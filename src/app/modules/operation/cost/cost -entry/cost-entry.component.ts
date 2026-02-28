@@ -212,13 +212,17 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   }
 
   parentFormValue: any = {};
+  previousDepartmentName : string | null = '';
   @Input()
   set formData(value: any) {
     if (value) {
       console.log("Parent Value Changed",value);
       this.parentFormValue = value;
       this.setParentData(value);
-      this.filterDepartmentBasedOnSegment(this.parentFormValue?.departmentName);
+      if(this.parentFormValue?.departmentName && this.previousDepartmentName !== this.parentFormValue?.departmentName){
+        this.previousDepartmentName = this.parentFormValue?.departmentName;
+        this.filterDepartmentBasedOnSegment(this.parentFormValue?.departmentName);
+      }
     } else {
       this.parentFormValue = {};
     }
