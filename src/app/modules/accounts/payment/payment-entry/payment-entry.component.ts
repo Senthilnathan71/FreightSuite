@@ -48,6 +48,7 @@ import {
   of,
   Subject,
   takeUntil,
+  tap,
 } from 'rxjs';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
@@ -391,7 +392,6 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     this.initSearchOutstandingForm();
     this.initializeForm();
     this.loadPaymentModes();
-    this.loadAllLookups();
     this.loadDetailLookups();
     this.loadVoucherPeriods();
 
@@ -399,10 +399,17 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const paymentId = this.route.snapshot.params['id'];
     if (paymentId) {
       this.headerId = Number(paymentId);
-      this.loadPayment(this.headerId);
-    } else {
-      this.subscribeToPartyAndBankChanges();
     }
+
+    // Load currencies first, then fetch the payment so currencyList
+    // is always populated before patchValues runs.
+    this.loadAllLookups().subscribe(() => {
+      if (this.headerId) {
+        this.loadPayment(this.headerId);
+      } else {
+        this.subscribeToPartyAndBankChanges();
+      }
+    });
   }
 
   ngAfterViewInit(): void {
@@ -631,60 +638,67 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
 
-  loadAllLookups() {
+  loadAllLookups(): Observable<void> {
     const filterOption = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
     };
+
+    // Parties and ledgers load in the background — do not block payment loading.
     forkJoin({
       parties: this.accountService
         .getAllCreditorWithCOAMapped(filterOption)
-        .pipe(catchError((err) => of([]))),
-      currencies: this.dropdownStore
-        .loadCurrencies()
-        .pipe(catchError((err) => of([]))),
+        .pipe(catchError(() => of([]))),
       bankTypedLedgers: this.accountService
         .getAllLedgersByItsType({
           CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
           LedgerType: 'Bank',
+          filterNonJob: true,
         })
-        .pipe(catchError((err) => of([]))),
+        .pipe(catchError(() => of([]))),
       cashTypeLedgers: this.accountService
         .getAllLedgersByItsType({
           CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
           LedgerType: 'Cash',
+          filterNonJob: true,
         })
-        .pipe(catchError((err) => of([]))),
-    }).subscribe(
-      ({ parties, currencies, bankTypedLedgers, cashTypeLedgers }) => {
-        this.partyList = parties.data;
+        .pipe(catchError(() => of([]))),
+    }).subscribe(({ parties, bankTypedLedgers, cashTypeLedgers }) => {
+      this.partyList = parties.data;
+      this.bankTypedLedgers = bankTypedLedgers.data;
+      this.cashTypeLedgers = cashTypeLedgers.data;
+
+      const cusMap = new Map<number, any>();
+      this.partyList.forEach((customer) => {
+        cusMap.set(customer.CustomerMasterSid, customer);
+      });
+      this.onlyCustomerList = Array.from(cusMap.values());
+    });
+
+    // Only currencies block the returned observable so that payment
+    // loading is always deferred until currencyList is populated.
+    return this.dropdownStore.loadCurrencies().pipe(
+      catchError(() => of([])),
+      tap((currencies) => {
         this.currencyList = (currencies || []).map((c) => ({
           ...c,
           countryName: c?.countryMaster?.countryName,
         }));
-        this.bankTypedLedgers = bankTypedLedgers.data;
-        this.cashTypeLedgers = cashTypeLedgers.data;
-
-        const companyCurrency = this.r['CurrencyMasterSid']?.value;
+        this.currencyConfigService.initializeConfigurations(this.currencyList);
+        const companyCurrency = this.r['CurrencyMasterSid']?.getRawValue();
         this.setCurrencyCode(companyCurrency);
 
-        this.currencyConfigService.initializeConfigurations(this.currencyList);
-
-        const cusMap = new Map<number, any>();
-        this.partyList.forEach((customer) => {
-          cusMap.set(customer.CustomerMasterSid, customer);
-        });
-        this.onlyCustomerList = Array.from(cusMap.values());
-
         if (!this.isEditMode) {
-          // Snapshot after all lookups loaded (create mode only)
+          // Snapshot after currencies are loaded (create mode only).
+          // Parties/ledgers are dropdown options only and do not affect form values.
           setTimeout(() => {
             this.initialFormValue = this.paymentForm.getRawValue();
             this.isDirty = false;
             this.subscribeToFormChanges();
           }, 0);
         }
-      }
+      }),
+      map(() => void 0),
     );
   }
 
@@ -750,7 +764,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
     let payload: any = {
       CompanyMasterSid: form.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
       IncludeFullyPaid: form.IncludeFullyPaid,
+      LedgerType: 'Sy Cr',
     };
 
     switch (form.SearchType) {
@@ -1423,9 +1439,14 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       },
       { emitEvent: false }
     );
+    // If currencyList is already loaded, resolve the code from the list.
+    // If not yet loaded, loadAllLookups will call setCurrencyCode once currencies arrive.
+    this.setCurrencyCode(headerInfo.CurrencyMasterSid);
 
     this.previousPartyBranchSid = headerInfo.CustomerBranchSid;
     this.searchOutstandingForm.get('LedgerMasterSid')?.setValue(headerInfo.PartyMasterSid);
+
+    this.paymentForm.get('CashOrBank')?.disable({ emitEvent: false });
 
     if (headerInfo.CashOrBank === 'C') {
       this.paymentForm.get('InstrumentMode')?.clearValidators();
@@ -1504,7 +1525,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     for (let i = 0; i < this.detailItems.length; i++) {
       if (this.isAutoPartyRow(i) || this.isAutoBankRow(i)) {
         ['COAMasterSid', 'LedgerMasterSid', 'DrCr', 'CurrencyMasterSid', 'CurrencyCode'].forEach(field => {
-          this.detailItems.at(i).get(field)?.disable();
+          this.detailItems.at(i).get(field)?.disable({ emitEvent: false });
         });
       }
     }
@@ -1682,9 +1703,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           .get('ExchangeRate')
           ?.setValue(this.r['ExchangeRate']?.getRawValue());
       }
-      detail.get('CurrencyMasterSid')?.disable();
-      detail.get('CurrencyCode')?.disable();
-      detail.get('ExchangeRate')?.disable();
+      detail.get('CurrencyMasterSid')?.disable({ emitEvent: false });
+      detail.get('CurrencyCode')?.disable({ emitEvent: false });
+      detail.get('ExchangeRate')?.disable({ emitEvent: false });
     } else if (isSyTypeDetail) {
       if (patch) {
         detail
@@ -1697,44 +1718,27 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           .get('ExchangeRate')
           ?.setValue(this.r['ExchangeRate']?.getRawValue());
       }
-      detail.get('CurrencyMasterSid')?.disable();
-      detail.get('CurrencyCode')?.disable();
-      detail.get('ExchangeRate')?.disable();
+      detail.get('CurrencyMasterSid')?.disable({ emitEvent: false });
+      detail.get('CurrencyCode')?.disable({ emitEvent: false });
+      detail.get('ExchangeRate')?.disable({ emitEvent: false });
     } else {
       // For auto party/bank rows, keep currency fields disabled
       const isLockedRow = this.isAutoPartyRow(detailIndex) || this.isAutoBankRow(detailIndex);
       if (!isLockedRow) {
-        detail.get('CurrencyMasterSid')?.enable();
-        detail.get('CurrencyCode')?.enable();
-        detail.get('ExchangeRate')?.enable();
+        detail.get('CurrencyMasterSid')?.enable({ emitEvent: false });
+        detail.get('CurrencyCode')?.enable({ emitEvent: false });
+        detail.get('ExchangeRate')?.enable({ emitEvent: false });
       }
     }
     this.calculateLocalAmount(detailIndex,true);
   }
 
   removeDetail(detailIndex: number, VoucherDetailSid?: number) {
-    // Case 1 : Row has VoucherDetailSid → call API first
-    if (VoucherDetailSid) {
-      this.accountService.softDeleteVoucherDetail(VoucherDetailSid).subscribe({
-        next: (res) => {
-          // On success, remove row from form array
-          (this.detailItems as FormArray).removeAt(detailIndex);
-          this.filteredCoaList.splice(detailIndex, 1);
-          this.removeJobSearchState(detailIndex);
-          this.rebuildFilteredCoaListForAllRows();
-        },
-        error: (err) => {
-          console.error('Error deleting voucher detail:', err);
-        },
-      });
-    }
-    // Case 2 : New row (no VoucherDetailSid) → directly remove it
-    else {
-      (this.detailItems as FormArray).removeAt(detailIndex);
-      this.filteredCoaList.splice(detailIndex, 1);
-      this.removeJobSearchState(detailIndex);
-      this.rebuildFilteredCoaListForAllRows();
-    }
+    // Remove from form array only — the backend soft-deletes orphaned rows on save
+    (this.detailItems as FormArray).removeAt(detailIndex);
+    this.filteredCoaList.splice(detailIndex, 1);
+    this.removeJobSearchState(detailIndex);
+    this.rebuildFilteredCoaListForAllRows();
   }
 
    private subscribeToPartyAndBankChanges(): void {
@@ -1798,6 +1802,16 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       }
     });
 
+    // Capture VoucherDetailSid/HeaderSid from the existing party row before removing,
+    // so the backend updates the record instead of creating a duplicate on save
+    let existingPartyVoucherDetailSid = 0;
+    let existingPartyVoucherHeaderSid: number | null = null;
+    if (partyIndexes.length > 0) {
+      const primaryPartyRow = this.detailItems.at(partyIndexes[0]);
+      existingPartyVoucherDetailSid = primaryPartyRow?.get('VoucherDetailSid')?.value || 0;
+      existingPartyVoucherHeaderSid = primaryPartyRow?.get('VoucherHeaderSid')?.value || null;
+    }
+
     // Remove all existing party rows (from last to first to avoid index issues)
     if (partyIndexes.length > 0) {
       partyIndexes
@@ -1813,6 +1827,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const currentMatchingPartyAmt = this.getTotalMatchPartyAmt();
 
     const partyData = {
+      VoucherDetailSid: existingPartyVoucherDetailSid,
+      VoucherHeaderSid: existingPartyVoucherHeaderSid,
       Sno: 1,
       COAMasterSid: partyLedger.COAMappedId,
       LedgerMasterSid: partyLedger.SubledgerMasterSid,
@@ -1832,7 +1848,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     }
 
     ['COAMasterSid', 'LedgerMasterSid', 'DrCr', 'CurrencyMasterSid', 'CurrencyCode'].forEach(field => {
-      this.detailItems.at(0).get(field)?.disable();
+      this.detailItems.at(0).get(field)?.disable({ emitEvent: false });
     });
 
     this.fetchLedgerForCOA(partyLedger, 0);
@@ -1887,6 +1903,16 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       }
     });
 
+    // Capture VoucherDetailSid/HeaderSid from the existing bank row before removing,
+    // so the backend updates the record instead of creating a duplicate on save
+    let existingBankVoucherDetailSid = 0;
+    let existingBankVoucherHeaderSid: number | null = null;
+    if (cashBankIndexes.length > 0) {
+      const primaryBankRow = this.detailItems.at(cashBankIndexes[0]);
+      existingBankVoucherDetailSid = primaryBankRow?.get('VoucherDetailSid')?.value || 0;
+      existingBankVoucherHeaderSid = primaryBankRow?.get('VoucherHeaderSid')?.value || null;
+    }
+
     // Remove all existing bank/cash rows (from last to first to avoid index issues)
     if (cashBankIndexes.length > 0) {
       cashBankIndexes
@@ -1906,6 +1932,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const currentMatchingPartyAmt = headerCurrencyId === bankCurrencyId ? this.getTotalMatchPartyAmt() : 0;
 
     const bankData = {
+      VoucherDetailSid: existingBankVoucherDetailSid,
+      VoucherHeaderSid: existingBankVoucherHeaderSid,
       Sno: this.detailItems.length + 1,
       COAMasterSid: bankLedger.COAMasterSid,
       LedgerMasterSid: bankLedger.LedgerMasterSid,
@@ -2012,7 +2040,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         );
       }
       if (bankCoaSid) {
-        filtered = filtered.filter((coa) => coa.COAMasterSid !== bankCoaSid);
+        filtered = filtered.filter((coa) => coa.LedgerType !== 'Bank' && coa.LedgerType !== 'Cash');
       }
     }
 
@@ -3050,9 +3078,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         partyCountry === 'united arab emirates' ? party.PanType : party.GSTNo,
     });
 
-    if (!this.r['BankPartyName']?.value) {
-      this.r['BankPartyName']?.setValue(party.CustomerName);
-    }
+    this.r['BankPartyName']?.setValue(party.CustomerName);
 
     const taxNoCtrl = this.paymentForm.get('GST_VAT');
     if(taxNoCtrl.getRawValue()){
@@ -3288,9 +3314,11 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   setCurrencyCode(CurrencyMasterSid: number) {
     if (!CurrencyMasterSid || this.currencyList.length === 0) return;
     const code = this.currencyList.find(
-      (c) => c.CurrencyMasterSid === CurrencyMasterSid
+      (c) => c.CurrencyMasterSid === Number(CurrencyMasterSid)
     )?.currencyCode;
-    this.r['CurrencyCode']?.setValue(code, { emitEvent: false });
+    if (code) {
+      this.r['CurrencyCode']?.setValue(code, { emitEvent: false });
+    }
   }
 
   clearSearchFields(type: string) {

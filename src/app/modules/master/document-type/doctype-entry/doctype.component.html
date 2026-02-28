@@ -165,10 +165,12 @@
                                     </div>
                                 </aside>
                                 <aside class="col-md-6">
-                                    <div class="custom-form-group">
-                                        <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                                            formControlName="Type" [textWithNumbers]="100">
-                                        <label for="text-input" class="input-label">Type </label>
+                                    <div class="custom-form-group custom-form-group-select"
+                                        [class.filled]="!!documentForm.get('Type')?.value">
+                                        <ng-select formControlName="Type" [items]="typeOptions"
+                                            class="ng-select" placeholder="">
+                                        </ng-select>
+                                        <label class="input-label">Type</label>
                                     </div>
                                 </aside>
                                 <aside class="col-md-6">
