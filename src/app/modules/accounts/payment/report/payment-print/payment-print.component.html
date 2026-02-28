@@ -25,14 +25,14 @@
 <div class="modal-body">
     <div id="printContent"class="p-1">
 
-       <div style="width:280mm; min-height:400mm; margin:10px;  background:#fff; border:1px solid #000; color:#000; position:relative; box-sizing:border-box; page-break-after:always;font-size: 16px;">
+       <div style="width:280mm; min-height:400mm; margin:10px;  background:#fff; border:1px solid #000; color:#000; position:relative; box-sizing:border-box; page-break-after:always;font-size: 16px; padding-bottom: 60px; display:flex; flex-direction:column;">
 
     <!-- Company Info -->
 
         <app-print-header></app-print-header>
 
     <!-- Cash Payment -->
-    <section >
+    <section style="display:flex; flex-direction:column; flex:1 1 auto;">
 
         <h4 style="text-align:center;border-top: 1px solid black; padding:10px auto;padding-top: 10px;font-weight: bolder;"><strong>Cash Payment</strong></h4>
 
@@ -125,36 +125,36 @@
         <!-- Remittance Details -->
         <h4 *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="font-weight:bolder; padding:2px 20px;text-align:start;"><strong>Remittance Details</strong></h4>
 
-        <table *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="width:100%; border-collapse:collapse; margin:10px 0; font-size:15px;">
+        <table *ngIf="paymentDataPrint?.voucherMatchings?.length > 0" style="width:100%; border-collapse:collapse; margin:10px 0; font-size:14px;">
             <tbody>
                 <tr>
-                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder; border-left: none;"><strong>Voucher No.</strong></th>
-                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder; border-left: none;"><strong>Bill No.</strong></th>
-                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder; border-left: none;"><strong>Bill Date.</strong></th>
-                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder;"><strong>INV Type</strong></th>
-                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder;"><strong>Voucher Date</strong></th>
-                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder;"><strong>Curr.</strong></th>
-                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder;"><strong>Ex. Rate</strong></th>
-                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder;"><strong>Curr. Amt</strong></th>
-                    <th style="border:1px solid black; padding:4px;  text-align:center; font-weight: bolder; border-right: none;"><strong>Local Amount</strong></th>
+                    <th style="border:1px solid black;padding:2px;  text-align:center; font-weight: bolder; border-left: none;"><strong>Voucher No.</strong></th>
+                    <th style="border:1px solid black;padding:2px;  text-align:center; font-weight: bolder; border-left: none;"><strong>Bill No.</strong></th>
+                    <th style="border:1px solid black;padding:2px;  text-align:center; font-weight: bolder; border-left: none;"><strong>Bill Date.</strong></th>
+                    <th style="border:1px solid black;padding:2px;  text-align:center; font-weight: bolder;"><strong>INV Type</strong></th>
+                    <th style="border:1px solid black;padding:2px;  text-align:center; font-weight: bolder;"><strong>Voucher Date</strong></th>
+                    <th style="border:1px solid black;padding:2px;  text-align:center; font-weight: bolder;"><strong>Curr.</strong></th>
+                    <th style="border:1px solid black;padding:2px;  text-align:center; font-weight: bolder;"><strong>Ex. Rate</strong></th>
+                    <th style="border:1px solid black;padding:2px;  text-align:center; font-weight: bolder;"><strong>Curr. Amt</strong></th>
+                    <th style="border:1px solid black;padding:2px;  text-align:center; font-weight: bolder; border-right: none;"><strong>Local Amount</strong></th>
                 </tr>
 
                 <tr *ngFor="let voucher of paymentDataPrint?.voucherMatchings">
-                    <td style="border:1px solid black; padding:4px;text-align: start;border-left: none;">{{voucher?.VoucherNumber}}</td>
-                      <td style="border:1px solid black; padding:4px;text-align: start;border-left: none;">{{voucher?.BillNo}}</td>
-                        <td style="border:1px solid black; padding:4px;text-align: center;border-left: none;">{{voucher?.BillDate | formatDate}}</td>
-                    <td style="border:1px solid black; padding:4px;text-align: center;">{{voucher?.VoucherType}}</td>
-                    <td style="border:1px solid black; padding:4px;">{{voucher?.VoucherDate | formatDate}}</td>
-                    <td style="border:1px solid black; padding:4px; text-align:center;text-align: center;">{{voucher?.CurrencyCode}}</td>
-                    <td style="border:1px solid black; padding:4px; text-align:right;">{{voucher?.ExchangeRate | number:'1.3-3'}}</td>
-                    <td style="border:1px solid black; padding:4px; text-align:right;">{{voucher?.MatchingAmount | number:'1.2-2'}}</td>
-                    <td style="border:1px solid black; padding:4px; text-align:right;border-right: none;">{{voucher?.MatchingLocalAmount | number:'1.2-2'}}</td>
+                    <td style="border:1px solid black;padding:2px;text-align: start;border-left: none;">{{voucher?.VoucherNumber}}</td>
+                      <td style="border:1px solid black;padding:2px;text-align: start;border-left: none;">{{voucher?.BillNo}}</td>
+                        <td style="border:1px solid black;padding:2px;text-align: center;border-left: none;">{{voucher?.BillDate | formatDate}}</td>
+                    <td style="border:1px solid black;padding:2px;text-align: center;">{{voucher?.VoucherType}}</td>
+                    <td style="border:1px solid black;padding:2px;">{{voucher?.VoucherDate | formatDate}}</td>
+                    <td style="border:1px solid black;padding:2px; text-align:center;text-align: center;">{{voucher?.CurrencyCode}}</td>
+                    <td style="border:1px solid black;padding:2px; text-align:right;">{{voucher?.ExchangeRate | number:'1.3-3'}}</td>
+                    <td style="border:1px solid black;padding:2px; text-align:right;">{{voucher?.MatchingAmount | number:'1.2-2'}}</td>
+                    <td style="border:1px solid black;padding:2px; text-align:right;border-right: none;">{{voucher?.MatchingLocalAmount | number:'1.2-2'}}</td>
                 </tr>
 
                 <tr>
-                    <td colspan="7" style="border:1px solid black; padding:4px; text-align:right; border-left: none;"><strong>Total</strong></td>
-                    <td style="border:1px solid black; padding:4px; text-align:right; font-weight:bolder;">{{getTotalMatchingAmount() | number:'1.2-2'}}</td>
-                    <td style="border:1px solid black; padding:4px; text-align:right; font-weight:bolder; border-right: none;">{{getTotalMatchingLocalAmount() | number:'1.2-2'}}</td>
+                    <td colspan="7" style="border:1px solid black;padding:2px; text-align:right; border-left: none;"><strong>Total</strong></td>
+                    <td style="border:1px solid black;padding:2px; text-align:right; font-weight:bolder;">{{getTotalMatchingAmount() | number:'1.2-2'}}</td>
+                    <td style="border:1px solid black;padding:2px; text-align:right; font-weight:bolder; border-right: none;">{{getTotalMatchingLocalAmount() | number:'1.2-2'}}</td>
                 </tr>
             </tbody>
         </table>
@@ -165,7 +165,7 @@
 
 
         <!-- Signature -->
-        <div style="position: absolute;bottom:160px;width:100%">
+        <div style="width:100%; margin-top:auto; padding-top:24px; page-break-inside: avoid; break-inside: avoid-page;">
          <div style="display:flex; justify-content:space-between; padding:0 20px;font-weight: bolder;">
         <strong>Checked By </strong>
         <strong>Approved By </strong>

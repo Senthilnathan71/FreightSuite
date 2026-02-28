@@ -301,7 +301,7 @@ printDiv(divId: string): void {
           coaList: this.coaList || [],
           ledgerList: this.ledgerList || [],
           bankTypedLedgers: this.bankTypedLedgers || [],
-          amountInWords: this.getAmountInWords(),
+          amountInWords: this.getAmountInWords() || this.paymentDataPrint?.AmountInWords || this.paymentDataPrint?.amountInWords || '',
           printSettings: this.companySettings.getPrintSettings()
         }
       );
@@ -328,7 +328,7 @@ printDiv(divId: string): void {
           coaList: this.coaList || [],
           ledgerList: this.ledgerList || [],
           bankTypedLedgers: this.bankTypedLedgers || [],
-          amountInWords: this.getAmountInWords(),
+          amountInWords: this.getAmountInWords() || this.paymentDataPrint?.AmountInWords || this.paymentDataPrint?.amountInWords || '',
           printSettings: this.companySettings.getPrintSettings()
         }
       );

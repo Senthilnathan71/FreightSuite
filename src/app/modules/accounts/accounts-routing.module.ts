@@ -21,6 +21,7 @@ import { VoucherMatchingEntryComponent } from './voucher-matching/voucher-matchi
 import { VoucherMatchingViewComponent } from './voucher-matching/voucher-matching-view/voucher-matching-view.component';
 import { TrialBalanceReportComponent } from './trial-balance/trial-balance-report.component';
 import { AccountsReportsComponent } from '../../accounts/components/accounts-reports/accounts-reports.component';
+import { ManagementReportsComponent } from '../../accounts/components/management-reports/management-reports.component';
 import { JournalVoucherEntryComponent } from './journal-voucher/journal-voucher-entry/journal-voucher-entry.component';
 import { ReverseVoucherEntryComponent } from './reverse-voucher/reverse-voucher-entry/reverse-voucher-entry.component';
 import { ReverseVoucherListComponent } from './reverse-voucher/reverse-voucher-list/reverse-voucher-list.component';
@@ -436,6 +437,17 @@ export const AccountRoutes: Routes = [
           urls: [
             { title: "Accounts", url: "/accounts" },
             { title: "Reports" },
+          ],
+        },
+      },
+      {
+        path: "management-report",
+        component: ManagementReportsComponent,
+        data: {
+          title: "Management Report",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Management Report" },
           ],
         },
       },

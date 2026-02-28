@@ -151,6 +151,17 @@ export class ReportService {
     );
   }
 
+   /**
+   * Get all Management reports available for a specific company
+   */
+  getManagementReports(companyId: number): Observable<ReportCard[]> {
+    return this.http.get<ApiResponse<ReportCard[]>>(
+      `${this.baseUrl}management/reports`,
+      { params: new HttpParams().set('companyId', companyId.toString()) }
+    ).pipe(
+      map(response => response.data)
+    );
+  }
   /**
    * Get parameters for a specific report
    */
