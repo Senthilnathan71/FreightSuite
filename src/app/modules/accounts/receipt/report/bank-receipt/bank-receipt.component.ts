@@ -210,7 +210,7 @@ getAmountInWords(): string {
           receiptType: 'bank',
           coaList: this.coaList || [],
           bankTypedLedgers: this.bankTypedLedgers || [],
-          amountInWords: this.getAmountInWords(),
+          amountInWords: this.getAmountInWords() || this.receiptPrintData?.AmountInWords || this.receiptPrintData?.amountInWords || '',
           currentUserCountry: this.currentUserCountry,
           printSettings: this.companySettings.getPrintSettings()
         }
@@ -237,7 +237,7 @@ getAmountInWords(): string {
           receiptType: 'bank',
           coaList: this.coaList || [],
           bankTypedLedgers: this.bankTypedLedgers || [],
-          amountInWords: this.getAmountInWords(),
+          amountInWords: this.getAmountInWords() || this.receiptPrintData?.AmountInWords || this.receiptPrintData?.amountInWords || '',
           currentUserCountry: this.currentUserCountry,
           printSettings: this.companySettings.getPrintSettings()
         }
@@ -294,7 +294,7 @@ getDrDetails() {
     v => v.COAMasterSid === COAMasterSid
   );
 
-  return ledger.LedgerName || '';
+  return ledger?.LedgerName || '';
 }
 
 

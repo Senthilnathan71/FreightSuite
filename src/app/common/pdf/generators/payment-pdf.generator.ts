@@ -45,7 +45,7 @@ function buildCompanyHeader(data: PaymentPdfData): any {
   const buildSlot = (slot: 'left' | 'center' | 'right') => {
     const stack: any[] = [];
     if (printSettings.logoPosition === slot && logo) {
-      stack.push({ image: logo, fit: [60, 60], alignment: slotAlign[slot] });
+      stack.push({ image: logo, fit: [60, 60], alignment: slotAlign[slot], margin: [8, 0, 15, 0] });
     }
     if (printSettings.companyPosition === slot) {
       stack.push({ stack: companyInfoStack, margin: stack.length ? [0, 4, 0, 0] : [0, 0, 0, 0] });
@@ -60,11 +60,16 @@ function buildCompanyHeader(data: PaymentPdfData): any {
           widths: ['33%', '34%', '33%'],
           body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
         },
-        layout: 'noBorders',
-        margin: [5, 0, 5, 4]
-      },
-      {
-        canvas: [{ type: 'line', x1: -10, y1: 0, x2: 555, y2: 0, lineWidth: 1 }]
+        layout: {
+          hLineWidth: (i: number, node: any) => (i === node.table.body.length ? 1 : 0),
+          vLineWidth: () => 0,
+          hLineColor: () => '#000000',
+          paddingLeft: () => 0,
+          paddingRight: () => 0,
+          paddingTop: () => 0,
+          paddingBottom: () => 2
+        },
+        margin: [0, 5, 0, 5]
       }
     ]
   };
@@ -136,7 +141,7 @@ function buildDetailsTable(data: PaymentPdfData): any {
 
   const rows = (data.details || []).map((item) => ([
     { text: item.ledgerName || '', style: 'tableCellSmall', margin: [2, 0, 0, 0] },
-    { text: item.narration || '', style: 'tableCellSmall' },
+    { text: item.narration || '', style: 'tableCellSmall' ,margin: [2, 0, 0, 0] },
     { text: item.currencyCode || '', style: 'tableCellSmall', alignment: 'center' },
     { text: formatNumberWithCommas(toNumber(item.exchangeRate), 3), style: 'tableCellSmall', alignment: 'right', margin: [0, 0, 2, 0] },
     { text: formatNumberWithCommas(toNumber(item.amount), 2), style: 'tableCellSmall', alignment: 'right', margin: [0, 0, 2, 0] },
@@ -144,10 +149,10 @@ function buildDetailsTable(data: PaymentPdfData): any {
   ]));
 
   rows.push([
-    { text: '', style: 'tableCellSmall' },
-    { text: '', style: 'tableCellSmall' },
-    { text: '', style: 'tableCellSmall' },
-    { text: '', style: 'tableCellSmall' },
+    { text: '', style: 'tableCellSmall' , margin: [2, 0, 0, 0] },
+    { text: '', style: 'tableCellSmall', margin: [2, 0, 0, 0] },
+    { text: '', style: 'tableCellSmall', margin: [2, 0, 0, 0] },
+    { text: '', style: 'tableCellSmall' , margin: [2, 0, 0, 0]},
     { text: 'Total', style: 'tableCellBoldSmall', alignment: 'right', margin: [0, 0, 2, 0] },
     { text: formatNumberWithCommas(toNumber(data.totals.totalAmount), 2), style: 'tableCellBoldSmall', alignment: 'right', margin: [0, 0, 2, 0] }
   ]);
@@ -255,10 +260,24 @@ function buildSignatureSection(): any {
 }
 
 export function generatePaymentDocument(data: PaymentPdfData): any {
+  const configuredMargins = data.config?.pageMargins as number[] | undefined;
+  const resolvedPageMargins = configuredMargins
+    ? [
+        configuredMargins[0] ?? 20,
+        Math.max(configuredMargins[1] ?? 82, 82),
+        configuredMargins[2] ?? 20,
+        configuredMargins[3] ?? 55
+      ]
+    : [20, 82, 20, 55];
+
   return {
     pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
     pageOrientation: data.config?.pageOrientation || PDF_DEFAULT_CONFIG.pageOrientation,
-    pageMargins: data.config?.pageMargins || [20, 20, 20, 55],
+    pageMargins: resolvedPageMargins,
+    header: () => ({
+      stack: [buildCompanyHeader(data)],
+      margin: [10, 10, 10, 4]
+    }),
     background: (_currentPage: number, pageSize: any) => ({
       canvas: [
         { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 1 },
@@ -268,7 +287,6 @@ export function generatePaymentDocument(data: PaymentPdfData): any {
       ]
     }),
     content: [
-      buildCompanyHeader(data),
       buildTitle(data),
       buildInfoSection(data),
       buildDetailsTable(data),
@@ -401,6 +419,10 @@ export function transformPaymentApiData(
       totalMatchingAmount,
       totalMatchingLocalAmount
     },
-    amountInWords: options?.amountInWords || ''
+    amountInWords:
+      options?.amountInWords ||
+      apiData?.AmountInWords ||
+      apiData?.amountInWords ||
+      ''
   };
 }

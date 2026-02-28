@@ -160,14 +160,6 @@
                <tbody>
 
                 <ng-container *ngFor="let dept of groupedSalesmanRows">
-
-                    <!-- Department Header Row -->
-                    <tr class="table-light fw-bold">
-                        <td colspan="7">
-                            {{ dept.DepartmentName }}
-                        </td>
-                    </tr>
-
                     <!-- Salesman Rows -->
                     <tr *ngFor="let item of dept.salesmen" style="white-space: nowrap;">
                         <td>{{ item.SalesmanName }}</td>
