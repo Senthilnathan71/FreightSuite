@@ -310,7 +310,7 @@ export class CustomsComponent implements OnInit, OnChanges {
   }
 
   private loadPackageTypes() {
-    this.operationService.getUOMsByType('E').subscribe({
+    this.operationService.getUOMsByType('P').subscribe({
       next: (resp) => {
         this.packageTypeList = resp.data;
       },
