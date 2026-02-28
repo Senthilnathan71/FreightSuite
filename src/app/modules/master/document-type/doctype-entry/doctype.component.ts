@@ -90,6 +90,8 @@ currentBranch: any;
 		{ id : 8 , code : 'VM'},
 	]
 
+	typeOptions = ['Cash', 'Bank', 'Others'];
+
 	currentMenuId: number;
 	TandCList: any;
 	menuList : any[];
@@ -181,6 +183,25 @@ hasAnyDropdownPermission(): boolean {
 		this.documentForm.get('CompanyValue').disable();
 		this.documentForm.get('BranchValue').disable();
 		this.documentForm.get('DocumentValue').disable();
+
+		// Default Type to 'Others' and disable; enable only for RPT/PMT
+		this.documentForm.get('Type')?.setValue('Others', { emitEvent: false });
+		this.documentForm.get('Type')?.disable({ emitEvent: false });
+
+		this.documentForm.get('DocumentTypeCode')?.valueChanges.subscribe((code) => {
+			this.applyTypeFieldState(code);
+		});
+	}
+
+	applyTypeFieldState(code: string) {
+		const typeCtrl = this.documentForm.get('Type');
+		if (!typeCtrl) return;
+		if (code === 'RPT' || code === 'PMT') {
+			typeCtrl.enable({ emitEvent: false });
+		} else {
+			typeCtrl.setValue('Others', { emitEvent: false });
+			typeCtrl.disable({ emitEvent: false });
+		}
 	}
 
 	loadAllFields() {
@@ -247,6 +268,7 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
                     // Trigger the COA selection change to load subledgers
                     this.onCOASelected(data);
 					this.handleReverseVoucherPosting(data);
+					this.applyTypeFieldState(data.DocumentTypeCode);
                     
                     // After a small delay (to allow subledgers to load), set the subledger value
                     setTimeout(() => {
