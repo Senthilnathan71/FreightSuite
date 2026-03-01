@@ -147,7 +147,7 @@ export class EmailTriggerService {
     let result = text;
     for (const key in context) {
       if (context.hasOwnProperty(key)) {
-        result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), context[key] ?? '');
+        result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), context[key] ?? '');
       }
     }
     return result;

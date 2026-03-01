@@ -11,6 +11,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { SettingsService } from 'src/app/modules/settings/settings.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MailBodyModalComponent } from '../mail-body-modal/mail-body-modal.component';
+import { PlaceholderAutocompleteDirective } from 'src/app/core/Directives/placeholder-autocomplete.directive';
 
 interface MailConfigRow {
   MailConfigurationMasterSid?: number;
@@ -39,7 +40,8 @@ interface MailConfigRow {
     ReactiveFormsModule,
     NgSelectModule,
     FeatherModule,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    PlaceholderAutocompleteDirective
   ],
   templateUrl: './mail-configuration-entry.component.html',
   styleUrl: './mail-configuration-entry.component.scss'
