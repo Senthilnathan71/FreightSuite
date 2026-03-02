@@ -28,6 +28,15 @@
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
+                    <!-- Filter Toggle Button -->
+                    <div class="mt-md-0 mt-1" *ngIf="hasAnyFilterConfig">
+                        <button type="button" class="btn btn-sm dofi-min-w-80 dofi-max-w-80"
+                            [class.btn-outline-info]="!showAdvancedFilters"
+                            [class.btn-info]="showAdvancedFilters"
+                            (click)="toggleAdvancedFilters()">
+                            <i class="fas fa-filter me-1"></i> Filters
+                        </button>
+                    </div>
                     <div class="mt-md-0 mt-1">
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="onSearch()">
@@ -89,5 +98,89 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- Advanced Filters Row -->
+    <div class="row bg-white mb-1 py-2 px-2 rounded shadow-sm align-items-end"
+         *ngIf="hasAnyFilterConfig && showAdvancedFilters">
+
+        <!-- Date Range Preset -->
+        <div class="col-md-auto mb-1" *ngIf="dateRangeConfig?.enabled">
+            <label class="form-label mb-0 small text-muted">Date Range</label>
+            <select class="form-select form-select-sm" [(ngModel)]="selectedPreset">
+                <option value="last30">Last 30 Days</option>
+                <option value="thisMonth">This Month</option>
+                <option value="lastMonth">Last Month</option>
+                <option value="last2Months">Last 2 Months</option>
+                <option value="last3Months">Last 3 Months</option>
+                <option value="custom">Custom Range</option>
+            </select>
+        </div>
+
+        <!-- Custom From Date -->
+        <div class="col-md-auto mb-1" *ngIf="dateRangeConfig?.enabled && isCustomRange">
+            <label class="form-label mb-0 small text-muted">From</label>
+            <div class="input-group input-group-sm">
+                <input class="form-control" placeholder="dd-MMM-yyyy" name="customFromDate"
+                       [(ngModel)]="customFromDate" ngbDatepicker #dpFrom="ngbDatepicker"
+                       (click)="dpFrom.toggle()" readonly>
+                <button class="btn btn-outline-secondary" type="button" (click)="dpFrom.toggle()">
+                    <i class="fas fa-calendar-alt"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Custom To Date -->
+        <div class="col-md-auto mb-1" *ngIf="dateRangeConfig?.enabled && isCustomRange">
+            <label class="form-label mb-0 small text-muted">To</label>
+            <div class="input-group input-group-sm">
+                <input class="form-control" placeholder="dd-MMM-yyyy" name="customToDate"
+                       [(ngModel)]="customToDate" ngbDatepicker #dpTo="ngbDatepicker"
+                       (click)="dpTo.toggle()" readonly>
+                <button class="btn btn-outline-secondary" type="button" (click)="dpTo.toggle()">
+                    <i class="fas fa-calendar-alt"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Date Type -->
+        <div class="col-md-auto mb-1" *ngIf="dateTypeConfig?.enabled">
+            <label class="form-label mb-0 small text-muted">Date Type</label>
+            <select class="form-select form-select-sm" [(ngModel)]="selectedDateType">
+                <option *ngFor="let opt of dateTypeConfig!.options" [value]="opt.value">{{ opt.label }}</option>
+            </select>
+        </div>
+
+        <!-- Party Type & Party Selection -->
+        <div class="col-md-auto mb-1" *ngIf="partyFilterConfig?.enabled">
+            <label class="form-label mb-0 small text-muted">Party Type</label>
+            <select class="form-select form-select-sm" [(ngModel)]="selectedPartyType"
+                    (ngModelChange)="onPartyTypeChange()">
+                <option *ngFor="let pt of partyFilterConfig!.partyTypes" [value]="pt.value">{{ pt.label }}</option>
+            </select>
+        </div>
+
+        <div class="col-md mb-1" *ngIf="partyFilterConfig?.enabled" style="min-width: 200px;">
+            <label class="form-label mb-0 small text-muted">Party</label>
+            <dofi-searchable-dropdown
+                [items]="partySearchResults"
+                [displayFields]="['CustomerName']"
+                [displayLabels]="['Name']"
+                [labelFields]="['CustomerName']"
+                bindLabel="CustomerName"
+                bindValue="CustomerMasterSid"
+                [isLoading]="partyLoading"
+                placeholder="Search party..."
+                [clearable]="true"
+                (itemSelected)="onPartySelected($event)">
+            </dofi-searchable-dropdown>
+        </div>
+
+        <!-- Clear Filters -->
+        <div class="col-md-auto mb-1">
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="clearAdvancedFilters()">
+                <i class="fas fa-times me-1"></i> Clear
+            </button>
+        </div>
     </div>
 </div>

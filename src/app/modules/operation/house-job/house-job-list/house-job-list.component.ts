@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
@@ -33,6 +33,13 @@ import {
 } from 'src/app/shared/interfaces/table.interface';
 
 import { OperationService } from '../../operation.service';
+import { MasterService } from 'src/app/modules/master/master.service';
+import {
+  AdvancedFilterValues,
+  DateRangeConfig,
+  DateTypeConfig,
+  PartyFilterConfig
+} from 'src/app/shared/interfaces/advanced-filter.interface';
 
 @Component({
   selector: 'app-house-job-list',
@@ -65,6 +72,35 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
 
   tableLoading = false;
 
+  // Advanced filter configs
+  dateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+  dateTypeConfig: DateTypeConfig = {
+    enabled: true,
+    options: [
+      { label: 'Booking Date', value: 'BookingDateTime' },
+      { label: 'ETD', value: 'ETD' },
+      { label: 'ETA', value: 'ETA' },
+      { label: 'HBL Date', value: 'HBLDate' },
+    ],
+    defaultValue: 'BookingDateTime'
+  };
+  partyFilterConfig: PartyFilterConfig = {
+    enabled: true,
+    partyTypes: [
+      { label: 'Customer', value: 'CustomerMasterSid' },
+      { label: 'Shipper', value: 'ShipperName' },
+      { label: 'Consignee', value: 'ConsigneeName' },
+    ]
+  };
+  currentFilters: AdvancedFilterValues = {};
+
+  partySearchFn = (searchTerm: string, partyType: string) => {
+    return this.masterService.searchCustomersByName({
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      searchTerm: searchTerm || ''
+    }).pipe(map((res: any) => res.status ? res.data : []));
+  };
+
   protected config: ListComponentConfig = {
     storageKey: 'house-job-list-state',
     defaultPageSize: 10,
@@ -87,7 +123,8 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
     private datePipe: CustomDatePipe,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private masterService: MasterService
   ) {
     super(paginationService);
   }
@@ -123,8 +160,8 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
     return this.operationService.searchHouseJob(this.getSearchParams());
   }
 
-  protected getSearchParams(): SearchParams & { departmentType: string } {
-    return {
+  protected getSearchParams(): SearchParams & Record<string, any> {
+    const params: any = {
       search: this.filterValue.trim(),
       page: Number(this.page),
       pageSize: Number(this.pageSize),
@@ -134,6 +171,22 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
       sortDirection: this.sortDirection,
       departmentType: 'Sea'
     };
+
+    // Merge advanced filter values
+    if (this.currentFilters.dateRange) {
+      params.dateFrom = this.currentFilters.dateRange.fromDate;
+      params.dateTo = this.currentFilters.dateRange.toDate;
+    }
+    if (this.currentFilters.dateType) {
+      params.dateField = this.currentFilters.dateType;
+    }
+    if (this.currentFilters.party) {
+      params.partyType = this.currentFilters.party.partyType;
+      params.partyId = this.currentFilters.party.partyId;
+      params.partyName = this.currentFilters.party.partyName;
+    }
+
+    return params;
   }
 
   protected processSearchResults(response: any): void {
@@ -274,8 +327,16 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
     this.searchHouseJob();
   }
 
+  onAdvancedSearch(event: { searchValue: string; filters: AdvancedFilterValues }): void {
+    this.filterValue = event.searchValue;
+    this.currentFilters = event.filters;
+    this.page = 1;
+    this.search();
+  }
+
   onSearchCleared(): void {
     this.filterValue = '';
+    this.currentFilters = {};
     this.clearFilterValue();
   }
 

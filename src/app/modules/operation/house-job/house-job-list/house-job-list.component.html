@@ -16,7 +16,12 @@
     [searchButtonText]="'Search'"
     [(searchValue)]="filterValue"
     [actions]="headerActions"
+    [dateRangeConfig]="dateRangeConfig"
+    [dateTypeConfig]="dateTypeConfig"
+    [partyFilterConfig]="partyFilterConfig"
+    [partySearchFn]="partySearchFn"
     (searchTriggered)="onSearchTriggered($event)"
+    (advancedSearchTriggered)="onAdvancedSearch($event)"
     (searchCleared)="onSearchCleared()"
     (actionTriggered)="onActionTriggered($event)">
   </app-page-header>
