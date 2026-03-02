@@ -1195,7 +1195,7 @@ private deepEqual(obj1: any, obj2: any): boolean {
       currencyAmount: [0, [Validators.required, Validators.min(0.01)]],
       localAmount: [0, [Validators.required, Validators.min(0)]],
       drCr: ['D', Validators.required],
-      narration: ['', [Validators.required, Validators.maxLength(200)]],
+      narration: [''],
       departmentMasterSid: [null],
       chargeMasterSid: [null],
       chargeDescription: [''],

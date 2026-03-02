@@ -2595,7 +2595,7 @@ validatePartyMatchingAmount() {
   const details = this.details.getRawValue() || [];
   
   details.forEach((vd) => {
-    const amount = Number(vd.Amount) || 0;
+    const amount = Number(vd.PartyAmount) || 0;
     if (vd.DrCr === 'C') {
       totalCredits += amount;
     } else if (vd.DrCr === 'D') {

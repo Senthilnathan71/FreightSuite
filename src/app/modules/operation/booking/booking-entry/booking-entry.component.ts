@@ -396,17 +396,24 @@ arapFilter = {
   ];
 
   tabs = [
-    { name: 'Shipment', icon: 'fas fa-ship' },
-    { name: 'Cargo', icon: 'fas fa-boxes' },
-    { name: 'Others', icon: 'fas fa-ellipsis-h' },
-    { name: 'CRO', icon: 'fas fa-file-export' },
-    // { name: 'Product', icon: 'fas fa-box' },
-    { name: 'Connection', icon: 'fas fa-link' },
-    { name: 'Rate', icon: 'fas fa-rupee-sign' },
-    { name: 'Milestone', icon: 'fas fa-flag-checkered' },
-    { name: 'AR/AP', icon: 'fas fa-file-alt' },
-    // { name: 'Others', icon: 'fas fa-ellipsis-h' },
-  ];
+  { name: 'Shipment', icon: 'fas fa-ship' },
+  { name: 'Cargo', icon: 'fas fa-boxes' },
+  { name: 'Others', icon: 'fas fa-ellipsis-h' },
+  { name: 'CRO', icon: 'fas fa-file-export' },
+  { name: 'Connection', icon: 'fas fa-link' },
+  { name: 'Rate', icon: 'fas fa-rupee-sign' },
+  { name: 'Milestone', icon: 'fas fa-flag-checkered' },
+  { name: 'AR/AP', icon: 'fas fa-file-alt' },
+];
+
+get visibleTabs() {
+  return this.tabs.filter(tab => {
+    if (tab.name === 'CRO' && this.selectedDepartmentType === 'AIR') {
+      return false;
+    }
+    return true;
+  });
+}
   dataFromQuotation: any
   // Mail content
  departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
@@ -2496,6 +2503,9 @@ onCarrierChangeForAir(carrier: any): void {
       this.handleCFSOrYard()
       return;
     }
+    if (this.selectedDepartmentType === 'AIR' && this.selectedTab === 'CRO') {
+    this.selectedTab = 'Shipment';
+  }
     this.selectedDepartmentType = department.departmentType.toUpperCase();
     this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? department.FCLLCL.toUpperCase() : "AIR";
      if (this.bookingProducts.length > 0) {

@@ -67,8 +67,8 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
   protected config: ListComponentConfig = {
     storageKey: 'mawbill-list-state',
     defaultPageSize: 10,
-    defaultSortColumn: 'departmentName',
-    defaultSortDirection: 'asc',
+    defaultSortColumn: 'MasterJobSid',
+    defaultSortDirection: 'desc',
     pageSizeOptions: [10, 20, 50, 100, 500],
     maxPagesToShow: 3
   };
