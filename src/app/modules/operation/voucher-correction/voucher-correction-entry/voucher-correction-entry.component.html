@@ -98,7 +98,8 @@
                             <div class="custom-form-group">
                                 <input type="text" id="Narration" formControlName="Narration" placeholder=""
                                     class="custom-input-field sm highlight-field" />
-                                <label for="Narration" class="input-label">Narration</label>
+                                <label for="Narration" class="input-label">Narration<span *ngIf="isReceipt || isJournalVoucher"
+                                        class="text-danger">*</span></label>
                             </div>
                         </aside>
 
@@ -292,7 +293,7 @@
                                     class="custom-input-field sm highlight-field"
                                     [class.is-invalid]="isFieldInvalid('DocumentNumber')" />
                                 <label for="DocumentNumber" class="input-label">
-                                    Bill No. <span class="text-danger"></span>
+                                    Bill No. <span *ngIf="isVendorInvoice || isVendorCreditNote" class="text-danger">*</span>
                                 </label>
                             </div>
                         </aside>
@@ -305,7 +306,7 @@
                                         formControlName="DocumentDate"
                                         [class.is-invalid]="isFieldInvalid('DocumentDate')" />
                                     <label class="input-label" for="DocumentDate">
-                                        Bill Date <span class="text-danger"></span>
+                                        Bill Date <span *ngIf="isVendorInvoice || isVendorCreditNote" class="text-danger">*</span>
                                     </label>
                                 </div>
                                 <button class="btn bi bi-calendar3 mt-2" (click)="d3.toggle()" type="button">
@@ -342,31 +343,31 @@
                             </div>
                         </aside>
 
-                        <aside class="col-md-3" *ngIf="isReceipt || isPayment">
+                        <aside class="col-md-3" *ngIf="(voucherForm.get('CashOrBank')?.value === 'B') && isReceipt || isPayment">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm highlight-field"
                                     formControlName="InstrumentNumber" />
-                                <label for="text-input" class="input-label" style="font-size: 14px">Inst No. <span
-                                        class="text-danger"></span></label>
+                                <label for="text-input" class="input-label" style="font-size: 14px">Inst No. <span *ngIf="isBankReceipt"
+                                        class="text-danger">*</span></label>
                             </div>
                         </aside>
 
                         <!-- Inst Mode -->
 
-                        <aside class="col-md-3" *ngIf="isReceipt || isPayment">
+                        <aside class="col-md-3" *ngIf="(voucherForm.get('CashOrBank')?.value === 'B') && isReceipt || isPayment">
                             <div class="custom-form-group custom-form-group-select highlight-field"
                                 [class.filled]="!!voucherForm.get('InstrumentMode')?.value">
                                 <ng-select class="ng-select" [items]="paymentModes" bindLabel="label" bindValue="value"
                                     formControlName="InstrumentMode">
                                 </ng-select>
-                                <label for="text-input" class="input-label" style="font-size: 14px">Inst Mode <span
-                                        class="text-danger"></span></label>
+                                <label for="text-input" class="input-label" style="font-size: 14px">Inst Mode <span *ngIf="isBankReceipt"
+                                        class="text-danger">*</span></label>
                             </div>
                         </aside>
 
                         <!-- Instrument Date -->
 
-                        <aside class="col-md-3" *ngIf="isReceipt || isPayment">
+                        <aside class="col-md-3" *ngIf="(voucherForm.get('CashOrBank')?.value === 'B') && isReceipt || isPayment">
                             <div class="custom-form-group custom-form-group-select filled">
                                 <div class="input-group">
                                     <input class="form-control highlight-field" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
@@ -376,15 +377,15 @@
                                         <i-feather name="calendar" class="feather-sm"></i-feather>
                                     </button>
                                 </div>
-                                <label class="input-label" style="font-size: 14px">Inst Date <span
-                                        class="text-danger"></span>
+                                <label class="input-label" style="font-size: 14px">Inst Date <span *ngIf="isBankReceipt"
+                                        class="text-danger">*</span>
                                 </label>
                             </div>
                         </aside>
 
                         <!-- Clearance Date -->
 
-                        <aside class="col-md-3" *ngIf="isReceipt || isPayment">
+                        <aside class="col-md-3" *ngIf="(voucherForm.get('CashOrBank')?.value === 'B') && isReceipt || isPayment">
                             <div class="custom-form-group custom-form-group-select filled">
                                 <div class="input-group">
                                     <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker

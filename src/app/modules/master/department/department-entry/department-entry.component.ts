@@ -287,73 +287,67 @@ hasAnyDropdownPermission(): boolean {
   }
 
   onSubmit() {
-    if (this.departmentForm.invalid) {
-      this.departmentForm.markAllAsTouched(); // Force validation messages to show
-      this.departmentForm.updateValueAndValidity(); // Ensure validation is refreshed
-      this.appSettingService.showWarning('Please fill all required fields correctly.')
-      return;
-    } else {
-      let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
-      let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
-      const formValue = this.departmentForm.value;
 
-      const payload = (this.isEditMode) ? {
-        ...formValue,
-        ...updatedBy,
-        Status: formValue.Status === "Active" ? "A" : "S",
-        
-        CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
-      } : {
-        ...formValue,
-        ...createdBy,
-        Status: formValue.Status === "Active" ? "A" : "S",
-        CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
-      };
-
-
-      console.log('payload', payload);
-
-      if (this.isEditMode) {
-        this.masterService.updateDepartmentById(this.DepartmentMasterSid, payload).subscribe(
-          (resp: any) => {
-
-            console.log(resp.message);
-            if (resp.status) {
-              this.appSettingService.showSuccess(resp.message);
-              this.router.navigate(['master/department/list']);
-            } else {
-              this.appSettingService.showError(resp.message);
-            }
-
-          },
-          (error) => {
-            this.errorMessage = error.message;
-            console.error('Error loading country:', error);
-          }
-        );
-      } else {
-
-        this.masterService.createDepartment(payload).subscribe(
-          (resp: any) => {
-
-            console.log(resp);
-            if (resp.status) {
-              this.appSettingService.showSuccess(resp.message);
-              this.router.navigate(['master/department/list']);
-
-            } else {
-              this.appSettingService.showError(resp.message);
-            }
-
-          },
-          (error) => {
-            this.errorMessage = error.message;
-            console.error('Error loading country:', error);
-          }
-        );
-      }
-    }
+  if (this.departmentForm.invalid) {
+    this.departmentForm.markAllAsTouched();
+    this.departmentForm.updateValueAndValidity();
+    this.appSettingService.showWarning('Please fill all required fields correctly.');
+    return;
   }
+
+  this.btnDisable = true;
+
+  const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
+  const formValue = this.departmentForm.value;
+
+  const payload = {
+    ...formValue,
+    ...(this.isEditMode ? { updatedBy: userEmail } : { createdBy: userEmail }),
+    Status: formValue.Status === "Active" ? "A" : "S",
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+  };
+
+  const request$ = this.isEditMode
+    ? this.masterService.updateDepartmentById(this.DepartmentMasterSid, payload)
+    : this.masterService.createDepartment(payload);
+
+  request$.subscribe({
+    next: (resp: any) => {
+      if (resp.status) {
+
+        this.appSettingService.showSuccess(resp.message);
+
+        if (!this.isEditMode) {
+          this.DepartmentMasterSid = resp.data?.DepartmentMasterSid; 
+          this.isEditMode = true;
+          this.departmentData = resp.data;
+
+          this.departmentForm.patchValue({
+            ...resp.data,
+            Status: resp.data.Status === 'A' ? 'Active' : 'Suspended'
+          });
+
+          this.router.navigate(
+            ['master/department/entry', this.DepartmentMasterSid],
+            
+          );
+        }
+
+      } else {
+        this.appSettingService.showError(resp.message);
+        this.btnDisable = false;
+      }
+    },
+    error: (error) => {
+      this.errorMessage = error.message;
+      console.error(error);
+      this.btnDisable = false;
+    },
+    complete: () => {
+      this.btnDisable = false;
+    }
+  });
+}
 
   // Mapping for API status values
   statusMap: { [key: string]: string } = {
@@ -495,7 +489,7 @@ openAuditLogs(modal: TemplateRef<any>) {
 }
 
   goBack() {
-    history.back()
+    this.router.navigate(['master/department/list'])
   }
 
   showInfo() {
