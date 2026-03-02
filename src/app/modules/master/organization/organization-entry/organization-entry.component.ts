@@ -68,6 +68,8 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import * as XLSX from 'xlsx';
 import { SearchableDropdownModal } from 'src/app/component/searchable-dropdown/searchable-dropdown-modal.component';
+import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/dial-code-dropdown.component';
+
 
 @Component({
   selector: 'app-organization-entry',
@@ -93,7 +95,8 @@ import { SearchableDropdownModal } from 'src/app/component/searchable-dropdown/s
     NgbDropdownModule,
     NgbAccordionModule,
     SearchableDropdown,
-    SearchableDropdownModal
+    SearchableDropdownModal,
+    DialCodeDropdownComponent
   ],
   templateUrl: './organization-entry.component.html',
   styleUrl: './organization-entry.component.scss',
@@ -122,7 +125,7 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
     public mps : MenuPermissionService
   ) {
     this.cusMilestoneFormArr = this.fb.array([]);
-    effect(()=> {
+        effect(()=> {
           const countryData = this.dropdownStore.countries();
           const stateData = this.dropdownStore.states();
           const cityData = this.dropdownStore.cities();
@@ -842,6 +845,12 @@ clearCustomerSearch(): void {
   }
 
   addBranchFormGroup(data?: any): FormGroup {
+    const parsedBranchPhone = this.parsePhone(data?.ContactNo ?? data?.CustBranchPhone ?? '');
+    const branchPhoneCode =
+      data?.CustBranchPhoneCode ||
+      parsedBranchPhone.phoneCode ||
+      DialCodeDropdownComponent.getDefaultDialCodeFromLoginCountry(this.userData);
+
     const branchForm = this.fb.group({
       CustomerBranchSid: [data?.CustomerBranchSid || null],
       CustomerMasterSid: [this.CustomerMasterSid],
@@ -852,8 +861,9 @@ clearCustomerSearch(): void {
        CustBranchCode: [data?.Branch_Code || ''],
       Contact_Person: [data?.Contact_Person || ''],
       CustBranchZipPostCode: [data?.Zip_PostBox || '', [Validators.maxLength(10)]],
-      CustBranchPhone: [data?.ContactNo || '', [Validators.maxLength(15), this.phoneNumberValidator]],
-      CustBranchEmail: [data?.Email || '', [Validators.required, EmailValidators.multipleEmails()]],
+      CustBranchPhoneCode: [branchPhoneCode],
+      CustBranchPhone: [parsedBranchPhone.phoneNumber, [Validators.maxLength(15), this.phoneNumberValidator]],
+      CustBranchEmail: [data?.Email || null, [ EmailValidators.multipleEmails()]],
       CustBranchAddress: [data?.Address || '', [Validators.required]],
       CustBranchRegistered: [data?.Registered || 'Y', [Validators.required]],
       CustBranchGSTtype: [data?.CustomerGstType || 'Regular'],
@@ -906,14 +916,22 @@ clearCustomerSearch(): void {
 
   // Create contacts array from data
   createContactsArray(contacts: any[]): FormGroup[] {
-    return contacts.map(contact => this.fb.group({
-      CusBranchContactSid: [contact.CusBranchContactSid || null],
-      ContactType: [contact.ContactType || '', [Validators.required]],
-      ContactName: [contact.ContactName || '', [Validators.required]],
-      MobileNo: [contact.MobileNo || '', [Validators.maxLength(15), this.phoneNumberValidator]],
-      Email: [contact.Email || '', [Validators.required, EmailValidators.multipleEmails()]],
-      status: [contact.status === 'A' ? 'Active' : contact.status === 'S' ? 'Suspended' : 'Active']
-    }));
+    return contacts.map(contact => {
+      const parsedMobile = this.parsePhone(contact.MobileNo || '');
+      return this.fb.group({
+        CusBranchContactSid: [contact.CusBranchContactSid || null],
+        ContactType: [contact.ContactType || '', [Validators.required]],
+        ContactName: [contact.ContactName || '', [Validators.required]],
+        MobileNoCode: [
+          contact.MobileNoCode ||
+          parsedMobile.phoneCode ||
+          this.getFormDialCode()
+        ],
+        MobileNo: [parsedMobile.phoneNumber, [Validators.maxLength(15), this.phoneNumberValidator]],
+        Email: [contact.Email || '', [Validators.required, EmailValidators.multipleEmails()]],
+        status: [contact.status === 'A' ? 'Active' : contact.status === 'S' ? 'Suspended' : 'Active']
+      });
+    });
   }
 
   debugEmailData(): void {
@@ -1015,6 +1033,7 @@ clearCustomerSearch(): void {
       CusBranchContactSid: [null],
       ContactType: ['', [Validators.required]],
       ContactName: ['', [Validators.required]],
+      MobileNoCode: [this.getFormDialCode()],
       MobileNo: ['', [Validators.maxLength(15), this.phoneNumberValidator]],
       Email: ['', [Validators.required, EmailValidators.multipleEmails()]],
       status: ['Active']
@@ -1605,10 +1624,26 @@ clearCustomerSearch(): void {
   if (!control.value) {
     return null;
   }
-  const phoneRegex = /^(\+[0-9]{1,3})?[0-9]{6,15}$/;
+  const phoneRegex = /^[0-9]{6,15}$/;
   const isValid = phoneRegex.test(control.value);
   return isValid ? null : { invalidPhoneNumber: true };
 }
+
+  private getFormDialCode(): string {
+    return DialCodeDropdownComponent.getCurrentCountryDialCode(
+      this.customerForm,
+      this.countryList,
+      this.userData
+    );
+  }
+
+  private parsePhone(rawValue: any): { phoneCode: string; phoneNumber: string } {
+    return DialCodeDropdownComponent.splitPhoneNumber(rawValue);
+  }
+
+  private withDialCode(phoneValue: any, dialCode?: string): string {
+    return DialCodeDropdownComponent.buildPhoneWithDialCode(phoneValue, dialCode || this.getFormDialCode());
+  }
 
   gstValidator(control: AbstractControl): ValidationErrors | null {
     const gstin = control.value;
@@ -2888,7 +2923,7 @@ private getFirstInvalidField(): string {
         Branch_Code: branchData.CustBranchCode,
         Contact_Person: branchData.Contact_Person,
         Zip_PostBox: String(branchData.CustBranchZipPostCode),
-        ContactNo: String(branchData.CustBranchPhone),
+        ContactNo: this.withDialCode(branchData.CustBranchPhone, branchData.CustBranchPhoneCode),
         Email: branchData.CustBranchEmail,
         Address: branchData.CustBranchAddress,
         Registered: branchData.CustBranchRegistered,
@@ -2917,7 +2952,7 @@ private getFirstInvalidField(): string {
       contactsPayload.push({
         ContactType: contactData.ContactType,
         ContactName: contactData.ContactName?.trim(),
-        MobileNo: String(contactData.MobileNo),
+        MobileNo: this.withDialCode(contactData.MobileNo, contactData.MobileNoCode),
         Email: contactData.Email,
         status: contactData.status === 'Active' ? 'A' : 'S'
       });
@@ -3024,7 +3059,7 @@ private getFirstInvalidField(): string {
       Branch_Code: branchData.CustBranchCode,
       Contact_Person: branchData.Contact_Person,
       Zip_PostBox: String(branchData.CustBranchZipPostCode),
-      ContactNo: String(branchData.CustBranchPhone),
+      ContactNo: this.withDialCode(branchData.CustBranchPhone, branchData.CustBranchPhoneCode),
       Email: branchData.CustBranchEmail,
       Address: branchData.CustBranchAddress,
       Registered: branchData.CustBranchRegistered,
@@ -3061,7 +3096,7 @@ private getFirstInvalidField(): string {
       const contactPayload: any = {
         ContactType: contactData.ContactType,
         ContactName: contactData.ContactName?.trim(),
-        MobileNo: String(contactData.MobileNo),
+        MobileNo: this.withDialCode(contactData.MobileNo, contactData.MobileNoCode),
         Email: contactData.Email,
         status: contactStatus
       };
@@ -3685,12 +3720,14 @@ private updateChildRecordsStatus(branchIndex: number, isSuspended: boolean): voi
       contactForm.get('status')?.disable();
       contactForm.get('ContactType')?.disable();
       contactForm.get('ContactName')?.disable();
+      contactForm.get('MobileNoCode')?.disable();
       contactForm.get('MobileNo')?.disable();
       contactForm.get('Email')?.disable();
     } else {
       contactForm.get('status')?.enable();
       contactForm.get('ContactType')?.enable();
       contactForm.get('ContactName')?.enable();
+      contactForm.get('MobileNoCode')?.enable();
       contactForm.get('MobileNo')?.enable();
       contactForm.get('Email')?.enable();
     }
@@ -4190,6 +4227,7 @@ private loadNetworks(): void {
           CustBranchZipPostCode: row.Zip_PostBox?.toString().trim() || row.ZipPostCode?.toString().trim() || row.CustBranchZipPostCode?.toString().trim() || '',
           // ContactNo (Excel) or BranchPhone
           CustBranchPhone: row.ContactNo?.toString().trim() || row.BranchPhone?.toString().trim() || row.CustBranchPhone?.toString().trim() || '',
+          CustBranchPhoneCode: row.BranchPhoneCode?.toString().trim() || row.CustBranchPhoneCode?.toString().trim() || '',
           // Email (Excel) or BranchEmail
           CustBranchEmail: row.Email?.toString().trim() || row.BranchEmail?.toString().trim() || row.CustBranchEmail?.toString().trim() || '',
           // Address (Excel) or BranchAddress
@@ -4515,7 +4553,7 @@ private loadNetworks(): void {
         Branch_Code: branch.CustBranchCode || '',
         Contact_Person: branch.Contact_Person || '',
         Zip_PostBox: branch.CustBranchZipPostCode || '',
-        ContactNo: branch.CustBranchPhone || '',
+        ContactNo: this.withDialCode(branch.CustBranchPhone, branch.CustBranchPhoneCode),
         Email: branch.CustBranchEmail || '',
         Address: branch.CustBranchAddress || '',
         Registered: branch.CustBranchRegistered === 'Y' ? 'Y' : 'N',
@@ -4689,6 +4727,7 @@ private loadNetworks(): void {
         CityMasterSid: cityId,
         Contact_Person: branch.Contact_Person,
         Zip_PostBox: branch.CustBranchZipPostCode,
+        CustBranchPhoneCode: branch.CustBranchPhoneCode,
         ContactNo: branch.CustBranchPhone,
         Email: branch.CustBranchEmail,
         Address: branch.CustBranchAddress,
@@ -4740,6 +4779,7 @@ private loadNetworks(): void {
         ContactPerson: 'John Doe',
         ZipPostCode: '400001',
         BranchPhone: '9876543210',
+        BranchPhoneCode: '+91',
         BranchEmail: 'ho@abc.com',
         BranchAddress: '123 Main Street, Mumbai',
         Registered: 'Y',
@@ -4778,6 +4818,7 @@ private loadNetworks(): void {
         ContactPerson: 'Jane Smith',
         ZipPostCode: '110001',
         BranchPhone: '9876543211',
+        BranchPhoneCode: '+91',
         BranchEmail: 'delhi@abc.com',
         BranchAddress: '456 Park Avenue, Delhi',
         Registered: 'Y',
@@ -4822,6 +4863,7 @@ private loadNetworks(): void {
       { wch: 18 }, // ContactPerson
       { wch: 12 }, // ZipPostCode
       { wch: 15 }, // BranchPhone
+      { wch: 15 }, // BranchPhoneCode
       { wch: 25 }, // BranchEmail
       { wch: 30 }, // BranchAddress
       { wch: 12 }, // Registered
