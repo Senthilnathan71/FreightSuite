@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
@@ -48,6 +47,7 @@ export class MAWBComponent implements OnChanges {
   bankDetails: any;
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
+  private pdfDepsPromise?: Promise<{ html2canvas: any; pdfMake: any }>;
 
   ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
@@ -106,6 +106,7 @@ export class MAWBComponent implements OnChanges {
 
     console.log(this.companyCode, "CompanyCode")
     this.getBankDetails();
+    this.preloadPdfDependencies();
   }
 
 
@@ -139,7 +140,6 @@ export class MAWBComponent implements OnChanges {
   constructor(
     private activeModal: NgbActiveModal,
     private appSettingService: AppSettingsService,
-    private pdfService: PdfDownloadService,
     private spinner: NgxSpinnerService,
     private masterService: MasterService,
     private operationService: OperationService,
@@ -204,6 +204,10 @@ export class MAWBComponent implements OnChanges {
     return chargeCode ? chargeCode.chargeCode : "";
   }
 
+  getFormattedMBLNo(): string {
+  const value = this.masterAirWayData?.MBLNo?.toString() || '';
+  return value ? value.substring(0, 3) + ' - ' + value.substring(3) : '';
+}
 
   modalClose() {
     this.activeModal.close();
@@ -984,20 +988,96 @@ export class MAWBComponent implements OnChanges {
     this.showPrintLogo = false;
     this.showPdfLogo = true;
 
-    setTimeout(async () => {
-      this.spinner.show();
+    this.spinner.show();
+    try {
+      const BankPaymentNo = this.masterAirWayData?.MBLNo || '';
+      await this.downloadPdfWithPdfMake('printContent', `MAWB_${BankPaymentNo}`);
+      this.appSettingService.showSuccess('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('MAWB pdfmake export failed:', error);
+      this.appSettingService.showError('Error generating PDF. Please try again.');
+    } finally {
+      this.spinner.hide();
+    }
+  }
+
+  private async downloadPdfWithPdfMake(containerId: string, filename: string): Promise<void> {
+    const container = document.getElementById(containerId);
+    if (!container) {
+      throw new Error(`Element #${containerId} not found`);
+    }
+
+    const { html2canvas, pdfMake } = await this.getPdfDependencies();
+
+    const pageElements = Array.from(container.querySelectorAll('.mawb-report')) as HTMLElement[];
+    const renderTargets = pageElements.length ? pageElements : [container as HTMLElement];
+
+    const pageWidthPt = 595.28;   // A4 width
+    const pageHeightPt = 841.89;  // A4 height
+    const margin = 10;
+    const fitWidth = pageWidthPt - margin * 2;
+    const fitHeight = pageHeightPt - margin * 2;
+
+    // Tuned for faster export and smaller file size.
+    const captureScale = 1.15;
+    const jpegQuality = 0.55;
+    const content: any[] = [];
+    for (let index = 0; index < renderTargets.length; index++) {
+      const target = renderTargets[index];
+      const canvas = await html2canvas(target, {
+        scale: captureScale,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+
+      content.push({
+        image: canvas.toDataURL('image/jpeg', jpegQuality),
+        fit: [fitWidth, fitHeight],
+        alignment: 'center',
+        pageBreak: index < renderTargets.length - 1 ? 'after' : undefined
+      });
+    }
+
+    const docDefinition = {
+      pageSize: 'A4',
+      pageMargins: [margin, margin, margin, margin],
+      content
+    };
+
+    await new Promise<void>((resolve, reject) => {
       try {
-        const BankPaymentNo = this.masterAirWayData?.MBLNo || '';
-        await this.pdfService.downloadBalancedPDF(
-          'printContent',
-          `MAWB_${BankPaymentNo}`,
-          () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-          (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
-        );
-      } finally {
-        this.spinner.hide();
+        pdfMake.createPdf(docDefinition).download(`${filename}.pdf`, () => resolve());
+      } catch (err) {
+        reject(err);
       }
-    }, 50);
+    });
+  }
+
+  private preloadPdfDependencies(): void {
+    if (!this.pdfDepsPromise) {
+      this.pdfDepsPromise = this.getPdfDependencies();
+    }
+  }
+
+  private async getPdfDependencies(): Promise<{ html2canvas: any; pdfMake: any }> {
+    if (this.pdfDepsPromise) {
+      return this.pdfDepsPromise;
+    }
+
+    this.pdfDepsPromise = (async () => {
+      const html2canvas = (await import('html2canvas')).default;
+      const pdfMakeModule = await import('pdfmake/build/pdfmake');
+      const pdfFontsModule = await import('pdfmake/build/vfs_fonts');
+
+      const pdfMake: any = (pdfMakeModule as any).default || pdfMakeModule;
+      const pdfFonts: any = (pdfFontsModule as any).default || pdfFontsModule;
+      pdfMake.vfs = pdfFonts?.pdfMake?.vfs || pdfFonts;
+
+      return { html2canvas, pdfMake };
+    })();
+
+    return this.pdfDepsPromise;
   }
 
 
