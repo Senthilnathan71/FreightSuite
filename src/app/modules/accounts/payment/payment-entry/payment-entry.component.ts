@@ -575,12 +575,12 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       'InstrumentNumber',
       'BankPartyName',
     ].forEach((ctrl) => {
-      this.paymentForm.get(ctrl)?.valueChanges.subscribe(() => {
+      this.paymentForm.get(ctrl)?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
         this.updateDetailNarration();
       });
     });
     ['detailItems', 'voucherMatchings'].forEach((ctrl) => {
-      this.paymentForm.get(ctrl)?.valueChanges.subscribe(() => {
+      this.paymentForm.get(ctrl)?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
         this.validateAmount();
       });
     });
@@ -1537,9 +1537,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     if (this.isReadOnly) {
       this.isDirty = false;
       this.initialFormValue = this.paymentForm.getRawValue();
-      this.paymentForm.disable();
       this.destroy$.next();
       this.destroy$.complete();
+      this.paymentForm.disable();
       return;
     }
     

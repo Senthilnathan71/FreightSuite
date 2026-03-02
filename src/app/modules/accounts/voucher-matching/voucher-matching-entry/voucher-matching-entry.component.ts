@@ -67,6 +67,7 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
   isEditMode = false;
   isAutoPosting: boolean = false;
   isPosting: boolean = false;
+  postedLocked: boolean = false;
   panelsVisible: boolean = false;
 
   // === VIEW MODE ===
@@ -356,9 +357,11 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
 
   //SECTION: DATA PATCHING
   patchValues(data: FetchVoucherMatchingResponse) {
+    this.postedLocked = (data?.PostStatus ?? '').toString().trim().toUpperCase() === 'P';
     this.selectedLedger = {
       LedgerName: data?.LedgerName ?? '',
       LedgerSid: data?.SubledgerMasterSid ?? 0,
+      COAMasterSid: data?.COAMasterSid ?? null,
     }
     this.selectedLedgerType = data?.LedgerType ?? null;
     this.selectedSubledger = {
@@ -370,6 +373,7 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
       VoucherMatchingNo: data.VoucherMatchingNo,
       VoucherMatchingDate: data.VoucherMatchingDate ? new Date(data.VoucherMatchingDate) : null,
       LedgerName: data?.LedgerName ?? null,
+      SubledgerMasterSid: data?.SubledgerMasterSid ?? null,
       SubledgerName: data?.SubledgerName ?? null,
       Narration : data?.Narration ?? '',
       Remarks: data?.Remarks ?? '',
@@ -485,7 +489,7 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
   }
 
   loadSourceData() {
-    if (this.isLoadingSource || !this.hasMoreSourceData) return;
+    if (this.isPosted || this.isPosting || this.isLoadingSource || !this.hasMoreSourceData) return;
     this.isLoadingSource = true;
     this.voucherMatchingService.searchCustomerOutstandingVouchers({
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -498,6 +502,10 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
       COAMasterSid: this.selectedLedger?.COAMasterSid ?? undefined,
     }).subscribe({
       next: (resp: any) => {
+        if (this.isPosted || this.isPosting) {
+          this.isLoadingSource = false;
+          return;
+        }
         const data = resp?.status ? resp.data : resp;
         if (data?.length) {
           const existingTransactionSid = this.sourceItems.getRawValue().map(tx => tx.VoucherTransactionSid);
@@ -516,7 +524,7 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
   }
 
   loadObjectData() {
-    if (this.isLoadingObject || !this.hasMoreObjectData) return;
+    if (this.isPosted || this.isPosting || this.isLoadingObject || !this.hasMoreObjectData) return;
     this.isLoadingObject = true;
     this.voucherMatchingService.searchCustomerOutstandingVouchers({
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -529,6 +537,10 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
       COAMasterSid: this.selectedLedger?.COAMasterSid ?? undefined,
     }).subscribe({
       next: (resp: any) => {
+        if (this.isPosted || this.isPosting) {
+          this.isLoadingObject = false;
+          return;
+        }
         const data = resp?.status ? resp.data : resp;
         if (data?.length) {
           const existingTransactionSid = this.objectItems.getRawValue().map(tx => tx.VoucherTransactionSid);
@@ -570,6 +582,7 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
   }
 
   onGet() {
+    if (this.isPosted) { return; }
     if (!this.selectedLedger) { this.appSettingService.showWarning('Please select a Ledger'); return; }
     if (!this.selectedSubledger) { this.appSettingService.showWarning('Please select a Subledger'); return; }
     if (!this.isEditMode) {
@@ -599,6 +612,7 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
 
   //SECTION : SCROLLING RELATED FUNCTIONS
   private reobserveSentinel(panel: 'source' | 'object') {
+    if (this.isPosted || this.isPosting) return;
     if (panel === 'source' && this.sourceSentinel?.nativeElement) {
       this.sourceObserver?.disconnect();
       this.sourceObserver = new IntersectionObserver(e => { if (e[0].isIntersecting) this.loadSourceData(); }, { root: this.sourceScrollContainer?.nativeElement, threshold: 0.1 });
@@ -612,6 +626,7 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
   }
 
   private setupObservers() {
+    if (this.isPosted || this.isPosting) return;
     this.reobserveSentinel('source');
     this.reobserveSentinel('object');
     this.fetchMoreIfAtBottom('source');
