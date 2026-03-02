@@ -3100,6 +3100,8 @@ export class VendorCreditNoteEntryComponent {
 
   onCOAChange(coa: any, detailIndex: number, resetSubledger: boolean = true) {
     const ctrl = this.details.at(detailIndex) as FormGroup;
+    // Preserve the selected ledger so it can be restored after the async list loads (patch/edit mode)
+    const preservedLedgerSid = !resetSubledger ? ctrl.get('LedgerMasterSid')?.value : null;
     if (resetSubledger) {
       ctrl.get('LedgerMasterSid')?.setValue(null);
       ctrl.get('LedgerMasterSid')?.disable();
@@ -3119,6 +3121,10 @@ export class VendorCreditNoteEntryComponent {
           next: (resp: any) => {
             if (resp.status) {
               this.subledgerListDetail[detailIndex] = resp.data || [];
+              // Re-apply the preserved ledger value so ng-select can bind to the loaded list
+              if (preservedLedgerSid) {
+                ctrl.get('LedgerMasterSid')?.setValue(preservedLedgerSid);
+              }
             } else {
               this.appSettingService.showError(
                 'Error fetching subledger for COA',
