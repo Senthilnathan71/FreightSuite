@@ -474,25 +474,29 @@
 
                     </aside>
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="Phone" placeholder="" class="custom-input-field sm" formControlName="phone"
-                                [onlyNumbers]="15">
-                            <label for="Phone" class="input-label">
-                                Phone <span class="text-danger">*</span>
-                            </label>
-                            <div class="error-message"
-                                *ngIf="leadForm.get('phone')?.touched && leadForm.get('phone')?.invalid">
-                                <span *ngIf="leadForm.get('phone')?.hasError('maxlength')">
-                                    Enter a Valid Phone Number
-                                </span>
-                                @if(leadForm.get('phone')?.hasError('required')) {
-                                <span>Required</span>
-                                }
+                        <div class="d-flex gap-2 align-items-start">
+                            <div class="custom-form-group custom-form-group-select fixed-dial-code"
+                                [class.filled]="!!leadForm.get('phoneCode')?.value">
+                                <app-dial-code-dropdown formControlName="phoneCode" [countries]="countryList"
+                                    placeholder=""></app-dial-code-dropdown>
                             </div>
-
-
+                            <div class="custom-form-group flex-grow-1">
+                                <input type="text" id="Phone" placeholder="" class="custom-input-field sm" formControlName="phone"
+                                    [onlyNumbers]="15">
+                                <label for="Phone" class="input-label">
+                                    Phone <span class="text-danger">*</span>
+                                </label>
+                                <div class="error-message"
+                                    *ngIf="leadForm.get('phone')?.touched && leadForm.get('phone')?.invalid">
+                                    <span *ngIf="leadForm.get('phone')?.hasError('maxlength')">
+                                        Enter a Valid Phone Number
+                                    </span>
+                                    @if(leadForm.get('phone')?.hasError('required')) {
+                                    <span>Required</span>
+                                    }
+                                </div>
+                            </div>
                         </div>
-
                     </aside>
                     
                     <aside class="col-md-3">
@@ -951,11 +955,18 @@
                                 }
                             </aside>
                             <aside class="col-md-4">
-                                <div class="custom-form-group">
-                                    <input type="text" id="Phone" placeholder="" class="custom-input-field sm"
-                                        formControlName="phone" [onlyNumbers]="15">
-                                    <label for="Phone" class="input-label">Phone <span
-                                            class="text-danger">*</span></label>
+                                <div class="d-flex gap-2 align-items-start">
+                                    <div class="custom-form-group custom-form-group-select fixed-dial-code"
+                                        [class.filled]="!!leadForm.get('phoneCode')?.value">
+                                        <app-dial-code-dropdown formControlName="phoneCode" [countries]="countryList"
+                                            placeholder=""></app-dial-code-dropdown>
+                                    </div>
+                                    <div class="custom-form-group flex-grow-1">
+                                        <input type="text" id="Phone" placeholder="" class="custom-input-field sm"
+                                            formControlName="phone" [onlyNumbers]="15">
+                                        <label for="Phone" class="input-label">Phone <span
+                                                class="text-danger">*</span></label>
+                                    </div>
                                 </div>
                                 @if(leadForm.get('phone')?.touched && leadForm.get('phone')?.invalid){
                                 <div class="error-message">

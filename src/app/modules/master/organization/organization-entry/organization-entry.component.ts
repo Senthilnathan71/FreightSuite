@@ -3446,7 +3446,7 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
   }
 
   goBack() {
-    history.back();
+   this.router.navigate(['master/organization/list']);
   }
 
   openAuditLogs(modal: TemplateRef<any>) {

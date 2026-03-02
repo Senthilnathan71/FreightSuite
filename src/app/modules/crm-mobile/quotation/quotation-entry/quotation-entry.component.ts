@@ -15,7 +15,7 @@ import {
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { NgbAccordionDirective } from '@ng-bootstrap/ng-bootstrap';
-import { AbstractControl, Form, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, Form, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LeadService } from '../../Services/lead.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -57,6 +57,7 @@ import { getDefaultTodayDate } from 'src/app/common/helper';
 import { OperationService } from 'src/app/modules/operation/operation.service';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { GetStandardChargesComponent } from 'src/app/modules/operation/cost/get-standard-charges/get-standard-charges.component';
+import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/dial-code-dropdown.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -101,7 +102,8 @@ type Html2PdfOptions = {
     FormsModule,
     NgbTooltip,
     PreventMultiClickDirective,
-    PrintHeaderComponent
+    PrintHeaderComponent,
+    DialCodeDropdownComponent
     // MultiColumnComboboxComponent
   ],
   templateUrl: './quotation-entry.component.html',
@@ -343,6 +345,7 @@ dataFromEnqPage:any;
     if (userProfile) {
       this.userData = userProfile;
       this.currentUserEmail = this.userData?.userEmail;
+      this.quotationForm.get('ContactNumberCode')?.setValue(this.getDefaultContactDialCode());
     }
      
   
@@ -396,11 +399,12 @@ dataFromEnqPage:any;
     
   }
 
-patchEnqPageValues(enqData: any) { 
+  patchEnqPageValues(enqData: any) { 
   
   // --- Header form setup ---------------------------------
   this.enquiryNumber = enqData?.EnquiryNumber;
   this.quoteRoutes.clear();
+  const parsedContact = this.parsePhone(enqData?.ContactNumber);
 
   const headerFields = [
     'EnquirySid',
@@ -413,6 +417,7 @@ patchEnqPageValues(enqData: any) {
     'CustomerAddress',
     'ContactPerson',
     'ContactNumber',
+    'ContactNumberCode',
     'Email',
     'FreightPPCC',
     'SalesmanSid',
@@ -421,10 +426,14 @@ patchEnqPageValues(enqData: any) {
   ];
 
   this.quotationForm.patchValue(
-    headerFields.reduce(
+    {
+      ...headerFields.reduce(
       (obj, field) => ({ ...obj, [field]: enqData?.[field] }),
       {}
-    )
+      ),
+      ContactNumberCode: parsedContact.phoneCode,
+      ContactNumber: parsedContact.phoneNumber
+    }
   );
   if (!this.quotationForm.get('FreightPPCC')?.value) {
     this.quotationForm.get('FreightPPCC')?.setValue('Prepaid');
@@ -684,7 +693,8 @@ private extractCargoData(enquiryCargo: any[]): any {
       IsContract:[false],
       RateLock: [false],
       ContactPerson:[''],
-      ContactNumber:['']
+      ContactNumberCode: [this.getDefaultContactDialCode()],
+      ContactNumber: ['', [Validators.maxLength(15), this.phoneNumberValidator]]
     })
     this.addQuoteRoute();
     this.quotationForm.get('EnquirySid')?.disable();
@@ -693,6 +703,34 @@ private extractCargoData(enquiryCargo: any[]): any {
       route.get('POLSid')?.valueChanges.subscribe(() => this.onRouteChange(index));
     });
     this.subscribeToLeadCustomerToggle(); 
+  }
+
+  phoneNumberValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) {
+      return null;
+    }
+    const phoneRegex = /^[0-9]{6,15}$/;
+    const isValid = phoneRegex.test(control.value);
+    return isValid ? null : { invalidPhoneNumber: true };
+  }
+
+  private parsePhone(rawValue: any): { phoneCode: string; phoneNumber: string } {
+    const parsed = DialCodeDropdownComponent.splitPhoneNumber(rawValue);
+    return {
+      phoneCode: parsed.phoneCode || this.getDefaultContactDialCode(),
+      phoneNumber: parsed.phoneNumber
+    };
+  }
+
+  private getDefaultContactDialCode(): string {
+    return DialCodeDropdownComponent.getDefaultDialCodeFromLoginCountry(this.userData);
+  }
+
+  private withDialCode(phoneValue: any, dialCode?: string): string {
+    return DialCodeDropdownComponent.buildPhoneWithDialCode(
+      phoneValue,
+      dialCode || this.getDefaultContactDialCode()
+    );
   }
 
   subscribeToLeadCustomerToggle() {
@@ -711,6 +749,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       CustomerAddress: null,
       CustomerBranchSid: null,
       Email: null,
+      ContactNumberCode: this.getDefaultContactDialCode(),
       ContactNumber: null,
       ContactPerson: null,
     });
@@ -740,6 +779,7 @@ private extractCargoData(enquiryCargo: any[]): any {
         CustomerAddress: null,
         CustomerBranchSid: null,
         Email: null,
+        ContactNumberCode: this.getDefaultContactDialCode(),
         ContactNumber: null,
         ContactPerson: null,
       });
@@ -749,6 +789,7 @@ private extractCargoData(enquiryCargo: any[]): any {
 
     const isCustomer = this.quotationForm.get('LeadOrCustomer')?.value;
     if (isCustomer) {
+      const parsedContact = this.parsePhone(selectedItem.ContactNumber);
       this.quotationForm.patchValue({
         CustomerMasterSid : selectedItem.CustomerMasterSid,
         CustomerName: selectedItem.CustomerName,
@@ -756,17 +797,20 @@ private extractCargoData(enquiryCargo: any[]): any {
         Email: selectedItem.Email,
         CustomerBranchSid: selectedItem.CustomerBranchSid,
         ContactPerson:selectedItem.ContactPerson,
-        ContactNumber:selectedItem.ContactNumber
+        ContactNumberCode: parsedContact.phoneCode,
+        ContactNumber: parsedContact.phoneNumber
       });
       this.handleCustomerChangeOnCharges(selectedItem);
     } else {
+      const parsedContact = this.parsePhone(selectedItem.phone);
       this.quotationForm.patchValue({
         CustomerName: selectedItem.preCustomerName,
         CustomerAddress: selectedItem.preCustomerAddress1,
         Email: selectedItem.email,
         CustomerBranchSid: null,
         ContactPerson:selectedItem.contactPerson,
-        ContactNumber:selectedItem.phone
+        ContactNumberCode: parsedContact.phoneCode,
+        ContactNumber: parsedContact.phoneNumber
       });
       this.patchSalespersonOfLead(selectedItem.PreCustomerMasterSid);
     }
@@ -1473,6 +1517,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       types : ['vendor', 'transporter', 'agent']
     }
     return forkJoin({
+      countries: this.dropdownStore.loadCountries().pipe(catchError(err => of([]))),
       cargoTypes: this.leadService.getAllCargoTypes(CompanyMasterSid).pipe(catchError(err => of([]))),
       // carriers: this.leadService.getAllCarrier(CompanyMasterSid).pipe(catchError(err => of([]))),
       leads : this.leadService.fetchAllLeads(filterOption).pipe(catchError(err => of([]))),
@@ -1491,7 +1536,8 @@ private extractCargoData(enquiryCargo: any[]): any {
       containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(err => of([]))),
       products : this.leadService.getAllProducts().pipe(catchError(err => of([]))),
       imcos : this.leadService.getAllImco().pipe(catchError(err => of([]))),
-    }).pipe(tap(({ departments , cargoTypes, leads, customers, customerlist, vendors, ports, incos, salesman, masters,chargeUnits, containerTypes , packageTypes,products,imcos,measurementUnits,weightUnits }) => {
+    }).pipe(tap(({ countries, departments , cargoTypes, leads, customers, customerlist, vendors, ports, incos, salesman, masters,chargeUnits, containerTypes , packageTypes,products,imcos,measurementUnits,weightUnits }) => {
+      this.dropdownStore.countries.set(countries || []);
       this.packageTypes = cargoTypes || [];
       // this.carriers = carriers || [];
       this.leadList = leads.data;
@@ -1545,6 +1591,7 @@ isRateLockDisabled(): boolean {
   }
 
   patchValues(response: any) {
+    const parsedContact = this.parsePhone(response.ContactNumber);
     
     const selectedDept = this.departments.find(dept => dept.DepartmentMasterSid === response.DepartmentMasterSid);
     const selectedCustomer = this.customerlist.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
@@ -1572,7 +1619,8 @@ isRateLockDisabled(): boolean {
       status: response.status === 'A' ? 'Active' : 'Suspended',
       QuoteDate: new Date(response.QuoteDate),
       ContactPerson:response.ContactPerson,
-      ContactNumber:response.ContactNumber
+      ContactNumberCode: parsedContact.phoneCode,
+      ContactNumber: parsedContact.phoneNumber
     })
     this.quotationForm.patchValue({
       PreCustomerMasterSid: response.PreCustomerMasterSid,
@@ -1582,7 +1630,8 @@ isRateLockDisabled(): boolean {
       CustomerBranchSid: response.CustomerBranchSid,
       Email: response.Email,
       ContactPerson:response.ContactPerson,
-      ContactNumber:response.ContactNumber
+      ContactNumberCode: parsedContact.phoneCode,
+      ContactNumber: parsedContact.phoneNumber
     });
     this.authStateCache = response?.authorizerStatus || 'Pending';
     this.quoteRoutes.clear();
@@ -1869,7 +1918,10 @@ isRateLockDisabled(): boolean {
       CustomerAddress: formValue.CustomerAddress,
       Email: formValue.Email,
       ContactPerson:formValue.ContactPerson,
-      ContactNumber:formValue.ContactNumber,
+      ContactNumber: this.withDialCode(
+        formValue.ContactNumber,
+        formValue.ContactNumberCode
+      ),
       SalesmanSid: formValue.SalesmanSid,
       TransportBy: transportBy,
       ClearanceBy: clearanceBy,
@@ -2976,7 +3028,10 @@ ${this.userData.userName}`;
     CustomerAddress: '',
     QuoteNumber: '',
     QuoteDate: null,
-    EnquirySid: ''
+    EnquirySid: '',
+    ContactPerson: '',
+    ContactNumberCode: this.getDefaultContactDialCode(),
+    ContactNumber: ''
   });
 
   // Clear any cached or derived UI state related to routes/charges
