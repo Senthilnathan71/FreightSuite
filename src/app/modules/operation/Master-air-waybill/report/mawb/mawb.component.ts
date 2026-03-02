@@ -4,6 +4,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { GlobalDateFormatService } from 'src/app/core/services/global-date-format.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { OperationService } from '../../../operation.service';
 import { LogoService } from 'src/app/core/services/logo.service';
@@ -47,7 +48,8 @@ export class MAWBComponent implements OnChanges {
   bankDetails: any;
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
-  private pdfDepsPromise?: Promise<{ html2canvas: any; pdfMake: any }>;
+  private pdfDepsPromise?: Promise<{ pdfMake: any }>;
+  private mawbImageBase64: string | null = null;
 
   ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
@@ -107,6 +109,7 @@ export class MAWBComponent implements OnChanges {
     console.log(this.companyCode, "CompanyCode")
     this.getBankDetails();
     this.preloadPdfDependencies();
+    this.preloadMawbImage();
   }
 
 
@@ -143,7 +146,8 @@ export class MAWBComponent implements OnChanges {
     private spinner: NgxSpinnerService,
     private masterService: MasterService,
     private operationService: OperationService,
-    public logoService : LogoService
+    public logoService: LogoService,
+    private globalDateService: GlobalDateFormatService
   ) { }
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['masterAirWayData']) {
@@ -991,7 +995,7 @@ export class MAWBComponent implements OnChanges {
     this.spinner.show();
     try {
       const BankPaymentNo = this.masterAirWayData?.MBLNo || '';
-      await this.downloadPdfWithPdfMake('printContent', `MAWB_${BankPaymentNo}`);
+      await this.downloadPdfWithPdfMake(`MAWB_${BankPaymentNo}`);
       this.appSettingService.showSuccess('PDF downloaded successfully!');
     } catch (error) {
       console.error('MAWB pdfmake export failed:', error);
@@ -1001,48 +1005,46 @@ export class MAWBComponent implements OnChanges {
     }
   }
 
-  private async downloadPdfWithPdfMake(containerId: string, filename: string): Promise<void> {
-    const container = document.getElementById(containerId);
-    if (!container) {
-      throw new Error(`Element #${containerId} not found`);
+  private async downloadPdfWithPdfMake(filename: string): Promise<void> {
+    const { pdfMake } = await this.getPdfDependencies();
+
+    const page1Content = this.buildMawbPdfContent();
+    const content: any[] = [...page1Content];
+
+    const hasLegalPage = this.selectedReport === 'MAWB';
+    if (hasLegalPage) {
+      content.push({ text: '', pageBreak: 'after' });
+      const legalContent = this.getLegalTextContent();
+      content.push(...legalContent);
     }
 
-    const { html2canvas, pdfMake } = await this.getPdfDependencies();
+    const pageWidthPt = 595.28;
+    const pageHeightPt = 841.89;
 
-    const pageElements = Array.from(container.querySelectorAll('.mawb-report')) as HTMLElement[];
-    const renderTargets = pageElements.length ? pageElements : [container as HTMLElement];
-
-    const pageWidthPt = 595.28;   // A4 width
-    const pageHeightPt = 841.89;  // A4 height
-    const margin = 10;
-    const fitWidth = pageWidthPt - margin * 2;
-    const fitHeight = pageHeightPt - margin * 2;
-
-    // Tuned for faster export and smaller file size.
-    const captureScale = 1.15;
-    const jpegQuality = 0.55;
-    const content: any[] = [];
-    for (let index = 0; index < renderTargets.length; index++) {
-      const target = renderTargets[index];
-      const canvas = await html2canvas(target, {
-        scale: captureScale,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        logging: false
-      });
-
-      content.push({
-        image: canvas.toDataURL('image/jpeg', jpegQuality),
-        fit: [fitWidth, fitHeight],
-        alignment: 'center',
-        pageBreak: index < renderTargets.length - 1 ? 'after' : undefined
-      });
-    }
-
-    const docDefinition = {
+    const docDefinition: any = {
       pageSize: 'A4',
-      pageMargins: [margin, margin, margin, margin],
-      content
+      pageMargins: [0, 0, 0, 0] as [number, number, number, number],
+      background: (currentPage: number) => {
+        if (currentPage === 1 && this.mawbImageBase64) {
+          return {
+            image: this.mawbImageBase64,
+            width: pageWidthPt * 1.08,
+            height: pageHeightPt * 1.06,
+            absolutePosition: { x: 0, y: 0 }
+          };
+        }
+        return null;
+      },
+      content,
+      styles: {
+        legalTitle: {
+          fontSize: 12,
+          bold: true
+        }
+      },
+      defaultStyle: {
+        fontSize: 8
+      }
     };
 
     await new Promise<void>((resolve, reject) => {
@@ -1060,13 +1062,12 @@ export class MAWBComponent implements OnChanges {
     }
   }
 
-  private async getPdfDependencies(): Promise<{ html2canvas: any; pdfMake: any }> {
+  private async getPdfDependencies(): Promise<{ pdfMake: any }> {
     if (this.pdfDepsPromise) {
       return this.pdfDepsPromise;
     }
 
     this.pdfDepsPromise = (async () => {
-      const html2canvas = (await import('html2canvas')).default;
       const pdfMakeModule = await import('pdfmake/build/pdfmake');
       const pdfFontsModule = await import('pdfmake/build/vfs_fonts');
 
@@ -1074,10 +1075,219 @@ export class MAWBComponent implements OnChanges {
       const pdfFonts: any = (pdfFontsModule as any).default || pdfFontsModule;
       pdfMake.vfs = pdfFonts?.pdfMake?.vfs || pdfFonts;
 
-      return { html2canvas, pdfMake };
+      return { pdfMake };
     })();
 
     return this.pdfDepsPromise;
+  }
+
+  private preloadMawbImage(): void {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        this.mawbImageBase64 = canvas.toDataURL('image/png');
+      }
+    };
+    img.src = 'assets/images/MAWB.png';
+  }
+
+  private buildMawbPdfContent(): any[] {
+    // mm → pt conversion: CSS container is 280mm x 401mm, PDF is A4 (595.28pt x 841.89pt)
+    // Scale factor = min(595.28/(280*2.8346), 841.89/(401*2.8346)) ≈ 0.741
+    // So 1mm CSS = 2.8346 * 0.741 ≈ 2.10 pt
+    const mm = (val: number) => val * 2.10;
+
+    const data = this.masterAirWayData;
+    const hj = data?.houseJob?.[0];
+    const others = hj?.Others?.[0];
+    const agg = data?.aggregatedTotals;
+    const voyage = data?.voyages?.[0];
+    const freightTotals = this.getFreightTotals();
+    const isPrepaid = data?.FreightPPCC === 'Prepaid';
+    const isCollect = data?.FreightPPCC === 'Collect';
+
+    const fmtNum = (val: any, dec: number = 2): string => {
+      const n = Number(val);
+      if (isNaN(n) || val === null || val === undefined) return '';
+      return n.toFixed(dec);
+    };
+
+    const fmtDate = (val: any): string => {
+      if (!val) return '';
+      return this.globalDateService.formatDate(val);
+    };
+
+    const otherChargesText = this.otherCharges.map(c => {
+      return `${this.getChargeCode(c.ChargeMasterSid)} ${c.RevenueExchangeRate}`;
+    }).join('  ');
+
+    const goodsDesc = [data?.CommodityDescription, data?.MarksandNumber]
+      .filter(Boolean).join('\n');
+
+    // Helper to create a positioned text field
+    const field = (topMm: number, leftMm: number, text: string, opts: any = {}): any => {
+      if (!text && text !== '0') return null;
+      return {
+        text: text,
+        fontSize: opts.fontSize || 9,
+        bold: true,
+        absolutePosition: { x: mm(leftMm), y: mm(topMm) },
+        ...(opts.width ? { width: mm(opts.width) } : {}),
+        ...(opts.alignment ? { alignment: opts.alignment } : {}),
+      };
+    };
+
+    const fields = [
+      // Header — MAWB series & numbers
+      field(12, 30, data?.POL || '', { fontSize: 14 }),
+      field(12, 13, data?.MBLNo?.toString().substring(0, 3) || '', { fontSize: 14 }),
+      field(12, 43, data?.MBLNo?.toString().substring(3) || '', { fontSize: 14 }),
+      field(12, 220, this.getFormattedMBLNo(), { fontSize: 14 }),
+
+      // Shipper
+      field(27, 12, hj?.ShipperName || ''),
+      field(32, 12, hj?.ShipperAddress || ''),
+
+      // Consignee
+      field(63, 12, hj?.ConsigneeName || ''),
+      field(68, 12, hj?.ConsigneeAddress || ''),
+
+      // Agent
+      field(100, 12, this.getAgentName(data?.DestinationAgent)),
+      field(105, 12, this.getAgentName(data?.DestinationAgentAddress)),
+      field(119, 0, this.currentUserCode || '', { width: 60, alignment: 'center' }),
+
+      // Airport departure
+      field(131, 0, data?.POL || '', { width: 125, alignment: 'center' }),
+
+      // Right column — account & reference
+      field(100, 145, data?.FreightPPCC || ''),
+      field(131, 133, others?.CustomerRefNo || '', { width: 40, alignment: 'center' }),
+
+      // Routing
+      field(144, 5, data?.POD || '', { width: 15, alignment: 'center' }),
+      field(144, 11, voyage?.CarrierName || '', { width: 60, alignment: 'center' }),
+
+      // Currency & charges
+      field(144, 141, this.getCurrencyCodeById(this.currentCurrency)?.toString() || '', { width: 15, alignment: 'center' }),
+      field(145, 156, isPrepaid ? 'PP' : (isCollect ? 'CC' : ''), { width: 15, alignment: 'center' }),
+
+      // PP/CC checkboxes
+      field(147, 167, isPrepaid ? 'X' : '', { width: 10, alignment: 'center' }),
+      field(135, 185, isCollect ? 'X' : '', { width: 10, alignment: 'center' }),
+      field(147, 184, isPrepaid ? 'X' : '', { width: 10, alignment: 'center' }),
+      field(135, 200, isCollect ? 'X' : '', { width: 10, alignment: 'center' }),
+
+      // Declared values
+      field(145, 203, others?.DeclaredValueOfCarriage?.toString() || '', { width: 30, alignment: 'center' }),
+      field(145, 242, others?.DeclaredValueOfCustoms?.toString() || '', { width: 30, alignment: 'center' }),
+
+      // Flight row
+      field(159, 14, data?.FPD || '', { width: 40, alignment: 'center' }),
+      field(159, 63, voyage?.VesselName || '', { fontSize: 8, width: 40, alignment: 'center' }),
+      field(159, 105, fmtDate(voyage?.ETA), { fontSize: 8, width: 40, alignment: 'center' }),
+      field(159, 139, fmtNum(others?.ValueForInsurance), { width: 40, alignment: 'center' }),
+
+      // Handling information
+      field(173, 9, others?.HandlingInformation || '', { width: 133 }),
+
+      // Package details
+      field(206, 2, agg?.NoOfPkg?.toString() || '', { width: 20, alignment: 'center' }),
+      field(206, 25, fmtNum(agg?.GrossWeight, 3), { width: 25, alignment: 'center' }),
+      field(206, 84, fmtNum(agg?.ChargeableWeight, 3), { width: 30, alignment: 'center' }),
+      field(206, 119, fmtNum(freightTotals.totalExchangeRate), { width: 25, alignment: 'center' }),
+      field(206, 149, fmtNum(freightTotals.totalRevenueAmount), { width: 25, alignment: 'center' }),
+      field(206, 190, goodsDesc, { width: 90 }),
+
+      // Totals row
+      field(275, 3, agg?.NoOfPkg?.toString() || '', { width: 20, alignment: 'center' }),
+      field(275, 28, fmtNum(agg?.GrossWeight, 3), { width: 20, alignment: 'center' }),
+      field(275, 85, fmtNum(agg?.ChargeableWeight, 3), { width: 30, alignment: 'center' }),
+      field(275, 120, fmtNum(freightTotals.totalExchangeRate), { width: 25, alignment: 'center' }),
+      field(275, 149, fmtNum(freightTotals.totalRevenueAmount), { width: 25, alignment: 'center' }),
+
+      // Charges section
+      field(290, 5, fmtNum(this.freightCharges[0]?.RevenueAmount), { width: 35, alignment: 'center' }),
+      field(290, 78, fmtNum(this.freightCharges[0]?.CostAmount), { width: 35, alignment: 'center' }),
+      field(288, 120, otherChargesText, { width: 140 }),
+      field(301, 5, fmtNum(others?.ValuationCharge), { width: 35, alignment: 'center' }),
+
+      // Agent certification
+      field(345, 156, this.getAgentName(data?.DestinationAgent), { width: 80, alignment: 'center' }),
+
+      // Totals
+      field(363, 9, fmtNum(this.getGrandTotal()), { width: 35, alignment: 'center' }),
+      field(375, 12, fmtNum(this.getTotalExchangeRate()), { width: 35, alignment: 'center' }),
+
+      // Execution info
+      field(370, 108, fmtDate(data?.MBLDate), { width: 40, alignment: 'center' }),
+      field(370, 162, this.currentCountryName?.toString() || '', { alignment: 'center' }),
+      field(370, 200, this.getAgentName(data?.DestinationAgent), { width: 60, alignment: 'center' }),
+
+      // Bottom MAWB number
+      field(386, 204, this.getFormattedMBLNo(), { fontSize: 14 }),
+    ];
+
+    return fields.filter(f => f !== null);
+  }
+
+  private getLegalTextContent(): any[] {
+    const leftColumn = [
+      { text: '1. In this contract and the Notices appearing hereon:\nCARRIER includes the air carrier issuing this air waybill and all carriers that carry or undertake to carry the cargo or perform any other services related to such carriage\nSPECIAL DRAWING RIGHT (SDR) is a Special Drawing Right as defined by the International Monetary Fund.\nWARSAW CONVENTION means whichever of the following instruments is applicable to the contract of carriage:\nthe Convention for the Unification of Certain Rules Relating to International Carriage by Air, signed at Warsaw, 12 October 1929;\nthat Convention as amended at The Hague on 28 September 1955;\nthat Convention as amended at The Hague 1955 and by Montreal Protocol No. 1, 2, or 4 (1975) as the case may be.\nMONTREAL CONVENTION means the Convention for the Unification of Certain Rules.', margin: [0, 0, 0, 4] },
+      { text: '2.1 Carriage is subject to the rules relating to liability established by the Warsaw Convention or the Montreal Convention unless such carriage is not "international carriage" as defined by the applicable Conventions.', margin: [0, 0, 0, 4] },
+      { text: '2.2 To the extent not in conflict with the foregoing, carriage and other related services performed by each Carrier are subject to:', margin: [0, 0, 0, 4] },
+      { text: '2.2.1 applicable laws and government regulations;', margin: [0, 0, 0, 4] },
+      { text: '2.2.2 provisions contained in the air waybill, Carrier\'s conditions of carriage and related rules, regulations, and timetables (but not the times of departure and arrival stated therein) and applicable tariffs of such Carrier, which are made part hereof, and which may be inspected at any airports or other cargo sales offices from which it operates regular services. When carriage is to/from the USA, the shipper and the consignee are entitled, upon request, to receive a free copy of the Carrier\'s conditions of carriage. The Carrier\'s conditions of carriage include, but are not limited to:', margin: [0, 0, 0, 4] },
+      { text: '2.2.2.1 limits on the Carrier\'s liability for loss, damage or delay of goods, including fragile or perishable goods;', margin: [0, 0, 0, 4] },
+      { text: '2.2.2.2 claims restrictions, including time periods within which shippers or consignees must file a claim or bring an action against the Carrier for its acts or omissions, or those of its agents;', margin: [0, 0, 0, 4] },
+      { text: '2.2.2.3 rights, if any, of the Carrier to change the terms of the contract', margin: [0, 0, 0, 4] },
+      { text: '2.2.2.4 rules about Carrier\'s right to refuse to carry', margin: [0, 0, 0, 4] },
+      { text: '2.2.2.5 rights of the Carrier and limitations concerning delay or failure to perform service, including schedule changes, substitution of alternate Carrier or aircraft and rerouting.', margin: [0, 0, 0, 4] },
+      { text: '3 The agreed stopping places (which may be altered by Carrier in case of necessity) are those places, except the place of departure and place of destination, set forth on the face hereof or shown in Carrier\'s timetables as scheduled stopping places for the route. Carriage to be performed hereunder by several successive Carriers is regarded as a single operation.', margin: [0, 0, 0, 4] },
+      { text: '4 For carriage to which the Montreal Convention does not apply, Carrier\'s liability limitation for cargo lost, damaged or delayed shall be 19 SDRs per kilogram unless a greater per kilogram monetary limit is provided in any applicable Convention or in Carrier\'s tariffs or general conditions of carriage.', margin: [0, 0, 0, 4] },
+      { text: '5 5.1 Except when the Carrier has extended credit to the consignee without the written consent of the shipper, the shipper guarantees payment of all charges for the carriage due in accordance with Carrier\'s tariff, conditions of carriage and related regulations, applicable laws (including national laws implementing the Warsaw Convention and the Montreal Convention), government regulations, orders and requirements', margin: [0, 0, 0, 4] },
+      { text: '5.2 When no part of the consignment is delivered, a claim with respect to such consignment will be considered even though transportation charges thereon are unpaid.', margin: [0, 0, 0, 4] },
+      { text: '6 6.1 For cargo accepted for carriage, the Warsaw Convention and the Montreal Convention permit shipper to increase the limitation of liability by declaring a higher value for carriage and paying a supplemental charge if required.', margin: [0, 0, 0, 4] },
+    ];
+
+    const rightColumn = [
+      { text: '.2 In carriage to which neither the Warsaw Convention nor the Montreal Convention applies Carrier shall, in accordance with the procedures set forth in its general conditions of carriage and applicable tariffs, permit shipper to increase the limitation of liability by declaring a higher value for carriage and paying a supplemental charge if so required', margin: [0, 0, 0, 4] },
+      { text: '7 7.1 In cases of loss of, damage or delay to part of the cargo, the weight to be taken into account in determining Carrier\'s limit of liability shall be only the weight of the package or packages concerned.', margin: [0, 0, 0, 4] },
+      { text: '7.2 Notwithstanding any other provisions, for foreign air transportation as defined by the U.S. Transportation Code:', margin: [0, 0, 0, 4] },
+      { text: '7.2.1 in the case of loss of, damage or delay to a shipment, the weight to be used in determining Carrier\'s limit of liability shall be the weight which is used to determine the charge for carriage of such shipment; and', margin: [0, 0, 0, 4] },
+      { text: '7.2.2 in the case of loss of, damage or delay to a part of a shipment, the shipment weight in 7.2.1 shall be prorated to the packages covered by the same air waybill whose values is affected by the loss, damage or delay. The weight applicable in the case of loss or damage to one or more articles in a package shall be the weight of the entire package.', margin: [0, 0, 0, 4] },
+      { text: '8 Any exclusion or limitation of liability applicable to Carrier shall apply to Carrier\'s agents, employees, and representatives and to any person whose aircraft or equipment is used by Carrier for carriage and such person\'s agents, employees and representatives', margin: [0, 0, 0, 4] },
+      { text: '9 Carrier undertakes to complete the carriage with reasonable dispatch. Where permitted by applicable laws, tariffs and government regulations, Carrier may use alternative carriers, aircraft or modes of transport without notice but with due regard to interests of the shipper. Carrier is authorised by the shipper to select the routing and all intermediate stopping places that it deems appropriate or to change or deviate from the routing shown on the face hereof', margin: [0, 0, 0, 4] },
+      { text: '10 Receipt by the person entitled to delivery of the cargo without complaint shall be prima facie evidence that the cargo has been delivered in good condition and in accordance with the contract of carriage', margin: [0, 0, 0, 4] },
+      { text: '10.1 In the case of loss of, damage or delay to cargo a written complaint must be made to Carrier by the person entitled to delivery. Such complaint must be made;', margin: [0, 0, 0, 4] },
+      { text: '10.1.1 in the case of damage to the cargo, immediately after discovery of the damage and at the latest within 14 days from the date of receipt of the cargo', margin: [0, 0, 0, 4] },
+      { text: '10.1.2 in the case of delay, within 21 days from the date on which the cargo was placed at the disposal of the person entitled to delivery', margin: [0, 0, 0, 4] },
+      { text: '10.1.3 in the case of non-delivery of the cargo, within 120 days from the date of issue of the air waybill, or if an air waybill has not been issued, within 120 days from the date of receipt of the cargo for transportation by the Carrier.', margin: [0, 0, 0, 4] },
+      { text: '10.2 Such complaint may be made to the Carrier whose air waybill was used, or to the first Carrier or to the last Carrier or to the Carrier, which performed the carriage during which the loss, damage or delay took place', margin: [0, 0, 0, 4] },
+      { text: '10.3 Unless a written complaint is made within the time limits specified in 10.1 no action may be brought against Carrier.', margin: [0, 0, 0, 4] },
+      { text: '10.4 Any rights to damages against Carrier shall be extinguished unless an action is brought within two years from the date of arrival at the destination, or from the date on which the aircraft ought to have arrived, or from the date on which the carriage stopped.', margin: [0, 0, 0, 4] },
+      { text: '11 Shipper shall comply with all applicable laws and government regulations of any country to or from which the cargo may be carried, including those relating to the packing, carriage or delivery of the cargo, and furnish such information and attach such documents to the air waybill as may be necessary to comply with such laws and regulations.Carrier is not liable to shipper and shipper shall indemnify Carrier for loss or expense due to shipper\'s failure to comply with this provision.', margin: [0, 0, 0, 4] },
+      { text: '12 No agent, employee or representative of Carrier has authority to alter, modify or waive any provisions of this contract.', margin: [0, 0, 0, 4] },
+    ];
+
+    return [
+      { text: 'NOTICE CONCERNING CARRIERS LIMITATION OF LIABILITY', style: 'legalTitle', alignment: 'center', margin: [0, 10, 0, 10] },
+      { text: 'If the carriage involves an ultimate destination or stop in a country other than the country of departure, the Montreal Convention or the Warsaw Convention may be applicable to the liability of the Carrier in respect of loss of, damage or delay to cargo. Carrier\'s limitation of liability in accordance with those Conventions shall be as set forth in subparagraph 4 unless a higher value is declared.', margin: [0, 0, 0, 10] },
+      { text: 'CONDITIONS OF CONTRACT', style: 'legalTitle', alignment: 'center', margin: [0, 10, 0, 10] },
+      {
+        columns: [
+          { stack: leftColumn, width: '50%' },
+          { stack: rightColumn, width: '50%' }
+        ],
+        columnGap: 10
+      }
+    ];
   }
 
 
