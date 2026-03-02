@@ -12,6 +12,7 @@
     position: relative;
     line-height: 1.2;
     overflow: hidden;
+    font-family: Helvetica, Arial, sans-serif;
 }
 
 /* Data Overlays Container */
@@ -40,21 +41,21 @@
 
 /* Shipper Information */
 .shipper-name {
-    top: 20mm;  /* Adjust based on your form */
-    left: 12mm;
+    top: 23mm;  /* Adjust based on your form */
+    left: 7mm;
     width: 95mm;
     max-height: 10mm;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 15px;
+    font-weight: bolder;
 }
 
 .shipper-address {
-    top: 25mm;
-    left: 12mm;
+    top: 27mm;
+    left: 7mm;
     width: 95mm;
     max-height: 15mm;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 14px;
+    font-weight: bolder;
 }
 
 .shipper-account {
@@ -67,21 +68,21 @@
 
 /* Consignee Information */
 .consignee-name {
-    top: 58mm;
-    left: 12mm;
+    top: 60mm;
+    left: 7mm;
     width: 95mm;
     max-height: 10mm;
-    font-size:12px;
-    font-weight: bold;
+    font-size:15px;
+    font-weight: bolder;
 }
 
 .consignee-address {
-    top: 63mm;
-    left: 12mm;
+    top: 65mm;
+    left: 7mm;
     width: 95mm;
     max-height: 15mm;
-    font-size:12px;
-    font-weight: bold;
+    font-size:15px;
+    font-weight: bolder;
 }
 
 .consignee-account {
@@ -94,31 +95,31 @@
 
 /* Agent Information */
 .carrier-agent-name {
-    top: 92mm;
-    left: 12mm;
+    top: 95mm;
+    left: 9mm;
     width: 95mm;
     max-height: 8mm;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 14px;
+    font-weight: bolder;
 }
 
 .carrier-agent-city {
-    top: 101mm;
-    left: 12mm;
+    top: 103mm;
+    left: 8mm;
     width: 95mm;
     max-height: 8mm;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 14px;
+    font-weight: bolder;
 }
 
 .agent-iata-code {
-    top: 112mm;
+    top: 113mm;
     left: 0mm;
     width: 60mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 14px;
+    font-weight: bolder;
    
 }
 
@@ -128,8 +129,8 @@
     width: 60mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
    
 }
 
@@ -140,8 +141,8 @@
     width: 125mm;
     height: 8mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 14px;
+    font-weight: bolder;
    
 }
 
@@ -214,10 +215,10 @@
 /* Account Information */
 .account-info {
     top: 92mm;
-    left: 138mm;
+    left: 140mm;
     width: 35mm;
     height: 5mm;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: bold;
    
 }
@@ -225,12 +226,12 @@
 /* Reference Information */
 .reference-number {
     top: 125mm;
-    left: 122mm;
+    left: 137mm;
     width: 40mm;
     height: 5mm;
     text-align: center;
-    font-size: 13px;
-    font-weight: bold;
+    font-size: 14px;
+    font-weight: bolder;
 }
 
 .shipping-info {
@@ -248,19 +249,19 @@
     width: 15mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
    
 }
 
 .routing-carrier1 {
     top: 138mm;
-    left: 11mm;
+    left: 10mm;
     width: 60mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
    
 }
 
@@ -271,7 +272,7 @@
     height: 5mm;
     text-align: center;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: bolder;
 }
 
 .routing-by2 {
@@ -281,7 +282,7 @@
     height: 5mm;
     text-align: center;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: bolder;
 }
 
 .routing-to3 {
@@ -291,7 +292,7 @@
     height: 5mm;
     text-align: center;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: bolder;
 }
 
 .routing-by3 {
@@ -301,136 +302,136 @@
     height: 5mm;
     text-align: center;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: bolder;
 }
 
 /* Currency and Charges */
 .currency {
-    top: 136mm;
+    top: 139mm;
     left: 133mm;
     width: 15mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
    
 }
 
 .charges-code {
-    top: 140mm;
-    left: 148mm;
+    top: 139mm;
+    left: 149mm;
     width: 15mm;
     height: 5mm;
     text-align: center;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: bolder;
    
 }
 
 /* PP/CC Checkboxes */
 .wt-pp {
-    top: 140mm;
+    top: 139mm;
     left: 160mm;
     width: 10mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
 }
 
 .wt-col {
-    top: 135mm;
+    top: 139mm;
+    left: 168mm;
+    width: 10mm;
+    height: 5mm;
+    text-align: center;
+    font-size: 13px;
+    font-weight: bolder;
+}
+
+.other-pp {
+    top: 139mm;
+    left: 176mm;
+    width: 10mm;
+    height: 5mm;
+    text-align: center;
+    font-size: 13px;
+    font-weight: bolder;
+}
+
+.other-col {
+    top: 139mm;
     left: 185mm;
     width: 10mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.other-pp {
-    top: 140mm;
-    left: 178mm;
-    width: 10mm;
-    height: 5mm;
-    text-align: center;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.other-col {
-    top: 135mm;
-    left: 200mm;
-    width: 10mm;
-    height: 5mm;
-    text-align: center;
-    font-size: 12px;    
-    font-weight: bold;
+    font-size: 13px;    
+    font-weight: bolder;
 }
 
 /* Declared Values */
 .declared-carriage {
-    top: 136mm;
+    top: 138mm;
     left: 190mm;
     width: 30mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
 }
 
 .declared-customs {
-    top: 136mm;
+    top: 138mm;
     left: 230mm;
     width: 30mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
 }
 
 /* Airport Destination */
 .airport-destination {
     top: 152mm;
-    left: 12mm;
+    left: 8mm;
     width: 40mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
    
 }
 
 /* Flight Name */
 .flight-name {
     top: 152mm;
-    left: 55mm;
+    left: 60mm;
     width: 40mm;
     height: 5mm;
     text-align: center;
-    font-size: 11px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
 }
 /* Flight Date */
 .flight-date {
     top: 152mm;
-    left: 78mm;
+    left: 95mm;
     width: 40mm;
     height: 5mm;
     text-align: center;
-    font-size: 11px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
 }
 
 /* Insurance */
 .insurance-amount {
-    top: 150mm;
+    top: 152mm;
     left: 130mm;
     width: 40mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
 }
 
 .insurance-info {
@@ -445,36 +446,69 @@
 }
 
 /* Handling Information */
+
 .handling-info {
-    top: 165mm;
+    top: 166mm;
     left: 8mm;
-    width: 240mm;
-    height: 10mm;
+    width: 120mm;      
+    height: auto;        
+    min-height: 10mm;
     font-size: 12px;
-    font-weight: bold;
-    
+    font-weight: bolder;
+    white-space: normal;  
+    word-break: break-word;
+    overflow: visible;
 }
 
+// /notify
+
+.notify {
+    top: 170mm;
+    left: 150mm;
+    width: 120mm;      
+    height: auto;        
+    min-height: 10mm;
+    font-size: 12px;
+    font-weight: bolder;
+    white-space: normal;  
+    word-break: break-word;
+    overflow: visible;
+}
+
+// notify-address
+
+.notify-address {
+    top: 166mm;
+    left: 150mm;
+    width: 120mm;      
+    height: auto;        
+    min-height: 10mm;
+    font-size: 12px;
+    font-weight: bolder;
+    white-space: normal;  
+    word-break: break-word;
+    overflow: visible;
+}
 /* Package Details - Main Table */
 .no-of-pieces {
     top: 197mm;
-    left: 2mm;
+    left: 4mm;
     width: 20mm;
     height: 10mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
    
 }
 
 .gross-weight {
     top: 197mm;
-    left: 25mm;
+    left: 26mm;
     width: 25mm;
     height: 10mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
    
 }
 
@@ -484,8 +518,8 @@
     width: 15mm;
     height: 10mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
    
 }
 
@@ -503,60 +537,86 @@
     width: 30mm;
     height: 10mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
    
 }
 
 .rate-charge {
     top: 197mm;
-    left: 119mm;
+    left: 118mm;
     width: 25mm;
     height: 10mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
    
 }
 
 .total-charge {
     top: 197mm;
-    left: 149mm;
+    left: 147mm;
     width: 25mm;
     height: 10mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
    
 }
-
+/* Commodity Description - Right side */
 .goods-description {
     top: 195mm;
-    left: 190mm;
-    width: 90mm;
+    left: 180mm;
+    width: 83mm;
     height: 70mm;
     padding: 2mm;
     overflow: hidden;
-    line-height: 1.2;
     font-size: 12px;
-    font-weight: bold;
-    
-    /* Add these */
+    font-weight: bolder;
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;
     box-sizing: border-box;
+    display: block;
+    text-align: start;
+
+    .commodity-text {
+        display: block;
+        line-height: 1.3;
+    }
+
+    /* marks-text hide பண்ணுங்க - separate div use பண்றோம் */
+    .marks-text {
+        display: none;
+    }
+}
+
+/* Marks and Number - Left side */
+.marks-number {
+    top: 210mm;
+    left: 11mm;        /* ← Left side position */
+    width: 85mm;      /* ← Left column width */
+    height: 70mm;
+    padding: 2mm;
+    overflow: hidden;
+    font-size: 12px;
+    font-weight: bolder;
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    box-sizing: border-box;
+    line-height: 1.3;
 }
 
 /* Totals Row */
 .total-no-pieces {
     top: 267mm;
-    left: 3mm;
+    left: 4mm;
     width: 20mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
    
 }
 
@@ -566,127 +626,162 @@
     width: 20mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
    
 }
 
 .total-chargeable-weight {
     top: 267mm;
-    left: 85mm;
+    left: 84mm;
     width: 30mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
    
 }
 
 .total-rate {
     top: 267mm;
-    left: 120mm;
+    left: 119mm;
     width: 25mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
    
 }
 
 .total-amount {
     top: 267mm;
-    left: 149mm;
+    left: 147mm;
     width: 25mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
    
 }
 
 /* Charges Section */
 .prepaid-weight {
-    top: 278mm;
-    left: 5mm;
+    top: 280mm;
+    left: 22mm;
     width: 35mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
    
 }
 
 .valuation-charge {
-    top: 290mm;
-    left: 5mm;
+    top: 292mm;
+    left: 22mm;
     width: 35mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
    
 }
 
 .collect-weight {
     top: 280mm;
-    left: 78mm;
+    left: 77mm;
     width: 35mm;
     height: 5mm;
     text-align: center;
+    font-size: 13px;
+    font-weight: bolder;
    
 }
 
 /* Other Charges */
 .other-charges {
-    top: 280mm;
+    top: 277mm;
     left: 130mm;
     width: 140mm;
     height: 15mm;
-    
+    font-size: 13px;
+    font-weight: bolder;
     padding: 1mm;
 }
 
 /* Total Other Charges */
-.total-other-carrier {
-    top: 330mm;
-    left: 7mm;
+.total-other-agent {
+    top: 318mm;
+    left: 22mm;
     width: 35mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
+}
+
+.total-other-agent-collect {
+    top: 318mm;
+    left: 80mm;
+    width: 35mm;
+    height: 5mm;
+    text-align: center;
+    font-size: 13px;
+    font-weight: bolder;
+}
+
+.total-other-carrier {
+    top: 330mm;
+    left: 22mm;
+    width: 35mm;
+    height: 5mm;
+    text-align: center;
+    font-size: 13px;
+    font-weight: bolder;
    
+}
+
+.total-other-carrier-collect {
+    top: 330mm;
+    left: 80mm;
+    width: 35mm;
+    height: 5mm;
+    text-align: center;
+    font-size: 13px;
+    font-weight: bolder;
 }
 
 /* Shipper Certificate */
 .agent-name-cert {
     top: 333mm;
-    left: 157mm;
+    left: 155mm;
     width: 80mm;
     height: 10mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 17px;
+    font-weight: bolder;
 }
 
 /* Totals Section */
 .total-prepaid {
-    top: 357mm;
-    left: 9mm;
+    top: 353mm;
+    left: 20mm;
     width: 35mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: bolder;
    
 }
 
 .total-collect {
-    top: 310mm;
-    left: 75mm;
+    top: 353mm;
+    left: 77mm;
     width: 35mm;
     height: 5mm;
     text-align: center;
+    font-size: 13px;
+    font-weight: bolder;
    
 }
 
@@ -738,12 +833,12 @@
 /* Execution Information */
 .execution-date {
     top: 358mm;
-    left: 100mm;
+    left: 110mm;
     width: 40mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 14px;
+    font-weight: bolder;
 }
 
 .execution-place {
@@ -752,18 +847,18 @@
     // width: 40mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 14px;
+    font-weight: bolder;
 }
 
 .execution-signature {
     top: 358mm;
-    left: 195mm;
+    left: 197mm;
     width: 60mm;
     height: 5mm;
     text-align: center;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 14px;
+    font-weight: bolder;
    
 }
 
