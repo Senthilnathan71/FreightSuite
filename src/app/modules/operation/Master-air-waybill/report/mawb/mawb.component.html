@@ -20,27 +20,24 @@
         <div class="mawb-report">
             <div class="mawb-page">
 
-              <img
-                class="mawb-background-image"
-                src="assets/images/MAWB.png"
-                alt="MAWB Template" />
+                <img class="mawb-background-image" src="assets/images/MAWB.png" alt="MAWB Template" />
 
                 <!-- Data Overlays Container -->
                 <div class="data-overlays">
 
-                    <div class="data-field portofloading" style="font-size:18px">
+                    <div class="data-field portofloading" >
                         {{ masterAirWayData?.POL }}
                     </div>
-                    
-                    <div class="data-field mawbseries" style="font-size:18px">
+
+                    <div class="data-field mawbseries" >
                         {{ masterAirWayData?.MBLNo?.toString().substring(0, 3) }}
                     </div>
 
-                      <div class="data-field mawbseries1" style="font-size:18px">
+                    <div class="data-field mawbseries1">
                         {{ masterAirWayData?.MBLNo?.toString().substring(3) }}
                     </div>
 
-                      <div class="data-field mawbno1" style="font-size:18px">
+                    <div class="data-field mawbno1" style="font-size:18px">
                         {{ getFormattedMBLNo() }}
                     </div>
                     <!-- LEFT COLUMN DATA -->
@@ -94,7 +91,7 @@
 
                     <!-- Account Information -->
                     <div class="data-field account-info">
-                        {{ masterAirWayData?.FreightPPCC }}
+                        FREIGHT {{ masterAirWayData?.FreightPPCC }}
                     </div>
 
                     <!-- Reference Information -->
@@ -130,22 +127,23 @@
                         {{ getCurrencyCodeById(currentCurrency) }}
                     </div>
                     <div class="data-field charges-code">
-                        <span *ngIf="masterAirWayData?.FreightPPCC === 'Prepaid'">PP</span>
-                        <span *ngIf="masterAirWayData?.FreightPPCC === 'Collect'">CC</span>
+                        <span *ngIf="getTotalPrepaidAmount() > 0 && getTotalCollectAmount() > 0">PP/CC</span>
+                        <span *ngIf="getTotalPrepaidAmount() > 0 && getTotalCollectAmount() === 0">PP</span>
+                        <span *ngIf="getTotalCollectAmount() > 0 && getTotalPrepaidAmount() === 0">CC</span>
                     </div>
 
                     <!-- PP/CC Checkboxes -->
                     <div class="data-field wt-pp">
-                        <span *ngIf="masterAirWayData?.FreightPPCC === 'Prepaid'" class="checkmark">X</span>
+                        <span *ngIf="getFreightPrepaidTotal() > 0" class="checkmark">X</span>
                     </div>
                     <div class="data-field wt-col">
-                        <span *ngIf="masterAirWayData?.FreightPPCC === 'Collect'" class="checkmark">X</span>
+                        <span *ngIf="getFreightCollectTotal() > 0" class="checkmark">X</span>
                     </div>
                     <div class="data-field other-pp">
-                        <span *ngIf="masterAirWayData?.FreightPPCC === 'Prepaid'" class="checkmark">X</span>
+                        <span *ngIf="getOtherPrepaidTotal() > 0" class="checkmark">X</span>
                     </div>
                     <div class="data-field other-col">
-                        <span *ngIf="masterAirWayData?.FreightPPCC === 'Collect'" class="checkmark">X</span>
+                        <span *ngIf="getOtherCollectTotal() > 0" class="checkmark">X</span>
                     </div>
 
                     <!-- Declared Values -->
@@ -153,13 +151,13 @@
                         {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.DeclaredValueOfCarriage }}
                     </div>
                     <div class="data-field declared-customs">
-                       {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.DeclaredValueOfCustoms }}
+                        {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.DeclaredValueOfCustoms }}
                     </div>
 
                     <!-- Airport Destination -->
                     <div class="data-field airport-destination">{{ masterAirWayData?.FPD }}</div>
 
-                    <!-- Flight Name -->    
+                    <!-- Flight Name -->
                     <div class="data-field flight-name">
                         {{masterAirWayData?.voyages?.[0]?.VesselName}}
                     </div>
@@ -172,18 +170,24 @@
                     <!-- Insurance -->
                     <div class="data-field insurance-amount">
                         <!-- Amount of Insurance -->
-                          {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.ValueForInsurance  | number:'1.2-2'}}
+                        {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.ValueForInsurance | number:'1.2-2'}}
                     </div>
-                   
+
 
                     <!-- Handling Information -->
                     <div class="data-field handling-info">
                         {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.HandlingInformation }}
                     </div>
+                    <div 
+                    class="data-field notify"
+                    *ngIf="masterAirWayData?.houseJob?.[0]?.Notify 
+                            || masterAirWayData?.houseJob?.[0]?.NotifyAddress">
 
-                      <div class="data-field notify">
-                        {{ masterAirWayData?.houseJob?.Notify }} <br>
-                        {{ masterAirWayData?.houseJob?.NotifyAddress }}
+                    <div class="notify-label">
+                        Notify
+                    </div>
+                    {{ masterAirWayData?.houseJob?.[0]?.Notify }} <br>
+                    {{ masterAirWayData?.houseJob?.[0]?.NotifyAddress }}
                     </div>
 
                     <!-- Package Details -->
@@ -203,7 +207,7 @@
                         {{ masterAirWayData?.aggregatedTotals?.ChargeableWeight | number:'1.3-3' }}
                     </div>
                     <div class="data-field rate-charge">
-                       {{ getFreightTotals().totalExchangeRate | number:'1.2-2'}}
+                        {{ getFreightTotals().totalExchangeRate | number:'1.2-2'}}
                     </div>
                     <div class="data-field total-charge">
                         {{ getFreightTotals().totalRevenueAmount | number:'1.2-2'}}
@@ -221,28 +225,28 @@
                     <div class="data-field total-gross-weight">
                         {{ masterAirWayData?.aggregatedTotals?.GrossWeight | number:'1.3-3' }}
                     </div>
-                    <div class="data-field total-chargeable-weight">
+                    <!-- <div class="data-field total-chargeable-weight">
                         {{ masterAirWayData?.aggregatedTotals?.ChargeableWeight | number:'1.3-3' }}
-                    </div>
-                    <div class="data-field total-rate">
+                    </div> -->
+                    <!-- <div class="data-field total-rate">
                         {{ getFreightTotals().totalExchangeRate | number:'1.2-2' }}
-                    </div>
+                    </div> -->
                     <div class="data-field total-amount">
                         {{ getFreightTotals().totalRevenueAmount | number:'1.2-2' }}
                     </div>
 
                     <!-- Charges Section -->
                     <div class="data-field prepaid-weight">
-                        {{ freightCharges[0]?.RevenueAmount | number:'1.2-2' }}
+                        {{ prepaidTotal() | number:'1.2-2' }}
                     </div>
                     <div class="data-field collect-weight">
-                        {{ freightCharges[0]?.CostAmount | number:'1.2-2' }}
+                        {{ collectTotal() | number:'1.2-2' }}
                     </div>
 
                     <!-- Other Charges -->
                     <div class="data-field other-charges">
-                        <span *ngFor="let charge of otherCharges; let last = last">
-                            {{ getChargeCode(charge.ChargeMasterSid) }} {{ charge.RevenueExchangeRate }}
+                        <span *ngFor="let charge of otherCharges1; let last = last">
+                            {{ getChargeCode(charge.ChargeMasterSid) }} {{ charge.RevenueAmount | number:'1.2-2' }}
                             {{ !last ? '&nbsp;&nbsp;' : '' }}
                         </span>
                     </div>
@@ -251,26 +255,36 @@
                         {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.ValuationCharge | number:'1.2-2'}}
                     </div>
                     <!-- Total Other Charges -->
-                    <div class="data-field total-other-carrier">
-                       
+                    <div class="data-field total-other-agent">
+                        {{ getOtherDueAgentPrepaidTotal() | number:'1.2-2' }}
                     </div>
-
+                    <div class="data-field total-other-agent-collect">
+                        {{ getOtherDueAgentCollectTotal() | number:'1.2-2' }}
+                    </div>
+                    <div class="data-field total-other-carrier">
+                        {{ getOtherDueCarrierPrepaidTotal() | number:'1.2-2' }}
+                    </div>
+                    <div class="data-field total-other-carrier-collect">
+                        {{ getOtherDueCarrierCollectTotal() | number:'1.2-2' }}
+                    </div>
                     <!-- Shipper Certificate -->
                     <div class="data-field agent-name-cert">
-                        {{ getAgentName(masterAirWayData?.DestinationAgent) }} 
+                        {{ getAgentName(masterAirWayData?.DestinationAgent) }}
                     </div>
 
                     <!-- Totals -->
                     <div class="data-field total-prepaid">
-                        {{ getGrandTotal() | number:'1.2-2' }}
+                        <!-- {{ getGrandTotal() | number:'1.2-2' }} -->
+                        {{ getTotalPrepaidAmount() | number:'1.2-2' }}
                     </div>
                     <div class="data-field total-collect">
                         <!-- Total Collect -->
+                        {{ getTotalCollectAmount() | number:'1.2-2' }}
                     </div>
 
                     <!-- Currency Conversion -->
                     <div class="data-field currency-rate">
-                         {{ getTotalExchangeRate()  | number:'1.2-2'}}
+                        {{ getTotalExchangeRate() | number:'1.2-2'}}
                     </div>
                     <div class="data-field dest-currency">
                         <!-- CC Charges in Dest. Currency -->
@@ -284,14 +298,9 @@
                         <!-- Charges at Destination -->
                     </div>
 
-                    <!-- Total Collect Charges -->
-                    <div class="data-field total-collect-charges">
-                        <!-- Total collect charges -->
-                    </div>
-
                     <!-- Execution Information -->
                     <div class="data-field execution-date">
-                        {{ masterAirWayData?.MBLDate | formatDate }}
+                        {{ masterAirWayData?.MBLDate |  date:'dd-MMM-yyyy HH:mm' }}
                     </div>
                     <div class="data-field execution-place">
                         {{ currentCountryName }}
@@ -300,7 +309,7 @@
                         {{ getAgentName(masterAirWayData?.DestinationAgent) }}
                     </div>
 
-                     <div class="data-field mawbno" style="font-size:18px">
+                    <div class="data-field mawbno" style="font-size:18px">
                         {{ getFormattedMBLNo() }}
                     </div>
                 </div>
@@ -308,8 +317,7 @@
             </div>
         </div>
 
-        <div class="mawb-report" *ngIf="selectedReport === 'MAWB'"
-            style="color: #000;width: 280mm;min-height: 400mm; margin: '10px auto';padding: 0 5px;">
+        <div class="mawb-page" style="color: #000;width: 280mm;min-height: 400mm; margin: '10px auto';padding: 0 5px;">
             <div class="mawb-page">
                 <div style="text-align: center;margin: 10px 0px;">
                     <h5>NOTICE CONCERNING CARRIERS LIMITATION OF LIABILITY</h5>
