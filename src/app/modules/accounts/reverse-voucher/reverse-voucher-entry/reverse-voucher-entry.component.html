@@ -193,9 +193,7 @@
           </span>
         </span>
       </div>
-            <button class="btn btn-info btn-sm" (click)="addDetailRow()" type="button">
-              <i class="fas fa-plus me-1"></i>Add Charge
-            </button>
+            
           </div>
 
           <!-- Detail Grid -->
@@ -206,8 +204,7 @@
                 <table class="table table-hover table-sm mb-0 text-center">
                   <thead class="table-header-booking">
                     <tr class="align-middle bg-info">
-                      <th rowspan="2" class="text-center bg-transparent text-light"
-                        style="min-width: 30px; border-top-left-radius: 10px;"></th>
+                      
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 50px;">Sno.</th>
                       <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Ledger
                       </th>
@@ -248,11 +245,7 @@
                     <ng-container *ngFor="let row of details.controls; let i = index">
                       <tr [formGroupName]="i">
                         <!-- Delete Button -->
-                        <td>
-                          <button type="button" class="btn btn-sm pt-0" (click)="removeDetailRow(i)">
-                            <i class="fas fa-trash text-danger"></i>
-                          </button>
-                        </td>
+                        
                         <td>{{ i + 1 }}</td>
                         <td>
                           <ng-select formControlName="COAMasterSid" [items]="coaList" bindLabel="LedgerName"
