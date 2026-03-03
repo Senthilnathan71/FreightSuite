@@ -149,10 +149,23 @@
                         [displayLabels]="stateLookupConfig.displayLabels"
                         [labelFields]="stateLookupConfig.labelFields" bindLabel="stateName"
                         bindValue="StateMasterSid"
+                        (itemSelected)="filterCityByState($event)"
                         >
                       </dofi-searchable-dropdown>
 
                                                 <label for="text-input" class="input-label">State</label>
+                                            </div>
+                                        </aside>
+                                        <aside class="col-md-6">
+                                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!portForm.get('CityMasterSid')?.value">
+                                                <dofi-searchable-dropdown [items]="filteredCityList" formControlName="CityMasterSid" placeholder=""
+                        [displayFields]="cityLookupConfig.displayFields"
+                        [displayLabels]="cityLookupConfig.displayLabels"
+                        [labelFields]="cityLookupConfig.labelFields" bindLabel="cityName"
+                        bindValue="CityMasterSid"
+                        >
+                      </dofi-searchable-dropdown>
+                                                <label for="text-input" class="input-label">City</label>
                                             </div>
                                         </aside>
                                         <aside class="col-md-6">
