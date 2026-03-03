@@ -2,7 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import { firstValueFrom } from 'rxjs';
+import { take } from 'rxjs/operators';
+import {
+  generateMblDocument,
+  transformMblApiData
+} from 'src/app/common/pdf/generators/mbl-pdf.generator';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -24,9 +29,10 @@ export class MblComponent {
   branchDetails: any;
   currentMenuId: any;
   TandCList: any[] = [];
-  
+
   currentBranchCityName: string | null;
   currentBranchCityId: number;
+
   @Input() masterJobData: any;
   @Input() masterJobContainers: any[];
   @Input() withOrWithoutCharge: boolean;
@@ -36,7 +42,21 @@ export class MblComponent {
   @Input() uomList: any;
   @Input() containerTypeList: any;
   @Input() packageTypeList: any[] = [];
-  @Input() selectedReport: 'MBL' | 'MBLDraft' = 'MBL'; 
+  @Input() selectedReport: 'MBL' | 'MBLDraft' = 'MBL';
+
+  private pdfDepsPromise?: Promise<{ pdfMake: any }>;
+
+  showPrintLogo = false;
+  showPdfLogo = true;
+
+  constructor(
+    private activeModal: NgbActiveModal,
+    private masterService: MasterService,
+    private appSettingService: AppSettingsService,
+    private spinner: NgxSpinnerService,
+    private modalService: NgbModal,
+    public logoService: LogoService
+  ) {}
 
   ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
@@ -47,21 +67,15 @@ export class MblComponent {
       localStorage.getItem('selected-branch')
     );
     this.branchDetails = this.appSettingService.getCurrentBranchInfo();
-    this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
-    this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
+    this.currentCompany = ((this.userData.userCompanyMaster || []).find(
+      (ucm) => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid
+    ))?.companyMaster;
+    this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(
+      (ubm) => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid
+    ))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
   }
-
-  constructor(
-    private activeModal: NgbActiveModal,
-    private masterService: MasterService,
-    private appSettingService: AppSettingsService,
-    private spinner: NgxSpinnerService,
-    private pdfService: PdfDownloadService,
-    private modalService: NgbModal,
-    public logoService : LogoService
-  ) { }
 
   loadCityName(): void {
     if (!this.currentBranchCityId) return;
@@ -70,17 +84,15 @@ export class MblComponent {
 
     this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
       next: (response: any) => {
-
         if (response) {
           const ourCity = response;
-
           this.currentBranchCityName = ourCity ? ourCity.cityName : '';
         }
 
         this.spinner.hide();
       },
       error: (error) => {
-        console.error("Failed to load city:", error);
+        console.error('Failed to load city:', error);
         this.spinner.hide();
       }
     });
@@ -128,50 +140,64 @@ export class MblComponent {
 
   getPackageTypeName(pkgTypeSid: number): string {
     if (!pkgTypeSid) return 'Unknown';
-    const packageType = this.packageTypeList.find(pt => pt.UOMMasterSid === pkgTypeSid);
+    const packageType = this.packageTypeList.find(
+      (pt) => pt.UOMMasterSid === pkgTypeSid
+    );
     return packageType ? packageType.UOMName : 'Unknown';
   }
+
   modalClose() {
     this.activeModal.close();
   }
 
-
-   async downloadPDF() {
-  this.showPrintLogo = false;
-  this.showPdfLogo = true;
-
-  setTimeout(async () => {
+  async downloadPDF() {
+    this.showPrintLogo = false;
+    this.showPdfLogo = true;
     this.spinner.show();
-   try {
-     const quotationNumber = this.masterJobData?.MBLNo;
-      await this.pdfService.downloadBalancedPDF(
-        'printContent',
-        `MBL_${quotationNumber}`,
-        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+
+    try {
+      const { pdfMake } = await this.getPdfDependencies();
+      const logo = await this.resolveReportLogo();
+
+      const pdfData = transformMblApiData(
+        this.masterJobData,
+        {
+          selectedReport: this.selectedReport,
+          company: this.currentCompany,
+          branch: this.currentBranch,
+          userData: this.userData,
+          currentDate: this.currentDate,
+          currentBranchCityName: this.currentBranchCityName,
+          packageTypeList: this.packageTypeList,
+          agentList: this.agentList
+        },
+        logo
       );
+
+      const docDefinition = generateMblDocument(pdfData);
+      const mblNo = this.masterJobData?.MBLNo || 'Draft';
+      pdfMake.createPdf(docDefinition).download(`MBL_${mblNo}.pdf`);
+      this.appSettingService.showSuccess('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('MBL PDF generation error:', error);
+      this.appSettingService.showError('Error generating PDF. Please try again.');
     } finally {
       this.spinner.hide();
     }
-  }, 50);
-}
-
-
-  showPrintLogo: boolean = false;
-  showPdfLogo: boolean = true;
+  }
 
   printDiv(divId: string): void {
-  this.showPrintLogo = true;
-  this.showPdfLogo = false;
+    this.showPrintLogo = true;
+    this.showPdfLogo = false;
 
-  setTimeout(() => {
-    const printContents = document.getElementById(divId)?.innerHTML;
-    if (!printContents) return;
+    setTimeout(() => {
+      const printContents = document.getElementById(divId)?.innerHTML;
+      if (!printContents) return;
 
-    const popupWin = window.open('', '_blank', 'width=900,height=600');
-    if (popupWin) {
-      popupWin.document.open();
-      popupWin.document.write(`
+      const popupWin = window.open('', '_blank', 'width=900,height=600');
+      if (popupWin) {
+        popupWin.document.open();
+        popupWin.document.write(`
         <html>
           <head>
             <title>Print</title>
@@ -181,32 +207,89 @@ export class MblComponent {
           </body>
         </html>
       `);
-      popupWin.document.close();
-    }
-  }, 50); // small timeout so Angular updates DOM
-}
-
-
-openTandC(){
-    this.currentMenuId=Number(sessionStorage.getItem('currentMenuId'));
-    const payload = { MenuMasterSid: this.currentMenuId };
-    this.masterService.getTandCByCondition(payload).subscribe((resp: any) => {
-      if(resp.status) {
-        this.TandCList = resp.data;
-        const modelRef = this.modalService.open(TermsAndConditionsComponent,{
-          size: 'lg',
-          backdrop: 'static',
-          centered: true,
-        });
-        modelRef.componentInstance.terms = this.TandCList;
-        modelRef.componentInstance.MenuMasterSid = this.currentMenuId;
-        modelRef.componentInstance.DocumentSid = this.masterJobData?.MasterJobSid;
-      } else {
-        this.appSettingService.showError('Error loading Terms and Conditions');
+        popupWin.document.close();
       }
-  },(error)=>{
-    this.appSettingService.showError('Error loading Terms and Conditions',error);
-  });
-}
+    }, 50);
+  }
 
+  openTandC() {
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+    const payload = { MenuMasterSid: this.currentMenuId };
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          const modelRef = this.modalService.open(TermsAndConditionsComponent, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true,
+          });
+          modelRef.componentInstance.terms = this.TandCList;
+          modelRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modelRef.componentInstance.DocumentSid = this.masterJobData?.MasterJobSid;
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+  }
+
+  private async getPdfDependencies(): Promise<{ pdfMake: any }> {
+    if (this.pdfDepsPromise) {
+      return this.pdfDepsPromise;
+    }
+
+    this.pdfDepsPromise = (async () => {
+      const pdfMakeModule = await import('pdfmake/build/pdfmake');
+      const pdfFontsModule = await import('pdfmake/build/vfs_fonts');
+
+      const pdfMake: any = (pdfMakeModule as any).default || pdfMakeModule;
+      const pdfFonts: any = (pdfFontsModule as any).default || pdfFontsModule;
+      pdfMake.vfs = pdfFonts?.pdfMake?.vfs || pdfFonts;
+
+      return { pdfMake };
+    })();
+
+    return this.pdfDepsPromise;
+  }
+
+  private async resolveReportLogo(): Promise<string | undefined> {
+    const logoFromStream = await firstValueFrom(
+      this.logoService.reportLogo$.pipe(take(1))
+    );
+    const logoSource = logoFromStream || localStorage.getItem('current_report_logo') || '';
+
+    if (!logoSource) return undefined;
+    if (logoSource.startsWith('data:image')) return logoSource;
+
+    return this.imageUrlToBase64(logoSource);
+  }
+
+  private imageUrlToBase64(url: string): Promise<string | undefined> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          resolve(undefined);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      };
+
+      img.onerror = () => resolve(undefined);
+      img.src = url;
+    });
+  }
 }

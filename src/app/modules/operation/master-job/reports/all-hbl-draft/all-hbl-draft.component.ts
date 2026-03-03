@@ -1,13 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import { firstValueFrom } from 'rxjs';
+import { take } from 'rxjs/operators';
+import {
+  generateAllHblDocument,
+  transformAllHblItemApiData,
+} from 'src/app/common/pdf/generators/all-hbl-pdf.generator';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { MasterService } from 'src/app/modules/master/master.service';
 import { OperationService } from '../../../operation.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 
@@ -16,15 +18,13 @@ import { LogoService } from 'src/app/core/services/logo.service';
   standalone: true,
   imports: [CustomDatePipe, CommonModule],
   templateUrl: './all-hbl-draft.component.html',
-  styles: ``
+  styles: ``,
 })
 export class AllHBLDraftComponent {
-
-
-  currentCompany: any
+  currentCompany: any;
   currentBranch: any;
-  userData: any
-  currentDate = new Date()
+  userData: any;
+  currentDate = new Date();
   branchDetails: any;
   currentBranchCityName: string | null;
   currentBranchCityId: number;
@@ -37,25 +37,41 @@ export class AllHBLDraftComponent {
   @Input() currencyList: any;
   @Input() uomList: any;
   @Input() containerTypeList: any;
-  
+
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
   @Input() masterJobSid: number;
 
   masterJobData: any;
   masterJobHouseJobs: any;
+  private pdfDepsPromise?: Promise<{ pdfMake: any }>;
+
+  constructor(
+    private activeModal: NgbActiveModal,
+    private appSettingService: AppSettingsService,
+    private spinner: NgxSpinnerService,
+    private operationService: OperationService,
+    public logoService: LogoService,
+  ) {}
 
   ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
-    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.currentCompany = this.appSettingService.decrypt(
+      localStorage.getItem('selected-company'),
+    );
+    this.currentBranch = this.appSettingService.decrypt(
+      localStorage.getItem('selected-branch'),
+    );
     this.branchDetails = this.appSettingService.getCurrentBranchInfo();
-    this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
-    this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
+    this.currentCompany = ((this.userData.userCompanyMaster || []).find(
+      (ucm) => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid,
+    ))?.companyMaster;
+    this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(
+      (ubm) => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid,
+    ))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadMasterJobWithAllHouseJob(this.masterJobSid);
   }
-
 
   loadMasterJobWithAllHouseJob(MasterJobSid: number) {
     this.spinner.show();
@@ -63,154 +79,90 @@ export class AllHBLDraftComponent {
       next: (response: any) => {
         if (response.status && response.data) {
           this.masterJobData = response.data;
-
           this.masterJobHouseJobs = response.data.houseJob || [];
-
           this.housejobData = this.masterJobHouseJobs[0];
-         
         }
         this.spinner.hide();
       },
       error: (error) => {
         console.error('Error loading master job details:', error);
+        this.spinner.hide();
       },
     });
   }
 
-
-  constructor(
-    private activeModal: NgbActiveModal,
-    private appSettingService: AppSettingsService,
-    private masterService: MasterService,
-    private pdfService: PdfDownloadService,
-    private spinner: NgxSpinnerService,
-    private operationService: OperationService,
-    public logoService : LogoService
-  ) { }
-
-
   getTotalGrossWeight(housejobData: any): number {
-    return this.getContainerMappedProducts(housejobData)
-      .reduce((total: number, item: any) => {
+    return this.getContainerMappedProducts(housejobData).reduce(
+      (total: number, item: any) => {
         return total + (Number(item?.GrossWeight) || 0);
-      }, 0);
+      },
+      0,
+    );
   }
-
 
   getTotalVolume(housejobData: any): number {
-    return this.getContainerMappedProducts(housejobData)
-      .reduce((total: number, item: any) => {
+    return this.getContainerMappedProducts(housejobData).reduce(
+      (total: number, item: any) => {
         return total + (Number(item?.Volume) || 0);
-      }, 0);
+      },
+      0,
+    );
   }
-
-
-
-
-  // container details only show
 
   getContainerMappedProducts(housejobData: any) {
     return housejobData?.Products || [];
   }
 
-
-
-  // All container details  show
-
-  // get containerMappedProducts() {
-  //   const products = this.housejobData?.Products || [];
-
-  //   const map = new Map<number, any>();
-
-  //   products.forEach((p: any) => {
-  //     if (!p.MasterJobContainerSid) return; // ❌ skip unmapped
-
-  //     if (!map.has(p.MasterJobContainerSid)) {
-  //       map.set(p.MasterJobContainerSid, {
-  //         MasterJobContainerSid: p.MasterJobContainerSid,
-  //         ContainerNo: p.ContainerNo,
-  //         GrossWeight: Number(p.GrossWeight) || 0,
-  //         Volume: Number(p.Volume) || 0,
-  //         ExternlQty: Number(p.ExternlQty) || 0,
-  //         ExternaPkg: p.ExternaPkg
-  //       });
-  //     } else {
-  //       const existing = map.get(p.MasterJobContainerSid);
-  //       existing.GrossWeight += Number(p.GrossWeight) || 0;
-  //       existing.Volume += Number(p.Volume) || 0;
-  //       existing.ExternlQty += Number(p.ExternlQty) || 0;
-  //     }
-  //   });
-
-  //   return Array.from(map.values());
-  // }
   getDestinationAgentName(CustomerMasterSid: number | string): string {
-    const agent = this.agentList.find(a => a.CustomerMasterSid == CustomerMasterSid);
+    const agent = this.agentList.find((a) => a.CustomerMasterSid == CustomerMasterSid);
     return agent ? agent.CustomerName : '';
   }
 
   async downloadPDF() {
     this.showPrintLogo = false;
     this.showPdfLogo = true;
-
-
-
-    setTimeout(async () => {
-      this.spinner.show();
-      try {
-        const HouseJob = this.housejobData?.HBLNo || '';
-        await this.pdfService.downloadBalancedPDF(
-          'printContent',
-          `HBL-Draft ${HouseJob}`,
-          () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-          (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
-        );
-      } finally {
-        this.spinner.hide();
-      }
-    }, 50);
-  }
-
-
-
-
-  async generatePDFBlob(): Promise<Blob | null> {
-    const printContent = document.getElementById('printContent');
-    if (!printContent) {
-      return null;
-    }
+    this.spinner.show();
 
     try {
-      const canvas = await html2canvas(printContent, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
+      const draftHouseJobs = (this.masterJobHouseJobs || []).filter(
+        (house: any) => !house?.Others?.[0]?.ReleaseType,
+      );
 
-      const imgWidth = 210;
-      const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgData = canvas.toDataURL('image/png');
-
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+      if (!draftHouseJobs.length) {
+        this.appSettingService.showError('No Record Found');
+        return;
       }
 
-      return pdf.output('blob');
+      const { pdfMake } = await this.getPdfDependencies();
+      const logo = await this.resolveReportLogo();
+
+      const items = draftHouseJobs.map((houseJob: any) =>
+        transformAllHblItemApiData(
+          houseJob,
+          {
+            company: this.currentCompany,
+            branch: this.currentBranch,
+            userData: this.userData,
+            currentDate: this.currentDate,
+            currentBranchCityName: this.currentBranchCityName,
+            agentList: this.agentList,
+            masterJobData: this.masterJobData,
+            isDraft: true,
+            title: 'House Bill of Lading',
+          },
+          logo,
+        ),
+      );
+
+      const docDefinition = generateAllHblDocument(items);
+      const fileRef = this.masterJobData?.MasterJobNumber || this.masterJobSid || 'ALL_HBL_DRAFT';
+      pdfMake.createPdf(docDefinition).download(`ALL_HBL_DRAFT_${fileRef}.pdf`);
+      this.appSettingService.showSuccess('PDF downloaded successfully!');
     } catch (error) {
-      console.error('Error generating PDF blob:', error);
-      return null;
+      console.error('All HBL Draft PDF generation error:', error);
+      this.appSettingService.showError('Error generating PDF. Please try again.');
+    } finally {
+      this.spinner.hide();
     }
   }
 
@@ -238,18 +190,72 @@ export class AllHBLDraftComponent {
         popupWin.document.close();
       }
     }, 50);
-
   }
 
   modalClose() {
-    this.activeModal.close()
+    this.activeModal.close();
   }
-
 
   hasDraftHouseBL(): boolean {
     return this.masterJobHouseJobs?.some(
-      house => !house?.Others?.[0]?.ReleaseType
+      (house) => !house?.Others?.[0]?.ReleaseType,
     );
   }
 
+  private async getPdfDependencies(): Promise<{ pdfMake: any }> {
+    if (this.pdfDepsPromise) {
+      return this.pdfDepsPromise;
+    }
+
+    this.pdfDepsPromise = (async () => {
+      const pdfMakeModule = await import('pdfmake/build/pdfmake');
+      const pdfFontsModule = await import('pdfmake/build/vfs_fonts');
+
+      const pdfMake: any = (pdfMakeModule as any).default || pdfMakeModule;
+      const pdfFonts: any = (pdfFontsModule as any).default || pdfFontsModule;
+      pdfMake.vfs = pdfFonts?.pdfMake?.vfs || pdfFonts;
+
+      return { pdfMake };
+    })();
+
+    return this.pdfDepsPromise;
+  }
+
+  private async resolveReportLogo(): Promise<string | undefined> {
+    const logoFromStream = await firstValueFrom(
+      this.logoService.reportLogo$.pipe(take(1)),
+    );
+    const logoSource =
+      logoFromStream || localStorage.getItem('current_report_logo') || '';
+
+    if (!logoSource) return undefined;
+    if (logoSource.startsWith('data:image')) return logoSource;
+
+    return this.imageUrlToBase64(logoSource);
+  }
+
+  private imageUrlToBase64(url: string): Promise<string | undefined> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          resolve(undefined);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      };
+
+      img.onerror = () => resolve(undefined);
+      img.src = url;
+    });
+  }
 }
