@@ -362,31 +362,43 @@
           </aside>
 
           <aside class="col-md-4">
-            <div class="custom-form-group">
-              <input
-                type="text"
-                id="text-input"
-                placeholder=""
-                class="custom-input-field sm"
-                formControlName="contactNumber"
-                [onlyNumbers]="20"
-              />
-              <label for="text-input" class="input-label"
-                >Mobile No <span class="text-danger"></span
-              ></label>
+            <div class="d-flex gap-2 align-items-start">
+              <div
+                class="custom-form-group custom-form-group-select fixed-dial-code"
+                [class.filled]="!!userForm.get('contactNumberCode')?.value"
+              >
+                <app-dial-code-dropdown
+                  formControlName="contactNumberCode"
+                  [countries]="dropdownStore.countries()"
+                  placeholder=""
+                ></app-dial-code-dropdown>
+              </div>
+              <div class="custom-form-group flex-grow-1">
+                <input
+                  type="text"
+                  id="text-input"
+                  placeholder=""
+                  class="custom-input-field sm"
+                  formControlName="contactNumber"
+                  [onlyNumbers]="15"
+                />
+                <label for="text-input" class="input-label"
+                  >Mobile No <span class="text-danger"></span
+                ></label>
 
-              @if(userForm.get('contactNumber')?.touched &&
-              userForm.get('contactNumber')?.invalid){
-              <div class="error-message">
-                @if(userForm.get('contactNumber')?.hasError('required')){
-                <div>Required</div>
-                } @else if(userForm.get('contactNumber')?.hasError('onlyNumbers')){
-                <div>Only Digits are allowed</div>
-                } @else if(userForm.get('contactNumber')?.hasError('maxlength')){
-                <div>Max 20 Chars</div>
+                @if(userForm.get('contactNumber')?.touched &&
+                userForm.get('contactNumber')?.invalid){
+                <div class="error-message">
+                  @if(userForm.get('contactNumber')?.hasError('required')){
+                  <div>Required</div>
+                  } @else if(userForm.get('contactNumber')?.hasError('onlyNumbers')){
+                  <div>Only Digits are allowed</div>
+                  } @else if(userForm.get('contactNumber')?.hasError('maxlength')){
+                  <div>Max 15 Chars</div>
+                  }
+                </div>
                 }
               </div>
-              }
             </div>
           </aside>
 

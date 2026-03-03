@@ -33,6 +33,7 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from '../../settings/follow-up/follow-up/follow-up.component';
+import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/dial-code-dropdown.component';
 
 
 @Component({
@@ -55,7 +56,8 @@ import { FollowUpComponent } from '../../settings/follow-up/follow-up/follow-up.
     DecimalPrecisionDirective,
     EdocComponent,
     SearchableDropdown,
-    OnlyNumbersDirective 
+    OnlyNumbersDirective,
+    DialCodeDropdownComponent
     // NgxIntlTelInputModule
   ],
   templateUrl: './lead.component.html',
@@ -207,6 +209,7 @@ MenuMasterSid:any
           this.leadForm.patchValue({
             CountryMasterSid: currentCompanyInfo?.CountryMasterSid
           });
+          this.updatePhoneCodeByCountry(currentCompanyInfo?.CountryMasterSid, true);
           this.filterStateByCountryId({ CountryMasterSid: currentCompanyInfo?.CountryMasterSid })
         }
       }
@@ -268,6 +271,7 @@ MenuMasterSid:any
       CityMasterSid: [, [Validators.required]],
       contactPerson: ['', [Validators.required]],
       email: ['', [Validators.required, EmailValidators.multipleEmails(), Validators.maxLength(100)]],
+      phoneCode: [DialCodeDropdownComponent.getDefaultDialCodeFromLoginCountry(this.userData)],
       phone: ['',[Validators.required,Validators.maxLength(15), this.phoneNumberValidator]],
       leadStatus: [{ value: LeadStatus.Discovery, disabled: true }],
       PreferredContactMode: ['Email'],
@@ -290,13 +294,14 @@ MenuMasterSid:any
         console.log(this.leadForm.get('email'));
       }
     )
+    
   }
 
   phoneNumberValidator(control: AbstractControl): ValidationErrors | null {
     if (!control.value) {
       return null;
     }
-    const phoneRegex = /^(\+[0-9]{1,3})?[0-9]{6,15}$/;
+    const phoneRegex = /^[0-9]{6,15}$/;
     const isValid = phoneRegex.test(control.value);
     return isValid ? null : { invalidPhoneNumber: true };
   }
@@ -334,6 +339,7 @@ languagePrefValidator(): ValidatorFn {
     console.log(formData)
     const payload = {
       ...formData,
+      phone: this.withDialCode(formData.phone, formData.phoneCode),
       CompanySize: parseInt(formData.CompanySize),
       AnnualRevenue: parseInt(formData.AnnualRevenue),
       ...(this.isEditMode ? { updatedBy: userEmail } : { createdBy: userEmail }),
@@ -482,6 +488,7 @@ else {
       // Patch form
       this.leadForm.patchValue({
         ...resp,
+        ...this.parsePhone(resp.phone),
         isQualify: resp.isQualify === 'Y',
         leadStatus: apiLeadStatus,
         status: this.findStatus(resp.status)
@@ -613,6 +620,7 @@ else {
   // Add these methods to handle dropdown changes
 onCountryChange(selectedCountry: any) {
   if (selectedCountry) {
+    this.updatePhoneCodeByCountry(selectedCountry);
     this.filterStateByCountryId(selectedCountry);
   } else {
     // Clear states and cities if no country selected
@@ -674,6 +682,7 @@ onStateChange(selectedState: any) {
       CityMasterSid: null,
       contactPerson: null,
       email: null,
+      phoneCode: DialCodeDropdownComponent.getDefaultDialCodeFromLoginCountry(this.userData),
       phone: null,
       PreferredContactMode: 'Email',
       LanguagePreferrence: null,
@@ -698,6 +707,36 @@ onStateChange(selectedState: any) {
 
     // Clear selected data
     this.leadData = null;
+  }
+
+  private parsePhone(rawValue: any): { phoneCode: string; phone: string } {
+    const parsed = DialCodeDropdownComponent.splitPhoneNumber(rawValue);
+    return {
+      phoneCode: parsed.phoneCode || DialCodeDropdownComponent.getDefaultDialCodeFromLoginCountry(this.userData),
+      phone: parsed.phoneNumber
+    };
+  }
+
+  private withDialCode(phoneValue: any, dialCode?: string): string {
+    return DialCodeDropdownComponent.buildPhoneWithDialCode(phoneValue, dialCode);
+  }
+  private updatePhoneCodeByCountry(countryInput: any, force = false): void {
+    const phoneCodeControl = this.leadForm.get('phoneCode');
+    const phoneValue = this.leadForm.get('phone')?.value;
+    if (!phoneCodeControl) return;
+    if (!force && phoneValue && String(phoneValue).trim()) return;
+
+    const countryId =
+      typeof countryInput === 'object' ? countryInput?.CountryMasterSid : countryInput;
+    const country =
+      this.countryList?.find((c: any) => c?.CountryMasterSid == countryId) ||
+      this.dropdownStore.countries()?.find((c: any) => c?.CountryMasterSid == countryId);
+
+    const dialCode =
+      DialCodeDropdownComponent.getDialCodeByCountry(country) ||
+      DialCodeDropdownComponent.getDefaultDialCodeFromLoginCountry(this.userData);
+
+    phoneCodeControl.setValue(dialCode);
   }
   goBack() {
     this.router.navigate(['crm/lead/list'])

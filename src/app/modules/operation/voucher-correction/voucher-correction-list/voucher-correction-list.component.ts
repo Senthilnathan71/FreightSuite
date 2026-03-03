@@ -244,14 +244,6 @@ export class VoucherCorrectionListComponent extends BaseListComponent implements
           dataType: 'string',
         },
         {
-          key: 'Amount',
-          label: 'Amount',
-          sortable: true,
-          filterable: true,
-          visible: true,
-          dataType: 'number',
-        },
-        {
           key: 'CashOrBank',
           label: 'Cash Or Bank',
           sortable: true,

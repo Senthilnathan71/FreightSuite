@@ -252,6 +252,11 @@ export class VoucherCorrectionEntryComponent implements OnInit {
       this.currentBranch = null;
     }
     this.initForm();
+    this.updateVendorInvoiceValidators();
+    this.updateReceiptValidators();
+    this.voucherForm.get('CashOrBank')?.valueChanges.subscribe(() => {
+  this.updateReceiptBankValidators();
+});
     this.loadPaymentModes();
     this.loadLookups();
     this.loadDetailLookups();
@@ -424,6 +429,9 @@ export class VoucherCorrectionEntryComponent implements OnInit {
 
           this.voucherData = resp.data;
           this.selectedDocumentType = resp.data?.voucherTypeMaster?.DocumentTypeCode || '';
+          this.updateVendorInvoiceValidators();
+          this.updateReceiptValidators();
+          this.updateReceiptBankValidators();
           this.voucherForm.markAsUntouched();
           this.patchValues(this.voucherData);
         } else {
@@ -547,6 +555,7 @@ export class VoucherCorrectionEntryComponent implements OnInit {
       }
 
     });
+    this.updateReceiptBankValidators();
     this.spinner.hide();
   }
 
@@ -599,7 +608,8 @@ export class VoucherCorrectionEntryComponent implements OnInit {
       if (voucherDate < fyStart || voucherDate > fyEnd) {
         this.appSettingService.showWarning(
           `Voucher date must be within the financial year (${fy.YearName})`
-        )
+        );
+        return;
       }
     }
 
@@ -625,6 +635,7 @@ export class VoucherCorrectionEntryComponent implements OnInit {
       this.voucherForm.markAllAsTouched();
       this.voucherForm.updateValueAndValidity();
       this.appSettingService.showError('Please fill all the required fields.');
+      return;
     }
     const YearMasterSid = Number(localStorage.getItem('current-year-id'));
 
@@ -814,7 +825,6 @@ export class VoucherCorrectionEntryComponent implements OnInit {
       if (!isLockedRow) {
         ledgerCtrl.enable();
       }
-      ledgerCtrl.setValidators([Validators.required]);
       this.accountService
         .getLedgerByCOAMasterSid({
           COAMasterSid: coa.COAMappedId || coa.COAMasterSid,
@@ -866,4 +876,52 @@ export class VoucherCorrectionEntryComponent implements OnInit {
     const bankCoaSid = this.f['BankCOA']?.getRawValue();
     return bankCoaSid && row.get('COAMasterSid')?.getRawValue() === bankCoaSid;
   }
+
+  private updateVendorInvoiceValidators(): void {
+  const docNo = this.voucherForm.get('DocumentNumber');
+  const docDate = this.voucherForm.get('DocumentDate');
+
+  if (this.isVendorInvoice || this.isVendorCreditNote) {
+    docNo?.setValidators([Validators.required]);
+    docDate?.setValidators([Validators.required]);
+  } else {
+    docNo?.clearValidators();
+    docDate?.clearValidators();
+  }
+
+  docNo?.updateValueAndValidity();
+  docDate?.updateValueAndValidity();
+}
+
+private updateReceiptValidators(): void {
+  const narration = this.voucherForm.get('Narration');
+
+  if (this.isReceipt) {
+    narration?.setValidators([Validators.required]);
+  } else {
+    narration?.clearValidators();
+  }
+
+  narration?.updateValueAndValidity();
+}
+
+get isBankReceipt(): boolean {
+  return (this.isReceipt || this.isPayment) && this.voucherForm.get('CashOrBank')?.value === 'B';
+}
+
+private updateReceiptBankValidators(): void {
+  const instNo = this.voucherForm.get('InstrumentNumber');
+  const instMode = this.voucherForm.get('InstrumentMode');
+
+  if (this.isBankReceipt) {
+    instNo?.setValidators([Validators.required]);
+    instMode?.setValidators([Validators.required]);
+  } else {
+    instNo?.clearValidators();
+    instMode?.clearValidators();
+  }
+
+  instNo?.updateValueAndValidity();
+  instMode?.updateValueAndValidity();
+}
 }

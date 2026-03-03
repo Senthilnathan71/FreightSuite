@@ -139,7 +139,7 @@ export class CostEntryComponent implements OnInit, OnDestroy {
     this.selectedTab = tab;
   }
 
-  @Input() screenName: 'Booking' | 'Master Job' | 'House Job' | 'House Air Waybill' | 'Master Air Waybill' | 'Service Job';
+  @Input() screenName: 'Booking' | 'Master Job' | 'House Job' | 'House Air Waybill' | 'Master Air Waybill' | 'Service Job'| 'Agent Master Air Waybill';
   private _currencyList: any[] = [];
   private _customerList: any[] = [];
   private _agentList: any[] = [];
@@ -1832,7 +1832,7 @@ createRateFormGroup(data?: any): FormGroup {
    */
 
   
-  isCurrentScreen(screenName : 'Booking' | 'Master Job' | 'House Job' | 'House Air Waybill' | 'Master Air Waybill' | 'Service Job'){
+  isCurrentScreen(screenName : 'Booking' | 'Master Job' | 'House Job' | 'House Air Waybill' | 'Master Air Waybill' | 'Service Job'| 'Agent Master Air Waybill'){
     return this.screenName === screenName;
   }
 
@@ -1850,7 +1850,8 @@ createRateFormGroup(data?: any): FormGroup {
     
     const isHouseFieldsRequired =
       this.isCurrentScreen('House Job') || 
-      this.isCurrentScreen('House Air Waybill');
+      this.isCurrentScreen('House Air Waybill') ||
+      this.isCurrentScreen('Agent Master Air Waybill');
 
     const isMasterFieldsRequired =
       this.isCurrentScreen('Master Job') ||
@@ -1945,11 +1946,13 @@ createRateFormGroup(data?: any): FormGroup {
     const isBookingFieldsRequired = 
       this.isCurrentScreen('Booking') || 
       this.isCurrentScreen('House Job') || 
-      this.isCurrentScreen('House Air Waybill');
+      this.isCurrentScreen('House Air Waybill') ||
+      this.isCurrentScreen('Agent Master Air Waybill');
     
     const isHouseFieldsRequired =
       this.isCurrentScreen('House Job') || 
-      this.isCurrentScreen('House Air Waybill');
+      this.isCurrentScreen('House Air Waybill') ||
+      this.isCurrentScreen('Agent Master Air Waybill');
 
     const isMasterFieldsRequired =
       this.isCurrentScreen('Master Job') ||
@@ -2493,7 +2496,8 @@ createRateFormGroup(data?: any): FormGroup {
 
     const isHouseScreen =
       this.isCurrentScreen('House Job') ||
-      this.isCurrentScreen('House Air Waybill');
+      this.isCurrentScreen('House Air Waybill') ||
+      this.isCurrentScreen('Agent Master Air Waybill');
 
     const isMasterScreen =
       this.isCurrentScreen('Master Job') ||
@@ -3640,7 +3644,7 @@ isFromQuotation(index: number): boolean {
 
     // Screen-specific conditional validators (reuse your logic)
     const isBookingFieldsRequired = this.isCurrentScreen('Booking');
-    const isHouseFieldsRequired = this.isCurrentScreen('House Job') || this.isCurrentScreen('House Air Waybill');
+    const isHouseFieldsRequired = this.isCurrentScreen('House Job') || this.isCurrentScreen('House Air Waybill') || this.isCurrentScreen('Agent Master Air Waybill');
     const isMasterFieldsRequired = this.isCurrentScreen('Master Job') || this.isCurrentScreen('Master Air Waybill');
 
     return this.fb.group({

@@ -34,6 +34,7 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { LogoService } from 'src/app/core/services/logo.service';
+import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/dial-code-dropdown.component';
 
 @Component({
 	selector: 'app-company-entry',
@@ -56,7 +57,8 @@ import { LogoService } from 'src/app/core/services/logo.service';
 		ConfigComponent,
 		NgbAccordionModule,
 		NgbDropdownModule,
-		SearchableDropdown
+		SearchableDropdown,
+		DialCodeDropdownComponent
 	],
 	templateUrl: './company-entry.component.html',
 	styleUrl: './company-entry.component.scss'
@@ -374,7 +376,8 @@ clearReportLogo() {
 			addressLine1: ['', [Validators.required]],
 			webSite: ['', [this.customWebsiteValidator(), Validators.maxLength(100)]],
 			email: ['', [EmailValidators.multipleEmails(), Validators.maxLength(100)]],
-			phoneNumber: [],
+			phoneCode: [DialCodeDropdownComponent.getDefaultDialCodeFromLoginCountry(this.userData)],
+			phoneNumber: ['', [Validators.maxLength(15)]],
 			Pan: ['', this.panValidator],
 			isHo: [false],
 			status: ['Active'],
@@ -389,6 +392,7 @@ clearReportLogo() {
 			const country = this.dropdownStore.countries()?.find(c => c.CountryMasterSid === countryId);
 			this.handlePanControl(country);
 			this.updateTaxIdLabelAndValidation(countryId);
+			this.updateCompanyDialCodeByCountry(countryId);
 		});
 		  this.companyForm.get('Pan')?.valueChanges.subscribe((panValue) => {
     this.isPanAvailable = !!panValue;
@@ -475,6 +479,7 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 			branchStateMasterSid: [null, [Validators.required]],
 			branchCountryMasterSid: [null, [Validators.required]],
 			branchWebSite: ['', [Validators.maxLength(100), this.customWebsiteValidator()]],
+			branchPhoneCode: [this.companyForm.get('phoneCode')?.value || this.getFormDialCode()],
 			branchPhoneNumber: ['', [Validators.maxLength(15)]],
 			branchEmail: ['', [Validators.maxLength(100), EmailValidators.multipleEmails()]],
 			branchTimeZone: ['', [Validators.maxLength(6)]],
@@ -521,6 +526,7 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 	}
 
 	createBranchFormGroup(branchData?: any): FormGroup {
+		const parsedBranchPhone = this.parsePhone(branchData?.branchPhoneNumber || '');
 		const group = this.fb.group({
 			BranchMasterSid: [branchData?.BranchMasterSid || null],
 			CompanyMasterSid : [branchData?.CompanyMasterSid || null],
@@ -533,7 +539,8 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 			StateMasterSid: [branchData?.branchStateMasterSid || null, [Validators.required]],
 			CountryMasterSid: [branchData?.branchCountryMasterSid || null, [Validators.required]],
 			webSite: [branchData?.branchWebSite || '', [Validators.maxLength(100), this.customWebsiteValidator()]],
-			phoneNumber: [branchData?.branchPhoneNumber || '', [Validators.maxLength(15)]],
+			phoneCode: [branchData?.branchPhoneCode || parsedBranchPhone.phoneCode || this.getFormDialCode()],
+			phoneNumber: [parsedBranchPhone.phoneNumber, [Validators.maxLength(15)]],
 			email: [branchData?.branchEmail || '', [Validators.maxLength(100), this.customEmailValidator(), Validators.required]],
 			timeZone: [branchData?.branchTimeZone || '', [Validators.maxLength(6), Validators.required]],
 			remarks: [branchData?.branchRemarks || '', [Validators.maxLength(500)]],
@@ -588,6 +595,7 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
     (resp) => {
       if (resp) {
         this.companyData = resp;
+		const parsedCompanyPhone = this.parsePhone(resp.phoneNumber || '');
 		if (resp.CountryMasterSid) {
           this.updateTaxIdLabelAndValidation(resp.CountryMasterSid);
         }
@@ -598,6 +606,8 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 						...resp,
 						isHo: resp.isHo === 'Y' ? true : false,
 						status: resp.status === 'A' ? 'Active' : 'Suspended',
+						phoneCode: resp.phoneCode || parsedCompanyPhone.phoneCode || this.getFormDialCode(),
+						phoneNumber: parsedCompanyPhone.phoneNumber,
 						config: resp.config || {}
 					});
 
@@ -625,6 +635,7 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 					// Process branches
 					const branchData: any[] = resp.branchMaster || [];
 					branchData.forEach((branch) => {
+						const parsedBranchPhone = this.parsePhone(branch?.phoneNumber || '');
 						// Create branch form group
 						const branchGroup = this.fb.group({
 							BranchMasterSid: branch?.BranchMasterSid,
@@ -638,7 +649,8 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 							StateMasterSid: branch?.StateMasterSid,
 							CountryMasterSid: branch?.CountryMasterSid,
 							webSite: branch?.webSite,
-							phoneNumber: branch?.phoneNumber,
+							phoneCode: branch?.phoneCode || parsedBranchPhone.phoneCode || this.getFormDialCode(),
+							phoneNumber: parsedBranchPhone.phoneNumber,
 							email: branch?.email,
 							timeZone: branch?.timeZone,
 							remarks: branch?.remarks,
@@ -746,6 +758,7 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 				branchStateMasterSid: this.branchData?.StateMasterSid,
 				branchCountryMasterSid: this.branchData?.CountryMasterSid,
 				branchWebSite: this.branchData?.webSite,
+				branchPhoneCode: this.branchData?.phoneCode || this.getFormDialCode(),
 				branchPhoneNumber: this.branchData?.phoneNumber,
 				branchEmail: this.branchData?.email,
 				branchTimeZone: this.branchData?.timeZone,
@@ -836,7 +849,8 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 			addressLine2: formValue.branchAddressLine2,
 			postalCode: formValue.branchPostalCode,
 			webSite: formValue.branchWebSite,
-			phoneNumber: formValue.branchPhoneNumber,
+			phoneCode: formValue.branchPhoneCode,
+			phoneNumber: this.withDialCode(formValue.branchPhoneNumber, formValue.branchPhoneCode),
 			email: formValue.branchEmail,
 			timeZone: formValue.branchTimeZone,
 			remarks: formValue.branchRemarks,
@@ -1038,7 +1052,8 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 				addressLine2: branchValue.addressLine2,
 				postalCode: branchValue.postalCode,
 				webSite: branchValue.webSite,
-				phoneNumber: branchValue.phoneNumber,
+				phoneCode: branchValue.phoneCode,
+				phoneNumber: this.withDialCode(branchValue.phoneNumber, branchValue.phoneCode),
 				email: branchValue.email,
 				timeZone: branchValue.timeZone,
 				remarks: branchValue.remarks,
@@ -1067,6 +1082,7 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 			...formValue,
 			CountryMasterSid: parseInt(formValue.CountryMasterSid),
 			CurrencyMasterSid: parseInt(formValue.CurrencyMasterSid),
+			phoneNumber: this.withDialCode(formValue.phoneNumber, formValue.phoneCode),
 			isHo: formValue.isHo ? 'Y' : 'N',
 			status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
 			branches: branchesPayload,
@@ -1458,6 +1474,7 @@ openAuditLogs(modal: TemplateRef<any>) {
     addressLine1: '',
     webSite: '',
     email: '',
+    phoneCode: DialCodeDropdownComponent.getDefaultDialCodeFromLoginCountry(this.userData),
     phoneNumber: '',
     Pan: '',
     isHo: false,
@@ -1633,6 +1650,38 @@ openFollowup() {
 
 			return websitePattern.test(website) ? null : { websiteInvalid: true };
 		};
+	}
+
+	private getFormDialCode(): string {
+		return DialCodeDropdownComponent.getCurrentCountryDialCode(
+			this.companyForm,
+			this.countryResults,
+			this.userData
+		);
+	}
+
+	private parsePhone(rawValue: any): { phoneCode: string; phoneNumber: string } {
+		return DialCodeDropdownComponent.splitPhoneNumber(rawValue);
+	}
+
+	private withDialCode(phoneValue: any, dialCode?: string): string {
+		return DialCodeDropdownComponent.buildPhoneWithDialCode(phoneValue, dialCode || this.getFormDialCode());
+	}
+
+	private updateCompanyDialCodeByCountry(countryId: number): void {
+		const phoneCodeControl = this.companyForm.get('phoneCode');
+		const phoneNumber = this.companyForm.get('phoneNumber')?.value;
+		if (!phoneCodeControl) return;
+
+		// Keep existing dial code when a phone number is already present (e.g. edit mode data).
+		if (phoneNumber && String(phoneNumber).trim()) return;
+
+		const country = this.dropdownStore.countries()?.find((c: any) => c?.CountryMasterSid == countryId);
+		const dialCode =
+			DialCodeDropdownComponent.getDialCodeByCountry(country) ||
+			DialCodeDropdownComponent.getDefaultDialCodeFromLoginCountry(this.userData);
+
+		phoneCodeControl.setValue(dialCode);
 	}
 
 	validateTimezoneKey(event: KeyboardEvent) {

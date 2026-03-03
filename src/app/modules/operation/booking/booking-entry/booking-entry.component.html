@@ -244,7 +244,7 @@
   <!-- Modern Navigation Pills -->
   <div class="nav-pills-container">
     <div class="nav-pills">
-      <div class="nav-pill" *ngFor="let tab of tabs" [class.active]="selectedTab === tab.name"
+      <div class="nav-pill" *ngFor="let tab of visibleTabs" [class.active]="selectedTab === tab.name"
         (click)="selectTab(tab.name)">
         <div class="pill-icon">
           <i [class]="tab.icon"></i>

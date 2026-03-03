@@ -112,6 +112,7 @@
       </div>
       <div class="action-group primary">
         <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                appPreventMultiClick
                 (click)="onSubmit()"
                 [disabled]="isSaving || isLoading">
           <i class="fas fa-save  me-1"></i>
@@ -899,7 +900,7 @@
                             [displayFields]="portLookupConfig.displayFields"
                             [displayLabels]="portLookupConfig.displayLabels"
                             [labelFields]="portLookupConfig.labelFields" bindLabel="PortName" bindValue="PortCode"
-                            (itemSelected)="handlePOLChange($event) ; onVesselChange($event)">
+                            (itemSelected)="handlePOLChange($event)">
                           </dofi-searchable-dropdown>
                           <label for="text-input" class="input-label">POL <span class="text-danger">*</span></label>
                           @if(houseJobForm.get('POL')?.touched && houseJobForm.get('POL')?.invalid){
@@ -923,7 +924,7 @@
                             [displayFields]="portLookupConfig.displayFields"
                             [displayLabels]="portLookupConfig.displayLabels"
                             [labelFields]="portLookupConfig.labelFields" bindLabel="PortName" bindValue="PortCode"
-                            (itemSelected)="handlePODChange($event) ; onVesselChange($event)">
+                            (itemSelected)="handlePODChange($event)">
                           </dofi-searchable-dropdown>
                           <label for="text-input" class="input-label">POD <span class="text-danger">*</span></label>
                           @if(houseJobForm.get('POD')?.touched && houseJobForm.get('POD')?.invalid){
@@ -1057,7 +1058,7 @@
                           <!-- Dropdown Mode (Readonly) -->
                           <div class="input-group">
                             <input class="form-control" placeholder="" name="dp" formControlName="ETD" container="body"
-                              [minDate]="b['ETA']?.value" ngbDatepicker #d5="ngbDatepicker"
+                              [maxDate]="toNgbDateStruct(b['ETA']?.value)" ngbDatepicker #d5="ngbDatepicker"
                               (keydown.arrowDown)="d5.open()" (click)="d5.toggle()" readonly />
                             <button class="btn bi bi-calendar3 px-0" (click)="d5.toggle()" type="button">
                               <i-feather name="calendar" class="feather-sm"></i-feather>
@@ -1331,7 +1332,7 @@
         [dataItems]="bookingRateArr" [resetTrigger]="resetTriggerRate" [formData]="currentFormValue"
         (dataEmitter)="handleRateChange($event)"></app-cost-entry> -->
           <app-cost-entry #costEntryComponent
-            [screenName]="selectedDepartmentType === 'AIR' ? 'House Air Waybill' : 'House Job'"
+            [screenName]="'Agent Master Air Waybill'"
             [currencyList]="currencyList" [customerList]="customerList" [agentList]="agentList"
             [dataItems]="bookingRateArr" [resetTrigger]="resetTriggerRate" [formData]="currentFormValue"
             (dataEmitter)="handleRateChange($event)" (reloadParent)="loadHouseById($event)"></app-cost-entry>
@@ -5906,3 +5907,4 @@
       </div>
     </div>
     <div class="modal-backdrop fade" [class.show]="showCustomsValidationModal" *ngIf="showCustomsValidationModal"></div>
+
