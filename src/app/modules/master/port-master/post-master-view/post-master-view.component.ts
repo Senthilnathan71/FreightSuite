@@ -29,6 +29,7 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { CommonService } from 'src/app/common/common.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { City } from 'src/app/modules/crm-mobile/Interfaces/city.interface';
 
 
 
@@ -60,7 +61,9 @@ export class PostMasterViewComponent {
   btnDisable: boolean = true;
   countryList: Country[] = [];
   stateList: State[] = [];
+  cityList: City[] = [];
   filteredStateList: State[];
+  filteredCityList: City[];
   regionList: any[] = [];
   portData: any;
   userData:any;
@@ -69,6 +72,7 @@ export class PostMasterViewComponent {
   MenuMasterSid: any;
   countryLookupConfig = DROPDOWN_CONFIGS.COUNTRY;
   stateLookupConfig = DROPDOWN_CONFIGS.STATE;
+  cityLookupConfig = DROPDOWN_CONFIGS.CITY;
   zoneLookupConfig = DROPDOWN_CONFIGS.ZONE;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
@@ -98,9 +102,11 @@ export class PostMasterViewComponent {
     effect(()=> {
           const countryData = this.dropdownStore.countries();
           const stateData = this.dropdownStore.states();
+          const cityData = this.dropdownStore.cities();
           const zoneData = this.dropdownStore.zone();
           this.countryList = countryData;
           this.filteredStateList = (stateData || []).map(s => ({...s,Country : s.countryMaster?.countryName}));
+          this.filteredCityList =(cityData ||[]).map(c=>({...c, State : c.stateMaster?.stateName}))
           this.regionList = zoneData;
         })
   }
@@ -163,6 +169,7 @@ hasAnyDropdownPermission(): boolean {
       PortCode: ['', [Validators.required]],
       CountryMasterSid: ['', [Validators.required]],
       StateMasterSid: ['',],
+      CityMasterSid: ['',],
       TimeZone: [''],
       ZoneMasterSid: [null],
       TerminalCode: ['', [Validators.maxLength(10)]],
@@ -182,7 +189,8 @@ hasAnyDropdownPermission(): boolean {
       (resp) => {
         console.log(resp, 'portdata')
         this.portData = resp;
-        this.filterStateByCountry(resp.CountryMasterSid);
+        this.filterStateByCountry(resp.CountryMasterSid, true);
+        this.filterCityByState(resp.StateMasterSid, true);
         this.portForm.patchValue({
           ...resp,
           PortCode : this.handlePortCodePatch(resp.PortCode,resp.PortType),
@@ -265,12 +273,17 @@ hasAnyDropdownPermission(): boolean {
     this.dropdownStore.loadZones().subscribe();
   }
 
-  filterStateByCountry(country) {
+  filterStateByCountry(country, isPatch: boolean = false) {
 
     this.filteredStateList = [];
-    if(this.portForm.get('StateMasterSid').value){
+    this.filteredCityList = [];
+    if(!isPatch && this.portForm.get('StateMasterSid').value){
       this.portForm.get('StateMasterSid').reset();
       this.portForm.get('StateMasterSid').markAsTouched();
+    }
+    if(!isPatch && this.portForm.get('CityMasterSid')?.value){
+      this.portForm.get('CityMasterSid')?.reset();
+      this.portForm.get('CityMasterSid')?.markAsTouched();
     }
     if(!country){
       return;
@@ -284,7 +297,9 @@ hasAnyDropdownPermission(): boolean {
     else {
       countryId = country;
     }
-    this.portForm.get('StateMasterSid')?.reset();
+    if(!isPatch){
+      this.portForm.get('StateMasterSid')?.reset();
+    }
     this.masterService.getStateByCountryId(countryId).subscribe(
       (resp:any)=>{
         if(resp.status){
@@ -294,6 +309,40 @@ hasAnyDropdownPermission(): boolean {
         }
       }
     )
+  }
+
+  filterCityByState(state: any, isPatch: boolean = false) {
+    this.filteredCityList = [];
+
+    if (!isPatch && this.portForm.get('CityMasterSid')?.value) {
+      this.portForm.get('CityMasterSid')?.reset();
+      this.portForm.get('CityMasterSid')?.markAsTouched();
+    }
+
+    let stateId: number;
+    if (state instanceof Object) {
+      stateId = state.StateMasterSid;
+    } else {
+      stateId = state;
+    }
+
+    if (!stateId) {
+      return;
+    }
+
+    this.masterService.getCityByStateId(stateId).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.filteredCityList = (resp.data || []).map(c => ({
+            ...c,
+            State: c.stateMaster?.stateName,
+            Country: c.countryMaster?.countryName
+          }));
+        } else {
+          console.error('Error Fetching City for State');
+        }
+      }
+    );
   }
 
 
@@ -314,6 +363,7 @@ hasAnyDropdownPermission(): boolean {
     PortCode: '',
     CountryMasterSid: '',
     StateMasterSid: '',
+    CityMasterSid: '',
     TimeZone: '',
     ZoneMasterSid: null,
     TerminalCode: '',

@@ -598,7 +598,6 @@ get visibleTabs() {
       }, 1000);
       
     } else if (this.dataFromQuotation?.quotation) {
-        this.patchBookingFromQuotation(this.dataFromQuotation);
         this.patchValues(this.dataFromQuotation);
         this.minDate = this.today;
       } else {
@@ -1776,6 +1775,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
   // Patch booking from quotation
   patchBookingFromQuotation(data: any) {
+    const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === data.DepartmentMasterSid);
+    this.onDeptChange(selectedDepartment);
+
     // Find customer from loaded customer list
     const customer = this.customerList.find(c => c.CustomerMasterSid === data.CustomerMasterSid);
     if (customer) {

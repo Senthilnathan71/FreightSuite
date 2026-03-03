@@ -150,7 +150,7 @@ export class AgentMasterAirWaybillListComponent extends BaseListComponent implem
   this.allItems = response.data.items.map((item: any) => ({
     ...item,
     MasterJobSid: item.MasterJobSid,
-    MasterJobNumber: item.MBLNo ?? item.masterJob?.MBLNo ?? '', // Fix here: use MBLNo instead of MasterJobNumber
+    MasterJobNumber: item.MasterJobNumber ?? item.masterJob?.MasterJobNumber ?? '', // Fix here: use MBLNo instead of MasterJobNumber
     departmentName: item?.departmentMaster?.departmentName ?? '',
     MBLDate: item?.MBLDate ? this.datePipe.transform(item.MBLDate) : '', // Add MBLDate if needed
     ETD: item?.ETD ? this.datePipe.transform(item.ETD) : '',
@@ -208,7 +208,6 @@ export class AgentMasterAirWaybillListComponent extends BaseListComponent implem
         { key: 'MasterJobNumber', label: 'Agent Master Job No', sortable: true, filterable: true, visible: true },
         { key: 'MBLNo', label: 'MAWB No', sortable: true, filterable: true, visible: true },
         { key: 'MBLDate', label: 'MAWB Date', sortable: true, filterable: true, visible: true },
-        { key: 'BookingNo', label: 'Booking No', sortable: true, filterable: true, visible: true, template: 'link',cellClass: 'booking-no-column' },
         { key: 'departmentName', label: 'Department', sortable: true, filterable: true, visible: true },
         { key: 'POL', label: 'POL', sortable: true, filterable: true, visible: true },
         { key: 'POD', label: 'POD', sortable: true, filterable: true, visible: true },
@@ -239,23 +238,7 @@ export class AgentMasterAirWaybillListComponent extends BaseListComponent implem
   // =========================
 
   onTableActionClick(event: TableEventData): void {
-    if(event.column?.template === "link"){
-      if (event.column.key === 'MasterJobNumber') {
-        this.router.navigate([
-          'operation/master-job/entry',
-          event.row.MasterJobSid
-        ]);
-        return;
-      }
-      if (event.column.key === 'BookingNo') {
-        this.router.navigate([
-          'operation/booking/entry',
-          event.row.BookingHeaderSid
-        ]);
-        return;
-      }
-    }
-     else if (event.action === 'view') {
+    if (event.action === 'view') {
       this.router.navigate(['operation/agent-master-air-waybill/entry', event.row.HouseJobSid]);
     }
   }

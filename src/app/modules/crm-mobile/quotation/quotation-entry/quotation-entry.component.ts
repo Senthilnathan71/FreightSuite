@@ -4154,7 +4154,7 @@ private async createBookingFromQuotation() {
       SalesmanSid: QuoteData.SalesmanSid || null,
       FreightTerms: approvedRoute.FreightPPCC || "Prepaid",
       QuotationHeaderSid: QuoteData.QuoteHeaderSid || null,
-      QuoteRoteSid: approvedRoute.QuoteRouteSid || null,
+      QuoteRouteSid: approvedRoute.QuoteRouteSid || null,
       CarrierName: approvedCarrier?.CarrierName || "",
       status: 'A',
       JobType: jobType,

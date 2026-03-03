@@ -3056,13 +3056,18 @@ export class VendorInvoiceEntryComponent implements OnInit {
     const isHouseJobInvoice = data?.HouseJobSid && data?.MasterJobSid;
     const isMasterJobInvoice = data?.MasterJobSid && !data?.HouseJobSid;
     const isBookingInvoice = !!data?.BookingHeaderSid;
+    const isAgentHouseJob = String(data?.houseJob?.JobType || '') === 'Agent';
 
     if (isHouseJobInvoice) {
       this.hyperLinkInfo = {
         id: data?.HouseJobSid,
-        number: data?.houseJob?.HBLNo,
-        path: `/operation/house-job/entry/${data.HouseJobSid}`,
-        label: airDept ? 'HAWBL No.' : 'HBL No.'
+        number: isAgentHouseJob
+          ? (data?.masterJob?.MasterJobNumber || data?.MasterNumber || '')
+          : data?.houseJob?.HBLNo,
+        path: isAgentHouseJob
+          ? `/operation/agent-master-air-waybill/entry/${data.HouseJobSid}`
+          : `/operation/house-job/entry/${data.HouseJobSid}`,
+        label: isAgentHouseJob ? 'AMWBL No.' : (airDept ? 'HAWBL No.' : 'HBL No.')
       };
     } else if (isMasterJobInvoice) {
       this.hyperLinkInfo = {
