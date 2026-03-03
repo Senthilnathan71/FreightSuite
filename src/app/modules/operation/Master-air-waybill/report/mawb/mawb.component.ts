@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, formatDate } from '@angular/common';
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
@@ -48,6 +48,15 @@ export class MAWBComponent implements OnChanges {
   bankDetails: any;
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
+  dueCarrierCharges: any[] = [];
+  dueAgentCharges: any[] = [];
+  otherDueCarrierCharges: any[] = []; 
+  otherDueAgentCharges: any[] = [];
+  freightPrepaidCharges: any[] = [];
+  freightCollectCharges: any[] = [];
+  otherPrepaidCharges: any[] = [];  
+  otherCollectCharges: any[] = [];
+  otherCharges1: any[] = [];
   private pdfDepsPromise?: Promise<{ pdfMake: any }>;
   private mawbImageBase64: string | null = null;
 
@@ -161,23 +170,49 @@ export class MAWBComponent implements OnChanges {
     const filteredCharges = this.costRevenueCharges.filter(cost => !!cost.ChargeMasterSid);
     console.log("Filtered Charges", filteredCharges);
 
-    this.freightCharges = filteredCharges.filter(cr => {
-      const chargeGroupName = cr.chargeMaster?.chargeGroup?.GroupName || '';
-      return chargeGroupName === "Freight"
-    })
+    this.freightCharges = filteredCharges.filter(cr => this.isWeightCharge(cr));
 
     console.log("only freight charges", this.freightCharges);
-
-    const freightChargeIds = this.freightCharges.map(c => c.ChargeMasterSid);
-    console.log("Freight Charge Ids", freightChargeIds)
-
-    this.otherCharges = filteredCharges.filter(c => {
-      return !freightChargeIds.includes(c.ChargeMasterSid);
-    })
+     this.otherCharges = filteredCharges.filter(c => !this.isWeightCharge(c));
+    this.otherCharges1 = filteredCharges.filter(c => {
+      const chargeGroupName = String(c.chargeMaster?.chargeGroup?.GroupName || '').trim().toLowerCase();
+      return chargeGroupName === 'other';
+    });
 
     console.log("Other Charges", this.otherCharges)
+    this.dueCarrierCharges = filteredCharges.filter(c => this.isCarrierCharge(c));
+    this.dueAgentCharges = filteredCharges.filter(c => !this.isCarrierCharge(c));
+    this.otherDueCarrierCharges = this.otherCharges.filter(c => this.isCarrierCharge(c));
+    this.otherDueAgentCharges = this.otherCharges.filter(c => !this.isCarrierCharge(c));
+
+    this.freightPrepaidCharges = this.freightCharges.filter(c => this.isPrepaidCharge(c));
+    this.freightCollectCharges = this.freightCharges.filter(c => this.isCollectCharge(c));
+
+    this.otherPrepaidCharges = this.otherCharges.filter(c => this.isPrepaidCharge(c));
+    this.otherCollectCharges = this.otherCharges.filter(c => this.isCollectCharge(c));
   }
 
+  private isCarrierCharge(charge: any): boolean {
+    const groupName = String(charge?.chargeMaster?.chargeGroup?.GroupName || '').toLowerCase();
+    const chargeName = String(charge?.chargeMaster?.ChargeName || charge?.chargeMaster?.chargeName || '').toLowerCase();
+    const chargeCode = String(charge?.chargeMaster?.ChargeCode || charge?.chargeMaster?.chargeCode || '').toLowerCase();
+ 
+    return groupName.includes('freight') ||
+      groupName.includes('airline') ||
+      chargeName.includes('surcharge') ||
+      chargeName.includes('freight') ||
+      chargeCode.includes('freight');
+  }
+
+  private isWeightCharge(charge: any): boolean {
+    const groupName = String(charge?.chargeMaster?.chargeGroup?.GroupName || '').toLowerCase();
+    const chargeName = String(charge?.chargeMaster?.ChargeName || charge?.chargeMaster?.chargeName || charge?.ChargeDescription || '').toLowerCase();
+    const chargeCode = String(charge?.chargeMaster?.ChargeCode || charge?.chargeMaster?.chargeCode || '').toLowerCase();
+ 
+    // Weight charge bucket should contain freight line items only.
+    return groupName.includes('freight') &&
+      (chargeName.includes('freight') || chargeCode.includes('frt'));
+  }
   getBankDetails() {
     console.log('DEBUG - getBankDetails');
 
@@ -248,6 +283,137 @@ export class MAWBComponent implements OnChanges {
       return sum + (Number(c.RevenueExchangeRate) || 0);
     }, 0);
   }
+
+  prepaidTotal(): number {
+    return (this.freightCharges || [])
+      .filter(c => this.isPrepaidCharge(c))
+      .reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+
+  collectTotal(): number {
+    return (this.freightCharges || [])
+      .filter(c => this.isCollectCharge(c))
+      .reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+
+  otherChargesTotal(): number {
+    return (this.otherCharges || []).reduce((sum, c) => sum + (Number(c?.RevenueAmount) || 0), 0);
+  }
+
+  otherChargesPrepaidTotal(): number {
+    return (this.otherCharges || [])
+      .filter(c => c?.RevenuePrepaidCollect === 'Prepaid')
+      .reduce((sum, c) => sum + (Number(c?.RevenueAmount) || 0), 0);
+  }
+
+  otherChargesCollectTotal(): number {
+    return (this.otherCharges || [])
+      .filter(c => c?.RevenuePrepaidCollect === 'Collect')
+      .reduce((sum, c) => sum + (Number(c?.RevenueAmount) || 0), 0);
+  }
+
+  totalPrepaidCharges(): number {
+    return this.prepaidTotal() + this.otherChargesPrepaidTotal();
+  }
+
+  totalCollectCharges(): number {
+    return this.collectTotal() + this.otherChargesCollectTotal();
+  }
+
+    private getPrepaidCollect(charge: any): string {
+    const rowTerm = String(charge?.RevenuePrepaidCollect ?? charge?.CostPrepaidCollect ?? '').trim().toLowerCase();
+    if (rowTerm === 'prepaid' || rowTerm === 'pp') {
+      return 'prepaid';
+    }
+    if (rowTerm === 'collect' || rowTerm === 'cc') {
+      return 'collect';
+    }
+ 
+    // Fallback to master-level term when row-level PP/CC is missing.
+    const masterTerm = String(this.masterAirWayData?.FreightPPCC ?? '').trim().toLowerCase();
+    if (masterTerm === 'prepaid' || masterTerm === 'pp') {
+      return 'prepaid';
+    }
+    if (masterTerm === 'collect' || masterTerm === 'cc') {
+      return 'collect';
+    }
+ 
+    return '';
+  }
+ 
+  private isPrepaidCharge(charge: any): boolean {
+    return this.getPrepaidCollect(charge) === 'prepaid';
+  }
+ 
+  private isCollectCharge(charge: any): boolean {
+    return this.getPrepaidCollect(charge) === 'collect';
+  }
+
+    private getChargeValue(charge: any): number {
+    return Number(charge?.RevenueAmount ?? charge?.RevenueExchangeRate ?? 0) || 0;
+  }
+
+
+  // total others charges due at Agent
+
+    getOtherDueAgentPrepaidTotal(): number {
+    if (!this.otherDueAgentCharges?.length) return 0;
+    return this.otherDueAgentCharges
+      .filter(c => this.isPrepaidCharge(c))
+      .reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+
+    getOtherDueAgentCollectTotal(): number {
+    if (!this.otherDueAgentCharges?.length) return 0;
+    return this.otherDueAgentCharges
+      .filter(c => this.isCollectCharge(c))
+      .reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+
+    getOtherDueCarrierPrepaidTotal(): number {
+    if (!this.otherDueCarrierCharges?.length) return 0;
+    return this.otherDueCarrierCharges
+      .filter(c => this.isPrepaidCharge(c))
+      .reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+ 
+  getOtherDueCarrierCollectTotal(): number {
+    if (!this.otherDueCarrierCharges?.length) return 0;
+    return this.otherDueCarrierCharges
+      .filter(c => this.isCollectCharge(c))
+      .reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+
+   
+  getFreightPrepaidTotal(): number {
+    if (!this.freightPrepaidCharges?.length) return 0;
+    return this.freightPrepaidCharges.reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+ 
+  getFreightCollectTotal(): number {
+    if (!this.freightCollectCharges?.length) return 0;
+    return this.freightCollectCharges.reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+ 
+getOtherPrepaidTotal(): number {
+    if (!this.otherPrepaidCharges?.length) return 0;
+    return this.otherPrepaidCharges.reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+ 
+  getOtherCollectTotal(): number {
+    if (!this.otherCollectCharges?.length) return 0;
+    return this.otherCollectCharges.reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+ 
+ 
+   getTotalPrepaidAmount(): number {
+    return this.prepaidTotal() + this.getOtherDueAgentPrepaidTotal() + this.getOtherDueCarrierPrepaidTotal();
+  }
+ 
+  getTotalCollectAmount(): number {
+    return this.collectTotal() + this.getOtherDueAgentCollectTotal() + this.getOtherDueCarrierCollectTotal();
+  }
+ 
 
   getGrandTotal(): number {
     const exchangeTotal = this.getTotalExchangeRate() || 0;
@@ -1012,11 +1178,11 @@ export class MAWBComponent implements OnChanges {
     const content: any[] = [...page1Content];
 
     const hasLegalPage = this.selectedReport === 'MAWB';
-    if (hasLegalPage) {
+   
       content.push({ text: '', pageBreak: 'after' });
       const legalContent = this.getLegalTextContent();
       content.push(...legalContent);
-    }
+    
 
     const pageWidthPt = 595.28;
     const pageHeightPt = 841.89;
@@ -1109,23 +1275,39 @@ export class MAWBComponent implements OnChanges {
     const agg = data?.aggregatedTotals;
     const voyage = data?.voyages?.[0];
     const freightTotals = this.getFreightTotals();
-    const isPrepaid = data?.FreightPPCC === 'Prepaid';
-    const isCollect = data?.FreightPPCC === 'Collect';
+    const freightPrepaidTotal = this.getFreightPrepaidTotal();
+    const freightCollectTotal = this.getFreightCollectTotal();
+    const otherPrepaidTotal = this.getOtherPrepaidTotal();
+    const otherCollectTotal = this.getOtherCollectTotal();
+    const totalPrepaidAmount = this.getTotalPrepaidAmount();
+    const totalCollectAmount = this.getTotalCollectAmount();
 
-    const fmtNum = (val: any, dec: number = 2): string => {
+      const fmtNum = (val: any, dec: number = 2): string => {
       const n = Number(val);
       if (isNaN(n) || val === null || val === undefined) return '';
-      return n.toFixed(dec);
+      return n.toLocaleString('en-US', {
+        minimumFractionDigits: dec,
+        maximumFractionDigits: dec
+      });
     };
+
 
     const fmtDate = (val: any): string => {
       if (!val) return '';
       return this.globalDateService.formatDate(val);
     };
 
-    const otherChargesText = this.otherCharges.map(c => {
-      return `${this.getChargeCode(c.ChargeMasterSid)} ${c.RevenueExchangeRate}`;
-    }).join('  ');
+    const fmtDateTime = (val: any): string => {
+  if (!val) return '';
+  return formatDate(val, 'dd-MMM-yyyy HH:mm', 'en-US');
+};
+
+
+
+
+      const otherChargesText = this.otherCharges1.map(c => {
+        return `${this.getChargeCode(c.ChargeMasterSid)} ${Number(c.RevenueAmount).toFixed(2)}`;
+      }).join('  ');
 
     const goodsDesc = [data?.CommodityDescription, data?.MarksandNumber]
       .filter(Boolean).join('\n');
@@ -1145,10 +1327,10 @@ export class MAWBComponent implements OnChanges {
 
     const fields = [
       // Header — MAWB series & numbers
-      field(12, 30, data?.POL || '', { fontSize: 14 }),
-      field(12, 13, data?.MBLNo?.toString().substring(0, 3) || '', { fontSize: 14 }),
-      field(12, 43, data?.MBLNo?.toString().substring(3) || '', { fontSize: 14 }),
-      field(12, 220, this.getFormattedMBLNo(), { fontSize: 14 }),
+      field(12, 30, data?.POL || '', { fontSize: 9 }),
+      field(12, 13, data?.MBLNo?.toString().substring(0, 3) || '', { fontSize: 8 }),
+      field(12, 43, data?.MBLNo?.toString().substring(3) || '', { fontSize: 8 }),
+      field(12, 220, this.getFormattedMBLNo(), { fontSize: 14}),
 
       // Shipper
       field(27, 12, hj?.ShipperName || ''),
@@ -1161,73 +1343,89 @@ export class MAWBComponent implements OnChanges {
       // Agent
       field(100, 12, this.getAgentName(data?.DestinationAgent)),
       field(105, 12, this.getAgentName(data?.DestinationAgentAddress)),
-      field(119, 0, this.currentUserCode || '', { width: 60, alignment: 'center' }),
+      field(119, 12, this.currentUserCode || ''),
 
       // Airport departure
-      field(131, 0, data?.POL || '', { width: 125, alignment: 'center' }),
+      field(131, -140, data?.POL || '', { width: 80, alignment: 'center' }),
 
       // Right column — account & reference
-      field(100, 145, data?.FreightPPCC || ''),
-      field(131, 133, others?.CustomerRefNo || '', { width: 40, alignment: 'center' }),
+      field(100, 148, `FREIGHT ${data?.FreightPPCC || ''}`),
+      field(131, 42, others?.CustomerRefNo || '', { width: 40, alignment: 'center' }),
 
       // Routing
-      field(144, 5, data?.POD || '', { width: 15, alignment: 'center' }),
-      field(144, 11, voyage?.CarrierName || '', { width: 60, alignment: 'center' }),
+      field(147, -256, data?.POD || '', { width: 15, alignment: 'center' }),
+      field(147, -190, voyage?.CarrierName || '', { width: 60, alignment: 'center' }),
 
       // Currency & charges
-      field(144, 141, this.getCurrencyCodeById(this.currentCurrency)?.toString() || '', { width: 15, alignment: 'center' }),
-      field(145, 156, isPrepaid ? 'PP' : (isCollect ? 'CC' : ''), { width: 15, alignment: 'center' }),
+      field(147, 20, this.getCurrencyCodeById(this.currentCurrency)?.toString() || '', { width: 15, alignment: 'center' }),
+      field(
+        147,
+        48,
+        totalPrepaidAmount > 0 && totalCollectAmount > 0
+          ? 'PP/CC'
+          : (totalPrepaidAmount > 0 ? 'PP' : (totalCollectAmount > 0 ? 'CC' : '')),
+        { width: 15, alignment: 'center', fontSize:7 }
+      ),
 
       // PP/CC checkboxes
-      field(147, 167, isPrepaid ? 'X' : '', { width: 10, alignment: 'center' }),
-      field(135, 185, isCollect ? 'X' : '', { width: 10, alignment: 'center' }),
-      field(147, 184, isPrepaid ? 'X' : '', { width: 10, alignment: 'center' }),
-      field(135, 200, isCollect ? 'X' : '', { width: 10, alignment: 'center' }),
+      field(147, 67, freightPrepaidTotal > 0 ? 'X' : '', { width: 10, alignment: 'center' }),
+      field(147, 82, freightCollectTotal > 0 ? 'X' : '', { width: 10, alignment: 'center' }),
+      field(147, 98, otherPrepaidTotal > 0 ? 'X' : '', { width: 10, alignment: 'center' }),
+      field(147, 113, otherCollectTotal > 0 ? 'X' : '', { width: 10, alignment: 'center' }),
 
       // Declared values
-      field(145, 203, others?.DeclaredValueOfCarriage?.toString() || '', { width: 30, alignment: 'center' }),
-      field(145, 242, others?.DeclaredValueOfCustoms?.toString() || '', { width: 30, alignment: 'center' }),
+      field(147, 160, others?.DeclaredValueOfCarriage?.toString() || '', { width: 30, alignment: 'center' }),
+      field(147, 240, others?.DeclaredValueOfCustoms?.toString() || '', { width: 30, alignment: 'center' }),
 
       // Flight row
-      field(159, 14, data?.FPD || '', { width: 40, alignment: 'center' }),
-      field(159, 63, voyage?.VesselName || '', { fontSize: 8, width: 40, alignment: 'center' }),
-      field(159, 105, fmtDate(voyage?.ETA), { fontSize: 8, width: 40, alignment: 'center' }),
-      field(159, 139, fmtNum(others?.ValueForInsurance), { width: 40, alignment: 'center' }),
+      field(159, -210, data?.FPD || '', { width: 40, alignment: 'center' }),
+      field(159, -110, voyage?.VesselName || '', { fontSize: 8, width: 40, alignment: 'center' }),
+      field(159, -30, fmtDate(voyage?.ETA), { fontSize: 8, width: 40, alignment: 'center' }),
+      field(159, 40, fmtNum(others?.ValueForInsurance), { width: 40, alignment: 'center' }),
 
       // Handling information
-      field(173, 9, others?.HandlingInformation || '', { width: 133 }),
-
+      field(173, 9, others?.HandlingInformation || '', { width: 50, fontSize: 8 }),
+      field(170, 150, 'Notify', { width: 50, fontSize: 8, bold: true }),
+      field(175, 150, hj?.Notify || '', { width: 50, fontSize: 8 }),
+      field(180, 150, hj?.NotifyAddress || '', { width: 50, fontSize: 8 }),
+   
       // Package details
-      field(206, 2, agg?.NoOfPkg?.toString() || '', { width: 20, alignment: 'center' }),
-      field(206, 25, fmtNum(agg?.GrossWeight, 3), { width: 25, alignment: 'center' }),
-      field(206, 84, fmtNum(agg?.ChargeableWeight, 3), { width: 30, alignment: 'center' }),
-      field(206, 119, fmtNum(freightTotals.totalExchangeRate), { width: 25, alignment: 'center' }),
-      field(206, 149, fmtNum(freightTotals.totalRevenueAmount), { width: 25, alignment: 'center' }),
-      field(206, 190, goodsDesc, { width: 90 }),
+      field(206, -250, agg?.NoOfPkg?.toString() || '', { width: 20, alignment: 'center' }),
+      field(206, -210, fmtNum(agg?.GrossWeight, 3), { width: 25, alignment: 'center' }),
+      field(206, -72, fmtNum(agg?.ChargeableWeight, 3), { width: 30, alignment: 'center' }),
+      field(206, -15, fmtNum(freightTotals.totalExchangeRate), { width: 25, alignment: 'center' }),
+      field(206, 50, fmtNum(freightTotals.totalRevenueAmount), { width: 25, alignment: 'center' }),
+      field(206, 185, goodsDesc, { width: 60 , fontSize: 8}),
 
       // Totals row
-      field(275, 3, agg?.NoOfPkg?.toString() || '', { width: 20, alignment: 'center' }),
-      field(275, 28, fmtNum(agg?.GrossWeight, 3), { width: 20, alignment: 'center' }),
-      field(275, 85, fmtNum(agg?.ChargeableWeight, 3), { width: 30, alignment: 'center' }),
-      field(275, 120, fmtNum(freightTotals.totalExchangeRate), { width: 25, alignment: 'center' }),
-      field(275, 149, fmtNum(freightTotals.totalRevenueAmount), { width: 25, alignment: 'center' }),
+      field(275,-250, agg?.NoOfPkg?.toString() || '', { width: 20, alignment: 'center' }),
+      field(275, -210, fmtNum(agg?.GrossWeight, 3), { width: 20, alignment: 'center' }),
+      // field(275,  -70, fmtNum(agg?.ChargeableWeight, 3), { width: 30, alignment: 'center' }),
+      // field(275, -15, fmtNum(freightTotals.totalExchangeRate), { width: 25, alignment: 'center' }),
+      field(275, 50, fmtNum(freightTotals.totalRevenueAmount), { width: 25, alignment: 'center' }),
 
       // Charges section
-      field(290, 5, fmtNum(this.freightCharges[0]?.RevenueAmount), { width: 35, alignment: 'center' }),
-      field(290, 78, fmtNum(this.freightCharges[0]?.CostAmount), { width: 35, alignment: 'center' }),
+      field(290, -230, fmtNum(this.prepaidTotal()), { width: 35, alignment: 'center' }),
+      field(290, -120, fmtNum(this.collectTotal()), { width: 35, alignment: 'center' }),
       field(288, 120, otherChargesText, { width: 140 }),
-      field(301, 5, fmtNum(others?.ValuationCharge), { width: 35, alignment: 'center' }),
+      field(301, -230, fmtNum(others?.ValuationCharge), { width: 35, alignment: 'center' }),
+      field(326, -230, fmtNum(this.getOtherDueAgentPrepaidTotal()), { width: 35, alignment: 'center' }),
+      field(326, -120, fmtNum(this.getOtherDueAgentCollectTotal()), { width: 35, alignment: 'center' }),  
+      field(338, -230, fmtNum(this.getOtherDueCarrierPrepaidTotal()), { width: 35, alignment: 'center' }),
+      field(338, -120, fmtNum(this.getOtherDueCarrierCollectTotal()), { width: 35, alignment: 'center' }),
 
       // Agent certification
-      field(345, 156, this.getAgentName(data?.DestinationAgent), { width: 80, alignment: 'center' }),
+      field(345, 120, this.getAgentName(data?.DestinationAgent), { width: 80, alignment: 'center' }),
 
       // Totals
-      field(363, 9, fmtNum(this.getGrandTotal()), { width: 35, alignment: 'center' }),
-      field(375, 12, fmtNum(this.getTotalExchangeRate()), { width: 35, alignment: 'center' }),
+      // field(363, 9, fmtNum(this.getGrandTotal()), { width: 35, alignment: 'center' }),
+      field(363, -230, fmtNum(this.getTotalPrepaidAmount()), { width: 35, alignment: 'center' }),
+      field(363, -120, fmtNum(this.getTotalCollectAmount()), { width: 35, alignment: 'center' }),
+      field(375, -230, fmtNum(this.getTotalExchangeRate()), { width: 35, alignment: 'center' }),
 
       // Execution info
-      field(370, 108, fmtDate(data?.MBLDate), { width: 40, alignment: 'center' }),
-      field(370, 162, this.currentCountryName?.toString() || '', { alignment: 'center' }),
+      field(370, -17, fmtDateTime(data?.MBLDate), { width: 40, alignment: 'center' }),
+      field(370, 84, this.currentCountryName?.toString() || '', { alignment: 'center' }),
       field(370, 200, this.getAgentName(data?.DestinationAgent), { width: 60, alignment: 'center' }),
 
       // Bottom MAWB number
@@ -1277,15 +1475,16 @@ export class MAWBComponent implements OnChanges {
     ];
 
     return [
-      { text: 'NOTICE CONCERNING CARRIERS LIMITATION OF LIABILITY', style: 'legalTitle', alignment: 'center', margin: [0, 10, 0, 10] },
-      { text: 'If the carriage involves an ultimate destination or stop in a country other than the country of departure, the Montreal Convention or the Warsaw Convention may be applicable to the liability of the Carrier in respect of loss of, damage or delay to cargo. Carrier\'s limitation of liability in accordance with those Conventions shall be as set forth in subparagraph 4 unless a higher value is declared.', margin: [0, 0, 0, 10] },
-      { text: 'CONDITIONS OF CONTRACT', style: 'legalTitle', alignment: 'center', margin: [0, 10, 0, 10] },
+      { text: 'NOTICE CONCERNING CARRIERS LIMITATION OF LIABILITY', style: 'legalTitle', alignment: 'center', margin: [20, 20, 20, 10] },
+      { text: 'If the carriage involves an ultimate destination or stop in a country other than the country of departure, the Montreal Convention or the Warsaw Convention may be applicable to the liability of the Carrier in respect of loss of, damage or delay to cargo. Carrier\'s limitation of liability in accordance with those Conventions shall be as set forth in subparagraph 4 unless a higher value is declared.', margin: [20, 0, 20, 10] },
+      { text: 'CONDITIONS OF CONTRACT', style: 'legalTitle', alignment: 'center', margin: [20, 10, 20, 10] },
       {
         columns: [
           { stack: leftColumn, width: '50%' },
           { stack: rightColumn, width: '50%' }
         ],
-        columnGap: 10
+        columnGap: 10,
+        margin: [20, 0, 20, 20]
       }
     ];
   }
@@ -1295,3 +1494,10 @@ export class MAWBComponent implements OnChanges {
 
 
 }
+
+
+
+
+
+
+
