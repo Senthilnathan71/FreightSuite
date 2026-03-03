@@ -1,10 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import { firstValueFrom } from 'rxjs';
+import { take } from 'rxjs/operators';
+import {
+  generateHblDocument,
+  transformHblApiData,
+} from 'src/app/common/pdf/generators/hbl-pdf.generator';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
@@ -16,14 +19,13 @@ import { OperationService } from 'src/app/modules/operation/operation.service';
   standalone: true,
   imports: [CommonModule, CustomDatePipe],
   templateUrl: './hbl.component.html',
-  styles: ``
+  styles: ``,
 })
 export class HblComponent {
-
-  currentCompany: any
+  currentCompany: any;
   currentBranch: any;
-  userData: any
-  currentDate = new Date()
+  userData: any;
+  currentDate = new Date();
   branchDetails: any;
   currentBranchCityName: string | null;
   currentBranchCityId: number;
@@ -39,152 +41,90 @@ export class HblComponent {
   @Input() selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
   @Input() hblCount: number = 0;
   @Output() hblCountUpdated = new EventEmitter<void>();
+
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
-
-
-  ngOnInit() {
-    this.userData = this.appSettingService.getDecryptedUserProfile();
-    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    this.branchDetails = this.appSettingService.getCurrentBranchInfo();
-    this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
-    this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
-    this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
-    this.loadCityName();
-    console.log(this.hblCount,"HBL COUNT")
-  }
-
-
-  loadCityName(): void {
-    if (!this.currentBranchCityId) return;
-
-
-    this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
-      next: (response: any) => {
-
-        if (response) {
-          const ourCity = response;
-
-          this.currentBranchCityName = ourCity ? ourCity.cityName : '';
-        }
-
-
-      },
-      error: (error) => {
-        console.error("Failed to load city:", error);
-
-      }
-    });
-  }
+  private pdfDepsPromise?: Promise<{ pdfMake: any }>;
 
   constructor(
     private activeModal: NgbActiveModal,
     private appSettingService: AppSettingsService,
     private masterService: MasterService,
-    private pdfService: PdfDownloadService,
     private spinner: NgxSpinnerService,
     public logoService: LogoService,
     private operationService: OperationService,
-  ) { }
+  ) {}
 
+  ngOnInit() {
+    this.userData = this.appSettingService.getDecryptedUserProfile();
+    this.currentCompany = this.appSettingService.decrypt(
+      localStorage.getItem('selected-company'),
+    );
+    this.currentBranch = this.appSettingService.decrypt(
+      localStorage.getItem('selected-branch'),
+    );
+    this.branchDetails = this.appSettingService.getCurrentBranchInfo();
+    this.currentCompany = ((this.userData.userCompanyMaster || []).find(
+      (ucm) => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid,
+    ))?.companyMaster;
+    this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(
+      (ubm) => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid,
+    ))?.branchMaster;
+    this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
+    this.loadCityName();
+  }
+
+  loadCityName(): void {
+    if (!this.currentBranchCityId) return;
+
+    this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
+      next: (response: any) => {
+        if (response) {
+          const ourCity = response;
+          this.currentBranchCityName = ourCity ? ourCity.cityName : '';
+        }
+      },
+      error: (error) => {
+        console.error('Failed to load city:', error);
+      },
+    });
+  }
 
   grossAmount(): number {
-
     const cargoList = this.housejobData?.Cargo || [];
-
     return cargoList.reduce((sum: number, item: any) => {
-
       const weight = parseFloat(item?.GrossWeight) || 0;
-
       return sum + weight;
-
     }, 0);
-
   }
 
   volumeAmount(): number {
-
     const cargoList = this.housejobData?.Cargo || [];
-
     return cargoList.reduce((sum: number, item: any) => {
-
       const volume = parseFloat(item?.Volume) || 0;
-
       return sum + volume;
-
     }, 0);
   }
 
-  // container details only show
-
   get containerMappedProducts() {
     return (this.housejobData?.Products || []).filter(
-      (p: any) => !!p.MasterJobContainerSid
+      (p: any) => !!p.MasterJobContainerSid,
     );
   }
 
-  // All container details  show
-
-  // get containerMappedProducts() {
-  //   const products = this.housejobData?.Products || [];
-
-  //   const map = new Map<number, any>();
-
-  //   products.forEach((p: any) => {
-  //     if (!p.MasterJobContainerSid) return; // ❌ skip unmapped
-
-  //     if (!map.has(p.MasterJobContainerSid)) {
-  //       map.set(p.MasterJobContainerSid, {
-  //         MasterJobContainerSid: p.MasterJobContainerSid,
-  //         ContainerNo: p.ContainerNo,
-  //         GrossWeight: Number(p.GrossWeight) || 0,
-  //         Volume: Number(p.Volume) || 0,
-  //         ExternlQty: Number(p.ExternlQty) || 0,
-  //         ExternaPkg: p.ExternaPkg
-  //       });
-  //     } else {
-  //       const existing = map.get(p.MasterJobContainerSid);
-  //       existing.GrossWeight += Number(p.GrossWeight) || 0;
-  //       existing.Volume += Number(p.Volume) || 0;
-  //       existing.ExternlQty += Number(p.ExternlQty) || 0;
-  //     }
-  //   });
-
-  //   return Array.from(map.values());
-  // }
   getDestinationAgentName(CustomerMasterSid: number | string): string {
-    const agent = this.agentList.find(a => a.CustomerMasterSid == CustomerMasterSid);
+    const agent = this.agentList.find(
+      (a) => a.CustomerMasterSid == CustomerMasterSid,
+    );
     return agent ? agent.CustomerName : '';
   }
 
-  async download() {
-
-    setTimeout(async () => {
-      this.spinner.show();
-      try {
-        const HouseJob = this.housejobData?.HBLNo || 'Receipt';
-        await this.pdfService.downloadBalancedPDF(
-          'printContent',
-          `HBL - ${HouseJob}`,
-          () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-          (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
-        );
-      } finally {
-        this.spinner.hide();
-      }
-    }, 50);
-  }
-
-
   async downloadPDF() {
-    // HBL Draft - download directly
     if (this.selectedReport === 'HBLDraft') {
-      this.download();
+      await this.generateAndDownloadPdf();
       return;
     }
 
-    // HBL - increment HBL count
     const payload = {
       HouseJobSid: this.housejobData?.HouseJobSid,
       CompanyMasterSid: this.housejobData?.CompanyMasterSid,
@@ -196,60 +136,54 @@ export class HblComponent {
     this.operationService.incrementHBLCount(payload).subscribe({
       next: async (resp: any) => {
         if (resp.status) {
-          this.download();
+          await this.generateAndDownloadPdf(false);
           this.updateHBLCountInDisplay();
         } else {
           this.spinner.hide();
-          this.appSettingService.showError("Error incrementing HBL Count");
+          this.appSettingService.showError('Error incrementing HBL Count');
         }
       },
       error: (error) => {
         this.spinner.hide();
         this.appSettingService.showError(error.message);
         console.error(error);
-      }
+      },
     });
   }
 
-
-
-  async generatePDFBlob(): Promise<Blob | null> {
-    const printContent = document.getElementById('printContent');
-    if (!printContent) {
-      return null;
+  private async generateAndDownloadPdf(showSpinner: boolean = true): Promise<void> {
+    if (showSpinner) {
+      this.spinner.show();
     }
 
     try {
-      const canvas = await html2canvas(printContent, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
+      const { pdfMake } = await this.getPdfDependencies();
+      const logo = await this.resolveReportLogo();
 
-      const imgWidth = 210;
-      const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
+      const pdfData = transformHblApiData(
+        this.housejobData,
+        {
+          selectedReport: this.selectedReport,
+          hblCount: this.hblCount,
+          company: this.currentCompany,
+          branch: this.currentBranch,
+          userData: this.userData,
+          currentDate: this.currentDate,
+          currentBranchCityName: this.currentBranchCityName,
+          agentList: this.agentList,
+        },
+        logo,
+      );
 
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgData = canvas.toDataURL('image/png');
-
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      return pdf.output('blob');
+      const docDefinition = generateHblDocument(pdfData);
+      const houseJob = this.housejobData?.HBLNo || 'Draft';
+      pdfMake.createPdf(docDefinition).download(`HBL_${houseJob}.pdf`);
+      this.appSettingService.showSuccess('PDF downloaded successfully!');
     } catch (error) {
-      console.error('Error generating PDF blob:', error);
-      return null;
+      console.error('HBL PDF generation error:', error);
+      this.appSettingService.showError('Error generating PDF. Please try again.');
+    } finally {
+      this.spinner.hide();
     }
   }
 
@@ -277,16 +211,70 @@ export class HblComponent {
         popupWin.document.close();
       }
     }, 50);
-
   }
 
   modalClose() {
-    this.activeModal.close()
+    this.activeModal.close();
   }
 
   updateHBLCountInDisplay() {
     this.activeModal.close('UPDATED');
   }
 
+  private async getPdfDependencies(): Promise<{ pdfMake: any }> {
+    if (this.pdfDepsPromise) {
+      return this.pdfDepsPromise;
+    }
 
+    this.pdfDepsPromise = (async () => {
+      const pdfMakeModule = await import('pdfmake/build/pdfmake');
+      const pdfFontsModule = await import('pdfmake/build/vfs_fonts');
+
+      const pdfMake: any = (pdfMakeModule as any).default || pdfMakeModule;
+      const pdfFonts: any = (pdfFontsModule as any).default || pdfFontsModule;
+      pdfMake.vfs = pdfFonts?.pdfMake?.vfs || pdfFonts;
+
+      return { pdfMake };
+    })();
+
+    return this.pdfDepsPromise;
+  }
+
+  private async resolveReportLogo(): Promise<string | undefined> {
+    const logoFromStream = await firstValueFrom(
+      this.logoService.reportLogo$.pipe(take(1)),
+    );
+    const logoSource =
+      logoFromStream || localStorage.getItem('current_report_logo') || '';
+
+    if (!logoSource) return undefined;
+    if (logoSource.startsWith('data:image')) return logoSource;
+
+    return this.imageUrlToBase64(logoSource);
+  }
+
+  private imageUrlToBase64(url: string): Promise<string | undefined> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          resolve(undefined);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      };
+
+      img.onerror = () => resolve(undefined);
+      img.src = url;
+    });
+  }
 }
