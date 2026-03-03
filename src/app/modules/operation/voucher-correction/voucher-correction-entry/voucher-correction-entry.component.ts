@@ -896,7 +896,7 @@ export class VoucherCorrectionEntryComponent implements OnInit {
 private updateReceiptValidators(): void {
   const narration = this.voucherForm.get('Narration');
 
-  if (this.isReceipt) {
+  if (this.isReceipt || this.isPayment) {
     narration?.setValidators([Validators.required]);
   } else {
     narration?.clearValidators();

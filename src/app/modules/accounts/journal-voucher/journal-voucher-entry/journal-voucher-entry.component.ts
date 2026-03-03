@@ -31,13 +31,7 @@ import { CurrencyConfigurationService } from 'src/app/core/services/currency-con
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { Subject } from 'rxjs';
 import { takeUntil, debounceTime } from 'rxjs/operators';
-import {
- 
-  NgbDateAdapter,
-  NgbDateParserFormatter,
-  NgbDate,
- 
-} from '@ng-bootstrap/ng-bootstrap';
+import {NgbDateAdapter,NgbDateParserFormatter, NgbDate} from '@ng-bootstrap/ng-bootstrap';
 import { getDefaultTodayDate } from 'src/app/common/helper';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
@@ -2048,7 +2042,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
         PostedBy: currentUserEmail,
         TaxDetails: {
           CountryMasterSid: currentCountry,
-          countryName: currentCountryName,
+          countryCode: this.currentCompanyCountryCode,
           TaxCategory: 'Inter',
           EffectiveFrom: new Date().toISOString(),
           TaxType: 'Output'

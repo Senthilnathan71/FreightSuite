@@ -1022,14 +1022,7 @@ export class ReverseVoucherEntryComponent {
     return this.round(this.getTotalCurrencyAmount() + this.getTotalTaxAmount());
   }
   
-    addDetailRow() {
-      const newRow = this.createDetailGroup();
-      this.details.push(newRow);
-  
-      // Subscribe to changes for auto-calculation
-      this.subscribeToRowChanges(newRow);
-      this.validateAmount();
-    }
+   
   
     subscribeToRowChanges(row: FormGroup) {
       // Recalculate when NumberOfUnit or Rate changes
@@ -2595,7 +2588,7 @@ validatePartyMatchingAmount() {
   const details = this.details.getRawValue() || [];
   
   details.forEach((vd) => {
-    const amount = Number(vd.PartyAmount) || 0;
+    const amount = Number(vd.LocalAmount);
     if (vd.DrCr === 'C') {
       totalCredits += amount;
     } else if (vd.DrCr === 'D') {
