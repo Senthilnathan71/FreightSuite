@@ -15,7 +15,7 @@ import { NgbModal, NgbDatepickerModule, NgbModalRef, NgbDropdownModule, NgbDateA
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CommonModule } from '@angular/common';
-import { catchError, combineLatest, debounceTime, distinctUntilChanged, firstValueFrom, forkJoin, map, of, Subject, Subscription, switchMap, takeUntil } from 'rxjs';
+import { catchError, combineLatest, debounceTime, distinctUntilChanged, firstValueFrom, forkJoin, map, Observable, of, Subject, Subscription, switchMap, takeUntil } from 'rxjs';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 import { OperationService } from 'src/app/modules/operation/operation.service';
@@ -345,24 +345,35 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
     this.checkVoucherPostingMechanism();
     this.initForm();
-    this.loadLookups();
     this.loadVoucherPeriods();
     this.spinner.show();
+
     this.route.data.subscribe((data) => {
       this.isViewMode = data['viewMode'] === true;
     });
 
+    // Resolve headerId synchronously so loadLookups subscription can act on it
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.headerId = Number(id);
+    }
 
-    this.route.paramMap.subscribe((params) => {
-      const id = params.get('id');
-      if (id) {
-        this.headerId = Number(id);
-        // loadVendorInvoiceById is called from loadLookups callback
-        // to guarantee chargeList is populated before patching detail rows
-      } else {
-        this.initialFormValue = this.vendorInvoiceForm.getRawValue();
-        this.subscribeToFormChanges();
-        this.subscribeToValueChanges();
+    // All lookups (including COA for NonJob) are guaranteed to be ready
+    // before loadVendorInvoiceById is called
+    this.loadLookups().subscribe({
+      next: () => {
+        if (this.headerId) {
+          this.loadVendorInvoiceById(this.headerId);
+        } else {
+          this.initialFormValue = this.vendorInvoiceForm.getRawValue();
+          this.subscribeToFormChanges();
+          this.subscribeToValueChanges();
+          this.spinner.hide();
+        }
+      },
+      error: (err) => {
+        this.spinner.hide();
+        console.error('Lookup error:', err);
       }
     });
   }
@@ -568,61 +579,59 @@ export class VendorInvoiceEntryComponent implements OnInit {
     }
   }
 
-  // Load lookups
-  loadLookups() {
-    this.spinner.show();
+  // Load lookups — critical (party + COA) fetch first.
+  // Once done, non-critical lookups start in the background and vendor invoice loads.
+  loadLookups(): Observable<void> {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const BranchMasterSid = this.currentBranch?.BranchMasterSid;
     const filterOption = { CompanyMasterSid, BranchMasterSid };
 
-    const source: any = {
-      vendors: this.operationService.getAllCreditorWithCOAMapped(filterOption).pipe(catchError(() => of({ data: [] }))),
-      currencies: this.operationService.getAllCurrencies().pipe(catchError(() => of({ data: [] }))),
-      uom: this.operationService.getAllUom().pipe(catchError(() => of({ data: [] }))),
-      departments: this.operationService.getAllDepartments(CompanyMasterSid).pipe(catchError(() => of({ data: [] }))),
-      masterJobs: this.operationService.getAllMasterJobs({ ...filterOption, limit: 200, offset: 0 }).pipe(catchError(() => of({ data: [] })))
+    // 1. Critical lookups — party and COA must be ready before vendor invoice is loaded
+    const criticalSource: any = {
+      vendors: this.operationService.getAllCreditorWithCOAMapped(filterOption).pipe(catchError(() => of({ data: [] })))
     };
-
     if (this.isNonJob) {
-      source.coa = this.operationService.getAllCoaWithLedgerCategory({
+      criticalSource.coa = this.operationService.getAllCoaWithLedgerCategory({
         LedgerCategory: 'Ledger',
         CompanyMasterSid: CompanyMasterSid,
-        filterNonJob : true
+        filterNonJob: true
       }).pipe(catchError(() => of({ data: [] })));
-      source.hssac = this.operationService.getAllHssac().pipe(catchError(() => of([])));
-      source.charges = of({ data: [] });
-    } else {
-      source.charges = this.operationService.getAllMappedChargeDebtors(filterOption).pipe(catchError(() => of({ data: [] })));
-      source.hssac = of([]);
-      source.coa = of({ data: [] });
     }
 
-    // 3. Use the dynamic source in forkJoin
-    forkJoin(source).subscribe(
-      ({ vendors, currencies, charges, uom, departments, masterJobs, coa , hssac }: any) => {
+    return forkJoin(criticalSource).pipe(
+      map(({ vendors, coa }: any) => {
         this.vendorList = vendors.data || [];
         this.subledgerList = vendors.data || [];
-        this.chargeList = charges.data || [];
-        this.filteredChargeList = [...this.chargeList];
-        this.uomList = uom.data || [];
-        this.departmentList = departments.data || [];
-        this.masterJobList = masterJobs.data || [];
-        this.hssacListForNonJob = hssac || [];
-        this.coaList = coa.data || [];
+        this.coaList = coa?.data || [];
 
-        this.currencyList = currencies.data || [];
-        this.currencyConfigService.initializeConfigurations(this.currencyList);
-
-        if (this.headerId) {
-          this.loadVendorInvoiceById(this.headerId);
+        // 2. Non-critical lookups start after critical resources are ready
+        const otherSource: any = {
+          currencies: this.operationService.getAllCurrencies().pipe(catchError(() => of({ data: [] }))),
+          uom: this.operationService.getAllUom().pipe(catchError(() => of({ data: [] }))),
+          departments: this.operationService.getAllDepartments(CompanyMasterSid).pipe(catchError(() => of({ data: [] }))),
+          masterJobs: this.operationService.getAllMasterJobs({ ...filterOption, limit: 200, offset: 0 }).pipe(catchError(() => of({ data: [] })))
+        };
+        if (this.isNonJob) {
+          otherSource.hssac = this.operationService.getAllHssac().pipe(catchError(() => of([])));
+          otherSource.charges = of({ data: [] });
         } else {
-          this.spinner.hide();
+          otherSource.charges = this.operationService.getAllMappedChargeDebtors(filterOption).pipe(catchError(() => of({ data: [] })));
+          otherSource.hssac = of([]);
         }
-      },
-      (err) => {
-        this.spinner.hide();
-        console.error("Lookup error:", err);
-      }
+        forkJoin(otherSource).subscribe({
+          next: ({ currencies, charges, uom, departments, masterJobs, hssac }: any) => {
+            this.currencyList = currencies.data || [];
+            this.currencyConfigService.initializeConfigurations(this.currencyList);
+            this.chargeList = charges?.data || [];
+            this.filteredChargeList = [...this.chargeList];
+            this.uomList = uom.data || [];
+            this.departmentList = departments.data || [];
+            this.masterJobList = masterJobs.data || [];
+            this.hssacListForNonJob = hssac || [];
+          },
+          error: (err) => console.error('Lookup error:', err)
+        });
+      })
     );
   }
 
@@ -3047,13 +3056,18 @@ export class VendorInvoiceEntryComponent implements OnInit {
     const isHouseJobInvoice = data?.HouseJobSid && data?.MasterJobSid;
     const isMasterJobInvoice = data?.MasterJobSid && !data?.HouseJobSid;
     const isBookingInvoice = !!data?.BookingHeaderSid;
+    const isAgentHouseJob = String(data?.houseJob?.JobType || '') === 'Agent';
 
     if (isHouseJobInvoice) {
       this.hyperLinkInfo = {
         id: data?.HouseJobSid,
-        number: data?.houseJob?.HBLNo,
-        path: `/operation/house-job/entry/${data.HouseJobSid}`,
-        label: airDept ? 'HAWBL No.' : 'HBL No.'
+        number: isAgentHouseJob
+          ? (data?.masterJob?.MasterJobNumber || data?.MasterNumber || '')
+          : data?.houseJob?.HBLNo,
+        path: isAgentHouseJob
+          ? `/operation/agent-master-air-waybill/entry/${data.HouseJobSid}`
+          : `/operation/house-job/entry/${data.HouseJobSid}`,
+        label: isAgentHouseJob ? 'AMWBL No.' : (airDept ? 'HAWBL No.' : 'HBL No.')
       };
     } else if (isMasterJobInvoice) {
       this.hyperLinkInfo = {

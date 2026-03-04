@@ -285,7 +285,7 @@
             <aside class="col-md-4">
   <div class="custom-form-group">
     <input type="text" id="CustomerAddress1" placeholder="" class="custom-input-field sm"
-           formControlName="CustomerAddress1" [textWithNumbers]="300"
+           formControlName="CustomerAddress1" maxlength="300"
            [class.is-invalid]="customerForm.get('CustomerAddress1')?.invalid && 
                                customerForm.get('CustomerAddress1')?.touched">
     <label for="CustomerAddress1" class="input-label">Address1 <span class="text-danger">*</span></label>
@@ -818,34 +818,42 @@
 
                 <!-- Phone -->
                 <aside class="col-md-4">
-                  <div class="custom-form-group">
-                    <input type="text" placeholder="" class="custom-input-field sm" formControlName="CustBranchPhone"
-                      [onlyNumbers]="15">
-                    <label class="input-label">Phone</label>
-                    @if (getBranchFormGroup(branch).get('CustBranchPhone')?.touched &&
-                    getBranchFormGroup(branch).get('CustBranchPhone')?.invalid) {
-                    <div class="error-message">
-                      @if (getBranchFormGroup(branch).get('CustBranchPhone')?.hasError('invalidPhoneNumber')) {
-                      <span>Please enter a valid phone number </span>
-                      }
+                  <div class="d-flex gap-2">
+                    <div class="custom-form-group custom-form-group-select w-40"
+                      [class.filled]="!!getBranchFormGroup(branch).get('CustBranchPhoneCode')?.value">
+                      <app-dial-code-dropdown formControlName="CustBranchPhoneCode" [countries]="countryList"
+                        placeholder=""></app-dial-code-dropdown>
+                      <!-- <label class="input-label">Code</label> -->
                     </div>
+                    <div class="custom-form-group w-100">
+                      <input type="text" placeholder="" class="custom-input-field sm" formControlName="CustBranchPhone"
+                        [onlyNumbers]="15">
+                      <label class="input-label">Phone</label>
+                    </div>
+                  </div>
+                  @if (getBranchFormGroup(branch).get('CustBranchPhone')?.touched &&
+                  getBranchFormGroup(branch).get('CustBranchPhone')?.invalid) {
+                  <div class="error-message">
+                    @if (getBranchFormGroup(branch).get('CustBranchPhone')?.hasError('invalidPhoneNumber')) {
+                    <span>Please enter a valid phone number </span>
                     }
                   </div>
+                  }
                 </aside>
 
                 <!-- Email -->
                 <aside class="col-md-4">
                   <div class="custom-form-group">
                     <input type="text" placeholder="" class="custom-input-field sm" formControlName="CustBranchEmail">
-                    <label class="input-label">Email <span class="text-danger">*</span></label>
+                    <label class="input-label">Email <span class="text-danger"></span></label>
                     @if ((getBranchFormGroup(branch).get('CustBranchEmail')?.touched ||
                     getBranchFormGroup(branch).get('CustBranchEmail')?.dirty) &&
                     getBranchFormGroup(branch).get('CustBranchEmail')?.invalid) {
                     <div class="error-message">
-                      @if (getBranchFormGroup(branch).get('CustBranchEmail')?.hasError('required')) {
+                      <!-- @if (getBranchFormGroup(branch).get('CustBranchEmail')?.hasError('required')) {
                       <span>Required</span>
-                      }
-                      @else if (getBranchFormGroup(branch).get('CustBranchEmail')?.hasError('invalidEmails')) {
+                      } -->
+                      @if (getBranchFormGroup(branch).get('CustBranchEmail')?.hasError('invalidEmails')) {
                       <span>Invalid email format</span>
                       }
                     </div>
@@ -857,7 +865,7 @@
                 <aside class="col-md-4">
                   <div class="custom-form-group">
                     <input type="text" placeholder="" class="custom-input-field sm" formControlName="CustBranchAddress"
-                      [textWithNumbers]="200">
+                      maxlength="200">
                     <label class="input-label">Address <span class="text-danger">*</span></label>
                     @if (getBranchFormGroup(branch).get('CustBranchAddress')?.touched &&
                     getBranchFormGroup(branch).get('CustBranchAddress')?.invalid) {
@@ -1039,7 +1047,13 @@
 
                           <!-- Mobile No -->
                           <td class="px-1">
-                            <input type="text" class="custom-input-field sm" formControlName="MobileNo">
+                            <div class="d-flex gap-2 align-items-center">
+                              <div style="min-width: 80px;">
+                                <app-dial-code-dropdown formControlName="MobileNoCode" [countries]="countryList"
+                                  placeholder=""></app-dial-code-dropdown>
+                              </div>
+                              <input type="text" class="custom-input-field sm" formControlName="MobileNo">
+                            </div>
                           </td>
 
                           <!-- Email -->

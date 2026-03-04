@@ -67,8 +67,8 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
   protected config: ListComponentConfig = {
     storageKey: 'mawbill-list-state',
     defaultPageSize: 10,
-    defaultSortColumn: 'departmentName',
-    defaultSortDirection: 'asc',
+    defaultSortColumn: 'MasterJobDate',
+    defaultSortDirection: 'desc',
     pageSizeOptions: [10, 20, 50, 100, 500],
     maxPagesToShow: 3
   };
@@ -142,7 +142,6 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
         MBLDate: this.datePipe.transform(item?.MBLDate),
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
-      this.applySorting();
       this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching company.');

@@ -444,7 +444,7 @@ export class ComprehensiveManagementReportComponent {
       this.cashBankRows.forEach(item => {
         rows.push({
           cells: [
-            { value: item.SubledgerName || '' },
+            { value: item.LedgerName || '' },
             { value: this.formatNumber(item.DrAmount) },
             { value: this.formatNumber(item.CrAmount) },
             { value: this.formatNumber(item.Balance) },

@@ -44,6 +44,15 @@ export class MawbPreprintComponent implements OnChanges {
   costRevenueCharges: any[] = [];
   freightCharges: any[] = [];
   otherCharges: any[] = [];
+  otherCharges1: any[] = [];
+  otherDueCarrierCharges: any[] = [];
+  otherDueAgentCharges: any[] = [];
+  dueCarrierCharges: any[] = [];
+  dueAgentCharges: any[] = [];
+  freightPrepaidCharges: any[] = [];
+  freightCollectCharges: any[] = [];
+  otherPrepaidCharges: any[] = [];
+  otherCollectCharges: any[] = [];
   companyCode: any;
   bankDetails: any;
   @Input() portList: any[] = []; // Add this input
@@ -155,26 +164,187 @@ export class MawbPreprintComponent implements OnChanges {
 
   handleCharges() {
     this.costRevenueCharges = this.masterAirWayData.costRevenueCharges || [];
-    const filteredCharges = this.costRevenueCharges.filter(cost => !!cost.ChargeMasterSid);
+    const filteredCharges = this.costRevenueCharges.filter((cost: any) =>
+      !!cost?.ChargeMasterSid &&
+      String(cost?.status ?? 'A').toUpperCase() === 'A' &&
+      this.getChargeValue(cost) > 0
+    );
     console.log("Filtered Charges", filteredCharges);
 
-    this.freightCharges = filteredCharges.filter(cr => {
-      const chargeGroupName = cr.chargeMaster?.chargeGroup?.GroupName || '';
-      return chargeGroupName === "Freight"
-    })
+    this.freightCharges = filteredCharges.filter(cr => this.isWeightCharge(cr));
 
     console.log("only freight charges", this.freightCharges);
 
-    const freightChargeIds = this.freightCharges.map(c => c.ChargeMasterSid);
-    console.log("Freight Charge Ids", freightChargeIds)
+    this.otherCharges = filteredCharges.filter(c => !this.isWeightCharge(c));
+    this.otherCharges1 = filteredCharges.filter(c => {
+      const chargeGroupName = String(c.chargeMaster?.chargeGroup?.GroupName || '').trim().toLowerCase();
+      return chargeGroupName === 'other';
+    });
+ 
 
-    this.otherCharges = filteredCharges.filter(c => {
-      return !freightChargeIds.includes(c.ChargeMasterSid);
-    })
+    // AWB split:
+    // Due Carrier -> freight + airline surcharges
+    // Due Agent   -> handling/local service fees (non-freight)
+    this.dueCarrierCharges = filteredCharges.filter(c => this.isCarrierCharge(c));
+    this.dueAgentCharges = filteredCharges.filter(c => !this.isCarrierCharge(c));
+    this.otherDueCarrierCharges = this.otherCharges.filter(c => this.isCarrierCharge(c));
+    this.otherDueAgentCharges = this.otherCharges.filter(c => !this.isCarrierCharge(c));
+
+    this.freightPrepaidCharges = this.freightCharges.filter(c => this.isPrepaidCharge(c));
+    this.freightCollectCharges = this.freightCharges.filter(c => this.isCollectCharge(c));
+
+    this.otherPrepaidCharges = this.otherCharges.filter(c => this.isPrepaidCharge(c));
+    this.otherCollectCharges = this.otherCharges.filter(c => this.isCollectCharge(c));
 
     console.log("Other Charges", this.otherCharges)
   }
 
+  private isCarrierCharge(charge: any): boolean {
+    const groupName = String(charge?.chargeMaster?.chargeGroup?.GroupName || '').toLowerCase();
+    const chargeName = String(charge?.chargeMaster?.ChargeName || charge?.chargeMaster?.chargeName || '').toLowerCase();
+    const chargeCode = String(charge?.chargeMaster?.ChargeCode || charge?.chargeMaster?.chargeCode || '').toLowerCase();
+
+    return groupName.includes('freight') ||
+      groupName.includes('airline') ||
+      chargeName.includes('surcharge') ||
+      chargeName.includes('freight') ||
+      chargeCode.includes('freight');
+  }
+
+  private isWeightCharge(charge: any): boolean {
+    const groupName = String(charge?.chargeMaster?.chargeGroup?.GroupName || '').toLowerCase();
+    const chargeName = String(charge?.chargeMaster?.ChargeName || charge?.chargeMaster?.chargeName || charge?.ChargeDescription || '').toLowerCase();
+    const chargeCode = String(charge?.chargeMaster?.ChargeCode || charge?.chargeMaster?.chargeCode || '').toLowerCase();
+
+    // Weight charge bucket should contain freight line items only.
+    return groupName.includes('freight') &&
+      (chargeName.includes('freight') || chargeCode.includes('frt'));
+  }
+
+  private getChargeValue(charge: any): number {
+    return Number(charge?.RevenueAmount ?? charge?.RevenueExchangeRate ?? 0) || 0;
+  }
+
+  private getPrepaidCollect(charge: any): string {
+    const rowTerm = String(charge?.RevenuePrepaidCollect ?? charge?.CostPrepaidCollect ?? '').trim().toLowerCase();
+    if (rowTerm === 'prepaid' || rowTerm === 'collect') {
+      return rowTerm;
+    }
+
+    // Fallback to master-level term when row-level PP/CC is missing.
+    const masterTerm = String(this.masterAirWayData?.FreightPPCC ?? '').trim().toLowerCase();
+    if (masterTerm === 'prepaid' || masterTerm === 'collect') {
+      return masterTerm;
+    }
+
+    return '';
+  }
+
+  private isPrepaidCharge(charge: any): boolean {
+    return this.getPrepaidCollect(charge) === 'prepaid';
+  }
+
+  private isCollectCharge(charge: any): boolean {
+    return this.getPrepaidCollect(charge) === 'collect';
+  }
+
+  getDueCarrierTotal(): number {
+    if (!this.dueCarrierCharges?.length) return 0;
+    return this.dueCarrierCharges.reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+
+  getDueAgentTotal(): number {
+    if (!this.dueAgentCharges?.length) return 0;
+    return this.dueAgentCharges.reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+
+  getDueChargeGrandTotal(): number {
+    return this.getDueCarrierTotal() + this.getDueAgentTotal();
+  }
+
+  getFreightPrepaidTotal(): number {
+    if (!this.freightPrepaidCharges?.length) return 0;
+    return this.freightPrepaidCharges.reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+
+  getFreightCollectTotal(): number {
+    if (!this.freightCollectCharges?.length) return 0;
+    return this.freightCollectCharges.reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+
+  getOtherPrepaidTotal(): number {
+    if (!this.otherPrepaidCharges?.length) return 0;
+    return this.otherPrepaidCharges.reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+
+  getOtherCollectTotal(): number {
+    if (!this.otherCollectCharges?.length) return 0;
+    return this.otherCollectCharges.reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+
+  getOtherDueAgentTotal(): number {
+    if (!this.otherDueAgentCharges?.length) return 0;
+    return this.otherDueAgentCharges.reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+
+  getOtherDueCarrierTotal(): number {
+    if (!this.otherDueCarrierCharges?.length) return 0;
+    return this.otherDueCarrierCharges.reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+
+  getOtherDueAgentCollectTotal(): number {
+    if (!this.otherDueAgentCharges?.length) return 0;
+    return this.otherDueAgentCharges
+      .filter(c => this.isCollectCharge(c))
+      .reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+
+  getOtherDueAgentPrepaidTotal(): number {
+    if (!this.otherDueAgentCharges?.length) return 0;
+    return this.otherDueAgentCharges
+      .filter(c => this.isPrepaidCharge(c))
+      .reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+
+  getOtherDueCarrierCollectTotal(): number {
+    if (!this.otherDueCarrierCharges?.length) return 0;
+    return this.otherDueCarrierCharges
+      .filter(c => this.isCollectCharge(c))
+      .reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+
+  getOtherDueCarrierPrepaidTotal(): number {
+    if (!this.otherDueCarrierCharges?.length) return 0;
+    return this.otherDueCarrierCharges
+      .filter(c => this.isPrepaidCharge(c))
+      .reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+
+  getOtherDueAgentDisplayTotal(): number {
+    const collect = this.getOtherDueAgentCollectTotal();
+    if (collect > 0) return collect;
+    return this.otherDueAgentCharges
+      .filter(c => this.isPrepaidCharge(c))
+      .reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+
+  getOtherDueCarrierDisplayTotal(): number {
+    const collect = this.getOtherDueCarrierCollectTotal();
+    if (collect > 0) return collect;
+    return this.otherDueCarrierCharges
+      .filter(c => this.isPrepaidCharge(c))
+      .reduce((sum, c) => sum + this.getChargeValue(c), 0);
+  }
+
+  getTotalPrepaidAmount(): number {
+    return this.getFreightPrepaidTotal() + this.getOtherPrepaidTotal();
+  }
+
+  getTotalCollectAmount(): number {
+    return this.getFreightCollectTotal() + this.getOtherCollectTotal();
+  }
+
+  
   getBankDetails() {
     console.log('DEBUG - getBankDetails');
 
@@ -265,14 +435,29 @@ export class MawbPreprintComponent implements OnChanges {
     return { totalExchangeRate, totalRevenueAmount };
   }
 
- getPortName(portCode: string): string {
-    if (!portCode || !this.portList || this.portList.length === 0) {
-      return portCode || '';
-    }
+//  getPortName(portCode: string): string {
+//     if (!portCode || !this.portList || this.portList.length === 0) {
+//       const port = this.portList.find(p => p.PortCode === portCode);
+//       return  port ? port.PortName : portCode;
+//     }
     
-    const port = this.portList.find(p => p.PortCode === portCode);
-    return port ? `${port.PortCode} - ${port.PortName}` : portCode;
+//     const port = this.portList.find(p => p.PortCode === portCode);
+//     return port ? `${port.PortCode} - ${port.PortName}` : portCode;
+//   }
+getPortName(portCode: string | number): string {
+  if (portCode === null || portCode === undefined || !this.portList?.length) {
+    return '';
   }
+
+  const lookup = String(portCode).trim();
+  const port = this.portList.find((p: any) =>
+    String(p?.PortCode ?? '').trim() === lookup ||
+    String(p?.portCode ?? '').trim() === lookup ||
+    String(p?.PortMasterSid ?? '').trim() === lookup
+  );
+
+  return port?.PortName || lookup;
+}
   printDiv(divId: string): void {
     this.showPrintLogo = true;
     this.showPdfLogo = false;

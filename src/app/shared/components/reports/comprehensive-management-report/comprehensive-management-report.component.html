@@ -275,7 +275,7 @@
                 </thead>
                 <tbody>
                     <tr *ngFor="let item of cashBankRows" style="white-space: nowrap;">
-                        <td>{{ item.SubledgerName }}</td>
+                        <td>{{ item.LedgerName }}</td>
                         <td class="text-end">{{ item.DrAmount | number:'1.2-2' }}</td>
                         <td class="text-end">{{ item.CrAmount | number:'1.2-2' }}</td>
                         <td class="text-end">{{ item.Balance | number:'1.2-2' }}</td>

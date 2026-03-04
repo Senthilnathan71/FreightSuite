@@ -1427,8 +1427,8 @@ addProduct() {
       VoyageNo: [data?.VoyageNo || null],
       POL: [data?.POL || null],
       POD: [data?.POD || null],
-      ETD: [new Date(data?.ETD) || ''],
-      ETA: [new Date(data?.ETA) || ''],
+      ETD: [new Date(data?.ETD) || null],
+      ETA: [new Date(data?.ETA) || null],
       status: [data.status ? (data.status === "A" ? "Active" : "Suspended") : "Active"]
     })
     return connectionForm;
@@ -1700,7 +1700,7 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
 }
 private loadMasterJobDetails(masterJobSid: number): void {
   const payload = {
-    screenName : 'Master Job',
+    screenName : 'Agent Master Air Waybill',
     masterJobSid : masterJobSid
   }
   this.operationService.getMasterJobById(masterJobSid).subscribe({
@@ -2524,8 +2524,8 @@ private getAgentNameById(agentId: number): string {
     this.b['POL'].setValue(null);
     this.b['POD'].setValue(null);
     this.b['FPD'].setValue(null);
-    this.b['ETA'].setValue('');
-    this.b['ETD'].setValue('');
+    this.b['ETA'].setValue(null);
+    this.b['ETD'].setValue(null);
     this.b['MovementType'].setValue(null);
     this.b['JobType'].setValue('');
     this.handleImportExport();
@@ -3036,25 +3036,30 @@ validateImportMAWBLNo(): boolean {
     this.houseJobForm.patchValue({
       VoyageMasterSid: null,
       VoyageNo: null,
-      ETA: '',
-      ETD: ''
+      ETA: null,
+      ETD: null
     });
     return;
   }
+
+  const parsedETA = vesselVoyage.ETA ? new Date(vesselVoyage.ETA) : null;
+  const parsedETD = vesselVoyage.ETD ? new Date(vesselVoyage.ETD) : null;
+  const ETA = parsedETA && !isNaN(parsedETA.getTime()) ? parsedETA : null;
+  const ETD = parsedETD && !isNaN(parsedETD.getTime()) ? parsedETD : null;
   
   this.houseJobForm.patchValue({
     VoyageMasterSid: vesselVoyage.VoyageMasterSid,
     VoyageNo: vesselVoyage.VoyageNo,
-    ETA: new Date(vesselVoyage.ETA),
-    ETD: new Date(vesselVoyage.ETD)
+    ETA: ETA,
+    ETD: ETD
   });
 }
 
 
   onVoyageChange(voyage: any) {
   if (!voyage) {
-    this.b['ETA'].setValue('');
-    this.b['ETD'].setValue('');
+    this.b['ETA'].setValue(null);
+    this.b['ETD'].setValue(null);
     this.b['VoyageMasterSid']?.setValue('');
     return;
   }
@@ -5285,3 +5290,4 @@ interface CustomerProfit {
   CustomerName : string,
   Amount : number
 }
+

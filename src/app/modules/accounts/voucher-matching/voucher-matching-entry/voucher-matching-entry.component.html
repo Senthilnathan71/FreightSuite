@@ -465,7 +465,7 @@
           </div>
 
           <div #sourceScrollContainer class="flex-grow-1" [class.h-100]="sourceItems.length >= BATCH_SIZE || isFullScreen"
-            style="position: relative; min-width: 0; overflow-x: auto; scrollbar-gutter: stable;"
+            style="position: relative; min-width: 0; overflow-x: auto;"
             [style.overflow-y]="(sourceItems.length >= BATCH_SIZE || isFullScreen) ? 'auto' : 'visible'"
             (scroll)="onPanelScroll('source')">
             <form [formGroup]="voucherMatchingForm" novalidate>
@@ -600,7 +600,7 @@
                   <i class="fas fa-spinner fa-spin me-1"></i>Loading...
                 </div>
               </div>
-              <div #sourceSentinel style="height: 1px;"></div>
+              <div #sourceSentinel [style.height]="isPosted ? '0' : '1px'"></div>
               <div *ngIf="hasMoreSourceData && !isLoadingSource && !isPosted" class="text-center py-1"
                 style="font-size: 11px; color: #aaa;">
                 <i class="fas fa-chevron-down fa-bounce me-1"></i>Scroll for more
@@ -636,7 +636,7 @@
             OBJECT
           </div>
           <div #objectScrollContainer class="flex-grow-1" [class.h-100]="hasMoreObjectData || isFullScreen"
-            style="position: relative; min-width: 0; overflow-x: auto; scrollbar-gutter: stable;"
+            style="position: relative; min-width: 0; overflow-x: auto;"
             [style.overflow-y]="(objectItems.length >= BATCH_SIZE || isFullScreen) ? 'auto' : 'visible'"
             (scroll)="onPanelScroll('object')">
             <form [formGroup]="voucherMatchingForm" novalidate>
@@ -767,7 +767,7 @@
                   <i class="fas fa-spinner fa-spin me-1"></i>Loading...
                 </div>
               </div>
-              <div #objectSentinel style="height: 1px;"></div>
+              <div #objectSentinel [style.height]="isPosted ? '0' : '1px'"></div>
               <div *ngIf="hasMoreObjectData && !isLoadingObject && !isPosted" class="text-center py-1"
                 style="font-size: 11px; color: #aaa;">
                 <i class="fas fa-chevron-down fa-bounce me-1"></i>Scroll for more

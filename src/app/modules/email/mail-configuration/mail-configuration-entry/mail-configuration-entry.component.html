@@ -114,7 +114,8 @@
                   <td >
                     @if (row.isEditing) {
                       <input type="text" class="custom-input-field sm"
-                        [(ngModel)]="row.MailSubject" maxlength="500" placeholder="">
+                        [(ngModel)]="row.MailSubject" maxlength="500" placeholder=""
+                        appPlaceholderAutocomplete>
                     } @else {
                       <span>{{ row.MailSubject }}</span>
                     }

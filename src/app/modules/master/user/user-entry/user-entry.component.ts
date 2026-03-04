@@ -47,6 +47,7 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
+import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/dial-code-dropdown.component';
 
 @Component({
   selector: 'app-user-entry',
@@ -63,6 +64,7 @@ import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/
     FormsModule,
     NgbDropdownModule,
     SearchableDropdown,
+    DialCodeDropdownComponent,
   ],
   templateUrl: './user-entry.component.html',
   styleUrl: './user-entry.component.scss',
@@ -145,7 +147,8 @@ export class UserEntryComponent implements OnInit {
       isSalesperson: [false],
       isLoginUser: [true],
       userTypeId: [, [Validators.required]],
-      contactNumber: [],
+      contactNumberCode: [DialCodeDropdownComponent.getDefaultDialCodeFromLoginCountry(this.userData)],
+      contactNumber: ['', [Validators.maxLength(15)]],
       status: ['Active'],
       userPassword: [, [PasswordValidators.validate()]],
       CountryMasterSid: [, [Validators.required]],
@@ -477,6 +480,7 @@ export class UserEntryComponent implements OnInit {
         if (resp.status) {
           this.userData = resp.data;
           const d = resp.data;
+          const parsedContact = this.parsePhone(d.contactNumber);
           const allCompanyIds = d.userCompanyMaster.map((comp) => comp.CompanyMasterSid);
           this.selectedCompanies = allCompanyIds || [];
 
@@ -484,7 +488,8 @@ export class UserEntryComponent implements OnInit {
             userCode: d.userCode?.trim(),
             userName: d.userName,
             userEmail: d.userEmail,
-            contactNumber: d.contactNumber,
+            contactNumberCode: parsedContact.phoneCode,
+            contactNumber: parsedContact.phoneNumber,
             designation: d.designation,
             isLoginUser: d.isLoginUser === 'Y',
             isSalesperson: d.isSalesperson === '1' || d.isSalesperson === 'Y',
@@ -644,7 +649,7 @@ export class UserEntryComponent implements OnInit {
       DefaultDept: formValue.DefaultDept,
       isSalesperson: formValue.isSalesperson ? '1' : '0',
       userTypeId: formValue.userTypeId,
-      contactNumber: formValue.contactNumber,
+      contactNumber: this.withDialCode(formValue.contactNumber, formValue.contactNumberCode),
       CountryMasterSid: formValue.CountryMasterSid,
       status:
         formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
@@ -870,6 +875,7 @@ export class UserEntryComponent implements OnInit {
       DefaultDept: '',
       isSalesperson: false,
       userTypeId: null,
+      contactNumberCode: DialCodeDropdownComponent.getDefaultDialCodeFromLoginCountry(this.userData),
       contactNumber: '',
       status: 'Active',
       userPassword: null,
@@ -902,6 +908,23 @@ export class UserEntryComponent implements OnInit {
     // Clear any loaded user data for new entries
     this.userData = null;
     this.UserMasterSid = null;
+  }
+
+  private parsePhone(rawValue: any): { phoneCode: string; phoneNumber: string } {
+    const parsed = DialCodeDropdownComponent.splitPhoneNumber(rawValue);
+    return {
+      phoneCode:
+        parsed.phoneCode ||
+        DialCodeDropdownComponent.getDefaultDialCodeFromLoginCountry(this.userData),
+      phoneNumber: parsed.phoneNumber,
+    };
+  }
+
+  private withDialCode(phoneValue: any, dialCode?: string): string {
+    return DialCodeDropdownComponent.buildPhoneWithDialCode(
+      phoneValue,
+      dialCode || DialCodeDropdownComponent.getDefaultDialCodeFromLoginCountry(this.userData)
+    );
   }
 
   openTandC() {

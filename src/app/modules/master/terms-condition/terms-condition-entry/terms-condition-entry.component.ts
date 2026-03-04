@@ -42,22 +42,22 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
     templateUrl: './terms-condition-entry.component.html',
     styleUrl: './terms-condition-entry.component.scss'
 })
-export class TermsConditionEntryComponent implements OnInit{
+export class TermsConditionEntryComponent implements OnInit {
 
     TermsAndConditionsMasterSid: number;
-    departmentOnTermsId : number;
-    TermsAndConditionsDetailSid:number | null;
-    isEditMode : boolean = false;
-    isModalEditMode : boolean = false;
+    departmentOnTermsId: number;
+    TermsAndConditionsDetailSid: number | null;
+    isEditMode: boolean = false;
+    isModalEditMode: boolean = false;
     isSaving: boolean = false;
     isDetailSaving: boolean = false;
-    termsAndConditionForm !:FormGroup;
-    termsAndConditionDetailForm !:FormGroup;
-    menuList : any[] = [];
-    portList : any[] = [];
-    carrierList : any[] = [];
-    branchList : any[] = [];
-    departmentList : any[] = [];
+    termsAndConditionForm !: FormGroup;
+    termsAndConditionDetailForm !: FormGroup;
+    menuList: any[] = [];
+    portList: any[] = [];
+    carrierList: any[] = [];
+    branchList: any[] = [];
+    departmentList: any[] = [];
     selectedDepartment: any;
     selectedDepartmentType: string = '';
     selectedFCLLCL: string = '';
@@ -65,9 +65,9 @@ export class TermsConditionEntryComponent implements OnInit{
     filteredPOL: any[] = [];
     filteredPOD: any[] = [];
     filteredFDC: any[] = [];
-    TandCDetail : any[] = [];
-    filteredTandCDetail : any[] = [];
-    TandCDetailLength : number = 0;
+    TandCDetail: any[] = [];
+    filteredTandCDetail: any[] = [];
+    TandCDetailLength: number = 0;
     page = 1;
     pageSize = 5;
     totalAmountOfCollections: number;
@@ -83,19 +83,19 @@ export class TermsConditionEntryComponent implements OnInit{
 
     portLookupConfig = DROPDOWN_CONFIGS.PORT
     constructor(
-        private masterService : MasterService,
+        private masterService: MasterService,
         private operationService: OperationService,
         private settingsService: SettingsService,
-        private appSettingService : AppSettingsService,
-        private route : Router,
-        private currentRoute : ActivatedRoute,
-        private modalService : NgbModal,
-        private fb:FormBuilder,
-        private dialog : MatDialog,
+        private appSettingService: AppSettingsService,
+        private route: Router,
+        private currentRoute: ActivatedRoute,
+        private modalService: NgbModal,
+        private fb: FormBuilder,
+        private dialog: MatDialog,
         public mps: MenuPermissionService
-    ){}
+    ) { }
 
-    ngOnInit(){
+    ngOnInit() {
         this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
         this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
         this.mps.init().subscribe();
@@ -103,9 +103,9 @@ export class TermsConditionEntryComponent implements OnInit{
         this.initTandDetailForm();
         this.loadAllFields();
         this.currentRoute.paramMap.subscribe(
-            (param)=>{
+            (param) => {
                 this.TermsAndConditionsMasterSid = +param.get('id');
-                if(this.TermsAndConditionsMasterSid){
+                if (this.TermsAndConditionsMasterSid) {
                     this.isEditMode = true;
                     this.loadTermsAndConditions();
                 }
@@ -113,16 +113,16 @@ export class TermsConditionEntryComponent implements OnInit{
         )
     }
 
-    initTandCForm(){
+    initTandCForm() {
         this.termsAndConditionForm = this.fb.group({
-            MenuMasterSid : [,[Validators.required]],
-            BranchMasterSid : [,[Validators.required]],
-            departmentId : [],
-            Carrier : [],
-            POL : [],
-            POD : [],
-            FDC : [],
-            status : ['Active'],
+            MenuMasterSid: [, [Validators.required]],
+            BranchMasterSid: [, [Validators.required]],
+            departmentId: [],
+            Carrier: [],
+            POL: [],
+            POD: [],
+            FDC: [],
+            status: ['Active'],
         })
     }
 
@@ -143,57 +143,57 @@ export class TermsConditionEntryComponent implements OnInit{
         return details.map((item: any) => this.getDetailPayloadFromForm(item));
     }
 
-    initTandDetailForm(){
+    initTandDetailForm() {
         this.termsAndConditionDetailForm = this.fb.group({
             TermsAndConditionsMasterSid: [],
-            IsDefaut : [false,[Validators.required]],
-            TandC: ['',[Validators.required, Validators.maxLength(500)]],
-            Type : ['',[Validators.maxLength(20)]],
-            TypeValue : ['',[Validators.maxLength(20)]],
-            detailstatus : ['Active'], 
+            IsDefaut: [false, [Validators.required]],
+            TandC: ['', [Validators.required, Validators.maxLength(500)]],
+            Type: ['', [Validators.maxLength(20)]],
+            TypeValue: ['', [Validators.maxLength(20)]],
+            detailstatus: ['Active'],
         })
     }
 
-    updatePaginationData(){
-        let start = (this.page - 1 ) * this.pageSize;
+    updatePaginationData() {
+        let start = (this.page - 1) * this.pageSize;
         let end = start + this.pageSize;
-        this.filteredTandCDetail = this.TandCDetail.slice(start,end);
+        this.filteredTandCDetail = this.TandCDetail.slice(start, end);
     }
 
     private filterOnlyLeafMenus(menuList: any[]): any[] {
-  if (!Array.isArray(menuList)) return [];
+        if (!Array.isArray(menuList)) return [];
 
-  // Collect all parentIds that exist
-  const parentIds = new Set(
-    menuList
-      .map(menu => Number(menu.parentId))
-      .filter(parentId => !!parentId)
-  );
+        // Collect all parentIds that exist
+        const parentIds = new Set(
+            menuList
+                .map(menu => Number(menu.parentId))
+                .filter(parentId => !!parentId)
+        );
 
-  // Keep only menus that are NOT parents
-  return menuList.filter(
-    menu => !parentIds.has(Number(menu.MenuMasterSid))
-  );
-}
-    
-    loadAllFields(){
-         const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+        // Keep only menus that are NOT parents
+        return menuList.filter(
+            menu => !parentIds.has(Number(menu.MenuMasterSid))
+        );
+    }
+
+    loadAllFields() {
+        const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
         forkJoin({
-            menus : this.masterService.getAllMenu(),
-            ports : this.masterService.getAllPorts(),
-            carriers: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['carrier' , 'airLine'] }).pipe(catchError(err => of([]))),
-            branches : this.masterService.getCurrentBranch(CompanyMasterSid),
-            departments : this.masterService.getAllDepartments(CompanyMasterSid)
-        }).subscribe(({menus,ports,carriers,branches,departments})=>{
+            menus: this.masterService.getAllMenu(),
+            ports: this.masterService.getAllPorts(),
+            carriers: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['carrier', 'airLine'] }).pipe(catchError(err => of([]))),
+            branches: this.masterService.getCurrentBranch(CompanyMasterSid),
+            departments: this.masterService.getAllDepartments(CompanyMasterSid)
+        }).subscribe(({ menus, ports, carriers, branches, departments }) => {
             this.menuList = this.filterOnlyLeafMenus(menus),
-            this.portList = ports.data,
-            this.filteredPorts = [...this.portList],
-            this.filteredPOL = [...this.portList],
-            this.filteredPOD = [...this.portList],
-            this.filteredFDC = [...this.portList],
-            this.carrierList = carriers.data,
-            this.branchList = branches,
-            this.departmentList = departments;
+                this.portList = ports.data,
+                this.filteredPorts = [...this.portList],
+                this.filteredPOL = [...this.portList],
+                this.filteredPOD = [...this.portList],
+                this.filteredFDC = [...this.portList],
+                this.carrierList = carriers.data,
+                this.branchList = branches,
+                this.departmentList = departments;
             if (this.pendingDepartmentSid) {
                 this.onDepartmentChange(this.pendingDepartmentSid);
                 this.pendingDepartmentSid = null;
@@ -201,7 +201,7 @@ export class TermsConditionEntryComponent implements OnInit{
         })
     }
 
-    onDepartmentChange(departmentSid: any){
+    onDepartmentChange(departmentSid: any) {
         const selectedDepartmentSid = typeof departmentSid === 'object'
             ? Number(departmentSid?.DepartmentMasterSid ?? departmentSid?.departmentId ?? 0)
             : Number(departmentSid);
@@ -251,7 +251,18 @@ export class TermsConditionEntryComponent implements OnInit{
             : 'AIR';
 
         this.filteredPorts = this.getFilteredPortsBySegment(this.selectedFCLLCL);
-        this.onPortSelectionChange();
+
+        // 🔥 CLEAR POL & POD when department changes
+        this.termsAndConditionForm.patchValue({
+            POL: null,
+            POD: null,
+            FDC: null
+        }, { emitEvent: false });
+
+        // Reset filtered dropdown lists
+        this.filteredPOL = [...this.filteredPorts];
+        this.filteredPOD = [...this.filteredPorts];
+        this.filteredFDC = [...this.filteredPorts];
     }
 
     getFilteredPortsBySegment(segment: string): any[] {
@@ -266,24 +277,24 @@ export class TermsConditionEntryComponent implements OnInit{
     }
 
     onPortSelectionChange(): void {
-    const pol = this.termsAndConditionForm.get('POL')?.value;
-    const pod = this.termsAndConditionForm.get('POD')?.value;
+        const pol = this.termsAndConditionForm.get('POL')?.value;
+        const pod = this.termsAndConditionForm.get('POD')?.value;
 
-    this.filteredPOL = this.filteredPorts.filter(
-        (port: any) => port.PortCode !== pod
-    );
+        this.filteredPOL = this.filteredPorts.filter(
+            (port: any) => port.PortCode !== pod
+        );
 
-    this.filteredPOD = this.filteredPorts.filter(
-        (port: any) => port.PortCode !== pol
-    );
+        this.filteredPOD = this.filteredPorts.filter(
+            (port: any) => port.PortCode !== pol
+        );
 
-    // If same selected in both, clear one
-    if (pol && pod && pol === pod) {
-        this.termsAndConditionForm.patchValue({
-            POD: null
-        }, { emitEvent: false });
+        // If same selected in both, clear one
+        if (pol && pod && pol === pod) {
+            this.termsAndConditionForm.patchValue({
+                POD: null
+            }, { emitEvent: false });
+        }
     }
-}
 
 
     private asArray(value: any): any[] {
@@ -292,44 +303,48 @@ export class TermsConditionEntryComponent implements OnInit{
         return [value];
     }
 
-    onSubmit(){
+    onSubmit() {
         if (this.isSaving) return;
-        if(this.termsAndConditionForm.invalid){
+        if (this.termsAndConditionForm.invalid) {
             this.termsAndConditionForm.markAllAsTouched();
             this.termsAndConditionForm.updateValueAndValidity();
             this.appSettingService.showWarning('Please fill all the required fields');
             return;
         }
+        if (!this.TandCDetail || this.TandCDetail.length === 0) {
+        this.appSettingService.showWarning('Please add at least one Terms and Conditions detail row');
+        return;
+    }
         this.isSaving = true;
         const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
         const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
         const formValue = this.termsAndConditionForm.value;
         const { departmentId, ...rest } = formValue;
         const masterFormValue = {
-        ...rest,
-        POL: this.wrapAsArray(rest.POL),
-        POD: this.wrapAsArray(rest.POD),
-        FDC: this.wrapAsArray(rest.FDC)
+            ...rest,
+            POL: this.wrapAsArray(rest.POL),
+            POD: this.wrapAsArray(rest.POD),
+            FDC: this.wrapAsArray(rest.FDC)
         };
         const termsAndConditionsDetail = this.buildTermsDetailPayload();
         const departmentPayload = departmentId
-    ? [{
-        DepartmentOnTermSid: this.isEditMode ? this.departmentOnTermsId : null,
-        departmentId: Number(departmentId),
-        status: formValue.status === 'Active' ? 'A' : 'S'
-      }]
-    : [];
+            ? [{
+                DepartmentOnTermSid: this.isEditMode ? this.departmentOnTermsId : null,
+                departmentId: Number(departmentId),
+                status: formValue.status === 'Active' ? 'A' : 'S'
+            }]
+            : [];
         const payload = {
             ...masterFormValue,
-            status : formValue.status === 'Active' ? 'A' : 'S',
+            status: formValue.status === 'Active' ? 'A' : 'S',
             departmentOnTerms: departmentPayload,
             termsAndConditionsDetail,
-            ...(this.isEditMode ? {updatedBy:updatedBy}: {createdBy:createdBy})
+            ...(this.isEditMode ? { updatedBy: updatedBy } : { createdBy: createdBy })
         };
-        if(this.isEditMode){
-            this.masterService.updateTandCById(this.TermsAndConditionsMasterSid,payload).subscribe(
-                (resp:any)=>{
-                    if(resp.status){
+        if (this.isEditMode) {
+            this.masterService.updateTandCById(this.TermsAndConditionsMasterSid, payload).subscribe(
+                (resp: any) => {
+                    if (resp.status) {
                         this.appSettingService.showSuccess('Terms and Conditions updated successfully');
                         this.loadTermsAndConditions();
                     } else {
@@ -338,15 +353,15 @@ export class TermsConditionEntryComponent implements OnInit{
                     }
                     this.isSaving = false;
                 },
-                (error)=>{
+                (error) => {
                     this.isSaving = false;
-                    console.error('Error Updating Terms and Conditions',error);
+                    console.error('Error Updating Terms and Conditions', error);
                 }
             )
         } else {
             this.masterService.createNewTandC(payload).subscribe(
-                (resp:any)=>{
-                    if(resp.status){
+                (resp: any) => {
+                    if (resp.status) {
                         const createdId = resp?.data?.TermsAndConditionsMasterSid
                             || resp?.data?.termsAndCondition?.TermsAndConditionsMasterSid
                             || resp?.data?.id;
@@ -363,24 +378,24 @@ export class TermsConditionEntryComponent implements OnInit{
                     }
                     this.isSaving = false;
                 },
-                (error)=>{
+                (error) => {
                     this.isSaving = false;
                     const backendMessage = error?.error?.message || error?.error?.response?.message || error?.message;
                     this.appSettingService.showError(backendMessage)
-                    console.error('Error Creating Terms and Conditions',error)
+                    console.error('Error Creating Terms and Conditions', error)
                 }
             )
         }
     }
     private wrapAsArray(value: any): string[] {
-    if (!value) return [];
-    return Array.isArray(value) ? value : [value];
-}
+        if (!value) return [];
+        return Array.isArray(value) ? value : [value];
+    }
 
 
-    upsertDetailRow(){
+    upsertDetailRow() {
         if (this.isDetailSaving) return;
-        if(this.termsAndConditionDetailForm.invalid){
+        if (this.termsAndConditionDetailForm.invalid) {
             this.termsAndConditionDetailForm.markAllAsTouched();
             this.termsAndConditionDetailForm.updateValueAndValidity();
             this.appSettingService.showWarning('Please fill all the required fields');
@@ -405,10 +420,10 @@ export class TermsConditionEntryComponent implements OnInit{
         this.TandCDetailLength = this.TandCDetail.length;
         this.totalAmountOfCollections = this.TandCDetailLength;
         this.updatePaginationData();
-        this.closeDetailForm();
+        this.closeDetailSection();
     }
 
-    startNewDetail(){
+    startNewDetail() {
         this.initTandDetailForm();
         this.isModalEditMode = false;
         this.TermsAndConditionsDetailSid = null;
@@ -423,12 +438,13 @@ export class TermsConditionEntryComponent implements OnInit{
         });
     }
 
-    editDetail(data ?:any, index?: number){
+    editDetail(data?: any, index?: number) {
+        this.showDetailSection = true;
         this.initTandDetailForm();
         this.isModalEditMode = false;
         this.TermsAndConditionsDetailSid = null;
         this.pendingDetailEditIndex = null;
-        if(data){
+        if (data) {
             this.isModalEditMode = true;
             this.tandCDetailData = data;
             if (typeof index === 'number') {
@@ -436,10 +452,10 @@ export class TermsConditionEntryComponent implements OnInit{
             }
             this.termsAndConditionDetailForm.patchValue({
                 ...data,
-                IsDefaut : data.IsDefaut === 'S' ? true : false,
-                detailstatus : data.status === 'A' ? 'Active' : 'Suspended'
+                IsDefaut: data.IsDefaut === 'S' ? true : false,
+                detailstatus: data.status === 'A' ? 'Active' : 'Suspended'
             })
-            if(data.TermsAndConditionsDetailSid){
+            if (data.TermsAndConditionsDetailSid) {
                 this.termsAndConditionDetailForm.get('TermsAndConditionsMasterSid').setValue(data.TermsAndConditionsMasterSid);
                 this.TermsAndConditionsDetailSid = data.TermsAndConditionsDetailSid;
             }
@@ -478,10 +494,10 @@ export class TermsConditionEntryComponent implements OnInit{
         )
     }
 
-    loadTermsAndConditions(){
+    loadTermsAndConditions() {
         this.masterService.getTandCById(this.TermsAndConditionsMasterSid).subscribe(
-            (resp:any)=>{
-                if(resp.status){
+            (resp: any) => {
+                if (resp.status) {
                     const response = resp.data;
                     this.tandCHeaderData = response;
                     this.termsAndConditionForm.patchValue({
@@ -489,8 +505,8 @@ export class TermsConditionEntryComponent implements OnInit{
                         POL: response.POL?.[0] || null,
                         POD: response.POD?.[0] || null,
                         FDC: response.FDC?.[0] || null,
-                        departmentId : response.departments[0]?.departmentId || response.departments[0]?.DepartmentMasterSid || '',
-                        status : response.status === 'A' ? 'Active':'Suspended'    
+                        departmentId: response.departments[0]?.departmentId || response.departments[0]?.DepartmentMasterSid || '',
+                        status: response.status === 'A' ? 'Active' : 'Suspended'
                     })
                     this.onDepartmentChange(response.departments[0]?.departmentId || response.departments[0]?.DepartmentMasterSid);
                     this.departmentOnTermsId = response.departments[0]?.DepartmentOnTermSid;
@@ -499,16 +515,16 @@ export class TermsConditionEntryComponent implements OnInit{
                     this.appSettingService.showError('Error Loading Terms and Conditions');
                 }
             },
-            (error)=>{
-                console.error('Error Loading Terms and Conditions',error);
+            (error) => {
+                console.error('Error Loading Terms and Conditions', error);
             }
         )
     }
 
-    loadTandCDetails(){
+    loadTandCDetails() {
         this.masterService.getAllTandCDetail().subscribe(
-            (resp:any)=>{
-                if(resp.status){
+            (resp: any) => {
+                if (resp.status) {
                     const loadedData = resp.data;
                     this.TandCDetail = loadedData.filter(detail => detail.TermsAndConditionsMasterSid === this.TermsAndConditionsMasterSid);
                     this.TandCDetailLength = this.TandCDetail.length;
@@ -518,13 +534,13 @@ export class TermsConditionEntryComponent implements OnInit{
                     this.appSettingService.showError('Error Loading Terms and Conditions Details')
                 }
             },
-            (error)=>{
-                console.error('Error loading T&C Details',error);
+            (error) => {
+                console.error('Error loading T&C Details', error);
             }
         )
     }
 
-    closeDetailForm(){
+    closeDetailForm() {
         this.isModalEditMode = false;
         this.isDetailSaving = false;
         this.TermsAndConditionsDetailSid = null;
@@ -539,17 +555,72 @@ export class TermsConditionEntryComponent implements OnInit{
         });
     }
 
-    resetForm(){
+    resetForm() {
+
+        // If editing → reload original record from server
+        if (this.isEditMode && this.TermsAndConditionsMasterSid) {
+            this.loadTermsAndConditions();
+            return;
+        }
+
+        // ---------- CREATE MODE RESET ----------
+
         this.termsAndConditionForm.reset({
-            status : 'Active'
-        })
+            MenuMasterSid: null,
+            BranchMasterSid: null,
+            departmentId: null,
+            Carrier: null,
+            POL: null,
+            POD: null,
+            FDC: null,
+            status: 'Active'
+        });
+
+        // Reset detail form also
+        this.termsAndConditionDetailForm.reset({
+            TermsAndConditionsMasterSid: null,
+            IsDefaut: false,
+            TandC: '',
+            Type: '',
+            TypeValue: '',
+            detailstatus: 'Active'
+        });
+
+        // Clear header-level local state
         this.selectedDepartment = null;
         this.selectedDepartmentType = '';
         this.selectedFCLLCL = '';
+        this.departmentOnTermsId = null;
+
+        // Reset port filtering
         this.filteredPorts = [];
         this.filteredPOL = [];
         this.filteredPOD = [];
         this.filteredFDC = [];
+
+        // Clear details table
+        this.TandCDetail = [];
+        this.filteredTandCDetail = [];
+        this.TandCDetailLength = 0;
+        this.totalAmountOfCollections = 0;
+
+        // Reset pagination
+        this.page = 1;
+
+        // Reset flags
+        this.isModalEditMode = false;
+        this.isSaving = false;
+        this.isDetailSaving = false;
+        this.TermsAndConditionsDetailSid = null;
+        this.pendingDetailEditIndex = null;
+
+        // Hide detail section if open
+        this.showDetailSection = false;
+
+        // Clear header data references
+        this.tandCHeaderData = null;
+        this.tandCDetailData = null;
+
     }
 
     navigateToCreate() {
@@ -577,13 +648,13 @@ export class TermsConditionEntryComponent implements OnInit{
     }
 
     openDetailSection() {
-    this.showDetailSection = true;
-    this.startNewDetail();
-}
+        this.showDetailSection = true;
+        this.startNewDetail();
+    }
 
-closeDetailSection() {
-    this.showDetailSection = false;
-    this.closeDetailForm();
-}
+    closeDetailSection() {
+        this.showDetailSection = false;
+        this.closeDetailForm();
+    }
 
 }

@@ -2,3 +2,39 @@
 
 // html, body { height: 100%; }
 // body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* Placeholder Autocomplete Dropdown */
+.placeholder-autocomplete-dropdown {
+  position: absolute;
+  z-index: 10500;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.placeholder-autocomplete-item {
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .placeholder-key {
+    font-weight: 600;
+    color: #05608d;
+    font-family: monospace;
+  }
+
+  .placeholder-label {
+    color: #666;
+  }
+
+  &:hover,
+  &.active {
+    background-color: #e9f5fb;
+  }
+}

@@ -528,15 +528,23 @@
                                             </div>
                                         </aside>
                                         <aside class="col-md-6">
-                                            <div class="custom-form-group">
-                                                <input type="text" id="phone" placeholder=""
-                                                    class="custom-input-field sm" formControlName="ContactNumber"
-                                                    [onlyNumbers]="15">
-                                                <label for="text-input" class="input-label">Phone <span
-                                                        class="text-danger"></span></label>
-                                                <div *ngIf="f['ContactNumber'].touched && f['ContactNumber'].invalid"
-                                                    class="error-message">
-                                                    Enter a Valid Phone Number
+                                            <div class="d-flex gap-2 align-items-start">
+                                                <div class="custom-form-group custom-form-group-select fixed-dial-code"
+                                                    [class.filled]="!!rateRequestForm.get('ContactNumberCode')?.value">
+                                                    <app-dial-code-dropdown formControlName="ContactNumberCode"
+                                                        [countries]="dropdownStore.countries()"
+                                                        placeholder=""></app-dial-code-dropdown>
+                                                </div>
+                                                <div class="custom-form-group flex-grow-1">
+                                                    <input type="text" id="phone" placeholder=""
+                                                        class="custom-input-field sm" formControlName="ContactNumber"
+                                                        [onlyNumbers]="15">
+                                                    <label for="text-input" class="input-label">Phone <span
+                                                            class="text-danger"></span></label>
+                                                    <div *ngIf="f['ContactNumber'].touched && f['ContactNumber'].invalid"
+                                                        class="error-message">
+                                                        Enter a Valid Phone Number
+                                                    </div>
                                                 </div>
                                             </div>
                                         </aside>

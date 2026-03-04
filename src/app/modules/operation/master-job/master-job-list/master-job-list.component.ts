@@ -67,8 +67,8 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
   protected config: ListComponentConfig = {
     storageKey: 'master-job-list-state',
     defaultPageSize: 10,
-    defaultSortColumn: 'departmentName',
-    defaultSortDirection: 'asc',
+    defaultSortColumn: 'MasterJobDate',
+    defaultSortDirection: 'desc',
     pageSizeOptions: [10, 20, 50, 100, 500],
     maxPagesToShow: 3
   };
@@ -144,7 +144,7 @@ this.initializeTableConfig();
         MBLDate: this.datePipe.transform(item?.MBLDate),
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
-      this.applySorting();
+      // this.applySorting();
       this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching company.');

@@ -574,12 +574,12 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       'InstrumentNumber',
       'BankPartyName',
     ].forEach((ctrl) => {
-      this.receiptForm.get(ctrl)?.valueChanges.subscribe(() => {
+      this.receiptForm.get(ctrl)?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
         this.updateDetailNarration();
       });
     });
     ['detailItems', 'voucherMatchings'].forEach((ctrl) => {
-      this.receiptForm.get(ctrl)?.valueChanges.subscribe(() => {
+      this.receiptForm.get(ctrl)?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
         this.validateAmount();
       });
     });
@@ -1540,9 +1540,9 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     if (this.isReadOnly) {
       this.isDirty = false;
       this.initialFormValue = this.receiptForm.getRawValue();
-      this.receiptForm.disable();
       this.destroy$.next();
       this.destroy$.complete();
+      this.receiptForm.disable();
       return;
     }
 
