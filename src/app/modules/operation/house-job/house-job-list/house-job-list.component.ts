@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-import { map, Observable } from 'rxjs';
+import { catchError, map, Observable, of } from 'rxjs';
 
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
@@ -33,7 +33,6 @@ import {
 } from 'src/app/shared/interfaces/table.interface';
 
 import { OperationService } from '../../operation.service';
-import { MasterService } from 'src/app/modules/master/master.service';
 import {
   AdvancedFilterValues,
   DateRangeConfig,
@@ -94,11 +93,37 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
   };
   currentFilters: AdvancedFilterValues = {};
 
-  partySearchFn = (searchTerm: string, partyType: string) => {
-    return this.masterService.searchCustomersByName({
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      searchTerm: searchTerm || ''
-    }).pipe(map((res: any) => res.status ? res.data : []));
+  partySearchFn = (searchTerm: string, partyType: string): Observable<any[]> => {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+
+    switch (partyType) {
+      case 'CustomerMasterSid':
+        return this.operationService.getAllCustomersWithBranch(CompanyMasterSid).pipe(
+          map((data: any) => Array.isArray(data) ? data : []),
+          catchError(() => of([]))
+        );
+
+      case 'ShipperName':
+        return this.operationService.getCustomerByItsType({
+          CompanyMasterSid,
+          types: ['shipper']
+        }).pipe(
+          map((res: any) => res?.data || []),
+          catchError(() => of([]))
+        );
+
+      case 'ConsigneeName':
+        return this.operationService.getCustomerByItsType({
+          CompanyMasterSid,
+          types: ['consignee']
+        }).pipe(
+          map((res: any) => res?.data || []),
+          catchError(() => of([]))
+        );
+
+      default:
+        return of([]);
+    }
   };
 
   protected config: ListComponentConfig = {
@@ -123,8 +148,7 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
     private datePipe: CustomDatePipe,
-    public mps: MenuPermissionService,
-    private masterService: MasterService
+    public mps: MenuPermissionService
   ) {
     super(paginationService);
   }
@@ -147,7 +171,24 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
     this.initializeHeaderActions();
     this.initializeTableConfig();
 
+    // Set default filters before initial search so first API call includes date range
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'BookingDateTime'
+    };
+
     super.ngOnInit();
+  }
+
+  private getLast30FromDate(): string {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - 30);
+    return date.toISOString();
   }
 
   // =========================
@@ -321,11 +362,6 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
   // =========================
   // Search handlers (REQUIRED)
   // =========================
-
-  onSearchTriggered(searchValue: string): void {
-    this.filterValue = searchValue;
-    this.searchHouseJob();
-  }
 
   onAdvancedSearch(event: { searchValue: string; filters: AdvancedFilterValues }): void {
     this.filterValue = event.searchValue;

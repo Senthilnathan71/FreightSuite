@@ -1,186 +1,183 @@
 <div class="col-12">
-    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm justify-content-between">
+    <div class="bg-white mb-1 rounded shadow-sm">
 
-        <!-- Title Section -->
-        <div class="col-md pb-1">
-            <div class="d-flex align-items-center gap-2">
-                <h5 class="page-title mb-0 text-info">{{ title }}</h5>
-                <app-favorite-star *ngIf="showFavorite" [screenName]="title" class="mt-1 me-1">
-                </app-favorite-star>
-            </div>
-        </div>
+        <!-- Row 1: Title | Search | Actions -->
+        <div class="row align-items-center pt-1 justify-content-between px-2">
 
-        <!-- Search Section -->
-        <div class="col-md pb-1" *ngIf="showSearch">
-            <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0"
-                  (ngSubmit)="onSearch()" (submit)="$event.preventDefault()">
-                <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
-                    <div class="form-outline flex-grow-1 position-relative">
-                        <input name="filterValue" type="text" class="form-control pe-5"
-                            [placeholder]="searchPlaceholder" [(ngModel)]="searchValue" aria-label="Search input"
-                            (keyup.enter)="onSearch(); $event.preventDefault()">
-                        <button type="button" *ngIf="searchValue"
-                            class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                            (click)="onClearSearch()" tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip"
-                            data-bs-placement="top" data-bs-title="Clear search"
-                            onfocus="this.classList.replace('text-secondary','text-danger')"
-                            onblur="this.classList.replace('text-danger','text-secondary')">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    <!-- Filter Toggle Button -->
-                    <div class="mt-md-0 mt-1" *ngIf="hasAnyFilterConfig">
-                        <button type="button" class="btn btn-sm dofi-min-w-80 dofi-max-w-80"
-                            [class.btn-outline-info]="!showAdvancedFilters"
-                            [class.btn-info]="showAdvancedFilters"
-                            (click)="toggleAdvancedFilters()">
-                            <i class="fas fa-filter me-1"></i> Filters
-                        </button>
-                    </div>
-                    <div class="mt-md-0 mt-1">
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="onSearch()">
-                            <i class="fas fa-search me-1"></i> {{ searchButtonText }}
-                        </button>
-                    </div>
+            <!-- Title Section -->
+            <div class="col-md pb-1">
+                <div class="d-flex align-items-center gap-2">
+                    <h5 class="page-title mb-0 text-info">{{ title }}</h5>
+                    <app-favorite-star *ngIf="showFavorite" [screenName]="title" class="mt-1 me-1">
+                    </app-favorite-star>
                 </div>
-            </form>
-        </div>
+            </div>
 
-        <!-- Actions Section -->
-        <div class="col-md-auto pb-1" *ngIf="actions.length > 0">
-            <div
-                class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                <ng-container *ngFor="let action of actions">
-                    <!-- Dropdown Button (if action has children) -->
-                    <div *ngIf="action.children && action.children.length > 0 && action.condition !== false"
-                         ngbDropdown container="body" class="d-inline-block">
-                        <button type="button"
-                                class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                                [id]="'dropdown-' + action.action"
-                                [disabled]="action.disabled"
-                                ngbDropdownToggle>
-                            <i [class]="action.icon + ' me-1'"></i> {{ action.label }}
-                        </button>
-                        <div ngbDropdownMenu [attr.aria-labelledby]="'dropdown-' + action.action" class="shadow">
-                            <button *ngFor="let child of action.children"
-                                    class="dropdown-item text-dark"
-                                    ngbDropdownItem
-                                    [disabled]="child.disabled"
-                                    (click)="onActionClick(child.action)">
-                                <i [class]="child.icon + ' me-2'"></i> {{ child.label }}
+            <!-- Search Section -->
+            <div class="col-md pb-1" *ngIf="showSearch">
+                <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0"
+                      (ngSubmit)="onSearch()" (submit)="$event.preventDefault()">
+                    <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
+                        <div class="form-outline flex-grow-1 position-relative">
+                            <input name="filterValue" type="text" class="form-control pe-5"
+                                [placeholder]="searchPlaceholder" [(ngModel)]="searchValue" aria-label="Search input"
+                                (keyup.enter)="onSearch(); $event.preventDefault()">
+                            <button type="button" *ngIf="searchValue"
+                                class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                                (click)="onClearSearch()" tabindex="0" aria-label="Clear search" data-bs-toggle="tooltip"
+                                data-bs-placement="top" data-bs-title="Clear search"
+                                onfocus="this.classList.replace('text-secondary','text-danger')"
+                                onblur="this.classList.replace('text-danger','text-secondary')">
+                                <i class="fas fa-times"></i>
                             </button>
                         </div>
-                        <!-- Info Icon with Tooltip -->
-                        <i *ngIf="action.tooltip"
-                           class="fas fa-info-circle text-info ms-1"
-                           style="cursor: help;"
-                           [ngbTooltip]="action.tooltip"
-                           placement="bottom"></i>
+                        <div class="mt-md-0 mt-1">
+                            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                                (click)="onSearch()">
+                                <i class="fas fa-search me-1"></i> {{ searchButtonText }}
+                            </button>
+                        </div>
                     </div>
+                </form>
+            </div>
 
-                    <!-- Regular Button (if action has no children) -->
-                    <button *ngIf="!action.children && action.condition !== false"
-                            type="button"
-                            [class]="'btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80 ' + (action.cssClass || '')"
-                            [disabled]="action.disabled"
-                            (click)="onActionClick(action.action)">
-                        <i [class]="action.icon + ' me-1'"></i> {{ action.label }}
-                        <!-- Info Icon with Tooltip for regular button -->
-                        <i *ngIf="action.tooltip"
-                           class="fas fa-info-circle text-white-50 ms-1"
-                           style="cursor: help; font-size: 0.85em;"
-                           [ngbTooltip]="action.tooltip"
-                           placement="bottom"
-                           (click)="$event.stopPropagation()"></i>
+            <!-- Actions Section -->
+            <div class="col-md-auto pb-1" *ngIf="actions.length > 0">
+                <div
+                    class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    <ng-container *ngFor="let action of actions">
+                        <!-- Dropdown Button (if action has children) -->
+                        <div *ngIf="action.children && action.children.length > 0 && action.condition !== false"
+                             ngbDropdown container="body" class="d-inline-block">
+                            <button type="button"
+                                    class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                                    [id]="'dropdown-' + action.action"
+                                    [disabled]="action.disabled"
+                                    ngbDropdownToggle>
+                                <i [class]="action.icon + ' me-1'"></i> {{ action.label }}
+                            </button>
+                            <div ngbDropdownMenu [attr.aria-labelledby]="'dropdown-' + action.action" class="shadow">
+                                <button *ngFor="let child of action.children"
+                                        class="dropdown-item text-dark"
+                                        ngbDropdownItem
+                                        [disabled]="child.disabled"
+                                        (click)="onActionClick(child.action)">
+                                    <i [class]="child.icon + ' me-2'"></i> {{ child.label }}
+                                </button>
+                            </div>
+                            <!-- Info Icon with Tooltip -->
+                            <i *ngIf="action.tooltip"
+                               class="fas fa-info-circle text-info ms-1"
+                               style="cursor: help;"
+                               [ngbTooltip]="action.tooltip"
+                               placement="bottom"></i>
+                        </div>
+
+                        <!-- Regular Button (if action has no children) -->
+                        <button *ngIf="!action.children && action.condition !== false"
+                                type="button"
+                                [class]="'btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80 ' + (action.cssClass || '')"
+                                [disabled]="action.disabled"
+                                (click)="onActionClick(action.action)">
+                            <i [class]="action.icon + ' me-1'"></i> {{ action.label }}
+                            <!-- Info Icon with Tooltip for regular button -->
+                            <i *ngIf="action.tooltip"
+                               class="fas fa-info-circle text-white-50 ms-1"
+                               style="cursor: help; font-size: 0.85em;"
+                               [ngbTooltip]="action.tooltip"
+                               placement="bottom"
+                               (click)="$event.stopPropagation()"></i>
+                        </button>
+                    </ng-container>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Row 2: Filter controls (always visible when config exists) -->
+        <div class="d-flex flex-wrap align-items-end gap-2 px-2 py-2 border-top"
+             *ngIf="hasAnyFilterConfig">
+
+            <!-- Date Type -->
+            <div *ngIf="dateTypeConfig?.enabled">
+                <label class="form-label mb-0 small text-muted">Date Type</label>
+                <select class="form-select form-select-sm" [(ngModel)]="selectedDateType">
+                    <option *ngFor="let opt of dateTypeConfig!.options" [value]="opt.value">{{ opt.label }}</option>
+                </select>
+            </div>
+
+            <!-- Date Range Preset -->
+            <div *ngIf="dateRangeConfig?.enabled">
+                <label class="form-label mb-0 small text-muted">Date Range</label>
+                <select class="form-select form-select-sm" [(ngModel)]="selectedPreset">
+                    <option value="last30">Last 30 Days</option>
+                    <option value="thisMonth">This Month</option>
+                    <option value="lastMonth">Last Month</option>
+                    <option value="last2Months">Last 2 Months</option>
+                    <option value="last3Months">Last 3 Months</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+            </div>
+
+            <!-- Custom From Date -->
+            <div *ngIf="dateRangeConfig?.enabled && isCustomRange">
+                <label class="form-label mb-0 small text-muted">From</label>
+                <div class="input-group input-group-sm">
+                    <input class="form-control" placeholder="dd-MMM-yyyy" name="customFromDate"
+                           [(ngModel)]="customFromDate" ngbDatepicker #dpFrom="ngbDatepicker"
+                           (click)="dpFrom.toggle()" readonly>
+                    <button class="btn btn-outline-secondary" type="button" (click)="dpFrom.toggle()">
+                        <i class="fas fa-calendar-alt"></i>
                     </button>
-                </ng-container>
+                </div>
             </div>
-        </div>
 
-    </div>
+            <!-- Custom To Date -->
+            <div *ngIf="dateRangeConfig?.enabled && isCustomRange">
+                <label class="form-label mb-0 small text-muted">To</label>
+                <div class="input-group input-group-sm">
+                    <input class="form-control" placeholder="dd-MMM-yyyy" name="customToDate"
+                           [(ngModel)]="customToDate" ngbDatepicker #dpTo="ngbDatepicker"
+                           (click)="dpTo.toggle()" readonly>
+                    <button class="btn btn-outline-secondary" type="button" (click)="dpTo.toggle()">
+                        <i class="fas fa-calendar-alt"></i>
+                    </button>
+                </div>
+            </div>
 
-    <!-- Advanced Filters Row -->
-    <div class="row bg-white mb-1 py-2 px-2 rounded shadow-sm align-items-end"
-         *ngIf="hasAnyFilterConfig && showAdvancedFilters">
+            <!-- Party Type -->
+            <div *ngIf="partyFilterConfig?.enabled">
+                <label class="form-label mb-0 small text-muted">Party Type</label>
+                <select class="form-select form-select-sm" [(ngModel)]="selectedPartyType"
+                        (ngModelChange)="onPartyTypeChange()">
+                    <option *ngFor="let pt of partyFilterConfig!.partyTypes" [value]="pt.value">{{ pt.label }}</option>
+                </select>
+            </div>
 
-        <!-- Date Range Preset -->
-        <div class="col-md-auto mb-1" *ngIf="dateRangeConfig?.enabled">
-            <label class="form-label mb-0 small text-muted">Date Range</label>
-            <select class="form-select form-select-sm" [(ngModel)]="selectedPreset">
-                <option value="last30">Last 30 Days</option>
-                <option value="thisMonth">This Month</option>
-                <option value="lastMonth">Last Month</option>
-                <option value="last2Months">Last 2 Months</option>
-                <option value="last3Months">Last 3 Months</option>
-                <option value="custom">Custom Range</option>
-            </select>
-        </div>
+            <!-- Party -->
+            <div class="flex-grow-1" *ngIf="partyFilterConfig?.enabled" style="min-width: 200px;">
+                <label class="form-label mb-0 small text-muted">Party</label>
+                <dofi-searchable-dropdown
+                    [items]="partySearchResults"
+                    [displayFields]="['CustomerName']"
+                    [displayLabels]="['Name']"
+                    [labelFields]="['CustomerName']"
+                    bindLabel="CustomerName"
+                    bindValue="CustomerMasterSid"
+                    [isLoading]="partyLoading"
+                    placeholder="Search party..."
+                    [clearable]="true"
+                    (itemSelected)="onPartySelected($event)">
+                </dofi-searchable-dropdown>
+            </div>
 
-        <!-- Custom From Date -->
-        <div class="col-md-auto mb-1" *ngIf="dateRangeConfig?.enabled && isCustomRange">
-            <label class="form-label mb-0 small text-muted">From</label>
-            <div class="input-group input-group-sm">
-                <input class="form-control" placeholder="dd-MMM-yyyy" name="customFromDate"
-                       [(ngModel)]="customFromDate" ngbDatepicker #dpFrom="ngbDatepicker"
-                       (click)="dpFrom.toggle()" readonly>
-                <button class="btn btn-outline-secondary" type="button" (click)="dpFrom.toggle()">
-                    <i class="fas fa-calendar-alt"></i>
+            <!-- Clear Filters -->
+            <div>
+                <button type="button" class="btn btn-outline-secondary btn-sm" (click)="clearAdvancedFilters()">
+                    <i class="fas fa-times me-1"></i> Clear
                 </button>
             </div>
         </div>
 
-        <!-- Custom To Date -->
-        <div class="col-md-auto mb-1" *ngIf="dateRangeConfig?.enabled && isCustomRange">
-            <label class="form-label mb-0 small text-muted">To</label>
-            <div class="input-group input-group-sm">
-                <input class="form-control" placeholder="dd-MMM-yyyy" name="customToDate"
-                       [(ngModel)]="customToDate" ngbDatepicker #dpTo="ngbDatepicker"
-                       (click)="dpTo.toggle()" readonly>
-                <button class="btn btn-outline-secondary" type="button" (click)="dpTo.toggle()">
-                    <i class="fas fa-calendar-alt"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Date Type -->
-        <div class="col-md-auto mb-1" *ngIf="dateTypeConfig?.enabled">
-            <label class="form-label mb-0 small text-muted">Date Type</label>
-            <select class="form-select form-select-sm" [(ngModel)]="selectedDateType">
-                <option *ngFor="let opt of dateTypeConfig!.options" [value]="opt.value">{{ opt.label }}</option>
-            </select>
-        </div>
-
-        <!-- Party Type & Party Selection -->
-        <div class="col-md-auto mb-1" *ngIf="partyFilterConfig?.enabled">
-            <label class="form-label mb-0 small text-muted">Party Type</label>
-            <select class="form-select form-select-sm" [(ngModel)]="selectedPartyType"
-                    (ngModelChange)="onPartyTypeChange()">
-                <option *ngFor="let pt of partyFilterConfig!.partyTypes" [value]="pt.value">{{ pt.label }}</option>
-            </select>
-        </div>
-
-        <div class="col-md mb-1" *ngIf="partyFilterConfig?.enabled" style="min-width: 200px;">
-            <label class="form-label mb-0 small text-muted">Party</label>
-            <dofi-searchable-dropdown
-                [items]="partySearchResults"
-                [displayFields]="['CustomerName']"
-                [displayLabels]="['Name']"
-                [labelFields]="['CustomerName']"
-                bindLabel="CustomerName"
-                bindValue="CustomerMasterSid"
-                [isLoading]="partyLoading"
-                placeholder="Search party..."
-                [clearable]="true"
-                (itemSelected)="onPartySelected($event)">
-            </dofi-searchable-dropdown>
-        </div>
-
-        <!-- Clear Filters -->
-        <div class="col-md-auto mb-1">
-            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="clearAdvancedFilters()">
-                <i class="fas fa-times me-1"></i> Clear
-            </button>
-        </div>
     </div>
 </div>

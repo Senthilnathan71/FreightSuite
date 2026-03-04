@@ -67,7 +67,6 @@ export class PageHeaderComponent implements OnInit {
   @Output() advancedSearchTriggered = new EventEmitter<{ searchValue: string; filters: AdvancedFilterValues }>();
 
   // Advanced filter state
-  showAdvancedFilters = false;
   selectedPreset: DateRangePreset = 'last30';
   customFromDate: NgbDateStruct | null = null;
   customToDate: NgbDateStruct | null = null;
@@ -87,6 +86,9 @@ export class PageHeaderComponent implements OnInit {
 
   ngOnInit(): void {
     this.initializeFilterDefaults();
+    if (this.partyFilterConfig?.enabled) {
+      this.loadPartyResults('');
+    }
   }
 
   initializeFilterDefaults(): void {
@@ -102,12 +104,15 @@ export class PageHeaderComponent implements OnInit {
   }
 
   onSearch(): void {
-    this.searchTriggered.emit(this.searchValue);
     if (this.hasAnyFilterConfig) {
+      // Only emit advancedSearchTriggered when filters are configured
       this.advancedSearchTriggered.emit({
         searchValue: this.searchValue,
         filters: this.getCurrentFilterValues()
       });
+    } else {
+      // Emit plain searchTriggered for pages without filters
+      this.searchTriggered.emit(this.searchValue);
     }
   }
 
@@ -119,13 +124,6 @@ export class PageHeaderComponent implements OnInit {
 
   onActionClick(action: string): void {
     this.actionTriggered.emit(action);
-  }
-
-  toggleAdvancedFilters(): void {
-    this.showAdvancedFilters = !this.showAdvancedFilters;
-    if (this.showAdvancedFilters && this.partyFilterConfig?.enabled && this.partySearchResults.length === 0) {
-      this.loadPartyResults('');
-    }
   }
 
   clearAdvancedFilters(): void {
