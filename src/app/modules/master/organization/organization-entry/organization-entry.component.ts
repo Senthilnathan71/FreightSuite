@@ -4547,8 +4547,10 @@ private loadNetworks(): void {
       branches.push({
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
         BranchName: branch.CustBranchName,
-        StateMasterSid: stateId,
-        CityMasterSid: cityId,
+        StateMasterSid: stateId || undefined,
+        CityMasterSid: cityId || undefined,
+        StateName: branch.StateName || '',
+        CityName: branch.CityName || '',
         Branch_Type: branch.CustBranchType || 'BRANCH',
         Branch_Code: branch.CustBranchCode || '',
         Contact_Person: branch.Contact_Person || '',
