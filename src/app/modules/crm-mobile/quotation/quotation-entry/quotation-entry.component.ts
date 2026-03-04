@@ -249,6 +249,7 @@ export class QuotationEntryComponent implements OnInit {
   ];
 
   allApprovalStatus = [
+    { value : "Open" , name :"Open"},
     { value : "Pending" , name :"Waiting for Approval"},
     { value : "WaitingForFinalApproval" , name :"Waiting for Final Approval"},
     { value : "WaitingForCustomerApproval" , name :"Waiting for Customer Approval"},
@@ -258,6 +259,7 @@ export class QuotationEntryComponent implements OnInit {
   ]
 
   approvalStatus = [
+    { value : "Open" , name :"Open"},
     { value : "Pending" , name :"Waiting for Approval"},
     { value : "Approved" , name :"Approved"},
     { value : "Rejected" , name : "Rejected"},
@@ -1919,6 +1921,7 @@ isRateLockDisabled(): boolean {
       RateLock : formValue.RateLock ? "Y" : "N",
       PreCustomerMasterSid : formValue.PreCustomerMasterSid,
       CustomerMasterSid: formValue.CustomerMasterSid,
+      CustomerBranchSid: formValue.CustomerBranchSid,
       CustomerRef: formValue.CustomerRef,
       CustomerAddress: formValue.CustomerAddress,
       Email: formValue.Email,
@@ -3568,6 +3571,10 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
           <p>${this.userData['userEmail']}</p>
         </div>
       `);
+      if (this.QuoteHeaderSid) {
+        formData.append('QuoteHeaderSid', String(this.QuoteHeaderSid));
+      }
+      formData.append('CreatedBy', this.userData?.['userEmail'] || '');
       formData.append('file', pdfBlob, (this.selectedItem?.QuotationName || 'quotation') + '.pdf');
 
       // Step 4: Use firstValueFrom for cleaner async handling
@@ -3604,6 +3611,11 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
 
       const quotationNumber = this.quotationForm.get('QuoteNumber')?.value || 'Quotation';
       pdfMake.createPdf(docDefinition).download(`Quotation_${quotationNumber}.pdf`);
+      if (this.QuoteHeaderSid) {
+        this.leadService.markQuoteWaitingForApproval(this.QuoteHeaderSid, {
+          updatedBy: this.userData?.['userEmail'] || ''
+        }).subscribe();
+      }
       this.appSettingService.showSuccess('PDF downloaded successfully!');
     } catch (error) {
       console.error('Quotation PDF download error:', error);
@@ -4102,13 +4114,50 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
 //   }
 // }
 
-async goForBookingCreation() {
-  const customerHasBranch = this.customers.find(cus => cus.CustomerMasterSid === this.selectedItem.CustomerMasterSid);
-  if (!customerHasBranch) {
-    this.appSettingService.showWarning("Please fill KYC and Branch details for the customer.");
-    return;
+private validateCustomerForBookingCreation(): boolean {
+  const customerMasterSid = this.selectedItem?.CustomerMasterSid ?? this.quotationForm.get('CustomerMasterSid')?.value;
+  let customerBranchSid = this.selectedItem?.CustomerBranchSid ?? this.quotationForm.get('CustomerBranchSid')?.value;
+
+  // Backward compatibility: old quotations may have null CustomerBranchSid on header.
+  // If exactly one branch exists for this customer, auto-select it for booking flow.
+  if (customerMasterSid && !customerBranchSid) {
+    const availableBranches = (this.cusBranchList || []).filter((branch: any) =>
+      Number(branch?.CustomerMasterSid ?? branch?.customerMaster?.CustomerMasterSid) === Number(customerMasterSid)
+    );
+
+    if (availableBranches.length === 1) {
+      customerBranchSid = availableBranches[0]?.CustomerBranchSid ?? null;
+      if (customerBranchSid) {
+        this.quotationForm.patchValue({ CustomerBranchSid: customerBranchSid }, { emitEvent: false });
+        if (this.selectedItem) {
+          this.selectedItem.CustomerBranchSid = customerBranchSid;
+        }
+      }
+    }
   }
 
+  if (!customerMasterSid || !customerBranchSid) {
+    this.appSettingService.showWarning("Please fill KYC and Branch details for the customer.");
+    return false;
+  }
+
+  const isMappedCustomerBranch = this.customers.some((cus) =>
+    Number(cus.CustomerMasterSid) === Number(customerMasterSid) &&
+    Number(cus.CustomerBranchSid) === Number(customerBranchSid)
+  );
+
+  if (!isMappedCustomerBranch) {
+    this.appSettingService.showWarning("Selected customer branch is not mapped in debtor/COA. Please complete mapping before booking.");
+    return false;
+  }
+
+  return true;
+}
+
+async goForBookingCreation() {
+  if (!this.validateCustomerForBookingCreation()) {
+    return;
+  }
   // Check if booking already exists
   if (this.selectedItem.BookingHeaderSid) {
     // Show confirmation modal
@@ -4205,6 +4254,9 @@ private async createBookingFromQuotation() {
       }
     }
     // Prepare booking data
+    const cargoCurrency = cargo?.CargoCurrency || enquiryOther?.CargoCurrency || null;
+    const cargoValue = Number(cargo?.CargoValue ?? enquiryOther?.CargoValue ?? 0) || 0;
+
     const bookingData = {
       quotation: true,
       // Clear BookingHeaderSid to ensure new booking creation
@@ -4245,10 +4297,18 @@ private async createBookingFromQuotation() {
         GrossWeight: cargo.GrossWeight || 0,
         NetWeight: cargo.NetWeight || 0,
         Volume: cargo.Volume || 0,
+        Volumetric: cargo.Volumetric ||  0,
         ChargeableWeight: cargo.ChargeableWeight || 0,
         ContainerType: containerTypeId,
         NoofContainers: cargo.Qty || 0,
+        NoOfPackage: cargo.PackageQty || 0,
       }] : [],
+
+      // Other details (Booking tab "Cargo Value" patches from bookingOthers)
+      bookingOthers: [{
+        CargoCurrency: cargoCurrency,
+        CargoValue: cargoValue
+      }],
 
       // Product details
       bookingProduct: (cargo?.quoteProduct || []).map(product => ({
@@ -4673,12 +4733,9 @@ doesBookingExistForRoute(routeIndex: number): boolean {
          (!!routeData?.bookingHeader && !!routeData.bookingHeader.BookingHeaderSid);
 }
 async goForBookingCreationForRoute(routeIndex: number) {
-  const customerHasBranch = this.customers.find(cus => cus.CustomerMasterSid === this.selectedItem.CustomerMasterSid);
-  if (!customerHasBranch) {
-    this.appSettingService.showWarning("Please fill KYC and Branch details for the customer.");
+  if (!this.validateCustomerForBookingCreation()) {
     return;
   }
-
   // Check if the specific route is approved
   if (!this.isRouteApproved(routeIndex)) {
     this.appSettingService.showWarning("This route is not approved. Please approve the route before creating a booking.");
@@ -4781,6 +4838,9 @@ private async createBookingFromRoute(routeIndex: number, carrierIndex: number) {
 
     
     // Prepare booking data
+    const cargoCurrency = cargo?.CargoCurrency || enquiryOther?.CargoCurrency || null;
+    const cargoValue = Number(cargo?.CargoValue ?? enquiryOther?.CargoValue ?? 0) || 0;
+
     const bookingData = {
       quotation: true,
       // Clear BookingHeaderSid to ensure new booking creation
@@ -4822,13 +4882,21 @@ private async createBookingFromRoute(routeIndex: number, carrierIndex: number) {
         GrossWeight: cargo.GrossWeight || 0,
         NetWeight: cargo.NetWeight || 0,
         Volume: cargo.Volume || 0,
+        Volumetric: cargo.Volumetric ||  0,
         ChargeableWeight: cargo.ChargeableWeight || 0,
         ContainerType: containerTypeId,
         NoofContainers: cargo.Qty || 0,
+        NoOfPackage: cargo.PackageQty || 0,
       }] : [],
 
+      // Other details (Booking tab "Cargo Value" patches from bookingOthers)
+      bookingOthers: [{
+        CargoCurrency: cargoCurrency,
+        CargoValue: cargoValue
+      }],
+
       // Product details
-      bookingProducts: (cargo?.quoteProduct || []).map(product => ({
+      bookingProduct: (cargo?.quoteProduct || []).map(product => ({
         ProductName: product.ProductName,
         ExternaPkg: product.PackageType,
         ExternlQty: product.ExternalQty,

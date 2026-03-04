@@ -504,7 +504,7 @@
                         </button>
                       </div>
                       <label for="text-input" class="input-label">Consignee Name <span
-                          class="text-danger">*</span></label>
+                          class="text-danger"></span></label>
                     </div>
                   </aside>
 
@@ -515,14 +515,8 @@
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="ConsigneeAddress">
                       <label for="text-input" class="input-label">Consignee Address <span
-                          class="text-danger">*</span></label>
-                      @if(bookingForm.get('ConsigneeAddress')?.touched && bookingForm.get('ConsigneeAddress')?.invalid){
-                      <div class="error-message">
-                        @if(bookingForm.get('ConsigneeAddress')?.hasError('required')){
-                        <span>Required</span>
-                        }
-                      </div>
-                      }
+                          class="text-danger"></span></label>
+                      
                     </div>
                   </aside>
 

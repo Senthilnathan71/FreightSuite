@@ -715,6 +715,14 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     )
   }
 
+  markQuoteWaitingForApproval(quoteHeaderSid: number, payload: any = {}) {
+    return this.http.patch<{ data: any }>(`ff-quotation/approval-status/waiting/${quoteHeaderSid}`, payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
   getTariffDetailsByQuote(payload: any) {
     return this.http.post<{ data: any[] }>('ff-booking/tariffDetails', payload).pipe(
       map((resp) => {
