@@ -6,12 +6,11 @@
 import { BookingPdfData, CroPdfData, BookingDocumentType } from '../interfaces/pdf-document.interfaces';
 import { buildHeader } from '../builders/pdf-header.builder';
 import { createFooterFunction } from '../builders/pdf-footer.builder';
-import { buildCargoTable, buildProductTable, buildTwoColumnInfo } from '../builders/pdf-table.builder';
+import { buildTwoColumnInfo } from '../builders/pdf-table.builder';
 import {
   buildTitle,
   buildSectionTitle,
   buildDivider,
-  buildConfirmationMessage,
   buildRemarks,
   buildTermsSection
 } from '../builders/pdf-section.builder';
@@ -34,86 +33,87 @@ export function generateBookingDocument(
   return {
     pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
     pageOrientation: data.config?.pageOrientation || PDF_DEFAULT_CONFIG.pageOrientation,
-    pageMargins: data.config?.pageMargins || PDF_DEFAULT_CONFIG.pageMargins,
-    // pageMargins: data.config?.pageMargins || [20, 180, 20, 60], // Reduced from 200 to 150
+    pageMargins: data.config?.pageMargins || [20, 20, 20, 100],
 
-    //  background: function (currentPage, pageSize) {
-        
-    //     return {
-    //       canvas: [
-    //         // LEFT BORDER
-    //         { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.8 },
-    //         // RIGHT BORDER
-    //         { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 },
-    //         // TOP BORDER
-    //         { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.8 },
-    //         // BOTTOM BORDER
-    //         { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 }
-    //       ]
-    //     };
-    //   },
+    background: function (currentPage, pageSize) {
+      return {
+        canvas: [
+          // LEFT BORDER
+          { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.8 },
+          // RIGHT BORDER
+          { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 },
+          // TOP BORDER
+          { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.8 },
+          // BOTTOM BORDER
+          { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 }
+        ]
+      };
+    },
 
     content: [
       // Header
       buildHeader(data.company, data.branch, data.logo),
 
       // Title
-      buildTitle(`Booking Confirmation${departmentLabel}`),
+      buildBookingTitle(`Booking Confirmation${departmentLabel}`),
 
       // Customer and Booking Info
       buildBookingInfo(data),
 
       // Divider
-      // buildDivider(),
+      buildDivider({ width: 555, margin: [0, 6, 0, 8], thickness: 1 }),
 
       // Confirmation message
-      buildConfirmationMessage(),
+      {
+        text: 'We are pleased to confirm your booking as below',
+        style: 'labelBold',
+        fontSize: 11,
+        margin: [4, 0, 0, 6]
+      },
 
       // Shipment Details
       buildShipmentDetails(data),
 
-      // Cargo Table
-      buildSectionTitle('Cargo Details'),
-      buildCargoTable(
-        data.cargo.map(c => ({
-          CargoType: c.cargoType || '',
-          ContainerType: c.containerType || '',
-          NoofContainers: c.noOfContainers || 0,
-          NoOfPackage: c.noOfPackage || 0,
-          GrossWeight: c.grossWeight || 0,
-          Volume: c.volume || 0,
-          ChargeableWeight: c.chargeableWeight || 0,
-          ShipmentTerms: c.shipmentTerms || ''
-        })),
-        data.fclLcl
-      ),
-
-      // Product Details (if available)
-      ...(data.products && data.products.length > 0 ? [
-        buildSectionTitle('Product Details'),
-        buildProductTable(data.products.map(p => ({
-          ProductName: p.productName || '',
-          HSCode: p.hsCode || '',
-          GrossWeight: p.grossWeight || 0,
-          NetWeight: p.netWeight || 0,
-          Volume: p.volume || 0
-        })))
-      ] : []),
+      // Cargo details table
+      buildBookingCargoDetails(data),
 
       // Terms (if available)
       ...(data.terms && data.terms.length > 0 ? [
         buildTermsSection(data.terms)
-      ] : []),
-
-      // Signature section
-      buildBookingSignature(data),
-
-      // Thank you message
-      buildThankYouSection()
+      ] : [])
     ],
-    footer: createFooterFunction(data.userData),
+    footer: (currentPage: number, pageCount: number) => buildBookingFooter(data, currentPage, pageCount),
     styles: getPdfStyles(),
     defaultStyle: PDF_DEFAULT_CONFIG.defaultStyle
+  };
+}
+
+function buildBookingTitle(title: string): any {
+  const fullWidth = 555;
+
+  return {
+    stack: [
+      {
+        canvas: [
+          { type: 'line', x1: 0, y1: 0, x2: fullWidth, y2: 0, lineWidth: 1, lineColor: '#000000' }
+        ],
+        margin: [0, 0, 0, 6]
+      },
+      {
+        text: title,
+        alignment: 'center',
+        bold: true,
+        fontSize: 13,
+        margin: [0, 3, 0, 8]
+      },
+      {
+        canvas: [
+          { type: 'line', x1: 0, y1: 0, x2: fullWidth, y2: 0, lineWidth: 1, lineColor: '#000000' }
+        ],
+        margin: [0, 0, 0, 8]
+      }
+    ],
+    margin: [0, 0, 0, 2]
   };
 }
 
@@ -123,26 +123,38 @@ export function generateBookingDocument(
 function buildBookingInfo(data: BookingPdfData): any {
   const booking = data.booking;
 
-  const leftItems = [
-    { label: 'Customer', value: booking?.customerName || '' },
-    { label: 'Address', value: booking?.customerAddress || '' }
-  ].filter(item => item.value);
+  const leftBlock = {
+    stack: [
+      { text: 'Customer', style: 'labelBold', fontSize: 11, margin: [10, 0, 0, 4] },
+      { text: booking?.customerName || '', fontSize: 10, margin: [36, 0, 0, 3] },
+      { text: booking?.customerAddress || '', fontSize: 10, margin: [36, 0, 0, 0] }
+    ]
+  };
 
   const rightItems = [
-    { label: 'Booking No', value: booking?.bookingNo || '' },
-    { label: 'Booking Date', value: formatDate(booking?.bookingDate) },
-    { label: 'Cut Off Date', value: formatDate(booking?.cutOffDate) }
+    { label: 'Booking No.', value: booking?.bookingNo || '' },
+    { label: 'Booking Date', value: formatDate(booking?.bookingDate) || '' },
+    { label: 'Cut Off Date', value: formatDate(booking?.cutOffDate) || '' },
   ];
 
-  if (booking?.quotationNumber) {
-    rightItems.push({ label: 'Quotation No', value: booking.quotationNumber });
-  }
+  const rightBlock = {
+    stack: rightItems.map((item) => ({
+      columns: [
+        { text: item.label, style: 'labelBold', width: 95 },
+        { text: ':', width: 8 },
+        { text: item.value, width: '*' }
+      ],
+      margin: [0, 0, 0, 6]
+    }))
+  };
 
-  return buildTwoColumnInfo(
-    leftItems.filter(i => i.value),
-    rightItems.filter(i => i.value),
-    { labelWidth: 100 }
-  );
+  return {
+    columns: [
+      { width: '50%', ...leftBlock },
+      { width: '50%', ...rightBlock }
+    ],
+    margin: [0, 0, 0, 2]
+  };
 }
 
 /**
@@ -151,109 +163,211 @@ function buildBookingInfo(data: BookingPdfData): any {
 function buildShipmentDetails(data: BookingPdfData): any {
   const booking = data.booking;
   const route = data.route;
+  const firstCargo = data.cargo?.[0] || {};
+  const firstProduct = data.products?.[0];
 
-  const leftDetails: any[] = [];
-  const rightDetails: any[] = [];
+  const leftDetails = [
+    { label: 'Vessel/Voyage', value: [booking?.vesselName, booking?.voyageNo].filter(Boolean).join(' / ') },
+    { label: 'POL', value: formatPort(route?.pol) },
+    { label: 'POD', value: formatPort(route?.pod) },
+    { label: 'FPD', value: formatPort(route?.fpd) },
+    { label: 'Shipper Name', value: booking?.shipperName || '' },
+    { label: 'Shipping Bill No.', value: firstProduct?.shippingBillNo || '' },
+    { label: 'Inco Terms', value: booking?.incoTerms || '' },
+    { label: 'Hand Over To', value: booking?.handOverTo || '' },
+    { label: 'Shipment Terms', value: firstCargo?.shipmentTerms || '' }
+  ];
 
-  // Left column
-  if (booking?.vesselName || booking?.voyageNo) {
-    leftDetails.push({
-      label: 'Vessel/Voyage',
-      value: [booking.vesselName, booking.voyageNo].filter(Boolean).join(' / ')
-    });
-  }
+  const rightDetails = [
+    { label: data.fclLcl === 'AIR' ? 'HAWBL No.' : 'HBL No.', value: booking?.hblNo || '' },
+    { label: 'ETD', value: formatDate(booking?.polEtd) },
+    { label: 'ETA', value: formatDate(booking?.podEta || booking?.fpdEta) },
+    { label: 'Freight', value: booking?.freightTerms || '' },
+    { label: 'Dest Agent', value: booking?.destinationAgent || '' },
+    { label: 'Consignee Name', value: booking?.consigneeName || '' },
+    { label: 'Carrier', value: booking?.carrierName || '' },
+    { label: 'Carrier Booking', value: booking?.carrierBookingRef || '' },
+    { label: 'Remarks', value: booking?.remarks || '' }
+  ];
 
-  if (route?.pol) {
-    leftDetails.push({
-      label: 'Port of Loading',
-      value: formatPort(route.pol)
-    });
-  }
+  return {
+    table: {
+      widths: ['50%', '50%'],
+      body: [[
+        { stack: buildDetailRows(leftDetails, 95), margin: [4, 3, 2, 3] },
+        { stack: buildDetailRows(rightDetails, 95), margin: [4, 3, 2, 3] }
+      ]]
+    },
+    layout: 'bordered',
+    margin: [0, 0, 0, 5]
+  };
+}
 
-  if (route?.pod) {
-    leftDetails.push({
-      label: 'Port of Discharge',
-      value: formatPort(route.pod)
-    });
-  }
-
-  if (route?.fpd && formatPort(route.fpd) !== formatPort(route.pod)) {
-    leftDetails.push({
-      label: 'Final Destination',
-      value: formatPort(route.fpd)
-    });
-  }
-
-  if (booking?.shipperName) {
-    leftDetails.push({ label: 'Shipper', value: booking.shipperName });
-  }
-
-  if (booking?.incoTerms) {
-    leftDetails.push({ label: 'Inco Terms', value: booking.incoTerms });
-  }
-
-  // Right column
-  if (booking?.hblNo) {
-    rightDetails.push({
-      label: data.fclLcl === 'AIR' ? 'HAWB No' : 'HBL No',
-      value: booking.hblNo
-    });
-  }
-
-  if (booking?.polEtd) {
-    rightDetails.push({ label: 'POL ETD', value: formatDate(booking.polEtd) });
-  }
-
-  if (booking?.podEta) {
-    rightDetails.push({ label: 'POD ETA', value: formatDate(booking.podEta) });
-  }
-
-  if (booking?.consigneeName) {
-    rightDetails.push({ label: 'Consignee', value: booking.consigneeName });
-  }
-
-  if (booking?.carrierName) {
-    rightDetails.push({ label: 'Carrier', value: booking.carrierName });
-  }
-
-  if (booking?.freightTerms) {
-    rightDetails.push({ label: 'Freight Terms', value: booking.freightTerms });
-  }
-
-  if (booking?.destinationAgent) {
-    rightDetails.push({ label: 'Destination Agent', value: booking.destinationAgent });
-  }
-
-  return buildTwoColumnInfo(leftDetails, rightDetails, { labelWidth: 110 });
+function buildDetailRows(items: Array<{ label: string; value: string }>, labelWidth: number): any[] {
+  return items.map((item) => ({
+    columns: [
+      { text: item.label, style: 'labelBold', fontSize: 11, width: labelWidth },
+      { text: ':', width: 6 },
+      { text: item.value || '', fontSize: 10, width: '*' }
+    ],
+    margin: [0, 3, 0, 3]
+  }));
 }
 
 /**
- * Build booking signature section
+ * Format number to 3 decimal places with comma separators
+ * e.g. 1000 -> "1,000.000", 1.25 -> "1.250"
  */
-function buildBookingSignature(data: BookingPdfData): any {
+function formatDecimal(value: unknown): string {
+  if (value === null || value === undefined || value === '') return '';
+  const num = parseFloat(String(value));
+  if (isNaN(num)) return '';
+  return num.toLocaleString('en-US', {
+    minimumFractionDigits: 3,
+    maximumFractionDigits: 3
+  });
+}
+
+function buildBookingCargoDetails(data: BookingPdfData): any {
+  const firstCargo = data.cargo?.[0];
+  if (!firstCargo) {
+    return { text: '' };
+  }
+
+  const fclLcl = data.fclLcl?.toUpperCase();
+
+  const headerRow: any[] = [
+    { text: 'Cargo Type', style: 'tableHeader', alignment: 'center' }
+  ];
+  const valueRow: any[] = [
+    { text: firstCargo.cargoType || '', style: 'tableCell' }
+  ];
+
+  if (fclLcl === 'FCL') {
+    // FCL: Cargo Type | Container Type | No. of Containers | Gross Weight | Volume (CBM)
+    headerRow.push(
+      { text: 'Container Type', style: 'tableHeader', alignment: 'center' },
+      { text: 'No. of Containers', style: 'tableHeader', alignment: 'center' },
+      { text: 'Gross Weight', style: 'tableHeader', alignment: 'center' },
+      { text: 'Volume (CBM)', style: 'tableHeader', alignment: 'center' }
+    );
+    valueRow.push(
+      { text: firstCargo.containerType || '', style: 'tableCell' },
+      { text: safeText(firstCargo.noOfContainers), style: 'tableCell', alignment: 'right' },
+      { text: formatDecimal(firstCargo.grossWeight), style: 'tableCell', alignment: 'right' },
+      { text: formatDecimal(firstCargo.volume), style: 'tableCell', alignment: 'right' }
+    );
+  } else if (fclLcl === 'LCL') {
+    // LCL: Cargo Type | Gross Weight | No. of Pkg | Chargeable Weight | Volume (CBM)
+    headerRow.push(
+      { text: 'Gross Weight', style: 'tableHeader', alignment: 'center' },
+      { text: 'No. of Pkg', style: 'tableHeader', alignment: 'center' },
+      { text: 'Chargeable Weight', style: 'tableHeader', alignment: 'center' },
+      { text: 'Volume (CBM)', style: 'tableHeader', alignment: 'center' }
+    );
+    valueRow.push(
+      { text: formatDecimal(firstCargo.grossWeight), style: 'tableCell', alignment: 'right' },
+      { text: safeText(firstCargo.noOfPackage), style: 'tableCell', alignment: 'right' },
+      { text: formatDecimal(firstCargo.chargeableWeight), style: 'tableCell', alignment: 'right' },
+      { text: formatDecimal(firstCargo.volume), style: 'tableCell', alignment: 'right' }
+    );
+  } else if (fclLcl === 'AIR') {
+    // AIR: Cargo Type | Gross Weight | Chargeable Weight | Volume (CBM)
+    headerRow.push(
+      { text: 'Gross Weight', style: 'tableHeader', alignment: 'center' },
+      { text: 'Chargeable Weight', style: 'tableHeader', alignment: 'center' },
+      { text: 'Volume (CBM)', style: 'tableHeader', alignment: 'center' }
+    );
+    valueRow.push(
+      { text: formatDecimal(firstCargo.grossWeight), style: 'tableCell', alignment: 'right' },
+      { text: formatDecimal(firstCargo.chargeableWeight), style: 'tableCell', alignment: 'right' },
+      { text: formatDecimal(firstCargo.volume), style: 'tableCell', alignment: 'right' }
+    );
+  }
+
   return {
     stack: [
+      { text: 'Cargo Details', style: 'sectionTitle', margin: [0, 5, 0, 5] },
       {
-        text: "Your's Sincerely,",
-        style: 'labelBold',
-        margin: [0, 20, 0, 10]
-      },
-      {
-        text: data.userData?.userName || ''
+        table: {
+          headerRows: 1,
+          widths: new Array(headerRow.length).fill('*'),
+          body: [headerRow, valueRow]
+        },
+        layout: 'bordered',
+        margin: [0, 0, 0, 6]
       }
     ]
   };
 }
 
-/**
- * Build thank you section
- */
-function buildThankYouSection(): any {
+function safeText(value: unknown): string {
+  if (value === null || value === undefined) return '';
+  return String(value);
+}
+
+function buildBookingFooter(data: BookingPdfData, currentPage: number, pageCount: number): any {
+  const footerInfoRow = {
+    columns: [
+      {
+        text: `Printed By: ${data.userData?.userName || ''}`,
+        fontSize: 7,
+        alignment: 'left',
+        width: '25%'
+      },
+      {
+        text: 'This document is computer-generated and does not require a signature.',
+        fontSize: 7,
+        alignment: 'center',
+        width: '50%'
+      },
+      {
+        text: `Printed On: ${formatDate(new Date())}`,
+        fontSize: 7,
+        alignment: 'right',
+        width: '25%'
+      }
+    ],
+    margin: [20, 4, 20, 0]   // ✅ was [6, 0, 6, 0]
+  };
+
+  if (currentPage !== pageCount) {
+    return {
+      stack: [footerInfoRow],
+      margin: [0, 8, 0, 0]   // ✅ was just returning footerInfoRow directly
+    };
+  }
+
   return {
-    text: 'IF YOU REQUIRE ANY FURTHER INFORMATION, PLEASE DO NOT HESITATE TO CONTACT US.\nTHANK YOU FOR SHIPPING WITH US.',
-    alignment: 'center',
-    margin: [0, 20, 0, 0],
-    fontSize: 9
+    stack: [
+      // {
+      //   canvas: [
+      //     { type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 0.5, lineColor: '#cccccc' }  // ✅ added divider line
+      //   ],
+      //   margin: [20, 0, 20, 4]
+      // },
+      {
+        text: "Your's Sincerely",
+        style: 'labelBold',
+        fontSize: 9,           // ✅ was no fontSize (inherited larger size)
+        margin: [20, 0, 0, 1]  // ✅ was [6, 0, 0, 1]
+      },
+      {
+        text: data.userData?.userName || '',
+        style: 'labelBold',
+        fontSize: 9,           // ✅ added fontSize
+        margin: [20, 0, 0, 6]  // ✅ was [6, 0, 0, 8]
+      },
+      {
+        text: 'IF YOU REQUIRE ANY FURTHER INFORMATION, PLEASE DO NOT HESITATE TO CONTACT US.\nTHANK YOU FOR SHIPPING WITH US',
+        alignment: 'center',
+        style: 'labelBold',
+        fontSize: 9,           // ✅ was 10
+        margin: [0, 0, 0, 6]   // ✅ was [0, 0, 0, 8]
+      },
+      footerInfoRow
+    ],
+    margin: [0, 8, 0, 15]       // ✅ was [18, 0, 18, 0]
   };
 }
 
@@ -424,7 +538,7 @@ function buildValidityNotice(data: CroPdfData): any {
  */
 function formatPort(port: { portName: string; portCode: string } | undefined): string {
   if (!port) return '';
-  return port.portCode ? `${port.portName} (${port.portCode})` : port.portName;
+  return port.portCode ? `${port.portName} - ${port.portCode}` : port.portName;
 }
 
 /**
@@ -441,6 +555,7 @@ export function transformBookingApiData(
     departments?: any[];
     carriers?: any[];
     agents?: any[];
+    containerTypes?: any[];
   }
 ): BookingPdfData {
   const booking = apiData;
@@ -449,9 +564,36 @@ export function transformBookingApiData(
   const bookingOthers = booking.bookingOthers?.[0] || {};
 
   // Helper to get port info
-  const getPortInfo = (portName: string, portCode?: string) => {
-    if (!portName) return undefined;
-    return { portName, portCode: portCode || '' };
+  const getPortInfo = (portCodeOrName: string, explicitCode?: string) => {
+    if (!portCodeOrName) return undefined;
+
+    const normalized = String(portCodeOrName).trim().toUpperCase();
+    const matchedPort = lookups?.ports?.find((p: any) => {
+      const code = String(p?.PortCode || p?.portCode || '').trim().toUpperCase();
+      const name = String(p?.PortName || p?.portName || '').trim().toUpperCase();
+      return code === normalized || name === normalized;
+    });
+
+    const resolvedName = matchedPort?.PortName || matchedPort?.portName || portCodeOrName;
+    const resolvedCode =
+      explicitCode ||
+      matchedPort?.PortCode ||
+      matchedPort?.portCode ||
+      (resolvedName === portCodeOrName ? '' : portCodeOrName);
+
+    return { portName: resolvedName, portCode: resolvedCode || '' };
+  };
+
+  // Resolve fclLcl from FCLLCL field or fallback to departmentMaster name
+  const resolveFclLcl = (): 'FCL' | 'LCL' | 'AIR' => {
+    if (booking.FCLLCL) {
+      const val = booking.FCLLCL.toUpperCase();
+      if (val === 'FCL' || val === 'LCL' || val === 'AIR') return val;
+    }
+    const deptName = (booking.departmentMaster?.departmentName || booking.DepartmentName || '').toUpperCase();
+    if (deptName.includes('FCL')) return 'FCL';
+    if (deptName.includes('AIR')) return 'AIR';
+    return 'LCL'; // default fallback
   };
 
   return {
@@ -480,7 +622,7 @@ export function transformBookingApiData(
     booking: {
       bookingNo: booking.BookingNo || '',
       bookingDate: booking.BookingDateTime || booking.BookingDate,
-      cutOffDate: booking.voyageDetails?.PortCutoff,
+      cutOffDate: booking.voyageDetails?.POLCutOffDate || booking.voyageDetails?.PortCutoff || booking.POLCutOffDate,
       customerName: booking.CustomerName || '',
       customerAddress: booking.CustomerAddress || '',
       shipperName: booking.ShipperName || '',
@@ -494,14 +636,14 @@ export function transformBookingApiData(
       hblNo: booking.HBLNo || '',
       mblNo: booking.MBLNo || '',
       quotationNumber: booking.quotationHeader?.QuoteNumber || '',
-      polEta: booking.voyageDetails?.POLETA,
-      polEtd: booking.voyageDetails?.POLETD,
-      podEta: booking.ETA,
-      fpdEta: booking.FPDETA,
+      polEta: booking.voyageDetails?.POLETA || booking.POLETA,
+      polEtd: booking.voyageDetails?.POLETD || booking.POLETD || booking.ETD,
+      podEta: booking.voyageDetails?.PODETA || booking.PODETA || booking.ETA,
+      fpdEta: booking.FPDETA || booking.voyageDetails?.FPDETA || booking.ETA,
       incoTerms: booking.IncoTerms || '',
       freightTerms: booking.FreightTerms || '',
       handOverTo: bookingOthers.YardCFS || '',
-      destinationAgent: booking.DestinationAgentName || '',
+      destinationAgent: resolveDestinationAgent(booking, lookups?.agents),
       remarks: booking.InternalNote || ''
     },
     route: {
@@ -511,7 +653,7 @@ export function transformBookingApiData(
     },
     cargo: bookingCargo.map((cargo: any) => ({
       cargoType: cargo.CargoType || '',
-      containerType: cargo.ContainerType || '',
+      containerType: resolveContainerTypeText(cargo, lookups?.containerTypes),
       noOfContainers: cargo.NoofContainers || 0,
       noOfPackage: cargo.NoOfPackage || 0,
       grossWeight: cargo.GrossWeight || 0,
@@ -527,14 +669,64 @@ export function transformBookingApiData(
       quantity: product.Quantity || 0,
       grossWeight: product.GrossWeight || 0,
       netWeight: product.NetWeight || 0,
-      volume: product.Volume || 0
+      volume: product.Volume || 0,
+      shippingBillNo: product.ShippingBillNo || '',
+      shippingBillDate: product.ShippingBillDate
     })),
     terms: (booking.terms || []).map((term: any) => ({
       content: term.TandC || term.content || ''
     })),
-    fclLcl: booking.FCLLCL || 'LCL',
-    departmentName: booking.DepartmentName || ''
+    fclLcl: resolveFclLcl(),
+    departmentName: booking.departmentMaster?.departmentName || booking.DepartmentName || ''
   };
+}
+
+function resolveDestinationAgent(booking: any, agents?: any[]): string {
+  if (booking?.DestinationAgentName) return booking.DestinationAgentName;
+  if (booking?.AgentName) return booking.AgentName;
+  if (!booking?.DestinationAgent || !agents?.length) return '';
+  const matched = agents.find((agent: any) => {
+    const sid = agent?.AgentMasterSid ?? agent?.CustomerMasterSid ?? agent?.id ?? agent?.masterSid;
+    return String(sid) === String(booking.DestinationAgent);
+  });
+
+  return matched?.AgentName || matched?.CustomerName || matched?.agentName || matched?.name || '';
+}
+
+function resolveContainerTypeText(cargo: any, containerTypes?: any[]): string {
+  const directName =
+    cargo?.ContainerTypeName ||
+    cargo?.containerTypeName ||
+    cargo?.ContainerName ||
+    cargo?.containerName;
+  if (directName) return String(directName);
+
+  const rawType = cargo?.ContainerType ?? cargo?.containerType;
+  const rawTypeText = rawType !== null && rawType !== undefined ? String(rawType).trim() : '';
+  const numericTypeId = Number(rawTypeText);
+  const hasNumericTypeId = rawTypeText !== '' && !Number.isNaN(numericTypeId);
+
+  if (hasNumericTypeId && Array.isArray(containerTypes) && containerTypes.length > 0) {
+    const matched = containerTypes.find((item: any) => {
+      const sid = item?.ContainerTypeMasterSid ?? item?.ContainerTypeSid ?? item?.id;
+      return Number(sid) === numericTypeId;
+    });
+
+    const matchedName =
+      matched?.ContainerName ||
+      matched?.ContainerType ||
+      matched?.containerName ||
+      matched?.containerType ||
+      matched?.ContainerCode;
+    if (matchedName) return String(matchedName);
+  }
+
+  const size = cargo?.ContainerSize ?? cargo?.containerSize;
+  if (size !== null && size !== undefined && String(size).trim() !== '') {
+    return `${String(size).trim()}ft Container`;
+  }
+
+  return rawTypeText;
 }
 
 /**

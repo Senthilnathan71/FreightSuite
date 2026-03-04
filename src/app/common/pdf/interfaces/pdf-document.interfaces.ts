@@ -127,7 +127,7 @@ export interface BookingPdfData extends PdfDocumentBase {
     fpd?: PdfPortInfo;
   };
   cargo: BookingCargoData[];
-  products: PdfProductItem[];
+  products: BookingProductData[];
   terms?: PdfTermItem[];
   fclLcl: 'FCL' | 'LCL' | 'AIR';
   departmentName?: string;
@@ -135,6 +135,11 @@ export interface BookingPdfData extends PdfDocumentBase {
 
 export interface BookingCargoData extends PdfCargoItem {
   shipmentTerms?: string;
+}
+
+export interface BookingProductData extends PdfProductItem {
+  shippingBillNo?: string;
+  shippingBillDate?: Date | string;
 }
 
 // =====================
