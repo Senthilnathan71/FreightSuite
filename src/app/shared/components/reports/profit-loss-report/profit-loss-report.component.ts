@@ -154,7 +154,7 @@ getExcelData(): ComplexReportExportConfig {
         cells.push({ value: item.LedgerName }); // Ledger
 
         yearKeys.forEach(y => {
-          cells.push({ value: item.amounts[y] ?? 0 });
+          cells.push({ value: this.formatNumber(item.amounts[y] ?? 0) });
         });
 
         rows.push({ cells, style: 'data' });
@@ -165,7 +165,7 @@ getExcelData(): ComplexReportExportConfig {
         cells: [
           { value: `Total ${group.subGroupName}` },
           { value: '' }, // blank for ledger
-          ...yearKeys.map(y => ({ value: this.getGroupTotal(group.items, y) }))
+          ...yearKeys.map(y => ({ value: this.formatNumber(this.getGroupTotal(group.items, y)) }))
         ],
         style: 'total'
       });

@@ -54,6 +54,7 @@ export interface ComplexReportExportConfig {
   sheetName?: string;
   reportHeader: ReportHeaderConfig;
   tableHeaders: ExcelHeader[];
+  includeTableHeaders?: boolean;
   rows: ExcelRow[];
   columnWidths?: number[];
   summaryTable?: {
@@ -139,6 +140,7 @@ export class ExcelExportService {
       sheetName = fileName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 31),
       reportHeader,
       tableHeaders,
+      includeTableHeaders = true,
       rows,
       columnWidths
     } = config;
@@ -169,8 +171,10 @@ export class ExcelExportService {
       }
     }
 
-    // Table Header Row
-    aoa.push(tableHeaders.map(h => h.label));
+    // Table Header Row (optional)
+    if (includeTableHeaders) {
+      aoa.push(tableHeaders.map(h => h.label));
+    }
 
     // Data Rows
     let currentRowIndex = aoa.length;
