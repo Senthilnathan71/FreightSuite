@@ -93,16 +93,30 @@ export class EmailTriggerService {
     return actions.includes(currentAction.toUpperCase());
   }
 
+  private enrichContext(context?: { [key: string]: any }): { [key: string]: any } {
+    const userData = this.appSettingService.getDecryptedUserProfile();
+    const companyInfo = this.appSettingService.getCurrentCompanyInfo();
+    return {
+      ...context,
+      organizationEmail: companyInfo?.email || '',
+      userEmail: userData?.userEmail || '',
+      userName: context?.['userName'] || userData?.userName || ''
+    };
+  }
+
   private sendAutoEmail(config: any, companyId: number, branchId: number, context?: { [key: string]: any }): void {
     const userData = this.appSettingService.getDecryptedUserProfile();
-    const subject = this.replacePlaceholders(config.MailSubject, context);
-    const body = this.replacePlaceholders(config.MailBody, context);
+    const enrichedContext = this.enrichContext(context);
+    const subject = this.replacePlaceholders(config.MailSubject, enrichedContext);
+    const body = this.replacePlaceholders(config.MailBody, enrichedContext);
+    const toEmail = this.replacePlaceholders(config.ToEmailidFrom || '', enrichedContext);
+    const ccEmail = this.replacePlaceholders(config.CcEmailidFrom || '', enrichedContext);
 
     const formData = new FormData();
     formData.append('CompanyMasterSid', companyId.toString());
     formData.append('BranchMasterSid', branchId.toString());
-    formData.append('EmailTo', config.ToEmailidFrom || '');
-    formData.append('EmailCC', config.CcEmailidFrom || '');
+    formData.append('EmailTo', toEmail);
+    formData.append('EmailCC', ccEmail);
     formData.append('EmailBCC', '');
     formData.append('Subject', subject);
     formData.append('Mailbody', this.headerTemplate + `<pre style="min-height:400px;padding:2rem;margin:0;font-family:system-ui,sans-serif;font-size:1rem;line-height:1.6;white-space:pre-wrap;background:#f9f9f9;border-radius:4px">${body}</pre>` + this.footerTemplate);
@@ -124,8 +138,11 @@ export class EmailTriggerService {
   }
 
   private openEmailPopup(config: any, context?: { [key: string]: any }): void {
-    const subject = this.replacePlaceholders(config.MailSubject, context);
-    const body = this.replacePlaceholders(config.MailBody, context);
+    const enrichedContext = this.enrichContext(context);
+    const subject = this.replacePlaceholders(config.MailSubject, enrichedContext);
+    const body = this.replacePlaceholders(config.MailBody, enrichedContext);
+    const toEmail = this.replacePlaceholders(config.ToEmailidFrom || '', enrichedContext);
+    const ccEmail = this.replacePlaceholders(config.CcEmailidFrom || '', enrichedContext);
 
     const modalRef = this.ngbModal.open(EmailEntryComponent, {
       size: 'lg',
@@ -134,8 +151,8 @@ export class EmailTriggerService {
     });
 
     modalRef.componentInstance.setContent = {
-      EmailTo: config.ToEmailidFrom || '',
-      EmailCC: config.CcEmailidFrom || '',
+      EmailTo: toEmail,
+      EmailCC: ccEmail,
       EmailBCC: '',
       Subject: subject,
       Mailbody: body

@@ -133,6 +133,18 @@ export class MailConfigurationEntryComponent implements OnInit {
     });
   }
 
+  private readonly defaultMailBodies: { [key: string]: string } = {
+    'Quotation': `Dear Sir/Madam,\n\nPlease find enclosed the quotation as requested.\nKindly review the details at your convenience.\nLooking forward to your feedback and the opportunity to work together.\n{{approvalLink}}\n\nBest Regards,\n\n{{userName}}`,
+    'Enquiry': `Dear Sir/Madam,\n\nThank you for your enquiry. Please find the details below.\nKindly review and let us know if you need any further information.\n\nBest Regards,\n\n{{userName}}`,
+    'Booking': `Dear Sir/Madam,\n\nPlease find the booking confirmation details below.\nKindly review the details at your convenience.\n\nBest Regards,\n\n{{userName}}`,
+  };
+
+  private readonly defaultMailBody = `Dear Sir/Madam,\n\nPlease find the details as requested.\nKindly review at your convenience.\n\nBest Regards,\n\n{{userName}}`;
+
+  getDefaultMailBody(menuName: string): string {
+    return this.defaultMailBodies[menuName] || this.defaultMailBody;
+  }
+
   addRow(): void {
     const newSno = this.rows.length > 0 ? Math.max(...this.rows.map(r => r.Sno)) + 1 : 1;
 
@@ -142,8 +154,8 @@ export class MailConfigurationEntryComponent implements OnInit {
       MenuMasterSid: null,
       MailSubject: '',
       MailBody: '',
-      ToEmailidFrom: '',
-      CcEmailidFrom: '',
+      ToEmailidFrom: '{{menuEmail}}',
+      CcEmailidFrom: '{{organizationEmail}}, {{userEmail}}',
       AttachmentRequire: 'Y',
       Action: '',
       Trigger: 'A',
@@ -152,6 +164,21 @@ export class MailConfigurationEntryComponent implements OnInit {
       isEditing: true,
       isNew: true
     });
+  }
+
+  onMenuChange(row: MailConfigRow, menuMasterSid: number | null): void {
+    row.MenuMasterSid = menuMasterSid;
+    if (!menuMasterSid) return;
+
+    const menuName = this.getMenuName(menuMasterSid);
+    // Only auto-fill MailBody if it's empty or still matches a default template
+    const isDefaultBody = !row.MailBody ||
+      row.MailBody === this.defaultMailBody ||
+      Object.values(this.defaultMailBodies).includes(row.MailBody);
+
+    if (isDefaultBody) {
+      row.MailBody = this.getDefaultMailBody(menuName);
+    }
   }
 
   editRow(index: number): void {

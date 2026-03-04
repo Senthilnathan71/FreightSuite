@@ -2041,7 +2041,9 @@ isRateLockDisabled(): boolean {
                 POD: this.getFormattedPort(this.quotationData?.quoteRoute?.[0]?.PODSid),
                 FPD: this.getFormattedPort(this.quotationData?.quoteRoute?.[0]?.FPODSid),
                 customerName: this.quotationData?.CustomerName,
-                userName: this.userData?.userName
+                userName: this.userData?.userName,
+                menuEmail: this.quotationData?.Email || '',
+                approvalLink: 'Approval Hyper link ' + window.location.origin + '/crm/quotation/entry/' + this.QuoteHeaderSid
               }
             });
              this.loadQuotation(this.QuoteHeaderSid);
@@ -2083,7 +2085,9 @@ isRateLockDisabled(): boolean {
                 POD: this.getFormattedPort(this.quoteRoutes?.at(0)?.get('PODSid')?.value),
                 FPD: this.getFormattedPort(this.quoteRoutes?.at(0)?.get('FPODSid')?.value),
                 customerName: this.quotationForm.get('CustomerName')?.value || this.quotationForm.get('customerName')?.value,
-                userName: this.userData?.userName
+                userName: this.userData?.userName,
+                menuEmail: this.quotationForm.get('Email')?.value || '',
+                approvalLink: 'Approval Hyper link ' + window.location.origin + '/crm/quotation/entry/' + resp.data?.quoteHeader?.QuoteHeaderSid
               }
             });
             const id = resp.data?.quoteHeader?.QuoteHeaderSid;

@@ -17,4 +17,8 @@ export const ALL_PLACEHOLDERS: PlaceholderVariable[] = [
   { key: 'shipperName', label: 'Shipper Name' },
   { key: 'consigneeName', label: 'Consignee Name' },
   { key: 'userName', label: 'User Name' },
+  { key: 'menuEmail', label: 'Menu Email (To)' },
+  { key: 'organizationEmail', label: 'Organization Email' },
+  { key: 'userEmail', label: 'User Email' },
+  { key: 'approvalLink', label: 'Approval Link' },
 ];
