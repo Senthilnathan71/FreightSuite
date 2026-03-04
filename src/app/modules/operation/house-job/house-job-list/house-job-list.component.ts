@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-import { Observable } from 'rxjs';
+import { catchError, forkJoin, map, Observable, of } from 'rxjs';
 
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
@@ -33,6 +33,13 @@ import {
 } from 'src/app/shared/interfaces/table.interface';
 
 import { OperationService } from '../../operation.service';
+import {
+  AdvancedFilterValues,
+  DateRangeConfig,
+  DateTypeConfig,
+  PartyFilterConfig,
+  DropdownFilterConfig
+} from 'src/app/shared/interfaces/advanced-filter.interface';
 
 @Component({
   selector: 'app-house-job-list',
@@ -64,6 +71,78 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
   tableConfig!: TableConfig;
 
   tableLoading = false;
+
+  // Advanced filter configs
+  dateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+  dateTypeConfig: DateTypeConfig = {
+    enabled: true,
+    options: [
+      { label: 'HBL Date', value: 'HBLDate' },
+      { label: 'ETD', value: 'ETD' },
+      { label: 'ETA', value: 'ETA' },
+    ],
+    defaultValue: 'HBLDate'
+  };
+  partyFilterConfig: PartyFilterConfig = {
+    enabled: false,
+    partyTypes: []
+  };
+  departmentFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'Dept',
+    options: [],
+    bindLabel: 'departmentName',
+    bindValue: 'DepartmentMasterSid'
+  };
+  polFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'POL',
+    options: [],
+    bindLabel: 'displayName',
+    bindValue: 'PortCode'
+  };
+  podFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'POD',
+    options: [],
+    bindLabel: 'displayName',
+    bindValue: 'PortCode'
+  };
+  private allPorts: any[] = [];
+  currentFilters: AdvancedFilterValues = {};
+
+  partySearchFn = (searchTerm: string, partyType: string): Observable<any[]> => {
+    const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+
+    switch (partyType) {
+      case 'CustomerMasterSid':
+        return this.operationService.getAllCustomersWithBranch(CompanyMasterSid).pipe(
+          map((data: any) => Array.isArray(data) ? data : []),
+          catchError(() => of([]))
+        );
+
+      case 'ShipperName':
+        return this.operationService.getCustomerByItsType({
+          CompanyMasterSid,
+          types: ['shipper']
+        }).pipe(
+          map((res: any) => res?.data || []),
+          catchError(() => of([]))
+        );
+
+      case 'ConsigneeName':
+        return this.operationService.getCustomerByItsType({
+          CompanyMasterSid,
+          types: ['consignee']
+        }).pipe(
+          map((res: any) => res?.data || []),
+          catchError(() => of([]))
+        );
+
+      default:
+        return of([]);
+    }
+  };
 
   protected config: ListComponentConfig = {
     storageKey: 'house-job-list-state',
@@ -110,7 +189,146 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
     this.initializeHeaderActions();
     this.initializeTableConfig();
 
+    // Set default filters before initial search so first API call includes date range
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'HBLDate'
+    };
+
+    this.loadHeaderLookups();
     super.ngOnInit();
+  }
+
+  private loadHeaderLookups(): void {
+    const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    if (!companyMasterSid) {
+      return;
+    }
+
+    forkJoin({
+      departments: this.operationService.getAllDepartments(companyMasterSid).pipe(catchError(() => of({ data: [] }))),
+      ports: this.operationService.getAllPorts().pipe(catchError(() => of({ data: [] })))
+    }).subscribe(({ departments, ports }: any) => {
+      const allDepartments = Array.isArray(departments?.data) ? departments.data : [];
+      this.departmentFilterConfig = {
+        ...this.departmentFilterConfig,
+        options: allDepartments.filter((d: any) => (d?.departmentType || '').toUpperCase() === 'SEA')
+      };
+
+      const allPorts = Array.isArray(ports?.data) ? ports.data : [];
+      this.allPorts = allPorts.map((port: any) => ({
+        ...port,
+        displayName: `${port.PortName} (${port.PortCode})`
+      }));
+
+      this.setFilteredPortOptions(null);
+    });
+  }
+
+  private setFilteredPortOptions(departmentSid: number | null): void {
+    const normalizedDepartmentSid = departmentSid !== null ? Number(departmentSid) : null;
+    const selectedDepartment = this.departmentFilterConfig.options.find(
+      (dept: any) => Number(dept?.DepartmentMasterSid) === normalizedDepartmentSid
+    );
+
+    const departmentType = (selectedDepartment?.departmentType || '').toUpperCase();
+    const filteredPorts = !departmentType
+      ? [...this.allPorts]
+      : this.allPorts.filter((port: any) => {
+          const portType = (port?.PortType || '').toUpperCase();
+          return departmentType === 'AIR' ? portType === 'AIR' : portType === 'SEA';
+        });
+
+    this.polFilterConfig = { ...this.polFilterConfig, options: filteredPorts };
+    this.podFilterConfig = { ...this.podFilterConfig, options: filteredPorts };
+  }
+
+  private getLast30FromDate(): string {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - 30);
+    return date.toISOString();
+  }
+
+  private getSelectedDepartment(): any | null {
+    if (!this.currentFilters.departmentSid) {
+      return null;
+    }
+
+    return this.departmentFilterConfig.options.find(
+      (dept: any) => Number(dept?.DepartmentMasterSid) === Number(this.currentFilters.departmentSid)
+    ) || null;
+  }
+
+  private getPortSidByCode(portCode: string | null | undefined): number | null {
+    if (!portCode) {
+      return null;
+    }
+
+    const port = this.allPorts.find((p: any) => String(p?.PortCode) === String(portCode));
+    return port?.PortMasterSid ? Number(port.PortMasterSid) : null;
+  }
+
+  private hasAdvancedFilterValues(): boolean {
+    return !!(
+      this.currentFilters.departmentSid ||
+      this.currentFilters.pol ||
+      this.currentFilters.pod ||
+      this.currentFilters.dateRange?.fromDate ||
+      this.currentFilters.dateRange?.toDate
+    );
+  }
+
+  private applyAdvancedFilters(items: any[]): any[] {
+    if (!this.hasAdvancedFilterValues()) {
+      return items;
+    }
+
+    const selectedDateField = this.currentFilters.dateType || 'HBLDate';
+    const from = this.currentFilters.dateRange?.fromDate ? new Date(this.currentFilters.dateRange.fromDate) : null;
+    const to = this.currentFilters.dateRange?.toDate ? new Date(this.currentFilters.dateRange.toDate) : null;
+    const selectedPol = this.currentFilters.pol ? String(this.currentFilters.pol).trim().toUpperCase() : null;
+    const selectedPod = this.currentFilters.pod ? String(this.currentFilters.pod).trim().toUpperCase() : null;
+    const selectedDeptSid = this.currentFilters.departmentSid ? Number(this.currentFilters.departmentSid) : null;
+
+    return items.filter((item: any) => {
+      if (selectedDeptSid && Number(item?.DepartmentMasterSid) !== selectedDeptSid) {
+        return false;
+      }
+
+      if (selectedPol && String(item?.POL || '').trim().toUpperCase() !== selectedPol) {
+        return false;
+      }
+
+      if (selectedPod && String(item?.POD || '').trim().toUpperCase() !== selectedPod) {
+        return false;
+      }
+
+      if (from || to) {
+        const rawDate = item?.[selectedDateField];
+        if (!rawDate) {
+          return false;
+        }
+
+        const itemDate = new Date(rawDate);
+        if (Number.isNaN(itemDate.getTime())) {
+          return false;
+        }
+
+        if (from && itemDate < from) {
+          return false;
+        }
+        if (to && itemDate > to) {
+          return false;
+        }
+      }
+
+      return true;
+    });
   }
 
   // =========================
@@ -123,8 +341,8 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
     return this.operationService.searchHouseJob(this.getSearchParams());
   }
 
-  protected getSearchParams(): SearchParams & { departmentType: string } {
-    return {
+  protected getSearchParams(): SearchParams & Record<string, any> {
+    const params: any = {
       search: this.filterValue.trim(),
       page: Number(this.page),
       pageSize: Number(this.pageSize),
@@ -134,6 +352,71 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
       sortDirection: this.sortDirection,
       departmentType: 'Sea'
     };
+
+    // Merge advanced filter values
+    if (this.currentFilters.dateRange?.fromDate) {
+      params.dateFrom = this.currentFilters.dateRange.fromDate;
+      params.DateFrom = this.currentFilters.dateRange.fromDate;
+    }
+    if (this.currentFilters.dateRange?.toDate) {
+      params.dateTo = this.currentFilters.dateRange.toDate;
+      params.DateTo = this.currentFilters.dateRange.toDate;
+    }
+    if (this.currentFilters.dateType) {
+      params.dateField = this.currentFilters.dateType;
+      params.DateField = this.currentFilters.dateType;
+      if (params.dateFrom) {
+        params[`${this.currentFilters.dateType}From`] = params.dateFrom;
+      }
+      if (params.dateTo) {
+        params[`${this.currentFilters.dateType}To`] = params.dateTo;
+      }
+    }
+    if (this.currentFilters.party) {
+      params.partyType = this.currentFilters.party.partyType;
+      params.partyId = this.currentFilters.party.partyId;
+      params.partyName = this.currentFilters.party.partyName;
+    }
+    if (this.currentFilters.departmentSid) {
+      const selectedDept = this.getSelectedDepartment();
+      const departmentSid = Number(this.currentFilters.departmentSid);
+
+      params.DepartmentMasterSid = departmentSid;
+      params.departmentMasterSid = departmentSid;
+      params.DepartmentSid = departmentSid;
+      params.departmentSid = departmentSid;
+
+      if (selectedDept?.departmentName) {
+        params.Department = selectedDept.departmentName;
+        params.department = selectedDept.departmentName;
+        params.departmentName = selectedDept.departmentName;
+        params.DepartmentType = selectedDept.departmentName;
+      }
+    }
+    if (this.currentFilters.pol) {
+      const polCode = String(this.currentFilters.pol);
+      const polSid = this.getPortSidByCode(polCode);
+
+      params.POL = polCode;
+      params.pol = polCode;
+      if (polSid) {
+        params.POLSid = polSid;
+        params.polSid = polSid;
+      }
+    }
+    if (this.currentFilters.pod) {
+      const podCode = String(this.currentFilters.pod);
+      const podSid = this.getPortSidByCode(podCode);
+
+      params.POD = podCode;
+      params.pod = podCode;
+      if (podSid) {
+        params.PODSid = podSid;
+        params.podSid = podSid;
+      }
+    }
+
+    return params;
   }
 
   protected processSearchResults(response: any): void {
@@ -146,7 +429,10 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
       return;
     }
 
-    this.allItems = response.data.items.map((item: any) => ({
+    const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
+    const filteredItems = this.applyAdvancedFilters(rawItems);
+
+    this.allItems = filteredItems.map((item: any) => ({
       ...item,
       MasterJobSid: item.MasterJobSid,
       MasterJobNumber: item.masterJob?.MasterJobNumber ?? item.MBLNo ?? '',
@@ -199,6 +485,7 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
       columns: [
         { key: 'MasterJobNumber', label: 'Master Job No', sortable: true, filterable: true, visible: true,template: 'link',cellClass: 'master-job-column' },
         { key: 'HBLNo', label: 'HBL No', sortable: true, filterable: true, visible: true },
+        { key: 'HBLDate', label: 'HBL Date', sortable: true, filterable: true, visible: true },
         { key: 'BookingNo', label: 'Booking No', sortable: true, filterable: true, visible: true, template: 'link',cellClass: 'booking-no-column' },
         { key: 'departmentName', label: 'Department', sortable: true, filterable: true, visible: true },
         { key: 'POL', label: 'POL', sortable: true, filterable: true, visible: true },
@@ -269,14 +556,28 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
   // Search handlers (REQUIRED)
   // =========================
 
-  onSearchTriggered(searchValue: string): void {
-    this.filterValue = searchValue;
-    this.searchHouseJob();
+  onAdvancedSearch(event: { searchValue: string; filters: AdvancedFilterValues }): void {
+    this.filterValue = event.searchValue;
+    this.currentFilters = event.filters;
+    this.page = 1;
+    this.search();
   }
 
   onSearchCleared(): void {
     this.filterValue = '';
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'HBLDate'
+    };
     this.clearFilterValue();
+  }
+
+  onDepartmentFilterChanged(departmentSid: number | null): void {
+    this.setFilteredPortOptions(departmentSid);
   }
 
   // Legacy aliases (same as master list)
