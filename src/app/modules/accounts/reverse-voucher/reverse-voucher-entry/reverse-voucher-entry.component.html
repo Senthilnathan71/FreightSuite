@@ -1,3 +1,12 @@
+<ngx-spinner
+  bdColor="rgba(0,0,0,0.8)"
+  size="medium"
+  color="#fff"
+  type="ball-scale-ripple"
+  [fullScreen]="true"
+>
+  <p style="color: white" class="m-0">Loading...</p>
+</ngx-spinner>
 <div class="row compact-form">
   <div class="col-12 px-0">
     <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
@@ -19,19 +28,82 @@
           </button>
 
           <button *ngIf="!isViewMode" type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="onReset()">
+            (click)="onReset()" [disabled]="isReadOnly">
             <i class="fas fa-sync-alt me-1"></i> Reset
           </button>
+@if (isAutoPosting) {
+            <button
+              type="button"
+              class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
+              [ngClass]="{ 'btn-info': !isDirty, 'btn-warning': isDirty }"
+              (click)="onSubmit(undefined, true)"
+              [disabled]="
+                 isReadOnly ||(!mps.can('update') && isEditMode) || isSaving
+              "
+            >
+              <i class="fas fa-save me-1"></i>
+              <span>{{ isSaving ? "Saving..." : "Save" }}</span>
+              <span
+                *ngIf="isDirty"
+                class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+                title="You have unsaved changes"
+              >
+                <span class="visually-hidden">unsaved changes</span>
+              </span>
+            </button>
+            <button
+              *ngIf="isEditMode"
+              type="button"
+              appPreventMultiClick
+              class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
+              disabled="true"
+            >
+              <i class="fas fa-check-circle me-1"></i>
+              {{ isPosted ? "Posted" : "Post" }}
+            </button>
+          } @else {
+            <!-- Draft Save Button -->
+            <button
+              type="button"
+              appPreventMultiClick
+              class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
+              [ngClass]="{ 'btn-warning': isDirty, 'btn-info': !isDirty }"
+              (click)="onSubmit()"
+              [disabled]="
+                isReadOnly || (!mps.can('update') && isEditMode) || isSaving
+              "
+            >
+              <i class="fas fa-save me-1"></i>
+              <span>{{ isSaving ? "Saving..." : "Save" }}</span>
+              <span
+                *ngIf="isDirty"
+                class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+                title="You have unsaved changes"
+              >
+                <span class="visually-hidden">unsaved changes</span>
+              </span>
+            </button>
 
-          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-            [disabled]="(!mps.can('update') && isEditMode) || isPosted" (click)="onSubmit()">
-            <i class="fas fa-save me-1"></i> Save
-          </button>
-
-          <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" [disabled]="isPosted"
-            (click)="onFinalSave()" [disabled]="isPosted">
-            <i class="fas fa-check-circle me-1"></i> Post
-          </button>
+            <!-- Final Save/Post Button -->
+            <button
+              type="button"
+              appPreventMultiClick
+              class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
+              (click)="onFinalSave()"
+              [disabled]="
+                reverseVoucherForm.invalid ||
+                (!mps.can('update') && isEditMode) ||
+                isDirty ||
+                isSaving || isReadOnly
+              "
+              [title]="
+                isDirty ? 'Please save the draft first before posting' : ''
+              "
+            >
+              <i class="fas fa-check-circle me-1"></i>
+              {{ isPosted ? "Posted" : "Post" }}
+            </button>
+          }
           <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
             <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
               ngbDropdownToggle>
@@ -72,26 +144,55 @@
               </div>
             </aside>
 
-            <aside class="col-md-3" *ngIf="!isEditMode">
-              <div class="d-flex gap-1 align-items-end">
-                <!-- Invoice Dropdown -->
-                <div class="custom-form-group custom-form-group-select flex-grow-1"
-                  [class.filled]="!!reverseVoucherForm.get('ReversalVoucher')?.value">
+            <aside class="col-md-3">
+                <div class="d-flex align-items-end gap-1">
+                  <div class="custom-form-group w-100">
+                    <input
+                      type="text"
+                      id="ReversalVoucherNumber"
+                      formControlName="ReversalVoucherNumber"
+                      class="custom-input-field sm"
+                      [readonly]="
+                        isEditMode ||
+                        reverseVoucherForm.get('ReversalVoucher')?.value
+                      "
+                    />
+                    <label for="ReversalVoucherNumber" class="input-label">
+                      Voucher No. <span class="text-danger">*</span>
+                    </label>
+                  </div>
 
-                  <dofi-searchable-dropdown [items]="voucherList" formControlName="ReversalVoucher" [placeholder]="''"
-                    [displayFields]="invoiceLookupConfig.displayFields"
-                    [displayLabels]="invoiceLookupConfig.displayLabels" [labelFields]="invoiceLookupConfig.labelFields"
-                    [bindValue]="'VoucherHeaderSid'">
-                  </dofi-searchable-dropdown>
-                  <label class="input-label">Voucher No.</label>
+                  <!-- clear -->
+                  <button
+                    type="button"
+                    class="btn btn-sm mb-1 text-danger fw-bold"
+                    style="width: 28px; height: 26px"
+                    *ngIf="
+                      reverseVoucherForm.get('ReversalVoucherNumber')?.value &&
+                      !isEditMode
+                    "
+                    (click)="onReset()"
+                  >
+                    &times;
+                  </button>
+
+                  <!-- Get -->
+                  @if (!isEditMode) {
+                    <button
+                      type="button"
+                      class="btn btn-info btn-sm mb-1"
+                      style="width: 40px; height: 26px"
+                      (click)="getVoucherData()"
+                      [disabled]="
+                        !reverseVoucherForm.get('ReversalVoucherNumber')?.value ||
+                        reverseVoucherForm.get('ReversalVoucher')?.value
+                      "
+                    >
+                      Get
+                    </button>
+                  }
                 </div>
-
-                <!-- Get Button with proper styling and disable state -->
-                <button type="button" class="btn btn-info btn-sm mb-1" style="min-width: 25px; height: 25px;"
-                  (click)="getVoucherData()" [disabled]="!reverseVoucherForm.get('ReversalVoucher')?.value">Get
-                </button>
-              </div>
-            </aside>
+              </aside>
 
             <!-- Invoice Date -->
             <aside class="col-md-3">

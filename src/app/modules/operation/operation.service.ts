@@ -1660,8 +1660,12 @@ createReverseVoucher(payload: any) {
     )
   }
 
-  getVoucherById(VoucherHeaderSid: number) {
-    return this.http.get<{ status: boolean; data: any }>(`reverse-voucher/fetch/voucher/${VoucherHeaderSid}`).pipe(
+  getVoucherById(payload: {
+    VoucherNumber: string,
+    CompanyMasterSid: number,
+    BranchMasterSid: number
+  }) {
+    return this.http.post<{ status: boolean; data: any }>(`reverse-voucher/fetch/voucher`,payload).pipe(
       map((resp) => {
         return resp;
       })

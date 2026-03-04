@@ -674,6 +674,11 @@
     <i class="ti-exchange-vertical me-1 ms-1"></i> Switch Branch
   </a>
 </li>
+<li>
+  <a class="dropdown-item d-flex align-items-center" (click)="openCurrentUserChangePassword(resetTemplate)" style="cursor: pointer;">
+    <i class="ti-key me-1 ms-1"></i> Change Password
+  </a>
+</li>
         <!-- <a class="dropdown-item" href="javascript:void(0)">
         <i class="ti-wallet me-1 ms-1"></i> My Balance</a>
       <a class="dropdown-item" href="javascript:void(0)">
@@ -749,5 +754,104 @@
             (click)="onBranchChangeFromModal(selectedBranchId, modal)">
       Switch
     </button>
+  </div>
+</ng-template>
+<ng-template #resetTemplate let-modal>
+  <div class="modal-header modalHeaderpart p-2">
+    <h5 class="card-title ">Change Password</h5>
+    <button type="button" class="btn btn-close btn-close-white" (click)="modal.close()"></button>
+  </div>
+  <div class="modal-body">
+    <form class="col-12" [formGroup]="resetPasswordForm">
+      <aside class="col-md-12">
+        <div class="input-group mb-2">
+          <input
+            type="password"
+            formControlName="password"
+            class="form-control custom-input-field md"
+            placeholder="Password"
+            [ngClass]="{
+              'is-invalid': (resetPasswordForm.controls['password'].invalid) &&
+              (resetPasswordForm.controls['password'].touched || resetPasswordForm.controls['password'].dirty)
+            }"
+            #passwordInput />
+          <button
+            type="button"
+            class="input-group-text password-toggle"
+            (mousedown)="togglePassword(true,passwordInput)"
+            (mouseup)="viewPassword(true,passwordInput)"
+            (mouseleave)="viewPassword(true,passwordInput)">
+            @if(!passwordView) {
+            <i-feather class="feather-sm" name="eye"></i-feather>
+            } @else {
+            <i-feather class="feather-sm" name="eye-off"></i-feather>
+            }
+          </button>
+          @if(resetPasswordForm.get('password').invalid && (resetPasswordForm.get('password').touched
+          || resetPasswordForm.get('password').dirty)){
+          <div class="error-message">
+            @if(resetPasswordForm.get('password').hasError('required')){
+            <span class="text-danger">Password is required</span>
+            }
+            @else if(resetPasswordForm.get('password').hasError('minLength')){
+            <span>Password must be at least 4 characters.</span>
+            }
+            @else if (resetPasswordForm.get('password').hasError('missingLetter')) {
+            <span>Password must contain at least one letter</span>
+            }
+            @else if (resetPasswordForm.get('password').hasError('missingSpecialChar')) {
+            <span>Password must contain at least one special character</span>
+            }
+            @else if (resetPasswordForm.get('password').hasError('missingNumber')) {
+            <span>Password must contain at least one number</span>
+            }
+          </div>
+          }
+        </div>
+      </aside>
+
+      <aside class="col-md-12 mt-3">
+        <div class="input-group">
+          <input
+            type="password"
+            formControlName="confirmPassword"
+            class="form-control custom-input-field md"
+            placeholder="Confirm Password"
+            [ngClass]="{
+              'is-invalid': (resetPasswordForm.controls['confirmPassword'].invalid) &&
+              (resetPasswordForm.controls['confirmPassword'].dirty || resetPasswordForm.controls['confirmPassword'].touched)
+            }"
+            #passwordInput1 />
+          <button
+            type="button"
+            class="input-group-text password-toggle"
+            (mousedown)="togglePassword(false,passwordInput1)"
+            (mouseup)="viewPassword(false,passwordInput1)"
+            (mouseleave)="viewPassword(false,passwordInput1)"
+            [attr.aria-label]="passwordView1 ? 'Hide confirm password' : 'Show confirm password'"
+            tabindex="0">
+            @if(!passwordView1) {
+            <i-feather class="feather-sm" name="eye"></i-feather>
+            } @else {
+            <i-feather class="feather-sm" name="eye-off"></i-feather>
+            }
+          </button>
+          @if(resetPasswordForm.get('confirmPassword').invalid &&
+          (resetPasswordForm.get('confirmPassword').touched
+          ||resetPasswordForm.get('confirmPassword').dirty) ){
+          <div class="error-message">
+            @if(resetPasswordForm.get('confirmPassword').hasError('required')){
+            <span>Confirm Password is required</span>
+            }@else if(resetPasswordForm.get('confirmPassword').hasError('passwordMismatch')){
+            <span>Password do not match</span>
+            }
+          </div>
+          }
+        </div>
+      </aside>
+    </form>
+  </div>
+  <div class="modal-footer p-1">
+    <button class="btn btn-info ms-auto" type="submit" (click)="onSubmitPassForm()">Save</button>
   </div>
 </ng-template>
