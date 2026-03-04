@@ -1791,7 +1791,8 @@ private parseFloatSafe(value: any): number {
                 POD: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.PODSid),
                 FPD: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.FDPSid),
                 customerName: this.enquiryData?.CustomerName,
-                userName: this.userData?.userName
+                userName: this.userData?.userName,
+                menuEmail: this.enquiryData?.Email || ''
               }
             });
           } else {
@@ -1844,7 +1845,8 @@ private parseFloatSafe(value: any): number {
               POD: getFormattedPort(this.ports, this.routes?.at(0)?.get('POD')?.value),
               FPD: getFormattedPort(this.ports, this.routes?.at(0)?.get('FDC')?.value),
               customerName: this.rateRequestForm.get('customerName')?.value,
-              userName: this.userData?.userName
+              userName: this.userData?.userName,
+              menuEmail: this.rateRequestForm.get('Email')?.value || ''
             }
           });
         } else {

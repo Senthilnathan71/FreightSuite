@@ -2268,7 +2268,8 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
                 shipperName: this.bookingData?.ShipperName,
                 consigneeName: this.bookingData?.ConsigneeName,
                 userName: this.userData?.userName,
-                ShipmentNo: this.bookingData?.ShipmentNo
+                ShipmentNo: this.bookingData?.ShipmentNo,
+                menuEmail: this.selectedCustomerBranch?.Email || ''
               }
             });
           } else {
@@ -2310,7 +2311,8 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
                 shipperName: this.b['ShipperName']?.value,
                 consigneeName: this.b['ConsigneeName']?.value,
                 userName: this.userData?.userName,
-                ShipmentNo: resp.data?.bookingHeader?.ShipmentNo
+                ShipmentNo: resp.data?.bookingHeader?.ShipmentNo,
+                menuEmail: this.selectedCustomerBranch?.Email || ''
               }
             });
           } else {
