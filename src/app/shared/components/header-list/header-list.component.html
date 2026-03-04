@@ -101,7 +101,8 @@
             <!-- Date Type -->
             <div *ngIf="dateTypeConfig?.enabled">
                 <label class="form-label mb-0 small text-muted">Date Type</label>
-                <select class="form-select form-select-sm" [(ngModel)]="selectedDateType">
+                <select class="form-select form-select-sm" [(ngModel)]="selectedDateType"
+                        (ngModelChange)="onDateTypeChange()">
                     <option *ngFor="let opt of dateTypeConfig!.options" [value]="opt.value">{{ opt.label }}</option>
                 </select>
             </div>
@@ -109,7 +110,9 @@
             <!-- Date Range Preset -->
             <div *ngIf="dateRangeConfig?.enabled">
                 <label class="form-label mb-0 small text-muted">Date Range</label>
-                <select class="form-select form-select-sm" [(ngModel)]="selectedPreset">
+                <select class="form-select form-select-sm" [(ngModel)]="selectedPreset"
+                        (ngModelChange)="onDateRangePresetChange()">
+                    <option value="all">All Data</option>
                     <option value="last30">Last 30 Days</option>
                     <option value="thisMonth">This Month</option>
                     <option value="lastMonth">Last Month</option>
@@ -125,7 +128,7 @@
                 <div class="input-group input-group-sm">
                     <input class="form-control" placeholder="dd-MMM-yyyy" name="customFromDate"
                            [(ngModel)]="customFromDate" ngbDatepicker #dpFrom="ngbDatepicker"
-                           (click)="dpFrom.toggle()" readonly>
+                           (click)="dpFrom.toggle()" (ngModelChange)="onCustomDateChanged()" readonly>
                     <button class="btn btn-outline-secondary" type="button" (click)="dpFrom.toggle()">
                         <i class="fas fa-calendar-alt"></i>
                     </button>
@@ -138,7 +141,7 @@
                 <div class="input-group input-group-sm">
                     <input class="form-control" placeholder="dd-MMM-yyyy" name="customToDate"
                            [(ngModel)]="customToDate" ngbDatepicker #dpTo="ngbDatepicker"
-                           (click)="dpTo.toggle()" readonly>
+                           (click)="dpTo.toggle()" (ngModelChange)="onCustomDateChanged()" readonly>
                     <button class="btn btn-outline-secondary" type="button" (click)="dpTo.toggle()">
                         <i class="fas fa-calendar-alt"></i>
                     </button>
@@ -169,6 +172,48 @@
                     [clearable]="true"
                     (itemSelected)="onPartySelected($event)">
                 </dofi-searchable-dropdown>
+            </div>
+
+            <!-- Department -->
+            <div *ngIf="departmentFilterConfig?.enabled">
+                <label class="form-label mb-0 small text-muted">{{ departmentFilterConfig?.label }}</label>
+                <select class="form-select form-select-sm"
+                        [(ngModel)]="selectedDepartment"
+                        (ngModelChange)="onDepartmentFilterChange()">
+                    <option [ngValue]="null">All</option>
+                    <option *ngFor="let opt of departmentFilterConfig!.options"
+                            [ngValue]="opt[departmentFilterConfig!.bindValue]">
+                        {{ opt[departmentFilterConfig!.bindLabel] }}
+                    </option>
+                </select>
+            </div>
+
+            <!-- POL -->
+            <div *ngIf="polFilterConfig?.enabled">
+                <label class="form-label mb-0 small text-muted">{{ polFilterConfig?.label }}</label>
+                <select class="form-select form-select-sm"
+                        [(ngModel)]="selectedPOL"
+                        (ngModelChange)="onPolFilterChange()">
+                    <option [ngValue]="null">All</option>
+                    <option *ngFor="let opt of polFilterConfig!.options"
+                            [ngValue]="opt[polFilterConfig!.bindValue]">
+                        {{ opt[polFilterConfig!.bindLabel] }}
+                    </option>
+                </select>
+            </div>
+
+            <!-- POD -->
+            <div *ngIf="podFilterConfig?.enabled">
+                <label class="form-label mb-0 small text-muted">{{ podFilterConfig?.label }}</label>
+                <select class="form-select form-select-sm"
+                        [(ngModel)]="selectedPOD"
+                        (ngModelChange)="onPodFilterChange()">
+                    <option [ngValue]="null">All</option>
+                    <option *ngFor="let opt of podFilterConfig!.options"
+                            [ngValue]="opt[podFilterConfig!.bindValue]">
+                        {{ opt[podFilterConfig!.bindLabel] }}
+                    </option>
+                </select>
             </div>
 
             <!-- Clear Filters -->
