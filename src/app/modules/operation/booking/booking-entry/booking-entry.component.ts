@@ -4604,7 +4604,8 @@ downloadPDF(type: 'booking' | 'cro'  = 'booking'): void {
       {
         ports: this.portList,
         departments: this.departmentList,
-        carriers: this.carrierList
+        carriers: this.carrierList,
+        containerTypes: this.containerTypeList
       },
       type
     );
