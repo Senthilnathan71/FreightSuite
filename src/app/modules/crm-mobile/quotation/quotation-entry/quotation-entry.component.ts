@@ -56,6 +56,10 @@ import { PrintHeaderComponent } from 'src/app/shared/components/print-header/pri
 import { getDefaultTodayDate } from 'src/app/common/helper';
 import { OperationService } from 'src/app/modules/operation/operation.service';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
+import {
+  generateQuotationDocument,
+  transformQuotationApiData,
+} from 'src/app/common/pdf/generators/quotation-pdf.generator';
 import { GetStandardChargesComponent } from 'src/app/modules/operation/cost/get-standard-charges/get-standard-charges.component';
 import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/dial-code-dropdown.component';
 type Html2PdfOptions = {
@@ -197,6 +201,7 @@ export class QuotationEntryComponent implements OnInit {
   // PDF caching properties for performance optimization
   private cachedPdfBlob: Blob | null = null;
   private cachedQuoteNumber: string | null = null;
+  private pdfDepsPromise?: Promise<{ pdfMake: any }>;
 
   branchDetails: any;
   currentBranchCityName: string | null;
@@ -3589,73 +3594,128 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
     this.showPdfLogo = true;
     this.spinner.show();
 
-    // Use requestAnimationFrame for DOM readiness instead of setTimeout
-    requestAnimationFrame(async () => {
-      try {
-        const quotationNumber = this.quotationForm.get('QuoteNumber')?.value || 'Quotation';
-
-        // Use compressed PDF for faster download (scale: 1.5, quality: 0.6)
-        await this.pdfService.downloadCompressedPDF(
-          'printContent',
-          `Quotation_${quotationNumber}`,
-          () => {
-            this.spinner.hide(); // Hide AFTER success
-            this.appSettingService.showSuccess('PDF downloaded successfully!');
-          },
-          (error) => {
-            this.spinner.hide(); // Hide on error too
-            this.appSettingService.showError('Error generating PDF. Please try again.');
-          }
-        );
-      } catch (error) {
-        this.spinner.hide();
-        this.appSettingService.showError('Error generating PDF. Please try again.');
-      }
-    });
-  }
-  
-  async generatePDFBlob(): Promise<Blob | null> {
-    const printContent = document.getElementById('printContent');
-    if (!printContent) {
-      return null;
-    }
-
     try {
-      // Use compressed settings for faster generation (scale: 1.5 instead of 2)
-      const canvas = await html2canvas(printContent, {
-        scale: 1.5,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
-
-      const imgWidth = 210;
-      const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      // Use JPEG with 0.6 quality for smaller file size and faster processing
-      const imgData = canvas.toDataURL('image/jpeg', 0.6);
-
-      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+      const { pdfMake } = await this.getPdfDependencies();
+      const docDefinition = await this.buildQuotationDocDefinition();
+      if (!docDefinition) {
+        this.appSettingService.showError('No quotation data available for PDF.');
+        return;
       }
 
-      return pdf.output('blob');
+      const quotationNumber = this.quotationForm.get('QuoteNumber')?.value || 'Quotation';
+      pdfMake.createPdf(docDefinition).download(`Quotation_${quotationNumber}.pdf`);
+      this.appSettingService.showSuccess('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('Quotation PDF download error:', error);
+      this.appSettingService.showError('Error generating PDF. Please try again.');
+    } finally {
+      this.spinner.hide();
+    }
+  }
+
+  async generatePDFBlob(): Promise<Blob | null> {
+    try {
+      const { pdfMake } = await this.getPdfDependencies();
+      const docDefinition = await this.buildQuotationDocDefinition();
+      if (!docDefinition) {
+        return null;
+      }
+
+      return await new Promise<Blob>((resolve, reject) => {
+        try {
+          pdfMake.createPdf(docDefinition).getBlob((blob: Blob) => resolve(blob));
+        } catch (error) {
+          reject(error);
+        }
+      });
     } catch (error) {
       console.error('Error generating PDF blob:', error);
       return null;
     }
   }
 
+  private async getPdfDependencies(): Promise<{ pdfMake: any }> {
+    if (this.pdfDepsPromise) {
+      return this.pdfDepsPromise;
+    }
+
+    this.pdfDepsPromise = (async () => {
+      const pdfMakeModule = await import('pdfmake/build/pdfmake');
+      const pdfFontsModule = await import('pdfmake/build/vfs_fonts');
+
+      const pdfMake: any = (pdfMakeModule as any).default || pdfMakeModule;
+      const pdfFonts: any = (pdfFontsModule as any).default || pdfFontsModule;
+      pdfMake.vfs = pdfFonts?.pdfMake?.vfs || pdfFonts;
+
+      return { pdfMake };
+    })();
+
+    return this.pdfDepsPromise;
+  }
+
+  private async buildQuotationDocDefinition(): Promise<any | null> {
+    if (!this.selectedItem) {
+      return null;
+    }
+
+    const logo = await this.resolveReportLogo();
+    const apiData = {
+      ...this.selectedItem,
+      terms: this.selectedItem?.terms?.length ? this.selectedItem.terms : this.TandCList
+    };
+
+    const pdfData = transformQuotationApiData(
+      apiData,
+      this.currentCompany,
+      this.currentBranch,
+      this.userData,
+      logo,
+      {
+        currencyMaster: this.currencyMaster,
+        chargeUnitMaster: this.chargeUnitMaster,
+        departments: this.departments,
+        ports: this.ports
+      }
+    );
+
+    const documentType = this.selectedItem?.IsContract === 'Y' ? 'contract' : 'quotation';
+    return generateQuotationDocument(pdfData, documentType as any);
+  }
+
+  private async resolveReportLogo(): Promise<string | undefined> {
+    const logoFromStream = await firstValueFrom(this.logoService.reportLogo$);
+    const logoSource = logoFromStream || localStorage.getItem('current_report_logo') || '';
+
+    if (!logoSource) return undefined;
+    if (logoSource.startsWith('data:image')) return logoSource;
+
+    return this.imageUrlToBase64(logoSource);
+  }
+
+  private imageUrlToBase64(url: string): Promise<string | undefined> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          resolve(undefined);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      };
+
+      img.onerror = () => resolve(undefined);
+      img.src = url;
+    });
+  }
   /**
    * Get cached PDF blob or generate a new one
    * Improves performance when using both download and email features
@@ -5063,4 +5123,6 @@ openStandardCharges(routeIndex: number, carrierIndex: number) {
 
 
 }
+
+
 
