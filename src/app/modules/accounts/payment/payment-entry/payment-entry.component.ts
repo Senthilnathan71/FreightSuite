@@ -503,6 +503,26 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
   onVoucherDateChange(): void {
     this.applyVoucherDateConstraints();
+
+    const currencySid = this.paymentForm.get('CurrencyMasterSid')?.getRawValue();
+    if (!currencySid) return;
+
+    // Re-fetch header exchange rate for foreign currencies
+    // (patchCurrencyExchangeRate also calls checkAndUpdateForAllPartyDetail
+    //  and recalculateAllMatchingPartyAmounts after the API response)
+    if (currencySid !== this.currentCompany?.CurrencyMasterSid) {
+      this.patchCurrencyExchangeRate();
+    }
+
+    // Re-fetch exchange rates for non-party detail rows with foreign currencies
+    for (let i = 0; i < this.detailItems.length; i++) {
+      if (this.isAutoPartyRow(i)) continue; // party row is synced inside patchCurrencyExchangeRate
+      const row = this.detailItems.at(i) as FormGroup;
+      const detailCurrencySid = row.get('CurrencyMasterSid')?.getRawValue();
+      if (detailCurrencySid && detailCurrencySid !== this.currentCompany?.CurrencyMasterSid) {
+        this.patchCurrencyExchangeRateForDetail(detailCurrencySid, i);
+      }
+    }
   }
 
   initSearchOutstandingForm() {

@@ -62,6 +62,7 @@ import { SailingConfimationComponent } from '../report/sailing-confimation/saili
 import { ExitFormComponent } from '../report/exit-form/exit-form.component';
 import { JobCardComponent } from '../report/job-card/job-card.component';
 import { ProofOfDeliveryComponent } from '../report/proof-of-delivery/proof-of-delivery.component';
+import { SafeInsertShipmentMilestone } from '../../services/shipment-milestone.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -140,6 +141,7 @@ export class HouseJobEntryComponent  implements OnInit {
   @ViewChild('costEntryComponent') costEntryComponent: CostEntryComponent;
 @ViewChild(BoeEntryComponent) boeComponent!: BoeEntryComponent;
   @ViewChild('uploadModal') uploadModal!: BookingUploadComponent;
+  @ViewChild('milestoneComponent') milestoneComponent!: MilestoneComponent;
   parsedBookings: BookingData[] = [];
   showParsedData = false;
   uploadResult: any = null;
@@ -404,6 +406,7 @@ isVoyageFreeText: boolean = false;
 
       // Add a variable to track which report is selected
 selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
+hblModalRef?: NgbModalRef;
 
 
 
@@ -2028,6 +2031,9 @@ private loadMasterJobDetails(masterJobSid: number): void {
    
     if(allmilestones.length !== 0){
       this.milestoneResult = [...allmilestones];
+    }
+    if(this.hblModalRef){
+      this.initializeMilestoneContentForHBLPrint();
     }
   }
 
@@ -3966,17 +3972,24 @@ ${this.userData['userName']}`;
           size: 'xl',
           scrollable: true,
         })
+          this.hblModalRef = modalRef;
           modalRef.componentInstance.housejobData = this.housejobData || [];
           modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
           modalRef.componentInstance.agentList = this.agentList || [];
           modalRef.componentInstance.selectedReport = type;
           modalRef.componentInstance.hblCount = this.houseJobForm.get('HBLCount')?.getRawValue();
-         modalRef.result.then((result) => {
-           if (result === 'UPDATED') {
-             const prev = Number(this.houseJobForm.get('HBLCount')?.value);
 
-             this.houseJobForm.patchValue({
-               HBLCount: prev + 1,
+         if (type === 'HBLDraft') {
+           this.initializeMilestoneContentForHBLPrint();
+         }
+
+         modalRef.result.then((result) => {
+            this.hblModalRef = undefined;
+            if (result === 'UPDATED') {
+              const prev = Number(this.houseJobForm.get('HBLCount')?.value);
+
+              this.houseJobForm.patchValue({
+                HBLCount: prev + 1,
              });
 
              this.housejobData.HBLCount = prev + 1; 
@@ -3984,6 +3997,56 @@ ${this.userData['userName']}`;
          });
 
       }
+
+  initializeMilestoneContentForHBLPrint() {
+    let validDepartment = false;
+    let validJobType = false;
+    if (this.selectedDepartment?.ExportImport === "Export") {
+      validDepartment = true;
+    }
+
+    const currentJobType = this.b['JobType']?.value;
+    if (currentJobType === "Export") {
+      validJobType = true;
+    }
+
+    const allMilestones = this.milestoneComponent.allMilestones || [];
+    const draftMilestoneId = allMilestones.find(m => m.MilestoneCode === "Draft")?.MilestoneMasterSid;
+    const existingMilestone = this.milestoneResult.find(m => m.MilestoneMasterSid === draftMilestoneId);
+    console.log("AutoInsert Or Not", {
+      ImportOrExport: this.selectedDepartment?.ExportImport,
+      validDepartment,
+      currentJobType,
+      validJobType,
+      allMilestones,
+      tabValue: this.milestoneResult,
+      existingMilestone,
+      validMilestone: existingMilestone ? false : true,
+      finalDecision: validDepartment && validJobType && !existingMilestone
+    })
+
+    this.hblModalRef.componentInstance.autoInsertMilestone = validDepartment && validJobType && !existingMilestone;
+
+    const milestonePayload: SafeInsertShipmentMilestone = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      DepartmentName: this.selectedDepartment?.departmentName,
+      JobType: currentJobType,
+      MilestoneCode: "Draft",
+      MilestoneDate : getDefaultTodayDate(),
+      ShipmentNo: this.bookingData?.ShipmentNo,
+      createdBy: this.userData?.userEmail,
+      Remarks: `Draft BL has been sent on ${(new Date().toISOString()).split('T')[0]}`
+    };
+    console.log("Milestone Payload", milestonePayload);
+    this.hblModalRef.componentInstance.milestonePayload = milestonePayload;
+
+    this.hblModalRef.componentInstance.reloadMilestone.subscribe(() => {
+      console.log("Reloading milestone...");
+      this.milestoneComponent.loadShipmentMilestones(this.housejobData?.ShipmentNo);
+    });
+
+  }
 
 
 

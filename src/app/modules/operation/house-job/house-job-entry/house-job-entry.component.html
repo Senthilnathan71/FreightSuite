@@ -2562,7 +2562,7 @@
 
 
     <div class="workspace-content" [hidden]="selectedTab !== 'Milestone'">
-      <app-milestone screenName="Booking" [resetTrigger]="resetTriggerMilestone"
+      <app-milestone #milestoneComponent screenName="House Job" [resetTrigger]="resetTriggerMilestone"
         [shipmentNo]="bookingHeader?.ShipmentNo" (dataEmitter)="handleMilestoneChange($event)"></app-milestone>
     </div>
 

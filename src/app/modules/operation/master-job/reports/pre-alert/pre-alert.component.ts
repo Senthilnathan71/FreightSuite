@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { firstValueFrom } from 'rxjs';
@@ -8,6 +8,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { InsertMilestoneByMasterJobPayload, ShipmentMilestoneService } from 'src/app/modules/operation/services/shipment-milestone.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 
@@ -35,7 +36,13 @@ export class PreAlertComponent {
    @Input() agentList: any[] = [];
    @Input() yardList: any[] = [];
    @Input() portList: any[] = []; // Add this input
-     @Input()  selectedFCLLCL:any;
+   @Input()  selectedFCLLCL:any;
+
+   @Input() autoInsertMilestone: boolean = false;
+   @Input() milestonePayload?: InsertMilestoneByMasterJobPayload;
+   @Output() reloadMilestone = new EventEmitter<void>();
+   private milestoneInserted: boolean = false;
+
    constructor(
      private appSettingsService: AppSettingsService,
      private activeModal: NgbActiveModal,
@@ -43,7 +50,8 @@ export class PreAlertComponent {
      private appSettingService: AppSettingsService,
      private spinner: NgxSpinnerService,
      private pdfService: PdfDownloadService,
-    public logoService : LogoService
+    public logoService : LogoService,
+    private milestoneService: ShipmentMilestoneService
    ) { }
  
     showPrintLogo: boolean = false;
@@ -63,6 +71,7 @@ export class PreAlertComponent {
      this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
      this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     //  this.loadCityName();
+     this.milestoneInserted = false;
    }
  
    async loadLookups() {
@@ -226,6 +235,7 @@ export class PreAlertComponent {
    setTimeout(async () => {
      this.spinner.show();
     try {
+      await this.insertMilestoneSafelyForPrint();
        await this.pdfService.downloadBalancedPDF(
          'printContent',
          `Cargo_manifest_${this.masterJobData?.MasterJobNumber || ''}`,
@@ -239,9 +249,10 @@ export class PreAlertComponent {
    }, 50);
  }
    
- printDiv(divId: string): void {
+ async printDiv(divId: string): Promise<void> {
   //  this.showPrintLogo = true;
   //  this.showPdfLogo = false;
+  await this.insertMilestoneSafelyForPrint();
  
    setTimeout(() => {
      const printContents = document.getElementById(divId)?.innerHTML;
@@ -263,6 +274,27 @@ export class PreAlertComponent {
        popupWin.document.close();
      }
    }, 50); 
+ }
+
+ private async insertMilestoneSafelyForPrint(): Promise<void> {
+   if (!this.autoInsertMilestone || !this.milestonePayload || this.milestoneInserted) {
+     return;
+   }
+
+   try {
+     const resp: any = await firstValueFrom(
+       this.milestoneService.insertMilestoneByMasterJob(this.milestonePayload)
+     );
+
+     if (resp.status) {
+       this.milestoneInserted = true;
+       this.autoInsertMilestone = false;
+       this.reloadMilestone.emit();
+       console.log('Milestone inserted successfully');
+     }
+   } catch (error) {
+     console.error('Error inserting milestone', error);
+   }
  }
  
  
