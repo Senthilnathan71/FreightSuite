@@ -3441,6 +3441,14 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     }
     return 4;
   }
+
+  public getAmountDecimalPlacesByCode(CurrencyCode: string): number {
+    if (CurrencyCode) {
+      const config = this.currencyConfigService.getCurrencyConfig(CurrencyCode);
+      return config?.amountDecimal;
+    }
+    return 4;
+  }
   /**
    * Format an amount with currency symbol and comma separators
    * Example: getFormattedAmount(1234.56, 'USD') returns '$1,234.56'
