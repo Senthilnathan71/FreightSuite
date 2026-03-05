@@ -2663,9 +2663,12 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const osCurrAmt = Number(row.get('osCurrAmt')?.value || 0);
     const osLocalAmt = Number(row.get('osLocalAmt')?.value || 0);
 
-    // If matching currency amount equals outstanding currency amount,
-    // use outstanding local amount directly to avoid rounding differences
-    if (amount === osCurrAmt) {
+    // If outstanding has a currency amount but zero local amount, keep local at 0
+    if (osCurrAmt !== 0 && osLocalAmt === 0) {
+      row.get('matchLocalAmt')?.setValue(this.getFormattedAmount(0, row.get('matchCurr')?.value));
+    } else if (amount === osCurrAmt) {
+      // If matching currency amount equals outstanding currency amount,
+      // use outstanding local amount directly to avoid rounding differences
       row.get('matchLocalAmt')?.setValue(osLocalAmt);
     } else {
       const exchangeRate = Number(row.get('matchExRate')?.value);

@@ -723,7 +723,10 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
     const matchCurrencyAmt = toNumber(raw.MatchedCurrencyAmount);
     const osCurrencyAmt = toNumber(raw.OutstandingCurrencyAmount);
     const osLocalAmt = toNumber(raw.OutstandingLocalAmount);
-    if (matchCurrencyAmt === osCurrencyAmt) {
+    // If outstanding has a currency amount but zero local amount, keep local at 0
+    if (osCurrencyAmt !== 0 && osLocalAmt === 0) {
+      row.get('MatchedLocalAmount')?.setValue(this.getFormattedAndPaddedAmount(0, raw.CurrencyCode));
+    } else if (matchCurrencyAmt === osCurrencyAmt) {
       row.get('MatchedLocalAmount')?.setValue(this.getFormattedAndPaddedAmount(osLocalAmt, raw.CurrencyCode));
     } else {
       row.get('MatchedLocalAmount')?.setValue(this.getFormattedAndPaddedAmount(matchCurrencyAmt * (toNumber(raw.ExchangeRate) || 1), raw.CurrencyCode));
