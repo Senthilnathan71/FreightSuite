@@ -70,7 +70,8 @@ export class ProfitabilityReportComponent {
       { key: 'noOfShipment', label: 'No.of Shipment' },
       { key: 'twentyft', label: 'No.of 20ft' },
       { key: 'fourty', label: 'No.of 40ft' },
-
+      { key: 'fourtyfive', label: 'No.of 45ft' },
+      
       { key: 'containerNo', label: 'Container No.' },
       { key: 'chargeable', label: 'Total Chargeable Wt' },
       { key: 'Vol', label: 'Total CBM/Volume' },
@@ -96,6 +97,7 @@ export class ProfitabilityReportComponent {
         { value: item.noOfShipment || 0 },
         { value: item.twentyft || 0 },
         { value: item.fourty || 0 },
+        { value: item.fourtyfive || 0 },
 
         { value: item.containerNo || '' },
         { value: this.formatNumber(item.chargeable) || 0 },

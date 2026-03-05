@@ -49,6 +49,7 @@
                         <th class="bg-transparent text-light text-center">No.of Shipment</th>
                         <th class="bg-transparent text-light text-center">No.of 20ft</th>
                         <th class="bg-transparent text-light text-center">No.of 40ft</th>
+                        <th class="bg-transparent text-light text-center">No.of 45ft</th>
                         <th class="bg-transparent text-light text-center">Container No.</th>
                         <th class="bg-transparent text-light text-center">Total Chargeable Wt</th>
                         <th class="bg-transparent text-light text-center">Total CBM/Volume</th>
@@ -72,6 +73,7 @@
                         <td class="text-end">{{item.noOfShipment || ''}}</td>
                         <td class="text-end">{{ item.twentyft || '' }}</td>
                         <td class="text-end">{{ item.fourty || '' }}</td>
+                        <td class="text-end">{{ item.fourtyfive || '' }}</td>
                         <td>{{item.containerNo}}</td>
                         <td class="text-end">{{ item.chargeable | number:'1.2-2'}}</td>
                         <td class="text-end">{{ item.Vol | number:'1.2-2' }}</td>
