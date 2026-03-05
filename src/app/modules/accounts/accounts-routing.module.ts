@@ -311,6 +311,7 @@ export const AccountRoutes: Routes = [
        {
         path: "journal-voucher/entry",
         component: JournalVoucherEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Journal-Voucher",
           urls: [
@@ -322,6 +323,7 @@ export const AccountRoutes: Routes = [
       {
         path: "journal-voucher/entry/:id",
         component: JournalVoucherEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Journal-Voucher",
           urls: [
@@ -345,6 +347,7 @@ export const AccountRoutes: Routes = [
       {
         path: "reverse-voucher/entry",
         component: ReverseVoucherEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Reverse-Voucher",
           urls: [
@@ -356,6 +359,7 @@ export const AccountRoutes: Routes = [
       {
         path: "reverse-voucher/entry/:id",
         component: ReverseVoucherEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Reverse-Voucher",
           urls: [

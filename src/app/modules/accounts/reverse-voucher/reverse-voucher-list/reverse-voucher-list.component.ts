@@ -312,7 +312,8 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
             action: 'delete',
             tooltip: 'Delete ',
             class: "text-danger",
-            state: !this.mps.can('delete')
+            state: !this.mps.can('delete'),
+            condition: (row: any) => row.PostStatus === 'U'
           }
         ],
         selectable: false,

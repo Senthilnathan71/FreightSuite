@@ -36,6 +36,7 @@ import { getDefaultTodayDate } from 'src/app/common/helper';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
+import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
 @Component({
@@ -91,6 +92,8 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
   isPosted = false;
   todayDateInNgbStruct!: NgbDateStruct;
   isSaving = false;
+  isAutoPosting: boolean = true;
+  formatCurrencyAmountBeforeConcludingLocal: boolean = true;
   currentMenuId: number;
   TandCList: any[] = [];
   currentClauseId: any;
@@ -143,18 +146,18 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
     { id: 'C', name: 'C' },
   ];
 
-  // REMOVE THESE PROPERTIES - We'll use getters instead
-  // debitTotal = 0;
-  // creditTotal = 0;
-  // difference = 0;
-
-  // Voucher period constraints
   voucherConstraints: VoucherDateConstraints = {
     isClosed: false, errorMessage: null
   };
 
+  get isReadOnly(): boolean {
+    if (!this.editMode) return false;
+    return this.voucherData?.PostStatus !== 'U' || this.voucherData?.Status !== 'A';
+  }
   private showWarningFlags: boolean[] = [];
   manuallyEditedNarrationRows: Set<number> = new Set<number>();
+  private isPatchingEditData: boolean = false;
+  
 
   constructor(
     private router: Router,
@@ -174,7 +177,7 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
     private spinner: NgxSpinnerService,
     private currencyFormatter: CurrencyFormatService,
     private currencyConfigService: CurrencyConfigurationService,
-    private voucherPeriodService: VoucherPeriodValidationService
+    private voucherPeriodService: VoucherPeriodValidationService,
   ) { }
 
   ngOnInit(): void {
@@ -189,6 +192,7 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
       }
     this.loadUserAndCompanyData();
     this.mps.init().subscribe();
+    this.checkVoucherPostingMechanism();
     this.initializeForm();
     this.setTodayDate();
     this.loadMasterData();
@@ -232,9 +236,7 @@ private subscribeToFormChanges() {
     });
 }
 
-// Add this method to handle save with callback
 private saveDraftWithCallback(resolve?: (value: boolean) => void) {
-  // Validate voucher date is within financial year
   const fy = this.appSettingService.getCurrentFinancialYear();
   if (fy) {
     const voucherDate = new Date(this.form.getRawValue().voucherDate);
@@ -248,10 +250,9 @@ private saveDraftWithCallback(resolve?: (value: boolean) => void) {
       return;
     }
   }
+  const raw = this.form.getRawValue();
 
-  // Re-validate voucher date constraints at save time (edit mode may have stale state)
   this.applyVoucherDateConstraints();
-  // Block save if voucher period grace days exceeded or module closed
   if (this.voucherConstraints.isClosed) {
     this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
     if (resolve) resolve(false);
@@ -263,7 +264,7 @@ private saveDraftWithCallback(resolve?: (value: boolean) => void) {
     return;
   }
 
-  const raw = this.form.getRawValue();
+  
   
   if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
     this.appSettingService.showWarning('No changes to save');
@@ -358,18 +359,15 @@ private saveJournalVoucherWithCallback(isFinal: boolean, resolve?: (value: boole
   });
 }
 
-// Add the deepEqual method (same as invoice component)
 private normalizeValue(value: any): any {
-  if (value === null || value === undefined) {
+  if (value === null || value === undefined || value === '') {
     return null;
   }
 
-  // Handle Date
   if (value instanceof Date) {
     return value.toISOString().split('T')[0];
   }
 
-  // Handle numeric strings and numbers
   if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
     return Number(value);
   }
@@ -378,12 +376,10 @@ private normalizeValue(value: any): any {
     return Number(value.toFixed(6));
   }
 
-  // Handle arrays
   if (Array.isArray(value)) {
     return value.map(v => this.normalizeValue(v));
   }
 
-  // Handle objects
   if (typeof value === 'object') {
     return Object.keys(value)
       .sort()
@@ -402,9 +398,7 @@ private deepEqual(obj1: any, obj2: any): boolean {
   return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
 }
 
-  // ========== ADD THESE GETTERS ==========
 
-  // Real-time debit total calculation
   get debitTotal(): number {
     if (!this.details || this.details.length === 0) {
       return 0;
@@ -426,11 +420,9 @@ private deepEqual(obj1: any, obj2: any): boolean {
       return total;
     }, 0);
 
-    // Format the total
     return this.getFormattedAmount(total, companyCurrencyId);
   }
 
-  // Real-time credit total calculation
   get creditTotal(): number {
     if (!this.details || this.details.length === 0) {
       return 0;
@@ -452,20 +444,16 @@ private deepEqual(obj1: any, obj2: any): boolean {
       return total;
     }, 0);
 
-    // Format the total
     return this.getFormattedAmount(total, companyCurrencyId);
   }
 
-  // Real-time difference calculation
   get difference(): number {
     const companyCurrencyId = this.currentCompany?.CurrencyMasterSid;
     const diff = Math.abs(this.debitTotal - this.creditTotal);
 
-    // Format the difference
     return this.getFormattedAmount(diff, companyCurrencyId);
   }
 
-  // Optional: Get formatted totals for display
   get formattedDebitTotal() {
     return this.debitTotal
 
@@ -478,7 +466,6 @@ private deepEqual(obj1: any, obj2: any): boolean {
   get formattedDifference() {
     return this.difference
   }
-  // ========== END OF GETTERS ==========
 
   loadUserAndCompanyData(): void {
     try {
@@ -531,10 +518,12 @@ private deepEqual(obj1: any, obj2: any): boolean {
 
   initializeForm(): void {
    
-    const today = getDefaultTodayDate()
+     const today = getDefaultTodayDate();
+    const fy = this.appSettingService.getCurrentFinancialYear();
+    const defaultVoucherDate = fy && (today < new Date(fy.StartDate) || today > new Date(fy.EndDate)) ? fy.EndDate : today;
     this.form = this.fb.group({
       voucherNumber: [{ value: '', disabled: true }],
-      voucherDate: [{ value: today }, Validators.required],
+      voucherDate: [defaultVoucherDate],
       DocumentNumber:[null],
       DocumentDate:[null],
       narration: ['', [Validators.required, Validators.maxLength(200)]],
@@ -562,20 +551,15 @@ private deepEqual(obj1: any, obj2: any): boolean {
 
   }
   private propagateHeaderNarrationToDetails(headerNarration: string): void {
-  // Only propagate if there's a header narration
   if (!headerNarration) return;
   
-  // Propagate to all detail rows that haven't been manually edited
   this.details.controls.forEach((control, index) => {
     const detailGroup = control as FormGroup;
     
-    // Skip if this row was manually edited
     if (this.manuallyEditedNarrationRows.has(index)) return;
     
-    // Skip auto-generated rows
     if (detailGroup.get('IsAutoGenerated')?.value === 'Y') return;
     
-    // Update the detail narration
     detailGroup.patchValue({
       narration: headerNarration
     }, { emitEvent: false });
@@ -583,13 +567,10 @@ private deepEqual(obj1: any, obj2: any): boolean {
 }
 
   initializeDefaultCurrency(): void {
-    // Get company currency ID (from user company data or company settings)
     const companyCurrencyId = this.currentCompany?.CurrencyMasterSid || this.companyCurrency?.currencyMasterSid;
 
     if (companyCurrencyId) {
-      // console.log('Initializing default currency with ID:', companyCurrencyId);
 
-      // This will be applied when currency list is loaded
       this.defaultCurrencyId = companyCurrencyId;
       this.defaultCurrencyCode = this.currentCurrencyCode;
     }
@@ -627,19 +608,6 @@ private deepEqual(obj1: any, obj2: any): boolean {
 
   onVoucherDateChange(): void {
     this.applyVoucherDateConstraints();
-
-    const companyCurrencyId = this.currentCompany?.CurrencyMasterSid;
-    if (!companyCurrencyId) return;
-
-    // Re-fetch exchange rates for all non-auto-generated rows with foreign currencies
-    this.details.controls.forEach((control) => {
-      const detailGroup = control as FormGroup;
-      if (detailGroup.get('IsAutoGenerated')?.value === 'Y') return;
-      const currencyId = detailGroup.get('currencyMasterSid')?.getRawValue();
-      if (currencyId && currencyId !== companyCurrencyId) {
-        this.fetchExchangeRate(detailGroup, currencyId);
-      }
-    });
   }
 
   loadMasterData(): void {
@@ -777,7 +745,6 @@ private deepEqual(obj1: any, obj2: any): boolean {
         this.voucherHeaderSid = +params['id'];
         this.initializeForm();
         this.form.get('Status')?.enable(); // Enable for edit mode
-        this.form.get('voucherDate')?.disable();
       } else {
         this.editMode = false;
         this.initializeForm();
@@ -799,6 +766,7 @@ private deepEqual(obj1: any, obj2: any): boolean {
   loadVoucherForEdit(id: number): void {
     this.journalVoucherService.getJournalVoucherById(id).subscribe({
       next: (response) => {
+        this.isPatchingEditData = true;
         const voucher = response.data;
         this.voucherData = voucher;
         if (!voucher) {
@@ -840,6 +808,15 @@ private deepEqual(obj1: any, obj2: any): boolean {
         }
 
         this.form.patchValue(formPatchData);
+        const _paymentOrigDate = new Date(voucher.VoucherDate);
+    if (!isNaN(_paymentOrigDate.getTime())) {
+      const _y = _paymentOrigDate.getFullYear(), _m = _paymentOrigDate.getMonth() + 1;
+      const _monthEnd = new Date(_y, _m, 0);
+      const _today = new Date(); _today.setHours(0, 0, 0, 0);
+      const _effectiveEnd = _monthEnd < _today ? _monthEnd : _today;
+      this.fyMinDate = { year: _y, month: _m, day: 1 };
+      this.fyMaxDate = { year: _effectiveEnd.getFullYear(), month: _effectiveEnd.getMonth() + 1, day: _effectiveEnd.getDate() };
+    }
            // Clear the manually edited tracking set
       this.manuallyEditedNarrationRows.clear();
       
@@ -853,7 +830,8 @@ private deepEqual(obj1: any, obj2: any): boolean {
           this.form.get('narration')?.disable();
           this.form.get('remarks')?.disable();
           this.form.get('Status')?.disable();
-        }
+          this.form.get('voucherDate')?.disable();
+        } 
 
         this.details.clear();
 
@@ -941,7 +919,7 @@ private deepEqual(obj1: any, obj2: any): boolean {
 
             // Set department first
             if (dept) {
-              this.filterDetailsWithDept(dept, rowIndex);
+              this.filterDetailsWithDept(dept, rowIndex, true);
             }
 
             // Handle charge and HSSAC
@@ -995,24 +973,33 @@ private deepEqual(obj1: any, obj2: any): boolean {
 
             // Call refreshSubledgerFiltersForRow for each row to ensure proper filtering
             this.details.controls.forEach((control, index) => {
-              this.refreshSubledgerFiltersForRow(index);
+              this.refreshSubledgerFiltersForRow(index, true);
             });
 
             this.spinner.hide();
+          }).finally(() => {
+            this.isPatchingEditData = false;
+            setTimeout(() => {
+              this.initialFormValue = this.form.getRawValue();
+              this.isDirty = false;
+              this.subscribeToFormChanges();
+            }, 0);
           });
         } else {
           this.spinner.hide();
+          this.isPatchingEditData = false;
+          setTimeout(() => {
+            this.initialFormValue = this.form.getRawValue();
+            this.isDirty = false;
+            this.subscribeToFormChanges();
+          }, 0);
         }
-         setTimeout(() => {
-        this.initialFormValue = this.form.getRawValue();
-        this.isDirty = false;
-        this.subscribeToFormChanges();
-      }, 0);
       },
       error: (err) => {
         console.error('Error loading voucher:', err);
         this.appSettingService.showError('Failed to load voucher details', 'Error');
         this.router.navigate(['/accounts/journal-voucher/list']);
+        this.isPatchingEditData = false;
         this.spinner.hide();
       },
     });
@@ -1091,8 +1078,14 @@ private deepEqual(obj1: any, obj2: any): boolean {
     return this.form.get('details') as FormArray;
   }
 
-  filterDetailsWithDept(dept: any, detailIndex: number) {
+  filterDetailsWithDept(dept: any, detailIndex: number, preservePatchedValues: boolean = false) {
     if (!dept) {
+      if (preservePatchedValues) {
+        this.filteredChargeList[detailIndex] = [];
+        this.masterJobList[detailIndex] = [];
+        this.houseJobList[detailIndex] = [];
+        return;
+      }
       const row = this.details.at(detailIndex) as FormGroup;
       row.patchValue({
         ChargeDescription: '',
@@ -1115,6 +1108,22 @@ private deepEqual(obj1: any, obj2: any): boolean {
     }
 
     this.filterChargeByDeptForARow(dept, detailIndex);
+
+    if (preservePatchedValues) {
+      this.accountsService.getMasterJobByDepartment({
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
+        DepartmentMasterSid: dept?.DepartmentMasterSid
+      }).subscribe({
+        next: (resp: any) => {
+          this.masterJobList[detailIndex] = resp;
+        },
+        error: (err) => {
+          console.error('Failed to load master jobs:', err);
+        }
+      });
+      return;
+    }
 
     // IMPORTANT: Refresh subledger filters which will trigger auto-patching
     this.refreshSubledgerFiltersForRow(detailIndex);
@@ -1258,6 +1267,7 @@ private deepEqual(obj1: any, obj2: any): boolean {
   setupDetailCalculations(detailGroup: FormGroup): void {
   const rowIndex = this.getRowIndex(detailGroup);
    detailGroup.get('narration')?.valueChanges.subscribe((value) => {
+    if (this.isPatchingEditData) return;
     // Check if this is a user-initiated change (not from header propagation)
     const headerNarration = this.form.get('narration')?.value;
     
@@ -1266,12 +1276,13 @@ private deepEqual(obj1: any, obj2: any): boolean {
       this.manuallyEditedNarrationRows.add(rowIndex);
     }
   });
-    // Simplified: Only update the local amount, tax will be recalculated automatically
     detailGroup.get('currencyAmount')?.valueChanges.subscribe(() => {
-      this.calculateLocalAmount(detailGroup);
+      if (this.isPatchingEditData) return;
+      this.applyCurrencyFormatting(detailGroup, 'currencyAmount');
     });
 
     detailGroup.get('coaMasterSid')?.valueChanges.subscribe((coaMasterSid) => {
+      if (this.isPatchingEditData) return;
 
       // console.log('COA value changed:', coaMasterSid, {
       //   isAutoGenerated: detailGroup.get('IsAutoGenerated')?.value
@@ -1284,7 +1295,8 @@ private deepEqual(obj1: any, obj2: any): boolean {
     });
 
     detailGroup.get('exchangeRate')?.valueChanges.subscribe(() => {
-      this.calculateLocalAmount(detailGroup);
+      if (this.isPatchingEditData) return;
+      this.applyCurrencyFormatting(detailGroup, 'exchangeRate');
     });
 
     // REMOVED: drCr value change subscription - not needed with getters
@@ -1293,12 +1305,24 @@ private deepEqual(obj1: any, obj2: any): boolean {
     // });
 
     detailGroup.get('currencyMasterSid')?.valueChanges.subscribe((currencyId) => {
+      if (this.isPatchingEditData) return;
       if (currencyId) {
+        detailGroup.patchValue({
+          currencyAmount: this.getFormattedAndPaddedAmount(
+            this.toNumber(detailGroup.get('currencyAmount')?.value),
+            currencyId
+          ),
+          taxAmount: this.getFormattedAndPaddedAmount(
+            this.toNumber(detailGroup.get('taxAmount')?.value),
+            currencyId
+          ),
+        }, { emitEvent: false });
         this.fetchExchangeRate(detailGroup, currencyId);
       }
     });
 
     detailGroup.get('chargeMasterSid')?.valueChanges.subscribe((chargeId) => {
+      if (this.isPatchingEditData) return;
 
       // console.log('Charge value changed:', chargeId);
 
@@ -1324,6 +1348,7 @@ private deepEqual(obj1: any, obj2: any): boolean {
     });
 
     detailGroup.get('departmentMasterSid')?.valueChanges.subscribe((deptId) => {
+      if (this.isPatchingEditData) return;
       // console.log('Department value changed:', deptId);
 
       // Skip for auto-generated rows
@@ -1340,6 +1365,7 @@ private deepEqual(obj1: any, obj2: any): boolean {
     });
 
     detailGroup.get('taxPercentage')?.valueChanges.subscribe((val) => {
+       if (this.isPatchingEditData) return;
        const taxPercentage = Number(val || 0);
        if (taxPercentage === 0) {
          detailGroup.get('taxAmount')?.disable({ emitEvent: false });
@@ -1347,6 +1373,11 @@ private deepEqual(obj1: any, obj2: any): boolean {
          detailGroup.get('taxAmount')?.enable({ emitEvent: false });
        }
        this.calculateTaxAmount(detailGroup);
+    });
+
+    detailGroup.get('taxAmount')?.valueChanges.subscribe(() => {
+      if (this.isPatchingEditData) return;
+      this.applyCurrencyFormatting(detailGroup, 'taxAmount');
     });
     const initialTaxPercentage = Number(detailGroup.get('taxPercentage')?.value || 0);
 
@@ -1380,6 +1411,7 @@ private deepEqual(obj1: any, obj2: any): boolean {
   }
 
   onCoaChange(detailGroup: FormGroup, coaMasterSid: any): void {
+  if (this.isPatchingEditData) return;
   const coaId = coaMasterSid != null && coaMasterSid !== '' ? Number(coaMasterSid) : null;
   const rowIndex = this.getRowIndex(detailGroup);
 
@@ -1403,6 +1435,15 @@ private deepEqual(obj1: any, obj2: any): boolean {
   this.subledgerTypes[rowIndex] = '';
 
    this.clearRelatedFieldsForRow(detailGroup, rowIndex);
+
+  // Default detail row currency from the COA's configured ledger currency
+  if (coaId) {
+    const coa = this.coaList.find(c => c.COAMasterSid === coaId);
+    if (coa?.LedgerCurrency) {
+      detailGroup.patchValue({ currencyMasterSid: coa.LedgerCurrency });
+      // currencyCode and exchangeRate are updated via currencyMasterSid.valueChanges subscription
+    }
+  }
 
   // Fetch subledger details when COA changes
   if (coaId && this.currentCompany?.CompanyMasterSid) {
@@ -1513,31 +1554,81 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
 
 
   calculateTaxAmount(detailGroup: FormGroup): void {
-    const localAmount = detailGroup.get('localAmount')?.value || 0;
-    const taxPercentage = detailGroup.get('taxPercentage')?.value || 0;
-    const companyCurrencyId = this.currentCompany?.CurrencyMasterSid;
+    if (this.isPatchingEditData) return;
+    const localAmount = this.toNumber(detailGroup.get('localAmount')?.value || 0);
+    const taxPercentage = this.toNumber(detailGroup.get('taxPercentage')?.value || 0);
+    const currencyMasterSid =
+      detailGroup.get('currencyMasterSid')?.value || this.currentCompany?.CurrencyMasterSid;
 
     const taxAmount = (localAmount * taxPercentage) / 100;
 
-    // Format tax amount based on company currency configuration
-    const formattedTaxAmount = this.getFormattedAmount(taxAmount, companyCurrencyId);
+    const formattedTaxAmount = this.getFormattedAndPaddedAmount(taxAmount, currencyMasterSid);
 
     detailGroup.patchValue({
       taxAmount: formattedTaxAmount
     }, { emitEvent: false });
   }
 
+  private applyCurrencyFormatting(
+    detailGroup: FormGroup,
+    changedControl: 'exchangeRate' | 'currencyAmount' | 'taxAmount'
+  ): void {
+    if (this.isPatchingEditData) return;
+    const currencyMasterSid =
+      detailGroup.get('currencyMasterSid')?.value || this.currentCompany?.CurrencyMasterSid;
+
+    if (!currencyMasterSid) {
+      if (changedControl !== 'taxAmount') {
+        this.calculateLocalAmount(detailGroup);
+      }
+      return;
+    }
+
+    if (changedControl === 'exchangeRate') {
+      const exchangeRate = this.toNumber(detailGroup.get('exchangeRate')?.value);
+      detailGroup.patchValue(
+        { exchangeRate: this.getFormattedAndPaddedExchangeRate(exchangeRate, currencyMasterSid) },
+        { emitEvent: false }
+      );
+      this.calculateLocalAmount(detailGroup);
+      return;
+    }
+
+    if (changedControl === 'currencyAmount') {
+      const currencyAmount = this.toNumber(detailGroup.get('currencyAmount')?.value);
+      detailGroup.patchValue(
+        { currencyAmount: this.getFormattedAndPaddedAmount(currencyAmount, currencyMasterSid) },
+        { emitEvent: false }
+      );
+      this.calculateLocalAmount(detailGroup);
+      return;
+    }
+
+    const taxAmount = this.toNumber(detailGroup.get('taxAmount')?.value);
+    detailGroup.patchValue(
+      { taxAmount: this.getFormattedAndPaddedAmount(taxAmount, currencyMasterSid) },
+      { emitEvent: false }
+    );
+  }
+
   calculateLocalAmount(detailGroup: FormGroup): void {
-    const currencyAmount = detailGroup.get('currencyAmount')?.value || 0;
-    const exchangeRate = detailGroup.get('exchangeRate')?.value || 0;
-    const currencyMasterSid = detailGroup.get('currencyMasterSid')?.value;
-    const companyCurrencyId = this.currentCompany?.CurrencyMasterSid;
+    if (this.isPatchingEditData) return;
+    const currencyAmount = this.toNumber(detailGroup.get('currencyAmount')?.value || 0);
+    const exchangeRate = this.toNumber(detailGroup.get('exchangeRate')?.value || 0);
+    const currencyMasterSid =
+      detailGroup.get('currencyMasterSid')?.value || this.currentCompany?.CurrencyMasterSid;
 
-    // Calculate local amount
-    const localAmount = currencyAmount * exchangeRate;
+    const formattedExchangeRate = this.getFormattedExchangeRate(exchangeRate, currencyMasterSid);
+    const formattedCurrencyAmount = this.getFormattedAmount(currencyAmount, currencyMasterSid);
 
-    // Format based on company currency
-    const formattedLocalAmount = this.getFormattedAmount(localAmount, companyCurrencyId);
+    let localAmount: number;
+    if (this.formatCurrencyAmountBeforeConcludingLocal) {
+      localAmount = Number(formattedCurrencyAmount) * Number(formattedExchangeRate);
+    } else {
+      localAmount = Number(currencyAmount) * Number(formattedExchangeRate);
+    }
+
+    const formattedLocalAmount = this.getFormattedAndPaddedAmount(localAmount, currencyMasterSid);
 
     detailGroup.patchValue({
       localAmount: formattedLocalAmount
@@ -1548,6 +1639,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
   }
 
   fetchExchangeRate(detailGroup: FormGroup, currencyId: number): void {
+    if (this.isPatchingEditData) return;
     if (!currencyId || !this.currencyList?.length) return;
 
     const companyCurrencyCode = this.companySettings.getCurrencySettings().code;
@@ -1564,7 +1656,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
     if (fromCurrencyCode === toCurrencyCode) {
       detailGroup.patchValue({
         currencyCode: fromCurrencyCode,
-        exchangeRate: 1
+        exchangeRate: this.getFormattedAndPaddedExchangeRate(1, currencyId)
       }, { emitEvent: false });
 
       detailGroup.get('exchangeRate')?.disable({ emitEvent: false });
@@ -1591,7 +1683,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
         if (res?.status) {
           if (res.data) {
             const exchangeRate = Number(res.data);
-            const formattedRate = this.getFormattedExchangeRate(exchangeRate, currencyId);
+            const formattedRate = this.getFormattedAndPaddedExchangeRate(exchangeRate, currencyId);
             // Exchange rate found
             detailGroup.patchValue({
               currencyCode: fromCurrencyCode,
@@ -1807,7 +1899,6 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
             //   selectedHssacId: hssacId,
             //   selectedHssacCode: hssacCode
             // });
-
           }
 
           const charge = this.chargeList.find((c) => c.ChargeMasterSid === chargeId);
@@ -1893,22 +1984,22 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
   // calculateTotals(): void {
   //   this.debitTotal = 0;
   //   this.creditTotal = 0;
-  // 
+  //
   //   this.details.controls.forEach((control) => {
   //     const drCr = control.get('drCr')?.value;
   //     const localAmount = control.get('localAmount')?.value || 0;
   //     const taxAmount = control.get('taxAmount')?.value || 0;
-  //     
+  //
   //     // Calculate total amount including tax
   //     const totalAmount = localAmount + taxAmount;
-  // 
+  //
   //     if (drCr === 'D') {
   //       this.debitTotal += totalAmount;
   //     } else if (drCr === 'C') {
   //       this.creditTotal += totalAmount;
   //     }
   //   });
-  // 
+  //
   //   this.difference = Math.abs(this.debitTotal - this.creditTotal);
   // }
 
@@ -2072,8 +2163,10 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
         this.appSettingService.showSuccess('Journal voucher saved and posted successfully!');
         this.isPosted = true; // Update local state
 
-        // Navigate to list after successful posting
-       this.router.navigate(['/accounts/journal-voucher/entry', voucherHeaderSid]);
+        // Force reload of the same entry route so component state is fully refreshed
+        this.router.navigateByUrl('/accounts/journal-voucher/list', { skipLocationChange: true }).then(() => {
+          this.router.navigate(['/accounts/journal-voucher/entry', voucherHeaderSid]);
+        });
       } else {
         this.appSettingService.showError(result.message || 'Failed to post journal voucher.');
       }
@@ -2086,7 +2179,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
   }
 
   // Existing saveDraft method (for draft saving)
-  saveDraft(): void {
+  saveDraft(resolve?: (value: boolean) => void, isPostingTrue?: boolean) {
     console.log("saveDraft")
   // Re-validate voucher date constraints at save time (edit mode may have stale state)
   this.applyVoucherDateConstraints();
@@ -2097,8 +2190,17 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
   }
 
   if (!this.isFormValid()) return;
+
   
   const raw = this.form.getRawValue();
+  const autoPostingButNoPosted = this.isAutoPosting && !this.isPosted;
+    if (this.editMode && autoPostingButNoPosted) {
+      this.appSettingService.showWarning(
+        'Auto Posting is currently enabled.\n\nPlease switch to Manual Posting and post this  voucher first.\nAfter posting, you can switch back to Auto Posting.',
+      );
+      if (resolve) resolve(false);
+      return;
+    }
   
   if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
     this.appSettingService.showWarning('No changes to save');
@@ -2109,15 +2211,11 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
   this.saveJournalVoucher(false);
 }
 
+
   preparePayload(): any {
     const formValue = this.form.getRawValue();
     const voucherDate = formValue.voucherDate;
     const userEmail = this.userData?.userEmail;
-    // const DocumentDate = formValue.DocumentDate;
-    //  const voucherDateString = `${voucherDate.year}-${String(voucherDate.month).padStart(2, '0')}-${String(voucherDate.day).padStart(2, '0')}`;
-  // const DocumentDateString = `${DocumentDate.year}-${String(DocumentDate.month).padStart(2, '0')}-${String(DocumentDate.day).padStart(2, '0')}`;
-
-    const companyCurrencyId = this.currentCompany?.CurrencyMasterSid;
 
     const VoucherDetail = formValue.details.map((detail: any) => ({
       VoucherDetailSid: detail.VoucherDetailSid || undefined,
@@ -2127,7 +2225,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
       CurrencyCode: detail.currencyCode,
       ExchangeRate: this.getFormattedExchangeRate(detail.exchangeRate, detail.currencyMasterSid),
       Amount: this.getFormattedAmount(detail.currencyAmount, detail.currencyMasterSid),
-      LocalAmount: this.getFormattedAmount(detail.localAmount, companyCurrencyId),
+      LocalAmount: this.getFormattedAmount(detail.localAmount, detail.currencyMasterSid),
       DrCr: detail.drCr,
       Narration: detail.narration || null,
       DepartmentMasterSid: detail.departmentMasterSid || null,
@@ -2137,7 +2235,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
       MasterJobSid: detail.masterJobSid || null,
       HouseJobSid: detail.houseJobSid || null,
       TaxPercentage1: detail.taxPercentage || null,
-      TaxAmount1: this.getFormattedAmount(detail.taxAmount, companyCurrencyId),
+      TaxAmount1: this.getFormattedAmount(detail.taxAmount, detail.currencyMasterSid),
       CostCenterMasterSid: detail.costCenterMasterSid || null,
       ProfitCenterMasterSid: detail.profitCenterMasterSid || null,
     }));
@@ -2172,14 +2270,8 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
     };
   }
 
-  navigateToBack(): void {
-  if (this.isDirty) {
-    if (confirm('You have unsaved changes. Are you sure you want to leave?')) {
-      this.router.navigate(['/accounts/journal-voucher/list']);
-    }
-  } else {
+   navigateToBack(): void {
     this.router.navigate(['/accounts/journal-voucher/list']);
-  }
 }
 
   private fromNgbDate(s: NgbDateStructLike | null): Date | null {
@@ -2267,7 +2359,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
 
   }
 
-  refreshSubledgerFiltersForRow(rowIndex: number): void {
+  refreshSubledgerFiltersForRow(rowIndex: number, preservePatchedValues: boolean = false): void {
     const row = this.details.at(rowIndex) as FormGroup;
     const isAutoGenerated = row.get('IsAutoGenerated')?.value === 'Y';
     const isPosted = this.isPosted; // Use the component-level flag
@@ -2347,6 +2439,10 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
     // Update the filtered subledgers
     row.patchValue({ filteredSubledgers }, { emitEvent: false });
 
+    if (preservePatchedValues) {
+      return;
+    }
+
     // Handle Charge type logic
     if (subledgerType === 'Charge') {
       if (filteredSubledgers.length === 1) {
@@ -2424,7 +2520,6 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
   async handleSubledgerForEdit(detailGroup: FormGroup, detail: any, rowIndex: number): Promise<void> {
     // Skip for auto-generated rows
     if (detail.IsAutoGenerated === 'Y') {
-      // console.log(`Skipping handleSubledgerForEdit for auto-generated row ${rowIndex}`);
       return;
     }
 
@@ -2578,6 +2673,22 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
     return this.toNumber(formattedString);
   }
 
+  public getFormattedAndPaddedAmount(amount: number | string, currencyMasterSid: number): string {
+    const currency = this.currencyList.find(
+      (curr) => curr.CurrencyMasterSid === currencyMasterSid
+    );
+
+    const formattedAmount = this.currencyFormatter.formatAmount(
+      {
+        value: this.toNumber(amount),
+        currencyCode: currency?.currencyCode,
+      },
+      false
+    );
+
+    return Number(formattedAmount).toFixed(this.getAmountDecimalPlaces(currencyMasterSid));
+  }
+
   public getAmountDecimalPlaces(currencyMasterSid: number): number {
     const currency = this.currencyList.find(
       (currency) => currency.CurrencyMasterSid === currencyMasterSid
@@ -2585,10 +2696,10 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
 
     if (currency) {
       const config = this.currencyConfigService.getCurrencyConfig(currency.currencyCode);
-      return config?.amountDecimal || 2;
+      return config?.amountDecimal;
     }
 
-    return 2;
+    return 4;
   }
 
   public getFormattedExchangeRate(rate: number, currencyMasterSid: number): number {
@@ -2600,6 +2711,19 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
       value: rate,
       currencyCode: currency?.currencyCode,
     });
+  }
+
+  public getFormattedAndPaddedExchangeRate(rate: number, currencyMasterSid: number): string {
+    const currency = this.currencyList.find(
+      (curr) => curr.CurrencyMasterSid === currencyMasterSid
+    );
+
+    const formattedRate = this.currencyFormatter.formatExchangeRate({
+      value: rate,
+      currencyCode: currency?.currencyCode,
+    });
+
+    return Number(formattedRate).toFixed(this.getExchangeRateDecimalPlaces(currencyMasterSid));
   }
 
   public getExchangeRateDecimalPlaces(currencyMasterSid: number): number {
@@ -2628,7 +2752,6 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
   isTaxAmountReadonly(index: number): boolean {
   const row = this.details.at(index) as FormGroup;
   const taxPercentage = Number(row.get('taxPercentage')?.value || 0);
-
   // taxPercentage > 0 => taxAmount readonly
   return taxPercentage === 0;
 }
@@ -2637,23 +2760,40 @@ ngOnDestroy(): void {
   this.destroy$.complete();
 }
 resetForm(): void {
-  if (this.isDirty) {
-    if (confirm('You have unsaved changes. Are you sure you want to reset?')) {
-      this.form.reset();
-      this.setTodayDate();
+  
+    if (this.editMode) {
+      this.form.patchValue(this.voucherData);
+    } else {
+      this.initializeForm();
       this.details.clear();
-      this.addDetailLine();
-      this.manuallyEditedNarrationRows.clear();
-      this.initialFormValue = this.form.getRawValue();
-      this.isDirty = false;
     }
-  } else {
-    this.form.reset();
-    this.setTodayDate();
-    this.details.clear();
-    this.addDetailLine();
-    this.manuallyEditedNarrationRows.clear();
-  }
 }
 
+ checkVoucherPostingMechanism() {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    const branchId = this.currentBranch?.BranchMasterSid;
+    const menuName = 'Journal Voucher';
+    if (!companyId || !branchId || !menuName) {
+      return;
+    }
+    console.log('comapny',companyId)
+    this.operationService
+      .checkVoucherPostingMechanism({
+        CompanyMasterSid: companyId,
+        BranchMasterSid: branchId,
+        MenuName: menuName,
+      })
+      .subscribe({
+        next: (resp) => {
+          if (resp.status) {
+            this.isAutoPosting = Boolean(resp.data);
+          } else {
+            this.isAutoPosting = false;
+          }
+        },
+        error: (error: any) => {
+          console.error('Error checking voucher posting mechanism:', error);
+        },
+      });
+  }
 }

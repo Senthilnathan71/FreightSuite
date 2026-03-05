@@ -354,7 +354,7 @@ export class ReverseVoucherEntryComponent {
   }
 
   private normalizeValue(value: any): any {
-    if (value === null || value === undefined) {
+    if (value === null || value === undefined || value === '') {
       return null;
     }
 
@@ -1358,6 +1358,16 @@ export class ReverseVoucherEntryComponent {
       }
     }
 
+    const _paymentOrigDate = new Date(header.VoucherDate);
+    if (!isNaN(_paymentOrigDate.getTime())) {
+      const _y = _paymentOrigDate.getFullYear(), _m = _paymentOrigDate.getMonth() + 1;
+      const _monthEnd = new Date(_y, _m, 0);
+      const _today = new Date(); _today.setHours(0, 0, 0, 0);
+      const _effectiveEnd = _monthEnd < _today ? _monthEnd : _today;
+      this.fyMinDate = { year: _y, month: _m, day: 1 };
+      this.fyMaxDate = { year: _effectiveEnd.getFullYear(), month: _effectiveEnd.getMonth() + 1, day: _effectiveEnd.getDate() };
+    }
+
 
     this.details.clear();
     console.log('Details array cleared, length:', this.details.length);
@@ -1526,6 +1536,7 @@ export class ReverseVoucherEntryComponent {
   }
 
   onCancel() {
+    
     this.router.navigate(['/accounts/reverse-voucher/list']);
   }
 
@@ -1570,10 +1581,6 @@ export class ReverseVoucherEntryComponent {
       return;
     }
 
-    if (this.details.length === 0) {
-      this.appSettingService.showError('Please add at least one detail row');
-      return;
-    }
     const raw = this.reverseVoucherForm.getRawValue();
     const autoPostingButNoPosted = this.isAutoPosting && !this.isPosted;
     if (this.isEditMode && autoPostingButNoPosted) {
@@ -1589,6 +1596,10 @@ export class ReverseVoucherEntryComponent {
       if (resolve) resolve(false);
       return;
     }
+    if (this.details.length === 0) {
+      this.appSettingService.showError('Please get the voucher to be reversed');
+      return;
+    }
     const payload = this.preparePayload();
     this.isSaving = true;
     this.spinner.show();
@@ -1598,6 +1609,7 @@ export class ReverseVoucherEntryComponent {
         next: (response) => {
           this.spinner.hide();
           this.isSaving = false;
+          this.isDirty = false;
           if (response.status) {
             this.appSettingService.showSuccess('Reverse Voucher updated successfully');
             const id = response.data?.newVoucher?.VoucherHeaderSid || response.data?.VoucherHeaderSid || response.data?.voucherHeaderSid || null;
@@ -1618,8 +1630,9 @@ export class ReverseVoucherEntryComponent {
         next: (response) => {
           this.spinner.hide();
           this.isSaving = false;
+          this.isDirty = false;
           if (response.status) {
-            this.appSettingService.showSuccess('Reverse Voucher created and postedsuccessfully');
+            this.appSettingService.showSuccess('Reverse Voucher created and posted successfully');
             const id = response.data?.newVoucher?.VoucherHeaderSid || response.data?.VoucherHeaderSid || response.data?.voucherHeaderSid || null;
             if (id) this.router.navigate(['/accounts/reverse-voucher/entry', id]);
             else this.router.navigate(['/accounts/reverse-voucher/list']);

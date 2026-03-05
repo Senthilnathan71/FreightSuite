@@ -19,11 +19,7 @@
             <div class="col-md-8 pb-1">
                 <div
                     class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                    <button type="button" class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="onFinalSave()" [disabled]="isPosted || isSaving || form.invalid">
-                        <i class="fas fa-check-circle me-1"></i>
-                        {{ isPosted ? 'Posted' : 'Post' }}
-                    </button>
+                   
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                         (click)="reportJournalVoucher()" [disabled]="!voucherData" *ngIf="editMode">
                         <i class="fas fa-print me-1"></i> Print
@@ -38,19 +34,80 @@
     <i class="fas fa-sync-alt me-1"></i>
     Reset
 </button>
-                   <!-- Update the Save button in your HTML -->
-<button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80 position-relative" 
-    (click)="saveDraft()" 
-    [disabled]="(!mps.can('update') && editMode) || isPosted || isSaving"
-    [ngClass]="{'btn-warning': isDirty, 'btn-info': !isDirty}">
-    <i class="fas fa-save me-1"></i>
-    <span>{{ isSaving ? 'Saving...' : 'Save' }}</span>
-    <span *ngIf="isDirty" 
-          class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
-          title="You have unsaved changes">
-        <span class="visually-hidden">unsaved changes</span>
-    </span>
-</button>
+
+@if (isAutoPosting) {
+            <button
+              type="button"
+              class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
+              [ngClass]="{ 'btn-info': !isDirty, 'btn-warning': isDirty }"
+              (click)="saveDraft(undefined, true)"
+              [disabled]="
+                 isReadOnly ||(!mps.can('update') && editMode) || isSaving
+              "
+            >
+              <i class="fas fa-save me-1"></i>
+              <span>{{ isSaving ? "Saving..." : "Save" }}</span>
+              <span
+                *ngIf="isDirty"
+                class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+                title="You have unsaved changes"
+              >
+                <span class="visually-hidden">unsaved changes</span>
+              </span>
+            </button>
+            <button
+              *ngIf="editMode"
+              type="button"
+              appPreventMultiClick
+              class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
+              disabled="true"
+            >
+              <i class="fas fa-check-circle me-1"></i>
+              {{ isPosted ? "Posted" : "Post" }}
+            </button>
+          } @else {
+            <!-- Draft Save Button -->
+            <button
+              type="button"
+              appPreventMultiClick
+              class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
+              [ngClass]="{ 'btn-warning': isDirty, 'btn-info': !isDirty }"
+              (click)="saveDraft()"
+              [disabled]="
+                isReadOnly || (!mps.can('update') && editMode) || isSaving
+              "
+            >
+              <i class="fas fa-save me-1"></i>
+              <span>{{ isSaving ? "Saving..." : "Save" }}</span>
+              <span
+                *ngIf="isDirty"
+                class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+                title="You have unsaved changes"
+              >
+                <span class="visually-hidden">unsaved changes</span>
+              </span>
+            </button>
+
+            <!-- Final Save/Post Button -->
+            <button
+              type="button"
+              appPreventMultiClick
+              class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
+              (click)="onFinalSave()"
+              [disabled]="
+                form.invalid ||
+                (!mps.can('update') && editMode) ||
+                isDirty ||
+                isSaving || isReadOnly
+              "
+              [title]="
+                isDirty ? 'Please save the draft first before posting' : ''
+              "
+            >
+              <i class="fas fa-check-circle me-1"></i>
+              {{ isPosted ? "Posted" : "Post" }}
+            </button>
+          }
                     <div *ngIf="mps.hasAtLeastOne() && editMode" ngbDropdown class="d-inline-block">
                         <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
                             ngbDropdownToggle>
@@ -103,10 +160,15 @@
                     </aside>
 
                     <aside class="col-md-3">
-                        <div class="custom-form-group">
-                            <input type="text" id="PostedOn" formControlName="PostedOn" class="custom-input-field sm"
-                                placeholder="" readonly />
-                            <label for="PostedOn" class="input-label">Posted On</label>
+                        <div class="custom-form-group custom-form-group-select-date">
+                            <div class="input-group">
+                                <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                                    #d7="ngbDatepicker" (click)="d7.toggle()"  formControlName="PostedOn" />
+                                <button class="btn bi bi-calendar3" (click)="d7.toggle()" type="button">
+                                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                                </button>
+                            </div>
+                            <label class="input-label" for="dp">Posted On<span class="text-danger"></span></label>
                         </div>
                     </aside>
 
@@ -317,7 +379,7 @@
                             <td>
                                 <input type="number" step="0.01" formControlName="taxAmount" class="form-control"
                                     DecimalPrecision [DecimalPrecisionBefore]="12"
-                                    [DecimalPrecisionAfter]="getAmountDecimalPlaces(currentCompany?.CurrencyMasterSid)"
+                                    [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('currencyMasterSid')?.value)"
                                      [readonly]="isTaxAmountReadonly(i)" />
                             </td>
                             <td>
