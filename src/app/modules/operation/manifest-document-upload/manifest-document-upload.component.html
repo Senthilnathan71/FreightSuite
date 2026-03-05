@@ -1,17 +1,17 @@
 <!-- Manifest Document Upload Component -->
- <div class="header mb-3 d-flex align-items-center gap-3">
-    <div class="">
-      <h4 class="text-start mb-1">Manifest Document Processing</h4>
-      <p class="subtitle mb-0">Upload a PDF Manifest to automatically extract master job and house job data</p>
-    </div>
-    <div class="ms-auto">
-      <div class="p-2" style="cursor:pointer" (click)="closeModal()">
-        <i class="fas fa-times"></i>
-      </div>
+<div class="header d-flex align-items-center gap-3">
+  <div class="">
+    <h4 class="text-start mb-1">Manifest Document Processing</h4>
+    <p class="subtitle mb-0">Upload a PDF Manifest to automatically extract master job and house job data</p>
+  </div>
+  <div class="ms-auto">
+    <div class="p-2" style="cursor:pointer" (click)="closeModal()">
+      <i class="fas fa-times"></i>
     </div>
   </div>
+</div>
+
 <div class="document-upload-container">
-  
 
   <!-- File Upload Section -->
   <div class="upload-section">
@@ -57,17 +57,26 @@
           {{ uploadError }}
         </div>
 
-        <div *ngIf="extractedData && !uploadError && !isUploading" class="success-message">
-          <i class="success-icon">✅</i>
-          Manifest processed successfully!
-          <span class="confidence-score">
-            Confidence: {{ getRoundedConfidence(extractedData.confidence) }}%
-          </span>
-          <button type="button" class="link-btn" (click)="showExtractedDataModal()">
+        <!-- SUCCESS BANNER - View extracted data pushed to right -->
+        <div *ngIf="extractedData && !uploadError && !isUploading"
+             class="d-flex align-items-center justify-content-between"
+             style="background: #d1e7dd; border: 1px solid #198754; 
+                    border-radius: 8px; padding: 5px 16px;">
+          <div class="d-flex align-items-center gap-2">
+            <i class="fas fa-check-circle text-success" style="font-size:18px;"></i>
+            <span class="fw-semibold text-success">Manifest processed successfully!</span>
+            <span class="fw-bold text-success">
+              Confidence: {{ getRoundedConfidence(extractedData.confidence) }}%
+            </span>
+          </div>
+          <button type="button" class="btn btn-sm btn-info ms-auto" 
+                  (click)="showExtractedDataModal()">
             View extracted data
           </button>
         </div>
+
       </div>
+
     </div>
   </div>
 
@@ -75,7 +84,7 @@
   <div class="form-section" *ngIf="extractedData">
     <form [formGroup]="manifestForm" (ngSubmit)="onCreateJob()" class="manifest-form">
       <div class="form-header">
-        <h4 class="mb-1">Manifest Information</h4>
+        <h4 class="mb-1" style="color: black;">Manifest Information</h4>
         <p class="confidence-display">
           Processing Confidence:
           <span class="confidence-badge" [class]="extractedData.confidence > 0.7 ? 'high' : 'low'">
@@ -86,319 +95,326 @@
 
       <div class="row">
         <div class="col-md-12">
-           <!-- Master Job Information Section -->
-      <div class="form-section-header">
-        <h5 class="text-black mb-0">Master Job Information</h5>
-      </div>
-      <div class="row compact-form">
-      <div class="col-md-12">
-         <div class="row">
-          
-        
-        <aside class="col-md-3">
-          <div class="custom-form-group">
-            <input type="text" id="manifestNumber" formControlName="manifestNumber" placeholder=""
-              [class.invalid]="isFieldInvalid('manifestNumber')" class="form-control custom-input-field sm">
-            <label for="manifestNumber" class="input-label">Manifest Number <span class="text-danger">*</span></label>
-            <div class="error-message" *ngIf="isFieldInvalid('manifestNumber')">
-              {{ getFieldError('manifestNumber') }}
+          <!-- Master Job Information Section -->
+          <div class="form-section-header">
+            <h5 class="text-black mb-0">Master Job Information</h5>
+          </div>
+          <div class="row compact-form">
+            <div class="col-md-12">
+              <div class="row">
+
+                <aside class="col-md-3">
+                  <div class="custom-form-group">
+                    <input type="text" id="manifestNumber" formControlName="manifestNumber" placeholder=""
+                      [class.invalid]="isFieldInvalid('manifestNumber')" class="form-control custom-input-field sm">
+                    <label for="manifestNumber" class="input-label">Manifest Number <span class="text-danger">*</span></label>
+                    <div class="error-message" *ngIf="isFieldInvalid('manifestNumber')">
+                      {{ getFieldError('manifestNumber') }}
+                    </div>
+                  </div>
+                </aside>
+
+                <aside class="col-md-3">
+                  <div class="custom-form-group">
+                    <input type="text" id="vesselName" formControlName="vesselName" placeholder=""
+                      [class.invalid]="isFieldInvalid('vesselName')" class="form-control custom-input-field sm">
+                    <label for="vesselName" class="input-label">Vessel Name <span class="text-danger">*</span></label>
+                    <div class="error-message" *ngIf="isFieldInvalid('vesselName')">
+                      {{ getFieldError('vesselName') }}
+                    </div>
+                  </div>
+                </aside>
+
+                <aside class="col-md-3">
+                  <div class="custom-form-group">
+                    <input type="text" id="voyageNumber" formControlName="voyageNumber" placeholder=""
+                      [class.invalid]="isFieldInvalid('voyageNumber')" class="form-control custom-input-field sm">
+                    <label for="voyageNumber" class="input-label">Voyage Number <span class="text-danger">*</span></label>
+                    <div class="error-message" *ngIf="isFieldInvalid('voyageNumber')">
+                      {{ getFieldError('voyageNumber') }}
+                    </div>
+                  </div>
+                </aside>
+
+                <aside class="col-md-3">
+                  <div class="custom-form-group">
+                    <input type="text" id="portOfLoading" formControlName="portOfLoading" placeholder=""
+                      [class.invalid]="isFieldInvalid('portOfLoading')" class="form-control custom-input-field sm">
+                    <label for="portOfLoading" class="input-label">Port of Loading <span class="text-danger">*</span></label>
+                    <div class="error-message" *ngIf="isFieldInvalid('portOfLoading')">
+                      {{ getFieldError('portOfLoading') }}
+                    </div>
+                  </div>
+                </aside>
+
+                <aside class="col-md-3">
+                  <div class="custom-form-group">
+                    <input type="text" id="portOfDischarge" formControlName="portOfDischarge" placeholder=""
+                      [class.invalid]="isFieldInvalid('portOfDischarge')" class="form-control custom-input-field sm">
+                    <label for="portOfDischarge" class="input-label">Port of Discharge <span class="text-danger">*</span></label>
+                    <div class="error-message" *ngIf="isFieldInvalid('portOfDischarge')">
+                      {{ getFieldError('portOfDischarge') }}
+                    </div>
+                  </div>
+                </aside>
+
+                <aside class="col-md-3">
+                  <div class="custom-form-group">
+                    <input type="date" id="dateOfDeparture" formControlName="dateOfDeparture"
+                      class="form-control custom-input-field sm">
+                    <label for="dateOfDeparture" class="input-label">Date of Departure</label>
+                  </div>
+                </aside>
+
+                <aside class="col-md-3">
+                  <div class="custom-form-group">
+                    <input type="date" id="dateOfArrival" formControlName="dateOfArrival"
+                      class="form-control custom-input-field sm">
+                    <label for="dateOfArrival" class="input-label">Date of Arrival</label>
+                  </div>
+                </aside>
+
+                <aside class="col-md-3">
+                  <div class="custom-form-group">
+                    <input type="text" id="agent" formControlName="agent" placeholder=""
+                      class="form-control custom-input-field sm">
+                    <label for="agent" class="input-label">Agent</label>
+                  </div>
+                </aside>
+
+                <aside class="col-md-3">
+                  <div class="custom-form-group">
+                    <input type="text" id="carrier" formControlName="carrier" placeholder=""
+                      class="form-control custom-input-field sm">
+                    <label for="carrier" class="input-label">Carrier</label>
+                  </div>
+                </aside>
+
+                <aside class="col-md-3">
+                  <div class="custom-form-group">
+                    <input type="number" id="totalContainers" formControlName="totalContainers" placeholder=""
+                      class="form-control custom-input-field sm">
+                    <label for="totalContainers" class="input-label">Total Containers</label>
+                  </div>
+                </aside>
+
+                <aside class="col-md-3">
+                  <div class="custom-form-group">
+                    <input type="text" id="totalWeight" formControlName="totalWeight" placeholder=""
+                      class="form-control custom-input-field sm">
+                    <label for="totalWeight" class="input-label">Total Weight</label>
+                  </div>
+                </aside>
+
+                <aside class="col-md-3">
+                  <div class="custom-form-group">
+                    <input type="text" id="totalVolume" formControlName="totalVolume" placeholder=""
+                      class="form-control custom-input-field sm">
+                    <label for="totalVolume" class="input-label">Total Volume</label>
+                  </div>
+                </aside>
+
+                <aside class="col-md-3">
+                  <div class="custom-form-group">
+                    <input type="text" id="jobNumber" formControlName="jobNumber" placeholder=""
+                      class="form-control custom-input-field sm">
+                    <label for="jobNumber" class="input-label">Job Number</label>
+                  </div>
+                </aside>
+
+                <aside class="col-md-3">
+                  <div class="custom-form-group">
+                    <input type="date" id="etd" formControlName="etd"
+                      class="form-control custom-input-field sm">
+                    <label for="etd" class="input-label">ETD</label>
+                  </div>
+                </aside>
+
+                <aside class="col-md-3">
+                  <div class="custom-form-group">
+                    <input type="date" id="eta" formControlName="eta"
+                      class="form-control custom-input-field sm">
+                    <label for="eta" class="input-label">ETA</label>
+                  </div>
+                </aside>
+
+              </div>
             </div>
           </div>
-        </aside>
-
-        <aside class="col-md-3">
-          <div class="custom-form-group">
-            <input type="text" id="vesselName" formControlName="vesselName" placeholder=""
-              [class.invalid]="isFieldInvalid('vesselName')" class="form-control custom-input-field sm">
-            <label for="vesselName" class="input-label">Vessel Name <span class="text-danger">*</span></label>
-            <div class="error-message" *ngIf="isFieldInvalid('vesselName')">
-              {{ getFieldError('vesselName') }}
-            </div>
-          </div>
-        </aside>
-
-        <aside class="col-md-3">
-          <div class="custom-form-group">
-            <input type="text" id="voyageNumber" formControlName="voyageNumber" placeholder=""
-              [class.invalid]="isFieldInvalid('voyageNumber')" class="form-control custom-input-field sm">
-            <label for="voyageNumber" class="input-label">Voyage Number <span class="text-danger">*</span></label>
-            <div class="error-message" *ngIf="isFieldInvalid('voyageNumber')">
-              {{ getFieldError('voyageNumber') }}
-            </div>
-          </div>
-        </aside>
-
-        <aside class="col-md-3">
-          <div class="custom-form-group">
-            <input type="text" id="portOfLoading" formControlName="portOfLoading" placeholder=""
-              [class.invalid]="isFieldInvalid('portOfLoading')" class="form-control custom-input-field sm">
-            <label for="portOfLoading" class="input-label">Port of Loading <span class="text-danger">*</span></label>
-            <div class="error-message" *ngIf="isFieldInvalid('portOfLoading')">
-              {{ getFieldError('portOfLoading') }}
-            </div>
-          </div>
-        </aside>
-
-        <aside class="col-md-3">
-          <div class="custom-form-group">
-            <input type="text" id="portOfDischarge" formControlName="portOfDischarge" placeholder=""
-              [class.invalid]="isFieldInvalid('portOfDischarge')" class="form-control custom-input-field sm">
-            <label for="portOfDischarge" class="input-label">Port of Discharge <span class="text-danger">*</span></label>
-            <div class="error-message" *ngIf="isFieldInvalid('portOfDischarge')">
-              {{ getFieldError('portOfDischarge') }}
-            </div>
-          </div>
-        </aside>
-
-        <aside class="col-md-3">
-          <div class="custom-form-group">
-            <input type="date" id="dateOfDeparture" formControlName="dateOfDeparture"
-              class="form-control custom-input-field sm">
-            <label for="dateOfDeparture" class="input-label">Date of Departure</label>
-          </div>
-        </aside>
-
-        <aside class="col-md-3">
-          <div class="custom-form-group">
-            <input type="date" id="dateOfArrival" formControlName="dateOfArrival"
-              class="form-control custom-input-field sm">
-            <label for="dateOfArrival" class="input-label">Date of Arrival</label>
-          </div>
-        </aside>
-
-      
-       
-      
-     
-        
-        <aside class="col-md-3">
-          <div class="custom-form-group">
-            <input type="text" id="agent" formControlName="agent" placeholder=""
-              class="form-control custom-input-field sm">
-            <label for="agent" class="input-label">Agent</label>
-          </div>
-        </aside>
-
-        <aside class="col-md-3">
-          <div class="custom-form-group">
-            <input type="text" id="carrier" formControlName="carrier" placeholder=""
-              class="form-control custom-input-field sm">
-            <label for="carrier" class="input-label">Carrier</label>
-          </div>
-        </aside>
-
-        <aside class="col-md-3">
-          <div class="custom-form-group">
-            <input type="number" id="totalContainers" formControlName="totalContainers" placeholder=""
-              class="form-control custom-input-field sm">
-            <label for="totalContainers" class="input-label">Total Containers</label>
-          </div>
-        </aside>
-
-        <aside class="col-md-3">
-          <div class="custom-form-group">
-            <input type="text" id="totalWeight" formControlName="totalWeight" placeholder=""
-              class="form-control custom-input-field sm">
-            <label for="totalWeight" class="input-label">Total Weight</label>
-          </div>
-        </aside>
-
-        <aside class="col-md-3">
-          <div class="custom-form-group">
-            <input type="text" id="totalVolume" formControlName="totalVolume" placeholder=""
-              class="form-control custom-input-field sm">
-            <label for="totalVolume" class="input-label">Total Volume</label>
-          </div>
-        </aside>
-
-        <aside class="col-md-3">
-          <div class="custom-form-group">
-            <input type="text" id="jobNumber" formControlName="jobNumber" placeholder=""
-              class="form-control custom-input-field sm">
-            <label for="jobNumber" class="input-label">Job Number</label>
-          </div>
-        </aside>
-
-        <aside class="col-md-3">
-          <div class="custom-form-group">
-            <input type="date" id="etd" formControlName="etd"
-              class="form-control custom-input-field sm">
-            <label for="etd" class="input-label">ETD</label>
-          </div>
-        </aside>
-
-        <aside class="col-md-3">
-          <div class="custom-form-group">
-            <input type="date" id="eta" formControlName="eta"
-              class="form-control custom-input-field sm">
-            <label for="eta" class="input-label">ETA</label>
-          </div>
-        </aside>
-      </div>
-      </div>
-     </div>
         </div>
       </div>
-     
 
       <!-- House Jobs Section -->
-      <div class="form-section-header" *ngIf="houseJobsArray.length > 0">
-        <h5 class="mb-0 text-black">House Jobs Information ({{ houseJobsArray.length }} found)
-          <button type="button" class="btn btn-success btn-sm ms-2" (click)="addHouseJob()">
-            <i class="fas fa-plus"></i> Add House Job
-          </button>
-        </h5>
-      </div>
+<div class="form-section-header d-flex align-items-center justify-content-between"
+     *ngIf="houseJobsArray.length > 0"
+     style="background: linear-gradient(135deg, #e8f4fd, #d1ecf1); 
+            border-left: 4px solid #0d6efd; 
+            border-radius: 6px; 
+            padding: 6px 16px;">
+  <div class="d-flex align-items-center gap-2">
+    <span class="d-flex align-items-center justify-content-center bg-primary text-white rounded-circle"
+          style="width:30px; height:30px; font-size:13px;">
+      <i class="fas fa-file-alt"></i>
+    </span>
+    <h5 class="mb-0 fw-bold text-primary">
+      House Jobs Information
+    </h5>
+    <span class="badge bg-primary" style="font-size:11px; border-radius:20px;">
+      {{ houseJobsArray.length }} found
+    </span>
+  </div>
+  <button type="button" class="btn btn-info btn-sm" (click)="addHouseJob()">
+    <i class="fas fa-plus me-1"></i> Add House Job
+  </button>
+</div>
 
       <div class="house-jobs-section" *ngIf="houseJobsArray.length > 0" formArrayName="houseJobs">
         <div class="house-job-card" *ngFor="let houseJob of houseJobsArray.controls; let i = index" [formGroupName]="i">
-          <div class="card  mb-1">
-            <div class="card-header d-flex justify-content-between align-items-center ">
+          <div class="card mb-1">
+            <div class="card-header d-flex justify-content-between align-items-center">
               <h6 class="mb-0 text-white">House Job #{{ i + 1 }}</h6>
-              <button type="button" class="btn  btn-sm" (click)="removeHouseJob(i)" *ngIf="houseJobsArray.length > 1">
+              <button type="button" class="btn btn-sm" (click)="removeHouseJob(i)" *ngIf="houseJobsArray.length > 1">
                 <i class="fas fa-trash text-danger"></i>
               </button>
             </div>
             <div class="card-body p-1">
               <div class="col-md-12">
-                 <div class="row compact-form mb-0">
-                <aside class="col-md-4">
-                  <div class="custom-form-group">
-                    <input type="text" [id]="'hblNumber' + i" formControlName="hblNumber" placeholder=""
-                      [class.invalid]="houseJob.get('hblNumber')?.invalid && houseJob.get('hblNumber')?.touched"
-                      class="form-control custom-input-field sm">
-                    <label [for]="'hblNumber' + i" class="input-label">HBL Number <span class="text-danger">*</span></label>
-                    <div class="error-message" *ngIf="houseJob.get('hblNumber')?.invalid && houseJob.get('hblNumber')?.touched">
-                    HBL Number is required
-                  </div>
-                  </div>
-                  
-                </aside>
+                <div class="row compact-form mb-0">
 
-                <aside class="col-md-4">
-                  <div class="custom-form-group">
-                    <input type="text" [id]="'shipper' + i" formControlName="shipper" placeholder=""
-                      [class.invalid]="houseJob.get('shipper')?.invalid && houseJob.get('shipper')?.touched"
-                      class="form-control custom-input-field sm">
-                    <label [for]="'shipper' + i" class="input-label">Shipper <span class="text-danger">*</span></label>
-                    <div class="error-message" *ngIf="houseJob.get('shipper')?.invalid && houseJob.get('shipper')?.touched">
-                    Shipper is required
-                  </div>
-                  </div>
-                  
-                </aside>
+                  <aside class="col-md-4">
+                    <div class="custom-form-group">
+                      <input type="text" [id]="'hblNumber' + i" formControlName="hblNumber" placeholder=""
+                        [class.invalid]="houseJob.get('hblNumber')?.invalid && houseJob.get('hblNumber')?.touched"
+                        class="form-control custom-input-field sm">
+                      <label [for]="'hblNumber' + i" class="input-label">HBL Number <span class="text-danger">*</span></label>
+                      <div class="error-message" *ngIf="houseJob.get('hblNumber')?.invalid && houseJob.get('hblNumber')?.touched">
+                        HBL Number is required
+                      </div>
+                    </div>
+                  </aside>
 
-                <aside class="col-md-4">
-                  <div class="custom-form-group">
-                    <input [id]="'shipperAddress' + i" formControlName="shipperAddress" placeholder="" rows="1"
-                      class="form-control custom-input-field sm dofi-h-38">
-                    <label [for]="'shipperAddress' + i" class="input-label">Shipper Address</label>
-                  </div>
-                </aside>
+                  <aside class="col-md-4">
+                    <div class="custom-form-group">
+                      <input type="text" [id]="'shipper' + i" formControlName="shipper" placeholder=""
+                        [class.invalid]="houseJob.get('shipper')?.invalid && houseJob.get('shipper')?.touched"
+                        class="form-control custom-input-field sm">
+                      <label [for]="'shipper' + i" class="input-label">Shipper <span class="text-danger">*</span></label>
+                      <div class="error-message" *ngIf="houseJob.get('shipper')?.invalid && houseJob.get('shipper')?.touched">
+                        Shipper is required
+                      </div>
+                    </div>
+                  </aside>
 
-                <aside class="col-md-4">
-                  <div class="custom-form-group">
-                    <input type="text" [id]="'consignee' + i" formControlName="consignee" placeholder=""
-                      [class.invalid]="houseJob.get('consignee')?.invalid && houseJob.get('consignee')?.touched"
-                      class="form-control custom-input-field sm">
-                    <label [for]="'consignee' + i" class="input-label">Consignee <span class="text-danger">*</span></label>
-                    <div class="error-message" *ngIf="houseJob.get('consignee')?.invalid && houseJob.get('consignee')?.touched">
-                    Consignee is required
-                  </div>
-                  </div>
-                  
-                </aside>
+                  <aside class="col-md-4">
+                    <div class="custom-form-group">
+                      <input [id]="'shipperAddress' + i" formControlName="shipperAddress" placeholder="" rows="1"
+                        class="form-control custom-input-field sm dofi-h-38">
+                      <label [for]="'shipperAddress' + i" class="input-label">Shipper Address</label>
+                    </div>
+                  </aside>
 
-                <aside class="col-md-4">
-                  <div class="custom-form-group">
-                    <input [id]="'consigneeAddress' + i" formControlName="consigneeAddress" placeholder="" rows="1"
-                      class="form-control custom-input-field sm dofi-h-38">
-                    <label [for]="'consigneeAddress' + i" class="input-label">Consignee Address</label>
-                  </div>
-                </aside>
+                  <aside class="col-md-4">
+                    <div class="custom-form-group">
+                      <input type="text" [id]="'consignee' + i" formControlName="consignee" placeholder=""
+                        [class.invalid]="houseJob.get('consignee')?.invalid && houseJob.get('consignee')?.touched"
+                        class="form-control custom-input-field sm">
+                      <label [for]="'consignee' + i" class="input-label">Consignee <span class="text-danger">*</span></label>
+                      <div class="error-message" *ngIf="houseJob.get('consignee')?.invalid && houseJob.get('consignee')?.touched">
+                        Consignee is required
+                      </div>
+                    </div>
+                  </aside>
 
-                <aside class="col-md-4">
-                  <div class="custom-form-group">
-                    <input type="text" [id]="'notifyParty' + i" formControlName="notifyParty" placeholder=""
-                      class="form-control custom-input-field sm">
-                    <label [for]="'notifyParty' + i" class="input-label">Notify Party</label>
-                  </div>
-                </aside>
+                  <aside class="col-md-4">
+                    <div class="custom-form-group">
+                      <input [id]="'consigneeAddress' + i" formControlName="consigneeAddress" placeholder="" rows="1"
+                        class="form-control custom-input-field sm dofi-h-38">
+                      <label [for]="'consigneeAddress' + i" class="input-label">Consignee Address</label>
+                    </div>
+                  </aside>
 
-                <aside class="col-md-4">
-                  <div class="custom-form-group">
-                    <input type="text" [id]="'cargoDescription' + i" formControlName="cargoDescription" placeholder=""
-                      class="form-control custom-input-field sm">
-                    <label [for]="'cargoDescription' + i" class="input-label">Cargo Description</label>
-                  </div>
-                </aside>
+                  <aside class="col-md-4">
+                    <div class="custom-form-group">
+                      <input type="text" [id]="'notifyParty' + i" formControlName="notifyParty" placeholder=""
+                        class="form-control custom-input-field sm">
+                      <label [for]="'notifyParty' + i" class="input-label">Notify Party</label>
+                    </div>
+                  </aside>
 
-                <aside class="col-md-4">
-                  <div class="custom-form-group">
-                    <input type="text" [id]="'numberOfPackages' + i" formControlName="numberOfPackages" placeholder=""
-                      class="form-control custom-input-field sm">
-                    <label [for]="'numberOfPackages' + i" class="input-label">Number of Packages</label>
-                  </div>
-                </aside>
+                  <aside class="col-md-4">
+                    <div class="custom-form-group">
+                      <input type="text" [id]="'cargoDescription' + i" formControlName="cargoDescription" placeholder=""
+                        class="form-control custom-input-field sm">
+                      <label [for]="'cargoDescription' + i" class="input-label">Cargo Description</label>
+                    </div>
+                  </aside>
 
-                <aside class="col-md-4">
-                  <div class="custom-form-group">
-                    <input type="text" [id]="'packageType' + i" formControlName="packageType" placeholder=""
-                      class="form-control custom-input-field sm">
-                    <label [for]="'packageType' + i" class="input-label">Package Type</label>
-                  </div>
-                </aside>
+                  <aside class="col-md-4">
+                    <div class="custom-form-group">
+                      <input type="text" [id]="'numberOfPackages' + i" formControlName="numberOfPackages" placeholder=""
+                        class="form-control custom-input-field sm">
+                      <label [for]="'numberOfPackages' + i" class="input-label">Number of Packages</label>
+                    </div>
+                  </aside>
 
-                <aside class="col-md-4">
-                  <div class="custom-form-group">
-                    <input type="text" [id]="'grossWeight' + i" formControlName="grossWeight" placeholder=""
-                      class="form-control custom-input-field sm">
-                    <label [for]="'grossWeight' + i" class="input-label">Gross Weight</label>
-                  </div>
-                </aside>
+                  <aside class="col-md-4">
+                    <div class="custom-form-group">
+                      <input type="text" [id]="'packageType' + i" formControlName="packageType" placeholder=""
+                        class="form-control custom-input-field sm">
+                      <label [for]="'packageType' + i" class="input-label">Package Type</label>
+                    </div>
+                  </aside>
 
-                <aside class="col-md-4">
-                  <div class="custom-form-group">
-                    <input type="text" [id]="'netWeight' + i" formControlName="netWeight" placeholder=""
-                      class="form-control custom-input-field sm">
-                    <label [for]="'netWeight' + i" class="input-label">Net Weight</label>
-                  </div>
-                </aside>
+                  <aside class="col-md-4">
+                    <div class="custom-form-group">
+                      <input type="text" [id]="'grossWeight' + i" formControlName="grossWeight" placeholder=""
+                        class="form-control custom-input-field sm">
+                      <label [for]="'grossWeight' + i" class="input-label">Gross Weight</label>
+                    </div>
+                  </aside>
 
-                <aside class="col-md-4">
-                  <div class="custom-form-group">
-                    <input type="text" [id]="'measurement' + i" formControlName="measurement" placeholder=""
-                      class="form-control custom-input-field sm">
-                    <label [for]="'measurement' + i" class="input-label">Measurement</label>
-                  </div>
-                </aside>
+                  <aside class="col-md-4">
+                    <div class="custom-form-group">
+                      <input type="text" [id]="'netWeight' + i" formControlName="netWeight" placeholder=""
+                        class="form-control custom-input-field sm">
+                      <label [for]="'netWeight' + i" class="input-label">Net Weight</label>
+                    </div>
+                  </aside>
 
-                <aside class="col-md-4">
-                  <div class="custom-form-group">
-                    <input type="text" [id]="'containerNumbers' + i" formControlName="containerNumbers" placeholder=""
-                      class="form-control custom-input-field sm">
-                    <label [for]="'containerNumbers' + i" class="input-label">Container Numbers (comma-separated)</label>
-                  </div>
-                </aside>
+                  <aside class="col-md-4">
+                    <div class="custom-form-group">
+                      <input type="text" [id]="'measurement' + i" formControlName="measurement" placeholder=""
+                        class="form-control custom-input-field sm">
+                      <label [for]="'measurement' + i" class="input-label">Measurement</label>
+                    </div>
+                  </aside>
 
-                <aside class="col-md-4">
-                  <div class="custom-form-group">
-                    <input type="text" [id]="'marksAndNumbers' + i" formControlName="marksAndNumbers" placeholder=""
-                      class="form-control custom-input-field sm">
-                    <label [for]="'marksAndNumbers' + i" class="input-label">Marks & Numbers</label>
-                  </div>
-                </aside>
+                  <aside class="col-md-4">
+                    <div class="custom-form-group">
+                      <input type="text" [id]="'containerNumbers' + i" formControlName="containerNumbers" placeholder=""
+                        class="form-control custom-input-field sm">
+                      <label [for]="'containerNumbers' + i" class="input-label">Container Numbers (comma-separated)</label>
+                    </div>
+                  </aside>
 
-                <aside class="col-md-4">
-                  <div class="custom-form-group">
-                    <input type="text" [id]="'freightTerms' + i" formControlName="freightTerms" placeholder=""
-                      class="form-control custom-input-field sm">
-                    <label [for]="'freightTerms' + i" class="input-label">Freight Terms</label>
-                  </div>
-                </aside>
+                  <aside class="col-md-4">
+                    <div class="custom-form-group">
+                      <input type="text" [id]="'marksAndNumbers' + i" formControlName="marksAndNumbers" placeholder=""
+                        class="form-control custom-input-field sm">
+                      <label [for]="'marksAndNumbers' + i" class="input-label">Marks & Numbers</label>
+                    </div>
+                  </aside>
+
+                  <aside class="col-md-4">
+                    <div class="custom-form-group">
+                      <input type="text" [id]="'freightTerms' + i" formControlName="freightTerms" placeholder=""
+                        class="form-control custom-input-field sm">
+                      <label [for]="'freightTerms' + i" class="input-label">Freight Terms</label>
+                    </div>
+                  </aside>
+
+                </div>
               </div>
-              </div>
-             
             </div>
           </div>
         </div>
@@ -413,7 +429,7 @@
 
       <!-- Form Actions -->
       <div class="form-actions">
-        <button type="button" class="btn btn-light btn-sm" (click)="resetForm()">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="resetForm()">
           Clear Form
         </button>
         <button type="submit" class="btn btn-info btn-sm" [disabled]="manifestForm.invalid">
@@ -426,10 +442,10 @@
   <!-- Extracted Data Modal -->
   <div id="extractedDataModal" class="modal" *ngIf="extractedData && showModal">
     <div class="modal-content">
-      <div class="modal-header modalHeaderpart p-1"> 
+      <div class="modal-header modalHeaderpart p-1">
         <h5 class="mt-1">Extracted Data Details</h5>
-          <button type="button" class="btn-close btn-close-white" aria-label="Close"
-                (click)="closeExtractedDataModal()"></button>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close"
+              (click)="closeExtractedDataModal()"></button>
       </div>
       <div class="modal-body">
         <div class="confidence-display">
@@ -476,10 +492,11 @@
                 <small>{{ house.shipper }} → {{ house.consignee }}</small>
               </div>
             </div>
+
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
+</div>
