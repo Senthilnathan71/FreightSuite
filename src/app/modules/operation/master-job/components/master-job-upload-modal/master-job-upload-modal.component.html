@@ -1,7 +1,8 @@
 <!-- Modal Header -->
 <div class="modal-header modalHeaderpart p-1">
   <h5 class="modal-title text-white">Upload Master Job & House Jobs from Excel</h5>
-  <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="onCancel()" [disabled]="isProcessing"></button>
+  <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="onCancel()"
+    [disabled]="isProcessing"></button>
 </div>
 
 <!-- Modal Body -->
@@ -21,20 +22,9 @@
     </div>
 
     <div class="file-upload-box">
-      <input
-        type="file"
-        #fileInput
-        accept=".xlsx,.xls"
-        (change)="onFileSelected($event)"
-        style="display: none"
-      />
+      <input type="file" #fileInput accept=".xlsx,.xls" (change)="onFileSelected($event)" style="display: none" />
 
-      <button
-        type="button"
-        class="btn btn-info btn-sm"
-        (click)="fileInput.click()"
-        [disabled]="isProcessing"
-      >
+      <button type="button" class="btn btn-info btn-sm" (click)="fileInput.click()" [disabled]="isProcessing">
         <i class="fas fa-upload me-1"></i>
         Select Excel File
       </button>
@@ -50,7 +40,7 @@
   <div class="preview-section" *ngIf="showPreview && !hasErrors()">
     <div class="preview-header">
       <h6 class="fw-bold mb-0">Review and Edit Data</h6>
-      <button type="button" class="btn btn-outline-danger btn-sm" (click)="onReUpload()">
+      <button type="button" class="btn btn-sm btn-danger btn-sm" (click)="onReUpload()">
         <i class="fas fa-sync-alt me-1"></i>
         Upload Different File
       </button>
@@ -66,23 +56,16 @@
             <div class="form-section">
               <form [formGroup]="masterJobForm" *ngIf="masterJobForm">
                 <div class="row  compact-form">
-                  <div
-                    *ngFor="let column of masterJobColumns"
-                    class="col-md-3"
-                  >
-                  <div class="custom-form-group">
-                      
-                    <input
-                      type="text"
-                      class="custom-input-field sm"
-                      [formControlName]="column"
-                      [class.is-invalid]="hasFieldError(column, 'Master Job')"
-                    />
-                    <label class="input-label">{{ column }}</label>
-                    <div class="invalid-feedback" *ngIf="hasFieldError(column, 'Master Job')">
-                      {{ getFieldError(column, 'Master Job') }}
+                  <div *ngFor="let column of masterJobColumns" class="col-md-3">
+                    <div class="custom-form-group">
+
+                      <input type="text" class="custom-input-field sm" [formControlName]="column"
+                        [class.is-invalid]="hasFieldError(column, 'Master Job')" />
+                      <label class="input-label">{{ column }}</label>
+                      <div class="invalid-feedback" *ngIf="hasFieldError(column, 'Master Job')">
+                        {{ getFieldError(column, 'Master Job') }}
+                      </div>
                     </div>
-                  </div>
                   </div>
                 </div>
               </form>
@@ -109,35 +92,44 @@
                           <form [formGroup]="containersForm">
                             <div formArrayName="containers">
                               <div *ngFor="let container of containersArray.controls; let i = index"
-                                   class="child-data-item"
-                                   [formGroupName]="i">
-                                <div class="d-flex justify-content-between align-items-center ">
-                                  <h6 class="mb-0 text-black">Container {{ i + 1 }}</h6>
-                                  <div>
-                                    <button type="button" class="btn btn-sm btn-info "
-                                  (click)="addContainer()">
-                            <i class="fas fa-plus me-1"></i> Add Container
-                          </button>
-                                  <button type="button" class="btn btn-sm "
-                                          (click)="removeContainer(i)">
-                                    <i class="fas fa-trash me-1 text-danger"></i> 
-                                  </button>
+                                class="child-data-item" [formGroupName]="i">
+                                <div class="d-flex justify-content-between align-items-center">
+                                  <div class="d-inline-flex align-items-center gap-2" style="background: linear-gradient(135deg, #0d6efd15, #0d6efd08); 
+              border-left: 3px solid #0d6efd; 
+              border-radius: 0 20px 20px 0; 
+              padding: 4px 14px 4px 10px;">
+                                    <span
+                                      class="d-flex align-items-center justify-content-center bg-primary text-white rounded-circle"
+                                      style="width:24px; height:24px; font-size:10px;">
+                                      <i class="fas fa-box"></i>
+                                    </span>
+                                    <span class="fw-semibold text-primary"
+                                      style="font-size:13px; letter-spacing:0.3px;">
+                                      Container {{ i + 1 }}
+                                    </span>
                                   </div>
-                                   
+                                  <div>
+                                    <button type="button" class="btn btn-sm btn-info" (click)="addContainer()">
+                                      <i class="fas fa-plus me-1"></i> Add Container
+                                    </button>
+                                    <button type="button" class="btn btn-sm" (click)="removeContainer(i)">
+                                      <i class="fas fa-trash me-1 text-danger"></i>
+                                    </button>
+                                  </div>
                                 </div>
                                 <div class="row compact-form">
                                   <div class="col-md-3" *ngFor="let key of container.value | keyvalue">
-                                  <div class="custom-form-group">
-                                    <input type="text" class="custom-input-field sm"
-                                    [formControlName]="$any(key.key)" />
-                                    <label class="input-label ">{{ key.key }}</label>
-                                  </div>
+                                    <div class="custom-form-group">
+                                      <input type="text" class="custom-input-field sm"
+                                        [formControlName]="$any(key.key)" />
+                                      <label class="input-label ">{{ key.key }}</label>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
                             </div>
                           </form>
-                         
+
                         </div>
                       </ng-template>
                     </div>
@@ -145,6 +137,7 @@
                 </div>
 
                 <!-- Voyages Section -->
+
                 <div ngbAccordionItem>
                   <h2 ngbAccordionHeader>
                     <button ngbAccordionButton>
@@ -159,30 +152,44 @@
                         <div class="child-data-content">
                           <form [formGroup]="voyagesForm">
                             <div formArrayName="voyages">
-                              <div *ngFor="let voyage of voyagesArray.controls; let i = index"
-                                   class="child-data-item mb-3"
-                                   [formGroupName]="i">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                  <h6 class="mb-0">Voyage {{ i + 1 }}</h6>
-                                  <button type="button" class="btn btn-sm btn-outline-danger"
-                                          (click)="removeVoyage(i)">
-                                    <i class="fas fa-times"></i> Remove
-                                  </button>
+                              <div *ngFor="let voyage of voyagesArray.controls; let i = index" class="child-data-item"
+                                [formGroupName]="i">
+                                <div class="d-flex justify-content-between align-items-center">
+                                  <div class="d-inline-flex align-items-center gap-2" style="background: linear-gradient(135deg, #0d6efd15, #0d6efd08); 
+              border-left: 3px solid #0d6efd; 
+              border-radius: 0 20px 20px 0; 
+              padding: 4px 14px 4px 10px;">
+                                    <span
+                                      class="d-flex align-items-center justify-content-center bg-primary text-white rounded-circle"
+                                      style="width:24px; height:24px; font-size:10px;">
+                                      <i class="fas fa-ship"></i>
+                                    </span>
+                                    <span class="fw-semibold text-primary"
+                                      style="font-size:13px; letter-spacing:0.3px;">
+                                      Voyage {{ i + 1 }}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <button type="button" class="btn btn-sm btn-info" (click)="addVoyage()">
+                                      <i class="fas fa-plus me-1"></i> Add Voyage
+                                    </button>
+                                    <button type="button" class="btn btn-sm" (click)="removeVoyage(i)">
+                                      <i class="fas fa-trash me-1 text-danger"></i>
+                                    </button>
+                                  </div>
                                 </div>
-                                <div class="row g-2">
-                                  <div class="col-md-4" *ngFor="let key of voyage.value | keyvalue">
-                                    <label class="form-label text-sm">{{ key.key }}</label>
-                                    <input type="text" class="form-control form-control-sm"
-                                           [formControlName]="$any(key.key)" />
+                                <div class="row compact-form">
+                                  <div class="col-md-3" *ngFor="let key of voyage.value | keyvalue">
+                                    <div class="custom-form-group">
+                                      <input type="text" class="custom-input-field sm"
+                                        [formControlName]="$any(key.key)" />
+                                      <label class="input-label">{{ key.key }}</label>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
                             </div>
                           </form>
-                          <button type="button" class="btn btn-sm btn-outline-primary mt-2"
-                                  (click)="addVoyage()">
-                            <i class="fas fa-plus me-1"></i> Add Voyage
-                          </button>
                         </div>
                       </ng-template>
                     </div>
@@ -205,29 +212,58 @@
                           <form [formGroup]="masterConnectionsForm">
                             <div formArrayName="connections">
                               <div *ngFor="let connection of masterConnectionsArray.controls; let i = index"
-                                   class="child-data-item mb-3"
-                                   [formGroupName]="i">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                  <h6 class="mb-0">Connection {{ i + 1 }}</h6>
-                                  <button type="button" class="btn btn-sm btn-outline-danger"
-                                          (click)="removeMasterConnection(i)">
-                                    <i class="fas fa-times"></i> Remove
-                                  </button>
-                                </div>
-                                <div class="row g-2">
-                                  <div class="col-md-4" *ngFor="let key of connection.value | keyvalue">
-                                    <label class="form-label text-sm">{{ key.key }}</label>
-                                    <input type="text" class="form-control form-control-sm"
-                                           [formControlName]="$any(key.key)" />
+                                class="child-data-item" [formGroupName]="i">
+
+                                <!-- Title Badge + Buttons -->
+                                <div class="d-flex justify-content-between align-items-center">
+                                  <div class="d-inline-flex align-items-center gap-2" style="background: linear-gradient(135deg, #0d6efd15, #0d6efd08); 
+                              border-left: 3px solid #0d6efd; 
+                              border-radius: 0 20px 20px 0; 
+                              padding: 4px 14px 4px 10px;">
+                                    <span
+                                      class="d-flex align-items-center justify-content-center bg-primary text-white rounded-circle"
+                                      style="width:24px; height:24px; font-size:10px;">
+                                      <i class="fas fa-route"></i>
+                                    </span>
+                                    <span class="fw-semibold text-primary"
+                                      style="font-size:13px; letter-spacing:0.3px;">
+                                      Connection {{ i + 1 }}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <!-- Add button only on last item -->
+                                    <button type="button" class="btn btn-sm btn-info me-1"
+                                      *ngIf="i === masterConnectionsArray.length - 1" (click)="addMasterConnection()">
+                                      <i class="fas fa-plus me-1"></i> Add Connection
+                                    </button>
+                                    <button type="button" class="btn btn-sm" (click)="removeMasterConnection(i)">
+                                      <i class="fas fa-trash me-1 text-danger"></i>
+                                    </button>
                                   </div>
                                 </div>
+
+                                <!-- Input Fields -->
+                                <div class="row compact-form">
+                                  <div class="col-md-3" *ngFor="let key of connection.value | keyvalue">
+                                    <div class="custom-form-group">
+                                      <input type="text" class="custom-input-field sm"
+                                        [formControlName]="$any(key.key)" />
+                                      <label class="input-label">{{ key.key }}</label>
+                                    </div>
+                                  </div>
+                                </div>
+
                               </div>
+
+                              <!-- Empty state: show Add button when array is empty -->
+                              <div *ngIf="masterConnectionsArray.length === 0" class="text-center py-2">
+                                <button type="button" class="btn btn-sm btn-info" (click)="addMasterConnection()">
+                                  <i class="fas fa-plus me-1"></i> Add Connection
+                                </button>
+                              </div>
+
                             </div>
                           </form>
-                          <button type="button" class="btn btn-sm btn-outline-primary mt-2"
-                                  (click)="addMasterConnection()">
-                            <i class="fas fa-plus me-1"></i> Add Connection
-                          </button>
                         </div>
                       </ng-template>
                     </div>
@@ -247,11 +283,12 @@
                       <ng-template>
                         <div class="child-data-content">
                           <form [formGroup]="othersForm">
-                            <div class="row g-2">
-                              <div class="col-md-4" *ngFor="let key of othersForm.value | keyvalue">
-                                <label class="form-label text-sm">{{ key.key }}</label>
-                                <input type="text" class="form-control form-control-sm"
-                                       [formControlName]="$any(key.key)" />
+                            <div class="row compact-form">
+                              <div class="col-md-3" *ngFor="let key of othersForm.value | keyvalue">
+                                <div class="custom-form-group">
+                                  <input type="text" class="custom-input-field sm" [formControlName]="$any(key.key)" />
+                                  <label class="input-label">{{ key.key }}</label>
+                                </div>
                               </div>
                             </div>
                           </form>
@@ -260,6 +297,7 @@
                     </div>
                   </div>
                 </div>
+
               </div>
             </div>
           </div>
@@ -274,42 +312,34 @@
             <div class="house-jobs-container">
               <form [formGroup]="houseJobsForm" *ngIf="houseJobsForm">
                 <div formArrayName="houseJobs">
-                  <div
-                    *ngFor="let houseJob of houseJobsArray.controls; let i = index"
-                    class="house-job-item"
-                    [formGroupName]="i"
-                  >
+                  <div *ngFor="let houseJob of houseJobsArray.controls; let i = index" class="house-job-item"
+                    [formGroupName]="i">
                     <div class="house-job-header">
                       <h6 class="mb-0">House Job {{ i + 1 }}</h6>
                     </div>
 
                     <div class="row compact-form">
-                      <div
-                        *ngFor="let column of houseJobColumns"
-                        class="col-md-3"
-                      >
-                       <div class="custom-form-group">
-                        <input
-                        type="text"
-                        class="custom-input-field sm"
-                        [formControlName]="column"
-                        [class.is-invalid]="hasFieldError(column, 'House Jobs', i + 2)"
-                        />
-                        <label class="input-label">{{ column }}</label>
-                        <div class="invalid-feedback" *ngIf="hasFieldError(column, 'House Jobs', i + 2)">
-                          {{ getFieldError(column, 'House Jobs', i + 2) }}
+                      <div *ngFor="let column of houseJobColumns" class="col-md-3">
+                        <div class="custom-form-group">
+                          <input type="text" class="custom-input-field sm" [formControlName]="column"
+                            [class.is-invalid]="hasFieldError(column, 'House Jobs', i + 2)" />
+                          <label class="input-label">{{ column }}</label>
+                          <div class="invalid-feedback" *ngIf="hasFieldError(column, 'House Jobs', i + 2)">
+                            {{ getFieldError(column, 'House Jobs', i + 2) }}
+                          </div>
                         </div>
-                      </div>
                       </div>
                     </div>
 
                     <!-- House Job Child Data Accordions -->
+                    <!-- House Job Child Data Accordions -->
                     <div class="house-job-child-data mt-3">
                       <div ngbAccordion>
+
                         <!-- Cargo Section -->
                         <div ngbAccordionItem>
                           <h2 ngbAccordionHeader>
-                            <button ngbAccordionButton>
+                            <button ngbAccordionButton style="padding: 6px 12px; min-height: unset;background-color: #d1e7dd; color: #198754;">
                               <i class="fas fa-boxes me-2"></i>
                               Cargo
                               <span class="badge bg-success ms-2">{{ getHouseJobCargoArray(i).length }}</span>
@@ -321,28 +351,53 @@
                                 <div class="child-data-content">
                                   <div [formArrayName]="'cargo'">
                                     <div *ngFor="let cargo of getHouseJobCargoArray(i).controls; let cargoIdx = index"
-                                         class="child-data-item mb-2"
-                                         [formGroupName]="cargoIdx">
-                                      <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <h6 class="mb-0 text-sm">Cargo {{ cargoIdx + 1 }}</h6>
-                                        <button type="button" class="btn btn-sm btn-outline-danger"
-                                                (click)="removeHouseJobCargo(i, cargoIdx)">
-                                          <i class="fas fa-times"></i> Remove
-                                        </button>
+                                      class="child-data-item" [formGroupName]="cargoIdx">
+                                      <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-inline-flex align-items-center gap-2" style="background: linear-gradient(135deg, #19875415, #19875408); 
+                                border-left: 3px solid #198754; 
+                                border-radius: 0 20px 20px 0; 
+                                padding: 4px 14px 4px 10px;">
+                                          <span
+                                            class="d-flex align-items-center justify-content-center bg-success text-white rounded-circle"
+                                            style="width:24px; height:24px; font-size:10px;">
+                                            <i class="fas fa-boxes"></i>
+                                          </span>
+                                          <span class="fw-semibold text-success"
+                                            style="font-size:13px; letter-spacing:0.3px;">
+                                            Cargo {{ cargoIdx + 1 }}
+                                          </span>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-1">
+                                          <button type="button" class="btn btn-sm btn-info"
+                                            *ngIf="cargoIdx === getHouseJobCargoArray(i).length - 1"
+                                            (click)="addHouseJobCargo(i)">
+                                            <i class="fas fa-plus me-1"></i> Add Cargo
+                                          </button>
+                                          <button type="button" class="btn btn-sm"
+                                            (click)="removeHouseJobCargo(i, cargoIdx)">
+                                            <i class="fas fa-trash text-danger"></i>
+                                          </button>
+                                        </div>
                                       </div>
-                                      <div class="row g-2">
-                                        <div class="col-md-4" *ngFor="let key of cargo.value | keyvalue">
-                                          <label class="form-label text-sm">{{ key.key }}</label>
-                                          <input type="text" class="form-control form-control-sm"
-                                                 [formControlName]="$any(key.key)" />
+                                      <div class="row compact-form">
+                                        <div class="col-md-3" *ngFor="let key of cargo.value | keyvalue">
+                                          <div class="custom-form-group">
+                                            <input type="text" class="custom-input-field sm"
+                                              [formControlName]="$any(key.key)" />
+                                            <label class="input-label">{{ key.key }}</label>
+                                          </div>
                                         </div>
                                       </div>
                                     </div>
                                   </div>
-                                  <button type="button" class="btn btn-sm btn-outline-success mt-2"
-                                          (click)="addHouseJobCargo(i)">
-                                    <i class="fas fa-plus me-1"></i> Add Cargo
-                                  </button>
+
+                                  <!-- Empty state -->
+                                  <div *ngIf="getHouseJobCargoArray(i).length === 0" class="py-1">
+                                    <button type="button" class="btn btn-sm btn-info" (click)="addHouseJobCargo(i)">
+                                      <i class="fas fa-plus me-1"></i> Add Cargo
+                                    </button>
+                                  </div>
+
                                 </div>
                               </ng-template>
                             </div>
@@ -352,7 +407,7 @@
                         <!-- Products Section -->
                         <div ngbAccordionItem>
                           <h2 ngbAccordionHeader>
-                            <button ngbAccordionButton>
+                            <button ngbAccordionButton style="padding: 6px 12px; min-height: unset;background-color: #d1e7dd; color: #198754">
                               <i class="fas fa-cube me-2"></i>
                               Products
                               <span class="badge bg-success ms-2">{{ getHouseJobProductsArray(i).length }}</span>
@@ -363,29 +418,55 @@
                               <ng-template>
                                 <div class="child-data-content">
                                   <div [formArrayName]="'products'">
-                                    <div *ngFor="let product of getHouseJobProductsArray(i).controls; let prodIdx = index"
-                                         class="child-data-item mb-2"
-                                         [formGroupName]="prodIdx">
-                                      <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <h6 class="mb-0 text-sm">Product {{ prodIdx + 1 }}</h6>
-                                        <button type="button" class="btn btn-sm btn-outline-danger"
-                                                (click)="removeHouseJobProduct(i, prodIdx)">
-                                          <i class="fas fa-times"></i> Remove
-                                        </button>
+                                    <div
+                                      *ngFor="let product of getHouseJobProductsArray(i).controls; let prodIdx = index"
+                                      class="child-data-item" [formGroupName]="prodIdx">
+                                      <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-inline-flex align-items-center gap-2" style="background: linear-gradient(135deg, #19875415, #19875408); 
+                                border-left: 3px solid #198754; 
+                                border-radius: 0 20px 20px 0; 
+                                padding: 4px 14px 4px 10px;">
+                                          <span
+                                            class="d-flex align-items-center justify-content-center bg-success text-white rounded-circle"
+                                            style="width:24px; height:24px; font-size:10px;">
+                                            <i class="fas fa-cube"></i>
+                                          </span>
+                                          <span class="fw-semibold text-success"
+                                            style="font-size:13px; letter-spacing:0.3px;">
+                                            Product {{ prodIdx + 1 }}
+                                          </span>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-1">
+                                          <button type="button" class="btn btn-sm btn-info"
+                                            *ngIf="prodIdx === getHouseJobProductsArray(i).length - 1"
+                                            (click)="addHouseJobProduct(i)">
+                                            <i class="fas fa-plus me-1"></i> Add Product
+                                          </button>
+                                          <button type="button" class="btn btn-sm"
+                                            (click)="removeHouseJobProduct(i, prodIdx)">
+                                            <i class="fas fa-trash text-danger"></i>
+                                          </button>
+                                        </div>
                                       </div>
-                                      <div class="row g-2">
-                                        <div class="col-md-4" *ngFor="let key of product.value | keyvalue">
-                                          <label class="form-label text-sm">{{ key.key }}</label>
-                                          <input type="text" class="form-control form-control-sm"
-                                                 [formControlName]="$any(key.key)" />
+                                      <div class="row compact-form">
+                                        <div class="col-md-3" *ngFor="let key of product.value | keyvalue">
+                                          <div class="custom-form-group">
+                                            <input type="text" class="custom-input-field sm"
+                                              [formControlName]="$any(key.key)" />
+                                            <label class="input-label">{{ key.key }}</label>
+                                          </div>
                                         </div>
                                       </div>
                                     </div>
                                   </div>
-                                  <button type="button" class="btn btn-sm btn-outline-success mt-2"
-                                          (click)="addHouseJobProduct(i)">
-                                    <i class="fas fa-plus me-1"></i> Add Product
-                                  </button>
+
+                                  <!-- Empty state -->
+                                  <div *ngIf="getHouseJobProductsArray(i).length === 0" class="py-1">
+                                    <button type="button" class="btn btn-sm btn-info" (click)="addHouseJobProduct(i)">
+                                      <i class="fas fa-plus me-1"></i> Add Product
+                                    </button>
+                                  </div>
+
                                 </div>
                               </ng-template>
                             </div>
@@ -395,7 +476,7 @@
                         <!-- Connections Section -->
                         <div ngbAccordionItem>
                           <h2 ngbAccordionHeader>
-                            <button ngbAccordionButton>
+                            <button ngbAccordionButton style="padding: 6px 12px; min-height: unset; background-color: #d1e7dd; color: #198754;">
                               <i class="fas fa-route me-2"></i>
                               Connections
                               <span class="badge bg-success ms-2">{{ getHouseJobConnectionsArray(i).length }}</span>
@@ -406,36 +487,65 @@
                               <ng-template>
                                 <div class="child-data-content">
                                   <div [formArrayName]="'connections'">
-                                    <div *ngFor="let connection of getHouseJobConnectionsArray(i).controls; let connIdx = index"
-                                         class="child-data-item mb-2"
-                                         [formGroupName]="connIdx">
-                                      <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <h6 class="mb-0 text-sm">Connection {{ connIdx + 1 }}</h6>
-                                        <button type="button" class="btn btn-sm btn-outline-danger"
-                                                (click)="removeHouseJobConnection(i, connIdx)">
-                                          <i class="fas fa-times"></i> Remove
-                                        </button>
+                                    <div
+                                      *ngFor="let connection of getHouseJobConnectionsArray(i).controls; let connIdx = index"
+                                      class="child-data-item" [formGroupName]="connIdx">
+                                      <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-inline-flex align-items-center gap-2" style="background: linear-gradient(135deg, #19875415, #19875408); 
+                                border-left: 3px solid #198754; 
+                                border-radius: 0 20px 20px 0; 
+                                padding: 4px 14px 4px 10px;">
+                                          <span
+                                            class="d-flex align-items-center justify-content-center bg-success text-white rounded-circle"
+                                            style="width:24px; height:24px; font-size:10px;">
+                                            <i class="fas fa-route"></i>
+                                          </span>
+                                          <span class="fw-semibold text-success"
+                                            style="font-size:13px; letter-spacing:0.3px;">
+                                            Connection {{ connIdx + 1 }}
+                                          </span>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-1">
+                                          <button type="button" class="btn btn-sm btn-info"
+                                            *ngIf="connIdx === getHouseJobConnectionsArray(i).length - 1"
+                                            (click)="addHouseJobConnection(i)">
+                                            <i class="fas fa-plus me-1"></i> Add Connection
+                                          </button>
+                                          <button type="button" class="btn btn-sm"
+                                            (click)="removeHouseJobConnection(i, connIdx)">
+                                            <i class="fas fa-trash text-danger"></i>
+                                          </button>
+                                        </div>
                                       </div>
-                                      <div class="row g-2">
-                                        <div class="col-md-4" *ngFor="let key of connection.value | keyvalue">
-                                          <label class="form-label text-sm">{{ key.key }}</label>
-                                          <input type="text" class="form-control form-control-sm"
-                                                 [formControlName]="$any(key.key)" />
+                                      <div class="row compact-form">
+                                        <div class="col-md-3" *ngFor="let key of connection.value | keyvalue">
+                                          <div class="custom-form-group">
+                                            <input type="text" class="custom-input-field sm"
+                                              [formControlName]="$any(key.key)" />
+                                            <label class="input-label">{{ key.key }}</label>
+                                          </div>
                                         </div>
                                       </div>
                                     </div>
                                   </div>
-                                  <button type="button" class="btn btn-sm btn-outline-success mt-2"
-                                          (click)="addHouseJobConnection(i)">
-                                    <i class="fas fa-plus me-1"></i> Add Connection
-                                  </button>
+
+                                  <!-- Empty state -->
+                                  <div *ngIf="getHouseJobConnectionsArray(i).length === 0" class="py-1">
+                                    <button type="button" class="btn btn-sm btn-info"
+                                      (click)="addHouseJobConnection(i)">
+                                      <i class="fas fa-plus me-1"></i> Add Connection
+                                    </button>
+                                  </div>
+
                                 </div>
                               </ng-template>
                             </div>
                           </div>
                         </div>
+
                       </div>
                     </div>
+
                   </div>
                 </div>
               </form>
@@ -457,10 +567,7 @@
       </div>
 
       <div class="error-list">
-        <div
-          *ngFor="let error of errors"
-          class="error-item"
-        >
+        <div *ngFor="let error of errors" class="error-item">
           <div class="error-details">
             <strong>{{ error.sheet }}</strong>
             <span *ngIf="error.row"> - Row {{ error.row }}</span>
@@ -491,21 +598,11 @@
 
 <!-- Modal Footer -->
 <div class="modal-footer">
-  <button
-    type="button"
-    class="btn btn-secondary"
-    (click)="onCancel()"
-    [disabled]="isProcessing"
-  >
+  <button type="button" class="btn btn-sm btn-secondary" (click)="onCancel()" [disabled]="isProcessing">
     Cancel
   </button>
-  <button
-    type="button"
-    class="btn btn-primary"
-    (click)="onProceed()"
-    [disabled]="isProcessing || !showPreview || hasErrors()"
-    *ngIf="showPreview"
-  >
+  <button type="button" class="btn btn-sm btn-info" (click)="onProceed()"
+    [disabled]="isProcessing || !showPreview || hasErrors()" *ngIf="showPreview">
     <i class="fas fa-check-circle me-2"></i>
     Proceed with Job Creation
   </button>
