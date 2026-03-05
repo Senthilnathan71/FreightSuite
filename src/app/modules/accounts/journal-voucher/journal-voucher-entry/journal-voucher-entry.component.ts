@@ -1404,6 +1404,15 @@ private deepEqual(obj1: any, obj2: any): boolean {
 
    this.clearRelatedFieldsForRow(detailGroup, rowIndex);
 
+  // Default detail row currency from the COA's configured ledger currency
+  if (coaId) {
+    const coa = this.coaList.find(c => c.COAMasterSid === coaId);
+    if (coa?.LedgerCurrency) {
+      detailGroup.patchValue({ currencyMasterSid: coa.LedgerCurrency });
+      // currencyCode and exchangeRate are updated via currencyMasterSid.valueChanges subscription
+    }
+  }
+
   // Fetch subledger details when COA changes
   if (coaId && this.currentCompany?.CompanyMasterSid) {
     const payload = {
