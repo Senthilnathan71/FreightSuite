@@ -299,6 +299,7 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   billingPartyBranchDetails : any = null;
   billingPartyAddress: string = '';
   billingGST_VAT: string = '';
+  billingPartyCurrency: any = null;
   taxGroupList: any[] = [];
   currentCountry: Number;
   currentBranchStateName : string;
@@ -1699,7 +1700,7 @@ createRateFormGroup(data?: any): FormGroup {
     // Apply logic directly to customer master if no branches
     if (customer.countryMaster) {
       const countryCode = customer.countryMaster.countryCode;
-      
+
       if (countryCode === 'IN') {
         // For India customers without branches, you might not have GSTNo
         this.billingGST_VAT = customer.GSTNo || '';
@@ -2339,6 +2340,7 @@ createRateFormGroup(data?: any): FormGroup {
       const GST_VAT = this.isIndianCompany() ? customer?.GSTNo || '' : customer?.PanType || '';
       const GSTType = this.determineTaxType();
       const customerCurrency = customerFromLookup?.currencyMaster;
+      this.billingPartyCurrency = customerCurrency ?? null;
       const currentCompanyCurrencyId = this.currentCompany?.CurrencyMasterSid;
       const currentCompanyCurrencyCode = this.currentCompanyCurrency?.code;
 
@@ -2461,6 +2463,14 @@ createRateFormGroup(data?: any): FormGroup {
       })
       this.onHeaderExchangeRateChange();
     }
+  }
+
+  onVoucherCurrencySelected(currency: any) {
+    if (this.billingPartyCurrency?.CurrencyMasterSid && currency?.CurrencyMasterSid &&
+        currency.CurrencyMasterSid !== this.billingPartyCurrency.CurrencyMasterSid) {
+      this.toaster.warning("Selected currency differs from the party's default currency.", 'Currency Mismatch', { timeOut: 2000 });
+    }
+    this.onHeaderCurrencyChange(currency);
   }
 
   onVoucherDateChange() {
