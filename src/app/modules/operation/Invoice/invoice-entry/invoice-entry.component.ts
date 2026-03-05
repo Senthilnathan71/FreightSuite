@@ -994,6 +994,17 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       { emitEvent: false }
     );
 
+    // In edit mode, restrict the date picker to the original document's month
+    const _invoiceOrigDate = new Date(data.VoucherDate);
+    if (!isNaN(_invoiceOrigDate.getTime())) {
+      const _y = _invoiceOrigDate.getFullYear(), _m = _invoiceOrigDate.getMonth() + 1;
+      const _monthEnd = new Date(_y, _m, 0);
+      const _today = new Date(); _today.setHours(0, 0, 0, 0);
+      const _effectiveEnd = _monthEnd < _today ? _monthEnd : _today;
+      this.fyMinDate = { year: _y, month: _m, day: 1 };
+      this.fyMaxDate = { year: _effectiveEnd.getFullYear(), month: _effectiveEnd.getMonth() + 1, day: _effectiveEnd.getDate() };
+    }
+
     if (
       data?.CurrencyMasterSid === this.currentCompany?.CurrencyMasterSid ||
       this.isPosted
@@ -2980,20 +2991,31 @@ isSeaDepartment(): boolean {
   openFollowup() {}
   onHeaderCurrencyChange(selectedCurrency: any) {
     if (!selectedCurrency) return;
+    const currencyMasterSid = selectedCurrency?.CurrencyMasterSid;
     const currencyCode = selectedCurrency?.currencyCode;
     const companyCurrencyCode = this.currentCompanyCurrency?.code;
 
     // If same as company currency, set exchange rate to 1 and disable
     if (currencyCode === companyCurrencyCode) {
       this.invoiceForm.patchValue({
-        CurrencyMasterSid: selectedCurrency.CurrencyMasterSid,
-        CurrencyCode: selectedCurrency.currencyCode,
+        CurrencyMasterSid: currencyMasterSid,
+        CurrencyCode: currencyCode,
         ExchangeRate: 1,
       });
       this.invoiceForm.get('ExchangeRate')?.disable();
     } else {
       // Different currency - fetch exchange rate and enable field
       this.fetchExchangeRate(currencyCode, companyCurrencyCode);
+    }
+
+    // Warn if selected currency differs from the customer's default currency
+    const customerMasterSid = this.invoiceForm.get('CustomerMasterSid')?.getRawValue();
+    if (customerMasterSid && currencyMasterSid) {
+      const customer = this.customerList.find(c => c.CustomerMasterSid === customerMasterSid);
+      const customerCurrencySid = customer?.currencyMaster?.CurrencyMasterSid;
+      if (customerCurrencySid && currencyMasterSid !== customerCurrencySid) {
+        this.toastr.warning('Selected currency differs from the customer\'s default currency.', 'Currency Mismatch', { timeOut: 2000 });
+      }
     }
   }
 

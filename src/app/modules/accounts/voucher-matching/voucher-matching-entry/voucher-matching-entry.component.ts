@@ -152,6 +152,8 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
   private readonly PAIR_COLORS = ['#4caf50', '#2196f3', '#ff9800', '#9c27b0', '#e91e63', '#00bcd4'];
   previousMatchingDate: any = null;
   isFullScreen = false;
+  vmMinDate: { year: number; month: number; day: number } | null = null;
+  vmMaxDate: { year: number; month: number; day: number } | null = null;
 
   BATCH_SIZE = 10;
   sourceSkip = 0;
@@ -202,6 +204,16 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
     }
     this.currentFinancialYear = this.appSettingService.getCurrentFinancialYear();
     this.currentCompanyCurrency = this.companySettings.getCurrencySettings();
+    // Create mode: restrict date picker to financial year boundaries
+    const fy = this.currentFinancialYear;
+    if (fy) {
+      const fyStart = new Date(fy.StartDate);
+      const today = new Date();
+      const fyEnd = new Date(fy.EndDate);
+      const effectiveFyEnd = fyEnd > today ? today : fyEnd;
+      this.vmMinDate = { year: fyStart.getFullYear(), month: fyStart.getMonth() + 1, day: fyStart.getDate() };
+      this.vmMaxDate = { year: effectiveFyEnd.getFullYear(), month: effectiveFyEnd.getMonth() + 1, day: effectiveFyEnd.getDate() };
+    }
     this.loadCurrencies();
     this.checkVoucherPostingMechanism();
     this.initForm();
@@ -381,6 +393,17 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
       PostStatus: data.PostStatus === 'P' ? 'Posted' : 'Unposted',
       Status: data.Status === 'A' ? 'Active' : 'Suspended'
     });
+
+    // Edit mode: restrict date picker to the original document's month
+    const _vmOrigDate = new Date(data.VoucherMatchingDate);
+    if (!isNaN(_vmOrigDate.getTime())) {
+      const _y = _vmOrigDate.getFullYear(), _m = _vmOrigDate.getMonth() + 1;
+      const _monthEnd = new Date(_y, _m, 0);
+      const _today = new Date(); _today.setHours(0, 0, 0, 0);
+      const _effectiveEnd = _monthEnd < _today ? _monthEnd : _today;
+      this.vmMinDate = { year: _y, month: _m, day: 1 };
+      this.vmMaxDate = { year: _effectiveEnd.getFullYear(), month: _effectiveEnd.getMonth() + 1, day: _effectiveEnd.getDate() };
+    }
 
     this.voucherMatchingForm.get('LedgerName')?.disable();
     this.voucherMatchingForm.get('SubledgerName')?.disable();
@@ -700,7 +723,10 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
     const matchCurrencyAmt = toNumber(raw.MatchedCurrencyAmount);
     const osCurrencyAmt = toNumber(raw.OutstandingCurrencyAmount);
     const osLocalAmt = toNumber(raw.OutstandingLocalAmount);
-    if (matchCurrencyAmt === osCurrencyAmt) {
+    // If outstanding has a currency amount but zero local amount, keep local at 0
+    if (osCurrencyAmt !== 0 && osLocalAmt === 0) {
+      row.get('MatchedLocalAmount')?.setValue(this.getFormattedAndPaddedAmount(0, raw.CurrencyCode));
+    } else if (matchCurrencyAmt === osCurrencyAmt) {
       row.get('MatchedLocalAmount')?.setValue(this.getFormattedAndPaddedAmount(osLocalAmt, raw.CurrencyCode));
     } else {
       row.get('MatchedLocalAmount')?.setValue(this.getFormattedAndPaddedAmount(matchCurrencyAmt * (toNumber(raw.ExchangeRate) || 1), raw.CurrencyCode));

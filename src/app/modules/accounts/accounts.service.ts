@@ -7,6 +7,7 @@ export interface CheckVoucherPostingMechanism {
   CompanyMasterSid: number;
   BranchMasterSid: number;
   MenuName: string;
+  Type?: string;
 }
 @Injectable({
   providedIn: 'root'

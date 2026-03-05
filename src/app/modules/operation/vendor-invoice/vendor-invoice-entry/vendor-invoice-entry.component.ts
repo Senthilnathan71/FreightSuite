@@ -292,7 +292,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
     private currencyConfigService: CurrencyConfigurationService,
     private currencyFormatService: CurrencyFormatService,
     private datePipe : CustomDatePipe,
-    private voucherPeriodService: VoucherPeriodValidationService
+    private voucherPeriodService: VoucherPeriodValidationService,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -576,6 +577,16 @@ export class VendorInvoiceEntryComponent implements OnInit {
       this.vendorInvoiceForm.get('ExchangeRate')?.disable();
     } else {
       this.fetchExchangeRate(currencyCode, companyCurrencyCode);
+    }
+
+    // Warn if selected currency differs from the vendor's default currency
+    const partyMasterSid = this.vendorInvoiceForm.get('PartyMasterSid')?.getRawValue();
+    if (partyMasterSid && currencyMasterSid) {
+      const vendor = this.vendorList.find(v => v.SubledgerMasterSid === partyMasterSid);
+      const vendorCurrencySid = vendor?.currencyMaster?.CurrencyMasterSid;
+      if (vendorCurrencySid && currencyMasterSid !== vendorCurrencySid) {
+        this.toastr.warning('Selected currency differs from the vendor\'s default currency.', 'Currency Mismatch', { timeOut: 2000 });
+      }
     }
   }
 
@@ -945,6 +956,17 @@ export class VendorInvoiceEntryComponent implements OnInit {
       BillAmt: data.Amount || 0,
       HouseJobSid: data.HouseJobSid,
     }, { emitEvent: false });
+
+    // In edit mode, restrict the date picker to the original document's month
+    const _vinOrigDate = new Date(data.VoucherDate);
+    if (!isNaN(_vinOrigDate.getTime())) {
+      const _y = _vinOrigDate.getFullYear(), _m = _vinOrigDate.getMonth() + 1;
+      const _monthEnd = new Date(_y, _m, 0);
+      const _today = new Date(); _today.setHours(0, 0, 0, 0);
+      const _effectiveEnd = _monthEnd < _today ? _monthEnd : _today;
+      this.fyMinDate = { year: _y, month: _m, day: 1 };
+      this.fyMaxDate = { year: _effectiveEnd.getFullYear(), month: _effectiveEnd.getMonth() + 1, day: _effectiveEnd.getDate() };
+    }
 
     if (data?.CurrencyMasterSid === this.currentCompany?.CurrencyMasterSid || this.isPosted) {
       this.vendorInvoiceForm.get('ExchangeRate')?.disable();
@@ -2419,6 +2441,16 @@ export class VendorInvoiceEntryComponent implements OnInit {
     datepicker.close();
   }
 
+  get isTodayOutOfVoucherDateRange(): boolean {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const ngbToMs = (s: { year: number; month: number; day: number }) =>
+      new Date(s.year, s.month - 1, s.day).getTime();
+    const todayMs = today.getTime();
+    if (this.fyMinDate && todayMs < ngbToMs(this.fyMinDate)) return true;
+    if (this.fyMaxDate && todayMs > ngbToMs(this.fyMaxDate)) return true;
+    return false;
+  }
+
   // Add this new method to fetch exchange rate
   private fetchExchangeRate(fromCurrencyCode: string, toCurrencyCode: string): void {
     const voucherDate = this.vendorInvoiceForm.get('VoucherDate')?.getRawValue() ?? new Date();
@@ -2586,6 +2618,24 @@ export class VendorInvoiceEntryComponent implements OnInit {
       this.subledgerListDetail[detailIndex] = [];
       return;
     }
+
+    // Non-job: default detail row currency from the COA's LedgerCurrency and fetch exchange rate
+    if (this.isNonJob && resetSubledger) {
+      const fullCoa = this.coaList.find(c => c.COAMasterSid === (coa.COAMasterSid ?? coa));
+      const ledgerCurrencyId = fullCoa?.LedgerCurrency;
+      if (ledgerCurrencyId) {
+        const currency = this.currencyList.find(c => c.CurrencyMasterSid === ledgerCurrencyId);
+        const companyCurrencyCode = this.currentCompanyCurrency?.code;
+        ctrl.patchValue({
+          CurrencyMasterSid: ledgerCurrencyId,
+          CurrencyCode: currency?.currencyCode ?? null,
+        });
+        if (currency?.currencyCode) {
+          this.patchExchangeRateForDetail(currency.currencyCode, companyCurrencyCode, detailIndex);
+        }
+      }
+    }
+
     if(coa.SubledgerName === 'Y'){
       ctrl.get('LedgerMasterSid')?.enable();
       this.operationService.getAllSubledgerByCOA({

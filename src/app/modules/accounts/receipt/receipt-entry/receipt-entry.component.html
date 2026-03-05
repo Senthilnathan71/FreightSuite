@@ -182,6 +182,7 @@
               <span class="visually-hidden">unsaved changes</span>
             </span>
           </button>
+          @if(isPosted){
           <button
             type="button"
             appPreventMultiClick
@@ -189,8 +190,9 @@
             disabled="true"
           >
             <i class="fas fa-check-circle me-1"></i>
-            {{ isPosted ? "Posted" : "Post" }}
+            Posted
           </button>
+          }
           } @else {
           <!-- Draft Save Button -->
           <button
@@ -1416,7 +1418,7 @@
                   style="width: 100px"
                   [DecimalPrecisionBefore]="9"
                   [DecimalPrecisionAfter]="
-                    getAmountDecimalPlaces(v.get('curr')?.value)
+                    getAmountDecimalPlacesByCode(v.get('curr')?.value)
                   "
                 />
               </td>
@@ -1431,7 +1433,7 @@
                   style="width: 100px"
                   [DecimalPrecisionBefore]="9"
                   [DecimalPrecisionAfter]="
-                    getAmountDecimalPlaces(v.get('curr')?.value)
+                    getAmountDecimalPlacesByCode(v.get('curr')?.value)
                   "
                 />
               </td>
@@ -1446,7 +1448,7 @@
                   DecimalPrecision
                   [DecimalPrecisionBefore]="9"
                   [DecimalPrecisionAfter]="
-                    getAmountDecimalPlaces(v.get('curr')?.value)
+                    getAmountDecimalPlacesByCode(v.get('curr')?.value)
                   "
                 />
               </td>
@@ -1460,7 +1462,7 @@
                   DecimalPrecision
                   [DecimalPrecisionBefore]="9"
                   [DecimalPrecisionAfter]="
-                    getAmountDecimalPlaces(v.get('curr')?.value)
+                    getAmountDecimalPlacesByCode(v.get('curr')?.value)
                   "
                 />
               </td>

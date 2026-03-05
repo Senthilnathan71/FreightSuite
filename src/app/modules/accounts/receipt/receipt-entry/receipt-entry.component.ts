@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   HostListener,
@@ -196,6 +197,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   selectedInvoices: OutstandingInvoice[] = [];
   paymentModes: { value: string; label: string }[] = [];
   isAutoPosting: boolean = false;
+  private autoPostingCache: Record<string, boolean> = {};
   voucherMatchingInfo: {
     VoucherMatchingHeaderSid: number;
     VoucherMatchingNo: string;
@@ -360,7 +362,8 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     private spinner: NgxSpinnerService,
     private companySettings: CompanySettingsManagerService,
     private voucherPeriodService: VoucherPeriodValidationService,
-    private confirmService: ModalService
+    private confirmService: ModalService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -387,7 +390,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
     this.currentBranch = this.appSettingService.getCurrentBranchInfo();
     this.mps.init().subscribe();
-    this.checkVoucherPostingMechanism();
+    this.checkVoucherPostingMechanism('B');
     this.initSearchOutstandingForm();
     this.initializeForm();
     this.loadPaymentModes();
@@ -1177,6 +1180,21 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
     const currentUserEmail =
       this.appSettingService.userSettingSource.value['userEmail'];
+
+    const currentCompanyState = Number(this.currentBranch?.StateMasterSid);
+    const customerBranchFromForm = Number(formValue.CustomerBranchSid);
+    const customerState = this.partyList.find(
+      (c) => c.CustomerBranchSid === customerBranchFromForm
+    )?.StateMasterSid;
+    let interOrIntra = 'Inter';
+    if (this.currentCompanyCountryCode === 'in') {
+      if (currentCompanyState === customerState) {
+        interOrIntra = 'Inter';
+      } else {
+        interOrIntra = 'Intra';
+      }
+    }
+
     const voucherMatching = this.voucherMatchings.getRawValue().map((vm) => ({
       MatchingDetailSid: vm.MatchingDetailSid,
       VoucherHeaderSid: vm.VoucherHeaderSid,
@@ -1251,6 +1269,16 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           }
         : {
             CreatedBy: currentUserEmail,
+            LocalCurrencyMasterSid: Number(this.currentCompany?.CurrencyMasterSid),
+            LocalCurrencyCode: this.companyCurrency?.code,
+            current_date: getDefaultTodayDate(),
+            TaxDetails: {
+              CountryMasterSid: Number(this.currentCompany?.CountryMasterSid),
+              countryCode: this.currentCompanyCountryCode,
+              TaxCategory: interOrIntra,
+              EffectiveFrom: new Date().toISOString(),
+              TaxType: 'Output',
+            },
           }),
     };
 
@@ -1284,11 +1312,11 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           this.isSaving = false;
           if (resp.status) {
             this.headerId = resp.data?.voucherHeader?.VoucherHeaderSid;
-            if (isPostingTrue) {
-              await this.postVoucher();
-            } else {
-              this.spinner.hide();
+            this.appSettingService.showSuccess(resp.message);
+            if (resp.data?.isAutoPosted) {
+              this.receiptData = { ...this.receiptData, PostStatus: 'P' };
             }
+            this.spinner.hide();
             this.isDirty = false;
             if (resolve) resolve(true);
             if (this.headerId) {
@@ -1462,6 +1490,17 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     // If not yet loaded, loadAllLookups will call setCurrencyCode once currencies arrive.
     this.setCurrencyCode(headerInfo.CurrencyMasterSid);
 
+    // In edit mode, restrict the date picker to the original document's month
+    const _receiptOrigDate = new Date(headerInfo.VoucherDate);
+    if (!isNaN(_receiptOrigDate.getTime())) {
+      const _y = _receiptOrigDate.getFullYear(), _m = _receiptOrigDate.getMonth() + 1;
+      const _monthEnd = new Date(_y, _m, 0);
+      const _today = new Date(); _today.setHours(0, 0, 0, 0);
+      const _effectiveEnd = _monthEnd < _today ? _monthEnd : _today;
+      this.fyMinDate = { year: _y, month: _m, day: 1 };
+      this.fyMaxDate = { year: _effectiveEnd.getFullYear(), month: _effectiveEnd.getMonth() + 1, day: _effectiveEnd.getDate() };
+    }
+
     this.previousPartyBranchSid = headerInfo.CustomerBranchSid;
     this.searchOutstandingForm.get('LedgerMasterSid')?.setValue(headerInfo.PartyMasterSid);
 
@@ -1470,6 +1509,9 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     }
 
     this.receiptForm.get('CashOrBank')?.disable({ emitEvent: false });
+
+    // Re-check auto posting for the loaded CashOrBank value
+    this.checkVoucherPostingMechanism(headerInfo.CashOrBank);
 
     if(headerInfo.CashOrBank === 'C'){
       this.receiptForm.get('InstrumentMode')?.clearValidators();
@@ -2196,6 +2238,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           }
         });
     } else {
+      ledgerCtrl.setValue(null);
       ledgerCtrl.disable();
       ledgerCtrl.clearValidators();
       ledgerCtrl.updateValueAndValidity();
@@ -2620,9 +2663,12 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const osCurrAmt = Number(row.get('osCurrAmt')?.value || 0);
     const osLocalAmt = Number(row.get('osLocalAmt')?.value || 0);
 
-    // If matching currency amount equals outstanding currency amount,
-    // use outstanding local amount directly to avoid rounding differences
-    if (amount === osCurrAmt) {
+    // If outstanding has a currency amount but zero local amount, keep local at 0
+    if (osCurrAmt !== 0 && osLocalAmt === 0) {
+      row.get('matchLocalAmt')?.setValue(this.getFormattedAmount(0, row.get('matchCurr')?.value));
+    } else if (amount === osCurrAmt) {
+      // If matching currency amount equals outstanding currency amount,
+      // use outstanding local amount directly to avoid rounding differences
       row.get('matchLocalAmt')?.setValue(osLocalAmt);
     } else {
       const exchangeRate = Number(row.get('matchExRate')?.value);
@@ -2950,6 +2996,16 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     });
 
     this.handleHeaderExchangeRate(currencySid);
+
+    // Warn if selected currency differs from the party's default currency
+    const currentPartyId = this.receiptForm.get('PartyMasterSid')?.getRawValue();
+    if (currentPartyId) {
+      const currentParty = this.partyList.find(p => p.SubledgerMasterSid === currentPartyId);
+      const partyCurrencySid = currentParty?.currencyMaster?.CurrencyMasterSid;
+      if (partyCurrencySid && currencySid !== partyCurrencySid) {
+        this.toastr.warning('Selected currency differs from the party\'s default currency.', 'Currency Mismatch', { timeOut: 2000 });
+      }
+    }
   }
 
   handleDetailExchangeRate(currencySid: number, index: number) {
@@ -3077,6 +3133,16 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         partyCountry === 'united arab emirates' ? party.PanType : party.GSTNo,
     });
 
+    // Default header currency from the party's configured currency
+    const partyCurrency = party.currencyMaster;
+    if (partyCurrency?.CurrencyMasterSid) {
+      this.receiptForm.patchValue({
+        CurrencyMasterSid: partyCurrency.CurrencyMasterSid,
+        CurrencyCode: partyCurrency.currencyCode,
+      });
+      this.handleHeaderExchangeRate(partyCurrency.CurrencyMasterSid);
+    }
+
     this.r['BankPartyName']?.setValue(party.CustomerName);
 
     const taxNoCtrl = this.receiptForm.get('GST_VAT');
@@ -3169,6 +3235,9 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
     // Update filtered COA list since bank/cash selection was cleared
     this.rebuildFilteredCoaListForAllRows();
+
+    // Re-check auto posting based on the new Cash/Bank mode
+    this.checkVoucherPostingMechanism();
   }
 
   getExchangeRate(currency: number | string): Observable<number> {
@@ -3372,6 +3441,14 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     if (CurrencyCode) {
       const config = this.currencyConfigService.getCurrencyConfig(CurrencyCode);
       return config?.exchangeDecimal;
+    }
+    return 4;
+  }
+
+  public getAmountDecimalPlacesByCode(CurrencyCode: string): number {
+    if (CurrencyCode) {
+      const config = this.currencyConfigService.getCurrencyConfig(CurrencyCode);
+      return config?.amountDecimal;
     }
     return 4;
   }
@@ -3721,11 +3798,20 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     return this.currentCompanyCountryCode === 'in';
   }
 
-  checkVoucherPostingMechanism() {
+  checkVoucherPostingMechanism(cashOrBankCode?: string) {
+    const code = cashOrBankCode || this.receiptForm?.get('CashOrBank')?.value || 'B';
+    const typeValue = code === 'C' ? 'Cash' : 'Bank';
+
+    // Return cached result if already fetched for this type
+    if (typeValue in this.autoPostingCache) {
+      this.isAutoPosting = this.autoPostingCache[typeValue];
+      this.cdr.detectChanges();
+      return;
+    }
+
     const companyId = this.currentCompany?.CompanyMasterSid;
     const branchId = this.currentBranch?.BranchMasterSid;
-    const menuName = 'Receipt';
-    if (!companyId || !branchId || !menuName) {
+    if (!companyId || !branchId) {
       return;
     }
     this.accountService
@@ -3733,14 +3819,14 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         CompanyMasterSid: companyId,
         BranchMasterSid: branchId,
         MenuName: 'Receipt',
+        Type: typeValue,
       })
       .subscribe({
         next: (resp) => {
-          if (resp.status) {
-            this.isAutoPosting = Boolean(resp.data);
-          } else {
-            this.isAutoPosting = false;
-          }
+          const result = resp.status ? Boolean(resp.data) : false;
+          this.autoPostingCache[typeValue] = result;
+          this.isAutoPosting = result;
+          this.cdr.detectChanges();
         },
         error: (error: any) => {
           console.error('Error checking voucher posting mechanism:', error);

@@ -257,6 +257,7 @@
                 <div class="input-group">
                   <input class="form-control" formControlName="VoucherMatchingDate" placeholder="dd-mm-yyyy"
                     ngbDatepicker #d1="ngbDatepicker"
+                    [minDate]="vmMinDate" [maxDate]="vmMaxDate"
                     (click)="previousMatchingDate = vm['VoucherMatchingDate'].value; d1.toggle()"
                     (dateSelect)="onMatchingDateChange()" />
                   <button class="btn" type="button" (click)="d1.toggle()">
