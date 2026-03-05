@@ -393,6 +393,10 @@ export class FollowUpComponent implements OnInit, OnChanges {
         (resp: any) => {
           if (resp.status) {
             this.appSettingService.showSuccess(resp.message);
+            const isCargoInvolved = followupCreate.FollowupAction === 'External' && this.subject.toLowerCase().includes('cargo');
+            if (isCargoInvolved && this.autoInsertMilestone) {
+              this.handleAutoInsertMilestone();
+            }
             this.activeModal.close(resp);
           } else {
             this.appSettingService.showError(resp.message);
@@ -439,6 +443,7 @@ export class FollowUpComponent implements OnInit, OnChanges {
 
 handleAutoInsertMilestone(){
   console.log("payload from parent",this.milestonePayload);
+  const milestoneDate = this.getMilestoneDateFromFollowup();
   const payload : SafeInsertShipmentMilestone = {
     CompanyMasterSid: this.milestonePayload?.CompanyMasterSid || this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.milestonePayload?.BranchMasterSid || this.currentBranch?.BranchMasterSid,
@@ -446,6 +451,7 @@ handleAutoInsertMilestone(){
     JobType: this.milestonePayload?.JobType,
     MilestoneCode: this.milestonePayload?.MilestoneCode,
     ShipmentNo: this.milestonePayload?.ShipmentNo,
+    MilestoneDate: milestoneDate || undefined,
     createdBy : this.milestonePayload?.createdBy,
     Remarks : this.milestonePayload?.Remarks
   }
@@ -463,6 +469,32 @@ handleAutoInsertMilestone(){
       this.appSettingService.showError(error.message);
     }
   });
+}
+
+private getMilestoneDateFromFollowup(): Date | null {
+  const followupDate = this.followupForm?.get('FollowupDate')?.value;
+  if (!followupDate) return null;
+
+  if (followupDate instanceof Date) {
+    return isNaN(followupDate.getTime()) ? null : followupDate;
+  }
+
+  if (typeof followupDate === 'string') {
+    const parsed = new Date(followupDate);
+    return isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  if (
+    typeof followupDate === 'object' &&
+    'year' in followupDate &&
+    'month' in followupDate &&
+    'day' in followupDate
+  ) {
+    const parsed = new Date(followupDate.year, followupDate.month - 1, followupDate.day);
+    return isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  return null;
 }
 
 

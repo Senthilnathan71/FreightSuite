@@ -60,7 +60,18 @@ export interface SafeInsertShipmentMilestone {
   createdBy: string;
   MilestoneCode: string;
   ShipmentNo: string;
+  MilestoneDate?: Date;
   Remarks : string;
+}
+
+export interface InsertMilestoneByMasterJobPayload {
+  MasterJobSid: number;
+  CompanyMasterSid: number;
+  BranchMasterSid: number;
+  MilestoneCode: string;
+  MilestoneDate?: Date;
+  createdBy: string;
+  Remarks?: string;
 }
 
 @Injectable({
@@ -140,6 +151,17 @@ export class ShipmentMilestoneService {
   safeInsertMilestone(payload: any): Observable<ResponseData> {
     return this.http
       .post<ResponseData>('shipment-milestone/safe-insert', payload)
+      .pipe(
+        catchError((error) => {
+          const formattedError = handleError(error);
+          return formattedError;
+        })
+      );
+  }
+
+  insertMilestoneByMasterJob(payload: InsertMilestoneByMasterJobPayload): Observable<ResponseData> {
+    return this.http
+      .post<ResponseData>('shipment-milestone/insert-by-master-job', payload)
       .pipe(
         catchError((error) => {
           const formattedError = handleError(error);

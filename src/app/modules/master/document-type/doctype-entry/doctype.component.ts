@@ -327,11 +327,34 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
   });
 }
 
+	validateFlagCombination(): string | null {
+		const { ResetValue, DocumentFlag, MonthFlag, YearFlag } = this.documentForm.getRawValue();
+
+		if (ResetValue === 'Year' || ResetValue === 'Financial Year') {
+			if (!YearFlag) return 'Year Should be selected';
+			if (!DocumentFlag) return 'Book flag require';
+		}
+
+		if (ResetValue === 'Month') {
+			if (!MonthFlag) return 'Month flag should be selected';
+			if (!YearFlag) return 'Year flag Should be selected';
+			if (!DocumentFlag) return 'Book flag require';
+		}
+
+		return null;
+	}
+
 	onSubmit() {
 		if (this.documentForm.invalid) {
 			this.documentForm.markAllAsTouched();
 			this.documentForm.updateValueAndValidity();
 			this.appSettingService.showWarning('Please fill all the required fields');
+			return;
+		}
+
+		const flagError = this.validateFlagCombination();
+		if (flagError) {
+			this.appSettingService.showWarning(flagError);
 			return;
 		}
 
