@@ -1,0 +1,37 @@
+.advanced-filter-row {
+  background: #f5f8fb;
+  border-top-color: #d7e2ec !important;
+}
+
+.advanced-filter-row .custom-form-group {
+  margin-bottom: 0;
+}
+
+.advanced-filter-row .input-label {
+  color: #05608d;
+}
+
+:host ::ng-deep .advanced-filter-row .ng-select .ng-select-container {
+  background: transparent;
+  border-bottom: 1px solid #b9c8d8;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+:host ::ng-deep .advanced-filter-row .ng-select.ng-select-focused .ng-select-container,
+:host ::ng-deep .advanced-filter-row .ng-select.ng-select-opened .ng-select-container {
+  border-bottom-color: #0b7db8;
+  box-shadow: inset 0 -1px 0 #0b7db8;
+}
+
+:host ::ng-deep .advanced-filter-row .custom-form-group-select.filled .ng-select .ng-select-container {
+  border-bottom-color: #0b7db8;
+}
+
+:host ::ng-deep .advanced-filter-row .ng-select .ng-arrow-wrapper .ng-arrow {
+  border-top-color: #7f97ad;
+}
+
+:host ::ng-deep .advanced-filter-row .ng-select.ng-select-focused .ng-arrow-wrapper .ng-arrow,
+:host ::ng-deep .advanced-filter-row .ng-select.ng-select-opened .ng-arrow-wrapper .ng-arrow {
+  border-top-color: #0b7db8;
+}

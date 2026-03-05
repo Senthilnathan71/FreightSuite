@@ -84,8 +84,9 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
     defaultValue: 'HBLDate'
   };
   partyFilterConfig: PartyFilterConfig = {
-    enabled: false,
-    partyTypes: []
+    enabled: true,
+    partyTypes: [{ label: 'Customer', value: 'CustomerMasterSid' }],
+    defaultPartyType: 'CustomerMasterSid'
   };
   departmentFilterConfig: DropdownFilterConfig = {
     enabled: true,
@@ -147,9 +148,9 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
   protected config: ListComponentConfig = {
     storageKey: 'house-job-list-state',
     defaultPageSize: 10,
-    defaultSortColumn: 'HBLNo',
+    defaultSortColumn: 'HBLDate',
     defaultSortDirection: 'asc',
-    pageSizeOptions: [10, 20, 50, 100],
+    pageSizeOptions: [10, 20, 50, 100,500],
     maxPagesToShow: 3
   };
 
@@ -443,7 +444,10 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
       Status: item.status === 'A' ? 'Active' : 'Suspended'
     }));
 
-    this.totalLengthOfCollection = response.data.totalCount || 0;
+    this.totalLengthOfCollection =
+              rawItems.length !== filteredItems.length
+                ? filteredItems.length
+                : (response.data.totalCount || 0);
     this.updateHeaderActionState();
   }
 
@@ -488,6 +492,7 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
         { key: 'HBLDate', label: 'HBL Date', sortable: true, filterable: true, visible: true },
         { key: 'BookingNo', label: 'Booking No', sortable: true, filterable: true, visible: true, template: 'link',cellClass: 'booking-no-column' },
         { key: 'departmentName', label: 'Department', sortable: true, filterable: true, visible: true },
+        { key: 'CustomerName', label: 'Customer', sortable: true, filterable: true, visible: true },
         { key: 'POL', label: 'POL', sortable: true, filterable: true, visible: true },
         { key: 'POD', label: 'POD', sortable: true, filterable: true, visible: true },
         { key: 'ETD', label: 'ETD', sortable: true, filterable: true, visible: true },

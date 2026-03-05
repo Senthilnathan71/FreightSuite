@@ -3,10 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { Observable } from 'rxjs';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
-import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import {
   DateRangeConfig,
   DateRangePreset,
@@ -15,6 +15,7 @@ import {
   PartyFilterConfig,
   AdvancedFilterValues
 } from '../../interfaces/advanced-filter.interface';
+import { FeatherModule } from 'angular-feather';
 
 export interface HeaderAction {
   label: string;
@@ -34,17 +35,18 @@ export interface HeaderAction {
     CommonModule,
     FormsModule,
     FavoriteStarComponent,
+    NgSelectModule,
     NgbDropdownModule,
     NgbTooltipModule,
     NgbDatepickerModule,
-    SearchableDropdown
+    FeatherModule,
   ],
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter }
   ],
   templateUrl:'./header-list.component.html',
-  styleUrls: []
+  styleUrls: ['./header-list.component.scss']
 })
 export class PageHeaderComponent implements OnInit, OnChanges {
   @Input() title: string = '';
@@ -76,10 +78,9 @@ export class PageHeaderComponent implements OnInit, OnChanges {
 
   // Advanced filter state
   selectedPreset: DateRangePreset = 'last30';
-  customFromDate: NgbDateStruct | null = null;
-  customToDate: NgbDateStruct | null = null;
+  customFromDate: NgbDateStruct | Date | null = null;
+  customToDate: NgbDateStruct | Date | null = null;
   selectedDateType = '';
-  selectedPartyType = '';
   selectedParty: any = null;
   selectedDepartment: any = null;
   selectedPOL: any = null;
@@ -134,9 +135,6 @@ export class PageHeaderComponent implements OnInit, OnChanges {
     if (this.dateTypeConfig?.enabled && this.dateTypeConfig.options?.length) {
       this.selectedDateType = this.dateTypeConfig.defaultValue || this.dateTypeConfig.options[0].value;
     }
-    if (this.partyFilterConfig?.enabled && this.partyFilterConfig.partyTypes?.length) {
-      this.selectedPartyType = this.partyFilterConfig.defaultPartyType || this.partyFilterConfig.partyTypes[0].value;
-    }
     this.selectedDepartment = null;
     this.selectedPOL = null;
     this.selectedPOD = null;
@@ -188,13 +186,6 @@ export class PageHeaderComponent implements OnInit, OnChanges {
     this.triggerAutoSearchIfEnabled();
   }
 
-  onPartyTypeChange(): void {
-    this.selectedParty = null;
-    this.partySearchResults = [];
-    this.loadPartyResults('');
-    this.triggerAutoSearchIfEnabled();
-  }
-
   onDateTypeChange(): void {
     this.triggerAutoSearchIfEnabled();
   }
@@ -216,10 +207,6 @@ export class PageHeaderComponent implements OnInit, OnChanges {
     this.triggerAutoSearchIfEnabled();
   }
 
-  onPartySearch(term: string): void {
-    this.loadPartyResults(term);
-  }
-
   onDepartmentFilterChange(): void {
     this.selectedPOL = null;
     this.selectedPOD = null;
@@ -239,8 +226,12 @@ export class PageHeaderComponent implements OnInit, OnChanges {
 
   private loadPartyResults(searchTerm: string): void {
     if (!this.partySearchFn) return;
+    const activePartyType =
+      this.partyFilterConfig?.defaultPartyType ||
+      this.partyFilterConfig?.partyTypes?.[0]?.value ||
+      'CustomerMasterSid';
     this.partyLoading = true;
-    this.partySearchFn(searchTerm, this.selectedPartyType).subscribe({
+    this.partySearchFn(searchTerm, activePartyType).subscribe({
       next: (results) => {
         this.partySearchResults = results || [];
         this.partyLoading = false;
@@ -270,7 +261,10 @@ export class PageHeaderComponent implements OnInit, OnChanges {
 
     if (this.partyFilterConfig?.enabled && this.selectedParty) {
       filters.party = {
-        partyType: this.selectedPartyType,
+        partyType:
+          this.partyFilterConfig?.defaultPartyType ||
+          this.partyFilterConfig?.partyTypes?.[0]?.value ||
+          'CustomerMasterSid',
         partyId: this.selectedParty.CustomerMasterSid || this.selectedParty.id || null,
         partyName: this.selectedParty.CustomerName || this.selectedParty.name || null
       };
@@ -321,12 +315,8 @@ export class PageHeaderComponent implements OnInit, OnChanges {
         fromDate = new Date(today.getFullYear(), today.getMonth() - 3, 1);
         break;
       case 'custom':
-        const customFrom = this.customFromDate
-          ? new Date(this.customFromDate.year, this.customFromDate.month - 1, this.customFromDate.day, 0, 0, 0, 0)
-          : null;
-        const customTo = this.customToDate
-          ? new Date(this.customToDate.year, this.customToDate.month - 1, this.customToDate.day, 23, 59, 59, 999)
-          : null;
+        const customFrom = this.toBoundaryDate(this.customFromDate, false);
+        const customTo = this.toBoundaryDate(this.customToDate, true);
         return {
           fromDate: customFrom ? customFrom.toISOString() : null,
           toDate: customTo ? customTo.toISOString() : null
@@ -339,5 +329,31 @@ export class PageHeaderComponent implements OnInit, OnChanges {
       fromDate: fromDate ? fromDate.toISOString() : null,
       toDate: toDate.toISOString()
     };
+  }
+
+  private toBoundaryDate(value: NgbDateStruct | Date | null, endOfDay: boolean): Date | null {
+    if (!value) {
+      return null;
+    }
+
+    let date: Date;
+    if (value instanceof Date) {
+      // Preserve selected calendar day from UTC-backed datepicker model.
+      date = new Date(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate());
+    } else {
+      date = new Date(value.year, value.month - 1, value.day);
+    }
+
+    if (Number.isNaN(date.getTime())) {
+      return null;
+    }
+
+    if (endOfDay) {
+      date.setHours(23, 59, 59, 999);
+    } else {
+      date.setHours(0, 0, 0, 0);
+    }
+
+    return date;
   }
 }

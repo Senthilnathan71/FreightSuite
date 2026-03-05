@@ -2,10 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-import { Observable } from 'rxjs';
+import { catchError, forkJoin, map, Observable, of } from 'rxjs';
 
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
@@ -32,6 +32,14 @@ import {
   TableFilter
 } from 'src/app/shared/interfaces/table.interface';
 
+import {
+  AdvancedFilterValues,
+  DateRangeConfig,
+  DateTypeConfig,
+  PartyFilterConfig,
+  DropdownFilterConfig
+} from 'src/app/shared/interfaces/advanced-filter.interface';
+
 import { OperationService } from '../../operation.service';
 
 @Component({
@@ -45,14 +53,13 @@ import { OperationService } from '../../operation.service';
     CustomDatePipe,
     NgbPaginationModule,
     NgxSpinnerModule,
-    ReusableTableComponent, 
+    ReusableTableComponent,
     PageHeaderComponent,
     ToolsDropdownComponent
   ],
   providers: [CustomDatePipe],
- templateUrl: './agent-master-air-waybill-list.component.html',
+  templateUrl: './agent-master-air-waybill-list.component.html',
   styleUrl: './agent-master-air-waybill-list.component.scss'
-
 })
 export class AgentMasterAirWaybillListComponent extends BaseListComponent implements OnInit {
   @ViewChild('houseTable') houseTable!: ReusableTableComponent;
@@ -60,22 +67,69 @@ export class AgentMasterAirWaybillListComponent extends BaseListComponent implem
   userData: any;
   currentCompany: any;
   currentBranch: any;
-
+ 
   headerActions: HeaderAction[] = [];
   tableConfig!: TableConfig;
 
   tableLoading = false;
 
+  dateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+  dateTypeConfig: DateTypeConfig = {
+    enabled: true,
+    options: [{ label: 'MBLDate', value: 'MBLDate' }],
+    defaultValue: 'MBLDate'
+  };
+  partyFilterConfig: PartyFilterConfig = {
+    enabled: true,
+    partyTypes: [{ label: 'Customer', value: 'CustomerMasterSid' }],
+    defaultPartyType: 'CustomerMasterSid'
+  };
+  departmentFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'Dept',
+    options: [],
+    bindLabel: 'departmentName',
+    bindValue: 'DepartmentMasterSid'
+  };
+  polFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'POL',
+    options: [],
+    bindLabel: 'displayName',
+    bindValue: 'PortCode'
+  };
+  podFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'POD',
+    options: [],
+    bindLabel: 'displayName',
+    bindValue: 'PortCode'
+  };
+
+  private allPorts: any[] = [];
+  currentFilters: AdvancedFilterValues = {};
+
+  partySearchFn = (_searchTerm: string, partyType: string): Observable<any[]> => {
+    const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    if (!companyMasterSid || partyType !== 'CustomerMasterSid') {
+      return of([]);
+    }
+
+    return this.operationService.getAllCustomersWithBranch(companyMasterSid).pipe(
+      map((data: any) => Array.isArray(data) ? data : []),
+      catchError(() => of([]))
+    );
+  };
+
   protected config: ListComponentConfig = {
-    storageKey: 'house-job-list-state',
+    storageKey: 'agent-master-air-waybill-list-state',
     defaultPageSize: 10,
-    defaultSortColumn: 'HBLNo',
-    defaultSortDirection: 'asc',
+    defaultSortColumn: 'MBLDate',
+    defaultSortDirection: 'desc',
     pageSizeOptions: [10, 20, 50, 100],
     maxPagesToShow: 3
   };
 
-  // Alias for template compatibility
   get allHouseJob() {
     return this.allItems;
   }
@@ -84,7 +138,7 @@ export class AgentMasterAirWaybillListComponent extends BaseListComponent implem
     private operationService: OperationService,
     private router: Router,
     private appSettingService: AppSettingsService,
-    private excelReportService: ExcelExportService,
+    private excelExportService: ExcelExportService,
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
     private datePipe: CustomDatePipe,
@@ -111,12 +165,18 @@ export class AgentMasterAirWaybillListComponent extends BaseListComponent implem
     this.initializeHeaderActions();
     this.initializeTableConfig();
 
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'MBLDate'
+    };
+
+    this.loadHeaderLookups();
     super.ngOnInit();
   }
-
-  // =========================
-  // BaseListComponent methods
-  // =========================
 
   protected searchItems(): Observable<any> {
     this.tableLoading = true;
@@ -124,57 +184,107 @@ export class AgentMasterAirWaybillListComponent extends BaseListComponent implem
     return this.operationService.searchAgentMasterAirWaybill(this.getSearchParams());
   }
 
-  protected getSearchParams(): SearchParams & { departmentType: string } {
-    return {
+  protected getSearchParams(): SearchParams & Record<string, any> {
+    const params: any = {
       search: this.filterValue.trim(),
       page: Number(this.page),
       pageSize: Number(this.pageSize),
       activeCompanyId: this.currentCompany?.CompanyMasterSid,
       activeBranchId: this.currentBranch?.BranchMasterSid,
-      // sortColumn: this.sortColumn,
-      // sortDirection: this.sortDirection,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection,
       departmentType: 'Air'
     };
+
+    if (this.currentFilters.dateRange?.fromDate) {
+      params.dateFrom = this.currentFilters.dateRange.fromDate;
+      params.DateFrom = this.currentFilters.dateRange.fromDate;
+    }
+    if (this.currentFilters.dateRange?.toDate) {
+      params.dateTo = this.currentFilters.dateRange.toDate;
+      params.DateTo = this.currentFilters.dateRange.toDate;
+    }
+    if (this.currentFilters.dateType) {
+      params.dateField = this.currentFilters.dateType;
+      params.DateField = this.currentFilters.dateType;
+      if (params.dateFrom) {
+        params[`${this.currentFilters.dateType}From`] = params.dateFrom;
+      }
+      if (params.dateTo) {
+        params[`${this.currentFilters.dateType}To`] = params.dateTo;
+      }
+    }
+    if (this.currentFilters.party) {
+      params.CustomerMasterSid = this.currentFilters.party.partyId;
+      params.customerMasterSid = this.currentFilters.party.partyId;
+      params.customerName = this.currentFilters.party.partyName;
+    }
+    if (this.currentFilters.departmentSid) {
+      params.DepartmentMasterSid = Number(this.currentFilters.departmentSid);
+      params.departmentMasterSid = Number(this.currentFilters.departmentSid);
+    }
+    if (this.currentFilters.pol) {
+      const polCode = String(this.currentFilters.pol);
+      params.POL = polCode;
+      params.pol = polCode;
+      const polSid = this.getPortSidByCode(polCode);
+      if (polSid) {
+        params.POLSid = polSid;
+        params.polSid = polSid;
+      }
+    }
+    if (this.currentFilters.pod) {
+      const podCode = String(this.currentFilters.pod);
+      params.POD = podCode;
+      params.pod = podCode;
+      const podSid = this.getPortSidByCode(podCode);
+      if (podSid) {
+        params.PODSid = podSid;
+        params.podSid = podSid;
+      }
+    }
+
+    return params;
   }
 
- protected processSearchResults(response: any): void {
-  this.tableLoading = false;
-  this.spinner.hide();
+  protected processSearchResults(response: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
 
-  if (!response?.status) {
-    this.allItems = [];
-    this.totalLengthOfCollection = 0;
-    return;
+    if (!response?.status) {
+      this.allItems = [];
+      this.totalLengthOfCollection = 0;
+      return;
+    }
+
+    const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
+    const filteredItems = this.applyAdvancedFilters(rawItems);
+
+    this.allItems = filteredItems.map((item: any) => ({
+      ...item,
+      MasterJobSid: item.MasterJobSid,
+      MasterJobNumber: item.MasterJobNumber ?? item.masterJob?.MasterJobNumber ?? '',
+      departmentName: item?.departmentMaster?.departmentName ?? item?.departmentName ?? '',
+      MBLDate: item?.MBLDate ? this.datePipe.transform(item.MBLDate) : '',
+      ETD: item?.ETD ? this.datePipe.transform(item.ETD) : '',
+      ETA: item?.ETA ? this.datePipe.transform(item.ETA) : '',
+      HBLDate: item?.HBLDate ? this.datePipe.transform(item.HBLDate) : '',
+      Status: item.status === 'A' ? 'Active' : 'Suspended'
+    }));
+
+    this.totalLengthOfCollection = this.hasAdvancedFilterValues()
+      ? filteredItems.length
+      : (response.data.totalCount || 0);
+
+    this.updateHeaderActionState();
   }
-
-  this.allItems = response.data.items.map((item: any) => ({
-    ...item,
-    MasterJobSid: item.MasterJobSid,
-    MasterJobNumber: item.MasterJobNumber ?? item.masterJob?.MasterJobNumber ?? '', // Fix here: use MBLNo instead of MasterJobNumber
-    departmentName: item?.departmentMaster?.departmentName ?? '',
-    MBLDate: item?.MBLDate ? this.datePipe.transform(item.MBLDate) : '', // Add MBLDate if needed
-    ETD: item?.ETD ? this.datePipe.transform(item.ETD) : '',
-    ETA: item?.ETA ? this.datePipe.transform(item.ETA) : '',
-    HBLDate: item?.HBLDate ? this.datePipe.transform(item.HBLDate) : '',
-    Status: item.status === 'A' ? 'Active' : 'Suspended'
-  }));
-
-  this.totalLengthOfCollection = response.data.totalCount || 0;
-  this.updateHeaderActionState();
-}
-
-  // =========================
-  // Header actions
-  // =========================
 
   initializeHeaderActions(): void {
     this.headerActions = [
       {
         label: 'Create',
         icon: 'fas fa-plus',
-        action: 'create',
-        //  disabled: !this.mps.can('insert')
-
+        action: 'create'
       },
       {
         label: 'Report',
@@ -198,16 +308,13 @@ export class AgentMasterAirWaybillListComponent extends BaseListComponent implem
     );
   }
 
-  // =========================
-  // Table config
-  // =========================
-
   private initializeTableConfig(): void {
     this.tableConfig = {
       columns: [
         { key: 'MasterJobNumber', label: 'Agent Master Job No', sortable: true, filterable: true, visible: true },
         { key: 'MBLNo', label: 'MAWB No', sortable: true, filterable: true, visible: true },
         { key: 'MBLDate', label: 'MAWB Date', sortable: true, filterable: true, visible: true },
+        { key: 'CustomerName', label: 'Customer', sortable: true, filterable: true, visible: true },
         { key: 'departmentName', label: 'Department', sortable: true, filterable: true, visible: true },
         { key: 'POL', label: 'POL', sortable: true, filterable: true, visible: true },
         { key: 'POD', label: 'POD', sortable: true, filterable: true, visible: true },
@@ -220,8 +327,7 @@ export class AgentMasterAirWaybillListComponent extends BaseListComponent implem
           icon: 'fas fa-eye',
           label: 'View',
           action: 'view',
-          tooltip: 'View',
-          // state: !this.mps.can('view')
+          tooltip: 'View'
         }
       ],
       selectable: false,
@@ -233,19 +339,13 @@ export class AgentMasterAirWaybillListComponent extends BaseListComponent implem
     };
   }
 
-  // =========================
-  // Table events
-  // =========================
-
   onTableActionClick(event: TableEventData): void {
     if (event.action === 'view') {
       this.router.navigate(['operation/agent-master-air-waybill/entry', event.row.HouseJobSid]);
     }
   }
 
-  onTableRowClick(row: any): void {
-    // same as master-job-list (no action on row click)
-  }
+  onTableRowClick(row: any): void {}
 
   onTableSortChange(sort: TableSortConfig): void {
     this.sortColumn = sort.column;
@@ -257,10 +357,6 @@ export class AgentMasterAirWaybillListComponent extends BaseListComponent implem
     console.log('Filters changed', filters);
   }
 
-  // =========================
-  // Search handlers (REQUIRED)
-  // =========================
-
   onSearchTriggered(searchValue: string): void {
     this.filterValue = searchValue;
     this.searchHouseJob();
@@ -268,10 +364,28 @@ export class AgentMasterAirWaybillListComponent extends BaseListComponent implem
 
   onSearchCleared(): void {
     this.filterValue = '';
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'MBLDate'
+    };
     this.clearFilterValue();
   }
 
-  // Legacy aliases (same as master list)
+  onAdvancedSearch(event: { searchValue: string; filters: AdvancedFilterValues }): void {
+    this.filterValue = event.searchValue;
+    this.currentFilters = event.filters;
+    this.page = 1;
+    this.search();
+  }
+
+  onDepartmentFilterChanged(departmentSid: number | null): void {
+    this.setFilteredPortOptions(departmentSid);
+  }
+
   searchHouseJob(): void {
     this.search();
   }
@@ -279,10 +393,6 @@ export class AgentMasterAirWaybillListComponent extends BaseListComponent implem
   clearFilterValue(): void {
     this.clearFilter();
   }
-
-  // =========================
-  // Header action handlers
-  // =========================
 
   onActionTriggered(action: string): void {
     switch (action) {
@@ -305,12 +415,177 @@ export class AgentMasterAirWaybillListComponent extends BaseListComponent implem
       label: col.label
     }));
 
-    this.excelReportService.exportAsExcel({
+    this.excelExportService.exportAsExcel({
       data: this.allHouseJob,
       headers,
-      fileName: 'House-Job-Report',
+      fileName: 'Agent-Master-Air-Waybill-Report',
       title: this.currentCompany?.companyName ?? 'Company'
     });
   }
+
+  private loadHeaderLookups(): void {
+    const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    if (!companyMasterSid) {
+      return;
+    }
+
+    forkJoin({
+      departments: this.operationService.getAllDepartments(companyMasterSid).pipe(catchError(() => of({ data: [] }))),
+      ports: this.operationService.getAllPorts().pipe(catchError(() => of({ data: [] })))
+    }).subscribe(({ departments, ports }: any) => {
+      const allDepartments = Array.isArray(departments?.data) ? departments.data : [];
+      this.departmentFilterConfig = {
+        ...this.departmentFilterConfig,
+        options: allDepartments.filter((d: any) => (d?.departmentType || '').toUpperCase() === 'AIR')
+      };
+
+      const allPorts = Array.isArray(ports?.data) ? ports.data : [];
+      this.allPorts = allPorts.map((port: any) => ({
+        ...port,
+        displayName: `${port.PortName} (${port.PortCode})`
+      }));
+
+      this.setFilteredPortOptions(null);
+    });
+  }
+
+  private setFilteredPortOptions(departmentSid: number | null): void {
+    const normalizedDepartmentSid = departmentSid !== null ? Number(departmentSid) : null;
+    const selectedDepartment = this.departmentFilterConfig.options.find(
+      (dept: any) => Number(dept?.DepartmentMasterSid) === normalizedDepartmentSid
+    );
+
+    const departmentType = (selectedDepartment?.departmentType || '').toUpperCase();
+    const filteredPorts = !departmentType
+      ? [...this.allPorts]
+      : this.allPorts.filter((port: any) => {
+          const portType = (port?.PortType || '').toUpperCase();
+          return departmentType === 'AIR' ? portType === 'AIR' : portType === 'SEA';
+        });
+
+    this.polFilterConfig = { ...this.polFilterConfig, options: filteredPorts };
+    this.podFilterConfig = { ...this.podFilterConfig, options: filteredPorts };
+  }
+
+  private getPortSidByCode(portCode: string | null | undefined): number | null {
+    if (!portCode) {
+      return null;
+    }
+
+    const port = this.allPorts.find((p: any) => String(p?.PortCode) === String(portCode));
+    return port?.PortMasterSid ? Number(port.PortMasterSid) : null;
+  }
+
+  private getPortCode(value: any): string {
+    if (!value) {
+      return '';
+    }
+    if (typeof value === 'string') {
+      return value;
+    }
+    return String(value?.PortCode || value?.portCode || '').trim();
+  }
+
+  private getLast30FromDate(): string {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - 30);
+    return date.toISOString();
+  }
+
+  private hasAdvancedFilterValues(): boolean {
+    return !!(
+      this.currentFilters.party?.partyId ||
+      this.currentFilters.departmentSid ||
+      this.currentFilters.pol ||
+      this.currentFilters.pod ||
+      this.currentFilters.dateRange?.fromDate ||
+      this.currentFilters.dateRange?.toDate
+    );
+  }
+
+  private applyAdvancedFilters(items: any[]): any[] {
+    if (!this.hasAdvancedFilterValues()) {
+      return items;
+    }
+
+    const selectedDateField = this.currentFilters.dateType || 'MBLDate';
+    const from = this.currentFilters.dateRange?.fromDate ? new Date(this.currentFilters.dateRange.fromDate) : null;
+    const to = this.currentFilters.dateRange?.toDate ? new Date(this.currentFilters.dateRange.toDate) : null;
+    const selectedPol = this.currentFilters.pol ? String(this.currentFilters.pol).trim().toUpperCase() : null;
+    const selectedPod = this.currentFilters.pod ? String(this.currentFilters.pod).trim().toUpperCase() : null;
+    const selectedDeptSid = this.currentFilters.departmentSid ? Number(this.currentFilters.departmentSid) : null;
+    const selectedCustomerSid = this.currentFilters.party?.partyId ? Number(this.currentFilters.party.partyId) : null;
+    const selectedCustomerName = this.currentFilters.party?.partyName
+      ? String(this.currentFilters.party.partyName).trim().toUpperCase()
+      : null;
+
+    return items.filter((item: any) => {
+      if (selectedCustomerSid || selectedCustomerName) {
+        const itemCustomerSid = Number(
+          item?.CustomerMasterSid ??
+          item?.customerMaster?.CustomerMasterSid ??
+          item?.customer?.CustomerMasterSid ??
+          0
+        );
+        const itemCustomerName = String(
+          item?.CustomerName ??
+          item?.customerMaster?.CustomerName ??
+          item?.customer?.CustomerName ??
+          ''
+        ).trim().toUpperCase();
+
+        const sidMatches = selectedCustomerSid ? itemCustomerSid === selectedCustomerSid : false;
+        const nameMatches = selectedCustomerName ? itemCustomerName === selectedCustomerName : false;
+        if (!(sidMatches || nameMatches)) {
+          return false;
+        }
+      }
+
+      if (selectedDeptSid) {
+        const itemDeptSid = Number(
+          item?.DepartmentMasterSid ??
+          item?.departmentMasterSid ??
+          item?.departmentMaster?.DepartmentMasterSid ??
+          item?.departmentMaster?.departmentMasterSid ??
+          0
+        );
+        if (itemDeptSid !== selectedDeptSid) {
+          return false;
+        }
+      }
+
+      const itemPol = this.getPortCode(item?.POL).toUpperCase();
+      const itemPod = this.getPortCode(item?.POD).toUpperCase();
+
+      if (selectedPol && itemPol !== selectedPol) {
+        return false;
+      }
+
+      if (selectedPod && itemPod !== selectedPod) {
+        return false;
+      }
+
+      if (from || to) {
+        const rawDate = item?.[selectedDateField];
+        if (!rawDate) {
+          return false;
+        }
+
+        const itemDate = new Date(rawDate);
+        if (Number.isNaN(itemDate.getTime())) {
+          return false;
+        }
+
+        if (from && itemDate < from) {
+          return false;
+        }
+        if (to && itemDate > to) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }
 }
- 

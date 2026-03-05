@@ -4,6 +4,14 @@
 <div class="row compact-form">
     <app-page-header [title]="'Master Air Waybill'" [showFavorite]="true" [showSearch]="true" [searchPlaceholder]="'Search'"
         [searchButtonText]="'Search'" [(searchValue)]="filterValue" [actions]="headerActions"
+        [autoSearchOnFilterChange]="true"
+        [dateRangeConfig]="dateRangeConfig"
+        [dateTypeConfig]="dateTypeConfig"
+        [departmentFilterConfig]="departmentFilterConfig"
+        [polFilterConfig]="polFilterConfig"
+        [podFilterConfig]="podFilterConfig"
+        (departmentFilterChanged)="onDepartmentFilterChanged($event)"
+        (advancedSearchTriggered)="onAdvancedSearch($event)"
         (searchTriggered)="onSearchTriggered($event)" (searchCleared)="onSearchCleared()"
         (actionTriggered)="onActionTriggered($event)">
     </app-page-header>

@@ -17,11 +17,17 @@ import { ReusableTableComponent } from 'src/app/shared/components/table/table.co
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
-import { Observable } from 'rxjs';
+import { catchError, forkJoin, Observable, of } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { MasterJobUploadModalComponent } from '../components/master-job-upload-modal/master-job-upload-modal.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import {
+  AdvancedFilterValues,
+  DateRangeConfig,
+  DateTypeConfig,
+  DropdownFilterConfig
+} from 'src/app/shared/interfaces/advanced-filter.interface';
 @Component({
   selector: 'app-master-job-list',
   standalone: true,
@@ -63,6 +69,38 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
   
 
   tableLoading = false;
+  dateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+  dateTypeConfig: DateTypeConfig = {
+    enabled: true,
+    options: [
+      { label: 'Job Date', value: 'MasterJobDate' },
+      { label: 'MBLDate', value: 'MBLDate' }
+    ],
+    defaultValue: 'MasterJobDate'
+  };
+  departmentFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'Dept',
+    options: [],
+    bindLabel: 'departmentName',
+    bindValue: 'DepartmentMasterSid'
+  };
+  polFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'POL',
+    options: [],
+    bindLabel: 'displayName',
+    bindValue: 'PortCode'
+  };
+  podFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'POD',
+    options: [],
+    bindLabel: 'displayName',
+    bindValue: 'PortCode'
+  };
+  private allPorts: any[] = [];
+  currentFilters: AdvancedFilterValues = {};
 
   protected config: ListComponentConfig = {
     storageKey: 'master-job-list-state',
@@ -106,6 +144,15 @@ export class MasterJobListComponent extends BaseListComponent implements OnInit 
 this.initializeTableConfig();
     this.initializeHeaderActions();
     })
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'MasterJobDate'
+    };
+    this.loadHeaderLookups();
     // this.initializeModalDropdownItems();
     // Initialize base component
     super.ngOnInit();
@@ -120,8 +167,8 @@ this.initializeTableConfig();
     return this.operationService.searchMasterJobs(this.getSearchParams());
   }
 
-  protected getSearchParams(): SearchParams {
-    return {
+  protected getSearchParams(): SearchParams & Record<string, any> {
+    const params: any = {
       search: this.filterValue.trim(),
       page: Number(this.page),
       pageSize: Number(this.pageSize),
@@ -131,19 +178,70 @@ this.initializeTableConfig();
       sortColumn: this.sortColumn,
       sortDirection: this.sortDirection
     };
+
+    if (this.currentFilters.dateRange?.fromDate) {
+      params.dateFrom = this.currentFilters.dateRange.fromDate;
+      params.DateFrom = this.currentFilters.dateRange.fromDate;
+    }
+    if (this.currentFilters.dateRange?.toDate) {
+      params.dateTo = this.currentFilters.dateRange.toDate;
+      params.DateTo = this.currentFilters.dateRange.toDate;
+    }
+    if (this.currentFilters.dateType) {
+      params.dateField = this.currentFilters.dateType;
+      params.DateField = this.currentFilters.dateType;
+      if (params.dateFrom) {
+        params[`${this.currentFilters.dateType}From`] = params.dateFrom;
+      }
+      if (params.dateTo) {
+        params[`${this.currentFilters.dateType}To`] = params.dateTo;
+      }
+    }
+    if (this.currentFilters.departmentSid) {
+      params.DepartmentMasterSid = Number(this.currentFilters.departmentSid);
+      params.departmentMasterSid = Number(this.currentFilters.departmentSid);
+    }
+    if (this.currentFilters.pol) {
+      const polCode = String(this.currentFilters.pol);
+      params.POL = polCode;
+      params.pol = polCode;
+      const polSid = this.getPortSidByCode(polCode);
+      if (polSid) {
+        params.POLSid = polSid;
+        params.polSid = polSid;
+      }
+    }
+    if (this.currentFilters.pod) {
+      const podCode = String(this.currentFilters.pod);
+      params.POD = podCode;
+      params.pod = podCode;
+      const podSid = this.getPortSidByCode(podCode);
+      if (podSid) {
+        params.PODSid = podSid;
+        params.podSid = podSid;
+      }
+    }
+
+    return params;
   }
 
   protected processSearchResults(response: any): void {
     this.tableLoading = false;
     this.spinner.hide();
     if (response.status) {
-      this.allItems = response.data.items.map(item => ({
+      const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
+      const filteredItems = this.applyAdvancedFilters(rawItems);
+
+      this.allItems = filteredItems.map(item => ({
         ...item,
         Status: item.Status === 'A' ? 'Active' : 'Suspended',
         MasterJobDate: this.datePipe.transform(item?.MasterJobDate),
         MBLDate: this.datePipe.transform(item?.MBLDate),
       }));
-      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.totalLengthOfCollection =
+              rawItems.length !== filteredItems.length
+                ? filteredItems.length
+                : (response.data.totalCount || 0);
       // this.applySorting();
       this.updateHeaderActionState();
     } else {
@@ -159,6 +257,14 @@ this.initializeTableConfig();
   }
   onSearchCleared(): void {
     this.filterValue = '';
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'MasterJobDate'
+    };
     this.clearFilterValue();
   }
 
@@ -348,7 +454,7 @@ this.initializeTableConfig();
       },
       {
         key: 'MasterJobDate',
-        label: 'Date',
+        label: 'Job Date',
         sortable: true,
         filterable: true,
         visible: true,
@@ -488,6 +594,177 @@ this.initializeTableConfig();
     // For now, we'll handle this with the existing search functionality
     // In a more advanced implementation, you could apply individual column filters
     console.log('Filters changed:', filters);
+  }
+
+  onAdvancedSearch(event: { searchValue: string; filters: AdvancedFilterValues }): void {
+    this.filterValue = event.searchValue;
+    this.currentFilters = event.filters;
+    this.page = 1;
+    this.search();
+  }
+
+  onDepartmentFilterChanged(departmentSid: number | null): void {
+    this.setFilteredPortOptions(departmentSid);
+  }
+
+  private loadHeaderLookups(): void {
+    const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    if (!companyMasterSid) {
+      return;
+    }
+
+    forkJoin({
+      departments: this.operationService
+        .getDepartmentByType(companyMasterSid, ['Sea', 'Road', 'Transport', 'Others'])
+        .pipe(catchError(() => of([]))),
+      ports: this.operationService.getAllPorts().pipe(catchError(() => of({ data: [] })))
+    }).subscribe(({ departments, ports }: any) => {
+      this.departmentFilterConfig = {
+        ...this.departmentFilterConfig,
+        options: Array.isArray(departments) ? departments : []
+      };
+
+      const allPorts = Array.isArray(ports?.data) ? ports.data : [];
+      this.allPorts = allPorts.map((port: any) => ({
+        ...port,
+        displayName: `${port.PortName} (${port.PortCode})`
+      }));
+
+      this.setFilteredPortOptions(null);
+    });
+  }
+
+  private setFilteredPortOptions(departmentSid: number | null): void {
+    const normalizedDepartmentSid = departmentSid !== null ? Number(departmentSid) : null;
+    const selectedDepartment = this.departmentFilterConfig.options.find(
+      (dept: any) => Number(dept?.DepartmentMasterSid) === normalizedDepartmentSid
+    );
+
+    const departmentType = (selectedDepartment?.departmentType || '').toUpperCase();
+    const filteredPorts = !departmentType
+      ? [...this.allPorts]
+      : this.allPorts.filter((port: any) => {
+          const portType = (port?.PortType || '').toUpperCase();
+          return departmentType === 'AIR' ? portType === 'AIR' : portType === 'SEA';
+        });
+
+    this.polFilterConfig = { ...this.polFilterConfig, options: filteredPorts };
+    this.podFilterConfig = { ...this.podFilterConfig, options: filteredPorts };
+  }
+
+  private getPortSidByCode(portCode: string | null | undefined): number | null {
+    if (!portCode) {
+      return null;
+    }
+
+    const port = this.allPorts.find((p: any) => String(p?.PortCode) === String(portCode));
+    return port?.PortMasterSid ? Number(port.PortMasterSid) : null;
+  }
+
+  private getPortCode(value: any): string {
+    if (!value) {
+      return '';
+    }
+    if (typeof value === 'string') {
+      return value;
+    }
+    return String(value?.PortCode || value?.portCode || '').trim();
+  }
+
+  private getLast30FromDate(): string {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - 30);
+    return date.toISOString();
+  }
+
+  private hasAdvancedFilterValues(): boolean {
+    return !!(
+      this.currentFilters.departmentSid ||
+      this.currentFilters.pol ||
+      this.currentFilters.pod ||
+      this.currentFilters.dateRange?.fromDate ||
+      this.currentFilters.dateRange?.toDate
+    );
+  }
+
+  private applyAdvancedFilters(items: any[]): any[] {
+    if (!this.hasAdvancedFilterValues()) {
+      return items;
+    }
+
+    const selectedDateField = this.currentFilters.dateType || 'MasterJobDate';
+    const from = this.currentFilters.dateRange?.fromDate ? new Date(this.currentFilters.dateRange.fromDate) : null;
+    const to = this.currentFilters.dateRange?.toDate ? new Date(this.currentFilters.dateRange.toDate) : null;
+    const selectedPol = this.currentFilters.pol ? String(this.currentFilters.pol).trim().toUpperCase() : null;
+    const selectedPod = this.currentFilters.pod ? String(this.currentFilters.pod).trim().toUpperCase() : null;
+    const selectedDeptSid = this.currentFilters.departmentSid ? Number(this.currentFilters.departmentSid) : null;
+    const selectedDeptName = selectedDeptSid
+      ? String(
+          this.departmentFilterConfig.options.find(
+            (dept: any) => Number(dept?.DepartmentMasterSid) === selectedDeptSid
+          )?.departmentName || ''
+        ).trim().toUpperCase()
+      : null;
+
+    return items.filter((item: any) => {
+      if (selectedDeptSid) {
+        const itemDeptSid = Number(
+          item?.DepartmentMasterSid ??
+          item?.departmentMasterSid ??
+          item?.departmentMaster?.DepartmentMasterSid ??
+          item?.departmentMaster?.departmentMasterSid ??
+          0
+        );
+
+        if (itemDeptSid > 0) {
+          if (itemDeptSid !== selectedDeptSid) {
+            return false;
+          }
+        } else if (selectedDeptName) {
+          const itemDeptName = String(
+            item?.departmentName ??
+            item?.departmentMaster?.departmentName ??
+            ''
+          ).trim().toUpperCase();
+          if (itemDeptName !== selectedDeptName) {
+            return false;
+          }
+        }
+      }
+
+      const itemPol = this.getPortCode(item?.POL).toUpperCase();
+      const itemPod = this.getPortCode(item?.POD).toUpperCase();
+
+      if (selectedPol && itemPol !== selectedPol) {
+        return false;
+      }
+
+      if (selectedPod && itemPod !== selectedPod) {
+        return false;
+      }
+
+      if (from || to) {
+        const rawDate = item?.[selectedDateField];
+        if (!rawDate) {
+          return false;
+        }
+
+        const itemDate = new Date(rawDate);
+        if (Number.isNaN(itemDate.getTime())) {
+          return false;
+        }
+
+        if (from && itemDate < from) {
+          return false;
+        }
+        if (to && itemDate > to) {
+          return false;
+        }
+      }
+
+      return true;
+    });
   }
 
   report(): void {

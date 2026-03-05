@@ -95,131 +95,148 @@
         </div>
 
         <!-- Row 2: Filter controls (always visible when config exists) -->
-        <div class="d-flex flex-wrap align-items-end gap-2 px-2 py-2 border-top"
+        <div class="d-flex flex-wrap align-items-end gap-2 px-2 py-2 border-top advanced-filter-row"
              *ngIf="hasAnyFilterConfig">
 
             <!-- Date Type -->
-            <div *ngIf="dateTypeConfig?.enabled">
-                <label class="form-label mb-0 small text-muted">Date Type</label>
-                <select class="form-select form-select-sm" [(ngModel)]="selectedDateType"
-                        (ngModelChange)="onDateTypeChange()">
-                    <option *ngFor="let opt of dateTypeConfig!.options" [value]="opt.value">{{ opt.label }}</option>
-                </select>
+            <div *ngIf="dateTypeConfig?.enabled" class="custom-form-group custom-form-group-select dofi-min-w-100"
+            [class.filled]="!!selectedDateType">
+
+                <ng-select
+                    [items]="dateTypeConfig!.options"
+                    bindLabel="label"
+                    bindValue="value"
+                    class="ng-select"
+                    [(ngModel)]="selectedDateType"
+                    (change)="onDateTypeChange()"
+                    placeholder=""
+                    appendTo="body">
+                </ng-select>
+                <label class="input-label">Date Type</label>
             </div>
 
             <!-- Date Range Preset -->
-            <div *ngIf="dateRangeConfig?.enabled">
-                <label class="form-label mb-0 small text-muted">Date Range</label>
-                <select class="form-select form-select-sm" [(ngModel)]="selectedPreset"
-                        (ngModelChange)="onDateRangePresetChange()">
-                    <option value="all">All Data</option>
-                    <option value="last30">Last 30 Days</option>
-                    <option value="thisMonth">This Month</option>
-                    <option value="lastMonth">Last Month</option>
-                    <option value="last2Months">Last 2 Months</option>
-                    <option value="last3Months">Last 3 Months</option>
-                    <option value="custom">Custom Range</option>
-                </select>
+            <div *ngIf="dateRangeConfig?.enabled" class="custom-form-group custom-form-group-select dofi-min-w-160"
+            [class.filled]="!!selectedPreset">
+                <ng-select
+                    class="ng-select"
+                    [(ngModel)]="selectedPreset"
+                    (change)="onDateRangePresetChange()"
+                    placeholder=""
+                    appendTo="body">
+                    <ng-option [value]="'all'">All Data</ng-option>
+                    <ng-option [value]="'last30'">Last 30 Days</ng-option>
+                    <ng-option [value]="'thisMonth'">This Month</ng-option>
+                    <ng-option [value]="'lastMonth'">Last Month</ng-option>
+                    <ng-option [value]="'last2Months'">Last 2 Months</ng-option>
+                    <ng-option [value]="'last3Months'">Last 3 Months</ng-option>
+                    <ng-option [value]="'custom'">Custom Range</ng-option>
+                </ng-select>
+                <label class="input-label">Date Range</label>
             </div>
 
             <!-- Custom From Date -->
-            <div *ngIf="dateRangeConfig?.enabled && isCustomRange">
-                <label class="form-label mb-0 small text-muted">From</label>
-                <div class="input-group input-group-sm">
+            <div class="custom-form-group custom-form-group-select-date mt-md-1 "
+            [class.filled]="!!customFromDate"
+            *ngIf="dateRangeConfig?.enabled && isCustomRange">
+                <label class="input-label">From</label>
+                <div class="input-group">
                     <input class="form-control" placeholder="dd-MMM-yyyy" name="customFromDate"
                            [(ngModel)]="customFromDate" ngbDatepicker #dpFrom="ngbDatepicker"
                            (click)="dpFrom.toggle()" (ngModelChange)="onCustomDateChanged()" readonly>
-                    <button class="btn btn-outline-secondary" type="button" (click)="dpFrom.toggle()">
-                        <i class="fas fa-calendar-alt"></i>
+                    <button class="btn bi bi-calendar3 px-0" type="button" (click)="dpFrom.toggle()">
+                        <i-feather name="calendar" class="feather-sm"></i-feather>
                     </button>
                 </div>
             </div>
 
             <!-- Custom To Date -->
-            <div *ngIf="dateRangeConfig?.enabled && isCustomRange">
-                <label class="form-label mb-0 small text-muted">To</label>
-                <div class="input-group input-group-sm">
+            <div class="custom-form-group custom-form-group-select-date mt-md-1 "
+            [class.filled]="!!customToDate"
+            *ngIf="dateRangeConfig?.enabled && isCustomRange">
+                <label class="input-label">To</label>
+                <div class="input-group">
                     <input class="form-control" placeholder="dd-MMM-yyyy" name="customToDate"
                            [(ngModel)]="customToDate" ngbDatepicker #dpTo="ngbDatepicker"
                            (click)="dpTo.toggle()" (ngModelChange)="onCustomDateChanged()" readonly>
-                    <button class="btn btn-outline-secondary" type="button" (click)="dpTo.toggle()">
-                        <i class="fas fa-calendar-alt"></i>
+                    <button class="btn bi bi-calendar3 px-0" type="button" (click)="dpTo.toggle()">
+                        <i-feather name="calendar" class="feather-sm"></i-feather>
                     </button>
                 </div>
             </div>
 
-            <!-- Party Type -->
-            <div *ngIf="partyFilterConfig?.enabled">
-                <label class="form-label mb-0 small text-muted">Party Type</label>
-                <select class="form-select form-select-sm" [(ngModel)]="selectedPartyType"
-                        (ngModelChange)="onPartyTypeChange()">
-                    <option *ngFor="let pt of partyFilterConfig!.partyTypes" [value]="pt.value">{{ pt.label }}</option>
-                </select>
-            </div>
-
-            <!-- Party -->
-            <div class="flex-grow-1" *ngIf="partyFilterConfig?.enabled" style="min-width: 200px;">
-                <label class="form-label mb-0 small text-muted">Party</label>
-                <dofi-searchable-dropdown
+            <!-- Customer -->
+            <div *ngIf="partyFilterConfig?.enabled" class="custom-form-group custom-form-group-select dofi-min-w-100"
+            [class.filled]="!!selectedParty">
+                <ng-select
                     [items]="partySearchResults"
-                    [displayFields]="['CustomerName']"
-                    [displayLabels]="['Name']"
-                    [labelFields]="['CustomerName']"
                     bindLabel="CustomerName"
-                    bindValue="CustomerMasterSid"
-                    [isLoading]="partyLoading"
-                    placeholder="Search party..."
+                    class="ng-select"
+                    [(ngModel)]="selectedParty"
+                    (change)="onPartySelected($event)"
+                    [loading]="partyLoading"
                     [clearable]="true"
-                    (itemSelected)="onPartySelected($event)">
-                </dofi-searchable-dropdown>
+                    placeholder=""
+                    appendTo="body">
+                </ng-select>
+                <label class="input-label">Customer</label>
             </div>
 
             <!-- Department -->
-            <div *ngIf="departmentFilterConfig?.enabled">
-                <label class="form-label mb-0 small text-muted">{{ departmentFilterConfig?.label }}</label>
-                <select class="form-select form-select-sm"
-                        [(ngModel)]="selectedDepartment"
-                        (ngModelChange)="onDepartmentFilterChange()">
-                    <option [ngValue]="null">All</option>
-                    <option *ngFor="let opt of departmentFilterConfig!.options"
-                            [ngValue]="opt[departmentFilterConfig!.bindValue]">
-                        {{ opt[departmentFilterConfig!.bindLabel] }}
-                    </option>
-                </select>
+            <div *ngIf="departmentFilterConfig?.enabled" class="custom-form-group custom-form-group-select dofi-min-w-100"
+            [class.filled]="!!selectedDepartment">
+                <ng-select
+                    [items]="departmentFilterConfig!.options"
+                    [bindLabel]="departmentFilterConfig!.bindLabel"
+                    [bindValue]="departmentFilterConfig!.bindValue"
+                    class="ng-select"
+                    [(ngModel)]="selectedDepartment"
+                    (change)="onDepartmentFilterChange()"
+                    [clearable]="true"
+                    placeholder=""
+                    appendTo="body">
+                </ng-select>
+                <label class="input-label">{{ departmentFilterConfig?.label }}</label>
             </div>
 
             <!-- POL -->
-            <div *ngIf="polFilterConfig?.enabled">
-                <label class="form-label mb-0 small text-muted">{{ polFilterConfig?.label }}</label>
-                <select class="form-select form-select-sm"
-                        [(ngModel)]="selectedPOL"
-                        (ngModelChange)="onPolFilterChange()">
-                    <option [ngValue]="null">All</option>
-                    <option *ngFor="let opt of polFilterConfig!.options"
-                            [ngValue]="opt[polFilterConfig!.bindValue]">
-                        {{ opt[polFilterConfig!.bindLabel] }}
-                    </option>
-                </select>
+            <div *ngIf="polFilterConfig?.enabled" class="custom-form-group custom-form-group-select dofi-min-w-150"
+            [class.filled]="!!selectedPOL">
+                <ng-select
+                    [items]="polFilterConfig!.options"
+                    [bindLabel]="polFilterConfig!.bindLabel"
+                    [bindValue]="polFilterConfig!.bindValue"
+                    class="ng-select"
+                    [(ngModel)]="selectedPOL"
+                    (change)="onPolFilterChange()"
+                    [clearable]="true"
+                    placeholder=""
+                    appendTo="body">
+                </ng-select>
+                <label class="input-label">{{ polFilterConfig?.label }}</label>
             </div>
 
             <!-- POD -->
-            <div *ngIf="podFilterConfig?.enabled">
-                <label class="form-label mb-0 small text-muted">{{ podFilterConfig?.label }}</label>
-                <select class="form-select form-select-sm"
-                        [(ngModel)]="selectedPOD"
-                        (ngModelChange)="onPodFilterChange()">
-                    <option [ngValue]="null">All</option>
-                    <option *ngFor="let opt of podFilterConfig!.options"
-                            [ngValue]="opt[podFilterConfig!.bindValue]">
-                        {{ opt[podFilterConfig!.bindLabel] }}
-                    </option>
-                </select>
+            <div *ngIf="podFilterConfig?.enabled" class="custom-form-group custom-form-group-select dofi-min-w-150"
+            [class.filled]="!!selectedPOD">
+                <ng-select
+                    [items]="podFilterConfig!.options"
+                    [bindLabel]="podFilterConfig!.bindLabel"
+                    [bindValue]="podFilterConfig!.bindValue"
+                    class="ng-select"
+                    [(ngModel)]="selectedPOD"
+                    (change)="onPodFilterChange()"
+                    [clearable]="true"
+                    placeholder=""
+                    appendTo="body">
+                </ng-select>
+                <label class="input-label">{{ podFilterConfig?.label }}</label>
             </div>
 
             <!-- Clear Filters -->
-            <div>
-                <button type="button" class="btn btn-outline-secondary btn-sm" (click)="clearAdvancedFilters()">
-                    <i class="fas fa-times me-1"></i> Clear
+            <div class="action-group">
+                <button  class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="clearAdvancedFilters()">
+                    <i class="fas fa-sync-alt  me-1"></i> Clear
                 </button>
             </div>
         </div>

@@ -41,9 +41,9 @@ import { JobCloseListComponent } from './job-close/job-close-list/job-close-list
 import { JobCloseComponent } from './job-close/job-close.component';
 import { VoucherCorrectionListComponent } from './voucher-correction/voucher-correction-list/voucher-correction-list.component';
 import { title } from 'process';
-import { AgentMasterAirWaybillListComponent } from './agent-master-air-waybill/agent-master-air-waybill-list/agent-master-air-waybill-list.component';
 import { AgentMasterAirWaybillEntryComponent } from './agent-master-air-waybill/agent-master-air-waybill-entry/agent-master-air-waybill-entry.component';
 import { VoucherCorrectionEntryComponent } from './voucher-correction/voucher-correction-entry/voucher-correction-entry.component';
+import { AgentMasterAirWaybillListComponent } from './agent-master-air-waybill/agent-master-air-waybill-list/agent-master-air-waybill-list.component';
 
 
 export const OperationRoutes: Routes = [
