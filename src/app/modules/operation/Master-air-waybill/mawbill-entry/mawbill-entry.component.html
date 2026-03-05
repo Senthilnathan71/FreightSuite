@@ -305,7 +305,7 @@
                                                             [labelFields]="mawbStockLookupConfig.labelFields" bindValue="MasterBillNumber"
                                                             [disabled]="masterJobForm.get('MBLNo')?.disabled" style="width:100%">
                                                         </dofi-searchable-dropdown>
-                                                        <button class="btn bi bi-calendar3 pe-0" type="button" (click)="toggleMawbInputType($event)"
+                                                        <button class="btn bi bi-calendar3 pe-0 btn-light" type="button" (click)="toggleMawbInputType($event)"
                                                             [disabled]="isMawbDropdownDisabled || masterJobForm.get('MBLNo')?.disabled">
                                                             <i class="fas fa-exchange-alt"
                                                                 [title]="isMawbDropdownDisabled ? 'No stock available - manual only' : 'Switch to manual entry'"></i>
@@ -326,7 +326,7 @@
                                                     <div class="input-group">
                                                          <input type="text" class="form-control cutom-input-sm" formControlName="MBLNo" placeholder=""
                                                             [readonly]="masterJobForm.get('MBLNo')?.disabled">
-                                                        <button class="btn bi bi-calendar3 pe-0" type="button" (click)="toggleMawbInputType($event)"
+                                                        <button class="btn bi bi-calendar3 pe-0 btn-light" type="button" (click)="toggleMawbInputType($event)"
                                                             [disabled]="(isMawbDropdownDisabled && mawbStockList.length === 0) || masterJobForm.get('MBLNo')?.disabled">
                                                             <i class="fas fa-exchange-alt"
                                                                 [title]="isMawbDropdownDisabled ? 'Switch to dropdown (no stock)' : 'Switch to dropdown'"></i>

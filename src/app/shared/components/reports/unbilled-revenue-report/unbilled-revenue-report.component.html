@@ -78,7 +78,7 @@
                                 <td>{{ item.houseStatus }}</td>
                                 <td>{{ item.bookingNo }}</td>
                                 <td>{{ cr.chargeName }}</td>
-                                <td>{{ item.PPCC }}</td>
+                                <td>{{ cr.PPCC }}</td>
                                 <td class="text-center">{{ cr.RevenueDrCr }}</td>
                                 <td class="text-end">{{ cr.RevenueAmount || 0 | number:'1.2-2' }}</td>
                                 <td class="text-end">{{ cr.RevenueLocalAmt || 0 | number:'1.2-2' }}</td>
@@ -96,7 +96,7 @@
                                 <td></td>
                                 <td>{{item.bookingNo}}</td>
                                 <td>{{ cr.chargeName }}</td>
-                                <td></td>
+                                <td>{{cr.PPCC}}</td>
                                 <td class="text-center">{{ cr.RevenueDrCr }}</td>
                                 <td class="text-end">{{ cr.RevenueAmount || 0 | number:'1.2-2' }}</td>
                                 <td class="text-end">{{ cr.RevenueLocalAmt || 0 | number:'1.2-2' }}</td>
@@ -117,7 +117,7 @@
                                 <td></td>
                                 <td>{{item.bookingNo}}</td>
                                 <td>{{ item.chargeName }}</td>
-                                <td>{{item.FreightTerm}}</td>
+                                <td>{{item.PPCC}}</td>
                                 <td class="text-center">{{ item.ReveuneDrCr  }}</td>
                                 <td class="text-end">{{ item.RevenueAmount || 0 | number:'1.2-2' }}</td>
                                 <td class="text-end">{{ item.RevenueLocalAmount || 0 | number:'1.2-2' }}</td>
