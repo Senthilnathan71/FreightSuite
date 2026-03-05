@@ -8,7 +8,7 @@ import { NgScrollbarModule } from 'ngx-scrollbar';
 import { Router, RouterModule } from '@angular/router';
 import { VerticalNavService } from './vertical-navigation.service';
 import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
-import { FormsModule } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Branch } from 'src/app/modules/crm-mobile/Interfaces/branch.interface';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged, switchMap, of, catchError, take } from 'rxjs';
@@ -18,6 +18,7 @@ import { VerticalSidebarService } from '../vertical-sidebar/vertical-sidebar.ser
 import { RouteInfo } from '../vertical-sidebar/vertical-sidebar.metadata';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { SessionService } from 'src/app/core/services/session.service';
+import { PasswordValidators } from 'src/app/core/ValidationFn/password.validators';
 
 declare var $: any;
 
@@ -41,7 +42,7 @@ interface messages {
 @Component({
   selector: 'app-vertical-navigation',
   standalone: true,
-  imports: [NgbDropdownModule, RouterModule, FeatherModule, NgScrollbarModule, CommonModule, NgbAccordionModule, NgbCarouselModule, NgbModule, TimeAgoPipe, FormsModule,NgbTooltipModule],
+  imports: [NgbDropdownModule, RouterModule, FeatherModule, NgScrollbarModule, CommonModule, NgbAccordionModule, NgbCarouselModule, NgbModule, TimeAgoPipe, FormsModule, ReactiveFormsModule, NgbTooltipModule],
   templateUrl: './vertical-navigation.component.html'
 })
 export class VerticalNavigationComponent implements OnInit, AfterViewInit {
@@ -85,6 +86,12 @@ branchList: any[] = [];
   @ViewChild('docSearchInput') docSearchInput!: ElementRef<HTMLInputElement>;
   @ViewChild('docSearchDropdown') docSearchDropdown!: NgbDropdown;
   docActiveIndex = -1;
+  @ViewChild('resetTemplate') resetTemplate!: TemplateRef<any>;
+  resetPasswordForm!: FormGroup;
+  passwordView = false;
+  passwordView1 = false;
+  UserMasterSid: any;
+  passwordModalRef!: NgbModalRef;
 
   constructor(
     private router: Router,
@@ -97,7 +104,8 @@ branchList: any[] = [];
     private logoService : LogoService,
     private masterService : MasterService,
     private verticalSidebarService : VerticalSidebarService,
-    private sessionService: SessionService
+    private sessionService: SessionService,
+    private fb: FormBuilder
   ) {
     // translate.setDefaultLang('en');
   }
@@ -954,6 +962,98 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
   navigateToMaster() {
     this.router.navigate(['dashboard']);
   }
+
+  openCurrentUserChangePassword(content: TemplateRef<any>): void {
+    const currentUserSid = this.userData?.UserMasterSid;
+    if (!currentUserSid) {
+      this.appSettingsService.showError('Unable to find current user.');
+      return;
+    }
+    this.openChangePassword(content, currentUserSid);
+  }
+
+  initResetPassForm() {
+    this.resetPasswordForm = this.fb.group({
+      password: ['', [Validators.required, PasswordValidators.validate()]],
+      confirmPassword: ['', [Validators.required, this.confirmPasswordValidator()]]
+    });
+    this.resetPasswordForm.get('password')?.valueChanges.subscribe(() => {
+      this.resetPasswordForm.get('confirmPassword')?.updateValueAndValidity();
+    });
+  }
+
+  confirmPasswordValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!this.resetPasswordForm) return null;
+
+      const password = this.resetPasswordForm.get('password')?.value;
+      const confirmPassword = control.value;
+
+      if (!password || !confirmPassword) {
+        return null;
+      }
+
+      return password === confirmPassword ? null : { passwordMismatch: true };
+    };
+  }
+
+  openChangePassword(content: TemplateRef<any>, UserMasterSid: any) {
+    this.initResetPassForm();
+    this.UserMasterSid = UserMasterSid;
+    if (this.UserMasterSid) {
+      this.passwordModalRef = this.modalService.open(content, { size: 'lg', centered: true, backdrop: 'static' });
+    }
+  }
+
+  onSubmitPassForm() {
+    if (this.resetPasswordForm.invalid) {
+      this.resetPasswordForm.markAllAsTouched();
+      this.resetPasswordForm.updateValueAndValidity();
+      this.appSettingsService.showWarning('Please fill all the required fields correctly.');
+      return;
+    }
+
+    const currentUserEmail = this.appSettingsService.userSettingSource.value['userEmail'];
+    const formValue = this.resetPasswordForm.value;
+    const payload = {
+      password: formValue.password,
+      updatedBy: currentUserEmail
+    };
+
+    this.masterService.resetUserPassword(this.UserMasterSid, payload).subscribe((resp: any) => {
+      if (resp.status) {
+        this.appSettingsService.showSuccess('Password changed Successfully');
+        this.passwordModalRef.close();
+      } else {
+        this.appSettingsService.showError('Error Changing Password');
+        console.error(resp.message);
+      }
+    });
+  }
+
+  togglePassword(isPassword: boolean, input: HTMLInputElement): void {
+    if (isPassword) {
+      this.passwordView = !this.passwordView;
+      input.type = 'text';
+    } else {
+      this.passwordView1 = !this.passwordView1;
+      input.type = 'text';
+    }
+  }
+
+  viewPassword(isPassword: boolean, input: HTMLInputElement): void {
+    if (input.type === 'password') {
+      return;
+    }
+    if (isPassword) {
+      this.passwordView = !this.passwordView;
+      input.type = 'password';
+    } else {
+      this.passwordView1 = !this.passwordView1;
+      input.type = 'password';
+    }
+  }
+
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();

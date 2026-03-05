@@ -576,9 +576,22 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
     });
   }
 
-  onSubledgerChange(sub: any) { 
+  async onSubledgerChange(sub: any): Promise<void> {
+    const hasRows = this.sourceItems.length > 0 || this.objectItems.length > 0;
+    if (hasRows) {
+      const confirmed = await this.confirmService.confirm(
+        'Changing the party will clear all loaded source and object records. Do you want to proceed?',
+        'Confirm Party Change',
+        'Clear & Change'
+      );
+      if (!confirmed) {
+        this.voucherMatchingForm.get('SubledgerName')?.setValue(this.selectedSubledger, { emitEvent: false });
+        return;
+      }
+      this.clearCreateDetail();
+    }
     this.voucherMatchingForm.get('SubledgerMasterSid')?.setValue(sub.SubledgerMasterSid);
-    this.selectedSubledger = sub; 
+    this.selectedSubledger = sub;
   }
 
   onGet() {

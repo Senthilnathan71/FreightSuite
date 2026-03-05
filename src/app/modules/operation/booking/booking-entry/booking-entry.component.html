@@ -45,7 +45,7 @@
           <div ngbDropdownMenu aria-labelledby="dropdownManual">
             <button ngbDropdownItem (click)="reportAndEmailModel(reportModel)" class="fw-bold">Booking Confirmation</button>
             <button ngbDropdownItem (click)="barCode(BarModal)" class="fw-bold">BarCode</button>
-             <button ngbDropdownItem (click)="barCode(BarModalWithoutCompany)" class="fw-bold">BarCode Without Company</button>
+             <button ngbDropdownItem (click)="barCode(BarModalWithoutCompany)" class="fw-bold">BarCode 2</button>
           </div>
         </div>
       </div>
@@ -504,7 +504,7 @@
                         </button>
                       </div>
                       <label for="text-input" class="input-label">Consignee Name <span
-                          class="text-danger">*</span></label>
+                          class="text-danger"></span></label>
                     </div>
                   </aside>
 
@@ -515,14 +515,8 @@
                       <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                         formControlName="ConsigneeAddress">
                       <label for="text-input" class="input-label">Consignee Address <span
-                          class="text-danger">*</span></label>
-                      @if(bookingForm.get('ConsigneeAddress')?.touched && bookingForm.get('ConsigneeAddress')?.invalid){
-                      <div class="error-message">
-                        @if(bookingForm.get('ConsigneeAddress')?.hasError('required')){
-                        <span>Required</span>
-                        }
-                      </div>
-                      }
+                          class="text-danger"></span></label>
+                      
                     </div>
                   </aside>
 
@@ -2173,7 +2167,7 @@
                 <button class="btn  bi bi-calendar3 px-0" (click)="d7.toggle()" type="button"> <i-feather name="calendar"
                     class="feather-sm"></i-feather></button>
               </div>
-              <label for="shipmentDacteExpected" class="input-label">Ro Validity <span class="text-danger"></span>
+              <label for="shipmentDacteExpected" class="input-label">Released Date <span class="text-danger"></span>
               </label>
 
             </div>

@@ -151,48 +151,39 @@ export class BalanceSheetReportComponent {
 
   getExcelData(): ComplexReportExportConfig {
     const tableHeaders: ExcelHeader[] = [
-      { key: 'Group', label: 'Group' },
-      { key: 'SubGroup', label: 'SubGroup' },
-      { key: 'Ledger', label: 'Ledger' },
-      { key: 'Balance', label: 'Balance' }
+      { key: 'LGroup', label: '' },
+      { key: 'LSubGroup', label: '' },
+      { key: 'LLedger', label: '' },
+      { key: 'LBalance', label: '' },
+      { key: 'Gap', label: '' },
+      { key: 'RGroup', label: '' },
+      { key: 'RSubGroup', label: '' },
+      { key: 'RLedger', label: '' },
+      { key: 'RBalance', label: '' }
     ];
 
     const rows: ExcelRow[] = [];
-
-    // --- Source of Funds ---
-    rows.push({ cells: [{ value: 'Source of Funds', colspan: 4 }], style: 'section' });
-
-    // Equity section
-    rows.push({ cells: [{ value: 'Equity', colspan: 4 }], style: 'section' });
     const retainedEarning = (this.data?.incomeTotal || 0) - (this.data?.expenseTotal || 0);
-    rows.push({
-      cells: [
-        { value: 'Reserve & Surplus' },
-        { value: 'Retained Earning' },
-        { value: 'Retained Earning 2024' },
-        { value: this.formatNumber(retainedEarning) }
-      ],
-      style: 'data'
-    });
-    rows.push({
-      cells: [
-        { value: 'Category Total', colspan: 3 },
-        { value: this.formatNumber(retainedEarning) }
-      ],
-      style: 'total'
-    });
+    const nonAssetCategories = (this.processedFunds || []).filter(cat => cat.category !== 'Asset');
+    const assetCategories = (this.processedFunds || []).filter(cat => cat.category === 'Asset');
+    const panelHeaderCells: ExcelCell[] = [
+      { value: 'Group' },
+      { value: 'SubGroup' },
+      { value: 'Ledger' },
+      { value: 'Balance' }
+    ];
 
-    // Non-Asset categories (other source of funds)
-    (this.processedFunds || []).forEach(cat => {
-      if (cat.category === 'Asset') return;
+    const leftRows: ExcelRow[] = [];
+    const rightRows: ExcelRow[] = [];
 
-      rows.push({ cells: [{ value: cat.category, colspan: 4 }], style: 'section' });
-
+    const pushPanelCategoryRows = (target: ExcelRow[], cat: any): void => {
+      target.push({ cells: [{ value: cat.category, colspan: 4 }], style: 'section' });
+      target.push({ cells: panelHeaderCells, style: 'section' });
       (cat.items || []).forEach((item: any) => {
-        rows.push({
+        target.push({
           cells: [
-            { value: item.groupName || '' },
-            { value: item.subgroupName || '' },
+            { value: item.showGroup ? (item.groupName || '') : '' },
+            { value: item.showSubGroup ? (item.subgroupName || '') : '' },
             { value: item.ledgerName || '' },
             { value: this.formatNumber(item.LocalAmt) }
           ],
@@ -200,42 +191,63 @@ export class BalanceSheetReportComponent {
         });
       });
 
-      rows.push({
+      target.push({
         cells: [
           { value: 'Category Total', colspan: 3 },
           { value: this.formatNumber(cat.categoryTotal) }
         ],
         style: 'total'
       });
-    });
+      target.push({ cells: [{ value: '', colspan: 4 }], style: 'data' });
+    };
 
-    // --- Application of Funds (Asset) ---
-    (this.processedFunds || []).forEach(cat => {
-      if (cat.category !== 'Asset') return;
-
-      rows.push({ cells: [{ value: 'Application of Funds', colspan: 4 }], style: 'section' });
-      rows.push({ cells: [{ value: cat.category, colspan: 4 }], style: 'section' });
-
-      (cat.items || []).forEach((item: any) => {
-        rows.push({
-          cells: [
-            { value: item.groupName || '' },
-            { value: item.subgroupName || '' },
-            { value: item.ledgerName || '' },
-            { value: this.formatNumber(item.LocalAmt) }
-          ],
-          style: 'data'
-        });
+    // Build LEFT panel rows (Source of Funds side)
+    nonAssetCategories.forEach(cat => {
+      leftRows.push({ cells: [{ value: 'Source of Funds', colspan: 4 }], style: 'section' });
+      leftRows.push({ cells: [{ value: 'Equity', colspan: 4 }], style: 'section' });
+      leftRows.push({ cells: panelHeaderCells, style: 'section' });
+      leftRows.push({
+        cells: [
+          { value: 'Reserve & Surplus' },
+          { value: 'Retained Earning' },
+          { value: 'Retained Earning 2024' },
+          { value: this.formatNumber(retainedEarning) }
+        ],
+        style: 'data'
       });
-
-      rows.push({
+      leftRows.push({
         cells: [
           { value: 'Category Total', colspan: 3 },
-          { value: this.formatNumber(cat.categoryTotal) }
+          { value: this.formatNumber(retainedEarning) }
         ],
         style: 'total'
       });
+      pushPanelCategoryRows(leftRows, cat);
     });
+
+    // Build RIGHT panel rows (Application of Funds side)
+    assetCategories.forEach(cat => {
+      rightRows.push({ cells: [{ value: 'Application of Funds', colspan: 4 }], style: 'section' });
+      pushPanelCategoryRows(rightRows, cat);
+    });
+
+    // Merge left and right panel rows into one "flex-like" Excel sheet
+    const emptyPanelRow: ExcelRow = { cells: [{ value: '', colspan: 4 }], style: 'data' };
+    const totalRows = Math.max(leftRows.length, rightRows.length);
+
+    for (let i = 0; i < totalRows; i++) {
+      const left = leftRows[i] || emptyPanelRow;
+      const right = rightRows[i] || emptyPanelRow;
+
+      rows.push({
+        cells: [
+          ...left.cells,
+          { value: '' }, // center gap column to separate both panels
+          ...right.cells
+        ],
+        style: left.style || right.style || 'data'
+      });
+    }
 
     return {
       fileName: 'Balance-Sheet-Report',
@@ -249,9 +261,10 @@ export class BalanceSheetReportComponent {
           { label: 'Branch', value: this.fullData?.branchInvolved || 'All' }
         ]
       },
+      includeTableHeaders: false,
       tableHeaders,
       rows,
-      columnWidths: [25, 25, 30, 18]
+      columnWidths: [16, 16, 20, 14, 3, 16, 16, 20, 14]
     };
   }
 

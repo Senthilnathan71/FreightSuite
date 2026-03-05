@@ -801,8 +801,8 @@ subscribeToFormChanges() {
       ShipperName: [null, [Validators.required]],
       ShipperAddress: ['', [Validators.required]],
       isConsigneeFreeText: [false],
-      ConsigneeName: [null, [Validators.required]],
-      ConsigneeAddress: ['', [Validators.required]],
+      ConsigneeName: [null],
+      ConsigneeAddress: [null],
       isNotifyFreeText: [false],
       Notify: [null],
       NotifyAddress: [''],
@@ -1479,6 +1479,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
           this.bookingData = resp.data;
           this.minDate = undefined;
           this.spinner.hide();
+          this.isSaving = false;
           this.captureInitialFormState();
           if(withMilestoneRefresh){
             this.milestoneComponent.loadShipmentMilestones(resp.data?.ShipmentNo);
@@ -1492,6 +1493,11 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
           this.isSaving = false;
           this.spinner.hide();
         }
+      },
+      (error) => {
+        this.isSaving = false;
+        this.spinner.hide();
+        this.appSettingService.showError('Failed to load booking.');
       }
     )
   }
@@ -1591,18 +1597,22 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     this.minStartDate = response.ETA;
 
     // Patch cargo form with emitEvent: false
-    const cargoData = response.bookingCargo[0];
+    // Fallback to quotation payload shape when bookingCargo is not provided.
+    const cargoData =
+      response?.bookingCargo?.[0] ||
+      response?.quoteRoute?.[0]?.quoteCargo?.[0] ||
+      {};
     this.cargoForm.patchValue({
       BookingCargoSid: cargoData?.BookingCargoSid,
       CargoType: cargoData?.CargoType || 'General',
       ContainerType: cargoData?.ContainerType,
-      NoofContainers: cargoData?.NoofContainers,
-      GrossWeight: cargoData?.GrossWeight,
-      NetWeight: cargoData?.NetWeight,
-      Volume: cargoData?.Volume,
-      Volumetric: cargoData?.Volumetric,
-      ChargeableWeight: cargoData?.ChargeableWeight,
-      NoOfPackage: cargoData?.NoOfPackage,
+      NoofContainers: Number(cargoData?.NoofContainers ?? cargoData?.Qty ?? 0) || 0,
+      GrossWeight: Number(cargoData?.GrossWeight ?? 0) || 0,
+      NetWeight: Number(cargoData?.NetWeight ?? 0) || 0,
+      Volume: Number(cargoData?.Volume ?? 0) || 0,
+      Volumetric: Number(cargoData?.Volumetric ?? 0) || 0,
+      ChargeableWeight: Number(cargoData?.ChargeableWeight ?? 0) || 0,
+      NoOfPackage: Number(cargoData?.NoOfPackage ?? cargoData?.PackageQty ?? 0) || 0,
       ShipmentTerms: cargoData?.ShipmentTerms,
       MovementType: cargoData?.MovementType,
       FreightTerms: cargoData?.FreightTerms,
@@ -1746,7 +1756,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       
       // NOW trigger calculations AFTER patching is complete
       if(!this.isEditMode){
-      this.handleProductRelatedCalculation();
+      if (this.bookingProducts.length > 0) {
+        this.handleProductRelatedCalculation();
+      }
       this.calculateChargeableWeight();
       }
       
@@ -1973,6 +1985,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         this.appSettingService.showWarning(
           `Booking Date must be within the financial year (${fy.YearName})`
         );
+        this.isSaving = false;
         if (resolve) resolve(false);
         return;
       }
@@ -2009,14 +2022,29 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
        if (!this.validateAllForms()) {
         console.log("STOP 2 - validateAllForms failed");
       this.isSaving = false;
+      if (resolve) resolve(false);
     return;
   }
-  const polSid = this.bookingForm.get('POL')?.value;
-  const podSid = this.bookingForm.get('POD')?.value;
+  const polControl = this.bookingForm.get('POL');
+  const podControl = this.bookingForm.get('POD');
+  const polSid = polControl?.value;
+  const podSid = podControl?.value;
+
+    if (!polSid || !podSid) {
+      polControl?.markAsTouched();
+      podControl?.markAsTouched();
+      this.appSettingService.showWarning('Please select POL and POD.');
+      this.isSaving = false;
+      if (resolve) resolve(false);
+      return;
+    }
+
     if (polSid && podSid && polSid === podSid) {
       this.toastr.warning('POL and POD cannot be the same');
-      this.bookingForm.get('POD')?.setErrors({ samePort: true });
-      this.bookingForm.get('POL')?.setErrors({ samePort: true });
+      this.setControlError(podControl, 'samePort', true);
+      this.setControlError(polControl, 'samePort', true);
+      this.isSaving = false;
+      if (resolve) resolve(false);
       return;
     } 
     if (this.bookingForm.invalid) {
@@ -2035,12 +2063,15 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     this.appSettingService.showWarning('Please fill all required fields in CRO tab correctly.');
     console.log("STOP 4 - CRO form invalid");
     this.isSaving = false;
+    if (resolve) resolve(false);
     return;
   }
 
-  if(!this.costEntryComponent.validateRateArray()){
+  const isRateValid = this.costEntryComponent?.validateRateArray?.();
+  if (isRateValid === false) {
     this.selectedTab = 'Rate';
     this.isSaving = false;
+    if (resolve) resolve(false);
     return;
   }
 
@@ -2250,6 +2281,8 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
             this.otherForm.markAsPristine();
             this.croForm.markAsPristine();
             if (resolve) resolve(true);
+            this.isSaving = false;
+            this.spinner.hide();
             // this.router.navigate(['operation/booking/list']);
             this.loadBookingById(this.BookingHeaderSid,true);
             this.emailTriggerService.triggerEmails({
@@ -2294,6 +2327,8 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
             this.appSettingService.showSuccess('Booking successfully created.');
             const bookingId = resp.data?.bookingHeader?.BookingHeaderSid;
             if (resolve) resolve(true);
+            this.isSaving = false;
+            this.spinner.hide();
             this.router.navigate(['operation/booking/entry', bookingId]);
             this.emailTriggerService.triggerEmails({
               companyId: this.currentCompany.CompanyMasterSid,
@@ -2445,6 +2480,19 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   return isValid;
 }
 
+private setControlError(control: AbstractControl | null, key: string, value: any): void {
+  if (!control) return;
+  const currentErrors = control.errors || {};
+  control.setErrors({ ...currentErrors, [key]: value });
+}
+
+private clearControlError(control: AbstractControl | null, key: string): void {
+  if (!control?.errors || !control.errors[key]) return;
+  const remainingErrors = { ...control.errors };
+  delete remainingErrors[key];
+  control.setErrors(Object.keys(remainingErrors).length ? remainingErrors : null);
+}
+
 // Add this method to your BookingEntryComponent
 onCarrierChangeForAir(carrier: any): void {
   // Only apply for Air department
@@ -2581,20 +2629,22 @@ onCarrierChangeForAir(carrier: any): void {
 }
 
   onRouteChange(): void {
-    const polSid = this.b['POL']?.value;
-    const podSid = this.b['POD']?.value;
+    const polControl = this.b['POL'];
+    const podControl = this.b['POD'];
+    const polSid = polControl?.value;
+    const podSid = podControl?.value;
     const segment = this.selectedFCLLCL
 
     this.filteredPorts = this.getFilteredPortsBySegment(segment);
     this.filteredPOL = this.filteredPorts.filter(port => port.PortCode !== podSid);
     this.filteredPOD = this.filteredPorts.filter(port => port.PortCode !== polSid);
     if (polSid && podSid && polSid === podSid) {
-      this.b['POD']?.setErrors({ samePort: true });
-      this.b['POL']?.setErrors({ samePort: true });
+      this.setControlError(podControl, 'samePort', true);
+      this.setControlError(polControl, 'samePort', true);
       this.toastr.warning('POL and POD cannot be the same');
     } else {
-      this.b['POD']?.setErrors(null);
-      this.b['POL']?.setErrors(null);
+      this.clearControlError(podControl, 'samePort');
+      this.clearControlError(polControl, 'samePort');
     }
   }
 
@@ -4554,7 +4604,8 @@ downloadPDF(type: 'booking' | 'cro'  = 'booking'): void {
       {
         ports: this.portList,
         departments: this.departmentList,
-        carriers: this.carrierList
+        carriers: this.carrierList,
+        containerTypes: this.containerTypeList
       },
       type
     );
@@ -5200,8 +5251,8 @@ getFieldLabel(fieldName: string): string {
     'CustomerAddress': 'Customer Address',
     'ShipperName': 'Shipper Name',
     'ShipperAddress': 'Shipper Address',
-    'ConsigneeName': 'Consignee Name',
-    'ConsigneeAddress': 'Consignee Address',
+    // 'ConsigneeName': 'Consignee Name',
+    // 'ConsigneeAddress': 'Consignee Address',
     'POL': 'Port of Loading',
     'POD': 'Port of Discharge',
     'IncoTerms': 'INCO Terms',

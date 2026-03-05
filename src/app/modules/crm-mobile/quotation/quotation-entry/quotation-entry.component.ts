@@ -56,6 +56,10 @@ import { PrintHeaderComponent } from 'src/app/shared/components/print-header/pri
 import { getDefaultTodayDate } from 'src/app/common/helper';
 import { OperationService } from 'src/app/modules/operation/operation.service';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
+import {
+  generateQuotationDocument,
+  transformQuotationApiData,
+} from 'src/app/common/pdf/generators/quotation-pdf.generator';
 import { GetStandardChargesComponent } from 'src/app/modules/operation/cost/get-standard-charges/get-standard-charges.component';
 import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/dial-code-dropdown.component';
 type Html2PdfOptions = {
@@ -197,6 +201,7 @@ export class QuotationEntryComponent implements OnInit {
   // PDF caching properties for performance optimization
   private cachedPdfBlob: Blob | null = null;
   private cachedQuoteNumber: string | null = null;
+  private pdfDepsPromise?: Promise<{ pdfMake: any }>;
 
   branchDetails: any;
   currentBranchCityName: string | null;
@@ -244,6 +249,7 @@ export class QuotationEntryComponent implements OnInit {
   ];
 
   allApprovalStatus = [
+    { value : "Open" , name :"Open"},
     { value : "Pending" , name :"Waiting for Approval"},
     { value : "WaitingForFinalApproval" , name :"Waiting for Final Approval"},
     { value : "WaitingForCustomerApproval" , name :"Waiting for Customer Approval"},
@@ -253,6 +259,7 @@ export class QuotationEntryComponent implements OnInit {
   ]
 
   approvalStatus = [
+    { value : "Open" , name :"Open"},
     { value : "Pending" , name :"Waiting for Approval"},
     { value : "Approved" , name :"Approved"},
     { value : "Rejected" , name : "Rejected"},
@@ -1914,6 +1921,7 @@ isRateLockDisabled(): boolean {
       RateLock : formValue.RateLock ? "Y" : "N",
       PreCustomerMasterSid : formValue.PreCustomerMasterSid,
       CustomerMasterSid: formValue.CustomerMasterSid,
+      CustomerBranchSid: formValue.CustomerBranchSid,
       CustomerRef: formValue.CustomerRef,
       CustomerAddress: formValue.CustomerAddress,
       Email: formValue.Email,
@@ -3563,6 +3571,10 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
           <p>${this.userData['userEmail']}</p>
         </div>
       `);
+      if (this.QuoteHeaderSid) {
+        formData.append('QuoteHeaderSid', String(this.QuoteHeaderSid));
+      }
+      formData.append('CreatedBy', this.userData?.['userEmail'] || '');
       formData.append('file', pdfBlob, (this.selectedItem?.QuotationName || 'quotation') + '.pdf');
 
       // Step 4: Use firstValueFrom for cleaner async handling
@@ -3589,73 +3601,133 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
     this.showPdfLogo = true;
     this.spinner.show();
 
-    // Use requestAnimationFrame for DOM readiness instead of setTimeout
-    requestAnimationFrame(async () => {
-      try {
-        const quotationNumber = this.quotationForm.get('QuoteNumber')?.value || 'Quotation';
-
-        // Use compressed PDF for faster download (scale: 1.5, quality: 0.6)
-        await this.pdfService.downloadCompressedPDF(
-          'printContent',
-          `Quotation_${quotationNumber}`,
-          () => {
-            this.spinner.hide(); // Hide AFTER success
-            this.appSettingService.showSuccess('PDF downloaded successfully!');
-          },
-          (error) => {
-            this.spinner.hide(); // Hide on error too
-            this.appSettingService.showError('Error generating PDF. Please try again.');
-          }
-        );
-      } catch (error) {
-        this.spinner.hide();
-        this.appSettingService.showError('Error generating PDF. Please try again.');
-      }
-    });
-  }
-  
-  async generatePDFBlob(): Promise<Blob | null> {
-    const printContent = document.getElementById('printContent');
-    if (!printContent) {
-      return null;
-    }
-
     try {
-      // Use compressed settings for faster generation (scale: 1.5 instead of 2)
-      const canvas = await html2canvas(printContent, {
-        scale: 1.5,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
-
-      const imgWidth = 210;
-      const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      // Use JPEG with 0.6 quality for smaller file size and faster processing
-      const imgData = canvas.toDataURL('image/jpeg', 0.6);
-
-      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+      const { pdfMake } = await this.getPdfDependencies();
+      const docDefinition = await this.buildQuotationDocDefinition();
+      if (!docDefinition) {
+        this.appSettingService.showError('No quotation data available for PDF.');
+        return;
       }
 
-      return pdf.output('blob');
+      const quotationNumber = this.quotationForm.get('QuoteNumber')?.value || 'Quotation';
+      pdfMake.createPdf(docDefinition).download(`Quotation_${quotationNumber}.pdf`);
+      if (this.QuoteHeaderSid) {
+        this.leadService.markQuoteWaitingForApproval(this.QuoteHeaderSid, {
+          updatedBy: this.userData?.['userEmail'] || ''
+        }).subscribe();
+      }
+      this.appSettingService.showSuccess('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('Quotation PDF download error:', error);
+      this.appSettingService.showError('Error generating PDF. Please try again.');
+    } finally {
+      this.spinner.hide();
+    }
+  }
+
+  async generatePDFBlob(): Promise<Blob | null> {
+    try {
+      const { pdfMake } = await this.getPdfDependencies();
+      const docDefinition = await this.buildQuotationDocDefinition();
+      if (!docDefinition) {
+        return null;
+      }
+
+      return await new Promise<Blob>((resolve, reject) => {
+        try {
+          pdfMake.createPdf(docDefinition).getBlob((blob: Blob) => resolve(blob));
+        } catch (error) {
+          reject(error);
+        }
+      });
     } catch (error) {
       console.error('Error generating PDF blob:', error);
       return null;
     }
   }
 
+  private async getPdfDependencies(): Promise<{ pdfMake: any }> {
+    if (this.pdfDepsPromise) {
+      return this.pdfDepsPromise;
+    }
+
+    this.pdfDepsPromise = (async () => {
+      const pdfMakeModule = await import('pdfmake/build/pdfmake');
+      const pdfFontsModule = await import('pdfmake/build/vfs_fonts');
+
+      const pdfMake: any = (pdfMakeModule as any).default || pdfMakeModule;
+      const pdfFonts: any = (pdfFontsModule as any).default || pdfFontsModule;
+      pdfMake.vfs = pdfFonts?.pdfMake?.vfs || pdfFonts;
+
+      return { pdfMake };
+    })();
+
+    return this.pdfDepsPromise;
+  }
+
+  private async buildQuotationDocDefinition(): Promise<any | null> {
+    if (!this.selectedItem) {
+      return null;
+    }
+
+    const logo = await this.resolveReportLogo();
+    const apiData = {
+      ...this.selectedItem,
+      terms: this.selectedItem?.terms?.length ? this.selectedItem.terms : this.TandCList
+    };
+
+    const pdfData = transformQuotationApiData(
+      apiData,
+      this.currentCompany,
+      this.currentBranch,
+      this.userData,
+      logo,
+      {
+        currencyMaster: this.currencyMaster,
+        chargeUnitMaster: this.chargeUnitMaster,
+        departments: this.departments,
+        ports: this.ports
+      }
+    );
+
+    const documentType = this.selectedItem?.IsContract === 'Y' ? 'contract' : 'quotation';
+    return generateQuotationDocument(pdfData, documentType as any);
+  }
+
+  private async resolveReportLogo(): Promise<string | undefined> {
+    const logoFromStream = await firstValueFrom(this.logoService.reportLogo$);
+    const logoSource = logoFromStream || localStorage.getItem('current_report_logo') || '';
+
+    if (!logoSource) return undefined;
+    if (logoSource.startsWith('data:image')) return logoSource;
+
+    return this.imageUrlToBase64(logoSource);
+  }
+
+  private imageUrlToBase64(url: string): Promise<string | undefined> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          resolve(undefined);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      };
+
+      img.onerror = () => resolve(undefined);
+      img.src = url;
+    });
+  }
   /**
    * Get cached PDF blob or generate a new one
    * Improves performance when using both download and email features
@@ -4042,13 +4114,50 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
 //   }
 // }
 
-async goForBookingCreation() {
-  const customerHasBranch = this.customers.find(cus => cus.CustomerMasterSid === this.selectedItem.CustomerMasterSid);
-  if (!customerHasBranch) {
-    this.appSettingService.showWarning("Please fill KYC and Branch details for the customer.");
-    return;
+private validateCustomerForBookingCreation(): boolean {
+  const customerMasterSid = this.selectedItem?.CustomerMasterSid ?? this.quotationForm.get('CustomerMasterSid')?.value;
+  let customerBranchSid = this.selectedItem?.CustomerBranchSid ?? this.quotationForm.get('CustomerBranchSid')?.value;
+
+  // Backward compatibility: old quotations may have null CustomerBranchSid on header.
+  // If exactly one branch exists for this customer, auto-select it for booking flow.
+  if (customerMasterSid && !customerBranchSid) {
+    const availableBranches = (this.cusBranchList || []).filter((branch: any) =>
+      Number(branch?.CustomerMasterSid ?? branch?.customerMaster?.CustomerMasterSid) === Number(customerMasterSid)
+    );
+
+    if (availableBranches.length === 1) {
+      customerBranchSid = availableBranches[0]?.CustomerBranchSid ?? null;
+      if (customerBranchSid) {
+        this.quotationForm.patchValue({ CustomerBranchSid: customerBranchSid }, { emitEvent: false });
+        if (this.selectedItem) {
+          this.selectedItem.CustomerBranchSid = customerBranchSid;
+        }
+      }
+    }
   }
 
+  if (!customerMasterSid || !customerBranchSid) {
+    this.appSettingService.showWarning("Please fill KYC and Branch details for the customer.");
+    return false;
+  }
+
+  const isMappedCustomerBranch = this.customers.some((cus) =>
+    Number(cus.CustomerMasterSid) === Number(customerMasterSid) &&
+    Number(cus.CustomerBranchSid) === Number(customerBranchSid)
+  );
+
+  if (!isMappedCustomerBranch) {
+    this.appSettingService.showWarning("Selected customer branch is not mapped in debtor/COA. Please complete mapping before booking.");
+    return false;
+  }
+
+  return true;
+}
+
+async goForBookingCreation() {
+  if (!this.validateCustomerForBookingCreation()) {
+    return;
+  }
   // Check if booking already exists
   if (this.selectedItem.BookingHeaderSid) {
     // Show confirmation modal
@@ -4145,6 +4254,9 @@ private async createBookingFromQuotation() {
       }
     }
     // Prepare booking data
+    const cargoCurrency = cargo?.CargoCurrency || enquiryOther?.CargoCurrency || null;
+    const cargoValue = Number(cargo?.CargoValue ?? enquiryOther?.CargoValue ?? 0) || 0;
+
     const bookingData = {
       quotation: true,
       // Clear BookingHeaderSid to ensure new booking creation
@@ -4185,10 +4297,18 @@ private async createBookingFromQuotation() {
         GrossWeight: cargo.GrossWeight || 0,
         NetWeight: cargo.NetWeight || 0,
         Volume: cargo.Volume || 0,
+        Volumetric: cargo.Volumetric ||  0,
         ChargeableWeight: cargo.ChargeableWeight || 0,
         ContainerType: containerTypeId,
         NoofContainers: cargo.Qty || 0,
+        NoOfPackage: cargo.PackageQty || 0,
       }] : [],
+
+      // Other details (Booking tab "Cargo Value" patches from bookingOthers)
+      bookingOthers: [{
+        CargoCurrency: cargoCurrency,
+        CargoValue: cargoValue
+      }],
 
       // Product details
       bookingProduct: (cargo?.quoteProduct || []).map(product => ({
@@ -4613,12 +4733,9 @@ doesBookingExistForRoute(routeIndex: number): boolean {
          (!!routeData?.bookingHeader && !!routeData.bookingHeader.BookingHeaderSid);
 }
 async goForBookingCreationForRoute(routeIndex: number) {
-  const customerHasBranch = this.customers.find(cus => cus.CustomerMasterSid === this.selectedItem.CustomerMasterSid);
-  if (!customerHasBranch) {
-    this.appSettingService.showWarning("Please fill KYC and Branch details for the customer.");
+  if (!this.validateCustomerForBookingCreation()) {
     return;
   }
-
   // Check if the specific route is approved
   if (!this.isRouteApproved(routeIndex)) {
     this.appSettingService.showWarning("This route is not approved. Please approve the route before creating a booking.");
@@ -4721,6 +4838,9 @@ private async createBookingFromRoute(routeIndex: number, carrierIndex: number) {
 
     
     // Prepare booking data
+    const cargoCurrency = cargo?.CargoCurrency || enquiryOther?.CargoCurrency || null;
+    const cargoValue = Number(cargo?.CargoValue ?? enquiryOther?.CargoValue ?? 0) || 0;
+
     const bookingData = {
       quotation: true,
       // Clear BookingHeaderSid to ensure new booking creation
@@ -4762,13 +4882,21 @@ private async createBookingFromRoute(routeIndex: number, carrierIndex: number) {
         GrossWeight: cargo.GrossWeight || 0,
         NetWeight: cargo.NetWeight || 0,
         Volume: cargo.Volume || 0,
+        Volumetric: cargo.Volumetric ||  0,
         ChargeableWeight: cargo.ChargeableWeight || 0,
         ContainerType: containerTypeId,
         NoofContainers: cargo.Qty || 0,
+        NoOfPackage: cargo.PackageQty || 0,
       }] : [],
 
+      // Other details (Booking tab "Cargo Value" patches from bookingOthers)
+      bookingOthers: [{
+        CargoCurrency: cargoCurrency,
+        CargoValue: cargoValue
+      }],
+
       // Product details
-      bookingProducts: (cargo?.quoteProduct || []).map(product => ({
+      bookingProduct: (cargo?.quoteProduct || []).map(product => ({
         ProductName: product.ProductName,
         ExternaPkg: product.PackageType,
         ExternlQty: product.ExternalQty,
@@ -5063,4 +5191,6 @@ openStandardCharges(routeIndex: number, carrierIndex: number) {
 
 
 }
+
+
 

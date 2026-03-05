@@ -3,7 +3,7 @@ import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { firstValueFrom } from 'rxjs';
-import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import { generateCargoManifestDocument } from 'src/app/common/pdf/generators/cargo-manifest-pdf.generator';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
@@ -36,13 +36,13 @@ export class CargoManifestComponent {
   @Input() yardList: any[] = [];
   @Input()  selectedFCLLCL:any;
   @Input() portList: any[] = []; // Add this input
+  private pdfDepsPromise?: Promise<{ pdfMake: any }>;
   constructor(
     private appSettingsService: AppSettingsService,
     private activeModal: NgbActiveModal,
     private masterService: MasterService,
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
-    private pdfService: PdfDownloadService,
     public logoService : LogoService
   ) { }
 
@@ -219,22 +219,95 @@ export class CargoManifestComponent {
 
 
    async downloadPDF() {
-
-  setTimeout(async () => {
     this.spinner.show();
-   try {
-      await this.pdfService.downloadBalancedPDF(
-        'printContent',
-        `Cargo_manifest_${this.masterJobData?.MasterJobNumber || ''}`,
-        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-        (error) => this.appSettingService.showError('Error generating PDF. Please try again.'),
-        'landscape'
-      );
+    try {
+      const docDefinition = await this.buildCargoManifestDocDefinition();
+      if (!docDefinition) {
+        this.appSettingService.showError('No data available to generate PDF');
+        return;
+      }
+
+      const { pdfMake } = await this.getPdfDependencies();
+      const fileName = `Cargo_manifest_${this.masterJobData?.MasterJobNumber || ''}.pdf`;
+      pdfMake.createPdf(docDefinition).download(fileName);
+      this.appSettingService.showSuccess('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('Cargo manifest PDF generation failed:', error);
+      this.appSettingService.showError('Error generating PDF. Please try again.');
     } finally {
       this.spinner.hide();
     }
-  }, 50);
-}
+  }
+
+  private async getPdfDependencies(): Promise<{ pdfMake: any }> {
+    if (!this.pdfDepsPromise) {
+      this.pdfDepsPromise = (async () => {
+        const pdfMakeModule = await import('pdfmake/build/pdfmake');
+        const pdfFontsModule = await import('pdfmake/build/vfs_fonts');
+        const pdfMake: any = (pdfMakeModule as any).default || pdfMakeModule;
+        const pdfFonts: any = (pdfFontsModule as any).default || pdfFontsModule;
+        pdfMake.vfs = pdfFonts?.pdfMake?.vfs || pdfFonts;
+        return { pdfMake };
+      })();
+    }
+
+    return this.pdfDepsPromise;
+  }
+
+  private async buildCargoManifestDocDefinition(): Promise<any | null> {
+    if (!this.masterJobData) {
+      return null;
+    }
+
+    const logo = await this.resolveReportLogo();
+    return generateCargoManifestDocument({
+      masterJobData: this.masterJobData,
+      masterJobContainers: this.masterJobContainers,
+      containerTypeList: this.containerTypeList,
+      packageTypeList: this.packageTypeList,
+      agentList: this.agentList,
+      yardList: this.yardList,
+      selectedFCLLCL: this.selectedFCLLCL,
+      portList: this.portList,
+      userData: this.userData,
+      currentCompany: this.currentCompany,
+      currentBranch: this.currentBranch,
+      currentDate: this.currentDate,
+      logo
+    });
+  }
+
+  private async resolveReportLogo(): Promise<string | undefined> {
+    const logoFromStream = await firstValueFrom(this.logoService.reportLogo$);
+    const logoSource = logoFromStream || localStorage.getItem('current_report_logo') || '';
+
+    if (!logoSource) return undefined;
+    if (logoSource.startsWith('data:image')) return logoSource;
+    return this.imageUrlToBase64(logoSource);
+  }
+
+  private imageUrlToBase64(url: string): Promise<string | undefined> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(undefined);
+          return;
+        }
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      };
+
+      img.onerror = () => resolve(undefined);
+      img.src = url;
+    });
+  }
   
 printDiv(divId: string): void {
   this.showPrintLogo = true;

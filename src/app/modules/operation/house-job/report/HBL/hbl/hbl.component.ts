@@ -13,6 +13,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { OperationService } from 'src/app/modules/operation/operation.service';
+import { ShipmentMilestoneService } from 'src/app/modules/operation/services/shipment-milestone.service';
 
 @Component({
   selector: 'app-hbl',
@@ -46,6 +47,19 @@ export class HblComponent {
   showPdfLogo: boolean = true;
   private pdfDepsPromise?: Promise<{ pdfMake: any }>;
 
+  @Input() autoInsertMilestone: boolean = false;
+  @Input() milestonePayload?: {
+    MasterJobSid: number,
+    CompanyMasterSid: number,
+    BranchMasterSid: number,
+    MilestoneCode: string,
+    MilestoneDate: Date,
+    createdBy: string,
+    Remarks: string
+  };
+  @Output() reloadMilestone = new EventEmitter<void>();
+  private milestoneInserted: boolean = false;
+
   constructor(
     private activeModal: NgbActiveModal,
     private appSettingService: AppSettingsService,
@@ -53,6 +67,7 @@ export class HblComponent {
     private spinner: NgxSpinnerService,
     public logoService: LogoService,
     private operationService: OperationService,
+    private milestoneService : ShipmentMilestoneService
   ) {}
 
   ngOnInit() {
@@ -72,6 +87,7 @@ export class HblComponent {
     ))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
+    this.milestoneInserted = false;
   }
 
   loadCityName(): void {
@@ -157,6 +173,7 @@ export class HblComponent {
     }
 
     try {
+      await this.insertMilestoneSafelyForPrint();
       const { pdfMake } = await this.getPdfDependencies();
       const logo = await this.resolveReportLogo();
 
@@ -187,9 +204,10 @@ export class HblComponent {
     }
   }
 
-  printDiv(divId: string): void {
+  async printDiv(divId: string): Promise<void> {
     this.showPrintLogo = true;
     this.showPdfLogo = false;
+    await this.insertMilestoneSafelyForPrint();
 
     setTimeout(() => {
       const printContents = document.getElementById(divId)?.innerHTML;
@@ -276,5 +294,26 @@ export class HblComponent {
       img.onerror = () => resolve(undefined);
       img.src = url;
     });
+  }
+
+  private async insertMilestoneSafelyForPrint(): Promise<void> {
+    if (!this.autoInsertMilestone || !this.milestonePayload || this.milestoneInserted) {
+      return; // Already inserted or not needed
+    }
+
+    try {
+      const resp: any = await firstValueFrom(
+        this.milestoneService.safeInsertMilestone(this.milestonePayload)
+      );
+
+      if (resp.status) {
+        this.milestoneInserted = true;
+        this.autoInsertMilestone = false;
+        this.reloadMilestone.emit();
+        console.log('Milestone inserted successfully');
+      }
+    } catch (error) {
+      console.error('Error inserting milestone', error);
+    }
   }
 }

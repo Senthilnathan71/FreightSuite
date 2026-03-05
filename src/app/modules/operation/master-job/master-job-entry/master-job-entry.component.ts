@@ -71,6 +71,7 @@ import { LoadingPlanMasterComponent } from '../reports/loading-plan-master/loadi
 import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
 import { ProofOfDeliveryComponent } from '../../house-job/report/proof-of-delivery/proof-of-delivery.component';
 import { ProofOfDeliveryMasterPrintComponent } from '../reports/proof-of-delivery-master-print/proof-of-delivery-master-print.component';
+import { InsertMilestoneByMasterJobPayload } from '../../services/shipment-milestone.service';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -3523,6 +3524,35 @@ onETDDateSelect(): void {
     modalRef.componentInstance.yardList = this.yardList;
     modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL;
     modalRef.componentInstance.portList = this.portList || [];
+    this.initializeMilestoneContentForPreAlert(modalRef);
+  }
+
+  private initializeMilestoneContentForPreAlert(modalRef: any): void {
+    const department = this.selectedDepartment || this.departments.find(
+      (dep) => dep.DepartmentMasterSid === this.masterJobForm.get('DepartmentMasterSid')?.value,
+    );
+    const validDepartment = department?.ExportImport === 'Export';
+    const masterJobSid = this.masterJobData?.MasterJobSid || this.masterJobSid;
+
+    modalRef.componentInstance.autoInsertMilestone = !!(validDepartment && masterJobSid);
+
+    const milestonePayload: InsertMilestoneByMasterJobPayload = {
+      MasterJobSid: Number(masterJobSid),
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      MilestoneCode: 'PREALERT',
+      MilestoneDate: getDefaultTodayDate(),
+      createdBy: this.userData?.userEmail,
+      Remarks: `Pre Alert has been sent on ${(new Date().toISOString()).split('T')[0]}`,
+    };
+
+    modalRef.componentInstance.milestonePayload = milestonePayload;
+
+    modalRef.componentInstance.reloadMilestone.subscribe(() => {
+      if (this.masterJobSid) {
+        this.loadMasterJobData(this.masterJobSid);
+      }
+    });
   }
 
   reportcargomanifest() {

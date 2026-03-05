@@ -92,17 +92,20 @@ export class QuotationListManager {
     // Helper method to get formatted approval status label
     private getApprovalStatusLabel(item: any): string {
         const status = this.getApprovalStatus(item);
-        
+        const normalizedStatus = String(status || '').replace(/\s+/g, '');
+
         const statusLabels: Record<string, string> = {
+            'Open': 'Open',
             'Pending': 'Pending',
             'Approved': 'Approved',
             'Rejected': 'Rejected',
             'Counter': 'Counter Offer',
             'WaitingForFinalApproval': 'Waiting for Final Approval',
-            'WaitingForCustomerApproval': 'Waiting for Customer Approval'
+            'WaitingForCustomerApproval': 'Waiting for Customer Approval',
+            'FullReview': 'Full Review'
         };
-        
-        return statusLabels[status] || status;
+
+        return statusLabels[status] || statusLabels[normalizedStatus] || status;
     }
 
     private getSearchObservable(): Observable<any> {
@@ -157,3 +160,4 @@ export class QuotationListManager {
         this.destroy$.complete();
     }
 }
+
