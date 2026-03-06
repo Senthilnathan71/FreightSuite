@@ -323,32 +323,76 @@ export class FullcalendarComponent implements OnInit {
 
 
   initForm() {
-    this.meetingForm = this.fb.group({
-      LeadOrCustomer: ["L", Validators.required],
-      customerName: ['', Validators.required],
-      CustomerMasterSid: [null],
-      PreCustomerMasterSid: ['', Validators.required],
-      meetingDate: ['', Validators.required],
-      followUpDate: ['', Validators.required],
-      followUp: ['', Validators.required],
-      meetingType: ['', Validators.required],
-      leadAssignTo: ['', Validators.required],
-      meetingNote: ['', this.meetingNoteValidator.bind(this)],
-      meetingStatus: ['Scheduled', Validators.required],
-      followUpNote: ['', Validators.required],
-      meetingDuration: ['10 min', Validators.required]
-    });
-    this.meetingForm.get('meetingStatus').valueChanges.subscribe(() => {
-      this.meetingForm.get('meetingNote').updateValueAndValidity();
-    });
-  }
-  private meetingNoteValidator(control: AbstractControl) {
-    const status = this.meetingForm?.get('meetingStatus')?.value;
-    if (status === 'on hold' && !control.value) {
-      return { required: true };
+  this.meetingForm = this.fb.group({
+    LeadOrCustomer: ["L", Validators.required],
+    customerName: [''],
+    CustomerMasterSid: [null],
+    PreCustomerMasterSid: [''],
+    meetingDate: ['', Validators.required],
+    followUpDate: [''],
+    followUp: [false],
+    meetingType: ['', Validators.required],
+    leadAssignTo: ['', Validators.required],
+    meetingNote: ['', [Validators.required]],
+    meetingStatus: ['Scheduled', Validators.required],
+    followUpNote: [''],
+    meetingDuration: ['10 min', Validators.required]
+  });
+
+  this.meetingForm.get('LeadOrCustomer')?.valueChanges.subscribe(value => {
+    const preCustomer = this.meetingForm.get('PreCustomerMasterSid');
+    const customer = this.meetingForm.get('CustomerMasterSid');
+
+    if (value === 'L') {
+      preCustomer?.setValidators([Validators.required]);
+      customer?.clearValidators();
+      customer?.setValue(null);
+    } else if (value === 'C') {
+      customer?.setValidators([Validators.required]);
+      preCustomer?.clearValidators();
+      preCustomer?.setValue(null);
     }
-    return null;
+
+    preCustomer?.updateValueAndValidity();
+    customer?.updateValueAndValidity();
+  });
+  // Meeting note validation
+  this.meetingForm.get('meetingStatus')?.valueChanges.subscribe(() => {
+    this.meetingForm.get('meetingNote')?.updateValueAndValidity();
+  });
+
+  // FollowUpDate validation
+  this.meetingForm.get('followUp')?.valueChanges.subscribe((checked) => {
+    const followUpDateControl = this.meetingForm.get('followUpDate');
+    const followUpNoteControl = this.meetingForm.get('followUpNote');
+
+    if (checked) {
+      followUpDateControl?.setValidators([Validators.required]);
+      followUpNoteControl?.setValidators([Validators.required]);
+    } else {
+      followUpDateControl?.clearValidators();
+      followUpDateControl?.setValue(null);
+      followUpNoteControl?.clearValidators();
+      followUpNoteControl?.setValue('');
+    }
+
+    followUpDateControl?.updateValueAndValidity();
+  });
+  this.meetingForm.get('LeadOrCustomer')?.setValue(
+    this.meetingForm.get('LeadOrCustomer')?.value
+  );
+}
+  private meetingNoteValidator(control: AbstractControl) {
+  if (!control.parent) return null;
+
+  const status = control.parent.get('meetingStatus')?.value;
+
+  if (status === 'on hold' && !control.value) {
+    return { required: true };
   }
+
+  return null;
+}
 
 
   toggleFollowUp(event: Event): void {
@@ -512,6 +556,7 @@ export class FullcalendarComponent implements OnInit {
     // Mark all fields as touched to show validation errors
     this.meetingForm.markAllAsTouched();  
     this.appSettingService.showError('Please fill all required fields');
+      console.log('form',this.meetingForm.value)
     return;
   }
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
@@ -607,7 +652,7 @@ export class FullcalendarComponent implements OnInit {
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       userEmail: userEmail,
       followUpDate: followUpDate,
-      meetingDateStr: meetingDateStr
+      meetingDate: meetingDateStr
     };
 
     // If followUp is false, remove followUpNote and followUpDate from the payload
@@ -697,6 +742,9 @@ export class FullcalendarComponent implements OnInit {
           meetingDuration: this.preCustomerMeetingData.meetingDuration || '10 min',
         });
 
+        const followUpControl = this.meetingForm.get('followUp');
+        followUpControl?.updateValueAndValidity();
+        this.meetingForm.get('LeadOrCustomer')?.updateValueAndValidity();
         this.meetingForm.controls['meetingStatus'].enable();
         if (this.preCustomerMeetingData.meetingStatus === 'confirmed') {
           this.meetingForm.controls['meetingStatus'].disable();

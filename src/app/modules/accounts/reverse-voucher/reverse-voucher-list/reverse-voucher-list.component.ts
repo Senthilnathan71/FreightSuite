@@ -296,6 +296,7 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
             filterable: true,
             visible: true,
             dataType: 'string',
+            template: 'status',
           }
         ],
         actions: [
@@ -313,7 +314,7 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
             tooltip: 'Delete ',
             class: "text-danger",
             state: !this.mps.can('delete'),
-            condition: (row: any) => row.PostStatus === 'U'
+            condition: (row: any) => row.Status === 'Active' && row.PostStatus === 'U'
           }
         ],
         selectable: false,
@@ -429,7 +430,12 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
         dialogRef.afterClosed().subscribe(result => {
           if (result === true) {
             this.spinner.show();
-            this.operationService.deleteReverseVoucherById(ReverseVoucher.VoucherHeaderSid).subscribe({
+            this.accountService.deleteVoucher({
+              VoucherHeaderSid: ReverseVoucher.VoucherHeaderSid,
+          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+          BranchMasterSid: this.currentBranch?.BranchMasterSid,
+          UserEmail: this.userData?.userEmail
+            }).subscribe({
               next: (response) => {
                 this.spinner.hide();
                 if (response.status) {

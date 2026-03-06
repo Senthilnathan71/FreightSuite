@@ -1,14 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { NgxSpinnerService } from 'ngx-spinner';
+import { firstValueFrom } from 'rxjs';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { SafeInsertShipmentMilestone, ShipmentMilestoneService } from 'src/app/modules/operation/services/shipment-milestone.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 
@@ -35,14 +37,21 @@ export class ReleaseLetterComponent {
   @Input() masterJobData: any;
   @Input() containerTypeList: any;
   @Input() selectedFCLLCL: any;
-  @Input() portList: any[] = []; // Add this input
+  @Input() portList: any[] = [];
+
+  @Input() autoInsertMilestone: boolean = false;
+  @Input() milestonePayload?: SafeInsertShipmentMilestone;
+  @Output() reloadMilestone = new EventEmitter<void>();
+  private milestoneInserted: boolean = false;
+
   constructor(
     private appSettingsService: AppSettingsService,
     private activeModal: NgbActiveModal,
     private masterService: MasterService,
     private pdfService: PdfDownloadService,
     private spinner: NgxSpinnerService,
-    public logoService : LogoService
+    public logoService : LogoService,
+    private milestoneService: ShipmentMilestoneService
   ) { }
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
@@ -59,6 +68,7 @@ export class ReleaseLetterComponent {
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
+    this.milestoneInserted = false;
   }
 
   loadCityName(): void {
@@ -143,6 +153,7 @@ get totalVolume(): number {
   setTimeout(async () => {
     this.spinner.show();
    try {
+      await this.insertMilestoneSafelyForPrint();
       await this.pdfService.downloadBalancedPDF(
         'printContent',
         `Release_Letter${this.housejobData?.ShipmentNo || 'Report'}`,
@@ -161,6 +172,7 @@ get totalVolume(): number {
 
 
     async generatePDFBlob(): Promise<Blob | null> {
+          await this.insertMilestoneSafelyForPrint();
           const printContent = document.getElementById('printContent');
           if (!printContent) {
             return null;
@@ -204,9 +216,11 @@ get totalVolume(): number {
 // Print
 
       
-printDiv(divId: string): void {
+async printDiv(divId: string): Promise<void> {
   this.showPrintLogo = true;
   this.showPdfLogo = false;
+
+  await this.insertMilestoneSafelyForPrint();
 
   setTimeout(() => {
     const printContents = document.getElementById(divId)?.innerHTML;
@@ -231,6 +245,26 @@ printDiv(divId: string): void {
 }
 
 
+
+  private async insertMilestoneSafelyForPrint(): Promise<void> {
+    if (!this.autoInsertMilestone || !this.milestonePayload || this.milestoneInserted) {
+      return;
+    }
+
+    try {
+      const resp: any = await firstValueFrom(
+        this.milestoneService.safeInsertMilestone(this.milestonePayload)
+      );
+
+      if (resp.status) {
+        this.milestoneInserted = true;
+        this.autoInsertMilestone = false;
+        this.reloadMilestone.emit();
+      }
+    } catch (error) {
+      console.error('Error inserting milestone', error);
+    }
+  }
 
   modalClose() {
     this.activeModal.close();

@@ -3705,12 +3705,12 @@ ${this.userData['userName']}`;
     </div>
   `;
 
-    this.followupModalRef.componentInstance.followupSaved.subscribe((result) => {
-      console.log('Follow-up saved successfully:', result);
-      this.appSettingService.showSuccess('Follow-up created successfully');
-    });
+    this.initializeMilestoneContentForFollowup();
 
-    this.initializeMilestoneContentForFollowup()
+    this.followupModalRef.componentInstance.reloadMilestone.subscribe(() => {
+      console.log("Reloading milestone...");
+      this.milestoneComponent.loadShipmentMilestones(this.bookingData?.ShipmentNo);
+    });
 
     this.followupModalRef.result.then(
       (result) => console.log('Modal closed:', result),
@@ -3754,17 +3754,13 @@ ${this.userData['userName']}`;
       DepartmentName: this.selectedDepartment?.departmentName,
       JobType: currentJobType,
       MilestoneCode: "CFU",
+      MilestoneDate: getDefaultTodayDate(),
       ShipmentNo: this.bookingData?.ShipmentNo,
       createdBy: this.userData?.userEmail,
       Remarks: `Cargo Followup has been sent on ${(new Date().toISOString()).split('T')[0]}`
     };
-    console.log("Milestone Payload",milestonePayload);
+    console.log("Milestone Payload", milestonePayload);
     this.followupModalRef.componentInstance.milestonePayload = milestonePayload;
-
-    this.followupModalRef.componentInstance.reloadMilestone.subscribe(() => {
-      console.log("Reloading milestone...");
-      this.milestoneComponent.loadShipmentMilestones(this.bookingData?.ShipmentNo);
-    });
   }
  
  
@@ -5132,115 +5128,263 @@ printDiv(divId: string): void {
   }
 
 
+    openPrintQtyModalwithoutCompany(template: any) {
+    this.printQty = 1;
+    this.modalService.open(template, { centered: true });
+  }
+
   confirmPrint(modal: any) {
     modal.close();
     this.printDivBarcode('printContent', this.printQty);
   }
 
 
-  printDivBarcode(divId: string, qty: number): void {
-    this.showPrintLogo = true;
-    this.showPdfLogo = false;
+//   printDivBarcode(divId: string, qty: number): void {
+//     this.showPrintLogo = true;
+//     this.showPdfLogo = false;
 
-    setTimeout(() => {
-      const sourceElement = document.getElementById(divId);
-      if (!sourceElement) return;
+//     setTimeout(() => {
+//       const sourceElement = document.getElementById(divId);
+//       if (!sourceElement) return;
 
-      // ✅ Collect all styles from current page
-      const styles = Array.from(document.styleSheets)
-        .map((sheet: any) => {
-          try {
-            return Array.from(sheet.cssRules)
-              .map((rule: any) => rule.cssText)
-              .join('');
-          } catch {
-            return '';
-          }
-        })
-        .join('');
+//       // ✅ Collect all styles from current page
+//       const styles = Array.from(document.styleSheets)
+//         .map((sheet: any) => {
+//           try {
+//             return Array.from(sheet.cssRules)
+//               .map((rule: any) => rule.cssText)
+//               .join('');
+//           } catch {
+//             return '';
+//           }
+//         })
+//         .join('');
 
-      let finalHtml = '';
+//       let finalHtml = '';
 
-      for (let i = 0; i < qty; i++) {
-        finalHtml += `
+//       for (let i = 0; i < qty; i++) {
+//         finalHtml += `
+//         <div class="print-page">
+//           ${sourceElement.innerHTML}
+//         </div>
+//       `;
+//       }
+
+//       const popupWin = window.open('', '_blank', 'width=900,height=600');
+
+//       if (popupWin) {
+//         popupWin.document.open();
+//         popupWin.document.write(`
+//         <html>
+//           <head>
+//             <title>Print Barcode</title>
+
+//             <!-- Bootstrap -->
+//             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
+//             <!-- FontAwesome -->
+//             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+//          <style>
+//   ${styles}
+
+// html, body {
+//   margin: 0;
+//   padding: 0;
+// }
+
+// /* One physical printed page */
+// .print-page {
+//   width: 100vw;
+//   height: 100vh;
+
+//   display: flex;
+//   justify-content: center;
+//   align-items: center;
+
+//   page-break-after: always;
+// }
+
+// .print-page:last-child {
+//   page-break-after: auto;
+// }
+
+// /* Your label size */
+// .print-label {
+//   width: 380px;
+//   height: 480px;
+// }
+
+// @media print {
+//   body {
+//     -webkit-print-color-adjust: exact;
+//     print-color-adjust: exact;
+//   }
+
+//   @page {
+//     margin: 0;
+//   }
+// }
+
+// </style>
+
+//           </head>
+
+//           <body onload="window.print(); window.close();">
+//             ${finalHtml}
+//           </body>
+//         </html>
+//       `);
+
+//         popupWin.document.close();
+//       }
+//     }, 100);
+//   }
+
+printDivBarcode(divId: string, qty: number): void {
+
+  this.showPrintLogo = true;
+  this.showPdfLogo = false;
+
+  setTimeout(() => {
+
+    const sourceElement = document.getElementById(divId);
+    if (!sourceElement) return;
+
+    // Collect all styles from current page
+    const styles = Array.from(document.styleSheets)
+      .map((sheet: any) => {
+        try {
+          return Array.from(sheet.cssRules)
+            .map((rule: any) => rule.cssText)
+            .join('');
+        } catch {
+          return '';
+        }
+      })
+      .join('');
+
+    let finalHtml = '';
+
+    // ✅ Create 2 labels per A4 page
+    for (let i = 0; i < qty; i += 2) {
+
+      const label1 = sourceElement.innerHTML;
+      const label2 = (i + 1 < qty) ? sourceElement.innerHTML : '';
+
+      finalHtml += `
         <div class="print-page">
-          ${sourceElement.innerHTML}
+
+          <div class="print-label">
+            ${label1}
+          </div>
+
+          ${label2 ? `
+          <div class="print-label">
+            ${label2}
+          </div>
+          ` : ''}
+
         </div>
       `;
-      }
+    }
 
-      const popupWin = window.open('', '_blank', 'width=900,height=600');
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
 
-      if (popupWin) {
-        popupWin.document.open();
-        popupWin.document.write(`
-        <html>
-          <head>
-            <title>Print Barcode</title>
+    if (popupWin) {
 
-            <!-- Bootstrap -->
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+      popupWin.document.open();
 
-            <!-- FontAwesome -->
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+      popupWin.document.write(`
+      <html>
+        <head>
 
-         <style>
-  ${styles}
+          <title>Print Barcode</title>
 
-html, body {
-  margin: 0;
-  padding: 0;
-}
+          <!-- Bootstrap -->
+          <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
 
-/* One physical printed page */
-.print-page {
-  width: 100vw;
-  height: 100vh;
+          <!-- FontAwesome -->
+          <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  display: flex;
-  justify-content: center;
-  align-items: center;
+          <style>
 
-  page-break-after: always;
-}
+          ${styles}
 
-.print-page:last-child {
-  page-break-after: auto;
-}
+          html, body{
+            margin:0;
+            padding:0;
+          }
 
-/* Your label size */
-.print-label {
-  width: 380px;
-  height: 480px;
-}
+          /* A4 Page */
+          .print-page{
+            width:21cm;
+            height:29.7cm;
 
-@media print {
-  body {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
+            display:flex;
+            flex-direction:column;
+            justify-content:around;
+            align-items:center;
 
-  @page {
-    margin: 0;
-  }
-}
+            padding:2cm 0;
+            box-sizing:border-box;
 
-</style>
+            page-break-after:always;
+          }
 
-          </head>
+          .print-page:last-child{
+            page-break-after:auto;
+          }
 
-          <body onload="window.print(); window.close();">
-            ${finalHtml}
-          </body>
-        </html>
+          /* Label size */
+          .print-label{
+            width:12.5cm;
+            height:10cm;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+          }
+
+          /* center gap */
+          .print-label + .print-label{
+            margin-top:1.4cm;
+          }
+
+          @media print{
+
+            body{
+              -webkit-print-color-adjust:exact;
+              print-color-adjust:exact;
+            }
+
+            @page{
+              size:A4;
+              margin:0;
+            }
+
+          }
+
+          </style>
+
+        </head>
+
+        <body onload="window.print(); window.close();">
+
+          ${finalHtml}
+
+        </body>
+      </html>
       `);
 
-        popupWin.document.close();
-      }
-    }, 100);
-  }
+      popupWin.document.close();
 
+    }
 
+  }, 100);
+
+}
 
 // Add this method to your component class
 getFieldLabel(fieldName: string): string {

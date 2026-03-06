@@ -19,6 +19,10 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import {
+  AdvancedFilterValues,
+  DropdownFilterConfig
+} from 'src/app/shared/interfaces/advanced-filter.interface';
 @Component({
   selector: 'app-chart-account-list',
   standalone: true,
@@ -60,6 +64,35 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
   
 
   tableLoading = false;
+  categoryFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'Category',
+    options: [
+      { label: 'Asset', value: 'Asset' },
+      { label: 'Liability', value: 'Liability' },
+      { label: 'Income', value: 'Income' },
+      { label: 'Expense', value: 'Expense' }
+    ],
+    bindLabel: 'label',
+    bindValue: 'value'
+  };
+  groupFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'Group',
+    options: [],
+    bindLabel: 'name',
+    bindValue: 'name'
+  };
+  subGroupFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'SubGroup',
+    options: [],
+    bindLabel: 'name',
+    bindValue: 'name'
+  };
+  currentFilters: AdvancedFilterValues = {};
+  private allCoaFilterRows: any[] = [];
+  private selectedCategoryFilter = '';
 
   protected config: ListComponentConfig = {
     storageKey: 'chart-accounts-list-state',
@@ -106,6 +139,7 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
       this.initializeTableConfig();
       this.initializeHeaderActions();
     });
+    this.loadAllFilterOptions();
     
     // Initialize base component
     super.ngOnInit();
@@ -120,7 +154,7 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
   }
 
   protected getSearchParams(): SearchParams {
-    return {
+    const params: any = {
       search: this.filterValue.trim(),
       page: Number(this.page),
       pageSize: Number(this.pageSize),
@@ -129,17 +163,37 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
       sortColumn: this.sortColumn,
       sortDirection: this.sortDirection
     };
+
+    if (this.currentFilters.departmentSid) {
+      params.Category = this.currentFilters.departmentSid;
+      params.category = this.currentFilters.departmentSid;
+    }
+    if (this.currentFilters.pol) {
+      params.GroupName = this.currentFilters.pol;
+      params.groupName = this.currentFilters.pol;
+    }
+    if (this.currentFilters.pod) {
+      params.SubGroupName = this.currentFilters.pod;
+      params.subGroupName = this.currentFilters.pod;
+    }
+
+    return params;
   }
 
   protected processSearchResults(response: any): void {
     this.tableLoading = false;
     this.spinner.hide();
     if (response.status) {
-      this.allItems = response.data.items.map(item => ({
+      const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
+      const filteredItems = this.applyAdvancedFilters(rawItems);
+      this.allItems = filteredItems.map(item => ({
         ...item,
         Status: item.Status === 'A' ? 'Active' : 'Suspended'
       }));
-      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.totalLengthOfCollection =
+        rawItems.length !== filteredItems.length
+          ? filteredItems.length
+          : (response.data.totalCount || 0);
       this.applySorting();
       this.updateHeaderActionState();
     } else {
@@ -164,7 +218,138 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
 
     onSearchCleared(): void {
     this.filterValue = '';
+    this.currentFilters = {};
+    this.selectedCategoryFilter = '';
+    this.setAllGroupOptions();
+    this.setAllSubGroupOptions();
     this.clearFilterValue();
+  }
+
+  onAdvancedSearch(event: { searchValue: string; filters: AdvancedFilterValues }): void {
+    this.filterValue = event.searchValue;
+    this.currentFilters = event.filters;
+    this.page = 1;
+    this.search();
+  }
+
+  onCategoryFilterChanged(category: string | null): void {
+    const selectedCategory = category ? String(category) : '';
+    this.selectedCategoryFilter = selectedCategory;
+    this.groupFilterConfig = { ...this.groupFilterConfig, options: [] };
+
+    // Keep current logic for selected category/group.
+    if (!selectedCategory) {
+      this.setAllGroupOptions();
+      this.setAllSubGroupOptions();
+      return;
+    }
+
+    this.subGroupFilterConfig = { ...this.subGroupFilterConfig, options: [] };
+    if (!this.currentCompany?.CompanyMasterSid) {
+      return;
+    }
+
+    this.masterService.getAllGroupsByCategory({
+      Category: selectedCategory,
+      CompanyMasterSid: this.currentCompany.CompanyMasterSid
+    }).subscribe({
+      next: (groups: string[]) => {
+        this.groupFilterConfig = {
+          ...this.groupFilterConfig,
+          options: (groups || []).map(group => ({ name: group }))
+        };
+      },
+      error: () => {
+        this.groupFilterConfig = { ...this.groupFilterConfig, options: [] };
+      }
+    });
+  }
+
+  onGroupFilterChanged(groupName: string | null): void {
+    const selectedGroup = groupName ? String(groupName) : '';
+    const selectedCategory = this.selectedCategoryFilter;
+
+    if (!selectedGroup) {
+      if (selectedCategory) {
+        this.subGroupFilterConfig = { ...this.subGroupFilterConfig, options: [] };
+      } else {
+        this.setAllSubGroupOptions();
+      }
+      return;
+    }
+
+    if (!selectedCategory) {
+      const subgroups = this.allCoaFilterRows
+        .filter((row: any) => String(row?.GroupName || '').trim() === selectedGroup)
+        .map((row: any) => String(row?.SubGroupName || '').trim())
+        .filter((name: string) => !!name);
+      this.subGroupFilterConfig = {
+        ...this.subGroupFilterConfig,
+        options: Array.from(new Set(subgroups)).sort().map(name => ({ name }))
+      };
+      return;
+    }
+
+    this.subGroupFilterConfig = { ...this.subGroupFilterConfig, options: [] };
+    if (!this.currentCompany?.CompanyMasterSid) {
+      return;
+    }
+
+    this.masterService.getAllSubgroupsByGroup({
+      Category: selectedCategory,
+      GroupName: selectedGroup,
+      CompanyMasterSid: this.currentCompany.CompanyMasterSid
+    }).subscribe({
+      next: (subgroups: string[]) => {
+        this.subGroupFilterConfig = {
+          ...this.subGroupFilterConfig,
+          options: (subgroups || []).map(subgroup => ({ name: subgroup }))
+        };
+      },
+      error: () => {
+        this.subGroupFilterConfig = { ...this.subGroupFilterConfig, options: [] };
+      }
+    });
+  }
+
+  private loadAllFilterOptions(): void {
+    const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    if (!companyMasterSid) {
+      return;
+    }
+
+    this.masterService.getAllCoa(companyMasterSid).subscribe({
+      next: (rows: any[]) => {
+        this.allCoaFilterRows = Array.isArray(rows) ? rows : [];
+        this.setAllGroupOptions();
+        this.setAllSubGroupOptions();
+      },
+      error: () => {
+        this.allCoaFilterRows = [];
+        this.groupFilterConfig = { ...this.groupFilterConfig, options: [] };
+        this.subGroupFilterConfig = { ...this.subGroupFilterConfig, options: [] };
+      }
+    });
+  }
+
+  private setAllGroupOptions(): void {
+    const groups = this.allCoaFilterRows
+      .map((row: any) => String(row?.GroupName || '').trim())
+      .filter((name: string) => !!name);
+    this.groupFilterConfig = {
+      ...this.groupFilterConfig,
+      options: Array.from(new Set(groups)).sort().map(name => ({ name }))
+    };
+  }
+
+  private setAllSubGroupOptions(): void {
+    const subgroups = this.allCoaFilterRows
+      .map((row: any) => String(row?.SubGroupName || '').trim())
+      .filter((name: string) => !!name);
+    this.subGroupFilterConfig = {
+      ...this.subGroupFilterConfig,
+      options: Array.from(new Set(subgroups)).sort().map(name => ({ name }))
+    };
   }
 
     initializeHeaderActions(): void {
@@ -359,6 +544,33 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
     // For now, we'll handle this with the existing search functionality
     // In a more advanced implementation, you could apply individual column filters
     console.log('Filters changed:', filters);
+  }
+
+  private applyAdvancedFilters(items: any[]): any[] {
+    const selectedCategory = this.currentFilters.departmentSid ? String(this.currentFilters.departmentSid).trim().toUpperCase() : '';
+    const selectedGroup = this.currentFilters.pol ? String(this.currentFilters.pol).trim().toUpperCase() : '';
+    const selectedSubGroup = this.currentFilters.pod ? String(this.currentFilters.pod).trim().toUpperCase() : '';
+
+    if (!selectedCategory && !selectedGroup && !selectedSubGroup) {
+      return items;
+    }
+
+    return items.filter((item: any) => {
+      const itemCategory = String(item?.Category ?? '').trim().toUpperCase();
+      const itemGroup = String(item?.GroupName ?? '').trim().toUpperCase();
+      const itemSubGroup = String(item?.SubGroupName ?? '').trim().toUpperCase();
+
+      if (selectedCategory && itemCategory !== selectedCategory) {
+        return false;
+      }
+      if (selectedGroup && itemGroup !== selectedGroup) {
+        return false;
+      }
+      if (selectedSubGroup && itemSubGroup !== selectedSubGroup) {
+        return false;
+      }
+      return true;
+    });
   }
 
   report(): void {

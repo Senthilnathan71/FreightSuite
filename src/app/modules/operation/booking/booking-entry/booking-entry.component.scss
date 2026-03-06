@@ -1,0 +1,25 @@
+@media print {
+
+  .barcode-print{
+    width:21cm;
+    height:29.7cm;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between; /* top + bottom gap */
+    align-items:center;
+    padding:2cm 0;
+    box-sizing:border-box;
+  }
+
+  .barcode-print > div{
+    width:12.5cm;
+    height:10cm;
+    page-break-inside:avoid;
+  }
+
+}
+
+@page{
+  size:A4;
+  margin:0;
+}
