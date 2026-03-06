@@ -3705,12 +3705,12 @@ ${this.userData['userName']}`;
     </div>
   `;
 
-    this.followupModalRef.componentInstance.followupSaved.subscribe((result) => {
-      console.log('Follow-up saved successfully:', result);
-      this.appSettingService.showSuccess('Follow-up created successfully');
-    });
+    this.initializeMilestoneContentForFollowup();
 
-    this.initializeMilestoneContentForFollowup()
+    this.followupModalRef.componentInstance.reloadMilestone.subscribe(() => {
+      console.log("Reloading milestone...");
+      this.milestoneComponent.loadShipmentMilestones(this.bookingData?.ShipmentNo);
+    });
 
     this.followupModalRef.result.then(
       (result) => console.log('Modal closed:', result),
@@ -3754,17 +3754,13 @@ ${this.userData['userName']}`;
       DepartmentName: this.selectedDepartment?.departmentName,
       JobType: currentJobType,
       MilestoneCode: "CFU",
+      MilestoneDate: getDefaultTodayDate(),
       ShipmentNo: this.bookingData?.ShipmentNo,
       createdBy: this.userData?.userEmail,
       Remarks: `Cargo Followup has been sent on ${(new Date().toISOString()).split('T')[0]}`
     };
-    console.log("Milestone Payload",milestonePayload);
+    console.log("Milestone Payload", milestonePayload);
     this.followupModalRef.componentInstance.milestonePayload = milestonePayload;
-
-    this.followupModalRef.componentInstance.reloadMilestone.subscribe(() => {
-      console.log("Reloading milestone...");
-      this.milestoneComponent.loadShipmentMilestones(this.bookingData?.ShipmentNo);
-    });
   }
  
  

@@ -2662,6 +2662,23 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   }
 
+  onDetailSubledgerChange(subledger: any, detailIndex: number) {
+    if (!subledger || !this.isNonJob) return;
+    const ctrl = this.details.at(detailIndex) as FormGroup;
+    const currencyId = subledger.CurrencyMasterSid || subledger.currencyMaster?.CurrencyMasterSid;
+    if (currencyId) {
+      const currency = this.currencyList.find(c => c.CurrencyMasterSid === currencyId);
+      if (currency) {
+        const companyCurrencyCode = this.currentCompanyCurrency?.code;
+        ctrl.patchValue({
+          CurrencyMasterSid: currencyId,
+          CurrencyCode: currency.currencyCode,
+        });
+        this.patchExchangeRateForDetail(currency.currencyCode, companyCurrencyCode, detailIndex);
+      }
+    }
+  }
+
   private getVendorCountry(): string {
     const customer = this.vendorList.find(
       (c) => c.SubledgerMasterSid === this.vendorInvoiceForm.get('PartyMasterSid')?.value

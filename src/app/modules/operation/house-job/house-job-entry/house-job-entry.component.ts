@@ -4139,7 +4139,33 @@ ${this.userData['userName']}`;
          modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
          modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
         modalRef.componentInstance.portList = this.portList || [];
+        this.initializeMilestoneContentForReleaseLetter(modalRef);
       }
+
+  private initializeMilestoneContentForReleaseLetter(modalRef: any): void {
+    const validDepartment = this.selectedDepartment?.ExportImport === 'Export';
+    const validJobType = this.b['JobType']?.value === 'Export';
+
+    modalRef.componentInstance.autoInsertMilestone = validDepartment && validJobType;
+
+    const milestonePayload: SafeInsertShipmentMilestone = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      DepartmentName: this.selectedDepartment?.departmentName,
+      JobType: this.b['JobType']?.value,
+      MilestoneCode: 'HBL',
+      MilestoneDate: getDefaultTodayDate(),
+      ShipmentNo: this.bookingData?.ShipmentNo,
+      createdBy: this.userData?.userEmail,
+      Remarks: `BL Release on ${(new Date().toISOString()).split('T')[0]}`,
+    };
+
+    modalRef.componentInstance.milestonePayload = milestonePayload;
+
+    modalRef.componentInstance.reloadMilestone.subscribe(() => {
+      this.milestoneComponent.loadShipmentMilestones(this.housejobData?.ShipmentNo);
+    });
+  }
 
   reportReleaseOrder() {
     const modalRef = this.modalService.open(ReleaseOrderComponent, {
