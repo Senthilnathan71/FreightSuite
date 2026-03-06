@@ -44,6 +44,7 @@ import { title } from 'process';
 import { AgentMasterAirWaybillEntryComponent } from './agent-master-air-waybill/agent-master-air-waybill-entry/agent-master-air-waybill-entry.component';
 import { VoucherCorrectionEntryComponent } from './voucher-correction/voucher-correction-entry/voucher-correction-entry.component';
 import { AgentMasterAirWaybillListComponent } from './agent-master-air-waybill/agent-master-air-waybill-list/agent-master-air-waybill-list.component';
+import { ProRateComponent } from './master-job/pro-rate/pro-rate.component';
 
 
 export const OperationRoutes: Routes = [
@@ -545,6 +546,14 @@ export const OperationRoutes: Routes = [
         data: {
           title: 'Agent Master Air Waybill',
           urls: [{ title: 'operation', url: '/operation' }, { title: 'Agent Master Air Waybill' }],
+        },
+      },
+       {
+        path: 'pro-rate',
+        component: ProRateComponent,
+        data: {
+          title: 'Pro Rate',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Pro Rate' }],
         },
       },
     ],
