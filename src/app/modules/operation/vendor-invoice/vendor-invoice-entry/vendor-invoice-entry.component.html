@@ -705,13 +705,14 @@
                         </td>
 
                         <td>
-                          <ng-select 
+                          <ng-select
                             formControlName="LedgerMasterSid"
                             [items]="subledgerListDetail[i] || []"
                             bindLabel="SubledgerName"
                             bindValue="SubledgerMasterSid"
-                            appendTo="body" 
-                            placeholder="">
+                            appendTo="body"
+                            placeholder=""
+                            (change)="onDetailSubledgerChange($event, i)">
                           </ng-select>
                         </td>
                         } @else {

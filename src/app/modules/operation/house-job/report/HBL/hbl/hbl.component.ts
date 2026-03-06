@@ -13,7 +13,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { OperationService } from 'src/app/modules/operation/operation.service';
-import { ShipmentMilestoneService } from 'src/app/modules/operation/services/shipment-milestone.service';
+import { SafeInsertShipmentMilestone, ShipmentMilestoneService } from 'src/app/modules/operation/services/shipment-milestone.service';
 
 @Component({
   selector: 'app-hbl',
@@ -48,15 +48,7 @@ export class HblComponent {
   private pdfDepsPromise?: Promise<{ pdfMake: any }>;
 
   @Input() autoInsertMilestone: boolean = false;
-  @Input() milestonePayload?: {
-    MasterJobSid: number,
-    CompanyMasterSid: number,
-    BranchMasterSid: number,
-    MilestoneCode: string,
-    MilestoneDate: Date,
-    createdBy: string,
-    Remarks: string
-  };
+  @Input() milestonePayload?: SafeInsertShipmentMilestone;
   @Output() reloadMilestone = new EventEmitter<void>();
   private milestoneInserted: boolean = false;
 

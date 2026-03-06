@@ -542,7 +542,7 @@
                     placeholder=""
                     class="custom-input-field sm"
                     formControlName="ExchangeRate"
-                    (change)="checkAndUpdateForAllPartyDetail()"
+                    (change)="checkAndUpdateForAllPartyDetail(); recalculateAllMatchingPartyAmounts()"
                     DecimalPrecision
                     [DecimalPrecisionBefore]="4"
                     [DecimalPrecisionAfter]="
