@@ -6,7 +6,7 @@ import { NgbPagination, NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-import { Observable } from 'rxjs';
+import { catchError, forkJoin, map, Observable, of } from 'rxjs';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -17,6 +17,13 @@ import { ToolsDropdownComponent, DropdownMenuItem } from 'src/app/shared/compone
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
+import {
+  AdvancedFilterValues,
+  DateRangeConfig,
+  DateTypeConfig,
+  DropdownFilterConfig,
+  PartyFilterConfig
+} from 'src/app/shared/interfaces/advanced-filter.interface';
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { OperationService } from '../../operation.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
@@ -65,12 +72,46 @@ export class CargoReceiptListComponent extends BaseListComponent implements OnIn
   tableConfig: TableConfig;
 
   tableLoading = false;
+  dateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+  dateTypeConfig: DateTypeConfig = {
+    enabled: true,
+    options: [{ label: 'Booking Date', value: 'BookingDateTime' }],
+    defaultValue: 'BookingDateTime'
+  };
+  partyFilterConfig: PartyFilterConfig = {
+    enabled: true,
+    partyTypes: [{ label: 'Customer', value: 'CustomerMasterSid' }],
+    defaultPartyType: 'CustomerMasterSid'
+  };
+  departmentFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'Dept',
+    options: [],
+    bindLabel: 'departmentName',
+    bindValue: 'DepartmentMasterSid'
+  };
+  polFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'POL',
+    options: [],
+    bindLabel: 'displayName',
+    bindValue: 'PortCode'
+  };
+  podFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'POD',
+    options: [],
+    bindLabel: 'displayName',
+    bindValue: 'PortCode'
+  };
+  private allPorts: any[] = [];
+  currentFilters: AdvancedFilterValues = {};
   headerActions: HeaderAction[] = [];
   modalDropdownItems: DropdownMenuItem[] = [];
   protected config: ListComponentConfig = {
-    storageKey: 'booking-list-state',
+    storageKey: 'cargo-receipt-list-state',
     defaultPageSize: 10,
-    defaultSortColumn: 'BookingNo',
+    defaultSortColumn: 'BookingDateTime',
     defaultSortDirection: 'desc',
     pageSizeOptions: [10, 20, 50, 100, 500],
     maxPagesToShow: 3
@@ -78,6 +119,18 @@ export class CargoReceiptListComponent extends BaseListComponent implements OnIn
 
   // Alias for compatibility with existing template
   get allCargo() { return this.allItems; }
+  partySearchFn = (_searchTerm: string, partyType: string): Observable<any[]> => {
+    const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    if (!companyMasterSid || partyType !== 'CustomerMasterSid') {
+      return of([]);
+    }
+
+    return this.operationService.getAllCustomersWithBranch(companyMasterSid).pipe(
+      map((data: any) => Array.isArray(data) ? data : []),
+      catchError(() => of([]))
+    );
+  };
+
   constructor(
     private router: Router,
     private appSettingService: AppSettingsService,
@@ -110,6 +163,16 @@ export class CargoReceiptListComponent extends BaseListComponent implements OnIn
           this.initializeTableConfig();
           this.initializeHeaderActions();
         })
+
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'BookingDateTime'
+    };
+    this.loadHeaderLookups();
     // this.initializeModalDropdownItems();
     super.ngOnInit();
   }
@@ -117,12 +180,13 @@ export class CargoReceiptListComponent extends BaseListComponent implements OnIn
 
   // Implement abstract methods from BaseListComponent
   protected searchItems(): Observable<any> {
+    this.tableLoading = true;
     this.spinner.show();
     return this.operationService.search(this.getSearchParams());
   }
 
-  protected getSearchParams(): SearchParams {
-    return {
+  protected getSearchParams(): SearchParams & Record<string, any> {
+    const params: any = {
       search: this.filterValue.trim(),
       page: Number(this.page),
       pageSize: Number(this.pageSize),
@@ -131,21 +195,77 @@ export class CargoReceiptListComponent extends BaseListComponent implements OnIn
       sortColumn: this.sortColumn,
       sortDirection: this.sortDirection
     };
+
+    if (this.currentFilters.dateRange?.fromDate) {
+      params.dateFrom = this.currentFilters.dateRange.fromDate;
+      params.DateFrom = this.currentFilters.dateRange.fromDate;
+    }
+    if (this.currentFilters.dateRange?.toDate) {
+      params.dateTo = this.currentFilters.dateRange.toDate;
+      params.DateTo = this.currentFilters.dateRange.toDate;
+    }
+    if (this.currentFilters.dateType) {
+      params.dateField = this.currentFilters.dateType;
+      params.DateField = this.currentFilters.dateType;
+      if (params.dateFrom) {
+        params[`${this.currentFilters.dateType}From`] = params.dateFrom;
+      }
+      if (params.dateTo) {
+        params[`${this.currentFilters.dateType}To`] = params.dateTo;
+      }
+    }
+    if (this.currentFilters.party) {
+      params.CustomerMasterSid = this.currentFilters.party.partyId;
+      params.customerMasterSid = this.currentFilters.party.partyId;
+      params.customerName = this.currentFilters.party.partyName;
+    }
+    if (this.currentFilters.departmentSid) {
+      params.DepartmentMasterSid = Number(this.currentFilters.departmentSid);
+      params.departmentMasterSid = Number(this.currentFilters.departmentSid);
+    }
+    if (this.currentFilters.pol) {
+      const polCode = String(this.currentFilters.pol);
+      params.POL = polCode;
+      params.pol = polCode;
+      const polSid = this.getPortSidByCode(polCode);
+      if (polSid) {
+        params.POLSid = polSid;
+        params.polSid = polSid;
+      }
+    }
+    if (this.currentFilters.pod) {
+      const podCode = String(this.currentFilters.pod);
+      params.POD = podCode;
+      params.pod = podCode;
+      const podSid = this.getPortSidByCode(podCode);
+      if (podSid) {
+        params.PODSid = podSid;
+        params.podSid = podSid;
+      }
+    }
+
+    return params;
   }
 
   protected processSearchResults(response: any): void {
+    this.tableLoading = false;
     this.spinner.hide();
     console.log(response,'response')
     if (response.status) {
-      this.allItems = (response.data.items || []).map((item: any) => ({
+      const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
+      const filteredItems = this.applyAdvancedFilters(rawItems);
+
+      this.allItems = filteredItems.map((item: any) => ({
         ...item,
         status: item.status === 'A' ? 'Active' : 'Suspended',
         departmentName:item.departmentMaster?.departmentName,
         BookingDateTime:this.datePipe.transform(item?.BookingDateTime),
         bookingStatus: item.BookingStatus
       }));
-      this.totalLengthOfCollection = response.data.totalCount || 0;
-      this.applySorting();
+      this.totalLengthOfCollection =
+        rawItems.length !== filteredItems.length
+          ? filteredItems.length
+          : (response.data.totalCount || 0);
       this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching Cargo.');
@@ -155,6 +275,7 @@ export class CargoReceiptListComponent extends BaseListComponent implements OnIn
   }
 
   protected override handleSearchError(error: any): void {
+    this.tableLoading = false;
     this.spinner.hide();
     this.appSettingService.showError('Error searching Cargo.');
     console.error('Error searching Cargo', error);
@@ -175,6 +296,14 @@ export class CargoReceiptListComponent extends BaseListComponent implements OnIn
 
   onSearchCleared(): void {
     this.filterValue = '';
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'BookingDateTime'
+    };
     this.clearFilterValue();
   }
 
@@ -369,6 +498,199 @@ export class CargoReceiptListComponent extends BaseListComponent implements OnIn
     // For now, we'll handle this with the existing search functionality
     // In a more advanced implementation, you could apply individual column filters
     console.log('Filters changed:', filters);
+  }
+
+  onAdvancedSearch(event: { searchValue: string; filters: AdvancedFilterValues }): void {
+    this.filterValue = event.searchValue;
+    this.currentFilters = event.filters;
+    this.page = 1;
+    this.search();
+  }
+
+  onDepartmentFilterChanged(departmentSid: number | null): void {
+    this.setFilteredPortOptions(departmentSid);
+  }
+
+  private loadHeaderLookups(): void {
+    const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    if (!companyMasterSid) {
+      return;
+    }
+
+    forkJoin({
+      departments: this.operationService.getAllDepartments(companyMasterSid).pipe(catchError(() => of({ data: [] }))),
+      ports: this.operationService.getAllPorts().pipe(catchError(() => of({ data: [] })))
+    }).subscribe(({ departments, ports }: any) => {
+      this.departmentFilterConfig = {
+        ...this.departmentFilterConfig,
+        options: Array.isArray(departments?.data) ? departments.data : []
+      };
+
+      const allPorts = Array.isArray(ports?.data) ? ports.data : [];
+      this.allPorts = allPorts.map((port: any) => ({
+        ...port,
+        displayName: `${port.PortName} (${port.PortCode})`
+      }));
+
+      this.setFilteredPortOptions(null);
+    });
+  }
+
+  private setFilteredPortOptions(departmentSid: number | null): void {
+    const normalizedDepartmentSid = departmentSid !== null ? Number(departmentSid) : null;
+    const selectedDepartment = this.departmentFilterConfig.options.find(
+      (dept: any) => Number(dept?.DepartmentMasterSid) === normalizedDepartmentSid
+    );
+
+    const departmentType = (selectedDepartment?.departmentType || '').toUpperCase();
+    const filteredPorts = !departmentType
+      ? [...this.allPorts]
+      : this.allPorts.filter((port: any) => {
+          const portType = (port?.PortType || '').toUpperCase();
+          return departmentType === 'AIR' ? portType === 'AIR' : portType === 'SEA';
+        });
+
+    this.polFilterConfig = { ...this.polFilterConfig, options: filteredPorts };
+    this.podFilterConfig = { ...this.podFilterConfig, options: filteredPorts };
+  }
+
+  private getPortSidByCode(portCode: string | null | undefined): number | null {
+    if (!portCode) {
+      return null;
+    }
+
+    const port = this.allPorts.find((p: any) => String(p?.PortCode) === String(portCode));
+    return port?.PortMasterSid ? Number(port.PortMasterSid) : null;
+  }
+
+  private getPortCode(value: any): string {
+    if (!value) {
+      return '';
+    }
+    if (typeof value === 'string') {
+      return value;
+    }
+    return String(value?.PortCode || value?.portCode || '').trim();
+  }
+
+  private getLast30FromDate(): string {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - 30);
+    return date.toISOString();
+  }
+
+  private hasAdvancedFilterValues(): boolean {
+    return !!(
+      this.currentFilters.party?.partyId ||
+      this.currentFilters.departmentSid ||
+      this.currentFilters.pol ||
+      this.currentFilters.pod ||
+      this.currentFilters.dateRange?.fromDate ||
+      this.currentFilters.dateRange?.toDate
+    );
+  }
+
+  private applyAdvancedFilters(items: any[]): any[] {
+    if (!this.hasAdvancedFilterValues()) {
+      return items;
+    }
+
+    const selectedDateField = this.currentFilters.dateType || 'BookingDateTime';
+    const from = this.currentFilters.dateRange?.fromDate ? new Date(this.currentFilters.dateRange.fromDate) : null;
+    const to = this.currentFilters.dateRange?.toDate ? new Date(this.currentFilters.dateRange.toDate) : null;
+    const selectedPol = this.currentFilters.pol ? String(this.currentFilters.pol).trim().toUpperCase() : null;
+    const selectedPod = this.currentFilters.pod ? String(this.currentFilters.pod).trim().toUpperCase() : null;
+    const selectedDeptSid = this.currentFilters.departmentSid ? Number(this.currentFilters.departmentSid) : null;
+    const selectedDept = selectedDeptSid
+      ? this.departmentFilterConfig.options.find(
+          (dept: any) => Number(dept?.DepartmentMasterSid) === selectedDeptSid
+        )
+      : null;
+    const selectedDeptName = selectedDept?.departmentName
+      ? String(selectedDept.departmentName).trim().toUpperCase()
+      : null;
+    const selectedCustomerSid = this.currentFilters.party?.partyId ? Number(this.currentFilters.party.partyId) : null;
+    const selectedCustomerName = this.currentFilters.party?.partyName
+      ? String(this.currentFilters.party.partyName).trim().toUpperCase()
+      : null;
+
+    return items.filter((item: any) => {
+      if (selectedCustomerSid || selectedCustomerName) {
+        const itemCustomerSid = Number(
+          item?.CustomerMasterSid ??
+            item?.customerMaster?.CustomerMasterSid ??
+            item?.customer?.CustomerMasterSid ??
+            0
+        );
+        const itemCustomerName = String(
+          item?.CustomerName ??
+            item?.customerMaster?.CustomerName ??
+            item?.customer?.CustomerName ??
+            ''
+        ).trim().toUpperCase();
+
+        const sidMatches = selectedCustomerSid ? itemCustomerSid === selectedCustomerSid : false;
+        const nameMatches = selectedCustomerName ? itemCustomerName === selectedCustomerName : false;
+        if (!(sidMatches || nameMatches)) {
+          return false;
+        }
+      }
+
+      if (selectedDeptSid) {
+        const itemDeptSid = Number(
+          item?.DepartmentMasterSid ??
+            item?.departmentMaster?.DepartmentMasterSid ??
+            item?.departmentMaster?.departmentMasterSid ??
+            0
+        );
+
+        if (itemDeptSid > 0 && itemDeptSid !== selectedDeptSid) {
+          return false;
+        }
+
+        if (!itemDeptSid && selectedDeptName) {
+          const itemDeptName = String(item?.departmentMaster?.departmentName ?? '')
+            .trim()
+            .toUpperCase();
+          if (itemDeptName !== selectedDeptName) {
+            return false;
+          }
+        }
+      }
+
+      const itemPol = this.getPortCode(item?.POL).toUpperCase();
+      const itemPod = this.getPortCode(item?.POD).toUpperCase();
+
+      if (selectedPol && itemPol !== selectedPol) {
+        return false;
+      }
+
+      if (selectedPod && itemPod !== selectedPod) {
+        return false;
+      }
+
+      if (from || to) {
+        const rawDate = item?.[selectedDateField];
+        if (!rawDate) {
+          return false;
+        }
+
+        const itemDate = new Date(rawDate);
+        if (Number.isNaN(itemDate.getTime())) {
+          return false;
+        }
+
+        if (from && itemDate < from) {
+          return false;
+        }
+        if (to && itemDate > to) {
+          return false;
+        }
+      }
+
+      return true;
+    });
   }
 
   report(): void {

@@ -13,7 +13,15 @@
          <app-page-header 
     [title]="'Credit Note'" [showFavorite]="true" [showSearch]="true" 
     [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
-    [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" 
+    [autoSearchOnFilterChange]="true"
+    [actions]="headerActions"
+    [dateRangeConfig]="dateRangeConfig"
+    [dateTypeConfig]="dateTypeConfig"
+    [partyFilterConfig]="partyFilterConfig"
+    [polFilterConfig]="currencyFilterConfig"
+    [partySearchFn]="partySearchFn"
+    (advancedSearchTriggered)="onAdvancedSearch($event)"
+    (searchTriggered)="onSearchTriggered($event)" 
     (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)"
     >
     </app-page-header>

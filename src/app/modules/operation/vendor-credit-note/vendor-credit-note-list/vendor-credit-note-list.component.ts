@@ -7,7 +7,7 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
-import { Observable } from 'rxjs';
+import { catchError, map, Observable, of } from 'rxjs';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { ListpageComponent } from 'src/app/component/listpage/listpage.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
@@ -24,6 +24,13 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { OperationService } from '../../operation.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { AccountsService } from '../../../accounts/accounts.service';
+import {
+  AdvancedFilterValues,
+  DateRangeConfig,
+  DateTypeConfig,
+  DropdownFilterConfig,
+  PartyFilterConfig
+} from 'src/app/shared/interfaces/advanced-filter.interface';
 
 @Component({
   selector: 'app-vendor-credit-note-list',
@@ -197,6 +204,28 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
     headerActions: HeaderAction[] = [];
     modalDropdownItems: DropdownMenuItem[] = [];
     tableLoading = false;
+    dateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+    dateTypeConfig: DateTypeConfig = {
+      enabled: true,
+      options: [
+        { label: 'Credit Date', value: 'VoucherDate' },
+        { label: 'Bill Date', value: 'BillDate' }
+      ],
+      defaultValue: 'VoucherDate'
+    };
+    partyFilterConfig: PartyFilterConfig = {
+      enabled: true,
+      partyTypes: [{ label: 'VendorName', value: 'CustomerMasterSid' }],
+      defaultPartyType: 'CustomerMasterSid'
+    };
+    currencyFilterConfig: DropdownFilterConfig = {
+      enabled: true,
+      label: 'Currency',
+      options: [],
+      bindLabel: 'currencyCode',
+      bindValue: 'currencyCode'
+    };
+    currentFilters: AdvancedFilterValues = {};
   
     protected config: ListComponentConfig = {
       storageKey: 'vendor-credit-note-list-state',
@@ -209,6 +238,17 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
   
     // Alias for compatibility with existing template
     get allVendorCreditNote() { return this.allItems; }
+    partySearchFn = (_searchTerm: string, partyType: string): Observable<any[]> => {
+      const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+      if (!companyMasterSid || partyType !== 'CustomerMasterSid') {
+        return of([]);
+      }
+  
+      return this.operationService.getAllCustomersWithBranch(companyMasterSid).pipe(
+        map((data: any) => Array.isArray(data) ? data : []),
+        catchError(() => of([]))
+      );
+    };
   
     constructor(
       private operationService: OperationService,
@@ -240,6 +280,15 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
       this.initializeTableConfig();
       this.initializeHeaderActions();
     });
+      this.currentFilters = {
+        dateRange: {
+          preset: 'last30',
+          fromDate: this.getLast30FromDate(),
+          toDate: new Date().toISOString()
+        },
+        dateType: 'VoucherDate'
+      };
+      this.loadCurrencies();
       this.initializeHeaderActions();
       this.initializeTableConfig();
       this.initializeModalDropdownItems();
@@ -266,12 +315,13 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
   }
 
     protected searchItems(): Observable<any> {
+      this.tableLoading = true;
       this.spinner.show();
       return this.operationService.searchVendorCreditNote(this.getSearchParams());
     }
   
-    protected getSearchParams(): SearchParams {
-      return {
+    protected getSearchParams(): SearchParams & Record<string, any> {
+      const params: any = {
         search: this.filterValue.trim(),
         page: Number(this.page),
         pageSize: Number(this.pageSize),
@@ -280,22 +330,55 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
         sortColumn: this.sortColumn,
         sortDirection: this.sortDirection
       };
+
+      if (this.currentFilters.dateRange?.fromDate) {
+        params.dateFrom = this.currentFilters.dateRange.fromDate;
+        params.DateFrom = this.currentFilters.dateRange.fromDate;
+      }
+      if (this.currentFilters.dateRange?.toDate) {
+        params.dateTo = this.currentFilters.dateRange.toDate;
+        params.DateTo = this.currentFilters.dateRange.toDate;
+      }
+      if (this.currentFilters.dateType) {
+        params.dateField = this.currentFilters.dateType;
+        params.DateField = this.currentFilters.dateType;
+      }
+      if (this.currentFilters.party) {
+        params.CustomerMasterSid = this.currentFilters.party.partyId;
+        params.customerMasterSid = this.currentFilters.party.partyId;
+        params.customerName = this.currentFilters.party.partyName;
+      }
+      if (this.currentFilters.pol) {
+        params.CurrencyCode = this.currentFilters.pol;
+        params.currencyCode = this.currentFilters.pol;
+      }
+
+      return params;
     }
   
     protected processSearchResults(response: any): void {
+      this.tableLoading = false;
       this.spinner.hide();
       if (response.status) {
-        this.allItems = (response.data.items || []).map((item: any) => ({
+        const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
+        const filteredItems = this.applyAdvancedFilters(rawItems);
+
+        this.allItems = filteredItems.map((item: any) => ({
           ...item,
+          VoucherDateRaw: item?.VoucherDate,
+          BillDateRaw: item?.BillDate,
           VoucherDate: this.datePipe.transform(item?.VoucherDate),
           BillDate: this.datePipe.transform(item?.BillDate),
-          CurrencyCode: item.currencyMaster.currencyCode,
+          CurrencyCode: item?.CurrencyCode || item?.currencyMaster?.currencyCode || '',
           Status: item.Status === 'A' ? 'Active' : 'Suspended',
           PostStatus: item.PostStatus === 'P' ? 'Posted' : 'Unposted',
           AmountFormatted: this.formatAmount(item.Amount)
 
         }));
-        this.totalLengthOfCollection = response.data.totalCount || 0;
+        this.totalLengthOfCollection =
+          rawItems.length !== filteredItems.length
+            ? filteredItems.length
+            : (response.data.totalCount || 0);
         this.applySorting();
         this.updateHeaderActionState();
       } else {
@@ -335,6 +418,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
 }
 
     protected override handleSearchError(error: any): void {
+      this.tableLoading = false;
       this.spinner.hide();
       this.appSettingService.showError('Error searching Vendor CreditNote.');
       console.error('Error searching Vendor CreditNote', error);
@@ -353,6 +437,14 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
   
     onSearchCleared(): void {
       this.filterValue = '';
+      this.currentFilters = {
+        dateRange: {
+          preset: 'last30',
+          fromDate: this.getLast30FromDate(),
+          toDate: new Date().toISOString()
+        },
+        dateType: 'VoucherDate'
+      };
       this.clearFilterValue();
     }
   
@@ -457,6 +549,100 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
       console.log('Filters changed:', filters);
     }
 
+    onAdvancedSearch(event: { searchValue: string; filters: AdvancedFilterValues }): void {
+      this.filterValue = event.searchValue;
+      this.currentFilters = event.filters;
+      this.page = 1;
+      this.search();
+    }
+
+    private loadCurrencies(): void {
+      this.operationService.getAllCurrencies().pipe(
+        map((response: any) => {
+          const rows = Array.isArray(response?.data) ? response.data : [];
+          return rows.map((row: any) => ({
+            ...row,
+            currencyCode: row.currencyCode || row.CurrencyCode || row.code || ''
+          }));
+        }),
+        catchError(() => of([]))
+      ).subscribe((currencies: any[]) => {
+        this.currencyFilterConfig = {
+          ...this.currencyFilterConfig,
+          options: currencies.filter((c: any) => !!c.currencyCode)
+        };
+      });
+    }
+
+    private getLast30FromDate(): string {
+      const date = new Date();
+      date.setHours(0, 0, 0, 0);
+      date.setDate(date.getDate() - 30);
+      return date.toISOString();
+    }
+
+    private hasAdvancedFilterValues(): boolean {
+      return !!(
+        this.currentFilters.party?.partyId ||
+        this.currentFilters.pol ||
+        this.currentFilters.dateRange?.fromDate ||
+        this.currentFilters.dateRange?.toDate
+      );
+    }
+
+    private applyAdvancedFilters(items: any[]): any[] {
+      if (!this.hasAdvancedFilterValues()) {
+        return items;
+      }
+
+      const selectedDateField = this.currentFilters.dateType || 'VoucherDate';
+      const from = this.currentFilters.dateRange?.fromDate ? new Date(this.currentFilters.dateRange.fromDate) : null;
+      const to = this.currentFilters.dateRange?.toDate ? new Date(this.currentFilters.dateRange.toDate) : null;
+      const selectedCurrency = this.currentFilters.pol ? String(this.currentFilters.pol).trim().toUpperCase() : null;
+      const selectedCustomerSid = this.currentFilters.party?.partyId ? Number(this.currentFilters.party.partyId) : null;
+      const selectedCustomerName = this.currentFilters.party?.partyName
+        ? String(this.currentFilters.party.partyName).trim().toUpperCase()
+        : null;
+
+      return items.filter((item: any) => {
+        if (selectedCustomerSid || selectedCustomerName) {
+          const itemCustomerSid = Number(item?.CustomerMasterSid ?? item?.customerMaster?.CustomerMasterSid ?? 0);
+          const itemCustomerName = String(item?.PartyName ?? item?.VendorName ?? item?.CustomerName ?? '').trim().toUpperCase();
+          const sidMatches = selectedCustomerSid ? itemCustomerSid === selectedCustomerSid : false;
+          const nameMatches = selectedCustomerName ? itemCustomerName === selectedCustomerName : false;
+          if (!(sidMatches || nameMatches)) {
+            return false;
+          }
+        }
+
+        if (selectedCurrency) {
+          const itemCurrency = String(item?.CurrencyCode ?? item?.currencyMaster?.currencyCode ?? '').trim().toUpperCase();
+          if (itemCurrency !== selectedCurrency) {
+            return false;
+          }
+        }
+
+        if (from || to) {
+          const rawDate = item?.[selectedDateField];
+          if (!rawDate) {
+            return false;
+          }
+          const itemDate = new Date(rawDate);
+          if (Number.isNaN(itemDate.getTime())) {
+            return false;
+          }
+          if (from && itemDate < from) {
+            return false;
+          }
+          if (to && itemDate > to) {
+            return false;
+          }
+        }
+
+        return true;
+      });
+    }
+
     navigateToVendorInvoice(voucherSid: number) {
   if (!voucherSid) return;
 
@@ -475,16 +661,10 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
     }
   
     deleteVendorCreditNote(vendorCreditNote: any) {
-      const dialogRef = this.dialog.open(DeleteWarningComponent, {
-        width: '400px',
-        data: {
-          title: 'Delete Vendor CreditNote',
-          message: `Are you sure you want to delete Vendor CreditNote ${vendorCreditNote.VoucherNumber}?`
-        }
-      });
+      const dialogRef = this.dialog.open(DeleteWarningComponent);
 
       dialogRef.afterClosed().subscribe(result => {
-        if (result === 'confirm') {
+        if (result === true) {
           this.spinner.show();
           this.accountService.deleteVoucher({
             VoucherHeaderSid: vendorCreditNote.VoucherHeaderSid,

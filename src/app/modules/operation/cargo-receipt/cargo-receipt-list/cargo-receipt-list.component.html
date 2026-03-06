@@ -137,11 +137,22 @@
      <app-page-header 
     [title]="'Cargo Receipt'" [showFavorite]="true" [showSearch]="true" 
     [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
-    [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" 
+     [autoSearchOnFilterChange]="true"
+    [actions]="headerActions"
+    [dateRangeConfig]="dateRangeConfig"
+    [dateTypeConfig]="dateTypeConfig"
+    [partyFilterConfig]="partyFilterConfig"
+    [departmentFilterConfig]="departmentFilterConfig"
+    [polFilterConfig]="polFilterConfig"
+    [podFilterConfig]="podFilterConfig"
+    [partySearchFn]="partySearchFn"
+    (departmentFilterChanged)="onDepartmentFilterChanged($event)"
+    (advancedSearchTriggered)="onAdvancedSearch($event)"
+    (searchTriggered)="onSearchTriggered($event)"  
     (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)"
     >
     </app-page-header>
-    <div class="col-12 px-0">
+    <div class="col-12 px-0 table-scroll-wrapper">
         <app-reusable-table
         #cargoReceiptTable
         [config]="tableConfig"

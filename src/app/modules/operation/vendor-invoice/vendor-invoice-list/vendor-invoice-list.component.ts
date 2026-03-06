@@ -17,7 +17,7 @@ import { OperationService } from '../../operation.service';
 import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
-import { Observable } from 'rxjs';
+import { catchError, map, Observable, of } from 'rxjs';
 import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
 import { TableConfig } from 'src/app/shared/interfaces/table.interface';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
@@ -25,6 +25,13 @@ import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/compone
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { AccountsService } from '../../../accounts/accounts.service';
+import {
+  AdvancedFilterValues,
+  DateRangeConfig,
+  DateTypeConfig,
+  DropdownFilterConfig,
+  PartyFilterConfig
+} from 'src/app/shared/interfaces/advanced-filter.interface';
 
 @Component({
   selector: 'app-vendor-invoice-list',
@@ -72,6 +79,28 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
   headerActions: HeaderAction[] = [];
   modalDropdownItems: DropdownMenuItem[] = [];
   tableLoading = false;
+  dateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+  dateTypeConfig: DateTypeConfig = {
+    enabled: true,
+    options: [
+      { label: 'Invoice Date', value: 'VoucherDate' },
+      { label: 'Bill Date', value: 'BillDate' }
+    ],
+    defaultValue: 'VoucherDate'
+  };
+  partyFilterConfig: PartyFilterConfig = {
+    enabled: true,
+    partyTypes: [{ label: 'VendorName', value: 'CustomerMasterSid' }],
+    defaultPartyType: 'CustomerMasterSid'
+  };
+  currencyFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'Currency',
+    options: [],
+    bindLabel: 'currencyCode',
+    bindValue: 'currencyCode'
+  };
+  currentFilters: AdvancedFilterValues = {};
 
   protected config: ListComponentConfig = {
     storageKey: 'vendor-invoice-list-state',
@@ -84,6 +113,17 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
 
   // Alias for compatibility with existing template
   get allVendorInvoice() { return this.allItems; }
+  partySearchFn = (_searchTerm: string, partyType: string): Observable<any[]> => {
+    const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    if (!companyMasterSid || partyType !== 'CustomerMasterSid') {
+      return of([]);
+    }
+
+    return this.operationService.getAllCustomersWithBranch(companyMasterSid).pipe(
+      map((data: any) => Array.isArray(data) ? data : []),
+      catchError(() => of([]))
+    );
+  };
 
   constructor(
     private operationService: OperationService,
@@ -117,6 +157,15 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
      this.initializeHeaderActions();
     this.initializeTableConfig();
     });
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'VoucherDate'
+    };
+    this.loadCurrencies();
     this.initializeModalDropdownItems();
     super.ngOnInit();
     // this.loadVendorInvoices();
@@ -125,12 +174,13 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
   
 
   protected searchItems(): Observable<any> {
+    this.tableLoading = true;
     this.spinner.show();
     return this.operationService.searchVendorInvoices(this.getSearchParams());
   }
 
-  protected getSearchParams(): SearchParams {
-    return {
+  protected getSearchParams(): SearchParams & Record<string, any> {
+    const params: any = {
       search: this.filterValue.trim(),
       page: Number(this.page),
       pageSize: Number(this.pageSize),
@@ -139,22 +189,55 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
       sortColumn: this.sortColumn,
       sortDirection: this.sortDirection
     };
+
+    if (this.currentFilters.dateRange?.fromDate) {
+      params.dateFrom = this.currentFilters.dateRange.fromDate;
+      params.DateFrom = this.currentFilters.dateRange.fromDate;
+    }
+    if (this.currentFilters.dateRange?.toDate) {
+      params.dateTo = this.currentFilters.dateRange.toDate;
+      params.DateTo = this.currentFilters.dateRange.toDate;
+    }
+    if (this.currentFilters.dateType) {
+      params.dateField = this.currentFilters.dateType;
+      params.DateField = this.currentFilters.dateType;
+    }
+    if (this.currentFilters.party) {
+      params.CustomerMasterSid = this.currentFilters.party.partyId;
+      params.customerMasterSid = this.currentFilters.party.partyId;
+      params.customerName = this.currentFilters.party.partyName;
+    }
+    if (this.currentFilters.pol) {
+      params.CurrencyCode = this.currentFilters.pol;
+      params.currencyCode = this.currentFilters.pol;
+    }
+
+    return params;
   }
 
   protected processSearchResults(response: any): void {
+    this.tableLoading = false;
     this.spinner.hide();
     if (response.status) {
-      this.allItems = (response.data.items || []).map((item: any) => ({
+      const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
+      const filteredItems = this.applyAdvancedFilters(rawItems);
+
+      this.allItems = filteredItems.map((item: any) => ({
         ...item,
+        VoucherDateRaw: item?.VoucherDate,
+        BillDateRaw: item?.BillDate,
         VoucherDate: this.datePipe.transform(item?.VoucherDate),
         BillDate: this.datePipe.transform(item?.BillDate),
-        CurrencyCode: item.currencyMaster.currencyCode,
+        CurrencyCode: item?.CurrencyCode || item?.currencyMaster?.currencyCode || '',
         PostStatus : item.PostStatus === 'P' ? 'Posted' : 'Unposted',
         Status: item.Status === 'A' ? 'Active' : 'Suspended',
         AmountFormatted: this.formatAmount(item.Amount)
       }));
-      this.totalLengthOfCollection = response.data.totalCount || 0;
-      this.applySorting();
+      this.totalLengthOfCollection =
+        rawItems.length !== filteredItems.length
+          ? filteredItems.length
+          : (response.data.totalCount || 0);
+      // this.applySorting();
       this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching Vendor Invoices.');
@@ -175,6 +258,7 @@ private formatAmount(amount: number | string): string {
   return numValue.toFixed(2);
 }
   protected override handleSearchError(error: any): void {
+    this.tableLoading = false;
     this.spinner.hide();
     this.appSettingService.showError('Error searching Vendor Invoices.');
     console.error('Error searching Vendor Invoices', error);
@@ -193,6 +277,14 @@ private formatAmount(amount: number | string): string {
 
   onSearchCleared(): void {
     this.filterValue = '';
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'VoucherDate'
+    };
     this.clearFilterValue();
   }
 
@@ -250,9 +342,11 @@ private formatAmount(amount: number | string): string {
         key: 'VoucherDate',
         label: 'Invoice Date',
         sortable: true,
+        sortKey: 'VoucherDateRaw',
         filterable: true,
         visible: true,
-        dataType: 'string'
+        dataType: 'date',
+
       },
       {
         key: 'VendorName',
@@ -510,6 +604,100 @@ private formatAmount(amount: number | string): string {
   onTableFilterChange(filters: any[]): void {
     // Handle column filters if needed
     console.log('Filters changed:', filters);
+  }
+
+  onAdvancedSearch(event: { searchValue: string; filters: AdvancedFilterValues }): void {
+    this.filterValue = event.searchValue;
+    this.currentFilters = event.filters;
+    this.page = 1;
+    this.search();
+  }
+
+  private loadCurrencies(): void {
+    this.operationService.getAllCurrencies().pipe(
+      map((response: any) => {
+        const rows = Array.isArray(response?.data) ? response.data : [];
+        return rows.map((row: any) => ({
+          ...row,
+          currencyCode: row.currencyCode || row.CurrencyCode || row.code || ''
+        }));
+      }),
+      catchError(() => of([]))
+    ).subscribe((currencies: any[]) => {
+      this.currencyFilterConfig = {
+        ...this.currencyFilterConfig,
+        options: currencies.filter((c: any) => !!c.currencyCode)
+      };
+    });
+  }
+
+  private getLast30FromDate(): string {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - 30);
+    return date.toISOString();
+  }
+
+  private hasAdvancedFilterValues(): boolean {
+    return !!(
+      this.currentFilters.party?.partyId ||
+      this.currentFilters.pol ||
+      this.currentFilters.dateRange?.fromDate ||
+      this.currentFilters.dateRange?.toDate
+    );
+  }
+
+  private applyAdvancedFilters(items: any[]): any[] {
+    if (!this.hasAdvancedFilterValues()) {
+      return items;
+    }
+
+    const selectedDateField = this.currentFilters.dateType || 'VoucherDate';
+    const from = this.currentFilters.dateRange?.fromDate ? new Date(this.currentFilters.dateRange.fromDate) : null;
+    const to = this.currentFilters.dateRange?.toDate ? new Date(this.currentFilters.dateRange.toDate) : null;
+    const selectedCurrency = this.currentFilters.pol ? String(this.currentFilters.pol).trim().toUpperCase() : null;
+    const selectedCustomerSid = this.currentFilters.party?.partyId ? Number(this.currentFilters.party.partyId) : null;
+    const selectedCustomerName = this.currentFilters.party?.partyName
+      ? String(this.currentFilters.party.partyName).trim().toUpperCase()
+      : null;
+
+    return items.filter((item: any) => {
+      if (selectedCustomerSid || selectedCustomerName) {
+        const itemCustomerSid = Number(item?.CustomerMasterSid ?? item?.customerMaster?.CustomerMasterSid ?? 0);
+        const itemCustomerName = String(item?.PartyName ?? item?.VendorName ?? item?.CustomerName ?? '').trim().toUpperCase();
+        const sidMatches = selectedCustomerSid ? itemCustomerSid === selectedCustomerSid : false;
+        const nameMatches = selectedCustomerName ? itemCustomerName === selectedCustomerName : false;
+        if (!(sidMatches || nameMatches)) {
+          return false;
+        }
+      }
+
+      if (selectedCurrency) {
+        const itemCurrency = String(item?.CurrencyCode ?? item?.currencyMaster?.currencyCode ?? '').trim().toUpperCase();
+        if (itemCurrency !== selectedCurrency) {
+          return false;
+        }
+      }
+
+      if (from || to) {
+        const rawDate = item?.[selectedDateField];
+        if (!rawDate) {
+          return false;
+        }
+        const itemDate = new Date(rawDate);
+        if (Number.isNaN(itemDate.getTime())) {
+          return false;
+        }
+        if (from && itemDate < from) {
+          return false;
+        }
+        if (to && itemDate > to) {
+          return false;
+        }
+      }
+
+      return true;
+    });
   }
 
   viewVendorInvoice(vendorInvoice: any) {
