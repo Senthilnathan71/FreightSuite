@@ -31,6 +31,7 @@ export class JobCloseComponent implements OnInit {
   containers: any[] = [];
   hblData: any[] = [];
   closureStatus: any = {};
+  private initialClosureStatus: any = {};
   milestoneChecks: any = {
     documentation: [],
     operation: [],
@@ -92,6 +93,8 @@ export class JobCloseComponent implements OnInit {
           this.opsClose = this.closureStatus.OpsCloseStatus === 'Closed';
           this.accClose = this.closureStatus.AccCloseStatus === 'Closed';
           this.jobCloseCheck = this.closureStatus.JobCloseStatus === 'Closed';
+
+          this.initialClosureStatus = { ...this.closureStatus };
         } else {
           this.appSettingService.showError('Failed to load Job Close details');
         }
@@ -103,6 +106,13 @@ export class JobCloseComponent implements OnInit {
         console.error('Error loading job close detail', err);
       }
     });
+  }
+
+  get hasChanges(): boolean {
+    return this.closureStatus.DocCloseStatus !== this.initialClosureStatus.DocCloseStatus ||
+           this.closureStatus.OpsCloseStatus !== this.initialClosureStatus.OpsCloseStatus ||
+           this.closureStatus.AccCloseStatus !== this.initialClosureStatus.AccCloseStatus ||
+           this.closureStatus.JobCloseStatus !== this.initialClosureStatus.JobCloseStatus;
   }
 
   get allDocMilestonesPassed(): boolean {
@@ -194,7 +204,10 @@ export class JobCloseComponent implements OnInit {
 
   onJobCloseChange(): void {
     if (this.jobCloseCheck) {
-      this.tryClose('Job Closer', this.milestoneChecks.jobClose,
+      const blockingMilestones = this.milestoneChecks.jobClose?.filter(
+        (m: any) => !m.nonBlocking
+      ) || [];
+      this.tryClose('Job Closer', blockingMilestones,
         () => {
           this.closureStatus.JobCloseStatus = 'Closed';
           this.closureStatus.JobClosedDate = new Date().toISOString();
@@ -215,8 +228,11 @@ export class JobCloseComponent implements OnInit {
       this.closureStatus.OpsCloseStatus === 'Closed' &&
       this.closureStatus.AccCloseStatus === 'Closed';
 
-    if (this.milestoneChecks.jobClose && this.milestoneChecks.jobClose.length > 0) {
-      this.milestoneChecks.jobClose[0].passed = allPreviousClosed;
+    const milestone = this.milestoneChecks.jobClose?.find(
+      (m: any) => m.code === 'ALL_PREVIOUS_CLOSED'
+    );
+    if (milestone) {
+      milestone.passed = allPreviousClosed;
     }
 
     if (!allPreviousClosed && this.jobCloseCheck) {
@@ -228,6 +244,10 @@ export class JobCloseComponent implements OnInit {
   }
 
   save(): void {
+    if (!this.hasChanges) {
+      this.appSettingService.showError('No changes to save');
+      return;
+    }
     this.spinner.show('jobCloseSpinner');
     const payload = {
       MasterJobSid: this.masterJobSid,
