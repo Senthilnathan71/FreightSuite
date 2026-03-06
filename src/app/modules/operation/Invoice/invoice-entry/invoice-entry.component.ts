@@ -1265,6 +1265,9 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
             )
           )
       ,
+      JobType:isHouseJobInvoice ? this.invoiceData?.houseJob?.JobType : 
+      isBookingInvoice ? this.invoiceData?.BookingHeader?.JobType : 
+      isMasterJobInvoice ? this.invoiceData?.masterJob?.JobType : '',
       PkgWtVol: 
         isHouseJobInvoice ?
           `${this.invoiceData?.houseJob?.Cargo?.[0]?.NoOfPackage || "0"} / ${this.invoiceData?.houseJob?.Cargo?.[0]?.GrossWeight || "0"} / ${this.invoiceData?.houseJob?.Cargo?.[0]?.Volume || "0"}` :

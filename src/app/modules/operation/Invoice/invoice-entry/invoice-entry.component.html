@@ -1911,14 +1911,16 @@
               </div>
 
             </div>
-
+            
             <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
+            @if(invoicePrintData?.JobType !== 'Agent'){
               <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">
                   <strong> {{isSeaDepartment() ? 'HBL' : 'HAWB'}}</strong>
                 </div>
                 <div>: {{ invoicePrintData?.HBLNo }}</div>
               </div>
+            }     
 
               <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">

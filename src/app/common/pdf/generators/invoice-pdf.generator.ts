@@ -392,7 +392,12 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
       : invoice?.currencyCode || '');
 
   const rightItems: { label: string; value: string }[] = [
-    { label: isSeaMode ? 'HBL' : 'HAWB', value: printData?.HBLNo || invoice?.hblNo || '' },
+    ...(printData?.JobType !== 'Agent'
+  ? [{
+      label: isSeaMode ? 'HBL' : 'HAWB',
+      value: printData?.HBLNo || invoice?.hblNo || ''
+    }]
+  : []),
     { label: isSeaMode ? 'MBL' : 'MAWB', value: printData?.MBLNo || invoice?.mblNo || '' },
     { label: 'Job No.', value: printData?.MasterJobNumber || invoice?.jobNo || '' },
     { label: 'Freight Terms', value: printData?.FreightTerms || invoice?.freightTerms || '' },
@@ -1185,6 +1190,7 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
           ? houseJob?.FreightTerms
           : (isBookingInvoice ? bookingHeader?.FreightTerms : masterJob?.FreightPPCC) || '',
         irnNumber: invoice.IRNNumber || '',
+        jobType: isHouseJobInvoice ? houseJob?.JobType : (isBookingInvoice ? bookingHeader?.JobType :  masterJob?.JobType) || '',
         vesselName: options?.shipmentDetails?.vesselName || vesselName,
         voyageNo: options?.shipmentDetails?.voyageNo || voyageNo,
         flightName: options?.shipmentDetails?.flightName || '',
