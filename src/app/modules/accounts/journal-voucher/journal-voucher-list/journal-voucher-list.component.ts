@@ -21,6 +21,7 @@ import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/hea
 import { JournalVoucherService, JournalVoucherSearchResponse } from '../journal-voucher.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { AccountsService } from '../../accounts.service';
 
 @Component({
   selector: 'app-journal-voucher-list',
@@ -79,6 +80,7 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
     private spinner: NgxSpinnerService,
     public mps: MenuPermissionService,
     private datePipe: CustomDatePipe,
+    private accountService: AccountsService,
     paginationService: PaginationService
   ) {
     super(paginationService);
@@ -141,7 +143,7 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
     if (response.status) {
       this.allItems = response.data.items.map((item: any) => ({
         ...item,
-        PostStatusLabel: item.PostStatus === 'P' ? 'Posted' : 'Unposted',
+        PostStatus: item.PostStatus === 'P' ? 'Posted' : 'Unposted',
         StatusLabel: item.Status === 'A' ? 'Active' : 'Suspended',
         VoucherDateFormatted: this.datePipe.transform(item.VoucherDate),
         PostDateFormatted: this.datePipe.transform(item.PostDate),
@@ -290,7 +292,7 @@ private formatAmount(amount: number | string): string {
         width: '250px',
       },
        {
-        key: 'PostStatusLabel',
+        key: 'PostStatus',
         label: 'Posted Status',
         sortable: true,
         filterable: true,
@@ -335,7 +337,7 @@ private formatAmount(amount: number | string): string {
         tooltip: 'Delete Journal Voucher',
         class: 'text-danger',
         state: !this.mps.can('delete'),
-        condition: (row: any) => row.PostStatus === 'U' // Only unposted can be deleted
+        condition: (row: any) => row.Status === 'A' && row.PostStatus === 'Unposted' // Only unposted can be deleted
       }
     ],
     selectable: false,
@@ -403,12 +405,20 @@ editJournalVoucher(item: any): void {
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
         this.spinner.show();
-        // Use item.VoucherHeaderSid instead of just VoucherHeaderSid
-        this.journalVoucherService.deleteJournalVoucherById(item.VoucherHeaderSid).subscribe({
+        this.accountService.deleteVoucher({
+          VoucherHeaderSid: item.VoucherHeaderSid,
+            CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+            BranchMasterSid: this.currentBranch?.BranchMasterSid,
+            UserEmail: this.userData?.userEmail
+        }).subscribe({
           next: (resp: any) => {
             this.spinner.hide();
-            this.appSettingService.showSuccess("Journal Voucher Deleted!");
-            this.searchJournalVoucher();
+            if (resp.status) {
+              this.appSettingService.showSuccess("Journal Voucher Deleted!");
+              this.search();
+            } else {
+                this.appSettingService.showError(resp.message || 'Failed to delete Credit Note');
+              }
           },
           error: (error) => {
             this.spinner.hide();
@@ -443,7 +453,7 @@ editJournalVoucher(item: any): void {
   const formattedData = this.allJournalVoucher.map(item => ({
     VoucherNumber: item.VoucherNumber,
     VoucherDateFormatted: item.VoucherDateFormatted,
-    PostStatusLabel: item.PostStatusLabel,
+    PostStatus: item.PostStatus,
     PostDateFormatted: item.PostDateFormatted,
     LocalAmountFormatted: item.LocalAmountFormatted,
     Narration: item.Narration || '',
