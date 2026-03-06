@@ -91,6 +91,8 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
     bindValue: 'name'
   };
   currentFilters: AdvancedFilterValues = {};
+  private allCoaFilterRows: any[] = [];
+  private selectedCategoryFilter = '';
 
   protected config: ListComponentConfig = {
     storageKey: 'chart-accounts-list-state',
@@ -137,6 +139,7 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
       this.initializeTableConfig();
       this.initializeHeaderActions();
     });
+    this.loadAllFilterOptions();
     
     // Initialize base component
     super.ngOnInit();
@@ -216,8 +219,9 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
     onSearchCleared(): void {
     this.filterValue = '';
     this.currentFilters = {};
-    this.groupFilterConfig = { ...this.groupFilterConfig, options: [] };
-    this.subGroupFilterConfig = { ...this.subGroupFilterConfig, options: [] };
+    this.selectedCategoryFilter = '';
+    this.setAllGroupOptions();
+    this.setAllSubGroupOptions();
     this.clearFilterValue();
   }
 
@@ -230,9 +234,18 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
 
   onCategoryFilterChanged(category: string | null): void {
     const selectedCategory = category ? String(category) : '';
+    this.selectedCategoryFilter = selectedCategory;
     this.groupFilterConfig = { ...this.groupFilterConfig, options: [] };
+
+    // Keep current logic for selected category/group.
+    if (!selectedCategory) {
+      this.setAllGroupOptions();
+      this.setAllSubGroupOptions();
+      return;
+    }
+
     this.subGroupFilterConfig = { ...this.subGroupFilterConfig, options: [] };
-    if (!selectedCategory || !this.currentCompany?.CompanyMasterSid) {
+    if (!this.currentCompany?.CompanyMasterSid) {
       return;
     }
 
@@ -253,10 +266,32 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
   }
 
   onGroupFilterChanged(groupName: string | null): void {
-    const selectedCategory = this.currentFilters.departmentSid ? String(this.currentFilters.departmentSid) : '';
     const selectedGroup = groupName ? String(groupName) : '';
+    const selectedCategory = this.selectedCategoryFilter;
+
+    if (!selectedGroup) {
+      if (selectedCategory) {
+        this.subGroupFilterConfig = { ...this.subGroupFilterConfig, options: [] };
+      } else {
+        this.setAllSubGroupOptions();
+      }
+      return;
+    }
+
+    if (!selectedCategory) {
+      const subgroups = this.allCoaFilterRows
+        .filter((row: any) => String(row?.GroupName || '').trim() === selectedGroup)
+        .map((row: any) => String(row?.SubGroupName || '').trim())
+        .filter((name: string) => !!name);
+      this.subGroupFilterConfig = {
+        ...this.subGroupFilterConfig,
+        options: Array.from(new Set(subgroups)).sort().map(name => ({ name }))
+      };
+      return;
+    }
+
     this.subGroupFilterConfig = { ...this.subGroupFilterConfig, options: [] };
-    if (!selectedCategory || !selectedGroup || !this.currentCompany?.CompanyMasterSid) {
+    if (!this.currentCompany?.CompanyMasterSid) {
       return;
     }
 
@@ -275,6 +310,46 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
         this.subGroupFilterConfig = { ...this.subGroupFilterConfig, options: [] };
       }
     });
+  }
+
+  private loadAllFilterOptions(): void {
+    const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    if (!companyMasterSid) {
+      return;
+    }
+
+    this.masterService.getAllCoa(companyMasterSid).subscribe({
+      next: (rows: any[]) => {
+        this.allCoaFilterRows = Array.isArray(rows) ? rows : [];
+        this.setAllGroupOptions();
+        this.setAllSubGroupOptions();
+      },
+      error: () => {
+        this.allCoaFilterRows = [];
+        this.groupFilterConfig = { ...this.groupFilterConfig, options: [] };
+        this.subGroupFilterConfig = { ...this.subGroupFilterConfig, options: [] };
+      }
+    });
+  }
+
+  private setAllGroupOptions(): void {
+    const groups = this.allCoaFilterRows
+      .map((row: any) => String(row?.GroupName || '').trim())
+      .filter((name: string) => !!name);
+    this.groupFilterConfig = {
+      ...this.groupFilterConfig,
+      options: Array.from(new Set(groups)).sort().map(name => ({ name }))
+    };
+  }
+
+  private setAllSubGroupOptions(): void {
+    const subgroups = this.allCoaFilterRows
+      .map((row: any) => String(row?.SubGroupName || '').trim())
+      .filter((name: string) => !!name);
+    this.subGroupFilterConfig = {
+      ...this.subGroupFilterConfig,
+      options: Array.from(new Set(subgroups)).sort().map(name => ({ name }))
+    };
   }
 
     initializeHeaderActions(): void {
