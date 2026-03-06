@@ -750,8 +750,8 @@ export class ReverseVoucherEntryComponent {
         LocalCurrencyCode: currentCompany.CurrencyCode,
         PostedBy: currentUserEmail,
         TaxDetails: {
-          CountryMasterSid: currentCountry,
-          countryName: currentCountryName,
+          CountryMasterSid: this.currentCompanyCountry,
+          countryCode: this.currentCompanyCountryCode,
           TaxCategory: 'Inter',
           EffectiveFrom: new Date().toISOString(),
           TaxType: 'Output'
