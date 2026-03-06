@@ -25,6 +25,9 @@ import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warnin
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { AccountsService } from '../../../accounts/accounts.service';
 import {
+  AdvancedFilterValues,
+  DateRangeConfig,
+  DateTypeConfig,
   DropdownFilterConfig,
   PartyFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
