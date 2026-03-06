@@ -20,10 +20,14 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { OperationService } from '../../operation.service';
-import { Observable } from 'rxjs';
+import { catchError, map, Observable, of } from 'rxjs';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { AccountsService } from '../../../accounts/accounts.service';
+import {
+  DropdownFilterConfig,
+  PartyFilterConfig
+} from 'src/app/shared/interfaces/advanced-filter.interface';
 
 @Component({
   selector: 'app-credit-note-list',
@@ -70,6 +74,25 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
   modalDropdownItems: DropdownMenuItem[] = [];
 
   tableLoading = false;
+  dateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+  dateTypeConfig: DateTypeConfig = {
+    enabled: true,
+    options: [{ label: 'Credit Date', value: 'VoucherDate' }],
+    defaultValue: 'VoucherDate'
+  };
+  partyFilterConfig: PartyFilterConfig = {
+    enabled: true,
+    partyTypes: [{ label: 'Customer', value: 'CustomerMasterSid' }],
+    defaultPartyType: 'CustomerMasterSid'
+  };
+  currencyFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'Currency',
+    options: [],
+    bindLabel: 'currencyCode',
+    bindValue: 'currencyCode'
+  };
+  currentFilters: AdvancedFilterValues = {};
 
   protected config: ListComponentConfig = {
     storageKey: 'credit-note-type-state',
@@ -82,6 +105,17 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
 
   // Alias for compatibility with existing template
   get allCreditNote() { return this.allItems; }
+  partySearchFn = (_searchTerm: string, partyType: string): Observable<any[]> => {
+    const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    if (!companyMasterSid || partyType !== 'CustomerMasterSid') {
+      return of([]);
+    }
+
+    return this.operationService.getAllCustomersWithBranch(companyMasterSid).pipe(
+      map((data: any) => Array.isArray(data) ? data : []),
+      catchError(() => of([]))
+    );
+  };
 
   constructor(
     private operationService: OperationService,
@@ -115,6 +149,15 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
       this.initializeTableConfig();
       this.initializeHeaderActions();
     })
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'VoucherDate'
+    };
+    this.loadCurrencies();
     super.ngOnInit();
     // this.loadCreditNotes();
   }
@@ -135,12 +178,13 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
   }
 
   protected searchItems(): Observable<any> {
+      this.tableLoading = true;
       this.spinner.show();
       return this.operationService.searchCreditNote(this.getSearchParams());
     }
 
-  protected getSearchParams(): SearchParams {
-      return {
+  protected getSearchParams(): SearchParams & Record<string, any> {
+      const params: any = {
         search: this.filterValue.trim(),
         page: Number(this.page),
         pageSize: Number(this.pageSize),
@@ -149,20 +193,50 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
         sortColumn: this.sortColumn,
         sortDirection: this.sortDirection
       };
+
+      if (this.currentFilters.dateRange?.fromDate) {
+        params.dateFrom = this.currentFilters.dateRange.fromDate;
+        params.DateFrom = this.currentFilters.dateRange.fromDate;
+      }
+      if (this.currentFilters.dateRange?.toDate) {
+        params.dateTo = this.currentFilters.dateRange.toDate;
+        params.DateTo = this.currentFilters.dateRange.toDate;
+      }
+      if (this.currentFilters.dateType) {
+        params.dateField = this.currentFilters.dateType;
+        params.DateField = this.currentFilters.dateType;
+      }
+      if (this.currentFilters.party) {
+        params.CustomerMasterSid = this.currentFilters.party.partyId;
+        params.customerMasterSid = this.currentFilters.party.partyId;
+        params.customerName = this.currentFilters.party.partyName;
+      }
+      if (this.currentFilters.pol) {
+        params.CurrencyCode = this.currentFilters.pol;
+        params.currencyCode = this.currentFilters.pol;
+      }
+      return params;
     }
 
     protected processSearchResults(response: any): void {
+    this.tableLoading = false;
     this.spinner.hide();
     if (response.status) {
-      this.allItems = (response.data.items || []).map((item: any) => ({
+      const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
+      const filteredItems = this.applyAdvancedFilters(rawItems);
+      this.allItems = filteredItems.map((item: any) => ({
         ...item,
+        VoucherDateRaw: item?.VoucherDate,
         VoucherDate:this.datePipe.transform(item?.VoucherDate),
         Status: item.Status === 'A' ? 'Active' : 'Suspended',
         PostStatus: item.PostStatus === 'P' ? 'Posted' : 'Unposted',
         MasterNumber: item.masterJob?.MasterJobNumber || '-',
         HouseNumber: item.houseJob?.HBLNo || '-'
       }));
-      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.totalLengthOfCollection =
+        rawItems.length !== filteredItems.length
+          ? filteredItems.length
+          : (response.data.totalCount || 0);
       this.applySorting();
       this.updateHeaderActionState();
     } else {
@@ -184,6 +258,7 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
   }
 
   protected override handleSearchError(error: any): void {
+    this.tableLoading = false;
     this.spinner.hide();
     this.appSettingService.showError('Error searching Invoice.');
     console.error('Error searching Invoice', error);
@@ -202,6 +277,14 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
 
   onSearchCleared(): void {
     this.filterValue = '';
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'VoucherDate'
+    };
     this.clearFilterValue();
   }
 
@@ -258,7 +341,7 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
       },
       {
         key: 'VoucherDate',
-        label: 'Date',
+        label: 'Credit Date',
         sortable: true,
         filterable: true,
         visible: true,
@@ -266,7 +349,7 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
       },
       {
         key: 'PartyName',
-        label: 'Customer Name',
+        label: 'Customer',
         sortable: true,
         filterable: true,
         visible: true,
@@ -464,6 +547,100 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
         // In a more advanced implementation, you could apply individual column filters
         console.log('Filters changed:', filters);
       }
+
+  onAdvancedSearch(event: { searchValue: string; filters: AdvancedFilterValues }): void {
+    this.filterValue = event.searchValue;
+    this.currentFilters = event.filters;
+    this.page = 1;
+    this.search();
+  }
+
+  private loadCurrencies(): void {
+    this.operationService.getAllCurrencies().pipe(
+      map((response: any) => {
+        const rows = Array.isArray(response?.data) ? response.data : [];
+        return rows.map((row: any) => ({
+          ...row,
+          currencyCode: row.currencyCode || row.CurrencyCode || row.code || ''
+        }));
+      }),
+      catchError(() => of([]))
+    ).subscribe((currencies: any[]) => {
+      this.currencyFilterConfig = {
+        ...this.currencyFilterConfig,
+        options: currencies.filter((c: any) => !!c.currencyCode)
+      };
+    });
+  }
+
+  private getLast30FromDate(): string {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - 30);
+    return date.toISOString();
+  }
+
+  private hasAdvancedFilterValues(): boolean {
+    return !!(
+      this.currentFilters.party?.partyId ||
+      this.currentFilters.pol ||
+      this.currentFilters.dateRange?.fromDate ||
+      this.currentFilters.dateRange?.toDate
+    );
+  }
+
+  private applyAdvancedFilters(items: any[]): any[] {
+    if (!this.hasAdvancedFilterValues()) {
+      return items;
+    }
+
+    const selectedDateField = this.currentFilters.dateType || 'VoucherDate';
+    const from = this.currentFilters.dateRange?.fromDate ? new Date(this.currentFilters.dateRange.fromDate) : null;
+    const to = this.currentFilters.dateRange?.toDate ? new Date(this.currentFilters.dateRange.toDate) : null;
+    const selectedCurrency = this.currentFilters.pol ? String(this.currentFilters.pol).trim().toUpperCase() : null;
+    const selectedCustomerSid = this.currentFilters.party?.partyId ? Number(this.currentFilters.party.partyId) : null;
+    const selectedCustomerName = this.currentFilters.party?.partyName
+      ? String(this.currentFilters.party.partyName).trim().toUpperCase()
+      : null;
+
+    return items.filter((item: any) => {
+      if (selectedCustomerSid || selectedCustomerName) {
+        const itemCustomerSid = Number(item?.CustomerMasterSid ?? item?.customerMaster?.CustomerMasterSid ?? 0);
+        const itemCustomerName = String(item?.PartyName ?? item?.CustomerName ?? '').trim().toUpperCase();
+        const sidMatches = selectedCustomerSid ? itemCustomerSid === selectedCustomerSid : false;
+        const nameMatches = selectedCustomerName ? itemCustomerName === selectedCustomerName : false;
+        if (!(sidMatches || nameMatches)) {
+          return false;
+        }
+      }
+
+      if (selectedCurrency) {
+        const itemCurrency = String(item?.CurrencyCode ?? item?.currencyMaster?.currencyCode ?? '').trim().toUpperCase();
+        if (itemCurrency !== selectedCurrency) {
+          return false;
+        }
+      }
+
+      if (from || to) {
+        const rawDate = item?.[selectedDateField];
+        if (!rawDate) {
+          return false;
+        }
+        const itemDate = new Date(rawDate);
+        if (Number.isNaN(itemDate.getTime())) {
+          return false;
+        }
+        if (from && itemDate < from) {
+          return false;
+        }
+        if (to && itemDate > to) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }
 
       report(): void {
     const formattedData = this.allCreditNote;

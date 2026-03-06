@@ -263,7 +263,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
               rawItems.length !== filteredItems.length
                 ? filteredItems.length
                 : (response.data.totalCount || 0);
-            this.applySorting();
+            // this.applySorting();
             this.updateHeaderActionState();
         } else {
             this.appSettingService.showError('Error searching bookings.');

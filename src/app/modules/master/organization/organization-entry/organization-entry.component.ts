@@ -320,6 +320,7 @@ onCountryChange(): void {
 }
 
 private autoSelectCurrency(): void {
+   if (this.isEditMode) return;
   const countryId = this.customerForm.get('CountryMasterSid')?.value;
   
   if (!countryId || !this.countryList || !this.currencyList) return;
@@ -2089,7 +2090,8 @@ loadCustomerData(customerId: number) {
         AirlineNumber: customerData.AirlineNumber || '',
         AirlineCode: customerData.AirlineCode || '',
         PanName: customerData.PanName || ''
-      });
+      },{ emitEvent: false });
+
        if (this.isEditMode) {
         this.customerForm.get('CountryMasterSid')?.disable();
         this.customerForm.get('CurrencyMasterSid')?.disable();
@@ -4690,7 +4692,7 @@ private loadNetworks(): void {
       TAN: customer.TAN,
       status: customer.status === 'Suspended' ? 'Suspended' : 'Active',
       Network: customer.Network
-    });
+    },{ emitEvent: false });
 
     // Handle CustomerType (comma-separated)
     if (customer.CustomerType) {

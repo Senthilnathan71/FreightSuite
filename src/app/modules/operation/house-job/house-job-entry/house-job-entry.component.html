@@ -1925,7 +1925,7 @@
                   <td>
                     <div class="d-flex align-items-center">
                       <input class="form-control" placeholder="" name="dp" ngbDatepicker #d2="ngbDatepicker" (click)="d2.toggle()"
-                        formControlName="CargoRecDate" (keydown.arrowDown)="d2.open()" [minDate]="today" container="body" readonly />
+                        formControlName="CargoRecDate" (keydown.arrowDown)="d2.open()" [minDate]="!isEditMode ? today : null" container="body" readonly />
                       <button class="btn p-0 " (click)="d2.toggle()" type="button"> <i-feather name="calendar"
                           class="feather-sm"></i-feather></button>
                     </div>
@@ -1951,7 +1951,7 @@
                   <td>
                     <div class="d-flex align-items-center">
                       <input class="form-control" placeholder="" name="dp" ngbDatepicker #d24="ngbDatepicker" (click)="d24.toggle()"
-                        formControlName="DeliveryDate" (keydown.arrowDown)="d24.open()" [minDate]="today" container="body" readonly />
+                        formControlName="DeliveryDate" (keydown.arrowDown)="d24.open()" [minDate]="!isEditMode ? today : null" container="body" readonly />
                       <button class="btn p-0 " (click)="d24.toggle()" type="button"> <i-feather name="calendar"
                           class="feather-sm"></i-feather></button>
                     </div>

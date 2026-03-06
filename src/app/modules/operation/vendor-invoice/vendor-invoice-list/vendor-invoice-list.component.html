@@ -10,14 +10,21 @@
 
 <div class="row compact-form">
     <div class="col-12">
-         <app-page-header
+        <app-page-header
             [title]="'Vendor Invoice'"
             [showFavorite]="true"
             [showSearch]="true"
             [searchPlaceholder]="'Search'"
             [searchButtonText]="'Search'"
             [(searchValue)]="filterValue"
+            [autoSearchOnFilterChange]="true"
             [actions]="headerActions"
+            [dateRangeConfig]="dateRangeConfig"
+            [dateTypeConfig]="dateTypeConfig"
+            [partyFilterConfig]="partyFilterConfig"
+            [polFilterConfig]="currencyFilterConfig"
+            [partySearchFn]="partySearchFn"
+            (advancedSearchTriggered)="onAdvancedSearch($event)"
             (searchTriggered)="onSearchTriggered($event)"
             (searchCleared)="onSearchCleared()"
             (actionTriggered)="onHeaderAction($event)">
