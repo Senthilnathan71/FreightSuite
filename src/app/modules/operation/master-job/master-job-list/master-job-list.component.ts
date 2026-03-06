@@ -556,6 +556,12 @@ this.initializeTableConfig();
         action: 'job_close',
         tooltip: 'job-close',
       },
+      {
+        label: 'Pro Rate',
+        icon: 'fas fa-percentage',
+        action: 'pro_rate',  
+        tooltip: 'Pro-Rate',
+      }
     ],
     selectable: false,
     multiSelect: false,
@@ -576,6 +582,9 @@ this.initializeTableConfig();
   }
   if (event.action === 'job_close') {
     this.router.navigate(['operation/job-close', event.row.MasterJobSid]);
+  }
+  if(event.action === 'pro_rate'){
+    this.router.navigate(['operation/pro-rate']);
   }
 }
 
