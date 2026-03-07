@@ -375,10 +375,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
           AmountFormatted: this.formatAmount(item.Amount)
 
         }));
-        this.totalLengthOfCollection =
-          rawItems.length !== filteredItems.length
-            ? filteredItems.length
-            : (response.data.totalCount || 0);
+        this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
         this.applySorting();
         this.updateHeaderActionState();
       } else {
@@ -437,14 +434,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
   
     onSearchCleared(): void {
       this.filterValue = '';
-      this.currentFilters = {
-        dateRange: {
-          preset: 'last30',
-          fromDate: this.getLast30FromDate(),
-          toDate: new Date().toISOString()
-        },
-        dateType: 'VoucherDate'
-      };
+      this.currentFilters = this.getDefaultFilters();
       this.clearFilterValue();
     }
   
@@ -520,9 +510,8 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
   }
   
     onReset() {
-      this.filterValue = '';
-      this.page = 1;
-      this.search();
+     this.currentFilters = this.getDefaultFilters();
+    this.resetPage();
     }
   
     onTableAction(event: TableEventData): void {
@@ -551,11 +540,25 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
 
     onAdvancedSearch(event: { searchValue: string; filters: AdvancedFilterValues }): void {
       this.filterValue = event.searchValue;
-      this.currentFilters = event.filters;
+       this.currentFilters = {
+      ...this.getDefaultFilters(),
+      ...event.filters,
+      dateRange: event.filters?.dateRange ?? this.getDefaultFilters().dateRange,
+      dateType: event.filters?.dateType || 'VoucherDate'
+    };
       this.page = 1;
       this.search();
     }
-
+ private getDefaultFilters(): AdvancedFilterValues {
+    return {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'VoucherDate'
+    };
+  }
     private loadCurrencies(): void {
       this.operationService.getAllCurrencies().pipe(
         map((response: any) => {

@@ -44,4 +44,5 @@ export interface AdvancedFilterValues {
   departmentSid?: number | null;
   pol?: string | null;
   pod?: string | null;
+  extra?: string | number | null;
 }

@@ -157,14 +157,7 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
      this.initializeHeaderActions();
     this.initializeTableConfig();
     });
-    this.currentFilters = {
-      dateRange: {
-        preset: 'last30',
-        fromDate: this.getLast30FromDate(),
-        toDate: new Date().toISOString()
-      },
-      dateType: 'VoucherDate'
-    };
+    this.currentFilters = this.getDefaultFilters();
     this.loadCurrencies();
     this.initializeModalDropdownItems();
     super.ngOnInit();
@@ -233,10 +226,7 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
         Status: item.Status === 'A' ? 'Active' : 'Suspended',
         AmountFormatted: this.formatAmount(item.Amount)
       }));
-      this.totalLengthOfCollection =
-        rawItems.length !== filteredItems.length
-          ? filteredItems.length
-          : (response.data.totalCount || 0);
+      this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
       // this.applySorting();
       this.updateHeaderActionState();
     } else {
@@ -277,14 +267,7 @@ private formatAmount(amount: number | string): string {
 
   onSearchCleared(): void {
     this.filterValue = '';
-    this.currentFilters = {
-      dateRange: {
-        preset: 'last30',
-        fromDate: this.getLast30FromDate(),
-        toDate: new Date().toISOString()
-      },
-      dateType: 'VoucherDate'
-    };
+    this.currentFilters = this.getDefaultFilters();
     this.clearFilterValue();
   }
 
@@ -523,9 +506,8 @@ private formatAmount(amount: number | string): string {
   }
 
   onReset() {
-    this.filterValue = '';
-    this.page = 1;
-    this.search();
+    this.currentFilters = this.getDefaultFilters();
+    this.resetPage();
   }
 
   onTableActionClick(event: any) {
@@ -608,7 +590,12 @@ private formatAmount(amount: number | string): string {
 
   onAdvancedSearch(event: { searchValue: string; filters: AdvancedFilterValues }): void {
     this.filterValue = event.searchValue;
-    this.currentFilters = event.filters;
+    this.currentFilters = {
+      ...this.getDefaultFilters(),
+      ...event.filters,
+      dateRange: event.filters?.dateRange ?? this.getDefaultFilters().dateRange,
+      dateType: event.filters?.dateType || 'VoucherDate'
+    };
     this.page = 1;
     this.search();
   }
@@ -636,6 +623,17 @@ private formatAmount(amount: number | string): string {
     date.setHours(0, 0, 0, 0);
     date.setDate(date.getDate() - 30);
     return date.toISOString();
+  }
+
+  private getDefaultFilters(): AdvancedFilterValues {
+    return {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'VoucherDate'
+    };
   }
 
   private hasAdvancedFilterValues(): boolean {

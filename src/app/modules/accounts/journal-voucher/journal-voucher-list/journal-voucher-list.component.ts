@@ -22,6 +22,12 @@ import { JournalVoucherService, JournalVoucherSearchResponse } from '../journal-
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AccountsService } from '../../accounts.service';
+import {
+  AdvancedFilterValues,
+  DateRangeConfig,
+  DateTypeConfig,
+  DropdownFilterConfig
+} from 'src/app/shared/interfaces/advanced-filter.interface';
 
 @Component({
   selector: 'app-journal-voucher-list',
@@ -58,6 +64,26 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
  tableConfig: TableConfig;
 
   tableLoading = false;
+  dateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+  dateTypeConfig: DateTypeConfig = {
+    enabled: true,
+    options: [
+      { label: 'Voucher Date', value: 'VoucherDateFormatted' },
+      { label: 'Post Date', value: 'PostDateFormatted' }
+    ],
+    defaultValue: 'VoucherDateFormatted'
+  };
+  postStatusFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'PostStatus',
+    options: [
+      { label: 'Posted', value: 'P' },
+      { label: 'Unposted', value: 'U' }
+    ],
+    bindLabel: 'label',
+    bindValue: 'value'
+  };
+  currentFilters: AdvancedFilterValues = {};
 
   protected config: ListComponentConfig = {
     storageKey: 'journal-voucher-list-state',
@@ -100,7 +126,15 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
     this.mps.init().subscribe(()=>{
       this.initializeTableConfig();
       this.initializeHeaderActions();
-    })
+    });
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'VoucherDateFormatted'
+    };
     // Initialize base component
     super.ngOnInit();
     this.loadJournalVouchers();
@@ -122,12 +156,13 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
 
   // Implement abstract methods from BaseListComponent
   protected searchItems(): Observable<any> {
+    this.tableLoading = true;
     this.spinner.show();
     return this.journalVoucherService.searchJournalVouchers(this.getSearchParams());
   }
 
-  protected getSearchParams(): SearchParams {
-    return {
+  protected getSearchParams(): SearchParams & Record<string, any> {
+    const params: any = {
       search: this.filterValue.trim(),
       page: Number(this.page),
       pageSize: Number(this.pageSize),
@@ -136,21 +171,47 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
       sortColumn: this.sortColumn,
       sortDirection: this.sortDirection
     };
+
+    const dateField = this.currentFilters.dateType === 'PostDateFormatted' ? 'PostDate' : 'VoucherDate';
+    if (this.currentFilters.dateRange?.fromDate) {
+      params.dateFrom = this.currentFilters.dateRange.fromDate;
+      params.DateFrom = this.currentFilters.dateRange.fromDate;
+    }
+    if (this.currentFilters.dateRange?.toDate) {
+      params.dateTo = this.currentFilters.dateRange.toDate;
+      params.DateTo = this.currentFilters.dateRange.toDate;
+    }
+    if (this.currentFilters.dateType) {
+      params.dateField = dateField;
+      params.DateField = dateField;
+    }
+    if (this.currentFilters.departmentSid) {
+      params.PostStatus = this.currentFilters.departmentSid;
+      params.postStatus = this.currentFilters.departmentSid;
+    }
+
+    return params;
   }
 
   protected processSearchResults(response: any): void {
+    this.tableLoading = false;
     this.spinner.hide();
     if (response.status) {
-      this.allItems = response.data.items.map((item: any) => ({
+      const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
+      const filteredItems = this.applyAdvancedFilters(rawItems);
+      this.allItems = filteredItems.map((item: any) => ({
         ...item,
+        PostStatusCode: item.PostStatus,
+        VoucherDateRaw: item.VoucherDate,
+        PostDateRaw: item.PostDate,
         PostStatus: item.PostStatus === 'P' ? 'Posted' : 'Unposted',
         StatusLabel: item.Status === 'A' ? 'Active' : 'Suspended',
         VoucherDateFormatted: this.datePipe.transform(item.VoucherDate),
         PostDateFormatted: this.datePipe.transform(item.PostDate),
         LocalAmountFormatted: this.formatAmount(item.LocalAmount) 
       }));
-     this.totalLengthOfCollection = response.data.totalCount || 0;
-      this.applySorting();
+      this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
+      // this.applySorting();
       this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching journal vouchers.');
@@ -174,6 +235,7 @@ private formatAmount(amount: number | string): string {
 }
 
   protected override handleSearchError(error: any): void {
+    this.tableLoading = false;
     this.spinner.hide();
     this.appSettingService.showError('Error searching journal vouchers.');
     console.error('Error searching journal vouchers', error);
@@ -187,7 +249,22 @@ private formatAmount(amount: number | string): string {
 
   onSearchCleared(): void {
     this.filterValue = '';
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'VoucherDateFormatted'
+    };
     this.clearFilterValue();
+  }
+
+  onAdvancedSearch(event: { searchValue: string; filters: AdvancedFilterValues }): void {
+    this.filterValue = event.searchValue;
+    this.currentFilters = event.filters;
+    this.page = 1;
+    this.search();
   }
 
   initializeHeaderActions(): void {
@@ -446,6 +523,52 @@ editJournalVoucher(item: any): void {
 
   onTableFilterChange(filters: TableFilter[]): void {
     // console.log('Filters changed:', filters);
+  }
+
+  private getLast30FromDate(): string {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - 30);
+    return date.toISOString();
+  }
+
+  private applyAdvancedFilters(items: any[]): any[] {
+    const selectedDateField = this.currentFilters.dateType === 'PostDateFormatted' ? 'PostDate' : 'VoucherDate';
+    const from = this.currentFilters.dateRange?.fromDate ? new Date(this.currentFilters.dateRange.fromDate) : null;
+    const to = this.currentFilters.dateRange?.toDate ? new Date(this.currentFilters.dateRange.toDate) : null;
+    const selectedPostStatus = this.currentFilters.departmentSid ? String(this.currentFilters.departmentSid).trim().toUpperCase() : '';
+
+    if (!from && !to && !selectedPostStatus) {
+      return items;
+    }
+
+    return items.filter((item: any) => {
+      const itemPostStatus = String(item?.PostStatus ?? '').trim().toUpperCase();
+      if (selectedPostStatus && itemPostStatus !== selectedPostStatus) {
+        return false;
+      }
+
+      if (from || to) {
+        const rawDate = item?.[selectedDateField];
+        if (!rawDate) {
+          return false;
+        }
+
+        const itemDate = new Date(rawDate);
+        if (Number.isNaN(itemDate.getTime())) {
+          return false;
+        }
+
+        if (from && itemDate < from) {
+          return false;
+        }
+        if (to && itemDate > to) {
+          return false;
+        }
+      }
+
+      return true;
+    });
   }
 
   report(): void {

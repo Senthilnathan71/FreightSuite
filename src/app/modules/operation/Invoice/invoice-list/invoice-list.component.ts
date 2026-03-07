@@ -236,10 +236,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         PostStatusLabel: item.PostStatus === 'P' ? 'Posted' : 'Unposted',
         Status: item.Status === 'A' ? 'Active' : 'Suspended'
       }));
-      this.totalLengthOfCollection =
-        rawItems.length !== filteredItems.length
-          ? filteredItems.length
-          : (response.data.totalCount || 0);
+      this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
       this.applySorting();
       this.updateHeaderActionState();
     } else {

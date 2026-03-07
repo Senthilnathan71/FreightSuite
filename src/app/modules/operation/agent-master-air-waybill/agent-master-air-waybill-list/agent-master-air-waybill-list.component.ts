@@ -272,9 +272,7 @@ export class AgentMasterAirWaybillListComponent extends BaseListComponent implem
       Status: item.status === 'A' ? 'Active' : 'Suspended'
     }));
 
-    this.totalLengthOfCollection = this.hasAdvancedFilterValues()
-      ? filteredItems.length
-      : (response.data.totalCount || 0);
+    this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
 
     this.updateHeaderActionState();
   }

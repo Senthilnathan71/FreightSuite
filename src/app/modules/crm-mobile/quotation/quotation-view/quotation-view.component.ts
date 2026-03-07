@@ -15,9 +15,16 @@ import { CommonModule } from '@angular/common';
 import { FeatherModule } from 'angular-feather';
 import { FormsModule } from '@angular/forms';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
-import { firstValueFrom, forkJoin, Observable } from 'rxjs';
+import { firstValueFrom, forkJoin, Observable, of } from 'rxjs';
 import { PaginationConfig } from 'src/app/shared/interfaces/pagination.interface';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import {
+  AdvancedFilterValues,
+  DateRangeConfig,
+  DateTypeConfig,
+  DropdownFilterConfig,
+  PartyFilterConfig
+} from 'src/app/shared/interfaces/advanced-filter.interface';
 
 @Component({
   selector: 'app-quotation-view',
@@ -45,6 +52,7 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
   filterQuotationValue : string= "";
   departments : any[] = [];
   containerTypes : any[] = [];
+  allPorts: any[] = [];
 
 
   // List Managers
@@ -69,6 +77,87 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
   quotationPaginationConfig: PaginationConfig;
 
   quotationHeaderActions : any[] = [];
+  enquiryDateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+  enquiryDateTypeConfig: DateTypeConfig = {
+    enabled: true,
+    options: [{ label: 'Enquiry Date', value: 'EnquiryDate' }],
+    defaultValue: 'EnquiryDate'
+  };
+  enquiryPartyFilterConfig: PartyFilterConfig = {
+    enabled: true,
+    partyTypes: [{ label: 'Customer', value: 'CustomerMasterSid' }],
+    defaultPartyType: 'CustomerMasterSid'
+  };
+  enquiryDepartmentFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'Dept',
+    options: [],
+    bindLabel: 'departmentName',
+    bindValue: 'DepartmentMasterSid'
+  };
+  enquiryPolFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'POL',
+    options: [],
+    bindLabel: 'displayName',
+    bindValue: 'PortCode'
+  };
+  enquiryPodFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'POD',
+    options: [],
+    bindLabel: 'displayName',
+    bindValue: 'PortCode'
+  };
+
+  quotationDateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+  quotationDateTypeConfig: DateTypeConfig = {
+    enabled: true,
+    options: [{ label: 'Quote Date', value: 'QuoteDate' }],
+    defaultValue: 'QuoteDate'
+  };
+  quotationPartyFilterConfig: PartyFilterConfig = {
+    enabled: true,
+    partyTypes: [{ label: 'Customer', value: 'CustomerMasterSid' }],
+    defaultPartyType: 'CustomerMasterSid'
+  };
+  quotationDepartmentFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'Dept',
+    options: [],
+    bindLabel: 'departmentName',
+    bindValue: 'DepartmentMasterSid'
+  };
+  quotationPolFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'POL',
+    options: [],
+    bindLabel: 'displayName',
+    bindValue: 'PortCode'
+  };
+  quotationPodFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'POD',
+    options: [],
+    bindLabel: 'displayName',
+    bindValue: 'PortCode'
+  };
+  quotationApprovalStatusFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'ApprovalStatus',
+    options: [
+      { label: 'Open', value: 'Open' },
+      { label: 'Pending', value: 'Pending' },
+      { label: 'Approved', value: 'Approved' },
+      { label: 'Rejected', value: 'Rejected' },
+      { label: 'Counter Offer', value: 'Counter' },
+      { label: 'Waiting for Final Approval', value: 'WaitingForFinalApproval' },
+      { label: 'Waiting for Customer Approval', value: 'WaitingForCustomerApproval' },
+      { label: 'Full Review', value: 'FullReview' }
+    ],
+    bindLabel: 'label',
+    bindValue: 'value'
+  };
 
   initializeQuotationHeaderActions() {
     this.quotationHeaderActions = [
@@ -120,6 +209,7 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
 
 
     this.loadAllFields();
+    this.initializeDefaultFilters();
 
     // Initial load
     this.selectTab(this.selectedTab);
@@ -130,13 +220,25 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
   loadAllFields(){
     forkJoin([
       this.leadService.getAllDepartments(this.currentCompany.CompanyMasterSid),
-      this.leadService.getAllContainerTypes()])
+      this.leadService.getAllContainerTypes(),
+      this.leadService.getAllPorts()])
       .subscribe(([
         departments,
-        containerTypes
+        containerTypes,
+        ports
       ]) => {
       this.departments = departments;
       this.containerTypes = containerTypes;
+      this.allPorts = (ports || []).map((port: any) => ({
+        ...port,
+        displayName: `${port.PortName} (${port.PortCode})`
+      }));
+      this.quotationDepartmentFilterConfig = { ...this.quotationDepartmentFilterConfig, options: this.departments };
+      this.enquiryDepartmentFilterConfig = { ...this.enquiryDepartmentFilterConfig, options: this.departments };
+      this.quotationPolFilterConfig = { ...this.quotationPolFilterConfig, options: [...this.allPorts] };
+      this.quotationPodFilterConfig = { ...this.quotationPodFilterConfig, options: [...this.allPorts] };
+      this.enquiryPolFilterConfig = { ...this.enquiryPolFilterConfig, options: [...this.allPorts] };
+      this.enquiryPodFilterConfig = { ...this.enquiryPodFilterConfig, options: [...this.allPorts] };
     })
   }
 
@@ -451,8 +553,27 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
     console.log('After Search', this.enquiryManager.totalRecords);
   }
 
+  onEnquiryAdvancedSearch(event: { searchValue: string; filters: AdvancedFilterValues }): void {
+    this.enquiryManager.filterValue = event.searchValue;
+    this.enquiryManager.advancedFilters = event.filters;
+    this.enquiryManager.page = 1;
+    this.enquiryManager.search();
+  }
+
+  onEnquiryDepartmentFilterChanged(departmentSid: number | null): void {
+    this.setFilteredPortOptionsForEnquiry(departmentSid);
+  }
+
   enquiryResetPage() {
     this.enquiryManager.clearFilter();
+    this.enquiryManager.advancedFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'EnquiryDate'
+    };
   }
 
   // List Level
@@ -496,6 +617,17 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
     console.log('After Search', this.quotationManager.totalRecords);
   }
 
+  onQuotationAdvancedSearch(event: { searchValue: string; filters: AdvancedFilterValues }): void {
+    this.quotationManager.filterValue = event.searchValue;
+    this.quotationManager.advancedFilters = event.filters;
+    this.quotationManager.page = 1;
+    this.quotationManager.search();
+  }
+
+  onQuotationDepartmentFilterChanged(departmentSid: number | null): void {
+    this.setFilteredPortOptionsForQuotation(departmentSid);
+  }
+
   navigateQuoteEntry(){
     this.route.navigate(['crm/quotation/entry']);
   }
@@ -513,7 +645,85 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
 
   quoteResetPage() {
     this.quotationManager.clearFilter();
+    this.quotationManager.advancedFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'QuoteDate'
+    };
   }
 
+  partySearchFn = (_searchTerm: string, partyType: string): Observable<any[]> => {
+    const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    if (!companyMasterSid || partyType !== 'CustomerMasterSid') {
+      return of([]);
+    }
+    return this.leadService.getAllCustomersWithBranch(companyMasterSid);
+  };
+
+  private initializeDefaultFilters(): void {
+    this.enquiryManager.advancedFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'EnquiryDate'
+    };
+
+    this.quotationManager.advancedFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'QuoteDate'
+    };
+  }
+
+  private getLast30FromDate(): string {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - 30);
+    return date.toISOString();
+  }
+
+  private setFilteredPortOptionsForQuotation(departmentSid: number | null): void {
+    const normalizedDepartmentSid = departmentSid !== null ? Number(departmentSid) : null;
+    const selectedDepartment = this.departments.find(
+      (dept: any) => Number(dept?.DepartmentMasterSid) === normalizedDepartmentSid
+    );
+
+    const departmentType = (selectedDepartment?.departmentType || '').toUpperCase();
+    const filteredPorts = !departmentType
+      ? [...this.allPorts]
+      : this.allPorts.filter((port: any) => {
+          const portType = (port?.PortType || '').toUpperCase();
+          return departmentType === 'AIR' ? portType === 'AIR' : portType === 'SEA';
+        });
+
+    this.quotationPolFilterConfig = { ...this.quotationPolFilterConfig, options: filteredPorts };
+    this.quotationPodFilterConfig = { ...this.quotationPodFilterConfig, options: filteredPorts };
+  }
+
+  private setFilteredPortOptionsForEnquiry(departmentSid: number | null): void {
+    const normalizedDepartmentSid = departmentSid !== null ? Number(departmentSid) : null;
+    const selectedDepartment = this.departments.find(
+      (dept: any) => Number(dept?.DepartmentMasterSid) === normalizedDepartmentSid
+    );
+
+    const departmentType = (selectedDepartment?.departmentType || '').toUpperCase();
+    const filteredPorts = !departmentType
+      ? [...this.allPorts]
+      : this.allPorts.filter((port: any) => {
+          const portType = (port?.PortType || '').toUpperCase();
+          return departmentType === 'AIR' ? portType === 'AIR' : portType === 'SEA';
+        });
+
+    this.enquiryPolFilterConfig = { ...this.enquiryPolFilterConfig, options: filteredPorts };
+    this.enquiryPodFilterConfig = { ...this.enquiryPodFilterConfig, options: filteredPorts };
+  }
 
 }

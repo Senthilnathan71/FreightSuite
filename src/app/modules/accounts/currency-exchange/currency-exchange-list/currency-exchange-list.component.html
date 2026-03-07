@@ -12,7 +12,15 @@
            <app-page-header 
     [title]="'Currency Exchange'" [showFavorite]="true" [showSearch]="true" 
     [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
-    [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" 
+    [autoSearchOnFilterChange]="true"
+    [actions]="headerActions"
+    [dateRangeConfig]="dateRangeConfig"
+    [dateTypeConfig]="dateTypeConfig"
+    [polFilterConfig]="fromCurrencyFilterConfig"
+    [podFilterConfig]="toCurrencyFilterConfig"
+    (polFilterChanged)="onFromCurrencyFilterChanged($event)"
+    (advancedSearchTriggered)="onAdvancedSearch($event)"
+    (searchTriggered)="onSearchTriggered($event)" 
     (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)"
     >
     </app-page-header>

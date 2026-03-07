@@ -24,6 +24,12 @@ import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pag
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { AccountsService } from '../../accounts.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import {
+  AdvancedFilterValues,
+  DateRangeConfig,
+  DateTypeConfig,
+  DropdownFilterConfig
+} from 'src/app/shared/interfaces/advanced-filter.interface';
 
 @Component({
   selector: 'app-reverse-voucher-list',
@@ -72,6 +78,37 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
       }
     
       tableConfig: TableConfig;
+      dateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+      dateTypeConfig: DateTypeConfig = {
+        enabled: true,
+        options: [{ label: 'Voucher Date', value: 'VoucherDate' }],
+        defaultValue: 'VoucherDate'
+      };
+      vendorFilterConfig: DropdownFilterConfig = {
+        enabled: true,
+        label: 'Vendor Name',
+        options: [],
+        bindLabel: 'VendorName',
+        bindValue: 'VendorName'
+      };
+      postStatusFilterConfig: DropdownFilterConfig = {
+        enabled: true,
+        label: 'Post Status',
+        options: [
+          { label: 'Posted', value: 'P' },
+          { label: 'Unposted', value: 'U' }
+        ],
+        bindLabel: 'label',
+        bindValue: 'value'
+      };
+      currentFilters: AdvancedFilterValues = {
+        dateRange: {
+          preset: 'last30',
+          fromDate: this.getLast30FromDate(),
+          toDate: new Date().toISOString()
+        },
+        dateType: 'VoucherDate'
+      };
     
       headerActions: HeaderAction[] = [];
       modalDropdownItems: DropdownMenuItem[] = [];
@@ -148,8 +185,8 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
         return this.operationService.searchReverseVoucher(this.getSearchParams());
       }
     
-      protected getSearchParams(): SearchParams {
-        return {
+      protected getSearchParams(): SearchParams & Record<string, any> {
+        const params: SearchParams & Record<string, any> = {
           search: this.filterValue.trim(),
           page: Number(this.page),
           pageSize: Number(this.pageSize),
@@ -158,12 +195,38 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
           sortColumn: this.sortColumn,
           sortDirection: this.sortDirection
         };
+
+        if (this.currentFilters.dateRange?.fromDate) {
+          params['dateFrom'] = this.currentFilters.dateRange.fromDate;
+          params['DateFrom'] = this.currentFilters.dateRange.fromDate;
+        }
+        if (this.currentFilters.dateRange?.toDate) {
+          params['dateTo'] = this.currentFilters.dateRange.toDate;
+          params['DateTo'] = this.currentFilters.dateRange.toDate;
+        }
+        if (this.currentFilters.dateType) {
+          params['dateField'] = this.currentFilters.dateType;
+          params['DateField'] = this.currentFilters.dateType;
+        }
+        if (this.currentFilters.pol) {
+          params['VendorName'] = this.currentFilters.pol;
+          params['vendorName'] = this.currentFilters.pol;
+        }
+        if (this.currentFilters.extra) {
+          params['PostStatus'] = this.currentFilters.extra;
+          params['postStatus'] = this.currentFilters.extra;
+        }
+
+        return params;
       }
     
       protected processSearchResults(response: any): void {
         this.spinner.hide();
         if (response.status) {
-          this.allItems = (response.data.items || []).map((item: any) => ({
+          const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
+          this.updateVendorFilterOptions(rawItems);
+          const filteredItems = this.applyAdvancedFilters(rawItems);
+          this.allItems = filteredItems.map((item: any) => ({
             ...item,
             VoucherDate: this.datePipe.transform(item?.VoucherDate),
             PostStatusLabel: item.PostStatus === 'P' ? 'Posted' : 'Unposted',
@@ -171,7 +234,7 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
             ReversalVoucherDisplay: this.getInvoiceNumber(item.ReversalVoucher),
             
           }));
-          this.totalLengthOfCollection = response.data.totalCount || 0;
+          this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
           this.applySorting();
           this.updateHeaderActionState();
         } else {
@@ -211,7 +274,30 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
     
       onSearchCleared(): void {
         this.filterValue = '';
+        this.currentFilters = {
+          dateRange: {
+            preset: 'last30',
+            fromDate: this.getLast30FromDate(),
+            toDate: new Date().toISOString()
+          },
+          dateType: 'VoucherDate'
+        };
         this.clearFilterValue();
+      }
+
+      onAdvancedSearch(event: { searchValue: string; filters: AdvancedFilterValues }): void {
+        this.filterValue = event.searchValue;
+        this.currentFilters = {
+          ...event.filters,
+          dateRange: event.filters?.dateRange || {
+            preset: 'last30',
+            fromDate: this.getLast30FromDate(),
+            toDate: new Date().toISOString()
+          },
+          dateType: event.filters?.dateType || 'VoucherDate'
+        };
+        this.page = 1;
+        this.search();
       }
     
       clearFilterValue() {
@@ -485,6 +571,72 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
           }
           return item;
         });
+      }
+
+      private updateVendorFilterOptions(items: any[]): void {
+        const vendors = Array.from(
+          new Map(
+            (items || [])
+              .map((item: any) => ({
+                VendorName: item?.VendorName || ''
+              }))
+              .filter((x: any) => !!x.VendorName)
+              .map((x: any) => [x.VendorName, x])
+          ).values()
+        );
+
+        this.vendorFilterConfig = { ...this.vendorFilterConfig, options: vendors };
+      }
+
+      private applyAdvancedFilters(items: any[]): any[] {
+        const selectedDateField = this.currentFilters.dateType || 'VoucherDate';
+        const from = this.currentFilters.dateRange?.fromDate ? new Date(this.currentFilters.dateRange.fromDate) : null;
+        const to = this.currentFilters.dateRange?.toDate ? new Date(this.currentFilters.dateRange.toDate) : null;
+        const selectedVendor = this.currentFilters.pol ? String(this.currentFilters.pol).trim().toUpperCase() : '';
+        const selectedPostStatus = this.currentFilters.extra ? String(this.currentFilters.extra).trim().toUpperCase() : '';
+
+        if (!from && !to && !selectedVendor && !selectedPostStatus) {
+          return items;
+        }
+
+        return (items || []).filter((item: any) => {
+          const itemVendor = String(item?.VendorName ?? '').trim().toUpperCase();
+          const itemPostStatus = String(item?.PostStatus ?? '').trim().toUpperCase();
+
+          if (selectedVendor && itemVendor !== selectedVendor) {
+            return false;
+          }
+
+          if (selectedPostStatus && itemPostStatus !== selectedPostStatus) {
+            return false;
+          }
+
+          if (from || to) {
+            const rawDate = item?.[selectedDateField];
+            if (!rawDate) {
+              return false;
+            }
+            const itemDate = new Date(rawDate);
+            if (Number.isNaN(itemDate.getTime())) {
+              return false;
+            }
+            if (from && itemDate < from) {
+              return false;
+            }
+            if (to && itemDate > to) {
+              return false;
+            }
+          }
+
+          return true;
+        });
+      }
+
+      private getLast30FromDate(): string {
+        const date = new Date();
+        date.setHours(0, 0, 0, 0);
+        date.setDate(date.getDate() - 30);
+        return date.toISOString();
       }
 
 }

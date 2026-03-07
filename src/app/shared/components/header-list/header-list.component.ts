@@ -65,6 +65,7 @@ export class PageHeaderComponent implements OnInit, OnChanges {
   @Input() departmentFilterConfig?: DropdownFilterConfig;
   @Input() polFilterConfig?: DropdownFilterConfig;
   @Input() podFilterConfig?: DropdownFilterConfig;
+  @Input() extraFilterConfig?: DropdownFilterConfig;
   @Input() partySearchFn?: (searchTerm: string, partyType: string) => Observable<any[]>;
 
   @Output() searchValueChange = new EventEmitter<string>();
@@ -75,6 +76,7 @@ export class PageHeaderComponent implements OnInit, OnChanges {
   @Output() departmentFilterChanged = new EventEmitter<any>();
   @Output() polFilterChanged = new EventEmitter<any>();
   @Output() podFilterChanged = new EventEmitter<any>();
+  @Output() extraFilterChanged = new EventEmitter<any>();
 
   // Advanced filter state
   selectedPreset: DateRangePreset = 'last30';
@@ -85,6 +87,7 @@ export class PageHeaderComponent implements OnInit, OnChanges {
   selectedDepartment: any = null;
   selectedPOL: any = null;
   selectedPOD: any = null;
+  selectedExtra: any = null;
   partySearchResults: any[] = [];
   partyLoading = false;
 
@@ -95,7 +98,8 @@ export class PageHeaderComponent implements OnInit, OnChanges {
       this.partyFilterConfig?.enabled ||
       this.departmentFilterConfig?.enabled ||
       this.polFilterConfig?.enabled ||
-      this.podFilterConfig?.enabled
+      this.podFilterConfig?.enabled ||
+      this.extraFilterConfig?.enabled
     );
   }
 
@@ -138,6 +142,7 @@ export class PageHeaderComponent implements OnInit, OnChanges {
     this.selectedDepartment = null;
     this.selectedPOL = null;
     this.selectedPOD = null;
+    this.selectedExtra = null;
   }
 
   private triggerAutoSearchIfEnabled(): void {
@@ -224,6 +229,29 @@ export class PageHeaderComponent implements OnInit, OnChanges {
     this.triggerAutoSearchIfEnabled();
   }
 
+  onExtraFilterChange(): void {
+    this.extraFilterChanged.emit(this.selectedExtra);
+    this.triggerAutoSearchIfEnabled();
+  }
+
+  getFilteredPolOptions(): any[] {
+    const options = this.polFilterConfig?.options || [];
+    const podBind = this.podFilterConfig?.bindValue;
+    if (!podBind || this.selectedPOD === null || this.selectedPOD === undefined || this.selectedPOD === '') {
+      return options;
+    }
+    return options.filter((opt: any) => opt?.[podBind] !== this.selectedPOD);
+  }
+
+  getFilteredPodOptions(): any[] {
+    const options = this.podFilterConfig?.options || [];
+    const polBind = this.polFilterConfig?.bindValue;
+    if (!polBind || this.selectedPOL === null || this.selectedPOL === undefined || this.selectedPOL === '') {
+      return options;
+    }
+    return options.filter((opt: any) => opt?.[polBind] !== this.selectedPOL);
+  }
+
   private loadPartyResults(searchTerm: string): void {
     if (!this.partySearchFn) return;
     const activePartyType =
@@ -280,6 +308,9 @@ export class PageHeaderComponent implements OnInit, OnChanges {
 
     if (this.podFilterConfig?.enabled) {
       filters.pod = this.selectedPOD ?? null;
+    }
+    if (this.extraFilterConfig?.enabled) {
+      filters.extra = this.selectedExtra ?? null;
     }
 
     return filters;

@@ -23,6 +23,12 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { OperationService } from '../../operation.service';
 import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
 import { Observable } from 'rxjs';
+import {
+  AdvancedFilterValues,
+  DateRangeConfig,
+  DateTypeConfig,
+  DropdownFilterConfig
+} from 'src/app/shared/interfaces/advanced-filter.interface';
 
 @Component({
   selector: 'app-voucher-correction-list',
@@ -66,6 +72,51 @@ export class VoucherCorrectionListComponent extends BaseListComponent implements
   }
 
   tableConfig: TableConfig;
+  dateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+  dateTypeConfig: DateTypeConfig = {
+    enabled: true,
+    options: [{ label: 'Voucher Date', value: 'VoucherDate' }],
+    defaultValue: 'VoucherDate'
+  };
+  voucherTypeFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'Voucher Type',
+    options: [],
+    bindLabel: 'DocumentTypeName',
+    bindValue: 'VoucherTypeMasterSid'
+  };
+  partyNameFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'Party Name',
+    options: [],
+    bindLabel: 'PartyName',
+    bindValue: 'PartyName'
+  };
+  currencyFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'Curr',
+    options: [],
+    bindLabel: 'CurrencyCode',
+    bindValue: 'CurrencyCode'
+  };
+  cashOrBankFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'CashorBank',
+    options: [
+      { label: 'Cash', value: 'C' },
+      { label: 'Bank', value: 'B' }
+    ],
+    bindLabel: 'label',
+    bindValue: 'value'
+  };
+  currentFilters: AdvancedFilterValues = {
+    dateRange: {
+      preset: 'last30',
+      fromDate: this.getLast30FromDate(),
+      toDate: new Date().toISOString()
+    },
+    dateType: 'VoucherDate'
+  };
   headerActions: HeaderAction[] = [];
   modalDropdownItems: DropdownMenuItem[] = [];
   tableLoading = false;
@@ -120,8 +171,8 @@ export class VoucherCorrectionListComponent extends BaseListComponent implements
     return this.operationService.searchVoucher(this.getSearchParams());
   }
 
-  protected getSearchParams(): SearchParams {
-    return {
+  protected getSearchParams(): SearchParams & Record<string, any> {
+    const params: SearchParams & Record<string, any> = {
       search: this.filterValue.trim(),
       page: Number(this.page),
       pageSize: Number(this.pageSize),
@@ -130,21 +181,58 @@ export class VoucherCorrectionListComponent extends BaseListComponent implements
       sortColumn: this.sortColumn,
       sortDirection: this.sortDirection
     };
+
+    if (this.currentFilters.dateRange?.fromDate) {
+      params['dateFrom'] = this.currentFilters.dateRange.fromDate;
+      params['DateFrom'] = this.currentFilters.dateRange.fromDate;
+    }
+    if (this.currentFilters.dateRange?.toDate) {
+      params['dateTo'] = this.currentFilters.dateRange.toDate;
+      params['DateTo'] = this.currentFilters.dateRange.toDate;
+    }
+    if (this.currentFilters.dateType) {
+      params['dateField'] = this.currentFilters.dateType;
+      params['DateField'] = this.currentFilters.dateType;
+    }
+    if (this.currentFilters.departmentSid) {
+      params['VoucherTypeMasterSid'] = Number(this.currentFilters.departmentSid);
+      params['voucherTypeMasterSid'] = Number(this.currentFilters.departmentSid);
+    }
+    if (this.currentFilters.pol) {
+      params['PartyName'] = this.currentFilters.pol;
+      params['partyName'] = this.currentFilters.pol;
+    }
+    if (this.currentFilters.pod) {
+      params['CurrencyCode'] = this.currentFilters.pod;
+      params['currencyCode'] = this.currentFilters.pod;
+    }
+    if (this.currentFilters.extra) {
+      params['CashOrBank'] = this.currentFilters.extra;
+      params['cashOrBank'] = this.currentFilters.extra;
+    }
+
+    return params;
   }
 
   protected processSearchResults(response: any): void {
     this.spinner.hide();
     if (response.status) {
-      this.allItems = (response.data.items || []).map((item: any) => ({
+      const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
+      this.updateFilterOptions(rawItems);
+      const filteredItems = this.applyAdvancedFilters(rawItems);
+      this.allItems = filteredItems.map((item: any) => ({
         ...item,
+        VoucherDateRaw: item?.VoucherDate,
+        VoucherTypeMasterSid: item?.VoucherTypeMasterSid ?? item?.voucherTypeMaster?.VoucherTypeMasterSid ?? null,
         DocumentTypeName: item.voucherTypeMaster?.DocumentTypeName,
         VoucherDate: this.datePipe.transform(item?.VoucherDate),
+        CashOrBankCode: item.CashOrBank,
         CashOrBank: item.CashOrBank === 'C' ? 'Cash' : 'Bank',
         PostDate: this.datePipe.transform(item?.PostDate),
         PostStatus: item.PostStatus === 'P' ? 'Posted' : 'Unposted',
         Status: item.Status === 'A' ? 'Active' : 'Suspended'
       }));
-      this.totalLengthOfCollection = response.data.totalCount || 0;
+      this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
       this.applySorting();
       this.updateHeaderActionState();
     } else {
@@ -172,7 +260,22 @@ export class VoucherCorrectionListComponent extends BaseListComponent implements
 
   onSearchCleared(): void {
     this.filterValue = '';
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'VoucherDate'
+    };
     this.clearFilterValue();
+  }
+
+  onAdvancedSearch(event: { searchValue: string; filters: AdvancedFilterValues }): void {
+    this.filterValue = event.searchValue;
+    this.currentFilters = event.filters;
+    this.page = 1;
+    this.search();
   }
 
   clearFilterValue() {
@@ -229,7 +332,7 @@ export class VoucherCorrectionListComponent extends BaseListComponent implements
         },
         {
           key: 'PartyName',
-          label: 'Party',
+          label: 'Party Name ',
           sortable: true,
           filterable: true,
           visible: true,
@@ -371,6 +474,100 @@ export class VoucherCorrectionListComponent extends BaseListComponent implements
       fileName: 'Voucher-Correction-Report',
       title: companyName
     });
+  }
+
+  private updateFilterOptions(items: any[]): void {
+    const voucherTypes = Array.from(
+      new Map(
+        (items || [])
+          .map((item: any) => ({
+            VoucherTypeMasterSid: item?.VoucherTypeMasterSid ?? item?.voucherTypeMaster?.VoucherTypeMasterSid ?? null,
+            DocumentTypeName: item?.voucherTypeMaster?.DocumentTypeName ?? item?.DocumentTypeName ?? ''
+          }))
+          .filter((x: any) => !!x.VoucherTypeMasterSid && !!x.DocumentTypeName)
+          .map((x: any) => [x.VoucherTypeMasterSid, x])
+      ).values()
+    );
+    const parties = Array.from(
+      new Map(
+        (items || [])
+          .map((item: any) => ({ PartyName: item?.PartyName ?? '' }))
+          .filter((x: any) => !!x.PartyName)
+          .map((x: any) => [x.PartyName, x])
+      ).values()
+    );
+    const currencies = Array.from(
+      new Map(
+        (items || [])
+          .map((item: any) => ({ CurrencyCode: item?.CurrencyCode ?? '' }))
+          .filter((x: any) => !!x.CurrencyCode)
+          .map((x: any) => [x.CurrencyCode, x])
+      ).values()
+    );
+
+    this.voucherTypeFilterConfig = { ...this.voucherTypeFilterConfig, options: voucherTypes };
+    this.partyNameFilterConfig = { ...this.partyNameFilterConfig, options: parties };
+    this.currencyFilterConfig = { ...this.currencyFilterConfig, options: currencies };
+  }
+
+  private applyAdvancedFilters(items: any[]): any[] {
+    const selectedDateField = this.currentFilters.dateType || 'VoucherDate';
+    const from = this.currentFilters.dateRange?.fromDate ? new Date(this.currentFilters.dateRange.fromDate) : null;
+    const to = this.currentFilters.dateRange?.toDate ? new Date(this.currentFilters.dateRange.toDate) : null;
+    const selectedVoucherType = this.currentFilters.departmentSid ? Number(this.currentFilters.departmentSid) : null;
+    const selectedParty = this.currentFilters.pol ? String(this.currentFilters.pol).trim().toUpperCase() : '';
+    const selectedCurrency = this.currentFilters.pod ? String(this.currentFilters.pod).trim().toUpperCase() : '';
+    const selectedCashOrBank = this.currentFilters.extra ? String(this.currentFilters.extra).trim().toUpperCase() : '';
+
+    if (!from && !to && !selectedVoucherType && !selectedParty && !selectedCurrency && !selectedCashOrBank) {
+      return items;
+    }
+
+    return (items || []).filter((item: any) => {
+      const itemVoucherType = Number(item?.VoucherTypeMasterSid ?? item?.voucherTypeMaster?.VoucherTypeMasterSid ?? 0);
+      const itemParty = String(item?.PartyName ?? '').trim().toUpperCase();
+      const itemCurrency = String(item?.CurrencyCode ?? '').trim().toUpperCase();
+      const itemCashOrBank = String(item?.CashOrBank ?? '').trim().toUpperCase();
+
+      if (selectedVoucherType && itemVoucherType !== selectedVoucherType) {
+        return false;
+      }
+      if (selectedParty && itemParty !== selectedParty) {
+        return false;
+      }
+      if (selectedCurrency && itemCurrency !== selectedCurrency) {
+        return false;
+      }
+      if (selectedCashOrBank && itemCashOrBank !== selectedCashOrBank) {
+        return false;
+      }
+
+      if (from || to) {
+        const rawDate = item?.[selectedDateField];
+        if (!rawDate) {
+          return false;
+        }
+        const itemDate = new Date(rawDate);
+        if (Number.isNaN(itemDate.getTime())) {
+          return false;
+        }
+        if (from && itemDate < from) {
+          return false;
+        }
+        if (to && itemDate > to) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }
+
+  private getLast30FromDate(): string {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - 30);
+    return date.toISOString();
   }
 
 

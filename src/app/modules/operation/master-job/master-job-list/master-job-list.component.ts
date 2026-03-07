@@ -238,10 +238,7 @@ this.initializeTableConfig();
         MasterJobDate: this.datePipe.transform(item?.MasterJobDate),
         MBLDate: this.datePipe.transform(item?.MBLDate),
       }));
-      this.totalLengthOfCollection =
-              rawItems.length !== filteredItems.length
-                ? filteredItems.length
-                : (response.data.totalCount || 0);
+            this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
       // this.applySorting();
       this.updateHeaderActionState();
     } else {
