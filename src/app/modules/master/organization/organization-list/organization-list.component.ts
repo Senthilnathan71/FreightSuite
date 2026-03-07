@@ -69,7 +69,7 @@ export class OrganizationListComponent extends BaseListComponent implements OnIn
   protected config: ListComponentConfig = {
     storageKey: 'organization-list-state',
     defaultPageSize: 10,
-    defaultSortColumn: 'CustomerName',
+    defaultSortColumn: 'CustomerMasterSid',
     defaultSortDirection: 'desc',
     pageSizeOptions: [10, 20, 50, 100, 500],
     maxPagesToShow: 3
@@ -149,7 +149,6 @@ export class OrganizationListComponent extends BaseListComponent implements OnIn
         type: this.getFirstTrueKey(item.CustomerType) || "N/A"
       }));
       this.totalLengthOfCollection = response.data.totalCount || 0;
-      this.applySorting();
       this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching bookings.');

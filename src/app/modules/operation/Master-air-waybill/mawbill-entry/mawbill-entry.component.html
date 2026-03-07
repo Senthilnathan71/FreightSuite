@@ -1654,11 +1654,11 @@
         </div> -->
 
 
-    </div>
-    <div class="workspace-content" *ngIf="selectedTab === 'Edoc'">
-        <app-edoc [dataItems]="edocData" [resetTrigger]="edocResetTrigger" [formData]="currentEdocFormValue"
-            (dataEmitter)="handleEdocChange($event)">
-        </app-edoc>
+        <div class="workspace-content" *ngIf="selectedTab === 'Edoc'">
+            <app-edoc [dataItems]="edocData" [resetTrigger]="edocResetTrigger" [formData]="currentEdocFormValue"
+                (dataEmitter)="handleEdocChange($event)">
+            </app-edoc>
+        </div>
     </div>
     <!-- <div class="workspace-content" *ngIf="selectedTab === 'History'">
         <div class="modern-table-container">

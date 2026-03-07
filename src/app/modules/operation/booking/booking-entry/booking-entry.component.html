@@ -880,15 +880,17 @@
                             <!-- <ng-select [items]="airlineList" bindLabel="CustomerName" bindValue="CustomerName" class="ng-select"
                 formControlName="VesselName" placeholder="" appendTo="body" style="width: 85%">
               </ng-select> -->
+               <div style="flex:1; min-width:0; overflow:hidden;">
               <dofi-searchable-dropdown [items]="airlineList" formControlName="VesselName" placeholder=""
                 [displayFields]="customerAirlineLookupConfig.displayFields"
                 [displayLabels]="customerAirlineLookupConfig.displayLabels"
                 [labelFields]="customerAirlineLookupConfig.labelFields" bindLabel="CustomerName"
-                bindValue="CustomerName" style="width : 100%;"
+                bindValue="CustomerName" 
                 (change)="onCarrierChangeForAir($event)">
                 </dofi-searchable-dropdown>
+                </div>
                           <button class="btn bi bi-calendar3 pe-0" type="button"
-                            (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
+                            (click)="toggleInputType('VesselName','isVesselFreeText',$event)" style="flex-shrink:0;">
                             <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
                           </button>
                           </div>
@@ -903,6 +905,7 @@
                         }@else {
                         <!-- Dropdown Mode -->
                         <div class="d-flex align-items-center" *ngIf="!this.b['isVesselFreeText']?.value">
+                          <div style="flex:1; min-width:0; overflow:hidden;">
                           <dofi-searchable-dropdown
                             [items]="headerVesselList"
                             formControlName="VesselName"
@@ -912,11 +915,11 @@
                             [labelFields]="vesselVoyageConfig.labelFields"
                             bindValue="VesselName"
                             (itemSelected)="onVesselChange($event)"
-                            style="width: 85%">
+                            >
                           </dofi-searchable-dropdown>
-
+                          </div>
                           <button class="btn bi bi-calendar3 pe-0" type="button"
-                            (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
+                            (click)="toggleInputType('VesselName','isVesselFreeText',$event)" style="flex-shrink:0;">
                             <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
                           </button>
                         </div>

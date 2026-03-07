@@ -1867,6 +1867,9 @@ getDefaultBLClausesByDepartment(DepartmentMasterSid: number) {
     );
   }
 
+  calculateProRate(payload: { CompanyMasterSid: number; BranchMasterSid: number; MasterJobSid: number }) {
+    return this.http.post<any>('pro-rate/calculate', payload).pipe(map(resp => resp));
+  }
 
 
 

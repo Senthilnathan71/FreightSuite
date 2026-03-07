@@ -236,9 +236,7 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
         MasterJobDate: this.datePipe.transform(item?.MasterJobDate),
         MBLDate: this.datePipe.transform(item?.MBLDate),
       }));
-      this.totalLengthOfCollection = this.hasAdvancedFilterValues()
-        ? filteredItems.length
-        : (response.data.totalCount || 0);
+      this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
       this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching company.');

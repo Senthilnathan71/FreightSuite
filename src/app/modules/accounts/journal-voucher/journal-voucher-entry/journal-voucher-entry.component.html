@@ -232,7 +232,7 @@
 
     <!-- Journal Details -->
     <div class="d-flex justify-content-end mb-1">
-        <button type="button" class="btn btn-sm btn-info" (click)="addDetailLine()" [disabled]="isPosted">
+        <button type="button" class="btn btn-sm btn-info" (click)="addDetailLine()" [disabled]="isPosted || voucherData?.Status === 'S'">
             <i class="fas fa-plus"></i> Add Detail
         </button>
     </div>
@@ -270,7 +270,7 @@
                         <tr *ngFor="let row of details.controls; let i = index" [formGroupName]="i">
                             <td class="text-center">
                                 <button type="button" class="btn btn-sm border-0" (click)="deleteDetailLine(i)"
-                                    [disabled]="isPosted">
+                                    [disabled]="isPosted || voucherData?.Status === 'S'">
                                     <i class="fas fa-trash text-danger"></i>
                                 </button>
                             </td>

@@ -50,14 +50,13 @@
         }
 
         .dropdown-item-text {
-          padding: 2px 1rem;
+          padding: 0px 1rem;
 
           .form-check {
             margin: 0;
-            padding: 0.2rem 0;
+            padding: 2px 0;
             display: flex;
             align-items: flex-start;
-            min-height: 2rem;
             position: relative;
 
             .form-check-input {
@@ -208,10 +207,12 @@
 
   }
 
-  .table-responsive {
-    border-radius: 0.375rem;
-    overflow: hidden;
-  }
+ .table-responsive {
+  border-radius: 0.375rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
+}
 
   // Enterprise Table Styling
   .enterprise-table {
@@ -745,24 +746,19 @@
 }
 
 .table-responsive {
-  overflow-x: hidden;
+  overflow-x: auto;
   overflow-y: hidden;
+  width: 100%;
+}
 
-  &.horizontal-scroll-enabled {
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    -webkit-overflow-scrolling: touch;
-
-    table {
-      min-width: 1400px !important;
-      width: auto !important;
-      white-space: nowrap !important;
-    }
-  }
+.enterprise-table {
+  min-width: 100%;
+  width: max-content;
+  table-layout: auto;
 }
 
 .horizontal-scroll-enabled {
   td, th {
-    white-space: nowrap;
+    white-space: nowrap !important;
   }
 }

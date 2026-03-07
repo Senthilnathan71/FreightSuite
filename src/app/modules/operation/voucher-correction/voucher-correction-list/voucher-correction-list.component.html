@@ -13,7 +13,16 @@
          <app-page-header 
     [title]="'Voucher Correction'" [showFavorite]="true" [showSearch]="true" 
     [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
-    [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" 
+    [autoSearchOnFilterChange]="true"
+    [actions]="headerActions"
+    [dateTypeConfig]="dateTypeConfig"
+    [dateRangeConfig]="dateRangeConfig"
+    [departmentFilterConfig]="voucherTypeFilterConfig"
+    [polFilterConfig]="partyNameFilterConfig"
+    [podFilterConfig]="currencyFilterConfig"
+    [extraFilterConfig]="cashOrBankFilterConfig"
+    (advancedSearchTriggered)="onAdvancedSearch($event)"
+    (searchTriggered)="onSearchTriggered($event)" 
     (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)"
     >
     </app-page-header>

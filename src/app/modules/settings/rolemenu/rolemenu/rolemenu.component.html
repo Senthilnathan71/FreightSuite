@@ -244,7 +244,7 @@
     </ng-template>
 
      <!-- Reusable Table Component -->
-    <div class="col-12 px-0">
+    <div class="col-12">
         <app-reusable-table #rolemenuTable [config]="tableConfig" [data]="allRolemenu" [loading]="tableLoading"
             [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
             (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"

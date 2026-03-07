@@ -22,6 +22,12 @@ import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/compone
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AccountsService } from '../../accounts.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import {
+  AdvancedFilterValues,
+  DateRangeConfig,
+  DateTypeConfig,
+  DropdownFilterConfig
+} from 'src/app/shared/interfaces/advanced-filter.interface';
 
 @Component({
   selector: 'app-voucher-matching-list',
@@ -61,6 +67,27 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
   currentBranch: any;
 
   tableConfig: TableConfig;
+  dateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+  dateTypeConfig: DateTypeConfig = {
+    enabled: true,
+    options: [{ label: 'Matching Date', value: 'VoucherMatchingDate' }],
+    defaultValue: 'VoucherMatchingDate'
+  };
+  subledgerFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'SubledgerName',
+    options: [],
+    bindLabel: 'SubledgerName',
+    bindValue: 'SubledgerName'
+  };
+  currentFilters: AdvancedFilterValues = {
+    dateRange: {
+      preset: 'last30',
+      fromDate: this.getLast30FromDate(),
+      toDate: new Date().toISOString()
+    },
+    dateType: 'VoucherMatchingDate'
+  };
 
   headerActions: HeaderAction[] = [];
   modalDropdownItems: DropdownMenuItem[] = [];
@@ -119,8 +146,8 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
     return this.accountService.searchVoucherMatching(this.getSearchParams());
   }
 
-  protected getSearchParams(): SearchParams {
-    return {
+  protected getSearchParams(): SearchParams & Record<string, any> {
+    const params: SearchParams & Record<string, any> = {
       search: this.filterValue.trim(),
       page: Number(this.page),
       pageSize: Number(this.pageSize),
@@ -129,6 +156,25 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
       sortColumn: this.sortColumn,
       sortDirection: this.sortDirection
     };
+
+    if (this.currentFilters.dateRange?.fromDate) {
+      params['dateFrom'] = this.currentFilters.dateRange.fromDate;
+      params['DateFrom'] = this.currentFilters.dateRange.fromDate;
+    }
+    if (this.currentFilters.dateRange?.toDate) {
+      params['dateTo'] = this.currentFilters.dateRange.toDate;
+      params['DateTo'] = this.currentFilters.dateRange.toDate;
+    }
+    if (this.currentFilters.dateType) {
+      params['dateField'] = this.currentFilters.dateType;
+      params['DateField'] = this.currentFilters.dateType;
+    }
+    if (this.currentFilters.pol) {
+      params['SubledgerName'] = this.currentFilters.pol;
+      params['subledgerName'] = this.currentFilters.pol;
+    }
+
+    return params;
   }
 
   protected processSearchResults(response: any): void {
@@ -137,12 +183,16 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
 
     // Handle both array response and paginated response
     if(response.status){
-      this.allItems = response.data.items.map(item => ({
+      const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
+      this.updateSubledgerOptions(rawItems);
+      const filteredItems = this.applyAdvancedFilters(rawItems);
+      this.allItems = filteredItems.map(item => ({
         ...item,
+        VoucherMatchingDateRaw: item?.VoucherMatchingDate,
         VoucherMatchingDate:this.datePipe.transform(item?.VoucherMatchingDate),
         Status: item.Status === 'A' ? 'Active' : 'Suspended',
       }));
-      this.totalLengthOfCollection = response.data.totalCount || this.allItems.length;
+      this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
       this.applySorting();
       this.updateHeaderActionState();
     } else {
@@ -171,7 +221,22 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
 
   onSearchCleared(): void {
     this.filterValue = '';
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'VoucherMatchingDate'
+    };
     this.clearFilterValue();
+  }
+
+  onAdvancedSearch(event: { searchValue: string; filters: AdvancedFilterValues }): void {
+    this.filterValue = event.searchValue;
+    this.currentFilters = event.filters;
+    this.page = 1;
+    this.search();
   }
 
   clearFilterValue() {
@@ -384,6 +449,61 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
       : date;
 
     return isNaN(dateObj.getTime()) ? 'N/A' : dateObj.toLocaleDateString();
+  }
+
+  private updateSubledgerOptions(items: any[]): void {
+    const subledgers = Array.from(
+      new Map(
+        (items || [])
+          .map((item: any) => ({ SubledgerName: item?.SubledgerName ?? '' }))
+          .filter((x: any) => !!x.SubledgerName)
+          .map((x: any) => [x.SubledgerName, x])
+      ).values()
+    );
+    this.subledgerFilterConfig = { ...this.subledgerFilterConfig, options: subledgers };
+  }
+
+  private applyAdvancedFilters(items: any[]): any[] {
+    const selectedDateField = this.currentFilters.dateType || 'VoucherMatchingDate';
+    const from = this.currentFilters.dateRange?.fromDate ? new Date(this.currentFilters.dateRange.fromDate) : null;
+    const to = this.currentFilters.dateRange?.toDate ? new Date(this.currentFilters.dateRange.toDate) : null;
+    const selectedSubledger = this.currentFilters.pol ? String(this.currentFilters.pol).trim().toUpperCase() : '';
+
+    if (!from && !to && !selectedSubledger) {
+      return items;
+    }
+
+    return (items || []).filter((item: any) => {
+      const itemSubledger = String(item?.SubledgerName ?? '').trim().toUpperCase();
+      if (selectedSubledger && itemSubledger !== selectedSubledger) {
+        return false;
+      }
+
+      if (from || to) {
+        const rawDate = item?.[selectedDateField];
+        if (!rawDate) {
+          return false;
+        }
+        const itemDate = new Date(rawDate);
+        if (Number.isNaN(itemDate.getTime())) {
+          return false;
+        }
+        if (from && itemDate < from) {
+          return false;
+        }
+        if (to && itemDate > to) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }
+
+  private getLast30FromDate(): string {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - 30);
+    return date.toISOString();
   }
 }
 
