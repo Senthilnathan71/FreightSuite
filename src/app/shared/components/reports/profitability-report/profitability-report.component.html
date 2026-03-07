@@ -36,6 +36,7 @@
                     <tr class="bg-info" style="white-space: nowrap;">
                         <th class="bg-transparent text-light text-center">Job Number</th>
                         <th class="bg-transparent text-light text-center">MBL</th>
+                        <th class="bg-transparent text-light text-center">Dept</th>
                         <th class="bg-transparent text-light text-center">POL</th>
                         <th class="bg-transparent text-light text-center">POD</th>
                         <th class="bg-transparent text-light text-center">Prov.Revenue</th>
@@ -60,6 +61,7 @@
                     <tr *ngFor="let item of fullData?.data;" style="white-space: nowrap;">
                         <td>{{ item.jobNumber || '' }}</td>
                         <td>{{ item.Mbl || ''}}</td>
+                        <td>{{ item.dept || ''}}</td>
                         <td>{{ item.POL || '' }}</td>
                         <td>{{ item.POD || '' }}</td>
                         <td class="text-end">{{item.totalRevenueWithHouse | number:'1.2-2'}}</td>

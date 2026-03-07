@@ -19,7 +19,7 @@
 <div class="content-workspace">
     <div class="workspace-content" [hidden]="selectedTab !== 'Pending Enquiry'">
         <div class="row compact-form">
-            <div class="col-12">
+            <div class="col-12 table-scroll-wrapper">
                 <app-page-header [title]="'Pending Enquiry'" [showFavorite]="false" [showSearch]="true" [searchPlaceholder]="'Search'"
                     [searchButtonText]="'Search'" [(searchValue)]="enquiryManager.filterValue" [actions]="enquiryHeaderActions"
                     (searchTriggered)="onEnquirySearchTriggered($event)" (searchCleared)="enquiryResetPage()"

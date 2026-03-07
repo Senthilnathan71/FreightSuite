@@ -17,7 +17,7 @@ bdColor="rgba(0,0,0,0.8)"
     >
     </app-page-header>
     </div>
-    <div class="col-12 px-0">
+    <div class="col-12">
         <app-reusable-table #creditRequestTable [config]="tableConfig" [data]="allCreditRequest" [loading]="tableLoading"
             [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
             (actionClick)="onTableActionClick($event)"

@@ -11,7 +11,7 @@
         </app-page-header>
     </div>
 
-    <div class="col-12 px-0">
+    <div class="col-12">
         <!-- Desktop View with Reusable Table -->
         <div *ngIf="!isMobile" class="desktop-view">
             <app-reusable-table #meetingTable [config]="tableConfig" [data]="allItems" [loading]="tableLoading"

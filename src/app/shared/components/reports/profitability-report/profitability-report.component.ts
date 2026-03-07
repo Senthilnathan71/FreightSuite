@@ -54,6 +54,7 @@ export class ProfitabilityReportComponent {
     const tableHeaders: ExcelHeader[] = [
       { key: 'jobNumber', label: 'Job Number' },
       { key: 'Mbl', label: 'MBL' },
+      { key: 'dept', label: 'Dept' },
       { key: 'POL', label: 'POL' },
       { key: 'POD', label: 'POD' },
 
@@ -81,6 +82,7 @@ export class ProfitabilityReportComponent {
       const cells: ExcelCell[] = [
         { value: item.jobNumber || '' },
         { value: item.Mbl || '' },
+        { value: item.dept || '' },
         { value: item.POL || '' },
         { value: item.POD || '' },
 
@@ -125,7 +127,7 @@ export class ProfitabilityReportComponent {
       tableHeaders,
       rows,
       columnWidths: [
-        15, 15, 12, 12,
+        15, 15, 12, 12, 12,
         15, 15, 15, 15,
         15, 15, 15, 15,
         12, 12, 12,
