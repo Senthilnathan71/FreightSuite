@@ -1,138 +1,195 @@
-<div class="container-fluid py-1 px-1 px-md-2" style="font-size:14px;font-weight:500;">
-  <ngx-spinner name="proRateSpinner" [fullScreen]="false" type="ball-clip-rotate" size="medium"></ngx-spinner>
+<ngx-spinner
+  bdColor="rgba(0,0,0,0.8)"
+  size="medium"
+  color="#fff"
+  type="ball-scale-ripple"
+  [fullScreen]="true"
+>
+  <p style="color: white" class="m-0">Loading...</p>
+</ngx-spinner>
+<div class="container-fluid py-2 px-2 px-md-3" style="font-size:13px;font-weight:500;">
 
-  <div *ngIf="masterJob" class="rounded-1 p-1 p-md-2" style="background:#f5f7fa;border:1px solid #dde5ee;">
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-1">
-      <div class="d-flex flex-wrap align-items-center gap-2">
-        <span class="d-inline-flex align-items-center gap-2 text-white fw-bold px-2 py-1 rounded" style="background:#1f4b7a;">
+  <div *ngIf="masterJob">
+
+    <!-- Header -->
+    <div class="bg-white rounded-3 shadow-sm d-flex align-items-center justify-content-between flex-wrap gap-2 px-3 py-2 mb-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center justify-content-center rounded-2 text-white"
+             style="width:36px;height:36px;background:#05608D;font-size:15px;">
           <i class="fas fa-calculator"></i>
-          Pro Rate
-        </span>
-        <span class="badge border bg-white text-dark fw-semibold">Master Job: {{ masterJob.MasterJobNumber }}</span>
+        </div>
+        <div>
+          <div class="fw-bold" style="font-size:15px;color:#111827;line-height:1.2;">Pro Rate</div>
+          <div style="font-size:12px;color:#6b7280;">{{ masterJob.MasterJobNumber }}</div>
+        </div>
       </div>
-      <button type="button" class="btn btn-sm fw-semibold" (click)="goBack()" style="border:1px solid #1f4b7a;color:#1f4b7a;">
-        <i class="fas fa-arrow-left me-1"></i>
+      <button type="button" class="btn btn-sm d-inline-flex align-items-center gap-1"
+              (click)="goBack()"
+              style="border:1px solid #d1d5db;color:#111827;font-size:12px;font-weight:600;border-radius:6px;padding:6px 14px;">
+        <i class="fas fa-arrow-left" style="font-size:11px;"></i>
         Back
       </button>
     </div>
 
-    <div class="table-responsive mb-1">
-      <table class="table align-middle mb-0" style="font-size:14px;border:1px solid #73879d;">
-        <thead>
-          <tr>
-            <th class="fw-bold" style="border:1px solid #9dadbf;">Dept</th>
-            <th class="fw-bold" style="border:1px solid #9dadbf;">Job No</th>
-            <th class="fw-bold" style="border:1px solid #9dadbf;">Job Date</th>
-            <th class="fw-bold" style="border:1px solid #9dadbf;">Job Status</th>
-            <th class="fw-bold" style="border:1px solid #9dadbf;">Total Houses</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td style="border:1px solid #9dadbf;">{{ masterJob.department?.departmentName || "-" }}</td>
-            <td class="fw-semibold" style="border:1px solid #9dadbf;">{{ masterJob.MasterJobNumber || "-" }}</td>
-            <td style="border:1px solid #9dadbf;">{{ masterJob.MasterJobDate | formatDate }}</td>
-            <td style="border:1px solid #9dadbf;">{{ masterJob.JobStatus || "-" }}</td>
-            <td class="fw-semibold" style="border:1px solid #9dadbf;">{{ totalHouses }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Summary Cards -->
+    <div class="bg-white rounded-3 shadow-sm d-flex mb-3 overflow-hidden">
+      <div class="flex-fill d-flex align-items-center gap-2 px-3 py-2" style="border-left:4px solid #0dcaf0;border-right:1px solid #e5e7eb;">
+        <i class="fas fa-arrow-trend-up" style="font-size:18px;color:#0dcaf0;opacity:0.4;"></i>
+        <div>
+          <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Revenue</div>
+          <div class="fw-bold" style="font-size:15px;color:#0dcaf0;line-height:1.3;">{{ masterTotals.revenueLocalAmount | numberFormat }}</div>
+        </div>
+      </div>
+      <div class="flex-fill d-flex align-items-center gap-2 px-3 py-2" style="border-right:1px solid #e5e7eb;">
+        <i class="fas fa-arrow-trend-down" style="font-size:18px;color:#ee9d01;opacity:0.4;"></i>
+        <div>
+          <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Cost</div>
+          <div class="fw-bold" style="font-size:15px;color:#ee9d01;line-height:1.3;">{{ masterTotals.costLocalAmount | numberFormat }}</div>
+        </div>
+      </div>
+      <div class="flex-fill d-flex align-items-center gap-2 px-3 py-2" style="border-right:1px solid #e5e7eb;">
+        <div class="d-flex align-items-center justify-content-center rounded-circle" style="width:28px;height:28px;"
+             [style.background]="getProfitLocal() >= 0 ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)'">
+          <span class="fw-bold" style="font-size:13px;" [style.color]="getProfitLocal() >= 0 ? '#10b981' : '#ef4444'">{{ getProfitLocal() >= 0 ? '+' : '-' }}</span>
+        </div>
+        <div>
+          <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Profit / Loss</div>
+          <div class="fw-bold" style="font-size:15px;line-height:1.3;" [style.color]="getProfitLocal() >= 0 ? '#10b981' : '#ef4444'">{{ getProfitLocal() | numberFormat }}</div>
+        </div>
+      </div>
+      <div class="flex-fill d-flex align-items-center gap-2 px-3 py-2">
+        <i class="fas fa-boxes-stacked" style="font-size:18px;color:#05608D;opacity:0.4;"></i>
+        <div>
+          <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Houses</div>
+          <div class="fw-bold" style="font-size:15px;color:#05608D;line-height:1.3;">{{ totalHouses }}</div>
+        </div>
+      </div>
     </div>
 
-    <div class="card border-0 shadow-sm mb-1 overflow-hidden" style="border:1px solid #d7e0ea !important;">
-      <div class="px-2 py-1 d-flex align-items-center justify-content-between text-white fw-bold" style="background:#2f6f95;">
-        <span class="d-inline-flex align-items-center gap-2">
-          <i class="fas fa-boxes-stacked"></i>
-          Containers
+    <!-- Master Job Info -->
+    <div class="bg-white rounded-3 shadow-sm mb-3 overflow-hidden">
+      <div class="row g-0">
+        <div class="col" style="padding:12px 16px;border-right:1px solid #e5e7eb;">
+          <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:0.3px;font-weight:600;margin-bottom:4px;">Department</div>
+          <div style="font-size:13px;font-weight:600;color:#111827;">{{ masterJob.department?.departmentName || "-" }}</div>
+        </div>
+        <div class="col" style="padding:12px 16px;border-right:1px solid #e5e7eb;">
+          <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:0.3px;font-weight:600;margin-bottom:4px;">Job No</div>
+          <div style="font-size:13px;font-weight:600;color:#111827;">{{ masterJob.MasterJobNumber || "-" }}</div>
+        </div>
+        <div class="col" style="padding:12px 16px;border-right:1px solid #e5e7eb;">
+          <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:0.3px;font-weight:600;margin-bottom:4px;">Job Date</div>
+          <div style="font-size:13px;font-weight:600;color:#111827;">{{ masterJob.MasterJobDate | formatDate }}</div>
+        </div>
+        <div class="col" style="padding:12px 16px;border-right:1px solid #e5e7eb;">
+          <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:0.3px;font-weight:600;margin-bottom:4px;">Job Status</div>
+          <div style="font-size:13px;font-weight:600;color:#111827;">{{ masterJob.JobStatus || "-" }}</div>
+        </div>
+        <div class="col" style="padding:12px 16px;">
+          <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:0.3px;font-weight:600;margin-bottom:4px;">Total Houses</div>
+          <div style="font-size:13px;font-weight:600;color:#111827;">{{ totalHouses }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Containers -->
+    <div class="bg-white rounded-3 shadow-sm mb-3 overflow-hidden">
+      <div class="d-flex align-items-center justify-content-between px-3 py-2 text-white" style="background:#05608D;">
+        <span class="d-inline-flex align-items-center gap-2" style="font-size:13px;font-weight:600;">
+          <i class="fas fa-boxes-stacked"></i> Containers
         </span>
-        <span class="badge bg-light text-dark fw-semibold">{{ containers.length }}</span>
+        <span style="background:rgba(255,255,255,0.2);padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600;">{{ containers.length }}</span>
       </div>
       <div class="table-responsive">
-        <table class="table align-middle mb-0" style="font-size:14px;border:1px solid #73879d;">
+        <table class="table align-middle mb-0" style="font-size:12px;">
           <thead>
-            <tr>
-              <th class="fw-bold text-white" style="border:1px solid #9dadbf;background:#2f6f95;">Cont No.</th>
-              <th class="fw-bold text-white" style="border:1px solid #9dadbf;background:#2f6f95;">Type</th>
-              <th class="fw-bold text-white text-end" style="border:1px solid #9dadbf;background:#2f6f95;">Gr. Wt</th>
-              <th class="fw-bold text-white text-end" style="border:1px solid #9dadbf;background:#2f6f95;">CBM</th>
+            <tr style="background:#f9fafb;">
+              <th style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;color:#6b7280;">Cont No.</th>
+              <th style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;color:#6b7280;">Type</th>
+              <th class="text-end" style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;color:#6b7280;">Gr. Wt</th>
+              <th class="text-end" style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;color:#6b7280;">CBM</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let cont of containers">
-              <td class="fw-semibold" style="border:1px solid #9dadbf;">{{ cont.ContainerNumber }}</td>
-              <td style="border:1px solid #9dadbf;">{{ cont.containerTypeName }}</td>
-              <td class="text-end" style="border:1px solid #9dadbf;">{{ cont.GrossWeight | numberFormat }}</td>
-              <td class="text-end" style="border:1px solid #9dadbf;">{{ cont.Volume | numberFormat }}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-weight:600;">{{ cont.ContainerNumber }}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ cont.containerTypeName }}</td>
+              <td class="text-end" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ cont.GrossWeight | numberFormat }}</td>
+              <td class="text-end" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ cont.Volume | numberFormat }}</td>
             </tr>
             <tr *ngIf="containers.length === 0">
-              <td colspan="4" class="text-center text-muted" style="border:1px solid #9dadbf;">No containers found</td>
+              <td colspan="4" class="text-center" style="padding:24px 12px;color:#9ca3af;">No containers found</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <div class="card border-0 shadow-sm mb-1 overflow-hidden" style="border:1px solid #d7e0ea !important;" *ngIf="masterCharges.length > 0; else noMasterCharges">
-      <div class="px-2 py-1 d-flex align-items-center justify-content-between text-white fw-bold" style="background:#1f4b7a;">
-        <span class="d-inline-flex align-items-center gap-2">
-          <i class="fas fa-layer-group"></i>
-          Master-Level Charges
+    <!-- Master-Level Charges -->
+    <div class="bg-white rounded-3 shadow-sm mb-3 overflow-hidden" *ngIf="masterCharges.length > 0; else noMasterCharges">
+      <div class="d-flex align-items-center justify-content-between px-3 py-2 text-white" style="background:#05608D;">
+        <span class="d-inline-flex align-items-center gap-2" style="font-size:13px;font-weight:600;">
+          <i class="fas fa-layer-group"></i> Master-Level Charges
         </span>
-        <span class="badge bg-light text-dark fw-semibold">{{ masterCharges.length }}</span>
+        <span style="background:rgba(255,255,255,0.2);padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600;">{{ masterCharges.length }}</span>
       </div>
       <div class="table-responsive">
-        <table class="table align-middle mb-0" style="font-size:14px;border:1px solid #73879d;">
+        <table class="table align-middle mb-0" style="font-size:12px;">
           <thead>
             <tr>
-              <th rowspan="2" class="align-middle fw-bold" style="border:1px solid #9dadbf;background:#5c7a92;">Charge</th>
-              <th rowspan="2" class="align-middle fw-bold" style="border:1px solid #9dadbf;background:#5c7a92;">UOM</th>
-              <th rowspan="2" class="align-middle text-end fw-bold" style="border:1px solid #9dadbf;background:#5c7a92;">Units</th>
-              <th colspan="5" class="text-center fw-bold text-white" style="border:1px solid #9dadbf;background:#1f4b7a;">Revenue</th>
-              <th colspan="5" class="text-center fw-bold text-white" style="border:1px solid #9dadbf;background:#d68a1f;">Cost</th>
+              <th rowspan="2" class="align-middle" style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;color:#6b7280;background:#f9fafb;">Charge</th>
+              <th rowspan="2" class="align-middle" style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;color:#6b7280;background:#f9fafb;">UOM</th>
+              <th rowspan="2" class="align-middle text-end" style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;color:#6b7280;background:#f9fafb;">Units</th>
+              <th colspan="5" class="text-center" style="padding:8px 12px;background:#0dcaf0;color:#fff;font-size:12px;font-weight:700;border-bottom:none;">Revenue</th>
+              <th colspan="5" class="text-center" style="padding:8px 12px;background:#ee9d01;color:#fff;font-size:12px;font-weight:700;border-bottom:none;">Cost</th>
             </tr>
             <tr>
-              <th class="fw-bold" style="border:1px solid #9dadbf;background:#edf4fb;">Curr</th>
-              <th class="text-end fw-bold" style="border:1px solid #9dadbf;background:#edf4fb;">Amount</th>
-              <th class="text-end fw-bold" style="border:1px solid #9dadbf;background:#edf4fb;">Local Amt</th>
-              <th class="fw-bold" style="border:1px solid #9dadbf;background:#edf4fb;">Dr/Cr</th>
-              <th class="fw-bold" style="border:1px solid #9dadbf;background:#edf4fb;">Voucher</th>
-              <th class="fw-bold" style="border:1px solid #9dadbf;background:#fdf5e8;">Curr</th>
-              <th class="text-end fw-bold" style="border:1px solid #9dadbf;background:#fdf5e8;">Amount</th>
-              <th class="text-end fw-bold" style="border:1px solid #9dadbf;background:#fdf5e8;">Local Amt</th>
-              <th class="fw-bold" style="border:1px solid #9dadbf;background:#fdf5e8;">Dr/Cr</th>
-              <th class="fw-bold" style="border:1px solid #9dadbf;background:#fdf5e8;">Voucher</th>
+              <th style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;background:#e7f6f8;color:#055160;">Curr</th>
+              <th class="text-end" style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;background:#e7f6f8;color:#055160;">Amount</th>
+              <th class="text-end" style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;background:#e7f6f8;color:#055160;">Local Amt</th>
+              <th style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;background:#e7f6f8;color:#055160;">Dr/Cr</th>
+              <th style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;background:#e7f6f8;color:#055160;">Voucher</th>
+              <th style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;background:#fff8e1;color:#664d03;">Curr</th>
+              <th class="text-end" style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;background:#fff8e1;color:#664d03;">Amount</th>
+              <th class="text-end" style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;background:#fff8e1;color:#664d03;">Local Amt</th>
+              <th style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;background:#fff8e1;color:#664d03;">Dr/Cr</th>
+              <th style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;background:#fff8e1;color:#664d03;">Voucher</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let charge of masterCharges">
-              <td class="fw-semibold" style="border:1px solid #9dadbf;">{{ charge.chargeMaster?.chargeName }}</td>
-              <td style="border:1px solid #9dadbf;">{{ charge.chargeMaster?.UnitQty }}</td>
-              <td class="text-end" style="border:1px solid #9dadbf;">{{ charge.RevenueNumberOfUnit | numberFormat }}</td>
-              <td style="border:1px solid #9dadbf;">{{ charge.revenueCurrencyMaster?.currencyCode }}</td>
-              <td class="text-end" style="border:1px solid #9dadbf;">{{ charge.RevenueAmount | numberFormat: getDecimals(charge.RevenueCurrencyMasterSid) }}</td>
-              <td class="text-end" style="border:1px solid #9dadbf;">{{ charge.RevenueLocalAmount | numberFormat: getDecimals(charge.RevenueCurrencyMasterSid) }}</td>
-              <td class="text-center" style="border:1px solid #9dadbf;">{{ charge.RevenueDrCr }}</td>
-              <td style="border:1px solid #9dadbf;">{{ charge.revenueVoucherHeader?.VoucherNumber }}</td>
-              <td style="border:1px solid #9dadbf;">{{ charge.costCurrencyMaster?.currencyCode }}</td>
-              <td class="text-end" style="border:1px solid #9dadbf;">{{ charge.CostAmount | numberFormat: getDecimals(charge.CostCurrencyMasterSid) }}</td>
-              <td class="text-end" style="border:1px solid #9dadbf;">{{ charge.CostLocalAmount | numberFormat: getDecimals(charge.CostCurrencyMasterSid) }}</td>
-              <td class="text-center" style="border:1px solid #9dadbf;">{{ charge.CostDrCr }}</td>
-              <td style="border:1px solid #9dadbf;">{{ charge.costVoucherHeader?.VoucherNumber }}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-weight:600;">{{ charge.chargeMaster?.chargeName }}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ charge.chargeMaster?.UnitQty }}</td>
+              <td class="text-end" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ charge.RevenueNumberOfUnit | numberFormat }}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ charge.revenueCurrencyMaster?.currencyCode }}</td>
+              <td class="text-end" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-weight:600;color:#0891b2;">{{ charge.RevenueAmount | numberFormat: getDecimals(charge.RevenueCurrencyMasterSid) }}</td>
+              <td class="text-end" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-weight:600;color:#0891b2;">{{ charge.RevenueLocalAmount | numberFormat: getDecimals(charge.RevenueCurrencyMasterSid) }}</td>
+              <td class="text-center" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ charge.RevenueDrCr }}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ charge.revenueVoucherHeader?.VoucherNumber }}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ charge.costCurrencyMaster?.currencyCode }}</td>
+              <td class="text-end" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-weight:600;color:#b45309;">{{ charge.CostAmount | numberFormat: getDecimals(charge.CostCurrencyMasterSid) }}</td>
+              <td class="text-end" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-weight:600;color:#b45309;">{{ charge.CostLocalAmount | numberFormat: getDecimals(charge.CostCurrencyMasterSid) }}</td>
+              <td class="text-center" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ charge.CostDrCr }}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ charge.costVoucherHeader?.VoucherNumber }}</td>
             </tr>
           </tbody>
           <tfoot>
             <tr>
-              <td colspan="3" class="text-end fw-bold" style="border:1px solid #73879d;background:#eef3f9;">Total</td>
-              <td style="border:1px solid #73879d;background:#e6f0fb;"></td>
-              <td class="text-end fw-bold" style="border:1px solid #73879d;background:#e6f0fb;">{{ masterTotals.revenueAmount | numberFormat }}</td>
-              <td class="text-end fw-bold" style="border:1px solid #73879d;background:#e6f0fb;">{{ masterTotals.revenueLocalAmount | numberFormat }}</td>
-              <td style="border:1px solid #73879d;background:#e6f0fb;"></td>
-              <td style="border:1px solid #73879d;background:#e6f0fb;"></td>
-              <td style="border:1px solid #73879d;background:#fff1dd;"></td>
-              <td class="text-end fw-bold" style="border:1px solid #73879d;background:#fff1dd;">{{ masterTotals.costAmount | numberFormat }}</td>
-              <td class="text-end fw-bold" style="border:1px solid #73879d;background:#fff1dd;">{{ masterTotals.costLocalAmount | numberFormat }}</td>
-              <td style="border:1px solid #73879d;background:#fff1dd;"></td>
-              <td style="border:1px solid #73879d;background:#fff1dd;"></td>
+              <td colspan="3" class="text-end" style="padding:10px 12px;border-top:2px solid #d1d5db;font-weight:700;background:#f9fafb;">Total</td>
+              <td style="padding:10px 12px;border-top:2px solid #d1d5db;background:#e7f6f8;"></td>
+              <td class="text-end" style="padding:10px 12px;border-top:2px solid #d1d5db;font-weight:700;background:#e7f6f8;color:#0891b2;">
+                <span *ngIf="masterSingleRevCurrency">{{ masterTotals.revenueAmount | numberFormat }}</span>
+              </td>
+              <td class="text-end" style="padding:10px 12px;border-top:2px solid #d1d5db;font-weight:700;background:#e7f6f8;color:#0891b2;">{{ masterTotals.revenueLocalAmount | numberFormat }}</td>
+              <td style="padding:10px 12px;border-top:2px solid #d1d5db;background:#e7f6f8;"></td>
+              <td style="padding:10px 12px;border-top:2px solid #d1d5db;background:#e7f6f8;"></td>
+              <td style="padding:10px 12px;border-top:2px solid #d1d5db;background:#fff8e1;"></td>
+              <td class="text-end" style="padding:10px 12px;border-top:2px solid #d1d5db;font-weight:700;background:#fff8e1;color:#b45309;">
+                <span *ngIf="masterSingleCostCurrency">{{ masterTotals.costAmount | numberFormat }}</span>
+              </td>
+              <td class="text-end" style="padding:10px 12px;border-top:2px solid #d1d5db;font-weight:700;background:#fff8e1;color:#b45309;">{{ masterTotals.costLocalAmount | numberFormat }}</td>
+              <td style="padding:10px 12px;border-top:2px solid #d1d5db;background:#fff8e1;"></td>
+              <td style="padding:10px 12px;border-top:2px solid #d1d5db;background:#fff8e1;"></td>
             </tr>
           </tfoot>
         </table>
@@ -140,137 +197,154 @@
     </div>
 
     <ng-template #noMasterCharges>
-      <div class="card border-0 shadow-sm mb-1 text-center py-3" style="border:1px solid #d7e0ea !important;">
-        <i class="fas fa-inbox text-muted fs-3"></i>
-        <p class="text-muted mt-2 mb-0 fw-semibold">No master-level charges found for this job.</p>
+      <div class="bg-white rounded-3 shadow-sm mb-3 text-center py-4">
+        <div style="font-size:32px;color:#9ca3af;margin-bottom:8px;"><i class="fas fa-inbox"></i></div>
+        <div style="font-size:14px;font-weight:600;color:#6b7280;margin-bottom:4px;">No Master-Level Charges</div>
+        <div style="font-size:12px;color:#9ca3af;">No master-level charges found for this job.</div>
       </div>
     </ng-template>
 
-    <div *ngFor="let house of houses; let i = index" class="card border-0 shadow-sm mb-1 overflow-hidden" style="border:1px solid #d7e0ea !important;">
+    <!-- House Jobs -->
+    <div *ngFor="let house of houses; let i = index" class="bg-white rounded-3 shadow-sm mb-3 overflow-hidden">
       <button type="button"
-              class="w-100 d-flex align-items-center justify-content-between text-white fw-bold px-2 py-1 border-0"
-              style="background:#1f4b7a;"
+              class="w-100 d-flex align-items-center justify-content-between text-white border-0"
+              style="background:#05608D;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;"
               (click)="toggleHouse(i)"
               [attr.aria-expanded]="isHouseExpanded(i)">
-        <span class="d-inline-flex align-items-center gap-2 text-start">
-          <i class="fas" [ngClass]="isHouseExpanded(i) ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+        <span class="d-inline-flex align-items-center gap-2">
+          <i class="fas" style="font-size:11px;"
+             [ngClass]="isHouseExpanded(i) ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
           {{ house.houseJob?.HBLNo ? house.houseJob.HBLNo : 'House ' + (i + 1) }}
         </span>
-        <span class="badge bg-light text-dark fw-semibold">{{ (house.existingCharges?.length || 0) + (house.proratedCharges?.length || 0) }}</span>
+        <span style="background:rgba(255,255,255,0.2);padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600;">
+          {{ (house.existingCharges?.length || 0) + (house.proratedCharges?.length || 0) }}
+        </span>
       </button>
 
       <div *ngIf="isHouseExpanded(i)">
+        <!-- House Info -->
         <div class="table-responsive">
-        <table class="table align-middle mb-0" style="font-size:14px;border:1px solid #73879d;">
-          <thead>
-            <tr>
-              <th class="fw-bold text-white" style="border:1px solid #9dadbf;background:#5c7a92;">HBL No</th>
-              <th class="fw-bold text-white" style="border:1px solid #9dadbf;background:#5c7a92;">Shipment No</th>
-              <th class="fw-bold text-white" style="border:1px solid #9dadbf;background:#5c7a92;">Total Pkg</th>
-              <th class="fw-bold text-white text-end" style="border:1px solid #9dadbf;background:#5c7a92;">Gross Wt</th>
-              <th class="fw-bold text-white text-end" style="border:1px solid #9dadbf;background:#5c7a92;">Net Wt</th>
-              <th class="fw-bold text-white text-end" style="border:1px solid #9dadbf;background:#5c7a92;">CBM</th>
-              <th class="fw-bold text-white text-end" style="border:1px solid #9dadbf;background:#5c7a92;">Chargeable Wt</th>
-              <th class="fw-bold text-white text-end" style="border:1px solid #9dadbf;background:#5c7a92;">Container No.</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="fw-semibold" style="border:1px solid #9dadbf;">{{ house.houseJob?.HBLNo || "-" }}</td>
-              <td style="border:1px solid #9dadbf;">{{ house.houseJob?.ShipmentNo || "-" }}</td>
-              <td style="border:1px solid #9dadbf;">{{ house.cargo?.totalPkg || 0 }}</td>
-              <td class="text-end" style="border:1px solid #9dadbf;">{{ house.cargo?.grossWeight | numberFormat }}</td>
-              <td class="text-end" style="border:1px solid #9dadbf;">{{ house.cargo?.netWeight | numberFormat }}</td>
-              <td class="text-end" style="border:1px solid #9dadbf;">{{ house.cargo?.cbm | numberFormat }}</td>
-              <td class="text-end" style="border:1px solid #9dadbf;">{{ house.cargo?.chargeableWeight | numberFormat }}</td>
-              <td class="text-end" style="border:1px solid #9dadbf;">{{ house.cargo?.noOfContainers || 0 }}</td>
-            </tr>
-          </tbody>
-        </table>
+          <table class="table align-middle mb-0" style="font-size:12px;">
+            <thead>
+              <tr style="background:#f9fafb;">
+                <th style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;color:#6b7280;">HBL No</th>
+                <th style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;color:#6b7280;">Shipment No</th>
+                <th style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;color:#6b7280;">Total Pkg</th>
+                <th class="text-end" style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;color:#6b7280;">Gross Wt</th>
+                <th class="text-end" style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;color:#6b7280;">Net Wt</th>
+                <th class="text-end" style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;color:#6b7280;">CBM</th>
+                <th class="text-end" style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;color:#6b7280;">Chargeable Wt</th>
+                <th class="text-end" style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;color:#6b7280;">Container No.</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-weight:600;">{{ house.houseJob?.HBLNo || "-" }}</td>
+                <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ house.houseJob?.ShipmentNo || "-" }}</td>
+                <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ house.cargo?.totalPkg || 0 }}</td>
+                <td class="text-end" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ house.cargo?.grossWeight | numberFormat }}</td>
+                <td class="text-end" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ house.cargo?.netWeight | numberFormat }}</td>
+                <td class="text-end" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ house.cargo?.cbm | numberFormat }}</td>
+                <td class="text-end" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ house.cargo?.chargeableWeight | numberFormat }}</td>
+                <td class="text-end" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ house.cargo?.noOfContainers || 0 }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
+        <!-- House Charges -->
         <div class="table-responsive" *ngIf="house.existingCharges?.length > 0 || house.proratedCharges?.length > 0; else noHouseCharges">
-          <table class="table align-middle mb-0" style="font-size:14px;border:1px solid #73879d;background:#f8fbff;">
-          <thead>
-            <tr>
-              <th rowspan="2" class="align-middle fw-bold text-white" style="border:1px solid #9dadbf;background:#5c7a92;">Charge</th>
-              <th rowspan="2" class="align-middle fw-bold text-white" style="border:1px solid #9dadbf;background:#5c7a92;">UOM</th>
-              <th rowspan="2" class="align-middle text-end fw-bold text-white" style="border:1px solid #9dadbf;background:#5c7a92;">Units</th>
-              <th colspan="4" class="text-center fw-bold text-white" style="border:1px solid #9dadbf;background:#1f4b7a;">Revenue</th>
-              <th colspan="4" class="text-center fw-bold text-white" style="border:1px solid #9dadbf;background:#d68a1f;">Cost</th>
-              <th rowspan="2" class="align-middle text-center fw-bold text-white" style="border:1px solid #9dadbf;background:#5c7a92;">Type</th>
-            </tr>
-            <tr>
-              <th class="fw-bold" style="border:1px solid #9dadbf;background:#e6f0fb;">Curr</th>
-              <th class="text-end fw-bold" style="border:1px solid #9dadbf;background:#e6f0fb;">Amount</th>
-              <th class="text-end fw-bold" style="border:1px solid #9dadbf;background:#e6f0fb;">Local Amt</th>
-              <th class="fw-bold" style="border:1px solid #9dadbf;background:#e6f0fb;">Dr/Cr</th>
-              <th class="fw-bold" style="border:1px solid #9dadbf;background:#fff1dd;">Curr</th>
-              <th class="text-end fw-bold" style="border:1px solid #9dadbf;background:#fff1dd;">Amount</th>
-              <th class="text-end fw-bold" style="border:1px solid #9dadbf;background:#fff1dd;">Local Amt</th>
-              <th class="fw-bold" style="border:1px solid #9dadbf;background:#fff1dd;">Dr/Cr</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let c of house.existingCharges" style="border-left:4px solid #2b6cb0;">
-              <td class="fw-semibold" style="border:1px solid #9dadbf;background:#c9dcf1;">{{ c.chargeMaster?.chargeName }}</td>
-              <td style="border:1px solid #9dadbf;background:#c9dcf1;">{{ c.chargeMaster?.UnitQty }}</td>
-              <td class="text-end" style="border:1px solid #9dadbf;background:#c9dcf1;">{{ c.RevenueNumberOfUnit | numberFormat }}</td>
-              <td style="border:1px solid #9dadbf;background:#c9dcf1;">{{ c.revenueCurrencyMaster?.currencyCode }}</td>
-              <td class="text-end" style="border:1px solid #9dadbf;background:#c9dcf1;">{{ c.RevenueAmount | numberFormat: getDecimals(c.RevenueCurrencyMasterSid) }}</td>
-              <td class="text-end" style="border:1px solid #9dadbf;background:#c9dcf1;">{{ c.RevenueLocalAmount | numberFormat: getDecimals(c.RevenueCurrencyMasterSid) }}</td>
-              <td class="text-center" style="border:1px solid #9dadbf;background:#c9dcf1;">{{ c.RevenueDrCr }}</td>
-              <td style="border:1px solid #9dadbf;background:#c9dcf1;">{{ c.costCurrencyMaster?.currencyCode }}</td>
-              <td class="text-end" style="border:1px solid #9dadbf;background:#c9dcf1;">{{ c.CostAmount | numberFormat: getDecimals(c.CostCurrencyMasterSid) }}</td>
-              <td class="text-end" style="border:1px solid #9dadbf;background:#c9dcf1;">{{ c.CostLocalAmount | numberFormat: getDecimals(c.CostCurrencyMasterSid) }}</td>
-              <td class="text-center" style="border:1px solid #9dadbf;background:#c9dcf1;">{{ c.CostDrCr }}</td>
-              <td class="text-center fw-bold text-white" style="border:1px solid #9dadbf;background:#2b6cb0;">House</td>
-            </tr>
-            <tr *ngFor="let c of house.proratedCharges" style="border-left:4px solid #5d9c2c;">
-              <td class="fw-semibold" style="border:1px solid #9dadbf;background:#cde9b8;">{{ c.chargeName }}</td>
-              <td style="border:1px solid #9dadbf;background:#cde9b8;">{{ c.unitQty }}</td>
-              <td class="text-end" style="border:1px solid #9dadbf;background:#cde9b8;">{{ c.noOfUnit | numberFormat }}</td>
-              <td style="border:1px solid #9dadbf;background:#cde9b8;">{{ c.revenueCurrencyCode }}</td>
-              <td class="text-end" style="border:1px solid #9dadbf;background:#cde9b8;">{{ c.revenueAmount | numberFormat: getDecimals(c.revenueCurrencyMasterSid) }}</td>
-              <td class="text-end" style="border:1px solid #9dadbf;background:#cde9b8;">{{ c.revenueLocalAmount | numberFormat: getDecimals(c.revenueCurrencyMasterSid) }}</td>
-              <td class="text-center" style="border:1px solid #9dadbf;background:#cde9b8;">{{ c.revenueDrCr }}</td>
-              <td style="border:1px solid #9dadbf;background:#cde9b8;">{{ c.costCurrencyCode }}</td>
-              <td class="text-end" style="border:1px solid #9dadbf;background:#cde9b8;">{{ c.costAmount | numberFormat: getDecimals(c.costCurrencyMasterSid) }}</td>
-              <td class="text-end" style="border:1px solid #9dadbf;background:#cde9b8;">{{ c.costLocalAmount | numberFormat: getDecimals(c.costCurrencyMasterSid) }}</td>
-              <td class="text-center" style="border:1px solid #9dadbf;background:#cde9b8;">{{ c.costDrCr }}</td>
-              <td class="text-center fw-bold text-white" style="border:1px solid #9dadbf;background:#5d9c2c;">Prorate</td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colspan="3" class="text-end fw-bold" style="border:1px solid #73879d;background:#eef3f9;">Total</td>
-              <td style="border:1px solid #73879d;background:#eef3f9;"></td>
-              <td class="text-end fw-bold" style="border:1px solid #73879d;background:#e6f0fb;">{{ house._totals?.revenueAmount | numberFormat }}</td>
-              <td class="text-end fw-bold" style="border:1px solid #73879d;background:#e6f0fb;">{{ house._totals?.revenueLocalAmount | numberFormat }}</td>
-              <td style="border:1px solid #73879d;background:#e6f0fb;"></td>
-              <td style="border:1px solid #73879d;background:#fff1dd;"></td>
-              <td class="text-end fw-bold" style="border:1px solid #73879d;background:#fff1dd;">{{ house._totals?.costAmount | numberFormat }}</td>
-              <td class="text-end fw-bold" style="border:1px solid #73879d;background:#fff1dd;">{{ house._totals?.costLocalAmount | numberFormat }}</td>
-              <td style="border:1px solid #73879d;background:#fff1dd;"></td>
-              <td style="border:1px solid #73879d;background:#eef3f9;"></td>
-            </tr>
-          </tfoot>
+          <table class="table align-middle mb-0" style="font-size:12px;">
+            <thead>
+              <tr>
+                <th rowspan="2" class="align-middle" style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;color:#6b7280;background:#f9fafb;">Charge</th>
+                <th rowspan="2" class="align-middle" style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;color:#6b7280;background:#f9fafb;">UOM</th>
+                <th rowspan="2" class="align-middle text-end" style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;color:#6b7280;background:#f9fafb;">Units</th>
+                <th colspan="4" class="text-center" style="padding:8px 12px;background:#0dcaf0;color:#fff;font-size:12px;font-weight:700;border-bottom:none;">Revenue</th>
+                <th colspan="4" class="text-center" style="padding:8px 12px;background:#ee9d01;color:#fff;font-size:12px;font-weight:700;border-bottom:none;">Cost</th>
+                <th rowspan="2" class="align-middle text-center" style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;color:#6b7280;background:#f9fafb;">Type</th>
+              </tr>
+              <tr>
+                <th style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;background:#e7f6f8;color:#055160;">Curr</th>
+                <th class="text-end" style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;background:#e7f6f8;color:#055160;">Amount</th>
+                <th class="text-end" style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;background:#e7f6f8;color:#055160;">Local Amt</th>
+                <th style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;background:#e7f6f8;color:#055160;">Dr/Cr</th>
+                <th style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;background:#fff8e1;color:#664d03;">Curr</th>
+                <th class="text-end" style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;background:#fff8e1;color:#664d03;">Amount</th>
+                <th class="text-end" style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;background:#fff8e1;color:#664d03;">Local Amt</th>
+                <th style="padding:8px 12px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid #e5e7eb;background:#fff8e1;color:#664d03;">Dr/Cr</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of house.existingCharges" style="background:#eff6ff;">
+                <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-weight:600;">{{ c.chargeMaster?.chargeName }}</td>
+                <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ c.chargeMaster?.UnitQty }}</td>
+                <td class="text-end" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ c.RevenueNumberOfUnit | numberFormat }}</td>
+                <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ c.revenueCurrencyMaster?.currencyCode }}</td>
+                <td class="text-end" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-weight:600;color:#0891b2;">{{ c.RevenueAmount | numberFormat: getDecimals(c.RevenueCurrencyMasterSid) }}</td>
+                <td class="text-end" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-weight:600;color:#0891b2;">{{ c.RevenueLocalAmount | numberFormat: getDecimals(c.RevenueCurrencyMasterSid) }}</td>
+                <td class="text-center" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ c.RevenueDrCr }}</td>
+                <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ c.costCurrencyMaster?.currencyCode }}</td>
+                <td class="text-end" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-weight:600;color:#b45309;">{{ c.CostAmount | numberFormat: getDecimals(c.CostCurrencyMasterSid) }}</td>
+                <td class="text-end" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-weight:600;color:#b45309;">{{ c.CostLocalAmount | numberFormat: getDecimals(c.CostCurrencyMasterSid) }}</td>
+                <td class="text-center" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ c.CostDrCr }}</td>
+                <td class="text-center" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">
+                  <span style="display:inline-block;padding:2px 10px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;background:#2563eb;color:#fff;">House</span>
+                </td>
+              </tr>
+              <tr *ngFor="let c of house.proratedCharges" style="background:#f0fdf4;">
+                <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-weight:600;">{{ c.chargeName }}</td>
+                <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ c.unitQty }}</td>
+                <td class="text-end" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ c.noOfUnit | numberFormat }}</td>
+                <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ c.revenueCurrencyCode }}</td>
+                <td class="text-end" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-weight:600;color:#0891b2;">{{ c.revenueAmount | numberFormat: getDecimals(c.revenueCurrencyMasterSid) }}</td>
+                <td class="text-end" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-weight:600;color:#0891b2;">{{ c.revenueLocalAmount | numberFormat: getDecimals(c.revenueCurrencyMasterSid) }}</td>
+                <td class="text-center" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ c.revenueDrCr }}</td>
+                <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ c.costCurrencyCode }}</td>
+                <td class="text-end" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-weight:600;color:#b45309;">{{ c.costAmount | numberFormat: getDecimals(c.costCurrencyMasterSid) }}</td>
+                <td class="text-end" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-weight:600;color:#b45309;">{{ c.costLocalAmount | numberFormat: getDecimals(c.costCurrencyMasterSid) }}</td>
+                <td class="text-center" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">{{ c.costDrCr }}</td>
+                <td class="text-center" style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">
+                  <span style="display:inline-block;padding:2px 10px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;background:#16a34a;color:#fff;">Prorate</span>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3" class="text-end" style="padding:10px 12px;border-top:2px solid #d1d5db;font-weight:700;background:#f9fafb;">Total</td>
+                <td style="padding:10px 12px;border-top:2px solid #d1d5db;background:#e7f6f8;"></td>
+                <td class="text-end" style="padding:10px 12px;border-top:2px solid #d1d5db;font-weight:700;background:#e7f6f8;color:#0891b2;">
+                  <span *ngIf="house._singleRevCurrency">{{ house._totals?.revenueAmount | numberFormat }}</span>
+                </td>
+                <td class="text-end" style="padding:10px 12px;border-top:2px solid #d1d5db;font-weight:700;background:#e7f6f8;color:#0891b2;">{{ house._totals?.revenueLocalAmount | numberFormat }}</td>
+                <td style="padding:10px 12px;border-top:2px solid #d1d5db;background:#e7f6f8;"></td>
+                <td style="padding:10px 12px;border-top:2px solid #d1d5db;background:#fff8e1;"></td>
+                <td class="text-end" style="padding:10px 12px;border-top:2px solid #d1d5db;font-weight:700;background:#fff8e1;color:#b45309;">
+                  <span *ngIf="house._singleCostCurrency">{{ house._totals?.costAmount | numberFormat }}</span>
+                </td>
+                <td class="text-end" style="padding:10px 12px;border-top:2px solid #d1d5db;font-weight:700;background:#fff8e1;color:#b45309;">{{ house._totals?.costLocalAmount | numberFormat }}</td>
+                <td style="padding:10px 12px;border-top:2px solid #d1d5db;background:#fff8e1;"></td>
+                <td style="padding:10px 12px;border-top:2px solid #d1d5db;background:#f9fafb;"></td>
+              </tr>
+            </tfoot>
           </table>
         </div>
 
         <ng-template #noHouseCharges>
-          <div class="text-center py-3 text-muted fw-semibold">
-            <i class="fas fa-file-invoice fs-5 me-2"></i>
-            No charges available for this house
+          <div class="text-center py-4">
+            <i class="fas fa-file-invoice" style="font-size:24px;color:#9ca3af;"></i>
+            <div style="font-size:12px;font-weight:600;color:#6b7280;margin-top:8px;">No charges available for this house</div>
           </div>
         </ng-template>
       </div>
     </div>
 
-    <div class="card border-0 shadow-sm text-center py-4" style="border:1px solid #d7e0ea !important;" *ngIf="houses.length === 0">
-      <i class="fas fa-box-open text-muted fs-2"></i>
-      <p class="text-muted mt-2 mb-1 fw-bold">No House Jobs Found</p>
-      <p class="text-muted mb-0 fw-semibold">There are no active house jobs linked to this master job.</p>
+    <!-- No Houses -->
+    <div class="bg-white rounded-3 shadow-sm text-center py-5" *ngIf="houses.length === 0">
+      <div style="font-size:32px;color:#9ca3af;margin-bottom:8px;"><i class="fas fa-box-open"></i></div>
+      <div style="font-size:14px;font-weight:700;color:#6b7280;margin-bottom:4px;">No House Jobs Found</div>
+      <div style="font-size:12px;color:#9ca3af;">There are no active house jobs linked to this master job.</div>
     </div>
+
   </div>
 </div>

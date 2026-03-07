@@ -25,6 +25,8 @@ export class ProRateComponent implements OnInit {
   currencyDecimalMap = new Map<number, number>();
 
   masterTotals = { revenueAmount: 0, revenueLocalAmount: 0, costAmount: 0, costLocalAmount: 0 };
+  masterSingleRevCurrency = true;
+  masterSingleCostCurrency = true;
 
   constructor(
     private route: ActivatedRoute,
@@ -50,14 +52,14 @@ export class ProRateComponent implements OnInit {
     const company = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
     const branch = this.appSettingsService.decrypt(localStorage.getItem('selected-branch'));
 
-    this.spinner.show('proRateSpinner');
+    this.spinner.show();
     this.operationService.calculateProRate({
       CompanyMasterSid: company.CompanyMasterSid,
       BranchMasterSid: branch.BranchMasterSid,
       MasterJobSid: masterJobSid,
     }).subscribe({
       next: (resp) => {
-        this.spinner.hide('proRateSpinner');
+        this.spinner.hide();
         if (resp.status) {
           const data = resp.data;
           this.masterJob = data.masterJob;
@@ -87,7 +89,7 @@ export class ProRateComponent implements OnInit {
         }
       },
       error: () => {
-        this.spinner.hide('proRateSpinner');
+        this.spinner.hide();
         this.toastr.error('Failed to load pro-rate data');
       }
     });
@@ -95,30 +97,44 @@ export class ProRateComponent implements OnInit {
 
   private computeMasterTotals(): void {
     this.masterTotals = { revenueAmount: 0, revenueLocalAmount: 0, costAmount: 0, costLocalAmount: 0 };
+    const revCurrencies = new Set<number>();
+    const costCurrencies = new Set<number>();
     for (const c of this.masterCharges) {
       this.masterTotals.revenueAmount += this.toNum(c.RevenueAmount);
       this.masterTotals.revenueLocalAmount += this.toNum(c.RevenueLocalAmount);
       this.masterTotals.costAmount += this.toNum(c.CostAmount);
       this.masterTotals.costLocalAmount += this.toNum(c.CostLocalAmount);
+      if (c.RevenueCurrencyMasterSid) revCurrencies.add(c.RevenueCurrencyMasterSid);
+      if (c.CostCurrencyMasterSid) costCurrencies.add(c.CostCurrencyMasterSid);
     }
+    this.masterSingleRevCurrency = revCurrencies.size <= 1;
+    this.masterSingleCostCurrency = costCurrencies.size <= 1;
   }
 
   private computeHouseTotals(): void {
     for (const house of this.houses) {
       const totals = { revenueAmount: 0, revenueLocalAmount: 0, costAmount: 0, costLocalAmount: 0 };
+      const revCurrencies = new Set<number>();
+      const costCurrencies = new Set<number>();
       for (const c of (house.existingCharges || [])) {
         totals.revenueAmount += this.toNum(c.RevenueAmount);
         totals.revenueLocalAmount += this.toNum(c.RevenueLocalAmount);
         totals.costAmount += this.toNum(c.CostAmount);
         totals.costLocalAmount += this.toNum(c.CostLocalAmount);
+        if (c.RevenueCurrencyMasterSid) revCurrencies.add(c.RevenueCurrencyMasterSid);
+        if (c.CostCurrencyMasterSid) costCurrencies.add(c.CostCurrencyMasterSid);
       }
       for (const c of (house.proratedCharges || [])) {
         totals.revenueAmount += this.toNum(c.revenueAmount);
         totals.revenueLocalAmount += this.toNum(c.revenueLocalAmount);
         totals.costAmount += this.toNum(c.costAmount);
         totals.costLocalAmount += this.toNum(c.costLocalAmount);
+        if (c.revenueCurrencyMasterSid) revCurrencies.add(c.revenueCurrencyMasterSid);
+        if (c.costCurrencyMasterSid) costCurrencies.add(c.costCurrencyMasterSid);
       }
       house._totals = totals;
+      house._singleRevCurrency = revCurrencies.size <= 1;
+      house._singleCostCurrency = costCurrencies.size <= 1;
     }
   }
 
@@ -147,5 +163,13 @@ export class ProRateComponent implements OnInit {
 
   isHouseExpanded(index: number): boolean {
     return this.expandedHouses.has(index);
+  }
+
+  getProfit(): number {
+    return this.masterTotals.revenueAmount - this.masterTotals.costAmount;
+  }
+
+  getProfitLocal(): number {
+    return this.masterTotals.revenueLocalAmount - this.masterTotals.costLocalAmount;
   }
 }
