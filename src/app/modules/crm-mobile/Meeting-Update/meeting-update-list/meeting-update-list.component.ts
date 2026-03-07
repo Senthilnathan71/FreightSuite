@@ -7,7 +7,7 @@ import { AppService } from 'src/app/service/app.service';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LeadService } from '../../Services/lead.service';
-import { Observable } from 'rxjs';
+import { catchError, map, Observable, of } from 'rxjs';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { DetailsComponent } from 'src/app/component/details/details.component';
@@ -31,6 +31,12 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
+import {
+  AdvancedFilterValues,
+  DateRangeConfig,
+  DateTypeConfig,
+  PartyFilterConfig
+} from 'src/app/shared/interfaces/advanced-filter.interface';
 
 @Component({
   selector: 'app-meeting-update-list',
@@ -73,6 +79,23 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
   currentCompany: any;
   currentBranch: any;
   tableLoading = false;
+  dateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+  dateTypeConfig: DateTypeConfig = {
+    enabled: true,
+    options: [
+      { label: 'Meeting Date', value: 'meetingDate' },
+    ],
+    defaultValue: 'meetingDate'
+  };
+  partyFilterConfig: PartyFilterConfig = {
+  enabled: true,
+  partyTypes: [
+    { label: 'Lead', value: 'LeadMasterSid' },
+    { label: 'Customer', value: 'PreCustomerMasterSid' }
+  ],
+  defaultPartyType: 'PreCustomerMasterSid'
+};
+  currentFilters: AdvancedFilterValues = {};
   permissions: string[] = [];
   currentMenuPermissions: any = {};
   userData: any;
@@ -84,6 +107,45 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
 
   // Header actions
   headerActions: HeaderAction[] = [];
+  partySearchFn = (_searchTerm: string, partyType: string): Observable<any[]> => {
+  const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+
+  if (!CompanyMasterSid) {
+    return of([]);
+  }
+
+  // Lead dropdown
+  if (partyType === 'LeadMasterSid') {
+    return this.leadService.fetchAllLeads(CompanyMasterSid).pipe(
+      map((data: any) => {
+        const rows = Array.isArray(data) ? data : [];
+        return rows.map((row: any) => ({
+          ...row,
+          id: row.LeadMasterSid,
+          name: row.leadName
+        }));
+      }),
+      catchError(() => of([]))
+    );
+  }
+
+  // Customer dropdown
+  if (partyType === 'PreCustomerMasterSid') {
+    return this.leadService.getAllCustomersWithBranch(CompanyMasterSid).pipe(
+      map((data: any) => {
+        const rows = Array.isArray(data) ? data : [];
+        return rows.map((row: any) => ({
+          ...row,
+          id: row.PreCustomerMasterSid ?? row.CustomerMasterSid,
+          name: row.preCustomerName ?? row.CustomerName
+        }));
+      }),
+      catchError(() => of([]))
+    );
+  }
+
+  return of([]);
+};
 
   // Table configuration
   tableConfig: TableConfig = {
@@ -171,6 +233,14 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
     
     this.loadSalesPersons();
     this.initMeetingForm();
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'meetingDate'
+    };
     
     super.ngOnInit();
     this.sort('asc')
@@ -183,8 +253,8 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
     return this.leadService.searchPreCustomerMeeting(this.getSearchParams());
   }
 
-  protected getSearchParams(): SearchParams {
-    return {
+  protected getSearchParams(): SearchParams & Record<string, any> {
+    const params: any = {
       search: this.filterValue.trim(),
       page: Number(this.page),
       pageSize: Number(this.pageSize),
@@ -193,19 +263,60 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
       sortColumn: this.sortColumn,
       sortDirection: this.sortDirection
     };
+    const selectedDateField = this.currentFilters.dateType || 'meetingDate';
+    const isMeetingDatePresetRange =
+      selectedDateField === 'meetingDate' &&
+      this.currentFilters.dateRange?.preset &&
+      this.currentFilters.dateRange.preset !== 'custom';
+
+    if (this.currentFilters.dateRange?.fromDate) {
+      params.dateFrom = this.currentFilters.dateRange.fromDate;
+      params.DateFrom = this.currentFilters.dateRange.fromDate;
+    }
+    if (this.currentFilters.dateRange?.toDate && !isMeetingDatePresetRange) {
+      params.dateTo = this.currentFilters.dateRange.toDate;
+      params.DateTo = this.currentFilters.dateRange.toDate;
+    }
+    if (this.currentFilters.dateType) {
+      params.dateField = this.currentFilters.dateType;
+      params.DateField = this.currentFilters.dateType;
+      if (params.dateFrom) {
+        params[`${this.currentFilters.dateType}From`] = params.dateFrom;
+      }
+      if (params.dateTo) {
+        params[`${this.currentFilters.dateType}To`] = params.dateTo;
+      }
+    }
+    if (this.currentFilters.party) {
+  const partyType = this.currentFilters.party.partyType;
+  const partyId = this.currentFilters.party.partyId;
+
+  if (partyType === 'LeadMasterSid') {
+    params.LeadMasterSid = partyId;
+  }
+
+  if (partyType === 'PreCustomerMasterSid') {
+    params.PreCustomerMasterSid = partyId;
+  }
+}
+
+    return params;
   }
 
   protected processSearchResults(response: any): void {
     this.tableLoading = false;
     this.spinner.hide();
     if (response.status && response.data?.items) {
-      this.allItems = response.data.items.map((meeting: any) => {
+      const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
+      const filteredItems = this.applyAdvancedFilters(rawItems);
+      this.allItems = filteredItems.map((meeting: any) => {
         const salesPerson = this.salesPersons?.find(
           (person: any) => person.UserMasterSid === meeting.leadAssignTo
         );
         return {
           PreCustomerMeetingSid: meeting.PreCustomerMeetingSid,
-          customerName: meeting.preCustomerMaster?.preCustomerName || 'N/A',
+          customerName: meeting.customerMaster?.CustomerName || meeting.preCustomerMaster?.preCustomerName ,
+          LeadOrCustomer: meeting.LeadOrCustomer === "C" ? "Customer" : "Lead",
           meetingType: meeting.meetingType || 'N/A',
           meetingDate: meeting.meetingDate
           ? this.dateFormatPipe.transform(
@@ -230,11 +341,14 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
           updatedBy: meeting.updatedBy,
           updatedOn: meeting.updatedOn,
           rawMeetingDate: meeting.meetingDate,
-          rawCustomerName: meeting.preCustomerMaster?.preCustomerName || ''
+          rawCustomerName: meeting.preCustomerMaster?.preCustomerName || '',
+          preCustomerMasterSid: meeting.preCustomerMaster?.PreCustomerMasterSid || null
         };
       });
-      this.totalLengthOfCollection = response.data.totalCount || 0;
-      this.applySorting();
+      this.totalLengthOfCollection =
+        rawItems.length !== filteredItems.length
+          ? filteredItems.length
+          : (response.data.totalCount || 0);
       this.updateHeaderActionState();
       this.updatePaginatedData();
       this.searched = true;
@@ -340,6 +454,14 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
           dataType: 'string'
         },
         {
+          key: 'LeadOrCustomer',
+          label: 'Lead Or Customer',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string'
+        },
+        {
           key: 'meetingType',
           label: 'Meeting Type',
           sortable: true,
@@ -427,6 +549,13 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
 
   onTableFilterChange(filters: TableFilter[]): void {
     console.log('Filters changed:', filters);
+  }
+
+  onAdvancedSearch(event: { searchValue: string; filters: AdvancedFilterValues }): void {
+    this.filterValue = event.searchValue;
+    this.currentFilters = event.filters;
+    this.page = 1;
+    this.search();
   }
 
   // Header actions
@@ -553,6 +682,14 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
 
   onSearchCleared(): void {
     this.filterValue = '';
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'meetingDate'
+    };
     this.clearFilterValue();
   }
 
@@ -604,6 +741,84 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
         this.salesPersons = resp;
       }
     );
+  }
+
+  private getLast30FromDate(): string {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - 30);
+    return date.toISOString();
+  }
+
+  private hasAdvancedFilterValues(): boolean {
+    return !!(
+      this.currentFilters.party?.partyId ||
+      this.currentFilters.dateRange?.fromDate ||
+      this.currentFilters.dateRange?.toDate
+    );
+  }
+
+  private applyAdvancedFilters(items: any[]): any[] {
+    if (!this.hasAdvancedFilterValues()) {
+      return items;
+    }
+
+    const selectedDateField = this.currentFilters.dateType || 'meetingDate';
+    const from = this.currentFilters.dateRange?.fromDate ? new Date(this.currentFilters.dateRange.fromDate) : null;
+    const to = this.currentFilters.dateRange?.toDate ? new Date(this.currentFilters.dateRange.toDate) : null;
+    const isMeetingDatePresetRange =
+      selectedDateField === 'meetingDate' &&
+      this.currentFilters.dateRange?.preset &&
+      this.currentFilters.dateRange.preset !== 'custom';
+    const selectedCustomerSid = this.currentFilters.party?.partyId ? Number(this.currentFilters.party.partyId) : null;
+    const selectedCustomerName = this.currentFilters.party?.partyName
+      ? String(this.currentFilters.party.partyName).trim().toUpperCase()
+      : null;
+
+    return items.filter((item: any) => {
+      if (selectedCustomerSid || selectedCustomerName) {
+        const itemCustomerSid = Number(
+          item?.PreCustomerMasterSid ??
+          item?.preCustomerMaster?.PreCustomerMasterSid ??
+          item?.CustomerMasterSid ??
+          item?.customerMaster?.CustomerMasterSid ??
+          0
+        );
+        const itemCustomerName = String(
+          item?.preCustomerMaster?.preCustomerName ??
+          item?.CustomerName ??
+          item?.customerMaster?.CustomerName ??
+          ''
+        ).trim().toUpperCase();
+
+        const sidMatches = selectedCustomerSid ? itemCustomerSid === selectedCustomerSid : false;
+        const nameMatches = selectedCustomerName ? itemCustomerName === selectedCustomerName : false;
+        if (!(sidMatches || nameMatches)) {
+          return false;
+        }
+      }
+
+      if (from || to) {
+        const rawDate = item?.[selectedDateField];
+        if (!rawDate) {
+          return false;
+        }
+
+        const itemDate = new Date(rawDate);
+        if (Number.isNaN(itemDate.getTime())) {
+          return false;
+        }
+
+        if (from && itemDate < from) {
+          return false;
+        }
+        if (to && !isMeetingDatePresetRange && itemDate > to) {
+          return false;
+        }
+      }
+
+      return true;
+    });
   }
 
   // Modal and form handling methods

@@ -153,7 +153,7 @@ export class ChartAccountEntryComponent implements OnInit {
   initForm() {
     this.chartForm = this.fb.group({
       LedgerName: ['', [ Validators.maxLength(100)]],
-      LedgerCode: ['', [ Validators.maxLength(10)]],
+      LedgerCode: ['', [ Validators.required,Validators.maxLength(10)]],
       SubGroupName: ['', [Validators.maxLength(50)]],
       LedgerCurrency: [],
       GroupName: ['', [Validators.maxLength(100)]],
