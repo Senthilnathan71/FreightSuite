@@ -5,7 +5,7 @@ export interface PlaceholderVariable {
 
 export const ALL_PLACEHOLDERS: PlaceholderVariable[] = [
   { key: 'EnquiryNo', label: 'Enquiry Number' },
-  { key: 'quotationNo', label: 'Quotation Number' },
+  { key: 'quotationNumber', label: 'Quotation Number' },
   { key: 'BookingNo', label: 'Booking Number' },
   { key: 'ShipmentNo', label: 'Shipment Number' },
   { key: 'date', label: 'Date' },

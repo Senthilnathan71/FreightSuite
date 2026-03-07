@@ -197,6 +197,16 @@ export class MailConfigurationEntryComponent implements OnInit {
   saveRow(index: number): void {
     const row = this.rows[index];
 
+    // Check for duplicate MenuMasterSid (excluding current row)
+    const isDuplicate = this.rows.some((r, idx) =>
+      idx !== index &&
+      r.MenuMasterSid === row.MenuMasterSid
+    );
+    if (isDuplicate) {
+      this.appSettingService.showWarning('A mail configuration already exists for this menu.');
+      return;
+    }
+
     // Validation
     if (!row.Sno || !row.MailName || !row.MenuMasterSid || !row.MailSubject || !row.MailBody) {
       this.appSettingService.showWarning('Please fill all required fields (Sno, Mail Name, Menu, Subject, Body).');

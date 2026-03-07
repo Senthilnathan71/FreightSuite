@@ -95,10 +95,9 @@ export class EmailTriggerService {
 
   private enrichContext(context?: { [key: string]: any }): { [key: string]: any } {
     const userData = this.appSettingService.getDecryptedUserProfile();
-    const companyInfo = this.appSettingService.getCurrentCompanyInfo();
     return {
       ...context,
-      organizationEmail: companyInfo?.email || '',
+      organizationEmail: context?.['menuEmail'] || '',
       userEmail: userData?.userEmail || '',
       userName: context?.['userName'] || userData?.userName || ''
     };
