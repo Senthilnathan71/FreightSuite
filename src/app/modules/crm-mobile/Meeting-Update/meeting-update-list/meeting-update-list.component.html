@@ -6,8 +6,10 @@
     <div class="col-12">
         <app-page-header [title]="'Meeting Update'" [showFavorite]="true" [showSearch]="true"
             [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue"
-            [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" (searchCleared)="onSearchCleared()"
-            (actionTriggered)="onActionTriggered($event)">
+            [autoSearchOnFilterChange]="true" [actions]="headerActions" [dateRangeConfig]="dateRangeConfig"
+            [dateTypeConfig]="dateTypeConfig" [partyFilterConfig]="partyFilterConfig" [partySearchFn]="partySearchFn"
+            (advancedSearchTriggered)="onAdvancedSearch($event)" (searchTriggered)="onSearchTriggered($event)"
+            (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)">
         </app-page-header>
     </div>
 

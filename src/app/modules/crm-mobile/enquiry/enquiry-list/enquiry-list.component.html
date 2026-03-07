@@ -8,7 +8,15 @@
         <app-page-header 
     [title]="'Enquiry'" [showFavorite]="true" [showSearch]="true" 
     [searchPlaceholder]="'Search'" [searchButtonText]="'Search'" [(searchValue)]="filterValue" 
+    [autoSearchOnFilterChange]="true"
     [actions]="headerActions" (searchTriggered)="onSearchTriggered($event)" 
+    [partyFilterConfig]="partyFilterConfig"
+    [departmentFilterConfig]="departmentFilterConfig"
+    [polFilterConfig]="polFilterConfig"
+    [podFilterConfig]="podFilterConfig"
+    [partySearchFn]="partySearchFn"
+    (departmentFilterChanged)="onDepartmentFilterChanged($event)"
+    (advancedSearchTriggered)="onAdvancedSearch($event)"
     (searchCleared)="onSearchCleared()" (actionTriggered)="onActionTriggered($event)"
     >
     </app-page-header>
