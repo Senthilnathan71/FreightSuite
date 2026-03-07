@@ -584,7 +584,7 @@ this.initializeTableConfig();
     this.router.navigate(['operation/job-close', event.row.MasterJobSid]);
   }
   if(event.action === 'pro_rate'){
-    this.router.navigate(['operation/pro-rate']);
+    this.router.navigate(['operation/pro-rate', event.row.MasterJobSid]);
   }
 }
 
