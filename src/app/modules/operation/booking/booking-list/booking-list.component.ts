@@ -259,10 +259,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 HBLNo : item.houseJob?.HBLNo || '',
                 MasterJobSid: item.houseJob?.masterJob?.MasterJobSid || null
             }));
-           this.totalLengthOfCollection =
-              rawItems.length !== filteredItems.length
-                ? filteredItems.length
-                : (response.data.totalCount || 0);
+            this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
             // this.applySorting();
             this.updateHeaderActionState();
         } else {

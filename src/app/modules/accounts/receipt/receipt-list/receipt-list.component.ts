@@ -7,7 +7,8 @@ import { Router, RouterModule } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { authService } from 'src/app/modules/authentication/auth.service';
@@ -26,6 +27,13 @@ import { ReceiptService } from '../../services/receipt.service';
 import { ReceiptFilter, ReceiptListItem } from '../../models/receipt.model';
 import { AccountsService } from '../../accounts.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import {
+  AdvancedFilterValues,
+  DateRangeConfig,
+  DateTypeConfig,
+  DropdownFilterConfig,
+  PartyFilterConfig
+} from 'src/app/shared/interfaces/advanced-filter.interface';
 
 /**
  * Receipt List Component
@@ -72,6 +80,35 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
   currentBranch: any;
 
   tableConfig: TableConfig;
+  dateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+  dateTypeConfig: DateTypeConfig = {
+    enabled: true,
+    options: [{ label: 'Receipt Date', value: 'VoucherDate' }],
+    defaultValue: 'VoucherDate'
+  };
+  partyFilterConfig: PartyFilterConfig = {
+    enabled: true,
+    partyTypes: [{ label: 'Customer', value: 'CustomerMasterSid' }],
+    defaultPartyType: 'CustomerMasterSid'
+  };
+  currencyFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'Curr',
+    options: [],
+    bindLabel: 'currencyCode',
+    bindValue: 'currencyCode'
+  };
+  postStatusFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'PostStatus',
+    options: [
+      { label: 'Posted', value: 'P' },
+      { label: 'Unposted', value: 'U' }
+    ],
+    bindLabel: 'label',
+    bindValue: 'value'
+  };
+  currentFilters: AdvancedFilterValues = {};
 
   headerActions: HeaderAction[] = [];
   modalDropdownItems: DropdownMenuItem[] = [];
@@ -116,6 +153,15 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
 
     this.initializeHeaderActions();
     this.initializeTableConfig();
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'VoucherDate'
+    };
+    this.loadFilterLookups();
     this.mps.init().subscribe(()=>{
       this.initializeHeaderActions();
       this.initializeTableConfig();
@@ -132,8 +178,8 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
     return this.receiptService.searchReceipts(this.getSearchParams());
   }
 
-  protected getSearchParams(): SearchParams {
-    return {
+  protected getSearchParams(): SearchParams & Record<string, any> {
+    const params: SearchParams & Record<string, any> = {
       search: this.filterValue.trim(),
       page: Number(this.page),
       pageSize: Number(this.pageSize),
@@ -142,6 +188,37 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
       sortColumn: this.sortColumn,
       sortDirection: this.sortDirection
     };
+
+    if (this.currentFilters.dateRange?.fromDate) {
+      params['dateFrom'] = this.currentFilters.dateRange.fromDate;
+      params['DateFrom'] = this.currentFilters.dateRange.fromDate;
+    }
+    if (this.currentFilters.dateRange?.toDate) {
+      params['dateTo'] = this.currentFilters.dateRange.toDate;
+      params['DateTo'] = this.currentFilters.dateRange.toDate;
+    }
+    if (this.currentFilters.dateType) {
+      params['dateField'] = this.currentFilters.dateType;
+      params['DateField'] = this.currentFilters.dateType;
+    }
+    if (this.currentFilters.party?.partyId) {
+      params['CustomerMasterSid'] = this.currentFilters.party.partyId;
+      params['customerMasterSid'] = this.currentFilters.party.partyId;
+    }
+    if (this.currentFilters.party?.partyName) {
+      params['CustomerName'] = this.currentFilters.party.partyName;
+      params['PartyName'] = this.currentFilters.party.partyName;
+    }
+    if (this.currentFilters.pol) {
+      params['CurrencyCode'] = this.currentFilters.pol;
+      params['currencyCode'] = this.currentFilters.pol;
+    }
+    if (this.currentFilters.extra) {
+      params['PostStatus'] = this.currentFilters.extra;
+      params['postStatus'] = this.currentFilters.extra;
+    }
+
+    return params;
   }
 
   protected processSearchResults(response: any): void {
@@ -150,15 +227,19 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
 
     // Handle both array response and paginated response
     if(response && response.status){
-      this.allItems = (response.data.items || []).map((item: any) => ({
+      const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
+      const filteredItems = this.applyAdvancedFilters(rawItems);
+      this.allItems = filteredItems.map((item: any) => ({
         ...item,
+        VoucherDateRaw: item?.VoucherDate,
+        PostStatusCode: item?.PostStatus,
         ListAmount : this.formatAmount(item.VoucherDetail[0]?.PartyAmount || 0),
         CashOrBank : item.CashOrBank === 'C' ? 'Cash' : 'Bank',
         VoucherDate: this.datePipe.transform(item?.VoucherDate),
         PostStatus : item.PostStatus === 'P' ? 'Posted' : 'Unposted',
         Status: item.Status === 'A' ? 'Active' : 'Suspended'
       }));
-      this.totalLengthOfCollection = response.data.totalCount || this.allItems.length;
+      this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
       this.applySorting();
       this.updateHeaderActionState();
     } else {
@@ -198,12 +279,55 @@ private formatAmount(amount: number | string): string {
 
   onSearchCleared(): void {
     this.filterValue = '';
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'VoucherDate'
+    };
     this.clearFilterValue();
   }
 
   clearFilterValue() {
     this.clearFilter();
   }
+
+  onAdvancedSearch(event: { searchValue: string; filters: AdvancedFilterValues }): void {
+    this.filterValue = event.searchValue;
+    this.currentFilters = event.filters;
+    this.page = 1;
+    this.search();
+  }
+
+  partySearchFn = (_searchTerm: string, partyType: string): Observable<any[]> => {
+    const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const branchMasterSid = this.currentBranch?.BranchMasterSid;
+    if (!companyMasterSid || !branchMasterSid || partyType !== 'CustomerMasterSid') {
+      return of([]);
+    }
+    const payload = {
+      CompanyMasterSid: companyMasterSid,
+      BranchMasterSid: branchMasterSid
+    };
+
+    return this.accountService.getAllDebtorWithCOAMapped(payload).pipe(
+      map((response: any) => {
+        const rows = Array.isArray(response?.data) ? response.data : [];
+        const customers = rows
+          .map((row: any) => ({
+            ...row,
+            CustomerMasterSid: row?.CustomerMasterSid ?? null,
+            CustomerName: row?.CustomerName ?? ''
+          }))
+          .filter((row: any) => !!row.CustomerMasterSid && !!row.CustomerName);
+
+        return Array.from(new Map(customers.map((c: any) => [c.CustomerMasterSid, c])).values());
+      }),
+      catchError(() => of([]))
+    );
+  };
 
   override trackBy(index: number, item: any): number {
     return item.VoucherHeaderSid || index;
@@ -589,5 +713,86 @@ private formatAmount(amount: number | string): string {
       : date;
 
     return isNaN(dateObj.getTime()) ? 'N/A' : dateObj.toLocaleDateString();
+  }
+
+  private loadFilterLookups(): void {
+    this.accountService.getAllCurrencies().subscribe({
+      next: (rows: any[]) => {
+        const currencies = Array.isArray(rows)
+          ? rows
+              .map((row: any) => ({
+                ...row,
+                currencyCode: row?.currencyCode || row?.CurrencyCode || row?.code || ''
+              }))
+              .filter((c: any) => !!c.currencyCode)
+          : [];
+        this.currencyFilterConfig = { ...this.currencyFilterConfig, options: currencies };
+      },
+      error: () => {
+        this.currencyFilterConfig = { ...this.currencyFilterConfig, options: [] };
+      }
+    });
+  }
+
+  private getLast30FromDate(): string {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - 30);
+    return date.toISOString();
+  }
+
+  private applyAdvancedFilters(items: any[]): any[] {
+    const selectedDateField = this.currentFilters.dateType || 'VoucherDate';
+    const from = this.currentFilters.dateRange?.fromDate ? new Date(this.currentFilters.dateRange.fromDate) : null;
+    const to = this.currentFilters.dateRange?.toDate ? new Date(this.currentFilters.dateRange.toDate) : null;
+    const selectedCustomerSid = this.currentFilters.party?.partyId ? Number(this.currentFilters.party.partyId) : null;
+    const selectedCustomerName = this.currentFilters.party?.partyName
+      ? String(this.currentFilters.party.partyName).trim().toUpperCase()
+      : '';
+    const selectedCurrency = this.currentFilters.pol ? String(this.currentFilters.pol).trim().toUpperCase() : '';
+    const selectedPostStatus = this.currentFilters.extra ? String(this.currentFilters.extra).trim().toUpperCase() : '';
+
+    if (!from && !to && !selectedCustomerSid && !selectedCustomerName && !selectedCurrency && !selectedPostStatus) {
+      return items;
+    }
+
+    return items.filter((item: any) => {
+      const itemCustomerSid = Number(item?.CustomerMasterSid ?? item?.customerMaster?.CustomerMasterSid ?? 0);
+      const itemCustomerName = String(item?.PartyName ?? item?.CustomerName ?? '').trim().toUpperCase();
+      const sidMatch = selectedCustomerSid ? itemCustomerSid === selectedCustomerSid : false;
+      const nameMatch = selectedCustomerName ? itemCustomerName === selectedCustomerName : false;
+      if ((selectedCustomerSid || selectedCustomerName) && !(sidMatch || nameMatch)) {
+        return false;
+      }
+
+      const itemCurrency = String(item?.CurrencyCode ?? '').trim().toUpperCase();
+      if (selectedCurrency && itemCurrency !== selectedCurrency) {
+        return false;
+      }
+
+      const itemPostStatus = String(item?.PostStatus ?? '').trim().toUpperCase();
+      if (selectedPostStatus && itemPostStatus !== selectedPostStatus) {
+        return false;
+      }
+
+      if (from || to) {
+        const rawDate = item?.[selectedDateField];
+        if (!rawDate) {
+          return false;
+        }
+        const itemDate = new Date(rawDate);
+        if (Number.isNaN(itemDate.getTime())) {
+          return false;
+        }
+        if (from && itemDate < from) {
+          return false;
+        }
+        if (to && itemDate > to) {
+          return false;
+        }
+      }
+
+      return true;
+    });
   }
 }

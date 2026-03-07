@@ -22,6 +22,16 @@
             <div class="col-12 table-scroll-wrapper">
                 <app-page-header [title]="'Pending Enquiry'" [showFavorite]="false" [showSearch]="true" [searchPlaceholder]="'Search'"
                     [searchButtonText]="'Search'" [(searchValue)]="enquiryManager.filterValue" [actions]="enquiryHeaderActions"
+                    [autoSearchOnFilterChange]="true"
+                    [dateRangeConfig]="enquiryDateRangeConfig"
+                    [dateTypeConfig]="enquiryDateTypeConfig"
+                    [partyFilterConfig]="enquiryPartyFilterConfig"
+                    [departmentFilterConfig]="enquiryDepartmentFilterConfig"
+                    [polFilterConfig]="enquiryPolFilterConfig"
+                    [podFilterConfig]="enquiryPodFilterConfig"
+                    [partySearchFn]="partySearchFn"
+                    (departmentFilterChanged)="onEnquiryDepartmentFilterChanged($event)"
+                    (advancedSearchTriggered)="onEnquiryAdvancedSearch($event)"
                     (searchTriggered)="onEnquirySearchTriggered($event)" (searchCleared)="enquiryResetPage()"
                     (actionTriggered)="onEnquiryActionTriggered($event)">
                 </app-page-header>
@@ -46,6 +56,17 @@
             <div class="col-12">
                 <app-page-header [title]="'Quotation'" [showFavorite]="true" [showSearch]="true" [searchPlaceholder]="'Search'"
                     [searchButtonText]="'Search'" [(searchValue)]="quotationManager.filterValue" [actions]="quotationHeaderActions"
+                    [autoSearchOnFilterChange]="true"
+                    [dateRangeConfig]="quotationDateRangeConfig"
+                    [dateTypeConfig]="quotationDateTypeConfig"
+                    [partyFilterConfig]="quotationPartyFilterConfig"
+                    [departmentFilterConfig]="quotationDepartmentFilterConfig"
+                    [polFilterConfig]="quotationPolFilterConfig"
+                    [podFilterConfig]="quotationPodFilterConfig"
+                    [extraFilterConfig]="quotationApprovalStatusFilterConfig"
+                    [partySearchFn]="partySearchFn"
+                    (departmentFilterChanged)="onQuotationDepartmentFilterChanged($event)"
+                    (advancedSearchTriggered)="onQuotationAdvancedSearch($event)"
                     (searchTriggered)="onQuotationSearchTriggered($event)" (searchCleared)="quoteResetPage()"
                     (actionTriggered)="onQuotationActionTriggered($event)">
                 </app-page-header>

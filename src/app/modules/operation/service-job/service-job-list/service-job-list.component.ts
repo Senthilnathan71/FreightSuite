@@ -282,10 +282,7 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
                 MBLDate: this.datePipe.transform(item?.MBLDate),
                 Status: item.status === 'A' ? 'Active' : 'Inactive',
             }));
-            this.totalLengthOfCollection =
-              rawItems.length !== filteredItems.length
-                ? filteredItems.length
-                : (response.data.totalCount || 0);
+            this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
             this.updateHeaderActionState();
         } else {
             this.appSettingService.showError('Could not fetch service jobs.');

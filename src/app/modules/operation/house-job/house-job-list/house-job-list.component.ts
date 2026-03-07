@@ -444,10 +444,7 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
       Status: item.status === 'A' ? 'Active' : 'Suspended'
     }));
 
-    this.totalLengthOfCollection =
-              rawItems.length !== filteredItems.length
-                ? filteredItems.length
-                : (response.data.totalCount || 0);
+            this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
     this.updateHeaderActionState();
   }
 

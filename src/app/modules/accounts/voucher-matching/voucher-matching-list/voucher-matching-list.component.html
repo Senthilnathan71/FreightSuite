@@ -17,7 +17,12 @@
             [searchPlaceholder]="'Search'"
             [searchButtonText]="'Search'"
             [(searchValue)]="filterValue"
+            [autoSearchOnFilterChange]="true"
             [actions]="headerActions"
+            [dateTypeConfig]="dateTypeConfig"
+            [dateRangeConfig]="dateRangeConfig"
+            [polFilterConfig]="subledgerFilterConfig"
+            (advancedSearchTriggered)="onAdvancedSearch($event)"
             (searchTriggered)="onSearchTriggered($event)"
             (searchCleared)="onSearchCleared()"
             (actionTriggered)="onActionTriggered($event)">

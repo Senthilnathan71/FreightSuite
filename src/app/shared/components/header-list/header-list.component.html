@@ -203,7 +203,7 @@
             <div *ngIf="polFilterConfig?.enabled" class="custom-form-group custom-form-group-select dofi-min-w-150"
             [class.filled]="!!selectedPOL">
                 <ng-select
-                    [items]="polFilterConfig!.options"
+                    [items]="getFilteredPolOptions()"
                     [bindLabel]="polFilterConfig!.bindLabel"
                     [bindValue]="polFilterConfig!.bindValue"
                     class="ng-select"
@@ -220,7 +220,7 @@
             <div *ngIf="podFilterConfig?.enabled" class="custom-form-group custom-form-group-select dofi-min-w-150"
             [class.filled]="!!selectedPOD">
                 <ng-select
-                    [items]="podFilterConfig!.options"
+                    [items]="getFilteredPodOptions()"
                     [bindLabel]="podFilterConfig!.bindLabel"
                     [bindValue]="podFilterConfig!.bindValue"
                     class="ng-select"
@@ -231,6 +231,23 @@
                     appendTo="body">
                 </ng-select>
                 <label class="input-label">{{ podFilterConfig?.label }}</label>
+            </div>
+
+            <!-- Extra -->
+            <div *ngIf="extraFilterConfig?.enabled" class="custom-form-group custom-form-group-select dofi-min-w-150"
+            [class.filled]="!!selectedExtra">
+                <ng-select
+                    [items]="extraFilterConfig!.options"
+                    [bindLabel]="extraFilterConfig!.bindLabel"
+                    [bindValue]="extraFilterConfig!.bindValue"
+                    class="ng-select"
+                    [(ngModel)]="selectedExtra"
+                    (change)="onExtraFilterChange()"
+                    [clearable]="true"
+                    placeholder=""
+                    appendTo="body">
+                </ng-select>
+                <label class="input-label">{{ extraFilterConfig?.label }}</label>
             </div>
 
             <!-- Clear Filters -->

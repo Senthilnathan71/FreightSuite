@@ -262,10 +262,7 @@ export class CargoReceiptListComponent extends BaseListComponent implements OnIn
         BookingDateTime:this.datePipe.transform(item?.BookingDateTime),
         bookingStatus: item.BookingStatus
       }));
-      this.totalLengthOfCollection =
-        rawItems.length !== filteredItems.length
-          ? filteredItems.length
-          : (response.data.totalCount || 0);
+      this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
       this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching Cargo.');

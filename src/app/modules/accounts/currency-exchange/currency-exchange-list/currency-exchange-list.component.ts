@@ -21,6 +21,12 @@ import { ReusableTableComponent } from 'src/app/shared/components/table/table.co
 import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter } from 'src/app/shared/interfaces/table.interface';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import {
+  AdvancedFilterValues,
+  DateRangeConfig,
+  DateTypeConfig,
+  DropdownFilterConfig
+} from 'src/app/shared/interfaces/advanced-filter.interface';
 @Component({
   selector: 'app-currency-exchange-list',
   standalone: true,
@@ -70,7 +76,29 @@ export class CurrencyExchangeListComponent extends BaseListComponent implements 
   tableConfig: TableConfig;
 
   tableLoading = false;
-   headerActions: HeaderAction[] = [];
+  headerActions: HeaderAction[] = [];
+  dateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+  dateTypeConfig: DateTypeConfig = {
+    enabled: true,
+    options: [{ label: 'Effective From', value: 'EffectiveFrom' }],
+    defaultValue: 'EffectiveFrom'
+  };
+  fromCurrencyFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'FromCurrency',
+    options: [],
+    bindLabel: 'currencyCode',
+    bindValue: 'currencyCode'
+  };
+  toCurrencyFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'ToCurrency',
+    options: [],
+    bindLabel: 'currencyCode',
+    bindValue: 'currencyCode'
+  };
+  private allCurrencies: any[] = [];
+  currentFilters: AdvancedFilterValues = {};
   protected config: ListComponentConfig = {
     storageKey: 'currencyExchange-list-state',
     defaultPageSize: 10,
@@ -113,6 +141,15 @@ export class CurrencyExchangeListComponent extends BaseListComponent implements 
       this.initializeTableConfig();
       this.initializeHeaderActions();
     });
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'EffectiveFrom'
+    };
+    this.loadCurrencies();
     super.ngOnInit();
   }
 
@@ -153,12 +190,13 @@ export class CurrencyExchangeListComponent extends BaseListComponent implements 
   //   });
   // }
   protected searchItems(): Observable<any> {
+    this.tableLoading = true;
     this.spinner.show();
     return this.accountService.searchCurrencyExchangeList(this.getSearchParams());
   }
 
-  protected getSearchParams(): SearchParams {
-    return {
+  protected getSearchParams(): SearchParams & Record<string, any> {
+    const params: any = {
       search: this.filterValue.trim(),
       page: Number(this.page),
       pageSize: Number(this.pageSize),
@@ -167,20 +205,47 @@ export class CurrencyExchangeListComponent extends BaseListComponent implements 
       sortColumn: this.sortColumn,
       sortDirection: this.sortDirection
     };
+
+    if (this.currentFilters.dateRange?.fromDate) {
+      params.dateFrom = this.currentFilters.dateRange.fromDate;
+      params.DateFrom = this.currentFilters.dateRange.fromDate;
+    }
+    if (this.currentFilters.dateRange?.toDate) {
+      params.dateTo = this.currentFilters.dateRange.toDate;
+      params.DateTo = this.currentFilters.dateRange.toDate;
+    }
+    if (this.currentFilters.dateType) {
+      params.dateField = this.currentFilters.dateType;
+      params.DateField = this.currentFilters.dateType;
+    }
+    if (this.currentFilters.pol) {
+      params.FromCurrency = this.currentFilters.pol;
+      params.fromCurrency = this.currentFilters.pol;
+    }
+    if (this.currentFilters.pod) {
+      params.ToCurrency = this.currentFilters.pod;
+      params.toCurrency = this.currentFilters.pod;
+    }
+
+    return params;
   }
 
   protected processSearchResults(response: any): void {
+    this.tableLoading = false;
     this.spinner.hide();
     if (response.status) {
-      this.allItems = response.data.items.map(item => ({
+      const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
+      const filteredItems = this.applyAdvancedFilters(rawItems);
+      this.allItems = filteredItems.map(item => ({
         ...item,
         status: item.status === 'A' ? 'Active' : 'Suspended',
+        EffectiveFromRaw: item?.EffectiveFrom,
         EffectiveFrom: this.datePipe.transform(item?.EffectiveFrom),
         SellRateFormatted: this.formatAmount(item.SellRate),
         BuyRateFormatted: this.formatAmount(item.BuyRate)
       }));
-      this.totalLengthOfCollection = response.data.totalCount || 0;
-      this.applySorting();
+      this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
+      // this.applySorting();
       this.updateHeaderActionState();
 
     } else {
@@ -203,6 +268,7 @@ export class CurrencyExchangeListComponent extends BaseListComponent implements 
 }
 
   protected override handleSearchError(error: any): void {
+    this.tableLoading = false;
     this.spinner.hide();
     this.appSettingService.showError('Error fetching Currency-Exchange.');
     console.error('Error fetching Currency-Exchange', error);
@@ -221,7 +287,32 @@ export class CurrencyExchangeListComponent extends BaseListComponent implements 
 
     onSearchCleared(): void {
     this.filterValue = '';
+    this.currentFilters = {
+      dateRange: {
+        preset: 'last30',
+        fromDate: this.getLast30FromDate(),
+        toDate: new Date().toISOString()
+      },
+      dateType: 'EffectiveFrom'
+    };
+    this.fromCurrencyFilterConfig = { ...this.fromCurrencyFilterConfig, options: [...this.allCurrencies] };
+    this.toCurrencyFilterConfig = { ...this.toCurrencyFilterConfig, options: [...this.allCurrencies] };
     this.clearFilterValue();
+  }
+
+  onAdvancedSearch(event: { searchValue: string; filters: AdvancedFilterValues }): void {
+    this.filterValue = event.searchValue;
+    this.currentFilters = event.filters;
+    this.page = 1;
+    this.search();
+  }
+
+  onFromCurrencyFilterChanged(fromCurrency: string | null): void {
+    const selectedFrom = fromCurrency ? String(fromCurrency).trim().toUpperCase() : '';
+    const filteredToOptions = !selectedFrom
+      ? [...this.allCurrencies]
+      : this.allCurrencies.filter((c: any) => String(c?.currencyCode || '').trim().toUpperCase() !== selectedFrom);
+    this.toCurrencyFilterConfig = { ...this.toCurrencyFilterConfig, options: filteredToOptions };
   }
 
     initializeHeaderActions(): void {
@@ -403,6 +494,72 @@ export class CurrencyExchangeListComponent extends BaseListComponent implements 
     // For now, we'll handle this with the existing search functionality
     // In a more advanced implementation, you could apply individual column filters
     console.log('Filters changed:', filters);
+  }
+
+  private loadCurrencies(): void {
+    this.accountService.getAllCurrencies().subscribe({
+      next: (rows: any[]) => {
+        const currencies = Array.isArray(rows)
+          ? rows.map((row: any) => ({
+              ...row,
+              currencyCode: row?.currencyCode || row?.CurrencyCode || row?.code || ''
+            })).filter((c: any) => !!c.currencyCode)
+          : [];
+        this.allCurrencies = currencies;
+        this.fromCurrencyFilterConfig = { ...this.fromCurrencyFilterConfig, options: [...currencies] };
+        this.toCurrencyFilterConfig = { ...this.toCurrencyFilterConfig, options: [...currencies] };
+      },
+      error: () => {
+        this.allCurrencies = [];
+        this.fromCurrencyFilterConfig = { ...this.fromCurrencyFilterConfig, options: [] };
+        this.toCurrencyFilterConfig = { ...this.toCurrencyFilterConfig, options: [] };
+      }
+    });
+  }
+
+  private getLast30FromDate(): string {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - 30);
+    return date.toISOString();
+  }
+
+  private applyAdvancedFilters(items: any[]): any[] {
+    const selectedDateField = this.currentFilters.dateType || 'EffectiveFrom';
+    const from = this.currentFilters.dateRange?.fromDate ? new Date(this.currentFilters.dateRange.fromDate) : null;
+    const to = this.currentFilters.dateRange?.toDate ? new Date(this.currentFilters.dateRange.toDate) : null;
+    const fromCurrency = this.currentFilters.pol ? String(this.currentFilters.pol).trim().toUpperCase() : '';
+    const toCurrency = this.currentFilters.pod ? String(this.currentFilters.pod).trim().toUpperCase() : '';
+
+    if (!from && !to && !fromCurrency && !toCurrency) {
+      return items;
+    }
+
+    return items.filter((item: any) => {
+      if (fromCurrency && String(item?.FromCurrency || '').trim().toUpperCase() !== fromCurrency) {
+        return false;
+      }
+      if (toCurrency && String(item?.ToCurrency || '').trim().toUpperCase() !== toCurrency) {
+        return false;
+      }
+      if (from || to) {
+        const rawDate = item?.[selectedDateField];
+        if (!rawDate) {
+          return false;
+        }
+        const itemDate = new Date(rawDate);
+        if (Number.isNaN(itemDate.getTime())) {
+          return false;
+        }
+        if (from && itemDate < from) {
+          return false;
+        }
+        if (to && itemDate > to) {
+          return false;
+        }
+      }
+      return true;
+    });
   }
 
   report(): void {
