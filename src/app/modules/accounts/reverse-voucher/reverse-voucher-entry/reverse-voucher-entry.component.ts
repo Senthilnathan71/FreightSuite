@@ -1522,11 +1522,13 @@ export class ReverseVoucherEntryComponent {
     if (this.isEditMode) {
       this.loadReverseVoucherById(this.headerId!);
     } else {
+      const voucherDate = this.reverseVoucherForm.get('VoucherDate')?.value;
       this.reverseVoucherForm.reset();
       this.details.clear();
       // this.tdsGroup.reset();
       const currencySettings = this.companySettings.getCurrencySettings();
       this.reverseVoucherForm.patchValue({
+        VoucherDate: voucherDate,
         CurrencyCode: currencySettings.code,
         ExchangeRate: 1,
         InvoiceType: 'B2B',
