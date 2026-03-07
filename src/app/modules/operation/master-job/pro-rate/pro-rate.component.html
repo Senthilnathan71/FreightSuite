@@ -1,300 +1,276 @@
-<div class="pro-rate">
+<div class="container-fluid py-1 px-1 px-md-2" style="font-size:14px;font-weight:500;">
+  <ngx-spinner name="proRateSpinner" [fullScreen]="false" type="ball-clip-rotate" size="medium"></ngx-spinner>
 
-    <ngx-spinner name="proRateSpinner" [fullScreen]="false" type="ball-clip-rotate" size="medium"></ngx-spinner>
-
-    <!-- Header -->
-    <div class="row compact-form">
-        <div class="col-12 px-2">
-
-            <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
-
-                <div class="col-md-5 d-flex pb-1">
-                    <i class="bi bi-check-circle-fill text-success me-2"></i>
-                    <h5 class="mb-0">Pro Rate</h5>
-                </div>
-
-                <div class="col-md-7 d-flex gap-2 justify-content-end pb-1">
-
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80">
-                        <i class="fas fa-chevron-left me-1"></i> Back
-                    </button>
-
-                    <button type="button" class="btn btn-sm dofi-min-w-80 dofi-max-w-80 btn-info">
-                        <i class="fas fa-save me-1"></i> Save
-                    </button>
-
-                </div>
-
-            </div>
-        </div>
+  <div *ngIf="masterJob" class="rounded-1 p-1 p-md-2" style="background:#f5f7fa;border:1px solid #dde5ee;">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-1">
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <span class="d-inline-flex align-items-center gap-2 text-white fw-bold px-2 py-1 rounded" style="background:#1f4b7a;">
+          <i class="fas fa-calculator"></i>
+          Pro Rate
+        </span>
+        <span class="badge border bg-white text-dark fw-semibold">Master Job: {{ masterJob.MasterJobNumber }}</span>
+      </div>
+      <button type="button" class="btn btn-sm fw-semibold" (click)="goBack()" style="border:1px solid #1f4b7a;color:#1f4b7a;">
+        <i class="fas fa-arrow-left me-1"></i>
+        Back
+      </button>
     </div>
 
-
-    <!-- CARD -->
-    <div class="card mb-1">
-        <div class="card-body p-2">
-
-            <div class="row g-2">
-
-                <!-- LEFT FORM -->
-                <div class="col-md-6 card">
-
-                    <div class="row g-2 compact-form">
-
-                        <!-- Department -->
-                        <div class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select mb-1">
-                                <dofi-searchable-dropdown placeholder=""></dofi-searchable-dropdown>
-                                <label class="input-label">Department <span class="text-danger">*</span></label>
-                                <!-- <div class="error-message"><span>Required</span></div> -->
-                            </div>
-                        </div>
-
-                        <!-- Job No -->
-                        <div class="col-md-6">
-                            <div class="custom-form-group mb-1">
-                                <input type="text" class="form-control custom-input-field sm">
-                                <label class="input-label">Job No.</label>
-                                <!-- <div class="error-message"><span>Required</span></div> -->
-                            </div>
-                        </div>
-
-                        <!-- Job Date -->
-                        <div class="col-md-6">
-                            <div class="custom-form-group custom-form-group-select-date">
-                                <div class="input-group">
-
-                                    <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                        #d1="ngbDatepicker" container="body" />
-
-                                    <button class="btn bi bi-calendar3" (click)="d1.toggle()" type="button">
-                                        <i-feather name="calendar" class="feather-sm"></i-feather>
-                                    </button>
-
-                                </div>
-
-                                <label class="input-label">Job Date <span class="text-danger"></span></label>
-                                <!-- <div class="error-message"><span>Required</span></div> -->
-                            </div>
-                        </div>
-
-                        <!-- Job Status -->
-                        <div class="col-md-6">
-                            <div class="custom-form-group mb-1">
-                                <input type="text" class="form-control custom-input-field sm">
-                                <label class="input-label">Job Status</label>
-                                <!-- <div class="error-message"><span>Required</span></div> -->
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-
-                <!-- RIGHT SIDE TABLE -->
-                <div class="col-md-6">
-
-                    <div class="table-responsive table-borderless">
-
-                        <table class="table table-hover align-middle table-sm mb-0">
-
-                            <thead style="background:#1b658c;color:white;">
-
-                                <tr>
-                                    <th class="bg-transparent text-light">Cont No.</th>
-                                    <th class="bg-transparent text-light">Type</th>
-                                    <th class="bg-transparent text-light">Gr. Wt</th>
-                                    <th class="bg-transparent text-light">CBM</th>
-                                </tr>
-
-                            </thead>
-
-                            <tbody>
-
-                                <tr>
-                                    <td>XXX</td>
-                                    <td>XXXX</td>
-                                    <td>XXXX</td>
-                                    <td>XXXX</td>
-                                </tr>
-
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- TOTAL HOUSES -->
-            <div class="row mt-2">
-                <div class="col-md-12">
-                    <strong style="color: black;">Total Houses : </strong>
-                    <span class="badge bg-primary">xxx</span>
-                </div>
-            </div>
-            <!-- COST & REVENUE TABLE -->
-            <div class="row mt-2">
-                <div class="col-12">
-                    <div class="table-responsive table-borderless1" style="overflow-y: hidden;">
-                        <table class="table table-hover align-middle no-wrap  table-sm mb-0">
-                            <thead>
-                                <tr>
-                                    <!-- <th colspan="3"  class="bg-transparent text-light"  ></th> -->
-                                    <th class="bg-transparent text-light" rowspan="2">Charge</th>
-                                    <th class="bg-transparent text-light" rowspan="2">UOM</th>
-                                    <th class="bg-transparent text-light" rowspan="2">No. Of Unit</th>
-                                    <th colspan="5" style="background:#e67e32;color:white;" class="text-center fw-bold">
-                                        Cost</th>
-                                    <th colspan="5" style="background:#4f81bd;color:white;" class="text-center fw-bold">
-                                        Revenue</th>
-                                </tr>
-
-                                <tr>
-                                    <th class="bg-transparent text-light">Curr</th>
-                                    <th class="bg-transparent text-light">Amt</th>
-                                    <th class="bg-transparent text-light">Local Amt</th>
-                                    <th class="bg-transparent text-light">Dr/Cr</th>
-                                    <th class="bg-transparent text-light">Voucher No.</th>
-
-                                    <th class="bg-transparent text-light">Curr</th>
-                                    <th class="bg-transparent text-light">Amt</th>
-                                    <th class="bg-transparent text-light">Local Amt</th>
-                                    <th class="bg-transparent text-light">Dr/Cr</th>
-                                    <th class="bg-transparent text-light">Voucher No.</th>
-
-                                </tr>
-
-                            </thead>
-
-                            <tbody>
-                                <tr>
-                                    <td> </td>
-                                    <td> </td>
-                                    <td> </td>
-
-                                    <td> </td>
-                                    <td> </td>
-                                    <td> </td>
-                                    <td> </td>
-                                    <td> </td>
-
-                                    <td> </td>
-                                    <td> </td>
-                                    <td> </td>
-                                    <td> </td>
-                                    <td> </td>
-
-                                </tr>
-
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="table-responsive mb-1">
+      <table class="table align-middle mb-0" style="font-size:14px;border:1px solid #73879d;">
+        <thead>
+          <tr>
+            <th class="fw-bold" style="border:1px solid #9dadbf;">Dept</th>
+            <th class="fw-bold" style="border:1px solid #9dadbf;">Job No</th>
+            <th class="fw-bold" style="border:1px solid #9dadbf;">Job Date</th>
+            <th class="fw-bold" style="border:1px solid #9dadbf;">Job Status</th>
+            <th class="fw-bold" style="border:1px solid #9dadbf;">Total Houses</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="border:1px solid #9dadbf;">{{ masterJob.department?.departmentName || "-" }}</td>
+            <td class="fw-semibold" style="border:1px solid #9dadbf;">{{ masterJob.MasterJobNumber || "-" }}</td>
+            <td style="border:1px solid #9dadbf;">{{ masterJob.MasterJobDate | formatDate }}</td>
+            <td style="border:1px solid #9dadbf;">{{ masterJob.JobStatus || "-" }}</td>
+            <td class="fw-semibold" style="border:1px solid #9dadbf;">{{ totalHouses }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
-
-    <div class="row mt-0">
-        <div class="col-12">
-            <div
-                style="border-left:4px solid #ff0000;background:#fff7f7;display:flex;flex-wrap:wrap;">
-
-                <div
-                    style="display:flex;flex-direction:column;padding:6px 14px;border-right:2px solid #ffd0d0;flex:1;min-width:80px;">
-                    <span style="font-size:11px;font-weight:700;color:black;white-space:nowrap;">HBL No : <span
-                            style="font-weight:400;color:#1e2a38;">xxx</span></span>
-                </div>
-
-                <div
-                    style="display:flex;flex-direction:column;padding:6px 14px;border-right:2px solid #ffd0d0;flex:1;min-width:80px;">
-                    <span style="font-size:11px;font-weight:700;color:black;white-space:nowrap;">Total Pkg : <span
-                            style="font-weight:400;color:#1e2a38;">xxx</span></span>
-                </div>
-
-                <div
-                    style="display:flex;flex-direction:column;padding:6px 14px;border-right:2px solid #ffd0d0;flex:1;min-width:80px;">
-                    <span style="font-size:11px;font-weight:700;color:black;white-space:nowrap;">Gross Wt : <span
-                            style="font-weight:400;color:#1e2a38;"> </span></span>
-                </div>
-
-                <div
-                    style="display:flex;flex-direction:column;padding:6px 14px;border-right:2px solid #ffd0d0;flex:1;min-width:80px;">
-                    <span style="font-size:11px;font-weight:700;color:black;white-space:nowrap;">Net Wt : <span
-                            style="font-weight:400;color:#1e2a38;"> </span></span>
-                </div>
-
-                <div
-                    style="display:flex;flex-direction:column;padding:6px 14px;border-right:2px solid #ffd0d0;flex:1;min-width:80px;">
-                    <span style="font-size:11px;font-weight:700;color:black;white-space:nowrap;">CBM : <span
-                            style="font-weight:400;color:#1e2a38;"> </span></span>
-                </div>
-
-                <div
-                    style="display:flex;flex-direction:column;padding:6px 14px;border-right:2px solid #ffd0d0;flex:1;min-width:100px;">
-                    <span style="font-size:11px;font-weight:700;color:black;white-space:nowrap;">Chargeable Wt : <span
-                            style="font-weight:400;color:#1e2a38;"> </span></span>
-                </div>
-
-                <div style="display:flex;flex-direction:column;padding:6px 14px;flex:1;min-width:100px;">
-                    <span style="font-size:11px;font-weight:700;color:black;white-space:nowrap;">Container No. : <span
-                            style="font-weight:400;color:#1e2a38;"> </span></span>
-                </div>
-
-            </div>
-
-            <div class="table-responsive table-borderless" style="overflow-y: hidden;">
-                <table class="table table-hover align-middle no-wrap table-sm mb-0">
-                    <thead>
-                        <!-- Column Headers -->
-                        <tr>
-                            <th class="bg-info text-white">Charge</th>
-                            <th class="bg-info text-white">UOM</th>
-                            <th class="bg-info text-white" >No. Of Unit</th>
-
-                            <th style="background:#B33F62;color:white;">Curr</th>
-                            <th style="background:#B33F62;color:white;">Amt</th>
-                            <th style="background:#B33F62;color:white;">Local Amt</th>
-                            <th style="background:#B33F62;color:white;">Dr/Cr</th>
-                            <th style="background:#009688;color:white;"></th>
-
-                            <th style="background:#009688;color:white;">Curr</th>
-                            <th style="background:#009688;color:white;">Amt</th>
-                            <th style="background:#009688;color:white;">Local Amt</th>
-                            <th style="background:#009688;color:white;">Dr/Cr</th>
-                            <th style="background:#009688;color:white;"></th>
-                        </tr>
-
-                    </thead>
-
-                    <tbody>
-                        <tr>
-                            <td> </td>
-                            <td> </td>
-                            <td> </td>
-                            <td> </td>
-                           
-                            <td> </td>
-                            <td> </td>
-                            <td> </td>
-                            <td> </td>
-                          
-                            <td> </td>
-                            <td> </td>
-                            <td> </td>
-                            <td> </td>
-                            <td> </td>
-                        </tr>
-                    </tbody>
-
-                </table>
-            </div>
-        </div>
+    <div class="card border-0 shadow-sm mb-1 overflow-hidden" style="border:1px solid #d7e0ea !important;">
+      <div class="px-2 py-1 d-flex align-items-center justify-content-between text-white fw-bold" style="background:#2f6f95;">
+        <span class="d-inline-flex align-items-center gap-2">
+          <i class="fas fa-boxes-stacked"></i>
+          Containers
+        </span>
+        <span class="badge bg-light text-dark fw-semibold">{{ containers.length }}</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table align-middle mb-0" style="font-size:14px;border:1px solid #73879d;">
+          <thead>
+            <tr>
+              <th class="fw-bold text-white" style="border:1px solid #9dadbf;background:#2f6f95;">Cont No.</th>
+              <th class="fw-bold text-white" style="border:1px solid #9dadbf;background:#2f6f95;">Type</th>
+              <th class="fw-bold text-white text-end" style="border:1px solid #9dadbf;background:#2f6f95;">Gr. Wt</th>
+              <th class="fw-bold text-white text-end" style="border:1px solid #9dadbf;background:#2f6f95;">CBM</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let cont of containers">
+              <td class="fw-semibold" style="border:1px solid #9dadbf;">{{ cont.ContainerNumber }}</td>
+              <td style="border:1px solid #9dadbf;">{{ cont.containerTypeName }}</td>
+              <td class="text-end" style="border:1px solid #9dadbf;">{{ cont.GrossWeight | numberFormat }}</td>
+              <td class="text-end" style="border:1px solid #9dadbf;">{{ cont.Volume | numberFormat }}</td>
+            </tr>
+            <tr *ngIf="containers.length === 0">
+              <td colspan="4" class="text-center text-muted" style="border:1px solid #9dadbf;">No containers found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
+    <div class="card border-0 shadow-sm mb-1 overflow-hidden" style="border:1px solid #d7e0ea !important;" *ngIf="masterCharges.length > 0; else noMasterCharges">
+      <div class="px-2 py-1 d-flex align-items-center justify-content-between text-white fw-bold" style="background:#1f4b7a;">
+        <span class="d-inline-flex align-items-center gap-2">
+          <i class="fas fa-layer-group"></i>
+          Master-Level Charges
+        </span>
+        <span class="badge bg-light text-dark fw-semibold">{{ masterCharges.length }}</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table align-middle mb-0" style="font-size:14px;border:1px solid #73879d;">
+          <thead>
+            <tr>
+              <th rowspan="2" class="align-middle fw-bold" style="border:1px solid #9dadbf;background:#5c7a92;">Charge</th>
+              <th rowspan="2" class="align-middle fw-bold" style="border:1px solid #9dadbf;background:#5c7a92;">UOM</th>
+              <th rowspan="2" class="align-middle text-end fw-bold" style="border:1px solid #9dadbf;background:#5c7a92;">Units</th>
+              <th colspan="5" class="text-center fw-bold text-white" style="border:1px solid #9dadbf;background:#1f4b7a;">Revenue</th>
+              <th colspan="5" class="text-center fw-bold text-white" style="border:1px solid #9dadbf;background:#d68a1f;">Cost</th>
+            </tr>
+            <tr>
+              <th class="fw-bold" style="border:1px solid #9dadbf;background:#edf4fb;">Curr</th>
+              <th class="text-end fw-bold" style="border:1px solid #9dadbf;background:#edf4fb;">Amount</th>
+              <th class="text-end fw-bold" style="border:1px solid #9dadbf;background:#edf4fb;">Local Amt</th>
+              <th class="fw-bold" style="border:1px solid #9dadbf;background:#edf4fb;">Dr/Cr</th>
+              <th class="fw-bold" style="border:1px solid #9dadbf;background:#edf4fb;">Voucher</th>
+              <th class="fw-bold" style="border:1px solid #9dadbf;background:#fdf5e8;">Curr</th>
+              <th class="text-end fw-bold" style="border:1px solid #9dadbf;background:#fdf5e8;">Amount</th>
+              <th class="text-end fw-bold" style="border:1px solid #9dadbf;background:#fdf5e8;">Local Amt</th>
+              <th class="fw-bold" style="border:1px solid #9dadbf;background:#fdf5e8;">Dr/Cr</th>
+              <th class="fw-bold" style="border:1px solid #9dadbf;background:#fdf5e8;">Voucher</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let charge of masterCharges">
+              <td class="fw-semibold" style="border:1px solid #9dadbf;">{{ charge.chargeMaster?.chargeName }}</td>
+              <td style="border:1px solid #9dadbf;">{{ charge.chargeMaster?.UnitQty }}</td>
+              <td class="text-end" style="border:1px solid #9dadbf;">{{ charge.RevenueNumberOfUnit | numberFormat }}</td>
+              <td style="border:1px solid #9dadbf;">{{ charge.revenueCurrencyMaster?.currencyCode }}</td>
+              <td class="text-end" style="border:1px solid #9dadbf;">{{ charge.RevenueAmount | numberFormat: getDecimals(charge.RevenueCurrencyMasterSid) }}</td>
+              <td class="text-end" style="border:1px solid #9dadbf;">{{ charge.RevenueLocalAmount | numberFormat: getDecimals(charge.RevenueCurrencyMasterSid) }}</td>
+              <td class="text-center" style="border:1px solid #9dadbf;">{{ charge.RevenueDrCr }}</td>
+              <td style="border:1px solid #9dadbf;">{{ charge.revenueVoucherHeader?.VoucherNumber }}</td>
+              <td style="border:1px solid #9dadbf;">{{ charge.costCurrencyMaster?.currencyCode }}</td>
+              <td class="text-end" style="border:1px solid #9dadbf;">{{ charge.CostAmount | numberFormat: getDecimals(charge.CostCurrencyMasterSid) }}</td>
+              <td class="text-end" style="border:1px solid #9dadbf;">{{ charge.CostLocalAmount | numberFormat: getDecimals(charge.CostCurrencyMasterSid) }}</td>
+              <td class="text-center" style="border:1px solid #9dadbf;">{{ charge.CostDrCr }}</td>
+              <td style="border:1px solid #9dadbf;">{{ charge.costVoucherHeader?.VoucherNumber }}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" class="text-end fw-bold" style="border:1px solid #73879d;background:#eef3f9;">Total</td>
+              <td style="border:1px solid #73879d;background:#e6f0fb;"></td>
+              <td class="text-end fw-bold" style="border:1px solid #73879d;background:#e6f0fb;">{{ masterTotals.revenueAmount | numberFormat }}</td>
+              <td class="text-end fw-bold" style="border:1px solid #73879d;background:#e6f0fb;">{{ masterTotals.revenueLocalAmount | numberFormat }}</td>
+              <td style="border:1px solid #73879d;background:#e6f0fb;"></td>
+              <td style="border:1px solid #73879d;background:#e6f0fb;"></td>
+              <td style="border:1px solid #73879d;background:#fff1dd;"></td>
+              <td class="text-end fw-bold" style="border:1px solid #73879d;background:#fff1dd;">{{ masterTotals.costAmount | numberFormat }}</td>
+              <td class="text-end fw-bold" style="border:1px solid #73879d;background:#fff1dd;">{{ masterTotals.costLocalAmount | numberFormat }}</td>
+              <td style="border:1px solid #73879d;background:#fff1dd;"></td>
+              <td style="border:1px solid #73879d;background:#fff1dd;"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
 
+    <ng-template #noMasterCharges>
+      <div class="card border-0 shadow-sm mb-1 text-center py-3" style="border:1px solid #d7e0ea !important;">
+        <i class="fas fa-inbox text-muted fs-3"></i>
+        <p class="text-muted mt-2 mb-0 fw-semibold">No master-level charges found for this job.</p>
+      </div>
+    </ng-template>
+
+    <div *ngFor="let house of houses; let i = index" class="card border-0 shadow-sm mb-1 overflow-hidden" style="border:1px solid #d7e0ea !important;">
+      <button type="button"
+              class="w-100 d-flex align-items-center justify-content-between text-white fw-bold px-2 py-1 border-0"
+              style="background:#1f4b7a;"
+              (click)="toggleHouse(i)"
+              [attr.aria-expanded]="isHouseExpanded(i)">
+        <span class="d-inline-flex align-items-center gap-2 text-start">
+          <i class="fas" [ngClass]="isHouseExpanded(i) ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+          {{ house.houseJob?.HBLNo ? house.houseJob.HBLNo : 'House ' + (i + 1) }}
+        </span>
+        <span class="badge bg-light text-dark fw-semibold">{{ (house.existingCharges?.length || 0) + (house.proratedCharges?.length || 0) }}</span>
+      </button>
+
+      <div *ngIf="isHouseExpanded(i)">
+        <div class="table-responsive">
+        <table class="table align-middle mb-0" style="font-size:14px;border:1px solid #73879d;">
+          <thead>
+            <tr>
+              <th class="fw-bold text-white" style="border:1px solid #9dadbf;background:#5c7a92;">HBL No</th>
+              <th class="fw-bold text-white" style="border:1px solid #9dadbf;background:#5c7a92;">Shipment No</th>
+              <th class="fw-bold text-white" style="border:1px solid #9dadbf;background:#5c7a92;">Total Pkg</th>
+              <th class="fw-bold text-white text-end" style="border:1px solid #9dadbf;background:#5c7a92;">Gross Wt</th>
+              <th class="fw-bold text-white text-end" style="border:1px solid #9dadbf;background:#5c7a92;">Net Wt</th>
+              <th class="fw-bold text-white text-end" style="border:1px solid #9dadbf;background:#5c7a92;">CBM</th>
+              <th class="fw-bold text-white text-end" style="border:1px solid #9dadbf;background:#5c7a92;">Chargeable Wt</th>
+              <th class="fw-bold text-white text-end" style="border:1px solid #9dadbf;background:#5c7a92;">Container No.</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="fw-semibold" style="border:1px solid #9dadbf;">{{ house.houseJob?.HBLNo || "-" }}</td>
+              <td style="border:1px solid #9dadbf;">{{ house.houseJob?.ShipmentNo || "-" }}</td>
+              <td style="border:1px solid #9dadbf;">{{ house.cargo?.totalPkg || 0 }}</td>
+              <td class="text-end" style="border:1px solid #9dadbf;">{{ house.cargo?.grossWeight | numberFormat }}</td>
+              <td class="text-end" style="border:1px solid #9dadbf;">{{ house.cargo?.netWeight | numberFormat }}</td>
+              <td class="text-end" style="border:1px solid #9dadbf;">{{ house.cargo?.cbm | numberFormat }}</td>
+              <td class="text-end" style="border:1px solid #9dadbf;">{{ house.cargo?.chargeableWeight | numberFormat }}</td>
+              <td class="text-end" style="border:1px solid #9dadbf;">{{ house.cargo?.noOfContainers || 0 }}</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+
+        <div class="table-responsive" *ngIf="house.existingCharges?.length > 0 || house.proratedCharges?.length > 0; else noHouseCharges">
+          <table class="table align-middle mb-0" style="font-size:14px;border:1px solid #73879d;background:#f8fbff;">
+          <thead>
+            <tr>
+              <th rowspan="2" class="align-middle fw-bold text-white" style="border:1px solid #9dadbf;background:#5c7a92;">Charge</th>
+              <th rowspan="2" class="align-middle fw-bold text-white" style="border:1px solid #9dadbf;background:#5c7a92;">UOM</th>
+              <th rowspan="2" class="align-middle text-end fw-bold text-white" style="border:1px solid #9dadbf;background:#5c7a92;">Units</th>
+              <th colspan="4" class="text-center fw-bold text-white" style="border:1px solid #9dadbf;background:#1f4b7a;">Revenue</th>
+              <th colspan="4" class="text-center fw-bold text-white" style="border:1px solid #9dadbf;background:#d68a1f;">Cost</th>
+              <th rowspan="2" class="align-middle text-center fw-bold text-white" style="border:1px solid #9dadbf;background:#5c7a92;">Type</th>
+            </tr>
+            <tr>
+              <th class="fw-bold" style="border:1px solid #9dadbf;background:#e6f0fb;">Curr</th>
+              <th class="text-end fw-bold" style="border:1px solid #9dadbf;background:#e6f0fb;">Amount</th>
+              <th class="text-end fw-bold" style="border:1px solid #9dadbf;background:#e6f0fb;">Local Amt</th>
+              <th class="fw-bold" style="border:1px solid #9dadbf;background:#e6f0fb;">Dr/Cr</th>
+              <th class="fw-bold" style="border:1px solid #9dadbf;background:#fff1dd;">Curr</th>
+              <th class="text-end fw-bold" style="border:1px solid #9dadbf;background:#fff1dd;">Amount</th>
+              <th class="text-end fw-bold" style="border:1px solid #9dadbf;background:#fff1dd;">Local Amt</th>
+              <th class="fw-bold" style="border:1px solid #9dadbf;background:#fff1dd;">Dr/Cr</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of house.existingCharges" style="border-left:4px solid #2b6cb0;">
+              <td class="fw-semibold" style="border:1px solid #9dadbf;background:#c9dcf1;">{{ c.chargeMaster?.chargeName }}</td>
+              <td style="border:1px solid #9dadbf;background:#c9dcf1;">{{ c.chargeMaster?.UnitQty }}</td>
+              <td class="text-end" style="border:1px solid #9dadbf;background:#c9dcf1;">{{ c.RevenueNumberOfUnit | numberFormat }}</td>
+              <td style="border:1px solid #9dadbf;background:#c9dcf1;">{{ c.revenueCurrencyMaster?.currencyCode }}</td>
+              <td class="text-end" style="border:1px solid #9dadbf;background:#c9dcf1;">{{ c.RevenueAmount | numberFormat: getDecimals(c.RevenueCurrencyMasterSid) }}</td>
+              <td class="text-end" style="border:1px solid #9dadbf;background:#c9dcf1;">{{ c.RevenueLocalAmount | numberFormat: getDecimals(c.RevenueCurrencyMasterSid) }}</td>
+              <td class="text-center" style="border:1px solid #9dadbf;background:#c9dcf1;">{{ c.RevenueDrCr }}</td>
+              <td style="border:1px solid #9dadbf;background:#c9dcf1;">{{ c.costCurrencyMaster?.currencyCode }}</td>
+              <td class="text-end" style="border:1px solid #9dadbf;background:#c9dcf1;">{{ c.CostAmount | numberFormat: getDecimals(c.CostCurrencyMasterSid) }}</td>
+              <td class="text-end" style="border:1px solid #9dadbf;background:#c9dcf1;">{{ c.CostLocalAmount | numberFormat: getDecimals(c.CostCurrencyMasterSid) }}</td>
+              <td class="text-center" style="border:1px solid #9dadbf;background:#c9dcf1;">{{ c.CostDrCr }}</td>
+              <td class="text-center fw-bold text-white" style="border:1px solid #9dadbf;background:#2b6cb0;">House</td>
+            </tr>
+            <tr *ngFor="let c of house.proratedCharges" style="border-left:4px solid #5d9c2c;">
+              <td class="fw-semibold" style="border:1px solid #9dadbf;background:#cde9b8;">{{ c.chargeName }}</td>
+              <td style="border:1px solid #9dadbf;background:#cde9b8;">{{ c.unitQty }}</td>
+              <td class="text-end" style="border:1px solid #9dadbf;background:#cde9b8;">{{ c.noOfUnit | numberFormat }}</td>
+              <td style="border:1px solid #9dadbf;background:#cde9b8;">{{ c.revenueCurrencyCode }}</td>
+              <td class="text-end" style="border:1px solid #9dadbf;background:#cde9b8;">{{ c.revenueAmount | numberFormat: getDecimals(c.revenueCurrencyMasterSid) }}</td>
+              <td class="text-end" style="border:1px solid #9dadbf;background:#cde9b8;">{{ c.revenueLocalAmount | numberFormat: getDecimals(c.revenueCurrencyMasterSid) }}</td>
+              <td class="text-center" style="border:1px solid #9dadbf;background:#cde9b8;">{{ c.revenueDrCr }}</td>
+              <td style="border:1px solid #9dadbf;background:#cde9b8;">{{ c.costCurrencyCode }}</td>
+              <td class="text-end" style="border:1px solid #9dadbf;background:#cde9b8;">{{ c.costAmount | numberFormat: getDecimals(c.costCurrencyMasterSid) }}</td>
+              <td class="text-end" style="border:1px solid #9dadbf;background:#cde9b8;">{{ c.costLocalAmount | numberFormat: getDecimals(c.costCurrencyMasterSid) }}</td>
+              <td class="text-center" style="border:1px solid #9dadbf;background:#cde9b8;">{{ c.costDrCr }}</td>
+              <td class="text-center fw-bold text-white" style="border:1px solid #9dadbf;background:#5d9c2c;">Prorate</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" class="text-end fw-bold" style="border:1px solid #73879d;background:#eef3f9;">Total</td>
+              <td style="border:1px solid #73879d;background:#eef3f9;"></td>
+              <td class="text-end fw-bold" style="border:1px solid #73879d;background:#e6f0fb;">{{ house._totals?.revenueAmount | numberFormat }}</td>
+              <td class="text-end fw-bold" style="border:1px solid #73879d;background:#e6f0fb;">{{ house._totals?.revenueLocalAmount | numberFormat }}</td>
+              <td style="border:1px solid #73879d;background:#e6f0fb;"></td>
+              <td style="border:1px solid #73879d;background:#fff1dd;"></td>
+              <td class="text-end fw-bold" style="border:1px solid #73879d;background:#fff1dd;">{{ house._totals?.costAmount | numberFormat }}</td>
+              <td class="text-end fw-bold" style="border:1px solid #73879d;background:#fff1dd;">{{ house._totals?.costLocalAmount | numberFormat }}</td>
+              <td style="border:1px solid #73879d;background:#fff1dd;"></td>
+              <td style="border:1px solid #73879d;background:#eef3f9;"></td>
+            </tr>
+          </tfoot>
+          </table>
+        </div>
+
+        <ng-template #noHouseCharges>
+          <div class="text-center py-3 text-muted fw-semibold">
+            <i class="fas fa-file-invoice fs-5 me-2"></i>
+            No charges available for this house
+          </div>
+        </ng-template>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm text-center py-4" style="border:1px solid #d7e0ea !important;" *ngIf="houses.length === 0">
+      <i class="fas fa-box-open text-muted fs-2"></i>
+      <p class="text-muted mt-2 mb-1 fw-bold">No House Jobs Found</p>
+      <p class="text-muted mb-0 fw-semibold">There are no active house jobs linked to this master job.</p>
+    </div>
+  </div>
 </div>

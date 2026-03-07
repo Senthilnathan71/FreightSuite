@@ -549,7 +549,7 @@ export const OperationRoutes: Routes = [
         },
       },
        {
-        path: 'pro-rate',
+        path: 'pro-rate/:masterJobSid',
         component: ProRateComponent,
         data: {
           title: 'Pro Rate',
