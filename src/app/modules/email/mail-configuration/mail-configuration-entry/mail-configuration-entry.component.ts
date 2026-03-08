@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,6 +11,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { SettingsService } from 'src/app/modules/settings/settings.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MailBodyModalComponent } from '../mail-body-modal/mail-body-modal.component';
+import { MailSubjectModalComponent } from '../mail-subject-modal/mail-subject-modal.component';
 import { PlaceholderAutocompleteDirective } from 'src/app/core/Directives/placeholder-autocomplete.directive';
 
 interface MailConfigRow {
@@ -53,6 +54,17 @@ export class MailConfigurationEntryComponent implements OnInit {
   menuList: any[] = [];
 
   rows: MailConfigRow[] = [];
+
+  editingIndex: number | null = null;
+  editingSnapshot: MailConfigRow | null = null;
+  editingRow: MailConfigRow | null = null;
+
+  statusOptions = [
+    { value: 'A', label: 'Active' },
+    { value: 'I', label: 'Inactive' }
+  ];
+
+  @ViewChild('detailFormSection') detailFormSection!: ElementRef;
 
   attachmentOptions = [
     { value: 'Y', label: 'Yes' },
@@ -133,6 +145,18 @@ export class MailConfigurationEntryComponent implements OnInit {
     });
   }
 
+  private readonly defaultMailSubjects: { [key: string]: string } = {
+    'Enquiry': 'Enquiry No.{{EnquiryNo}} Date: {{date}} {{POO}} - {{POD}}',
+    'Quotation': 'Quotation No.{{quotationNumber}} Date: {{date}} {{POO}} - {{POD}}',
+    'Booking': 'Booking No.{{BookingNo}} Date: {{date}} {{POO}} - {{POD}}',
+  };
+
+  private readonly defaultMailSubject = '{{date}} {{POO}} - {{POD}}';
+
+  getDefaultMailSubject(menuName: string): string {
+    return this.defaultMailSubjects[menuName] || this.defaultMailSubject;
+  }
+
   private readonly defaultMailBodies: { [key: string]: string } = {
     'Quotation': `Dear Sir/Madam,\n\nPlease find enclosed the quotation as requested.\nKindly review the details at your convenience.\nLooking forward to your feedback and the opportunity to work together.\n{{approvalLink}}\n\nBest Regards,\n\n{{userName}}`,
     'Enquiry': `Dear Sir/Madam,\n\nThank you for your enquiry. Please find the details below.\nKindly review and let us know if you need any further information.\n\nBest Regards,\n\n{{userName}}`,
@@ -145,7 +169,36 @@ export class MailConfigurationEntryComponent implements OnInit {
     return this.defaultMailBodies[menuName] || this.defaultMailBody;
   }
 
+  scrollToDetailForm(): void {
+    setTimeout(() => {
+      this.detailFormSection?.nativeElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }
+
+  getTriggerLabel(value: string): string {
+    return value === 'A' ? 'Auto' : 'Manual';
+  }
+
+  getStatusLabel(value: string): string {
+    return value === 'A' ? 'Active' : 'Inactive';
+  }
+
   addRow(): void {
+    /* OLD UI addRow() body:
+    const newSno = this.rows.length > 0 ? Math.max(...this.rows.map(r => r.Sno)) + 1 : 1;
+    this.rows.push({
+      Sno: newSno, MailName: '', MenuMasterSid: null, MailSubject: '', MailBody: '',
+      ToEmailidFrom: '{{menuEmail}}', CcEmailidFrom: '{{organizationEmail}}, {{userEmail}}',
+      AttachmentRequire: 'Y', Action: '', Trigger: 'A', AutoPopup: 'A', Status: 'A',
+      isEditing: true, isNew: true
+    });
+    */
+
+    if (this.editingIndex !== null) {
+      this.appSettingService.showWarning('Please save or cancel the current edit before adding a new row.');
+      return;
+    }
+
     const newSno = this.rows.length > 0 ? Math.max(...this.rows.map(r => r.Sno)) + 1 : 1;
 
     this.rows.push({
@@ -164,6 +217,11 @@ export class MailConfigurationEntryComponent implements OnInit {
       isEditing: true,
       isNew: true
     });
+
+    this.editingIndex = this.rows.length - 1;
+    this.editingRow = this.rows[this.editingIndex];
+    this.editingSnapshot = null;
+    this.scrollToDetailForm();
   }
 
   onMenuChange(row: MailConfigRow, menuMasterSid: number | null): void {
@@ -179,31 +237,65 @@ export class MailConfigurationEntryComponent implements OnInit {
     if (isDefaultBody) {
       row.MailBody = this.getDefaultMailBody(menuName);
     }
+
+    const isDefaultSubject = !row.MailSubject ||
+      row.MailSubject === this.defaultMailSubject ||
+      Object.values(this.defaultMailSubjects).includes(row.MailSubject);
+
+    if (isDefaultSubject) {
+      row.MailSubject = this.getDefaultMailSubject(menuName);
+    }
   }
 
   editRow(index: number): void {
+    /* OLD UI editRow() body:
     this.rows[index].isEditing = true;
+    */
+
+    if (this.editingIndex !== null && this.editingIndex !== index) {
+      this.appSettingService.showWarning('Please save or cancel the current edit first.');
+      return;
+    }
+
+    this.editingSnapshot = { ...this.rows[index] };
+    this.editingIndex = index;
+    this.editingRow = this.rows[index];
+    this.rows[index].isEditing = true;
+    this.scrollToDetailForm();
   }
 
   cancelEdit(index: number): void {
+    /* OLD UI cancelEdit() body:
     if (this.rows[index].isNew) {
       this.rows.splice(index, 1);
     } else {
-      // Reload the original data for this row
       this.loadExistingData();
     }
+    */
+
+    if (this.rows[index].isNew) {
+      this.rows.splice(index, 1);
+    } else if (this.editingSnapshot) {
+      this.rows[index] = { ...this.editingSnapshot };
+      this.rows[index].isEditing = false;
+    }
+
+    this.editingIndex = null;
+    this.editingRow = null;
+    this.editingSnapshot = null;
   }
 
   saveRow(index: number): void {
     const row = this.rows[index];
 
-    // Check for duplicate MenuMasterSid (excluding current row)
+    // Check for duplicate MenuMasterSid + Trigger combination (excluding current row)
     const isDuplicate = this.rows.some((r, idx) =>
       idx !== index &&
-      r.MenuMasterSid === row.MenuMasterSid
+      r.MenuMasterSid === row.MenuMasterSid &&
+      r.Trigger === row.Trigger
     );
     if (isDuplicate) {
-      this.appSettingService.showWarning('A mail configuration already exists for this menu.');
+      this.appSettingService.showWarning('A mail configuration already exists for this menu with the same trigger.');
       return;
     }
 
@@ -240,6 +332,9 @@ export class MailConfigurationEntryComponent implements OnInit {
             row.MailConfigurationMasterSid = resp.data.MailConfigurationMasterSid;
             row.isEditing = false;
             row.isNew = false;
+            this.editingIndex = null;
+            this.editingRow = null;
+            this.editingSnapshot = null;
           } else {
             this.appSettingService.showError(resp.message || 'Error saving mail configuration.');
           }
@@ -257,6 +352,9 @@ export class MailConfigurationEntryComponent implements OnInit {
           if (resp.status) {
             this.appSettingService.showSuccess('Mail configuration updated successfully.');
             row.isEditing = false;
+            this.editingIndex = null;
+            this.editingRow = null;
+            this.editingSnapshot = null;
           } else {
             this.appSettingService.showError(resp.message || 'Error updating mail configuration.');
           }
@@ -275,6 +373,11 @@ export class MailConfigurationEntryComponent implements OnInit {
 
     if (row.isNew) {
       this.rows.splice(index, 1);
+      if (this.editingIndex === index) {
+        this.editingIndex = null;
+        this.editingRow = null;
+        this.editingSnapshot = null;
+      }
       return;
     }
 
@@ -288,6 +391,14 @@ export class MailConfigurationEntryComponent implements OnInit {
         this.spinner.hide();
         if (resp.status) {
           this.appSettingService.showSuccess('Mail configuration deleted successfully.');
+          if (this.editingIndex === index) {
+            this.editingIndex = null;
+            this.editingRow = null;
+            this.editingSnapshot = null;
+          } else if (this.editingIndex !== null && this.editingIndex > index) {
+            this.editingIndex--;
+            this.editingRow = this.rows[this.editingIndex];
+          }
           this.rows.splice(index, 1);
         } else {
           this.appSettingService.showError(resp.message || 'Error deleting mail configuration.');
@@ -305,6 +416,18 @@ export class MailConfigurationEntryComponent implements OnInit {
     if (!menuMasterSid) return '';
     const menu = this.menuList.find(m => m.MenuMasterSid === menuMasterSid);
     return menu?.MenuName || '';
+  }
+
+  openMailSubjectModal(row: MailConfigRow): void {
+    const modalRef = this.ngbModal.open(MailSubjectModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.mailSubject = row.MailSubject;
+    modalRef.result.then((result: string) => {
+      row.MailSubject = result;
+    }).catch(() => {});
   }
 
   openMailBodyModal(row: MailConfigRow): void {

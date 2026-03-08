@@ -334,7 +334,12 @@ private autoSelectCurrency(): void {
   }
 }
 
-
+private normalizeStatus(value: string): 'A' | 'S' {
+  if (!value) return 'A';
+  const v = value.toString().trim().toLowerCase();
+  if (v === 's' || v === 'suspended' || v === 'inactive') return 'S';
+  return 'A';
+}
 
   // Sales team properties
   salesTeamList: any[];
@@ -4533,6 +4538,11 @@ private loadNetworks(): void {
 
   async prepareCustomerPayloadFromExcel(customer: any): Promise<any> {
     const countryId = customer.CountryMasterSid || this.resolveCountryId(customer.CountryName);
+    let currencyId: number | null = null;
+    if (countryId && this.countryList) {
+      const selectedCountry = this.countryList.find((c: any) => c.CountryMasterSid == countryId);
+      currencyId = selectedCountry?.CurrencyMasterSid || null;
+    }
 
     const branches: any[] = [];
     for (const branch of customer.branches) {
@@ -4563,13 +4573,21 @@ private loadNetworks(): void {
         Registered: branch.CustBranchRegistered === 'Y' ? 'Y' : 'N',
         CustomerGstType: branch.CustBranchGSTtype || 'Regular',
         GSTNo: branch.CustBranchGSTIN || '',
-        status: branch.status === 'A' ? 'A' : 'S',
+        status: this.normalizeStatus(branch.status),
         customerBranchContacts: []
       });
     }
 
-    const customerTypes = customer.CustomerType ?
-      customer.CustomerType.split(',').map((t: string) => t.trim()) : [];
+    // Build CustomerType as object (same format as updateCustomerType)
+    const typeNames = customer.CustomerType ?
+      customer.CustomerType.split(',').map((t: string) => t.trim().toLowerCase()) : [];
+    const customerTypePayload: any = {};
+    this.modeOfCustomerType.forEach((type) => {
+      const key = this.toCamelCase(type.name);
+      customerTypePayload[key] = typeNames.some(
+        (name: string) => name === type.name.toLowerCase()
+      ) ? 'isTrue' : 'isFalse';
+    });
 
     return {
       customer: {
@@ -4580,7 +4598,8 @@ private loadNetworks(): void {
         CustomerAddress1: customer.CustomerAddress1 || '',
         CustomerAddress2: customer.CustomerAddress2 || '',
         CountryMasterSid: countryId,
-        CustomerType: customerTypes,
+        CurrencyMasterSid: currencyId,
+        CustomerType: customerTypePayload,
         PanName: customer.PanName || '',
         PanType: customer.PanAvailable ? 'Y' : 'N',
         GroupName: customer.GroupName || '',
@@ -4593,7 +4612,7 @@ private loadNetworks(): void {
         IsMSME: customer.IsMSME === 'Y' ? 'A' : 'I',
         RegistrationNo: customer.RegistrationNo || '',
         CompanyType: customer.CompanyType || '',
-        status: customer.status === 'A' ? 'A' : 'S',
+        status: this.normalizeStatus(customer.status),
         AirlineNumber: '',
         AirlineCode: ''
       },
@@ -4690,25 +4709,24 @@ private loadNetworks(): void {
       Remarks: customer.Remarks,
       CIN: customer.CIN,
       TAN: customer.TAN,
-      status: customer.status === 'Suspended' ? 'Suspended' : 'Active',
+      status: this.normalizeStatus(customer.status) === 'S' ? 'Suspended' : 'Active',
       Network: customer.Network
     },{ emitEvent: false });
 
     // Handle CustomerType (comma-separated)
     if (customer.CustomerType) {
       const typeNames = customer.CustomerType.split(',').map((t: string) => t.trim());
-      const selectedTypes = this.modeOfCustomerType.filter(
-        type => typeNames.some((name: string) => name.toLowerCase() === type.name.toLowerCase())
-      );
-      if (selectedTypes.length > 0) {
-        this.customerForm.get('CustomerType')?.setValue(selectedTypes);
-      }
+      this.selectedStatus = this.modeOfCustomerType
+        .filter(type => typeNames.some((name: string) => name.toLowerCase() === type.name.toLowerCase()))
+        .map(type => type.name);
+      this.updateCustomerType();
     }
 
     // Load states for the selected country
     if (countryId) {
       this.customerForm.get('CountryMasterSid')?.setValue(countryId);
       this.getStatesByCountryId();
+      this.autoSelectCurrency();
     }
 
     // Clear existing branches and add new ones from Excel
@@ -4738,7 +4756,7 @@ private loadNetworks(): void {
         Registered: branch.CustBranchRegistered,
         CustomerGstType: branch.CustBranchGSTtype,
         GSTNo: branch.CustBranchGSTIN,
-        status: branch.status === 'Suspended' ? 'S' : 'A'
+        status: this.normalizeStatus(branch.status)
       });
 
       this.branchFormArray.push(branchForm);

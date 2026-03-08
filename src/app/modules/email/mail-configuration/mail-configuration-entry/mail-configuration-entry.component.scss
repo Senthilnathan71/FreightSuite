@@ -1,0 +1,73 @@
+// Mail Configuration Card Grid + Detail Form styles
+
+.mail-config-card {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: default;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #eee;
+    border-radius: 8px 8px 0 0;
+  }
+
+  .card-footer {
+    border-top: 1px solid #eee;
+  }
+}
+
+.card-active {
+  border-color: #05608d !important;
+  box-shadow: 0 0 0 3px rgba(5, 96, 141, 0.2) !important;
+
+  &:hover {
+    transform: none;
+  }
+}
+
+.card-inactive {
+  opacity: 0.65;
+}
+
+.detail-form-card {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  animation: slideDown 0.25s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.section-heading {
+  color: #05608d;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 4px;
+}
+
+.form-hint {
+  display: block;
+  color: #6c757d;
+  font-size: 0.7rem;
+  margin-top: 2px;
+}
+
+// Override _compact-form.scss max-height: 29px !important on textareas
+::ng-deep .compact-form textarea.custom-input-field {
+  max-height: unset !important;
+}

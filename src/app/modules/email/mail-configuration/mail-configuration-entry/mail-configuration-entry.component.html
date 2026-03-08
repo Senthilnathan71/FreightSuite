@@ -10,20 +10,273 @@
 <div class="row compact-form">
   <div class="col-12">
     <div class="">
+      <!-- Page Header -->
       <div class="row bg-white mb-2 align-items-center rounded shadow-sm mx-1">
-          <div class=" d-flex justify-content-between align-items-center py-1">
-        <h5 class="mb-0">Mail Configuration</h5>
-        <div>
-          <button type="button" class="btn btn-sm btn-info me-2" (click)="addRow()">
-            <i class="fas fa-plus me-1"></i> Add Row
-          </button>
-          <button type="button" class="btn btn-sm btn-secondary" (click)="navigateBack()">
-            <i class="fas fa-arrow-left me-1"></i> Back
-          </button>
+        <div class="d-flex justify-content-between align-items-center py-1">
+          <h5 class="mb-0">Mail Configuration</h5>
+          <div>
+            <button type="button" class="btn btn-sm btn-info me-2" (click)="addRow()">
+              <i class="fas fa-plus me-1"></i> Add New
+            </button>
+            <button type="button" class="btn btn-sm btn-secondary" (click)="navigateBack()">
+              <i class="fas fa-arrow-left me-1"></i> Back
+            </button>
+          </div>
         </div>
       </div>
+
+      <!-- Card Grid -->
+      <div class="row mx-1">
+        @for (row of rows; track row.Sno; let i = $index) {
+          <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="card mail-config-card h-100"
+              [class.card-active]="editingIndex === i"
+              [class.card-inactive]="row.Status === 'I' && editingIndex !== i">
+
+              <!-- Card Header -->
+              <div class="card-header py-2 px-3 d-flex justify-content-between align-items-center">
+                <span class="fw-semibold text-truncate me-2" style="font-size: 0.85rem;">{{ row.MailName || 'Untitled' }}</span>
+                <span class="badge rounded-pill"
+                  [class.bg-success]="row.Status === 'A'"
+                  [class.bg-secondary]="row.Status !== 'A'"
+                  style="font-size: 0.7rem;">
+                  {{ getStatusLabel(row.Status) }}
+                </span>
+              </div>
+
+              <!-- Card Body -->
+              <div class="card-body py-2 px-3" style="font-size: 0.8rem;">
+                <div class="mb-1 text-muted">
+                  <i class="fas fa-list-alt me-1"></i>{{ getMenuName(row.MenuMasterSid) || '—' }}
+                </div>
+                <div class="mb-1">
+                  <span class="badge bg-light text-dark border me-1" style="font-size: 0.7rem;">
+                    {{ getTriggerLabel(row.Trigger) }}
+                  </span>
+                  @if (row.AutoPopup === 'P') {
+                    <span class="badge bg-warning text-dark border" style="font-size: 0.7rem;">Popup</span>
+                  }
+                  @if (row.AttachmentRequire === 'Y') {
+                    <span class="badge bg-light text-dark border ms-1" style="font-size: 0.7rem;">
+                      <i class="fas fa-paperclip me-1"></i>Attachment
+                    </span>
+                  }
+                </div>
+                @if (row.MailSubject) {
+                  <div class="text-truncate text-muted mt-1" style="font-size: 0.75rem;"
+                    title="{{ row.MailSubject }}">
+                    <i class="fas fa-envelope me-1"></i>{{ row.MailSubject | slice:0:40 }}
+                  </div>
+                }
+              </div>
+
+              <!-- Card Footer -->
+              <div class="card-footer bg-transparent py-1 px-3 d-flex justify-content-end gap-1">
+                <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" (click)="editRow(i)" title="Edit"
+                  style="font-size: 0.75rem;">
+                  <i class="fas fa-edit me-1"></i>Edit
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" (click)="deleteRow(i)" title="Delete"
+                  style="font-size: 0.75rem;">
+                  <i class="fas fa-trash me-1"></i>Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (rows.length === 0) {
+          <div class="col-12 text-center text-muted py-4">
+            No mail configurations found. Click "Add New" to create one.
+          </div>
+        }
       </div>
 
+      <!-- Detail Form -->
+      @if (editingRow) {
+        <div class="card detail-form-card mx-1 mt-2 mb-3" #detailFormSection>
+          <div class="card-header py-2 px-3 d-flex justify-content-between align-items-center bg-info bg-opacity-10">
+            <h6 class="mb-0">
+              <i class="fas fa-edit me-2 text-info"></i>
+              {{ editingRow.isNew ? 'New Mail Configuration' : 'Edit: ' + editingRow.MailName }}
+            </h6>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-sm btn-secondary" (click)="cancelEdit(editingIndex!)">
+                <i class="fas fa-times me-1"></i> Cancel
+              </button>
+              <button type="button" class="btn btn-sm btn-info" (click)="saveRow(editingIndex!)">
+                <i class="fas fa-save me-1"></i> Save
+              </button>
+            </div>
+          </div>
+
+          <div class="card-body px-3 py-3">
+            <!-- Section 1: Basic Info -->
+            <div class="section-heading mb-2">Basic Information</div>
+            <div class="row mb-3">
+              <div class="col-md-2">
+                <div class="custom-form-group">
+                  <input type="number" class="custom-input-field sm"
+                    [(ngModel)]="editingRow.Sno" min="1" max="999" placeholder=" ">
+                  <label class="input-label">Sno</label>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="custom-form-group">
+                  <input type="text" class="custom-input-field sm"
+                    [(ngModel)]="editingRow.MailName" maxlength="50" placeholder="Enter mail name">
+                  <label class="input-label">Mail Name <span class="text-danger">*</span></label>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="custom-form-group custom-form-group-select filled">
+                  <ng-select
+                    [ngModel]="editingRow.MenuMasterSid"
+                    (ngModelChange)="onMenuChange(editingRow, $event)"
+                    [items]="menuList"
+                    bindLabel="MenuName"
+                    bindValue="MenuMasterSid"
+                    placeholder="Select menu"
+                    [clearable]="true"
+                    [searchable]="true"
+                    appendTo="body"
+                    class="ng-select">
+                  </ng-select>
+                  <label class="input-label">Menu / Component <span class="text-danger">*</span></label>
+                </div>
+              </div>
+              <div class="col-md-2">
+                <div class="custom-form-group custom-form-group-select filled">
+                  <ng-select
+                    [(ngModel)]="editingRow.Status"
+                    [items]="statusOptions"
+                    bindLabel="label"
+                    bindValue="value"
+                    [clearable]="false"
+                    [searchable]="false"
+                    appendTo="body"
+                    class="ng-select">
+                  </ng-select>
+                  <label class="input-label">Status</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 2: Email Content -->
+            <div class="section-heading mb-2">Email Content</div>
+            <div class="row mb-3">
+              <div class="col-12 mb-2">
+                <div class="custom-form-group">
+                  <textarea class="custom-input-field sm" rows="3"
+                    [(ngModel)]="editingRow.MailSubject"
+                    appPlaceholderAutocomplete
+                    placeholder="Type {{ to insert placeholders"></textarea>
+                  <label class="input-label">Mail Subject <span class="text-danger">*</span></label>
+                  <small class="form-hint">Type curly braces to see available placeholders</small>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="custom-form-group">
+                  <textarea class="custom-input-field sm" rows="8"
+                    [(ngModel)]="editingRow.MailBody"
+                    appPlaceholderAutocomplete
+                    placeholder="Type {{ to insert placeholders"></textarea>
+                  <label class="input-label">Mail Body <span class="text-danger">*</span></label>
+                  <small class="form-hint">Type curly braces to see available placeholders</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 3: Recipients & Settings -->
+            <div class="section-heading mb-2">Recipients &amp; Settings</div>
+            <div class="row mb-2">
+              <div class="col-md-6 mb-2">
+                <div class="custom-form-group">
+                  <input type="text" class="custom-input-field sm"
+                    [(ngModel)]="editingRow.ToEmailidFrom"
+                    appPlaceholderAutocomplete
+                    maxlength="200" placeholder="To email addresses">
+                  <label class="input-label">To Email</label>
+                  <small class="form-hint">Picks from the Email field of the menu's entry screen (e.g., Customer/Enquiry email)</small>
+                </div>
+              </div>
+              <div class="col-md-6 mb-2">
+                <div class="custom-form-group">
+                  <input type="text" class="custom-input-field sm"
+                    [(ngModel)]="editingRow.CcEmailidFrom"
+                    appPlaceholderAutocomplete
+                    maxlength="200" placeholder="CC email addresses">
+                  <label class="input-label">CC Email</label>
+                  <small class="form-hint">Organization email + logged-in user's email</small>
+                </div>
+              </div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-md-3 mb-2">
+                <div class="custom-form-group custom-form-group-select filled">
+                  <ng-select
+                    [(ngModel)]="editingRow.AttachmentRequire"
+                    [items]="attachmentOptions"
+                    bindLabel="label"
+                    bindValue="value"
+                    [clearable]="false"
+                    [searchable]="false"
+                    appendTo="body"
+                    class="ng-select">
+                  </ng-select>
+                  <label class="input-label">Attachment</label>
+                </div>
+              </div>
+              <div class="col-md-3 mb-2">
+                <div class="custom-form-group">
+                  <input type="text" class="custom-input-field sm"
+                    [(ngModel)]="editingRow.Action" maxlength="200" placeholder="Action">
+                  <label class="input-label">Action</label>
+                </div>
+              </div>
+              <div class="col-md-3 mb-2">
+                <div class="custom-form-group custom-form-group-select filled">
+                  <ng-select
+                    [(ngModel)]="editingRow.Trigger"
+                    [items]="triggerOptions"
+                    bindLabel="label"
+                    bindValue="value"
+                    [clearable]="false"
+                    [searchable]="false"
+                    appendTo="body"
+                    class="ng-select">
+                  </ng-select>
+                  <label class="input-label">Trigger</label>
+                </div>
+              </div>
+              <div class="col-md-3 mb-2">
+                <div class="custom-form-group custom-form-group-select filled">
+                  <ng-select
+                    [(ngModel)]="editingRow.AutoPopup"
+                    [items]="autoPopupOptions"
+                    bindLabel="label"
+                    bindValue="value"
+                    [clearable]="false"
+                    [searchable]="false"
+                    appendTo="body"
+                    class="ng-select">
+                  </ng-select>
+                  <label class="input-label">Auto / Popup</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+
+
+
+      <!-- OLD TABLE UI - Uncomment to restore
       <div class="card-body p-0">
         <div class="table-responsive">
           <table class="table table-borderless table-sm mb-0">
@@ -31,7 +284,6 @@
               <tr class="bg-info">
                 <th class="text-center  bg-transparent text-light" style="width: 60px;border-top-left-radius: 10px;"></th>
                 <th class="text-center bg-transparent text-light bg-transparent text-light" style="width: 40px;">Sno</th>
-                <!-- <th class=" bg-transparent text-light" style="width: 150px;">Company Name</th> -->
                 <th class=" bg-transparent text-light" style="width: 150px;">Mail Name</th>
                 <th class=" bg-transparent text-light" style="width: 150px;">Menu/Component</th>
                 <th class=" bg-transparent text-light" style="width: 200px;">Mail Subject</th>
@@ -47,8 +299,7 @@
             <tbody>
               @for (row of rows; track row.Sno; let i = $index) {
                 <tr>
-                  <!-- Action Buttons -->
-                  <td >
+                  <td>
                     <div class="d-flex align-items-center">
                       @if (row.isEditing) {
                         <button type="button" class="btn  btn-sm" (click)="saveRow(i)" title="Save">
@@ -67,9 +318,7 @@
                       }
                     </div>
                   </td>
-
-                  <!-- Sno -->
-                  <td >
+                  <td>
                     @if (row.isEditing) {
                       <input type="number" class="custom-input-field sm"
                         [(ngModel)]="row.Sno" min="1" max="999" style="width: 40px;">
@@ -77,14 +326,7 @@
                       <span class="d-block text-center">{{ row.Sno }}</span>
                     }
                   </td>
-
-                  <!-- Company Name -->
-                  <!-- <td>
-                    <span>{{ currentCompany?.companyName }}</span>
-                  </td> -->
-
-                  <!-- Mail Name -->
-                  <td >
+                  <td>
                     @if (row.isEditing) {
                       <input type="text" class="custom-input-field sm"
                         [(ngModel)]="row.MailName" maxlength="50" placeholder="">
@@ -92,9 +334,7 @@
                       <span>{{ row.MailName }}</span>
                     }
                   </td>
-
-                  <!-- Menu/Component -->
-                  <td >
+                  <td>
                     @if (row.isEditing) {
                       <ng-select
                         [ngModel]="row.MenuMasterSid"
@@ -112,19 +352,16 @@
                       <span>{{ getMenuName(row.MenuMasterSid) }}</span>
                     }
                   </td>
-
-                  <!-- Mail Subject -->
-                  <td >
+                  <td>
                     @if (row.isEditing) {
-                      <input type="text" class="custom-input-field sm"
-                        [(ngModel)]="row.MailSubject" maxlength="500" placeholder=""
-                        appPlaceholderAutocomplete>
+                      <span class="text-primary" style="cursor:pointer; text-decoration:underline;"
+                        (click)="openMailSubjectModal(row)">
+                        {{ row.MailSubject ? (row.MailSubject | slice:0:30) + '...' : 'Click to enter' }}
+                      </span>
                     } @else {
-                      <span>{{ row.MailSubject }}</span>
+                      <span>{{ row.MailSubject | slice:0:50 }}</span>
                     }
                   </td>
-
-                  <!-- Mail Body -->
                   <td>
                     @if (row.isEditing) {
                       <span class="text-primary" style="cursor:pointer; text-decoration:underline;"
@@ -135,9 +372,7 @@
                       <span>{{ row.MailBody | slice:0:50 }}</span>
                     }
                   </td>
-
-                  <!-- To Email From -->
-                  <td >
+                  <td>
                     @if (row.isEditing) {
                       <input type="text" class="custom-input-field sm"
                         [(ngModel)]="row.ToEmailidFrom" maxlength="200" placeholder="">
@@ -145,9 +380,7 @@
                       <span>{{ row.ToEmailidFrom }}</span>
                     }
                   </td>
-
-                  <!-- CC Email From -->
-                  <td >
+                  <td>
                     @if (row.isEditing) {
                       <input type="text" class="custom-input-field sm"
                         [(ngModel)]="row.CcEmailidFrom" maxlength="200" placeholder="">
@@ -155,9 +388,7 @@
                       <span>{{ row.CcEmailidFrom }}</span>
                     }
                   </td>
-
-                  <!-- Attachment -->
-                  <td class=" text-center">
+                  <td class="text-center">
                     @if (row.isEditing) {
                       <ng-select
                         [(ngModel)]="row.AttachmentRequire"
@@ -173,8 +404,6 @@
                       <span>{{ row.AttachmentRequire === 'Y' ? 'Yes' : 'No' }}</span>
                     }
                   </td>
-
-                  <!-- Action -->
                   <td>
                     @if (row.isEditing) {
                       <textarea class="custom-input-field sm" [(ngModel)]="row.Action" rows="1" maxlength="200"></textarea>
@@ -182,8 +411,6 @@
                       <span>{{ row.Action }}</span>
                     }
                   </td>
-
-                  <!-- Trigger -->
                   <td class="text-center">
                     @if (row.isEditing) {
                       <ng-select
@@ -200,9 +427,7 @@
                       <span>{{ row.Trigger === 'A' ? 'Auto' : 'Manual' }}</span>
                     }
                   </td>
-
-                  <!-- Auto/Popup -->
-                  <td class=" text-center">
+                  <td class="text-center">
                     @if (row.isEditing) {
                       <ng-select
                         [(ngModel)]="row.AutoPopup"
@@ -220,7 +445,6 @@
                   </td>
                 </tr>
               }
-
               @if (rows.length === 0) {
                 <tr>
                   <td colspan="13" class="text-center text-muted py-3">
@@ -232,6 +456,4 @@
           </table>
         </div>
       </div>
-    </div>
-  </div>
-</div>
+      END OLD TABLE UI -->
