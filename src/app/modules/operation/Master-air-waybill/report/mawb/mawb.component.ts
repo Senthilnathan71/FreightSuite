@@ -1311,6 +1311,23 @@ getOtherPrepaidTotal(): number {
 
     const goodsDesc = [data?.CommodityDescription, data?.MarksandNumber]
       .filter(Boolean).join('\n');
+    const wrapField = (topMm: number, leftMm: number, text: string, widthMm: number, opts: any = {}): any => {
+      if (!text && text !== '0') return null;
+      return {
+        absolutePosition: { x: mm(leftMm), y: mm(topMm) },
+        columns: [
+          {
+            width: mm(widthMm),
+            text,
+            fontSize: opts.fontSize || 9,
+            bold: opts.bold ?? true,
+            lineHeight: opts.lineHeight || 1.1,
+            noWrap: false
+          }
+        ],
+        columnGap: 0
+      };
+    };
 
     // Helper to create a positioned text field
     const field = (topMm: number, leftMm: number, text: string, opts: any = {}): any => {
@@ -1322,6 +1339,7 @@ getOtherPrepaidTotal(): number {
         absolutePosition: { x: mm(leftMm), y: mm(topMm) },
         ...(opts.width ? { width: mm(opts.width) } : {}),
         ...(opts.alignment ? { alignment: opts.alignment } : {}),
+         noWrap: false  
       };
     };
 
@@ -1333,16 +1351,16 @@ getOtherPrepaidTotal(): number {
       field(12, 220, this.getFormattedMBLNo(), { fontSize: 14}),
 
       // Shipper
-      field(27, 12, hj?.ShipperName || ''),
-      field(32, 12, hj?.ShipperAddress || ''),
+      wrapField(27, 12, hj?.ShipperName || '', 123),
+      wrapField(32, 12, hj?.ShipperAddress || '', 123),
 
       // Consignee
-      field(63, 12, hj?.ConsigneeName || ''),
-      field(68, 12, hj?.ConsigneeAddress || ''),
+      wrapField(63, 12, hj?.ConsigneeName || '', 123),
+      wrapField(68, 12, hj?.ConsigneeAddress || '', 123),
 
       // Agent
       field(100, 12, this.getAgentName(data?.DestinationAgent)),
-      field(105, 12, this.getAgentName(data?.DestinationAgentAddress)),
+      field(105, 12, data?.DestinationAgentAddress),
       field(119, 12, this.currentUserCode || ''),
 
       // Airport departure
@@ -1384,10 +1402,10 @@ getOtherPrepaidTotal(): number {
       field(159, 40, fmtNum(others?.ValueForInsurance), { width: 40, alignment: 'center' }),
 
       // Handling information
-      field(173, 9, others?.HandlingInformation || '', { width: 50, fontSize: 8 }),
+      wrapField(173, 9, others?.HandlingInformation || '' , 140, { fontSize: 8 }),
       field(170, 150, 'Notify', { width: 50, fontSize: 8, bold: true }),
       field(175, 150, hj?.Notify || '', { width: 50, fontSize: 8 }),
-      field(180, 150, hj?.NotifyAddress || '', { width: 50, fontSize: 8 }),
+      wrapField(180, 150, hj?.NotifyAddress || '', 100, { fontSize: 8 }),
    
       // Package details
       field(206, -250, agg?.NoOfPkg?.toString() || '', { width: 20, alignment: 'center' }),
