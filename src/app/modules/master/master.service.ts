@@ -2120,6 +2120,15 @@ getFieldConfiguration() {
     )
   }
 
+  getTandCByNCondition(payload) {
+    return this.http.post<{ data: any[] }>('terms-and-conditions/fetchByNCondition', payload).pipe(
+      map((resp : any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
   // Terms And Conditions Details
 
   getAllTandCDetail() {
@@ -4027,6 +4036,15 @@ createReportMaster(payload: any) {
 // Menu
  getAllMenu(){
     return this.http.get<{data:any[]}>('menu').pipe(
+      map((resp)=>{
+        let response = resp.data;
+        return response;
+      })
+    )
+  }
+
+  getAllMenus(){
+    return this.http.get<{data:any[]}>('terms-and-conditions/menu').pipe(
       map((resp)=>{
         let response = resp.data;
         return response;

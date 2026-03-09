@@ -21,7 +21,6 @@ export class TermsAndConditionsComponent implements OnInit {
   @Input() DepartmentMasterSid?: number;
   @Input() POL?: string;
   @Input() POD?: string;
-  @Input() FDC?: string;
   @Input() Carrier?: number;
   @Output() termsUpdated = new EventEmitter<void>(); // Event to notify parent
   isAgreed: boolean = false;
@@ -90,7 +89,6 @@ export class TermsAndConditionsComponent implements OnInit {
       ...(this.DepartmentMasterSid != null && { DepartmentMasterSid: this.DepartmentMasterSid }),
       ...(this.POL && { POL: this.POL }),
       ...(this.POD && { POD: this.POD }),
-      ...(this.FDC && { FDC: this.FDC }),
       ...(this.Carrier != null && { Carrier: this.Carrier }),
     };
 
@@ -119,4 +117,39 @@ export class TermsAndConditionsComponent implements OnInit {
   closeModal() {
     this.activeModal.close(false);
   }
+
+  getTermsAndConditions() {
+
+  const payload = {
+    MenuMasterSid: this.MenuMasterSid,
+    BranchMasterSid: this.currentBranch?.BranchMasterSid,
+    DepartmentMasterSid: this.DepartmentMasterSid,
+    POL: this.POL,
+    POD: this.POD,
+    Carrier: this.Carrier
+  };
+
+  this.masterService.getTandCByNCondition(payload).subscribe(
+    (resp: any) => {
+
+      if (resp.status) {
+
+        if (resp.data?.length) {
+          this.terms = resp.data;   // refresh modal list
+          this.showEmptyTemplate = false;
+        } else {
+          this.appSettingService.showWarning('No Non Default Terms Found');
+        }
+
+      } else {
+        this.appSettingService.showError('Error loading Non Default Terms');
+      }
+
+    },
+    (error) => {
+      console.error(error);
+      this.appSettingService.showError('Error loading Non Default Terms');
+    }
+  );
+}
 }

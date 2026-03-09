@@ -125,7 +125,7 @@ export class TermsConditionListComponent extends BaseListComponent implements On
             this.initializeHeaderActions();
         });
 
-        super.ngOnInit();
+        // super.ngOnInit();
         this.loadLookupData();
     }
 
@@ -442,7 +442,7 @@ export class TermsConditionListComponent extends BaseListComponent implements On
                     }
                 });
 
-                this.search();
+                super.ngOnInit();
             },
             error: (error) => {
                 console.error('Error loading lookup data for Terms and Conditions list', error);

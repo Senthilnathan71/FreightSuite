@@ -64,7 +64,6 @@ export class TermsConditionEntryComponent implements OnInit {
     filteredPorts: any[] = [];
     filteredPOL: any[] = [];
     filteredPOD: any[] = [];
-    filteredFDC: any[] = [];
     TandCDetail: any[] = [];
     filteredTandCDetail: any[] = [];
     TandCDetailLength: number = 0;
@@ -107,7 +106,6 @@ export class TermsConditionEntryComponent implements OnInit {
                 this.TermsAndConditionsMasterSid = +param.get('id');
                 if (this.TermsAndConditionsMasterSid) {
                     this.isEditMode = true;
-                    this.loadTermsAndConditions();
                 }
             }
         )
@@ -121,7 +119,6 @@ export class TermsConditionEntryComponent implements OnInit {
             Carrier: [],
             POL: [],
             POD: [],
-            FDC: [],
             status: ['Active'],
         })
     }
@@ -160,37 +157,21 @@ export class TermsConditionEntryComponent implements OnInit {
         this.filteredTandCDetail = this.TandCDetail.slice(start, end);
     }
 
-    private filterOnlyLeafMenus(menuList: any[]): any[] {
-        if (!Array.isArray(menuList)) return [];
-
-        // Collect all parentIds that exist
-        const parentIds = new Set(
-            menuList
-                .map(menu => Number(menu.parentId))
-                .filter(parentId => !!parentId)
-        );
-
-        // Keep only menus that are NOT parents
-        return menuList.filter(
-            menu => !parentIds.has(Number(menu.MenuMasterSid))
-        );
-    }
 
     loadAllFields() {
         const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
         forkJoin({
-            menus: this.masterService.getAllMenu(),
+            menus: this.masterService.getAllMenus(),
             ports: this.masterService.getAllPorts(),
             carriers: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['carrier', 'airLine'] }).pipe(catchError(err => of([]))),
             branches: this.masterService.getCurrentBranch(CompanyMasterSid),
             departments: this.masterService.getAllDepartments(CompanyMasterSid)
         }).subscribe(({ menus, ports, carriers, branches, departments }) => {
-            this.menuList = this.filterOnlyLeafMenus(menus),
+            this.menuList = menus,
                 this.portList = ports.data,
                 this.filteredPorts = [...this.portList],
                 this.filteredPOL = [...this.portList],
                 this.filteredPOD = [...this.portList],
-                this.filteredFDC = [...this.portList],
                 this.carrierList = carriers.data,
                 this.branchList = branches,
                 this.departmentList = departments;
@@ -198,6 +179,9 @@ export class TermsConditionEntryComponent implements OnInit {
                 this.onDepartmentChange(this.pendingDepartmentSid);
                 this.pendingDepartmentSid = null;
             }
+            if (this.isEditMode && this.TermsAndConditionsMasterSid) {
+      this.loadTermsAndConditions();
+    }
         })
     }
 
@@ -213,11 +197,9 @@ export class TermsConditionEntryComponent implements OnInit {
             this.filteredPorts = [];
             this.filteredPOL = [];
             this.filteredPOD = [];
-            this.filteredFDC = [];
             this.termsAndConditionForm.patchValue({
                 POL: [],
                 POD: [],
-                FDC: []
             }, { emitEvent: false });
             return;
         }
@@ -236,11 +218,9 @@ export class TermsConditionEntryComponent implements OnInit {
             this.filteredPorts = [];
             this.filteredPOL = [];
             this.filteredPOD = [];
-            this.filteredFDC = [];
             this.termsAndConditionForm.patchValue({
                 POL: [],
                 POD: [],
-                FDC: []
             }, { emitEvent: false });
             return;
         }
@@ -256,13 +236,11 @@ export class TermsConditionEntryComponent implements OnInit {
         this.termsAndConditionForm.patchValue({
             POL: null,
             POD: null,
-            FDC: null
         }, { emitEvent: false });
 
         // Reset filtered dropdown lists
         this.filteredPOL = [...this.filteredPorts];
         this.filteredPOD = [...this.filteredPorts];
-        this.filteredFDC = [...this.filteredPorts];
     }
 
     getFilteredPortsBySegment(segment: string): any[] {
@@ -324,7 +302,6 @@ export class TermsConditionEntryComponent implements OnInit {
             ...rest,
             POL: this.wrapAsArray(rest.POL),
             POD: this.wrapAsArray(rest.POD),
-            FDC: this.wrapAsArray(rest.FDC)
         };
         const termsAndConditionsDetail = this.buildTermsDetailPayload();
         const departmentPayload = departmentId
@@ -362,9 +339,7 @@ export class TermsConditionEntryComponent implements OnInit {
             this.masterService.createNewTandC(payload).subscribe(
                 (resp: any) => {
                     if (resp.status) {
-                        const createdId = resp?.data?.TermsAndConditionsMasterSid
-                            || resp?.data?.termsAndCondition?.TermsAndConditionsMasterSid
-                            || resp?.data?.id;
+                        const createdId = resp?.data?.tandCData?.TermsAndConditionsMasterSid;
                         if (createdId) {
                             this.appSettingService.showSuccess('New Terms and Conditions created successfully');
                             this.route.navigate(['master/terms-condition/entry', createdId]);
@@ -495,31 +470,41 @@ export class TermsConditionEntryComponent implements OnInit {
     }
 
     loadTermsAndConditions() {
-        this.masterService.getTandCById(this.TermsAndConditionsMasterSid).subscribe(
-            (resp: any) => {
-                if (resp.status) {
-                    const response = resp.data;
-                    this.tandCHeaderData = response;
-                    this.termsAndConditionForm.patchValue({
-                        ...response,
-                        POL: response.POL?.[0] || null,
-                        POD: response.POD?.[0] || null,
-                        FDC: response.FDC?.[0] || null,
-                        departmentId: response.departments[0]?.departmentId || response.departments[0]?.DepartmentMasterSid || '',
-                        status: response.status === 'A' ? 'Active' : 'Suspended'
-                    })
-                    this.onDepartmentChange(response.departments[0]?.departmentId || response.departments[0]?.DepartmentMasterSid);
-                    this.departmentOnTermsId = response.departments[0]?.DepartmentOnTermSid;
-                    this.loadTandCDetails();
-                } else {
-                    this.appSettingService.showError('Error Loading Terms and Conditions');
-                }
-            },
-            (error) => {
-                console.error('Error Loading Terms and Conditions', error);
-            }
-        )
+  this.masterService.getTandCById(this.TermsAndConditionsMasterSid).subscribe(
+    (resp: any) => {
+      if (resp.status) {
+        const response = resp.data;
+        this.tandCHeaderData = response;
+
+        const departmentId =
+          response.departments[0]?.departmentId ||
+          response.departments[0]?.DepartmentMasterSid ||
+          '';
+
+        this.termsAndConditionForm.patchValue({
+          ...response,
+          departmentId,
+          status: response.status === 'A' ? 'Active' : 'Suspended'
+        });
+
+        this.onDepartmentChange(departmentId);
+
+        const polCode = response.POL?.[0] || null;
+        const podCode = response.POD?.[0] || null;
+
+        this.termsAndConditionForm.patchValue({
+          POL: polCode,
+          POD: podCode
+        });
+
+        this.departmentOnTermsId =
+          response.departments[0]?.DepartmentOnTermSid;
+
+        this.loadTandCDetails();
+      }
     }
+  );
+}
 
     loadTandCDetails() {
         this.masterService.getAllTandCDetail().subscribe(
@@ -572,7 +557,6 @@ export class TermsConditionEntryComponent implements OnInit {
             Carrier: null,
             POL: null,
             POD: null,
-            FDC: null,
             status: 'Active'
         });
 
@@ -596,7 +580,6 @@ export class TermsConditionEntryComponent implements OnInit {
         this.filteredPorts = [];
         this.filteredPOL = [];
         this.filteredPOD = [];
-        this.filteredFDC = [];
 
         // Clear details table
         this.TandCDetail = [];
