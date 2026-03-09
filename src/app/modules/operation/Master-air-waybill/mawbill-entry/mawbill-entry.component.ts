@@ -1466,6 +1466,21 @@ loadMawbStock(data: any): void {
         return;
       }
     }
+
+    const etdValue = this.masterJobForm.get('ETD')?.value;
+    const etaValue = this.masterJobForm.get('ETA')?.value;
+    if (etdValue && etaValue) {
+      const etdDate = new Date(etdValue);
+      const etaDate = new Date(etaValue);
+      if (!isNaN(etdDate.getTime()) && !isNaN(etaDate.getTime()) && etaDate <= etdDate) {
+        this.toastr.error('ETA date should be greater than ETD date');
+        this.masterJobForm.get('ETA')?.setErrors({ etaLessThanOrEqualEtd: true });
+        this.masterJobForm.get('ETA')?.markAsTouched();
+        this.selectedTab = 'Master';
+        return;
+      }
+    }
+
      this.formSubmitted = true;
      // First check form validity
     this.masterJobForm.markAllAsTouched();
@@ -2791,3 +2806,5 @@ onYardChange(selectedYard: any): void {
 
       
 }
+
+

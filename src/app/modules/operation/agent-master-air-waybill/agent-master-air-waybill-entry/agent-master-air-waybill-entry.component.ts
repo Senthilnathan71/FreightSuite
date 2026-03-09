@@ -2158,6 +2158,20 @@ onCurrencyChange(event: any) {
     }
   }
 
+  const etdValue = this.houseJobForm.get('ETD')?.value;
+  const etaValue = this.houseJobForm.get('ETA')?.value;
+  if (etdValue && etaValue) {
+    const etdDate = new Date(etdValue);
+    const etaDate = new Date(etaValue);
+    if (!isNaN(etdDate.getTime()) && !isNaN(etaDate.getTime()) && etaDate <= etdDate) {
+      this.toastr.error('ETA date should be greater than ETD date');
+      this.houseJobForm.get('ETA')?.setErrors({ etaLessThanOrEqualEtd: true });
+      this.houseJobForm.get('ETA')?.markAsTouched();
+      this.selectedTab = 'Shipment';
+      return;
+    }
+  }
+
   if (this.houseJobForm.invalid) {
     this.houseJobForm.markAllAsTouched();
     this.houseJobForm.updateValueAndValidity();
@@ -5290,4 +5304,5 @@ interface CustomerProfit {
   CustomerName : string,
   Amount : number
 }
+
 

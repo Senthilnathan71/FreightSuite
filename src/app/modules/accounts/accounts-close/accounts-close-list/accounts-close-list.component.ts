@@ -247,8 +247,24 @@ export class AccountsCloseListComponent extends BaseListComponent implements OnI
           dataType: 'string'
         },
         {
-          key: 'Remarks',
-          label: 'Remarks',
+          key: 'ARClosed',
+          label: 'AR Status',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string'
+        },
+        {
+          key: 'APClosed',
+          label: 'AP Status',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string'
+        },
+        {
+          key:'GLClosed',
+          label: 'GL Status',
           sortable: true,
           filterable: true,
           visible: true,

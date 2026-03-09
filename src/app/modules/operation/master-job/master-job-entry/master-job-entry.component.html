@@ -267,6 +267,9 @@
                                                 @if(masterJobForm.get('MasterJobDate')?.hasError('required')){
                                                 <span>Required</span>
                                                 }
+                                                @if(masterJobForm.get('MasterJobDate')?.hasError('invalidDate')){
+                                                <span>Master Job Date must be within the financial year</span>
+                                                }
                                             </div>
                                             }
 
@@ -677,6 +680,9 @@
     </div>
     
     <label class="input-label">ETA <span class="text-danger"></span></label>
+    <div class="error-message" *ngIf="masterJobForm.get('ETA')?.touched && masterJobForm.get('ETA')?.hasError('etaLessThanOrEqualEtd')">
+      <span>ETA date should be greater than ETD date</span>
+    </div>
   </div>
 </aside>
 
@@ -1174,6 +1180,7 @@
                                     <th>Chargeable Weight</th>
                                     <th>Volume (CBM)</th>
                                     <th>SOC?</th>
+                                    <th>Haz</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1223,6 +1230,7 @@
                                     <td>{{ container.value.ChargeableWeight }}</td>
                                     <td>{{ container.value.Volume }}</td>
                                     <td>{{ container.value.IsSoc ? 'Yes' : 'No' }}</td>
+                                    <td>{{ container.value.IsHaz ? 'Yes' : 'No' }}</td>
                                 </tr>
                                 <tr *ngIf="masterJobContainers.length === 0">
                                     <td colspan="14" class="text-center py-4 text-muted">
@@ -2971,6 +2979,16 @@
                                 min="0" placeholder="">
                             <label class="input-label">Volume (CBM)</label>
                         </div>
+                    </aside>
+
+                    <aside class="col-md-4">
+                         <div class="form-check form-check-inline p-0">
+                                            <div class="form-check d-flex align-items-center">
+                                                <input type="checkbox" id="hazCheckbox" formControlName="IsHaz"
+                                                    class="focus-ring form-check-input sm p-0" readonly>
+                                                <label for="hazCheckbox" class="form-check-label sm">Haz</label>
+                                            </div>
+                                        </div>
                     </aside>
 
                     
