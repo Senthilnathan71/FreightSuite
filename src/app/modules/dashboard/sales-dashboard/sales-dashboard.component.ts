@@ -328,12 +328,12 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
         { name: 'Today', data: [counts.today] },
         { name: 'Future', data: [counts.future] },
       ],
-      chart: { type: 'bar', height: 250, toolbar: { show: false } },
+      chart: { type: 'bar', height: 180, toolbar: { show: false } },
       colors: ['#ef4444', '#f59e0b', '#16a34a'],
       plotOptions: {
         bar: { horizontal: false, columnWidth: '55%', borderRadius: 6 },
       },
-      dataLabels: { enabled: true, style: { fontSize: '14px', fontWeight: 700 } },
+      dataLabels: { enabled: true, style: { fontSize: '11px', fontWeight: 700 } },
       xaxis: { categories: ['Meetings'] },
       legend: { position: 'bottom' },
     };
@@ -353,46 +353,68 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
       DealLost: '#dc2626',
     };
 
+    const segmentColors = distribution.map(
+      (d) => statusColors[d.status] || '#94a3b8',
+    );
+
     this.leadStatusDonutOptions = {
       series: distribution.map((d) => d.count),
-      chart: { type: 'donut', height: 360 },
+      chart: { type: 'donut', height: 220 },
       labels: distribution.map((d) => d.status),
-      colors: distribution.map(
-        (d) => statusColors[d.status] || '#94a3b8',
-      ),
+      colors: segmentColors,
       legend: {
         position: 'right',
-        fontSize: '13px',
+        fontSize: '11px',
         fontWeight: 500,
-        markers: { width: 12, height: 12, radius: 3 },
-        itemMargin: { vertical: 4 },
+        markers: { width: 10, height: 10, radius: 3 },
+        itemMargin: { vertical: 2 },
       },
       dataLabels: {
         enabled: true,
-        style: { fontSize: '12px', fontWeight: 600 },
+        style: {
+          fontSize: '11px',
+          fontWeight: 700,
+          colors: segmentColors.map((color) => this.getReadableTextColor(color)),
+        },
         dropShadow: { enabled: false },
       },
       stroke: { width: 2, colors: ['#fff'] },
       plotOptions: {
         pie: {
           donut: {
-            size: '58%',
+            background: '#0d4f74',
+            size: '62%',
             labels: {
               show: true,
-              name: { fontSize: '14px', fontWeight: 600, color: '#94a3b8' },
-              value: { fontSize: '28px', fontWeight: 800, color: '#0f172a' },
+              name: { fontSize: '12px', fontWeight: 700, color: '#ffffff' },
+              value: { fontSize: '18px', fontWeight: 800, color: '#ffffff' },
               total: {
                 show: true,
                 label: 'Total Leads',
-                fontSize: '13px',
-                fontWeight: 600,
-                color: '#94a3b8',
+                fontSize: '11px',
+                fontWeight: 700,
+                color: '#ffffff',
               },
             },
           },
         },
       },
     };
+  }
+
+  private getReadableTextColor(backgroundHex: string): string {
+    const hex = backgroundHex.replace('#', '');
+    const normalizedHex =
+      hex.length === 3
+        ? hex.split('').map((char) => char + char).join('')
+        : hex;
+
+    const r = parseInt(normalizedHex.substring(0, 2), 16);
+    const g = parseInt(normalizedHex.substring(2, 4), 16);
+    const b = parseInt(normalizedHex.substring(4, 6), 16);
+
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.6 ? '#0f172a' : '#ffffff';
   }
 
   private buildQuoteVsBookingChart(): void {
@@ -405,12 +427,12 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
         { name: 'Approved', data: [quotes.approvedQuotes] },
         { name: 'Bookings', data: [bookings.totalBookings] },
       ],
-      chart: { type: 'bar', height: 250, stacked: false, toolbar: { show: false } },
+      chart: { type: 'bar', height: 180, stacked: false, toolbar: { show: false } },
       colors: ['#05608D', '#16a34a', '#06b6d4'],
       plotOptions: {
         bar: { horizontal: false, columnWidth: '50%', borderRadius: 6 },
       },
-      dataLabels: { enabled: true, style: { fontSize: '14px', fontWeight: 700 } },
+      dataLabels: { enabled: true, style: { fontSize: '11px', fontWeight: 700 } },
       xaxis: { categories: ['Pipeline'] },
       legend: { position: 'bottom' },
     };

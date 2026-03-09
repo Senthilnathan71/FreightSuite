@@ -88,19 +88,20 @@
       <div class="charts-row">
         <div class="chart-card">
           <div class="chart-title"><i class="fas fa-filter ct-icon"></i> Pipeline Funnel</div>
-          <apx-chart
-            *ngIf="funnelChartOptions.series"
-            [series]="funnelChartOptions.series"
-            [chart]="funnelChartOptions.chart"
-            [plotOptions]="funnelChartOptions.plotOptions"
-            [colors]="funnelChartOptions.colors"
-            [dataLabels]="funnelChartOptions.dataLabels"
-            [xaxis]="funnelChartOptions.xaxis"
-            [yaxis]="funnelChartOptions.yaxis"
-            [grid]="funnelChartOptions.grid"
-            [legend]="funnelChartOptions.legend"
-            [tooltip]="funnelChartOptions.tooltip"
-          ></apx-chart>
+          <div class="funnel-bars" *ngIf="funnelRows.length">
+            <div class="funnel-row" *ngFor="let row of funnelRows">
+              <div class="funnel-label">{{ row.label }}</div>
+              <div class="funnel-track">
+                <div
+                  class="funnel-bar"
+                  [style.width.%]="row.pct"
+                  [style.background]="row.color"
+                >
+                  <span>{{ row.value }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="chart-card">
           <div class="chart-title"><i class="fas fa-chart-pie ct-icon"></i> Lead Status Distribution</div>
