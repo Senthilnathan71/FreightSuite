@@ -1058,7 +1058,7 @@
                           <!-- Dropdown Mode (Readonly) -->
                           <div class="input-group">
                             <input class="form-control" placeholder="" name="dp" formControlName="ETD" container="body"
-                              [maxDate]="toNgbDateStruct(b['ETA']?.value)" ngbDatepicker #d5="ngbDatepicker"
+                              ngbDatepicker #d5="ngbDatepicker"
                               (keydown.arrowDown)="d5.open()" (click)="d5.toggle()" readonly />
                             <button class="btn bi bi-calendar3 px-0" (click)="d5.toggle()" type="button">
                               <i-feather name="calendar" class="feather-sm"></i-feather>
