@@ -170,7 +170,7 @@
                   <i class="fas"
                      [ngClass]="m.passed ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'">
                   </i>
-                  <span class="ms-1 small" style="color: black;">{{ m.label }}</span>
+                  <span class="ms-1 small" style="color: black;">{{ m.passed ? m.label : m.failedLabel }}</span>
                 </div>
               </div>
 
@@ -205,7 +205,7 @@
                   <i class="fas"
                      [ngClass]="m.passed ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'">
                   </i>
-                  <span class="ms-1 small" style="color: black;">{{ m.label }}</span>
+                  <span class="ms-1 small" style="color: black;">{{ m.passed ? m.label : m.failedLabel }}</span>
                 </div>
               </div>
 
@@ -240,7 +240,7 @@
                   <i class="fas"
                      [ngClass]="m.passed ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'">
                   </i>
-                  <span class="ms-1 small" style="color: black;">{{ m.label }}</span>
+                  <span class="ms-1 small" style="color: black;">{{ m.passed ? m.label : m.failedLabel }}</span>
                 </div>
               </div>
 
@@ -275,7 +275,7 @@
                   <i class="fas"
                      [ngClass]="m.passed ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'">
                   </i>
-                  <span class="ms-1 small" style="color: black;">{{ m.label }}</span>
+                  <span class="ms-1 small" style="color: black;">{{ m.passed ? m.label : m.failedLabel }}</span>
                 </div>
               </div>
 
@@ -317,7 +317,7 @@
     <div *ngFor="let m of validationModalMilestones" class="d-flex align-items-center mb-2">
       <i class="fas me-2"
          [ngClass]="m.passed ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'"></i>
-      <span [class.text-danger]="!m.passed" [class.fw-semibold]="!m.passed">{{ m.label }}</span>
+      <span [class.text-danger]="!m.passed" [class.fw-semibold]="!m.passed">{{ m.passed ? m.label : m.failedLabel }}</span>
     </div>
     <div class="text-muted small mt-3">All milestones must pass before this closer can be completed.</div>
   </div>

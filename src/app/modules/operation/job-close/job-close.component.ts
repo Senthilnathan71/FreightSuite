@@ -49,7 +49,7 @@ export class JobCloseComponent implements OnInit {
 
   // Validation modal state
   validationModalTitle = '';
-  validationModalMilestones: { label: string; passed: boolean }[] = [];
+  validationModalMilestones: { label: string; failedLabel: string; passed: boolean }[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -133,7 +133,7 @@ export class JobCloseComponent implements OnInit {
 
   private tryClose(
     closerName: string,
-    milestones: { label: string; passed: boolean }[],
+    milestones: { label: string; failedLabel: string; passed: boolean }[],
     onSuccess: () => void,
     onRevert: () => void
   ): void {
