@@ -590,16 +590,19 @@ export class VendorInvoiceEntryComponent implements OnInit {
     }
   }
 
-  // Load lookups — critical (party + COA) fetch first.
+  // Load lookups — critical (party, charges, COA) fetch first.
   // Once done, non-critical lookups start in the background and vendor invoice loads.
   loadLookups(): Observable<void> {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const BranchMasterSid = this.currentBranch?.BranchMasterSid;
     const filterOption = { CompanyMasterSid, BranchMasterSid };
 
-    // 1. Critical lookups — party and COA must be ready before vendor invoice is loaded
+    // 1. Critical lookups — party, charges and COA must be ready before vendor invoice is loaded
     const criticalSource: any = {
-      vendors: this.operationService.getAllCreditorWithCOAMapped(filterOption).pipe(catchError(() => of({ data: [] })))
+      vendors: this.operationService.getAllCreditorWithCOAMapped(filterOption).pipe(catchError(() => of({ data: [] }))),
+      charges: this.isNonJob
+        ? of({ data: [] })
+        : this.operationService.getAllMappedChargeDebtors(filterOption).pipe(catchError(() => of({ data: [] })))
     };
     if (this.isNonJob) {
       criticalSource.coa = this.operationService.getAllCoaWithLedgerCategory({
@@ -610,9 +613,11 @@ export class VendorInvoiceEntryComponent implements OnInit {
     }
 
     return forkJoin(criticalSource).pipe(
-      map(({ vendors, coa }: any) => {
+      map(({ vendors, charges, coa }: any) => {
         this.vendorList = vendors.data || [];
         this.subledgerList = vendors.data || [];
+        this.chargeList = charges?.data || [];
+        this.filteredChargeList = [...this.chargeList];
         this.coaList = coa?.data || [];
 
         // 2. Non-critical lookups start after critical resources are ready
@@ -624,17 +629,11 @@ export class VendorInvoiceEntryComponent implements OnInit {
         };
         if (this.isNonJob) {
           otherSource.hssac = this.operationService.getAllHssac().pipe(catchError(() => of([])));
-          otherSource.charges = of({ data: [] });
-        } else {
-          otherSource.charges = this.operationService.getAllMappedChargeDebtors(filterOption).pipe(catchError(() => of({ data: [] })));
-          otherSource.hssac = of([]);
         }
         forkJoin(otherSource).subscribe({
-          next: ({ currencies, charges, uom, departments, masterJobs, hssac }: any) => {
+          next: ({ currencies, uom, departments, masterJobs, hssac }: any) => {
             this.currencyList = currencies.data || [];
             this.currencyConfigService.initializeConfigurations(this.currencyList);
-            this.chargeList = charges?.data || [];
-            this.filteredChargeList = [...this.chargeList];
             this.uomList = uom.data || [];
             this.departmentList = departments.data || [];
             this.masterJobList = masterJobs.data || [];
@@ -1195,7 +1194,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
     }
 
 
-    const allowedControls = ['Rate', 'ExchangeRate', 'HSSACMasterSid'];
+    const allowedControls = ['Rate', 'ExchangeRate', 'HSSACMasterSid','ChargeDescription','NumberOfUnit'];
 
     Object.keys(group.controls).forEach((controlName) => {
       if (!allowedControls.includes(controlName)) {

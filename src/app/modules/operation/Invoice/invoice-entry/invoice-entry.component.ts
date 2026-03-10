@@ -23,7 +23,7 @@ import {
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CommonModule } from '@angular/common';
-import { catchError, debounceTime, distinctUntilChanged, firstValueFrom, forkJoin, Observable, of, Subject, takeUntil } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, firstValueFrom, forkJoin, map, Observable, of, Subject, takeUntil } from 'rxjs';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -367,22 +367,30 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     }
     this.checkVoucherPostingMechanism();
     this.initForm();
-    this.loadLookups();
     this.loadVoucherPeriods();
     this.spinner.show();
     this.route.data.subscribe((data) => {
       this.isViewMode = data['viewMode'] === true;
     });
 
-    this.route.paramMap.subscribe((params) => {
-      const id = params.get('id');
-      if (id) {
-        this.headerId = Number(id);
-        this.loadInvoiceById(this.headerId);
-      } else {
-        this.initialFormValue = this.invoiceForm.getRawValue();
-        this.subscribeToFormChanges();
-        this.subscribeToValueChanges();
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.headerId = Number(id);
+    }
+
+    this.loadLookups().subscribe({
+      next: () => {
+        if (this.headerId) {
+          this.loadInvoiceById(this.headerId);
+        } else {
+          this.initialFormValue = this.invoiceForm.getRawValue();
+          this.subscribeToFormChanges();
+          this.subscribeToValueChanges();
+        }
+      },
+      error: (err) => {
+        this.spinner.hide();
+        console.error('Lookup error:', err);
       }
     });
 
@@ -549,7 +557,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
 
 
 
-  loadLookups() {
+  loadLookups(): Observable<void> {
     this.spinner.show();
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const BranchMasterSid = this.currentBranch?.BranchMasterSid;
@@ -558,52 +566,50 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       BranchMasterSid,
     };
 
-    forkJoin({
+    // 1. Critical lookups — customers and charges must be ready before invoice is loaded
+    return forkJoin({
       customers: this.operationService
         .getAllDebtorWithCOAMapped(filterOption)
         .pipe(catchError((err) => of({ data: [] }))),
-      currencies: this.operationService
-        .getAllCurrencies()
-        .pipe(catchError((err) => of([]))),
       charges: this.operationService
         .getAllMappedChargeCreditors(filterOption)
         .pipe(catchError((err) => of([]))),
-      uoms: this.operationService.getAllUom().pipe(catchError((err) => of([]))),
-      departments: this.operationService
-        .getAllDepartments(CompanyMasterSid)
-        .pipe(catchError((err) => of([]))),
-      masterJobs: this.operationService
-        .getAllMasterJobs({
-          CompanyMasterSid,
-          BranchMasterSid,
-          limit: 200,
-          offset: 0,
-        })
-        .pipe(catchError((err) => of([]))),
-    }).subscribe(
-      ({
-        customers,
-        currencies,
-        charges,
-        uoms,
-        departments,
-        masterJobs,
-      }) => {
+    }).pipe(
+      map(({ customers, charges }) => {
         this.customerList = customers.data || [];
         this.subledgerList = customers.data || [];
         this.chargeList = charges.data || [];
 
-        this.currencyList = currencies.data || [];
-        this.currencyConfigService.initializeConfigurations(this.currencyList);
-        this.numberToWords.initializeCurrencies(this.currencyList);
+        // 2. Non-critical lookups start in the background
+        forkJoin({
+          currencies: this.operationService
+            .getAllCurrencies()
+            .pipe(catchError((err) => of([]))),
+          uoms: this.operationService.getAllUom().pipe(catchError((err) => of([]))),
+          departments: this.operationService
+            .getAllDepartments(CompanyMasterSid)
+            .pipe(catchError((err) => of([]))),
+          masterJobs: this.operationService
+            .getAllMasterJobs({
+              CompanyMasterSid,
+              BranchMasterSid,
+              limit: 200,
+              offset: 0,
+            })
+            .pipe(catchError((err) => of([]))),
+        }).subscribe(({ currencies, uoms, departments, masterJobs }) => {
+          this.currencyList = currencies.data || [];
+          this.currencyConfigService.initializeConfigurations(this.currencyList);
+          this.numberToWords.initializeCurrencies(this.currencyList);
 
-        this.uomList = uoms.data || [];
-        this.departmentList = departments.data || [];
-        this.masterJobList = masterJobs.data || [];
-        if(!this.isEditMode){
-          this.spinner.hide();
-        }
-      }
+          this.uomList = uoms.data || [];
+          this.departmentList = departments.data || [];
+          this.masterJobList = masterJobs.data || [];
+          if(!this.isEditMode){
+            this.spinner.hide();
+          }
+        });
+      })
     );
   }
 
