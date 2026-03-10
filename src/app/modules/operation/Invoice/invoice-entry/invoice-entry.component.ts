@@ -1250,7 +1250,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       MBLNo: this.invoiceData?.masterJob?.MBLNo || '',
       MasterJobNumber: this.invoiceData?.masterJob?.MasterJobNumber || '',
       MasterJobDate: this.invoiceData?.masterJob?.MasterJobDate || '',
-      CustomerRefNo: this.invoiceData?.houseJob?.Others?.[0]?.CustomerRefNo || '',
+      DocumentNumber: this.invoiceData?.DocumentNumber || '',
       ContainerType: this.invoiceData?.masterJob?.containers?.[0]?.ContainerType || '',
       ContainerNumber: this.invoiceData?.masterJob?.containers?.[0]?.ContainerNumber || '',
       DepartmentMasterSid : this.invoiceData?.masterJob?.DepartmentMasterSid || '',
@@ -1268,6 +1268,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       JobType:isHouseJobInvoice ? this.invoiceData?.houseJob?.JobType : 
       isBookingInvoice ? this.invoiceData?.BookingHeader?.JobType : 
       isMasterJobInvoice ? this.invoiceData?.masterJob?.JobType : '',
+      IsServiceJob : isHouseJobInvoice ? this.invoiceData?.houseJob?.IsServiceJob : '',
       PkgWtVol: 
         isHouseJobInvoice ?
           `${this.invoiceData?.houseJob?.Cargo?.[0]?.NoOfPackage || "0"} / ${this.invoiceData?.houseJob?.Cargo?.[0]?.GrossWeight || "0"} / ${this.invoiceData?.houseJob?.Cargo?.[0]?.Volume || "0"}` :
