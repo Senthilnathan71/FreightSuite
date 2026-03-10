@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgApexchartsModule } from 'ng-apexcharts';
-import { NgbDateAdapter, NgbDatepickerModule, NgbDateParserFormatter } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateAdapter, NgbDatepickerModule, NgbDateParserFormatter, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { Subject, takeUntil } from 'rxjs';
 import { Router } from '@angular/router';
 import { SalesDashboardService } from '../services/sales-dashboard.service';
@@ -21,6 +21,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { toNgbDateStruct } from 'src/app/common/helper';
 
 @Component({
   selector: 'app-sales-dashboard',
@@ -35,6 +36,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 })
 export class SalesDashboardComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  readonly maxDateTo: NgbDateStruct = toNgbDateStruct(new Date())!;
 
   dashboardData: SalesDashboardData | null = null;
   isLoading = false;
@@ -88,8 +90,8 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
       .getSalesDashboardData({
         companyMasterSid: company.CompanyMasterSid,
         branchMasterSid: branch?.BranchMasterSid ?? company.BranchMasterSid,
-        dateFrom: this.dateFromInput ? this.toDateStr(this.dateFromInput) : undefined,
-        dateTo: this.dateToInput ? this.toDateStr(this.dateToInput) : undefined,
+        dateFrom: this.dateFromInput ? this.toDateTimeStr(this.dateFromInput, 'start') : undefined,
+        dateTo: this.dateToInput ? this.toDateTimeStr(this.dateToInput, 'end') : undefined,
         ...this.filters,
       })
       .pipe(takeUntil(this.destroy$))
@@ -482,8 +484,16 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  private toDateStr(d: Date): string {
-    return d.toISOString().split('T')[0];
+  private toDateTimeStr(d: Date, boundary: 'start' | 'end'): string {
+    const date = new Date(d);
+
+    if (boundary === 'start') {
+      date.setHours(0, 0, 0, 0);
+    } else {
+      date.setHours(23, 59, 59, 999);
+    }
+
+    return date.toISOString();
   }
 
   private setDefaultDateRange(): void {

@@ -22,7 +22,7 @@
         <use href="#jumpDolphin" width="260" height="135"></use>
       </g>
 
-      <g class="dolphin-main" opacity=".95">
+      <g class="dolphin-main" opacity=".16">
         <use href="#jumpDolphin" width="260" height="135"></use>
       </g>
     </svg>
@@ -75,6 +75,7 @@
             class="date-input"
             placeholder="Select date"
             [(ngModel)]="dateToInput"
+            [maxDate]="maxDateTo"
             ngbDatepicker
             #dateToPicker="ngbDatepicker"
             (click)="dateToPicker.toggle()"
