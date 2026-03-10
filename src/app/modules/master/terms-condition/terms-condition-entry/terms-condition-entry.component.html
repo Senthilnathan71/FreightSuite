@@ -109,17 +109,7 @@
 
                         </div>
                     </aside>
-                    <aside class="col-md-3">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!termsAndConditionForm.get('FDC')?.value">
-                            <ng-select class="ng-select" [items]="filteredFDC" bindValue="PortCode" bindLabel="PortCode" formControlName="FDC" placeholder="" (change)="onPortSelectionChange()">
-                                <ng-template ng-option-tmp let-item="item">
-                                    {{ item.PortName }} - {{ item.PortCode }}
-                                </ng-template>
-                            </ng-select>
-                            <label for="text-input" class="input-label">FDC</label>
-
-                        </div>
-                    </aside>
+                   
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!termsAndConditionForm.get('status')?.value">
                             @if(isEditMode){

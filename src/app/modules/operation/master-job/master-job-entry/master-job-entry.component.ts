@@ -922,7 +922,8 @@ onETDDateSelect(): void {
       Volume: [{ value: 0, disabled: true }],
       ChargeableWeight: [0, [Validators.min(0)]],
 
-      IsSoc: [false]
+      IsSoc: [false],
+      IsHaz: [false]
     }, { validators: this.grossNetWeightValidator() });
   }
   private grossNetWeightValidator(): ValidatorFn {
@@ -1099,18 +1100,10 @@ onETDDateSelect(): void {
   toggleDateInputType(field: 'ETD' | 'ETA'): void {
     if (field === 'ETD') {
       this.isETDFreeText = !this.isETDFreeText;
-      if (this.isETDFreeText) {
-        this.masterJobForm.get('ETD')?.enable();
-      } else {
-        this.masterJobForm.get('ETD')?.disable();
-      }
+      this.masterJobForm.get('ETD')?.enable();
     } else if (field === 'ETA') {
       this.isETAFreeText = !this.isETAFreeText;
-      if (this.isETAFreeText) {
-        this.masterJobForm.get('ETA')?.enable();
-      } else {
-        this.masterJobForm.get('ETA')?.disable();
-      }
+      this.masterJobForm.get('ETA')?.enable();
     }
   }
 
@@ -1156,7 +1149,8 @@ onETDDateSelect(): void {
       NetWeight: [container?.NetWeight || 0, [Validators.min(0)]],
       ChargeableWeight: [container?.ChargeableWeight || 0, [Validators.min(0)]],
       Volume: [container?.Volume || 0, [Validators.min(0)]],
-      IsSoc: [container?.IsSoc === 'Y' || container?.IsSoc === true || false]
+      IsSoc: [container?.IsSoc === 'Y' || container?.IsSoc === true || false],
+      IsHaz: [container?.IsHaz === 'Y' || container?.IsHaz === true || false]
     }, { validators: this.grossNetWeightValidator() }); // Add validator here too
 
     this.masterJobContainers.push(containerGroup);
@@ -2102,6 +2096,9 @@ onETDDateSelect(): void {
     if (this.isSaving || this.isLoading) {
       return;
     }
+    this.clearValidationError('ETA', 'etaLessThanOrEqualEtd');
+    this.clearValidationError('MasterJobDate', 'invalidDate');
+
     const fy = this.appSettingService.getCurrentFinancialYear();
     if(fy){
       const MasterJobDate =new Date (this. masterJobForm.getRawValue().MasterJobDate);
@@ -2113,6 +2110,21 @@ onETDDateSelect(): void {
         return;
       }
     }
+
+    const etdValue = this.masterJobForm.get('ETD')?.value;
+    const etaValue = this.masterJobForm.get('ETA')?.value;
+    if (etdValue && etaValue) {
+      const etdDate = new Date(etdValue);
+      const etaDate = new Date(etaValue);
+      if (!isNaN(etdDate.getTime()) && !isNaN(etaDate.getTime()) && etaDate <= etdDate) {
+        this.toastr.error('ETA date should be greater than ETD date');
+        this.mergeValidationError('ETA', 'etaLessThanOrEqualEtd');
+        this.masterJobForm.get('ETA')?.markAsTouched();
+        this.selectedTab = 'Master';
+        return;
+      }
+    }
+
     const polSid = this.masterJobForm.get('POL')?.value;
   const podSid = this.masterJobForm.get('POD')?.value;
   
@@ -2141,8 +2153,8 @@ onETDDateSelect(): void {
   //   }
   // });
     if (this.masterJobForm.invalid) {
-      this.toastr.error('Please fill all required fields');
       this.masterJobForm.markAllAsTouched();
+      this.showFirstFormError();
       return;
     }
 
@@ -2351,6 +2363,76 @@ onETDDateSelect(): void {
       });
     }
   }
+
+  private showFirstFormError(): void {
+    const firstInvalidControlName = Object.keys(this.masterJobForm.controls)
+      .find((controlName) => this.masterJobForm.get(controlName)?.invalid);
+
+    if (!firstInvalidControlName) {
+      this.toastr.error('Please fill all required fields');
+      return;
+    }
+
+    const invalidControl = this.masterJobForm.get(firstInvalidControlName);
+    const controlLabelMap: { [key: string]: string } = {
+      DepartmentMasterSid: 'Department',
+      MasterJobNumber: 'Master Job Number',
+      MasterJobDate: 'Master Job Date',
+      FreightPPCC: 'Freight PP/CC',
+      NoofOriginal: 'No Of Original',
+      POL: 'POL',
+      POD: 'POD',
+      Status: 'Status',
+      JobStatus: 'Job Status',
+      ETA: 'ETA',
+      ETD: 'ETD'
+    };
+    const controlTabMap: { [key: string]: string } = {
+      Status: 'Others'
+    };
+
+    this.selectedTab = controlTabMap[firstInvalidControlName] || 'Master';
+
+    if (invalidControl?.hasError('required')) {
+      this.toastr.error(`${controlLabelMap[firstInvalidControlName] || firstInvalidControlName} is required`);
+      return;
+    }
+
+    if (invalidControl?.hasError('samePort')) {
+      this.toastr.error('POL and POD cannot be the same port');
+      return;
+    }
+
+    if (invalidControl?.hasError('invalidDate')) {
+      this.toastr.error('The date of the master job must be between the financial year start date and end date');
+      return;
+    }
+
+    if (invalidControl?.hasError('etaLessThanOrEqualEtd')) {
+      this.toastr.error('ETA date should be greater than ETD date');
+      return;
+    }
+
+    this.toastr.error('Please correct the highlighted fields');
+  }
+
+  private mergeValidationError(controlName: string, errorKey: string): void {
+    const control = this.masterJobForm.get(controlName);
+    if (!control) {
+      return;
+    }
+    const currentErrors = control.errors || {};
+    control.setErrors({ ...currentErrors, [errorKey]: true });
+  }
+
+  private clearValidationError(controlName: string, errorKey: string): void {
+    const control = this.masterJobForm.get(controlName);
+    if (!control?.errors?.[errorKey]) {
+      return;
+    }
+    const { [errorKey]: _removed, ...remainingErrors } = control.errors;
+    control.setErrors(Object.keys(remainingErrors).length ? remainingErrors : null);
+  }
   handleCustomsChange(event: any) {
 
     // You can process and save event data here
@@ -2384,7 +2466,8 @@ onETDDateSelect(): void {
         containerGroup.patchValue({
           ...containerData,
           MasterJobContainerSid: existingContainerSid, // Preserve the existing SID
-          IsSoc: containerData.IsSoc
+          IsSoc: containerData.IsSoc,
+          IsHaz: containerData.IsHaz
         });
       } else {
         // Add new container - MasterJobContainerSid will be null for new containers
@@ -2410,6 +2493,7 @@ onETDDateSelect(): void {
     return this.masterJobContainers.value.map(container => ({
       ...container,
       IsSoc: container.IsSoc ? 'Y' : 'N',
+      IsHaz: container.IsHaz ? 'Y' : 'N',
       MasterJobContainerSid: container.MasterJobContainerSid
     }));
   }
@@ -2492,7 +2576,8 @@ onETDDateSelect(): void {
       // Patch the form with existing container data
       this.containerFormGroup.patchValue({
         ...container,
-        IsSoc: container.IsSoc === 'Y' || container.IsSoc === true
+        IsSoc: container.IsSoc === 'Y' || container.IsSoc === true,
+        IsHaz: container.IsHaz === 'Y' || container.IsHaz === true
       });
     } else {
       // Reset the form for new container
@@ -2502,7 +2587,8 @@ onETDDateSelect(): void {
         NetWeight: 0,
         ChargeableWeight: 0,
         Volume: 0,
-        IsSoc: false
+        IsSoc: false,
+        IsHaz: false
       });
     }
 
@@ -4689,14 +4775,12 @@ findElementByTextContent(selector: string, text: string): Element | null {
     const departmentSid = this.masterJobData?.DepartmentMasterSid;
     const pol = this.masterJobData?.POL;
     const pod = this.masterJobData?.POD;
-    const fdc = this.masterJobData?.FPD;
     const carrier = this.masterJobData?.voyages?.[0]?.CarrierSid || null;
     const payload = {
        MenuMasterSid: this.currentMenuId,
        DepartmentMasterSid: departmentSid,
        POL: pol,
        POD: pod,
-       FDC: fdc,
        Carrier: carrier
        };
     this.masterService.getTandCByCondition(payload).subscribe((resp: any) => {
@@ -4713,7 +4797,6 @@ findElementByTextContent(selector: string, text: string): Element | null {
         modelRef.componentInstance.DepartmentMasterSid = departmentSid;
         modelRef.componentInstance.POL = pol;
         modelRef.componentInstance.POD = pod;
-        modelRef.componentInstance.FDC = fdc;
         modelRef.componentInstance.Carrier = carrier;
       } else {
         this.appSettingService.showError('Error loading Terms and Conditions');
@@ -5020,7 +5103,8 @@ findElementByTextContent(selector: string, text: string): Element | null {
       'Net Weight': container.NetWeight,
       'Chargeable Weight': container.ChargeableWeight,
       'Volume (CBM)': container.Volume,
-      'SOC': container.IsSoc ? 'Yes' : 'No'
+      'SOC': container.IsSoc ? 'Yes' : 'No',
+      'HAZ': container.IsHaz ? 'Yes' : 'No'
     }));
 
     // Use the same ExcelExportService as your reports

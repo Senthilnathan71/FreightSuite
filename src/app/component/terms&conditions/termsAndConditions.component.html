@@ -4,15 +4,21 @@
     <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeModal()"></button>
   </div>
   <div class="modal-body">
-    <div class="col-12 d-flex align-items-center justify-content-end">
-      <button class="btn btn-info btn-sm ms-auto" type="button" (click)="toggleAddRow()">
-        @if(showAddRow){
-          <i-feather class="feather-sm" name="x-circle"></i-feather> Cancel
-        } @else {
-          <i class="fas fa-plus me-1"></i> Add
-        }
-      </button>
-    </div>
+    <div class="col-12 d-flex align-items-center justify-content-end gap-2">
+  
+  <button class="btn btn-info btn-sm" type="button" (click)="toggleAddRow()">
+    @if(showAddRow){
+      <i-feather class="feather-sm" name="x-circle"></i-feather> Cancel
+    } @else {
+      <i class="fas fa-plus me-1"></i> Add
+    }
+  </button>
+
+  <button class="btn btn-info btn-sm" type="button" (click)="getTermsAndConditions()">
+    Get
+  </button>
+
+</div>
     <div class="row compact-form">
       <div class="table-responsive mt-1">
         <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">

@@ -66,6 +66,7 @@ import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.i
 import { HostListener } from '@angular/core';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { th } from 'date-fns/locale';
+import * as JsBarcode from 'jsbarcode';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -264,6 +265,12 @@ export class BookingEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
 
   barcodeBookingNo: string = '';
   printQty: number = 1;
+  isWithCompany = false;
+  barcodeActionType: 'print' | 'pdf' = 'print';
+  private barcodePdfImageCache = new Map<string, string>();
+  isBarcodePdfPreparing = false;
+  isBarcodePdfReady = false;
+  isBarcodePdfDownloading = false;
  barcodeConfig: BarcodeConfig = {
   format: 'CODE128',
   height: 22,     // small but readable
@@ -4643,33 +4650,284 @@ downloadPDFLegacy(type: 'booking' | 'cro'  = 'booking'): void {
   );
 }
 
-downloadPDFBarCode(): void {
+async downloadPDFBarCode(qty: number = 1, withCompany: boolean = this.isWithCompany): Promise<void> {
   this.spinner.show();
+  this.showPrintLogo = false;
+  this.showPdfLogo = true;
 
-  const elementId = 'printContent'; // ✅ fixed element
-  const fileName = this.generateFileName('barcode');
+  try {
+    const safeQty = Math.max(1, Number(qty) || 1);
+    const imgData = await this.getBarcodePdfImageDataUrl(withCompany);
+    const fileName = this.generateFileName('barcode') + '.pdf';
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = 210;
+    const pageHeight = 297;
 
-  const sourceEl = document.getElementById(elementId);
-  if (!sourceEl) {
+    if (withCompany) {
+      const labelWidth = 100.5; // 380px at 96dpi
+      const labelHeight = 127;  // 480px at 96dpi
+      const x = (pageWidth - labelWidth) / 2;
+      const y = (pageHeight - labelHeight) / 2;
+
+      for (let i = 0; i < safeQty; i++) {
+        if (i > 0) pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', x, y, labelWidth, labelHeight, undefined, 'FAST');
+      }
+    } else {
+      const labelWidth = 125; // print css width: 12.5cm
+      const labelHeight = 100; // print css height: 10cm
+      const x = (pageWidth - labelWidth) / 2;
+      const y1 = 35;
+      const y2 = 149; // y1 + 10cm + 1.4cm gap
+
+      for (let i = 0, page = 0; i < safeQty; i += 2, page++) {
+        if (page > 0) pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', x, y1, labelWidth, labelHeight, undefined, 'FAST');
+        if (i + 1 < safeQty) {
+          pdf.addImage(imgData, 'JPEG', x, y2, labelWidth, labelHeight, undefined, 'FAST');
+        }
+      }
+    }
+
+    pdf.save(fileName);
+    this.appSettingService.showSuccess('Barcode PDF downloaded successfully!');
+  } catch (error) {
+    console.error('PDF generation error:', error);
+    this.appSettingService.showError('Error generating Barcode PDF. Please try again.');
+  } finally {
     this.spinner.hide();
-    this.appSettingService.showWarning('PDF content not found.');
-    return;
+  }
+}
+
+private preloadBarcodePdfImage(withCompany: boolean): void {
+  setTimeout(() => {
+    this.getBarcodePdfImageDataUrl(withCompany)
+      .then(() => {
+        this.isBarcodePdfReady = true;
+      })
+      .catch(() => {
+        this.isBarcodePdfReady = false;
+      })
+      .finally(() => {
+        this.isBarcodePdfPreparing = false;
+      });
+  }, 0);
+}
+
+private getBarcodePdfCacheKey(withCompany: boolean): string {
+  const b = this.bookingHeader || {};
+  return JSON.stringify({
+    withCompany,
+    bookingNo: b.BookingNo || '',
+    barcode: this.barcodeBookingNo || b.BookingNo || '',
+    shipper: b.ShipperName || '',
+    consignee: b.ConsigneeName || '',
+    etd: b.ETD || '',
+    poo: b.POO || '',
+    fpd: b.FPD || '',
+    pkg: b.bookingCargo?.[0]?.NoOfPackage || '',
+    wt: b.bookingCargo?.[0]?.GrossWeight || ''
+  });
+}
+
+private async getBarcodePdfImageDataUrl(withCompany: boolean): Promise<string> {
+  const cacheKey = this.getBarcodePdfCacheKey(withCompany);
+  const cached = this.barcodePdfImageCache.get(cacheKey);
+  if (cached) return cached;
+
+  const sourceElementId = withCompany ? 'printContentBarcode' : 'printContentBarcodeNoCompany';
+  const sourceElement = document.getElementById(sourceElementId);
+  if (!sourceElement) throw new Error('Barcode content not found.');
+
+  const canvas = await html2canvas(sourceElement, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: '#ffffff',
+    logging: false
+  });
+
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+  this.barcodePdfImageCache.set(cacheKey, dataUrl);
+  return dataUrl;
+}
+
+private buildBarcodePdfLabel(withCompany: boolean, barcodeValue: string): any {
+  const pxToPt = (px: number) => Number((px * 0.75).toFixed(2));
+  const cardWidthWithCompany = pxToPt(380);
+  const cardHeightWithCompany = pxToPt(480);
+  const cardWidthWithoutCompany = pxToPt(378);
+  const cardHeightWithoutCompany = pxToPt(350);
+  const cardInnerPadding = pxToPt(8);
+  const innerWidthWithCompany = cardWidthWithCompany - cardInnerPadding * 2;
+  const innerWidthWithoutCompany = cardWidthWithoutCompany - cardInnerPadding * 2;
+  const barcodeWidthWithCompany = innerWidthWithCompany - pxToPt(10);
+  const barcodeWidthWithoutCompany = innerWidthWithoutCompany - pxToPt(26);
+
+  const topBarcode = this.createBarcodeSvg(
+    barcodeValue,
+    this.barcodeConfig1.width || 1,
+    this.barcodeConfig1.height || 30,
+    this.barcodeConfig1.fontSize || 9
+  );
+  const bottomBarcode = this.createBarcodeSvg(
+    barcodeValue,
+    this.barcodeConfig.width || 1,
+    this.barcodeConfig.height || 22,
+    this.barcodeConfig.fontSize || 9
+  );
+  const logo = this.pdfMakeService.getReportLogo();
+  const logoImage = logo?.startsWith('data:image') ? logo : null;
+
+  const detailRows = [
+    ['Shipper', this.bookingHeader?.ShipperName],
+    ['Consignee', this.bookingHeader?.ConsigneeName],
+    ['Accepted On', this.bookingHeader?.ETD ? this.datePipe.transform(this.bookingHeader?.ETD) : ''],
+    ['Origin', this.bookingHeader?.POO],
+    ['Destination', this.bookingHeader?.FPD],
+    ['Total Pkgs', this.bookingHeader?.bookingCargo?.[0]?.NoOfPackage],
+    ['Weight', this.bookingHeader?.bookingCargo?.[0]?.GrossWeight],
+    ['Booking No', this.bookingHeader?.BookingNo]
+  ].map(([key, value]) => [{ text: String(key), bold: true }, { text: String(value ?? '') }]);
+
+  const detailTable = {
+    table: {
+      widths: [pxToPt(150), '*'],
+      body: detailRows
+    },
+    layout: {
+      hLineWidth: () => 0.8,
+      vLineWidth: (i: number) => (i === 1 ? 0.8 : 0),
+      hLineColor: () => '#000',
+      vLineColor: () => '#000',
+      paddingLeft: () => 6,
+      paddingRight: () => 6,
+      paddingTop: () => 3,
+      paddingBottom: () => 3
+    },
+    fontSize: 9
+  };
+
+  const labelContent: any[] = [{
+    svg: topBarcode,
+    width: barcodeWidthWithCompany,
+    alignment: 'center',
+    margin: [0, 0, 0, pxToPt(8)]
+  }];
+
+  if (!withCompany) {
+    const withoutCompanyTable = {
+      table: {
+        widths: [pxToPt(150), '*'],
+        body: detailRows
+      },
+      layout: {
+        hLineWidth: () => 1,
+        vLineWidth: (i: number) => (i === 1 ? 1 : 0),
+        hLineColor: () => '#000',
+        vLineColor: () => '#000',
+        paddingLeft: () => 8,
+        paddingRight: () => 8,
+        paddingTop: () => 2,
+        paddingBottom: () => 2
+      },
+      fontSize: 9,
+      margin: [pxToPt(15), pxToPt(12), pxToPt(15), pxToPt(12)]
+    };
+
+    const outerStack: any[] = [
+      { svg: topBarcode, width: barcodeWidthWithoutCompany, alignment: 'center' },
+      withoutCompanyTable,
+      { svg: bottomBarcode, width: barcodeWidthWithoutCompany, alignment: 'center' }
+    ];
+
+    return {
+      table: {
+        widths: [cardWidthWithoutCompany],
+        body: [[{ stack: outerStack, margin: [cardInnerPadding, cardInnerPadding, cardInnerPadding, cardInnerPadding] }]],
+        heights: [cardHeightWithoutCompany]
+      },
+      layout: {
+        hLineWidth: () => 1,
+        vLineWidth: () => 1,
+        hLineColor: () => '#000',
+        vLineColor: () => '#000',
+        paddingLeft: () => 0,
+        paddingRight: () => 0,
+        paddingTop: () => 0,
+        paddingBottom: () => 0
+      },
+      alignment: 'center',
+      margin: [0, 0, 0, 0]
+    };
   }
 
-  // Generate PDF directly from the element
-  this.pdfService.downloadBalancedPDF(
-    elementId,
-    fileName,
-    () => {
-      this.appSettingService.showSuccess('Barcode PDF downloaded successfully!');
-      this.spinner.hide();
-    },
-    (error) => {
-      console.error('PDF generation error:', error);
-      this.appSettingService.showError('Error generating Barcode PDF. Please try again.');
-      this.spinner.hide();
-    }
+  if (withCompany) {
+    labelContent.push(
+      { text: this.currentCompany?.companyName || 'Company Name', bold: true, alignment: 'center', fontSize: 12 },
+      { text: this.currentBranch?.branchName || 'Company Branch', alignment: 'center', margin: [0, 0, 0, 8] }
+    );
+  }
+
+  labelContent.push(
+    { ...detailTable, margin: [0, 0, 0, pxToPt(8)] },
+    { svg: bottomBarcode, width: barcodeWidthWithCompany, alignment: 'center', margin: [0, 0, 0, pxToPt(8)] }
   );
+
+  if (withCompany) {
+    labelContent.push({
+      columns: [
+        ...(logoImage ? [{ image: logoImage, width: 28, margin: [0, 0, 8, 0] }] : []),
+        { text: this.currentCompany?.companyName || '', alignment: 'left', bold: true, margin: [0, 6, 0, 0] }
+      ],
+      margin: [0, 0, 0, 4]
+    });
+
+    const addressLine = [
+      this.currentBranch?.addressLine1,
+      this.currentBranch?.addressLine2,
+      this.currentBranch?.cityMaster?.cityName || this.currentCompany?.City,
+      this.currentBranch?.postalCode || this.currentBranch?.ZipCode,
+      this.currentBranch?.phoneNumber || this.currentBranch?.Phone
+    ].filter(Boolean).join(', ');
+
+    labelContent.push(
+      { text: addressLine, alignment: 'center', fontSize: 8, margin: [0, 0, 0, 2] },
+      { text: this.website || '', alignment: 'center', fontSize: 8 }
+    );
+  }
+
+  return {
+    table: {
+      widths: [cardWidthWithCompany],
+      body: [[{ stack: labelContent, margin: [cardInnerPadding, cardInnerPadding, cardInnerPadding, cardInnerPadding] }]],
+      heights: [cardHeightWithCompany]
+    },
+    layout: {
+      hLineWidth: () => 1,
+      vLineWidth: () => 1,
+      hLineColor: () => '#000',
+      vLineColor: () => '#000',
+      paddingLeft: () => 0,
+      paddingRight: () => 0,
+      paddingTop: () => 0,
+      paddingBottom: () => 0
+    },
+    alignment: 'center',
+    margin: [0, 0, 0, 0]
+  };
+}
+
+private createBarcodeSvg(value: string, width: number, height: number, fontSize: number): string {
+  const svgNode = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  (JsBarcode as any)(svgNode, value, {
+    format: 'CODE128',
+    displayValue: true,
+    width,
+    height,
+    fontSize,
+    margin: 0
+  });
+  return new XMLSerializer().serializeToString(svgNode);
 }
 
 
@@ -4687,11 +4945,14 @@ private getPdfElementId(type: string): string {
 }
 
 // Helper method to generate appropriate file names
-private generateFileName(type: string): string {
+  private generateFileName(type: string): string {
   const bookingNo = this.bookingHeader?.BookingNo || 'Booking';
   const timestamp = new Date().getTime();
   
   switch (type) {
+    case 'barcode':
+      return `Barcode_${bookingNo}_${timestamp}`;
+
     case 'cro':
       return `CRO_${bookingNo}_${timestamp}`;
     
@@ -5124,124 +5385,170 @@ printDiv(divId: string): void {
 
   openPrintQtyModal(template: any) {
     this.printQty = 1;
+    this.isWithCompany = true;
+    this.barcodeActionType = 'print';
     this.modalService.open(template, { centered: true });
   }
 
 
     openPrintQtyModalwithoutCompany(template: any) {
     this.printQty = 1;
+    this.isWithCompany = false;
+    this.barcodeActionType = 'print';
     this.modalService.open(template, { centered: true });
   }
 
+  openPdfQtyModal(template: any) {
+    this.printQty = 1;
+    this.isWithCompany = true;
+    this.barcodeActionType = 'pdf';
+    this.isBarcodePdfReady = false;
+    this.isBarcodePdfPreparing = true;
+    this.modalService.open(template, { centered: true });
+    this.preloadBarcodePdfImage(true);
+  }
+
+  openPdfQtyModalwithoutCompany(template: any) {
+    this.printQty = 1;
+    this.isWithCompany = false;
+    this.barcodeActionType = 'pdf';
+    this.isBarcodePdfReady = false;
+    this.isBarcodePdfPreparing = true;
+    this.modalService.open(template, { centered: true });
+    this.preloadBarcodePdfImage(false);
+  }
+
   confirmPrint(modal: any) {
+    const actionType = this.barcodeActionType;
+    const safeQty = Math.max(1, Number(this.printQty) || 1);
+    const withCompany = this.isWithCompany;
+
+    if (actionType === 'pdf') {
+      if (this.isBarcodePdfPreparing || !this.isBarcodePdfReady || this.isBarcodePdfDownloading) {
+        this.appSettingService.showWarning('Please wait, preparing PDF preview...');
+        return;
+      }
+
+      this.isBarcodePdfDownloading = true;
+      void this.downloadPDFBarCode(safeQty, withCompany).finally(() => {
+        this.isBarcodePdfDownloading = false;
+        modal.close();
+      });
+      return;
+    }
+
     modal.close();
-    this.printDivBarcode('printContent', this.printQty);
+    if (withCompany) {
+      this.printDivBarcode('printContentBarcode', safeQty);
+    } else {
+      this.printDivBarcodeWithCompany('printContentBarcodeNoCompany', safeQty);
+    }
   }
 
 
-//   printDivBarcode(divId: string, qty: number): void {
-//     this.showPrintLogo = true;
-//     this.showPdfLogo = false;
+  printDivBarcode(divId: string, qty: number): void {
+    this.showPrintLogo = true;
+    this.showPdfLogo = false;
 
-//     setTimeout(() => {
-//       const sourceElement = document.getElementById(divId);
-//       if (!sourceElement) return;
+    setTimeout(() => {
+      const sourceElement = document.getElementById(divId);
+      if (!sourceElement) return;
 
-//       // ✅ Collect all styles from current page
-//       const styles = Array.from(document.styleSheets)
-//         .map((sheet: any) => {
-//           try {
-//             return Array.from(sheet.cssRules)
-//               .map((rule: any) => rule.cssText)
-//               .join('');
-//           } catch {
-//             return '';
-//           }
-//         })
-//         .join('');
+      // ✅ Collect all styles from current page
+      const styles = Array.from(document.styleSheets)
+        .map((sheet: any) => {
+          try {
+            return Array.from(sheet.cssRules)
+              .map((rule: any) => rule.cssText)
+              .join('');
+          } catch {
+            return '';
+          }
+        })
+        .join('');
 
-//       let finalHtml = '';
+      let finalHtml = '';
 
-//       for (let i = 0; i < qty; i++) {
-//         finalHtml += `
-//         <div class="print-page">
-//           ${sourceElement.innerHTML}
-//         </div>
-//       `;
-//       }
+      for (let i = 0; i < qty; i++) {
+        finalHtml += `
+        <div class="print-page">
+          ${sourceElement.innerHTML}
+        </div>
+      `;
+      }
 
-//       const popupWin = window.open('', '_blank', 'width=900,height=600');
+      const popupWin = window.open('', '_blank', 'width=900,height=600');
 
-//       if (popupWin) {
-//         popupWin.document.open();
-//         popupWin.document.write(`
-//         <html>
-//           <head>
-//             <title>Print Barcode</title>
+      if (popupWin) {
+        popupWin.document.open();
+        popupWin.document.write(`
+        <html>
+          <head>
+            <title>Print Barcode</title>
 
-//             <!-- Bootstrap -->
-//             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+            <!-- Bootstrap -->
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
 
-//             <!-- FontAwesome -->
-//             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+            <!-- FontAwesome -->
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-//          <style>
-//   ${styles}
+         <style>
+  ${styles}
 
-// html, body {
-//   margin: 0;
-//   padding: 0;
-// }
+html, body {
+  margin: 0;
+  padding: 0;
+}
 
-// /* One physical printed page */
-// .print-page {
-//   width: 100vw;
-//   height: 100vh;
+/* One physical printed page */
+.print-page {
+  width: 100vw;
+  height: 100vh;
 
-//   display: flex;
-//   justify-content: center;
-//   align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-//   page-break-after: always;
-// }
+  page-break-after: always;
+}
 
-// .print-page:last-child {
-//   page-break-after: auto;
-// }
+.print-page:last-child {
+  page-break-after: auto;
+}
 
-// /* Your label size */
-// .print-label {
-//   width: 380px;
-//   height: 480px;
-// }
+/* Your label size */
+.print-label {
+  width: 380px;
+  height: 480px;
+}
 
-// @media print {
-//   body {
-//     -webkit-print-color-adjust: exact;
-//     print-color-adjust: exact;
-//   }
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 
-//   @page {
-//     margin: 0;
-//   }
-// }
+  @page {
+    margin: 0;
+  }
+}
 
-// </style>
+</style>
 
-//           </head>
+          </head>
 
-//           <body onload="window.print(); window.close();">
-//             ${finalHtml}
-//           </body>
-//         </html>
-//       `);
+          <body onload="window.print(); window.close();">
+            ${finalHtml}
+          </body>
+        </html>
+      `);
 
-//         popupWin.document.close();
-//       }
-//     }, 100);
-//   }
+        popupWin.document.close();
+      }
+    }, 100);
+  }
 
-printDivBarcode(divId: string, qty: number): void {
+printDivBarcodeWithCompany(divId: string, qty: number): void {
 
   this.showPrintLogo = true;
   this.showPdfLogo = false;
