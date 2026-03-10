@@ -923,7 +923,7 @@ onETDDateSelect(): void {
       ChargeableWeight: [0, [Validators.min(0)]],
 
       IsSoc: [false],
-      IsHaz: [false]
+      IsHaz: [{value: false, disabled: true}],
     }, { validators: this.grossNetWeightValidator() });
   }
   private grossNetWeightValidator(): ValidatorFn {

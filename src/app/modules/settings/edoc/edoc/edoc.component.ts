@@ -84,6 +84,11 @@ export class EdocComponent implements OnInit, OnDestroy {
     this.componentData = this.commonService.documentData()
     console.log(this.componentData, ' this.componentData')
     this.initEdocForm()
+    if (this.formData) {
+      this.edocform.patchValue({
+        AttachDocmentNo: this.formData.AttachDocmentNo || ''
+      });
+    }
     this.loadEdocData()
   }
   initEdocForm() {
@@ -203,21 +208,21 @@ export class EdocComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Emit to parent (optional)
-    this.dataEmitter.emit({
-      dataItems: [formValue],
-      formData: this.selectedFiles
-    });
-
     console.log('Uploading files...');
 
     // ✅ Update or Create API call
     if (this.attachDocumentSid) {
       // --- Update ---
       this.commonService.updateEdocById(this.attachDocumentSid, formData).subscribe(
-        (res) => {
+        (res: any) => {
           if (res) {
             this.appSettingService.showSuccess(res.message || 'Edoc updated successfully');
+            const createdFiles = res?.createdFiles || res?.data?.createdFiles || [];
+            const firstFile = createdFiles[0];
+            this.dataEmitter.emit({
+              attachDocumentSid: firstFile?.AttachDocumentSid || this.attachDocumentSid,
+              fileName: firstFile?.FileName
+            });
             this.closeTemplate()
             this.resetForm();
           } else {
@@ -233,9 +238,15 @@ export class EdocComponent implements OnInit, OnDestroy {
     } else {
       // --- Create ---
       this.commonService.createEdoc(formData).subscribe(
-        (res) => {
+        (res: any) => {
           if (res) {
             this.appSettingService.showSuccess(res.message || 'Edoc created successfully');
+            const createdFiles = res?.createdFiles || res?.data?.createdFiles || [];
+            const firstFile = createdFiles[0];
+            this.dataEmitter.emit({
+              attachDocumentSid: firstFile?.AttachDocumentSid,
+              fileName: firstFile?.FileName
+            });
             this.closeTemplate()
             this.resetForm();
           } else {

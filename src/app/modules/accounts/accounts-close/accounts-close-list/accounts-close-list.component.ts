@@ -270,17 +270,7 @@ export class AccountsCloseListComponent extends BaseListComponent implements OnI
           visible: true,
           dataType: 'string'
         },
-        {
-          key: 'status',
-          label: 'Status',
-          sortable: true,
-          filterable: true,
-          visible: true,
-          template: 'status',
-          width: '100px',
-          dataType: 'string',
-          cellClass: 'status-column'
-        }
+       
       ],
       actions: [
         {

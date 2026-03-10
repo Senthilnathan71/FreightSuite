@@ -1384,6 +1384,26 @@ processProductUpload(payload: any): Observable<any> {
     );
   }
 
+  deleteCustomerCreditRequest(CustomerCreditRequestSid: number) {
+    return this.http.delete<{ status: boolean; message: string; data: any }>(
+      `credit-request/delete-credit-request/${CustomerCreditRequestSid}`
+    ).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
+  deleteCustomerKyc(CustomerKycSid: number) {
+    return this.http.delete<{ status: boolean; message: string; data: any }>(
+      `credit-request/delete-kyc/${CustomerKycSid}`
+    ).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
   // Service Job related Operations
   getServiceJobById(HouseJobSid: number) {
     return this.http.get<{ data: any }>(`service-job/fetch/${HouseJobSid}`).pipe(
