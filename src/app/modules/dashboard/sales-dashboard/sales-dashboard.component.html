@@ -1,14 +1,44 @@
 <div class="sales-dashboard-container">
   <!-- ============ HERO ============ -->
   <div class="hero">
+    <svg class="hero-svg" viewBox="0 0 1420 130" aria-hidden="true">
+      <defs>
+        <symbol id="jumpDolphin" viewBox="350 130 190 95">
+          <g transform="translate(0,363) scale(0.1,-0.1)">
+            <path
+              fill="white"
+              d="M3809 1947 c-14 -7 -33 -17 -40 -24 -8 -7 -53 -24 -99 -39 -112 -35
+              -159 -79 -188 -179 -23 -73 -21 -87 6 -67 20 14 20 14 97 39 37 12 70 16 85
+              12 41 -12 86 -10 114 4 30 16 24 27 -15 27 -15 0 -31 5 -34 10 -9 15 91 12
+              151 -4 96 -25 204 -105 204 -150 0 -13 5 -37 11 -53 l12 -28 10 27 c9 23 20
+              29 64 38 29 6 53 14 53 18 0 9 -66 39 -102 48 -19 4 -32 18 -46 48 -33 70 -99
+              144 -156 177 -63 35 -72 50 -45 75 10 9 19 21 19 26 0 12 -70 8 -101 -5z"
+            />
+          </g>
+        </symbol>
+      </defs>
+
+      <g class="dolphin-back" opacity=".35">
+        <use href="#jumpDolphin" width="260" height="135"></use>
+      </g>
+
+      <g class="dolphin-main" opacity=".95">
+        <use href="#jumpDolphin" width="260" height="135"></use>
+      </g>
+    </svg>
+
     <div class="hero-content">
-      <div class="hero-left">
+      <div class="hero-text-block">
         <h1>Sales Dashboard</h1>
         <p>Navigate your leads from discovery to booking &mdash; track your conversion pipeline</p>
       </div>
-      <div class="hero-right">
-        <button class="btn btn-glass" (click)="loadDashboardData()"><i class="fas fa-sync-alt"></i> Refresh</button>
-      </div>
+
+      <button class="hero-refresh-btn" type="button" (click)="loadDashboardData()">
+        <svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M13.65 2.35A8 8 0 1 0 15 8h-2a6 6 0 1 1-1.05-3.39L10 6h5V1l-1.35 1.35Z" fill="white" />
+        </svg>
+        Refresh
+      </button>
     </div>
   </div>
 
