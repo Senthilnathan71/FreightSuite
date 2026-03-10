@@ -889,6 +889,8 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       departmentName,
       MBLNo,
       HBLNo,
+      ShipmentNo: this.b['ShipmentNo']?.value || '',
+      parentMenuName: 'Service Job',
       Segment: this.selectedFCLLCL,
       POLSid,
       PODSid,
