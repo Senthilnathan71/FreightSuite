@@ -1286,6 +1286,21 @@ private extractCargoData(enquiryCargo: any[]): any {
     return this.quoteRoutes.at(routeIndex)?.get('quoteProducts') as FormArray;
   }
 
+  private deriveProductVolumetric(product: any): number {
+    const existing = Number(product?.Volumetric ?? product?.volumetric);
+    if (!Number.isNaN(existing) && existing > 0) return existing;
+
+    const length = Number(product?.Length ?? product?.length ?? 0) || 0;
+    const width = Number(product?.Width ?? product?.width ?? 0) || 0;
+    const height = Number(product?.Height ?? product?.height ?? 0) || 0;
+    const qty = Number(product?.ExternalQty ?? product?.ExternlQty ?? 0) || 0;
+
+    if (length > 0 && width > 0 && height > 0 && qty > 0) {
+      return Number((((length * width * height) / 6000) * qty).toFixed(this.digitsAfterDecimal));
+    }
+    return 0;
+  }
+
   addQuoteProduct(routeIndex: number, data?: any) {
     const productForm = this.fb.group({
       QuoteProductSid : [data?.QuoteProductSid || null],
@@ -1713,7 +1728,11 @@ isRateLockDisabled(): boolean {
       if (cargo) {
         (cargo.quoteProduct || []).forEach(product => {
           const productUnNo = this.productList.find(prod => prod.ProductMasterSid === product.ProductMasterSid)?.UnNo;
-          this.addQuoteProduct(routeIndex, { ...product, UnNo: productUnNo });
+          this.addQuoteProduct(routeIndex, {
+            ...product,
+            Volumetric: this.deriveProductVolumetric(product),
+            UnNo: productUnNo
+          });
         })
       }
 
@@ -4326,6 +4345,7 @@ private async createBookingFromQuotation() {
         Width: product.Width,
         Height: product.Height,
         UomMasterSid: product.UomMasterSid,
+        Volumetric: this.deriveProductVolumetric(product),
       })),
 
       // Rate details
@@ -4911,6 +4931,7 @@ private async createBookingFromRoute(routeIndex: number, carrierIndex: number) {
         Width: product.Width,
         Height: product.Height,
         UomMasterSid: product.UomMasterSid,
+        Volumetric: this.deriveProductVolumetric(product),
       })),
 
       // Rate details

@@ -373,7 +373,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
     { label: 'Consignee / Notify', value: printData?.ConsigneeName || invoice?.consigneeName || '' },
     { label: isSeaMode ? 'Vessel Name' : 'Flight Name', value: printData?.Vessel || invoice?.vesselName || '' },
     { label: isSeaMode ? 'Voyage No.' : 'Flight No.', value: printData?.VoyageNo || invoice?.voyageNo || '' },
-    { label: 'Shipper Ref No.', value: printData?.CustomerRefNo || invoice?.shipperRefNo || '' },
+    { label: 'Ref No.', value: printData?.DocumentNumber || invoice?.shipperRefNo || '' },
     { label: 'Loading Port', value: printData?.POL || invoice?.loadingPort || invoice?.pol || '' },
     { label: 'Final Destination', value: printData?.FPD || invoice?.finalDestination || invoice?.fpd || '' },
     { label: 'ETD', value: printData?.ETD ? formatDate(printData.ETD) : formatDate(invoice?.etd || '') },
@@ -392,13 +392,18 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
       : invoice?.currencyCode || '');
 
   const rightItems: { label: string; value: string }[] = [
-    ...(printData?.JobType !== 'Agent'
+    ...(printData?.IsServiceJob !== 'Y' && printData?.JobType !== 'Agent'
   ? [{
       label: isSeaMode ? 'HBL' : 'HAWB',
       value: printData?.HBLNo || invoice?.hblNo || ''
     }]
   : []),
-    { label: isSeaMode ? 'MBL' : 'MAWB', value: printData?.MBLNo || invoice?.mblNo || '' },
+    ...(printData?.IsServiceJob !== 'Y'
+  ? [{
+      label: isSeaMode ? 'MBL' : 'MAWB',
+      value: printData?.MBLNo || invoice?.mblNo || ''
+    }]
+  : []),
     { label: 'Job No.', value: printData?.MasterJobNumber || invoice?.jobNo || '' },
     { label: 'Freight Terms', value: printData?.FreightTerms || invoice?.freightTerms || '' },
     { label: 'Booking No.', value: printData?.BookingNumber || invoice?.bookingNo || '' },
@@ -1191,6 +1196,7 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
           : (isBookingInvoice ? bookingHeader?.FreightTerms : masterJob?.FreightPPCC) || '',
         irnNumber: invoice.IRNNumber || '',
         jobType: isHouseJobInvoice ? houseJob?.JobType : (isBookingInvoice ? bookingHeader?.JobType :  masterJob?.JobType) || '',
+        IsServiceJob: isHouseJobInvoice ? houseJob?.IsServiceJob : '',
         vesselName: options?.shipmentDetails?.vesselName || vesselName,
         voyageNo: options?.shipmentDetails?.voyageNo || voyageNo,
         flightName: options?.shipmentDetails?.flightName || '',
