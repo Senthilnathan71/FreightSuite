@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgApexchartsModule } from 'ng-apexcharts';
+import { NgbDateAdapter, NgbDatepickerModule, NgbDateParserFormatter } from '@ng-bootstrap/ng-bootstrap';
 import { Subject, takeUntil } from 'rxjs';
 import { Router } from '@angular/router';
 import { SalesDashboardService } from '../services/sales-dashboard.service';
@@ -17,19 +18,28 @@ import {
   QuoteNoBooking,
 } from '../interfaces/sales-dashboard.interfaces';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 
 @Component({
   selector: 'app-sales-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgApexchartsModule],
+  imports: [CommonModule, FormsModule, NgApexchartsModule, NgbDatepickerModule, CustomDatePipe],
   templateUrl: './sales-dashboard.component.html',
   styleUrls: ['./sales-dashboard.component.scss'],
+  providers: [
+    { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+  ],
 })
 export class SalesDashboardComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   dashboardData: SalesDashboardData | null = null;
   isLoading = false;
+  dateFromInput: Date | null = null;
+  dateToInput: Date | null = null;
 
   filters: SalesDashboardFilters = {};
   activePreset: string = 'month';
@@ -56,7 +66,8 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.setPreset('month');
+    this.setDefaultDateRange();
+    this.loadDashboardData();
   }
 
   ngOnDestroy(): void {
@@ -77,6 +88,8 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
       .getSalesDashboardData({
         companyMasterSid: company.CompanyMasterSid,
         branchMasterSid: branch?.BranchMasterSid ?? company.BranchMasterSid,
+        dateFrom: this.dateFromInput ? this.toDateStr(this.dateFromInput) : undefined,
+        dateTo: this.dateToInput ? this.toDateStr(this.dateToInput) : undefined,
         ...this.filters,
       })
       .pipe(takeUntil(this.destroy$))
@@ -100,7 +113,8 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
 
   resetFilters(): void {
     this.filters = {};
-    this.setPreset('month');
+    this.setDefaultDateRange();
+    this.loadDashboardData();
   }
 
   setPreset(preset: string): void {
@@ -108,21 +122,21 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     const now = new Date();
     switch (preset) {
       case 'today':
-        this.filters.dateFrom = this.toDateStr(now);
-        this.filters.dateTo = this.toDateStr(now);
+        this.dateFromInput = new Date(now);
+        this.dateToInput = new Date(now);
         break;
       case 'week': {
         const monday = new Date(now);
         monday.setDate(now.getDate() - now.getDay() + 1);
-        this.filters.dateFrom = this.toDateStr(monday);
-        this.filters.dateTo = this.toDateStr(now);
+        this.dateFromInput = new Date(monday);
+        this.dateToInput = new Date(now);
         break;
       }
       case 'month':
-        this.filters.dateFrom = this.toDateStr(
+        this.dateFromInput = new Date(
           new Date(now.getFullYear(), now.getMonth(), 1),
         );
-        this.filters.dateTo = this.toDateStr(now);
+        this.dateToInput = new Date(now);
         break;
       case 'quarter': {
         const qStart = new Date(
@@ -130,15 +144,15 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
           Math.floor(now.getMonth() / 3) * 3,
           1,
         );
-        this.filters.dateFrom = this.toDateStr(qStart);
-        this.filters.dateTo = this.toDateStr(now);
+        this.dateFromInput = new Date(qStart);
+        this.dateToInput = new Date(now);
         break;
       }
       case 'ytd':
-        this.filters.dateFrom = this.toDateStr(
+        this.dateFromInput = new Date(
           new Date(now.getFullYear(), 0, 1),
         );
-        this.filters.dateTo = this.toDateStr(now);
+        this.dateToInput = new Date(now);
         break;
     }
     this.loadDashboardData();
@@ -470,5 +484,15 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
 
   private toDateStr(d: Date): string {
     return d.toISOString().split('T')[0];
+  }
+
+  private setDefaultDateRange(): void {
+    const today = new Date();
+    const oneMonthBack = new Date(today);
+    oneMonthBack.setMonth(oneMonthBack.getMonth() - 1);
+
+    this.activePreset = '';
+    this.dateFromInput = oneMonthBack;
+    this.dateToInput = today;
   }
 }

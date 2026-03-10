@@ -23,11 +23,37 @@
       </div>
       <div class="filter-group">
         <label>Date From</label>
-        <input type="date" [(ngModel)]="filters.dateFrom">
+        <div class="date-input-wrap">
+          <input
+            class="date-input"
+            placeholder="Select date"
+            [(ngModel)]="dateFromInput"
+            ngbDatepicker
+            #dateFromPicker="ngbDatepicker"
+            (click)="dateFromPicker.toggle()"
+            readonly
+          >
+          <button type="button" class="date-toggle" (click)="dateFromPicker.toggle()">
+            <i class="fas fa-calendar-alt"></i>
+          </button>
+        </div>
       </div>
       <div class="filter-group">
         <label>Date To</label>
-        <input type="date" [(ngModel)]="filters.dateTo">
+        <div class="date-input-wrap">
+          <input
+            class="date-input"
+            placeholder="Select date"
+            [(ngModel)]="dateToInput"
+            ngbDatepicker
+            #dateToPicker="ngbDatepicker"
+            (click)="dateToPicker.toggle()"
+            readonly
+          >
+          <button type="button" class="date-toggle" (click)="dateToPicker.toggle()">
+            <i class="fas fa-calendar-alt"></i>
+          </button>
+        </div>
       </div>
       <div class="preset-buttons">
         <button class="preset-btn" [class.active]="activePreset === 'today'" (click)="setPreset('today')">Today</button>
@@ -179,7 +205,7 @@
                 <td><span class="badge" [ngClass]="getLeadStatusClass(lead.leadStatus)">{{ lead.leadStatus }}</span></td>
                 <td><span class="source-tag">{{ lead.leadFrom }}</span></td>
                 <td>{{ lead.salespersonName }}</td>
-                <td>{{ lead.createdOn | date:'dd MMM yyyy' }}</td>
+                <td>{{ lead.createdOn | formatDate }}</td>
                 <td><span class="days-pill" [ngClass]="getDaysPillClass(lead.daysIdle!, 7)">{{ lead.daysIdle }}d</span></td>
                 <td><button class="action-btn schedule" (click)="navigateToMeetingSchedule(lead.PreCustomerMasterSid)">Schedule</button></td>
               </tr>
@@ -216,7 +242,7 @@
               <tbody>
                 <tr *ngFor="let m of dashboardData.sections.meetingsScheduled.overdue">
                   <td><a class="link">{{ getDisplayName(m) }}</a></td>
-                  <td><span class="days-pill danger">{{ m.meetingDate | date:'dd MMM' }}</span></td>
+                  <td><span class="days-pill danger">{{ m.meetingDate | formatDate }}</span></td>
                   <td>{{ m.meetingType }}</td>
                   <td>{{ m.salespersonName }}</td>
                 </tr>
@@ -236,7 +262,7 @@
               <tbody>
                 <tr *ngFor="let m of dashboardData.sections.meetingsScheduled.today">
                   <td><a class="link">{{ getDisplayName(m) }}</a></td>
-                  <td><span class="days-pill warning">{{ m.meetingDate | date:'hh:mm a' }}</span></td>
+                  <td><span class="days-pill warning">{{ m.meetingDate | formatDate:false:false:false:'hh:mm a' }}</span></td>
                   <td>{{ m.meetingType }}</td>
                   <td>{{ m.salespersonName }}</td>
                 </tr>
@@ -256,7 +282,7 @@
               <tbody>
                 <tr *ngFor="let m of dashboardData.sections.meetingsScheduled.future">
                   <td><a class="link">{{ getDisplayName(m) }}</a></td>
-                  <td><span class="days-pill ok">{{ m.meetingDate | date:'dd MMM' }}</span></td>
+                  <td><span class="days-pill ok">{{ m.meetingDate | formatDate }}</span></td>
                   <td>{{ m.meetingType }}</td>
                   <td>{{ m.salespersonName }}</td>
                 </tr>
@@ -294,9 +320,9 @@
               <tr *ngFor="let f of filterSection(dashboardData.sections.meetingsWithFollowup, 3); let i = index">
                 <td class="row-num">{{ i + 1 }}</td>
                 <td><a class="link">{{ getDisplayName(f) }}</a></td>
-                <td>{{ f.meetingDate | date:'dd MMM yyyy' }}</td>
+                <td>{{ f.meetingDate | formatDate }}</td>
                 <td><span class="source-tag">{{ f.meetingType }}</span></td>
-                <td><span class="days-pill" [ngClass]="f.followUpStatus === 'Overdue' ? 'danger' : (f.followUpStatus === 'Due Today' ? 'warning' : 'ok')">{{ f.followUpDate | date:'dd MMM' }}</span></td>
+                <td><span class="days-pill" [ngClass]="f.followUpStatus === 'Overdue' ? 'danger' : (f.followUpStatus === 'Due Today' ? 'warning' : 'ok')">{{ f.followUpDate | formatDate }}</span></td>
                 <td><span class="badge" [ngClass]="getFollowUpStatusClass(f.followUpStatus)">{{ f.followUpStatus }}</span></td>
                 <td class="note-cell" [title]="f.followUpNote">{{ f.followUpNote }}</td>
                 <td>{{ f.salespersonName }}</td>
@@ -339,7 +365,7 @@
                 <td>{{ m.phone }}</td>
                 <td><span class="badge" [ngClass]="getLeadStatusClass(m.leadStatus)">{{ m.leadStatus }}</span></td>
                 <td class="center"><span class="meeting-count-badge">{{ m.meetingCount }}</span></td>
-                <td>{{ m.lastMeetingDate | date:'dd MMM yyyy' }}</td>
+                <td>{{ m.lastMeetingDate | formatDate }}</td>
                 <td><span class="days-pill" [ngClass]="getDaysPillClass(m.daysSinceMeeting!, 14)">{{ m.daysSinceMeeting }}d</span></td>
                 <td>{{ m.salespersonName }}</td>
                 <td><button class="action-btn convert" (click)="navigateToPreCustomer(m.PreCustomerMasterSid)">Convert</button></td>
@@ -379,7 +405,7 @@
                 <td><a class="link" (click)="navigateToCustomer(c.CustomerMasterSid)">{{ c.CustomerName }}</a></td>
                 <td class="note-cell" [title]="c.CustomerAddress1">{{ c.CustomerAddress1 }}</td>
                 <td><a class="link" *ngIf="c.PreCustomerMasterSid" (click)="navigateToPreCustomer(c.PreCustomerMasterSid)">{{ c.preCustomerName }}</a></td>
-                <td>{{ c.customerCreatedOn | date:'dd MMM yyyy' }}</td>
+                <td>{{ c.customerCreatedOn | formatDate }}</td>
                 <td><span class="days-pill" [ngClass]="getDaysPillClass(c.daysWithoutQuote!, 30)">{{ c.daysWithoutQuote }}d</span></td>
                 <td>{{ c.salespersonName }}</td>
                 <td><button class="action-btn create">Create Quote</button></td>
@@ -417,13 +443,13 @@
               <tr *ngFor="let q of filterSection(dashboardData.sections.quotesNotApproved, 6); let i = index">
                 <td class="row-num">{{ i + 1 }}</td>
                 <td><a class="link" (click)="navigateToQuote(q.QuoteHeaderSid)">{{ q.QuoteNumber }}</a></td>
-                <td>{{ q.QuoteDate | date:'dd MMM' }}</td>
+                <td>{{ q.QuoteDate | formatDate }}</td>
                 <td>{{ getQuoteCustomerName(q) }}</td>
                 <td><span class="badge" [ngClass]="getApprovalStatusClass(q.authorizerStatus)">{{ q.authorizerStatus }}</span></td>
                 <td class="note-cell" [title]="q.AuthorizerRemarks">{{ q.AuthorizerRemarks || '&mdash;' }}</td>
                 <td>
                   <span [class.days-pill]="isQuoteExpired(q.QuoteValidTo)" [class.danger]="isQuoteExpired(q.QuoteValidTo)">
-                    {{ q.QuoteValidTo | date:'dd MMM' }}
+                    {{ q.QuoteValidTo | formatDate }}
                   </span>
                 </td>
                 <td><span class="source-tag">{{ q.TransportType }}</span></td>
@@ -464,12 +490,12 @@
               <tr *ngFor="let q of filterSection(dashboardData.sections.quotesNoBooking, 7); let i = index">
                 <td class="row-num">{{ i + 1 }}</td>
                 <td><a class="link" (click)="navigateToQuote(q.QuoteHeaderSid)">{{ q.QuoteNumber }}</a></td>
-                <td>{{ q.QuoteDate | date:'dd MMM' }}</td>
+                <td>{{ q.QuoteDate | formatDate }}</td>
                 <td>{{ getQuoteCustomerName(q) }}</td>
                 <td>{{ q.InternalApprovedBy }}</td>
-                <td>{{ q.InternalApprovedOn | date:'dd MMM' }}</td>
+                <td>{{ q.InternalApprovedOn | formatDate }}</td>
                 <td>
-                  <span *ngIf="q.CustomerApprovedOn" class="badge approved">{{ q.CustomerApprovedOn | date:'dd MMM' }}</span>
+                  <span *ngIf="q.CustomerApprovedOn" class="badge approved">{{ q.CustomerApprovedOn | formatDate }}</span>
                   <span *ngIf="!q.CustomerApprovedOn">&mdash;</span>
                 </td>
                 <td><span class="days-pill" [ngClass]="getDaysPillClass(q.daysSinceApproval || 0, 14)">{{ q.daysSinceApproval || 0 }}d</span></td>
