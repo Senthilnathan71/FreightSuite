@@ -25,9 +25,11 @@
                         <i class="fas fa-sync-alt me-1"></i> Reset
                     </button>
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-                        (click)="onSubmit()" [disabled]="(!mps.can('update') && isEditMode)"
+                        appPreventMultiClick
+                        (click)="onSubmit()" [disabled]="isSaveDisabled()"
                         >
-                        <i class="fas fa-save me-1"></i> Save
+                        <i class="fas fa-save me-1"></i>
+                        <span>{{ isSaving ? "Saving..." : "Save" }}</span>
                     </button>
                     <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
             <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
@@ -147,23 +149,33 @@
       </span>
     </div>
 
-    <!-- Right Side (Approval Status) -->
-    <span
-      class="px-2 py-1 rounded text-white"
-      [ngStyle]="{
-        'background-color':
-          credit.get('ApprovalStatus')?.value === 'APPROVED'
-            ? '#28a745'
-            : credit.get('ApprovalStatus')?.value === 'REJECTED'
-            ? '#dc3545'
-            : '#0d6efd',
-        'font-size': '10px',
-        'font-weight': '600',
-        'text-transform': 'uppercase'
-      }"
-    >
-      {{ credit.get('ApprovalStatus')?.value || 'Pending' }}
-    </span>
+    <!-- Right Side (Approval Status + Delete) -->
+    <div class="d-flex align-items-center gap-2">
+      <span
+        class="px-2 py-1 rounded text-white"
+        [ngStyle]="{
+          'background-color':
+            credit.get('ApprovalStatus')?.value === 'Approved'
+              ? '#28a745'
+              : credit.get('ApprovalStatus')?.value === 'Rejected'
+              ? '#dc3545'
+              : '#0d6efd',
+          'font-size': '10px',
+          'font-weight': '600',
+          'text-transform': 'uppercase'
+        }"
+      >
+        {{ credit.get('ApprovalStatus')?.value || 'Pending' }}
+      </span>
+      <span
+        *ngIf="credit.get('ApprovalStatus')?.value === 'Pending'"
+        class="btn btn-sm btn-danger py-0 px-2"
+        (click)="deleteCreditRequestRow(i); $event.stopPropagation()"
+        title="Delete Credit Request"
+      >
+        <i class="fas fa-trash"></i>
+      </span>
+    </div>
   </button>
 </h2>
 
@@ -182,6 +194,7 @@
                           bindLabel="name"
                           bindValue="id"
                           placeholder=""
+                          [disabled]="isApprovedRow(credit)"
                           (change)="onBranchSelect($event, i)"
                           appendTo="body">
                         </ng-select>
@@ -199,6 +212,7 @@
                           bindLabel="departmentName"
                           bindValue="DepartmentMasterSid"
                           placeholder=""
+                          [disabled]="isApprovedRow(credit)"
                           (change)="onDepartmentSelect($event, i)"
                           appendTo="body">
                         </ng-select>
@@ -216,6 +230,7 @@
                           bindLabel="userName"
                           bindValue="UserMasterSid"
                           placeholder=""
+                          [disabled]="isApprovedRow(credit)"
                           appendTo="body">
                         </ng-select>
                         <label class="input-label">Sales Person</label>
@@ -227,7 +242,8 @@
                       <div class="custom-form-group"
                            [class.filled]="credit.get('CreditDays')?.value !== null && credit.get('CreditDays')?.value !== ''">
                         <input type="number" formControlName="CreditDays"
-                               class="custom-input-field sm" min="0" placeholder="" />
+                               class="custom-input-field sm" min="0" placeholder=""
+                               [disabled]="isApprovedRow(credit)" />
                         <label class="input-label">Credit Days <span class="text-danger">*</span></label>
                       </div>
                     </aside>
@@ -237,7 +253,8 @@
                       <div class="custom-form-group"
                            [class.filled]="credit.get('CreditLimit')?.value !== null && credit.get('CreditLimit')?.value !== ''">
                         <input type="number" formControlName="CreditLimit"
-                               class="custom-input-field sm" min="0" step="0.01" placeholder="" />
+                               class="custom-input-field sm" min="0" step="0.01" placeholder=""
+                               [disabled]="isApprovedRow(credit)" />
                         <label class="input-label">Credit Limit <span class="text-danger">*</span></label>
                       </div>
                     </aside>
@@ -247,7 +264,8 @@
                       <div class="custom-form-group"
                            [class.filled]="credit.get('PublishedDays')?.value !== null && credit.get('PublishedDays')?.value !== ''">
                         <input type="number" formControlName="PublishedDays"
-                               class="custom-input-field sm" min="0" placeholder="" />
+                               class="custom-input-field sm" min="0" placeholder=""
+                               [disabled]="isApprovedRow(credit)" />
                         <label class="input-label">Published Days</label>
                       </div>
                     </aside>
@@ -257,7 +275,8 @@
                       <div class="custom-form-group"
                            [class.filled]="credit.get('PublishedLimit')?.value !== null && credit.get('PublishedLimit')?.value !== ''">
                         <input type="number" formControlName="PublishedLimit"
-                               class="custom-input-field sm" min="0" step="0.01" placeholder="" />
+                               class="custom-input-field sm" min="0" step="0.01" placeholder=""
+                               [disabled]="isApprovedRow(credit)" />
                         <label class="input-label">Published Limit</label>
                       </div>
                     </aside>
@@ -271,8 +290,9 @@
                                  ngbDatepicker #d1="ngbDatepicker"
                                  (click)="d1.toggle()"
                                  formControlName="EffectiveFrom"
+                                 [disabled]="isApprovedRow(credit)"
                                  [minDate]="today" container="body" />
-                          <button class="btn px-0" (click)="d1.toggle()" type="button">
+                          <button class="btn px-0" (click)="d1.toggle()" type="button" [disabled]="isApprovedRow(credit)">
                             <i-feather name="calendar" class="feather-sm"></i-feather>
                           </button>
                         </div>
@@ -294,7 +314,7 @@
                             <i-feather name="calendar" class="feather-sm"></i-feather>
                           </button>
                         </div>
-                        <label class="input-label">Effective To</label>
+                        <label class="input-label">Effective To <span class="text-danger">*</span></label>
                       </div>
                     </aside>
 
@@ -310,6 +330,7 @@
                                             bindLabel="name"
                                             bindValue="value" 
                                             placeholder=""
+                                            [disabled]="isApprovedRow(credit)"
                                             >
                                         </ng-select>
                         <label class="input-label">Approval Status</label>
@@ -341,7 +362,7 @@
                           <i class="fas fa-layer-group me-2"></i>KYC Documents
                         </h6>
                         <button type="button" class="btn btn-sm btn-info"
-                                (click)="addKycRow(i)">
+                                (click)="addKycRow(i)" [disabled]="isApprovedRow(credit)">
                           <i class="fas fa-plus"></i> Add KYC
                         </button>
                       </div>
@@ -359,6 +380,7 @@
                             <table class="table table-hover table-sm mb-0">
                               <thead class="bg-info">
                                 <tr>
+                                   <th class="bg-transparent text-light" width="3%"></th>
                                   <th width="2%" class="bg-transparent text-light">S.No</th>
                                   <th width class="bg-transparent text-light">Document Name</th>
                                   <th class="bg-transparent text-light">Document No.</th>
@@ -368,6 +390,12 @@
                               <tbody>
                                 @for (kyc of getKycArray(i).controls; track kyc; let k = $index) {
                                   <tr [formGroupName]="k">
+                                    <td>
+                                      <button type="button" class="btn btn-sm border-0"
+                                              (click)="deleteKycRow(i, k)" [disabled]="isApprovedRow(credit)">
+                                        <i class="fas fa-trash text-danger"></i>
+                                      </button>
+                                    </td>
                                     <td class="text-center pt-1">{{ k + 1 }}</td>
                                     <td>
                                       <ng-select
@@ -376,19 +404,34 @@
                                         bindLabel="name"
                                         bindValue="id"
                                         placeholder=""
+                                        [disabled]="isApprovedRow(credit)"
                                         appendTo="body">
                                       </ng-select>
                                     </td>
                                     <td>
                                       <input type="text" formControlName="KycDocNumber"
                                              class="custom-input-field sm"
-                                             placeholder="" />
+                                             placeholder=""
+                                             [disabled]="isApprovedRow(credit)" />
                                     </td>
                                     <td>
-                                      <button type="button" class="btn btn-sm btn-secondary dofi-min-w-80"
-                                              (click)="openEDoc(i, k)">
+                                      <button *ngIf="!kyc.get('AttachDocumentSid')?.value"
+                                              type="button"
+                                              class="btn btn-sm btn-secondary dofi-min-w-80"
+                                              (click)="openEDoc(i, k)" [disabled]="isApprovedRow(credit)">
                                         <i class="fas fa-upload me-1"></i> Upload
                                       </button>
+                                     
+                                      <button *ngIf="kyc.get('AttachDocumentSid')?.value"
+                                        type="button"
+                                        class="badge bg-success ms-1 border-0"
+                                        (click)="openEDoc(i, k)"
+                                        [disabled]="isApprovedRow(credit)">
+                                        Attached
+                                      </button>
+                                      <div *ngIf="getKycFileName(i, k)" class="small text-muted mt-1">
+                                        {{ getKycFileName(i, k) }}
+                                      </div>
                                     </td>
                                     
                                   </tr>
