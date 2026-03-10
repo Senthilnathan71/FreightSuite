@@ -30,7 +30,7 @@
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()"
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" [disabled]="(!mps.can('update') && isEditMode)"
                         >
                         <i class="fas fa-save me-1"></i>
                         {{isSaving ? 'Saving...' : (isEditMode ? 'Update' : 'Save') }}
@@ -90,21 +90,26 @@
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!termsAndConditionForm.get('POL')?.value">
-                            <ng-select class="ng-select" [items]="filteredPOL" bindValue="PortCode" bindLabel="PortCode" formControlName="POL"  placeholder="" (change)="onPortSelectionChange()">
+                            <!-- <ng-select class="ng-select" [items]="filteredPOL" bindValue="PortCode" bindLabel="PortCode" formControlName="POL"  placeholder="" (change)="onPortSelectionChange()">
                                 <ng-template ng-option-tmp let-item="item">
                                     {{ item.PortName }} - {{ item.PortCode }}
                                 </ng-template>
-                            </ng-select>
+                            </ng-select> -->
+                            <dofi-searchable-dropdown [items]="filteredPOL" formControlName="POL" placeholder=""
+                            [displayFields]="portLookupConfig.displayFields"
+                            [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
+                            bindLabel="PortCode" bindValue="PortCode" (itemSelected)="onPortSelectionChange()">
+                            </dofi-searchable-dropdown>
                             <label for="text-input" class="input-label">POL</label> 
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!termsAndConditionForm.get('POD')?.value">
-                            <ng-select class="ng-select" [items]="filteredPOD" bindValue="PortCode" bindLabel="PortCode" formControlName="POD"  placeholder="" (change)="onPortSelectionChange()">
-                                <ng-template ng-option-tmp let-item="item">
-                                    {{ item.PortName }} - {{ item.PortCode }}
-                                </ng-template>
-                            </ng-select>
+                            <dofi-searchable-dropdown [items]="filteredPOD" formControlName="POD" placeholder=""
+                            [displayFields]="portLookupConfig.displayFields"
+                            [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
+                            bindLabel="PortCode" bindValue="PortCode" (itemSelected)="onPortSelectionChange()">
+                            </dofi-searchable-dropdown>
                             <label for="text-input" class="input-label">POD</label>
 
                         </div>
