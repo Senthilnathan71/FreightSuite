@@ -292,7 +292,7 @@ private formatAmount(amount: number | string): string {
         label: 'Create (Non Job)',
         icon: 'fas fa-plus',
         action: 'create-non-job',
-        cssClass : 'dofi-min-w-120',
+        cssClass : 'dofi-min-w-130 dofi-max-w-130',
         disabled: !this.mps.can('insert')
       },
       {
