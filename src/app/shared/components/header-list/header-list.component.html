@@ -62,11 +62,66 @@
                     type="button"
                     class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                     [disabled]="action.disabled"
-                    (click)="onActionClick(action.action)">
+                    (click)="onActionClick(action.action)"
+                     [ngClass]="action.cssClass"
+                     >
 
               <i [class]="action.icon + ' me-1'"></i> {{ action.label }}
 
             </button>
+
+            <div *ngIf="action.children && action.condition !== false"
+ 
+                 ngbDropdown
+ 
+                 class="d-inline-block">
+ 
+ 
+ 
+              <button type="button"
+ 
+                      class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+ 
+                      ngbDropdownToggle
+                     
+ 
+                      [disabled]="action.disabled">
+ 
+ 
+ 
+                <i [class]="action.icon + ' me-1'"></i> {{ action.label }}
+ 
+ 
+ 
+              </button>
+ 
+ 
+ 
+              <div ngbDropdownMenu>
+ 
+                <ng-container *ngFor="let child of action.children">
+ 
+                  <button *ngIf="child.condition !== false"
+ 
+                          ngbDropdownItem
+ 
+                          (click)="onActionClick(child.action)"
+ 
+                          [disabled]="child.disabled">
+ 
+ 
+ 
+                    <i [class]="child.icon + ' me-1'"></i> {{ child.label }}
+ 
+ 
+ 
+                  </button>
+ 
+                </ng-container>
+ 
+              </div>
+ 
+            </div>
 
           </ng-container>
 
@@ -81,7 +136,7 @@
          *ngIf="hasAnyFilterConfig">
 
       <!-- Date Type -->
-      <div class="col filter-col" *ngIf="dateTypeConfig?.enabled">
+      <div class="col mt-1" *ngIf="dateTypeConfig?.enabled">
 
         <div class="custom-form-group custom-form-group-select"
              [class.filled]="!!selectedDateType">
@@ -103,7 +158,7 @@
 
 
       <!-- Date Range -->
-      <div class="col filter-col" *ngIf="dateRangeConfig?.enabled">
+      <div class="col mt-1" *ngIf="dateRangeConfig?.enabled">
 
         <div class="custom-form-group custom-form-group-select"
              [class.filled]="!!selectedPreset">
@@ -131,7 +186,7 @@
 
 
       <!-- From Date -->
-      <div class="col filter-col"
+      <div class="col filter-col mt-1"
            *ngIf="dateRangeConfig?.enabled && isCustomRange">
 
         <div class="custom-form-group custom-form-group-select-date"
@@ -164,7 +219,7 @@
 
 
       <!-- To Date -->
-      <div class="col filter-col"
+      <div class="col filter-col mt-1"
            *ngIf="dateRangeConfig?.enabled && isCustomRange">
 
         <div class="custom-form-group custom-form-group-select-date"
@@ -197,7 +252,7 @@
 
 
       <!-- Customer -->
-      <div class="col filter-col" *ngIf="partyFilterConfig?.enabled">
+      <div class="col filter-col mt-1" *ngIf="partyFilterConfig?.enabled">
 
         <div class="custom-form-group custom-form-group-select"
              [class.filled]="!!selectedParty">
@@ -223,7 +278,7 @@
 
 
       <!-- Department -->
-      <div class="col filter-col" *ngIf="departmentFilterConfig?.enabled">
+      <div class="col filter-col mt-1" *ngIf="departmentFilterConfig?.enabled">
 
         <div class="custom-form-group custom-form-group-select"
              [class.filled]="!!selectedDepartment">
@@ -249,7 +304,7 @@
 
 
       <!-- POL -->
-      <div class="col filter-col" *ngIf="polFilterConfig?.enabled">
+      <div class="col filter-col mt-1" *ngIf="polFilterConfig?.enabled">
 
         <div class="custom-form-group custom-form-group-select"
              [class.filled]="!!selectedPOL">
@@ -275,7 +330,7 @@
 
 
       <!-- POD -->
-      <div class="col filter-col" *ngIf="podFilterConfig?.enabled">
+      <div class="col filter-col mt-1" *ngIf="podFilterConfig?.enabled">
 
         <div class="custom-form-group custom-form-group-select"
              [class.filled]="!!selectedPOD">
@@ -301,7 +356,7 @@
 
 
       <!-- Clear -->
-      <div class="col-auto d-flex align-items-end">
+      <div class="col-auto d-flex align-items-end mt-3">
 
         <button class="btn btn-secondary btn-sm"
                 (click)="clearAdvancedFilters()">
