@@ -32,7 +32,7 @@
                     <span>Create </span>    
                     </button>
             </div>
-      <div class="action-group" *ngIf="isEditMode"> </div>
+      <!-- <div class="action-group" *ngIf="isEditMode"> </div> -->
       <div class="action-group">
         <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateBack()">
           <i class="fas fa-chevron-left me-1"></i>
@@ -82,7 +82,7 @@
       <div class="row">
         <div class="col-12">
           <div class="row compact-form" [formGroup]="serviceJobForm">
-            <aside class="col-md-3">
+            <aside class="col-md-2">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!serviceJobForm.get('DepartmentMasterSid')?.value">
                 <dofi-searchable-dropdown #departmentLookup [items]="departmentList"
@@ -103,7 +103,7 @@
                 }
               </div>
             </aside>
-            <aside class="col-md-3">
+            <aside class="col-md-2">
               <div class=" custom-form-group custom-form-group-select-date">
                 <div class="input-group">
                   <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="MBLDate" ngbDatepicker
@@ -118,7 +118,7 @@
 
               </div>
             </aside>
-            <aside class="col-md-3">
+            <aside class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
                   formControlName="MasterJobNumber">
@@ -128,7 +128,7 @@
              }">Job No.<span class="text-danger"></span></label>
               </div>
             </aside>
-            <aside class="col-md-3">
+            <aside class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
                   formControlName="HBLNo">
@@ -143,7 +143,7 @@
             
             
 
-            <aside class="col-md-3">
+            <aside class="col-md-2">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!serviceJobForm.get('CustomerMasterSid')?.value">
                 <dofi-searchable-dropdown [items]="customerList" formControlName="CustomerMasterSid" placeholder=""
@@ -162,7 +162,7 @@
                 }
               </div>
             </aside>
-            <aside class="col-md-3">
+            <aside class="col-md-2">
               <div class="custom-form-group" style="margin-top: 8px;">
                 <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
                   formControlName="ShipmentNo">
@@ -172,7 +172,7 @@
              }">Reference No <span class="text-danger"></span></label>
               </div>
             </aside>
-            <aside class="col-md-3">
+            <aside class="col-md-2">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!serviceJobForm.get('POL')?.value">
                 <dofi-searchable-dropdown [items]="filteredPOL" formControlName="POL" placeholder=""
@@ -191,7 +191,7 @@
               </div>
             </aside>
 
-            <aside class="col-md-3">
+            <aside class="col-md-2">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!serviceJobForm.get('POD')?.value">
                 <dofi-searchable-dropdown [items]="filteredPOD" formControlName="POD" placeholder=""
@@ -211,7 +211,7 @@
             </aside>
 
 
-            <div class="col-md-3">
+            <div class="col-md-2">
               <aside>
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!serviceJobForm.get('status')?.value">
@@ -583,7 +583,7 @@
           <!-- External Note -->
           <aside class="col-md-2">
             <div class="custom-form-group">
-              <textarea rows="2" class="form-control custom-input-field" formControlName="ExternalNote"></textarea>
+              <textarea rows="1" class=" custom-input-field" formControlName="ExternalNote" placeholder=""></textarea>
               <label class="input-label">External Note</label>
             </div>
           </aside>
@@ -591,11 +591,25 @@
           <!-- Internal Note -->
           <aside class="col-md-2">
             <div class="custom-form-group">
-              <textarea rows="2" class="form-control custom-input-field" formControlName="InternalNote"></textarea>
+              <textarea rows="1" class=" custom-input-field" formControlName="InternalNote" placeholder=""></textarea>
               <label class="input-label">Internal Note</label>
             </div>
           </aside>
 
+          <aside class="col-md-2">
+            <div class="custom-form-group">
+              <input  class="form-control custom-input-field" formControlName="CommodityDescription" placeholder="">
+              <label class="input-label">Good Decription</label>
+            </div>
+          </aside>
+          
+          <!-- Internal Note -->
+          <aside class="col-md-2">
+            <div class="custom-form-group">
+              <input  class="form-control custom-input-field" formControlName="MarksAndNumber" placeholder="">
+              <label class="input-label">Mark and Number</label>
+            </div>
+          </aside>
 
         </div>
       </div>

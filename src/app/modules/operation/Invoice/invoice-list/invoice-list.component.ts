@@ -122,13 +122,17 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
   // Alias for compatibility with existing template
   get allInvoice() { return this.allItems; }
   partySearchFn = (_searchTerm: string, partyType: string): Observable<any[]> => {
-    const companyMasterSid = this.currentCompany?.CompanyMasterSid;
-    if (!companyMasterSid || partyType !== 'CustomerMasterSid') {
+   const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const branchMasterSid = this.currentBranch?.BranchMasterSid;
+    if (!companyMasterSid || !branchMasterSid || partyType !== 'CustomerMasterSid') {
       return of([]);
     }
 
-    return this.operationService.getAllCustomersWithBranch(companyMasterSid).pipe(
-      map((data: any) => Array.isArray(data) ? data : []),
+    return this.operationService.getAllDebtorWithCOAMapped({
+      CompanyMasterSid: companyMasterSid,
+      BranchMasterSid: branchMasterSid
+    }).pipe(
+      map((resp: any) => Array.isArray(resp?.data) ? resp.data : []),
       catchError(() => of([]))
     );
   };
@@ -321,7 +325,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         filterable: true,
         visible: true,
         dataType: 'string',
-        width:"170px"
+        
       },
       {
         key: 'VoucherDate',

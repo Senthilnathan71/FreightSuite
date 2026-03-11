@@ -7,6 +7,13 @@
   margin: 2px;
 }
 
+/* Make all visible filter columns share space equally */
+.advanced-filter-row > [class*='col']:not(.col-auto) {
+  flex: 1 1 0;
+  min-width: 180px;
+  max-width: none;
+}
+
 /* remove bottom spacing */
 .advanced-filter-row .custom-form-group {
   margin-bottom: 0;
@@ -19,9 +26,9 @@
 --------------------------------*/
 
 .filter-col {
-  min-width: 140px;
-  max-width: 220px;
-  flex: 1 1 160px;
+  min-width: 180px;
+  max-width: none;
+  flex: 1 1 0;
 }
 
 /* prevent long values from breaking layout */
@@ -63,8 +70,8 @@
 
 @media (max-width: 1200px) {
 
-  .filter-col {
-    flex: 1 1 200px;
+  .advanced-filter-row > [class*='col']:not(.col-auto) {
+    min-width: 160px;
   }
 
 }
@@ -75,8 +82,9 @@
     row-gap: 10px;
   }
 
-  .filter-col {
+  .advanced-filter-row > [class*='col']:not(.col-auto) {
     flex: 1 1 100%;
+    min-width: 100%;
     max-width: 100%;
   }
 

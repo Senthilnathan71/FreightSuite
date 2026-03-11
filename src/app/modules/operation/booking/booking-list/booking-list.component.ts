@@ -440,7 +440,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 filterable: true,
                 visible: true,
                 dataType: 'string',
-                width: '100px'
+               
                 
             },
            {
@@ -513,7 +513,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 visible: true,
                 dataType: 'string',
                 cellClass: 'vessel-column',
-                width: '100px'
+               
             },
             // {
             //     key: 'salesman',

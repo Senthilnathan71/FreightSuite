@@ -1,374 +1,298 @@
 <div class="col-12">
-   <div class="col-12">
-  <div class="bg-white mb-1 rounded shadow-sm">
+  <div class="col-12">
+    <div class="bg-white mb-1 rounded shadow-sm">
 
-    <!-- Row 1: Title | Search | Actions -->
-    <div class="row align-items-center py-1 justify-content-between px-2">
+      <!-- Row 1: Title | Search | Actions -->
+      <div class="row align-items-center py-1 justify-content-between px-2">
 
-      <!-- Title -->
-      <div class="col-md">
-        <div class="d-flex align-items-center gap-2">
-          <h5 class="page-title mb-0 text-info">{{ title }}</h5>
-          <app-favorite-star *ngIf="showFavorite" [screenName]="title" class="mt-1 me-1"></app-favorite-star>
-        </div>
-      </div>
-
-      <!-- Search -->
-      <div class="col-md " *ngIf="showSearch">
-        <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0"
-              (ngSubmit)="onSearch()" (submit)="$event.preventDefault()">
-
-          <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
-
-            <div class="form-outline flex-grow-1 position-relative">
-              <input name="filterValue" type="text" class="form-control pe-5"
-                     [placeholder]="searchPlaceholder"
-                     [(ngModel)]="searchValue"
-                     (keyup.enter)="onSearch(); $event.preventDefault()">
-
-              <button type="button"
-                      *ngIf="searchValue"
-                      class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
-                      (click)="onClearSearch()">
-
-                <i class="fas fa-times"></i>
-
-              </button>
-            </div>
-
-            <div class="mt-md-0 mt-1">
-              <button type="button"
-                      class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                      (click)="onSearch()">
-
-                <i class="fas fa-search me-1"></i> {{ searchButtonText }}
-
-              </button>
-            </div>
-
+        <!-- Title -->
+        <div class="col-md">
+          <div class="d-flex align-items-center gap-2">
+            <h5 class="page-title mb-0 text-info">{{ title }}</h5>
+            <app-favorite-star *ngIf="showFavorite" [screenName]="title" class="mt-1 me-1"></app-favorite-star>
           </div>
+        </div>
 
-        </form>
-      </div>
+        <!-- Search -->
+        <div class="col-md " *ngIf="showSearch">
+          <form class="row d-flex flex-wrap align-items-center justify-content-center gap-1 gap-md-2 mx-0"
+            (ngSubmit)="onSearch()" (submit)="$event.preventDefault()">
 
-      <!-- Actions -->
-      <div class="col-md-auto" *ngIf="actions.length > 0">
+            <div class="d-flex gap-2 col-12 px-0 align-items-stretch align-items-md-center">
 
-        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+              <div class="form-outline flex-grow-1 position-relative">
+                <input name="filterValue" type="text" class="form-control pe-5" [placeholder]="searchPlaceholder"
+                  [(ngModel)]="searchValue" (keyup.enter)="onSearch(); $event.preventDefault()">
 
-          <ng-container *ngFor="let action of actions">
+                <button type="button" *ngIf="searchValue"
+                  class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-3 p-1 text-secondary"
+                  (click)="onClearSearch()">
 
-            <button *ngIf="!action.children && action.condition !== false"
-                    type="button"
-                    class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                    [disabled]="action.disabled"
-                    (click)="onActionClick(action.action)"
-                     [ngClass]="action.cssClass"
-                     >
+                  <i class="fas fa-times"></i>
 
-              <i [class]="action.icon + ' me-1'"></i> {{ action.label }}
-
-            </button>
-
-            <div *ngIf="action.children && action.condition !== false"
- 
-                 ngbDropdown
- 
-                 class="d-inline-block">
- 
- 
- 
-              <button type="button"
- 
-                      class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
- 
-                      ngbDropdownToggle
-                     
- 
-                      [disabled]="action.disabled">
- 
- 
- 
-                <i [class]="action.icon + ' me-1'"></i> {{ action.label }}
- 
- 
- 
-              </button>
- 
- 
- 
-              <div ngbDropdownMenu>
- 
-                <ng-container *ngFor="let child of action.children">
- 
-                  <button *ngIf="child.condition !== false"
- 
-                          ngbDropdownItem
- 
-                          (click)="onActionClick(child.action)"
- 
-                          [disabled]="child.disabled">
- 
- 
- 
-                    <i [class]="child.icon + ' me-1'"></i> {{ child.label }}
- 
- 
- 
-                  </button>
- 
-                </ng-container>
- 
+                </button>
               </div>
- 
+
+              <div class="mt-md-0 mt-1">
+                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSearch()">
+
+                  <i class="fas fa-search me-1"></i> {{ searchButtonText }}
+
+                </button>
+              </div>
+
             </div>
 
-          </ng-container>
+          </form>
+        </div>
+
+        <!-- Actions -->
+        <div class="col-md-auto" *ngIf="actions.length > 0">
+
+          <div
+            class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+
+            <ng-container *ngFor="let action of actions">
+
+              <button *ngIf="!action.children && action.condition !== false" type="button"
+                class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" [disabled]="action.disabled"
+                (click)="onActionClick(action.action)" [ngClass]="action.cssClass">
+
+                <i [class]="action.icon + ' me-1'"></i> {{ action.label }}
+
+              </button>
+
+              <div *ngIf="action.children && action.condition !== false" ngbDropdown class="d-inline-block">
+
+
+
+                <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" ngbDropdownToggle
+                  [disabled]="action.disabled">
+
+
+
+                  <i [class]="action.icon + ' me-1'"></i> {{ action.label }}
+
+
+
+                </button>
+
+
+
+                <div ngbDropdownMenu>
+
+                  <ng-container *ngFor="let child of action.children">
+
+                    <button *ngIf="child.condition !== false" ngbDropdownItem (click)="onActionClick(child.action)"
+                      [disabled]="child.disabled">
+
+
+
+                      <i [class]="child.icon + ' me-1'"></i> {{ child.label }}
+
+
+
+                    </button>
+
+                  </ng-container>
+
+                </div>
+
+              </div>
+
+            </ng-container>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Row 2 Filters -->
+      <div class="row g-2  pb-1 border-top advanced-filter-row bg-white" *ngIf="hasAnyFilterConfig">
+
+        <!-- Date Type -->
+        <div class="col mt-1" *ngIf="dateTypeConfig?.enabled">
+
+          <div class="custom-form-group custom-form-group-select" [class.filled]="!!selectedDateType">
+
+            <ng-select [items]="dateTypeConfig!.options" bindLabel="label" bindValue="value"
+              [(ngModel)]="selectedDateType" (change)="onDateTypeChange()" appendTo="body">
+            </ng-select>
+
+            <label class="input-label">Date Type</label>
+
+          </div>
+
+        </div>
+
+
+        <!-- Date Range -->
+        <div class="col mt-1" *ngIf="dateRangeConfig?.enabled">
+
+          <div class="custom-form-group custom-form-group-select" [class.filled]="!!selectedPreset">
+
+            <ng-select [(ngModel)]="selectedPreset" (change)="onDateRangePresetChange()" appendTo="body">
+
+              <ng-option [value]="'all'">All Data</ng-option>
+              <ng-option [value]="'last30'">Last 30 Days</ng-option>
+              <ng-option [value]="'thisMonth'">This Month</ng-option>
+              <ng-option [value]="'lastMonth'">Last Month</ng-option>
+              <ng-option [value]="'last2Months'">Last 2 Months</ng-option>
+              <ng-option [value]="'last3Months'">Last 3 Months</ng-option>
+              <ng-option [value]="'custom'">Custom Range</ng-option>
+
+            </ng-select>
+
+            <label class="input-label">Date Range</label>
+
+          </div>
+
+        </div>
+
+
+        <!-- From Date -->
+        <div class="col filter-col mt-1" *ngIf="dateRangeConfig?.enabled && isCustomRange">
+
+          <div class="custom-form-group custom-form-group-select-date" [class.filled]="!!customFromDate">
+
+
+
+            <div class="input-group">
+
+              <input class="form-control" placeholder="dd-MMM-yyyy" [(ngModel)]="customFromDate" ngbDatepicker
+                #dpFrom="ngbDatepicker" (click)="dpFrom.toggle()" (ngModelChange)="onCustomDateChanged()" readonly>
+
+              <button class="btn px-0" (click)="dpFrom.toggle()">
+
+                <i-feather name="calendar" class="feather-sm"></i-feather>
+
+              </button>
+
+            </div>
+            <label class="input-label">From</label>
+          </div>
+
+        </div>
+
+
+        <!-- To Date -->
+        <div class="col filter-col mt-1" *ngIf="dateRangeConfig?.enabled && isCustomRange">
+
+          <div class="custom-form-group custom-form-group-select-date" [class.filled]="!!customToDate">
+
+
+            <div class="input-group">
+
+              <input class="form-control" placeholder="dd-MMM-yyyy" [(ngModel)]="customToDate" ngbDatepicker
+                #dpTo="ngbDatepicker" (click)="dpTo.toggle()" (ngModelChange)="onCustomDateChanged()" readonly>
+
+              <button class="btn px-0" (click)="dpTo.toggle()">
+
+                <i-feather name="calendar" class="feather-sm"></i-feather>
+
+              </button>
+
+            </div>
+
+            <label class="input-label">To</label>
+          </div>
+
+        </div>
+
+
+        <!-- Customer -->
+        <div class="col filter-col mt-1" *ngIf="partyFilterConfig?.enabled">
+
+          <div class="custom-form-group custom-form-group-select" [class.filled]="!!selectedParty">
+
+            <ng-select [items]="partySearchResults" bindLabel="CustomerName" [(ngModel)]="selectedParty"
+              (change)="onPartySelected($event)" [loading]="partyLoading" [clearable]="true" appendTo="body">
+
+            </ng-select>
+
+            <label class="input-label">
+              {{ partyFilterConfig?.partyTypes?.[0]?.label || 'Customer' }}
+            </label>
+
+          </div>
+
+        </div>
+
+
+        <!-- Department -->
+        <div class="col filter-col mt-1" *ngIf="departmentFilterConfig?.enabled">
+
+          <div class="custom-form-group custom-form-group-select" [class.filled]="!!selectedDepartment">
+
+            <ng-select [items]="departmentFilterConfig!.options" [bindLabel]="departmentFilterConfig!.bindLabel"
+              [bindValue]="departmentFilterConfig!.bindValue" [(ngModel)]="selectedDepartment"
+              (change)="onDepartmentFilterChange()" [clearable]="true" appendTo="body">
+
+            </ng-select>
+
+            <label class="input-label">
+              {{ departmentFilterConfig?.label }}
+            </label>
+
+          </div>
+
+        </div>
+
+
+        <!-- POL -->
+        <div class="col filter-col mt-1" *ngIf="polFilterConfig?.enabled">
+
+          <div class="custom-form-group custom-form-group-select" [class.filled]="!!selectedPOL">
+
+            <ng-select [items]="polFilterConfig!.options" [bindLabel]="polFilterConfig!.bindLabel"
+              [bindValue]="polFilterConfig!.bindValue" [(ngModel)]="selectedPOL" (change)="onPolFilterChange()"
+              [clearable]="true" appendTo="body">
+
+            </ng-select>
+
+            <label class="input-label">
+              {{ polFilterConfig?.label }}
+            </label>
+
+          </div>
+
+        </div>
+
+
+        <!-- POD -->
+        <div class="col filter-col mt-1" *ngIf="podFilterConfig?.enabled">
+
+          <div class="custom-form-group custom-form-group-select" [class.filled]="!!selectedPOD">
+
+            <ng-select [items]="podFilterConfig!.options" [bindLabel]="podFilterConfig!.bindLabel"
+              [bindValue]="podFilterConfig!.bindValue" [(ngModel)]="selectedPOD" (change)="onPodFilterChange()"
+              [clearable]="true" appendTo="body">
+
+            </ng-select>
+
+            <label class="input-label">
+              {{ podFilterConfig?.label }}
+            </label>
+
+          </div>
+
+        </div>
+
+
+        <!-- Clear -->
+        <div class="col-auto d-flex align-items-end">
+
+          <button class="btn btn-secondary btn-sm" (click)="clearAdvancedFilters()">
+
+            <i class="fas fa-sync-alt me-1"></i> Clear
+
+          </button>
 
         </div>
 
       </div>
 
     </div>
-
-    <!-- Row 2 Filters -->
-    <div class="row g-2  pb-1 border-top advanced-filter-row bg-white"
-         *ngIf="hasAnyFilterConfig">
-
-      <!-- Date Type -->
-      <div class="col mt-1" *ngIf="dateTypeConfig?.enabled">
-
-        <div class="custom-form-group custom-form-group-select"
-             [class.filled]="!!selectedDateType">
-
-          <ng-select
-              [items]="dateTypeConfig!.options"
-              bindLabel="label"
-              bindValue="value"
-              [(ngModel)]="selectedDateType"
-              (change)="onDateTypeChange()"
-              appendTo="body">
-          </ng-select>
-
-          <label class="input-label">Date Type</label>
-
-        </div>
-
-      </div>
-
-
-      <!-- Date Range -->
-      <div class="col mt-1" *ngIf="dateRangeConfig?.enabled">
-
-        <div class="custom-form-group custom-form-group-select"
-             [class.filled]="!!selectedPreset">
-
-          <ng-select
-              [(ngModel)]="selectedPreset"
-              (change)="onDateRangePresetChange()"
-              appendTo="body">
-
-            <ng-option [value]="'all'">All Data</ng-option>
-            <ng-option [value]="'last30'">Last 30 Days</ng-option>
-            <ng-option [value]="'thisMonth'">This Month</ng-option>
-            <ng-option [value]="'lastMonth'">Last Month</ng-option>
-            <ng-option [value]="'last2Months'">Last 2 Months</ng-option>
-            <ng-option [value]="'last3Months'">Last 3 Months</ng-option>
-            <ng-option [value]="'custom'">Custom Range</ng-option>
-
-          </ng-select>
-
-          <label class="input-label">Date Range</label>
-
-        </div>
-
-      </div>
-
-
-      <!-- From Date -->
-      <div class="col filter-col mt-1"
-           *ngIf="dateRangeConfig?.enabled && isCustomRange">
-
-        <div class="custom-form-group custom-form-group-select-date"
-             [class.filled]="!!customFromDate">
-
-
-
-          <div class="input-group">
-
-            <input class="form-control"
-                   placeholder="dd-MMM-yyyy"
-                   [(ngModel)]="customFromDate"
-                   ngbDatepicker
-                   #dpFrom="ngbDatepicker"
-                   (click)="dpFrom.toggle()"
-                   (ngModelChange)="onCustomDateChanged()"
-                   readonly>
-
-            <button class="btn px-0" (click)="dpFrom.toggle()">
-
-              <i-feather name="calendar" class="feather-sm"></i-feather>
-
-            </button>
-
-          </div>
-                    <label class="input-label">From</label>
-        </div>
-
-      </div>
-
-
-      <!-- To Date -->
-      <div class="col filter-col mt-1"
-           *ngIf="dateRangeConfig?.enabled && isCustomRange">
-
-        <div class="custom-form-group custom-form-group-select-date"
-             [class.filled]="!!customToDate">
-
-
-          <div class="input-group">
-
-            <input class="form-control"
-                   placeholder="dd-MMM-yyyy"
-                   [(ngModel)]="customToDate"
-                   ngbDatepicker
-                   #dpTo="ngbDatepicker"
-                   (click)="dpTo.toggle()"
-                   (ngModelChange)="onCustomDateChanged()"
-                   readonly>
-
-            <button class="btn px-0" (click)="dpTo.toggle()">
-
-              <i-feather name="calendar" class="feather-sm"></i-feather>
-
-            </button>
-
-          </div>
-          
-          <label class="input-label">To</label>
-        </div>
-
-      </div>
-
-
-      <!-- Customer -->
-      <div class="col filter-col mt-1" *ngIf="partyFilterConfig?.enabled">
-
-        <div class="custom-form-group custom-form-group-select"
-             [class.filled]="!!selectedParty">
-
-          <ng-select
-              [items]="partySearchResults"
-              bindLabel="CustomerName"
-              [(ngModel)]="selectedParty"
-              (change)="onPartySelected($event)"
-              [loading]="partyLoading"
-              [clearable]="true"
-              appendTo="body">
-
-          </ng-select>
-
-          <label class="input-label">
-            {{ partyFilterConfig?.partyTypes?.[0]?.label || 'Customer' }}
-          </label>
-
-        </div>
-
-      </div>
-
-
-      <!-- Department -->
-      <div class="col filter-col mt-1" *ngIf="departmentFilterConfig?.enabled">
-
-        <div class="custom-form-group custom-form-group-select"
-             [class.filled]="!!selectedDepartment">
-
-          <ng-select
-              [items]="departmentFilterConfig!.options"
-              [bindLabel]="departmentFilterConfig!.bindLabel"
-              [bindValue]="departmentFilterConfig!.bindValue"
-              [(ngModel)]="selectedDepartment"
-              (change)="onDepartmentFilterChange()"
-              [clearable]="true"
-              appendTo="body">
-
-          </ng-select>
-
-          <label class="input-label">
-            {{ departmentFilterConfig?.label }}
-          </label>
-
-        </div>
-
-      </div>
-
-
-      <!-- POL -->
-      <div class="col filter-col mt-1" *ngIf="polFilterConfig?.enabled">
-
-        <div class="custom-form-group custom-form-group-select"
-             [class.filled]="!!selectedPOL">
-
-          <ng-select
-              [items]="polFilterConfig!.options"
-              [bindLabel]="polFilterConfig!.bindLabel"
-              [bindValue]="polFilterConfig!.bindValue"
-              [(ngModel)]="selectedPOL"
-              (change)="onPolFilterChange()"
-              [clearable]="true"
-              appendTo="body">
-
-          </ng-select>
-
-          <label class="input-label">
-            {{ polFilterConfig?.label }}
-          </label>
-
-        </div>
-
-      </div>
-
-
-      <!-- POD -->
-      <div class="col filter-col mt-1" *ngIf="podFilterConfig?.enabled">
-
-        <div class="custom-form-group custom-form-group-select"
-             [class.filled]="!!selectedPOD">
-
-          <ng-select
-              [items]="podFilterConfig!.options"
-              [bindLabel]="podFilterConfig!.bindLabel"
-              [bindValue]="podFilterConfig!.bindValue"
-              [(ngModel)]="selectedPOD"
-              (change)="onPodFilterChange()"
-              [clearable]="true"
-              appendTo="body">
-
-          </ng-select>
-
-          <label class="input-label">
-            {{ podFilterConfig?.label }}
-          </label>
-
-        </div>
-
-      </div>
-
-
-      <!-- Clear -->
-      <div class="col-auto d-flex align-items-end mt-3">
-
-        <button class="btn btn-secondary btn-sm"
-                (click)="clearAdvancedFilters()">
-
-          <i class="fas fa-sync-alt me-1"></i> Clear
-
-        </button>
-
-      </div>
-
-    </div>
-
   </div>
-</div>
 </div>

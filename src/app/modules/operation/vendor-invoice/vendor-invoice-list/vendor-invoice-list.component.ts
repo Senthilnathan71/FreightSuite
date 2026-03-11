@@ -115,12 +115,16 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
   get allVendorInvoice() { return this.allItems; }
   partySearchFn = (_searchTerm: string, partyType: string): Observable<any[]> => {
     const companyMasterSid = this.currentCompany?.CompanyMasterSid;
-    if (!companyMasterSid || partyType !== 'CustomerMasterSid') {
+    const branchMasterSid = this.currentBranch?.BranchMasterSid;
+    if (!companyMasterSid || !branchMasterSid || partyType !== 'CustomerMasterSid') {
       return of([]);
     }
 
-    return this.operationService.getAllCustomersWithBranch(companyMasterSid).pipe(
-      map((data: any) => Array.isArray(data) ? data : []),
+    return this.operationService.getAllCreditorWithCOAMapped({
+      CompanyMasterSid: companyMasterSid,
+      BranchMasterSid: branchMasterSid
+    }).pipe(
+      map((resp: any) => Array.isArray(resp?.data) ? resp.data : []),
       catchError(() => of([]))
     );
   };

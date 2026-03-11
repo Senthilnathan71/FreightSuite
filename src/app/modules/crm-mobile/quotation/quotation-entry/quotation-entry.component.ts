@@ -2039,6 +2039,8 @@ isRateLockDisabled(): boolean {
         (resp: any) => {
           this.isSaving = false;
           if (resp.status) {
+            this.quotationForm.markAsPristine();
+            this.quotationForm.markAsUntouched();
                       setTimeout(() => {
             disabledFieldsByRoute.forEach((disabledFields, routeIndex) => {
               if (disabledFields && disabledFields.length > 0) {
@@ -2098,6 +2100,8 @@ isRateLockDisabled(): boolean {
         (resp: any) => {
           this.isSaving = false;
           if (resp.status) {
+            this.quotationForm.markAsPristine();
+            this.quotationForm.markAsUntouched();
             this.appSettingService.showSuccess("Quotation Created Successfully");
             this.emailTriggerService.triggerEmails({
               companyId: this.currentCompany?.CompanyMasterSid,

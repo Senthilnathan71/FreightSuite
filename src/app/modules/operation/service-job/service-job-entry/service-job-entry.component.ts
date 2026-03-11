@@ -382,7 +382,9 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       ModeOfTransport: [null],
       StuffingAt: ['Dock'],
       ExternalNote: [''],
-    InternalNote: ['']
+    InternalNote: [''],
+    CommodityDescription: [''],
+    MarksAndNumber: [''],
     })
     this.cargoForm.get('GrossWeight')?.valueChanges.subscribe(() => {
       this.setOrResetWeightError(this.cargoForm);
@@ -510,6 +512,8 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       FreightTerms: cargoData?.FreightTerms,
       ModeOfTransport: cargoData?.ModeOfTransport,
       StuffingAt: cargoData?.StuffingAt,
+      CommodityDescription : cargoData?.CommodityDescription,
+      MarksAndNumber : cargoData?.MarksAndNumber,
       ExternalNote: othersData?.ExternalNote || '',
       InternalNote: othersData?.InternalNote || ''
     })
@@ -622,7 +626,9 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
         NoofContainers: parseFloat(cargoFormValue.NoofContainers) || 0,
         Qty: 0,
         StuffingAt: cargoFormValue.StuffingAt || 'Dock',
-        WeightUnitSid: null
+        WeightUnitSid: null,
+        CommodityDescription: cargoFormValue.CommodityDescription || "",
+        MarksAndNumber: cargoFormValue.MarksAndNumber || ""
       },
       houseJobOthers: {
         ExternalNote: cargoFormValue.ExternalNote || "",

@@ -3123,6 +3123,11 @@ export class VendorInvoiceEntryComponent implements OnInit {
     const isMasterJobInvoice = data?.MasterJobSid && !data?.HouseJobSid;
     const isBookingInvoice = !!data?.BookingHeaderSid;
     const isAgentHouseJob = String(data?.houseJob?.JobType || '') === 'Agent';
+    const invoiceServiceFlag = String(data?.IsServiceJob ?? '').trim().toUpperCase();
+    const houseServiceFlag = String(data?.houseJob?.IsServiceJob ?? '').trim().toUpperCase();
+    const isServiceJobInvoice = invoiceServiceFlag
+      ? invoiceServiceFlag === 'Y'
+      : houseServiceFlag === 'Y';
 
     if (isHouseJobInvoice) {
       this.hyperLinkInfo = {
@@ -3132,7 +3137,9 @@ export class VendorInvoiceEntryComponent implements OnInit {
           : data?.houseJob?.HBLNo,
         path: isAgentHouseJob
           ? `/operation/agent-master-air-waybill/entry/${data.HouseJobSid}`
-          : `/operation/house-job/entry/${data.HouseJobSid}`,
+          : (isServiceJobInvoice
+            ? `/operation/service-job/entry/${data.HouseJobSid}`
+            : `/operation/house-job/entry/${data.HouseJobSid}`),
         label: isAgentHouseJob ? 'AMWBL No.' : (airDept ? 'HAWBL No.' : 'HBL No.')
       };
     } else if (isMasterJobInvoice) {

@@ -11,7 +11,7 @@
                 <h1 class="workspace-title">Master Air Waybill</h1>
             </div>
             @if(isEditMode){
-            <a class="text-info ps-2 d-flex align-items-center w-2 h-2 crusor-pointer" (click)="showInfo()">
+            <a class="text-info d-flex align-items-center w-2 h-2 crusor-pointer" (click)="showInfo()">
                 <i class="fas fs-6 fa-info-circle"></i>
             </a>
             }
@@ -20,7 +20,7 @@
             <div class="action-group" *ngIf="isEditMode">
                 <div ngbDropdown container="body" class="d-inline-block">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" id="dropdownUpload"
-                        ngbDropdownToggle [disabled]="!masterAirWayData">
+                        ngbDropdownToggle [disabled]="!masterAirWayData || masterJobForm?.dirty || containerFormGroup?.dirty">
                         <i class="fas fa-print me-1"></i> Print
                     </button>
                     <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
