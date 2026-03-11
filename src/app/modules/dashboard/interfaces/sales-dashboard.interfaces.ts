@@ -2,8 +2,15 @@
 
 export interface SalesDashboardFilters {
   salespersonId?: number;
+  salespersonEmail?: string;
   dateFrom?: string;
   dateTo?: string;
+}
+
+export interface SalesDashboardCounts {
+  counts: FunnelCounts;
+  summaryKpis: SummaryKpis;
+  charts: ChartData;
 }
 
 // ── Section 1: Leads No Meeting ──

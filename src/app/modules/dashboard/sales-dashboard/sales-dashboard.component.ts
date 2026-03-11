@@ -8,9 +8,11 @@ import { Router } from '@angular/router';
 import { SalesDashboardService } from '../services/sales-dashboard.service';
 import {
   SalesDashboardData,
+  SalesDashboardCounts,
   SalesDashboardFilters,
   LeadNoMeeting,
   ScheduledMeeting,
+  MeetingsScheduledGroup,
   MeetingWithFollowup,
   MeetingNotConverted,
   CustomerNoQuote,
@@ -39,6 +41,7 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
   readonly maxDateTo: NgbDateStruct = toNgbDateStruct(new Date())!;
 
   dashboardData: SalesDashboardData | null = null;
+  dashboardCounts: SalesDashboardCounts | null = null;
   isLoading = false;
   dateFromInput: Date | null = null;
   dateToInput: Date | null = null;
@@ -47,8 +50,13 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
   activePreset: string = 'month';
 
   expandedSections: Record<number, boolean> = {
-    1: true, 2: true, 3: true, 4: true, 5: true, 6: true, 7: true, 8: true,
+    1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: true,
   };
+
+  // Lazy loading state
+  sectionData: Record<number, any> = {};
+  sectionLoading: Record<number, boolean> = {};
+  sectionLoaded: Record<number, boolean> = {};
 
   searchTerms: Record<number, string> = {};
 
@@ -60,6 +68,11 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
 
   // Funnel data for custom CSS funnel
   funnelRows: { label: string; value: number; color: string; pct: number }[] = [];
+  private readonly emptyMeetingsGroup: MeetingsScheduledGroup = {
+    overdue: [],
+    today: [],
+    future: [],
+  };
 
   constructor(
     private salesDashboardService: SalesDashboardService,
@@ -77,29 +90,40 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  loadDashboardData(): void {
-    this.isLoading = true;
+  private getApiFilters() {
     const company = this.appSettings.decrypt(
       localStorage.getItem('selected-company'),
     );
     const branch = this.appSettings.decrypt(
       localStorage.getItem('selected-branch'),
     );
+    const userProfile = this.appSettings.getDecryptedUserProfile();
+
+    return {
+      companyMasterSid: company.CompanyMasterSid,
+      branchMasterSid: branch?.BranchMasterSid ?? company.BranchMasterSid,
+      dateFrom: this.dateFromInput ? this.toDateTimeStr(this.dateFromInput, 'start') : undefined,
+      dateTo: this.dateToInput ? this.toDateTimeStr(this.dateToInput, 'end') : undefined,
+      salespersonId: userProfile?.UserMasterSid,
+      salespersonEmail: userProfile?.userEmail,
+    };
+  }
+
+  loadDashboardData(): void {
+    this.isLoading = true;
+
+    // Reset lazy-load state
+    this.sectionData = {};
+    this.sectionLoaded = {};
+    this.sectionLoading = {};
 
     this.salesDashboardService
-      .getSalesDashboardData({
-        companyMasterSid: company.CompanyMasterSid,
-        branchMasterSid: branch?.BranchMasterSid ?? company.BranchMasterSid,
-        dateFrom: this.dateFromInput ? this.toDateTimeStr(this.dateFromInput, 'start') : undefined,
-        dateTo: this.dateToInput ? this.toDateTimeStr(this.dateToInput, 'end') : undefined,
-        ...this.filters,
-      })
+      .getSalesDashboardCounts(this.getApiFilters())
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          this.dashboardData = response.data;
-          this.computeDayFields();
-          this.buildCharts();
+          this.dashboardCounts = response.data;
+          this.buildChartsFromCounts(response.data);
           this.isLoading = false;
         },
         error: () => {
@@ -140,72 +164,92 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
         );
         this.dateToInput = new Date(now);
         break;
-      case 'quarter': {
-        const qStart = new Date(
-          now.getFullYear(),
-          Math.floor(now.getMonth() / 3) * 3,
-          1,
-        );
-        this.dateFromInput = new Date(qStart);
-        this.dateToInput = new Date(now);
+      case 'fy': {
+        const fy = this.appSettings.getCurrentFinancialYear();
+        if (fy) {
+          this.dateFromInput = new Date(fy.StartDate);
+          const fyEnd = new Date(fy.EndDate);
+          this.dateToInput = fyEnd < now ? fyEnd : new Date(now);
+        } else {
+          // Fallback: April 1 to today
+          const fyStart = now.getMonth() >= 3
+            ? new Date(now.getFullYear(), 3, 1)
+            : new Date(now.getFullYear() - 1, 3, 1);
+          this.dateFromInput = fyStart;
+          this.dateToInput = new Date(now);
+        }
         break;
       }
-      case 'ytd':
-        this.dateFromInput = new Date(
-          new Date(now.getFullYear(), 0, 1),
-        );
-        this.dateToInput = new Date(now);
-        break;
     }
     this.loadDashboardData();
   }
 
   toggleSection(section: number): void {
     this.expandedSections[section] = !this.expandedSections[section];
+    if (this.expandedSections[section] && !this.sectionLoaded[section] && section !== 8) {
+      this.loadSection(section);
+    }
   }
 
-  // â”€â”€ Computed day fields â”€â”€
+  private loadSection(section: number): void {
+    this.sectionLoading[section] = true;
+    this.salesDashboardService
+      .getSectionData(section, this.getApiFilters())
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          this.sectionData[section] = response.data;
+          this.computeSectionDayFields(section);
+          this.sectionLoaded[section] = true;
+          this.sectionLoading[section] = false;
+        },
+        error: () => {
+          this.sectionLoading[section] = false;
+        },
+      });
+  }
 
-  private computeDayFields(): void {
-    if (!this.dashboardData) return;
+  // ── Computed day fields ──
+
+  private computeSectionDayFields(section: number): void {
+    const data = this.sectionData[section];
+    if (!data) return;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    this.dashboardData.sections.leadsNoMeeting.forEach((lead) => {
-      lead.daysIdle = this.daysBetween(new Date(lead.createdOn), today);
-    });
-
-    this.dashboardData.sections.meetingsNotConverted.forEach((m) => {
-      m.daysSinceMeeting = this.daysBetween(
-        new Date(m.lastMeetingDate),
-        today,
-      );
-    });
-
-    this.dashboardData.sections.customersNoQuote.forEach((c) => {
-      c.daysWithoutQuote = this.daysBetween(
-        new Date(c.customerCreatedOn),
-        today,
-      );
-    });
-
-    this.dashboardData.sections.quotesNoBooking.forEach((q) => {
-      if (q.InternalApprovedOn) {
-        q.daysSinceApproval = this.daysBetween(
-          new Date(q.InternalApprovedOn),
-          today,
-        );
-      }
-    });
+    switch (section) {
+      case 1:
+        (data as LeadNoMeeting[]).forEach((lead) => {
+          lead.daysIdle = this.daysBetween(new Date(lead.createdOn), today);
+        });
+        break;
+      case 4:
+        (data as MeetingNotConverted[]).forEach((m) => {
+          m.daysSinceMeeting = this.daysBetween(new Date(m.lastMeetingDate), today);
+        });
+        break;
+      case 5:
+        (data as CustomerNoQuote[]).forEach((c) => {
+          c.daysWithoutQuote = this.daysBetween(new Date(c.customerCreatedOn), today);
+        });
+        break;
+      case 7:
+        (data as QuoteNoBooking[]).forEach((q) => {
+          if (q.InternalApprovedOn) {
+            q.daysSinceApproval = this.daysBetween(new Date(q.InternalApprovedOn), today);
+          }
+        });
+        break;
+    }
   }
 
   private daysBetween(d1: Date, d2: Date): number {
-    return Math.floor(
+    return Math.max(0, Math.floor(
       (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24),
-    );
+    ));
   }
 
-  // â”€â”€ Section filtering â”€â”€
+  // ── Section filtering ──
 
   filterSection<T>(items: T[], section: number): T[] {
     const term = (this.searchTerms[section] || '').toLowerCase();
@@ -218,20 +262,66 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     );
   }
 
-  // â”€â”€ Display helpers â”€â”€
+  // ── Display helpers ──
+
+  getLeadsNoMeetingRows(): LeadNoMeeting[] {
+    return this.filterSection((this.sectionData[1] as LeadNoMeeting[]) || [], 1);
+  }
+
+  getMeetingsScheduledGroup(): MeetingsScheduledGroup {
+    return (this.sectionData[2] as MeetingsScheduledGroup) || this.emptyMeetingsGroup;
+  }
+
+  getMeetingsWithFollowupRows(): MeetingWithFollowup[] {
+    return this.filterSection((this.sectionData[3] as MeetingWithFollowup[]) || [], 3);
+  }
+
+  getMeetingsNotConvertedRows(): MeetingNotConverted[] {
+    return this.filterSection((this.sectionData[4] as MeetingNotConverted[]) || [], 4);
+  }
+
+  getCustomersNoQuoteRows(): CustomerNoQuote[] {
+    return this.filterSection((this.sectionData[5] as CustomerNoQuote[]) || [], 5);
+  }
+
+  getQuotesNotApprovedRows(): QuoteNotApproved[] {
+    return this.filterSection((this.sectionData[6] as QuoteNotApproved[]) || [], 6);
+  }
+
+  getQuotesNoBookingRows(): QuoteNoBooking[] {
+    return this.filterSection((this.sectionData[7] as QuoteNoBooking[]) || [], 7);
+  }
 
   getDisplayName(item: any): string {
     if (item.LeadOrCustomer === 'C' && item.CustomerName) {
       return item.CustomerName;
     }
-    return item.preCustomerName || item.CustomerName || 'â€”';
+    return item.preCustomerName || item.CustomerName || '\u2014';
   }
 
   getQuoteCustomerName(item: any): string {
     if (item.LeadOrCustomer === 'C' || item.LeadOrCustomer === null) {
-      return item.CustomerName || 'â€”';
+      return item.CustomerName || '\u2014';
     }
-    return item.preCustomerName || 'â€”';
+    return item.preCustomerName || '\u2014';
+  }
+
+  camelToWords(str: string): string {
+    return str ? str.replace(/([a-z])([A-Z])/g, '$1 $2') : '';
+  }
+
+  formatMeetingDateTime(isoString: string, timeOnly = false): string {
+    if (!isoString) return '\u2014';
+    // Parse without timezone conversion
+    const match = isoString.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+    if (!match) return isoString;
+    const [, year, month, day, hours24, minutes] = match;
+    const h = parseInt(hours24, 10);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const h12 = h % 12 || 12;
+    const timeStr = `${String(h12).padStart(2, '0')}:${minutes} ${ampm}`;
+    if (timeOnly) return timeStr;
+    return `${day}/${month}/${year} ${timeStr}`;
   }
 
   getDaysPillClass(days: number, threshold: number = 7): string {
@@ -292,26 +382,25 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
   }
 
   getConversionRate(): number {
-    if (!this.dashboardData) return 0;
-    const { totalQuotes } = this.dashboardData.sections.summaryKpis.quotes;
-    const { totalBookings } = this.dashboardData.sections.summaryKpis.bookings;
+    if (!this.dashboardCounts) return 0;
+    const { totalQuotes } = this.dashboardCounts.summaryKpis.quotes;
+    const { totalBookings } = this.dashboardCounts.summaryKpis.bookings;
     if (!totalQuotes) return 0;
     return Math.round((totalBookings / totalQuotes) * 1000) / 10;
   }
 
   getQuoteToBookingRate(): number {
-    if (!this.dashboardData) return 0;
-    const { approvedQuotes } = this.dashboardData.sections.summaryKpis.quotes;
-    const { bookingsFromQuote } = this.dashboardData.sections.summaryKpis.bookings;
+    if (!this.dashboardCounts) return 0;
+    const { approvedQuotes } = this.dashboardCounts.summaryKpis.quotes;
+    const { bookingsFromQuote } = this.dashboardCounts.summaryKpis.bookings;
     if (!approvedQuotes) return 0;
     return Math.round((bookingsFromQuote / approvedQuotes) * 1000) / 10;
   }
 
-  // â”€â”€ Charts â”€â”€
+  // ── Charts ──
 
-  private buildCharts(): void {
-    if (!this.dashboardData) return;
-    const { charts } = this.dashboardData;
+  private buildChartsFromCounts(countsData: SalesDashboardCounts): void {
+    const { charts } = countsData;
 
     this.buildFunnelChart(charts.funnelCounts);
     this.buildMeetingsBarChart(charts.meetingsBoardCounts);
@@ -324,7 +413,7 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
       { label: 'Leads (No Meeting)', value: counts.leadsNoMeeting, color: 'linear-gradient(90deg, #044a6c, #05608D)' },
       { label: 'Meetings Scheduled', value: counts.meetingsScheduled, color: 'linear-gradient(90deg, #05608D, #0891b2)' },
       { label: 'Follow-Ups Pending', value: counts.followUpsPending, color: 'linear-gradient(90deg, #7c3aed, #a78bfa)' },
-      { label: 'Not Converted', value: counts.meetingsNotConverted, color: 'linear-gradient(90deg, #f59e0b, #fbbf24)' },
+      { label: 'Business not converted', value: counts.meetingsNotConverted, color: 'linear-gradient(90deg, #f59e0b, #fbbf24)' },
       { label: 'Customers (No Quote)', value: counts.customersNoQuote, color: 'linear-gradient(90deg, #06b6d4, #22d3ee)' },
       { label: 'Quotes Pending', value: counts.quotesNotApproved, color: 'linear-gradient(90deg, #f97316, #fb923c)' },
       { label: 'Approved (No Booking)', value: counts.quotesNoBooking, color: 'linear-gradient(90deg, #ec4899, #f472b6)' },
@@ -376,7 +465,7 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     this.leadStatusDonutOptions = {
       series: distribution.map((d) => d.count),
       chart: { type: 'donut', height: 220 },
-      labels: distribution.map((d) => d.status),
+      labels: distribution.map((d) => this.camelToWords(d.status)),
       colors: segmentColors,
       legend: {
         position: 'right',
@@ -434,8 +523,8 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
   }
 
   private buildQuoteVsBookingChart(): void {
-    if (!this.dashboardData) return;
-    const { quotes, bookings } = this.dashboardData.sections.summaryKpis;
+    if (!this.dashboardCounts) return;
+    const { quotes, bookings } = this.dashboardCounts.summaryKpis;
 
     this.quoteVsBookingOptions = {
       series: [
@@ -454,7 +543,7 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     };
   }
 
-  // â”€â”€ Navigation helpers â”€â”€
+  // ── Navigation helpers ──
 
   navigateToPreCustomer(sid: number): void {
     this.router.navigate(['/crm/pre-customer/entry', sid]);
@@ -468,14 +557,12 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     this.router.navigate(['/crm/quotation/entry', sid]);
   }
 
-  navigateToBookingCreate(quoteSid?: number): void {
-    if (quoteSid) {
-      this.router.navigate(['/operation/booking/entry'], {
-        queryParams: { quotationHeaderSid: quoteSid },
-      });
-    } else {
-      this.router.navigate(['/operation/booking/entry']);
-    }
+  navigateToCalendar(): void {
+    this.router.navigate(['/crm/calendar']);
+  }
+
+  navigateToMeetingUpdate(): void {
+    this.router.navigate(['/crm/meeting-update']);
   }
 
   navigateToMeetingSchedule(preCustomerSid: number): void {
@@ -497,12 +584,6 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
   }
 
   private setDefaultDateRange(): void {
-    const today = new Date();
-    const oneMonthBack = new Date(today);
-    oneMonthBack.setMonth(oneMonthBack.getMonth() - 1);
-
-    this.activePreset = '';
-    this.dateFromInput = oneMonthBack;
-    this.dateToInput = today;
+    this.setPreset('month');
   }
 }
