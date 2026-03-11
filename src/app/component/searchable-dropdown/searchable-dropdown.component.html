@@ -32,7 +32,7 @@
     <!-- Header Template -->
     <ng-template ng-header-tmp>
       <div class="dropdown-header row">
-        <div *ngFor="let label of displayLabels; let i = index" [id]="'header'+i" [ngClass]="getColumnStyle(i)" class="text-truncate"  style="min-width: none;">
+        <div *ngFor="let label of displayLabels; let i = index" [id]="'header'+i" [ngStyle]="getColumnStyle(i)" class="text-truncate">
           {{ label }}
         </div>
       </div>
@@ -41,7 +41,7 @@
     <!-- Option Template -->
     <ng-template ng-option-tmp let-item="item">
       <div class="dropdown-row row">
-        <div *ngFor="let field of displayFields; let i = index" class="text-truncate" [ngClass]="getColumnStyle(i)" style="min-width: none;"
+        <div *ngFor="let field of displayFields; let i = index" class="text-truncate" [ngStyle]="getColumnStyle(i)"
           [ngbTooltip]="item[field]">
           {{ item[field] }}
         </div>
