@@ -157,6 +157,8 @@ export class TermsConditionListComponent extends BaseListComponent implements On
                 branchName: this.getBranchName(item),
                 menuName: this.getMenuName(item),
                 departmentName: this.getDepartmentName(item),
+                pol: Array.isArray(item.POL) && item.POL.length ? item.POL[0] : '-',
+    pod: Array.isArray(item.POD) && item.POD.length ? item.POD[0] : '-',
                 status: item.status === 'A' ? 'Active' : 'Suspended'
             }));
 
@@ -217,7 +219,7 @@ export class TermsConditionListComponent extends BaseListComponent implements On
                 label: 'Create',
                 icon: 'fas fa-plus',
                 action: 'create',
-                // disabled: !this.mps.can('insert')
+                disabled: !this.mps.can('insert')
             },
             {
                 label: 'Report',
@@ -349,6 +351,22 @@ export class TermsConditionListComponent extends BaseListComponent implements On
                     dataType: 'string'
                 },
                 {
+                    key: 'pol',
+                    label: 'POL',
+                    sortable: true,
+                    filterable: true,
+                    visible: true,
+                    dataType: 'string'
+                },
+                {
+                    key: 'pod',
+                    label: 'POD',
+                    sortable: true,
+                    filterable: true,
+                    visible: true,
+                    dataType: 'string'
+                },
+                {
                     key: 'status',
                     label: 'Status',
                     sortable: true,
@@ -365,7 +383,7 @@ export class TermsConditionListComponent extends BaseListComponent implements On
                     label: 'View',
                     action: 'view',
                     tooltip: 'View',
-                    // state: !this.mps.can('view')
+                    state: !this.mps.can('view')
                 },
                 {
                     icon: 'fas fa-trash',
@@ -373,7 +391,7 @@ export class TermsConditionListComponent extends BaseListComponent implements On
                     action: 'delete',
                     tooltip: 'Delete',
                     class: 'text-danger',
-                    // state: !this.mps.can('delete')
+                    state: !this.mps.can('delete')
                 }
             ],
             selectable: false,

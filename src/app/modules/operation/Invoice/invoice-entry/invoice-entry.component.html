@@ -1854,11 +1854,11 @@
 
                     <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
                   <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
-                      <strong>Shipper Ref No.</strong>
+                      <strong>Ref No.</strong>
                   </div>
                   <div style="width: 15px;text-align: center;">:</div>
                       <div style="flex: 1;line-height: 1.4;">
-                       {{ invoicePrintData?.CustomerRefNo }}
+                       {{ invoicePrintData?.DocumentNumber }}
                   </div>
                 </div>
 
@@ -1913,14 +1913,15 @@
             </div>
             
             <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
-            @if(invoicePrintData?.JobType !== 'Agent'){
+              @if(invoicePrintData?.IsServiceJob !== 'Y'){
+              @if(invoicePrintData?.JobType !== 'Agent'){
               <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">
                   <strong> {{isSeaDepartment() ? 'HBL' : 'HAWB'}}</strong>
                 </div>
                 <div>: {{ invoicePrintData?.HBLNo }}</div>
               </div>
-            }     
+              }     
 
               <div style="display: flex">
                 <div style="width: 180px; font-weight: bolder">
@@ -1928,7 +1929,7 @@
                 </div>
                 <div>: {{ invoicePrintData?.MBLNo }}</div>
               </div>
-
+              }
               <div style="display: flex">
   <div style="width: 180px; font-weight: bolder">
     <strong>Job No.</strong>

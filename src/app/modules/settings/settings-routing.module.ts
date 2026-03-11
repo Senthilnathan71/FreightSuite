@@ -10,6 +10,8 @@ import { FollowUpComponent } from "./follow-up/follow-up/follow-up.component";
 import { RolemenuEntryComponent } from "./rolemenu/rolemenu-entry/rolemenu-entry.component";
 import { NumberSeriesListComponent } from "./number-series/number-series-list/number-series-list.component";
 import { NumberSeriesEntryComponent } from "./number-series/number-series-entry/number-series-entry.component";
+import { ReportScheduleListComponent } from "./report-schedule/report-schedule-list/report-schedule-list.component";
+import { ReportScheduleEntryComponent } from "./report-schedule/report-schedule-entry/report-schedule-entry.component";
 
 
 export const SettingsRoutes: Routes = [
@@ -128,6 +130,30 @@ export const SettingsRoutes: Routes = [
                 data: {
                     title: 'Number Series Entry',
                     urls: [{ title: 'Settings', url: '/settings' }, { title: 'Number Series' }],
+                },
+            },
+            {
+                path: 'report-schedule/list',
+                component: ReportScheduleListComponent,
+                data: {
+                    title: 'Report Schedule',
+                    urls: [{ title: 'Settings', url: '/settings' }, { title: 'Report Schedule' }],
+                },
+            },
+            {
+                path: 'report-schedule/entry',
+                component: ReportScheduleEntryComponent,
+                data: {
+                    title: 'Add Report Schedule',
+                    urls: [{ title: 'Settings', url: '/settings' }, { title: 'Report Schedule', url: '/settings/report-schedule/list' }, { title: 'Add' }],
+                },
+            },
+            {
+                path: 'report-schedule/entry/:id',
+                component: ReportScheduleEntryComponent,
+                data: {
+                    title: 'Edit Report Schedule',
+                    urls: [{ title: 'Settings', url: '/settings' }, { title: 'Report Schedule', url: '/settings/report-schedule/list' }, { title: 'Edit' }],
                 },
             },
         ]

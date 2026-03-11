@@ -31,6 +31,8 @@ export class TermsAndConditionsComponent implements OnInit {
   userData : any;
   currentCompany : any;
   currentBranch: any;
+  editIndex: number | null = null;
+editForm: FormGroup;
 
   constructor(
     private activeModal: NgbActiveModal,
@@ -42,6 +44,10 @@ export class TermsAndConditionsComponent implements OnInit {
       newTerm: ['', [Validators.required]],
       IsDefaut: [false]
     });
+    this.editForm = this.fb.group({
+  TandC: ['', Validators.required],
+  IsDefaut: [false]
+});
   }
 
   ngOnInit() {
@@ -135,7 +141,7 @@ export class TermsAndConditionsComponent implements OnInit {
       if (resp.status) {
 
         if (resp.data?.length) {
-          this.terms = resp.data;   // refresh modal list
+          this.terms = [...this.terms, ...resp.data];   // refresh modal list
           this.showEmptyTemplate = false;
         } else {
           this.appSettingService.showWarning('No Non Default Terms Found');
@@ -151,5 +157,95 @@ export class TermsAndConditionsComponent implements OnInit {
       this.appSettingService.showError('Error loading Non Default Terms');
     }
   );
+}
+
+deleteTerm(item: any, index: number) {
+
+  // If record not saved in DB (new row)
+  if (!item?.TermsAndConditionsDetailSid) {
+    this.terms.splice(index, 1);
+    return;
+  }
+
+  this.masterService.deleteTandCDetailById(item.TermsAndConditionsDetailSid)
+    .subscribe(
+      (resp: any) => {
+
+        if (resp.status) {
+
+          this.appSettingService.showSuccess('Term deleted successfully');
+
+          this.terms.splice(index, 1);
+
+        } else {
+
+          this.appSettingService.showError('Error deleting term');
+
+        }
+
+      },
+      (error) => {
+        console.error('Delete error', error);
+        this.appSettingService.showError('Error deleting term');
+      }
+    );
+}
+
+
+
+editTerm(item: any, index: number) {
+
+  this.editIndex = index;
+
+  this.editForm.patchValue({
+    TandC: item.TandC,
+    IsDefaut: item.IsDefaut === 'S'
+  });
+
+}
+
+cancelEdit() {
+  this.editIndex = null;
+  this.editForm.reset();
+}
+
+updateTerm(item: any, index: number) {
+
+  if (this.editForm.invalid) {
+    this.editForm.markAllAsTouched();
+    return;
+  }
+
+  const formValue = this.editForm.value;
+
+  const payload = {
+    TermsAndConditionsDetailSid: item.TermsAndConditionsDetailSid,
+    TandC: formValue.TandC,
+    IsDefaut: formValue.IsDefaut ? 'S' : 'N'
+  };
+
+  this.masterService.updateTandCDetailById(item.TermsAndConditionsDetailSid,payload).subscribe(
+    (resp: any) => {
+
+      if (resp.status) {
+
+        this.appSettingService.showSuccess('Term updated successfully');
+
+        this.terms[index].TandC = formValue.TandC;
+        this.terms[index].IsDefaut = formValue.IsDefaut ? 'S' : 'N';
+
+        this.cancelEdit();
+
+      } else {
+        this.appSettingService.showError('Error updating term');
+      }
+
+    },
+    (error) => {
+      console.error(error);
+      this.appSettingService.showError('Error updating term');
+    }
+  );
+
 }
 }

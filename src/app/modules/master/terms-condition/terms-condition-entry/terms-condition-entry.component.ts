@@ -116,6 +116,7 @@ export class TermsConditionEntryComponent implements OnInit {
             MenuMasterSid: [, [Validators.required]],
             BranchMasterSid: [, [Validators.required]],
             departmentId: [],
+            CompanyMasterSid: [this.currentCompany?.CompanyMasterSid],
             Carrier: [],
             POL: [],
             POD: [],
@@ -168,7 +169,7 @@ export class TermsConditionEntryComponent implements OnInit {
             departments: this.masterService.getAllDepartments(CompanyMasterSid)
         }).subscribe(({ menus, ports, carriers, branches, departments }) => {
             this.menuList = menus,
-                this.portList = ports.data,
+                this.portList = (ports.data || []).map(p=> ({ ...p, Country: p.countryMaster?.countryName})),
                 this.filteredPorts = [...this.portList],
                 this.filteredPOL = [...this.portList],
                 this.filteredPOD = [...this.portList],
@@ -180,8 +181,8 @@ export class TermsConditionEntryComponent implements OnInit {
                 this.pendingDepartmentSid = null;
             }
             if (this.isEditMode && this.TermsAndConditionsMasterSid) {
-      this.loadTermsAndConditions();
-    }
+                this.loadTermsAndConditions();
+            }
         })
     }
 
@@ -194,12 +195,12 @@ export class TermsConditionEntryComponent implements OnInit {
             this.selectedDepartment = null;
             this.selectedDepartmentType = '';
             this.selectedFCLLCL = '';
-            this.filteredPorts = [];
-            this.filteredPOL = [];
-            this.filteredPOD = [];
+            this.filteredPorts = [...this.portList];
+            this.filteredPOL = [...this.portList];
+            this.filteredPOD = [...this.portList];
             this.termsAndConditionForm.patchValue({
-                POL: [],
-                POD: [],
+                POL: null,
+                POD: null,
             }, { emitEvent: false });
             return;
         }
@@ -215,9 +216,9 @@ export class TermsConditionEntryComponent implements OnInit {
         if (!department) {
             this.selectedDepartmentType = '';
             this.selectedFCLLCL = '';
-            this.filteredPorts = [];
-            this.filteredPOL = [];
-            this.filteredPOD = [];
+            this.filteredPorts = [...this.portList];
+            this.filteredPOL = [...this.portList];
+            this.filteredPOD = [...this.portList];
             this.termsAndConditionForm.patchValue({
                 POL: [],
                 POD: [],
@@ -290,9 +291,9 @@ export class TermsConditionEntryComponent implements OnInit {
             return;
         }
         if (!this.TandCDetail || this.TandCDetail.length === 0) {
-        this.appSettingService.showWarning('Please add at least one Terms and Conditions detail row');
-        return;
-    }
+            this.appSettingService.showWarning('Please add at least one Terms and Conditions detail row');
+            return;
+        }
         this.isSaving = true;
         const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
         const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
@@ -300,6 +301,7 @@ export class TermsConditionEntryComponent implements OnInit {
         const { departmentId, ...rest } = formValue;
         const masterFormValue = {
             ...rest,
+            CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
             POL: this.wrapAsArray(rest.POL),
             POD: this.wrapAsArray(rest.POD),
         };
@@ -470,41 +472,41 @@ export class TermsConditionEntryComponent implements OnInit {
     }
 
     loadTermsAndConditions() {
-  this.masterService.getTandCById(this.TermsAndConditionsMasterSid).subscribe(
-    (resp: any) => {
-      if (resp.status) {
-        const response = resp.data;
-        this.tandCHeaderData = response;
+        this.masterService.getTandCById(this.TermsAndConditionsMasterSid).subscribe(
+            (resp: any) => {
+                if (resp.status) {
+                    const response = resp.data;
+                    this.tandCHeaderData = response;
 
-        const departmentId =
-          response.departments[0]?.departmentId ||
-          response.departments[0]?.DepartmentMasterSid ||
-          '';
+                    const departmentId =
+                        response.departments[0]?.departmentId ||
+                        response.departments[0]?.DepartmentMasterSid ||
+                        '';
 
-        this.termsAndConditionForm.patchValue({
-          ...response,
-          departmentId,
-          status: response.status === 'A' ? 'Active' : 'Suspended'
-        });
+                    this.termsAndConditionForm.patchValue({
+                        ...response,
+                        departmentId,
+                        status: response.status === 'A' ? 'Active' : 'Suspended'
+                    });
 
-        this.onDepartmentChange(departmentId);
+                    this.onDepartmentChange(departmentId);
 
-        const polCode = response.POL?.[0] || null;
-        const podCode = response.POD?.[0] || null;
+                    const polCode = response.POL?.[0] || null;
+                    const podCode = response.POD?.[0] || null;
 
-        this.termsAndConditionForm.patchValue({
-          POL: polCode,
-          POD: podCode
-        });
+                    this.termsAndConditionForm.patchValue({
+                        POL: polCode,
+                        POD: podCode
+                    });
 
-        this.departmentOnTermsId =
-          response.departments[0]?.DepartmentOnTermSid;
+                    this.departmentOnTermsId =
+                        response.departments[0]?.DepartmentOnTermSid;
 
-        this.loadTandCDetails();
-      }
+                    this.loadTandCDetails();
+                }
+            }
+        );
     }
-  );
-}
 
     loadTandCDetails() {
         this.masterService.getAllTandCDetail().subscribe(

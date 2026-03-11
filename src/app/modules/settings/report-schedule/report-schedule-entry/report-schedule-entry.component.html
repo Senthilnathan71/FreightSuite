@@ -1,0 +1,228 @@
+<ngx-spinner
+  bdColor="rgba(0,0,0,0.8)"
+  size="medium"
+  color="#fff"
+  type="ball-scale-ripple"
+  [fullScreen]="true">
+  <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
+
+<div class="row compact-form">
+  <div class="col-12">
+    <div class="bg-white mb-2 rounded shadow-sm p-3">
+
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+        <h5 class="page-title mb-0 text-info">
+          {{ isEditMode ? 'Edit Report Schedule' : 'New Report Schedule' }}
+        </h5>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-secondary btn-sm" (click)="onCancel()">
+            <i class="fas fa-arrow-left me-1"></i> Back
+          </button>
+          <button type="button" class="btn btn-info btn-sm" (click)="onSubmit()">
+            <i class="fas fa-save me-1"></i> {{ isEditMode ? 'Update' : 'Save' }}
+          </button>
+        </div>
+      </div>
+
+      <form [formGroup]="form">
+
+        <!-- Row 1: Schedule Name + Report Type -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Schedule Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm" formControlName="ScheduleName"
+                   placeholder="e.g. Daily Outstanding Report">
+            <div *ngIf="f['ScheduleName'].touched && f['ScheduleName'].errors?.['required']"
+                 class="text-danger small mt-1">Schedule name is required</div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Report Type <span class="text-danger">*</span></label>
+            <ng-select formControlName="ReportMasterSid"
+                       [items]="availableReports"
+                       bindLabel="ReportDisplayName"
+                       bindValue="ReportMasterSid"
+                       placeholder="Select report"
+                       [clearable]="false"
+                       appendTo="body">
+            </ng-select>
+            <div *ngIf="f['ReportMasterSid'].touched && f['ReportMasterSid'].errors?.['required']"
+                 class="text-danger small mt-1">Report type is required</div>
+          </div>
+        </div>
+
+        <!-- Row 2: Customer (Subledger) + Ledger (COA) + Branch -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <label class="form-label fw-bold">Customer (Subledger)</label>
+            <ng-select formControlName="SubledgerMasterSid"
+                       [items]="subledgerList"
+                       bindLabel="SubledgerName"
+                       bindValue="SubledgerMasterSid"
+                       placeholder="All customers"
+                       [clearable]="true"
+                       appendTo="body">
+            </ng-select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-bold">Ledger (COA)</label>
+            <ng-select formControlName="COAMasterSid"
+                       [items]="coaList"
+                       bindLabel="LedgerName"
+                       bindValue="COAMasterSid"
+                       placeholder="Select ledger"
+                       [clearable]="true"
+                       appendTo="body">
+            </ng-select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-bold">Branches</label>
+            <ng-select formControlName="BranchFilter"
+                       [items]="branchList"
+                       bindLabel="branchName"
+                       bindValue="BranchMasterSid"
+                       placeholder="All branches"
+                       [multiple]="true"
+                       [clearable]="true"
+                       appendTo="body">
+            </ng-select>
+          </div>
+        </div>
+
+        <!-- Row 3: Frequency + Day of Week / Day of Month + Time -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Frequency <span class="text-danger">*</span></label>
+            <ng-select formControlName="Frequency"
+                       [items]="frequencyOptions"
+                       bindLabel="label"
+                       bindValue="value"
+                       [clearable]="false"
+                       appendTo="body">
+            </ng-select>
+          </div>
+
+          <div class="col-md-3" *ngIf="isWeekly">
+            <label class="form-label fw-bold">Day of Week <span class="text-danger">*</span></label>
+            <ng-select formControlName="DayOfWeek"
+                       [items]="dayOfWeekOptions"
+                       bindLabel="label"
+                       bindValue="value"
+                       placeholder="Select day"
+                       [clearable]="false"
+                       appendTo="body">
+            </ng-select>
+            <div *ngIf="f['DayOfWeek'].touched && f['DayOfWeek'].errors?.['required']"
+                 class="text-danger small mt-1">Day of week is required for weekly</div>
+          </div>
+
+          <div class="col-md-3" *ngIf="isMonthly">
+            <label class="form-label fw-bold">Day of Month <span class="text-danger">*</span></label>
+            <ng-select formControlName="DayOfMonth"
+                       [items]="dayOfMonthOptions"
+                       placeholder="Select day (1-28)"
+                       [clearable]="false"
+                       appendTo="body">
+            </ng-select>
+            <div *ngIf="f['DayOfMonth'].touched && f['DayOfMonth'].errors?.['required']"
+                 class="text-danger small mt-1">Day of month is required for monthly</div>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Schedule Time <span class="text-danger">*</span></label>
+            <input type="time" class="form-control form-control-sm" formControlName="ScheduleTime">
+            <div *ngIf="f['ScheduleTime'].touched && f['ScheduleTime'].errors?.['required']"
+                 class="text-danger small mt-1">Time is required</div>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Report Format <span class="text-danger">*</span></label>
+            <ng-select formControlName="ReportFormat"
+                       [items]="reportFormatOptions"
+                       bindLabel="label"
+                       bindValue="value"
+                       [clearable]="false"
+                       appendTo="body">
+            </ng-select>
+          </div>
+        </div>
+
+        <!-- Row 4: Emails -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold">To Emails <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm" formControlName="ToEmails"
+                   placeholder="email1@example.com, email2@example.com">
+            <div *ngIf="f['ToEmails'].touched && f['ToEmails'].errors?.['required']"
+                 class="text-danger small mt-1">At least one email is required</div>
+            <small class="text-muted">Separate multiple emails with commas</small>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-bold">CC Emails</label>
+            <input type="text" class="form-control form-control-sm" formControlName="CcEmails"
+                   placeholder="cc1@example.com, cc2@example.com">
+            <small class="text-muted">Separate multiple emails with commas</small>
+          </div>
+        </div>
+
+        <!-- Row 5: Active toggle -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-3">
+            <div class="form-check form-switch mt-4">
+              <input class="form-check-input" type="checkbox" formControlName="IsActive" id="isActiveSwitch">
+              <label class="form-check-label fw-bold" for="isActiveSwitch">Active</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Report Parameters (from ReportMasterDetail) -->
+        <div *ngIf="selectedReportDetails.length > 0" class="border-top pt-3 mt-2">
+          <h6 class="text-info mb-3">Report Parameters</h6>
+          <div class="row g-3">
+            <div *ngFor="let param of selectedReportDetails" class="col-md-4">
+              <label class="form-label fw-bold">{{ param.ParameterName }}</label>
+
+              <!-- Text input -->
+              <input *ngIf="param.ParameterFieldType === 'text'"
+                     type="text" class="form-control form-control-sm"
+                     [value]="form.value.ReportParams?.[param.ParameterName] || param.DefaultValue || ''"
+                     (change)="onParamChange(param.ParameterName, $event)">
+
+              <!-- Number input -->
+              <input *ngIf="param.ParameterFieldType === 'number'"
+                     type="number" class="form-control form-control-sm"
+                     [value]="form.value.ReportParams?.[param.ParameterName] || param.DefaultValue || ''"
+                     (change)="onParamChange(param.ParameterName, $event)">
+
+              <!-- Dropdown -->
+              <select *ngIf="param.ParameterFieldType === 'dropdown'"
+                      class="form-select form-select-sm"
+                      [value]="form.value.ReportParams?.[param.ParameterName] || param.DefaultValue || ''"
+                      (change)="onParamChange(param.ParameterName, $event)">
+                <option value="">-- Select --</option>
+                <ng-container *ngIf="param.DropDownValue">
+                  <option *ngFor="let opt of param.DropDownValue" [value]="opt.value">
+                    {{ opt.label }}
+                  </option>
+                </ng-container>
+              </select>
+
+              <!-- Checkbox -->
+              <div *ngIf="param.ParameterFieldType === 'checkbox'" class="form-check mt-1">
+                <input type="checkbox" class="form-check-input"
+                       [checked]="form.value.ReportParams?.[param.ParameterName] === true || form.value.ReportParams?.[param.ParameterName] === 'true'"
+                       (change)="onParamCheckboxChange(param.ParameterName, $event)">
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

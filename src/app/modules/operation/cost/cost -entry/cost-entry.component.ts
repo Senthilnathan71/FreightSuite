@@ -2384,6 +2384,7 @@ createRateFormGroup(data?: any): FormGroup {
         GST_VAT: GST_VAT || '',
         GSTType : GSTType,
         TaxType: GSTType,
+        ...(this.parentFormValue?.parentMenuName === 'Service Job' && isRevenue ? { DocumentNumber: this.parentFormValue?.ShipmentNo || null } : {}),
       })
 
       if(customerCurrency){

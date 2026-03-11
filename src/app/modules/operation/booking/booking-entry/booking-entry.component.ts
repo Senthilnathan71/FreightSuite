@@ -960,7 +960,6 @@ subscribeToFormChanges() {
   }
 
  private calculateChargeableWeight(): void {
-  console.error('calculateChargeableWeight');
   // During patching, don't recalculate - use the patched value
   if (this.isPatching) {
     console.log('Skipping chargeable weight calculation during patching');
@@ -4659,9 +4658,15 @@ async downloadPDFBarCode(qty: number = 1, withCompany: boolean = this.isWithComp
     const safeQty = Math.max(1, Number(qty) || 1);
     const imgData = await this.getBarcodePdfImageDataUrl(withCompany);
     const fileName = this.generateFileName('barcode') + '.pdf';
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pageWidth = 210;
-    const pageHeight = 297;
+    const pdf = withCompany
+      ? new jsPDF('p', 'mm', 'a4')
+      : new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: [101.6, 152.4] // 4in x 6in
+        });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
 
     if (withCompany) {
       const labelWidth = 100.5; // 380px at 96dpi
@@ -4674,18 +4679,23 @@ async downloadPDFBarCode(qty: number = 1, withCompany: boolean = this.isWithComp
         pdf.addImage(imgData, 'JPEG', x, y, labelWidth, labelHeight, undefined, 'FAST');
       }
     } else {
-      const labelWidth = 125; // print css width: 12.5cm
-      const labelHeight = 100; // print css height: 10cm
-      const x = (pageWidth - labelWidth) / 2;
-      const y1 = 35;
-      const y2 = 149; // y1 + 10cm + 1.4cm gap
+      // Match without-company print structure:
+      // One 4x6 label per page, print content in top 4.5in area,
+      // keep bottom 1.5in blank for pre-printed logo/company.
+      const contentAreaHeight = 114.3; // 4.5in
+      const dataUrlProps = pdf.getImageProperties(imgData);
+      const scale = Math.min(
+        pageWidth / dataUrlProps.width,
+        contentAreaHeight / dataUrlProps.height
+      );
+      const renderWidth = dataUrlProps.width * scale;
+      const renderHeight = dataUrlProps.height * scale;
+      const x = (pageWidth - renderWidth) / 2;
+      const y = 0;
 
-      for (let i = 0, page = 0; i < safeQty; i += 2, page++) {
-        if (page > 0) pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', x, y1, labelWidth, labelHeight, undefined, 'FAST');
-        if (i + 1 < safeQty) {
-          pdf.addImage(imgData, 'JPEG', x, y2, labelWidth, labelHeight, undefined, 'FAST');
-        }
+      for (let i = 0; i < safeQty; i++) {
+        if (i > 0) pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', x, y, renderWidth, renderHeight, undefined, 'FAST');
       }
     }
 
@@ -5573,25 +5583,13 @@ printDivBarcodeWithCompany(divId: string, qty: number): void {
 
     let finalHtml = '';
 
-    // ✅ Create 2 labels per A4 page
-    for (let i = 0; i < qty; i += 2) {
-
-      const label1 = sourceElement.innerHTML;
-      const label2 = (i + 1 < qty) ? sourceElement.innerHTML : '';
-
+    // Keep original label structure and print one label per page for label printers.
+    for (let i = 0; i < qty; i++) {
       finalHtml += `
         <div class="print-page">
-
-          <div class="print-label">
-            ${label1}
+          <div class="label-content-area">
+            ${sourceElement.innerHTML}
           </div>
-
-          ${label2 ? `
-          <div class="print-label">
-            ${label2}
-          </div>
-          ` : ''}
-
         </div>
       `;
     }
@@ -5625,38 +5623,30 @@ printDivBarcodeWithCompany(divId: string, qty: number): void {
             padding:0;
           }
 
-          /* A4 Page */
           .print-page{
-            width:21cm;
-            height:29.7cm;
-
+            width:4in;
+            height:6in;
+            margin:0 auto;
+            padding:0;
             display:flex;
-            flex-direction:column;
-            justify-content:around;
-            align-items:center;
-
-            padding:2cm 0;
+            justify-content:flex-start;
+            align-items:flex-start;
             box-sizing:border-box;
-
             page-break-after:always;
+            break-after:page;
+          }
+
+          /* Keep only 4.5in data area; remaining 1.5in is for pre-printed logo/company */
+          .label-content-area{
+            width:4in;
+            height:4.5in;
+            overflow:hidden;
+            box-sizing:border-box;
           }
 
           .print-page:last-child{
             page-break-after:auto;
-          }
-
-          /* Label size */
-          .print-label{
-            width:12.5cm;
-            height:10cm;
-            display:flex;
-            justify-content:center;
-            align-items:center;
-          }
-
-          /* center gap */
-          .print-label + .print-label{
-            margin-top:1.4cm;
+            break-after:auto;
           }
 
           @media print{
@@ -5667,7 +5657,7 @@ printDivBarcodeWithCompany(divId: string, qty: number): void {
             }
 
             @page{
-              size:A4;
+              size:4in 6in;
               margin:0;
             }
 
