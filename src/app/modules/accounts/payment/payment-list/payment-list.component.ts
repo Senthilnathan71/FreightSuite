@@ -244,7 +244,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
           filterable: true,
           visible: true,
           width: '120px',
-          cellClass: 'fw-bold text-primary'
+          // cellClass: 'fw-bold text-primary'
         },
         {
           key: 'VoucherDate',
@@ -763,11 +763,15 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
 
   private loadFilterLookups(): void {
     const companyMasterSid = this.currentCompany?.CompanyMasterSid;
-    if (!companyMasterSid) {
+    const branchMasterSid = this.currentBranch?.BranchMasterSid;
+    if (!companyMasterSid || !branchMasterSid) {
       return;
     }
 
-    this.accountService.getAllSuppliers(companyMasterSid).subscribe({
+    this.accountService.getAllCreditorWithCOAMapped({
+      CompanyMasterSid :companyMasterSid,
+      BranchMasterSid: branchMasterSid
+    }).subscribe({
       next: (response: any) => {
         const rows = Array.isArray(response?.data) ? response.data : [];
         const parties = rows.map((row: any) => ({

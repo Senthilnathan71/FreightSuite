@@ -239,15 +239,19 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
     // Alias for compatibility with existing template
     get allVendorCreditNote() { return this.allItems; }
     partySearchFn = (_searchTerm: string, partyType: string): Observable<any[]> => {
-      const companyMasterSid = this.currentCompany?.CompanyMasterSid;
-      if (!companyMasterSid || partyType !== 'CustomerMasterSid') {
-        return of([]);
-      }
-  
-      return this.operationService.getAllCustomersWithBranch(companyMasterSid).pipe(
-        map((data: any) => Array.isArray(data) ? data : []),
-        catchError(() => of([]))
-      );
+     const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const branchMasterSid = this.currentBranch?.BranchMasterSid;
+    if (!companyMasterSid || !branchMasterSid || partyType !== 'CustomerMasterSid') {
+      return of([]);
+    }
+
+    return this.operationService.getAllCreditorWithCOAMapped({
+      CompanyMasterSid: companyMasterSid,
+      BranchMasterSid: branchMasterSid
+    }).pipe(
+      map((resp: any) => Array.isArray(resp?.data) ? resp.data : []),
+      catchError(() => of([]))
+    );
     };
   
     constructor(

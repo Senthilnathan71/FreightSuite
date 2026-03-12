@@ -67,13 +67,27 @@ import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPr
 import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { greaterThanZero } from 'src/app/core/ValidationFn/greaterThanZero.validators';
-
+import { saveAs } from 'file-saver';
 interface NgbDateStructLike {
   day: number;
   month: number;
   year: number;
 }
 
+interface FilePickerWindow extends Window {
+  showSaveFilePicker?: (options?: {
+    suggestedName?: string;
+    types?: Array<{
+      description?: string;
+      accept: Record<string, string[]>;
+    }>;
+  }) => Promise<{
+    createWritable: () => Promise<{
+      write: (data: Blob) => Promise<void>;
+      close: () => Promise<void>;
+    }>;
+  }>;
+}
 @Component({
   selector: 'app-invoice-entry',
   standalone: true,
@@ -1239,7 +1253,9 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       BilledTo: this.invoiceData?.PartyName || this.invoiceData?.subledgerMaster?.SubledgerName || '',
       BillingAddress: this.invoiceData?.PartyAddress || this.invoiceData?.subledgerMaster?.Address || '',
       PAN: this.currentCompany?.Pan || this.currentCompany?.PAN || '',
-      InvoiceNo: `${this.invoiceData?.VoucherNumber} ${this.invoiceData?.PostStatus === 'P' ? '' : '( DRAFT )'}` || '',
+      InvoiceNo: this.currentCompany?.CompanyMasterSid === 13
+        ? `${this.invoiceData?.VoucherNumber || ''} ${this.invoiceData?.PostStatus === 'P' ? '' : '( CREATED )'}`
+        : `${this.invoiceData?.VoucherNumber || ''} ${this.invoiceData?.PostStatus === 'P' ? '' : '( DRAFT )'}`,
       InvoiceDate: this.invoiceData?.VoucherDate || '',
       GST_VAT: this.invoiceData?.GST_VAT || '',
       IRNNumber: this.invoiceData?.IRNNumber || '',
@@ -1370,6 +1386,11 @@ isSeaDepartment(): boolean {
     const isMasterJobInvoice = data.MasterJobSid && !data.HouseJobSid;
     const isBookingInvoice = !!data.BookingHeaderSid;
     const isAgentHouseJob = String(data?.houseJob?.JobType || '') === 'Agent';
+    const invoiceServiceFlag = String(data?.IsServiceJob ?? '').trim().toUpperCase();
+    const houseServiceFlag = String(data?.houseJob?.IsServiceJob ?? '').trim().toUpperCase();
+    const isServiceJobInvoice = invoiceServiceFlag
+      ? invoiceServiceFlag === 'Y'
+      : houseServiceFlag === 'Y';
 
     if(isHouseJobInvoice){
       this.hyperLinkInfo = {
@@ -1379,7 +1400,9 @@ isSeaDepartment(): boolean {
           : data?.houseJob?.HBLNo,
         path : isAgentHouseJob
           ? `/operation/agent-master-air-waybill/entry/${data.HouseJobSid}`
-          : `/operation/house-job/entry/${data.HouseJobSid}`,
+          : (isServiceJobInvoice
+            ? `/operation/service-job/entry/${data.HouseJobSid}`
+            : `/operation/house-job/entry/${data.HouseJobSid}`),
         label : isAgentHouseJob ? 'AMWBL No.' : (airDept ? 'HAWBL No.' : 'HBL No.')
       }
     } else if (isMasterJobInvoice) {
@@ -3507,17 +3530,17 @@ isSeaDepartment(): boolean {
 
   // pdf
 
-  async downloadPDF() {
+   async downloadPDF() {
     this.spinner.show();
     try {
       await this.preparePrintData();
       const logo = this.pdfMakeService.getReportLogo();
-
+ 
       const lookups = {
         hssacMaster: this.hssacList?.flat() || [],
         currencyMaster: this.currencyList || []
       };
-
+ 
       const options = {
         taxDisplayConfig: this.getTaxDisplayConfig(),
         bankDetails: this.bankDetails || [],
@@ -3550,8 +3573,8 @@ isSeaDepartment(): boolean {
         },
         invoicePrintData: this.invoicePrintData
       };
-
-      this.pdfMakeService.generateInvoiceFromApi(
+ 
+      const blob = await this.pdfMakeService.generateInvoiceBlobFromApi(
         this.invoiceData,
         this.currentCompany,
         this.currentBranch,
@@ -3560,15 +3583,55 @@ isSeaDepartment(): boolean {
         lookups,
         options
       );
+      const filename = this.getInvoicePdfFilename();
+      await this.savePdfWithPicker(blob, filename);
       this.appSettingService.showSuccess('PDF downloaded successfully!');
     } catch (error) {
+      if ((error as any)?.name === 'AbortError') {
+        return;
+      }
       console.error('Error generating PDF:', error);
       this.appSettingService.showError('Error generating PDF. Please try again.');
     } finally {
       this.spinner.hide();
     }
   }
+ 
 
+  private getInvoicePdfFilename(): string {
+    const voucherNumber = this.invoiceForm.get('VoucherNumber')?.value || 'Invoice';
+    return `Invoice_${voucherNumber}.pdf`;
+  }
+ 
+  private async savePdfWithPicker(blob: Blob, filename: string): Promise<void> {
+    const pickerWindow = window as FilePickerWindow;
+ 
+    if (typeof pickerWindow.showSaveFilePicker === 'function') {
+      try {
+        const fileHandle = await pickerWindow.showSaveFilePicker({
+          suggestedName: filename,
+          types: [
+            {
+              description: 'PDF Document',
+              accept: {
+                'application/pdf': ['.pdf']
+              }
+            }
+          ]
+        });
+        const writable = await fileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        return;
+      } catch (error: any) {
+        if (error?.name === 'AbortError') {
+          throw error;
+        }
+      }
+    }
+ 
+    saveAs(blob, filename);
+  }
 
   async generatePDFBlob(): Promise<Blob | null> {
     try {

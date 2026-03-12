@@ -1668,6 +1668,10 @@ if (polSid && !podSid) {
                 this.isLoading = false;
                 this.spinner.hide();
                 if (response.status) {
+                    this.masterJobForm.markAsPristine();
+                    this.masterJobForm.markAsUntouched();
+                    this.containerFormGroup.markAsPristine();
+                    this.containerFormGroup.markAsUntouched();
                     const masterJobSid =
                         response.data?.newMasterJob?.MasterJobSid ||
                         response.newMasterJob?.MasterJobSid ||
@@ -1708,6 +1712,10 @@ if (polSid && !podSid) {
     this.spinner.hide();
 
     if (response.status) {
+      this.masterJobForm.markAsPristine();
+      this.masterJobForm.markAsUntouched();
+      this.containerFormGroup.markAsPristine();
+      this.containerFormGroup.markAsUntouched();
 
       const masterJobSid =
         response.data?.newMasterJob?.MasterJobSid ||

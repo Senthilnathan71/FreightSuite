@@ -365,7 +365,7 @@ private formatAmount(amount: number | string): string {
           filterable: true,
           visible: true,
           dataType: 'string',
-          width: '150px'
+          
         },
         {
           key: 'VoucherDate',
@@ -383,7 +383,7 @@ private formatAmount(amount: number | string): string {
           filterable: true,
           visible: true,
           dataType: 'string',
-          width: '120px',
+          
         },
         {
           key: 'PartyName',

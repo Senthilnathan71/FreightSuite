@@ -17,37 +17,41 @@
       </a>
       }
     <!-- Add this after the existing info icon in the smart-header div -->
-@if(isEditMode && getUnmappedContainers().length > 0){
-  <div class="ms-3 unmapped-container-indicator" 
-       ngbDropdown 
-       container="body"
-       placement="bottom-right">
-    
-    <!-- Main indicator button -->
-    <button class="unmapped-badge" id="unmappedDropdown" ngbDropdownToggle>
-      <i class="fas fa-exclamation-triangle me-1"></i>
-      <span>{{ getUnmappedContainers().length }} Unassigned Containers</span>
-      <i class="fas fa-chevron-down ms-1" style="font-size: 10px;"></i>
-    </button>
-    
-    <!-- Dropdown list of unmapped container numbers -->
-    <div ngbDropdownMenu aria-labelledby="unmappedDropdown" class="unmapped-dropdown-menu">
-      <!-- <div class="dropdown-header">
-        <i class="fas fa-box-open me-1"></i>
-        Unmapped Containers
-      </div>
-      <div class="dropdown-divider"></div> -->
-      
-      @for(container of getUnmappedContainers(); track container.MasterJobContainerSid){
-        <button class="dropdown-item" (click)="scrollToContainer(container.ContainerNumber)">
-          <i class="fas fa-box me-2 text-black"></i>
-          <span class="container-number text-black">{{ container.ContainerNumber }}</span>
-          <small class="text-muted ms-2">{{ getContainerTypeName(container.ContainerType) }}</small>
+        @if(isEditMode && getUnmappedContainers().length > 0){
+        <div ngbDropdown container="body" class="d-inline-block ms-3 unmapped-container-indicator" placement="bottom-right">
+        
+        <!-- Main button -->
+        <button
+            type="button"
+            class="btn btn-warning btn-sm"
+            id="unmappedDropdown"
+            ngbDropdownToggle
+            [disabled]="getUnmappedContainers().length === 0"
+            title="{{ getUnmappedContainers().length > 0 ? 'View Unassigned Containers' : 'No Unassigned Containers' }}"
+        >
+            <i class="fas fa-exclamation-triangle me-1"></i>
+            {{ getUnmappedContainers().length }} Unassigned Containers
         </button>
-      }
-    </div>
-  </div>
-}
+
+        <!-- Dropdown menu -->
+        <div ngbDropdownMenu aria-labelledby="unmappedDropdown" class="shadow">
+            @for (container of getUnmappedContainers(); track container.MasterJobContainerSid) {
+            <button
+                class="text-dark"
+                ngbDropdownItem
+                (click)="scrollToContainer(container.ContainerNumber)"
+            >
+                <i class="fas fa-box me-2"></i>
+                {{ container.ContainerNumber }}
+                <small class="text-muted ms-2">
+                {{ getContainerTypeName(container.ContainerType) }}
+                </small>
+            </button>
+            }
+        </div>
+
+        </div>
+        }
         </div>
         <div class="header-actions">
             <div class="action-group" *ngIf="isEditMode">

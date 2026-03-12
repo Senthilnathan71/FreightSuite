@@ -3308,7 +3308,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
 
 
   navigateBack() {
-    history.back();
+    this.router.navigate(['/operation/house-job/list']);
   }
 
   selectedTab = 'Shipment';

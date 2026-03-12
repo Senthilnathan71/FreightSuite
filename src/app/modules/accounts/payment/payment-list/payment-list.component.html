@@ -30,7 +30,7 @@
      
     </div>
      <!-- Reusable Table Component -->
-    <div class="col-12 px-0  table-scroll-wrapper">
+    <div class="col-12">
         <app-reusable-table #paymentTable [config]="tableConfig" [data]="Allpayment" [loading]="tableLoading"
             [totalRecords]="totalLengthOfCollection" [paginationConfig]="paginationConfig"
             (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"

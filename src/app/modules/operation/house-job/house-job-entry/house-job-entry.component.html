@@ -67,7 +67,7 @@
       <div class="action-group" *ngIf="isEditMode">
         <div ngbDropdown container="body" class="d-inline-block">
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" id="dropdownUpload"
-            ngbDropdownToggle [disabled]="!housejobData">
+            ngbDropdownToggle [disabled]="!housejobData || houseJobForm?.dirty || cargoForm?.dirty || otherForm?.dirty || detailForm?.dirty">
             <i class="fas fa-print me-1"></i> Print
           </button>
           <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">

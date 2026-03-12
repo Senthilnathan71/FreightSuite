@@ -20,6 +20,8 @@ import { LeadStatusLabels } from 'src/app/common/helper';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { DeleteWarningComponent } from '../../delete-warning.component';
+import { MatDialog } from '@angular/material/dialog';
 @Component({
   selector: 'app-view',
   standalone: true,
@@ -82,6 +84,7 @@ export class ViewComponent extends BaseListComponent implements OnInit {
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
     private excelReportService: ExcelExportService,
+    private dialog: MatDialog,
   ) {
     super(paginationService);
   }
@@ -399,17 +402,25 @@ export class ViewComponent extends BaseListComponent implements OnInit {
     this.route.navigate(['crm/lead/entry', id])
   }
 
-  deleteLead(PreCustomerMasterSid: number) {
-    this.leadService.deleteLeadById(PreCustomerMasterSid).subscribe(
-      (resp: any) => {
-        if (resp.status) {
+  deleteLead(PreCustomerMasterSid: any) {
+    const dialogRef = this.dialog.open(DeleteWarningComponent);
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+    this.leadService.deleteLeadById(PreCustomerMasterSid).subscribe({
+      next: (response:any) => {
+        if (response.status) {
           this.appSettingService.showSuccess("Lead Deleted Successfully");
           this.search();
-        } else {
+    } else {
           this.appSettingService.showError("Error deleting lead");
         }
+      },
+      error: (error) =>{
+        this.appSettingService.showError("Error deleting lead");
       }
-    )
+      });
+    }
+  })
   }
 
   createMeeting(PreCustomerMasterSid: number) {

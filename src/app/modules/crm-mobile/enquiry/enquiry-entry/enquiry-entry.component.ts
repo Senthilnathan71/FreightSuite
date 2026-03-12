@@ -1775,6 +1775,10 @@ private parseFloatSafe(value: any): number {
         .subscribe((resp) => {
 
           if (resp) {
+            this.rateRequestForm.markAsPristine();
+            this.rateRequestForm.markAsUntouched();
+            this.enquiryOtherForm.markAsPristine();
+            this.enquiryOtherForm.markAsUntouched();
             this.modalService.openSuccessModal('Enquiry Updated Successfully');
             this.btnDisable = false;
             this.loadEnquiry(this.EnquiryHeaderSid);
@@ -1826,6 +1830,10 @@ private parseFloatSafe(value: any): number {
       }
       this.leadService.createEnquiry(createPayload).subscribe((resp) => {
         if (resp.status) {
+          this.rateRequestForm.markAsPristine();
+          this.rateRequestForm.markAsUntouched();
+          this.enquiryOtherForm.markAsPristine();
+          this.enquiryOtherForm.markAsUntouched();
           this.modalService.openSuccessModal('Enquiry Created Successfully');
           this.btnDisable = false;
           this.EnquiryHeaderSid = resp?.data?.enquiryHeader?.EnquiryHeaderSid;
@@ -1943,7 +1951,7 @@ private parseFloatSafe(value: any): number {
 
   goBack() {
     this.stopVoiceGuide();
-    history.back();
+    this.router.navigate(['/crm/enquiry/list']);
   }
 
   navigateQuotation() {
