@@ -67,6 +67,7 @@ import { HostListener } from '@angular/core';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { th } from 'date-fns/locale';
 import * as JsBarcode from 'jsbarcode';
+import { CreditValidationApiService } from '../../credit-request.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -153,6 +154,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   showParsedData = false;
   uploadResult: any = null;
   isSaving : boolean = false;
+  lastCreditValidationMessage: string = '';
   isDirty: boolean = false;
   private initialFormValue: any = null;
   showPrintLogo: boolean = false;
@@ -462,7 +464,8 @@ get visibleTabs() {
     private sidebarService : VerticalSidebarService,
     private commonModalService : ModalService,
     private toastr: ToastrService,
-    private emailTriggerService: EmailTriggerService
+    private emailTriggerService: EmailTriggerService,
+    private creditValidationApiService: CreditValidationApiService
   ) {
     this.today = this.calendar.getToday();
     // const nav = this.router.getCurrentNavigation();
@@ -2080,6 +2083,20 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     if (resolve) resolve(false);
     return;
   }
+
+    const creditOk = await this.validateCreditBeforeSave();
+    if (!creditOk) {
+      const proceed = await this.commonModalService.confirm(
+        `${this.lastCreditValidationMessage || 'Credit validation failed.'}\n\nDo you want to save this booking anyway?`,
+        'Credit Validation',
+        'Proceed'
+      );
+      if (!proceed) {
+        this.isSaving = false;
+        if (resolve) resolve(false);
+        return;
+      }
+    }
 
 
     // const isRateValid = this.costEntryComponent?.validateRateArray?.();
@@ -5188,6 +5205,77 @@ async generatePDFBlob(type: 'booking' | 'cro'  = 'booking'): Promise<Blob | null
     return null;
   }
 }
+
+  private async validateCreditBeforeSave(): Promise<boolean> {
+    this.lastCreditValidationMessage = '';
+    const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const branchMasterSid = this.currentBranch?.BranchMasterSid;
+    const raw = this.bookingForm.getRawValue();
+    const customerMasterSid = raw?.CustomerMasterSid ?? null;
+    const customerBranchSid = raw?.CustomerBranchSid ?? null;
+    const BookingDateTime= raw?.BookingDateTime?? null;
+
+    if (!customerMasterSid) {
+      return true;
+    }
+
+    if (!companyMasterSid) {
+      this.appSettingService.showWarning('Company is not selected. Please refresh and try again.');
+      return false;
+    }
+    if (!branchMasterSid) {
+      this.appSettingService.showWarning('Branch is not selected. Please select a branch before saving booking.');
+      return false;
+    }
+
+    try {
+      const resp: any = await firstValueFrom(
+        this.creditValidationApiService.validateCredit({
+          CompanyMasterSid: companyMasterSid,
+          BranchMasterSid: branchMasterSid,
+          CustomerMasterSid: customerMasterSid,
+          CustomerBranchSid: customerBranchSid,
+          DocumentDate: BookingDateTime
+        })
+      );
+
+      const validation = resp?.data;
+      const isValid = validation?.IsValid ?? validation?.isValid;
+      if (!resp?.status || isValid === false) {
+        const errors = Array.isArray(validation?.Errors)
+          ? validation.Errors
+          : Array.isArray(validation?.errors)
+            ? validation.errors
+            : [];
+        this.lastCreditValidationMessage = errors.length
+          ? errors.join('\n')
+          : resp?.message || 'Credit validation failed.';
+        return false;
+      }
+
+      const warnings = Array.isArray(validation?.Warnings)
+        ? validation.Warnings
+        : Array.isArray(validation?.warnings)
+          ? validation.warnings
+          : [];
+      if (warnings.length) {
+        this.appSettingService.showWarning(warnings.join('\n'));
+      }
+
+      return true;
+    } catch (error: any) {
+      const validation = error?.error?.data;
+      const errors = Array.isArray(validation?.Errors)
+        ? validation.Errors
+        : Array.isArray(validation?.errors)
+          ? validation.errors
+          : [];
+      this.lastCreditValidationMessage = errors.length
+        ? errors.join('\n')
+        : error?.error?.message || 'Credit validation failed.';
+      return false;
+    }
+  }
 
 
  getContainerName(ContainerTypeMasterSid:number){
