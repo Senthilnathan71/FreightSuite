@@ -2763,8 +2763,58 @@ onYardChange(selectedYard: any): void {
   }
 
   printARAPReport() {
-    // Implement print functionality
-    window.print();
+    const printSection = document.getElementById('arap-print-section');
+    if (!printSection) {
+      this.appSettingsService.showWarning('AR/AP table not found for printing');
+      return;
+    }
+
+    const printWindow = window.open('', '_blank', 'width=1200,height=800');
+    if (!printWindow) {
+      this.appSettingsService.showWarning('Unable to open print window. Please allow popups.');
+      return;
+    }
+
+    const reportTitle = `AR/AP Report - ${this.masterAirWayData?.MasterJobNumber || ''}`;
+    const printDate = this.datePipe.transform(new Date(), 'dd-MM-yyyy HH:mm') || '';
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>${reportTitle}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 16px; color: #1f2937; }
+            .print-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+            .print-title { font-size: 18px; font-weight: 700; margin: 0; }
+            .print-meta { font-size: 12px; color: #6b7280; }
+            .modern-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+            .modern-table th, .modern-table td { border: 1px solid #d1d5db; padding: 8px; }
+            .modern-table th { background: #f3f4f6; text-align: left; }
+            .modern-table .text-end { text-align: right; }
+            .modern-table tfoot td { font-weight: 700; background: #f9fafb; }
+            .voucher-link { color: #111827; text-decoration: none; pointer-events: none; }
+            .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; color: #111827; background: #e5e7eb; }
+            .status-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; }
+            .status-unpaid { background: #fee2e2; color: #991b1b; }
+            .status-partial { background: #fef3c7; color: #92400e; }
+            .status-paid { background: #dcfce7; color: #166534; }
+            @media print { body { margin: 0; } }
+          </style>
+        </head>
+        <body>
+          <div class="print-header">
+            <h1 class="print-title">${reportTitle}</h1>
+            <div class="print-meta">Printed: ${printDate}</div>
+          </div>
+          ${printSection.outerHTML}
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
   }
 
     // Print

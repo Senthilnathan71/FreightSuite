@@ -1604,7 +1604,7 @@ clearCustomerSearch(): void {
       PanName: [''],
       GroupName: [''],
       Website: [''],
-      paymentType: [''],
+      paymentType: ['Credit',[Validators.required]],
       IsMSME: [''],
       KYCSpecified: [false],
       RegistrationNo: [''],

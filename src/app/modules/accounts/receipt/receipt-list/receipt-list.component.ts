@@ -421,6 +421,7 @@ private formatAmount(amount: number | string): string {
           visible: true,
           dataType: 'number',
           width: '130px',
+          template: 'status',
         },
         {
           key: 'Status',

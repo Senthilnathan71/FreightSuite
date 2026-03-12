@@ -1891,6 +1891,11 @@ getDefaultBLClausesByDepartment(DepartmentMasterSid: number) {
     return this.http.post<any>('pro-rate/calculate', payload).pipe(map(resp => resp));
   }
 
+  getCompanyConfig(CompanyMasterSid: number, Configurationname: string) {
+    return this.http.get<any>(`company-config/value/${CompanyMasterSid}/${Configurationname}`).pipe(
+      map((resp) => resp)
+    );
+  }
 
 
 

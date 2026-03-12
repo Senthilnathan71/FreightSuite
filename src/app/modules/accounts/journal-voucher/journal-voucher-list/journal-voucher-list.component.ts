@@ -137,7 +137,7 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
     };
     // Initialize base component
     super.ngOnInit();
-    this.loadJournalVouchers();
+   
   }
 
   loadJournalVouchers(){
@@ -339,7 +339,7 @@ private formatAmount(amount: number | string): string {
         filterable: true,
         visible: true,
         dataType: 'string',
-        width: '150px',
+
       },
       {
         key: 'VoucherDateFormatted',
@@ -348,7 +348,7 @@ private formatAmount(amount: number | string): string {
         filterable: true,
         visible: true,
         dataType: 'string',
-        width: '120px',
+       
       },
       {
         key: 'LocalAmountFormatted',
@@ -366,7 +366,7 @@ private formatAmount(amount: number | string): string {
         filterable: true,
         visible: true,
         dataType: 'string',
-        width: '250px',
+  
       },
        {
         key: 'PostStatus',
@@ -376,7 +376,7 @@ private formatAmount(amount: number | string): string {
         visible: true,
         template: 'status',
         dataType: 'string',
-        width: '120px',
+        
       },
       {
         key: 'PostDateFormatted',

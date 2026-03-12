@@ -156,7 +156,7 @@
         <div class="col-md-12 ">
 
           <div class="row">
-            <aside class="col-md-4">
+            <aside class="col-md-3">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="customerForm.get('CountryMasterSid')?.value">
                 <!-- <ng-select [items]="dropdownStore.countries()" bindLabel="countryName" bindValue="CountryMasterSid"
@@ -183,7 +183,7 @@
               </div>
             </aside>
 
-            <aside class="col-md-4">
+            <aside class="col-md-3">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!customerForm.get('CurrencyMasterSid')?.value">
               <dofi-searchable-dropdown [items]="currencyList" formControlName="CurrencyMasterSid" placeholder=""
@@ -197,7 +197,7 @@
             </div>
             </aside>
 
-            <aside class="col-md-4">
+            <aside class="col-md-3">
               <div class="custom-form-group" style="position: relative;">
                 <input type="text" id="CustomerName" formControlName="CustomerName" placeholder=""
                   class="custom-input-field sm"  (input)="onCustomerNameInput($event)"
@@ -232,7 +232,7 @@
               </div>
             </aside>
 
-            <aside class="col-md-4">
+            <aside class="col-md-3">
               <div class="custom-form-group">
                 <input type="text" id="CustomerShortCode" formControlName="CustomerShortCode" placeholder=""
                   class="custom-input-field sm" [textWithNumbers]="50" />
@@ -245,7 +245,7 @@
 
 
 
-            <aside class="col-md-4">
+            <aside class="col-md-3">
               <div class="custom-form-group custom-form-group-select" [class.filled]="selectedStatus?.length > 0">
                 <multi-select [items]="modeOfCustomerType" bindLabel="name" bindValue="name" placeholder=""
                   [(ngModel)]="selectedStatus" (valueChange)="handleSelectedStatus($event)"
@@ -254,7 +254,7 @@
               </div>
             </aside>
 
-            <aside class="col-md-4">
+            <aside class="col-md-3">
               <div class="custom-form-group">
                 <input type="text" id="CustomerAliasName" placeholder="" class="custom-input-field sm"
                   formControlName="CustomerAliasName" [textWithNumbers]="100">
@@ -269,7 +269,7 @@
               </div>
             </aside>
 
-            <aside class="col-md-4">
+            <aside class="col-md-3">
               <div class="custom-form-group">
                 <input type="text" id="GroupName" placeholder="" class="custom-input-field sm"
                   formControlName="GroupName" [textWithNumbers]="20">
@@ -282,7 +282,7 @@
               </div>
             </aside>
 
-            <aside class="col-md-4">
+            <aside class="col-md-3">
   <div class="custom-form-group">
     <input type="text" id="CustomerAddress1" placeholder="" class="custom-input-field sm"
            formControlName="CustomerAddress1" maxlength="300"
@@ -306,7 +306,7 @@
   </div>
 </aside>
 
-            <aside class="col-md-4">
+            <aside class="col-md-3">
               <div class="custom-form-group">
                 <input type="text" id="CustomerAddress2" placeholder="" class="custom-input-field sm"
                   formControlName="CustomerAddress2">
@@ -319,7 +319,7 @@
               </div>
             </aside>
 
-            <aside class="col-md-4">
+            <aside class="col-md-3">
               <div class="custom-form-group">
                 <input type="text" id="Website" placeholder="" class="custom-input-field sm" formControlName="Website"
                   [maxlength]="50">
@@ -332,24 +332,24 @@
               </div>
             </aside>
 
-            <aside class="col-md-4 mt-md-2 mt-0">
+            <aside class="col-md-3 mt-md-2 mt-0">
               <div class="custom-form-group">
                 <div class="d-flex gap-3">
                   <div class="form-check">
                     <input class="form-check-input" type="radio" formControlName="paymentType" id="paymentTypeCash"
                       value="Cash">
-                    <label class="form-check-label" for="paymentTypeCash">Cash</label>
+                    <label class="form-check-label" for="paymentTypeCash">Cash <span class="text-danger">*</span></label>
                   </div>
                   <div class="form-check">
                     <input class="form-check-input" type="radio" formControlName="paymentType" id="paymentTypeCredit"
                       value="Credit">
-                    <label class="form-check-label" for="paymentTypeCredit">Credit</label>
+                    <label class="form-check-label" for="paymentTypeCredit">Credit <span class="text-danger">*</span></label>
                   </div>
                 </div>
               </div>
             </aside>
 
-            <aside class="col-md-4">
+            <aside class="col-md-3">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="customerForm.get('Network')?.value">
                  <dofi-searchable-dropdown  [items]="networkList" formControlName="Network" [placeholder]="''"
@@ -376,7 +376,7 @@
               </div>
             </aside> -->
 
-             <aside class="col-md-4">
+             <aside class="col-md-3">
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                   formControlName="CIN" [textWithNumbers]="25">
@@ -393,7 +393,7 @@
               </div>
             </aside>
 
-             <aside class="col-md-4">
+             <aside class="col-md-3">
               <div class="custom-form-group">
                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                   formControlName="TAN" [textWithNumbers]="25">
@@ -410,7 +410,7 @@
               </div>
             </aside>
 
-            <aside class="col-md-4">
+            <aside class="col-md-3">
               <div class="custom-form-group">
                 <textarea rows="1" class="custom-input-field sm" formControlName="Remarks" [textWithNumbers]="100"
                   placeholder=""></textarea>
@@ -423,7 +423,7 @@
               </div>
             </aside>
 
-            <aside class="col-md-4 d-flex align-items-center" *ngIf="isCurrentUserIndian">
+            <aside class="col-md-3 d-flex align-items-center" *ngIf="isCurrentUserIndian">
   <div class="form-check form-check-inline p-0">
     <div class="form-check d-flex align-items-center">
       <input type="checkbox" formControlName="IsMSME" id="IsMSME" class="form-check-input sm">
@@ -432,7 +432,7 @@
   </div>
 </aside>
             <ng-container *ngIf="isAirlineSelected">
-  <aside class="col-md-4">
+  <aside class="col-md-3">
     <div class="custom-form-group">
       <input type="text" id="AirlineNumber" formControlName="AirlineNumber" placeholder=""
              class="custom-input-field sm" [textWithNumbers]="3" />
@@ -458,7 +458,7 @@
     </div>
   </aside>
 
-  <aside class="col-md-4">
+  <aside class="col-md-3">
     <div class="custom-form-group">
       <input type="text" id="AirlineCode" formControlName="AirlineCode" placeholder=""
              class="custom-input-field sm" [textWithNumbers]="10" />
@@ -477,7 +477,7 @@
   </aside>
 </ng-container>
 
-            <aside class="col-md-4">
+            <aside class="col-md-3">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="customerForm.get('status')?.getRawValue()">
                 <ng-select name="status" class="ng-select" formControlName="status" id="statusSelect"
@@ -490,9 +490,12 @@
             </aside>
             <!-- KYC Section -->
             <div class="mx-0">
-              <div class="row border mx-0 rounded">
-                <div class="d-flex align-items-center gap-2 ps-md-0 mt-1">
-                  <h5 class="card-titlename mb-0 text-info fw-bold">KYC Section</h5>
+              <div class="row border mx-0 rounded px-2">
+                <div class="d-flex align-items-center gap-2 ps-0 pt-1">
+                  <div class="brand-icon">
+                   <i class="fas fa-id-card"></i>
+                  </div>
+                  <h5 class="page-title mb-0 text-info"> KYC Section</h5>
                 </div>
 
                 <aside class="col-md-4 d-flex align-items-center ps-md-0">
@@ -662,7 +665,7 @@
       <div class="custom-accordion-organization">
         <div *ngFor="let branch of (branches?.controls || []); let branchIndex = index" class="accordion-item">
           <h2 class="accordion-header">
-            <button class="accordion-button p-1" [class.collapsed]="!isBranchExpanded(branchIndex)" type="button"
+            <button class="accordion-button px-1" [class.collapsed]="!isBranchExpanded(branchIndex)" type="button"
               (click)="toggleBranch(branchIndex)">
               <div class="d-flex justify-content-between align-items-center w-100">
                 <div>
@@ -692,7 +695,7 @@
                 <!-- <h5 class="text-info pb-2">Branch Details</h5> -->
 
                 <!-- State Dropdown (Filtered by Country from Party tab) -->
-                <aside class="col-md-4">
+                <aside class="col-md-3">
                   <div class="custom-form-group custom-form-group-select"
                     [class.filled]="!!getBranchFormGroup(branch).get('CustBranchState')?.value">
                     <!-- <ng-select id="state_{{branchIndex}}" formControlName="CustBranchState" class=""
@@ -723,7 +726,7 @@
                 </aside>
 
                 <!-- City Dropdown (Filtered by State selection) -->
-                <aside class="col-md-4">
+                <aside class="col-md-3">
                   <div class="custom-form-group custom-form-group-select"
                     [class.filled]="!!getBranchFormGroup(branch).get('CustBranchCity')?.value">
                     <!-- <ng-select [id]="'city_' + branchIndex" formControlName="CustBranchCity"
@@ -756,7 +759,7 @@
                 </aside>
 
                 <!-- Branch Name -->
-                <aside class="col-md-4">
+                <aside class="col-md-3">
                   <div class="custom-form-group">
                     <input type="text" placeholder="" class="custom-input-field sm" formControlName="CustBranchName"
                       [textWithNumbers]="20" (input)="onBranchNameChange(branchIndex)">
@@ -776,7 +779,7 @@
                 </aside>
 
                 <!-- Branch Type -->
-                <aside class="col-md-4 pr-1">
+                <aside class="col-md-3">
                   <div class="custom-form-group my-0">
                     <label class="form-check-label mx-0">Branch Type <span class="text-danger">*</span></label>
                     <div class="d-flex gap-3">
@@ -800,7 +803,7 @@
                 </aside>
 
                 <!-- Branch Code (Auto-generated) -->
-                <aside class="col-md-4">
+                <aside class="col-md-3">
                   <div class="custom-form-group">
                     <input type="text" placeholder="" class="custom-input-field sm" formControlName="CustBranchCode"
                       [textWithNumbers]="10">
@@ -809,7 +812,7 @@
                 </aside>
 
                 <!-- Contact Person -->
-                <aside class="col-md-4">
+                <aside class="col-md-3">
                   <div class="custom-form-group">
                     <input type="text" placeholder="" class="custom-input-field sm" formControlName="Contact_Person">
                     <label class="input-label">Contact Person</label>
@@ -817,7 +820,7 @@
                 </aside>
 
                 <!-- Phone -->
-                <aside class="col-md-4">
+                <aside class="col-md-3">
                   <div class="d-flex gap-2">
                     <div class="custom-form-group custom-form-group-select w-40"
                       [class.filled]="!!getBranchFormGroup(branch).get('CustBranchPhoneCode')?.value">
@@ -829,9 +832,7 @@
                       <input type="text" placeholder="" class="custom-input-field sm" formControlName="CustBranchPhone"
                         [onlyNumbers]="15">
                       <label class="input-label">Phone</label>
-                    </div>
-                  </div>
-                  @if (getBranchFormGroup(branch).get('CustBranchPhone')?.touched &&
+                      @if (getBranchFormGroup(branch).get('CustBranchPhone')?.touched &&
                   getBranchFormGroup(branch).get('CustBranchPhone')?.invalid) {
                   <div class="error-message">
                     @if (getBranchFormGroup(branch).get('CustBranchPhone')?.hasError('invalidPhoneNumber')) {
@@ -839,10 +840,13 @@
                     }
                   </div>
                   }
+                    </div>
+                  </div>
+                  
                 </aside>
 
                 <!-- Email -->
-                <aside class="col-md-4">
+                <aside class="col-md-3">
                   <div class="custom-form-group">
                     <input type="text" placeholder="" class="custom-input-field sm" formControlName="CustBranchEmail">
                     <label class="input-label">Email <span class="text-danger"></span></label>
@@ -862,7 +866,7 @@
                 </aside>
 
                 <!-- Address -->
-                <aside class="col-md-4">
+                <aside class="col-md-3">
                   <div class="custom-form-group">
                     <input type="text" placeholder="" class="custom-input-field sm" formControlName="CustBranchAddress"
                       maxlength="200">
@@ -881,7 +885,7 @@
                   </div>
                 </aside>
                 <!-- After Contact Person field -->
-                <aside class="col-md-4">
+                <aside class="col-md-3">
                   <div class="custom-form-group">
                     <input type="text" placeholder="" class="custom-input-field sm"
                       formControlName="CustBranchZipPostCode" [onlyNumbers]="6">
@@ -897,7 +901,7 @@
                   </div>
                 </aside>
                 <!-- Add this after the Address field in the branch form -->
-                <aside class="col-md-4">
+                <aside class="col-md-3">
                   <div class="custom-form-group custom-form-group-select"
                     [class.filled]="!!getBranchFormGroup(branch).get('CustBranchRegistered')?.value">
                     <ng-select formControlName="CustBranchRegistered" [items]="modeOfRegistered" bindLabel="name"
@@ -916,7 +920,7 @@
                 </aside>
                 <!-- After Phone field -->
                 <!-- GST Type - ONLY show for India when PAN Available is checked -->
-                <aside class="col-md-4" *ngIf="shouldShowGSTFields(branchIndex)">
+                <aside class="col-md-3" *ngIf="shouldShowGSTFields(branchIndex)">
                   <div class="custom-form-group custom-form-group-select"
                     [class.filled]="!!getBranchFormGroup(branch).get('CustBranchGSTtype')?.value">
                     <ng-select [items]="gstTypeList" bindLabel="name" bindValue="name"
@@ -927,7 +931,7 @@
                 </aside>
 
                 <!-- GSTIN Section - ONLY show for India when PAN Available is checked -->
-      <aside class="col-md-4" *ngIf="shouldShowGSTFields(branchIndex)">
+      <aside class="col-md-3" *ngIf="shouldShowGSTFields(branchIndex)">
         <div class="custom-form-group gstin-group aos-horizontal">
       
           <!-- State Code -->
@@ -971,7 +975,7 @@
 
 
                 <!-- Status -->
-                <aside class="col-md-4">
+                <aside class="col-md-3">
                   <div class="custom-form-group custom-form-group-select"
                     [class.filled]="!!getBranchFormGroup(branch).get('status')?.value">
                     <ng-select formControlName="status" [items]="modeOfStatus" bindLabel="name" bindValue="name"

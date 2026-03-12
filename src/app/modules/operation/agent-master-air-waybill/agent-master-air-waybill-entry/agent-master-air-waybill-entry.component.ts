@@ -61,6 +61,7 @@ import { HAWBComponent } from '../../house-job/report/hawb/hawb.component';
 import { OperationService } from '../../operation.service';
 import { ToastrService } from 'ngx-toastr';
 import { AwbDraftComponent } from '../report/awb-draft/awb-draft.component';
+import { AwbPreprintComponent } from '../report/awb-preprint/awb-preprint.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -4418,6 +4419,34 @@ ${this.userData['userName']}`;
   reportAWAB() {
     // this.selectedReportAir = type;
     const modalRef = this.modalService.open(AwbDraftComponent, {
+      size: 'xl',
+      scrollable: true,
+    })
+    modalRef.componentInstance.masterJobData = this.masterJobData;
+    modalRef.componentInstance.housejobData = this.housejobData || [];
+    modalRef.componentInstance.currencyList = this.currencyList || [];
+    modalRef.componentInstance.uomList = this.uomList || [];
+    modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
+    modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+    modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
+    modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
+    modalRef.componentInstance.chargeList = this.chargeList || [];
+    modalRef.componentInstance.agentList = this.agentList || [];
+    modalRef.componentInstance.deliveryAgentList = this.deliveryAgentList || [];
+    // modalRef.componentInstance.selectedReportAir = type;
+    // modalRef.componentInstance.hblCountUpdated.subscribe(() => {
+    //   const prev = toNumber(this.houseJobForm.get('HBLCount')?.value);
+    //   this.houseJobForm.patchValue({
+    //     HBLCount: prev + 1
+    //   });
+    //   this.housejobData.HBLCount = prev + 1;
+    // });
+  }
+
+
+  reportAWABPreprint() {
+    // this.selectedReportAir = type;
+    const modalRef = this.modalService.open(AwbPreprintComponent, {
       size: 'xl',
       scrollable: true,
     })
