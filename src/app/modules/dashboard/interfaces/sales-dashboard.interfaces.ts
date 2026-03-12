@@ -1,10 +1,12 @@
-// ── Filters ──
-
 export interface SalesDashboardFilters {
   salespersonId?: number;
   salespersonEmail?: string;
   dateFrom?: string;
   dateTo?: string;
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  bucket?: MeetingBucket;
 }
 
 export interface SalesDashboardCounts {
@@ -13,7 +15,21 @@ export interface SalesDashboardCounts {
   charts: ChartData;
 }
 
-// ── Section 1: Leads No Meeting ──
+export interface PagedResult<T> {
+  items: T[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  hasMore: boolean;
+}
+
+export type MeetingBucket = 'overdue' | 'today' | 'future';
+
+export interface BucketedPagedResult<T> {
+  overdue: PagedResult<T>;
+  today: PagedResult<T>;
+  future: PagedResult<T>;
+}
 
 export interface LeadNoMeeting {
   PreCustomerMasterSid: number;
@@ -28,9 +44,9 @@ export interface LeadNoMeeting {
   salespersonName: string;
   createdOn: string;
   daysIdle?: number;
+  idleDisplay?: string;
+  idleHours?: number;
 }
-
-// ── Section 2: Meetings Scheduled ──
 
 export interface ScheduledMeeting {
   PreCustomerMeetingSid: number;
@@ -49,14 +65,6 @@ export interface ScheduledMeeting {
   CustomerName: string;
   salespersonName: string;
 }
-
-export interface MeetingsScheduledGroup {
-  overdue: ScheduledMeeting[];
-  today: ScheduledMeeting[];
-  future: ScheduledMeeting[];
-}
-
-// ── Section 3: Meetings With Follow-Up ──
 
 export interface MeetingWithFollowup {
   PreCustomerMeetingSid: number;
@@ -77,8 +85,6 @@ export interface MeetingWithFollowup {
   salespersonName: string;
 }
 
-// ── Section 4: Meeting Conducted Not Converted ──
-
 export interface MeetingNotConverted {
   PreCustomerMasterSid: number;
   preCustomerName: string;
@@ -94,8 +100,6 @@ export interface MeetingNotConverted {
   daysSinceMeeting?: number;
 }
 
-// ── Section 5: Customer No Quote ──
-
 export interface CustomerNoQuote {
   CustomerMasterSid: number;
   CustomerName: string;
@@ -106,8 +110,6 @@ export interface CustomerNoQuote {
   customerCreatedOn: string;
   daysWithoutQuote?: number;
 }
-
-// ── Section 6: Quote Not Approved ──
 
 export interface QuoteNotApproved {
   QuoteHeaderSid: number;
@@ -128,8 +130,6 @@ export interface QuoteNotApproved {
   TransportType: string;
 }
 
-// ── Section 7: Quote No Booking ──
-
 export interface QuoteNoBooking {
   QuoteHeaderSid: number;
   QuoteNumber: string;
@@ -145,12 +145,11 @@ export interface QuoteNoBooking {
   CustomerName: string;
   preCustomerName: string;
   salespersonName: string;
+  internalApprovedByName?: string;
   TransportType: string;
   FreightPPCC: string;
   daysSinceApproval?: number;
 }
-
-// ── Section 8: Summary KPIs ──
 
 export interface QuoteSummary {
   totalQuotes: number;
@@ -174,8 +173,6 @@ export interface SummaryKpis {
   quotes: QuoteSummary;
   bookings: BookingSummary;
 }
-
-// ── Charts ──
 
 export interface FunnelCounts {
   leadsNoMeeting: number;
@@ -205,16 +202,14 @@ export interface ChartData {
   leadStatusDistribution: LeadStatusCount[];
 }
 
-// ── Full Response ──
-
 export interface SalesDashboardSections {
-  leadsNoMeeting: LeadNoMeeting[];
-  meetingsScheduled: MeetingsScheduledGroup;
-  meetingsWithFollowup: MeetingWithFollowup[];
-  meetingsNotConverted: MeetingNotConverted[];
-  customersNoQuote: CustomerNoQuote[];
-  quotesNotApproved: QuoteNotApproved[];
-  quotesNoBooking: QuoteNoBooking[];
+  leadsNoMeeting: PagedResult<LeadNoMeeting>;
+  meetingsScheduled: BucketedPagedResult<ScheduledMeeting>;
+  meetingsWithFollowup: PagedResult<MeetingWithFollowup>;
+  meetingsNotConverted: PagedResult<MeetingNotConverted>;
+  customersNoQuote: PagedResult<CustomerNoQuote>;
+  quotesNotApproved: PagedResult<QuoteNotApproved>;
+  quotesNoBooking: PagedResult<QuoteNoBooking>;
   summaryKpis: SummaryKpis;
 }
 

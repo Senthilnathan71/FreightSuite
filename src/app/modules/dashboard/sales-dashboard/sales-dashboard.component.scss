@@ -34,8 +34,11 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
 .sales-dashboard-container {
   min-height: 100vh;
   background: $bg-body;
-  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-family: inherit;
   font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 // â”€â”€ Hero â”€â”€
@@ -54,7 +57,7 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
     0 12px 34px rgba(0, 0, 0, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
 
-.hero-content {
+  .hero-content {
     position: relative;
     z-index: 3;
     width: 100%;
@@ -625,6 +628,21 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
   overflow-x: auto;
 }
 
+.table-scroll {
+  max-height: 420px;
+  overflow: auto;
+}
+
+.board-scroll {
+  max-height: 420px;
+  overflow: auto;
+}
+
+.table-scroll,
+.board-scroll {
+  scrollbar-width: thin;
+}
+
 table {
   width: 100%;
   border-collapse: separate;
@@ -642,6 +660,9 @@ th {
   white-space: nowrap;
   background: $brand;
   border-bottom: none;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 
   &:first-child { padding-left: 16px; }
 }
@@ -791,8 +812,8 @@ tr:hover td { background: rgba($brand, 0.03); }
 .board-column {
   border: 1px solid $border-main;
   border-radius: 10px;
-  overflow: hidden;
   background: $bg-card;
+  overflow: hidden;
 }
 
 .board-column-header {
@@ -932,6 +953,10 @@ tr:hover td { background: rgba($brand, 0.03); }
     margin: 0 auto;
     animation: spin 0.8s linear infinite;
   }
+}
+
+.more-loading {
+  padding: 14px 0;
 }
 
 // ── Clickable Rows ──
