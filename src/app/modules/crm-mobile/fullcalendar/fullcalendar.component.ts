@@ -631,19 +631,6 @@ export class FullcalendarComponent implements OnInit {
     }
     const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
     
-    // Convert followUpDate in same format as meetingDate
-    const formValue = this.meetingForm.getRawValue();
-    let followUpDate: string = null;
-    if (this.meetingForm.value.followUp && this.meetingForm.value.followUpDate) {
-      const dt = new Date(this.meetingForm.value.followUpDate);
-      const hours = dt.getHours().toString().padStart(2, '0');
-      const minutes = dt.getMinutes().toString().padStart(2, '0');
-      const year = dt.getFullYear();
-      const month = (dt.getMonth() + 1).toString().padStart(2, '0');
-      const day = dt.getDate().toString().padStart(2, '0');
-
-      followUpDate = `${year}-${month}-${day}T${hours}:${minutes}`;
-    }
     const payload = {
       PreCustomerMeetingSid: this.preCustomerMeetingData.PreCustomerMeetingSid,
       PreCustomerMasterSid: this.preCustomerMeetingData.PreCustomerMasterSid,
@@ -651,7 +638,7 @@ export class FullcalendarComponent implements OnInit {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       userEmail: userEmail,
-      followUpDate: followUpDate,
+      followUpDate: this.meetingForm.value.followUp ? this.meetingForm.value.followUpDate : null,
       meetingDate: meetingDateStr
     };
 
