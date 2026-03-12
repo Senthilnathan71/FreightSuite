@@ -497,7 +497,7 @@ export class FullcalendarComponent implements OnInit {
                   : meetingData.preCustomerMaster?.preCustomerName;
 
                 return {
-                  start: this.convertUTCToLocal(meeting.FollowupDate),
+                  start: this.convertUTCToLocal(meetingData.followUpDate),
                   title: `Follow up meeting with - ${person}`,
                   id: meeting.PreCustomerMeetingSid,
                   color: { primary: "#ff5733", secondary: "#ffcccb" }
@@ -716,7 +716,7 @@ export class FullcalendarComponent implements OnInit {
           : '';
 
         const followUpDate = this.preCustomerMeetingData.followUpDate
-          ? this.formatDateForInput(this.preCustomerMeetingData.followUpDate)
+          ? new Date(this.preCustomerMeetingData.followUpDate)
           : '';
 
         // Determine if followUp should be true based on followUpDate or followUpNote
