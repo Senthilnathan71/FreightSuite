@@ -459,7 +459,7 @@ export class FullcalendarComponent implements OnInit {
 
       if (meetingRes.status && meetingRes.data.length) {
         meetingEvents = meetingRes.data
-          .filter((meeting) => meeting.meetingStatus !== "confirmed")
+          .filter((meeting) => meeting.meetingStatus !== "Confirmed")
           .map((meeting: any) => {
             const hasFollowUp = !!meeting.followUpDate;
             const isLead = meeting.LeadOrCustomer === "L";
@@ -487,7 +487,7 @@ export class FullcalendarComponent implements OnInit {
 
           if (followRes.status && followRes.data.length) {
             followUpEvents = followRes.data
-              .filter((meeting) => meeting.meetingStatus !== "confirmed")
+              .filter((meeting) => meeting.meetingStatus !== "Confirmed")
               .map((meeting: any) => {
                 const meetingData = meeting.preCustomerMeeting;
                 const isCustomer = meetingData.LeadOrCustomer === "C";
@@ -506,7 +506,19 @@ export class FullcalendarComponent implements OnInit {
           }
 
           // ✅ Merge both meetings + followups
-          this.events = [...meetingEvents, ...followUpEvents];
+          const mergedEvents = [...meetingEvents, ...followUpEvents];
+
+// remove duplicates
+const uniqueEvents = new Map();
+
+mergedEvents.forEach(event => {
+  const key = event.id + '_' + event.start;
+  uniqueEvents.set(key, event);
+});
+
+this.events = Array.from(uniqueEvents.values());
+
+this.refresh.next();
 
           this.refresh.next(); // refresh UI
           console.log("Combined Events:", this.events);
