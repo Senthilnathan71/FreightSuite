@@ -28,71 +28,199 @@
   </div>
 </div>
 
-  <!-- Master Section - single table layout matching XL -->
 
-<div class="master-job-card mb-2">
-  <table class="master-table">
+<div class="card border-0 shadow-sm mb-2 mt-2" style="border-radius:12px; overflow:hidden;">
 
-    <!-- Row 1: Master Job info -->
-    <tr class="info-row">
-      <td class="label-cell">Master Job No</td>
-      <td class="value-cell highlight">{{ masterJob.MasterJobNumber || '-' }}</td>
-      <td class="label-cell">Date</td>
-      <td class="value-cell">{{ formatDate(masterJob.MasterJobDate) }}</td>
-      <td class="label-cell">POL</td>
-      <td class="value-cell">{{ masterJob.POL || '-' }}</td>
-      <td class="label-cell">POD</td>
-      <td class="value-cell" colspan="3">{{ masterJob.POD || '-' }}</td>
+  <!-- HEADER -->
+  <div class="card-header bg-dark text-white p-2">
+
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <h6 class="text-uppercase mb-1"
+            style="font-size:0.7rem; opacity:0.8; letter-spacing:1px;">
+            Master Job Number
+        </h6>
+
+        <h5 class="mb-0 fw-bold fs-3">
+          {{ masterJob.MasterJobNumber || ' ' }}
+        </h5>
+      </div>
+
+      <div class="text-end">
+        <h6 class="text-uppercase mb-1"
+            style="font-size:0.7rem; opacity:0.8; letter-spacing:1px;">
+            Date
+        </h6>
+
+        <div class="mb-0 fw-bold fs-2">
+          {{ formatDate(masterJob.MasterJobDate) }}
+        </div>
+      </div>
+    </div>
+
+    <!-- POL POD -->
+    <div class="d-flex align-items-center bg-white bg-opacity-10 rounded p-1">
+
+      <div class="flex-fill text-center">
+        <div class="small text-uppercase opacity-75" style="font-size:0.65rem;">
+          Port of Loading
+        </div>
+
+        <div class="fw-bold">
+          {{ masterJob.POL || ' ' }}
+        </div>
+      </div>
+
+      <div class="px-3 text-center">
+        <i class="bi bi-ship-forward fs-4"></i>
+        <div style="border-top:2px dashed rgba(255,255,255,0.3); width:50px; margin-top:-10px;"></div>
+      </div>
+
+      <div class="flex-fill text-center">
+        <div class="small text-uppercase opacity-75" style="font-size:0.65rem;">
+          Port of Destination
+        </div>
+
+        <div class="fw-bold">
+          {{ masterJob.POD || ' ' }}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- TABLE -->
+  <div class="card-body p-0">
+
+    <div class="table-responsive">
+
+      <table class="table table-hover align-middle mb-0"
+             style="table-layout:fixed; width:100%;">
+
+        <!-- HEADER -->
+        <thead class="bg-light">
+
+          <tr>
+
+            <th class="border-0 ps-3" style="width:20%">
+              MBL No.
+            </th>
+
+            <th class="border-0" style="width:16%">
+              Department
+            </th>
+
+            <th class="border-0" style="width:18%">
+              Container No.
+            </th>
+
+            <th class="border-0 text-center" style="width:16%">
+              Container Type
+            </th>
+
+            <th class="border-0 text-end" style="width:10%">
+              CBM
+            </th>
+
+            <th class="border-0 text-end" style="width:10%">
+              Gross Wt
+            </th>
+
+            <th class="border-0 text-end pe-3" style="width:10%">
+              Net Wt
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <!-- BODY -->
+       <tbody>
+
+  <!-- WHEN CONTAINER DATA EXISTS -->
+  <tr *ngIf="containers.length === 0; else containerRows">
+
+    <td class="ps-3 border-end">
+      <div class="fw-bold text-primary">
+        {{ masterJob.MBLNo || ' ' }}
+      </div>
+    </td>
+
+    <td>
+      <span class="badge bg-primary rounded-pill px-3">
+        {{ masterJob.departmentName || masterJob.departmentType || ' ' }}
+      </span>
+    </td>
+
+    <td colspan="5" class="text-center py-3 text-muted">
+      No container data available
+    </td>
+
+  </tr>
+
+
+  <!-- CONTAINER ROWS -->
+  <ng-template #containerRows>
+
+    <tr *ngFor="let c of containers">
+
+      <!-- MBL NO -->
+      <td class="ps-3 border-end">
+        <div class="fw-bold text-primary text-break">
+          {{ masterJob.MBLNo || ' ' }}
+        </div>
+      </td>
+
+      <!-- DEPARTMENT -->
+      <td>
+        <span class="badge bg-primary rounded-pill px-3">
+          {{ masterJob.departmentName || masterJob.departmentType || ' ' }}
+        </span>
+      </td>
+
+      <!-- CONTAINER NUMBER -->
+      <td>
+        <span class="fw-semibold text-truncate d-inline-block" style="max-width:100%;">
+          {{ c.ContainerNumber || ' ' }}
+        </span>
+      </td>
+
+      <!-- CONTAINER TYPE -->
+      <td class="text-center">
+        <span class="badge border text-dark bg-light">
+          {{ c.ContainerTypeName || ' ' }}
+        </span>
+      </td>
+
+      <!-- CBM -->
+      <td class="text-end fw-medium" style="font-variant-numeric:tabular-nums;">
+        {{ c.Volume | number:'1.3-3' }}
+      </td>
+
+      <!-- GROSS WT -->
+      <td class="text-end fw-medium" style="font-variant-numeric:tabular-nums;">
+        {{ c.GrossWeight || ' ' }}
+      </td>
+
+      <!-- NET WT -->
+      <td class="text-end pe-3" style="font-variant-numeric:tabular-nums;">
+        {{ c.NetWeight || ' ' }}
+      </td>
+
     </tr>
 
-    <!-- Row 2: Container column headers -->
-    <tr class="col-header-row">
-      <td colspan="5" class="blank-cell"></td>
-      <td class="col-header">Cont No.</td>
-      <td class="col-header">Cont Type</td>
-      <td class="col-header">CBM</td>
-      <td class="col-header">Gr. Weight</td>
-      <td class="col-header">Net Wt</td>
-    </tr>
+  </ng-template>
 
-    <!-- Row 3: MBL + first container -->
-    <tr class="data-row" *ngIf="containers.length > 0; else noContainers">
-      <td class="label-cell">MBL No.</td>
-      <td class="value-cell" colspan="2">{{ masterJob.MBLNo || '-' }}</td>
-      <td class="label-cell">Dept</td>
-      <td class="value-cell">{{ masterJob.departmentName || masterJob.departmentType || '-' }}</td>
-      <td class="cont-cell">{{ containers[0]?.ContainerNumber || '-' }}</td>
-      <td class="cont-cell">{{ containers[0]?.ContainerTypeName || '-' }}</td>
-      <td class="cont-cell text-end">{{ containers[0]?.Volume | number:'1.3-3' }}</td>
-      <td class="cont-cell text-end">{{ containers[0]?.GrossWeight || '-' }}</td>
-      <td class="cont-cell text-end">{{ containers[0]?.NetWeight || '-' }}</td>
-    </tr>
+</tbody>
 
-    <ng-template #noContainers>
-      <tr class="data-row">
-        <td class="label-cell">MBL No.</td>
-        <td class="value-cell" colspan="2">{{ masterJob.MBLNo || '-' }}</td>
-        <td class="label-cell">Dept</td>
-        <td class="value-cell">{{ masterJob.departmentName || masterJob.departmentType || '-' }}</td>
-        <td class="cont-cell text-muted">-</td>
-        <td class="cont-cell text-muted">-</td>
-        <td class="cont-cell text-muted text-end">-</td>
-        <td class="cont-cell text-muted text-end">-</td>
-        <td class="cont-cell text-muted text-end">-</td>
-      </tr>
-    </ng-template>
+      </table>
 
-    <!-- Row 4+: Additional containers -->
-    <tr class="data-row extra-cont-row" *ngFor="let c of containers | slice:1">
-      <td colspan="5" class="blank-cell"></td>
-      <td class="cont-cell">{{ c.ContainerNumber || '-' }}</td>
-      <td class="cont-cell">{{ c.ContainerTypeName || '-' }}</td>
-      <td class="cont-cell text-end">{{ c.Volume | number:'1.3-3' }}</td>
-      <td class="cont-cell text-end">{{ c.GrossWeight || '-' }}</td>
-      <td class="cont-cell text-end">{{ c.NetWeight || '-' }}</td>
-    </tr>
+    </div>
 
-  </table>
+  </div>
+
 </div>
 
 

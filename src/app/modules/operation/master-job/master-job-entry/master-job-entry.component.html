@@ -556,7 +556,7 @@
     <!-- Manual Text Input -->
     <div *ngIf="this.f['isVesselFreeText']?.value" class="mt-md-1">
       <input type="text" formControlName="VesselName" placeholder=""  [textWithNumbers]="100"class="custom-input-field sm" style="width: 85%" />
-      <button class="btn bi bi-calendar3 pe-0 ps-3" type="button"
+      <button class="btn bi bi-calendar3 pe-0" type="button"
         (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
         <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
       </button>

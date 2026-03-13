@@ -72,164 +72,183 @@
       </div>
 
 
-      <ng-template #milestoneform>
-        
-            <div class="row">
-              <div class="col-md-6 pe-md-1">
-                <div class="card h-100 mb-0">
-                  <div class="card-body  ">
-                    <div class="row ">
-                      <!-- <div class="card-header-title d-flex align-items-center gap-2 mb-1">
-                        <i class="fas fa-map-marker-alt fs-4"></i>
-                        <h5 class="card-titlename mb-0">Milestone Information</h5>
-                      </div> -->
-                      <aside class="col-md-12">
-                        <div class="custom-form-group">
-                          <input type="text" id="MilestoneName" formControlName="MilestoneName"
-                            class="custom-input-field sm" placeholder="" maxlength="30" />
-                          <label for="MilestoneName" class="input-label">Milestone Name <span
-                              class="text-danger">*</span></label>
-                          <div
-                            *ngIf="milestoneForm.get('MilestoneName')?.touched && milestoneForm.get('MilestoneName')?.errors"
-                            class="error-message">
-                            <span *ngIf="milestoneForm.get('MilestoneName')?.hasError('required')">Required</span>
-                            <span *ngIf="milestoneForm.get('MilestoneName')?.hasError('maxlength')">
-                              Maximum 30 chars
-                            </span>
-                          </div>
-                        </div>
-                      </aside>
+    <ng-template #milestoneform>
 
-                      <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!milestoneForm.get('ShipmentType')?.value">
-                          <ng-select [items]="shipmentTypeOptions" bindLabel="label" bindValue="value"
-                            formControlName="ShipmentType" id="ShipmentType"
-                            [class.is-invalid]="milestoneForm.get('ShipmentType')?.invalid && milestoneForm.get('ShipmentType')?.touched">
-                          </ng-select>
-                          <label class="input-label">Shipment Type <span class="text-danger">*</span></label>
-                          <div
-                            *ngIf="milestoneForm.get('ShipmentType')?.touched && milestoneForm.get('ShipmentType')?.hasError('required')"
-                            class="error-message">
-                            <span>Required</span>
-                          </div>
-                        </div>
-                      </aside>
-                      <aside class="col-md-6">
-                                    <div class="custom-form-group custom-form-group-select"
-                                        [class.filled]="!!milestoneForm.get('DepartmentMasterSid')?.value">
-                                        <multi-select [items]="departmentList" bindLabel="departmentName"
-                                            bindValue="departmentName" placeholder="" 
-                                            [control]="milestoneForm.get('DepartmentMasterSid')">
-                                        </multi-select>
-                                        <label class="input-label">Departments <span
-                                                class="text-danger fw-semibold">*</span></label>
-                                        <div
-                                            *ngIf="milestoneForm.get('DepartmentMasterSid')?.touched && milestoneForm.get('DepartmentMasterSid')?.invalid">
-                                            <p *ngIf="milestoneForm.get('DepartmentMasterSid')?.errors?.['required']"
-                                                class="error-message">
-                                                At least one dept is required.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </aside>
+<div class="row g-2">
 
-                      <aside class="col-md-12 mt-1">
-                        <div class="custom-form-group">
-                          <input type="text" id="SortBy" formControlName="SortBy" class="custom-input-field sm"
-                            placeholder="" />
-                          <label for="SortBy" class="input-label">Sort By <span class="text-danger">*</span></label>
-                          <div *ngIf="milestoneForm.get('SortBy')?.touched && milestoneForm.get('SortBy')?.errors"
-                            class="error-message">
-                            <span *ngIf="milestoneForm.get('SortBy')?.hasError('required')">Required</span>
-                            <span *ngIf="milestoneForm.get('SortBy')?.hasError('pattern')">
-                              Only numeric
-                            </span>
-                          </div>
-                        </div>
-                      </aside>
+  <!-- LEFT CARD -->
+  <div class="col-md-6">
+    <div class="card h-100 mb-0">
+      <div class="card-body">
+
+        <div class="row g-3">
+
+          <!-- ROW 1 -->
+          <aside class="col-md-6">
+            <div class="custom-form-group">
+              <input type="text"
+                     id="MilestoneName"
+                     formControlName="MilestoneName"
+                     class="custom-input-field sm"
+                     maxlength="30"/>
+              <label class="input-label">
+                Milestone Name <span class="text-danger">*</span>
+              </label>
+            </div>
+          </aside>
+
+          <aside class="col-md-6">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!milestoneForm.get('ShipmentType')?.value">
+
+              <ng-select
+                [items]="shipmentTypeOptions"
+                bindLabel="label"
+                bindValue="value"
+                formControlName="ShipmentType">
+              </ng-select>
+
+              <label class="input-label">
+                Shipment Type <span class="text-danger">*</span>
+              </label>
+
+            </div>
+          </aside>
 
 
+          <!-- ROW 2 -->
+          <aside class="col-md-6">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!milestoneForm.get('DepartmentMasterSid')?.value">
 
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-6 ps-md-1">
-                <div class="card h-100 mb-0">
-                  <div class="card-body">
-                    <div class="row">
-                      <!-- <div class="card-header-title d-flex align-items-center gap-2 mb-1">
-                        <i class="fas fa-bullseye fs-4"></i>
-                        <h5 class="card-titlename mb-0">Milestone Setup</h5>
-                      </div> -->
+              <multi-select
+                [items]="departmentList"
+                bindLabel="departmentName"
+                bindValue="departmentName"
+                [displayCount]="1"
+                [control]="milestoneForm.get('DepartmentMasterSid')">
+              </multi-select>
 
-                      <aside class="col-md-6">
-                        <div class="custom-form-group">
-                          <input type="text" id="MilestoneCode" formControlName="MilestoneCode"
-                            class="custom-input-field sm" placeholder="" maxlength="30" />
-                          <label for="MilestoneCode" class="input-label">Milestone Code <span
-                              class="text-danger">*</span></label>
-                          <div
-                            *ngIf="milestoneForm.get('MilestoneCode')?.touched && milestoneForm.get('MilestoneCode')?.errors"
-                            class="error-message">
-                            <span *ngIf="milestoneForm.get('MilestoneCode')?.hasError('required')">Required</span>
-                            <span *ngIf="milestoneForm.get('MilestoneCode')?.hasError('maxlength')">
-                              Maximum 30 chars
-                            </span>
-                          </div>
-                        </div>
-                      </aside>
-                      <aside class="col-md-6 d-flex align-items-center mt-md-2">
-                        <div class="form-check form-check-inline ps-0">
-                          <div class="form-check d-flex align-items-center">
-                            <input type="checkbox" id="AutoCapture" class="form-check-input sm"
-                              [checked]="milestoneForm.get('AutoCapture')?.value === 'Y'"
-                              (change)="milestoneForm.get('AutoCapture')?.setValue(milestoneForm.get('AutoCapture')?.value === 'Y' ? 'N' : 'Y')">
-                            <label for="AutoCapture" class="form-check-label sm">Auto Capture</label>
-                          </div>
-                        </div>
-                      </aside>
-                      <aside class="col-md-6 d-flex align-items-center">
-                        <div class="form-check form-check-inline ps-0">
-                          <div class="form-check d-flex align-items-center">
-                            <input type="checkbox" id="AutomailRequire" class="form-check-input sm"
-                              [checked]="milestoneForm.get('AutomailRequire')?.value === 'Y'"
-                              (change)="milestoneForm.get('AutomailRequire')?.setValue(milestoneForm.get('AutomailRequire')?.value === 'Y' ? 'N' : 'Y')">
-                            <label for="AutomailRequire" class="form-check-label sm">Auto Mail</label>
-                          </div>
-                        </div>
-                      </aside>
-                      <aside class="col-md-6">
-                        <div class="custom-form-group">
-                          <textarea id="Remarks" class="custom-input-field sm" placeholder="" rows="1"
-                            formControlName="Remarks" maxlength="500"></textarea>
-                          <label for="Remarks" class="input-label">Remarks</label>
-                          <div *ngIf="milestoneForm.get('Remarks')?.touched && milestoneForm.get('Remarks')?.errors"
-                            class="error-message">
-                            <span *ngIf="milestoneForm.get('Remarks')?.hasError('maxlength')">
-                              Max 500 chars
-                            </span>
-                          </div>
-                        </div>
-                      </aside>
-                      <aside class="col-md-6">
-                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!milestoneForm.get('status')?.value">
-                          <ng-select [items]="statusOptions" bindLabel="name" bindValue="id" formControlName="status"
-                            id="status"></ng-select>
-                          <label class="input-label">Status <span class="text-danger">*</span></label>
-                        </div>
-                      </aside>
+              <label class="input-label">
+                Departments <span class="text-danger">*</span>
+              </label>
 
+            </div>
+          </aside>
 
-                    </div>
-                  </div>
-                </div>
-              </div>
-          
+          <aside class="col-md-6">
+            <div class="custom-form-group">
+              <input type="text"
+                     id="SortBy"
+                     formControlName="SortBy"
+                     class="custom-input-field sm"/>
+              <label class="input-label">
+                Sort By <span class="text-danger">*</span>
+              </label>
+            </div>
+          </aside>
+
         </div>
 
+      </div>
+    </div>
+  </div>
 
-      </ng-template>
+
+  <!-- RIGHT CARD -->
+  <div class="col-md-6">
+    <div class="card h-100 mb-0">
+      <div class="card-body">
+
+        <div class="row g-3">
+
+          <!-- ROW 1 (3 fields) -->
+          <aside class="col-md-4">
+            <div class="custom-form-group">
+              <input type="text"
+                     id="MilestoneCode"
+                     formControlName="MilestoneCode"
+                     class="custom-input-field sm"
+                     maxlength="30"/>
+              <label class="input-label">
+                Milestone Code <span class="text-danger">*</span>
+              </label>
+            </div>
+          </aside>
+
+          <aside class="col-md-4 d-flex align-items-center">
+            <div class="form-check">
+              <input type="checkbox"
+                     id="AutoCapture"
+                     class="form-check-input sm"
+                     [checked]="milestoneForm.get('AutoCapture')?.value === 'Y'"
+                     (change)="milestoneForm.get('AutoCapture')?.setValue(milestoneForm.get('AutoCapture')?.value === 'Y' ? 'N' : 'Y')">
+
+              <label class="form-check-label">
+                Auto Capture
+              </label>
+            </div>
+          </aside>
+
+          <aside class="col-md-4 d-flex align-items-center">
+            <div class="form-check">
+              <input type="checkbox"
+                     id="AutomailRequire"
+                     class="form-check-input sm"
+                     [checked]="milestoneForm.get('AutomailRequire')?.value === 'Y'"
+                     (change)="milestoneForm.get('AutomailRequire')?.setValue(milestoneForm.get('AutomailRequire')?.value === 'Y' ? 'N' : 'Y')">
+
+              <label class="form-check-label">
+                Auto Mail
+              </label>
+            </div>
+          </aside>
+
+
+          <!-- ROW 2 (2 fields) -->
+          <aside class="col-md-6">
+            <div class="custom-form-group">
+              <textarea
+                id="Remarks"
+                rows="1"
+                class="custom-input-field sm"
+                formControlName="Remarks"
+                maxlength="500"></textarea>
+
+              <label class="input-label">
+                Remarks
+              </label>
+            </div>
+          </aside>
+
+          <aside class="col-md-6">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!milestoneForm.get('status')?.value">
+
+              <ng-select
+                [items]="statusOptions"
+                bindLabel="name"
+                bindValue="id"
+                formControlName="status">
+              </ng-select>
+
+              <label class="input-label">
+                Status <span class="text-danger">*</span>
+              </label>
+
+            </div>
+          </aside>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</ng-template>
+      
     </div>
   </form>
   <!-- @if(isEditMode){
