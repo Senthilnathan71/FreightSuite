@@ -1,0 +1,27 @@
+.summary-card {
+  .summary-voucher {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .summary-icon {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .summary-label {
+    font-weight: bold;
+    color: black;
+  }
+
+  .summary-value{
+    font-weight: 600;
+    color: black;
+    padding-left: 40px;
+  }
+}
