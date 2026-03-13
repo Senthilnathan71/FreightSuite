@@ -5880,3 +5880,112 @@
 </div>
 <div class="modal-backdrop fade" [class.show]="showCustomsValidationModal"
      *ngIf="showCustomsValidationModal"></div>
+
+<div class="modal fade" [class.show]="showCreditValidationModal"
+     [style.display]="showCreditValidationModal ? 'block' : 'none'"
+     tabindex="-1" role="dialog" aria-labelledby="creditValidationLabel" aria-modal="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document" style="max-width: 760px;">
+    <div class="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
+      <div class="modal-header py-2 px-3" style="background: linear-gradient(135deg, #dc2626, #b91c1c);">
+        <div class="d-flex align-items-center">
+          <div class="rounded-circle bg-white bg-opacity-25 d-flex align-items-center justify-content-center me-2"
+               style="width: 28px; height: 28px;">
+            <i class="fas fa-ban text-white" style="font-size: 13px;"></i>
+          </div>
+          <h6 class="modal-title mb-0 text-white fw-semibold" id="creditValidationLabel">
+            {{ creditValidationActionLabel }} Blocked
+          </h6>
+        </div>
+        <button type="button" class="btn-close btn-close-white btn-sm"
+                (click)="closeCreditValidationModal()" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-0">
+        <div class="px-3 py-3 bg-light border-bottom">
+          <p class="mb-1 fw-semibold text-danger">
+            Credit validation failed for {{ creditValidationSummary?.customerName || 'this customer' }}.
+          </p>
+          <p class="text-muted small mb-0">
+            Clear the overdue vouchers or collect payment before continuing with {{ creditValidationActionLabel }}.
+          </p>
+        </div>
+
+        <div class="px-3 py-3">
+          <div class="row g-2 mb-3">
+            <div class="col-md-3 col-6">
+              <div class="border rounded p-2 h-100 bg-white">
+                <div class="text-muted small">Customer Type</div>
+                <div class="fw-semibold">{{ creditValidationSummary?.customerType || '-' }}</div>
+              </div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="border rounded p-2 h-100 bg-white">
+                <div class="text-muted small">Credit Days</div>
+                <div class="fw-semibold">{{ creditValidationSummary?.creditDays || 0 }}</div>
+              </div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="border rounded p-2 h-100 bg-white">
+                <div class="text-muted small">Outstanding</div>
+                <div class="fw-semibold">{{ creditValidationSummary?.totalOutstandingLocal || 0 | number:'1.2-2' }}</div>
+              </div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="border rounded p-2 h-100 bg-white">
+                <div class="text-muted small">Remaining Limit</div>
+                <div class="fw-semibold">{{ creditValidationSummary?.remainingCreditLimit || 0 | number:'1.2-2' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- <div *ngIf="creditValidationSummary?.errors?.length" class="mb-3">
+            <div class="fw-semibold mb-2">Issues</div>
+            <div *ngFor="let error of creditValidationSummary?.errors; let last = last"
+                 class="d-flex align-items-start py-2" [class.border-bottom]="!last">
+              <i class="fas fa-exclamation-circle text-danger me-2 mt-1"></i>
+              <span class="small">{{ error }}</span>
+            </div>
+          </div> -->
+
+          <div *ngIf="creditValidationSummary?.violatingVouchers?.length">
+            <div class="fw-semibold mb-2">Overdue Vouchers</div>
+            <div class="table-responsive border rounded">
+              <table class="table table-sm mb-0 align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>Voucher No</th>
+                    <th>Voucher Date</th>
+                    <th class="text-end">Outstanding</th>
+                    <th class="text-end">Ageing Days</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let voucher of creditValidationSummary?.violatingVouchers">
+                    <td>{{ voucher?.VoucherNumber || '-' }}</td>
+                    <td>{{ voucher?.VoucherDate | formatDate }}</td>
+                    <td class="text-end">{{ voucher?.OutstandingLocalAmount || 0 | number:'1.2-2' }}</td>
+                    <td class="text-end">
+                      <span class="badge bg-danger-subtle text-danger border">{{ voucher?.AgeingDays || 0 }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer py-2 px-3 bg-light border-top">
+        <small class="text-muted me-auto">
+          Credit Request SID: {{ creditValidationSummary?.selectedCreditRequestSid || '-' }}
+        </small>
+        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3"
+                (click)="closeCreditValidationModal()">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="showCreditValidationModal"
+     *ngIf="showCreditValidationModal"></div>

@@ -58,6 +58,8 @@ import { CFSOutturnComponent } from '../report/cfs-outturn/cfs-outturn.component
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 import { getDefaultTodayDate, getMaxDate,toNgbDateStruct, getMinDate, toNumber } from 'src/app/common/helper';
 import { PackingListComponent } from '../report/packing-list/packing-list.component';
+import { CreditValidationApiService } from '../../credit-request.service';
+
 import { SailingConfimationComponent } from '../report/sailing-confimation/sailing-confimation.component';
 import { ExitFormComponent } from '../report/exit-form/exit-form.component';
 import { JobCardComponent } from '../report/job-card/job-card.component';
@@ -164,6 +166,9 @@ fyMaxDate: NgbDateStruct | null = null;
 // Customs pre-save validation modal
 showCustomsValidationModal = false;
 customsValidationErrors: { recordType: string; fieldRef: string; fieldName: string; tabName?: string }[] = [];
+showCreditValidationModal = false;
+creditValidationActionLabel = '';
+creditValidationSummary: any = null;
 
   //Variable Declaration - Common
   detailForm !: FormGroup;
@@ -521,6 +526,7 @@ hblModalRef?: NgbModalRef;
     private datePipe : CustomDatePipe,
     private spinner: NgxSpinnerService,
     private volumetricAndCbmCalculationService: VolumetricAndCbmCalculationService,
+    private creditValidationApiService: CreditValidationApiService,
   ) {
     this.today = this.calendar.getToday();
    }
@@ -3863,7 +3869,12 @@ ${this.userData['userName']}`;
     this.currentFollowUpFormValue = event.formData || null;
   }
 
-  reportDeliveryOrder() {
+  async reportDeliveryOrder() {
+    const ok = await this.validateCreditForRelease('Delivery Order');
+    if (!ok) return;
+
+    if (!this.ensurePostedInvoice('Delivery Order')) return;
+
     const modalRef = this.modalService.open(DeliveryOrderComponent, {
       size: 'xl',
       scrollable: true,
@@ -3910,17 +3921,13 @@ ${this.userData['userName']}`;
   }
 
 
-       reportBill(type: 'HBL' | 'HBLDraft') {
-         const hasPostedInvoice = this.housejobData?.costRevenueCharges?.some(
-    (charge: any) => charge.RevenueVoucherHeaderSid !== null
-  );
-
+       async reportBill(type: 'HBL' | 'HBLDraft') {
+         if (type === 'HBL') {
+           const ok = await this.validateCreditForRelease('HBL');
+           if (!ok) return;
+         }
   // For HBL (final), require posted invoice
-  if (type === 'HBL' && !hasPostedInvoice) {
-    this.appSettingService.showWarning(
-      'Cannot print HBL without a posted invoice. ' +
-      'Please post at least one revenue invoice first.'
-    );
+  if (type === 'HBL' && !this.ensurePostedInvoice('HBL')) {
     return;
   }
          if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
@@ -4106,7 +4113,7 @@ ${this.userData['userName']}`;
   }
 
   
-    reportjobCard() {
+  reportjobCard() {
       const modalRef = this.modalService.open(JobCardComponent,{
         size: 'xl',
         scrollable: true,
@@ -4127,7 +4134,166 @@ ${this.userData['userName']}`;
       modalRef.componentInstance.selectedDepartmentType = this.selectedDepartmentType || [];
     }
 
-   reportReleaseLetter() {
+  private async validateCreditForRelease(actionLabel: string): Promise<boolean> {
+        const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+        const branchMasterSid = this.currentBranch?.BranchMasterSid;
+        const raw = this.houseJobForm.getRawValue();
+        const customerMasterSid = raw.CustomerMasterSid || this.housejobData?.CustomerMasterSid;
+        const departmentMasterSid =
+          raw.DepartmentMasterSid ||
+          this.housejobData?.DepartmentMasterSid ||
+          this.selectedDepartment?.DepartmentMasterSid;
+        const customerBranchSid =
+          raw.CustomerBranchSid ||
+          this.housejobData?.CustomerBranchSid ||
+          this.bookingHeader?.CustomerBranchSid ||
+          null;
+        const houseJobDate = this.housejobData?.HBLDate || null;
+
+        if (!companyMasterSid) {
+          this.appSettingService.showWarning('Company is not selected. Please refresh and try again.');
+          return false;
+        }
+        if (!branchMasterSid) {
+          this.appSettingService.showWarning('Branch is not selected. Please select a branch before release.');
+          return false;
+        }
+        if (!customerMasterSid) {
+          this.appSettingService.showWarning(
+            `Customer is missing. Please select customer before ${actionLabel}.`
+          );
+          return false;
+        }
+
+        try {
+          const resp: any = await firstValueFrom(
+            this.creditValidationApiService.validateCredit({
+              CompanyMasterSid : companyMasterSid,
+              BranchMasterSid : branchMasterSid,
+              CustomerMasterSid : customerMasterSid,
+              CustomerBranchSid : customerBranchSid,
+              DocumentDate : houseJobDate
+            })
+          );
+
+          const validation = resp?.data;
+          const isValid = this.getCreditValidationValue(validation, 'IsValid', 'isValid');
+          if (!resp?.status || isValid === false) {
+            this.showCreditValidationFailure(actionLabel, validation, resp?.message || 'Credit validation failed.');
+            return false;
+          }
+
+          const warnings = this.getCreditValidationArray(validation, 'Warnings', 'warnings');
+          if (warnings.length) {
+            this.appSettingService.showWarning(warnings.join('\n'));
+          }
+
+          return true;
+        } catch (error: any) {
+          this.showCreditValidationFailure(
+            actionLabel,
+            error?.error?.data,
+            error?.error?.message || 'Credit validation failed.'
+          );
+          return false;
+      }
+    }
+
+  private getCreditValidationValue(source: any, primaryKey: string, secondaryKey?: string): any {
+    if (!source) return undefined;
+    if (source[primaryKey] !== undefined) return source[primaryKey];
+    if (secondaryKey && source[secondaryKey] !== undefined) return source[secondaryKey];
+    return undefined;
+  }
+
+  private getCreditValidationArray(source: any, primaryKey: string, secondaryKey?: string): any[] {
+    const value = this.getCreditValidationValue(source, primaryKey, secondaryKey);
+    return Array.isArray(value) ? value : [];
+  }
+
+  private showCreditValidationFailure(actionLabel: string, validation: any, fallbackMessage: string): void {
+    const errors = this.getCreditValidationArray(validation, 'Errors', 'errors');
+    const violatingVouchers = this.getCreditValidationArray(validation, 'ViolatingVouchers', 'violatingVouchers');
+    const customerName =
+      this.houseJobForm?.get('CustomerName')?.value ||
+      this.selectedCustomer?.CustomerName ||
+      this.housejobData?.CustomerName ||
+      this.bookingHeader?.CustomerName ||
+      'this customer';
+
+    if (!errors.length && !violatingVouchers.length) {
+      this.appSettingService.showError(fallbackMessage);
+      return;
+    }
+
+    this.creditValidationActionLabel = actionLabel;
+    this.creditValidationSummary = {
+      customerName,
+      customerType: this.getCreditValidationValue(validation, 'CustomerType', 'customerType') || 'CREDIT',
+      creditLimit: this.getCreditValidationValue(validation, 'CreditLimit', 'creditLimit') ?? 0,
+      creditDays: this.getCreditValidationValue(validation, 'CreditDays', 'creditDays') ?? 0,
+      remainingCreditLimit: this.getCreditValidationValue(validation, 'RemainingCreditLimit', 'remainingCreditLimit') ?? 0,
+      totalOutstandingLocal: this.getCreditValidationValue(validation, 'TotalOutstandingLocal', 'totalOutstandingLocal') ?? 0,
+      selectedCreditRequestSid: this.getCreditValidationValue(validation, 'SelectedCreditRequestSid', 'selectedCreditRequestSid') ?? null,
+      errors,
+      violatingVouchers
+    };
+    this.showCreditValidationModal = true;
+  }
+
+  closeCreditValidationModal(): void {
+    this.showCreditValidationModal = false;
+    this.creditValidationActionLabel = '';
+    this.creditValidationSummary = null;
+  }
+
+  private ensurePostedInvoice(actionLabel: string): boolean {
+    if (this.arapLoading) {
+      this.appSettingService.showWarning(
+        'Invoice status is still loading. Please wait a moment and try again.'
+      );
+      return false;
+    }
+
+    const arap = Array.isArray(this.arapData) ? this.arapData : [];
+    const invoices = arap.filter(item => item?.DocumentTypeCode === 'INV');
+
+    const isPosted = (status: any) => {
+      const value = String(status || '').toUpperCase();
+      return value === 'P' || value === 'POSTED';
+    };
+
+    const postedInvoices = invoices.filter(item => isPosted(item?.PostStatus));
+
+    if (postedInvoices.length > 0) {
+      return true;
+    }
+
+    if (invoices.length === 0) {
+      this.appSettingService.showWarning(
+        `No posted invoice found. Please create and post at least one invoice before ${actionLabel}.`
+      );
+      return false;
+    }
+
+    const unpostedIds = invoices
+      .filter(item => !isPosted(item?.PostStatus))
+      .map(item => item?.VoucherNumber || item?.InvoiceNumber || item?.DocumentNo || item?.VoucherHeaderSid)
+      .filter(Boolean);
+
+    const details = unpostedIds.length
+      ? `Invoice not posted: ${unpostedIds.join(', ')}.`
+      : 'Invoice not posted.';
+
+    this.appSettingService.showWarning(
+      `${details} Please post at least one invoice before ${actionLabel}.`
+    );
+    return false;
+  }
+
+   async reportReleaseLetter() {
+        if (!this.ensurePostedInvoice('Release Letter')) return;
+
         const modalRef = this.modalService.open(ReleaseLetterComponent, {
           size: 'xl',
           scrollable: true,
@@ -4167,7 +4333,12 @@ ${this.userData['userName']}`;
     });
   }
 
-  reportReleaseOrder() {
+  async reportReleaseOrder() {
+    const ok = await this.validateCreditForRelease('Release Order');
+    if (!ok) return;
+
+    if (!this.ensurePostedInvoice('Release Order')) return;
+
     const modalRef = this.modalService.open(ReleaseOrderComponent, {
       size: 'xl',
       scrollable: true,

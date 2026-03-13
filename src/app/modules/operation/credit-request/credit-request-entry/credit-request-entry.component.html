@@ -114,7 +114,11 @@
     <h6 class="mb-0">
       <i class="fas fa-file-signature me-1"></i>Credit Request Details
     </h6>
-    <button type="button" class="btn btn-sm btn-secondary" (click)="addCreditRequestRow()">
+    <button
+      type="button"
+      class="btn btn-sm btn-secondary"
+      (click)="addCreditRequestRow()"
+      title="Adds a new row in the same branch scope and starts from the next available effective date">
       <i class="fas fa-plus"></i> Add Credit Request
     </button>
   </div>
@@ -202,23 +206,7 @@
                       </div>
                     </aside>
 
-                    <!-- Department -->
-                    <aside class="col-md-2">
-                      <div class="custom-form-group custom-form-group-select"
-                           [class.filled]="!!credit.get('DepartmentMasterSid')?.value">
-                        <ng-select
-                          formControlName="DepartmentMasterSid"
-                          [items]="departmentListPerRow[i]"
-                          bindLabel="departmentName"
-                          bindValue="DepartmentMasterSid"
-                          placeholder=""
-                          [disabled]="isApprovedRow(credit)"
-                          (change)="onDepartmentSelect($event, i)"
-                          appendTo="body">
-                        </ng-select>
-                        <label class="input-label">Department</label>
-                      </div>
-                    </aside>
+                  
 
                     <!-- Sales Person -->
                     <aside class="col-md-2">
@@ -309,7 +297,7 @@
                                  ngbDatepicker #d2="ngbDatepicker"
                                  (click)="d2.toggle()"
                                  formControlName="EffectiveTo"
-                                 [minDate]="today" container="body" />
+                                  container="body" />
                           <button class="btn px-0" (click)="d2.toggle()" type="button">
                             <i-feather name="calendar" class="feather-sm"></i-feather>
                           </button>
