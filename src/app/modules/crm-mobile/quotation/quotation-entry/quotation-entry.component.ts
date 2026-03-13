@@ -1660,9 +1660,6 @@ isRateLockDisabled(): boolean {
      if (response.BookingHeaderSid) {
     this.quotationForm.get('status')?.disable();
   }
-    // Track if any carrier is approved
-    let hasApprovedCarrier = false;
-    
     (response.quoteRoute || []).forEach((route, routeIndex) => {
       const cargo = route.quoteCargo[0];
       const fullRouteData = {
@@ -1738,21 +1735,12 @@ isRateLockDisabled(): boolean {
 
       (route?.quoteCarrier || []).forEach((carrier,carrierIndex) => {
         this.addQuoteCarrier(routeIndex,carrier);
-        
-        // Check if this carrier is approved
-        const isCarrierApproved = carrier.ApprovalStatus === "Approved";
-        if (isCarrierApproved) {
-          hasApprovedCarrier = true;
-          // Disable this specific approved carrier's fields
-          setTimeout(() => {
-            this.disableApprovedCarrierFields(routeIndex, carrierIndex);
-          }, 100);
-        }
-        
         (carrier?.quoteCharge || []).forEach(charge => {
           this.addQuoteCharge(routeIndex,carrierIndex, charge);
         }) 
       })
+      
+      this.applyBookingLockForRoute(routeIndex, route);
     })
     
     this.disableNonEditFields();
@@ -3399,7 +3387,7 @@ onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status:
     });
 
     routeForm.get('isRouteApproved')?.setValue(true);
-    
+    this.applyBookingLockForRoute(routeIndex);
     return;
   }
 
@@ -3417,35 +3405,87 @@ onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status:
 
   routeForm.get('isRouteApproved')?.setValue(false);
   this.enableCarrierFields(routeIndex, carrierIndex);
+  this.applyBookingLockForRoute(routeIndex);
 
 }
 
 
-// Helper method to disable fields of an approved carrier
-disableApprovedCarrierFields(routeIndex: number, carrierIndex: number): void {
+private hasBookingForRoute(routeIndex: number, routeData?: any): boolean {
+  const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+  const formBookingSid = routeForm?.get('BookingHeaderSid')?.value;
+  const formBookingNo = routeForm?.get('BookingNo')?.value;
+  const dataBookingSid = routeData?.BookingHeaderSid || routeData?.bookingHeader?.BookingHeaderSid;
+  const dataBookingNo = routeData?.BookingNo || routeData?.bookingHeader?.BookingNo;
+  return !!formBookingSid || !!formBookingNo || !!dataBookingSid || !!dataBookingNo;
+}
+
+private routeHasApprovedCarrier(routeIndex: number, routeData?: any): boolean {
+  if (routeData?.quoteCarrier?.length) {
+    return routeData.quoteCarrier.some(carrier => carrier?.ApprovalStatus === "Approved");
+  }
+  const carrierArr = this.quoteCarriers(routeIndex);
+  return carrierArr.controls.some((carrier: FormGroup) =>
+    carrier.get('authorizerStatus')?.value === "Approved"
+  );
+}
+
+isBookingLockedForRoute(routeIndex: number): boolean {
+  return this.hasBookingForRoute(routeIndex) && this.routeHasApprovedCarrier(routeIndex);
+}
+
+private applyBookingLockForRoute(routeIndex: number, routeData?: any): void {
+  const shouldLock = this.hasBookingForRoute(routeIndex, routeData) && this.routeHasApprovedCarrier(routeIndex, routeData);
+  const carrierArr = this.quoteCarriers(routeIndex);
+
+  carrierArr.controls.forEach((_, carrierIndex: number) => {
+    this.setCarrierControlsDisabled(routeIndex, carrierIndex, shouldLock);
+  });
+
+  if (!shouldLock) {
+    carrierArr.controls.forEach((carrierCtrl: AbstractControl) => {
+      this.updateCarrierValidationBasedOnStatus(carrierCtrl as FormGroup);
+    });
+
+    if (this.isRateLocked()) {
+      this.lockAllRateFields();
+    }
+  }
+}
+
+private setCarrierControlsDisabled(routeIndex: number, carrierIndex: number, disabled: boolean): void {
   const carrierForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
-  
-  // Disable the authorizer status field for approved carrier
-  carrierForm.get('authorizerStatus')?.disable({ emitEvent: false });
-  
-  // Optionally disable other fields in the approved carrier if needed
+
+  Object.keys(carrierForm.controls).forEach(key => {
+    if (key === 'quoteCharges') return;
+    const control = carrierForm.get(key);
+    if (!control) return;
+    if (disabled) {
+      control.disable({ emitEvent: false });
+      return;
+    }
+    if (key === 'CarrierMasterSid' && this.isEditMode) {
+      return;
+    }
+    control.enable({ emitEvent: false });
+  });
+
   const chargeArr = this.quoteCharges(routeIndex, carrierIndex);
   chargeArr.controls.forEach((charge: FormGroup) => {
-    // Disable charge fields for approved carrier
-    const chargeFields = [
-      'ChargeUomSid', 'ChargeDisplayName', 'RevenueRate', 'RevenueCurrencyMasterSid', 
-      'RevenueExchangeRate', 'CostRate', 'CostCurrencyMasterSid', 
-      'CostExchangeRate', 'Qty', 'RevenueChargeUomSid', 'CostChargeUomSid',
-      'RevenueAmount', 'RevenueLocalAmount', 'CostAmount', 'CostLocalAmount'
-    ];
-    
-    chargeFields.forEach(field => {
+    Object.keys(charge.controls).forEach(field => {
       const control = charge.get(field);
-      if (control && control.enabled) {
+      if (!control) return;
+      if (disabled) {
         control.disable({ emitEvent: false });
+        return;
       }
+      control.enable({ emitEvent: false });
     });
   });
+}
+
+// Helper method to disable fields of an approved carrier
+disableApprovedCarrierFields(routeIndex: number, carrierIndex: number): void {
+  this.setCarrierControlsDisabled(routeIndex, carrierIndex, true);
 }
 
 // Helper method to enable fields of a carrier
