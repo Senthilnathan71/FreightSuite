@@ -38,9 +38,9 @@
 
   <!-- Preview Section -->
   <div class="preview-section" *ngIf="showPreview && !hasErrors()">
-    <div class="preview-header">
+    <div class="preview-header p-1">
       <h6 class="fw-bold mb-0">Review and Edit Data</h6>
-      <button type="button" class="btn btn-sm btn-danger btn-sm" (click)="onReUpload()">
+      <button type="button" class="btn btn-sm btn-info btn-sm p-1" (click)="onReUpload()">
         <i class="fas fa-sync-alt me-1"></i>
         Upload Different File
       </button>
@@ -109,7 +109,7 @@
                                     </span>
                                   </div>
                                   <div>
-                                    <button type="button" class="btn btn-sm btn-info" (click)="addContainer()">
+                                    <button type="button" class="btn btn-sm btn-info"   *ngIf="i === containersArray.length - 1" (click)="addContainer()">
                                       <i class="fas fa-plus me-1"></i> Add Container
                                     </button>
                                     <button type="button" class="btn btn-sm" (click)="removeContainer(i)">
@@ -169,14 +169,16 @@
                                       Voyage {{ i + 1 }}
                                     </span>
                                   </div>
-                                  <div>
-                                    <button type="button" class="btn btn-sm btn-info" (click)="addVoyage()">
-                                      <i class="fas fa-plus me-1"></i> Add Voyage
-                                    </button>
-                                    <button type="button" class="btn btn-sm" (click)="removeVoyage(i)">
-                                      <i class="fas fa-trash me-1 text-danger"></i>
-                                    </button>
-                                  </div>
+                                 <div>
+  <button type="button" class="btn btn-sm btn-info me-1"
+    *ngIf="i === voyagesArray.length - 1"
+    (click)="addVoyage()">
+    <i class="fas fa-plus me-1"></i> Add Voyage
+  </button>
+  <button type="button" class="btn btn-sm" (click)="removeVoyage(i)">
+    <i class="fas fa-trash me-1 text-danger"></i>
+  </button>
+</div>
                                 </div>
                                 <div class="row compact-form">
                                   <div class="col-md-3" *ngFor="let key of voyage.value | keyvalue">
@@ -300,6 +302,7 @@
 
               </div>
             </div>
+            
           </div>
         </ng-template>
       </li>
@@ -312,9 +315,9 @@
             <div class="house-jobs-container">
               <form [formGroup]="houseJobsForm" *ngIf="houseJobsForm">
                 <div formArrayName="houseJobs">
-                  <div *ngFor="let houseJob of houseJobsArray.controls; let i = index" class="house-job-item"
+                  <div *ngFor="let houseJob of houseJobsArray.controls; let i = index" class="house-job-item pb-2"
                     [formGroupName]="i">
-                    <div class="house-job-header">
+                    <div class="house-job-header mb-0">
                       <h6 class="mb-0">House Job {{ i + 1 }}</h6>
                     </div>
 
@@ -332,8 +335,7 @@
                     </div>
 
                     <!-- House Job Child Data Accordions -->
-                    <!-- House Job Child Data Accordions -->
-                    <div class="house-job-child-data mt-3">
+                    <div class="house-job-child-data mt-0 p-0">
                       <div ngbAccordion>
 
                         <!-- Cargo Section -->
@@ -598,7 +600,7 @@
 
 <!-- Modal Footer -->
 <div class="modal-footer">
-  <button type="button" class="btn btn-sm btn-secondary" (click)="onCancel()" [disabled]="isProcessing">
+  <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onCancel()" [disabled]="isProcessing">
     Cancel
   </button>
   <button type="button" class="btn btn-sm btn-info" (click)="onProceed()"
