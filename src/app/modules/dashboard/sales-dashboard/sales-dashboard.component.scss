@@ -739,6 +739,9 @@ tr:hover td { background: rgba($brand, 0.03); }
   &.overdue { background: rgba($color-red, 0.1); color: #dc2626; border: 1px solid rgba($color-red, 0.15); &::before { background: $color-red; } }
   &.b-today { background: rgba($color-amber, 0.1); color: #d97706; border: 1px solid rgba($color-amber, 0.15); &::before { background: $color-amber; } }
   &.upcoming { background: rgba($color-green, 0.1); color: $color-green; border: 1px solid rgba($color-green, 0.15); &::before { background: $color-green; } }
+  &.created-by { background: rgba($brand, 0.1); color: $brand; border: 1px solid rgba($brand, 0.15); &::before { background: $brand; } }
+  &.assigned-to { background: rgba($color-purple, 0.1); color: #7c3aed; border: 1px solid rgba($color-purple, 0.15); &::before { background: $color-purple; } }
+  &.both-match { background: rgba($color-green, 0.1); color: $color-green; border: 1px solid rgba($color-green, 0.15); &::before { background: $color-green; } }
 }
 
 .days-pill {

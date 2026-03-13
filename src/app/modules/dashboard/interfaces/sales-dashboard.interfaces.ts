@@ -3,6 +3,8 @@ export interface SalesDashboardFilters {
   salespersonEmail?: string;
   dateFrom?: string;
   dateTo?: string;
+  naiveDateFrom?: string;
+  naiveDateTo?: string;
   page?: number;
   pageSize?: number;
   search?: string;
@@ -92,8 +94,8 @@ export interface MeetingNotConverted {
   phone: string;
   email: string;
   leadStatus: string;
-  leadAssignTo: number;
-  salespersonName: string;
+  leadCreatedBy: string;
+  matchedVia: 'Created by you' | 'Assigned to you' | 'Created & Assigned to you';
   meetingCount: number;
   lastMeetingDate: string;
   leadCreatedOn: string;
@@ -106,7 +108,11 @@ export interface CustomerNoQuote {
   CustomerAddress1: string;
   PreCustomerMasterSid: number;
   preCustomerName: string;
-  salespersonName: string;
+  contactPerson: string;
+  phone: string;
+  email: string;
+  leadCreatedBy: string;
+  matchedVia: 'Created by you' | 'Assigned to you' | 'Created & Assigned to you';
   customerCreatedOn: string;
   daysWithoutQuote?: number;
 }

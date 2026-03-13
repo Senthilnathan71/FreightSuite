@@ -381,6 +381,19 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  getMatchedViaClass(matchedVia: string): string {
+    switch (matchedVia) {
+      case 'Created by you':
+        return 'created-by';
+      case 'Assigned to you':
+        return 'assigned-to';
+      case 'Created & Assigned to you':
+        return 'both-match';
+      default:
+        return '';
+    }
+  }
+
   getApprovalStatusClass(status: string): string {
     switch (status) {
       case 'Pending':
@@ -873,6 +886,8 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
       branchMasterSid: branch?.BranchMasterSid ?? company.BranchMasterSid,
       dateFrom: this.dateFromInput ? this.toDateTimeStr(this.dateFromInput, 'start') : undefined,
       dateTo: this.dateToInput ? this.toDateTimeStr(this.dateToInput, 'end') : undefined,
+      naiveDateFrom: this.dateFromInput ? this.toNaiveDateTimeStr(this.dateFromInput, 'start') : undefined,
+      naiveDateTo: this.dateToInput ? this.toNaiveDateTimeStr(this.dateToInput, 'end') : undefined,
       salespersonId: userProfile?.UserMasterSid,
       salespersonEmail: userProfile?.userEmail,
     };
@@ -888,6 +903,23 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     }
 
     return date.toISOString();
+  }
+
+  /**
+   * Builds date boundaries for "timestamp without time zone" columns (meetingDate, followUpDate).
+   * Uses Date.UTC to match how the DateTimePicker stores these values — the user's
+   * selected date/time is stored as-is, without any local→UTC timezone conversion.
+   */
+  private toNaiveDateTimeStr(dateValue: Date, boundary: 'start' | 'end'): string {
+    const d = new Date(dateValue);
+    const y = d.getFullYear();
+    const m = d.getMonth();
+    const day = d.getDate();
+
+    if (boundary === 'start') {
+      return new Date(Date.UTC(y, m, day, 0, 0, 0, 0)).toISOString();
+    }
+    return new Date(Date.UTC(y, m, day, 23, 59, 59, 999)).toISOString();
   }
 
   private setDefaultDateRange(): void {

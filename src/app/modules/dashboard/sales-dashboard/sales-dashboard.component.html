@@ -247,19 +247,21 @@
         <div class="table-wrap" *ngIf="expandedSections[4]">
           <div class="table-scroll" (scroll)="onSectionScroll($event, 4)">
             <table>
-              <thead><tr><th>#</th><th>Lead Name</th><th>Contact</th><th>Phone</th><th>Status</th><th>Meetings</th><th>Last Meeting</th><th>Days Since</th></tr></thead>
+              <thead><tr><th>#</th><th>Lead Name</th><th>Contact</th><th>Phone</th><th>Email</th><th>Status</th><th>Matched Via</th><th>Meetings</th><th>Last Meeting</th><th>Days Since</th></tr></thead>
               <tbody>
                 <tr *ngFor="let meeting of getMeetingsNotConvertedRows(); let i = index">
                   <td class="row-num">{{ i + 1 }}</td>
                   <td><a class="link" (click)="navigateToPreCustomer(meeting.PreCustomerMasterSid)">{{ meeting.preCustomerName }}</a></td>
                   <td>{{ meeting.contactPerson }}</td>
-                  <td>{{ meeting.phone }}</td>
+                  <td><a [href]="'tel:' + meeting.phone">{{ meeting.phone }}</a></td>
+                  <td><a [href]="'mailto:' + meeting.email">{{ meeting.email }}</a></td>
                   <td><span class="badge" [ngClass]="getLeadStatusClass(meeting.leadStatus)">{{ camelToWords(meeting.leadStatus) }}</span></td>
+                  <td><span class="badge" [ngClass]="getMatchedViaClass(meeting.matchedVia)">{{ meeting.matchedVia }}</span></td>
                   <td class="center"><span class="meeting-count-badge">{{ meeting.meetingCount }}</span></td>
                   <td>{{ meeting.lastMeetingDate | formatDate }}</td>
                   <td><span class="days-pill" [ngClass]="getDaysPillClass(meeting.daysSinceMeeting!, 14)">{{ meeting.daysSinceMeeting }}d</span></td>
                 </tr>
-                <tr *ngIf="isSectionEmpty(4)"><td colspan="8" class="empty-state">No unconverted leads found</td></tr>
+                <tr *ngIf="isSectionEmpty(4)"><td colspan="10" class="empty-state">No unconverted leads found</td></tr>
               </tbody>
             </table>
             <div *ngIf="isSectionLoading(4)" class="section-loading more-loading"><div class="spinner"></div></div>
@@ -282,18 +284,21 @@
         <div class="table-wrap" *ngIf="expandedSections[5]">
           <div class="table-scroll" (scroll)="onSectionScroll($event, 5)">
             <table>
-              <thead><tr><th>#</th><th>Customer Name</th><th>Address</th><th>Original Lead</th><th>Customer Since</th><th>Days Without Quote</th><th>Action</th></tr></thead>
+              <thead><tr><th>#</th><th>Customer Name</th><th>Original Lead</th><th>Contact</th><th>Phone</th><th>Email</th><th>Matched Via</th><th>Customer Since</th><th>Days Without Quote</th><th>Action</th></tr></thead>
               <tbody>
                 <tr *ngFor="let customer of getCustomersNoQuoteRows(); let i = index">
                   <td class="row-num">{{ i + 1 }}</td>
                   <td><a class="link" (click)="navigateToCustomer(customer.CustomerMasterSid)">{{ customer.CustomerName }}</a></td>
-                  <td class="note-cell" [title]="customer.CustomerAddress1">{{ customer.CustomerAddress1 }}</td>
                   <td><a class="link" *ngIf="customer.PreCustomerMasterSid" (click)="navigateToPreCustomer(customer.PreCustomerMasterSid)">{{ customer.preCustomerName }}</a></td>
+                  <td>{{ customer.contactPerson }}</td>
+                  <td><a [href]="'tel:' + customer.phone">{{ customer.phone }}</a></td>
+                  <td><a [href]="'mailto:' + customer.email">{{ customer.email }}</a></td>
+                  <td><span class="badge" [ngClass]="getMatchedViaClass(customer.matchedVia)">{{ customer.matchedVia }}</span></td>
                   <td>{{ customer.customerCreatedOn | formatDate }}</td>
                   <td><span class="days-pill" [ngClass]="getDaysPillClass(customer.daysWithoutQuote!, 30)">{{ customer.daysWithoutQuote }}d</span></td>
                   <td><button class="action-btn create">Create Quote</button></td>
                 </tr>
-                <tr *ngIf="isSectionEmpty(5)"><td colspan="7" class="empty-state">No customers without quotes found</td></tr>
+                <tr *ngIf="isSectionEmpty(5)"><td colspan="10" class="empty-state">No customers without quotes found</td></tr>
               </tbody>
             </table>
             <div *ngIf="isSectionLoading(5)" class="section-loading more-loading"><div class="spinner"></div></div>
