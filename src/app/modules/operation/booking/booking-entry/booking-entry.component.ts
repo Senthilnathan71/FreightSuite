@@ -5646,179 +5646,129 @@ html, body {
     }, 100);
   }
 
-printDivBarcodeWithCompany(
-  divId: string,
-  qty: number,
-  labelSize: string = '4x6'
-): void {
+printDivBarcodeWithCompany(divId: string, qty: number): void {
+
   this.showPrintLogo = true;
   this.showPdfLogo = false;
 
   setTimeout(() => {
+
     const sourceElement = document.getElementById(divId);
     if (!sourceElement) return;
 
-    const sizeMap: Record<string, { width: string; height: string; widthPx: number; heightPx: number }> = {
-      '4x6':     { width: '4in',   height: '6in',   widthPx: 384,  heightPx: 576 },
-      '3x2':     { width: '3in',   height: '2in',   widthPx: 288,  heightPx: 192 },
-      '2x1':     { width: '2in',   height: '1in',   widthPx: 192,  heightPx: 96  },
-      '4x4':     { width: '4in',   height: '4in',   widthPx: 384,  heightPx: 384 },
-      '100x150': { width: '100mm', height: '150mm', widthPx: 378,  heightPx: 567 },
-      '75x50':   { width: '75mm',  height: '50mm',  widthPx: 283,  heightPx: 189 },
-      '50x25':   { width: '50mm',  height: '25mm',  widthPx: 189,  heightPx: 94  },
-    };
-
-    const selectedSize = sizeMap[labelSize] || sizeMap['4x6'];
-    const { width: pageWidth, height: pageHeight, widthPx, heightPx } = selectedSize;
-
-    // Get the natural rendered size of the source element
-    const sourceRect = sourceElement.getBoundingClientRect();
-    const sourceWidth  = sourceRect.width  || widthPx;   // fallback if element not visible
-    const sourceHeight = sourceRect.height || heightPx;  // fallback if element not visible
-
-    // Scale to fill label fully (both upscale & downscale supported)
-    const scaleX = widthPx  / sourceWidth;
-    const scaleY = heightPx / sourceHeight;
-    const scale  = Math.min(scaleX, scaleY); // maintain aspect ratio, fill label
-
-    // Centering offset after scaling
-    const scaledWidth  = sourceWidth  * scale;
-    const scaledHeight = sourceHeight * scale;
-    const offsetX = (widthPx  - scaledWidth)  / 2;
-    const offsetY = (heightPx - scaledHeight) / 2;
-
+    // Collect all styles from current page
     const styles = Array.from(document.styleSheets)
       .map((sheet: any) => {
         try {
-          return Array.from(sheet.cssRules).map((rule: any) => rule.cssText).join('');
-        } catch { return ''; }
+          return Array.from(sheet.cssRules)
+            .map((rule: any) => rule.cssText)
+            .join('');
+        } catch {
+          return '';
+        }
       })
       .join('');
 
     let finalHtml = '';
+
+    // Keep original label structure and print one label per page for label printers.
     for (let i = 0; i < qty; i++) {
       finalHtml += `
         <div class="print-page">
-          <div class="label-wrapper">
-            <div class="label-inner" style="
-              transform: scale(${scale});
-              transform-origin: top left;
-              position: absolute;
-              top: ${offsetY}px;
-              left: ${offsetX}px;
-              width: ${sourceWidth}px;
-            ">
-              ${sourceElement.innerHTML}
-            </div>
+          <div class="label-content-area">
+            ${sourceElement.innerHTML}
           </div>
         </div>
       `;
     }
 
-    const popupWin = window.open('', '_blank', 'width=900,height=700');
-    if (!popupWin) return;
+    const popupWin = window.open('', '_blank', 'width=900,height=600');
 
-    popupWin.document.open();
-    popupWin.document.write(`
+    if (popupWin) {
+
+      popupWin.document.open();
+
+      popupWin.document.write(`
       <html>
         <head>
+
           <title>Print Barcode</title>
-          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+          <!-- Bootstrap -->
+          <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
+          <!-- FontAwesome -->
+          <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
           <style>
-            ${styles}
 
-            *, *::before, *::after {
-              box-sizing: border-box;
+          ${styles}
+
+          html, body{
+            margin:0;
+            padding:0;
+          }
+
+          .print-page{
+            width:4in;
+            height:6in;
+            margin:0 auto;
+            padding:0;
+            display:flex;
+            justify-content:flex-start;
+            align-items:flex-start;
+            box-sizing:border-box;
+            page-break-after:always;
+            break-after:page;
+          }
+
+          /* Keep only 4.5in data area; remaining 1.5in is for pre-printed logo/company */
+          .label-content-area{
+            width:4in;
+            height:4.5in;
+            overflow:hidden;
+            box-sizing:border-box;
+          }
+
+          .print-page:last-child{
+            page-break-after:auto;
+            break-after:auto;
+          }
+
+          @media print{
+
+            body{
+              -webkit-print-color-adjust:exact;
+              print-color-adjust:exact;
             }
 
-            html, body {
-              margin: 0;
-              padding: 0;
-              background: white;
+            @page{
+              size:4in 6in;
+              margin:0;
             }
 
-            .print-page {
-              width: ${pageWidth};
-              height: ${pageHeight};
-              overflow: hidden;
-              page-break-after: always;
-              break-after: page;
-              position: relative;
-            }
+          }
 
-            .print-page:last-child {
-              page-break-after: auto;
-              break-after: auto;
-            }
-
-            .label-wrapper {
-              width: ${pageWidth};
-              height: ${pageHeight};
-              overflow: hidden;
-              position: relative;
-            }
-
-            .label-inner {
-              /* base styles — transform & position set inline */
-            }
-
-            @page {
-              size: ${pageWidth} ${pageHeight};
-              margin: 0mm;
-            }
-
-            @media print {
-              html, body {
-                margin: 0 !important;
-                padding: 0 !important;
-                width: ${pageWidth} !important;
-                height: ${pageHeight} !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-              }
-
-              .print-page {
-                width: ${pageWidth} !important;
-                height: ${pageHeight} !important;
-                overflow: hidden !important;
-                page-break-inside: avoid !important;
-              }
-
-              /* Hide browser default headers/footers */
-              @page {
-                size: ${pageWidth} ${pageHeight};
-                margin: 0mm !important;
-              }
-            }
           </style>
+
         </head>
-        <body onload="
-          // Auto-trigger print after fonts/images fully load
-          Promise.all(
-            Array.from(document.images)
-              .filter(img => !img.complete)
-              .map(img => new Promise(resolve => {
-                img.onload = img.onerror = resolve;
-              }))
-          ).then(() => {
-            document.fonts.ready.then(() => {
-              window.focus();
-              window.print();
-            });
-          });
-        ">
+
+        <body onload="window.print(); window.close();">
+
           ${finalHtml}
+
         </body>
       </html>
-    `);
+      `);
 
-    popupWin.document.close();
+      popupWin.document.close();
 
-    // Fallback close after print
-    popupWin.onafterprint = () => popupWin.close();
+    }
 
-  }, 300);
+  }, 100);
+
 }
 
 // Add this method to your component class
