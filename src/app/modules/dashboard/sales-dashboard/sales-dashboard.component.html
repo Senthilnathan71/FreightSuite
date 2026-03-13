@@ -67,8 +67,9 @@
         <div class="kpi-card c-brand"><div class="kpi-icon-wrap i-brand"><i class="fas fa-users"></i></div><div class="kpi-label">Leads (No Meeting)</div><div class="kpi-value">{{ dashboardCounts.counts.leadsNoMeeting }}</div><div class="kpi-watermark"><i class="fas fa-users"></i></div></div>
         <div class="kpi-card c-amber"><div class="kpi-icon-wrap i-amber"><i class="fas fa-calendar-alt"></i></div><div class="kpi-label">Meetings Scheduled</div><div class="kpi-value">{{ dashboardCounts.counts.meetingsScheduled }}</div><div class="kpi-watermark"><i class="fas fa-calendar-alt"></i></div></div>
         <div class="kpi-card c-purple"><div class="kpi-icon-wrap i-purple"><i class="fas fa-bell"></i></div><div class="kpi-label">Follow-Ups Pending</div><div class="kpi-value">{{ dashboardCounts.counts.followUpsPending }}</div><div class="kpi-watermark"><i class="fas fa-bell"></i></div></div>
+        <div class="kpi-card c-cyan"><div class="kpi-icon-wrap i-cyan"><i class="fas fa-clipboard-list"></i></div><div class="kpi-label">Enquiry Created (No Quotation)</div><div class="kpi-value">{{ dashboardCounts.counts.enquiriesNoQuotation }}</div><div class="kpi-watermark"><i class="fas fa-clipboard-list"></i></div></div>
+        <div class="kpi-card c-green"><div class="kpi-icon-wrap i-green"><i class="fas fa-random"></i></div><div class="kpi-label">Enquiry Converted</div><div class="kpi-value">{{ dashboardCounts.counts.enquiryConvertedToQuotation }}</div><div class="kpi-watermark"><i class="fas fa-random"></i></div></div>
         <div class="kpi-card c-orange"><div class="kpi-icon-wrap i-orange"><i class="fas fa-file-alt"></i></div><div class="kpi-label">Quotes Pending</div><div class="kpi-value">{{ dashboardCounts.counts.quotesNotApproved }}</div><div class="kpi-watermark"><i class="fas fa-file-alt"></i></div></div>
-        <div class="kpi-card c-green"><div class="kpi-icon-wrap i-green"><i class="fas fa-ship"></i></div><div class="kpi-label">Bookings Created</div><div class="kpi-value">{{ dashboardCounts.counts.totalBookings }}</div><div class="kpi-watermark"><i class="fas fa-ship"></i></div></div>
       </div>
 
       <div class="charts-row">
@@ -159,10 +160,10 @@
             <div class="board-column-header bh-overdue"><i class="fas fa-exclamation-circle"></i> Overdue <span class="board-count bc-red">{{ getMeetingBucketState('overdue').totalCount }}</span></div>
             <div class="board-scroll" (scroll)="onMeetingsBucketScroll($event, 'overdue')">
               <table>
-                <thead><tr><th>Lead/Customer</th><th>Date</th><th>Type</th></tr></thead>
+                <thead><tr><th>Name</th><th>L / C</th><th>Date</th><th>Type</th></tr></thead>
                 <tbody>
-                  <tr *ngFor="let meeting of getMeetingsScheduledGroup().overdue" class="clickable-row" (click)="navigateToMeetingUpdate()"><td><a class="link">{{ getDisplayName(meeting) }}</a></td><td><span class="days-pill danger">{{ formatMeetingDateTime(meeting.meetingDate) }}</span></td><td>{{ meeting.meetingType }}</td></tr>
-                  <tr *ngIf="isMeetingsBucketEmpty('overdue')"><td colspan="3" class="empty-state">No overdue meetings</td></tr>
+                  <tr *ngFor="let meeting of getMeetingsScheduledGroup().overdue" class="clickable-row" (click)="navigateToMeetingUpdate()"><td><a class="link">{{ meeting.name }}</a></td><td><span class="badge" [ngClass]="meeting.LeadOrCustomer === 'L' ? 'lead-type' : 'customer-type'">{{ meeting.LeadOrCustomer === 'L' ? 'Lead' : 'Customer' }}</span></td><td><span class="days-pill danger">{{ formatMeetingDateTime(meeting.meetingDate) }}</span></td><td>{{ meeting.meetingType }}</td></tr>
+                  <tr *ngIf="isMeetingsBucketEmpty('overdue')"><td colspan="4" class="empty-state">No overdue meetings</td></tr>
                 </tbody>
               </table>
               <div *ngIf="getMeetingBucketState('overdue').loading" class="section-loading more-loading"><div class="spinner"></div></div>
@@ -172,10 +173,10 @@
             <div class="board-column-header bh-today"><i class="fas fa-clock"></i> Today <span class="board-count bc-amber">{{ getMeetingBucketState('today').totalCount }}</span></div>
             <div class="board-scroll" (scroll)="onMeetingsBucketScroll($event, 'today')">
               <table>
-                <thead><tr><th>Lead/Customer</th><th>Time</th><th>Type</th></tr></thead>
+                <thead><tr><th>Name</th><th>L / C</th><th>Time</th><th>Type</th></tr></thead>
                 <tbody>
-                  <tr *ngFor="let meeting of getMeetingsScheduledGroup().today" class="clickable-row" (click)="navigateToMeetingUpdate()"><td><a class="link">{{ getDisplayName(meeting) }}</a></td><td><span class="days-pill warning">{{ formatMeetingDateTime(meeting.meetingDate, true) }}</span></td><td>{{ meeting.meetingType }}</td></tr>
-                  <tr *ngIf="isMeetingsBucketEmpty('today')"><td colspan="3" class="empty-state">No meetings today</td></tr>
+                  <tr *ngFor="let meeting of getMeetingsScheduledGroup().today" class="clickable-row" (click)="navigateToMeetingUpdate()"><td><a class="link">{{ meeting.name }}</a></td><td><span class="badge" [ngClass]="meeting.LeadOrCustomer === 'L' ? 'lead-type' : 'customer-type'">{{ meeting.LeadOrCustomer === 'L' ? 'Lead' : 'Customer' }}</span></td><td><span class="days-pill warning">{{ formatMeetingDateTime(meeting.meetingDate, true) }}</span></td><td>{{ meeting.meetingType }}</td></tr>
+                  <tr *ngIf="isMeetingsBucketEmpty('today')"><td colspan="4" class="empty-state">No meetings today</td></tr>
                 </tbody>
               </table>
               <div *ngIf="getMeetingBucketState('today').loading" class="section-loading more-loading"><div class="spinner"></div></div>
@@ -185,10 +186,10 @@
             <div class="board-column-header bh-future"><i class="fas fa-calendar-plus"></i> Future <span class="board-count bc-green">{{ getMeetingBucketState('future').totalCount }}</span></div>
             <div class="board-scroll" (scroll)="onMeetingsBucketScroll($event, 'future')">
               <table>
-                <thead><tr><th>Lead/Customer</th><th>Date</th><th>Type</th></tr></thead>
+                <thead><tr><th>Name</th><th>L / C</th><th>Date</th><th>Type</th></tr></thead>
                 <tbody>
-                  <tr *ngFor="let meeting of getMeetingsScheduledGroup().future" class="clickable-row" (click)="navigateToMeetingUpdate()"><td><a class="link">{{ getDisplayName(meeting) }}</a></td><td><span class="days-pill ok">{{ formatMeetingDateTime(meeting.meetingDate) }}</span></td><td>{{ meeting.meetingType }}</td></tr>
-                  <tr *ngIf="isMeetingsBucketEmpty('future')"><td colspan="3" class="empty-state">No future meetings</td></tr>
+                  <tr *ngFor="let meeting of getMeetingsScheduledGroup().future" class="clickable-row" (click)="navigateToMeetingUpdate()"><td><a class="link">{{ meeting.name }}</a></td><td><span class="badge" [ngClass]="meeting.LeadOrCustomer === 'L' ? 'lead-type' : 'customer-type'">{{ meeting.LeadOrCustomer === 'L' ? 'Lead' : 'Customer' }}</span></td><td><span class="days-pill ok">{{ formatMeetingDateTime(meeting.meetingDate) }}</span></td><td>{{ meeting.meetingType }}</td></tr>
+                  <tr *ngIf="isMeetingsBucketEmpty('future')"><td colspan="4" class="empty-state">No future meetings</td></tr>
                 </tbody>
               </table>
               <div *ngIf="getMeetingBucketState('future').loading" class="section-loading more-loading"><div class="spinner"></div></div>
@@ -247,7 +248,7 @@
         <div class="table-wrap" *ngIf="expandedSections[4]">
           <div class="table-scroll" (scroll)="onSectionScroll($event, 4)">
             <table>
-              <thead><tr><th>#</th><th>Lead Name</th><th>Contact</th><th>Phone</th><th>Email</th><th>Status</th><th>Matched Via</th><th>Meetings</th><th>Last Meeting</th><th>Days Since</th></tr></thead>
+              <thead><tr><th>#</th><th>Lead Name</th><th>Contact</th><th>Phone</th><th>Email</th><th>Status</th><th>Matched Via</th><th>Meetings</th><th>Last Meeting</th><th>Since</th></tr></thead>
               <tbody>
                 <tr *ngFor="let meeting of getMeetingsNotConvertedRows(); let i = index">
                   <td class="row-num">{{ i + 1 }}</td>
@@ -259,7 +260,7 @@
                   <td><span class="badge" [ngClass]="getMatchedViaClass(meeting.matchedVia)">{{ meeting.matchedVia }}</span></td>
                   <td class="center"><span class="meeting-count-badge">{{ meeting.meetingCount }}</span></td>
                   <td>{{ meeting.lastMeetingDate | formatDate }}</td>
-                  <td><span class="days-pill" [ngClass]="getDaysPillClass(meeting.daysSinceMeeting!, 14)">{{ meeting.daysSinceMeeting }}d</span></td>
+                  <td><span class="days-pill" [ngClass]="getDaysPillClass(meeting.daysSinceMeeting!, 14)">{{ meeting.elapsedDisplay }}</span></td>
                 </tr>
                 <tr *ngIf="isSectionEmpty(4)"><td colspan="10" class="empty-state">No unconverted leads found</td></tr>
               </tbody>
@@ -295,7 +296,7 @@
                   <td><a [href]="'mailto:' + customer.email">{{ customer.email }}</a></td>
                   <td><span class="badge" [ngClass]="getMatchedViaClass(customer.matchedVia)">{{ customer.matchedVia }}</span></td>
                   <td>{{ customer.customerCreatedOn | formatDate }}</td>
-                  <td><span class="days-pill" [ngClass]="getDaysPillClass(customer.daysWithoutQuote!, 30)">{{ customer.daysWithoutQuote }}d</span></td>
+                  <td><span class="days-pill" [ngClass]="getDaysPillClass(customer.daysWithoutQuote!, 30)">{{ customer.waitingDisplay }}</span></td>
                   <td><button class="action-btn create">Create Quote</button></td>
                 </tr>
                 <tr *ngIf="isSectionEmpty(5)"><td colspan="10" class="empty-state">No customers without quotes found</td></tr>
@@ -310,32 +311,31 @@
         <div class="section-header" (click)="toggleSection(6)">
           <div class="section-header-left">
             <div class="section-number sn-6">6</div>
-            <div class="section-title"><i class="fas fa-file-alt si"></i> Quote Given &mdash; Not Yet Approved</div>
-            <div class="section-count sc-orange">{{ dashboardCounts.counts.quotesNotApproved }}</div>
+            <div class="section-title"><i class="fas fa-clipboard-list si"></i> Enquiry not turned into Quotation</div>
+            <div class="section-count sc-cyan">{{ dashboardCounts.counts.enquiriesNoQuotation }}</div>
           </div>
           <div class="section-header-right">
-            <input class="search-input" placeholder="Search quotes..." [ngModel]="searchTerms[6]" (ngModelChange)="onSectionSearchChange(6, $event)" (click)="$event.stopPropagation()">
+            <input class="search-input" placeholder="Search enquiries..." [ngModel]="searchTerms[6]" (ngModelChange)="onSectionSearchChange(6, $event)" (click)="$event.stopPropagation()">
             <div class="chevron">{{ expandedSections[6] ? '&#9660;' : '&#9654;' }}</div>
           </div>
         </div>
         <div class="table-wrap" *ngIf="expandedSections[6]">
           <div class="table-scroll" (scroll)="onSectionScroll($event, 6)">
             <table>
-              <thead><tr><th>#</th><th>Quote Number</th><th>Date</th><th>Customer</th><th>Status</th><th>Remarks</th><th>Valid To</th><th>Transport</th><th>Freight</th><th>Action</th></tr></thead>
+              <thead><tr><th>#</th><th>Enquiry Number</th><th>Enquiry date</th><th>Lead / Customer</th><th>Dept</th><th>POL</th><th>POD</th><th>Status</th><th>Action</th></tr></thead>
               <tbody>
-                <tr *ngFor="let quote of getQuotesNotApprovedRows(); let i = index">
+                <tr *ngFor="let enquiry of getEnquiriesNoQuotationRows(); let i = index">
                   <td class="row-num">{{ i + 1 }}</td>
-                  <td><a class="link" (click)="navigateToQuote(quote.QuoteHeaderSid)">{{ quote.QuoteNumber }}</a></td>
-                  <td>{{ quote.QuoteDate | formatDate }}</td>
-                  <td>{{ getQuoteCustomerName(quote) }}</td>
-                  <td><span class="badge" [ngClass]="getApprovalStatusClass(quote.authorizerStatus)">{{ camelToWords(quote.authorizerStatus) }}</span></td>
-                  <td class="note-cell" [title]="quote.AuthorizerRemarks">{{ quote.AuthorizerRemarks || '&mdash;' }}</td>
-                  <td><span [class.days-pill]="isQuoteExpired(quote.QuoteValidTo)" [class.danger]="isQuoteExpired(quote.QuoteValidTo)">{{ quote.QuoteValidTo | formatDate }}</span></td>
-                  <td><span class="source-tag">{{ quote.TransportType }}</span></td>
-                  <td>{{ quote.FreightPPCC }}</td>
-                  <td><button class="action-btn followup" (click)="navigateToQuote(quote.QuoteHeaderSid)">Follow Up</button></td>
+                  <td><a class="link" (click)="navigateToEnquiry(enquiry.EnquiryHeaderSid)">{{ enquiry.EnquiryNumber }}</a></td>
+                  <td>{{ enquiry.EnquiryDate | formatDate }}</td>
+                  <td>{{ enquiry.CustomerName || '—' }}</td>
+                  <td>{{ enquiry.departmentName || '—' }}</td>
+                  <td>{{ enquiry.polCode || '—' }}</td>
+                  <td>{{ enquiry.podCode || '—' }}</td>
+                  <td><span class="badge" [ngClass]="getApprovalStatusClass(enquiry.authorizerStatus)">{{ camelToWords(enquiry.authorizerStatus) }}</span></td>
+                  <td><button class="action-btn followup" (click)="navigateToEnquiry(enquiry.EnquiryHeaderSid)">Open</button></td>
                 </tr>
-                <tr *ngIf="isSectionEmpty(6)"><td colspan="10" class="empty-state">No pending quotes found</td></tr>
+                <tr *ngIf="isSectionEmpty(6)"><td colspan="9" class="empty-state">No enquiries without quotations found</td></tr>
               </tbody>
             </table>
             <div *ngIf="isSectionLoading(6)" class="section-loading more-loading"><div class="spinner"></div></div>
@@ -347,8 +347,8 @@
         <div class="section-header" (click)="toggleSection(7)">
           <div class="section-header-left">
             <div class="section-number sn-7">7</div>
-            <div class="section-title"><i class="fas fa-box si"></i> Quote Approved &mdash; Booking Not Created</div>
-            <div class="section-count sc-pink">{{ dashboardCounts.counts.quotesNoBooking }}</div>
+            <div class="section-title"><i class="fas fa-file-alt si"></i> Quote Given &mdash; Not Yet Approved</div>
+            <div class="section-count sc-orange">{{ dashboardCounts.counts.quotesNotApproved }}</div>
           </div>
           <div class="section-header-right">
             <input class="search-input" placeholder="Search quotes..." [ngModel]="searchTerms[7]" (ngModelChange)="onSectionSearchChange(7, $event)" (click)="$event.stopPropagation()">
@@ -358,21 +358,20 @@
         <div class="table-wrap" *ngIf="expandedSections[7]">
           <div class="table-scroll" (scroll)="onSectionScroll($event, 7)">
             <table>
-              <thead><tr><th>#</th><th>Quote Number</th><th>Date</th><th>Customer</th><th>Approved By</th><th>Approved On</th><th>Customer OK</th><th>Days Since</th><th>Transport</th><th>Action</th></tr></thead>
+              <thead><tr><th>#</th><th>Quote No</th><th>Date</th><th>Customer</th><th>Dept</th><th>POL</th><th>POD</th><th>Status</th><th>Action</th></tr></thead>
               <tbody>
-                <tr *ngFor="let quote of getQuotesNoBookingRows(); let i = index">
+                <tr *ngFor="let quote of getQuotesNotApprovedRows(); let i = index">
                   <td class="row-num">{{ i + 1 }}</td>
                   <td><a class="link" (click)="navigateToQuote(quote.QuoteHeaderSid)">{{ quote.QuoteNumber }}</a></td>
                   <td>{{ quote.QuoteDate | formatDate }}</td>
                   <td>{{ getQuoteCustomerName(quote) }}</td>
-                  <td>{{ quote.internalApprovedByName || quote.InternalApprovedBy }}</td>
-                  <td>{{ quote.InternalApprovedOn | formatDate }}</td>
-                  <td><span *ngIf="quote.CustomerApprovedOn" class="badge approved">{{ quote.CustomerApprovedOn | formatDate }}</span><span *ngIf="!quote.CustomerApprovedOn">&mdash;</span></td>
-                  <td><span class="days-pill" [ngClass]="getDaysPillClass(quote.daysSinceApproval || 0, 14)">{{ quote.daysSinceApproval || 0 }}d</span></td>
-                  <td><span class="source-tag">{{ quote.TransportType }}</span></td>
-                  <td><button class="action-btn followup" (click)="navigateToQuote(quote.QuoteHeaderSid)">Follow Up</button></td>
+                  <td>{{ quote.departmentName || '—' }}</td>
+                  <td>{{ quote.polCode || '—' }}</td>
+                  <td>{{ quote.podCode || '—' }}</td>
+                  <td><span class="badge" [ngClass]="getApprovalStatusClass(quote.authorizerStatus)">{{ camelToWords(quote.authorizerStatus) }}</span></td>
+                  <td><button class="action-btn followup" (click)="navigateToQuote(quote.QuoteHeaderSid)">Open</button></td>
                 </tr>
-                <tr *ngIf="isSectionEmpty(7)"><td colspan="10" class="empty-state">No approved quotes without bookings found</td></tr>
+                <tr *ngIf="isSectionEmpty(7)"><td colspan="9" class="empty-state">No pending quotes found</td></tr>
               </tbody>
             </table>
             <div *ngIf="isSectionLoading(7)" class="section-loading more-loading"><div class="spinner"></div></div>
@@ -384,12 +383,48 @@
         <div class="section-header" (click)="toggleSection(8)">
           <div class="section-header-left">
             <div class="section-number sn-8">8</div>
+            <div class="section-title"><i class="fas fa-box si"></i> Quote Approved &mdash; Booking Not Created</div>
+            <div class="section-count sc-pink">{{ dashboardCounts.counts.quotesNoBooking }}</div>
+          </div>
+          <div class="section-header-right">
+            <input class="search-input" placeholder="Search quotes..." [ngModel]="searchTerms[8]" (ngModelChange)="onSectionSearchChange(8, $event)" (click)="$event.stopPropagation()">
+            <div class="chevron">{{ expandedSections[8] ? '&#9660;' : '&#9654;' }}</div>
+          </div>
+        </div>
+        <div class="table-wrap" *ngIf="expandedSections[8]">
+          <div class="table-scroll" (scroll)="onSectionScroll($event, 8)">
+            <table>
+              <thead><tr><th>#</th><th>Quote No</th><th>Date</th><th>Customer</th><th>Dept</th><th>POL</th><th>POD</th><th>Approved By</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let quote of getQuotesNoBookingRows(); let i = index">
+                  <td class="row-num">{{ i + 1 }}</td>
+                  <td><a class="link" (click)="navigateToQuote(quote.QuoteHeaderSid)">{{ quote.QuoteNumber }}</a></td>
+                  <td>{{ quote.QuoteDate | formatDate }}</td>
+                  <td>{{ getQuoteCustomerName(quote) }}</td>
+                  <td>{{ quote.departmentName || '—' }}</td>
+                  <td>{{ quote.polCode || '—' }}</td>
+                  <td>{{ quote.podCode || '—' }}</td>
+                  <td>{{ quote.approvedBy || '—' }}</td>
+                  <td><button class="action-btn followup" (click)="navigateToQuote(quote.QuoteHeaderSid)">Open</button></td>
+                </tr>
+                <tr *ngIf="isSectionEmpty(8)"><td colspan="9" class="empty-state">No approved quotes without bookings found</td></tr>
+              </tbody>
+            </table>
+            <div *ngIf="isSectionLoading(8)" class="section-loading more-loading"><div class="spinner"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header" (click)="toggleSection(9)">
+          <div class="section-header-left">
+            <div class="section-number sn-8">9</div>
             <div class="section-title"><i class="fas fa-chart-line si"></i> Summary &mdash; Quotation vs Booking KPIs</div>
             <div class="section-count sc-green">Overview</div>
           </div>
-          <div class="section-header-right"><div class="chevron">{{ expandedSections[8] ? '&#9660;' : '&#9654;' }}</div></div>
+          <div class="section-header-right"><div class="chevron">{{ expandedSections[9] ? '&#9660;' : '&#9654;' }}</div></div>
         </div>
-        <ng-container *ngIf="expandedSections[8]">
+        <ng-container *ngIf="expandedSections[9]">
           <div class="summary-grid">
             <div class="summary-card"><div class="value v-brand">{{ dashboardCounts.summaryKpis.quotes.totalQuotes }}</div><div class="label">Total Quotes</div></div>
             <div class="summary-card"><div class="value v-green">{{ dashboardCounts.summaryKpis.quotes.approvedQuotes }}</div><div class="label">Approved Quotes</div></div>

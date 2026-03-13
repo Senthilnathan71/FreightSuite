@@ -18,6 +18,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import {
   BucketedPagedResult,
   CustomerNoQuote,
+  EnquiryNoQuotation,
   LeadNoMeeting,
   MeetingBucket,
   MeetingNotConverted,
@@ -31,7 +32,7 @@ import {
 } from '../interfaces/sales-dashboard.interfaces';
 import { SalesDashboardService } from '../services/sales-dashboard.service';
 
-type ListSection = 1 | 3 | 4 | 5 | 6 | 7;
+type ListSection = 1 | 3 | 4 | 5 | 6 | 7 | 8;
 
 interface SectionState<T> {
   items: T[];
@@ -72,7 +73,7 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     'DealLost',
     'CustomerCreated',
   ];
-  private readonly listSections: ListSection[] = [1, 3, 4, 5, 6, 7];
+  private readonly listSections: ListSection[] = [1, 3, 4, 5, 6, 7, 8];
   private readonly sectionSearchTimers: Partial<Record<ListSection, ReturnType<typeof setTimeout>>> = {};
 
   readonly maxDateTo: NgbDateStruct = toNgbDateStruct(new Date())!;
@@ -93,6 +94,7 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     6: true,
     7: true,
     8: true,
+    9: true,
   };
 
   searchTerms: Partial<Record<ListSection, string>> = {};
@@ -101,8 +103,9 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     3: this.createSectionState<MeetingWithFollowup>(),
     4: this.createSectionState<MeetingNotConverted>(),
     5: this.createSectionState<CustomerNoQuote>(),
-    6: this.createSectionState<QuoteNotApproved>(),
-    7: this.createSectionState<QuoteNoBooking>(),
+    6: this.createSectionState<EnquiryNoQuotation>(),
+    7: this.createSectionState<QuoteNotApproved>(),
+    8: this.createSectionState<QuoteNoBooking>(),
   };
   meetingsState: Record<MeetingBucket, SectionState<ScheduledMeeting>> = {
     overdue: this.createSectionState<ScheduledMeeting>(),
@@ -181,34 +184,42 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     this.activePreset = preset;
     const now = new Date();
 
+    // Use noon (12:00) so the datepicker adapter reads the correct date
+    // regardless of UTC offset. toDateTimeStr / toNaiveDateTimeStr create
+    // their own Date copies and set hours independently, so this is safe.
+    const noon = (y: number, m: number, d: number) => new Date(y, m, d, 12);
+    const todayNoon = noon(now.getFullYear(), now.getMonth(), now.getDate());
+
     switch (preset) {
       case 'today':
-        this.dateFromInput = new Date(now);
-        this.dateToInput = new Date(now);
+        this.dateFromInput = todayNoon;
+        this.dateToInput = todayNoon;
         break;
       case 'week': {
         const monday = new Date(now);
         monday.setDate(now.getDate() - now.getDay() + 1);
-        this.dateFromInput = new Date(monday);
-        this.dateToInput = new Date(now);
+        this.dateFromInput = noon(monday.getFullYear(), monday.getMonth(), monday.getDate());
+        this.dateToInput = todayNoon;
         break;
       }
       case 'month':
-        this.dateFromInput = new Date(new Date(now.getFullYear(), now.getMonth(), 1));
-        this.dateToInput = new Date(now);
+        this.dateFromInput = noon(now.getFullYear(), now.getMonth(), 1);
+        this.dateToInput = todayNoon;
         break;
       case 'fy': {
         const fy = this.appSettings.getCurrentFinancialYear();
         if (fy) {
-          this.dateFromInput = new Date(fy.StartDate);
+          const fyStart = new Date(fy.StartDate);
+          this.dateFromInput = noon(fyStart.getFullYear(), fyStart.getMonth(), fyStart.getDate());
           const fyEnd = new Date(fy.EndDate);
-          this.dateToInput = fyEnd < now ? fyEnd : new Date(now);
+          this.dateToInput = fyEnd < now
+            ? noon(fyEnd.getFullYear(), fyEnd.getMonth(), fyEnd.getDate())
+            : todayNoon;
         } else {
-          const fyStart = now.getMonth() >= 3
-            ? new Date(now.getFullYear(), 3, 1)
-            : new Date(now.getFullYear() - 1, 3, 1);
-          this.dateFromInput = fyStart;
-          this.dateToInput = new Date(now);
+          this.dateFromInput = now.getMonth() >= 3
+            ? noon(now.getFullYear(), 3, 1)
+            : noon(now.getFullYear() - 1, 3, 1);
+          this.dateToInput = todayNoon;
         }
         break;
       }
@@ -222,7 +233,7 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
   toggleSection(section: number): void {
     this.expandedSections[section] = !this.expandedSections[section];
 
-    if (!this.expandedSections[section] || section === 8) {
+    if (!this.expandedSections[section] || section === 9) {
       return;
     }
 
@@ -286,11 +297,15 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
   }
 
   getQuotesNotApprovedRows(): QuoteNotApproved[] {
-    return this.sectionStates[6].items;
+    return this.sectionStates[7].items;
   }
 
   getQuotesNoBookingRows(): QuoteNoBooking[] {
-    return this.sectionStates[7].items;
+    return this.sectionStates[8].items;
+  }
+
+  getEnquiriesNoQuotationRows(): EnquiryNoQuotation[] {
+    return this.sectionStates[6].items;
   }
 
   getMeetingsScheduledGroup(): Record<MeetingBucket, ScheduledMeeting[]> {
@@ -457,6 +472,10 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     this.router.navigate(['/crm/quotation/entry', sid]);
   }
 
+  navigateToEnquiry(sid: number): void {
+    this.router.navigate(['/crm/enquiry/entry', sid]);
+  }
+
   navigateToCalendar(): void {
     this.router.navigate(['/crm/calendar']);
   }
@@ -608,23 +627,45 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
         };
       }
       if (section === 4) {
+        const meetingMetrics = this.getElapsedMetrics(item.lastMeetingDate);
         return {
           ...item,
-          daysSinceMeeting: this.daysBetween(new Date(item.lastMeetingDate), today),
+          daysSinceMeeting: Math.floor(meetingMetrics.hours / 24),
+          elapsedDisplay: meetingMetrics.display,
         };
       }
       if (section === 5) {
+        const waitMetrics = this.getElapsedMetrics(item.customerCreatedOn);
         return {
           ...item,
-          daysWithoutQuote: this.daysBetween(new Date(item.customerCreatedOn), today),
+          daysWithoutQuote: Math.floor(waitMetrics.hours / 24),
+          waitingDisplay: waitMetrics.display,
+        };
+      }
+      if (section === 6) {
+        const enquiryMetrics = this.getElapsedMetrics(item.EnquiryDate);
+        return {
+          ...item,
+          daysPending: Math.floor(enquiryMetrics.hours / 24),
+          elapsedDisplay: enquiryMetrics.display,
         };
       }
       if (section === 7) {
+        const pendingMetrics = this.getElapsedMetrics(item.QuoteDate);
         return {
           ...item,
-          daysSinceApproval: item.InternalApprovedOn
-            ? this.daysBetween(new Date(item.InternalApprovedOn), today)
-            : 0,
+          daysPending: Math.floor(pendingMetrics.hours / 24),
+          elapsedDisplay: pendingMetrics.display,
+        };
+      }
+      if (section === 8) {
+        const approvalMetrics = item.approvedOn
+          ? this.getElapsedMetrics(item.approvedOn)
+          : { display: '\u2014', hours: 0 };
+        return {
+          ...item,
+          daysSinceApproval: item.approvedOn ? Math.floor(approvalMetrics.hours / 24) : 0,
+          elapsedDisplay: approvalMetrics.display,
         };
       }
       return item;
@@ -645,6 +686,8 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
       { label: 'Follow-Ups Pending', value: counts.followUpsPending, color: 'linear-gradient(90deg, #7c3aed, #a78bfa)' },
       { label: 'Business not converted', value: counts.meetingsNotConverted, color: 'linear-gradient(90deg, #f59e0b, #fbbf24)' },
       { label: 'Customers (No Quote)', value: counts.customersNoQuote, color: 'linear-gradient(90deg, #06b6d4, #22d3ee)' },
+      { label: 'Enquiry Created', value: counts.enquiryCreated, color: 'linear-gradient(90deg, #2563eb, #60a5fa)' },
+      { label: 'Enquiry Converted to Quotation', value: counts.enquiryConvertedToQuotation, color: 'linear-gradient(90deg, #0f766e, #2dd4bf)' },
       { label: 'Quotes Pending', value: counts.quotesNotApproved, color: 'linear-gradient(90deg, #f97316, #fb923c)' },
       { label: 'Approved (No Booking)', value: counts.quotesNoBooking, color: 'linear-gradient(90deg, #ec4899, #f472b6)' },
       { label: 'Bookings Created', value: counts.totalBookings, color: 'linear-gradient(90deg, #16a34a, #4ade80)' },
@@ -705,7 +748,7 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
 
     this.leadStatusDonutOptions = {
       series: chartData.map((item) => item.count),
-      chart: { type: 'donut', height: 220 },
+      chart: { type: 'donut', height: 300 },
       labels: chartData.map((item) => item.status === 'NoData' ? 'No data' : this.camelToWords(item.status)),
       colors: segmentColors,
       legend: {
@@ -809,8 +852,9 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
       3: this.createSectionState<MeetingWithFollowup>(),
       4: this.createSectionState<MeetingNotConverted>(),
       5: this.createSectionState<CustomerNoQuote>(),
-      6: this.createSectionState<QuoteNotApproved>(),
-      7: this.createSectionState<QuoteNoBooking>(),
+      6: this.createSectionState<EnquiryNoQuotation>(),
+      7: this.createSectionState<QuoteNotApproved>(),
+      8: this.createSectionState<QuoteNoBooking>(),
     };
     this.meetingsState = {
       overdue: this.createSectionState<ScheduledMeeting>(),

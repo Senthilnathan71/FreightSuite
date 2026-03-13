@@ -47,8 +47,8 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 108px;
-  padding: 0 24px;
+  min-height: 84px;
+  padding: 0 18px;
   background: linear-gradient(135deg, $brand 0%, $brand-light 50%, $color-cyan 100%);
   border-radius: 18px;
   margin-bottom: 14px;
@@ -68,14 +68,14 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
   }
 
   h1 {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 800;
     color: #fff;
     margin: 0;
   }
 
   p {
-    font-size: 12px;
+    font-size: 11px;
     color: rgba(226, 241, 250, 0.9);
     margin-top: 0;
     margin-bottom: 0;
@@ -95,7 +95,7 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
   z-index: 3;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   max-width: 56%;
 }
 
@@ -105,13 +105,13 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 18px;
-  min-height: 40px;
+  padding: 8px 14px;
+  min-height: 34px;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.26);
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   backdrop-filter: blur(4px);
@@ -347,7 +347,7 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
 // â”€â”€ KPI Cards â”€â”€
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 10px;
   margin-bottom: 14px;
 }
@@ -355,7 +355,7 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
 .kpi-card {
   background: $bg-card;
   border-radius: 10px;
-  padding: 10px 12px;
+  padding: 8px 10px;
   position: relative;
   overflow: hidden;
   border: 1px solid $border-main;
@@ -380,19 +380,20 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
   &.c-brand::before { background: linear-gradient(90deg, $brand, $brand-light); }
   &.c-amber::before { background: linear-gradient(90deg, $color-amber, #fbbf24); }
   &.c-purple::before { background: linear-gradient(90deg, $color-purple, #a78bfa); }
+  &.c-cyan::before { background: linear-gradient(90deg, $color-cyan, #67e8f9); }
   &.c-orange::before { background: linear-gradient(90deg, $color-orange, #fb923c); }
   &.c-green::before { background: linear-gradient(90deg, $color-green, #4ade80); }
 }
 
 .kpi-icon-wrap {
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  margin-bottom: 8px;
+  font-size: 11px;
+  margin-bottom: 6px;
 
   &.i-brand { background: rgba($brand, 0.1); color: $brand; }
   &.i-amber { background: rgba($color-amber, 0.1); color: $color-amber; }
@@ -402,14 +403,14 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
 }
 
 .kpi-label {
-  font-size: 10px;
+  font-size: 11px;
   color: $text-muted;
-  font-weight: 500;
-  margin-bottom: 4px;
+  font-weight: 700;
+  margin-bottom: 2px;
 }
 
 .kpi-value {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 800;
   color: $text-primary;
 }
@@ -418,9 +419,13 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
   position: absolute;
   right: 8px;
   bottom: 6px;
-  font-size: 22px;
+  font-size: 18px;
   opacity: 0.06;
   color: $text-primary;
+}
+
+.charts-row .chart-card:nth-child(2) {
+  min-height: 320px;
 }
 
 // â”€â”€ Charts â”€â”€
@@ -742,6 +747,8 @@ tr:hover td { background: rgba($brand, 0.03); }
   &.created-by { background: rgba($brand, 0.1); color: $brand; border: 1px solid rgba($brand, 0.15); &::before { background: $brand; } }
   &.assigned-to { background: rgba($color-purple, 0.1); color: #7c3aed; border: 1px solid rgba($color-purple, 0.15); &::before { background: $color-purple; } }
   &.both-match { background: rgba($color-green, 0.1); color: $color-green; border: 1px solid rgba($color-green, 0.15); &::before { background: $color-green; } }
+  &.lead-type { background: rgba($color-amber, 0.1); color: #d97706; border: 1px solid rgba($color-amber, 0.15); &::before { background: $color-amber; } }
+  &.customer-type { background: rgba($color-green, 0.1); color: $color-green; border: 1px solid rgba($color-green, 0.15); &::before { background: $color-green; } }
 }
 
 .days-pill {
@@ -845,9 +852,10 @@ tr:hover td { background: rgba($brand, 0.03); }
 
 .board-column table {
   th {
-    background: rgba(0, 0, 0, 0.03);
+    background: $bg-card-alt;
     font-size: 10px;
     padding: 8px 10px;
+    color: $text-secondary;
   }
 
   td {

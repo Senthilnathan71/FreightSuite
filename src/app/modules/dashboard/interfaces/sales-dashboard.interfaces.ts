@@ -59,12 +59,9 @@ export interface ScheduledMeeting {
   meetingDuration: string;
   leadAssignTo: number;
   LeadOrCustomer: string;
+  name: string;
   PreCustomerMasterSid: number;
-  preCustomerName: string;
-  contactPerson: string;
-  phone: string;
   CustomerMasterSid: number;
-  CustomerName: string;
   salespersonName: string;
 }
 
@@ -100,6 +97,7 @@ export interface MeetingNotConverted {
   lastMeetingDate: string;
   leadCreatedOn: string;
   daysSinceMeeting?: number;
+  elapsedDisplay?: string;
 }
 
 export interface CustomerNoQuote {
@@ -115,6 +113,21 @@ export interface CustomerNoQuote {
   matchedVia: 'Created by you' | 'Assigned to you' | 'Created & Assigned to you';
   customerCreatedOn: string;
   daysWithoutQuote?: number;
+  waitingDisplay?: string;
+}
+
+export interface EnquiryNoQuotation {
+  EnquiryHeaderSid: number;
+  EnquiryNumber: string;
+  EnquiryDate: string;
+  CustomerName: string;
+  LeadOrCustomer: string;
+  authorizerStatus: string;
+  departmentName: string;
+  polCode: string;
+  podCode: string;
+  daysPending?: number;
+  elapsedDisplay?: string;
 }
 
 export interface QuoteNotApproved {
@@ -122,9 +135,6 @@ export interface QuoteNotApproved {
   QuoteNumber: string;
   QuoteDate: string;
   authorizerStatus: string;
-  AuthorizerRemarks: string;
-  QuoteValidFrom: string;
-  QuoteValidTo: string;
   SalesmanSid: number;
   LeadOrCustomer: string;
   PreCustomerMasterSid: number;
@@ -132,18 +142,17 @@ export interface QuoteNotApproved {
   CustomerName: string;
   preCustomerName: string;
   salespersonName: string;
-  FreightPPCC: string;
-  TransportType: string;
+  departmentName: string;
+  polCode: string;
+  podCode: string;
+  elapsedDisplay?: string;
+  daysPending?: number;
 }
 
 export interface QuoteNoBooking {
   QuoteHeaderSid: number;
   QuoteNumber: string;
   QuoteDate: string;
-  CustomerApprovedBy: string;
-  CustomerApprovedOn: string;
-  InternalApprovedBy: number;
-  InternalApprovedOn: string;
   SalesmanSid: number;
   LeadOrCustomer: string;
   PreCustomerMasterSid: number;
@@ -151,9 +160,12 @@ export interface QuoteNoBooking {
   CustomerName: string;
   preCustomerName: string;
   salespersonName: string;
-  internalApprovedByName?: string;
-  TransportType: string;
-  FreightPPCC: string;
+  approvedBy: string;
+  approvedOn: string;
+  departmentName: string;
+  polCode: string;
+  podCode: string;
+  elapsedDisplay?: string;
   daysSinceApproval?: number;
 }
 
@@ -186,6 +198,9 @@ export interface FunnelCounts {
   followUpsPending: number;
   meetingsNotConverted: number;
   customersNoQuote: number;
+  enquiryCreated: number;
+  enquiryConvertedToQuotation: number;
+  enquiriesNoQuotation: number;
   quotesNotApproved: number;
   quotesNoBooking: number;
   totalBookings: number;
@@ -214,6 +229,7 @@ export interface SalesDashboardSections {
   meetingsWithFollowup: PagedResult<MeetingWithFollowup>;
   meetingsNotConverted: PagedResult<MeetingNotConverted>;
   customersNoQuote: PagedResult<CustomerNoQuote>;
+  enquiriesNoQuotation: PagedResult<EnquiryNoQuotation>;
   quotesNotApproved: PagedResult<QuoteNotApproved>;
   quotesNoBooking: PagedResult<QuoteNoBooking>;
   summaryKpis: SummaryKpis;
