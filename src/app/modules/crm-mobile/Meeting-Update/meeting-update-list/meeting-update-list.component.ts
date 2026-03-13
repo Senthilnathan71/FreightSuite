@@ -847,7 +847,8 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
           : '';
 
         const followUpDate = meeting.followUpDate
-          ? this.formatDateForInput(meeting.followUpDate)
+          // ? this.formatDateForInput(meeting.followUpDate)
+          ? meeting.followUpDate
           : '';
 
         const followUp = !!(meeting.followUpDate || meeting.followUpNote);

@@ -780,21 +780,28 @@ this.refresh.next();
   }
 
   // Treat UTC string as "local" without converting
-  convertUTCToLocal(utcDate: string): Date {
-    const parts = utcDate.match(/\d+/g); // extract [YYYY, MM, DD, HH, MM, SS]
-    return new Date(
-      Number(parts[0]),       // year
-      Number(parts[1]) - 1,   // month (0-indexed)
-      Number(parts[2]),       // day
-      Number(parts[3]),       // hour
-      Number(parts[4]),       // minute
-      Number(parts[5])        // second
-    );
+convertUTCToLocal(utcDate: string | null): Date | null {
+ 
+  if (!utcDate) {
+    return null;
   }
-
-
-
-
+ 
+  const parts = utcDate.match(/\d+/g);
+ 
+  if (!parts) {
+    return null;
+  }
+ 
+  return new Date(
+    Number(parts[0]),
+    Number(parts[1]) - 1,
+    Number(parts[2]),
+    Number(parts[3] || 0),
+    Number(parts[4] || 0),
+    Number(parts[5] || 0)
+  );
+}
+ 
   resetForm() {
     this.meetingForm.reset();
   }
