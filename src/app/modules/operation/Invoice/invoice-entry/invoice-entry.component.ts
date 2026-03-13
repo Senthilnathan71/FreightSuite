@@ -67,27 +67,13 @@ import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPr
 import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { greaterThanZero } from 'src/app/core/ValidationFn/greaterThanZero.validators';
-import { saveAs } from 'file-saver';
+import { PdfFileSaveService } from 'src/app/common/pdf-file-save.service';
 interface NgbDateStructLike {
   day: number;
   month: number;
   year: number;
 }
 
-interface FilePickerWindow extends Window {
-  showSaveFilePicker?: (options?: {
-    suggestedName?: string;
-    types?: Array<{
-      description?: string;
-      accept: Record<string, string[]>;
-    }>;
-  }) => Promise<{
-    createWritable: () => Promise<{
-      write: (data: Blob) => Promise<void>;
-      close: () => Promise<void>;
-    }>;
-  }>;
-}
 @Component({
   selector: 'app-invoice-entry',
   standalone: true,
@@ -317,7 +303,8 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     private toastr: ToastrService,
     public logoService: LogoService,
     private numberToWords: NumberToWordsService,
-    private voucherPeriodService: VoucherPeriodValidationService
+    private voucherPeriodService: VoucherPeriodValidationService,
+    private pdfFileSaveService: PdfFileSaveService
   ) {}
 
   ngOnInit(): void {
@@ -3533,7 +3520,8 @@ isSeaDepartment(): boolean {
    async downloadPDF() {
     this.spinner.show();
     try {
-      const saveAsFilePath = await this.shouldDownloadByFilePath();
+      const companyMasterSid = Number(this.currentCompany?.CompanyMasterSid || 0);
+      const saveAsFilePath = await this.pdfFileSaveService.shouldDownloadByFilePath(companyMasterSid);
       if (saveAsFilePath) {
         await this.downloadPDFByFilePath();
       } else {
@@ -3548,21 +3536,6 @@ isSeaDepartment(): boolean {
       this.appSettingService.showError('Error generating PDF. Please try again.');
     } finally {
       this.spinner.hide();
-    }
-  }
-
-  private async shouldDownloadByFilePath(): Promise<boolean> {
-    const companyMasterSid = Number(this.currentCompany?.CompanyMasterSid || 0);
-    if (!companyMasterSid) return false;
-
-    try {
-      const resp: any = await firstValueFrom(
-        this.operationService.getCompanyConfig(companyMasterSid, 'SaveAsFilePath')
-      );
-      return !!resp?.status && String(resp?.data || '').trim().toUpperCase() === 'Y';
-    } catch (error) {
-      console.error('Error fetching SaveAsFilePath config:', error);
-      return false;
     }
   }
 
@@ -3635,7 +3608,7 @@ isSeaDepartment(): boolean {
       options
     );
     const filename = this.getInvoicePdfFilename();
-    await this.savePdfWithPicker(blob, filename);
+    await this.pdfFileSaveService.savePdf(blob, filename, true);
   }
  
 
@@ -3644,36 +3617,6 @@ isSeaDepartment(): boolean {
     return `Invoice_${voucherNumber}.pdf`;
   }
  
-  private async savePdfWithPicker(blob: Blob, filename: string): Promise<void> {
-    const pickerWindow = window as FilePickerWindow;
- 
-    if (typeof pickerWindow.showSaveFilePicker === 'function') {
-      try {
-        const fileHandle = await pickerWindow.showSaveFilePicker({
-          suggestedName: filename,
-          types: [
-            {
-              description: 'PDF Document',
-              accept: {
-                'application/pdf': ['.pdf']
-              }
-            }
-          ]
-        });
-        const writable = await fileHandle.createWritable();
-        await writable.write(blob);
-        await writable.close();
-        return;
-      } catch (error: any) {
-        if (error?.name === 'AbortError') {
-          throw error;
-        }
-      }
-    }
- 
-    saveAs(blob, filename);
-  }
-
   async generatePDFBlob(): Promise<Blob | null> {
     try {
       await this.preparePrintData();
