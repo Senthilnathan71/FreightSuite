@@ -129,7 +129,8 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
   }
 
   getColumnStyle(index: number): any {
-    return `col-${this.width[index]}`
+    const width = this.columnWidths[index] || 100;
+    return { 'width': `${width}px`, 'min-width': `${width}px`, 'max-width': `${width}px` };
   }
 
   calculateColumnWidths() {
@@ -187,18 +188,28 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
     const ngSelectElement: HTMLElement = this.ngSelectRef?.nativeElement;
     if (!ngSelectElement) return;
 
-    // Get bounding box of the ng-select
     const rect = ngSelectElement.getBoundingClientRect();
     const windowWidth = window.innerWidth;
 
-    // Calculate available space from ng-select's left to right edge of the window
-    const availableWidth = windowWidth - rect.left - 16; // -16 for slight padding/margin
-    // Apply this width to the dropdown panel
+    const totalContentWidth = this.columnWidths.length > 0
+      ? this.columnWidths.reduce((sum, w) => sum + w, 0) + 40
+      : 400;
+
+    // Cap panel width at viewport width minus margins
+    const maxWidth = windowWidth - 32;
+    const panelWidth = Math.min(Math.max(totalContentWidth, 400), maxWidth);
+
     const panels = document.querySelectorAll('.ng-dropdown-panel');
-    const dropdownPanel = panels[panels.length - 1] as HTMLElement; // Most recently opened
+    const dropdownPanel = panels[panels.length - 1] as HTMLElement;
     if (dropdownPanel) {
-      dropdownPanel.style.width = `${availableWidth}px`;
-      // dropdownPanel.style.maxWidth = `${availableWidth}px`;
+      dropdownPanel.style.width = `${panelWidth}px`;
+
+      // If panel overflows the right edge, shift it left
+      const rightOverflow = (rect.left + panelWidth) - (windowWidth - 16);
+      if (rightOverflow > 0) {
+        const newLeft = Math.max(16, rect.left - rightOverflow);
+        dropdownPanel.style.left = `${newLeft}px`;
+      }
     }
   }
 
