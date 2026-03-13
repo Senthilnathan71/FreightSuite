@@ -15,11 +15,11 @@
 
                 <div class="d-flex align-items-center">
                     <strong style="width: 100px;">From Date </strong>
-                    <p class="ms-1 my-0">: {{ params?.FromJobDt | formatDate }}</p>
+                    <p class="ms-1 my-0">: {{ params?.FromHblDt | formatDate }}</p>
                 </div>
                 <div class="d-flex align-items-center">
                     <strong style="width: 100px;">To Date </strong>
-                    <p class="ms-1 my-0">: {{ params?.ToJobDt | formatDate }}</p>
+                    <p class="ms-1 my-0">: {{ params?.ToHblDt | formatDate }}</p>
                 </div>
             </div>
 
@@ -43,11 +43,12 @@
             <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
                 <thead>
                     <tr class="bg-info">
-                        <th class="bg-transparent text-light text-center" style="white-space: nowrap;">Master No</th>
+                        <th class="bg-transparent text-light text-center" style="white-space: nowrap;">Job No</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">MBL No</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">HBL No</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">HBL Date</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Dept</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Customer</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Vessel/Flight</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Voyage/Flight No</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">ETD</th>
@@ -64,19 +65,28 @@
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Origin Agent</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Delivery Name</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Carrier</th>
-                        <th class="bg-transparent text-light" style="white-space: nowrap;">TEU</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Salesman</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Shipment Terms</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Inco Terms</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">PPCC</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">T/S Ships</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Local Ships</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Total Ships</th>
-                        <th class="bg-transparent text-light" style="white-space: nowrap;">Weight</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">No of Pkg</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Gross Weight</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Volumetric</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Volume</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Chargeable</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">No of Containers</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Container No</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">20'</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">40'</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">45'</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">TEU</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Shipper</th>
-                        <th class="bg-transparent text-light" style="white-space: nowrap;">Container No</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Consignee</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Notify</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">Forwarder</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Status</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">T/S Vol</th>
                         <th class="bg-transparent text-light" style="white-space: nowrap;">Local Vol</th>
@@ -90,6 +100,7 @@
                         <td>{{ item.Hblno || '' }}</td>
                         <td>{{ item.HblDate | formatDate }}</td>
                         <td>{{ item.department || '' }}</td>
+                        <td>{{ item.CustomerName || '' }}</td>
                         <td>{{ item.vesselName || '' }}</td>
                         <td>{{ item.voyageNo || '' }}</td>
                         <td>{{ item.etd | formatDate  }}</td>
@@ -106,19 +117,28 @@
                         <td>{{ item.sendingAgent || '' }}</td>
                         <td>{{ item.receivingAgent || '' }}</td>
                         <td>{{ item.carrier || '' }}</td>
-                        <td>{{ item.totalNoOfTEU || '' }}</td>
+                        <td>{{ item.Salesman || '' }}</td>
+                        <td>{{ item.ShipmentTerms || '' }}</td>
+                        <td>{{ item.IncoTerms || '' }}</td>
+                        <td>{{ item.PPCC || '' }}</td>
                         <td>{{ item.transhipmentShipment || '' }}</td>
                         <td>{{ item.localShipment || '' }}</td>
                         <td>{{ item.totalShipment || '' }}</td>
+                        <td class="text-end">{{ item.NoofPkg || '' }}</td>
                         <td class="text-end">{{ item.weight | number:'1.3-3' }}</td>
+                        <td class="text-end">{{ item.Volumetric | number:'1.3-3' }}</td>
                         <td class="text-end">{{ item.volume | number:'1.3-3' }}</td>
                         <td class="text-end">{{ item.chargeable | number:'1.3-3' }}</td>
                         <td>{{ item.nofcontainer || '' }}</td>
+                        <td>{{ item.containerNoList || '' }}</td>
                         <td>{{ item.numberOfTwentyFt || '' }}</td>
                         <td>{{ item.numberOfFourtyFt || '' }}</td>
                         <td>{{ item.numberOfFortyFive || '' }}</td>
+                        <td>{{ item.totalNoOfTEU || '' }}</td>
                         <td>{{ item.shipper || '' }}</td>
-                        <td>{{ item.containerNoList || '' }}</td>
+                        <td>{{ item.Consignee || '' }}</td>
+                        <td>{{ item.Notify || '' }}</td>
+                        <td>{{ item.Forwarder || '' }}</td>
                         <td>{{ item.houseStatus || '' }}</td>
                         <td class="text-end">{{ item.transhipmentVol | number:'1.2-2' }}</td>
                         <td class="text-end">{{ item.localShipmentVol | number:'1.2-2' }}</td>
