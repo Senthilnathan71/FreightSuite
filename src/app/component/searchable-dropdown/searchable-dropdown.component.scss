@@ -28,6 +28,7 @@
 .dropdown-header,
 .dropdown-row {
   display: flex;
+  flex-wrap: nowrap;
   // width: max-content;
   // min-width: 100%;
   font-size: 0.9rem;

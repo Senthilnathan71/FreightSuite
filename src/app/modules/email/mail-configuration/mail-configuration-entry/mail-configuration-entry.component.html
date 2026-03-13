@@ -170,7 +170,7 @@
                   <textarea class="custom-input-field sm" rows="3"
                     [(ngModel)]="editingRow.MailSubject"
                     appPlaceholderAutocomplete
-                    placeholder="Type {{ to insert placeholders"></textarea>
+                    placeholder="Type curly braces to insert placeholders"></textarea>
                   <label class="input-label">Mail Subject <span class="text-danger">*</span></label>
                   <small class="form-hint">Type curly braces to see available placeholders</small>
                 </div>
@@ -180,7 +180,7 @@
                   <textarea class="custom-input-field sm" rows="8"
                     [(ngModel)]="editingRow.MailBody"
                     appPlaceholderAutocomplete
-                    placeholder="Type {{ to insert placeholders"></textarea>
+                    placeholder="Type curly braces to insert placeholders"></textarea>
                   <label class="input-label">Mail Body <span class="text-danger">*</span></label>
                   <small class="form-hint">Type curly braces to see available placeholders</small>
                 </div>
@@ -273,187 +273,4 @@
   </div>
 </div>
 
-
-
-
-      <!-- OLD TABLE UI - Uncomment to restore
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-borderless table-sm mb-0">
-            <thead>
-              <tr class="bg-info">
-                <th class="text-center  bg-transparent text-light" style="width: 60px;border-top-left-radius: 10px;"></th>
-                <th class="text-center bg-transparent text-light bg-transparent text-light" style="width: 40px;">Sno</th>
-                <th class=" bg-transparent text-light" style="width: 150px;">Mail Name</th>
-                <th class=" bg-transparent text-light" style="width: 150px;">Menu/Component</th>
-                <th class=" bg-transparent text-light" style="width: 200px;">Mail Subject</th>
-                <th class=" bg-transparent text-light" style="min-width: 250px;">Mail Body</th>
-                <th class=" bg-transparent text-light" style="width: 130px;">To Email From</th>
-                <th class=" bg-transparent text-light" style="width: 130px;">CC Email From</th>
-                <th class="text-center  bg-transparent text-light" style="width: 90px;">Attachment</th>
-                <th class=" bg-transparent text-light" style="width: 150px;">Action</th>
-                <th class="text-center  bg-transparent text-light" style="width: 100px;">Trigger</th>
-                <th class="text-center  bg-transparent text-light" style="width: 90px;border-top-right-radius: 10px;">Auto/Popup</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (row of rows; track row.Sno; let i = $index) {
-                <tr>
-                  <td>
-                    <div class="d-flex align-items-center">
-                      @if (row.isEditing) {
-                        <button type="button" class="btn  btn-sm" (click)="saveRow(i)" title="Save">
-                          <i class="fas fa-save fs-2 text-info"></i>
-                        </button>
-                        <button type="button" class="btn btn-sm" (click)="cancelEdit(i)" title="Cancel">
-                          <i class="fas fa-times fs-2 text-danger"></i>
-                        </button>
-                      } @else {
-                        <button type="button" class="btn btn-sm" (click)="editRow(i)" title="Edit">
-                          <i class="fas fa-edit fs-2 text-secondary"></i>
-                        </button>
-                        <button type="button" class="btn  btn-sm" (click)="deleteRow(i)" title="Delete">
-                          <i class="fas fa-trash fs-2 text-danger"></i>
-                        </button>
-                      }
-                    </div>
-                  </td>
-                  <td>
-                    @if (row.isEditing) {
-                      <input type="number" class="custom-input-field sm"
-                        [(ngModel)]="row.Sno" min="1" max="999" style="width: 40px;">
-                    } @else {
-                      <span class="d-block text-center">{{ row.Sno }}</span>
-                    }
-                  </td>
-                  <td>
-                    @if (row.isEditing) {
-                      <input type="text" class="custom-input-field sm"
-                        [(ngModel)]="row.MailName" maxlength="50" placeholder="">
-                    } @else {
-                      <span>{{ row.MailName }}</span>
-                    }
-                  </td>
-                  <td>
-                    @if (row.isEditing) {
-                      <ng-select
-                        [ngModel]="row.MenuMasterSid"
-                        (ngModelChange)="onMenuChange(row, $event)"
-                        [items]="menuList"
-                        bindLabel="MenuName"
-                        bindValue="MenuMasterSid"
-                        placeholder="Select"
-                        [clearable]="true"
-                        [searchable]="true"
-                        appendTo="body"
-                        class="ng-select">
-                      </ng-select>
-                    } @else {
-                      <span>{{ getMenuName(row.MenuMasterSid) }}</span>
-                    }
-                  </td>
-                  <td>
-                    @if (row.isEditing) {
-                      <span class="text-primary" style="cursor:pointer; text-decoration:underline;"
-                        (click)="openMailSubjectModal(row)">
-                        {{ row.MailSubject ? (row.MailSubject | slice:0:30) + '...' : 'Click to enter' }}
-                      </span>
-                    } @else {
-                      <span>{{ row.MailSubject | slice:0:50 }}</span>
-                    }
-                  </td>
-                  <td>
-                    @if (row.isEditing) {
-                      <span class="text-primary" style="cursor:pointer; text-decoration:underline;"
-                        (click)="openMailBodyModal(row)">
-                        {{ row.MailBody ? (row.MailBody | slice:0:30) + '...' : 'Click to enter' }}
-                      </span>
-                    } @else {
-                      <span>{{ row.MailBody | slice:0:50 }}</span>
-                    }
-                  </td>
-                  <td>
-                    @if (row.isEditing) {
-                      <input type="text" class="custom-input-field sm"
-                        [(ngModel)]="row.ToEmailidFrom" maxlength="200" placeholder="">
-                    } @else {
-                      <span>{{ row.ToEmailidFrom }}</span>
-                    }
-                  </td>
-                  <td>
-                    @if (row.isEditing) {
-                      <input type="text" class="custom-input-field sm"
-                        [(ngModel)]="row.CcEmailidFrom" maxlength="200" placeholder="">
-                    } @else {
-                      <span>{{ row.CcEmailidFrom }}</span>
-                    }
-                  </td>
-                  <td class="text-center">
-                    @if (row.isEditing) {
-                      <ng-select
-                        [(ngModel)]="row.AttachmentRequire"
-                        [items]="attachmentOptions"
-                        bindLabel="label"
-                        bindValue="value"
-                        [clearable]="false"
-                        [searchable]="false"
-                        appendTo="body"
-                        class="ng-select">
-                      </ng-select>
-                    } @else {
-                      <span>{{ row.AttachmentRequire === 'Y' ? 'Yes' : 'No' }}</span>
-                    }
-                  </td>
-                  <td>
-                    @if (row.isEditing) {
-                      <textarea class="custom-input-field sm" [(ngModel)]="row.Action" rows="1" maxlength="200"></textarea>
-                    } @else {
-                      <span>{{ row.Action }}</span>
-                    }
-                  </td>
-                  <td class="text-center">
-                    @if (row.isEditing) {
-                      <ng-select
-                        [(ngModel)]="row.Trigger"
-                        [items]="triggerOptions"
-                        bindLabel="label"
-                        bindValue="value"
-                        [clearable]="false"
-                        [searchable]="false"
-                        appendTo="body"
-                        class="ng-select">
-                      </ng-select>
-                    } @else {
-                      <span>{{ row.Trigger === 'A' ? 'Auto' : 'Manual' }}</span>
-                    }
-                  </td>
-                  <td class="text-center">
-                    @if (row.isEditing) {
-                      <ng-select
-                        [(ngModel)]="row.AutoPopup"
-                        [items]="autoPopupOptions"
-                        bindLabel="label"
-                        bindValue="value"
-                        [clearable]="false"
-                        [searchable]="false"
-                        appendTo="body"
-                        class="ng-select">
-                      </ng-select>
-                    } @else {
-                      <span>{{ row.AutoPopup === 'A' ? 'Auto' : 'Popup' }}</span>
-                    }
-                  </td>
-                </tr>
-              }
-              @if (rows.length === 0) {
-                <tr>
-                  <td colspan="13" class="text-center text-muted py-3">
-                    No mail configurations found. Click "Add Row" to create one.
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
-      END OLD TABLE UI -->
+<!-- Old table UI removed — preserved in git history -->

@@ -190,18 +190,26 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
 
     const rect = ngSelectElement.getBoundingClientRect();
     const windowWidth = window.innerWidth;
-    const availableWidth = windowWidth - rect.left - 16;
 
     const totalContentWidth = this.columnWidths.length > 0
       ? this.columnWidths.reduce((sum, w) => sum + w, 0) + 40
       : 400;
 
-    const panelWidth = Math.min(Math.max(totalContentWidth, 400), availableWidth);
+    // Cap panel width at viewport width minus margins
+    const maxWidth = windowWidth - 32;
+    const panelWidth = Math.min(Math.max(totalContentWidth, 400), maxWidth);
 
     const panels = document.querySelectorAll('.ng-dropdown-panel');
     const dropdownPanel = panels[panels.length - 1] as HTMLElement;
     if (dropdownPanel) {
       dropdownPanel.style.width = `${panelWidth}px`;
+
+      // If panel overflows the right edge, shift it left
+      const rightOverflow = (rect.left + panelWidth) - (windowWidth - 16);
+      if (rightOverflow > 0) {
+        const newLeft = Math.max(16, rect.left - rightOverflow);
+        dropdownPanel.style.left = `${newLeft}px`;
+      }
     }
   }
 
