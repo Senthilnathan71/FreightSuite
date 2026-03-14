@@ -4452,7 +4452,9 @@ ${this.userData['userName']}`;
 
       // House Air Way Bill
 
-  reportHAWB(type: 'HAWB' | 'HAWBDraft') {
+  async reportHAWB(type: 'HAWB' | 'HAWBDraft') {
+     const ok = await this.validateCreditForRelease('HAWB');
+     if (!ok) return;
     this.selectedReportAir = type;
     const modalRef = this.modalService.open(HAWBComponent, {
       size: 'xl',
