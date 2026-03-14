@@ -614,7 +614,7 @@ export class TermsConditionEntryComponent implements OnInit {
 
 
     navigateBack() {
-        history.back();
+        this.route.navigate(['master/terms-condition/list']);
     }
 
     showHeaderInfo() {
