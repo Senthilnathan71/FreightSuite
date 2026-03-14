@@ -4227,7 +4227,7 @@ ${this.userData['userName']}`;
     this.creditValidationSummary = {
       customerName,
       customerType: this.getCreditValidationValue(validation, 'CustomerType', 'customerType') || 'CREDIT',
-      creditLimit: this.getCreditValidationValue(validation, 'CreditLimit', 'creditLimit') ?? 0,
+      CreditLimit: this.getCreditValidationValue(validation, 'CreditLimit', 'CreditLimit') ?? 0,
       creditDays: this.getCreditValidationValue(validation, 'CreditDays', 'creditDays') ?? 0,
       remainingCreditLimit: this.getCreditValidationValue(validation, 'RemainingCreditLimit', 'remainingCreditLimit') ?? 0,
       totalOutstandingLocal: this.getCreditValidationValue(validation, 'TotalOutstandingLocal', 'totalOutstandingLocal') ?? 0,

@@ -1695,7 +1695,7 @@
                      
                         <input class="form-control" placeholder="" name="dp" ngbDatepicker #d2="ngbDatepicker"
                           (click)="d2.toggle()" formControlName="CargoRecDate" (keydown.arrowDown)="d2.open()"
-                         [minDate]="!isEditMode ? today : null" container="body" readonly />
+                         [maxDate]="today" container="body" readonly />
                         <button class="btn p-0 " (click)="d2.toggle()" type="button"> <i-feather name="calendar"
                             class="feather-sm"></i-feather></button>
                       
