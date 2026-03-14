@@ -377,6 +377,7 @@ export class VoucherCorrectionListComponent extends BaseListComponent implements
           filterable: true,
           visible: true,
           dataType: 'string',
+          template: 'status',
         },
         {
           key: 'Status',

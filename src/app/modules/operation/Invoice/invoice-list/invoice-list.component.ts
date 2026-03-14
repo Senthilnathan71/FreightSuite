@@ -392,6 +392,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         visible: true,
         dataType: 'string',
         width: '150px',
+        template: 'status',
       },
       
        {

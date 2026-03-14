@@ -211,8 +211,20 @@ export class CreditRequestEntryComponent {
   }
 
   addCreditRequestRow(data?: any) {
+    const sourceIndex = this.expandedIndex ?? (this.creditRequest.length ? this.creditRequest.length - 1 : null);
+    const sourceBranchSid =
+      data?.CustomerBranchSid ??
+      (sourceIndex !== null ? this.creditRequest.at(sourceIndex)?.get('CustomerBranchSid')?.value : null) ??
+      null;
+
     const fg = this.createCreditRequest(data);
-    
+
+    if (!data && sourceBranchSid) {
+      fg.patchValue({
+        CustomerBranchSid: sourceBranchSid
+      }, { emitEvent: false });
+    }
+
     // Patch Salesman if passed separately
     if (data?.Salesman) {
       fg.patchValue({
@@ -223,6 +235,13 @@ export class CreditRequestEntryComponent {
     this.creditRequest.push(fg);
     this.expandedIndex = this.creditRequest.length - 1;
     this.salesmanListPerRow[this.expandedIndex] = this.salesmanList;
+
+    if (!data) {
+      this.applyNextEffectiveFrom(this.expandedIndex, sourceBranchSid);
+      if (sourceBranchSid) {
+        this.onBranchSelect(sourceBranchSid, this.expandedIndex);
+      }
+    }
   }
 
   removeCreditRequestRow(index: number, force = false) {
@@ -434,38 +453,13 @@ export class CreditRequestEntryComponent {
       return;
     }
 
-     const creditRequests = this.creditRequest.getRawValue();
-     if (!this.isEditMode) {
-    for (let i = 0; i < creditRequests.length; i++) {
-      const current = creditRequests[i];
-      for (let j = 0; j < creditRequests.length; j++) {
-        if (i !== j) {
-          const other = creditRequests[j];
-
-          if (
-            current.CustomerBranchSid === other.CustomerBranchSid &&
-            current.DepartmentMasterSid === other.DepartmentMasterSid
-          ) {
-            const curFrom = new Date(current.EffectiveFrom);
-            const othTo = other.EffectiveTo ? new Date(other.EffectiveTo) : null;
-            const othStatus = other.Status;
-
-            const isAllowed =
-              (othStatus === 'S') ||
-              (othTo && curFrom > othTo);
-
-            if (!isAllowed) {
-              this.appSettingService.showError(
-                `Existing Branch & Department not allowed.`
-              );
-              this.isSaving = false;
-              return;
-            }
-          }
-        }
-      }
+    const creditRequests = this.creditRequest.getRawValue();
+    const continuityError = this.validateCreditRequestContinuity(creditRequests);
+    if (continuityError) {
+      this.appSettingService.showError(continuityError);
+      this.isSaving = false;
+      return;
     }
-  }
     this.btnDisable = true;
     this.loading = true;
 
@@ -705,9 +699,11 @@ getDepartmentName(deptId: number, rowIndex: number): string {
     this.salesmanListPerRow[rowIndex] = [];
     this.creditRequest.at(rowIndex).get('DepartmentMasterSid')?.reset();
     this.creditRequest.at(rowIndex).get('SalesmanSid')?.reset();
+    this.applyNextEffectiveFrom(rowIndex, null);
     return;
   }
 
+  this.applyNextEffectiveFrom(rowIndex, branchSid);
   this.applySalesmenForRow(rowIndex);
 
   const payload = {
@@ -732,6 +728,113 @@ getDepartmentName(deptId: number, rowIndex: number): string {
     }
   });
 }
+
+  private normalizeBranchSid(branchSid: any): number | null {
+    if (branchSid === null || branchSid === undefined || branchSid === '') {
+      return null;
+    }
+    const value = Number(branchSid);
+    return Number.isFinite(value) ? value : null;
+  }
+
+  private normalizeDateValue(value: any): Date | null {
+    if (!value) return null;
+    if (value instanceof Date) {
+      return Number.isNaN(value.getTime()) ? null : new Date(value);
+    }
+    if (typeof value === 'object' && value.year && value.month && value.day) {
+      const date = new Date(value.year, value.month - 1, value.day);
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  private addDays(date: Date, days: number): Date {
+    const next = new Date(date);
+    next.setHours(0, 0, 0, 0);
+    next.setDate(next.getDate() + days);
+    return next;
+  }
+
+  private getMatchingActiveRequests(branchSid: any, excludeRowIndex?: number): any[] {
+    const normalizedBranchSid = this.normalizeBranchSid(branchSid);
+
+    return this.creditRequest.controls
+      .map((ctrl, index) => ({ index, value: ctrl.getRawValue() }))
+      .filter(item => item.index !== excludeRowIndex)
+      .filter(item => this.normalizeBranchSid(item.value?.CustomerBranchSid) === normalizedBranchSid)
+      .filter(item => String(item.value?.Status || 'A') === 'A')
+      .filter(item => this.normalizeDateValue(item.value?.EffectiveTo))
+      .map(item => item.value);
+  }
+
+  private getLatestMatchingActiveRequest(branchSid: any, excludeRowIndex?: number): any | null {
+    const matches = this.getMatchingActiveRequests(branchSid, excludeRowIndex);
+    if (!matches.length) return null;
+
+    return matches.sort((a, b) => {
+      const aDate = this.normalizeDateValue(a?.EffectiveTo)?.getTime() || 0;
+      const bDate = this.normalizeDateValue(b?.EffectiveTo)?.getTime() || 0;
+      return bDate - aDate;
+    })[0];
+  }
+
+  private applyNextEffectiveFrom(rowIndex: number, branchSid: any): void {
+    const row = this.creditRequest.at(rowIndex) as FormGroup | null;
+    if (!row) return;
+
+    const latest = this.getLatestMatchingActiveRequest(branchSid, rowIndex);
+    const latestTo = this.normalizeDateValue(latest?.EffectiveTo);
+    if (!latestTo) return;
+
+    row.patchValue({
+      EffectiveFrom: this.addDays(latestTo, 1)
+    }, { emitEvent: false });
+  }
+
+  private validateCreditRequestContinuity(creditRequests: any[]): string | null {
+    for (let i = 0; i < creditRequests.length; i++) {
+      const current = creditRequests[i];
+      const currentBranchSid = this.normalizeBranchSid(current?.CustomerBranchSid);
+      const currentFrom = this.normalizeDateValue(current?.EffectiveFrom);
+      const currentTo = this.normalizeDateValue(current?.EffectiveTo);
+
+      if (!currentFrom || !currentTo) {
+        continue;
+      }
+
+      for (let j = 0; j < creditRequests.length; j++) {
+        if (i === j) continue;
+
+        const other = creditRequests[j];
+        const otherBranchSid = this.normalizeBranchSid(other?.CustomerBranchSid);
+        if (currentBranchSid !== otherBranchSid) {
+          continue;
+        }
+
+        if (String(other?.Status || 'A') !== 'A') {
+          continue;
+        }
+
+        const otherFrom = this.normalizeDateValue(other?.EffectiveFrom);
+        const otherTo = this.normalizeDateValue(other?.EffectiveTo);
+        if (!otherFrom || !otherTo) {
+          continue;
+        }
+
+        const overlap = currentFrom <= otherTo && currentTo >= otherFrom;
+        if (overlap) {
+          const scopeLabel = currentBranchSid
+            ? `branch ${this.getBranchName(currentBranchSid) || currentBranchSid}`
+            : 'customer without branch';
+          return `Date range overlaps for ${scopeLabel}. Please start the next credit request after the previous Effective To date.`;
+        }
+      }
+    }
+
+    return null;
+  }
   onDepartmentSelect(departmentSid: number, rowIndex: number) {
   const branchSid = this.creditRequest.at(rowIndex).get('CustomerBranchSid')?.value;
 

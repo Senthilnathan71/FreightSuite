@@ -9,6 +9,7 @@ import { CompanyConfigService } from '../services/company-config.service';
 import { MasterService } from '../../master.service';
 import { CompanySettingsManagerService } from '../../../../core/services/company-settings-manager.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { forkJoin } from 'rxjs';
 
 interface CompanyConfig {
   CompanyMasterSid: number;
@@ -45,6 +46,13 @@ export class CompanyConfigComponent implements OnInit {
 
   // Forms
   configForm!: FormGroup;
+  newConfigForm!: FormGroup;
+  availableTypes: Array<'string' | 'number' | 'boolean' | 'email-array'> = [
+    'string',
+    'number',
+    'boolean',
+    'email-array'
+  ];
 
   // Configuration templates
   configTemplates = [
@@ -61,6 +69,12 @@ export class CompanyConfigComponent implements OnInit {
       
       type: 'number' as const,
       defaultValue: null
+    },
+    {
+      name: 'SaveAsFilePath',
+      displayName: 'Save As File Path',
+      type: 'boolean' as const,
+      defaultValue: false
     },
     
   ];
@@ -98,6 +112,12 @@ export class CompanyConfigComponent implements OnInit {
     this.configForm = this.fb.group({
       configurations: this.fb.array([])
     });
+    this.newConfigForm = this.fb.group({
+      ConfigurationName: ['', Validators.required],
+      DisplayName: [''],
+      Type: ['string', Validators.required],
+      Value: ['']
+    });
   }
 
   get configurations(): FormArray {
@@ -111,21 +131,27 @@ export class CompanyConfigComponent implements OnInit {
     if (configTemplate.type === 'email-array' && Array.isArray(value)) {
       value = value.join(', ');
     }
+    if (configTemplate.type === 'boolean') {
+      value = this.parseBooleanValue(value, configTemplate.name);
+    }
 
     return this.fb.group({
       ConfigurationName: [configTemplate.name],
-      DisplayName: [configTemplate.displayName],
+      DisplayName: [configTemplate.displayName || this.formatLabel(configTemplate.name)],
       Description: [configTemplate.description],
       Type: [configTemplate.type],
-      Value: [value, this.getValidatorsForType(configTemplate.type)]
+      Value: [value, this.getValidatorsForType(configTemplate.type, configTemplate.name)]
     });
   }
 
-  private getValidatorsForType(type: string) {
+  private getValidatorsForType(type: string, configName?: string) {
     switch (type) {
       case 'email-array':
         return [this.emailArrayValidator()];
       case 'number':
+        if (configName === 'ExchangeJVCOA') {
+          return [Validators.pattern(/^-?\d*\.?\d+$/)];
+        }
         return [Validators.required, Validators.pattern(/^-?\d*\.?\d+$/)];
       case 'boolean':
         return [];
@@ -200,6 +226,21 @@ export class CompanyConfigComponent implements OnInit {
         existingConfig?.ConfigurationValue
       );
       
+      this.configurations.push(formGroup);
+    });
+
+    // Add any configs from DB not in templates (dynamic support)
+    (this.currentConfigs || []).forEach((config) => {
+      const existsInTemplate = this.configTemplates.some(t => t.name === config.ConfigurationName);
+      if (existsInTemplate) return;
+
+      const dynamicTemplate = {
+        name: config.ConfigurationName,
+        displayName: this.formatLabel(config.ConfigurationName),
+        type: this.inferTypeFromValue(config.ConfigurationValue),
+        defaultValue: config.ConfigurationValue
+      };
+      const formGroup = this.createConfigFormGroup(dynamicTemplate, config.ConfigurationValue);
       this.configurations.push(formGroup);
     });
   }
@@ -305,7 +346,26 @@ export class CompanyConfigComponent implements OnInit {
   private updateConfiguration() {
     const payload = this.prepareUpdatePayload();
 
-    this.masterService.bulkUpdateCompanyConfigs(payload).subscribe({
+    const existingConfigs = payload.configurations.filter((c: any) => c.CompanyConfigurationSid);
+    const newConfigs = payload.configurations.filter((c: any) => !c.CompanyConfigurationSid);
+
+    const requests = [];
+    if (existingConfigs.length) {
+      requests.push(this.masterService.bulkUpdateCompanyConfigs({
+        CompanyMasterSid: this.companyId,
+        configurations: existingConfigs
+      }));
+    }
+    if (newConfigs.length) {
+      requests.push(this.masterService.createBulkCompanyConfigs(newConfigs));
+    }
+
+    if (!requests.length) {
+      this.isSaving = false;
+      return;
+    }
+
+    forkJoin(requests).subscribe({
       next: (response) => {
         console.log('Configuration updated successfully', response);
         this.appSettingService.showSuccess('Configuration updated successfully');
@@ -337,7 +397,7 @@ export class CompanyConfigComponent implements OnInit {
           processedValue = processedValue ? Number(processedValue).toString() : null;
           break;
         case 'boolean':
-          processedValue = Boolean(processedValue).toString();
+          processedValue = this.formatBooleanValue(processedValue, config.ConfigurationName);
           break;
         default:
           processedValue = processedValue !== null && processedValue !== undefined ? processedValue.toString() : '';
@@ -372,9 +432,7 @@ export class CompanyConfigComponent implements OnInit {
         processedValue = processedValue !== null ? processedValue.toString() : null;
         break;
       case 'boolean':
-        processedValue = Boolean(processedValue);
-        // Convert to string if your Prisma expects string for booleans
-        processedValue = processedValue.toString();
+        processedValue = this.formatBooleanValue(processedValue, config.ConfigurationName);
         break;
       default:
         // Ensure all values are strings
@@ -407,6 +465,82 @@ export class CompanyConfigComponent implements OnInit {
         });
       }
     });
+  }
+
+  addConfigRow() {
+    if (this.newConfigForm.invalid) {
+      this.markFormGroupTouched(this.newConfigForm);
+      return;
+    }
+
+    const name = String(this.newConfigForm.get('ConfigurationName')?.value || '').trim();
+    if (!name) return;
+
+    const alreadyExists = this.configurations.value.some(
+      (c: any) => String(c.ConfigurationName).trim().toLowerCase() === name.toLowerCase()
+    );
+    if (alreadyExists) {
+      this.appSettingService.showWarning('Configuration already exists');
+      return;
+    }
+
+    const type = this.newConfigForm.get('Type')?.value;
+    const displayName = this.newConfigForm.get('DisplayName')?.value || this.formatLabel(name);
+    const value = this.newConfigForm.get('Value')?.value;
+
+    const template = {
+      name,
+      displayName,
+      type,
+      defaultValue: value
+    };
+    const formGroup = this.createConfigFormGroup(template, value);
+    this.configurations.push(formGroup);
+
+    this.newConfigForm.reset({
+      ConfigurationName: '',
+      DisplayName: '',
+      Type: 'string',
+      Value: ''
+    });
+  }
+
+  private markFormGroupTouched(formGroup: FormGroup) {
+    Object.keys(formGroup.controls).forEach(key => {
+      const control = formGroup.get(key);
+      control?.markAsTouched();
+    });
+  }
+
+  private inferTypeFromValue(value: any): 'string' | 'number' | 'boolean' | 'email-array' {
+    if (value === 'Y' || value === 'N' || value === true || value === false) return 'boolean';
+    if (value !== null && value !== undefined && String(value).trim() !== '' && !isNaN(Number(value))) {
+      return 'number';
+    }
+    return 'string';
+  }
+
+  private formatLabel(key: string): string {
+    return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
+  }
+
+  private parseBooleanValue(value: any, configName: string): boolean {
+    if (value === true) return true;
+    if (value === false || value === null || value === undefined) return false;
+
+    const normalized = String(value).trim().toUpperCase();
+    if (configName === 'SaveAsFilePath') {
+      return normalized === 'Y' || normalized === 'YES' || normalized === 'TRUE' || normalized === '1';
+    }
+    return normalized === 'TRUE' || normalized === '1';
+  }
+
+  private formatBooleanValue(value: any, configName: string): string {
+    const normalized = Boolean(value);
+    if (configName === 'SaveAsFilePath') {
+      return normalized ? 'Y' : 'N';
+    }
+    return normalized.toString();
   }
 
   resetConfiguration() {

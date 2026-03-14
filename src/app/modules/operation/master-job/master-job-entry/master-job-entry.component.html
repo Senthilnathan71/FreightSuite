@@ -18,7 +18,7 @@
       }
     <!-- Add this after the existing info icon in the smart-header div -->
         @if(isEditMode && getUnmappedContainers().length > 0){
-        <div ngbDropdown container="body" class="d-inline-block ms-3 unmapped-container-indicator" placement="bottom-right">
+        <div ngbDropdown container="body" class="d-inline-block ms-1 unmapped-container-indicator" placement="bottom-right">
         
         <!-- Main button -->
         <button
@@ -29,7 +29,7 @@
             [disabled]="getUnmappedContainers().length === 0"
             title="{{ getUnmappedContainers().length > 0 ? 'View Unassigned Containers' : 'No Unassigned Containers' }}"
         >
-            <i class="fas fa-exclamation-triangle me-1"></i>
+            <i class="fas fa-exclamation-triangle ms-2"></i>
             {{ getUnmappedContainers().length }} Unassigned Containers
         </button>
 
@@ -556,7 +556,7 @@
     <!-- Manual Text Input -->
     <div *ngIf="this.f['isVesselFreeText']?.value" class="mt-md-1">
       <input type="text" formControlName="VesselName" placeholder=""  [textWithNumbers]="100"class="custom-input-field sm" style="width: 85%" />
-      <button class="btn bi bi-calendar3 pe-0 ps-3" type="button"
+      <button class="btn bi bi-calendar3 pe-0" type="button"
         (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
         <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
       </button>
@@ -1691,7 +1691,7 @@
     <div class="modern-table-container">
         <div class="table-toolbar">
             <div class="toolbar-left">
-                <div class="filter-controls d-flex gap-2 align-items-center">
+                <div class="filter-controls d-flex gap-2 align-items-center compact-form">
                     <div class="custom-form-group custom-form-group-select">
                         <ng-select class="ng-select" [(ngModel)]="arapFilter.voucherType" 
                             (change)="loadMasterJobARAPData()" style="width: 150px;">

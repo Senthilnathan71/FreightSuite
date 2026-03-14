@@ -67,27 +67,13 @@ import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPr
 import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { greaterThanZero } from 'src/app/core/ValidationFn/greaterThanZero.validators';
-import { saveAs } from 'file-saver';
+import { PdfFileSaveService } from 'src/app/common/pdf-file-save.service';
 interface NgbDateStructLike {
   day: number;
   month: number;
   year: number;
 }
 
-interface FilePickerWindow extends Window {
-  showSaveFilePicker?: (options?: {
-    suggestedName?: string;
-    types?: Array<{
-      description?: string;
-      accept: Record<string, string[]>;
-    }>;
-  }) => Promise<{
-    createWritable: () => Promise<{
-      write: (data: Blob) => Promise<void>;
-      close: () => Promise<void>;
-    }>;
-  }>;
-}
 @Component({
   selector: 'app-invoice-entry',
   standalone: true,
@@ -317,7 +303,8 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     private toastr: ToastrService,
     public logoService: LogoService,
     private numberToWords: NumberToWordsService,
-    private voucherPeriodService: VoucherPeriodValidationService
+    private voucherPeriodService: VoucherPeriodValidationService,
+    private pdfFileSaveService: PdfFileSaveService
   ) {}
 
   ngOnInit(): void {
@@ -3533,58 +3520,13 @@ isSeaDepartment(): boolean {
    async downloadPDF() {
     this.spinner.show();
     try {
-      await this.preparePrintData();
-      const logo = this.pdfMakeService.getReportLogo();
- 
-      const lookups = {
-        hssacMaster: this.hssacList?.flat() || [],
-        currencyMaster: this.currencyList || []
-      };
- 
-      const options = {
-        taxDisplayConfig: this.getTaxDisplayConfig(),
-        bankDetails: this.bankDetails || [],
-        terms: this.TandCList || [],
-        amountInWords: this.invoicePrintData?.AmountInWords || '',
-        localCurrency: this.currentCompanyCurrency?.code || '',
-        invoiceTitle: this.invoicePrintData?.invoiceTitle || '',
-        // Additional options for matching original PDF
-        isSeaMode: this.isSeaDepartment(),
-        isVATMode: this.isVATMode,
-        companyVatNo: this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
-        shipmentDetails: {
-          shipper: this.invoicePrintData?.ShipperName,
-          consignee: this.invoicePrintData?.ConsigneeName,
-          vesselName: this.invoicePrintData?.Vessel,
-          voyageNo: this.invoicePrintData?.VoyageNo,
-          shipperRefNo: this.invoicePrintData?.CustomerRefNo,
-          loadingPort: this.invoicePrintData?.POL,
-          finalDestination: this.invoicePrintData?.FPD,
-          etd: this.invoicePrintData?.ETD,
-          eta: this.invoicePrintData?.ETA,
-          invoiceDueDate: this.invoicePrintData?.InvoiceDueDate
-        },
-        cargoDetails: {
-          packages: this.invoicePrintData?.pkg,
-          commodityDesc: this.invoicePrintData?.desc,
-          grossWeight: this.invoicePrintData?.grosswt,
-          chargeableWeight: this.invoicePrintData?.ChargeableWeight,
-          cbm: this.invoicePrintData?.cbm
-        },
-        invoicePrintData: this.invoicePrintData
-      };
- 
-      const blob = await this.pdfMakeService.generateInvoiceBlobFromApi(
-        this.invoiceData,
-        this.currentCompany,
-        this.currentBranch,
-        this.userData,
-        logo,
-        lookups,
-        options
-      );
-      const filename = this.getInvoicePdfFilename();
-      await this.savePdfWithPicker(blob, filename);
+      const companyMasterSid = Number(this.currentCompany?.CompanyMasterSid || 0);
+      const saveAsFilePath = await this.pdfFileSaveService.shouldDownloadByFilePath(companyMasterSid);
+      if (saveAsFilePath) {
+        await this.downloadPDFByFilePath();
+      } else {
+        await this.downloadPDFInBrowser();
+      }
       this.appSettingService.showSuccess('PDF downloaded successfully!');
     } catch (error) {
       if ((error as any)?.name === 'AbortError') {
@@ -3596,6 +3538,78 @@ isSeaDepartment(): boolean {
       this.spinner.hide();
     }
   }
+
+  private async getPdfGenerationContext(): Promise<{ logo: string; lookups: any; options: any }> {
+    await this.preparePrintData();
+    const logo = this.pdfMakeService.getReportLogo();
+
+    const lookups = {
+      hssacMaster: this.hssacList?.flat() || [],
+      currencyMaster: this.currencyList || []
+    };
+
+    const options = {
+      taxDisplayConfig: this.getTaxDisplayConfig(),
+      bankDetails: this.bankDetails || [],
+      terms: this.TandCList || [],
+      amountInWords: this.invoicePrintData?.AmountInWords || '',
+      localCurrency: this.currentCompanyCurrency?.code || '',
+      invoiceTitle: this.invoicePrintData?.invoiceTitle || '',
+      isSeaMode: this.isSeaDepartment(),
+      isVATMode: this.isVATMode,
+      companyVatNo: this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
+      shipmentDetails: {
+        shipper: this.invoicePrintData?.ShipperName,
+        consignee: this.invoicePrintData?.ConsigneeName,
+        vesselName: this.invoicePrintData?.Vessel,
+        voyageNo: this.invoicePrintData?.VoyageNo,
+        shipperRefNo: this.invoicePrintData?.CustomerRefNo,
+        loadingPort: this.invoicePrintData?.POL,
+        finalDestination: this.invoicePrintData?.FPD,
+        etd: this.invoicePrintData?.ETD,
+        eta: this.invoicePrintData?.ETA,
+        invoiceDueDate: this.invoicePrintData?.InvoiceDueDate
+      },
+      cargoDetails: {
+        packages: this.invoicePrintData?.pkg,
+        commodityDesc: this.invoicePrintData?.desc,
+        grossWeight: this.invoicePrintData?.grosswt,
+        chargeableWeight: this.invoicePrintData?.ChargeableWeight,
+        cbm: this.invoicePrintData?.cbm
+      },
+      invoicePrintData: this.invoicePrintData
+    };
+
+    return { logo, lookups, options };
+  }
+
+  private async downloadPDFInBrowser(): Promise<void> {
+    const { logo, lookups, options } = await this.getPdfGenerationContext();
+    this.pdfMakeService.generateInvoiceFromApi(
+      this.invoiceData,
+      this.currentCompany,
+      this.currentBranch,
+      this.userData,
+      logo,
+      lookups,
+      options
+    );
+  }
+
+  private async downloadPDFByFilePath(): Promise<void> {
+    const { logo, lookups, options } = await this.getPdfGenerationContext();
+    const blob = await this.pdfMakeService.generateInvoiceBlobFromApi(
+      this.invoiceData,
+      this.currentCompany,
+      this.currentBranch,
+      this.userData,
+      logo,
+      lookups,
+      options
+    );
+    const filename = this.getInvoicePdfFilename();
+    await this.pdfFileSaveService.savePdf(blob, filename, true);
+  }
  
 
   private getInvoicePdfFilename(): string {
@@ -3603,36 +3617,6 @@ isSeaDepartment(): boolean {
     return `Invoice_${voucherNumber}.pdf`;
   }
  
-  private async savePdfWithPicker(blob: Blob, filename: string): Promise<void> {
-    const pickerWindow = window as FilePickerWindow;
- 
-    if (typeof pickerWindow.showSaveFilePicker === 'function') {
-      try {
-        const fileHandle = await pickerWindow.showSaveFilePicker({
-          suggestedName: filename,
-          types: [
-            {
-              description: 'PDF Document',
-              accept: {
-                'application/pdf': ['.pdf']
-              }
-            }
-          ]
-        });
-        const writable = await fileHandle.createWritable();
-        await writable.write(blob);
-        await writable.close();
-        return;
-      } catch (error: any) {
-        if (error?.name === 'AbortError') {
-          throw error;
-        }
-      }
-    }
- 
-    saveAs(blob, filename);
-  }
-
   async generatePDFBlob(): Promise<Blob | null> {
     try {
       await this.preparePrintData();

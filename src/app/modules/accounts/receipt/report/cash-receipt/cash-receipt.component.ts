@@ -4,6 +4,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { PdfMakeService } from 'src/app/common/pdf';
+import { PdfFileSaveService } from 'src/app/common/pdf-file-save.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
@@ -64,6 +65,7 @@ export class CashReceiptComponent {
     private activeModal: NgbActiveModal,
     private appSettingService: AppSettingsService,
     private pdfMakeService: PdfMakeService,
+    private pdfFileSaveService: PdfFileSaveService,
     private spinner: NgxSpinnerService,
     private masterService: MasterService,
     private numberToWords: NumberToWordsService,
@@ -229,29 +231,75 @@ getDrDetails() {
     this.showPdfLogo = true;
     this.spinner.show();
     try {
-      const logo = this.pdfMakeService.getReportLogo();
-      this.pdfMakeService.generateReceiptFromApi(
-        this.receiptPrintData,
-        this.currentCompany,
-        this.currentBranch,
-        this.userData,
-        logo,
-        {
-          receiptType: 'cash',
-          coaList: this.coaList || [],
-          bankTypedLedgers: this.bankTypedLedgers || [],
-          amountInWords: this.getAmountInWords() || this.receiptPrintData?.AmountInWords || this.receiptPrintData?.amountInWords || '',
-          currentUserCountry: this.currentUserCountry,
-          printSettings: this.companySettings.getPrintSettings()
-        }
-      );
+      const companyMasterSid = Number(this.currentCompany?.CompanyMasterSid || 0);
+      const saveAsFilePath = await this.pdfFileSaveService.shouldDownloadByFilePath(companyMasterSid);
+      if (saveAsFilePath) {
+        await this.downloadPDFByFilePath();
+      } else {
+        await this.downloadPDFInBrowser();
+      }
       this.appSettingService.showSuccess('PDF downloaded successfully!');
     } catch (error) {
+      if ((error as any)?.name === 'AbortError') {
+        return;
+      }
       console.error('Error generating PDF:', error);
       this.appSettingService.showError('Error generating PDF. Please try again.');
     } finally {
       this.spinner.hide();
     }
+  }
+
+  private getPdfGenerationOptions(): {
+    receiptType: 'cash';
+    coaList: any[];
+    bankTypedLedgers: any[];
+    amountInWords: string;
+    currentUserCountry: string;
+    printSettings: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    };
+  } {
+    return {
+      receiptType: 'cash',
+      coaList: this.coaList || [],
+      bankTypedLedgers: this.bankTypedLedgers || [],
+      amountInWords: String(this.getAmountInWords() || this.receiptPrintData?.AmountInWords || this.receiptPrintData?.amountInWords || ''),
+      currentUserCountry: this.currentUserCountry || '',
+      printSettings: this.companySettings.getPrintSettings()
+    };
+  }
+
+  private async downloadPDFInBrowser(): Promise<void> {
+    const logo = this.pdfMakeService.getReportLogo();
+    this.pdfMakeService.generateReceiptFromApi(
+      this.receiptPrintData,
+      this.currentCompany,
+      this.currentBranch,
+      this.userData,
+      logo,
+      this.getPdfGenerationOptions()
+    );
+  }
+
+  private async downloadPDFByFilePath(): Promise<void> {
+    const logo = this.pdfMakeService.getReportLogo();
+    const blob = await this.pdfMakeService.generateReceiptBlobFromApi(
+      this.receiptPrintData,
+      this.currentCompany,
+      this.currentBranch,
+      this.userData,
+      logo,
+      this.getPdfGenerationOptions()
+    );
+    await this.pdfFileSaveService.savePdf(blob, this.getReceiptPdfFilename(), true);
+  }
+
+  private getReceiptPdfFilename(): string {
+    const voucherNo = this.receiptPrintData?.VoucherNo || this.receiptPrintData?.VoucherNumber || 'CashReceipt';
+    return `CashReceipt_${voucherNo}.pdf`;
   }
 
   async generatePDFBlob(): Promise<Blob | null> {
@@ -263,14 +311,7 @@ getDrDetails() {
         this.currentBranch,
         this.userData,
         logo,
-        {
-          receiptType: 'cash',
-          coaList: this.coaList || [],
-          bankTypedLedgers: this.bankTypedLedgers || [],
-          amountInWords: this.getAmountInWords() || this.receiptPrintData?.AmountInWords || this.receiptPrintData?.amountInWords || '',
-          currentUserCountry: this.currentUserCountry,
-          printSettings: this.companySettings.getPrintSettings()
-        }
+        this.getPdfGenerationOptions()
       );
       return blob;
     } catch (error) {

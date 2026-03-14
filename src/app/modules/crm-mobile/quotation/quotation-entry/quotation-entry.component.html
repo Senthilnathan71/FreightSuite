@@ -1020,7 +1020,7 @@
   </div>
                              
                             <button class="btn btn-sm btn-info" (click)="addQuoteCarrier(routeIndex)"
-                              [disabled]="quotationApproved || isRateLocked()">
+                              [disabled]="quotationApproved || isRateLocked() || isBookingLockedForRoute(routeIndex)">
                               <i class="fas fa-plus me-1"></i> Add Carrier
                             </button>
                           </div>
@@ -1051,7 +1051,8 @@
 
                                 @if(quoteCarriers(routeIndex).length > 1){
                                 <button class="btn btn-sm waves-effect waves-light text-light"
-                                  (click)="deleteCarrier(routeIndex,carrierIndex,carrier.value.QuoteCarrierSid)">
+                                  (click)="deleteCarrier(routeIndex,carrierIndex,carrier.value.QuoteCarrierSid)"
+                                  [disabled]="isBookingLockedForRoute(routeIndex)">
                                   <i-feather class="feather-sm me-1 text-danger" name="trash-2"></i-feather>
                                 </button>
                                 }
@@ -1115,7 +1116,7 @@
                                             <ng-select formControlName="authorizerStatus" [items]="approvalStatus"
                                               bindLabel="name" bindValue="value"
                                               (change)="onCustomerApprovalStatusChange(routeIndex,carrierIndex,$event)"
-                                               [disabled]="carrier.get('authorizerStatus')?.value === 'Approved'">
+                                               [disabled]="isBookingLockedForRoute(routeIndex)">
                                             </ng-select>
                                             <label for="" class="input-label">Authorization Status <span
                                                 class="text-danger">{{isRequiredInQuoteCarrier(routeIndex,carrierIndex,'authorizerStatus')
@@ -1141,9 +1142,9 @@
                                         </aside>
                                         <aside class="col-md-2">
                                           <div class="custom-form-group">
-                                            <input type="text" id="text-input" formControlName="ApprovedBy"
-                                              class="custom-input-field sm"
-                                               [disabled]="carrier.get('authorizerStatus')?.value === 'Approved'">
+                                              <input type="text" id="text-input" formControlName="ApprovedBy"
+                                               class="custom-input-field sm"
+                                               [disabled]="isBookingLockedForRoute(routeIndex)">
                                             <label for="text-input" class="input-label">Authorized By <span
                                                 class="text-danger">{{isRequiredInQuoteCarrier(routeIndex,carrierIndex,'ApprovedBy')
                                                 ? '*' : '' }}</span></label>
@@ -1170,11 +1171,11 @@
                                           
                                           <button class="btn btn-info btn-sm me-1" type="button"
         (click)="getTariffDetails(routeIndex,carrierIndex,tariffDetailsModal)"
-        [disabled]="disableAllModification || !canGetTariff(routeIndex) || quotationApproved || isRateLocked()">
+        [disabled]="disableAllModification || !canGetTariff(routeIndex) || quotationApproved || isRateLocked() || isBookingLockedForRoute(routeIndex)">
   <i-feather name="dollar-sign" class="feather-sm"></i-feather> Get Tariff
 </button>
 <button class="btn btn-info btn-sm me-1" type="button"
-  (click)="openStandardCharges(routeIndex, carrierIndex)" [disabled]="disableAllModification || !canGetTariff(routeIndex) || quotationApproved || isRateLocked()">
+  (click)="openStandardCharges(routeIndex, carrierIndex)" [disabled]="disableAllModification || !canGetTariff(routeIndex) || quotationApproved || isRateLocked() || isBookingLockedForRoute(routeIndex)">
   Get Std Charges
 </button>
 
@@ -1182,7 +1183,7 @@
 <!-- Add Charge button -->
 <button class="btn btn-info btn-sm" type="button"
         (click)="addQuoteCharge(routeIndex,carrierIndex)"
-        [disabled]="disableAllModification || quotationApproved || isRateLocked()">
+        [disabled]="disableAllModification || quotationApproved || isRateLocked() || isBookingLockedForRoute(routeIndex)">
   <i class="fas fa-plus me-1"></i> Add Charge
 </button>
                                         </div>
@@ -1302,7 +1303,7 @@
                                         <td *ngIf="quoteCharges(routeIndex,carrierIndex).length > 1">
   <button class="btn btn-link text-danger py-0"
           (click)="removeCharge(routeIndex,carrierIndex,chargeIndex,charge.value.QuoteChargeSid)"
-          [disabled]="disableAllModification || isRateLocked()" 
+          [disabled]="disableAllModification || isRateLocked() || isBookingLockedForRoute(routeIndex)" 
           ngbTooltip="Delete">
     <i class="fas fa-trash text-center fs-2"></i>
   </button>
@@ -2133,7 +2134,7 @@
                                   style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                   <button class="btn btn-link text-danger"
                                     (click)="deleteQuoteProduct(routeIndex,productIndex,product.value.QuoteProductSid)"
-                                    [disabled]="disableAllModification">
+                                    [disabled]="disableAllModification || isBookingLockedForRoute(routeIndex)">
                                     <i class="fas fa-trash text-center"></i>
                                   </button>
                                 </td>
@@ -2179,7 +2180,8 @@
                                 <h5 class="font-bold my-1 text-light">Carrier Details</h5>
                                 @if(quoteCarriers(routeIndex).length > 1){
                                 <button class="btn btn-sm waves-effect waves-light text-light"
-                                  (click)="deleteCarrier(routeIndex,carrierIndex,carrier.value.QuoteCarrierSid)">
+                                  (click)="deleteCarrier(routeIndex,carrierIndex,carrier.value.QuoteCarrierSid)"
+                                  [disabled]="isBookingLockedForRoute(routeIndex)">
                                   <i-feather class="feather-sm me-1" name="trash-2"></i-feather>
                                 </button>
                                 }
@@ -2228,7 +2230,7 @@
                                 
                                   <button class="btn btn-light-secondary btn-sm me-1" type="button"
                                     (click)="getTariffDetails(routeIndex,carrierIndex,tariffDetailsModal)"
-                                    [disabled]="disableAllModification">
+                                    [disabled]="disableAllModification || isBookingLockedForRoute(routeIndex)">
                                     <i-feather name="dollar-sign" class="feather-sm"></i-feather> Get Tariff
                                   </button>
                                   <button class="btn btn-info btn-sm" type="button"
@@ -2331,7 +2333,7 @@
                                           style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                           <button class="btn btn-link text-danger"
                                             (click)="removeCharge(routeIndex,carrierIndex,chargeIndex,charge.value.QuoteChargeSid)"
-                                            [disabled]="disableAllModification">
+                                            [disabled]="disableAllModification || isBookingLockedForRoute(routeIndex)">
                                             <i class="fas fa-trash text-center"></i>
                                           </button>
                                         </td>

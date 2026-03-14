@@ -459,7 +459,7 @@ export class FullcalendarComponent implements OnInit {
 
       if (meetingRes.status && meetingRes.data.length) {
         meetingEvents = meetingRes.data
-          .filter((meeting) => meeting.meetingStatus !== "confirmed")
+          .filter((meeting) => meeting.meetingStatus !== "Confirmed")
           .map((meeting: any) => {
             const hasFollowUp = !!meeting.followUpDate;
             const isLead = meeting.LeadOrCustomer === "L";
@@ -487,7 +487,7 @@ export class FullcalendarComponent implements OnInit {
 
           if (followRes.status && followRes.data.length) {
             followUpEvents = followRes.data
-              .filter((meeting) => meeting.meetingStatus !== "confirmed")
+              .filter((meeting) => meeting.meetingStatus !== "Confirmed")
               .map((meeting: any) => {
                 const meetingData = meeting.preCustomerMeeting;
                 const isCustomer = meetingData.LeadOrCustomer === "C";
@@ -497,7 +497,7 @@ export class FullcalendarComponent implements OnInit {
                   : meetingData.preCustomerMaster?.preCustomerName;
 
                 return {
-                  start: this.convertUTCToLocal(meeting.FollowupDate),
+                  start: this.convertUTCToLocal(meetingData.followUpDate),
                   title: `Follow up meeting with - ${person}`,
                   id: meeting.PreCustomerMeetingSid,
                   color: { primary: "#ff5733", secondary: "#ffcccb" }
@@ -506,7 +506,19 @@ export class FullcalendarComponent implements OnInit {
           }
 
           // ✅ Merge both meetings + followups
-          this.events = [...meetingEvents, ...followUpEvents];
+          const mergedEvents = [...meetingEvents, ...followUpEvents];
+
+// remove duplicates
+const uniqueEvents = new Map();
+
+mergedEvents.forEach(event => {
+  const key = event.id + '_' + event.start;
+  uniqueEvents.set(key, event);
+});
+
+this.events = Array.from(uniqueEvents.values());
+
+this.refresh.next();
 
           this.refresh.next(); // refresh UI
           console.log("Combined Events:", this.events);
@@ -631,19 +643,6 @@ export class FullcalendarComponent implements OnInit {
     }
     const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
     
-    // Convert followUpDate in same format as meetingDate
-    const formValue = this.meetingForm.getRawValue();
-    let followUpDate: string = null;
-    if (this.meetingForm.value.followUp && this.meetingForm.value.followUpDate) {
-      const dt = new Date(this.meetingForm.value.followUpDate);
-      const hours = dt.getHours().toString().padStart(2, '0');
-      const minutes = dt.getMinutes().toString().padStart(2, '0');
-      const year = dt.getFullYear();
-      const month = (dt.getMonth() + 1).toString().padStart(2, '0');
-      const day = dt.getDate().toString().padStart(2, '0');
-
-      followUpDate = `${year}-${month}-${day}T${hours}:${minutes}`;
-    }
     const payload = {
       PreCustomerMeetingSid: this.preCustomerMeetingData.PreCustomerMeetingSid,
       PreCustomerMasterSid: this.preCustomerMeetingData.PreCustomerMasterSid,
@@ -651,7 +650,7 @@ export class FullcalendarComponent implements OnInit {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       userEmail: userEmail,
-      followUpDate: followUpDate,
+      followUpDate: this.meetingForm.value.followUp ? this.meetingForm.value.followUpDate : null,
       meetingDate: meetingDateStr
     };
 
@@ -716,7 +715,7 @@ export class FullcalendarComponent implements OnInit {
           : '';
 
         const followUpDate = this.preCustomerMeetingData.followUpDate
-          ? this.formatDateForInput(this.preCustomerMeetingData.followUpDate)
+          ? new Date(this.preCustomerMeetingData.followUpDate)
           : '';
 
         // Determine if followUp should be true based on followUpDate or followUpNote
@@ -781,21 +780,28 @@ export class FullcalendarComponent implements OnInit {
   }
 
   // Treat UTC string as "local" without converting
-  convertUTCToLocal(utcDate: string): Date {
-    const parts = utcDate.match(/\d+/g); // extract [YYYY, MM, DD, HH, MM, SS]
-    return new Date(
-      Number(parts[0]),       // year
-      Number(parts[1]) - 1,   // month (0-indexed)
-      Number(parts[2]),       // day
-      Number(parts[3]),       // hour
-      Number(parts[4]),       // minute
-      Number(parts[5])        // second
-    );
+convertUTCToLocal(utcDate: string | null): Date | null {
+ 
+  if (!utcDate) {
+    return null;
   }
-
-
-
-
+ 
+  const parts = utcDate.match(/\d+/g);
+ 
+  if (!parts) {
+    return null;
+  }
+ 
+  return new Date(
+    Number(parts[0]),
+    Number(parts[1]) - 1,
+    Number(parts[2]),
+    Number(parts[3] || 0),
+    Number(parts[4] || 0),
+    Number(parts[5] || 0)
+  );
+}
+ 
   resetForm() {
     this.meetingForm.reset();
   }

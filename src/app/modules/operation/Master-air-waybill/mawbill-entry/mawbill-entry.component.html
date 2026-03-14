@@ -11,7 +11,7 @@
                 <h1 class="workspace-title">Master Air Waybill</h1>
             </div>
             @if(isEditMode){
-            <a class="text-info d-flex align-items-center w-2 h-2 crusor-pointer" (click)="showInfo()">
+            <a class="text-info d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showInfo()">
                 <i class="fas fs-6 fa-info-circle"></i>
             </a>
             }
@@ -1475,21 +1475,24 @@
             <div class="modern-table-container">
                 <div class="table-toolbar">
                     <div class="toolbar-left">
-                        <div class="filter-controls d-flex gap-2 align-items-center">
-                            <select class="form-select form-select-sm" [(ngModel)]="arapFilter.voucherType"
-                                (change)="loadMasterJobARAPData()" style="width: 150px;">
-                                <option value="all">All Vouchers</option>
-                                <option value="revenue">Revenue</option>
-                                <option value="cost">Cost</option>
-                            </select>
-
-                            <select class="form-select form-select-sm" [(ngModel)]="arapFilter.status"
-                                (change)="loadMasterJobARAPData()" style="width: 150px;">
-                                <option value="all">All Status</option>
-                                <option value="unpaid">Unpaid</option>
-                                <option value="partial">Partial</option>
-                                <option value="paid">Paid</option>
-                            </select>
+                        <div class="filter-controls d-flex gap-2 align-items-center compact-form">
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select class="ng-select" [(ngModel)]="arapFilter.voucherType"
+                                    (change)="loadMasterJobARAPData()" style="width: 150px;">
+                                    <ng-option value="all">All Vouchers</ng-option>
+                                    <ng-option value="revenue">Revenue</ng-option>
+                                    <ng-option value="cost">Cost</ng-option>
+                                </ng-select>
+                            </div>
+                            <div class="custom-form-group custom-form-group-select">
+                                <ng-select class="ng-select" [(ngModel)]="arapFilter.status"
+                                    (change)="loadMasterJobARAPData()" style="width: 150px;">
+                                    <ng-option value="all">All Status</ng-option>
+                                    <ng-option value="unpaid">Unpaid</ng-option>
+                                    <ng-option value="partial">Partial</ng-option>
+                                    <ng-option value="paid">Paid</ng-option>
+                                </ng-select>
+                            </div>
                         </div>
                     </div>
 
@@ -1524,7 +1527,7 @@
                     <p class="empty-description">No accounting records found for this master job.</p>
                 </div>
                 } @else {
-                <div class="modern-table-wrapper">
+                <div class="modern-table-wrapper" id="arap-print-section">
                     <table class="modern-table">
                         <thead>
                             <tr>
@@ -1590,25 +1593,29 @@
                 </div>
 
                 <!-- Summary Cards -->
-                <div class="row mt-4">
+                <div class="row mt-1">
                     <div class="col-md-3">
                         <div class="summary-card">
-                            <div class="summary-icon bg-primary">
+                            <div class="summary-voucher">
+                                <div class="summary-icon bg-primary">
                                 <i class="fas fa-file-invoice"></i>
                             </div>
+                            <div class="summary-label">Total Vouchers</div>
+                            </div>
                             <div class="summary-content">
-                                <div class="summary-label">Total Vouchers</div>
                                 <div class="summary-value">{{arapData.length}}</div>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="summary-card">
-                            <div class="summary-icon bg-warning">
+                            <div class="summary-voucher"> 
+                                  <div class="summary-icon bg-warning">
                                 <i class="fas fa-clock"></i>
                             </div>
+                            <div class="summary-label">Unpaid</div>
+                            </div>
                             <div class="summary-content">
-                                <div class="summary-label">Unpaid</div>
                                 <div class="summary-value">
                                     {{getCountByStatus('Unpaid')}}
                                 </div>
@@ -1617,11 +1624,13 @@
                     </div>
                     <div class="col-md-3">
                         <div class="summary-card">
-                            <div class="summary-icon bg-info">
+                            <div class="summary-voucher">   
+                                 <div class="summary-icon bg-info">
                                 <i class="fas fa-percentage"></i>
                             </div>
+                            <div class="summary-label">Partial</div>
+                            </div>
                             <div class="summary-content">
-                                <div class="summary-label">Partial</div>
                                 <div class="summary-value">
                                     {{getCountByStatus('Partial')}}
                                 </div>
@@ -1630,11 +1639,13 @@
                     </div>
                     <div class="col-md-3">
                         <div class="summary-card">
-                            <div class="summary-icon bg-success">
-                                <i class="fas fa-check-circle"></i>
+                            <div class="summary-voucher">   
+                                <div class="summary-icon bg-success">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="summary-label">Paid</div>
                             </div>
                             <div class="summary-content">
-                                <div class="summary-label">Paid</div>
                                 <div class="summary-value">
                                     {{getCountByStatus('Paid')}}
                                 </div>

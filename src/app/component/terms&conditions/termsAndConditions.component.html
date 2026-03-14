@@ -36,21 +36,21 @@
               <td>
                 <div>
                   <a class="mx-2 ps-2" (click)="editTerm(item, $index)" *ngIf="editIndex !== $index">
-      <i-feather name="eye" class="feather-sm"></i-feather>
-    </a>
+                    <i-feather name="eye" class="feather-sm"></i-feather>
+                  </a>
 
-    <!-- Update -->
-    <a class="text-success" (click)="updateTerm(item, $index)" *ngIf="editIndex === $index">
-      <i-feather name="check" class="feather-sm"></i-feather>
-    </a>
+                  <!-- Update -->
+                  <a class="text-success" (click)="updateTerm(item, $index)" *ngIf="editIndex === $index">
+                    <i-feather name="check" class="feather-sm"></i-feather>
+                  </a>
 
-    <!-- Cancel -->
-    <a class="text-secondary" (click)="cancelEdit()" *ngIf="editIndex === $index">
-      <i-feather name="x" class="feather-sm"></i-feather>
-    </a>
-                <a class="text-danger mx-2 ps-3 border-start" (click)="deleteTerm(item, $index)">
-                  <i-feather name="trash-2" class="feather-sm"></i-feather>
-                </a>
+                  <!-- Cancel -->
+                  <a class="text-secondary" (click)="cancelEdit()" *ngIf="editIndex === $index">
+                    <i-feather name="x" class="feather-sm"></i-feather>
+                  </a>
+                  <a class="text-danger mx-2 ps-3 border-start" (click)="deleteTerm(item, $index)">
+                    <i-feather name="trash-2" class="feather-sm"></i-feather>
+                  </a>
                 </div>
               </td>
               <td>
@@ -62,12 +62,8 @@
               <td>
                 <div class="text-truncate">{{item.TandC}}</div>
                 <form *ngIf="editIndex === $index" [formGroup]="editForm">
-  <input
-    type="text"
-    class="custom-input-field sm"
-    formControlName="TandC"
-  />
-</form>
+                  <input type="text" class="custom-input-field sm" formControlName="TandC" />
+                </form>
               </td>
             </tr>
             } @if(showEmptyTemplate) {
@@ -81,19 +77,24 @@
             <!-- New input row -->
             @if (showAddRow) {
             <tr>
+
+              <!-- Action column (empty) -->
+              <td></td>
+
+              <!-- Default column -->
               <td>
-                <div class="d-flex align-items-center gap-2">
-                  <form [formGroup]="addForm">
-                    <dofi-toggler formControlName="IsDefaut"></dofi-toggler>
-                  </form>
-                  <!-- <span>{{ addForm.get('IsDefaut')?.value ? 'Yes' : 'No' }}</span> -->
-                </div>
+                <form [formGroup]="addForm">
+                  <dofi-toggler formControlName="IsDefaut"></dofi-toggler>
+                </form>
               </td>
+
+              <!-- Details column -->
               <td>
                 <form [formGroup]="addForm">
                   <div class="custom-form-group">
                     <input type="text" class="custom-input-field sm" formControlName="newTerm"
                       placeholder="Enter new terms">
+
                     @if(addForm.get('newTerm').touched && addForm.get('newTerm').invalid){
                     <div class="error-message">
                       @if(addForm.get('newTerm').hasError('required')){
@@ -104,8 +105,9 @@
                   </div>
                 </form>
               </td>
+
             </tr>
-            }
+            } 
           </tbody>
         </table>
         <div *ngIf="showAddRow">

@@ -393,6 +393,11 @@ export class ReusableTableComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
+  isStatusActive(value: any): boolean {
+    const normalized = String(value ?? '').trim().toLowerCase();
+    return normalized === 'active' || normalized === 'posted';
+  }
+
   // Action handling
   onActionClick(action: string, row: any, column?: TableColumn): void {
     this.actionClick.emit({ action, row, column });

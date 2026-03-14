@@ -667,7 +667,8 @@ createRateFormGroup(data?: any): FormGroup {
 
   // Ensure ParentSid is available - try from data, then helper method
   const ParentSid = data?.ParentSid ?? this.getParentSid();
-  const isFromQuotation = !!data?.QuoteChargeSid;
+  const isFromQuotation = !!data?.QuoteChargeSid
+    || ((this.screenName === 'House Job' || this.screenName === 'House Air Waybill') && !!data?.BookingRateSid);
 
   const form = this.fb.group({
     /** This one holds BookingRateSid or CostRevenueChargesSid */
@@ -763,7 +764,7 @@ createRateFormGroup(data?: any): FormGroup {
     // Below are some helping fields
     QuoteChargeSid : [data?.QuoteChargeSid ?? null],
     TariffDetailSid : [data?.TariffDetailSid ?? null],
-    BookingRateSid : [data?.RateSid ?? null],
+    BookingRateSid : [data?.BookingRateSid ?? data?.RateSid ?? null],
     unitQtyBasis: [data?.UnitQty || null],  // Store unit quantity basis for taking no of unit from parent
     _costVoucherHeaderSid: [data?.CostVoucherHeaderSid ?? null], // Store actual IDs separately for validation
     _revenueVoucherHeaderSid: [data?.RevenueVoucherHeaderSid ?? null] ,// Store actual IDs separately for validation

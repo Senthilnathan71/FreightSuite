@@ -1,33 +1,80 @@
-.closer-section {
-  border: 2px solid #dee2e6;
-  border-radius: 4px;
-  padding: 10px;
-  height: 100%;
+// Master Job Card
+.master-job-card {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+
 }
 
-.closer-title {
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #495057;
-}
+// Base table
+.master-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
 
-.milestone-list {
-  min-height: 115px;
-}
-
-.milestone-item {
-  display: flex;
-  align-items: flex-start;
-  margin-bottom: 4px;
-
-  i {
-    margin-top: 2px;
-    font-size: 0.8rem;
+  td {
+    // padding: 5px 8px;
+    border: 1px solid #e9ecef;
+    vertical-align: middle;
+    background: transparent;  // ← add this
   }
 
-  span {
-    line-height: 1.3;
+  .label-cell {
+    background: linear-gradient(135deg, #f0f4ff, #e8edf5);
+    color: #05608d;
+    font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
+    border-right: 2px solid #c8d8e8;
+    letter-spacing: 0.2px;
+  }
+
+  .value-cell {
+    color: #212529;
+    font-size: 12px;
+
+    &.highlight {
+      color: #05608d;
+      font-weight: 700;
+      font-size: 12.5px;
+    }
+  }
+
+  .col-header-row {
+    .col-header {
+      background: #05608d;
+      color: #fff;
+      font-weight: 600;
+      font-size: 11px;
+      text-align: center;
+      border-color: #0a7ab5;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+  }
+
+  .data-row {
+    &:hover td {
+      background-color: #f8fbff;  // ← apply to td not tr
+    }
+  }
+
+  .extra-cont-row {
+    &:hover td {
+      background-color: #f0f7ff;
+    }
+  }
+
+  .cont-cell {
+    text-align: center;
+    color: #333;
+    font-size: 12px;
+    border-left: 1px solid #e9ecef;
+  }
+
+  .blank-cell {
+    border: none;
+    background: transparent !important;
   }
 }
-
