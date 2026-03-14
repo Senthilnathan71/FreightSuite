@@ -825,10 +825,10 @@ getDepartmentName(deptId: number, rowIndex: number): string {
 
         const overlap = currentFrom <= otherTo && currentTo >= otherFrom;
         if (overlap) {
-          const scopeLabel = currentBranchSid
-            ? `branch ${this.getBranchName(currentBranchSid) || currentBranchSid}`
-            : 'customer without branch';
-          return `Date range overlaps for ${scopeLabel}. Please start the next credit request after the previous Effective To date.`;
+          if (currentBranchSid) {
+            return 'Credit request already exists for this branch within the selected effective dates.';
+          }
+          return 'Credit request already exists for this customer (no branch) within the selected effective dates.';
         }
       }
     }

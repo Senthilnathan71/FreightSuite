@@ -3314,7 +3314,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
 
 
   navigateBack() {
-    this.router.navigate(['/operation/house-job/list']);
+   history.back();
   }
 
   selectedTab = 'Shipment';
@@ -3870,10 +3870,9 @@ ${this.userData['userName']}`;
   }
 
   async reportDeliveryOrder() {
+    if (!this.ensurePostedInvoice('Delivery Order')) return;
     const ok = await this.validateCreditForRelease('Delivery Order');
     if (!ok) return;
-
-    if (!this.ensurePostedInvoice('Delivery Order')) return;
 
     const modalRef = this.modalService.open(DeliveryOrderComponent, {
       size: 'xl',
@@ -3923,13 +3922,11 @@ ${this.userData['userName']}`;
 
        async reportBill(type: 'HBL' | 'HBLDraft') {
          if (type === 'HBL') {
+           // For HBL (final), require posted invoice first
+           if (!this.ensurePostedInvoice('HBL')) return;
            const ok = await this.validateCreditForRelease('HBL');
            if (!ok) return;
          }
-  // For HBL (final), require posted invoice
-  if (type === 'HBL' && !this.ensurePostedInvoice('HBL')) {
-    return;
-  }
          if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
     // Check if any products have ContainerMasterSid mapped
     const hasContainerMapping = this.housejobData?.Products?.some(
