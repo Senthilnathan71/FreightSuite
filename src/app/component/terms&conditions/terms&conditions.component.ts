@@ -132,7 +132,8 @@ editForm: FormGroup;
     DepartmentMasterSid: this.DepartmentMasterSid,
     POL: this.POL,
     POD: this.POD,
-    Carrier: this.Carrier
+    Carrier: this.Carrier,
+    DocumentSid: this.DocumentSid
   };
 
   this.masterService.getTandCByNCondition(payload).subscribe(
@@ -141,7 +142,14 @@ editForm: FormGroup;
       if (resp.status) {
 
         if (resp.data?.length) {
-          this.terms = [...this.terms, ...resp.data];   // refresh modal list
+          const newTerms = resp.data.filter(
+  (newItem: any) =>
+    !this.terms.some(
+      (existing: any) => existing.TandCTransactionSid === newItem.TandCTransactionSid
+    )
+);
+
+this.terms = [...this.terms, ...newTerms];
           this.showEmptyTemplate = false;
         } else {
           this.appSettingService.showWarning('No Non Default Terms Found');
@@ -161,34 +169,33 @@ editForm: FormGroup;
 
 deleteTerm(item: any, index: number) {
 
-  // If record not saved in DB (new row)
-  if (!item?.TermsAndConditionsDetailSid) {
+  if (!item?.TandCTransactionSid) {
     this.terms.splice(index, 1);
     return;
   }
 
-  this.masterService.deleteTandCDetailById(item.TermsAndConditionsDetailSid)
-    .subscribe(
-      (resp: any) => {
+  this.masterService.deleteTerms(
+    item.TandCTransactionSid,
+    { DocumentSid: this.DocumentSid }
+  ).subscribe(
+    (resp: any) => {
 
-        if (resp.status) {
+      if (resp.status) {
 
-          this.appSettingService.showSuccess('Term deleted successfully');
+        this.appSettingService.showSuccess('Term deleted successfully');
 
-          this.terms.splice(index, 1);
+        this.terms.splice(index, 1);
 
-        } else {
-
-          this.appSettingService.showError('Error deleting term');
-
-        }
-
-      },
-      (error) => {
-        console.error('Delete error', error);
+      } else {
         this.appSettingService.showError('Error deleting term');
       }
-    );
+
+    },
+    (error) => {
+      console.error('Delete error', error);
+      this.appSettingService.showError('Error deleting term');
+    }
+  );
 }
 
 
@@ -219,12 +226,13 @@ updateTerm(item: any, index: number) {
   const formValue = this.editForm.value;
 
   const payload = {
-    TermsAndConditionsDetailSid: item.TermsAndConditionsDetailSid,
-    TandC: formValue.TandC,
-    IsDefaut: formValue.IsDefaut ? 'S' : 'N'
+    TandCTransactionSid: item.TandCTransactionSid,
+    Terms: formValue.TandC,
+    IsDefaut: formValue.IsDefaut ? 'S' : 'N',
+    DocumentSid: this.DocumentSid
   };
 
-  this.masterService.updateTandCDetailById(item.TermsAndConditionsDetailSid,payload).subscribe(
+  this.masterService.updateTerms(item.TandCTransactionSid, payload).subscribe(
     (resp: any) => {
 
       if (resp.status) {
@@ -246,6 +254,5 @@ updateTerm(item: any, index: number) {
       this.appSettingService.showError('Error updating term');
     }
   );
-
 }
 }

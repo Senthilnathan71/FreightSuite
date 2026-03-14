@@ -2176,6 +2176,24 @@ getFieldConfiguration() {
     )
   }
 
+  deleteTerms(TandCTransactionSid,payload) {
+    return this.http.delete<{ data: any }>(`terms-and-conditions/delete/terms/${TandCTransactionSid}`,{body:payload}).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateTerms(TandCTransactionSid, payload) {
+    return this.http.patch<{ data: any }>(`terms-and-conditions/update/terms/${TandCTransactionSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
   searchTandCDetail(payload) {
     return this.http.post<{ data: any[] }>('terms-and-conditions-detail/search-list', payload).pipe(
       map((resp) => {
