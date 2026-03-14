@@ -20,6 +20,9 @@
           <button type="button" class="btn btn-secondary btn-sm" (click)="onCancel()">
             <i class="fas fa-arrow-left me-1"></i> Back
           </button>
+          <button *ngIf="isEditMode" type="button" class="btn btn-success btn-sm" (click)="onTestSend()">
+            <i class="fas fa-paper-plane me-1"></i> Test Send
+          </button>
           <button type="button" class="btn btn-info btn-sm" (click)="onSubmit()">
             <i class="fas fa-save me-1"></i> {{ isEditMode ? 'Update' : 'Save' }}
           </button>
@@ -183,37 +186,43 @@
         <!-- Dynamic Report Parameters (from ReportMasterDetail) -->
         <div *ngIf="selectedReportDetails.length > 0" class="border-top pt-3 mt-2">
           <h6 class="text-info mb-3">Report Parameters</h6>
-          <div class="row g-3">
-            <div *ngFor="let param of selectedReportDetails" class="col-md-4">
+          <small class="text-muted d-block mb-2">
+            Date range parameters (FromDate/ToDate) are automatically calculated based on the selected frequency.
+          </small>
+          <div class="row g-3" *ngIf="visibleReportDetails.length > 0">
+            <div *ngFor="let param of visibleReportDetails" class="col-md-4">
               <label class="form-label fw-bold">{{ param.ParameterName }}</label>
 
               <!-- Text input -->
-              <input *ngIf="param.ParameterFieldType === 'text'"
+              <input *ngIf="param.ParameterFieldType === 'TEXT'"
                      type="text" class="form-control form-control-sm"
-                     [value]="form.value.ReportParams?.[param.ParameterName] || param.DefaultValue || ''"
-                     (change)="onParamChange(param.ParameterName, $event)">
+                     [ngModel]="form.value.ReportParams?.[param.ParameterName] || param.DefaultValue || ''"
+                     [ngModelOptions]="{standalone: true}"
+                     (ngModelChange)="onParamDropdownChange(param.ParameterName, $event)">
 
               <!-- Number input -->
-              <input *ngIf="param.ParameterFieldType === 'number'"
+              <input *ngIf="param.ParameterFieldType === 'NUMBER'"
                      type="number" class="form-control form-control-sm"
-                     [value]="form.value.ReportParams?.[param.ParameterName] || param.DefaultValue || ''"
-                     (change)="onParamChange(param.ParameterName, $event)">
+                     [ngModel]="form.value.ReportParams?.[param.ParameterName] || param.DefaultValue || ''"
+                     [ngModelOptions]="{standalone: true}"
+                     (ngModelChange)="onParamDropdownChange(param.ParameterName, $event)">
 
               <!-- Dropdown -->
-              <select *ngIf="param.ParameterFieldType === 'dropdown'"
-                      class="form-select form-select-sm"
-                      [value]="form.value.ReportParams?.[param.ParameterName] || param.DefaultValue || ''"
-                      (change)="onParamChange(param.ParameterName, $event)">
-                <option value="">-- Select --</option>
-                <ng-container *ngIf="param.DropDownValue">
-                  <option *ngFor="let opt of param.DropDownValue" [value]="opt.value">
-                    {{ opt.label }}
-                  </option>
-                </ng-container>
-              </select>
+              <ng-select *ngIf="param.ParameterFieldType === 'DROPDOWN'"
+                         [items]="getParamDropdownOptions(param.ParameterName)"
+                         bindLabel="label"
+                         bindValue="value"
+                         [ngModel]="form.value.ReportParams?.[param.ParameterName] || param.DefaultValue || ''"
+                         [ngModelOptions]="{standalone: true}"
+                         (ngModelChange)="onParamDropdownChange(param.ParameterName, $event)"
+                         [placeholder]="getParamPlaceholder(param)"
+                         [disabled]="isParamDisabled(param.ParameterName)"
+                         [clearable]="true"
+                         appendTo="body">
+              </ng-select>
 
               <!-- Checkbox -->
-              <div *ngIf="param.ParameterFieldType === 'checkbox'" class="form-check mt-1">
+              <div *ngIf="param.ParameterFieldType === 'CHECKBOX'" class="form-check mt-1">
                 <input type="checkbox" class="form-check-input"
                        [checked]="form.value.ReportParams?.[param.ParameterName] === true || form.value.ReportParams?.[param.ParameterName] === 'true'"
                        (change)="onParamCheckboxChange(param.ParameterName, $event)">
