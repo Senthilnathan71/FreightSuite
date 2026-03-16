@@ -634,16 +634,20 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
           if (!rawDate) {
             return false;
           }
-          const itemDate = new Date(rawDate);
-          if (Number.isNaN(itemDate.getTime())) {
+          const itemTime = this.parseDateValue(rawDate);
+          if (itemTime === null) {
             return false;
           }
+          const itemDate = new Date(itemTime);
           if (from && itemDate < from) {
             return false;
           }
           if (to && itemDate > to) {
             return false;
           }
+
+
+
         }
 
         return true;
@@ -735,3 +739,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
       });
     }
 }
+
+
+
+

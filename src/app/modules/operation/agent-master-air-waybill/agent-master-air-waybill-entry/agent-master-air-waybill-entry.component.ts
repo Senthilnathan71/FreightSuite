@@ -62,6 +62,7 @@ import { OperationService } from '../../operation.service';
 import { ToastrService } from 'ngx-toastr';
 import { AwbDraftComponent } from '../report/awb-draft/awb-draft.component';
 import { AwbPreprintComponent } from '../report/awb-preprint/awb-preprint.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -533,6 +534,7 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
     private datePipe : CustomDatePipe,
     private spinner: NgxSpinnerService,
      private toastr: ToastrService,
+     public mps: MenuPermissionService,
     private volumetricAndCbmCalculationService: VolumetricAndCbmCalculationService,
   ) {
     this.today = this.calendar.getToday();
@@ -571,6 +573,7 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
   this.initDetailsForm();
   this.setupMBLDateListener();
   this.spinner.show();
+  this.mps.init().subscribe();
   
 
     this.loadHeaderMandatoryParts().subscribe(() => {
