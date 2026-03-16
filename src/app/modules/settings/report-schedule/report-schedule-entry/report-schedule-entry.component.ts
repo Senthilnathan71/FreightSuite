@@ -160,7 +160,7 @@ export class ReportScheduleEntryComponent implements OnInit, OnDestroy {
 
     // Load dropdown data for each parameter
     for (const param of this.selectedReportDetails) {
-      if (param.ParameterFieldType === 'DROPDOWN') {
+    if (param.ParameterFieldType === 'DROPDOWN' || param.ParameterFieldType === 'DROPDOWN M') {
         if (param.DependsOnParameter) {
           // Dependent dropdown — start disabled until parent is selected
           this.disabledParams.set(param.ParameterName, true);
@@ -272,9 +272,11 @@ export class ReportScheduleEntryComponent implements OnInit, OnDestroy {
     return this.form.get('Frequency')?.value === 'MONTHLY';
   }
 
-  get dayOfMonthOptions(): number[] {
-    return Array.from({ length: 28 }, (_, i) => i + 1);
-  }
+  // get dayOfMonthOptions(): number[] {
+  //   return Array.from({ length: 28 }, (_, i) => i + 1);
+  // }
+  dayOfMonthOptions: number[] = Array.from({ length: 28 }, (_, i) => i + 1);
+
 
   // Filter out DATE parameters — they are auto-computed based on frequency
   get visibleReportDetails(): any[] {
