@@ -1938,6 +1938,10 @@ createRateFormGroup(data?: any): FormGroup {
     return this.voucherForm.get('voucherDetails') as FormArray;
   }
 
+  get showVendorInvoiceHeaderRemarks(): boolean {
+    return this.selectedVoucherType === 'Vendor Invoice';
+  }
+
   addDetailGroup(data : any) {
     this.details.push(this.createDetailGroup(data));
   }
@@ -2534,6 +2538,7 @@ createRateFormGroup(data?: any): FormGroup {
         ChargeMasterSid: charge.ChargeMasterSid,
         ChargeCode : charge.ChargeMaster?.chargeCode, 
         ChargeDescription : charge.ChargeDescription,
+        Remarks : charge.Remarks ?? '',
         ChargeUOMSid : isRevenue ? charge.RevenueChargeUomSid : charge.CostChargeUomSid,
         HSSACMasterSid : this.chargeHSSACMapping?.[chargeIndex]?.[0]?.HSSACMasterSid,
         NumberOfUnit: toNumber(NumberOfUnit).toFixed(3),
@@ -3031,6 +3036,8 @@ createRateFormGroup(data?: any): FormGroup {
 
     const details = this.details.getRawValue();
     const narration = this.autoGenerateNarration();
+    const vendorInvoiceRemarks = String(rawValue.Remarks ?? '').trim();
+    const headerRemarks = isInvoice ? narration : (vendorInvoiceRemarks || narration);
     let interOrIntra = 'Inter';
 
     // india
@@ -3084,7 +3091,7 @@ createRateFormGroup(data?: any): FormGroup {
           VoucherTransactionSid: null,
           CostCenter: null,
           ProfitCenter: null,
-          Remarks: '',
+          Remarks: vd.Remarks ?? '',
           CostRevenue: isInvoice ? 'Revenue' : 'Cost',
         };
       });
@@ -3117,7 +3124,7 @@ createRateFormGroup(data?: any): FormGroup {
       MasterJobSid: rawValue.MasterJobSid,
       MasterNumber: rawValue.MasterNumber,
       Narration: narration,
-      Remarks: narration,
+      Remarks: headerRemarks,
       Salesman: rawValue.Salesman,
       VoucherDetail: VoucherDetail,
       CreatedBy: this.userData?.userEmail,

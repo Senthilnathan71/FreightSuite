@@ -1100,6 +1100,13 @@
                   </div>
                 </aside>
               }
+
+              <aside class="col-md-6" *ngIf="showVendorInvoiceHeaderRemarks">
+                <div class="custom-form-group">
+                  <input type="text" class="custom-input-field sm" formControlName="Remarks" placeholder="" />
+                  <label class="input-label">Remarks</label>
+                </div>
+              </aside>
           </div>
           </div>
       </div>
