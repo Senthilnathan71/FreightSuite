@@ -231,7 +231,7 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
         AmountFormatted: this.formatAmount(item.Amount)
       }));
       this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
-      // this.applySorting();
+      this.applySorting();
       this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching Vendor Invoices.');
@@ -686,16 +686,20 @@ private formatAmount(amount: number | string): string {
         if (!rawDate) {
           return false;
         }
-        const itemDate = new Date(rawDate);
-        if (Number.isNaN(itemDate.getTime())) {
+        const itemTime = this.parseDateValue(rawDate);
+        if (itemTime === null) {
           return false;
         }
+        const itemDate = new Date(itemTime);
         if (from && itemDate < from) {
           return false;
         }
         if (to && itemDate > to) {
           return false;
         }
+
+
+
       }
 
       return true;
@@ -793,3 +797,7 @@ private formatAmount(amount: number | string): string {
     });
   }
 }
+
+
+
+

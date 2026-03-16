@@ -143,7 +143,7 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
     protected config: ListComponentConfig = {
         storageKey: 'service-job-list-state',
         defaultPageSize: 10,
-        defaultSortColumn: 'createdOn',
+        defaultSortColumn: 'MBLDate',
         defaultSortDirection: 'desc',
         pageSizeOptions: [10, 20, 50, 100,500],
         maxPagesToShow: 5
@@ -279,10 +279,11 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
                 ...item,
                 departmentName : item.departmentMaster?.departmentName,
                 MasterJobNumber: item.masterJob?.MasterJobNumber,
-                MBLDate: this.datePipe.transform(item?.MBLDate),
+                MBLDate:this.datePipe.transform(item?.MBLDate),
                 Status: item.status === 'A' ? 'Active' : 'Inactive',
             }));
             this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
+            this.applySorting();
             this.updateHeaderActionState();
         } else {
             this.appSettingService.showError('Could not fetch service jobs.');
@@ -574,20 +575,35 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
             return false;
           }
 
-          const itemDate = new Date(rawDate);
-          if (Number.isNaN(itemDate.getTime())) {
+          const itemTime = this.parseDateValue(rawDate);
+
+          if (itemTime === null) {
+
             return false;
+
           }
 
+          const itemDate = new Date(itemTime);
+
           if (from && itemDate < from) {
+
             return false;
+
           }
+
           if (to && itemDate > to) {
+
             return false;
+
           }
+
+
         }
 
         return true;
       });
     }
 }
+
+
+

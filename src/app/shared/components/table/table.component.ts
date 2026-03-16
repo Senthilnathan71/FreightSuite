@@ -298,6 +298,10 @@ export class ReusableTableComponent implements OnInit, OnChanges, OnDestroy {
 
   private updateFilteredData(): void {
     // Always start with the current data
+      if (this.config.showPagination) {
+    this.filteredData = this.data ? [...this.data] : [];
+    return;
+  }
     this.filteredData = this.data ? [...this.data] : [];
 
     // Apply filters if any exist

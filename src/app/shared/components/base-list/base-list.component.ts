@@ -101,23 +101,64 @@ export abstract class BaseListComponent implements OnInit, OnDestroy {
     this.applySorting();
   }
 
-  protected applySorting(): void {
-    this.allItems.sort((a, b) => {
-      let valueA = a[this.sortColumn] || '';
-      let valueB = b[this.sortColumn] || '';
+protected applySorting(): void {
+  this.allItems.sort((a, b) => {
+    let valueA = a[this.sortColumn];
+    let valueB = b[this.sortColumn];
 
-      if (typeof valueA !== 'number' && !(valueA instanceof Date)) {
-        valueA = valueA.toString().toLowerCase();
-        valueB = valueB.toString().toLowerCase();
-      }
+    // Handle null/undefined values
+    if (valueA === null || valueA === undefined || valueA === '') return 1;
+    if (valueB === null || valueB === undefined || valueB === '') return -1;
 
-      return valueA < valueB
-        ? this.sortDirection === 'asc' ? -1 : 1
-        : valueA > valueB
-        ? this.sortDirection === 'asc' ? 1 : -1
-        : 0;
-    });
+    // Detect date strings (including dd/MM/yyyy)
+    const dateA = this.parseDateValue(valueA);
+    const dateB = this.parseDateValue(valueB);
+    if (dateA !== null && dateB !== null) {
+      valueA = dateA;
+      valueB = dateB;
+    }
+
+    // Convert strings to lowercase
+    if (typeof valueA === 'string') valueA = valueA.toLowerCase();
+    if (typeof valueB === 'string') valueB = valueB.toLowerCase();
+
+    if (valueA < valueB) return this.sortDirection === 'asc' ? -1 : 1;
+    if (valueA > valueB) return this.sortDirection === 'asc' ? 1 : -1;
+
+    return 0;
+  });
+}
+
+protected parseDateValue(value: any): number | null {
+  if (value instanceof Date) {
+    const time = value.getTime();
+    return Number.isNaN(time) ? null : time;
   }
+
+  if (typeof value === 'number') {
+    const time = new Date(value).getTime();
+    return Number.isNaN(time) ? null : time;
+  }
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+
+    const parsed = Date.parse(trimmed);
+    if (!Number.isNaN(parsed)) return parsed;
+
+    const match = trimmed.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:\s.*)?$/);
+    if (match) {
+      const day = Number(match[1]);
+      const month = Number(match[2]) - 1;
+      const year = Number(match[3]);
+      const time = new Date(year, month, day).getTime();
+      return Number.isNaN(time) ? null : time;
+    }
+  }
+
+  return null;
+}
 
   // Pagination event handlers
   onPageChange(newPage: number): void {

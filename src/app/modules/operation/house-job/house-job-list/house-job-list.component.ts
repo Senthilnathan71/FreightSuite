@@ -315,17 +315,20 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
           return false;
         }
 
-        const itemDate = new Date(rawDate);
-        if (Number.isNaN(itemDate.getTime())) {
+        const itemTime = this.parseDateValue(rawDate);
+        if (itemTime === null) {
           return false;
         }
-
+        const itemDate = new Date(itemTime);
         if (from && itemDate < from) {
           return false;
         }
         if (to && itemDate > to) {
           return false;
         }
+
+
+
       }
 
       return true;
@@ -444,7 +447,8 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
       Status: item.status === 'A' ? 'Active' : 'Suspended'
     }));
 
-            this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
+    this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
+    this.applySorting();
     this.updateHeaderActionState();
   }
 
@@ -625,3 +629,7 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
   }
 }
  
+
+
+
+
