@@ -66,6 +66,11 @@
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
+                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+                        (click)="sendManualMail()">
+                        <i class="fas fa-envelope me-1"></i>
+                        Send Mail
+                    </button>
                     <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" type="submit" (click)="onSubmit()"
                         [disabled]="(disableAddButtons || quotationCreatedAgainstThisEnquiry) || (!mps.can('update') && isEditMode)"
                         appPreventMultiClick>

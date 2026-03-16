@@ -88,6 +88,12 @@
     <span>Copy</span>
   </button>
 </div>
+<div class="action-group primary" *ngIf="isEditMode">
+  <button class="btn btn-sm btn-info dofi-min-w-80 dofi-max-w-80" (click)="sendManualMail()">
+    <i class="fas fa-envelope me-1"></i>
+    <span>Send Mail</span>
+  </button>
+</div>
       <div class="action-group primary">
   <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
           [ngClass]="{ 'btn-info': !isFormDirty(), 'btn-warning': isFormDirty() }"

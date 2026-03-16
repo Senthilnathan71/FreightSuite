@@ -3030,6 +3030,27 @@ ${this.userData.userName}`;
   logFormValue() {
   }
 
+  sendManualMail(): void {
+    this.emailTriggerService.triggerManualEmails({
+      companyId: this.currentCompany?.CompanyMasterSid,
+      branchId: this.currentBranch?.BranchMasterSid,
+      menuMasterSid: this.MenuMasterSid,
+      action: 'UPDATE',
+      context: {
+        quotationNumber: this.quotationData?.QuoteNumber,
+        date: this.datePipe.transform(this.quotationData?.QuoteDate),
+        POO: this.getFormattedPort(this.quotationData?.quoteRoute?.[0]?.PORSid),
+        POL: this.getFormattedPort(this.quotationData?.quoteRoute?.[0]?.POLSid),
+        POD: this.getFormattedPort(this.quotationData?.quoteRoute?.[0]?.PODSid),
+        FPD: this.getFormattedPort(this.quotationData?.quoteRoute?.[0]?.FPODSid),
+        customerName: this.quotationData?.CustomerName,
+        userName: this.userData?.userName,
+        menuEmail: this.quotationData?.Email || '',
+        approvalLink: 'Approval Hyper link ' + window.location.origin + '/crm/quotation/entry/' + this.QuoteHeaderSid
+      }
+    });
+  }
+
   back() {
     this.router.navigate(['crm/quotation/list']);
   }

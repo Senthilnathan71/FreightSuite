@@ -13,7 +13,11 @@ export interface MailConfiguration {
   ToEmailidFrom?: string;
   CcEmailidFrom?: string;
   AttachmentRequire: string;
+  Action?: string;
+  Trigger?: string;
   AutoPopup: string;
+  UpdateFields?: string;
+  Attachments?: string;
   Status?: string;
   CreatedOn?: string;
   CreatedBy?: string;
@@ -53,6 +57,12 @@ export class EmailModuleService {
 
   createMailConfiguration(payload: MailConfiguration): Observable<any> {
     return this.http.post('mail-configuration/create', payload).pipe(
+      map((resp: any) => resp)
+    );
+  }
+
+  createMailConfigurationWithFiles(formData: FormData): Observable<any> {
+    return this.http.post('mail-configuration/create', formData).pipe(
       map((resp: any) => resp)
     );
   }
