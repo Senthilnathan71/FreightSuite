@@ -103,12 +103,12 @@ editForm: FormGroup;
       if (resp.status) {
         this.appSettingService.showSuccess('New Term is successfully created');
         this.termsUpdated.emit();
-        this.terms.push(
-          {
-            TandC: this.addForm.get('newTerm').value,
-            IsDefaut: this.addForm.get('IsDefaut').value ? 'S' : 'N'
-          }
-        )
+        // this.terms.push(
+        //   {
+        //     TandC: this.addForm.get('newTerm').value,
+        //     IsDefaut: this.addForm.get('IsDefaut').value ? 'S' : 'N'
+        //   }
+        // )
         this.showAddRow = !this.showAddRow;
         this.addForm.reset({ newTerm: '', IsDefaut: false });
       } else {
@@ -142,19 +142,29 @@ editForm: FormGroup;
       if (resp.status) {
 
         if (resp.data?.length) {
-          const newTerms = resp.data.filter(
-  (newItem: any) =>
-    !this.terms.some(
-      (existing: any) => existing.TandCTransactionSid === newItem.TandCTransactionSid
-    )
-);
+            const newTerms = resp.data.filter((newItem: any) =>
+              !this.terms.some((existing: any) =>
+                (
+                  existing?.TandCTransactionSid &&
+                  newItem?.TandCTransactionSid &&
+                  existing.TandCTransactionSid === newItem.TandCTransactionSid
+                ) ||
+                (
+                  (existing?.TandC || '').trim().toLowerCase() === (newItem?.TandC || '').trim().toLowerCase() &&
+                  (existing?.DocumentSid ?? null) === (newItem?.DocumentSid ?? null)
+                )
+              )
+            );
 
-this.terms = [...this.terms, ...newTerms];
-          this.showEmptyTemplate = false;
-        } else {
-          this.appSettingService.showWarning('No Non Default Terms Found');
-        }
+            this.terms = [...this.terms, ...newTerms];
+            this.showEmptyTemplate = this.terms.length === 0 && !this.showAddRow;
 
+            if (!newTerms.length) {
+              this.appSettingService.showWarning('Terms already added');
+            }
+             } else {
+            this.appSettingService.showWarning('No Non Default Terms Found');
+          }
       } else {
         this.appSettingService.showError('Error loading Non Default Terms');
       }
