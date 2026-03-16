@@ -72,6 +72,7 @@
                             }
                         </div>
                     </aside>
+                    @if(showExtraFields){
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!termsAndConditionForm.get('departmentId')?.value">
                             <ng-select class="ng-select" [items]="departmentList" bindValue="DepartmentMasterSid" bindLabel="departmentName" formControlName="departmentId" placeholder="" (change)="onDepartmentChange($event)">
@@ -114,6 +115,7 @@
 
                         </div>
                     </aside>
+                }
                    
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!termsAndConditionForm.get('status')?.value">
