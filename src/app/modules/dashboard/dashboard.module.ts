@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 
 import { DashboardRoutingModule } from './dashboard-routing.module';
 import { DashboardComponent } from './dashboard.component';
+import { SalesDashboardComponent } from './sales-dashboard/sales-dashboard.component';
 
 @NgModule({
   declarations: [],
@@ -11,7 +12,8 @@ import { DashboardComponent } from './dashboard.component';
     CommonModule,
     FormsModule,
     DashboardRoutingModule,
-    DashboardComponent
+    DashboardComponent,
+    SalesDashboardComponent
   ]
 })
 export class DashboardModule { }
