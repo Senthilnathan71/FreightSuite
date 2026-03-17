@@ -338,6 +338,11 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     { id: 'CY-FO', name: 'CY-FO' }
   ];
 
+    jobToSubJobList = [
+    { id: 'Y', name: 'Y' },
+    { id: 'N', name: 'N' },
+  ];
+
   modeOfShipmentTerms = [
     { id: 'FCL/FCL', name: 'FCL/FCL' },
     { id: 'FCL/LCL', name: 'FCL/LCL' },
@@ -549,6 +554,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       AgentRef: formValue.AgentRef,
       ExportDoDate: formValue.ExportDoDate,
       SOBDate: formValue.SOBDate,
+      JobtoSubjob: formValue.JobtoSubjob
     };
 
     const formData: any = {
@@ -881,6 +887,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       ExportDoNo: [''],
       ExportDoDate: [null],
       SOBDate: [null],
+      JobtoSubjob:[''],
       CarrierRef: [''],
       AgentRef: [''],
 
@@ -1430,7 +1437,7 @@ onETDDateSelect(): void {
           ExportDoNo: othersData.ExportDoNo || '',
           CarrierRef: othersData.CarrierRef || '',
           AgentRef: othersData.AgentRef || '',
-
+          JobtoSubjob: othersData.JobtoSubjob,
           ExportDoDate: othersData.ExportDoDate ? new Date(othersData.ExportDoDate) : null,
           SOBDate: othersData.SOBDate ? new Date(othersData.SOBDate) : null,
         });
@@ -2236,6 +2243,7 @@ onETDDateSelect(): void {
       AgentRef: formValue.AgentRef,
       ExportDoDate: formValue.ExportDoDate,
       SOBDate: formValue.SOBDate,
+      JobtoSubjob: formValue.JobtoSubjob
     };
 
     const formData: any = {
