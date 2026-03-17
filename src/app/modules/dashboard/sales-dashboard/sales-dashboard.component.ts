@@ -19,7 +19,10 @@ import {
   BucketedPagedResult,
   CustomerNoQuote,
   EnquiryNoQuotation,
+  FunnelCounts,
+  LeadAgeCohorts,
   LeadNoMeeting,
+  LeadSourceEffectiveness,
   MeetingBucket,
   MeetingNotConverted,
   MeetingWithFollowup,
@@ -42,6 +45,16 @@ interface SectionState<T> {
   hasMore: boolean;
   loading: boolean;
   initialized: boolean;
+}
+
+interface FunnelRow {
+  label: string;
+  value: number;
+  color: string;
+  icon: string;
+  widthPct: number;
+  pctOfTotal: number;
+  tooltip: string;
 }
 
 @Component({
@@ -113,11 +126,8 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     future: this.createSectionState<ScheduledMeeting>(),
   };
 
-  funnelChartOptions: any = {};
-  meetingsBarOptions: any = {};
   leadStatusDonutOptions: any = {};
-  quoteVsBookingOptions: any = {};
-  funnelRows: { label: string; value: number; color: string; pct: number }[] = [];
+  funnelRows: FunnelRow[] = [];
 
   constructor(
     private salesDashboardService: SalesDashboardService,
@@ -460,6 +470,28 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     return approvedQuotes ? Math.round((bookingsFromQuote / approvedQuotes) * 1000) / 10 : 0;
   }
 
+  getLeadSourceRows(): LeadSourceEffectiveness[] {
+    return this.dashboardCounts?.charts?.leadSourceEffectiveness || [];
+  }
+
+  getMaxLeadSourceCount(): number {
+    const rows = this.getLeadSourceRows();
+    return rows.length > 0 ? Math.max(...rows.map((r) => r.totalLeads), 1) : 1;
+  }
+
+  getLeadAgeCohorts(): LeadAgeCohorts | null {
+    return this.dashboardCounts?.charts?.leadAgeCohorts || null;
+  }
+
+  getAgeCohortTotal(): number {
+    const c = this.getLeadAgeCohorts();
+    return c ? c.total : 0;
+  }
+
+  getPipelinePct(part: number, total: number): number {
+    return total > 0 ? Math.round((part / total) * 1000) / 10 : 0;
+  }
+
   navigateToPreCustomer(sid: number): void {
     this.router.navigate(['/crm/pre-customer/entry', sid]);
   }
@@ -674,47 +706,105 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
 
   private buildChartsFromCounts(countsData: SalesDashboardCounts): void {
     this.buildFunnelChart(countsData.charts.funnelCounts);
-    this.buildMeetingsBarChart(countsData.charts.meetingsBoardCounts);
     this.buildLeadStatusDonut(countsData.charts.leadStatusDistribution || []);
-    this.buildQuoteVsBookingChart();
   }
 
-  private buildFunnelChart(counts: any): void {
+  private buildFunnelChart(counts: FunnelCounts): void {
+    const pathMix = counts.pathMix || {
+      enquiry: { viaLead: 0, viaCustomer: 0 },
+      quote: { viaLead: 0, viaCustomer: 0 },
+      approvedQuote: { viaLead: 0, viaCustomer: 0 },
+      booking: { viaLead: 0, viaCustomer: 0 },
+      customer: { viaMeeting: 0, viaApprovedQuote: 0 },
+    };
     const items = [
-      { label: 'Leads (No Meeting)', value: counts.leadsNoMeeting, color: 'linear-gradient(90deg, #044a6c, #05608D)' },
-      { label: 'Meetings Scheduled', value: counts.meetingsScheduled, color: 'linear-gradient(90deg, #05608D, #0891b2)' },
-      { label: 'Follow-Ups Pending', value: counts.followUpsPending, color: 'linear-gradient(90deg, #7c3aed, #a78bfa)' },
-      { label: 'Business not converted', value: counts.meetingsNotConverted, color: 'linear-gradient(90deg, #f59e0b, #fbbf24)' },
-      { label: 'Customers (No Quote)', value: counts.customersNoQuote, color: 'linear-gradient(90deg, #06b6d4, #22d3ee)' },
-      { label: 'Enquiry Created', value: counts.enquiryCreated, color: 'linear-gradient(90deg, #2563eb, #60a5fa)' },
-      { label: 'Enquiry Converted to Quotation', value: counts.enquiryConvertedToQuotation, color: 'linear-gradient(90deg, #0f766e, #2dd4bf)' },
-      { label: 'Quotes Pending', value: counts.quotesNotApproved, color: 'linear-gradient(90deg, #f97316, #fb923c)' },
-      { label: 'Approved (No Booking)', value: counts.quotesNoBooking, color: 'linear-gradient(90deg, #ec4899, #f472b6)' },
-      { label: 'Bookings Created', value: counts.totalBookings, color: 'linear-gradient(90deg, #16a34a, #4ade80)' },
+      {
+        label: 'Lead Created',
+        value: counts.totalLeads,
+        icon: 'fas fa-search',
+        color: 'linear-gradient(90deg, #044a6c, #05608D)',
+        tooltip: this.getFunnelTooltip('Lead Created', counts.totalLeads, counts.totalLeads),
+      },
+      {
+        label: 'Meeting Scheduled',
+        value: counts.leadsWithMeeting,
+        icon: 'fas fa-handshake',
+        color: 'linear-gradient(90deg, #f59e0b, #fbbf24)',
+        tooltip: this.getFunnelTooltip('Meeting Scheduled', counts.leadsWithMeeting, counts.totalLeads),
+      },
+      {
+        label: 'Enquiry Created',
+        value: counts.leadsWithEnquiry,
+        icon: 'fas fa-comment-dots',
+        color: 'linear-gradient(90deg, #06b6d4, #22d3ee)',
+        tooltip: this.getFunnelTooltip('Enquiry Created', counts.leadsWithEnquiry, counts.totalLeads, [
+          `${pathMix.enquiry.viaLead} via lead-linked enquiry`,
+          `${pathMix.enquiry.viaCustomer} via customer-linked enquiry`,
+        ]),
+      },
+      {
+        label: 'Quotation Created',
+        value: counts.leadsWithQuote,
+        icon: 'fas fa-file-invoice-dollar',
+        color: 'linear-gradient(90deg, #f97316, #fb923c)',
+        tooltip: this.getFunnelTooltip('Quotation Created', counts.leadsWithQuote, counts.totalLeads, [
+          `${pathMix.quote.viaLead} via lead-linked quote`,
+          `${pathMix.quote.viaCustomer} via customer-linked quote`,
+        ]),
+      },
+      {
+        label: 'Quotation Approved',
+        value: counts.leadsWithApprovedQuote,
+        icon: 'fas fa-stamp',
+        color: 'linear-gradient(90deg, #7c3aed, #a78bfa)',
+        tooltip: this.getFunnelTooltip('Quotation Approved', counts.leadsWithApprovedQuote, counts.totalLeads, [
+          `${pathMix.approvedQuote.viaLead} via lead-linked quote`,
+          `${pathMix.approvedQuote.viaCustomer} via customer-linked quote`,
+        ]),
+      },
+      {
+        label: 'Booking Created',
+        value: counts.leadsWithBooking,
+        icon: 'fas fa-calendar-check',
+        color: 'linear-gradient(90deg, #16a34a, #4ade80)',
+        tooltip: this.getFunnelTooltip('Booking Created', counts.leadsWithBooking, counts.totalLeads, [
+          `${pathMix.booking.viaLead} via lead-linked chain`,
+          `${pathMix.booking.viaCustomer} via customer-linked chain`,
+        ]),
+      },
+      {
+        label: 'Customer Created',
+        value: counts.leadsTurnedCustomer,
+        icon: 'fas fa-user-check',
+        color: 'linear-gradient(90deg, #0f766e, #14b8a6)',
+        tooltip: this.getFunnelTooltip('Customer Created', counts.leadsTurnedCustomer, counts.totalLeads, [
+          `${pathMix.customer.viaMeeting} via confirmed meeting`,
+          `${pathMix.customer.viaApprovedQuote} via approved quotation`,
+        ]),
+      },
     ];
     const maxVal = Math.max(...items.map((item) => item.value), 1);
+    const totalValue = items[0]?.value || 0;
+
     this.funnelRows = items.map((item) => ({
       ...item,
-      pct: Math.max((item.value / maxVal) * 100, 8),
+      widthPct: item.value > 0 ? Math.max((item.value / maxVal) * 100, 16) : 16,
+      pctOfTotal: totalValue > 0 ? Math.round((item.value / totalValue) * 1000) / 10 : 0,
     }));
   }
 
-  private buildMeetingsBarChart(counts: any): void {
-    this.meetingsBarOptions = {
-      series: [
-        { name: 'Overdue', data: [counts.overdue] },
-        { name: 'Today', data: [counts.today] },
-        { name: 'Future', data: [counts.future] },
-      ],
-      chart: { type: 'bar', height: 180, toolbar: { show: false } },
-      colors: ['#ef4444', '#f59e0b', '#16a34a'],
-      plotOptions: {
-        bar: { horizontal: false, columnWidth: '55%', borderRadius: 6 },
-      },
-      dataLabels: { enabled: true, style: { fontSize: '11px', fontWeight: 700 } },
-      xaxis: { categories: ['Meetings'] },
-      legend: { position: 'bottom' },
-    };
+  private getFunnelTooltip(
+    label: string,
+    value: number,
+    totalLeads: number,
+    extraLines: string[] = [],
+  ): string {
+    const pctOfTotal = totalLeads > 0 ? Math.round((value / totalLeads) * 1000) / 10 : 0;
+    return [
+      `${label}: ${value} leads`,
+      `${pctOfTotal}% of total leads`,
+      ...extraLines,
+    ].join('\n');
   }
 
   private buildLeadStatusDonut(distribution: Array<{ status: string; count: number }>): void {
@@ -809,29 +899,6 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 
     return luminance > 0.6 ? '#0f172a' : '#ffffff';
-  }
-
-  private buildQuoteVsBookingChart(): void {
-    if (!this.dashboardCounts) return;
-
-    const quotes = this.dashboardCounts.summaryKpis.quotes;
-    const bookings = this.dashboardCounts.summaryKpis.bookings;
-
-    this.quoteVsBookingOptions = {
-      series: [
-        { name: 'Quotes', data: [quotes.totalQuotes] },
-        { name: 'Approved', data: [quotes.approvedQuotes] },
-        { name: 'Bookings', data: [bookings.totalBookings] },
-      ],
-      chart: { type: 'bar', height: 180, stacked: false, toolbar: { show: false } },
-      colors: ['#05608D', '#16a34a', '#06b6d4'],
-      plotOptions: {
-        bar: { horizontal: false, columnWidth: '50%', borderRadius: 6 },
-      },
-      dataLabels: { enabled: true, style: { fontSize: '11px', fontWeight: 700 } },
-      xaxis: { categories: ['Pipeline'] },
-      legend: { position: 'bottom' },
-    };
   }
 
   private createSectionState<T>(): SectionState<T> {

@@ -12,9 +12,23 @@ export interface SalesDashboardFilters {
 }
 
 export interface SalesDashboardCounts {
-  counts: FunnelCounts;
+  counts: SectionCounts;
   summaryKpis: SummaryKpis;
   charts: ChartData;
+}
+
+export interface SectionCounts {
+  leadsNoMeeting: number;
+  meetingsScheduled: number;
+  followUpsPending: number;
+  meetingsNotConverted: number;
+  customersNoQuote: number;
+  enquiryCreated: number;
+  enquiryConvertedToQuotation: number;
+  enquiriesNoQuotation: number;
+  quotesNotApproved: number;
+  quotesNoBooking: number;
+  totalBookings: number;
 }
 
 export interface PagedResult<T> {
@@ -176,6 +190,8 @@ export interface QuoteSummary {
   rejectedQuotes: number;
   waitingQuotes: number;
   quotesWithBooking: number;
+  quotesFromEnquiry: number;
+  directQuotes: number;
 }
 
 export interface BookingSummary {
@@ -193,17 +209,35 @@ export interface SummaryKpis {
 }
 
 export interface FunnelCounts {
-  leadsNoMeeting: number;
-  meetingsScheduled: number;
-  followUpsPending: number;
-  meetingsNotConverted: number;
-  customersNoQuote: number;
-  enquiryCreated: number;
-  enquiryConvertedToQuotation: number;
-  enquiriesNoQuotation: number;
-  quotesNotApproved: number;
-  quotesNoBooking: number;
-  totalBookings: number;
+  totalLeads: number;
+  leadsWithMeeting: number;
+  leadsWithEnquiry: number;
+  leadsWithQuote: number;
+  leadsWithApprovedQuote: number;
+  leadsWithBooking: number;
+  leadsTurnedCustomer: number;
+  pathMix: {
+    enquiry: {
+      viaLead: number;
+      viaCustomer: number;
+    };
+    quote: {
+      viaLead: number;
+      viaCustomer: number;
+    };
+    approvedQuote: {
+      viaLead: number;
+      viaCustomer: number;
+    };
+    booking: {
+      viaLead: number;
+      viaCustomer: number;
+    };
+    customer: {
+      viaMeeting: number;
+      viaApprovedQuote: number;
+    };
+  };
 }
 
 export interface MeetingsBoardCounts {
@@ -217,10 +251,27 @@ export interface LeadStatusCount {
   count: number;
 }
 
+export interface LeadSourceEffectiveness {
+  source: string;
+  totalLeads: number;
+  convertedLeads: number;
+  conversionRate: number;
+}
+
+export interface LeadAgeCohorts {
+  days0to7: number;
+  days7to30: number;
+  days30to60: number;
+  days60plus: number;
+  total: number;
+}
+
 export interface ChartData {
   funnelCounts: FunnelCounts;
   meetingsBoardCounts: MeetingsBoardCounts;
   leadStatusDistribution: LeadStatusCount[];
+  leadSourceEffectiveness: LeadSourceEffectiveness[];
+  leadAgeCohorts: LeadAgeCohorts;
 }
 
 export interface SalesDashboardSections {

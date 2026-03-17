@@ -63,22 +63,28 @@
     </div>
 
     <ng-container *ngIf="dashboardCounts && !isLoading">
-      <div class="kpi-grid">
-        <div class="kpi-card c-brand"><div class="kpi-icon-wrap i-brand"><i class="fas fa-users"></i></div><div class="kpi-label">Leads (No Meeting)</div><div class="kpi-value">{{ dashboardCounts.counts.leadsNoMeeting }}</div><div class="kpi-watermark"><i class="fas fa-users"></i></div></div>
-        <div class="kpi-card c-amber"><div class="kpi-icon-wrap i-amber"><i class="fas fa-calendar-alt"></i></div><div class="kpi-label">Meetings Scheduled</div><div class="kpi-value">{{ dashboardCounts.counts.meetingsScheduled }}</div><div class="kpi-watermark"><i class="fas fa-calendar-alt"></i></div></div>
-        <div class="kpi-card c-purple"><div class="kpi-icon-wrap i-purple"><i class="fas fa-bell"></i></div><div class="kpi-label">Follow-Ups Pending</div><div class="kpi-value">{{ dashboardCounts.counts.followUpsPending }}</div><div class="kpi-watermark"><i class="fas fa-bell"></i></div></div>
-        <div class="kpi-card c-cyan"><div class="kpi-icon-wrap i-cyan"><i class="fas fa-clipboard-list"></i></div><div class="kpi-label">Enquiry Created (No Quotation)</div><div class="kpi-value">{{ dashboardCounts.counts.enquiriesNoQuotation }}</div><div class="kpi-watermark"><i class="fas fa-clipboard-list"></i></div></div>
-        <div class="kpi-card c-green"><div class="kpi-icon-wrap i-green"><i class="fas fa-random"></i></div><div class="kpi-label">Enquiry Converted</div><div class="kpi-value">{{ dashboardCounts.counts.enquiryConvertedToQuotation }}</div><div class="kpi-watermark"><i class="fas fa-random"></i></div></div>
-        <div class="kpi-card c-orange"><div class="kpi-icon-wrap i-orange"><i class="fas fa-file-alt"></i></div><div class="kpi-label">Quotes Pending</div><div class="kpi-value">{{ dashboardCounts.counts.quotesNotApproved }}</div><div class="kpi-watermark"><i class="fas fa-file-alt"></i></div></div>
-      </div>
-
       <div class="charts-row">
         <div class="chart-card">
           <div class="chart-title"><i class="fas fa-filter ct-icon"></i> Pipeline Funnel</div>
+          <div class="chart-subtitle">Distinct original leads by milestone. Stages include both lead-linked and customer-linked downstream records, and each stage respects the selected date range.</div>
           <div class="funnel-bars" *ngIf="funnelRows.length">
-            <div class="funnel-row" *ngFor="let row of funnelRows">
-              <div class="funnel-label">{{ row.label }}</div>
-              <div class="funnel-track"><div class="funnel-bar" [style.width.%]="row.pct" [style.background]="row.color"><span>{{ row.value }}</span></div></div>
+            <div class="funnel-row" *ngFor="let row of funnelRows; let rowIndex = index">
+              <div class="funnel-stage-info">
+                <div class="funnel-stage-icon">
+                  <i [class]="row.icon"></i>
+                </div>
+                <div class="funnel-stage-label">{{ row.label }}</div>
+              </div>
+              <div class="funnel-progress">
+                <div
+                  class="funnel-progress-fill"
+                  [style.width.%]="row.widthPct"
+                  [style.background]="row.color"
+                  [title]="row.tooltip"
+                >
+                  <span>{{ row.value }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -98,14 +104,84 @@
         </div>
       </div>
 
-      <div class="charts-row-equal">
+      <div class="insights-row">
         <div class="chart-card">
-          <div class="chart-title"><i class="fas fa-calendar-check ct-icon"></i> Meetings Overview</div>
-          <apx-chart *ngIf="meetingsBarOptions.series" [series]="meetingsBarOptions.series" [chart]="meetingsBarOptions.chart" [colors]="meetingsBarOptions.colors" [plotOptions]="meetingsBarOptions.plotOptions" [dataLabels]="meetingsBarOptions.dataLabels" [xaxis]="meetingsBarOptions.xaxis" [legend]="meetingsBarOptions.legend"></apx-chart>
+          <div class="chart-title"><i class="fas fa-bullseye ct-icon"></i> Lead Source Effectiveness</div>
+          <div class="source-bars" *ngIf="getLeadSourceRows().length; else noSourceData">
+            <div class="source-row" *ngFor="let src of getLeadSourceRows()">
+              <div class="source-label" [title]="src.source">{{ src.source || 'Unknown' }}</div>
+              <div class="source-track">
+                <div class="source-bar" [style.width.%]="(src.totalLeads / getMaxLeadSourceCount()) * 100">
+                  <span>{{ src.totalLeads }}</span>
+                </div>
+              </div>
+              <div class="source-rate" [ngClass]="src.conversionRate >= 50 ? 'rate-high' : (src.conversionRate >= 20 ? 'rate-mid' : 'rate-low')">{{ src.conversionRate }}%</div>
+            </div>
+          </div>
+          <ng-template #noSourceData><div class="empty-chart">No lead source data</div></ng-template>
         </div>
+
         <div class="chart-card">
-          <div class="chart-title"><i class="fas fa-chart-bar ct-icon"></i> Quotation vs Booking</div>
-          <apx-chart *ngIf="quoteVsBookingOptions.series" [series]="quoteVsBookingOptions.series" [chart]="quoteVsBookingOptions.chart" [colors]="quoteVsBookingOptions.colors" [plotOptions]="quoteVsBookingOptions.plotOptions" [dataLabels]="quoteVsBookingOptions.dataLabels" [xaxis]="quoteVsBookingOptions.xaxis" [legend]="quoteVsBookingOptions.legend"></apx-chart>
+          <div class="chart-title"><i class="fas fa-hourglass-half ct-icon"></i> Lead Age Cohorts</div>
+          <ng-container *ngIf="getLeadAgeCohorts() as cohorts">
+            <div class="cohort-total">{{ cohorts.total }} active unconverted lead{{ cohorts.total !== 1 ? 's' : '' }}</div>
+            <div class="age-cohorts" *ngIf="cohorts.total > 0; else noAgeCohorts">
+              <div class="cohort-bar-stack">
+                <div class="cohort-segment seg-green" *ngIf="cohorts.days0to7" [style.flex]="cohorts.days0to7" [title]="cohorts.days0to7 + ' leads (0-7 days)'"></div>
+                <div class="cohort-segment seg-amber" *ngIf="cohorts.days7to30" [style.flex]="cohorts.days7to30" [title]="cohorts.days7to30 + ' leads (7-30 days)'"></div>
+                <div class="cohort-segment seg-orange" *ngIf="cohorts.days30to60" [style.flex]="cohorts.days30to60" [title]="cohorts.days30to60 + ' leads (30-60 days)'"></div>
+                <div class="cohort-segment seg-red" *ngIf="cohorts.days60plus" [style.flex]="cohorts.days60plus" [title]="cohorts.days60plus + ' leads (60+ days)'"></div>
+              </div>
+              <div class="cohort-legend">
+                <div class="legend-item"><span class="legend-dot dot-green"></span> 0-7d: {{ cohorts.days0to7 }}</div>
+                <div class="legend-item"><span class="legend-dot dot-amber"></span> 7-30d: {{ cohorts.days7to30 }}</div>
+                <div class="legend-item"><span class="legend-dot dot-orange"></span> 30-60d: {{ cohorts.days30to60 }}</div>
+                <div class="legend-item"><span class="legend-dot dot-red"></span> 60d+: {{ cohorts.days60plus }}</div>
+              </div>
+            </div>
+            <ng-template #noAgeCohorts><div class="empty-chart">No unconverted leads</div></ng-template>
+          </ng-container>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-title"><i class="fas fa-project-diagram ct-icon"></i> Pipeline Path Breakdown</div>
+          <div class="pipeline-paths" *ngIf="dashboardCounts.summaryKpis.quotes.totalQuotes > 0 || dashboardCounts.summaryKpis.bookings.totalBookings > 0; else noPipelineData">
+            <div class="pipeline-section" *ngIf="dashboardCounts.summaryKpis.quotes.totalQuotes > 0">
+              <div class="pipeline-label">Quotations ({{ dashboardCounts.summaryKpis.quotes.totalQuotes }})</div>
+              <div class="pipeline-bar-stack">
+                <div class="pipeline-seg seg-pipeline" [style.flex]="dashboardCounts.summaryKpis.quotes.quotesFromEnquiry || 0" [title]="'From Enquiry: ' + dashboardCounts.summaryKpis.quotes.quotesFromEnquiry">
+                  <span *ngIf="dashboardCounts.summaryKpis.quotes.quotesFromEnquiry">{{ dashboardCounts.summaryKpis.quotes.quotesFromEnquiry }}</span>
+                </div>
+                <div class="pipeline-seg seg-direct" [style.flex]="dashboardCounts.summaryKpis.quotes.directQuotes || 0" [title]="'Direct: ' + dashboardCounts.summaryKpis.quotes.directQuotes">
+                  <span *ngIf="dashboardCounts.summaryKpis.quotes.directQuotes">{{ dashboardCounts.summaryKpis.quotes.directQuotes }}</span>
+                </div>
+              </div>
+              <div class="pipeline-pcts">
+                <span>Pipeline: {{ getPipelinePct(dashboardCounts.summaryKpis.quotes.quotesFromEnquiry, dashboardCounts.summaryKpis.quotes.totalQuotes) }}%</span>
+                <span>Direct: {{ getPipelinePct(dashboardCounts.summaryKpis.quotes.directQuotes, dashboardCounts.summaryKpis.quotes.totalQuotes) }}%</span>
+              </div>
+            </div>
+            <div class="pipeline-section" *ngIf="dashboardCounts.summaryKpis.bookings.totalBookings > 0">
+              <div class="pipeline-label">Bookings ({{ dashboardCounts.summaryKpis.bookings.totalBookings }})</div>
+              <div class="pipeline-bar-stack">
+                <div class="pipeline-seg seg-pipeline" [style.flex]="dashboardCounts.summaryKpis.bookings.bookingsFromQuote || 0" [title]="'From Quote: ' + dashboardCounts.summaryKpis.bookings.bookingsFromQuote">
+                  <span *ngIf="dashboardCounts.summaryKpis.bookings.bookingsFromQuote">{{ dashboardCounts.summaryKpis.bookings.bookingsFromQuote }}</span>
+                </div>
+                <div class="pipeline-seg seg-direct" [style.flex]="dashboardCounts.summaryKpis.bookings.directBookings || 0" [title]="'Direct: ' + dashboardCounts.summaryKpis.bookings.directBookings">
+                  <span *ngIf="dashboardCounts.summaryKpis.bookings.directBookings">{{ dashboardCounts.summaryKpis.bookings.directBookings }}</span>
+                </div>
+              </div>
+              <div class="pipeline-pcts">
+                <span>From Quote: {{ getPipelinePct(dashboardCounts.summaryKpis.bookings.bookingsFromQuote, dashboardCounts.summaryKpis.bookings.totalBookings) }}%</span>
+                <span>Direct: {{ getPipelinePct(dashboardCounts.summaryKpis.bookings.directBookings, dashboardCounts.summaryKpis.bookings.totalBookings) }}%</span>
+              </div>
+            </div>
+            <div class="pipeline-legend">
+              <div class="legend-item"><span class="legend-dot dot-pipeline"></span> From Pipeline</div>
+              <div class="legend-item"><span class="legend-dot dot-direct"></span> Direct</div>
+            </div>
+          </div>
+          <ng-template #noPipelineData><div class="empty-chart">No quotation or booking data</div></ng-template>
         </div>
       </div>
 
