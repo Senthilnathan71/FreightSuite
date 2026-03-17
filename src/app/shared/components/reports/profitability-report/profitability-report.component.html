@@ -81,6 +81,25 @@
                         <td class="text-end">{{ item.Vol | number:'1.2-2' }}</td>
                          <td class="text-end">{{ item.space | number:'1.2-2' }}</td>
                     </tr>
+                    <tr>
+                        <td colspan="5" class="text-end fw-bold">Grand Total</td>
+                        <td class="text-end fw-bold">{{grandtotalRevenueWithHouse() | number:'1.2-2'}}</td>
+                        <td class="text-end fw-bold">{{grandtotalCostWithHouse() | number:'1.2-2'}}</td>
+                        <td class="text-end fw-bold">{{grandGP() | number:'1.2-2'}}</td>
+                        <td class="text-end fw-bold">{{grandproveprofit() | number:'1.2-2'}}</td>
+                        <td class="text-end fw-bold">{{grandactualRevenue() | number:'1.2-2'}}</td>
+                        <td class="text-end fw-bold">{{grandactualCost() | number:'1.2-2'}}</td>
+                        <td class="text-end fw-bold">{{grandactualGp() | number:'1.2-2'}}</td>
+                        <td class="text-end fw-bold">{{grandprofit() | number:'1.2-2'}}</td>
+                        <td class="text-end fw-bold">{{grandnoOfShipment()}}</td>
+                        <td class="text-end fw-bold">{{grandtwentyft()}}</td>
+                        <td class="text-end fw-bold">{{grandfourty()}}</td>
+                        <td class="text-end fw-bold">{{grandfourtyfive()}}</td>
+                        <td></td>
+                        <td class="text-end fw-bold">{{grandchargeable() | number:'1.2-2'}}</td>
+                        <td class="text-end fw-bold">{{grnadVol() | number:'1.2-2'}}</td>
+                        <td class="text-end fw-bold">{{grandspace() | number:'1.2-2'}}</td>
+                    </tr>
                      <tr *ngIf="!fullData?.data || fullData.data.length === 0">
                         <td colspan="18" class="text-center fw-bold py-1">
                             No Record Found

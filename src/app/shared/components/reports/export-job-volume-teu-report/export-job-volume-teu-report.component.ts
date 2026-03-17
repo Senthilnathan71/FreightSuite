@@ -63,7 +63,7 @@ export class ExportJobVolumeTeuReportComponent {
     { key: 'portOfdischarge', label: 'Port of Discharge' },
     { key: 'portOfDestination', label: 'Port of Destination' },
     { key: 'TEUCount', label: 'No of TEU' },
-    { key: 'weight', label: 'Weight' },
+    { key: 'weight', label: 'Gross Weight' },
     { key: 'chargebaleWt', label: 'Chargeable Wt' }
   ];
 

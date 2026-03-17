@@ -556,13 +556,15 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
         .filter(p => p.ParameterFieldType === this.FIELD_TYPES.DATE)
         .map(p => p.ParameterName)
     );
+    const validatedPairs = new Set<string>();
 
     for (const fromName of dateParamNames) {
-      if (!/^From/i.test(fromName)) continue;
+      const toName = this.findMatchingToDateName(fromName, dateParamNames);
+      if (!toName) continue;
 
-      const suffix = fromName.replace(/^From/i, '');
-      const toName = `To${suffix}`;
-      if (!dateParamNames.has(toName)) continue;
+      const pairKey = [fromName, toName].sort().join('|');
+      if (validatedPairs.has(pairKey)) continue;
+      validatedPairs.add(pairKey);
 
       const fromControl = this.parameterForm.get(fromName);
       const toControl = this.parameterForm.get(toName);
@@ -582,6 +584,26 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
     }
 
     return true;
+  }
+
+  private findMatchingToDateName(fromName: string, dateParamNames: Set<string>): string | null {
+    if (!/from/i.test(fromName)) {
+      return null;
+    }
+
+    const candidateNames = [
+      fromName.replace(/^From/i, 'To'),
+      fromName.replace(/From/i, 'To'),
+      fromName.replace(/from/i, 'to'),
+    ].filter(candidate => candidate !== fromName);
+
+    for (const candidate of candidateNames) {
+      if (dateParamNames.has(candidate)) {
+        return candidate;
+      }
+    }
+
+    return null;
   }
 
   private toComparableDate(value: any): Date | null {

@@ -10,13 +10,15 @@ import {
   OnDestroy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { ReportService, REPORT_DATA, ReportCard } from '../../services/report.service';
 import { ReportConfig } from '../../services/report-registry.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ExcelExportService } from '../../excel-report-service';
 import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import * as XLSX from 'xlsx';
 
 /**
  * Generic Report Modal Component
@@ -106,6 +108,7 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
 
   constructor(
     public activeModal: NgbActiveModal,
+    private modalService: NgbModal,
     private reportService: ReportService,
     private spinner: NgxSpinnerService,
     private appSettingsService: AppSettingsService,
@@ -284,15 +287,26 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
     try {
       this.spinner.show();
 
-      let pdfBlob: Blob;
+      let attachmentFile: File;
       const filename = this.reportService.generateFilename(
         this.reportConfig.filenameTemplate,
         this.reportData
       );
+      const reportFormat = (this.reportHeader?.ReportFormat || '').toUpperCase();
+      const selectedFormat = reportFormat === 'EXCEL' || reportFormat === 'XL' ? 'XL' : 'PDF';
+      const exportConfig = typeof this.componentRef?.instance?.getExcelData === 'function'
+        ? this.componentRef.instance.getExcelData()
+        : null;
 
-      // Use pdfmake if component provides structured data
-      if (this.componentRef?.instance?.getExcelData) {
-        const exportConfig = this.componentRef.instance.getExcelData();
+      if (selectedFormat === 'XL') {
+        const excelBlob = this.buildExcelAttachmentBlob(exportConfig, filename);
+        attachmentFile = new File(
+          [excelBlob],
+          `${filename}.xlsx`,
+          { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }
+        );
+      } else {
+        let pdfBlob: Blob;
         if (exportConfig?.reportHeader && exportConfig?.rows) {
           const company = this.appSettingsService.getCurrentCompanyInfo();
           const branch = this.appSettingsService.getCurrentBranchInfo();
@@ -304,12 +318,12 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
             this.reportConfig?.pdfOrientation || 'portrait'
           );
         } else {
-          // Fallback to html2canvas
           pdfBlob = await this.reportService.generatePDFBlob(this.printElementId);
         }
-      } else {
-        // Fallback to html2canvas
-        pdfBlob = await this.reportService.generatePDFBlob(this.printElementId);
+
+        attachmentFile = new File([pdfBlob], `${filename}.pdf`, {
+          type: 'application/pdf'
+        });
       }
 
       const emailData = this.reportService.buildEmailData(
@@ -322,8 +336,20 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
       // Close this modal
       this.activeModal.dismiss();
 
-      // Open email modal with PDF attachment
-      this.reportService.openEmailModal(emailData, pdfBlob, filename);
+      const modalRef = this.modalService.open(EmailEntryComponent, {
+        size: 'xl',
+        centered: true,
+        backdrop: 'static'
+      });
+
+      modalRef.componentInstance.setContent = {
+        EmailTo: emailData.to,
+        EmailCC: emailData.cc || [],
+        EmailBCC: emailData.bcc || [],
+        Subject: emailData.subject,
+        Mailbody: emailData.body,
+        attachments: [attachmentFile]
+      };
     } catch (error) {
       console.error('Error preparing email:', error);
       this.spinner.hide();
@@ -569,6 +595,174 @@ private formatLabel(key: string): string {
     .replace(/([A-Z])/g, ' $1')
     .replace(/^./, str => str.toUpperCase())
     .trim();
+}
+
+private buildExcelAttachmentBlob(excelData: any, filename: string): Blob {
+  if (excelData?.reportHeader && excelData?.rows) {
+    return this.buildComplexExcelBlob(excelData, filename);
+  }
+
+  if (excelData?.data && excelData?.headers) {
+    return this.buildSimpleExcelBlob(excelData, filename);
+  }
+
+  throw new Error('No Excel-compatible data found in report');
+}
+
+private buildSimpleExcelBlob(excelData: any, filename: string): Blob {
+  const headers = excelData.headers || [];
+  const data = excelData.data || [];
+  const sheetName = (excelData.sheetName || filename).replace(/[^a-zA-Z0-9]/g, '').slice(0, 31);
+  const title = excelData.title;
+
+  if (!data.length || !headers.length) {
+    throw new Error('No Excel data or headers provided');
+  }
+
+  const formattedData = data.map((item: any) => {
+    const row: any = {};
+    headers.forEach((header: any) => {
+      row[header.label] = item[header.key] ?? '';
+    });
+    return row;
+  });
+
+  const aoa: any[][] = [];
+  if (title) {
+    aoa.push([`Company Name: ${title}`]);
+  }
+  aoa.push(headers.map((h: any) => h.label));
+  formattedData.forEach((row: any) => {
+    aoa.push(headers.map((h: any) => row[h.label]));
+  });
+
+  const worksheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(aoa);
+  if (title) {
+    const endCol = headers.length - 1;
+    worksheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: endCol } }];
+  }
+
+  const workbook: XLSX.WorkBook = {
+    Sheets: { [sheetName]: worksheet },
+    SheetNames: [sheetName]
+  };
+
+  const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+  return new Blob([excelBuffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  });
+}
+
+private buildComplexExcelBlob(config: any, filename: string): Blob {
+  const {
+    fileName,
+    sheetName = (fileName || filename).replace(/[^a-zA-Z0-9]/g, '').slice(0, 31),
+    reportHeader,
+    tableHeaders,
+    includeTableHeaders = true,
+    rows,
+    columnWidths
+  } = config;
+
+  const aoa: any[][] = [];
+  const merges: XLSX.Range[] = [];
+  const totalCols = tableHeaders.length;
+
+  aoa.push([reportHeader.companyName]);
+  merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: totalCols - 1 } });
+
+  aoa.push([reportHeader.reportTitle]);
+  merges.push({ s: { r: 1, c: 0 }, e: { r: 1, c: totalCols - 1 } });
+
+  aoa.push([]);
+
+  if (reportHeader.additionalInfo?.length) {
+    for (const info of reportHeader.additionalInfo) {
+      aoa.push([`${info.label} : ${info.value}`]);
+      merges.push({
+        s: { r: aoa.length - 1, c: 0 },
+        e: { r: aoa.length - 1, c: totalCols - 1 }
+      });
+    }
+  }
+
+  if (includeTableHeaders) {
+    aoa.push(tableHeaders.map((h: any) => h.label));
+  }
+
+  let currentRowIndex = aoa.length;
+  for (const row of rows) {
+    const excelRow: any[] = [];
+    let colIndex = 0;
+
+    for (const cell of row.cells) {
+      excelRow.push(cell.value ?? '');
+
+      if (cell.colspan && cell.colspan > 1) {
+        merges.push({
+          s: { r: currentRowIndex, c: colIndex },
+          e: { r: currentRowIndex, c: colIndex + cell.colspan - 1 }
+        });
+        for (let i = 1; i < cell.colspan; i++) {
+          excelRow.push('');
+        }
+        colIndex += cell.colspan;
+      } else {
+        colIndex++;
+      }
+    }
+
+    while (excelRow.length < totalCols) {
+      excelRow.push('');
+    }
+
+    aoa.push(excelRow);
+    currentRowIndex++;
+  }
+
+  if (config.summaryTable) {
+    aoa.push([]);
+    currentRowIndex++;
+
+    if (config.summaryTable.title) {
+      aoa.push([config.summaryTable.title]);
+      merges.push({ s: { r: currentRowIndex, c: 0 }, e: { r: currentRowIndex, c: totalCols - 1 } });
+      currentRowIndex++;
+    }
+
+    const summaryHeaders = config.summaryTable.headers;
+    aoa.push(summaryHeaders);
+    currentRowIndex++;
+
+    for (const row of config.summaryTable.rows) {
+      const summaryExcelRow: any[] = [];
+      for (const cell of row.cells) {
+        summaryExcelRow.push(cell.value ?? '');
+      }
+      while (summaryExcelRow.length < summaryHeaders.length) {
+        summaryExcelRow.push('');
+      }
+      aoa.push(summaryExcelRow);
+      currentRowIndex++;
+    }
+  }
+
+  const worksheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(aoa);
+  worksheet['!merges'] = merges;
+
+  if (columnWidths?.length) {
+    worksheet['!cols'] = columnWidths.map((w: number) => ({ wch: w }));
+  }
+
+  const workbook: XLSX.WorkBook = {
+    Sheets: { [sheetName]: worksheet },
+    SheetNames: [sheetName]
+  };
+
+  const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+  return new Blob([excelBuffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  });
 }
 
 }

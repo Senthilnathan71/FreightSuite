@@ -388,7 +388,7 @@ export class ReportRegistryService {
         id: 'statement-ledger-report',
         title: 'Statment of Accounts',
         component: StatementReportComponent,
-        filenameTemplate: 'Statemnt_Ledger_Report_{LedgerName}_{date}',
+        filenameTemplate: 'Statemnt_of_Accounts_Report_{LedgerName}_{date}',
         module: 'accounts-report',
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
@@ -397,7 +397,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong>Statment Ledger Report</strong> for Ledger: <strong>{LedgerName}</strong></p>
+            <p>Please find attached the <strong>Statment of Accounts Report</strong> for Ledger: <strong>{LedgerName}</strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -491,7 +491,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong> Profit Loss Report</strong> for Ledger: <strong>{GroupName}</strong></p>
+            <p>Please find attached the <strong> Profit and Loss Report</strong> for Ledger: <strong>{GroupName}</strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -500,7 +500,7 @@ export class ReportRegistryService {
       });
 
     } catch (error) {
-      console.warn(' Balance Sheet Report component not yet created:', error);
+      console.warn(' profit and Loss Report component not yet created:', error);
     }
 
 
@@ -523,7 +523,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong> Top_N_Customer_Report</strong></strong></p>
+            <p>Please find attached the <strong> Top N Customer Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -555,7 +555,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong> Ledger_Report</strong></strong></p>
+            <p>Please find attached the <strong> LedgerReport</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -586,7 +586,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong> Balance_Sheet</strong></strong></p>
+            <p>Please find attached the <strong> Balance Sheet</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -617,7 +617,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong> VAT_Report</strong></strong></p>
+            <p>Please find attached the <strong> VAT Recivedable Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -648,7 +648,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong> VAT_Payable_Report</strong></strong></p>
+            <p>Please find attached the <strong> VAT Payable Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -679,7 +679,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong> VAT_201_Report</strong></strong></p>
+            <p>Please find attached the <strong> VAT-201 Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -711,7 +711,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong> Unposted_Voucher_List_Report</strong></strong></p>
+            <p>Please find attached the <strong> Unposted Voucher List Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -742,7 +742,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong>Profit_Summary_Report</strong></strong></p>
+            <p>Please find attached the <strong>Profit Summary Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -768,7 +768,7 @@ export class ReportRegistryService {
             apiEndpoint: 'accounts-report/send-email',
             request: 'POST',
             fetchDataEndpoint: 'accounts/reports/{id}/generate',
-            emailSubjectTemplate: 'Matching_List_Receipt_and_Payment_Report',
+            emailSubjectTemplate: 'Matching List Receipt and Payment Report',
             emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
@@ -804,11 +804,11 @@ export class ReportRegistryService {
         apiEndpoint: 'accounts-report/send-email',
         request: 'POST',
         fetchDataEndpoint: 'operation/reports/{id}/generate',
-        emailSubjectTemplate: 'Shipment_Summary_Report - Ledger: {GroupName}',
+        emailSubjectTemplate: 'House_Summary_Report - Ledger: {GroupName}',
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong> Shipment_Summary_Report</strong> for Ledger: <strong>{GroupName}</strong></p>
+            <p>Please find attached the <strong> House Summary Report</strong> for Ledger: <strong>{GroupName}</strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -841,7 +841,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong> BL_Issue_Report</strong></strong></p>
+            <p>Please find attached the <strong> BL Issue Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -873,7 +873,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong> Profitability_Report</strong></strong></p>
+            <p>Please find attached the <strong> Profitability Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -905,7 +905,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong> Container_Wise-KPI_Report</strong></strong></p>
+            <p>Please find attached the <strong> Container Wise-KPI Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -936,7 +936,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong> Do_Issue_List_Report</strong></strong></p>
+            <p>Please find attached the <strong> Do Issue List Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -968,7 +968,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong> Shipment_Summary_Details_Report</strong></strong></p>
+            <p>Please find attached the <strong> Shipment Summary Details Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -1000,7 +1000,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong> Unbilled_cost_report</strong></strong></p>
+            <p>Please find attached the <strong> Unbilled cost report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -1031,7 +1031,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong>Unbilled_Revenue_report</strong></strong></p>
+            <p>Please find attached the <strong>Unbilled Revenue Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -1062,7 +1062,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong>House_Job_Loss_Report</strong></strong></p>
+            <p>Please find attached the <strong>House Job Loss Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -1093,7 +1093,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong>Profit_Summary_Report</strong></strong></p>
+            <p>Please find attached the <strong>Profit Summary Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -1125,7 +1125,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong>Lost_Customer_Report</strong></strong></p>
+            <p>Please find attached the <strong>Lost Customer Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -1156,7 +1156,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong>Destination_Report</strong></strong></p>
+            <p>Please find attached the <strong>Destination Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -1187,7 +1187,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong>Export_Job_Volume_TEU_Report</strong></strong></p>
+            <p>Please find attached the <strong>Export Job Volume TEU Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -1218,7 +1218,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong>Comprehensive_Management_Report</strong></strong></p>
+            <p>Please find attached the <strong>Comprehensive Management Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -1249,7 +1249,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong>Tradelane_Profitability_Report</strong></strong></p>
+            <p>Please find attached the <strong>Tradelane Profitability Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -1281,7 +1281,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong>Network_report</strong></strong></p>
+            <p>Please find attached the <strong>Network Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -1313,7 +1313,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong>Freight_MoM_Growth_report</strong></strong></p>
+            <p>Please find attached the <strong>Freight MoM Growth Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -1344,7 +1344,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong>cost_revenue_not_booked_report</strong></strong></p>
+            <p>Please find attached the <strong>Cost & Revenue Not Booked Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
