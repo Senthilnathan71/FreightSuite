@@ -250,6 +250,17 @@ export class LoginComponent implements OnInit {
     this.pendingLoginParams = null;
   }
 
+  private getDashboardLandingRoute(): string {
+    const userProfile = this.appSettingService.getDecryptedUserProfile();
+    const salespersonFlag = String(userProfile?.isSalesperson || '').toUpperCase();
+
+    if (salespersonFlag === '1' || salespersonFlag === 'Y') {
+      return '/dashboard/sales';
+    }
+
+    return '/dashboard';
+  }
+
   private handleLoginSuccess(param: any) {
     const selectedYearId = this.loginform.get('yearMasterSid')?.value;
     const selectedYr = this.financialYears.find(fy => fy.YearMasterSid === toNumber(selectedYearId));
@@ -268,7 +279,7 @@ export class LoginComponent implements OnInit {
       localStorage.removeItem('rememberedPassword');
     }
 
-    this.router.navigate(['dashboard']).then(() => {
+    this.router.navigateByUrl(this.getDashboardLandingRoute()).then(() => {
       this.spinner.hide();
     });
   }

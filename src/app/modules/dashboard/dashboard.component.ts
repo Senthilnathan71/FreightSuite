@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
+import { Router } from '@angular/router';
 import { DashboardService } from './dashboard.service';
 import {
   DashboardData,
@@ -13,6 +14,7 @@ import {
   ApprovedQuotation,
   BookingListItem
 } from './interfaces/dashboard.interfaces';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -70,9 +72,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
   bookingSortField = '';
   bookingSortDirection: 'asc' | 'desc' = 'asc';
 
-  constructor(private dashboardService: DashboardService) {}
+  constructor(
+    private dashboardService: DashboardService,
+    private appSettings: AppSettingsService,
+    private router: Router,
+  ) {}
 
   ngOnInit(): void {
+    const userProfile = this.appSettings.getDecryptedUserProfile();
+    const salespersonFlag = String(userProfile?.isSalesperson || '').toUpperCase();
+
+    if (salespersonFlag === '1' || salespersonFlag === 'Y') {
+      this.router.navigate(['/dashboard/sales']);
+      return;
+    }
+
     // TODO: Get user type from authentication service
     // this.userType = this.authService.getUserType();
     this.filters.userType = this.userType;

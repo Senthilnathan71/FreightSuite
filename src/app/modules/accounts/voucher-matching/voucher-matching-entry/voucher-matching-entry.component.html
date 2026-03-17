@@ -138,7 +138,7 @@
 <div class="row compact-form">
   <!-- Toolbar -->
   <div class="col-12 px-0">
-    <div class="row bg-white mb-1 align-items-center pt-0 rounded shadow-sm mx-0">
+    <div class="row bg-white mb-1 align-items-center pt-0 rounded shadow-sm mx-0 pt-1">
       <div class="col-md-5 pb-0">
         <div class="d-flex align-items-center gap-2">
           <div class="brand-icon">
@@ -239,7 +239,7 @@
   </div>
 
   <!-- Header Section -->
-  <div class="col-md-12 px-0">
+  <div class="col-md-12 px-0 mb-1">
     <div class="card h-100 mb-0">
       <div class="card-body pb-1">
         <form [formGroup]="voucherMatchingForm" novalidate>
@@ -344,7 +344,7 @@
     <div class="card mb-0" [style.height]="isFullScreen ? '100%' : ''">
 
       <!-- ── Total Summary Section ── -->
-      <div class="card-header py-2 px-3 border-bottom" style="background: #f8f9fa;">
+      <div class="card-header py-2 px-3 " style="background: #f8f9fa;">
         <div class="d-flex align-items-center justify-content-between">
           <div class="d-flex flex-wrap align-items-center gap-3" style="font-size: 12px;">
             <!-- Scenario Badge -->
@@ -426,9 +426,9 @@
                 </span>
               }
               @if(currencyAmountsMatch && exchangeDifference !== 0) {
-                <span class="fw-bold" [ngClass]="exchangeDifference < 0 ? 'text-success' : 'text-danger'">
+                <span class="fw-bold" [ngClass]="exchangeDifference > 0 ? 'text-success' : 'text-danger'">
                   <i class="fas fa-exchange-alt me-1"></i>
-                  Exchange {{ exchangeDifference > 0 ? 'Loss' : 'Gain' }}:
+                  Exchange {{ exchangeDifference > 0 ? 'Gain' : 'Loss' }}:
                   {{ (exchangeDifference > 0 ? exchangeDifference : -exchangeDifference) | number:'1.2-2' }}
                 </span>
               }
@@ -458,7 +458,7 @@
 
       <!-- ── Source Panel ── -->
       <div>
-        <div class="d-flex" style="overflow: hidden; border-top: 1px solid #dee2e6;"
+        <div class="d-flex" style="overflow: hidden;"
           [style.height]="isFullScreen ? 'calc((100vh - 80px) / 2)' : (sourceItems.length >= BATCH_SIZE ? 'calc((100vh - 200px) / 2)' : 'auto')">
           <div class="text-light d-flex align-items-center justify-content-center fw-bold border-end"
             style="width: 22px; min-width: 22px; max-width: 22px; writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); letter-spacing: 1px; font-size: 10px; background: linear-gradient(180deg, #e91e63 0%, #c2185b 100%);">
@@ -474,20 +474,20 @@
                 <table class="table table-hover align-middle table-sm mb-0" style="table-layout: fixed; width: 100%; min-width: 1000px;">
                   <thead class="bg-info">
                     <tr>
-                      <th class="bg-info text-light text-center fw-bold" [style.width]="isPosted ? '14%' : '11%'" style="font-size: 12px;">Voucher No.</th>
-                      <th class="bg-info text-light fw-bold" [style.width]="isPosted ? '5%' : '4%'" style="font-size: 12px;">Type</th>
-                      <th class="bg-info text-light fw-bold" [style.width]="isPosted ? '8%' : '6%'" style="font-size: 12px;">Date</th>
-                      <th class="bg-info text-light fw-bold" [style.width]="isPosted ? '4%' : '3%'" style="font-size: 12px;">Dr/Cr</th>
-                      <th class="bg-info text-light fw-bold" [style.width]="isPosted ? '4%' : '3%'" style="font-size: 12px;">Curr.</th>
-                      <th class="bg-info text-light text-end fw-bold" [style.width]="isPosted ? '7%' : '5%'" style="font-size: 12px;">Ex.Rate</th>
-                      <th class="bg-info text-light text-end fw-bold" [style.width]="isPosted ? '14%' : '8%'" style="font-size: 12px;">Curr. Amt.</th>
-                      <th class="bg-info text-light text-end fw-bold" [style.width]="isPosted ? '14%' : '8%'" style="font-size: 12px;">Local Amt.</th>
-                      <th *ngIf="!isPosted" class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 8%;">OS Curr.</th>
-                      <th *ngIf="!isPosted" class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 8%;">OS Local</th>
-                      <th class="bg-warning text-dark text-end fw-bold" [style.width]="isPosted ? '15%' : '9%'" style="font-size: 12px;">Match Curr.</th>
-                      <th class="bg-warning text-dark text-end fw-bold" [style.width]="isPosted ? '15%' : '8%'" style="font-size: 12px;padding-right: 5px;">Match Local</th>
+                      <th class="bg-info text-light text-center fw-bold" [style.width]="isPosted ? '14%' : '15%'" style="font-size: 12px;">Voucher No.</th>
+                      <th class="bg-info text-light fw-bold text-center" [style.width]="isPosted ? '5%' : '4%'" style="font-size: 12px;">Type</th>
+                      <th class="bg-info text-light fw-bold text-center" [style.width]="isPosted ? '8%' : '6%'" style="font-size: 12px;">Date</th>
+                      <th class="bg-info text-light fw-bold text-center" [style.width]="isPosted ? '4%' : '3%'" style="font-size: 12px;">Dr/Cr</th>
+                      <th class="bg-info text-light fw-bold text-center" [style.width]="isPosted ? '4%' : '3%'" style="font-size: 12px;">Curr.</th>
+                      <th class="bg-info text-light text-center fw-bold" [style.width]="isPosted ? '7%' : '5%'" style="font-size: 12px;">Ex.Rate</th>
+                      <th class="bg-info text-light text-center fw-bold" [style.width]="isPosted ? '14%' : '8%'" style="font-size: 12px;">Curr. Amt.</th>
+                      <th class="bg-info text-light text-center fw-bold" [style.width]="isPosted ? '14%' : '8%'" style="font-size: 12px;">Local Amt.</th>
+                      <th *ngIf="!isPosted" class="bg-info text-light text-center fw-bold" style="font-size: 12px; width: 8%;">OS Curr.</th>
+                      <th *ngIf="!isPosted" class="bg-info text-light text-center fw-bold" style="font-size: 12px; width: 8%;">OS Local</th>
+                      <th class="bg-warning text-dark text-center fw-bold" [style.width]="isPosted ? '15%' : '9%'" style="font-size: 12px;">Match Curr.</th>
+                      <th class="bg-warning text-dark text-centerfw-bold" [style.width]="isPosted ? '15%' : '8%'" style="font-size: 12px;padding-right: 5px;">Match Local</th>
                       <!-- <th *ngIf="!isPosted" class="bg-success text-light text-end fw-bold" style="font-size: 12px; width: 8%;">Bal Curr.</th> -->
-                      <th *ngIf="!isPosted" class="bg-warning text-dark text-end fw-bold" style="font-size: 12px; width: 8%;">Bal Local</th>
+                      <th *ngIf="!isPosted" class="bg-warning text-dark text-center fw-bold" style="font-size: 12px; width: 8%;">Bal Local</th>
                       <th *ngIf="!isPosted" class="bg-warning text-dark text-center fw-bold" style="font-size: 12px; width: 3%;">&#10003;</th>
                     </tr>
                   </thead>
@@ -498,7 +498,7 @@
                   <tbody formArrayName="sourceItems">
                     <!-- Phantom row: always-present first row so table-layout:fixed never recalculates column widths from a colspan row -->
                     <tr aria-hidden="true" style="visibility: hidden; height: 0; line-height: 0; font-size: 0;">
-                      <td [style.width]="isPosted ? '14%' : '11%'" style="padding:0;border:none;"></td>
+                      <td [style.width]="isPosted ? '16%' : '15%'" style="padding:0;border:none;"></td>
                       <td [style.width]="isPosted ? '5%' : '4%'" style="padding:0;border:none;"></td>
                       <td [style.width]="isPosted ? '8%' : '6%'" style="padding:0;border:none;"></td>
                       <td [style.width]="isPosted ? '4%' : '3%'" style="padding:0;border:none;"></td>
@@ -513,9 +513,17 @@
                       <td *ngIf="!isPosted" style="width:8%;padding:0;border:none;"></td>
                       <td *ngIf="!isPosted" style="width:3%;padding:0;border:none;"></td>
                     </tr>
-                    <tr *ngFor="let s of sourceItems.controls; let i = index" [formGroupName]="i">
-                      <td [style.width]="isPosted ? '14%' : '11%'"><input type="text" formControlName="VoucherNumber"
-                          class="custom-input-field sm" /></td>
+                    <tr *ngFor="let s of sourceItems.controls; let i = index" [formGroupName]="i" style="white-space: nowrap;">
+                      <td [style.width]="isPosted ? '14%' : '11%'">
+                        <ng-container *ngIf="getVoucherEntryLink(s.get('VoucherType')?.value, s.get('VoucherHeaderSid')?.value) as voucherLink; else sourceVoucherText">
+                          <a [routerLink]="voucherLink" class="fw-bold px-2">
+                            {{ s.get('VoucherNumber')?.value }}
+                          </a>
+                        </ng-container>
+                        <ng-template #sourceVoucherText>
+                          <span class="px-2">{{ s.get('VoucherNumber')?.value }}</span>
+                        </ng-template>
+                      </td>
                       <td [style.width]="isPosted ? '5%' : '4%'"><input type="text" formControlName="VoucherType"
                           class="custom-input-field sm" /></td>
                       <td [style.width]="isPosted ? '8%' : '6%'"><input type="text" [value]="(s.getRawValue().VoucherDate | formatDate)"
@@ -550,7 +558,7 @@
                       </td>
                       <td class="table-warning" [style.width]="isPosted ? '15%' : '9%'">
                         <input type="text" formControlName="MatchedCurrencyAmount" class="custom-input-field sm text-end"
-                          [class.is-invalid]="s.get('matchCurrAmt')?.errors?.['limitExceeded']" DecimalPrecision
+                          DecimalPrecision
                           [DecimalPrecisionBefore]="9"
                           [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyCode)"
                           (input)="onMatchAmountChange(sourceItems, i)" (blur)="onMatchAmountChange(sourceItems, i)" />
@@ -577,8 +585,6 @@
                           [value]="getRowBalance(s, 'local') | number:'1.2-2'" 
                           class="custom-input-field sm text-end"
                           [style.background-color]="'#f5f5f5'" 
-                          [style.text-success] = "getRowBalance(s, 'local') >= 0"
-                          [style.text-danger] = "getRowBalance(s, 'local') < 0"
                           [style.cursor]="'not-allowed'"
                           readonly 
                         />
@@ -610,18 +616,18 @@
           </div>
         </div>
         <!-- Source Footer Totals -->
-        <div *ngIf="sourceItems.length > 0" class="py-0 border-top">
+        <div *ngIf="sourceItems.length > 0" class="py-0">
           <table class="table table-sm mb-0" style="table-layout: fixed; width: 100%; min-width: 1000px; font-size: 12px;">
             <tr class="fw-bold text-end" style="background-color: #fce4ec; color: #880e4f;">
-              <td [style.width]="isPosted ? '42%' : '32%'" class="text-end">Totals</td>
-              <td [style.width]="isPosted ? '14%' : '8%'" class="text-end">{{ isMultiCurrency ? '-' : (sourceTotalCurrAmt | number:'1.2-2') }}</td>
+              <td [style.width]="isPosted ? '44%' : '35%'" class="text-end">Totals</td>
+              <td [style.width]="isPosted ? '14%' : '8%'" class="text-end" >{{ isMultiCurrency ? '-' : (sourceTotalCurrAmt | number:'1.2-2') }}</td>
               <td [style.width]="isPosted ? '14%' : '8%'" class="text-end">{{ sourceTotalLocalAmt | number:'1.2-2' }}</td>
               <td *ngIf="!isPosted" style="width: 8%;" class="text-end">{{ isMultiCurrency ? '-' : (sourceTotalOsCurrAmt | number:'1.2-2') }}</td>
               <td *ngIf="!isPosted" style="width: 8%;" class="text-end">{{ sourceTotalOsLocalAmt | number:'1.2-2' }}</td>
-              <td class="text-end" [style.width]="isPosted ? '15%' : '9%'" style="background-color: #f8bbd0;">{{ sourceTotalMatchCurrAmt | number:'1.2-2' }}</td>
-              <td class="text-end" [style.width]="isPosted ? '15%' : '8%'" style="background-color: #f8bbd0;">{{ sourceTotalMatchLocalAmt | number:'1.2-2' }}</td>
+              <td class="text-end" [style.width]="isPosted ? '15%' : '9%'" [ngClass]="isPosted ? 'pe-0' : 'pe-2'" style="background-color: #f8bbd0;">{{ sourceTotalMatchCurrAmt | number:'1.2-2' }}</td>
+              <td class="text-end" [style.width]="isPosted ? '15%' : '8%'" [ngClass]="isPosted ? 'pe-0' : 'pe-2'" style="background-color: #f8bbd0;">{{ sourceTotalMatchLocalAmt | number:'1.2-2' }}</td>
               <!-- <td *ngIf="!isPosted" class="text-end" style="background-color: #c8e6c9; color: #1b5e20; width: 8%;">{{ sourceTotalBalCurrAmt | number:'1.2-2' }}</td> -->
-              <td *ngIf="!isPosted" class="text-end" [style.width]="isPosted ? '15%' : '8%'" style="background-color: #f8bbd0;">{{ sourceTotalBalLocalAmt | number:'1.2-2' }}</td>
+              <td *ngIf="!isPosted" class="text-end" [style.width]="isPosted ? '15%' : '8%'" style="background-color: #f8bbd0;" [ngClass]="isPosted ? 'pe-0' : 'pe-3'">{{ sourceTotalBalLocalAmt | number:'1.2-2' }}</td>
               <td *ngIf="!isPosted" style="width: 3%;"></td>
             </tr>
           </table>
@@ -630,7 +636,7 @@
 
       <!-- ── Object Panel ── -->
       <div>
-        <div class="d-flex" style="overflow: hidden; border-top: 2px solid #adb5bd;"
+        <div class="d-flex" style="overflow: hidden;"
           [style.height]="isFullScreen ? 'calc((100vh - 80px) / 2)' : (objectItems.length >= BATCH_SIZE ? 'calc((100vh - 200px) / 2)' : 'auto')">
           <div class="text-light d-flex align-items-center justify-content-center fw-bold border-end"
             style="width: 22px; min-width: 22px; max-width: 22px; writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); letter-spacing: 1px; font-size: 10px; background: linear-gradient(180deg, #1565c0 0%, #0d47a1 100%);">
@@ -645,20 +651,20 @@
                 <table class="table table-hover align-middle table-sm mb-0" style="table-layout: fixed; width: 100%; min-width: 1000px;">
                   <thead class="bg-info">
                     <tr>
-                      <th class="bg-info text-light text-center fw-bold" [style.width]="isPosted ? '14%' : '11%'" style="font-size: 12px;">Voucher No.</th>
-                      <th class="bg-info text-light fw-bold" [style.width]="isPosted ? '5%' : '4%'" style="font-size: 12px;">Type</th>
-                      <th class="bg-info text-light fw-bold" [style.width]="isPosted ? '8%' : '6%'" style="font-size: 12px;">Date</th>
-                      <th class="bg-info text-light fw-bold" [style.width]="isPosted ? '4%' : '3%'" style="font-size: 12px;">Dr/Cr</th>
-                      <th class="bg-info text-light fw-bold" [style.width]="isPosted ? '4%' : '3%'" style="font-size: 12px;">Curr.</th>
-                      <th class="bg-info text-light text-end fw-bold" [style.width]="isPosted ? '7%' : '5%'" style="font-size: 12px;">Ex.Rate</th>
-                      <th class="bg-info text-light text-end fw-bold" [style.width]="isPosted ? '14%' : '8%'" style="font-size: 12px;">Curr. Amt.</th>
-                      <th class="bg-info text-light text-end fw-bold" [style.width]="isPosted ? '14%' : '8%'" style="font-size: 12px;">Local Amt.</th>
-                      <th *ngIf="!isPosted" class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 8%;">OS Curr.</th>
-                      <th *ngIf="!isPosted" class="bg-info text-light text-end fw-bold" style="font-size: 12px; width: 8%;">OS Local</th>
-                      <th class="bg-warning text-dark text-end fw-bold" [style.width]="isPosted ? '15%' : '9%'" style="font-size: 12px;">Match Curr.</th>
-                      <th class="bg-warning text-dark text-end fw-bold" [style.width]="isPosted ? '15%' : '8%'" style="font-size: 12px;">Match Local</th>
+                      <th class="bg-info text-light text-center fw-bold" [style.width]="isPosted ? '16%' : '15%'" style="font-size: 12px;">Voucher No.</th>
+                      <th class="bg-info text-light fw-bold text-center" [style.width]="isPosted ? '5%' : '4%'" style="font-size: 12px;">Type</th>
+                      <th class="bg-info text-light fw-bold text-center" [style.width]="isPosted ? '8%' : '6%'" style="font-size: 12px;">Date</th>
+                      <th class="bg-info text-light fw-bold text-center" [style.width]="isPosted ? '4%' : '3%'" style="font-size: 12px;">Dr/Cr</th>
+                      <th class="bg-info text-light fw-bold text-center" [style.width]="isPosted ? '4%' : '3%'" style="font-size: 12px;">Curr.</th>
+                      <th class="bg-info text-light text-center fw-bold" [style.width]="isPosted ? '7%' : '5%'" style="font-size: 12px;">Ex.Rate</th>
+                      <th class="bg-info text-light text-center fw-bold" [style.width]="isPosted ? '14%' : '8%'" style="font-size: 12px;">Curr. Amt.</th>
+                      <th class="bg-info text-light text-center fw-bold" [style.width]="isPosted ? '14%' : '8%'" style="font-size: 12px;">Local Amt.</th>
+                      <th *ngIf="!isPosted" class="bg-info text-light text-center fw-bold" style="font-size: 12px; width: 8%;">OS Curr.</th>
+                      <th *ngIf="!isPosted" class="bg-info text-light text-center fw-bold" style="font-size: 12px; width: 8%;">OS Local</th>
+                      <th class="bg-warning text-dark text-center fw-bold" [style.width]="isPosted ? '15%' : '9%'" style="font-size: 12px;">Match Curr.</th>
+                      <th class="bg-warning text-dark text-center fw-bold" [style.width]="isPosted ? '15%' : '8%'" style="font-size: 12px;">Match Local</th>
                       <!-- <th *ngIf="!isPosted" class="bg-success text-light text-end fw-bold" style="font-size: 12px; width: 8%;">Bal Curr.</th> -->
-                      <th *ngIf="!isPosted" class="bg-warning text-dark text-end fw-bold" style="font-size: 12px; width: 8%;">Bal Local</th>
+                      <th *ngIf="!isPosted" class="bg-warning text-dark text-center fw-bold" style="font-size: 12px; width: 8%;">Bal Local</th>
                       <th *ngIf="!isPosted" class="bg-warning text-dark text-center fw-bold" style="font-size: 12px; width: 3%;">&#10003;</th>
                     </tr>
                   </thead>
@@ -669,7 +675,7 @@
                   <tbody formArrayName="objectItems">
                     <!-- Phantom row: always-present first row so table-layout:fixed never recalculates column widths from a colspan row -->
                     <tr aria-hidden="true" style="visibility: hidden; height: 0; line-height: 0; font-size: 0;">
-                      <td [style.width]="isPosted ? '14%' : '11%'" style="padding:0;border:none;"></td>
+                      <td [style.width]="isPosted ? '16%' : '15%'" style="padding:0;border:none;"></td>
                       <td [style.width]="isPosted ? '5%' : '4%'" style="padding:0;border:none;"></td>
                       <td [style.width]="isPosted ? '8%' : '6%'" style="padding:0;border:none;"></td>
                       <td [style.width]="isPosted ? '4%' : '3%'" style="padding:0;border:none;"></td>
@@ -684,8 +690,17 @@
                       <td *ngIf="!isPosted" style="width:8%;padding:0;border:none;"></td>
                       <td *ngIf="!isPosted" style="width:3%;padding:0;border:none;"></td>
                     </tr>
-                    <tr *ngFor="let o of objectItems.controls; let i = index" [formGroupName]="i">
-                      <td [style.width]="isPosted ? '14%' : '11%'"><input type="text" formControlName="VoucherNumber" class="custom-input-field sm" /></td>
+                    <tr *ngFor="let o of objectItems.controls; let i = index" [formGroupName]="i" style="white-space: nowrap;">
+                      <td [style.width]="isPosted ? '14%' : '11%'">
+                        <ng-container *ngIf="getVoucherEntryLink(o.get('VoucherType')?.value, o.get('VoucherHeaderSid')?.value) as voucherLink; else objectVoucherText">
+                          <a [routerLink]="voucherLink" class="fw-bold px-2">
+                            {{ o.get('VoucherNumber')?.value }}
+                          </a>
+                        </ng-container>
+                        <ng-template #objectVoucherText>
+                          <span class="px-2">{{ o.get('VoucherNumber')?.value }}</span>
+                        </ng-template>
+                      </td>
                       <td [style.width]="isPosted ? '5%' : '4%'"><input type="text" formControlName="VoucherType" class="custom-input-field sm" /></td>
                       <td [style.width]="isPosted ? '8%' : '6%'"><input type="text" [value]="(o.getRawValue().VoucherDate | formatDate)"
                           class="custom-input-field sm" disabled /></td>
@@ -745,8 +760,6 @@
                           [value]="getRowBalance(o, 'local') | number:'1.2-2'" 
                           class="custom-input-field sm text-end"
                           [style.background-color]="'#f5f5f5'" 
-                          [style.text-success] = "getRowBalance(o, 'local') >= 0"
-                          [style.text-danger] = "getRowBalance(o, 'local') < 0"
                           [style.cursor]="'not-allowed'"
                           readonly 
                         />
@@ -777,18 +790,18 @@
           </div>
         </div>
         <!-- Object Footer Totals -->
-        <div *ngIf="objectItems.length > 0" class="py-0 border-top">
+        <div *ngIf="objectItems.length > 0" class="py-0">
           <table class="table table-sm mb-0" style="table-layout: fixed; width: 100%; min-width: 1000px; font-size: 12px;">
             <tr class="fw-bold text-end" style="background-color: #e3f2fd; color: #0d47a1;">
-              <td [style.width]="isPosted ? '42%' : '32%'" class="text-end">Totals</td>
+              <td [style.width]="isPosted ? '44%' : '35%'" class="text-end">Totals</td>
               <td [style.width]="isPosted ? '14%' : '8%'" class="text-end">{{ isMultiCurrency ? '-' : (objectTotalCurrAmt | number:'1.2-2') }}</td>
               <td [style.width]="isPosted ? '14%' : '8%'" class="text-end">{{ objectTotalLocalAmt | number:'1.2-2' }}</td>
               <td *ngIf="!isPosted" style="width: 8%;" class="text-end">{{ isMultiCurrency ? '-' : (objectTotalOsCurrAmt | number:'1.2-2') }}</td>
               <td *ngIf="!isPosted" style="width: 8%;" class="text-end">{{ objectTotalOsLocalAmt | number:'1.2-2' }}</td>
-              <td class="text-end" [style.width]="isPosted ? '15%' : '9%'" style="background-color: #bbdefb;">{{ objectTotalMatchCurrAmt | number:'1.2-2' }}</td>
-              <td class="text-end" [style.width]="isPosted ? '15%' : '8%'" style="background-color: #bbdefb;">{{ objectTotalMatchLocalAmt | number:'1.2-2' }}</td>
+              <td class="text-end" [style.width]="isPosted ? '15%' : '9%'" [ngClass]="isPosted ? 'pe-0' : 'pe-2'" style="background-color: #bbdefb;">{{ objectTotalMatchCurrAmt | number:'1.2-2' }}</td>
+              <td class="text-end" [style.width]="isPosted ? '15%' : '8%'" [ngClass]="isPosted ? 'pe-0' : 'pe-2'" style="background-color: #bbdefb;">{{ objectTotalMatchLocalAmt | number:'1.2-2' }}</td>
               <!-- <td *ngIf="!isPosted" class="text-end" style="background-color: #c8e6c9; color: #1b5e20; width: 8%;">{{ objectTotalBalCurrAmt | number:'1.2-2' }}</td> -->
-              <td *ngIf="!isPosted" class="text-end" [style.width]="isPosted ? '15%' : '8%'" style="background-color: #bbdefb;">{{ objectTotalBalLocalAmt | number:'1.2-2' }}</td>
+              <td *ngIf="!isPosted" class="text-end" [style.width]="isPosted ? '15%' : '8%'" style="background-color: #bbdefb;" [ngClass]="isPosted ? 'pe-0' : 'pe-3'">{{ objectTotalBalLocalAmt | number:'1.2-2' }}</td>
               <td *ngIf="!isPosted" style="width: 3%;"></td>
             </tr>
           </table>

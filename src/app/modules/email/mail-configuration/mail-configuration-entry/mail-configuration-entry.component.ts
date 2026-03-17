@@ -520,6 +520,13 @@ export class MailConfigurationEntryComponent implements OnInit {
   }
 
   navigateBack(): void {
-    this.router.navigate(['/dashboard']);
+    const userProfile = this.appSettingService.getDecryptedUserProfile();
+    const salespersonFlag = String(userProfile?.isSalesperson || '').toUpperCase();
+
+    if (salespersonFlag === '1' || salespersonFlag === 'Y') {
+      this.router.navigate(['/dashboard/sales']);
+    } else {
+      this.router.navigate(['/dashboard']);
+    }
   }
 }
