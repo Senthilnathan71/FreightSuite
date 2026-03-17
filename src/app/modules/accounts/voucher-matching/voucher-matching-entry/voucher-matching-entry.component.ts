@@ -1,6 +1,6 @@
 // Voucher Matching Entry - TS
 import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild, HostListener } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -41,6 +41,7 @@ import { CommonService } from 'src/app/common/common.service';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    RouterLink,
     NgbDatepickerModule,
     NgbDropdownModule,
     FeatherModule,
@@ -1226,6 +1227,37 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
 
   navigateToBack() {
     this.router.navigate(['accounts/voucher-matching/list']);
+  }
+
+  getVoucherEntryLink(voucherType: string | number | null | undefined, voucherHeaderSid: string | number | null | undefined): string[] | null {
+    const normalizedVoucherType = String(voucherType ?? '').trim().toUpperCase();
+    const normalizedHeaderSid = Number(voucherHeaderSid);
+
+    if (!normalizedVoucherType || !Number.isFinite(normalizedHeaderSid) || normalizedHeaderSid <= 0) {
+      return null;
+    }
+
+    const voucherRouteMap: Record<string, string> = {
+      INV: '/operation/invoice/entry',
+      INVOICE: '/operation/invoice/entry',
+      VIN: '/operation/vendor-invoice/entry',
+      'VENDOR INVOICE': '/operation/vendor-invoice/entry',
+      RPT: '/accounts/receipt/entry',
+      RECEIPT: '/accounts/receipt/entry',
+      PMT: '/accounts/payment/entry',
+      PAYMENT: '/accounts/payment/entry',
+      JV: '/accounts/journal-voucher/entry',
+      'JOURNAL VOUCHER': '/accounts/journal-voucher/entry',
+      RJV: '/accounts/reverse-voucher/entry',
+      'REVERSAL JOURNAL VOUCHER': '/accounts/reverse-voucher/entry',
+      CRN: '/operation/credit-note/entry',
+      'CREDIT NOTE': '/operation/credit-note/entry',
+      VRN: '/operation/vendor-credit-note/entry',
+      'VENDOR CREDIT NOTE': '/operation/vendor-credit-note/entry',
+    };
+
+    const route = voucherRouteMap[normalizedVoucherType];
+    return route ? [route, normalizedHeaderSid.toString()] : null;
   }
 
   //SECTION: PLUGIN / INFO METHODS

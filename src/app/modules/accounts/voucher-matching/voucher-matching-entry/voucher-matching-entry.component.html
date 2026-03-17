@@ -498,7 +498,7 @@
                   <tbody formArrayName="sourceItems">
                     <!-- Phantom row: always-present first row so table-layout:fixed never recalculates column widths from a colspan row -->
                     <tr aria-hidden="true" style="visibility: hidden; height: 0; line-height: 0; font-size: 0;">
-                      <td [style.width]="isPosted ? '14%' : '11%'" style="padding:0;border:none;"></td>
+                      <td [style.width]="isPosted ? '16%' : '15%'" style="padding:0;border:none;"></td>
                       <td [style.width]="isPosted ? '5%' : '4%'" style="padding:0;border:none;"></td>
                       <td [style.width]="isPosted ? '8%' : '6%'" style="padding:0;border:none;"></td>
                       <td [style.width]="isPosted ? '4%' : '3%'" style="padding:0;border:none;"></td>
@@ -514,8 +514,16 @@
                       <td *ngIf="!isPosted" style="width:3%;padding:0;border:none;"></td>
                     </tr>
                     <tr *ngFor="let s of sourceItems.controls; let i = index" [formGroupName]="i">
-                      <td [style.width]="isPosted ? '14%' : '11%'"><input type="text" formControlName="VoucherNumber"
-                          class="custom-input-field sm" /></td>
+                      <td [style.width]="isPosted ? '14%' : '11%'">
+                        <ng-container *ngIf="getVoucherEntryLink(s.get('VoucherType')?.value, s.get('VoucherHeaderSid')?.value) as voucherLink; else sourceVoucherText">
+                          <a [routerLink]="voucherLink" class="fw-bold px-2 text-decoration-underline">
+                            {{ s.get('VoucherNumber')?.value }}
+                          </a>
+                        </ng-container>
+                        <ng-template #sourceVoucherText>
+                          <span class="px-2">{{ s.get('VoucherNumber')?.value }}</span>
+                        </ng-template>
+                      </td>
                       <td [style.width]="isPosted ? '5%' : '4%'"><input type="text" formControlName="VoucherType"
                           class="custom-input-field sm" /></td>
                       <td [style.width]="isPosted ? '8%' : '6%'"><input type="text" [value]="(s.getRawValue().VoucherDate | formatDate)"
@@ -550,7 +558,7 @@
                       </td>
                       <td class="table-warning" [style.width]="isPosted ? '15%' : '9%'">
                         <input type="text" formControlName="MatchedCurrencyAmount" class="custom-input-field sm text-end"
-                          [class.is-invalid]="s.get('matchCurrAmt')?.errors?.['limitExceeded']" DecimalPrecision
+                          DecimalPrecision
                           [DecimalPrecisionBefore]="9"
                           [DecimalPrecisionAfter]="getAmountDecimalPlaces(s.getRawValue().CurrencyCode)"
                           (input)="onMatchAmountChange(sourceItems, i)" (blur)="onMatchAmountChange(sourceItems, i)" />
@@ -577,8 +585,6 @@
                           [value]="getRowBalance(s, 'local') | number:'1.2-2'" 
                           class="custom-input-field sm text-end"
                           [style.background-color]="'#f5f5f5'" 
-                          [style.text-success] = "getRowBalance(s, 'local') >= 0"
-                          [style.text-danger] = "getRowBalance(s, 'local') < 0"
                           [style.cursor]="'not-allowed'"
                           readonly 
                         />
@@ -645,7 +651,7 @@
                 <table class="table table-hover align-middle table-sm mb-0" style="table-layout: fixed; width: 100%; min-width: 1000px;">
                   <thead class="bg-info">
                     <tr>
-                      <th class="bg-info text-light text-center fw-bold" [style.width]="isPosted ? '14%' : '11%'" style="font-size: 12px;">Voucher No.</th>
+                      <th class="bg-info text-light text-center fw-bold" [style.width]="isPosted ? '16%' : '15%'" style="font-size: 12px;">Voucher No.</th>
                       <th class="bg-info text-light fw-bold" [style.width]="isPosted ? '5%' : '4%'" style="font-size: 12px;">Type</th>
                       <th class="bg-info text-light fw-bold" [style.width]="isPosted ? '8%' : '6%'" style="font-size: 12px;">Date</th>
                       <th class="bg-info text-light fw-bold" [style.width]="isPosted ? '4%' : '3%'" style="font-size: 12px;">Dr/Cr</th>
@@ -669,7 +675,7 @@
                   <tbody formArrayName="objectItems">
                     <!-- Phantom row: always-present first row so table-layout:fixed never recalculates column widths from a colspan row -->
                     <tr aria-hidden="true" style="visibility: hidden; height: 0; line-height: 0; font-size: 0;">
-                      <td [style.width]="isPosted ? '14%' : '11%'" style="padding:0;border:none;"></td>
+                      <td [style.width]="isPosted ? '16%' : '15%'" style="padding:0;border:none;"></td>
                       <td [style.width]="isPosted ? '5%' : '4%'" style="padding:0;border:none;"></td>
                       <td [style.width]="isPosted ? '8%' : '6%'" style="padding:0;border:none;"></td>
                       <td [style.width]="isPosted ? '4%' : '3%'" style="padding:0;border:none;"></td>
@@ -685,7 +691,16 @@
                       <td *ngIf="!isPosted" style="width:3%;padding:0;border:none;"></td>
                     </tr>
                     <tr *ngFor="let o of objectItems.controls; let i = index" [formGroupName]="i">
-                      <td [style.width]="isPosted ? '14%' : '11%'"><input type="text" formControlName="VoucherNumber" class="custom-input-field sm" /></td>
+                      <td [style.width]="isPosted ? '14%' : '11%'">
+                        <ng-container *ngIf="getVoucherEntryLink(o.get('VoucherType')?.value, o.get('VoucherHeaderSid')?.value) as voucherLink; else objectVoucherText">
+                          <a [routerLink]="voucherLink" class="fw-bold px-2 text-decoration-underline">
+                            {{ o.get('VoucherNumber')?.value }}
+                          </a>
+                        </ng-container>
+                        <ng-template #objectVoucherText>
+                          <span class="px-2">{{ o.get('VoucherNumber')?.value }}</span>
+                        </ng-template>
+                      </td>
                       <td [style.width]="isPosted ? '5%' : '4%'"><input type="text" formControlName="VoucherType" class="custom-input-field sm" /></td>
                       <td [style.width]="isPosted ? '8%' : '6%'"><input type="text" [value]="(o.getRawValue().VoucherDate | formatDate)"
                           class="custom-input-field sm" disabled /></td>
@@ -745,8 +760,6 @@
                           [value]="getRowBalance(o, 'local') | number:'1.2-2'" 
                           class="custom-input-field sm text-end"
                           [style.background-color]="'#f5f5f5'" 
-                          [style.text-success] = "getRowBalance(o, 'local') >= 0"
-                          [style.text-danger] = "getRowBalance(o, 'local') < 0"
                           [style.cursor]="'not-allowed'"
                           readonly 
                         />
