@@ -2120,7 +2120,7 @@
             <div style="display:flex;flex-wrap:wrap;margin:0;padding:15px 10px;border-top:1px solid black;border-bottom:1px solid black;box-sizing:border-box;line-height:1.2;">
 
             <!-- LEFT COLUMN -->
-            <div style="width:50%;padding-left:3rem;box-sizing:border-box;font-size:17px;margin:0;">
+            <div style="width:50%;padding-left:3rem;box-sizing:border-box;font-size:16px;margin:0;">
 
                         <!-- Dept -->
                         <div style="display:flex; margin-bottom:2px;">
@@ -2209,7 +2209,7 @@
     width:50%;
     padding-left:2rem;
     box-sizing:border-box;
-    font-size:17px;
+    font-size:16px;
     margin:0;
 ">
 
@@ -2221,14 +2221,25 @@
                             <div style="padding-left:6px;">{{ enquiryData?.enquiryOther?.[0]?.ShipperName || '' }}</div>
                         </div>
 
-                        <!-- Shipper Address -->
-                        <div style="display:flex; margin-bottom:2px;margin-top: 7px;">
-                            <div style="width:190px; white-space:nowrap; font-weight:bolder;"><strong>Shipper
-                                    Address</strong></div>
-                            <div style="width:10px; text-align:center;">:</div>
-                            <div style="padding-left:6px;">{{ enquiryData?.enquiryOther?.[0]?.ShipperAddress || '' }}
-                            </div>
-                        </div>
+                       <!-- Shipper Address -->
+<div style="display:flex; align-items:flex-start; margin-bottom:2px; margin-top:7px;">
+
+    <!-- Label -->
+    <div style="width:190px; font-weight:bolder;">
+       <strong>Shipper Address</strong>
+    </div>
+
+    <!-- Colon -->
+    <div style="width:10px; text-align:center;">
+        :
+    </div>
+
+    <!-- Value -->
+    <div style="flex:1; padding-left:6px; word-break:break-word; line-height:1.4;">
+        {{ enquiryData?.enquiryOther?.[0]?.ShipperAddress || '' }}
+    </div>
+
+</div>
 
                         <!-- Enquiry Created By -->
                         <div style="display:flex; margin-bottom:2px;margin-top: 7px;">
@@ -2285,33 +2296,45 @@
                             </div>
                         </div>
 
+<!-- Port of Discharge -->
+<div style="display:flex; align-items:flex-start; margin:6px 0; font-size:16px;">
 
-                        <!-- Port of Discharge -->
-                        <div style="display: flex;align-items: flex-start;margin: 6px 0;font-size: 16px;">
-                            <!-- Label -->
-                            <div style="width: 190px;font-weight: bolder;white-space: nowrap;">Port of Discharge</div>
+    <!-- Label -->
+    <div style="width:190px; font-weight:bolder;">
+        Port of Discharge
+    </div>
 
-                            <!-- Colon -->
-                            <div style="width: 15px;text-align: center;">:</div>
+    <!-- Colon -->
+    <div style="width:10px; text-align:center;">
+        :
+    </div>
 
-                            <!-- Value -->
-                            <div style="flex: 1;line-height: 1.4;">{{ getPort(enquiryData?.enquiryRoute[0]?.PODSid) }}
-                            </div>
-                        </div>
+    <!-- Value -->
+    <div style="flex:1; padding-left:6px; line-height:1.4; word-break:break-word;">
+        {{ getPort(enquiryData?.enquiryRoute[0]?.PODSid) }}
+    </div>
 
+</div>
 
-                        <!-- Final Destination -->
-                        <div style="display: flex;align-items: flex-start;margin: 6px 0;font-size: 16px;">
-                            <!-- Label -->
-                            <div style="width: 190px;font-weight: bolder;white-space: nowrap;">Final Destination</div>
+<!-- Final Destination -->
+<div style="display:flex; align-items:flex-start; margin:6px 0; font-size:16px;">
 
-                            <!-- Colon -->
-                            <div style="width: 15px;text-align: center;">:</div>
+    <!-- Label -->
+    <div style="width:190px; font-weight:bolder;">
+        Final Destination
+    </div>
 
-                            <!-- Value -->
-                            <div style="flex: 1;line-height: 1.4;">{{ getPort(enquiryData?.enquiryRoute[0]?.FDPSid) }}
-                            </div>
-                        </div>
+    <!-- Colon -->
+    <div style="width:10px; text-align:center;">
+        :
+    </div>
+
+    <!-- Value -->
+    <div style="flex:1; padding-left:6px; line-height:1.4; word-break:break-word;">
+        {{ getPort(enquiryData?.enquiryRoute[0]?.FDPSid) }}
+    </div>
+
+</div>
 
                     </div>
 
@@ -2321,14 +2344,14 @@
                 <!-- Product Table -->
                 <div style="margin-top: 0;">
                     <div style=" padding-top:8px;padding-bottom: 8px;">
-                        <h3 style="margin:0; padding-left:55px;text-align: center; font-weight:bolder;">
+                        <h4 style="margin:0; padding-left:55px;text-align: start; font-weight:bolder;">
                             <strong>Product Details</strong>
-                        </h3>
+                        </h4>
                     </div>
 
                     <div style="overflow-x: auto;">
                         <table
-                            style="width: 100%; border-collapse: collapse;  table-layout:fixed; margin: 0; font-size: 17px;">
+                            style="width: 100%; border-collapse: collapse;  table-layout:fixed; margin: 0; font-size: 16px;">
                             <thead>
                                 <tr>
                                     <th

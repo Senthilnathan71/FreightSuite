@@ -547,21 +547,25 @@ export function buildRemarks(
   options: {
     title?: string;
     margin?: [number, number, number, number];
+    labelWidth?: number;
   } = {}
 ): any {
   const {
     title = 'Remarks',
-    margin = [0, 10, 0, 10]
+    margin = [0, 10, 0, 10],
+    labelWidth = 120
   } = options;
-
-  if (!remarks) {
-    return { text: '' };
-  }
 
   return {
     stack: [
-      { text: title, style: 'labelBold', margin: [0, 0, 0, 3] },
-      { text: remarks }
+      {
+        columns: [
+          { text: title, style: 'labelBold', width: labelWidth },
+          { text: ':', width: 6, alignment: 'right' },
+          { text: remarks || '', width: '*', style: 'labelBold' }
+        ],
+        margin: [0, 0, 0, 3]
+      }
     ],
     margin
   };

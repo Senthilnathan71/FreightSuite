@@ -20,37 +20,48 @@ import { formatDate, joinNonEmpty } from '../helpers/pdf-formatters';
  * Generate enquiry PDF document definition
  */
 export function generateEnquiryDocument(data: EnquiryPdfData): any {
-  const departmentLabel = data.departmentName ? ` - ${data.departmentName}` : '';
-  const modeLabel = data.fclLcl ? ` (${data.fclLcl})` : '';
-
   return {
     pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
     pageOrientation: data.config?.pageOrientation || PDF_DEFAULT_CONFIG.pageOrientation,
-    pageMargins: data.config?.pageMargins || PDF_DEFAULT_CONFIG.pageMargins,
+    pageMargins: data.config?.pageMargins || [20, 20, 20, 100],
+    
+      background: function (currentPage, pageSize) {
+      return {
+        canvas: [
+          // LEFT BORDER
+          { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.8 },
+          // RIGHT BORDER
+          { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 },
+          // TOP BORDER
+          { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.8 },
+          // BOTTOM BORDER
+          { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 }
+        ]
+      };
+    },
+
     content: [
       // Header
       buildHeader(data.company, data.branch, data.logo),
 
       // Title
-      buildTitle(`Enquiry${departmentLabel}${modeLabel}`),
+      buildTitle('ENQUIRY', {
+        lineWidth: 555,
+        linePadding: -10,
+        margin: [0, 0, 0, 6]
+      }),
 
       // Enquiry Info (two columns)
       buildEnquiryInfo(data),
 
       // Divider
-      buildDivider(),
-
-      // Route Information
-      ...buildRouteInfo(data),
+      buildDivider({ width: 575, margin: [-10, 2, -10, 2] }),
 
       // Cargo Table(s)
       ...buildCargoSection(data),
 
       // Remarks
-      buildRemarks(data.enquiry?.remarks || ''),
-
-      // Signature area
-      buildSignatureSection(data)
+      buildRemarks(data.enquiry?.remarks || '', { title: 'Enquiry Remarks', labelWidth: 105 }),
     ],
     footer: createFooterFunction(data.userData),
     styles: getPdfStyles(),
@@ -63,101 +74,53 @@ export function generateEnquiryDocument(data: EnquiryPdfData): any {
  */
 function buildEnquiryInfo(data: EnquiryPdfData): any {
   const enquiry = data.enquiry;
+  const firstRoute = data.routes?.[0];
 
   const leftItems = [
-    { label: 'Customer', value: enquiry?.customerName || '' },
-    { label: 'Address', value: enquiry?.customerAddress || '' },
-    { label: 'Contact Person', value: enquiry?.contactPerson || '' },
-    { label: 'Contact No', value: enquiry?.contactNumber || '' },
-    { label: 'Email', value: enquiry?.email || '' }
-  ].filter(item => item.value);
+    { label: 'Dept', value: data.departmentName || '' },
+    { label: 'Enquiry Number', value: enquiry?.enquiryNumber || '' },
+    { label: 'Party Name', value: enquiry?.customerName || '' },
+    { label: 'Party Address', value: enquiry?.customerAddress || '' },
+    { label: 'Received Date', value: formatDate(enquiry?.enquiryDate) },
+    { label: 'Port of Origin', value: formatPort(firstRoute?.poo) },
+    { label: 'Port of Loading', value: formatPort(firstRoute?.pol) },
+    { label: 'Inco Terms', value: enquiry?.incoTerms || '' },
+    // { label: 'Freight Terms', value: enquiry?.freightTerms || '' },
+    // { label: 'Shipment Type', value: enquiry?.shipmentType || '' },
+    // { label: 'Email', value: enquiry?.email || '' }
+  ];
 
   const rightItems = [
-    { label: 'Enquiry No', value: enquiry?.enquiryNumber || '' },
-    { label: 'Enquiry Date', value: formatDate(enquiry?.enquiryDate) },
-    { label: 'Salesman', value: enquiry?.salesmanName || '' },
-    { label: 'Enquiry Type', value: enquiry?.enquiryType || '' },
-    { label: 'Shipment Date', value: formatDate(enquiry?.shipmentDate) },
-    { label: 'Inco Terms', value: enquiry?.incoTerms || '' },
-    { label: 'Freight Terms', value: enquiry?.freightTerms || '' }
-  ].filter(item => item.value);
+    { label: 'Shipper Name', value: enquiry?.shipperName || '' },
+    { label: 'Shipper Address', value: enquiry?.shipperAddress || '' },
+    // { label: 'Consignee Name', value: enquiry?.consigneeName || '' },
+    // { label: 'Consignee Address', value: enquiry?.consigneeAddress || '' },
+    { label: 'Enquiry Created By', value: enquiry?.createdBy || '' },
+    { label: 'Enquiry Created Date', value: formatDate(enquiry?.createdOn) },
+    { label: 'Contact / Number', value: joinNonEmpty([enquiry?.contactPerson, enquiry?.contactNumber], ' / ') },
+    { label: 'Expected Shipment Date', value: formatDate(enquiry?.shipmentDate) },
+    { label: 'Port of Discharge', value: formatPort(firstRoute?.pod) },
+    { label: 'Final Destination', value: formatPort(firstRoute?.fpd) },
+    // { label: 'Salesman', value: enquiry?.salesmanName || '' },
+    // { label: 'Enquiry Type', value: enquiry?.enquiryType || '' },
+    // { label: 'Clearance By', value: enquiry?.clearanceBy || '' },
+    // { label: 'Transport By', value: enquiry?.transportBy || '' },
+    // { label: 'Customer Ref', value: enquiry?.customerRef || '' },
+    // { label: 'Pickup Address', value: enquiry?.pickupAddress || '' },
+    // { label: 'Additional Service', value: enquiry?.additionalService || '' },
+    // { label: 'Mode of BL', value: enquiry?.modeOfBl || '' },
+    // { label: 'Shipment Frequency', value: enquiry?.shipmentFreq || '' }
+  ];
 
-  return buildTwoColumnInfo(leftItems, rightItems, { labelWidth: 90 });
-}
-
-/**
- * Build route information section
- */
-function buildRouteInfo(data: EnquiryPdfData): any[] {
-  const content: any[] = [];
-  const routes = data.routes || [];
-
-  if (routes.length === 0) {
-    return content;
-  }
-
-  content.push(buildSectionTitle('Route Information'));
-
-  routes.forEach((route, index) => {
-    const routeContent: any[] = [];
-
-    // Route header for multiple routes
-    if (routes.length > 1) {
-      routeContent.push({
-        text: `Route ${index + 1}`,
-        style: 'subSectionTitle',
-        margin: [0, index > 0 ? 10 : 0, 0, 5]
-      });
-    }
-
-    // Port information
-    const portInfo: any[] = [];
-
-    if (route.poo) {
-      portInfo.push({
-        columns: [
-          { text: 'Place of Origin', style: 'labelBold', width: 120 },
-          { text: `: ${formatPort(route.poo)}`, width: '*' }
-        ]
-      });
-    }
-
-    if (route.pol) {
-      portInfo.push({
-        columns: [
-          { text: 'Port of Loading', style: 'labelBold', width: 120 },
-          { text: `: ${formatPort(route.pol)}`, width: '*' }
-        ]
-      });
-    }
-
-    if (route.pod) {
-      portInfo.push({
-        columns: [
-          { text: 'Port of Discharge', style: 'labelBold', width: 120 },
-          { text: `: ${formatPort(route.pod)}`, width: '*' }
-        ]
-      });
-    }
-
-    if (route.fpd) {
-      portInfo.push({
-        columns: [
-          { text: 'Final Destination', style: 'labelBold', width: 120 },
-          { text: `: ${formatPort(route.fpd)}`, width: '*' }
-        ]
-      });
-    }
-
-    routeContent.push({
-      stack: portInfo,
-      margin: [0, 0, 0, 10]
-    });
-
-    content.push(...routeContent);
+  return buildTwoColumnInfo(leftItems, rightItems, {
+    labelWidth: 110,
+    leftLabelWidth: 95,
+    rightLabelWidth: 120,
+    margin: [5, 6, 5, 6],
+    columnGap: 4,
+    rowGap: 6,
+    fontSize: 10
   });
-
-  return content;
 }
 
 /**
@@ -179,26 +142,26 @@ function buildCargoSection(data: EnquiryPdfData): any[] {
     return content;
   }
 
-  content.push(buildSectionTitle('Cargo Details'));
+  content.push(buildSectionTitle('Product Details'));
 
   // Transform cargo data for table
   const cargoData = allCargo.map(cargo => ({
     CargoType: cargo.cargoType || '',
+    CargoDesc: cargo.cargoDescription || '',
+    ProductName: cargo.productName || '',
     ContainerType: cargo.containerType || '',
-    NoofContainers: cargo.noOfContainers || 0,
+    NoofContainers: cargo.noOfContainers ?? cargo.containerQty ?? cargo.qty ?? cargo.Qty ?? cargo.packageQty ?? cargo.noOfPackage ?? 0,
     NoOfPackage: cargo.packageQty || cargo.noOfPackage || 0,
+    Qty: cargo.packageQty || cargo.noOfPackage || 0,
     GrossWeight: cargo.grossWeight || 0,
     NetWeight: cargo.netWeight || 0,
     Volume: cargo.volume || 0,
     ChargeableWeight: cargo.chargeableWeight || 0,
-    PackageType: cargo.packageType || ''
+    PackageType: cargo.packageType || '',
+    WeightUnit: cargo.weightUnit || ''
   }));
 
-  content.push(buildCargoTable(cargoData, data.fclLcl));
-
-  // Add totals summary
-  const totals = calculateCargoTotals(allCargo);
-  content.push(buildCargoTotalsSummary(totals, data.fclLcl));
+  content.push(buildCargoTable(cargoData, data.fclLcl, { margin: [0, 0, 0, 15] }));
 
   return content;
 }
@@ -214,67 +177,6 @@ function calculateCargoTotals(cargo: any[]): any {
     totalNetWeight: cargo.reduce((sum, c) => sum + (Number(c.netWeight) || 0), 0),
     totalVolume: cargo.reduce((sum, c) => sum + (Number(c.volume) || 0), 0),
     totalChargeableWeight: cargo.reduce((sum, c) => sum + (Number(c.chargeableWeight) || 0), 0)
-  };
-}
-
-/**
- * Build cargo totals summary
- */
-function buildCargoTotalsSummary(totals: any, fclLcl: string): any {
-  const summaryItems: string[] = [];
-
-  if (fclLcl === 'FCL' && totals.totalQty > 0) {
-    summaryItems.push(`Total Containers: ${totals.totalQty}`);
-  }
-
-  if (fclLcl === 'LCL' && totals.totalPackages > 0) {
-    summaryItems.push(`Total Packages: ${totals.totalPackages}`);
-  }
-
-  if (totals.totalGrossWeight > 0) {
-    summaryItems.push(`Total Gross Weight: ${totals.totalGrossWeight.toFixed(2)} KG`);
-  }
-
-  if (totals.totalVolume > 0) {
-    summaryItems.push(`Total Volume: ${totals.totalVolume.toFixed(3)} CBM`);
-  }
-
-  if (fclLcl === 'AIR' && totals.totalChargeableWeight > 0) {
-    summaryItems.push(`Total Chargeable Weight: ${totals.totalChargeableWeight.toFixed(2)} KG`);
-  }
-
-  if (summaryItems.length === 0) {
-    return { text: '' };
-  }
-
-  return {
-    text: summaryItems.join(' | '),
-    style: 'labelBold',
-    alignment: 'right',
-    margin: [0, 5, 0, 15]
-  };
-}
-
-/**
- * Build signature section
- */
-function buildSignatureSection(data: EnquiryPdfData): any {
-  return {
-    stack: [
-      {
-        text: "Your's Sincerely,",
-        style: 'labelBold',
-        margin: [0, 20, 0, 10]
-      },
-      {
-        text: data.userData?.userName || '',
-        margin: [0, 0, 0, 5]
-      },
-      {
-        text: data.company?.companyName || '',
-        style: 'muted'
-      }
-    ]
   };
 }
 
@@ -303,7 +205,7 @@ export function transformEnquiryApiData(
 ): EnquiryPdfData {
   const enquiry = apiData;
   const routes = enquiry.enquiryRoute || [];
-
+  const enquiryOther = enquiry.enquiryOther?.[0];
   // Helper to get port info
   const getPortInfo = (portId: number) => {
     if (!portId || !lookups?.ports) return undefined;
@@ -324,6 +226,17 @@ export function transformEnquiryApiData(
     const dept = lookups.departments.find(d => d.DepartmentMasterSid === deptId);
     return dept?.departmentName || '';
   };
+
+  const shipmentType = (enquiry.ShipmentType || '').toUpperCase();
+  const deptName = (getDeptName(enquiry.DepartmentMasterSid) || enquiry.DepartmentName || '').toUpperCase();
+  const fclLclRaw = (enquiry.FCLLCL || routes[0]?.FCLLCL || '').toUpperCase();
+  const detectMode = (value: string) => {
+    if (value.includes('FCL')) return 'FCL';
+    if (value.includes('LCL')) return 'LCL';
+    if (value.includes('AIR')) return 'AIR';
+    return '';
+  };
+  const fclLcl = (detectMode(fclLclRaw) || detectMode(shipmentType) || detectMode(deptName) || 'LCL') as 'FCL' | 'LCL' | 'AIR';
 
   return {
     company: {
@@ -358,10 +271,24 @@ export function transformEnquiryApiData(
       email: enquiry.Email || '',
       salesmanName: getSalesmanName(enquiry.UserMasterSid) || enquiry.SalesmanName || '',
       enquiryType: enquiry.EnquiryType || '',
-      shipmentDate: enquiry.ShipmentDate,
+      shipmentDate: enquiry.ShipmentDate || enquiry.ShipmentExpectedDate,
       incoTerms: enquiry.IncoTerms || '',
-      freightTerms: enquiry.FreightTerms || '',
-      remarks: enquiry.Remarks || ''
+      freightTerms: enquiry.FreightPPCC || enquiry.FreightTerms || enquiryOther?.FreightTerms || '',
+      remarks: enquiry.Remarks || '',
+      shipmentType: enquiry.ShipmentType || '',
+      clearanceBy: enquiry.ClearanceBy || '',
+      transportBy: enquiry.TransportBy || '',
+      customerRef: enquiry.CustomerRef || '',
+      createdBy: enquiry.createdBy || '',
+      createdOn: enquiry.createdOn || '',
+      shipperName: enquiryOther?.ShipperName || '',
+      shipperAddress: enquiryOther?.ShipperAddress || '',
+      consigneeName: enquiryOther?.ConsigneeName || '',
+      consigneeAddress: enquiryOther?.ConsigneeAddress || '',
+      pickupAddress: enquiryOther?.PickupAddress || '',
+      additionalService: enquiryOther?.AdditionalService || '',
+      modeOfBl: enquiryOther?.ModeofBL || '',
+      shipmentFreq: enquiryOther?.ShipmentFreq || ''
     },
     routes: routes.map((route: any) => ({
       poo: getPortInfo(route.POOSid),
@@ -370,8 +297,10 @@ export function transformEnquiryApiData(
       fpd: getPortInfo(route.FDPSid || route.FDCSid),
       cargo: (route.enquiryCargo || []).map((cargo: any) => ({
         cargoType: cargo.CargoType || '',
+        cargoDescription: cargo.CargoDescription || '',
+        productName: cargo.ProductName || '',
         containerType: cargo.ContainerType || '',
-        noOfContainers: cargo.NoofContainers || cargo.Qty || 0,
+        noOfContainers: cargo.NoofContainers ?? cargo.ContainerQty ?? cargo.Qty ?? 0,
         noOfPackage: cargo.NoOfPackage || cargo.PackageQty || 0,
         packageQty: cargo.PackageQty || 0,
         grossWeight: cargo.GrossWeight || 0,
@@ -382,7 +311,7 @@ export function transformEnquiryApiData(
         weightUnit: cargo.WeightUnit || 'KG'
       }))
     })),
-    fclLcl: enquiry.FCLLCL || routes[0]?.FCLLCL || 'LCL',
+    fclLcl,
     departmentName: getDeptName(enquiry.DepartmentMasterSid) || enquiry.DepartmentName || ''
   };
 }
