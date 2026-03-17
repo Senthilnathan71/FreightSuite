@@ -249,9 +249,7 @@ export class HawbBillListComponent extends BaseListComponent implements OnInit {
     }
 
     const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
-    const filteredItems = this.applyAdvancedFilters(rawItems);
-
-    this.allItems = filteredItems.map((item: any) => ({
+    this.allItems = rawItems.map((item: any) => ({
       ...item,
       MasterJobSid: item.MasterJobSid,
       MasterJobNumber: item.masterJob?.MasterJobNumber ?? item.MBLNo ?? '',
@@ -262,7 +260,8 @@ export class HawbBillListComponent extends BaseListComponent implements OnInit {
       Status: item.status === 'A' ? 'Active' : 'Suspended'
     }));
 
-    this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
+    this.totalLengthOfCollection = response?.data?.totalCount || rawItems.length || 0;
+    this.applySorting();
     this.updateHeaderActionState();
   }
 

@@ -108,6 +108,7 @@ export class AgentMasterAirWaybillListComponent extends BaseListComponent implem
 
   private allPorts: any[] = [];
   currentFilters: AdvancedFilterValues = {};
+  private lastSearchParams: any = null;
 
   partySearchFn = (_searchTerm: string, partyType: string): Observable<any[]> => {
     const companyMasterSid = this.currentCompany?.CompanyMasterSid;
@@ -244,6 +245,7 @@ export class AgentMasterAirWaybillListComponent extends BaseListComponent implem
       }
     }
 
+    this.lastSearchParams = { ...params };
     return params;
   }
 
@@ -258,21 +260,19 @@ export class AgentMasterAirWaybillListComponent extends BaseListComponent implem
     }
 
     const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
-    const filteredItems = this.applyAdvancedFilters(rawItems);
+    const totalCount = response?.data?.totalCount || rawItems.length || 0;
 
-    this.allItems = filteredItems.map((item: any) => ({
-      ...item,
-      MasterJobSid: item.MasterJobSid,
-      MasterJobNumber: item.MasterJobNumber ?? item.masterJob?.MasterJobNumber ?? '',
-      departmentName: item?.departmentMaster?.departmentName ?? item?.departmentName ?? '',
-      MBLDate: item?.MBLDate ? this.datePipe.transform(item.MBLDate) : '',
-      ETD: item?.ETD ? this.datePipe.transform(item.ETD) : '',
-      ETA: item?.ETA ? this.datePipe.transform(item.ETA) : '',
-      HBLDate: item?.HBLDate ? this.datePipe.transform(item.HBLDate) : '',
-      Status: item.status === 'A' ? 'Active' : 'Suspended'
-    }));
+    if (this.hasAdvancedFilterValues()) {
+      const filteredOnPage = this.applyAdvancedFilters(rawItems);
+      if (filteredOnPage.length !== rawItems.length && totalCount > rawItems.length) {
+        this.fetchAllFilteredItems(totalCount);
+        return;
+      }
+    }
 
-    this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
+    this.allItems = rawItems.map(item => this.normalizeRow(item));
+
+    this.totalLengthOfCollection = totalCount;
     this.applySorting();
     this.updateHeaderActionState();
   }
@@ -590,6 +590,67 @@ export class AgentMasterAirWaybillListComponent extends BaseListComponent implem
 
       return true;
     });
+  }
+
+  private fetchAllFilteredItems(totalCount: number): void {
+    const baseParams = { ...(this.lastSearchParams || {}) };
+    if (!baseParams.pageSize) {
+      baseParams.pageSize = Number(this.pageSize);
+    }
+
+    const pageSize = Number(baseParams.pageSize);
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+    this.tableLoading = true;
+    this.spinner.show();
+
+    const requests = Array.from({ length: totalPages }, (_v, index) => {
+      const page = index + 1;
+      return this.operationService.searchAgentMasterAirWaybill({ ...baseParams, page }).pipe(
+        catchError(() => of(null))
+      );
+    });
+
+    forkJoin(requests).subscribe({
+      next: (responses: any[]) => {
+        const allRawItems = responses.flatMap(resp =>
+          Array.isArray(resp?.data?.items) ? resp.data.items : []
+        );
+        const filteredItems = this.applyAdvancedFilters(allRawItems);
+        const normalizedItems = filteredItems.map(item => this.normalizeRow(item));
+
+        this.allItems = normalizedItems;
+        this.applySorting();
+
+        const start = (this.page - 1) * pageSize;
+        const end = start + pageSize;
+        this.allItems = this.allItems.slice(start, end);
+
+        this.totalLengthOfCollection = normalizedItems.length;
+        this.updatePaginationConfig();
+        this.updateHeaderActionState();
+        this.tableLoading = false;
+        this.spinner.hide();
+      },
+      error: () => {
+        this.tableLoading = false;
+        this.spinner.hide();
+      }
+    });
+  }
+
+  private normalizeRow(item: any): any {
+    return {
+      ...item,
+      MasterJobSid: item.MasterJobSid,
+      MasterJobNumber: item.MasterJobNumber ?? item.masterJob?.MasterJobNumber ?? '',
+      departmentName: item?.departmentMaster?.departmentName ?? item?.departmentName ?? '',
+      MBLDate: item?.MBLDate ? this.datePipe.transform(item.MBLDate) : '',
+      ETD: item?.ETD ? this.datePipe.transform(item.ETD) : '',
+      ETA: item?.ETA ? this.datePipe.transform(item.ETA) : '',
+      HBLDate: item?.HBLDate ? this.datePipe.transform(item.HBLDate) : '',
+      Status: item.status === 'A' ? 'Active' : 'Suspended'
+    };
   }
 }
 

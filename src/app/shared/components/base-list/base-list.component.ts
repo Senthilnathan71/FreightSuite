@@ -144,9 +144,6 @@ protected parseDateValue(value: any): number | null {
     const trimmed = value.trim();
     if (!trimmed) return null;
 
-    const parsed = Date.parse(trimmed);
-    if (!Number.isNaN(parsed)) return parsed;
-
     const match = trimmed.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:\s.*)?$/);
     if (match) {
       const day = Number(match[1]);
@@ -155,6 +152,9 @@ protected parseDateValue(value: any): number | null {
       const time = new Date(year, month, day).getTime();
       return Number.isNaN(time) ? null : time;
     }
+
+    const parsed = Date.parse(trimmed);
+    if (!Number.isNaN(parsed)) return parsed;
   }
 
   return null;

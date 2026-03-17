@@ -404,8 +404,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
     this.spinner.hide();
     if (response.status) {
       const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
-      const filteredItems = this.applyAdvancedFilters(rawItems);
-      this.allItems = filteredItems.map(item => ({
+      this.allItems = rawItems.map(item => ({
         ...item,
         CashOrBank : item.CashOrBank === 'C' ? 'Cash' : 'Bank',
         ListAmount : Number(item.VoucherDetail[0]?.PartyAmount || 0).toFixed(2),
@@ -416,7 +415,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
         PostStatus : item.PostStatus === 'P' ? 'Posted' : 'Unposted',
         Status: item.Status === 'A' ? 'Active' : 'Suspended'
       }));
-      this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
+      this.totalLengthOfCollection = response?.data?.totalCount || rawItems.length || 0;
       this.applySorting();
       this.updateHeaderActionState();
     } else {

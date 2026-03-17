@@ -198,8 +198,7 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
     this.spinner.hide();
     if (response.status) {
       const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
-      const filteredItems = this.applyAdvancedFilters(rawItems);
-      this.allItems = filteredItems.map((item: any) => ({
+      this.allItems = rawItems.map((item: any) => ({
         ...item,
         PostStatusCode: item.PostStatus,
         VoucherDateRaw: item.VoucherDate,
@@ -210,8 +209,8 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
         PostDateFormatted: this.datePipe.transform(item.PostDate),
         LocalAmountFormatted: this.formatAmount(item.LocalAmount) 
       }));
-      this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
-      // this.applySorting();
+      this.totalLengthOfCollection = response?.data?.totalCount || rawItems.length || 0;
+      this.applySorting();
       this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching journal vouchers.');

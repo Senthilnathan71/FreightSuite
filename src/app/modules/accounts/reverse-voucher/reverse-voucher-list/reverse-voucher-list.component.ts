@@ -159,7 +159,39 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
         });
         this.initializeModalDropdownItems();
         super.ngOnInit();
+        this.loadVendorOptions();
         this.loadVouchers();
+      }
+
+      private loadVendorOptions(): void {
+        const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+        const branchMasterSid = this.currentBranch?.BranchMasterSid;
+        if (!companyMasterSid || !branchMasterSid) {
+          this.vendorFilterConfig = { ...this.vendorFilterConfig, options: [] };
+          return;
+        }
+        this.operationService.getAllCreditorWithCOAMapped({
+          CompanyMasterSid: companyMasterSid,
+          BranchMasterSid: branchMasterSid
+        }).subscribe({
+          next: (resp: any) => {
+            const rows = Array.isArray(resp?.data) ? resp.data : [];
+            const vendors = Array.from(
+              new Map(
+                rows
+                  .map((row: any) => ({
+                    VendorName: row?.CustomerName ?? row?.PartyName ?? ''
+                  }))
+                  .filter((x: any) => !!x.VendorName)
+                  .map((x: any) => [x.VendorName, x])
+              ).values()
+            );
+            this.vendorFilterConfig = { ...this.vendorFilterConfig, options: vendors };
+          },
+          error: () => {
+            this.vendorFilterConfig = { ...this.vendorFilterConfig, options: [] };
+          }
+        });
       }
     
     
@@ -225,8 +257,7 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
         if (response.status) {
           const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
           this.updateVendorFilterOptions(rawItems);
-          const filteredItems = this.applyAdvancedFilters(rawItems);
-          this.allItems = filteredItems.map((item: any) => ({
+          this.allItems = rawItems.map((item: any) => ({
             ...item,
             VoucherDate: this.datePipe.transform(item?.VoucherDate),
             PostStatusLabel: item.PostStatus === 'P' ? 'Posted' : 'Unposted',
@@ -234,7 +265,7 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
             ReversalVoucherDisplay: this.getInvoiceNumber(item.ReversalVoucher),
             
           }));
-          this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
+          this.totalLengthOfCollection = response?.data?.totalCount || rawItems.length || 0;
           this.applySorting();
           this.updateHeaderActionState();
         } else {
@@ -574,18 +605,20 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
       }
 
       private updateVendorFilterOptions(items: any[]): void {
-        const vendors = Array.from(
+        const existing = Array.isArray(this.vendorFilterConfig.options) ? this.vendorFilterConfig.options : [];
+        const incoming = (items || [])
+          .map((item: any) => ({
+            VendorName: item?.VendorName || item?.PartyName || ''
+          }))
+          .filter((x: any) => !!x.VendorName);
+
+        const merged = Array.from(
           new Map(
-            (items || [])
-              .map((item: any) => ({
-                VendorName: item?.VendorName || ''
-              }))
-              .filter((x: any) => !!x.VendorName)
-              .map((x: any) => [x.VendorName, x])
+            [...existing, ...incoming].map((x: any) => [x.VendorName, x])
           ).values()
         );
 
-        this.vendorFilterConfig = { ...this.vendorFilterConfig, options: vendors };
+        this.vendorFilterConfig = { ...this.vendorFilterConfig, options: merged };
       }
 
       private applyAdvancedFilters(items: any[]): any[] {

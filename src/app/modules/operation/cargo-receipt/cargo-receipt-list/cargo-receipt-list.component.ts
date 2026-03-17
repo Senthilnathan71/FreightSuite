@@ -250,19 +250,18 @@ export class CargoReceiptListComponent extends BaseListComponent implements OnIn
   protected processSearchResults(response: any): void {
     this.tableLoading = false;
     this.spinner.hide();
-    console.log(response,'response')
     if (response.status) {
       const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
-      const filteredItems = this.applyAdvancedFilters(rawItems);
 
-      this.allItems = filteredItems.map((item: any) => ({
+      this.allItems = rawItems.map((item: any) => ({
         ...item,
         status: item.status === 'A' ? 'Active' : 'Suspended',
         departmentName:item.departmentMaster?.departmentName,
         BookingDateTime:this.datePipe.transform(item?.BookingDateTime),
         bookingStatus: item.BookingStatus
       }));
-      this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
+      this.totalLengthOfCollection = response?.data?.totalCount || rawItems.length || 0;
+      this.applySorting();
       this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching Cargo.');
