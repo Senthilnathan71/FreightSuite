@@ -221,57 +221,235 @@ export function buildCargoTable(
   }
 
   // Define columns based on shipment type
-  let columns: PdfTableColumn[] = [
-    { header: 'Commodity', field: 'CargoType', width: '*' }
-  ];
-
-  if (fclLcl === 'FCL') {
-    columns.push(
-      { header: 'Container Type', field: 'ContainerType', width: 80 },
-      { header: 'No. of Containers', field: 'NoofContainers', width: 80, alignment: 'right', format: 'number' }
-    );
-  }
-
-  columns.push({
-    header: 'Gross Weight',
-    field: 'GrossWeight',
-    width: 70,
-    alignment: 'right',
-    format: 'number',
-    decimals: 2
-  });
-
-  if (fclLcl === 'LCL') {
-    columns.push({
-      header: 'No. of Pkg',
-      field: 'NoOfPackage',
-      width: 60,
-      alignment: 'right',
-      format: 'number'
-    });
-  }
+  let columns: PdfTableColumn[] = [];
 
   if (fclLcl === 'AIR') {
-    columns.push({
-      header: 'Chargeable Wt',
-      field: 'ChargeableWeight',
-      width: 80,
-      alignment: 'right',
-      format: 'number',
-      decimals: 2
+    columns = [
+      { header: 'Cargo Type', field: 'CargoType', width: 58 },
+      { header: 'Cargo Desc', field: 'CargoDesc', width: 72 },
+      { header: 'Product Name', field: 'ProductName', width: 82 },
+      { header: 'Chargeable Wt.', field: 'ChargeableWeight', width: 72, alignment: 'right', format: 'number', decimals: 3 },
+      { header: 'Pkg Type', field: 'PackageType', width: 52 },
+      { header: 'Qty.', field: 'Qty', width: 35, alignment: 'right', format: 'number', decimals: 2 },
+      { header: 'Gross Wt.', field: 'GrossWeight', width: 56, alignment: 'right', format: 'number', decimals: 3 },
+      { header: 'CBM', field: 'Volume', width: 55, alignment: 'right', format: 'number', decimals: 3 }
+    ];
+
+    const headerRow = columns.map(col => ({
+      text: col.header,
+      style: opts.headerStyle,
+      alignment: col.alignment || 'left'
+    }));
+
+    const dataRows = cargo.map((row, rowIndex) => {
+      return columns.map(col => {
+        let value = row[col.field];
+        let displayValue = '';
+
+        switch (col.format) {
+          case 'number':
+            displayValue = formatNumber(value, col.decimals || 0);
+            break;
+          case 'currency':
+            displayValue = formatNumberWithCommas(value, col.decimals || 2);
+            break;
+          case 'date':
+            displayValue = formatDate(value);
+            break;
+          default:
+            displayValue = value !== null && value !== undefined ? String(value) : '';
+        }
+
+        const cell: any = {
+          text: displayValue,
+          style: opts.cellStyle,
+          alignment: col.alignment || 'left'
+        };
+
+        if (opts.alternateRowColors && rowIndex % 2 === 1) {
+          cell.fillColor = opts.alternateColor;
+        }
+
+        return cell;
+      });
     });
+
+    const totalQty = cargo.reduce((sum, item) => sum + (Number(item.Qty) || 0), 0);
+    const totalGrossWeight = cargo.reduce((sum, item) => sum + (Number(item.GrossWeight) || 0), 0);
+    const totalVolume = cargo.reduce((sum, item) => sum + (Number(item.Volume) || 0), 0);
+
+    const totalRow: any[] = columns.map(() => ({ text: '', style: opts.cellStyle }));
+    totalRow[4] = { text: 'Total', style: opts.cellStyle, alignment: 'right' };
+    totalRow[5] = { text: formatNumber(totalQty, 2), style: opts.cellStyle, alignment: 'right' };
+    totalRow[6] = { text: formatNumber(totalGrossWeight, 3), style: opts.cellStyle, alignment: 'right' };
+    totalRow[7] = { text: formatNumber(totalVolume, 3), style: opts.cellStyle, alignment: 'right' };
+
+    const widths = columns.map(col => col.width || '*');
+    const layout = typeof opts.layout === 'string'
+      ? PDF_TABLE_LAYOUTS[opts.layout] || PDF_TABLE_LAYOUTS.bordered
+      : opts.layout;
+
+    return {
+      table: {
+        headerRows: 1,
+        widths,
+        body: [headerRow, ...dataRows, totalRow]
+      },
+      layout,
+      margin: opts.margin
+    };
   }
 
-  columns.push({
-    header: 'Volume (CBM)',
-    field: 'Volume',
-    width: 70,
-    alignment: 'right',
-    format: 'number',
-    decimals: 3
+  if (fclLcl === 'FCL') {
+    columns = [
+      { header: 'Cargo Type', field: 'CargoType', width: 58 },
+      { header: 'Cargo Desc', field: 'CargoDesc', width: 72 },
+      { header: 'Product Name', field: 'ProductName', width: 82 },
+      { header: 'Cont. Type', field: 'ContainerType', width: 60 },
+      { header: 'No. of Cont.', field: 'NoofContainers', width: 50, alignment: 'right', format: 'number' },
+      { header: 'Pkg Type', field: 'PackageType', width: 46 },
+      { header: 'Gross Wt.', field: 'GrossWeight', width: 52, alignment: 'right', format: 'number', decimals: 3 },
+      { header: 'CBM', field: 'Volume', width: 44, alignment: 'right', format: 'number', decimals: 3 }
+    ];
+
+    const headerRow = columns.map(col => ({
+      text: col.header,
+      style: opts.headerStyle,
+      alignment: col.alignment || 'left'
+    }));
+
+    const dataRows = cargo.map((row, rowIndex) => {
+      return columns.map(col => {
+        let value = row[col.field];
+        let displayValue = '';
+
+        switch (col.format) {
+          case 'number':
+            displayValue = formatNumber(value, col.decimals || 0);
+            break;
+          case 'currency':
+            displayValue = formatNumberWithCommas(value, col.decimals || 2);
+            break;
+          case 'date':
+            displayValue = formatDate(value);
+            break;
+          default:
+            displayValue = value !== null && value !== undefined ? String(value) : '';
+        }
+
+        const cell: any = {
+          text: displayValue,
+          style: opts.cellStyle,
+          alignment: col.alignment || 'left'
+        };
+
+        if (opts.alternateRowColors && rowIndex % 2 === 1) {
+          cell.fillColor = opts.alternateColor;
+        }
+
+        return cell;
+      });
+    });
+
+    const totalGrossWeight = cargo.reduce((sum, item) => sum + (Number(item.GrossWeight) || 0), 0);
+    const totalVolume = cargo.reduce((sum, item) => sum + (Number(item.Volume) || 0), 0);
+
+    const totalRow: any[] = columns.map(() => ({ text: '', style: opts.cellStyle }));
+    totalRow[5] = { text: 'Total', style: opts.cellStyle, alignment: 'right' };
+    totalRow[6] = { text: formatNumber(totalGrossWeight, 3), style: opts.cellStyle, alignment: 'right' };
+    totalRow[7] = { text: formatNumber(totalVolume, 3), style: opts.cellStyle, alignment: 'right' };
+
+    const widths = columns.map(col => col.width || '*');
+    const layout = typeof opts.layout === 'string'
+      ? PDF_TABLE_LAYOUTS[opts.layout] || PDF_TABLE_LAYOUTS.bordered
+      : opts.layout;
+
+    return {
+      table: {
+        headerRows: 1,
+        widths,
+        body: [headerRow, ...dataRows, totalRow]
+      },
+      layout,
+      margin: opts.margin
+    };
+  }
+
+  columns = [
+    { header: 'Cargo Type', field: 'CargoType', width: 60 },
+    { header: 'Cargo Desc', field: 'CargoDesc', width: 72 },
+    { header: 'Product Name', field: 'ProductName', width: 78 },
+    { header: 'Chargeable Wt.', field: 'ChargeableWeight', width: 72, alignment: 'right', format: 'number', decimals: 3 },
+    { header: 'Qty.', field: 'Qty', width: 32, alignment: 'right', format: 'number' },
+    { header: 'Wt.Unit', field: 'WeightUnit', width: 40 },
+    { header: 'Pkg Type', field: 'PackageType', width: 45 },
+    { header: 'Gross Wt.', field: 'GrossWeight', width: 50, alignment: 'right', format: 'number', decimals: 3 },
+    { header: 'CBM', field: 'Volume', width: 40, alignment: 'right', format: 'number', decimals: 3 }
+  ];
+
+  const headerRow = columns.map(col => ({
+    text: col.header,
+    style: opts.headerStyle,
+    alignment: col.alignment || 'left'
+  }));
+
+  const dataRows = cargo.map((row, rowIndex) => {
+    return columns.map(col => {
+      let value = row[col.field];
+      let displayValue = '';
+
+      switch (col.format) {
+        case 'number':
+          displayValue = formatNumber(value, col.decimals || 0);
+          break;
+        case 'currency':
+          displayValue = formatNumberWithCommas(value, col.decimals || 2);
+          break;
+        case 'date':
+          displayValue = formatDate(value);
+          break;
+        default:
+          displayValue = value !== null && value !== undefined ? String(value) : '';
+      }
+
+      const cell: any = {
+        text: displayValue,
+        style: opts.cellStyle,
+        alignment: col.alignment || 'left'
+      };
+
+      if (opts.alternateRowColors && rowIndex % 2 === 1) {
+        cell.fillColor = opts.alternateColor;
+      }
+
+      return cell;
+    });
   });
 
-  return buildTable(cargo, columns, opts);
+  const totalQty = cargo.reduce((sum, item) => sum + (Number(item.Qty) || 0), 0);
+  const totalGrossWeight = cargo.reduce((sum, item) => sum + (Number(item.GrossWeight) || 0), 0);
+  const totalVolume = cargo.reduce((sum, item) => sum + (Number(item.Volume) || 0), 0);
+
+  const totalRow: any[] = columns.map(() => ({ text: '', style: opts.cellStyle }));
+  totalRow[2] = { text: 'Total', style: opts.cellStyle, alignment: 'right' };
+  totalRow[4] = { text: formatNumber(totalQty, 0), style: opts.cellStyle, alignment: 'right' };
+  totalRow[7] = { text: formatNumber(totalGrossWeight, 3), style: opts.cellStyle, alignment: 'right' };
+  totalRow[8] = { text: formatNumber(totalVolume, 3), style: opts.cellStyle, alignment: 'right' };
+
+  const widths = columns.map(col => col.width || '*');
+  const layout = typeof opts.layout === 'string'
+    ? PDF_TABLE_LAYOUTS[opts.layout] || PDF_TABLE_LAYOUTS.bordered
+    : opts.layout;
+
+  return {
+    table: {
+      headerRows: 1,
+      widths,
+      body: [headerRow, ...dataRows, totalRow]
+    },
+    layout,
+    margin: opts.margin
+  };
 }
 
 /**
@@ -363,24 +541,41 @@ export function buildTwoColumnInfo(
   options: {
     labelWidth?: number;
     margin?: [number, number, number, number];
+    columnGap?: number;
+    rowGap?: number;
+    fontSize?: number;
+    leftLabelWidth?: number;
+    rightLabelWidth?: number;
   } = {}
 ): any {
-  const { labelWidth = 100, margin = [0, 0, 0, 15] } = options;
+  const {
+    labelWidth = 100,
+    margin = [0, 0, 0, 15],
+    columnGap = 0,
+    rowGap = 0,
+    fontSize,
+    leftLabelWidth,
+    rightLabelWidth
+  } = options;
 
-  const buildColumn = (items: { label: string; value: string }[]) => {
+  const buildColumn = (items: { label: string; value: string }[], widthOverride?: number) => {
+    const effectiveLabelWidth = widthOverride ?? labelWidth;
     return items.map(item => ({
       columns: [
-        { text: item.label, style: 'labelBold', width: labelWidth },
-        { text: `: ${item.value}`, width: '*' }
-      ]
+        { text: item.label, style: 'labelBold', width: effectiveLabelWidth, fontSize },
+        { text: ':', width: 6, alignment: 'right', fontSize },
+        { text: item.value || '', width: '*', fontSize }
+      ],
+      margin: [0, 0, 0, rowGap]
     }));
   };
 
   return {
     columns: [
-      { stack: buildColumn(leftItems), width: '50%' },
-      { stack: buildColumn(rightItems), width: '50%' }
+      { stack: buildColumn(leftItems, leftLabelWidth), width: '50%' },
+      { stack: buildColumn(rightItems, rightLabelWidth), width: '50%' }
     ],
+    columnGap,
     margin
   };
 }

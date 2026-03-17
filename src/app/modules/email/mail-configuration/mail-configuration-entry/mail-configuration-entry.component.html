@@ -11,10 +11,19 @@
   <div class="col-12">
     <div class="">
       <!-- Page Header -->
-      <div class="row bg-white mb-2 align-items-center rounded shadow-sm mx-1">
+      <div class="row bg-white mb-2 align-items-center rounded shadow-sm mx-1 border" style="border-color: #e9ecef;">
         <div class="d-flex justify-content-between align-items-center py-1">
-          <h5 class="mb-0">Mail Configuration</h5>
-          <div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="rounded-circle d-inline-flex align-items-center justify-content-center bg-info text-white"
+              style="width: 28px; height: 28px;">
+              <i class="fas fa-envelope-open-text"></i>
+            </span>
+            <div>
+              <h5 class="mb-0">Mail Configuration</h5>
+              <small class="text-muted">Manage templates, triggers, and delivery rules</small>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
             <button type="button" class="btn btn-sm btn-info me-2" (click)="addRow()">
               <i class="fas fa-plus me-1"></i> Add New
             </button>
@@ -26,16 +35,23 @@
       </div>
 
       <!-- Card Grid -->
-      <div class="row mx-1">
+      <div class="row mx-1 g-2">
         @for (row of rows; track row.Sno; let i = $index) {
           <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
-            <div class="card mail-config-card h-100"
+            <div class="card mail-config-card h-100 shadow-sm border-0 position-relative"
               [class.card-active]="editingIndex === i"
               [class.card-inactive]="row.Status === 'I' && editingIndex !== i">
 
               <!-- Card Header -->
-              <div class="card-header py-2 px-3 d-flex justify-content-between align-items-center">
-                <span class="fw-semibold text-truncate me-2" style="font-size: 0.85rem;">{{ row.MailName || 'Untitled' }}</span>
+              <div class="card-header py-2 px-3 d-flex justify-content-between align-items-center border-0"
+                style="background: linear-gradient(135deg, #f8f9fa 0%, #eef7ff 100%);">
+                <div class="d-flex align-items-center gap-2 text-truncate">
+                  <span class="rounded-circle"
+                    [class.bg-success]="row.Status === 'A'"
+                    [class.bg-secondary]="row.Status !== 'A'"
+                    style="width: 8px; height: 8px; display: inline-block;"></span>
+                  <span class="fw-semibold text-truncate" style="font-size: 0.85rem;">{{ row.MailName || 'Untitled' }}</span>
+                </div>
                 <span class="badge rounded-pill"
                   [class.bg-success]="row.Status === 'A'"
                   [class.bg-secondary]="row.Status !== 'A'"
@@ -46,10 +62,13 @@
 
               <!-- Card Body -->
               <div class="card-body py-2 px-3" style="font-size: 0.8rem;">
-                <div class="mb-1 text-muted">
-                  <i class="fas fa-list-alt me-1"></i>{{ getMenuName(row.MenuMasterSid) || '—' }}
+                <div class="d-flex align-items-center text-muted mb-1">
+                  <span class="badge bg-light text-dark border me-2" style="font-size: 0.65rem;">Menu</span>
+                  <span class="text-truncate">
+                    <i class="fas fa-list-alt me-1"></i>{{ getMenuName(row.MenuMasterSid) || '—' }}
+                  </span>
                 </div>
-                <div class="mb-1">
+                <div class="d-flex flex-wrap gap-1 mb-1">
                   <span class="badge bg-light text-dark border me-1" style="font-size: 0.7rem;">
                     {{ getTriggerLabel(row.Trigger) }}
                   </span>
@@ -66,15 +85,17 @@
                   }
                 </div>
                 @if (row.MailSubject) {
-                  <div class="text-truncate text-muted mt-1" style="font-size: 0.75rem;"
+                  <div class="text-truncate text-muted mt-1 d-flex align-items-center gap-1" style="font-size: 0.75rem;"
                     title="{{ row.MailSubject }}">
-                    <i class="fas fa-envelope me-1"></i>{{ row.MailSubject | slice:0:40 }}
+                    <i class="fas fa-envelope"></i>
+                    <span class="fw-semibold">Subject:</span>
+                    <span>{{ row.MailSubject | slice:0:40 }}</span>
                   </div>
                 }
               </div>
 
               <!-- Card Footer -->
-              <div class="card-footer bg-transparent py-1 px-3 d-flex justify-content-end gap-1">
+              <div class="card-footer bg-transparent py-1 px-3 d-flex justify-content-end gap-1 border-0">
                 <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" (click)="editRow(i)" title="Edit"
                   style="font-size: 0.75rem;">
                   <i class="fas fa-edit me-1"></i>Edit
@@ -97,12 +118,18 @@
 
       <!-- Detail Form -->
       @if (editingRow) {
-        <div class="card detail-form-card mx-1 mt-2 mb-3" #detailFormSection>
-          <div class="card-header py-2 px-3 d-flex justify-content-between align-items-center bg-info bg-opacity-10">
-            <h6 class="mb-0">
-              <i class="fas fa-edit me-2 text-info"></i>
-              {{ editingRow.isNew ? 'New Mail Configuration' : 'Edit: ' + editingRow.MailName }}
-            </h6>
+        <div class="card detail-form-card mx-1 mt-2 mb-3 shadow-sm border-0"
+          style="border-top: 3px solid #0dcaf0;" #detailFormSection>
+          <div class="card-header py-2 px-3 d-flex justify-content-between align-items-center bg-info bg-opacity-10 border-0">
+            <div class="d-flex align-items-center gap-2">
+              <span class="rounded-circle d-inline-flex align-items-center justify-content-center bg-info text-white"
+                style="width: 28px; height: 28px;">
+                <i class="fas fa-edit"></i>
+              </span>
+              <h6 class="mb-0">
+                {{ editingRow.isNew ? 'New Mail Configuration' : 'Edit: ' + editingRow.MailName }}
+              </h6>
+            </div>
             <div class="d-flex gap-2">
               <button type="button" class="btn btn-sm btn-secondary" (click)="cancelEdit(editingIndex!)">
                 <i class="fas fa-times me-1"></i> Cancel
@@ -115,7 +142,10 @@
 
           <div class="card-body px-3 py-3">
             <!-- Section 1: Basic Info -->
-            <div class="section-heading mb-2">Basic Information</div>
+            <div class="section-heading mb-2 d-flex align-items-center gap-2">
+              <span class="badge bg-info text-white">1</span>
+              <span>Basic Information</span>
+            </div>
             <div class="row mb-3">
               <div class="col-md-2">
                 <div class="custom-form-group">
@@ -127,7 +157,7 @@
               <div class="col-md-4">
                 <div class="custom-form-group">
                   <input type="text" class="custom-input-field sm"
-                    [(ngModel)]="editingRow.MailName" maxlength="50" placeholder="Enter mail name">
+                    [(ngModel)]="editingRow.MailName" maxlength="50" placeholder=" ">
                   <label class="input-label">Mail Name <span class="text-danger">*</span></label>
                 </div>
               </div>
@@ -139,7 +169,7 @@
                     [items]="menuList"
                     bindLabel="MenuName"
                     bindValue="MenuMasterSid"
-                    placeholder="Select menu"
+                    placeholder=" "
                     [clearable]="true"
                     [searchable]="true"
                     appendTo="body"
@@ -166,7 +196,10 @@
             </div>
 
             <!-- Section 2: Email Content -->
-            <div class="section-heading mb-2">Email Content</div>
+            <div class="section-heading mb-2 d-flex align-items-center gap-2">
+              <span class="badge bg-info text-white">2</span>
+              <span>Email Content</span>
+            </div>
             <div class="row mb-3">
               <div class="col-12 mb-2">
                 <div class="custom-form-group">
@@ -191,7 +224,10 @@
             </div>
 
             <!-- Section 3: Recipients & Settings -->
-            <div class="section-heading mb-2">Recipients &amp; Settings</div>
+            <div class="section-heading mb-2 d-flex align-items-center gap-2">
+              <span class="badge bg-info text-white">3</span>
+              <span>Recipients &amp; Settings</span>
+            </div>
             <div class="row mb-2">
               <div class="col-md-6 mb-2">
                 <div class="custom-form-group">
@@ -324,6 +360,7 @@
 
         </div>
       }
+      
     </div>
   </div>
 </div>

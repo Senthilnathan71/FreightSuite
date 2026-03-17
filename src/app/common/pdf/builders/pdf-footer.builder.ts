@@ -80,8 +80,7 @@ export function buildFooter(
 
   return {
     columns,
-    margin: [40, 30, 38, 40],  // Increased top margin to push content down
-
+    margin: [40, 60, 38, -6]
   };
 }
 

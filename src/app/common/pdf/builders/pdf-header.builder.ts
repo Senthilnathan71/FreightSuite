@@ -59,7 +59,7 @@ export function buildHeader(
       text: company.companyName,
       style: 'companyName',
       alignment: opts.alignment,
-      margin: [0, 0, 0, 4]
+      margin: [0, 0, 0, 6]
     });
   }
 
@@ -68,7 +68,8 @@ export function buildHeader(
     companyInfoStack.push({
       text: branch.branchName,
       style: 'branchName',
-      alignment: opts.alignment
+      alignment: opts.alignment,
+      margin: [0, 2, 0, 2]
     });
   }
 
@@ -79,7 +80,8 @@ export function buildHeader(
       companyInfoStack.push({
         text: addressLine1,
         style: 'addressText',
-        alignment: opts.alignment
+        alignment: opts.alignment,
+        margin: [0, 0, 0, 2]
       });
     }
 
@@ -98,13 +100,15 @@ export function buildHeader(
       companyInfoStack.push({
         text: phone ? `${addressParts} - ${phone}` : addressParts,
         style: 'addressText',
-        alignment: opts.alignment
+        alignment: opts.alignment,
+        margin: [0, 0, 0, 2]
       });
     } else if (phone) {
       companyInfoStack.push({
         text: phone,
         style: 'addressText',
-        alignment: opts.alignment
+        alignment: opts.alignment,
+        margin: [0, 0, 0, 2]
       });
     }
   }

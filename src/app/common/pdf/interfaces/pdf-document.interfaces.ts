@@ -71,6 +71,20 @@ export interface EnquiryPdfData extends PdfDocumentBase {
     incoTerms?: string;
     freightTerms?: string;
     remarks?: string;
+    shipmentType?: string;
+    clearanceBy?: string;
+    transportBy?: string;
+    customerRef?: string;
+    createdBy?: string;
+    createdOn?: Date | string;
+    shipperName?: string;
+    shipperAddress?: string;
+    consigneeName?: string;
+    consigneeAddress?: string;
+    pickupAddress?: string;
+    additionalService?: string;
+    modeOfBl?: string;
+    shipmentFreq?: string;
   };
   routes: EnquiryRouteData[];
   fclLcl: 'FCL' | 'LCL' | 'AIR';
@@ -88,6 +102,8 @@ export interface EnquiryRouteData {
 export interface EnquiryCargoData extends PdfCargoItem {
   packageQty?: number;
   weightUnit?: string;
+  cargoDescription?: string;
+  productName?: string;
 }
 
 // =====================
