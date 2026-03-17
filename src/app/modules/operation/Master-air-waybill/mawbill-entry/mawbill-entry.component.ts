@@ -2245,15 +2245,14 @@ handleEdocChange(event: any) {
       const departmentSid = this.masterJobData?.DepartmentMasterSid;
       const pol = this.masterJobData?.POL;
       const pod = this.masterJobData?.POD;
-      const fdc = this.masterJobData?.FPD;
       const carrier = this.masterJobData?.voyages?.[0]?.CarrierSid || null;
       const payload = { 
         MenuMasterSid: this.currentMenuId,
         DepartmentMasterSid: departmentSid,
         POL: pol,
         POD: pod,
-        FDC: fdc,
-        Carrier: carrier
+        Carrier: carrier,
+        DocumentSid: this.masterJobData?.MasterJobSid
        };
       this.masterService.getTandCByCondition(payload).subscribe((resp: any) => {
         if (resp.status) {
@@ -2269,7 +2268,6 @@ handleEdocChange(event: any) {
           modelRef.componentInstance.DepartmentMasterSid = departmentSid;
           modelRef.componentInstance.POL = pol;
           modelRef.componentInstance.POD = pod;
-          modelRef.componentInstance.FDC = fdc;
           modelRef.componentInstance.Carrier = carrier;
         } else {
           this.appSettingsService.showError('Error loading Terms and Conditions');

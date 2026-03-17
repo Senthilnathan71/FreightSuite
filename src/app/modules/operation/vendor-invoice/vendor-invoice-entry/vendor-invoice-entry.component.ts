@@ -2817,7 +2817,10 @@ export class VendorInvoiceEntryComponent implements OnInit {
   // Terms & Conditions Method
   openTandC() {
     this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
-    const payload = { MenuMasterSid: this.currentMenuId };
+    const payload = { 
+      MenuMasterSid: this.currentMenuId,
+      DocumentSid: this.vendorInvoiceData?.VoucherHeaderSid
+    };
 
     this.masterService.getTandCByCondition(payload).subscribe(
       (resp: any) => {

@@ -3372,15 +3372,14 @@ resetForm() {
         const departmentSid = this.bookingData?.DepartmentMasterSid;
         const pol = this.bookingData?.POL;
         const pod = this.bookingData?.POD;
-        const fdc = this.bookingData?.FPD;
         const carrier = this.bookingData?.CarrierSid || null;
         const payload = { 
           MenuMasterSid: currentMenuId,
           DepartmentMasterSid: departmentSid,
           POL: pol,
           POD: pod,
-          FDC: fdc,
-          Carrier: carrier
+          Carrier: carrier,
+          DocumentSid: this.HouseJobSid
         };
         this.masterService.getTandCByCondition(payload).subscribe(
           (resp: any) => {
@@ -3397,7 +3396,6 @@ resetForm() {
               modalRef.componentInstance.DepartmentMasterSid = departmentSid;
               modalRef.componentInstance.POL = pol;
               modalRef.componentInstance.POD = pod;
-              modalRef.componentInstance.FDC = fdc;
               modalRef.componentInstance.Carrier = carrier;
     
             } else {

@@ -393,9 +393,6 @@ dataFromEnqPage:any;
             this.isEditMode = true;
             this.loadQuotation(this.QuoteHeaderSid);
             this.checkAuthorisedPerson(this.userData?.UserMasterSid, this.QuoteHeaderSid);
-            this.loadTandC({MenuMasterSid : this.currentMenuId}).subscribe((res)=>{
-              this.TandCList = res;
-            })
           } else {
             this.minEffDate = this.todayDate;
             this.f['status']?.disable();
@@ -2882,50 +2879,77 @@ canGetTariff(routeIndex: number): boolean {
   );
   }
 
- openTandC() {
-    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
-    if (!this.currentMenuId) {
-        this.appSettingService.showError('Error: Menu ID not found.');
-        return;
+  private getPortCodeBySid(portSid: number | null | undefined): string | null {
+    if (portSid === null || portSid === undefined) return null;
+    const port = this.ports.find(p => p.PortMasterSid === portSid);
+    return port?.PortCode ?? null;
+  }
+
+  openTandC(routeIndex: number = 0) {
+  this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+  
+  // Use the specific route based on routeIndex
+  const route = this.quotationData?.quoteRoute?.[routeIndex] || null;
+  const departmentSid = route?.DepartmentMasterSid ?? null;
+  const pol = this.getPortCodeBySid(route?.POLSid);
+  const pod = this.getPortCodeBySid(route?.PODSid);
+  const carrier = route?.quoteCarrier?.[0]?.CarrierMasterSid ?? null;
+  
+  const payload = {
+    MenuMasterSid: this.currentMenuId,
+    DepartmentMasterSid: departmentSid,
+    POL: pol,
+    POD: pod,
+    Carrier: carrier,
+    DocumentSid: this.QuoteHeaderSid
+  };
+
+  this.masterService.getTandCByCondition(payload).subscribe((resp: any) => {
+    if (resp.status) {
+      this.TandCList = resp.data;
+      const modalRef = this.ngbModal.open(TermsAndConditionsComponent, {
+        size: 'lg',
+        backdrop: 'static',
+        centered: true,
+      });
+
+      modalRef.componentInstance.terms = this.TandCList;
+      modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+      modalRef.componentInstance.DocumentSid = this.QuoteHeaderSid;
+      modalRef.componentInstance.DepartmentMasterSid = departmentSid;
+      modalRef.componentInstance.POL = pol;
+      modalRef.componentInstance.POD = pod;
+      modalRef.componentInstance.Carrier = carrier;
+    } else {
+      this.appSettingService.showError('Error loading Terms and Conditions');
     }
+  }, (error) => {
+    this.appSettingService.showError('Error loading Terms and Conditions', error);
+  });
+}
 
-    const payload = { MenuMasterSid: this.currentMenuId };
-
-    const sub = this.loadTandC(payload).subscribe((termsData: any[]) => {
-      if (termsData && termsData.length > 0) {
-        this.TandCList = termsData;
-        const modalRef = this.ngbModal.open(TermsAndConditionsComponent, {
-          size: 'lg',
-          backdrop: 'static',
-          centered: true,
-        });
-        
-        modalRef.componentInstance.terms = this.TandCList;
-        modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-        modalRef.componentInstance.DocumentSid = this.QuoteHeaderSid;
-      } else {
-        console.warn('No Terms and Conditions data found to display.');
-      }
-    });
-
-    this.subscription.add(sub);
-  }
-
-  loadTandC(payload: { MenuMasterSid: number }): Observable<any[]> {
-    return this.leadService.getTandCByCondition(payload).pipe(
-      map((resp: any) => {
-        if (resp && resp.status) {
-          return resp.data;
-        }
-        this.appSettingService.showError('Failed to load Terms and Conditions: Invalid response');
-        return [];
-      }),
-      catchError((error) => {
-        this.appSettingService.showError('Error loading Terms and Conditions');
-        return of([]);
-      })
-    );
-  }
+  // loadTandC(payload: {
+  //   MenuMasterSid: number;
+  //   DepartmentMasterSid?: number | null;
+  //   POL?: string | null;
+  //   POD?: string | null;
+  //   Carrier?: number | null;
+  //   DocumentSid?: number | null;
+  // }): Observable<any[]> {
+  //   return this.leadService.getTandCByCondition(payload).pipe(
+  //     map((resp: any) => {
+  //       if (resp && resp.status) {
+  //         return resp.data;
+  //       }
+  //       this.appSettingService.showError('Failed to load Terms and Conditions: Invalid response');
+  //       return [];
+  //     }),
+  //     catchError((error) => {
+  //       this.appSettingService.showError('Error loading Terms and Conditions');
+  //       return of([]);
+  //     })
+  //   );
+  // }
 
   async openEmail() {
     if (!this.quotationData) return;

@@ -1712,7 +1712,10 @@ export class ReverseVoucherEntryComponent {
   }
   openTandC() {
     this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
-    const payload = { MenuMasterSid: this.currentMenuId };
+    const payload = { 
+      MenuMasterSid: this.currentMenuId,
+      DocumentSid: this.reverseVoucherData?.VoucherHeaderSid
+     };
     this.masterService.getTandCByCondition(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
@@ -1724,7 +1727,7 @@ export class ReverseVoucherEntryComponent {
           });
           modalRef.componentInstance.terms = this.TandCList;
           modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-          modalRef.componentInstance.DocumentSid = this.currentClauseId;
+          modalRef.componentInstance.DocumentSid = this.reverseVoucherData?.VoucherHeaderSid;
 
         } else {
           this.appSettingService.showError('Error loading Terms and Conditions');

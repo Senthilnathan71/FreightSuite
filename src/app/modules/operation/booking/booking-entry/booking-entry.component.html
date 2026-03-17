@@ -2807,7 +2807,7 @@
         </thead>
         <tbody>
           <tr *ngFor="let log of auditLogs">
-            <td>{{ log.changedAt | date:'medium' }}</td>
+            <td>{{ log.changedAt | date:'dd-MM-yyyy hh:mm a' }}</td>
             <td>{{ log.changedBy || '-' }}</td>
             <td>{{ log.operation }}</td>
             <td class="bg-light-danger">

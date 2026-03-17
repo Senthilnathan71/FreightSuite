@@ -81,6 +81,7 @@ import { CompanySettingsManagerService } from 'src/app/core/services/company-set
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { errorLoggerWithToastr, ValidationMessageConfig } from 'src/app/common/error-handling/form-error-handler';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
+import { MasterService } from 'src/app/modules/master/master.service';
 
 /**
  * Receipt Entry Component
@@ -363,7 +364,8 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     private companySettings: CompanySettingsManagerService,
     private voucherPeriodService: VoucherPeriodValidationService,
     private confirmService: ModalService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private masterService: MasterService
   ) {}
 
   ngOnInit(): void {
@@ -3597,16 +3599,15 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   openTandC() {
-    if (!this.currentMenuId) {
-      this.appSettingService.showError('Error: Menu ID not found.');
-      return;
-    }
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+    const payload = { 
+      MenuMasterSid: this.currentMenuId,
+      DocumentSid: this.receiptData?.VoucherHeaderSid
+     };
 
-    const payload = { MenuMasterSid: this.currentMenuId };
-
-    const sub = this.loadTandC(payload).subscribe((termsData: any[]) => {
-      if (termsData) {
-        this.TandCList = termsData;
+    this.masterService.getTandCByCondition(payload).subscribe((resp: any) => {
+      if (resp.status) {
+        this.TandCList = resp.data;
         const modalRef = this.modalService.open(TermsAndConditionsComponent, {
           size: 'lg',
           backdrop: 'static',
@@ -3615,7 +3616,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
         modalRef.componentInstance.terms = this.TandCList;
         modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-        modalRef.componentInstance.DocumentSid = this.headerId;
+        modalRef.componentInstance.DocumentSid = this.receiptData?.VoucherHeaderSid;
       } else {
         console.warn('No Terms and Conditions data found to display.');
       }

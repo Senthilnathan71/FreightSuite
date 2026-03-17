@@ -3174,7 +3174,10 @@ export class VendorCreditNoteEntryComponent {
 
   openTandC() {
     this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
-    const payload = { MenuMasterSid: this.currentMenuId };
+    const payload = { 
+      MenuMasterSid: this.currentMenuId,
+      DocumentSid: this.headerId
+     };
     this.masterService.getTandCByCondition(payload).subscribe(
       (resp: any) => {
         if (resp.status) {

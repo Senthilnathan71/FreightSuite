@@ -68,6 +68,7 @@ import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { greaterThanZero } from 'src/app/core/ValidationFn/greaterThanZero.validators';
 import { PdfFileSaveService } from 'src/app/common/pdf-file-save.service';
+import { Menu } from 'angular-feather/icons';
 interface NgbDateStructLike {
   day: number;
   month: number;
@@ -2904,8 +2905,12 @@ isSeaDepartment(): boolean {
       return;
     }
 
+    const payload = {
+      MenuMasterSid: this.invoiceData?.voucherTypeMaster?.MenuMasterSid,
+      DocumentSid: this.invoiceData?.VoucherHeaderSid
+    }
     // If not fetched then fetch and open the modal
-    this.getTandC().subscribe(
+    this.masterService.getTandCByCondition(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
           this.TandCFetched = true;
@@ -2917,7 +2922,7 @@ isSeaDepartment(): boolean {
           });
           modalRef.componentInstance.terms = this.TandCList;
           modalRef.componentInstance.MenuMasterSid = this.invoiceData?.voucherTypeMaster?.MenuMasterSid;
-          modalRef.componentInstance.DocumentSid = this.headerId;
+          modalRef.componentInstance.DocumentSid = this.invoiceData?.VoucherHeaderSid;
         } else {
           this.appSettingService.showError(
             'Error loading Terms and Conditions'
