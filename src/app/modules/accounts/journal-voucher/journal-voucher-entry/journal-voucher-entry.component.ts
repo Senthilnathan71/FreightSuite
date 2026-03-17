@@ -2405,7 +2405,10 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
   }
   openTandC() {
     this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
-    const payload = { MenuMasterSid: this.currentMenuId };
+    const payload = { 
+      MenuMasterSid: this.currentMenuId,
+      DocumentSid: this.voucherData?.VoucherHeaderSid
+     };
     this.masterService.getTandCByCondition(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
@@ -2417,8 +2420,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
           });
           modalRef.componentInstance.terms = this.TandCList;
           modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-          modalRef.componentInstance.DocumentSid = this.currentClauseId;
-
+          modalRef.componentInstance.DocumentSid = this.voucherData?.VoucherHeaderSid;
         } else {
           this.appSettingService.showError('Error loading Terms and Conditions');
         }

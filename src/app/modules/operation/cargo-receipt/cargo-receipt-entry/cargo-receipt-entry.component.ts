@@ -1,4 +1,4 @@
-import { Component, effect, OnInit } from '@angular/core';
+import { Component, effect, OnInit, TemplateRef } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormArray, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NgbModalRef, NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
@@ -68,6 +68,8 @@ export class CargoReceiptEntryComponent implements OnInit {
   currentBranch: any;
   cfsList:any[] = [];
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
+  auditLogs: any[] = []; // Stores audit logs
+  auditLogModalRef!: NgbModalRef;
 
   constructor(
     private config: NgSelectConfig,
@@ -402,6 +404,73 @@ export class CargoReceiptEntryComponent implements OnInit {
   
     openFollowup() {
   
+    }
+
+      openAuditLogs(modal: TemplateRef<any>) {
+        if (!this.BookingHeaderSid) return;
+        this.getAuditLog()
+        this.auditLogModalRef = this.modalService.open(modal, {
+          centered: true,
+          scrollable: true,
+          windowClass: 'audit-log-modal'
+        });
+      }
+    
+     getAuditLog() {
+      this.operationService.getAuditLogsCargoReceipt(
+        'BookingHeader',
+        this.BookingHeaderSid.toString()
+      ).subscribe({
+        next: (logs: any[]) => {
+  logs = (logs || []).filter(log => log.tableName === 'BookingProduct');
+
+  const ignoredFields = ['updatedOn', 'updatedBy', 'createdOn', 'createdBy'];
+
+  const normalize = (val: any) => {
+    if (val === null || val === undefined || val === '') return null;
+    return String(val).trim();
+  };
+
+  const groups: any = {};
+
+  logs.forEach(log => {
+    const key = `${log.changedAt}-${log.changedBy}`;
+
+    if (!groups[key]) {
+      groups[key] = {
+        changedAt: log.changedAt,
+        changedBy: log.changedBy,
+        operation: log.operation,
+        oldValDisplay: [],
+        newValDisplay: []
+      };
+    }
+
+    const oldObj = log.oldVal || {};
+    const newObj = log.newVal || {};
+
+    const keys = new Set([
+      ...Object.keys(oldObj),
+      ...Object.keys(newObj)
+    ]);
+
+    keys.forEach(k => {
+      if (ignoredFields.includes(k)) return;
+
+      const oldVal = normalize(oldObj[k]);
+      const newVal = normalize(newObj[k]);
+
+      if (oldVal !== newVal) {
+        groups[key].oldValDisplay.push(`${k}: ${oldVal ?? '-'}`);
+        groups[key].newValDisplay.push(`${k}: ${newVal ?? '-'}`);
+      }
+    });
+  });
+
+  this.auditLogs = Object.values(groups)
+    .filter((g: any) => g.oldValDisplay.length > 0);
+}
+      });
     }
   
 }

@@ -948,11 +948,14 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
     const departmentSid = this.serviceJobData?.DepartmentMasterSid;
     const pol = this.serviceJobData?.POL;
     const pod = this.serviceJobData?.POD;
+    const carrier = this.serviceJobData?.CarrierSid;
     const payload = { 
       MenuMasterSid: this.currentMenuId,
       DepartmentMasterSid: departmentSid,
       POL: pol,
       POD: pod,
+      Carrier: carrier,
+      DocumentSid: this.serviceJobData?.HouseJobSid
      };
     this.masterService.getTandCByCondition(payload).subscribe(
       (resp: any) => {
@@ -965,11 +968,11 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
           });
           modalRef.componentInstance.terms = this.TandCList;
           modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-          modalRef.componentInstance.DocumentSid = this.HouseJobSid;
+          modalRef.componentInstance.DocumentSid = this.serviceJobData?.HouseJobSid;
           modalRef.componentInstance.DepartmentMasterSid = departmentSid;
           modalRef.componentInstance.POL = pol;
           modalRef.componentInstance.POD = pod;
-
+          modalRef.componentInstance.Carrier = carrier;
         } else {
           this.appSettingService.showError('Error loading Terms and Conditions');
         }

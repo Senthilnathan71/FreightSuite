@@ -95,8 +95,8 @@
           <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
             <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
               (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-            <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
-              (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+            <!-- <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button> -->
             <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
               (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
             <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
@@ -450,6 +450,25 @@
                     <i class="fas fa-info-circle me-2"></i>
                     Gross Weight should be greater than Net Weight
                   </span>
+                  <div *ngIf="isEditMode" 
+         ngbDropdown 
+         class="d-inline-block me-1" 
+         (click)="$event.stopPropagation()">
+      <button type="button" 
+              class="btn btn-sm btn-light-secondary text-light has-arrow" 
+              ngbDropdownToggle
+              style="background: rgba(255,255,255,0.15); border: none; color: white;">
+        <i class="fas fa-ellipsis-v"></i>
+      </button>
+      <div ngbDropdownMenu>
+        <button *ngIf="mps.has('terms_and_condition')"
+                class="text-dark" 
+                ngbDropdownItem 
+                (click)="openTandC(routeIndex)">
+          <i class="fas fa-clipboard me-1"></i> Terms & Condition
+        </button>
+      </div>
+    </div>
                   <span class="ribbon-e text-white">
 
                     {{ route.value.segmentType || 'LCL' }}

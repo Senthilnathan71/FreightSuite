@@ -447,12 +447,12 @@ export class EnquiryEntryComponent implements OnInit {
         action: 'edoc',
         condition: this.mps.has('edoc')
       },
-      {
-        label: 'Terms & Condition',
-        icon: 'fas fa-clipboard',
-        action: 'terms_and_condition',
-        condition: this.mps.has('terms_and_condition')
-      },
+      // {
+      //   label: 'Terms & Condition',
+      //   icon: 'fas fa-clipboard',
+      //   action: 'terms_and_condition',
+      //   condition: this.mps.has('terms_and_condition')
+      // },
       {
         label: 'Authorize',
         icon: 'fas fa-shield-alt',
@@ -491,9 +491,9 @@ export class EnquiryEntryComponent implements OnInit {
       case 'edoc':
         this.openEDoc();
         break;
-      case 'terms_and_condition':
-        this.openTandC();
-        break;
+      // case 'terms_and_condition':
+      //   this.openTandC();
+      //   break;
       case 'authority':
         this.openAuthority();
         break;
@@ -2278,31 +2278,53 @@ private parseFloatSafe(value: any): number {
     modalRef.componentInstance.idValue = this.rateRequestData?.EnquiryHeaderSid;
   }
 
+  private getPortCodeBySid(portSid: number | null | undefined): string | null {
+    if (portSid === null || portSid === undefined) return null;
+    const port = this.ports.find(p => p.PortMasterSid === portSid);
+    return port?.PortCode ?? null;
+  }
 
-  openTandC() {
+  openTandC(routeIndex: number = 0) {
     this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
-    const payload = { MenuMasterSid: this.currentMenuId };
-    this.leadService.getTandCByCondition(payload).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          this.TandCList = resp.data;
-          const modalRef = this.ngbModal.open(TermsAndConditionsComponent, {
-            size: 'lg',
-            backdrop: 'static',
-            centered: true
-          });
-          modalRef.componentInstance.terms = this.TandCList;
-          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-          modalRef.componentInstance.DocumentSid = this.rateRequestData?.EnquiryHeaderSid;
-
-        } else {
-          this.appSettingsService.showError('Error loading Terms and Conditions');
-        }
-      },
-      (error) => {
-        this.appSettingsService.showError('Error loading Terms and Conditions', error);
+    
+    // Use the specific route based on routeIndex
+    const route = this.enquiryData?.enquiryRoute?.[routeIndex] || null;
+    const departmentSid = this.enquiryData?.DepartmentMasterSid;
+    const pol = this.getPortCodeBySid(route?.POLSid);
+    const pod = this.getPortCodeBySid(route?.PODSid);
+    const carrier = null;
+    
+    const payload = {
+      MenuMasterSid: this.currentMenuId,
+      DepartmentMasterSid: departmentSid,
+      POL: pol,
+      POD: pod,
+      Carrier: carrier,
+      DocumentSid: this.EnquiryHeaderSid
+    };
+  
+    this.masterService.getTandCByCondition(payload).subscribe((resp: any) => {
+      if (resp.status) {
+        this.TandCList = resp.data;
+        const modalRef = this.ngbModal.open(TermsAndConditionsComponent, {
+          size: 'lg',
+          backdrop: 'static',
+          centered: true,
+        });
+  
+        modalRef.componentInstance.terms = this.TandCList;
+        modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+        modalRef.componentInstance.DocumentSid = this.EnquiryHeaderSid;
+        modalRef.componentInstance.DepartmentMasterSid = departmentSid;
+        modalRef.componentInstance.POL = pol;
+        modalRef.componentInstance.POD = pod;
+        modalRef.componentInstance.Carrier = carrier;
+      } else {
+        this.appSettingService.showError('Error loading Terms and Conditions');
       }
-    );
+    }, (error) => {
+      this.appSettingService.showError('Error loading Terms and Conditions', error);
+    });
   }
   // openEmail() {
   //   if (!this.rateRequestData) return;

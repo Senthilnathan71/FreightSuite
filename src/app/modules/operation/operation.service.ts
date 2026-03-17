@@ -39,6 +39,24 @@ export class OperationService {
     );
   }
 
+  getAuditLogsCargoReceipt(tableName: string, recordId?: string) {
+    let url = `cargoreceipt/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
+  getAuditLogsAgentMasterAirWaybill(tableName: string, recordId?: string) {
+    let url = `agent-master-air-waybill/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
   geAuditLogsHouseJob(tableName: string, recordId?: string) {
     let url = `ff-booking/audit-logs?tableName=${tableName}`;
     if (recordId) url += `&recordId=${recordId}`;

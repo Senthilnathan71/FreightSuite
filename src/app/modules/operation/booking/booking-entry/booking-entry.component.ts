@@ -3593,15 +3593,14 @@ getVesselVoyBasedOnPorts() {
     const departmentSid = this.bookingData?.DepartmentMasterSid;
     const pol = this.bookingData?.POL;
     const pod = this.bookingData?.POD;
-    const fdc = this.bookingData?.FPD;
     const carrier = this.bookingData?.CarrierSid || null;
     const payload = { 
       MenuMasterSid: this.currentMenuId,
       DepartmentMasterSid: departmentSid,
       POL: pol,
       POD: pod,
-      FDC: fdc,
-      Carrier: carrier
+      Carrier: carrier,
+      DocumentSid: this.bookingData?.BookingHeaderSid
     };
     this.masterService.getTandCByCondition(payload).subscribe(
       (resp: any) => {
@@ -3614,11 +3613,10 @@ getVesselVoyBasedOnPorts() {
           });
           modalRef.componentInstance.terms = this.TandCList;
           modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-          modalRef.componentInstance.DocumentSid = this.BookingHeaderSid;
+          modalRef.componentInstance.DocumentSid = this.bookingData?.BookingHeaderSid;
           modalRef.componentInstance.DepartmentMasterSid = departmentSid;
           modalRef.componentInstance.POL = pol;
           modalRef.componentInstance.POD = pod;
-          modalRef.componentInstance.FDC = fdc;
           modalRef.componentInstance.Carrier = carrier;
         } else {
           this.appSettingService.showError('Error loading Terms and Conditions');
@@ -3864,64 +3862,74 @@ ${this.userData['userName']}`;
     });
   }
 
-  getAuditLog() {
-    this.operationService.getAuditLogsBooking(
-      'BookingHeader',
-      this.BookingHeaderSid.toString()
-    ).subscribe({
-      next: (logs: any[]) => {
-        const ignoredFields = ['updatedOn', 'updatedBy']; // ✅ add more if needed later
+ getAuditLog() {
+  this.operationService.getAuditLogsBooking(
+    'BookingHeader',
+    this.BookingHeaderSid.toString()
+  ).subscribe({
+    next: (logs: any[]) => {
 
-        const formatFields = (val: any) => {
-          if (!val) return [];
-          const obj = typeof val === 'string' ? JSON.parse(val) : val;
-          if (Object.keys(obj).length === 0) return [];
-          return Object.entries(obj)
-            .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-            .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-        };
+      const ignoredFields = ['updatedOn','updatedBy','createdOn','createdBy'];
 
-        this.auditLogs = logs
-          .map(log => ({
-            ...log,
-            oldValDisplay: formatFields(log.oldVal),
-            newValDisplay: formatFields(log.newVal),
-          }))
-          .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
+      const normalize = (val:any) => {
+        if (val === null || val === undefined || val === '') return null;
+        return String(val).trim();
+      };
 
-        this.bookingStatusTimeline = logs
-          .filter(log => log.newVal?.BookingStatus)
-          .sort((a, b) => new Date(b.changedAt).getTime() - new Date(a.changedAt).getTime())
-          .map(log => ({
-            status: log.newVal.BookingStatus,
-            at: log.changedAt
-          }));
+      const groups: any = {};
 
-        // ✅ Check if Cargo Received exists but Booked does not
-        const hasCargoReceived = this.bookingStatusTimeline.some(l => l.status === 'Cargo Received');
-        const hasBooked = this.bookingStatusTimeline.some(l => l.status === 'Booked');
+      logs.forEach(log => {
 
-        if (hasCargoReceived && !hasBooked) {
-          const cargoLog = this.bookingStatusTimeline.find(l => l.status === 'Cargo Received');
+        const key = `${log.changedAt}-${log.changedBy}`;
 
-          // create Booked log 1 second before Cargo Received
-          const bookedDate = new Date(new Date(cargoLog.at).getTime() - 1000).toISOString();
-
-          this.bookingStatusTimeline.push({
-            status: 'Booked',
-            at: bookedDate
-          });
+        if (!groups[key]) {
+          groups[key] = {
+            changedAt: log.changedAt,
+            changedBy: log.changedBy,
+            operation: log.operation,
+            oldValDisplay: [],
+            newValDisplay: []
+          };
         }
 
-        // ✅ Resort descending and take latest 3
-        this.bookingStatusTimeline = this.bookingStatusTimeline
-          .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
-          .slice(0, 3);
+        const oldObj = log.oldVal || {};
+        const newObj = log.newVal || {};
 
-      },
-      error: err => console.error('Error fetching audit logs:', err)
-    });
-  }
+        const keys = new Set([
+          ...Object.keys(oldObj),
+          ...Object.keys(newObj)
+        ]);
+
+        keys.forEach(k => {
+
+          if (ignoredFields.includes(k)) return;
+
+          const oldVal = normalize(oldObj[k]);
+          const newVal = normalize(newObj[k]);
+
+          if (oldVal !== newVal) {
+
+            groups[key].oldValDisplay.push(
+              `${k}: ${oldVal ?? '-'}`
+            );
+
+            groups[key].newValDisplay.push(
+              `${k}: ${newVal ?? '-'}`
+            );
+
+          }
+
+        });
+
+      });
+
+      this.auditLogs = Object.values(groups)
+        .filter((g:any)=> g.oldValDisplay.length > 0);
+
+    },
+    error: err => console.error('Error fetching audit logs:', err)
+  });
+}
 
   getContainerDisplay(): string {
     const containerCount = this.c['NoofContainers']?.value;
