@@ -1626,6 +1626,17 @@
         <label class="input-label">Movement Type<span class="text-danger"></span></label>
     </div>
 </aside>
+
+                    <!-- JobToSubjob Field -->
+                    <aside class="col-md-3">
+                        <div class="custom-form-group custom-form-group-select" [class.filled]="!!masterJobForm.get('JobtoSubjob')">
+                            <ng-select [items]="jobToSubJobList" bindLabel="name" bindValue="name" formControlName="JobtoSubjob"
+                                placeholder="" appendTo="body">
+                            </ng-select>
+                            <label class="input-label">Job To SubJob<span class="text-danger"></span></label>
+                        </div>
+                    </aside>
+
                      <aside class="col-md-3">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('Status')?.value">
