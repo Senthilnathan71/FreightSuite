@@ -374,7 +374,7 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
       this.logoService.clearAllStoredLogos();
       this.appSettingsService.showSuccess('Switched to new branch and company');
       setTimeout(() => {
-        window.location.href = '/dashboard';
+        window.location.href = this.getDashboardLandingRoute();
       }, 300);
     }
 
@@ -960,7 +960,18 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
   }
 
   navigateToMaster() {
-    this.router.navigate(['dashboard']);
+    this.router.navigate([this.getDashboardLandingRoute()]);
+  }
+
+  private getDashboardLandingRoute(): string {
+    const userProfile = this.appSettingsService.getDecryptedUserProfile();
+    const salespersonFlag = String(userProfile?.isSalesperson || '').toUpperCase();
+
+    if (salespersonFlag === '1' || salespersonFlag === 'Y') {
+      return '/dashboard/sales';
+    }
+
+    return '/dashboard';
   }
 
   openCurrentUserChangePassword(content: TemplateRef<any>): void {

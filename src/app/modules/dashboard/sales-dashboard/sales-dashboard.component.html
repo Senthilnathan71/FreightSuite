@@ -109,9 +109,11 @@
 
       <div class="insights-row">
         <div class="chart-card">
-          <div class="chart-title"><i class="fas fa-hourglass-half ct-icon"></i> Lead Age Cohorts</div>
+          <div class="chart-title chart-title-with-count">
+            <span><i class="fas fa-hourglass-half ct-icon"></i> Lead Age Cohorts</span>
+            <span class="chart-title-count" *ngIf="getLeadAgeCohorts() as cohorts">Leads Not Converted Into Customer: {{ cohorts.total }}</span>
+          </div>
           <ng-container *ngIf="getLeadAgeCohorts() as cohorts">
-            <div class="cohort-total"><strong>Leads Not Converted Into Customer - {{ cohorts.total }}</strong></div>
             <div class="age-cohorts" *ngIf="cohorts.total > 0; else noAgeCohorts">
               <div class="cohort-dial-grid">
                 <div class="cohort-dial-card dial-green" [title]="cohorts.days0to7 + ' leads aged 0-7 days'">

@@ -80,7 +80,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const userProfile = this.appSettings.getDecryptedUserProfile();
-    if (userProfile?.isSalesperson === '1') {
+    const salespersonFlag = String(userProfile?.isSalesperson || '').toUpperCase();
+
+    if (salespersonFlag === '1' || salespersonFlag === 'Y') {
       this.router.navigate(['/dashboard/sales']);
       return;
     }
