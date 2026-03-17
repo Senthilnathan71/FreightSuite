@@ -79,6 +79,7 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
   readonly maxDateTo: NgbDateStruct = toNgbDateStruct(new Date())!;
 
   dashboardCounts: SalesDashboardCounts | null = null;
+  lastRefreshedAt: Date | null = null;
   isLoading = false;
   dateFromInput: Date | null = null;
   dateToInput: Date | null = null;
@@ -148,6 +149,7 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           this.dashboardCounts = response.data;
+          this.lastRefreshedAt = new Date();
           this.buildChartsFromCounts(response.data);
           this.isLoading = false;
           this.loadInitialSections();
@@ -166,6 +168,7 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
 
   applyFilters(): void {
     this.activePreset = '';
+    this.normalizeDateRange();
     this.loadDashboardData();
   }
 
@@ -186,6 +189,24 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     // their own Date copies and set hours independently, so this is safe.
     const noon = (y: number, m: number, d: number) => new Date(y, m, d, 12);
     const todayNoon = noon(now.getFullYear(), now.getMonth(), now.getDate());
+    const getFinancialYearBounds = () => {
+      const fy = this.appSettings.getCurrentFinancialYear();
+      if (fy) {
+        return {
+          start: noon(new Date(fy.StartDate).getFullYear(), new Date(fy.StartDate).getMonth(), new Date(fy.StartDate).getDate()),
+          end: noon(new Date(fy.EndDate).getFullYear(), new Date(fy.EndDate).getMonth(), new Date(fy.EndDate).getDate()),
+        };
+      }
+
+      return {
+        start: now.getMonth() >= 3
+          ? noon(now.getFullYear(), 3, 1)
+          : noon(now.getFullYear() - 1, 3, 1),
+        end: now.getMonth() >= 2
+          ? noon(now.getFullYear() + 1, 2, 31)
+          : noon(now.getFullYear(), 2, 31),
+      };
+    };
 
     switch (preset) {
       case 'today':
@@ -203,28 +224,54 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
         this.dateFromInput = noon(now.getFullYear(), now.getMonth(), 1);
         this.dateToInput = todayNoon;
         break;
-      case 'fy': {
-        const fy = this.appSettings.getCurrentFinancialYear();
-        if (fy) {
-          const fyStart = new Date(fy.StartDate);
-          this.dateFromInput = noon(fyStart.getFullYear(), fyStart.getMonth(), fyStart.getDate());
-          const fyEnd = new Date(fy.EndDate);
-          this.dateToInput = fyEnd < now
-            ? noon(fyEnd.getFullYear(), fyEnd.getMonth(), fyEnd.getDate())
-            : todayNoon;
+      case 'lastMonth': {
+        const { start: fyStart, end: fyEnd } = getFinancialYearBounds();
+        const previousMonthStart = noon(now.getFullYear(), now.getMonth() - 1, 1);
+        const previousMonthEnd = noon(now.getFullYear(), now.getMonth(), 0);
+        const clampedStart = previousMonthStart < fyStart ? fyStart : previousMonthStart;
+        const cappedToday = fyEnd < todayNoon ? fyEnd : todayNoon;
+        const clampedEnd = previousMonthEnd > cappedToday ? cappedToday : previousMonthEnd;
+
+        if (clampedStart > clampedEnd) {
+          this.dateFromInput = fyStart;
+          this.dateToInput = cappedToday;
         } else {
-          this.dateFromInput = now.getMonth() >= 3
-            ? noon(now.getFullYear(), 3, 1)
-            : noon(now.getFullYear() - 1, 3, 1);
-          this.dateToInput = todayNoon;
+          this.dateFromInput = clampedStart;
+          this.dateToInput = clampedEnd;
         }
+        break;
+      }
+      case 'fy': {
+        const { start: fyStart, end: fyEnd } = getFinancialYearBounds();
+        this.dateFromInput = fyStart;
+        this.dateToInput = fyEnd < todayNoon ? fyEnd : todayNoon;
         break;
       }
     }
 
+    this.normalizeDateRange();
+
     if (shouldLoad) {
       this.loadDashboardData();
     }
+  }
+
+  onDateFromChange(): void {
+    this.activePreset = '';
+    this.normalizeDateRange('from');
+  }
+
+  onDateToChange(): void {
+    this.activePreset = '';
+    this.normalizeDateRange('to');
+  }
+
+  getMinDateTo(): NgbDateStruct | undefined {
+    return this.dateFromInput ? toNgbDateStruct(this.dateFromInput) ?? undefined : undefined;
+  }
+
+  getMaxDateFrom(): NgbDateStruct {
+    return this.dateToInput ? toNgbDateStruct(this.dateToInput) ?? this.maxDateTo : this.maxDateTo;
   }
 
   toggleSection(section: number): void {
@@ -479,6 +526,52 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     return total > 0 ? Math.round((part / total) * 1000) / 10 : 0;
   }
 
+  getSummaryBarWidth(part: number, total: number): number {
+    return this.getPipelinePct(part, total);
+  }
+
+  getShipmentMix(): Array<{ label: string; value: number; colorClass: string }> {
+    if (!this.dashboardCounts) {
+      return [];
+    }
+
+    const bookings = this.dashboardCounts.summaryKpis.bookings;
+    return [
+      { label: 'FCL', value: bookings.fclBookings, colorClass: 'mix-fcl' },
+      { label: 'LCL', value: bookings.lclBookings, colorClass: 'mix-lcl' },
+      { label: 'AIR', value: bookings.airBookings, colorClass: 'mix-air' },
+    ];
+  }
+
+  getSummaryInsight(): string {
+    if (!this.dashboardCounts) {
+      return 'No quote or booking activity in the selected range.';
+    }
+
+    const conversionRate = this.getConversionRate();
+    const approvedToBookingRate = this.getQuoteToBookingRate();
+    const bookingCount = this.dashboardCounts.summaryKpis.bookings.totalBookings;
+    const quoteCount = this.dashboardCounts.summaryKpis.quotes.totalQuotes;
+
+    if (quoteCount === 0 && bookingCount === 0) {
+      return 'No quote or booking activity in the selected range.';
+    }
+
+    if (approvedToBookingRate >= conversionRate && approvedToBookingRate > 0) {
+      return `${approvedToBookingRate}% of approved quotes became bookings.`;
+    }
+
+    if (conversionRate > 0) {
+      return `${conversionRate}% of total quotes became bookings.`;
+    }
+
+    if (quoteCount > 0 && bookingCount === 0) {
+      return 'Quotes exist, but none have converted into bookings yet.';
+    }
+
+    return 'Bookings exist without corresponding quote volume in the selected range.';
+  }
+
   navigateToPreCustomer(sid: number): void {
     this.router.navigate(['/crm/pre-customer/entry', sid]);
   }
@@ -720,6 +813,16 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
         tooltip: this.getFunnelTooltip('Meeting Scheduled', counts.leadsWithMeeting, counts.totalLeads),
       },
       {
+        label: 'Customer Converted',
+        value: counts.leadsTurnedCustomer,
+        icon: 'fas fa-user-check',
+        color: 'linear-gradient(90deg, #0f766e, #14b8a6)',
+        tooltip: this.getFunnelTooltip('Customer Converted', counts.leadsTurnedCustomer, counts.totalLeads, [
+          `${pathMix.customer.viaMeeting} via confirmed meeting`,
+          `${pathMix.customer.viaApprovedQuote} via approved quotation`,
+        ]),
+      },
+      {
         label: 'Enquiry Created',
         value: counts.leadsWithEnquiry,
         icon: 'fas fa-comment-dots',
@@ -757,16 +860,6 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
         tooltip: this.getFunnelTooltip('Booking Created', counts.leadsWithBooking, counts.totalLeads, [
           `${pathMix.booking.viaLead} via lead-linked chain`,
           `${pathMix.booking.viaCustomer} via customer-linked chain`,
-        ]),
-      },
-      {
-        label: 'Customer Created',
-        value: counts.leadsTurnedCustomer,
-        icon: 'fas fa-user-check',
-        color: 'linear-gradient(90deg, #0f766e, #14b8a6)',
-        tooltip: this.getFunnelTooltip('Customer Created', counts.leadsTurnedCustomer, counts.totalLeads, [
-          `${pathMix.customer.viaMeeting} via confirmed meeting`,
-          `${pathMix.customer.viaApprovedQuote} via approved quotation`,
         ]),
       },
     ];
@@ -1020,5 +1113,27 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
 
   private setDefaultDateRange(): void {
     this.setPreset('month', false);
+  }
+
+  private normalizeDateRange(changedField?: 'from' | 'to'): void {
+    if (!this.dateFromInput || !this.dateToInput) {
+      return;
+    }
+
+    if (this.dateFromInput <= this.dateToInput) {
+      return;
+    }
+
+    if (changedField === 'from') {
+      this.dateToInput = new Date(this.dateFromInput);
+      return;
+    }
+
+    if (changedField === 'to') {
+      this.dateFromInput = new Date(this.dateToInput);
+      return;
+    }
+
+    this.dateToInput = new Date(this.dateFromInput);
   }
 }

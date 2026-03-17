@@ -186,9 +186,11 @@ export interface QuoteNoBooking {
 export interface QuoteSummary {
   totalQuotes: number;
   approvedQuotes: number;
+  openQuotes: number;
   pendingQuotes: number;
   rejectedQuotes: number;
   waitingQuotes: number;
+  otherQuotes: number;
   quotesWithBooking: number;
   quotesFromEnquiry: number;
   directQuotes: number;

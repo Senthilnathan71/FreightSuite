@@ -19,6 +19,9 @@
       <div class="hero-text-block">
         <h1>Sales Dashboard</h1>
         <p>Navigate your leads from discovery to booking &mdash; track your conversion pipeline</p>
+        <div class="hero-refresh-meta" *ngIf="lastRefreshedAt">
+          Last refreshed {{ lastRefreshedAt | date:'dd MMM yyyy, h:mm a' }}
+        </div>
       </div>
       <button class="hero-refresh-btn" type="button" (click)="refreshDashboard()">
         <svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true">
@@ -34,14 +37,14 @@
       <div class="filter-group">
         <label>Date From</label>
         <div class="date-input-wrap">
-          <input class="date-input" placeholder="Select date" [(ngModel)]="dateFromInput" ngbDatepicker #dateFromPicker="ngbDatepicker" (click)="dateFromPicker.toggle()" readonly>
+          <input class="date-input" placeholder="Select date" [(ngModel)]="dateFromInput" [maxDate]="getMaxDateFrom()" (ngModelChange)="onDateFromChange()" ngbDatepicker #dateFromPicker="ngbDatepicker" (click)="dateFromPicker.toggle()" readonly>
           <button type="button" class="date-toggle" (click)="dateFromPicker.toggle()"><i class="fas fa-calendar-alt"></i></button>
         </div>
       </div>
       <div class="filter-group">
         <label>Date To</label>
         <div class="date-input-wrap">
-          <input class="date-input" placeholder="Select date" [(ngModel)]="dateToInput" [maxDate]="maxDateTo" ngbDatepicker #dateToPicker="ngbDatepicker" (click)="dateToPicker.toggle()" readonly>
+          <input class="date-input" placeholder="Select date" [(ngModel)]="dateToInput" [minDate]="getMinDateTo()" [maxDate]="maxDateTo" (ngModelChange)="onDateToChange()" ngbDatepicker #dateToPicker="ngbDatepicker" (click)="dateToPicker.toggle()" readonly>
           <button type="button" class="date-toggle" (click)="dateToPicker.toggle()"><i class="fas fa-calendar-alt"></i></button>
         </div>
       </div>
@@ -49,6 +52,7 @@
         <button class="preset-btn" [class.active]="activePreset === 'today'" (click)="setPreset('today')">Today</button>
         <button class="preset-btn" [class.active]="activePreset === 'week'" (click)="setPreset('week')">This Week</button>
         <button class="preset-btn" [class.active]="activePreset === 'month'" (click)="setPreset('month')">This Month</button>
+        <button class="preset-btn" [class.active]="activePreset === 'lastMonth'" (click)="setPreset('lastMonth')">Last Month</button>
         <button class="preset-btn" [class.active]="activePreset === 'fy'" (click)="setPreset('fy')">This Financial Year</button>
       </div>
       <div class="filter-actions">
@@ -107,7 +111,7 @@
         <div class="chart-card">
           <div class="chart-title"><i class="fas fa-hourglass-half ct-icon"></i> Lead Age Cohorts</div>
           <ng-container *ngIf="getLeadAgeCohorts() as cohorts">
-            <div class="cohort-total">{{ cohorts.total }} active unconverted lead{{ cohorts.total !== 1 ? 's' : '' }}</div>
+            <div class="cohort-total"><strong>Leads Not Converted Into Customer - {{ cohorts.total }}</strong></div>
             <div class="age-cohorts" *ngIf="cohorts.total > 0; else noAgeCohorts">
               <div class="cohort-dial-grid">
                 <div class="cohort-dial-card dial-green" [title]="cohorts.days0to7 + ' leads aged 0-7 days'">
@@ -165,7 +169,7 @@
         </div>
 
         <div class="chart-card">
-          <div class="chart-title"><i class="fas fa-project-diagram ct-icon"></i> Pipeline Path Breakdown</div>
+          <div class="chart-title"><i class="fas fa-project-diagram ct-icon"></i> Path Breakdown</div>
           <div class="pipeline-shell" *ngIf="dashboardCounts.summaryKpis.quotes.totalQuotes > 0 || dashboardCounts.summaryKpis.bookings.totalBookings > 0; else noPipelineData">
             <div class="pipeline-kpi-grid">
               <div class="pipeline-kpi-card">
@@ -176,7 +180,6 @@
                   </div>
                   <div class="pipeline-badge">{{ getPipelinePct(dashboardCounts.summaryKpis.quotes.quotesFromEnquiry, dashboardCounts.summaryKpis.quotes.totalQuotes) }}%</div>
                 </div>
-                <div class="pipeline-insight">from enquiry pipeline</div>
                 <div class="pipeline-track">
                   <div class="pipeline-fill fill-pipeline" [style.width.%]="getPipelinePct(dashboardCounts.summaryKpis.quotes.quotesFromEnquiry, dashboardCounts.summaryKpis.quotes.totalQuotes)"></div>
                   <div class="pipeline-fill fill-direct" [style.width.%]="getPipelinePct(dashboardCounts.summaryKpis.quotes.directQuotes, dashboardCounts.summaryKpis.quotes.totalQuotes)"></div>
@@ -184,12 +187,12 @@
                 <div class="pipeline-split">
                   <div class="pipeline-split-item">
                     <span class="legend-dot dot-pipeline"></span>
-                    Pipeline
+                    <span class="pipeline-split-label">From Enquiry</span>
                     <strong>{{ dashboardCounts.summaryKpis.quotes.quotesFromEnquiry }}</strong>
                   </div>
                   <div class="pipeline-split-item">
                     <span class="legend-dot dot-direct"></span>
-                    Direct
+                    <span class="pipeline-split-label">Direct</span>
                     <strong>{{ dashboardCounts.summaryKpis.quotes.directQuotes }}</strong>
                   </div>
                 </div>
@@ -203,7 +206,6 @@
                   </div>
                   <div class="pipeline-badge">{{ getPipelinePct(dashboardCounts.summaryKpis.bookings.bookingsFromQuote, dashboardCounts.summaryKpis.bookings.totalBookings) }}%</div>
                 </div>
-                <div class="pipeline-insight">from quotation pipeline</div>
                 <div class="pipeline-track">
                   <div class="pipeline-fill fill-pipeline" [style.width.%]="getPipelinePct(dashboardCounts.summaryKpis.bookings.bookingsFromQuote, dashboardCounts.summaryKpis.bookings.totalBookings)"></div>
                   <div class="pipeline-fill fill-direct" [style.width.%]="getPipelinePct(dashboardCounts.summaryKpis.bookings.directBookings, dashboardCounts.summaryKpis.bookings.totalBookings)"></div>
@@ -211,12 +213,12 @@
                 <div class="pipeline-split">
                   <div class="pipeline-split-item">
                     <span class="legend-dot dot-pipeline"></span>
-                    From Quote
+                    <span class="pipeline-split-label">From Quotation</span>
                     <strong>{{ dashboardCounts.summaryKpis.bookings.bookingsFromQuote }}</strong>
                   </div>
                   <div class="pipeline-split-item">
                     <span class="legend-dot dot-direct"></span>
-                    Direct
+                    <span class="pipeline-split-label">Direct</span>
                     <strong>{{ dashboardCounts.summaryKpis.bookings.directBookings }}</strong>
                   </div>
                 </div>
@@ -547,27 +549,128 @@
           <div class="section-header-right"><div class="chevron">{{ expandedSections[9] ? '&#9660;' : '&#9654;' }}</div></div>
         </div>
         <ng-container *ngIf="expandedSections[9]">
-          <div class="summary-grid">
-            <div class="summary-card"><div class="value v-brand">{{ dashboardCounts.summaryKpis.quotes.totalQuotes }}</div><div class="label">Total Quotes</div></div>
-            <div class="summary-card"><div class="value v-green">{{ dashboardCounts.summaryKpis.quotes.approvedQuotes }}</div><div class="label">Approved Quotes</div></div>
-            <div class="summary-card"><div class="value v-brand">{{ dashboardCounts.summaryKpis.bookings.totalBookings }}</div><div class="label">Total Bookings</div></div>
-            <div class="summary-card"><div class="value v-green">{{ getConversionRate() }}%</div><div class="label">Conversion Rate</div></div>
-            <div class="summary-card"><div class="value v-amber">{{ dashboardCounts.summaryKpis.quotes.pendingQuotes }}</div><div class="label">Pending Approval</div></div>
-            <div class="summary-card"><div class="value v-red">{{ dashboardCounts.summaryKpis.quotes.rejectedQuotes }}</div><div class="label">Rejected Quotes</div></div>
-            <div class="summary-card"><div class="value v-default">{{ dashboardCounts.summaryKpis.bookings.bookingsFromQuote }}</div><div class="label">Quotes &rarr; Booking</div></div>
-            <div class="summary-card"><div class="value v-default">{{ dashboardCounts.summaryKpis.bookings.directBookings }}</div><div class="label">Direct Bookings</div></div>
-          </div>
-          <div class="comparison-table">
-            <table>
-              <thead><tr><th>Metric</th><th>Quotation</th><th>Booking</th><th>Conversion</th></tr></thead>
-              <tbody>
-                <tr><td><strong>Total Count</strong></td><td class="v-brand-text">{{ dashboardCounts.summaryKpis.quotes.totalQuotes }}</td><td class="v-green-text">{{ dashboardCounts.summaryKpis.bookings.totalBookings }}</td><td><div class="pct-bar-wrap"><span class="pct-bar pb-brand" [style.width.px]="getConversionRate()"></span><span class="pct-value">{{ getConversionRate() }}%</span></div></td></tr>
-                <tr><td><strong>From Quote</strong></td><td>&mdash;</td><td class="v-green-text">{{ dashboardCounts.summaryKpis.bookings.bookingsFromQuote }}</td><td><div class="pct-bar-wrap"><span class="pct-bar pb-green" [style.width.px]="getQuoteToBookingRate()"></span><span class="pct-value">{{ getQuoteToBookingRate() }}%</span></div></td></tr>
-                <tr><td><strong>FCL Shipments</strong></td><td>&mdash;</td><td><strong>{{ dashboardCounts.summaryKpis.bookings.fclBookings }}</strong></td><td>&mdash;</td></tr>
-                <tr><td><strong>LCL Shipments</strong></td><td>&mdash;</td><td><strong>{{ dashboardCounts.summaryKpis.bookings.lclBookings }}</strong></td><td>&mdash;</td></tr>
-                <tr><td><strong>AIR Shipments</strong></td><td>&mdash;</td><td><strong>{{ dashboardCounts.summaryKpis.bookings.airBookings }}</strong></td><td>&mdash;</td></tr>
-              </tbody>
-            </table>
+          <div class="summary-grid summary-executive-grid">
+            <div class="summary-card summary-executive-card summary-quote-card">
+              <div class="summary-card-head">
+                <div>
+                  <div class="summary-kicker">Quote Health</div>
+                  <div class="summary-title">Quotation volume and approval status</div>
+                </div>
+                <div class="summary-value v-brand">{{ dashboardCounts.summaryKpis.quotes.totalQuotes }}</div>
+              </div>
+              <div class="summary-inline-metrics">
+                <div class="summary-chip chip-green">
+                  <span>Approved</span>
+                  <strong>{{ dashboardCounts.summaryKpis.quotes.approvedQuotes }}</strong>
+                </div>
+                <div class="summary-chip chip-cyan">
+                  <span>Open</span>
+                  <strong>{{ dashboardCounts.summaryKpis.quotes.openQuotes }}</strong>
+                </div>
+                <div class="summary-chip chip-amber">
+                  <span>Pending</span>
+                  <strong>{{ dashboardCounts.summaryKpis.quotes.pendingQuotes }}</strong>
+                </div>
+                <div class="summary-chip chip-red">
+                  <span>Rejected</span>
+                  <strong>{{ dashboardCounts.summaryKpis.quotes.rejectedQuotes }}</strong>
+                </div>
+                <div class="summary-chip chip-indigo">
+                  <span>Waiting</span>
+                  <strong>{{ dashboardCounts.summaryKpis.quotes.waitingQuotes }}</strong>
+                </div>
+                <div class="summary-chip chip-slate">
+                  <span>Other</span>
+                  <strong>{{ dashboardCounts.summaryKpis.quotes.otherQuotes }}</strong>
+                </div>
+              </div>
+              <div class="summary-bar-stack">
+                <div class="summary-bar-track">
+                  <span class="summary-bar fill-approved" [style.width.%]="getSummaryBarWidth(dashboardCounts.summaryKpis.quotes.approvedQuotes, dashboardCounts.summaryKpis.quotes.totalQuotes)"></span>
+                  <span class="summary-bar fill-open" [style.width.%]="getSummaryBarWidth(dashboardCounts.summaryKpis.quotes.openQuotes, dashboardCounts.summaryKpis.quotes.totalQuotes)"></span>
+                  <span class="summary-bar fill-pending" [style.width.%]="getSummaryBarWidth(dashboardCounts.summaryKpis.quotes.pendingQuotes, dashboardCounts.summaryKpis.quotes.totalQuotes)"></span>
+                  <span class="summary-bar fill-rejected" [style.width.%]="getSummaryBarWidth(dashboardCounts.summaryKpis.quotes.rejectedQuotes, dashboardCounts.summaryKpis.quotes.totalQuotes)"></span>
+                  <span class="summary-bar fill-waiting" [style.width.%]="getSummaryBarWidth(dashboardCounts.summaryKpis.quotes.waitingQuotes, dashboardCounts.summaryKpis.quotes.totalQuotes)"></span>
+                  <span class="summary-bar fill-other" [style.width.%]="getSummaryBarWidth(dashboardCounts.summaryKpis.quotes.otherQuotes, dashboardCounts.summaryKpis.quotes.totalQuotes)"></span>
+                </div>
+                <div class="summary-footnote">
+                  {{ getPipelinePct(dashboardCounts.summaryKpis.quotes.approvedQuotes, dashboardCounts.summaryKpis.quotes.totalQuotes) }}% approved in the selected range
+                </div>
+              </div>
+            </div>
+
+            <div class="summary-card summary-executive-card summary-booking-card">
+              <div class="summary-card-head">
+                <div>
+                  <div class="summary-kicker">Booking Outcome</div>
+                  <div class="summary-title">Quote-linked vs direct bookings</div>
+                </div>
+                <div class="summary-value v-green">{{ dashboardCounts.summaryKpis.bookings.totalBookings }}</div>
+              </div>
+              <div class="summary-inline-metrics">
+                <div class="summary-chip chip-brand">
+                  <span>From Quote</span>
+                  <strong>{{ dashboardCounts.summaryKpis.bookings.bookingsFromQuote }}</strong>
+                </div>
+                <div class="summary-chip chip-slate">
+                  <span>Direct</span>
+                  <strong>{{ dashboardCounts.summaryKpis.bookings.directBookings }}</strong>
+                </div>
+              </div>
+              <div class="summary-bar-stack">
+                <div class="summary-bar-track">
+                  <span class="summary-bar fill-brand" [style.width.%]="getSummaryBarWidth(dashboardCounts.summaryKpis.bookings.bookingsFromQuote, dashboardCounts.summaryKpis.bookings.totalBookings)"></span>
+                  <span class="summary-bar fill-direct" [style.width.%]="getSummaryBarWidth(dashboardCounts.summaryKpis.bookings.directBookings, dashboardCounts.summaryKpis.bookings.totalBookings)"></span>
+                </div>
+                <div class="summary-footnote">
+                  {{ getPipelinePct(dashboardCounts.summaryKpis.bookings.bookingsFromQuote, dashboardCounts.summaryKpis.bookings.totalBookings) }}% came through quotation pipeline
+                </div>
+              </div>
+              <div class="shipment-strip">
+                <div class="shipment-label">Shipment Mix</div>
+                <div class="shipment-items">
+                  <div class="shipment-pill" *ngFor="let item of getShipmentMix()" [ngClass]="item.colorClass">
+                    <span>{{ item.label }}</span>
+                    <strong>{{ item.value }}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="summary-card summary-executive-card summary-conversion-card">
+              <div class="summary-card-head">
+                <div>
+                  <div class="summary-kicker">Conversion Snapshot</div>
+                  <div class="summary-title">Quote-to-booking momentum</div>
+                </div>
+                <div class="summary-value v-default">{{ getConversionRate() }}%</div>
+              </div>
+              <div class="conversion-pairs">
+                <div class="conversion-stat">
+                  <span class="conversion-label">Total quote to booking</span>
+                  <strong>{{ getConversionRate() }}%</strong>
+                </div>
+                <div class="conversion-stat">
+                  <span class="conversion-label">Approved quote to booking</span>
+                  <strong>{{ getQuoteToBookingRate() }}%</strong>
+                </div>
+              </div>
+              <div class="conversion-bars">
+                <div class="conversion-bar-row">
+                  <div class="conversion-bar-label">Overall</div>
+                  <div class="summary-bar-track">
+                    <span class="summary-bar fill-brand" [style.width.%]="getSummaryBarWidth(getConversionRate(), 100)"></span>
+                  </div>
+                </div>
+                <div class="conversion-bar-row">
+                  <div class="conversion-bar-label">Approved</div>
+                  <div class="summary-bar-track">
+                    <span class="summary-bar fill-approved" [style.width.%]="getSummaryBarWidth(getQuoteToBookingRate(), 100)"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="summary-insight">{{ getSummaryInsight() }}</div>
+            </div>
           </div>
         </ng-container>
       </div>
