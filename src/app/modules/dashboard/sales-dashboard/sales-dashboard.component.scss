@@ -473,6 +473,12 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-bottom: 14px;
+
+  .chart-card {
+    min-height: 304px;
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 .empty-chart {
@@ -546,97 +552,212 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
   font-size: 11px;
   font-weight: 700;
   color: $text-secondary;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .age-cohorts {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
-.cohort-bar-stack {
+.cohort-dial-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.cohort-dial-card {
+  border-radius: 12px;
+  padding: 11px 10px;
+  border: 1px solid transparent;
   display: flex;
-  height: 28px;
-  border-radius: 8px;
-  overflow: hidden;
-  gap: 2px;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 92px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+
+  &.dial-green {
+    background: linear-gradient(180deg, rgba($color-green, 0.12), rgba($color-green, 0.04));
+    border-color: rgba($color-green, 0.2);
+  }
+
+  &.dial-amber {
+    background: linear-gradient(180deg, rgba($color-amber, 0.14), rgba($color-amber, 0.05));
+    border-color: rgba($color-amber, 0.22);
+  }
+
+  &.dial-orange {
+    background: linear-gradient(180deg, rgba($color-orange, 0.14), rgba($color-orange, 0.05));
+    border-color: rgba($color-orange, 0.22);
+  }
+
+  &.dial-red {
+    background: linear-gradient(180deg, rgba($color-red, 0.14), rgba($color-red, 0.05));
+    border-color: rgba($color-red, 0.22);
+  }
 }
 
-.cohort-segment {
+.dial-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dial-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 2px 0;
+}
+
+.dial-ring {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 8px;
-  transition: flex 0.3s;
-
-  &.seg-green { background: $color-green; }
-  &.seg-amber { background: $color-amber; }
-  &.seg-orange { background: $color-orange; }
-  &.seg-red { background: $color-red; }
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
 }
 
-.cohort-legend {
+.dial-inner {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.96);
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-// Pipeline Path Breakdown
-.pipeline-paths {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.pipeline-section {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.pipeline-label {
-  font-size: 11px;
-  font-weight: 700;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
   color: $text-primary;
 }
 
-.pipeline-bar-stack {
-  display: flex;
-  height: 26px;
-  border-radius: 8px;
-  overflow: hidden;
-  gap: 2px;
+.risk-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: $text-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
-.pipeline-seg {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 8px;
-
-  span {
-    font-size: 9px;
-    font-weight: 800;
-    color: #fff;
-  }
-
-  &.seg-pipeline { background: linear-gradient(90deg, $brand, $brand-light); }
-  &.seg-direct { background: linear-gradient(90deg, $color-cyan, #22d3ee); }
+.risk-value {
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 800;
+  color: $text-primary;
 }
 
-.pipeline-pcts {
-  display: flex;
-  justify-content: space-between;
+.risk-share {
   font-size: 10px;
   font-weight: 600;
   color: $text-muted;
 }
 
-.pipeline-legend {
+// Pipeline Path Breakdown
+.pipeline-shell {
+  min-height: 238px;
   display: flex;
-  gap: 16px;
-  padding-top: 4px;
+  flex: 1;
+}
+
+.pipeline-shell-empty {
+  align-items: center;
+  justify-content: center;
+}
+
+.pipeline-kpi-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  align-content: stretch;
+}
+
+.pipeline-kpi-card {
+  border: 1px solid $border-main;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #fcfdff, #f5f9fc);
+  padding: 11px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 112px;
+}
+
+.pipeline-kpi-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.pipeline-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: $text-primary;
+}
+
+.pipeline-badge {
+  min-width: 54px;
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: rgba($brand, 0.1);
+  color: $brand;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+}
+
+.pipeline-meta {
+  margin-top: 2px;
+  font-size: 10px;
+  font-weight: 600;
+  color: $text-muted;
+}
+
+.pipeline-insight {
+  font-size: 10px;
+  font-weight: 700;
+  color: $text-secondary;
+}
+
+.pipeline-track {
+  display: flex;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba($brand, 0.08);
+}
+
+.pipeline-fill {
+  height: 100%;
+
+  &.fill-pipeline { background: linear-gradient(90deg, $brand, $brand-light); }
+  &.fill-direct { background: linear-gradient(90deg, $color-cyan, #22d3ee); }
+}
+
+.pipeline-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.pipeline-split-item {
+  display: flex;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 600;
+  color: $text-muted;
+  gap: 5px;
+
+  strong {
+    margin-left: auto;
+    font-size: 11px;
+    color: $text-primary;
+  }
 }
 
 // Shared legend styles
@@ -1200,6 +1321,8 @@ tr:hover td { background: rgba($brand, 0.03); }
   .filter-bar,
   .meeting-board,
   .summary-grid { padding: 12px; }
+
+  .cohort-dial-grid { grid-template-columns: 1fr; }
 
   .comparison-table { margin: 0 12px 12px; }
 }

@@ -109,17 +109,55 @@
           <ng-container *ngIf="getLeadAgeCohorts() as cohorts">
             <div class="cohort-total">{{ cohorts.total }} active unconverted lead{{ cohorts.total !== 1 ? 's' : '' }}</div>
             <div class="age-cohorts" *ngIf="cohorts.total > 0; else noAgeCohorts">
-              <div class="cohort-bar-stack">
-                <div class="cohort-segment seg-green" *ngIf="cohorts.days0to7" [style.flex]="cohorts.days0to7" [title]="cohorts.days0to7 + ' leads (0-7 days)'"></div>
-                <div class="cohort-segment seg-amber" *ngIf="cohorts.days7to30" [style.flex]="cohorts.days7to30" [title]="cohorts.days7to30 + ' leads (7-30 days)'"></div>
-                <div class="cohort-segment seg-orange" *ngIf="cohorts.days30to60" [style.flex]="cohorts.days30to60" [title]="cohorts.days30to60 + ' leads (30-60 days)'"></div>
-                <div class="cohort-segment seg-red" *ngIf="cohorts.days60plus" [style.flex]="cohorts.days60plus" [title]="cohorts.days60plus + ' leads (60+ days)'"></div>
-              </div>
-              <div class="cohort-legend">
-                <div class="legend-item"><span class="legend-dot dot-green"></span> 0-7d: {{ cohorts.days0to7 }}</div>
-                <div class="legend-item"><span class="legend-dot dot-amber"></span> 7-30d: {{ cohorts.days7to30 }}</div>
-                <div class="legend-item"><span class="legend-dot dot-orange"></span> 30-60d: {{ cohorts.days30to60 }}</div>
-                <div class="legend-item"><span class="legend-dot dot-red"></span> 60d+: {{ cohorts.days60plus }}</div>
+              <div class="cohort-dial-grid">
+                <div class="cohort-dial-card dial-green" [title]="cohorts.days0to7 + ' leads aged 0-7 days'">
+                  <div class="dial-head">
+                    <div class="risk-label">0-7 Days</div>
+                    <div class="risk-value">{{ cohorts.days0to7 }}</div>
+                  </div>
+                  <div class="dial-wrap">
+                    <div class="dial-ring" [style.background]="getAgeDialStyle(cohorts.days0to7, cohorts.total, '#16a34a')">
+                      <div class="dial-inner">{{ getAgeCohortPct(cohorts.days0to7, cohorts.total) }}%</div>
+                    </div>
+                  </div>
+                  <div class="risk-share">Fresh leads in selected range</div>
+                </div>
+                <div class="cohort-dial-card dial-amber" [title]="cohorts.days7to30 + ' leads aged 7-30 days'">
+                  <div class="dial-head">
+                    <div class="risk-label">7-30 Days</div>
+                    <div class="risk-value">{{ cohorts.days7to30 }}</div>
+                  </div>
+                  <div class="dial-wrap">
+                    <div class="dial-ring" [style.background]="getAgeDialStyle(cohorts.days7to30, cohorts.total, '#f59e0b')">
+                      <div class="dial-inner">{{ getAgeCohortPct(cohorts.days7to30, cohorts.total) }}%</div>
+                    </div>
+                  </div>
+                  <div class="risk-share">Warming up without conversion</div>
+                </div>
+                <div class="cohort-dial-card dial-orange" [title]="cohorts.days30to60 + ' leads aged 30-60 days'">
+                  <div class="dial-head">
+                    <div class="risk-label">30-60 Days</div>
+                    <div class="risk-value">{{ cohorts.days30to60 }}</div>
+                  </div>
+                  <div class="dial-wrap">
+                    <div class="dial-ring" [style.background]="getAgeDialStyle(cohorts.days30to60, cohorts.total, '#f97316')">
+                      <div class="dial-inner">{{ getAgeCohortPct(cohorts.days30to60, cohorts.total) }}%</div>
+                    </div>
+                  </div>
+                  <div class="risk-share">Attention needed soon</div>
+                </div>
+                <div class="cohort-dial-card dial-red" [title]="cohorts.days60plus + ' leads aged 60+ days'">
+                  <div class="dial-head">
+                    <div class="risk-label">60+ Days</div>
+                    <div class="risk-value">{{ cohorts.days60plus }}</div>
+                  </div>
+                  <div class="dial-wrap">
+                    <div class="dial-ring" [style.background]="getAgeDialStyle(cohorts.days60plus, cohorts.total, '#ef4444')">
+                      <div class="dial-inner">{{ getAgeCohortPct(cohorts.days60plus, cohorts.total) }}%</div>
+                    </div>
+                  </div>
+                  <div class="risk-share">High-risk stale leads</div>
+                </div>
               </div>
             </div>
             <ng-template #noAgeCohorts><div class="empty-chart">No unconverted leads</div></ng-template>
@@ -128,43 +166,68 @@
 
         <div class="chart-card">
           <div class="chart-title"><i class="fas fa-project-diagram ct-icon"></i> Pipeline Path Breakdown</div>
-          <div class="pipeline-paths" *ngIf="dashboardCounts.summaryKpis.quotes.totalQuotes > 0 || dashboardCounts.summaryKpis.bookings.totalBookings > 0; else noPipelineData">
-            <div class="pipeline-section" *ngIf="dashboardCounts.summaryKpis.quotes.totalQuotes > 0">
-              <div class="pipeline-label">Quotations ({{ dashboardCounts.summaryKpis.quotes.totalQuotes }})</div>
-              <div class="pipeline-bar-stack">
-                <div class="pipeline-seg seg-pipeline" [style.flex]="dashboardCounts.summaryKpis.quotes.quotesFromEnquiry || 0" [title]="'From Enquiry: ' + dashboardCounts.summaryKpis.quotes.quotesFromEnquiry">
-                  <span *ngIf="dashboardCounts.summaryKpis.quotes.quotesFromEnquiry">{{ dashboardCounts.summaryKpis.quotes.quotesFromEnquiry }}</span>
+          <div class="pipeline-shell" *ngIf="dashboardCounts.summaryKpis.quotes.totalQuotes > 0 || dashboardCounts.summaryKpis.bookings.totalBookings > 0; else noPipelineData">
+            <div class="pipeline-kpi-grid">
+              <div class="pipeline-kpi-card">
+                <div class="pipeline-kpi-head">
+                  <div>
+                    <div class="pipeline-label">Quotations</div>
+                    <div class="pipeline-meta">{{ dashboardCounts.summaryKpis.quotes.totalQuotes }} total</div>
+                  </div>
+                  <div class="pipeline-badge">{{ getPipelinePct(dashboardCounts.summaryKpis.quotes.quotesFromEnquiry, dashboardCounts.summaryKpis.quotes.totalQuotes) }}%</div>
                 </div>
-                <div class="pipeline-seg seg-direct" [style.flex]="dashboardCounts.summaryKpis.quotes.directQuotes || 0" [title]="'Direct: ' + dashboardCounts.summaryKpis.quotes.directQuotes">
-                  <span *ngIf="dashboardCounts.summaryKpis.quotes.directQuotes">{{ dashboardCounts.summaryKpis.quotes.directQuotes }}</span>
+                <div class="pipeline-insight">from enquiry pipeline</div>
+                <div class="pipeline-track">
+                  <div class="pipeline-fill fill-pipeline" [style.width.%]="getPipelinePct(dashboardCounts.summaryKpis.quotes.quotesFromEnquiry, dashboardCounts.summaryKpis.quotes.totalQuotes)"></div>
+                  <div class="pipeline-fill fill-direct" [style.width.%]="getPipelinePct(dashboardCounts.summaryKpis.quotes.directQuotes, dashboardCounts.summaryKpis.quotes.totalQuotes)"></div>
+                </div>
+                <div class="pipeline-split">
+                  <div class="pipeline-split-item">
+                    <span class="legend-dot dot-pipeline"></span>
+                    Pipeline
+                    <strong>{{ dashboardCounts.summaryKpis.quotes.quotesFromEnquiry }}</strong>
+                  </div>
+                  <div class="pipeline-split-item">
+                    <span class="legend-dot dot-direct"></span>
+                    Direct
+                    <strong>{{ dashboardCounts.summaryKpis.quotes.directQuotes }}</strong>
+                  </div>
                 </div>
               </div>
-              <div class="pipeline-pcts">
-                <span>Pipeline: {{ getPipelinePct(dashboardCounts.summaryKpis.quotes.quotesFromEnquiry, dashboardCounts.summaryKpis.quotes.totalQuotes) }}%</span>
-                <span>Direct: {{ getPipelinePct(dashboardCounts.summaryKpis.quotes.directQuotes, dashboardCounts.summaryKpis.quotes.totalQuotes) }}%</span>
-              </div>
-            </div>
-            <div class="pipeline-section" *ngIf="dashboardCounts.summaryKpis.bookings.totalBookings > 0">
-              <div class="pipeline-label">Bookings ({{ dashboardCounts.summaryKpis.bookings.totalBookings }})</div>
-              <div class="pipeline-bar-stack">
-                <div class="pipeline-seg seg-pipeline" [style.flex]="dashboardCounts.summaryKpis.bookings.bookingsFromQuote || 0" [title]="'From Quote: ' + dashboardCounts.summaryKpis.bookings.bookingsFromQuote">
-                  <span *ngIf="dashboardCounts.summaryKpis.bookings.bookingsFromQuote">{{ dashboardCounts.summaryKpis.bookings.bookingsFromQuote }}</span>
+
+              <div class="pipeline-kpi-card">
+                <div class="pipeline-kpi-head">
+                  <div>
+                    <div class="pipeline-label">Bookings</div>
+                    <div class="pipeline-meta">{{ dashboardCounts.summaryKpis.bookings.totalBookings }} total</div>
+                  </div>
+                  <div class="pipeline-badge">{{ getPipelinePct(dashboardCounts.summaryKpis.bookings.bookingsFromQuote, dashboardCounts.summaryKpis.bookings.totalBookings) }}%</div>
                 </div>
-                <div class="pipeline-seg seg-direct" [style.flex]="dashboardCounts.summaryKpis.bookings.directBookings || 0" [title]="'Direct: ' + dashboardCounts.summaryKpis.bookings.directBookings">
-                  <span *ngIf="dashboardCounts.summaryKpis.bookings.directBookings">{{ dashboardCounts.summaryKpis.bookings.directBookings }}</span>
+                <div class="pipeline-insight">from quotation pipeline</div>
+                <div class="pipeline-track">
+                  <div class="pipeline-fill fill-pipeline" [style.width.%]="getPipelinePct(dashboardCounts.summaryKpis.bookings.bookingsFromQuote, dashboardCounts.summaryKpis.bookings.totalBookings)"></div>
+                  <div class="pipeline-fill fill-direct" [style.width.%]="getPipelinePct(dashboardCounts.summaryKpis.bookings.directBookings, dashboardCounts.summaryKpis.bookings.totalBookings)"></div>
+                </div>
+                <div class="pipeline-split">
+                  <div class="pipeline-split-item">
+                    <span class="legend-dot dot-pipeline"></span>
+                    From Quote
+                    <strong>{{ dashboardCounts.summaryKpis.bookings.bookingsFromQuote }}</strong>
+                  </div>
+                  <div class="pipeline-split-item">
+                    <span class="legend-dot dot-direct"></span>
+                    Direct
+                    <strong>{{ dashboardCounts.summaryKpis.bookings.directBookings }}</strong>
+                  </div>
                 </div>
               </div>
-              <div class="pipeline-pcts">
-                <span>From Quote: {{ getPipelinePct(dashboardCounts.summaryKpis.bookings.bookingsFromQuote, dashboardCounts.summaryKpis.bookings.totalBookings) }}%</span>
-                <span>Direct: {{ getPipelinePct(dashboardCounts.summaryKpis.bookings.directBookings, dashboardCounts.summaryKpis.bookings.totalBookings) }}%</span>
-              </div>
-            </div>
-            <div class="pipeline-legend">
-              <div class="legend-item"><span class="legend-dot dot-pipeline"></span> From Pipeline</div>
-              <div class="legend-item"><span class="legend-dot dot-direct"></span> Direct</div>
             </div>
           </div>
-          <ng-template #noPipelineData><div class="empty-chart">No quotation or booking data</div></ng-template>
+          <ng-template #noPipelineData>
+            <div class="pipeline-shell pipeline-shell-empty">
+              <div class="empty-chart">No quotation or booking data</div>
+            </div>
+          </ng-template>
         </div>
       </div>
 

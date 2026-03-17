@@ -466,6 +466,15 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     return c ? c.total : 0;
   }
 
+  getAgeCohortPct(value: number, total: number): number {
+    return total > 0 ? Math.round((value / total) * 1000) / 10 : 0;
+  }
+
+  getAgeDialStyle(value: number, total: number, color: string): string {
+    const pct = this.getAgeCohortPct(value, total);
+    return `conic-gradient(${color} 0deg ${pct * 3.6}deg, rgba(148, 163, 184, 0.16) ${pct * 3.6}deg 360deg)`;
+  }
+
   getPipelinePct(part: number, total: number): number {
     return total > 0 ? Math.round((part / total) * 1000) / 10 : 0;
   }
