@@ -109,6 +109,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
     bindValue: 'currencyCode'
   };
   currentFilters: AdvancedFilterValues = {};
+  private partyOptions: any[] = [];
 
   protected config: ListComponentConfig = {
     storageKey: 'invoice-type-state',
@@ -132,7 +133,11 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
       CompanyMasterSid: companyMasterSid,
       BranchMasterSid: branchMasterSid
     }).pipe(
-      map((resp: any) => Array.isArray(resp?.data) ? resp.data : []),
+      map((resp: any) => {
+        const rows = Array.isArray(resp?.data) ? resp.data : [];
+        this.partyOptions = rows;
+        return rows;
+      }),
       catchError(() => of([]))
     );
   };
@@ -214,8 +219,14 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
       params.DateField = this.currentFilters.dateType;
     }
     if (this.currentFilters.party) {
-      params.CustomerMasterSid = this.currentFilters.party.partyId;
-      params.customerMasterSid = this.currentFilters.party.partyId;
+      const partyMasterSid = this.resolvePartyMasterSid(this.currentFilters.party.partyId);
+      if (partyMasterSid) {
+        params.PartyMasterSid = partyMasterSid;
+        params.partyMasterSid = partyMasterSid;
+      } else {
+        params.CustomerMasterSid = this.currentFilters.party.partyId;
+        params.customerMasterSid = this.currentFilters.party.partyId;
+      }
       params.customerName = this.currentFilters.party.partyName;
     }
     if (this.currentFilters.pol) {
@@ -230,9 +241,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
     this.spinner.hide();
     if (response.status) {
       const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
-      const filteredItems = this.applyAdvancedFilters(rawItems);
-
-      this.allItems = filteredItems.map((item: any) => ({
+      this.allItems = rawItems.map((item: any) => ({
         ...item,
         BookingNo: item?.BookingHeader?.BookingNo || '',
         VoucherDateRaw: item?.VoucherDate,
@@ -240,7 +249,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         PostStatusLabel: item.PostStatus === 'P' ? 'Posted' : 'Unposted',
         Status: item.Status === 'A' ? 'Active' : 'Suspended'
       }));
-      this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
+      this.totalLengthOfCollection = response?.data?.totalCount || rawItems.length || 0;
       this.applySorting();
       this.updateHeaderActionState();
     } else {
@@ -583,6 +592,19 @@ navigateToBooking(row: any): void {
     date.setHours(0, 0, 0, 0);
     date.setDate(date.getDate() - 30);
     return date.toISOString();
+  }
+
+  private resolvePartyMasterSid(partyId: any): number | null {
+    const idNum = Number(partyId);
+    if (!idNum || this.partyOptions.length === 0) {
+      return null;
+    }
+    const match = this.partyOptions.find((p: any) =>
+      Number(p?.CustomerMasterSid) === idNum ||
+      Number(p?.SubledgerMasterSid) === idNum ||
+      Number(p?.PartyMasterSid) === idNum
+    );
+    return match?.SubledgerMasterSid ?? match?.PartyMasterSid ?? null;
   }
 
   private hasAdvancedFilterValues(): boolean {

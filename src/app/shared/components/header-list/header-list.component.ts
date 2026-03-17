@@ -1,10 +1,11 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import {
@@ -48,7 +49,7 @@ export interface HeaderAction {
   templateUrl:'./header-list.component.html',
   styleUrls: ['./header-list.component.scss']
 })
-export class PageHeaderComponent implements OnInit, OnChanges {
+export class PageHeaderComponent implements OnInit, OnChanges, OnDestroy {
   @Input() title: string = '';
   @Input() showFavorite: boolean = true;
   @Input() showSearch: boolean = true;
@@ -90,6 +91,8 @@ export class PageHeaderComponent implements OnInit, OnChanges {
   selectedExtra: any = null;
   partySearchResults: any[] = [];
   partyLoading = false;
+  private autoSearch$ = new Subject<{ searchValue: string; filters: AdvancedFilterValues }>();
+  private destroy$ = new Subject<void>();
 
   get hasAnyFilterConfig(): boolean {
     return !!(
@@ -112,6 +115,15 @@ export class PageHeaderComponent implements OnInit, OnChanges {
     if (this.partyFilterConfig?.enabled) {
       this.loadPartyResults('');
     }
+    this.autoSearch$
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(payload => {
+        this.advancedSearchTriggered.emit(payload);
+      });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -150,7 +162,7 @@ export class PageHeaderComponent implements OnInit, OnChanges {
       return;
     }
 
-    this.advancedSearchTriggered.emit({
+    this.autoSearch$.next({
       searchValue: this.searchValue,
       filters: this.getCurrentFilterValues()
     });
@@ -386,5 +398,10 @@ export class PageHeaderComponent implements OnInit, OnChanges {
     }
 
     return date;
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

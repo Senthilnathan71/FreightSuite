@@ -22,7 +22,7 @@ import { TableConfig, TableEventData, TableFilter, TableSortConfig } from 'src/a
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { OperationService } from '../../operation.service';
 import { BaseListComponent } from 'src/app/shared/components/base-list/base-list.component';
-import { Observable } from 'rxjs';
+import { Observable, catchError, forkJoin, of } from 'rxjs';
 import {
   AdvancedFilterValues,
   DateRangeConfig,
@@ -163,6 +163,7 @@ export class VoucherCorrectionListComponent extends BaseListComponent implements
       this.initializeTableConfig();
       this.initializeHeaderActions();
     });
+    this.loadPartyOptions();
     super.ngOnInit();
   }
 
@@ -219,8 +220,7 @@ export class VoucherCorrectionListComponent extends BaseListComponent implements
     if (response.status) {
       const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
       this.updateFilterOptions(rawItems);
-      const filteredItems = this.applyAdvancedFilters(rawItems);
-      this.allItems = filteredItems.map((item: any) => ({
+      this.allItems = rawItems.map((item: any) => ({
         ...item,
         VoucherDateRaw: item?.VoucherDate,
         VoucherTypeMasterSid: item?.VoucherTypeMasterSid ?? item?.voucherTypeMaster?.VoucherTypeMasterSid ?? null,
@@ -232,7 +232,7 @@ export class VoucherCorrectionListComponent extends BaseListComponent implements
         PostStatus: item.PostStatus === 'P' ? 'Posted' : 'Unposted',
         Status: item.Status === 'A' ? 'Active' : 'Suspended'
       }));
-      this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
+      this.totalLengthOfCollection = response?.data?.totalCount || rawItems.length || 0;
       this.applySorting();
       this.updateHeaderActionState();
     } else {
@@ -506,9 +506,51 @@ export class VoucherCorrectionListComponent extends BaseListComponent implements
       ).values()
     );
 
+    const existingParties = Array.isArray(this.partyNameFilterConfig.options)
+      ? this.partyNameFilterConfig.options
+      : [];
+    const mergedParties = Array.from(
+      new Map(
+        [...existingParties, ...parties].map((x: any) => [x.PartyName, x])
+      ).values()
+    );
+
     this.voucherTypeFilterConfig = { ...this.voucherTypeFilterConfig, options: voucherTypes };
-    this.partyNameFilterConfig = { ...this.partyNameFilterConfig, options: parties };
+    this.partyNameFilterConfig = { ...this.partyNameFilterConfig, options: mergedParties };
     this.currencyFilterConfig = { ...this.currencyFilterConfig, options: currencies };
+  }
+
+  private loadPartyOptions(): void {
+    const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const branchMasterSid = this.currentBranch?.BranchMasterSid;
+    if (!companyMasterSid || !branchMasterSid) {
+      this.partyNameFilterConfig = { ...this.partyNameFilterConfig, options: [] };
+      return;
+    }
+    const payload = { CompanyMasterSid: companyMasterSid, BranchMasterSid: branchMasterSid };
+    forkJoin({
+      vendors: this.operationService.getAllCreditorWithCOAMapped(payload).pipe(catchError(() => of({ data: [] }))),
+      customers: this.operationService.getAllDebtorWithCOAMapped(payload).pipe(catchError(() => of({ data: [] })))
+    }).subscribe({
+      next: ({ vendors, customers }: any) => {
+        const vendorRows = Array.isArray(vendors?.data) ? vendors.data : [];
+        const customerRows = Array.isArray(customers?.data) ? customers.data : [];
+        const parties = Array.from(
+          new Map(
+            [...vendorRows, ...customerRows]
+              .map((row: any) => ({
+                PartyName: row?.CustomerName ?? row?.PartyName ?? ''
+              }))
+              .filter((x: any) => !!x.PartyName)
+              .map((x: any) => [x.PartyName, x])
+          ).values()
+        );
+        this.partyNameFilterConfig = { ...this.partyNameFilterConfig, options: parties };
+      },
+      error: () => {
+        this.partyNameFilterConfig = { ...this.partyNameFilterConfig, options: [] };
+      }
+    });
   }
 
   private applyAdvancedFilters(items: any[]): any[] {

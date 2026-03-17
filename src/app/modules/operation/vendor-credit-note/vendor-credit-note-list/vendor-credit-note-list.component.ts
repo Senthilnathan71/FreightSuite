@@ -249,7 +249,21 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
       CompanyMasterSid: companyMasterSid,
       BranchMasterSid: branchMasterSid
     }).pipe(
-      map((resp: any) => Array.isArray(resp?.data) ? resp.data : []),
+      map((resp: any) => {
+        const rows = Array.isArray(resp?.data) ? resp.data : [];
+        return rows.map((row: any) => ({
+          ...row,
+          CustomerMasterSid:
+            row?.SubledgerMasterSid ??
+            row?.subledgerMasterSid ??
+            row?.PartyMasterSid ??
+            row?.partyMasterSid ??
+            row?.CustomerMasterSid ??
+            row?.id ??
+            null,
+          CustomerName: row?.CustomerName ?? row?.PartyName ?? row?.partyName ?? row?.name ?? ''
+        }));
+      }),
       catchError(() => of([]))
     );
     };
@@ -348,8 +362,8 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
         params.DateField = this.currentFilters.dateType;
       }
       if (this.currentFilters.party) {
-        params.CustomerMasterSid = this.currentFilters.party.partyId;
-        params.customerMasterSid = this.currentFilters.party.partyId;
+        params.PartyMasterSid = this.currentFilters.party.partyId;
+        params.partyMasterSid = this.currentFilters.party.partyId;
         params.customerName = this.currentFilters.party.partyName;
       }
       if (this.currentFilters.pol) {
@@ -365,9 +379,8 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
       this.spinner.hide();
       if (response.status) {
         const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
-        const filteredItems = this.applyAdvancedFilters(rawItems);
 
-        this.allItems = filteredItems.map((item: any) => ({
+        this.allItems = rawItems.map((item: any) => ({
           ...item,
           VoucherDateRaw: item?.VoucherDate,
           BillDateRaw: item?.BillDate,
@@ -379,7 +392,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
           AmountFormatted: this.formatAmount(item.Amount)
 
         }));
-        this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
+        this.totalLengthOfCollection = response?.data?.totalCount || rawItems.length || 0;
         this.applySorting();
         this.updateHeaderActionState();
       } else {

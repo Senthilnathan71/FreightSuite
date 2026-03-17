@@ -6,7 +6,8 @@ import { Router, RouterModule } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
@@ -21,6 +22,7 @@ import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/hea
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AccountsService } from '../../accounts.service';
+import { MasterService } from 'src/app/modules/master/master.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import {
   AdvancedFilterValues,
@@ -111,6 +113,7 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
   constructor(
     private mps : MenuPermissionService,
     private accountService : AccountsService,
+    private masterService: MasterService,
     private router: Router,
     private appSettingService: AppSettingsService,
     private dialog: MatDialog,
@@ -136,6 +139,7 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
       this.initializeHeaderActions();
       this.initializeTableConfig();
     })
+    this.loadSubledgerOptions();
     super.ngOnInit();
   }
 
@@ -185,14 +189,13 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
     if(response.status){
       const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
       this.updateSubledgerOptions(rawItems);
-      const filteredItems = this.applyAdvancedFilters(rawItems);
-      this.allItems = filteredItems.map(item => ({
+      this.allItems = rawItems.map(item => ({
         ...item,
         VoucherMatchingDateRaw: item?.VoucherMatchingDate,
         VoucherMatchingDate:this.datePipe.transform(item?.VoucherMatchingDate),
         Status: item.Status === 'A' ? 'Active' : 'Suspended',
       }));
-      this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
+      this.totalLengthOfCollection = response?.data?.totalCount || rawItems.length || 0;
       this.applySorting();
       this.updateHeaderActionState();
     } else {
@@ -460,7 +463,44 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
           .map((x: any) => [x.SubledgerName, x])
       ).values()
     );
-    this.subledgerFilterConfig = { ...this.subledgerFilterConfig, options: subledgers };
+    const existing = Array.isArray(this.subledgerFilterConfig.options) ? this.subledgerFilterConfig.options : [];
+    const merged = Array.from(
+      new Map([...existing, ...subledgers].map((x: any) => [x.SubledgerName, x])).values()
+    );
+    this.subledgerFilterConfig = { ...this.subledgerFilterConfig, options: merged };
+  }
+
+  private loadSubledgerOptions(): void {
+    const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    if (!companyMasterSid) {
+      this.subledgerFilterConfig = { ...this.subledgerFilterConfig, options: [] };
+      return;
+    }
+    forkJoin({
+      customers: this.masterService.getSubledgerMasterByType('Customer', companyMasterSid).pipe(catchError(() => of({ data: [] }))),
+      charges: this.masterService.getSubledgerMasterByType('Charge', companyMasterSid).pipe(catchError(() => of({ data: [] }))),
+      taxes: this.masterService.getSubledgerMasterByType('Tax', companyMasterSid).pipe(catchError(() => of({ data: [] })))
+    }).subscribe({
+      next: ({ customers, charges, taxes }: any) => {
+        const rows = [
+          ...(Array.isArray(customers?.data) ? customers.data : []),
+          ...(Array.isArray(charges?.data) ? charges.data : []),
+          ...(Array.isArray(taxes?.data) ? taxes.data : [])
+        ];
+        const subledgers = Array.from(
+          new Map(
+            rows
+              .map((row: any) => ({ SubledgerName: row?.SubledgerName ?? '' }))
+              .filter((x: any) => !!x.SubledgerName)
+              .map((x: any) => [x.SubledgerName, x])
+          ).values()
+        );
+        this.subledgerFilterConfig = { ...this.subledgerFilterConfig, options: subledgers };
+      },
+      error: () => {
+        this.subledgerFilterConfig = { ...this.subledgerFilterConfig, options: [] };
+      }
+    });
   }
 
   private applyAdvancedFilters(items: any[]): any[] {

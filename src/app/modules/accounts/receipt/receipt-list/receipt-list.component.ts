@@ -202,8 +202,8 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
       params['DateField'] = this.currentFilters.dateType;
     }
     if (this.currentFilters.party?.partyId) {
-      params['CustomerMasterSid'] = this.currentFilters.party.partyId;
-      params['customerMasterSid'] = this.currentFilters.party.partyId;
+      params['PartyMasterSid'] = this.currentFilters.party.partyId;
+      params['partyMasterSid'] = this.currentFilters.party.partyId;
     }
     if (this.currentFilters.party?.partyName) {
       params['CustomerName'] = this.currentFilters.party.partyName;
@@ -228,8 +228,7 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
     // Handle both array response and paginated response
     if(response && response.status){
       const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
-      const filteredItems = this.applyAdvancedFilters(rawItems);
-      this.allItems = filteredItems.map((item: any) => ({
+      this.allItems = rawItems.map((item: any) => ({
         ...item,
         VoucherDateRaw: item?.VoucherDate,
         PostStatusCode: item?.PostStatus,
@@ -239,7 +238,7 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
         PostStatus : item.PostStatus === 'P' ? 'Posted' : 'Unposted',
         Status: item.Status === 'A' ? 'Active' : 'Suspended'
       }));
-      this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
+      this.totalLengthOfCollection = response?.data?.totalCount || rawItems.length || 0;
       this.applySorting();
       this.updateHeaderActionState();
     } else {
@@ -318,7 +317,13 @@ private formatAmount(amount: number | string): string {
         const customers = rows
           .map((row: any) => ({
             ...row,
-            CustomerMasterSid: row?.CustomerMasterSid ?? null,
+            CustomerMasterSid:
+              row?.SubledgerMasterSid ??
+              row?.subledgerMasterSid ??
+              row?.PartyMasterSid ??
+              row?.partyMasterSid ??
+              row?.CustomerMasterSid ??
+              null,
             CustomerName: row?.CustomerName ?? ''
           }))
           .filter((row: any) => !!row.CustomerMasterSid && !!row.CustomerName);

@@ -235,8 +235,7 @@ export class CurrencyExchangeListComponent extends BaseListComponent implements 
     this.spinner.hide();
     if (response.status) {
       const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
-      const filteredItems = this.applyAdvancedFilters(rawItems);
-      this.allItems = filteredItems.map(item => ({
+      this.allItems = rawItems.map(item => ({
         ...item,
         status: item.status === 'A' ? 'Active' : 'Suspended',
         EffectiveFromRaw: item?.EffectiveFrom,
@@ -244,8 +243,8 @@ export class CurrencyExchangeListComponent extends BaseListComponent implements 
         SellRateFormatted: this.formatAmount(item.SellRate),
         BuyRateFormatted: this.formatAmount(item.BuyRate)
       }));
-      this.totalLengthOfCollection = response?.data?.totalCount || filteredItems.length || 0;
-      // this.applySorting();
+      this.totalLengthOfCollection = response?.data?.totalCount || rawItems.length || 0;
+      this.applySorting();
       this.updateHeaderActionState();
 
     } else {
