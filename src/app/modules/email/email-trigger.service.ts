@@ -11,6 +11,7 @@ export interface EmailTriggerParams {
   menuMasterSid: number;
   action: 'CREATE' | 'UPDATE';
   context?: { [key: string]: any };
+  changedFields?: string[];
 }
 
 @Injectable({
@@ -47,7 +48,7 @@ export class EmailTriggerService {
   ) {}
 
   triggerEmails(params: EmailTriggerParams): void {
-    const { companyId, branchId, menuMasterSid, action, context } = params;
+    const { companyId, branchId, menuMasterSid, action, context, changedFields } = params;
     const menuSid = Number(menuMasterSid);
 
     console.log('EmailTriggerService: triggerEmails called', { companyId, menuSid, action });
@@ -68,7 +69,8 @@ export class EmailTriggerService {
           Number(config.MenuMasterSid) === menuSid &&
           config.Trigger === 'A' &&
           config.Status === 'A' &&
-          this.matchesAction(config.Action, action)
+          this.matchesAction(config.Action, action) &&
+          this.matchesUpdateFields(config, action, changedFields)
         );
 
         console.log('EmailTriggerService: Matching configs after filter:', configs.length);
@@ -87,10 +89,53 @@ export class EmailTriggerService {
     });
   }
 
+  triggerManualEmails(params: EmailTriggerParams): void {
+    const { companyId, branchId, menuMasterSid, action, context, changedFields } = params;
+    const menuSid = Number(menuMasterSid);
+
+    this.emailService.getAllByCompany(companyId).subscribe({
+      next: (resp: any) => {
+        if (!resp.status || !resp.data) return;
+
+        const configs = resp.data.filter((config: any) =>
+          Number(config.MenuMasterSid) === menuSid &&
+          config.Trigger === 'M' &&
+          config.Status === 'A' &&
+          this.matchesAction(config.Action, action) &&
+          this.matchesUpdateFields(config, action, changedFields)
+        );
+
+        if (configs.length === 0) {
+          this.appSettingService.showInfo('No manual mail configuration found for this menu.');
+          return;
+        }
+
+        for (const config of configs) {
+          if (config.AutoPopup === 'A') {
+            this.sendAutoEmail(config, companyId, branchId, context);
+          } else if (config.AutoPopup === 'P') {
+            this.openEmailPopup(config, context);
+          }
+        }
+      },
+      error: (err) => {
+        console.error('EmailTriggerService: Error fetching manual mail configurations', err);
+      }
+    });
+  }
+
   private matchesAction(configAction: string, currentAction: string): boolean {
     if (!configAction) return false;
     const actions = configAction.split(',').map(a => a.trim().toUpperCase());
     return actions.includes(currentAction.toUpperCase());
+  }
+
+  private matchesUpdateFields(config: any, action: string, changedFields?: string[]): boolean {
+    if (action !== 'UPDATE') return true;
+    if (!config.UpdateFields) return true;
+    if (!changedFields || changedFields.length === 0) return true;
+    const configFields = config.UpdateFields.split(',').map((f: string) => f.trim());
+    return changedFields.some(field => configFields.includes(field));
   }
 
   private enrichContext(context?: { [key: string]: any }): { [key: string]: any } {

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
@@ -10,6 +10,7 @@ import { takeUntil } from 'rxjs/operators';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { ReportScheduleService } from '../report-schedule.service';
+import { ReportService } from 'src/app/shared/services/report.service';
 import {
   AvailableReport,
   FREQUENCY_OPTIONS,
@@ -22,6 +23,7 @@ import {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     RouterModule,
     NgSelectModule,
@@ -50,6 +52,10 @@ export class ReportScheduleEntryComponent implements OnInit, OnDestroy {
 
   // Dynamic report parameters
   selectedReportDetails: any[] = [];
+  paramDropdownData: Map<string, any[]> = new Map();
+  paramDependencies: Map<string, string[]> = new Map(); // parent -> children[]
+  disabledParams: Map<string, boolean> = new Map();     // paramName -> disabled
+  private currentReportModule: 'accounts' | 'operation' = 'accounts';
 
   constructor(
     private fb: FormBuilder,
@@ -57,6 +63,7 @@ export class ReportScheduleEntryComponent implements OnInit, OnDestroy {
     private router: Router,
     private appSettingService: AppSettingsService,
     private reportScheduleService: ReportScheduleService,
+    private reportService: ReportService,
     private masterService: MasterService,
     private spinner: NgxSpinnerService,
   ) {}
@@ -132,6 +139,47 @@ export class ReportScheduleEntryComponent implements OnInit, OnDestroy {
   private onReportSelected(reportMasterSid: number): void {
     const report = this.availableReports.find((r) => r.ReportMasterSid === reportMasterSid);
     this.selectedReportDetails = report?.ReportMasterDetail || [];
+
+    // Clear previous state
+    this.paramDropdownData.clear();
+    this.paramDependencies.clear();
+    this.disabledParams.clear();
+
+    // Determine module from ReportType for dynamic query execution
+    this.currentReportModule = (report?.ReportType || 'ACCOUNTS').toLowerCase() as 'accounts' | 'operation';
+    const companyId = this.currentCompany?.CompanyMasterSid;
+
+    // Build dependency map (parent -> children[])
+    for (const param of this.selectedReportDetails) {
+      if (param.DependsOnParameter) {
+        const children = this.paramDependencies.get(param.DependsOnParameter) || [];
+        children.push(param.ParameterName);
+        this.paramDependencies.set(param.DependsOnParameter, children);
+      }
+    }
+
+    // Load dropdown data for each parameter
+    for (const param of this.selectedReportDetails) {
+    if (param.ParameterFieldType === 'DROPDOWN' || param.ParameterFieldType === 'DROPDOWN M') {
+        if (param.DependsOnParameter) {
+          // Dependent dropdown — start disabled until parent is selected
+          this.disabledParams.set(param.ParameterName, true);
+          this.paramDropdownData.set(param.ParameterName, []);
+        } else if (param.DropDownValue && Array.isArray(param.DropDownValue)) {
+          // Static dropdown values
+          this.paramDropdownData.set(param.ParameterName, param.DropDownValue);
+        } else if (param.ParameterQuery) {
+          // Dynamic query (no parent dependency) — load immediately
+          this.reportService.executeParameterQuery(this.currentReportModule, param.ReportMasterDetailSid, { companyId })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: (options) => {
+                this.paramDropdownData.set(param.ParameterName, options || []);
+              },
+            });
+        }
+      }
+    }
   }
 
   // ─── Load lookups ─────────────────────────────────────────
@@ -156,17 +204,17 @@ export class ReportScheduleEntryComponent implements OnInit, OnDestroy {
       },
     });
 
-    // Branches
+    // Branches (service already unwraps resp.data)
     this.masterService.getBranchesByCompanyId(companyId).subscribe({
       next: (resp: any) => {
-        this.branchList = resp.data || [];
+        this.branchList = resp || [];
       },
     });
 
-    // COA (Ledger)
+    // COA (Ledger) (service already unwraps resp.data)
     this.masterService.getCoaWithSubledger(companyId).subscribe({
       next: (resp: any) => {
-        this.coaList = resp.data || [];
+        this.coaList = resp || [];
       },
     });
   }
@@ -224,8 +272,100 @@ export class ReportScheduleEntryComponent implements OnInit, OnDestroy {
     return this.form.get('Frequency')?.value === 'MONTHLY';
   }
 
-  get dayOfMonthOptions(): number[] {
-    return Array.from({ length: 28 }, (_, i) => i + 1);
+  // get dayOfMonthOptions(): number[] {
+  //   return Array.from({ length: 28 }, (_, i) => i + 1);
+  // }
+  dayOfMonthOptions: number[] = Array.from({ length: 28 }, (_, i) => i + 1);
+
+
+  // Filter out DATE parameters — they are auto-computed based on frequency
+  get visibleReportDetails(): any[] {
+    return this.selectedReportDetails.filter(
+      (param) => param.ParameterFieldType !== 'DATE',
+    );
+  }
+
+  getParamDropdownOptions(paramName: string): any[] {
+    return this.paramDropdownData.get(paramName) || [];
+  }
+
+  onParamDropdownChange(paramName: string, value: any): void {
+    const current = this.form.value.ReportParams || {};
+    this.form.patchValue({ ReportParams: { ...current, [paramName]: value } });
+
+    // Check if this param is a parent — trigger cascading reload for children
+    const children = this.paramDependencies.get(paramName);
+    if (children && children.length > 0) {
+      this.onParamParentChange(paramName, value, children);
+    }
+  }
+
+  isParamDisabled(paramName: string): boolean {
+    return this.disabledParams.get(paramName) || false;
+  }
+
+  getParamPlaceholder(param: any): string {
+    if (param.DependsOnParameter && this.disabledParams.get(param.ParameterName)) {
+      return `Select ${param.DependsOnParameter} first`;
+    }
+    return '-- Select --';
+  }
+
+  private onParamParentChange(parentName: string, parentValue: any, childrenNames: string[]): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+
+    for (const childName of childrenNames) {
+      const childParam = this.selectedReportDetails.find((p) => p.ParameterName === childName);
+      if (!childParam) continue;
+
+      // Clear child value
+      const current = this.form.value.ReportParams || {};
+      this.form.patchValue({ ReportParams: { ...current, [childName]: null } });
+      this.paramDropdownData.set(childName, []);
+
+      if (parentValue === null || parentValue === undefined || parentValue === '') {
+        // Parent cleared — disable child
+        this.disabledParams.set(childName, true);
+      } else {
+        // Parent has value — enable child and reload with context
+        this.disabledParams.set(childName, false);
+
+        if (childParam.ParameterQuery) {
+          const context: any = { companyId };
+          context[parentName] = parentValue;
+
+          // Add ancestor values for multi-level cascading
+          this.addParentValuesToContext(childParam, context);
+
+          this.reportService.executeParameterQuery(this.currentReportModule, childParam.ReportMasterDetailSid, context)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: (options) => {
+                this.paramDropdownData.set(childName, options || []);
+              },
+            });
+        }
+      }
+
+      // Recursively handle grandchildren
+      const grandchildren = this.paramDependencies.get(childName);
+      if (grandchildren && grandchildren.length > 0) {
+        this.onParamParentChange(childName, null, grandchildren);
+      }
+    }
+  }
+
+  private addParentValuesToContext(param: any, context: any): void {
+    if (param.DependsOnParameter) {
+      const parentParam = this.selectedReportDetails.find((p) => p.ParameterName === param.DependsOnParameter);
+      if (parentParam) {
+        const parentValue = this.form.value.ReportParams?.[param.DependsOnParameter];
+        if (parentValue !== null && parentValue !== undefined) {
+          context[param.DependsOnParameter] = parentValue;
+        }
+        this.addParentValuesToContext(parentParam, context);
+      }
+    }
   }
 
   // ─── Submit ───────────────────────────────────────────────
@@ -294,6 +434,27 @@ export class ReportScheduleEntryComponent implements OnInit, OnDestroy {
         },
       });
     }
+  }
+
+  onTestSend(): void {
+    if (!this.scheduleId) return;
+    this.spinner.show();
+    this.reportScheduleService
+      .testSend(this.scheduleId, this.currentCompany.CompanyMasterSid)
+      .subscribe({
+        next: (resp: any) => {
+          this.spinner.hide();
+          if (resp.status) {
+            this.appSettingService.showSuccess('Test report sent successfully');
+          } else {
+            this.appSettingService.showError(resp.message || 'Test send failed');
+          }
+        },
+        error: () => {
+          this.spinner.hide();
+          this.appSettingService.showError('Test send failed');
+        },
+      });
   }
 
   onCancel(): void {

@@ -1949,6 +1949,26 @@ private parseFloatSafe(value: any): number {
   }
 
 
+  sendManualMail(): void {
+    this.emailTriggerService.triggerManualEmails({
+      companyId: this.currentCompany?.CompanyMasterSid,
+      branchId: this.currentBranch?.BranchMasterSid,
+      menuMasterSid: this.MenuMasterSid,
+      action: 'UPDATE',
+      context: {
+        EnquiryNo: this.enquiryData?.EnquiryNumber,
+        date: this.enquiryData?.EnquiryDate ? new Date(this.enquiryData.EnquiryDate).toLocaleDateString() : '',
+        POO: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.PORSid),
+        POL: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.POLSid),
+        POD: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.PODSid),
+        FPD: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.FDPSid),
+        customerName: this.enquiryData?.CustomerName,
+        userName: this.userData?.userName,
+        menuEmail: this.enquiryData?.Email || ''
+      }
+    });
+  }
+
   goBack() {
     this.stopVoiceGuide();
     this.router.navigate(['/crm/enquiry/list']);

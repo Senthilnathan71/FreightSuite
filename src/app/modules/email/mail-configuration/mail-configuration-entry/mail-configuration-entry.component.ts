@@ -13,6 +13,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MailBodyModalComponent } from '../mail-body-modal/mail-body-modal.component';
 import { MailSubjectModalComponent } from '../mail-subject-modal/mail-subject-modal.component';
 import { PlaceholderAutocompleteDirective } from 'src/app/core/Directives/placeholder-autocomplete.directive';
+import { ALL_PLACEHOLDERS } from '../../mail-placeholder.constants';
 
 interface MailConfigRow {
   MailConfigurationMasterSid?: number;
@@ -28,6 +29,9 @@ interface MailConfigRow {
   Trigger: string;
   AutoPopup: string;
   Status: string;
+  UpdateFields?: string;
+  selectedActions: string[];
+  selectedUpdateFields: string[];
   isEditing: boolean;
   isNew: boolean;
 }
@@ -81,6 +85,15 @@ export class MailConfigurationEntryComponent implements OnInit {
     { value: 'P', label: 'Popup' }
   ];
 
+  actionOptions = [
+    { value: 'CREATE', label: 'Create' },
+    { value: 'UPDATE', label: 'Update' }
+  ];
+
+  updateFieldOptions = ALL_PLACEHOLDERS.map(p => ({ key: p.key, label: p.label }));
+
+  editingFiles: File[] = [];
+
   constructor(
     private fb: FormBuilder,
     private emailService: EmailModuleService,
@@ -119,23 +132,32 @@ export class MailConfigurationEntryComponent implements OnInit {
       next: (resp) => {
         this.spinner.hide();
         if (resp.status && resp.data) {
-          this.rows = resp.data.map((item: any) => ({
-            MailConfigurationMasterSid: item.MailConfigurationMasterSid,
-            Sno: Number(item.Sno),
-            MailName: item.MailName,
-            MenuMasterSid: item.MenuMasterSid,
-            MailSubject: item.MailSubject,
-            MailBody: item.MailBody,
-            ToEmailidFrom: item.ToEmailidFrom || '',
-            CcEmailidFrom: item.CcEmailidFrom || '',
-            AttachmentRequire: item.AttachmentRequire,
-            Action: item.Action || '',
-            Trigger: item.Trigger || 'A',
-            AutoPopup: item.AutoPopup,
-            Status: item.Status,
-            isEditing: false,
-            isNew: false
-          }));
+          this.rows = resp.data.map((item: any) => {
+            const actionStr = item.Action || '';
+            const selectedActions = actionStr ? actionStr.split(',').map((a: string) => a.trim().toUpperCase()).filter((a: string) => a) : [];
+            const updateFieldsStr = item.UpdateFields || '';
+            const selectedUpdateFields = updateFieldsStr ? updateFieldsStr.split(',').map((f: string) => f.trim()).filter((f: string) => f) : [];
+            return {
+              MailConfigurationMasterSid: item.MailConfigurationMasterSid,
+              Sno: Number(item.Sno),
+              MailName: item.MailName,
+              MenuMasterSid: item.MenuMasterSid,
+              MailSubject: item.MailSubject,
+              MailBody: item.MailBody,
+              ToEmailidFrom: item.ToEmailidFrom || '',
+              CcEmailidFrom: item.CcEmailidFrom || '',
+              AttachmentRequire: item.AttachmentRequire,
+              Action: actionStr,
+              Trigger: item.Trigger || 'A',
+              AutoPopup: item.AutoPopup,
+              Status: item.Status,
+              UpdateFields: updateFieldsStr,
+              selectedActions,
+              selectedUpdateFields,
+              isEditing: false,
+              isNew: false
+            };
+          });
         }
       },
       error: (err) => {
@@ -214,6 +236,9 @@ export class MailConfigurationEntryComponent implements OnInit {
       Trigger: 'A',
       AutoPopup: 'A',
       Status: 'A',
+      UpdateFields: '',
+      selectedActions: [],
+      selectedUpdateFields: [],
       isEditing: true,
       isNew: true
     });
@@ -221,6 +246,7 @@ export class MailConfigurationEntryComponent implements OnInit {
     this.editingIndex = this.rows.length - 1;
     this.editingRow = this.rows[this.editingIndex];
     this.editingSnapshot = null;
+    this.editingFiles = [];
     this.scrollToDetailForm();
   }
 
@@ -260,6 +286,7 @@ export class MailConfigurationEntryComponent implements OnInit {
     this.editingSnapshot = { ...this.rows[index] };
     this.editingIndex = index;
     this.editingRow = this.rows[index];
+    this.editingFiles = [];
     this.rows[index].isEditing = true;
     this.scrollToDetailForm();
   }
@@ -305,7 +332,11 @@ export class MailConfigurationEntryComponent implements OnInit {
       return;
     }
 
-    const payload = {
+    // Sync selectedActions back to Action CSV
+    row.Action = (row.selectedActions || []).join(',');
+    row.UpdateFields = (row.selectedUpdateFields || []).join(',');
+
+    const payload: any = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       Sno: row.Sno,
       MailName: row.MailName,
@@ -318,7 +349,8 @@ export class MailConfigurationEntryComponent implements OnInit {
       Action: row.Action,
       Trigger: row.Trigger,
       AutoPopup: row.AutoPopup,
-      Status: row.Status
+      Status: row.Status,
+      UpdateFields: row.UpdateFields || ''
     };
 
     this.spinner.show();
@@ -410,6 +442,51 @@ export class MailConfigurationEntryComponent implements OnInit {
         console.error('Delete error:', err);
       }
     });
+  }
+
+  onTriggerChange(row: MailConfigRow): void {
+    if (row.Trigger === 'A') {
+      row.AutoPopup = 'A';
+    }
+  }
+
+  onActionChange(row: MailConfigRow): void {
+    row.Action = (row.selectedActions || []).join(',');
+    if (!row.selectedActions?.includes('UPDATE')) {
+      row.selectedUpdateFields = [];
+      row.UpdateFields = '';
+    }
+  }
+
+  onUpdateFieldsChange(row: MailConfigRow): void {
+    row.UpdateFields = (row.selectedUpdateFields || []).join(',');
+  }
+
+  onFileChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files) {
+      for (let i = 0; i < input.files.length; i++) {
+        this.editingFiles.push(input.files[i]);
+      }
+    }
+    input.value = '';
+  }
+
+  removeFile(index: number): void {
+    this.editingFiles.splice(index, 1);
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    if (event.dataTransfer?.files) {
+      for (let i = 0; i < event.dataTransfer.files.length; i++) {
+        this.editingFiles.push(event.dataTransfer.files[i]);
+      }
+    }
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
   }
 
   getMenuName(menuMasterSid: number | null): string {

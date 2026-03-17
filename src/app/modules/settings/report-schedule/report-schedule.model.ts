@@ -40,6 +40,7 @@ export interface AvailableReport {
   ReportMasterSid: number;
   ReportName: string;
   ReportDisplayName: string;
+  ReportType?: string;
   ReportMasterDetail: ReportParameterDetail[];
 }
 

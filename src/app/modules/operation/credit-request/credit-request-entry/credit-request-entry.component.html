@@ -169,7 +169,7 @@
           'text-transform': 'uppercase'
         }"
       >
-        {{ credit.get('ApprovalStatus')?.value || 'Pending' }}
+        {{ getApprovalStatusLabel(credit.get('ApprovalStatus')?.value) }}
       </span>
       <span
         *ngIf="credit.get('ApprovalStatus')?.value === 'Pending'"
@@ -297,6 +297,7 @@
                                  ngbDatepicker #d2="ngbDatepicker"
                                  (click)="d2.toggle()"
                                  formControlName="EffectiveTo"
+                                  [minDate]="getEffectiveToMinDate(i)"
                                   container="body" />
                           <button class="btn px-0" (click)="d2.toggle()" type="button">
                             <i-feather name="calendar" class="feather-sm"></i-feather>
@@ -318,7 +319,7 @@
                                             bindLabel="name"
                                             bindValue="value" 
                                             placeholder=""
-                                            [disabled]="isApprovedRow(credit)"
+                                            [disabled]="true"
                                             >
                                         </ng-select>
                         <label class="input-label">Approval Status</label>
@@ -360,6 +361,7 @@
                           <div class="text-center py-1 text-muted">
                             <i class="fas fa-folder-open fa-2x mb-1"></i>
                             <p class="mb-0">No KYC documents added yet</p>
+                            <small>Add at least one KYC document to enable Save.</small>
                           </div>
                         }
 
@@ -406,7 +408,7 @@
                                       <button *ngIf="!kyc.get('AttachDocumentSid')?.value"
                                               type="button"
                                               class="btn btn-sm btn-secondary dofi-min-w-80"
-                                              (click)="openEDoc(i, k)" [disabled]="isApprovedRow(credit)">
+                                              (click)="openEDoc(i, k)" [disabled]="isApprovedRow(credit) && !approvalStatusChanged">
                                         <i class="fas fa-upload me-1"></i> Upload
                                       </button>
                                      
@@ -414,7 +416,7 @@
                                         type="button"
                                         class="badge bg-success ms-1 border-0"
                                         (click)="openEDoc(i, k)"
-                                        [disabled]="isApprovedRow(credit)">
+                                        [disabled]="isApprovedRow(credit) && !approvalStatusChanged">
                                         Attached
                                       </button>
                                       <div *ngIf="getKycFileName(i, k)" class="small text-muted mt-1">

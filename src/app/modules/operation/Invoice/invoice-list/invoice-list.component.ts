@@ -113,7 +113,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
   protected config: ListComponentConfig = {
     storageKey: 'invoice-type-state',
     defaultPageSize: 10,
-    defaultSortColumn: 'InvoiceNo',
+    defaultSortColumn: 'VoucherDate',
     defaultSortDirection: 'desc',
     pageSizeOptions: [10, 20, 50, 100, 500],
     maxPagesToShow: 3
@@ -631,16 +631,20 @@ navigateToBooking(row: any): void {
         if (!rawDate) {
           return false;
         }
-        const itemDate = new Date(rawDate);
-        if (Number.isNaN(itemDate.getTime())) {
+        const itemTime = this.parseDateValue(rawDate);
+        if (itemTime === null) {
           return false;
         }
+        const itemDate = new Date(itemTime);
         if (from && itemDate < from) {
           return false;
         }
         if (to && itemDate > to) {
           return false;
         }
+
+
+
       }
 
       return true;
@@ -893,3 +897,7 @@ navigateToBooking(row: any): void {
     this.router.navigate(['operation/invoice/entry/', id]);
   }
 }
+
+
+
+

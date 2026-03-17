@@ -53,8 +53,11 @@
                   <span class="badge bg-light text-dark border me-1" style="font-size: 0.7rem;">
                     {{ getTriggerLabel(row.Trigger) }}
                   </span>
-                  @if (row.AutoPopup === 'P') {
+                  @if (row.Trigger === 'M' && row.AutoPopup === 'P') {
                     <span class="badge bg-warning text-dark border" style="font-size: 0.7rem;">Popup</span>
+                  }
+                  @if (row.Trigger === 'M' && row.AutoPopup === 'A') {
+                    <span class="badge bg-info text-white border" style="font-size: 0.7rem;">Auto Send</span>
                   }
                   @if (row.AttachmentRequire === 'Y') {
                     <span class="badge bg-light text-dark border ms-1" style="font-size: 0.7rem;">
@@ -172,7 +175,7 @@
                     appPlaceholderAutocomplete
                     placeholder="Type curly braces to insert placeholders"></textarea>
                   <label class="input-label">Mail Subject <span class="text-danger">*</span></label>
-                  <small class="form-hint">Type curly braces to see available placeholders</small>
+                  <small class="form-hint">Default template shown — customize freely. Type curly braces to see available placeholders.</small>
                 </div>
               </div>
               <div class="col-12">
@@ -182,7 +185,7 @@
                     appPlaceholderAutocomplete
                     placeholder="Type curly braces to insert placeholders"></textarea>
                   <label class="input-label">Mail Body <span class="text-danger">*</span></label>
-                  <small class="form-hint">Type curly braces to see available placeholders</small>
+                  <small class="form-hint">Default template shown — customize freely. Type curly braces to see available placeholders.</small>
                 </div>
               </div>
             </div>
@@ -227,13 +230,62 @@
                   <label class="input-label">Attachment</label>
                 </div>
               </div>
+              @if (editingRow.AttachmentRequire === 'Y') {
+                <div class="col-12 mb-2">
+                  <div class="border rounded p-2 bg-light" (drop)="onDrop($event)" (dragover)="onDragOver($event)">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                      <button type="button" class="btn btn-sm btn-outline-info" (click)="fileInput.click()">
+                        <i class="fas fa-paperclip me-1"></i>Choose Files
+                      </button>
+                      <small class="text-muted">or drag & drop files here</small>
+                      <input #fileInput type="file" multiple hidden (change)="onFileChange($event)">
+                    </div>
+                    @for (file of editingFiles; track file.name; let fi = $index) {
+                      <span class="badge bg-light text-dark border me-1 mb-1">
+                        {{ file.name }} <i class="fas fa-times ms-1 text-danger" style="cursor:pointer" (click)="removeFile(fi)"></i>
+                      </span>
+                    }
+                  </div>
+                </div>
+              }
               <div class="col-md-3 mb-2">
-                <div class="custom-form-group">
-                  <input type="text" class="custom-input-field sm"
-                    [(ngModel)]="editingRow.Action" maxlength="200" placeholder="Action">
+                <div class="custom-form-group custom-form-group-select filled">
+                  <ng-select
+                    [(ngModel)]="editingRow.selectedActions"
+                    [items]="actionOptions"
+                    bindLabel="label"
+                    bindValue="value"
+                    [multiple]="true"
+                    [closeOnSelect]="false"
+                    [clearable]="false"
+                    placeholder="Select action(s)"
+                    appendTo="body"
+                    class="ng-select"
+                    (ngModelChange)="onActionChange(editingRow)">
+                  </ng-select>
                   <label class="input-label">Action</label>
                 </div>
               </div>
+              @if (editingRow.selectedActions?.includes('UPDATE')) {
+                <div class="col-md-3 mb-2">
+                  <div class="custom-form-group custom-form-group-select filled">
+                    <ng-select
+                      [(ngModel)]="editingRow.selectedUpdateFields"
+                      [items]="updateFieldOptions"
+                      bindLabel="label"
+                      bindValue="key"
+                      [multiple]="true"
+                      [closeOnSelect]="false"
+                      [clearable]="true"
+                      placeholder="Which fields?"
+                      appendTo="body"
+                      class="ng-select"
+                      (ngModelChange)="onUpdateFieldsChange(editingRow)">
+                    </ng-select>
+                    <label class="input-label">Trigger on Fields</label>
+                  </div>
+                </div>
+              }
               <div class="col-md-3 mb-2">
                 <div class="custom-form-group custom-form-group-select filled">
                   <ng-select
@@ -244,26 +296,29 @@
                     [clearable]="false"
                     [searchable]="false"
                     appendTo="body"
-                    class="ng-select">
+                    class="ng-select"
+                    (ngModelChange)="onTriggerChange(editingRow)">
                   </ng-select>
                   <label class="input-label">Trigger</label>
                 </div>
               </div>
-              <div class="col-md-3 mb-2">
-                <div class="custom-form-group custom-form-group-select filled">
-                  <ng-select
-                    [(ngModel)]="editingRow.AutoPopup"
-                    [items]="autoPopupOptions"
-                    bindLabel="label"
-                    bindValue="value"
-                    [clearable]="false"
-                    [searchable]="false"
-                    appendTo="body"
-                    class="ng-select">
-                  </ng-select>
-                  <label class="input-label">Auto / Popup</label>
+              @if (editingRow.Trigger === 'M') {
+                <div class="col-md-3 mb-2">
+                  <div class="custom-form-group custom-form-group-select filled">
+                    <ng-select
+                      [(ngModel)]="editingRow.AutoPopup"
+                      [items]="autoPopupOptions"
+                      bindLabel="label"
+                      bindValue="value"
+                      [clearable]="false"
+                      [searchable]="false"
+                      appendTo="body"
+                      class="ng-select">
+                    </ng-select>
+                    <label class="input-label">Auto / Popup</label>
+                  </div>
                 </div>
-              </div>
+              }
             </div>
           </div>
 

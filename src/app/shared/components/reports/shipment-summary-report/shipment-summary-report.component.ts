@@ -198,7 +198,7 @@ export class ShipmentSummaryReportComponent {
           { label: 'To Date', value: this.formatDate(this.params?.ToHblDt) },
           { label: 'Branch', value: this.currentBranch?.branchName || '' },
           { label: 'Dept', value: this.departmentNamesList || '' },
-          { label: 'JobGenerated', value: this.params?.JobGenerated ? 'Yes' : 'No' }
+          { label: 'House Status', value: this.params?.HouseStatus }
         ]
       },
       tableHeaders,

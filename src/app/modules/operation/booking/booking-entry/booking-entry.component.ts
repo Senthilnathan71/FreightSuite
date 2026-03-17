@@ -3501,6 +3501,29 @@ getVesselVoyBasedOnPorts() {
   }
 
 
+  sendManualMail(): void {
+    this.emailTriggerService.triggerManualEmails({
+      companyId: this.currentCompany.CompanyMasterSid,
+      branchId: this.currentBranch.BranchMasterSid,
+      menuMasterSid: this.MenuMasterSid,
+      action: 'UPDATE',
+      context: {
+        BookingNo: this.bookingData?.BookingNo,
+        date: this.datePipe.transform(this.bookingData?.BookingDateTime),
+        POO: this.getFormattedPort(this.bookingData?.POO),
+        POL: this.getFormattedPort(this.bookingData?.POL),
+        POD: this.getFormattedPort(this.bookingData?.POD),
+        FPD: this.getFormattedPort(this.bookingData?.FPD),
+        customerName: this.bookingData?.CustomerName,
+        shipperName: this.bookingData?.ShipperName,
+        consigneeName: this.bookingData?.ConsigneeName,
+        userName: this.userData?.userName,
+        ShipmentNo: this.bookingData?.ShipmentNo,
+        menuEmail: this.selectedCustomerBranch?.Email || ''
+      }
+    });
+  }
+
   navigateBack() {
     this.router.navigate(['operation/booking/list']);
   }

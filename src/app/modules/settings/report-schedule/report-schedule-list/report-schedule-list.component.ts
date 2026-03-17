@@ -39,9 +39,9 @@ export class ReportScheduleListComponent extends BaseListComponent implements On
   tableConfig: TableConfig = {
     columns: [],
     actions: [
-      { icon: 'fas fa-edit', label: 'Edit', action: 'edit', tooltip: 'Edit' },
+      { icon: 'fas fa-eye', label: 'Edit', action: 'edit', tooltip: 'Edit' },
       { icon: 'fas fa-paper-plane', label: 'Test Send', action: 'testSend', tooltip: 'Test Send' },
-      { icon: 'fas fa-trash', label: 'Delete', action: 'delete', tooltip: 'Delete' },
+      { icon: 'fas fa-trash', label: 'Delete', action: 'delete', tooltip: 'Delete' , class: 'text-danger' },
     ],
     selectable: false,
     showColumnToggle: true,

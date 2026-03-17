@@ -101,6 +101,23 @@ export class TermsConditionEntryComponent implements OnInit {
         this.initTandCForm();
         this.initTandDetailForm();
         this.loadAllFields();
+        this.termsAndConditionForm.get('MenuMasterSid')?.valueChanges.subscribe(() => {
+    if (!this.showExtraFields) {
+        this.termsAndConditionForm.patchValue({
+            departmentId: null,
+            Carrier: null,
+            POL: null,
+            POD: null
+        }, { emitEvent: false });
+
+        this.selectedDepartment = null;
+        this.selectedDepartmentType = '';
+        this.selectedFCLLCL = '';
+        this.filteredPorts = [...this.portList];
+        this.filteredPOL = [...this.portList];
+        this.filteredPOD = [...this.portList];
+    }
+});
         this.currentRoute.paramMap.subscribe(
             (param) => {
                 this.TermsAndConditionsMasterSid = +param.get('id');
@@ -614,7 +631,7 @@ export class TermsConditionEntryComponent implements OnInit {
 
 
     navigateBack() {
-        history.back();
+        this.route.navigate(['master/terms-condition/list']);
     }
 
     showHeaderInfo() {
@@ -641,5 +658,19 @@ export class TermsConditionEntryComponent implements OnInit {
         this.showDetailSection = false;
         this.closeDetailForm();
     }
+
+    allowedMenuCodesForExtraFields: string[] = ['QUA', 'RAT', 'SC2', 'MA2', 'MA1', 'HJB', 'HBL', 'BKN', 'AMA'];
+
+get selectedMenuCode(): string {
+    const selectedMenuSid = Number(this.termsAndConditionForm?.get('MenuMasterSid')?.value);
+    const selectedMenu = this.menuList?.find(
+        (menu: any) => Number(menu?.MenuMasterSid) === selectedMenuSid
+    );
+    return String(selectedMenu?.MenuCode || '').trim().toUpperCase();
+}
+
+get showExtraFields(): boolean {
+    return this.allowedMenuCodesForExtraFields.includes(this.selectedMenuCode);
+}
 
 }

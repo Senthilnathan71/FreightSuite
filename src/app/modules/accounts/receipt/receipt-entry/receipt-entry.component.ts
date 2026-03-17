@@ -781,7 +781,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
    * Search outstanding invoices for customer
    */
 
-  searchOutstanding() {
+  async searchOutstanding() {
     const form = this.searchOutstandingForm.getRawValue();
 
     let payload: any = {
@@ -812,6 +812,26 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     if(this.isEditMode && !this.isPosted && form.SearchType === 'Party' && form.LedgerMasterSid !== this.r['PartyMasterSid']?.getRawValue() && this.hasMatchingDetails) {
       this.appSettingService.showWarning(`Already a party ${this.r['PartyName']?.getRawValue()} involved in this receipt. \nCannot select a different one.`);
       return;
+    }
+
+    // In create mode, if matchings already exist for a different party, confirm before proceeding
+    if (!this.isEditMode && this.voucherMatchings?.length > 0) {
+      const currentPartyInHeader = this.r['PartyMasterSid']?.getRawValue();
+      const newPartyInSearch = form.SearchType === 'Party' ? form.LedgerMasterSid : null;
+
+      // Different party (or invoice search which may resolve to a different party)
+      if (newPartyInSearch !== currentPartyInHeader || form.SearchType !== 'Party') {
+        const confirmed = await this.confirmService.confirm(
+          'Changing the party will clear all voucher matchings. Do you want to proceed?',
+          'Change Party',
+          'Clear & Proceed'
+        );
+        if (!confirmed) {
+          return;
+        }
+        this.voucherMatchings.clear();
+        this.updateDetailAmountsFromMatching();
+      }
     }
 
     // Reset pagination for the new search; existing matched rows are preserved
@@ -972,6 +992,8 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   patchHeaderValue(res: any) {
+    // skipConfirmation = true because searchOutstanding() already handled the
+    // party-change confirmation before the API call was made
     if (
       res.length > 0 &&
       res[0].LedgerMasterSid &&
@@ -980,14 +1002,14 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       const party = this.partyList.find(
         (p) => p.SubledgerMasterSid === res[0].LedgerMasterSid
       );
-      if (this.isEditMode && 
-        this.searchOutstandingForm.get('SearchType').getRawValue() === 'Party' && 
+      if (this.isEditMode &&
+        this.searchOutstandingForm.get('SearchType').getRawValue() === 'Party' &&
         res[0].LedgerMasterSid !== this.r['PartyMasterSid']?.getRawValue()
       ) {
         this.appSettingService.showWarning(`Already a party ${this.r['PartyName']?.getRawValue()} involved in this receipt. \nCannot select a different one.`);
         return;
       }
-      this.onPartyChange(party);
+      this.onPartyChange(party, true);
       this.searchOutstandingForm.get('LedgerMasterSid')?.disable();
       this.receiptForm.get('PartyMasterSid')?.disable();
     } else if (
@@ -1000,7 +1022,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       const party = this.partyList.find(
         (p) => p.SubledgerMasterSid === partyIdInSearch
       );
-      this.onPartyChange(party);
+      this.onPartyChange(party, true);
       this.receiptForm.get('PartyMasterSid')?.disable();
     }
   }
@@ -3084,9 +3106,10 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
   private previousPartyBranchSid: number | null = null;
 
-  async onPartyChange(party: any) {
+  async onPartyChange(party: any, skipConfirmation: boolean = false) {
     // If matchings exist in create mode, confirm before clearing
-    if (!this.isEditMode && this.voucherMatchings?.length > 0) {
+    // skipConfirmation is true when called from patchHeaderValue (searchOutstanding already confirmed)
+    if (!skipConfirmation && !this.isEditMode && this.voucherMatchings?.length > 0) {
       const confirmed = await this.confirmService.confirm(
         'Changing the party will clear all voucher matchings. Do you want to proceed?',
         'Change Party',
@@ -3101,7 +3124,6 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         return;
       }
       this.voucherMatchings.clear();
-      this.searchOutstanding();
       this.updateDetailAmountsFromMatching();
     }
 
@@ -3733,8 +3755,8 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     }
     const headerCurrency = this.r['CurrencyMasterSid']?.getRawValue();
     const bankRow = this.detailItems.at(1) as FormGroup;
-    const bankCurrency = bankRow.get('CurrencyMasterSid')?.value;
     if (bankRow) {
+      const bankCurrency = bankRow.get('CurrencyMasterSid')?.value;
       bankRow.patchValue({ Amount: headerCurrency === bankCurrency ?  totalMatchCurrAmt : 0 });
       this.calculateLocalAmount(1, true);
     }

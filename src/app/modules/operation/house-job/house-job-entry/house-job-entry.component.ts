@@ -3314,7 +3314,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
 
 
   navigateBack() {
-    this.router.navigate(['/operation/house-job/list']);
+   history.back();
   }
 
   selectedTab = 'Shipment';
@@ -3870,10 +3870,9 @@ ${this.userData['userName']}`;
   }
 
   async reportDeliveryOrder() {
+    if (!this.ensurePostedInvoice('Delivery Order')) return;
     const ok = await this.validateCreditForRelease('Delivery Order');
     if (!ok) return;
-
-    if (!this.ensurePostedInvoice('Delivery Order')) return;
 
     const modalRef = this.modalService.open(DeliveryOrderComponent, {
       size: 'xl',
@@ -3923,13 +3922,11 @@ ${this.userData['userName']}`;
 
        async reportBill(type: 'HBL' | 'HBLDraft') {
          if (type === 'HBL') {
+           // For HBL (final), require posted invoice first
+           if (!this.ensurePostedInvoice('HBL')) return;
            const ok = await this.validateCreditForRelease('HBL');
            if (!ok) return;
          }
-  // For HBL (final), require posted invoice
-  if (type === 'HBL' && !this.ensurePostedInvoice('HBL')) {
-    return;
-  }
          if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
     // Check if any products have ContainerMasterSid mapped
     const hasContainerMapping = this.housejobData?.Products?.some(
@@ -4230,7 +4227,7 @@ ${this.userData['userName']}`;
     this.creditValidationSummary = {
       customerName,
       customerType: this.getCreditValidationValue(validation, 'CustomerType', 'customerType') || 'CREDIT',
-      creditLimit: this.getCreditValidationValue(validation, 'CreditLimit', 'creditLimit') ?? 0,
+      CreditLimit: this.getCreditValidationValue(validation, 'CreditLimit', 'CreditLimit') ?? 0,
       creditDays: this.getCreditValidationValue(validation, 'CreditDays', 'creditDays') ?? 0,
       remainingCreditLimit: this.getCreditValidationValue(validation, 'RemainingCreditLimit', 'remainingCreditLimit') ?? 0,
       totalOutstandingLocal: this.getCreditValidationValue(validation, 'TotalOutstandingLocal', 'totalOutstandingLocal') ?? 0,
@@ -4455,7 +4452,9 @@ ${this.userData['userName']}`;
 
       // House Air Way Bill
 
-  reportHAWB(type: 'HAWB' | 'HAWBDraft') {
+  async reportHAWB(type: 'HAWB' | 'HAWBDraft') {
+     const ok = await this.validateCreditForRelease('HAWB');
+     if (!ok) return;
     this.selectedReportAir = type;
     const modalRef = this.modalService.open(HAWBComponent, {
       size: 'xl',

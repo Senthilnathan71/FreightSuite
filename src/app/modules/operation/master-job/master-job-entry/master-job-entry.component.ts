@@ -4781,7 +4781,8 @@ findElementByTextContent(selector: string, text: string): Element | null {
        DepartmentMasterSid: departmentSid,
        POL: pol,
        POD: pod,
-       Carrier: carrier
+       Carrier: carrier,
+       DocumentSid: this.masterJobData?.MasterJobSid,
        };
     this.masterService.getTandCByCondition(payload).subscribe((resp: any) => {
       if (resp.status) {

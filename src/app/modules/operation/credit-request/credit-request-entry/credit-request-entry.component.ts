@@ -63,7 +63,7 @@ export class CreditRequestEntryComponent {
   customerId: number;
   customerData: any;
   userData: any;
-  
+  approvalStatusChanged: boolean = false;
   departmentListPerRow: any[][] = [];
   salesmanListPerRow: any[][] = [];
 
@@ -190,6 +190,9 @@ export class CreditRequestEntryComponent {
       Status: [data?.Status || 'A'],
       customerKyc: this.fb.array([])
     });
+    creditForm.get('EffectiveFrom')?.valueChanges.subscribe(() => {
+  creditForm.get('EffectiveTo')?.setValue(null);
+});
     // Add KYC records if available
     if (data?.customerKyc && data.customerKyc.length > 0) {
       const kycArray = creditForm.get('customerKyc') as FormArray;
@@ -199,9 +202,18 @@ export class CreditRequestEntryComponent {
     }
 
     this.applyApprovalLock(creditForm);
-    creditForm.get('ApprovalStatus')?.valueChanges.subscribe(() => {
-      this.applyApprovalLock(creditForm);
-    });
+
+// Disable ApprovalStatus only for new records
+if (!data?.CustomerCreditRequestSid) {
+  creditForm.get('ApprovalStatus')?.disable({ emitEvent: false });
+} else {
+  creditForm.get('ApprovalStatus')?.enable({ emitEvent: false });
+}
+
+creditForm.get('ApprovalStatus')?.valueChanges.subscribe(() => {
+  this.applyApprovalLock(creditForm);
+  this.approvalStatusChanged = true;
+});
 
     return creditForm;
   }
@@ -252,6 +264,21 @@ export class CreditRequestEntryComponent {
     this.departmentListPerRow.splice(index, 1);
     this.salesmanListPerRow.splice(index, 1);
   }
+  getEffectiveToMinDate(index: number): any {
+  const effectiveFrom = this.creditRequest
+    .at(index)
+    .get('EffectiveFrom')?.value;
+
+  if (!effectiveFrom) return null;
+
+  const date = new Date(effectiveFrom);
+
+  return {
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate()
+  };
+}
 
   createKycRow(data?: any): FormGroup {
     return this.fb.group({
@@ -453,10 +480,24 @@ export class CreditRequestEntryComponent {
       return;
     }
 
+    if (!this.hasAnyKycRows()) {
+      this.appSettingService.showError('Please add at least one KYC document before saving');
+      this.isSaving = false;
+      return;
+    }
+
     const creditRequests = this.creditRequest.getRawValue();
     const continuityError = this.validateCreditRequestContinuity(creditRequests);
     if (continuityError) {
       this.appSettingService.showError(continuityError);
+      this.isSaving = false;
+      return;
+    }
+
+    const missingUploads = this.getMissingKycUploads();
+    if (missingUploads.length) {
+      const docList = missingUploads.map(item => item.docName).join(', ');
+      this.appSettingService.showError(`Please upload KYC documents for: ${docList}`);
       this.isSaving = false;
       return;
     }
@@ -509,6 +550,7 @@ export class CreditRequestEntryComponent {
         this.isSaving = false;
 
         if (response.status) {
+          this.approvalStatusChanged = false;
           this.appSettingService.showSuccess(
             this.isEditMode ? 'Credit Request updated successfully.' : 'Credit Request created successfully.'
           );
@@ -607,8 +649,7 @@ export class CreditRequestEntryComponent {
       'CreditLimit',
       'PublishedDays',
       'PublishedLimit',
-      'EffectiveFrom',
-      'ApprovalStatus'
+      'EffectiveFrom'
     ];
 
     lockControls.forEach(name => {
@@ -644,10 +685,30 @@ export class CreditRequestEntryComponent {
     return !effectiveTo || !status;
   }
 
-  isSaveDisabled(): boolean {
-    if ((!this.mps.can('update') && this.isEditMode) || this.isSaving) return true;
-    const anyApprovedInvalid = this.creditRequest?.controls?.some(ctrl => this.isApprovedRowInvalid(ctrl));
-    return !!anyApprovedInvalid;
+ isSaveDisabled(): boolean {
+
+  if (this.isSaving) return true;
+
+  // If approval status changed → enable save
+  if (this.approvalStatusChanged) return false;
+
+  if ((!this.mps.can('update') && this.isEditMode)) return true;
+
+  const anyApprovedInvalid = this.creditRequest?.controls?.some(ctrl => this.isApprovedRowInvalid(ctrl));
+  const anyMissingUploads = this.getMissingKycUploads().length > 0;
+  const hasAnyKyc = this.hasAnyKycRows();
+
+  return !!anyApprovedInvalid || anyMissingUploads || !hasAnyKyc;
+}
+
+  getApprovalStatusLabel(raw: any): string {
+    const value =
+      typeof raw === 'string'
+        ? raw
+        : (raw?.value ?? raw?.name ?? raw?.Status ?? raw?.status ?? '');
+    if (!value) return 'Waiting for Approval';
+    const match = this.allApprovalStatus.find(s => s.value === value);
+    return match?.name || String(value);
   }
 
   getBranchName(branchId: number): string {
@@ -825,10 +886,10 @@ getDepartmentName(deptId: number, rowIndex: number): string {
 
         const overlap = currentFrom <= otherTo && currentTo >= otherFrom;
         if (overlap) {
-          const scopeLabel = currentBranchSid
-            ? `branch ${this.getBranchName(currentBranchSid) || currentBranchSid}`
-            : 'customer without branch';
-          return `Date range overlaps for ${scopeLabel}. Please start the next credit request after the previous Effective To date.`;
+          if (currentBranchSid) {
+            return 'Credit request already exists for this branch within the selected effective dates.';
+          }
+          return 'Credit request already exists for this customer (no branch) within the selected effective dates.';
         }
       }
     }
@@ -1057,6 +1118,34 @@ getDepartmentName(deptId: number, rowIndex: number): string {
       AttachDocumentSid: null
     });
     this.kycFileNameMap.delete(this.getKycKey(creditIndex, kycIndex));
+  }
+
+  private getMissingKycUploads(): { creditIndex: number; kycIndex: number; docName: string }[] {
+    const missing: { creditIndex: number; kycIndex: number; docName: string }[] = [];
+
+    this.creditRequest?.controls?.forEach((creditCtrl, creditIndex) => {
+      if (!this.isApprovedRow(creditCtrl)) return;
+      const kycArray = creditCtrl.get('customerKyc') as FormArray | null;
+      if (!kycArray) return;
+
+      kycArray.controls.forEach((kycCtrl, kycIndex) => {
+        const attachSid = kycCtrl.get('AttachDocumentSid')?.value;
+        if (attachSid) return;
+
+        const nameValue = kycCtrl.get('KycDocName')?.value;
+        const docName = nameValue ? String(nameValue) : `KYC #${kycIndex + 1}`;
+        missing.push({ creditIndex, kycIndex, docName });
+      });
+    });
+
+    return missing;
+  }
+
+  private hasAnyKycRows(): boolean {
+    return this.creditRequest?.controls?.some(ctrl => {
+      const kycArray = ctrl.get('customerKyc') as FormArray | null;
+      return (kycArray?.length || 0) > 0;
+    }) ?? false;
   }
 
   
