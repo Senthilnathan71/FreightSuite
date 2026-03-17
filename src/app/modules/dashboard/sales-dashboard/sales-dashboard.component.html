@@ -110,7 +110,7 @@
       <div class="insights-row">
         <div class="chart-card">
           <div class="chart-title chart-title-with-count">
-            <span><i class="fas fa-hourglass-half ct-icon"></i> Lead Age Cohorts</span>
+            <span><i class="fas fa-hourglass-half ct-icon"></i> Lead Aging Overview</span>
             <span class="chart-title-count" *ngIf="getLeadAgeCohorts() as cohorts">Leads Not Converted Into Customer: {{ cohorts.total }}</span>
           </div>
           <ng-container *ngIf="getLeadAgeCohorts() as cohorts">
@@ -198,6 +198,11 @@
                     <strong>{{ dashboardCounts.summaryKpis.quotes.directQuotes }}</strong>
                   </div>
                 </div>
+                <div class="pipeline-insight">
+                  {{ dashboardCounts.summaryKpis.quotes.quotesFromEnquiry }} of
+                  {{ dashboardCounts.summaryKpis.quotes.totalQuotes }}
+                  quotations came from enquiries
+                </div>
               </div>
 
               <div class="pipeline-kpi-card">
@@ -223,6 +228,11 @@
                     <span class="pipeline-split-label">Direct</span>
                     <strong>{{ dashboardCounts.summaryKpis.bookings.directBookings }}</strong>
                   </div>
+                </div>
+                <div class="pipeline-insight">
+                  {{ dashboardCounts.summaryKpis.bookings.bookingsFromQuote }} of
+                  {{ dashboardCounts.summaryKpis.bookings.totalBookings }}
+                  bookings came from quotations
                 </div>
               </div>
             </div>
@@ -254,7 +264,7 @@
               <tbody>
                 <tr *ngFor="let lead of getLeadsNoMeetingRows(); let i = index">
                   <td class="row-num">{{ i + 1 }}</td>
-                  <td><a class="link" (click)="navigateToPreCustomer(lead.PreCustomerMasterSid)">{{ lead.preCustomerName }}</a></td>
+                  <td><a class="link" (click)="navigateToLead(lead.PreCustomerMasterSid)">{{ lead.preCustomerName }}</a></td>
                   <td>{{ lead.contactPerson }}</td>
                   <td><a [href]="'tel:' + lead.phone">{{ lead.phone }}</a></td>
                   <td><a [href]="'mailto:' + lead.email">{{ lead.email }}</a></td>
@@ -343,7 +353,7 @@
               <tbody>
                 <tr *ngFor="let followUp of getMeetingsWithFollowupRows(); let i = index">
                   <td class="row-num">{{ i + 1 }}</td>
-                  <td><a class="link">{{ getDisplayName(followUp) }}</a></td>
+                  <td><a class="link" (click)="navigateToLeadOrCustomer(followUp)">{{ getDisplayName(followUp) }}</a></td>
                   <td>{{ formatMeetingDateTime(followUp.meetingDate) }}</td>
                   <td><span class="source-tag">{{ followUp.meetingType }}</span></td>
                   <td><span class="days-pill" [ngClass]="followUp.followUpStatus === 'Overdue' ? 'danger' : (followUp.followUpStatus === 'Due Today' ? 'warning' : 'ok')">{{ formatMeetingDateTime(followUp.followUpDate) }}</span></td>
@@ -378,7 +388,7 @@
               <tbody>
                 <tr *ngFor="let meeting of getMeetingsNotConvertedRows(); let i = index">
                   <td class="row-num">{{ i + 1 }}</td>
-                  <td><a class="link" (click)="navigateToPreCustomer(meeting.PreCustomerMasterSid)">{{ meeting.preCustomerName }}</a></td>
+                  <td><a class="link" (click)="navigateToLead(meeting.PreCustomerMasterSid)">{{ meeting.preCustomerName }}</a></td>
                   <td>{{ meeting.contactPerson }}</td>
                   <td><a [href]="'tel:' + meeting.phone">{{ meeting.phone }}</a></td>
                   <td><a [href]="'mailto:' + meeting.email">{{ meeting.email }}</a></td>
@@ -415,8 +425,8 @@
               <tbody>
                 <tr *ngFor="let customer of getCustomersNoQuoteRows(); let i = index">
                   <td class="row-num">{{ i + 1 }}</td>
-                  <td><a class="link" (click)="navigateToCustomer(customer.CustomerMasterSid)">{{ customer.CustomerName }}</a></td>
-                  <td><a class="link" *ngIf="customer.PreCustomerMasterSid" (click)="navigateToPreCustomer(customer.PreCustomerMasterSid)">{{ customer.preCustomerName }}</a></td>
+                  <td><a class="link" (click)="navigateToOrganization(customer.CustomerMasterSid)">{{ customer.CustomerName }}</a></td>
+                  <td><a class="link" *ngIf="customer.PreCustomerMasterSid" (click)="navigateToLead(customer.PreCustomerMasterSid)">{{ customer.preCustomerName }}</a></td>
                   <td>{{ customer.contactPerson }}</td>
                   <td><a [href]="'tel:' + customer.phone">{{ customer.phone }}</a></td>
                   <td><a [href]="'mailto:' + customer.email">{{ customer.email }}</a></td>

@@ -680,7 +680,7 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
 
 // Pipeline Path Breakdown
 .pipeline-shell {
-  min-height: 156px;
+  min-height: 0;
   display: flex;
   flex: 1;
 }
@@ -694,7 +694,7 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
   width: 100%;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 5px;
+  gap: 8px;
   align-content: stretch;
 }
 
@@ -702,11 +702,12 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
   border: 1px solid $border-main;
   border-radius: 12px;
   background: linear-gradient(180deg, #fcfdff, #f5f9fc);
-  padding: 9px 10px;
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  min-height: 72px;
+  gap: 8px;
+  min-height: 0;
+  justify-content: space-between;
 }
 
 .pipeline-kpi-head {
@@ -744,7 +745,7 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
 
 .pipeline-track {
   display: flex;
-  height: 8px;
+  height: 10px;
   border-radius: 999px;
   overflow: hidden;
   background: rgba($brand, 0.08);
@@ -760,25 +761,34 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
 .pipeline-split {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4px;
+  gap: 10px;
 }
 
 .pipeline-split-item {
   display: flex;
   align-items: center;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: $text-muted;
   gap: 6px;
 
   strong {
-    font-size: 12px;
+    font-size: 13px;
     color: $text-primary;
   }
 }
 
 .pipeline-split-label {
   color: $text-secondary;
+}
+
+.pipeline-insight {
+  padding-top: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  color: $text-secondary;
+  line-height: 1.35;
+  border-top: 1px dashed rgba($brand, 0.14);
 }
 
 // Shared legend styles

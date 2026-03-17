@@ -572,12 +572,23 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     return 'Bookings exist without corresponding quote volume in the selected range.';
   }
 
-  navigateToPreCustomer(sid: number): void {
-    this.router.navigate(['/crm/pre-customer/entry', sid]);
+  navigateToLead(sid: number): void {
+    this.router.navigate(['/crm/lead/entry', sid]);
   }
 
-  navigateToCustomer(sid: number): void {
-    this.router.navigate(['/master/customer/entry', sid]);
+  navigateToOrganization(sid: number): void {
+    this.router.navigate(['/master/organization/entry', sid]);
+  }
+
+  navigateToLeadOrCustomer(item: { LeadOrCustomer?: string; PreCustomerMasterSid?: number; CustomerMasterSid?: number }): void {
+    if (item.LeadOrCustomer === 'C' && item.CustomerMasterSid) {
+      this.navigateToOrganization(item.CustomerMasterSid);
+      return;
+    }
+
+    if (item.PreCustomerMasterSid) {
+      this.navigateToLead(item.PreCustomerMasterSid);
+    }
   }
 
   navigateToQuote(sid: number): void {
