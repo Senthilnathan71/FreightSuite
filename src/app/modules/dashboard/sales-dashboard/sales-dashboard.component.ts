@@ -22,7 +22,7 @@ import {
   FunnelCounts,
   LeadAgeCohorts,
   LeadNoMeeting,
-  LeadSourceEffectiveness,
+  LeadSourceDistribution,
   MeetingBucket,
   MeetingNotConverted,
   MeetingWithFollowup,
@@ -73,19 +73,6 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
   private readonly pageSize = 10;
   private readonly scrollThreshold = 96;
   private readonly searchDebounceMs = 300;
-  private readonly leadStatusOrder = [
-    'Discovery',
-    'Qualify',
-    'MeetingScheduled',
-    'MeetingCompleted',
-    'EnquiryGenerated',
-    'QuotationCreated',
-    'QuotationConfirmed',
-    'ContractSigned',
-    'DealWon',
-    'DealLost',
-    'CustomerCreated',
-  ];
   private readonly listSections: ListSection[] = [1, 3, 4, 5, 6, 7, 8];
   private readonly sectionSearchTimers: Partial<Record<ListSection, ReturnType<typeof setTimeout>>> = {};
 
@@ -126,7 +113,7 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     future: this.createSectionState<ScheduledMeeting>(),
   };
 
-  leadStatusDonutOptions: any = {};
+  leadSourceDonutOptions: any = {};
   funnelRows: FunnelRow[] = [];
 
   constructor(
@@ -470,15 +457,6 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     return approvedQuotes ? Math.round((bookingsFromQuote / approvedQuotes) * 1000) / 10 : 0;
   }
 
-  getLeadSourceRows(): LeadSourceEffectiveness[] {
-    return this.dashboardCounts?.charts?.leadSourceEffectiveness || [];
-  }
-
-  getMaxLeadSourceCount(): number {
-    const rows = this.getLeadSourceRows();
-    return rows.length > 0 ? Math.max(...rows.map((r) => r.totalLeads), 1) : 1;
-  }
-
   getLeadAgeCohorts(): LeadAgeCohorts | null {
     return this.dashboardCounts?.charts?.leadAgeCohorts || null;
   }
@@ -706,7 +684,7 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
 
   private buildChartsFromCounts(countsData: SalesDashboardCounts): void {
     this.buildFunnelChart(countsData.charts.funnelCounts);
-    this.buildLeadStatusDonut(countsData.charts.leadStatusDistribution || []);
+    this.buildLeadSourceDonut(countsData.charts.leadSourceDistribution || []);
   }
 
   private buildFunnelChart(counts: FunnelCounts): void {
@@ -807,39 +785,37 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     ].join('\n');
   }
 
-  private buildLeadStatusDonut(distribution: Array<{ status: string; count: number }>): void {
-    const sortedDistribution = [...distribution].sort((left, right) => {
-      const leftIndex = this.leadStatusOrder.indexOf(left.status);
-      const rightIndex = this.leadStatusOrder.indexOf(right.status);
-      const safeLeftIndex = leftIndex === -1 ? Number.MAX_SAFE_INTEGER : leftIndex;
-      const safeRightIndex = rightIndex === -1 ? Number.MAX_SAFE_INTEGER : rightIndex;
-      return safeLeftIndex - safeRightIndex;
-    });
-    const hasData = sortedDistribution.length > 0;
-    const chartData = hasData ? sortedDistribution : [{ status: 'NoData', count: 1 }];
-    const totalLeads = sortedDistribution.reduce((total, item) => total + item.count, 0);
+  private buildLeadSourceDonut(distribution: LeadSourceDistribution[]): void {
+    const normalizedDistribution = distribution
+      .map((item) => ({
+        source: item.source || 'Unknown',
+        count: item.count || 0,
+      }))
+      .sort((left, right) => right.count - left.count);
+    const hasData = normalizedDistribution.length > 0;
+    const chartData = hasData ? normalizedDistribution : [{ source: 'NoData', count: 1 }];
+    const totalLeads = normalizedDistribution.reduce((total, item) => total + item.count, 0);
 
-    const statusColors: Record<string, string> = {
-      Discovery: '#64748b',
-      Qualify: '#05608D',
-      MeetingScheduled: '#f59e0b',
-      MeetingCompleted: '#8b5cf6',
-      EnquiryGenerated: '#06b6d4',
-      QuotationCreated: '#f97316',
-      QuotationConfirmed: '#14b8a6',
-      ContractSigned: '#22c55e',
-      DealWon: '#16a34a',
-      DealLost: '#dc2626',
-      CustomerCreated: '#0ea5a4',
-      NoData: '#cbd5e1',
-    };
+    const palette = [
+      '#05608D',
+      '#06b6d4',
+      '#f59e0b',
+      '#16a34a',
+      '#f97316',
+      '#8b5cf6',
+      '#ec4899',
+      '#0ea5a4',
+      '#dc2626',
+      '#64748b',
+      '#84cc16',
+      '#14b8a6',
+    ];
+    const segmentColors = chartData.map((item, index) => item.source === 'NoData' ? '#cbd5e1' : palette[index % palette.length]);
 
-    const segmentColors = chartData.map((item) => statusColors[item.status] || '#94a3b8');
-
-    this.leadStatusDonutOptions = {
+    this.leadSourceDonutOptions = {
       series: chartData.map((item) => item.count),
       chart: { type: 'donut', height: 300 },
-      labels: chartData.map((item) => item.status === 'NoData' ? 'No data' : this.camelToWords(item.status)),
+      labels: chartData.map((item) => item.source === 'NoData' ? 'No data' : item.source),
       colors: segmentColors,
       legend: {
         position: 'right',
@@ -874,7 +850,7 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
               },
               total: {
                 show: true,
-                label: hasData ? 'Total Leads' : 'No lead data',
+                label: hasData ? 'Total Leads' : 'No source data',
                 fontSize: '11px',
                 fontWeight: 700,
                 color: '#ffffff',

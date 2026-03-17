@@ -66,7 +66,6 @@
       <div class="charts-row">
         <div class="chart-card">
           <div class="chart-title"><i class="fas fa-filter ct-icon"></i> Pipeline Funnel</div>
-          <div class="chart-subtitle">Distinct original leads by milestone. Stages include both lead-linked and customer-linked downstream records, and each stage respects the selected date range.</div>
           <div class="funnel-bars" *ngIf="funnelRows.length">
             <div class="funnel-row" *ngFor="let row of funnelRows; let rowIndex = index">
               <div class="funnel-stage-info">
@@ -89,38 +88,22 @@
           </div>
         </div>
         <div class="chart-card">
-          <div class="chart-title"><i class="fas fa-chart-pie ct-icon"></i> Lead Status Distribution</div>
+          <div class="chart-title"><i class="fas fa-chart-pie ct-icon"></i> Lead Acquisition Sources</div>
           <apx-chart
-            *ngIf="leadStatusDonutOptions.series?.length"
-            [series]="leadStatusDonutOptions.series"
-            [chart]="leadStatusDonutOptions.chart"
-            [labels]="leadStatusDonutOptions.labels"
-            [colors]="leadStatusDonutOptions.colors"
-            [legend]="leadStatusDonutOptions.legend"
-            [dataLabels]="leadStatusDonutOptions.dataLabels"
-            [plotOptions]="leadStatusDonutOptions.plotOptions"
-            [stroke]="leadStatusDonutOptions.stroke"
+            *ngIf="leadSourceDonutOptions.series?.length"
+            [series]="leadSourceDonutOptions.series"
+            [chart]="leadSourceDonutOptions.chart"
+            [labels]="leadSourceDonutOptions.labels"
+            [colors]="leadSourceDonutOptions.colors"
+            [legend]="leadSourceDonutOptions.legend"
+            [dataLabels]="leadSourceDonutOptions.dataLabels"
+            [plotOptions]="leadSourceDonutOptions.plotOptions"
+            [stroke]="leadSourceDonutOptions.stroke"
           ></apx-chart>
         </div>
       </div>
 
       <div class="insights-row">
-        <div class="chart-card">
-          <div class="chart-title"><i class="fas fa-bullseye ct-icon"></i> Lead Source Effectiveness</div>
-          <div class="source-bars" *ngIf="getLeadSourceRows().length; else noSourceData">
-            <div class="source-row" *ngFor="let src of getLeadSourceRows()">
-              <div class="source-label" [title]="src.source">{{ src.source || 'Unknown' }}</div>
-              <div class="source-track">
-                <div class="source-bar" [style.width.%]="(src.totalLeads / getMaxLeadSourceCount()) * 100">
-                  <span>{{ src.totalLeads }}</span>
-                </div>
-              </div>
-              <div class="source-rate" [ngClass]="src.conversionRate >= 50 ? 'rate-high' : (src.conversionRate >= 20 ? 'rate-mid' : 'rate-low')">{{ src.conversionRate }}%</div>
-            </div>
-          </div>
-          <ng-template #noSourceData><div class="empty-chart">No lead source data</div></ng-template>
-        </div>
-
         <div class="chart-card">
           <div class="chart-title"><i class="fas fa-hourglass-half ct-icon"></i> Lead Age Cohorts</div>
           <ng-container *ngIf="getLeadAgeCohorts() as cohorts">

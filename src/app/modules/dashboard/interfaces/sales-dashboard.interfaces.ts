@@ -246,8 +246,8 @@ export interface MeetingsBoardCounts {
   future: number;
 }
 
-export interface LeadStatusCount {
-  status: string;
+export interface LeadSourceDistribution {
+  source: string;
   count: number;
 }
 
@@ -269,7 +269,7 @@ export interface LeadAgeCohorts {
 export interface ChartData {
   funnelCounts: FunnelCounts;
   meetingsBoardCounts: MeetingsBoardCounts;
-  leadStatusDistribution: LeadStatusCount[];
+  leadSourceDistribution: LeadSourceDistribution[];
   leadSourceEffectiveness: LeadSourceEffectiveness[];
   leadAgeCohorts: LeadAgeCohorts;
 }
