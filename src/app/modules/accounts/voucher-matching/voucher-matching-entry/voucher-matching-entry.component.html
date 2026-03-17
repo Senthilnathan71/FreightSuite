@@ -426,9 +426,9 @@
                 </span>
               }
               @if(currencyAmountsMatch && exchangeDifference !== 0) {
-                <span class="fw-bold" [ngClass]="exchangeDifference < 0 ? 'text-success' : 'text-danger'">
+                <span class="fw-bold" [ngClass]="exchangeDifference > 0 ? 'text-success' : 'text-danger'">
                   <i class="fas fa-exchange-alt me-1"></i>
-                  Exchange {{ exchangeDifference > 0 ? 'Loss' : 'Gain' }}:
+                  Exchange {{ exchangeDifference > 0 ? 'Gain' : 'Loss' }}:
                   {{ (exchangeDifference > 0 ? exchangeDifference : -exchangeDifference) | number:'1.2-2' }}
                 </span>
               }
