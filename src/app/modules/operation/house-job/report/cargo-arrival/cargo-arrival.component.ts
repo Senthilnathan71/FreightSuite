@@ -1,13 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
-import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
-import { NumberFormatPipe } from 'src/app/core/pipes/number-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { LogoService } from 'src/app/core/services/logo.service';
@@ -87,7 +84,7 @@ export class CargoArrivalComponent {
     private activeModal: NgbActiveModal,
     private appSettingService : AppSettingsService,
     private masterService: MasterService,
-    private pdfService: PdfDownloadService,
+    private pdfMakeService: PdfMakeService,
     private spinner: NgxSpinnerService,
     private numberToWords: NumberToWordsService,
     public logoService : LogoService
@@ -197,44 +194,21 @@ export class CargoArrivalComponent {
 
 
     async generatePDFBlob(): Promise<Blob | null> {
-          const printContent = document.getElementById('printContent');
-          if (!printContent) {
-            return null;
-          }
-      
-          try {
-            const canvas = await html2canvas(printContent, {
-              scale: 2,
-              useCORS: true,
-              logging: false,
-              backgroundColor: '#ffffff'
-            });
-      
-            const imgWidth = 210;
-            const pageHeight = 297;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            let heightLeft = imgHeight;
-            let position = 0;
-      
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const imgData = canvas.toDataURL('image/png');
-      
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-      
-            while (heightLeft > 0) {
-              position = heightLeft - imgHeight;
-              pdf.addPage();
-              pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-              heightLeft -= pageHeight;
-            }
-      
-            return pdf.output('blob');
-          } catch (error) {
-            console.error('Error generating PDF blob:', error);
-            return null;
-          }
-        }
+    try {
+      const logo = this.pdfMakeService.getReportLogo();
+      return await this.pdfMakeService.generateCargoArrivalBlobFromApi(
+        this.housejobData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        this.getCargoArrivalPdfOptions()
+      );
+    } catch (error) {
+      console.error('Error generating cargo arrival PDF blob:', error);
+      return null;
+    }
+  }
 
 
         
@@ -273,16 +247,37 @@ printDiv(divId: string): void {
   setTimeout(async () => {
     this.spinner.show();
    try {
-      await this.pdfService.downloadBalancedPDF(
-        'printContent',
-        `CFS_Outturn_Report_${this.housejobData?.ShipmentNo || 'Report'}`,
-        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+      const logo = this.pdfMakeService.getReportLogo();
+      this.pdfMakeService.generateCargoArrivalFromApi(
+        this.housejobData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        this.getCargoArrivalPdfOptions()
       );
+      this.appSettingService.showSuccess('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('Cargo arrival PDF generation failed:', error);
+      this.appSettingService.showError('Error generating PDF. Please try again.');
     } finally {
       this.spinner.hide();
     }
   }, 50);
 }
+
+  private getCargoArrivalPdfOptions() {
+    return {
+      masterJobContainers: this.masterJobContainers || [],
+      withOrWithoutCharge: this.withOrWithoutCharge,
+      selectedFCLLCL: this.selectedFCLLCL || '',
+      currencyList: this.currencyList || [],
+      uomList: this.uomList || [],
+      containerTypeList: this.containerTypeList || [],
+      packageTypeList: this.packageTypeList || [],
+      portList: this.portList || [],
+      amountInWords: this.getAmountInWords()
+    };
+  }
 
 }

@@ -123,12 +123,12 @@ export class MatchingListReceiptPayemntComponent {
           cells: [
             { value: i === 0 ? v.VoucherNumber : '' },
             { value: i === 0 ? v.voucherName : '' },
-            { value: i === 0 ? this.formatDate(v.VoucherDate) : '' },
+            { value: i === 0 ? this.formatDate(v.VoucherDate) : '' , alignment:{horizontal:'center'} },
             { value: c.vouchermactingNo || '' },
-            { value: this.formatDate(c.VoucherMatchingDate) },
-            { value: c.CurrencyCode || '' },
+            { value: this.formatDate(c.VoucherMatchingDate) , alignment:{horizontal:'center'} },
+            { value: c.CurrencyCode || '' , alignment:{horizontal:'center'} },
             { value: this.formatNumber(c.ExRate) ?? 0 },
-            { value: c.DrCr || '' },
+            { value: c.DrCr || '' , alignment:{horizontal:'center'} },
             { value: this.formatNumber(c.Amount) ?? 0 },
             { value: this.formatNumber(c.LocalAmount) ?? 0 },
           ],
@@ -141,14 +141,7 @@ export class MatchingListReceiptPayemntComponent {
     if ((this.groupedData || []).length > 0) {
       rows.push({
         cells: [
-          { value: '' },
-          { value: '' },
-          { value: '' },
-          { value: '' },
-          { value: '' },
-          { value: '' },
-          { value: '' },
-          { value: 'TOTAL' },
+          { value: 'TOTAL' , colspan: 8 , alignment:{horizontal:'right'} },
           { value: this.formatNumber(this.grandTotalAmt) ?? 0 },
           { value: this.formatNumber(this.grandTotalLocalAmt) ?? 0 },
         ],
@@ -171,7 +164,7 @@ export class MatchingListReceiptPayemntComponent {
       },
       tableHeaders,
       rows,
-      columnWidths: [15, 15, 15, 20, 18, 10, 12, 6, 12, 12],
+      columnWidths: [18, 15, 15, 20, 18, 6, 12, 6, 12, 12],
     };
   }
 

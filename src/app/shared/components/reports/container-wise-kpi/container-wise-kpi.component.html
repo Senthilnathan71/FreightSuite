@@ -59,8 +59,8 @@
                         <th class="bg-transparent text-light text-center">Freight Amount (SGD)</th>
                         <!-- <th class="bg-transparent text-light">ETA POL Date</th> -->
                         <th class="bg-transparent text-light text-center">Freight Term</th>
-                        <th class="bg-transparent text-light text-center">DG Declaration on by container level</th>
                         <th class="bg-transparent text-light text-center">Booking Confirmation Date</th>
+                        <th class="bg-transparent text-light text-center">DG Declaration on by container level</th>
                         <th class="bg-transparent text-light text-center">DG Application on Received Date</th>
                         <th class="bg-transparent text-light text-center">DG Approval Date</th>
                         <th class="bg-transparent text-light text-center">BL Issued Date</th>
@@ -96,8 +96,8 @@
                         <td>{{ item.freightRevenue | number:'1.2-2' }}</td>
                         <!-- <td>{{ item.ETA | formatDate}}</td> -->
                         <td>{{ item.freightTerms || '' }}</td>
-                        <td class="text-center">{{ item.dgDelaration === 'true' ? 'Y' : 'N' }}</td>
                         <td></td>
+                        <td class="text-center">{{ item.dgDelaration === 'true' ? 'Y' : 'N' }}</td>
                         <td></td>
                         <td>{{item.dgAprrovelDate | formatDate}}</td>
                         <td></td>

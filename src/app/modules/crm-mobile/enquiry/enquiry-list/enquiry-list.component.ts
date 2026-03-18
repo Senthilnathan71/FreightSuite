@@ -229,7 +229,8 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
         status: item.status === 'A' ? 'Active' : 'Suspended',
         ShipmentExpectedDate: this.datePipe.transform(item.ShipmentExpectedDate) ?? '',
         formattedPOL : item.POL ? getConcatenatedPorts(item.POL?.PortName, item.POL?.PortCode) : '',
-        formattedPOD : item.POD ? getConcatenatedPorts(item.POD?.PortName, item.POD?.PortCode) : ''
+        formattedPOD : item.POD ? getConcatenatedPorts(item.POD?.PortName, item.POD?.PortCode) : '',
+        EnquiryDate: this.datePipe.transform(item.EnquiryDate) ?? '',
       }));
       this.enquiryItems = this.allItems;
       this.totalLengthOfCollection = response?.data?.totalCount || rawItems.length || 0;
@@ -333,6 +334,14 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
         filterable: true,
         visible: true,
 
+        dataType: 'string'
+      },
+      {
+        key: 'EnquiryDate',
+        label: 'Enquiry Date',
+        sortable: true,
+        filterable: true,
+        visible: true,
         dataType: 'string'
       },
       {

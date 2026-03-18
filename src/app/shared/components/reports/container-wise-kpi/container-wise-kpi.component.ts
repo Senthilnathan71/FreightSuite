@@ -80,8 +80,8 @@ export class ContainerWiseKpiComponent {
       { key: 'weight', label: 'Weight' },
       { key: 'freightRevenue', label: 'Freight Amount (SGD)' },
       { key: 'freightTerms', label: 'Freight Term' },
-      { key: 'dgDelaration', label: 'DG Declaration on by container level' },
       { key: 'bookingConfirmationDate', label: 'Booking Confirmation Date' },
+      { key: 'dgDelaration', label: 'DG Declaration on by container level' },
       {
         key: 'dgApplicationReceivedDate',
         label: 'DG Application on Received Date',
@@ -126,8 +126,8 @@ export class ContainerWiseKpiComponent {
         { value: this.formatNumber(item.weight) || 0 },
         { value: this.formatNumber(item.freightRevenue) || 0 },
         { value: item.freightTerms || '' },
-        { value: item.dgDelaration === 'true' ? 'Y' : 'N' },
         { value: '' }, // Booking Confirmation Date
+        { value: item.dgDelaration === 'true' ? 'Y' : 'N' },
         { value: '' }, // DG Application on Received Date
         {
           value: item.dgAprrovelDate

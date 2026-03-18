@@ -180,10 +180,10 @@ getSignedTotal(transactions: any[]): number {
       const cells: ExcelCell[] = [
         { value: item?.voucherNumber || '' },
         { value: this.formatDate(item?.voucherDate) },
-        { value: item?.voucherType || '' },
+        { value: item?.voucherType || '' , alignment:{horizontal:'center'}},
         { value: item?.naration || '' },
-        { value: item?.drCr || '' },
-        { value: item?.currencyCode || '' },
+        { value: item?.drCr || '',alignment:{horizontal:'center'} },
+        { value: item?.currencyCode || '' , alignment:{horizontal:'center'} },
         { value: this.formatNumber(item?.signedOriginalCurrency) },
         { value: this.formatNumber(item?.signedLocalAmt) },
         // { value: this.formatNumber(item?.signedOutstandingCurrency) },
@@ -195,7 +195,7 @@ getSignedTotal(transactions: any[]): number {
 
 
     const totalCells: ExcelCell[] = [
-      { value: 'TOTAL', colspan: 7 },
+      { value: 'TOTAL', colspan: 7 , alignment:{horizontal:'right'} },
       { value: this.formatNumber(this.getLocalTotal(transactions)) },
       // { value: '' },
       // { value: this.formatNumber(this.getSignedTotal(transactions)) },

@@ -286,14 +286,14 @@ export class OutstandingLocalComponent {
           cells: [
             { value: item?.voucherNumber || '' },
             { value: this.formatDate(item?.voucherDate) },
-            { value: item?.voucherType || '' },
+            { value: item?.voucherType || '' , alignment:{horizontal:'center'} },
             { value: item?.naration || '' },
-            { value: item?.drCr || '' },
+            { value: item?.drCr || '' , alignment:{horizontal:'center'} },
             { value: this.formatNumber(item?.signedOriginalCurrency || 0) },
             { value: this.formatNumber(item?.signedOutstandingCurrency || 0) },
             { value: this.formatNumber(item?.currencyWiseCumulative || 0) },
 
-            { value: item?.ageingDays || 0 }
+            { value: item?.ageingDays || 0 , alignment:{horizontal:'center'} }
           ],
           style: 'data'
         });
@@ -309,7 +309,7 @@ export class OutstandingLocalComponent {
             ),
             colspan: 4
           },
-          { value: 'Total', colspan: 1 },
+          { value: 'Total', colspan: 1 , alignment:{horizontal:'right'} },
 
           {
             value: this.formatNumber(

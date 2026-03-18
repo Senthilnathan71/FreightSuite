@@ -77,14 +77,14 @@ export class UnpostedVoucherListReportComponent {
 
   const rows: ExcelRow[] = (this.fullData?.tableData || []).map(item => ({
     cells: [
-      { value: item.branch || '' },
+      { value: item.branch || '' , alignment:{horizontal:'center'}},
       { value: item.voucherNo || '' },
       { value: this.formatDate(item.voucherDate) },
       { value: item.voucherType || '' },
       { value: item.party || '' },
       { value: item.createdBy || '' },
       { value: this.formatDate(item.createdOn) },
-      { value: item.postStatus || '' }
+      { value: item.postStatus || '' , alignment:{horizontal:'center'}}
     ],
     style: 'data'
   }));
@@ -103,7 +103,7 @@ export class UnpostedVoucherListReportComponent {
     },
     tableHeaders,
     rows,
-    columnWidths: [20, 20, 18, 18, 25, 20, 18, 15] // adjust widths as needed
+    columnWidths: [10, 24, 18, 18, 28, 22, 15, 10] // adjust widths as needed
   };
 }
 

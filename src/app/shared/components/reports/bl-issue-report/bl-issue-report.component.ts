@@ -66,13 +66,13 @@ export class BlIssueReportComponent {
   const rows: ExcelRow[] = (this.fullData?.data || []).map(item => {
     const cells: ExcelCell[] = [
       { value: item.HBLNo || '' },
-      { value: this.formatDate(item.HBLDate) },
+      { value: this.formatDate(item.HBLDate) , alignment:{horizontal:'center'} },
       { value: item.MBLNo || '' },
       { value: item.BookingNo || '' },
       { value: item.Shipper || '' },
       { value: item.Consignee || '' },
-      { value: item.POL || '' },
-      { value: item.POD || '' },
+      { value: item.POL || '' , alignment:{horizontal:'center'} },
+      { value: item.POD || '' , alignment:{horizontal:'center'} },
       { value: item.jobStatus || '' }
     ];
     return { cells, style: 'data' };

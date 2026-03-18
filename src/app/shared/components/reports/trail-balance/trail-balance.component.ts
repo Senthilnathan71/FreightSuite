@@ -377,7 +377,8 @@ export class TrailBalanceComponent {
         const subTotalCells: ExcelCell[] = [
           {
             value: 'Total',
-            colspan: showSubledger ? 5 : 4
+            colspan: showSubledger ? 5 : 4,
+            alignment:{horizontal:'right'}
           },
           { value: this.formatNumber(group.totals?.OpeningDebit) },
           { value: this.formatNumber(group.totals?.OpeningCredit) },
@@ -399,7 +400,8 @@ export class TrailBalanceComponent {
       const grandTotalCells: ExcelCell[] = [
         {
           value: 'Grand Total',
-          colspan: showSubledger ? 5 : 4
+          colspan: showSubledger ? 5 : 4,
+          alignment:{horizontal:'right'}
         },
         { value: this.formatNumber(this.data.grandTotal.TotalOpeningDebit) },
         { value: this.formatNumber(this.data.grandTotal.TotalOpeningCredit) },

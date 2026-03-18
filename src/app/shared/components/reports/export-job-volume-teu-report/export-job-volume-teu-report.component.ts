@@ -79,7 +79,7 @@ export class ExportJobVolumeTeuReportComponent {
       { value: item.portOfloading || '' },
       { value: item.portOfdischarge || '' },
       { value: item.portOfDestination || '' },
-      { value: item.TEUCount ?? 0 },
+      { value: item.TEUCount ?? 0  , alignment:{horizontal:"center"}},
       { value: this.formatNumber(item.weight ?? 0) },
       { value: this.formatNumber(item.chargebaleWt ?? 0) }
     ];
@@ -103,11 +103,11 @@ export class ExportJobVolumeTeuReportComponent {
     tableHeaders,
     rows,
     columnWidths: [
-      18, // Department
-      15, // Job No
-      18, // Mode of Transport
-      15, // Job Date
-      15, // ETD
+      16, // Department
+      25, // Job No
+      12, // Mode of Transport
+      14, // Job Date
+      14, // ETD
       25, // Delivery Agent
       20, // Carrier
       18, // POL

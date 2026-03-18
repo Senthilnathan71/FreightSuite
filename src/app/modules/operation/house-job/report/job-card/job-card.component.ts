@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
@@ -55,7 +55,7 @@ export class JobCardComponent implements OnChanges {
     private masterService: MasterService,
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
-    private pdfService: PdfDownloadService,
+    private pdfMakeService: PdfMakeService,
     public logoService : LogoService
   ) { }
 
@@ -373,18 +373,37 @@ getGroupedExpenseByParty() {
   setTimeout(async () => {
     this.spinner.show();
    try {
-      const quotationNumber = this.housejobData?.masterJob?.MasterJobNumber;
-      await this.pdfService.downloadBalancedPDF(
-        'printContent',
-         `Job_Card_${quotationNumber}`,
-        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+      const logo = this.pdfMakeService.getReportLogo();
+      this.pdfMakeService.generateJobCardFromApi(
+        this.housejobData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        this.getJobCardPdfOptions()
       );
+      this.appSettingService.showSuccess('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('Job card PDF generation failed:', error);
+      this.appSettingService.showError('Error generating PDF. Please try again.');
     } finally {
       this.spinner.hide();
     }
   }, 50);
 }
+
+  private getJobCardPdfOptions() {
+    return {
+      containerTypeList: this.containerTypeList || [],
+      currencyList: this.currencyList || [],
+      chargeList: this.chargeList || [],
+      profitSummary: this.profitSummary || [],
+      salesmenList: this.salemanList || [],
+      uomList: this.uomList || [],
+      portList: this.portList || [],
+      selectedDepartmentType: this.selectedDepartmentType || ''
+    };
+  }
 
   
 printDiv(divId: string): void {

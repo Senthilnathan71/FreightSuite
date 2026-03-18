@@ -65,12 +65,12 @@ export class LostCustomerReportComponent {
       cells: [
         { value: item.CustomerName || '' },
         { value: item.CustomerAddress || '' },
-        { value: item.ContactNo || '' },
+        { value: item.ContactNo || '' , alignment:{horizontal:'left'} },
         { value: item.BookingNo || '' },
-        { value: this.formatDate(item.BookingDateTime) },
+        { value: this.formatDate(item.BookingDateTime) , alignment:{horizontal:'center'} },
         { value: item.SalesmanName || '' },
         { value: this.formatNumber(item.GP) ?? 0 },
-        { value: item.days ?? 0 }
+        { value: item.days ?? 0 , alignment:{horizontal:'center'} }
       ],
       style: 'data'
     }));
@@ -91,7 +91,7 @@ export class LostCustomerReportComponent {
       },
       tableHeaders,
       rows,
-      columnWidths: [25, 25, 20, 20, 18, 20, 18, 12],
+      columnWidths: [25, 25, 20, 24, 14, 14, 18, 12],
       notes: ['Shipper/Customer who has booking earlier but no booking has been given between From and To Booking Date.']
     };
   }

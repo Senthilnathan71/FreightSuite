@@ -117,7 +117,12 @@ export class VatPayableComponent {
 
     rows.push({
       cells: [
-        { value: 'TOTAL', colspan: 6 },
+        {value:''},
+        {value:''},
+        {value:''},
+        {value: ''},
+        {value:''},
+        { value: 'TOTAL'},
         { value: this.formatNumber(totalTaxable) },
         { value: this.formatNumber(totalTax) }
       ],

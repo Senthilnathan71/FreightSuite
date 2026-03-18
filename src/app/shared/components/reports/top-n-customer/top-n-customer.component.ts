@@ -70,7 +70,7 @@ export class TopNCustomerComponent {
     data.forEach((item,index) => {
       rows.push({
         cells: [
-          {value: index + 1},
+          {value: index + 1 , alignment:{horizontal:'center'}},
           { value: item.customerName || '' },
           { value: this.formatNumber(item.GP) },
           { value: this.formatNumber(item.totalRevenue) },
@@ -78,7 +78,7 @@ export class TopNCustomerComponent {
           { value: this.formatNumber(item.Weight) },
           { value: this.formatNumber(item.netwt) },
           { value: this.formatNumber(item.chargeable) },
-          { value: item.noOfShipment || 0 }
+          { value: item.noOfShipment || 0 , alignment:{horizontal:'center'}}
         ],
         style: 'data'
       });

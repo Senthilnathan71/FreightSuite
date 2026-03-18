@@ -211,11 +211,11 @@ export class OutstandingReportComponent {
       rows.push({
         cells: [
           { value: item?.voucherNumber || '' },
-          { value: this.formatDate(item?.voucherDate) },
-          { value: item?.voucherType || '' },
+          { value: this.formatDate(item?.voucherDate) , alignment:{horizontal:'center'} },
+          { value: item?.voucherType || '' , alignment:{horizontal:'center'} },
           { value: item?.naration || '' },
-          { value: item?.drCr || '' },
-          { value: item?.currencyCode || '' },
+          { value: item?.drCr || '' , alignment:{horizontal:'center'} },
+          { value: item?.currencyCode || '' , alignment:{horizontal:'center'} },
           { value: this.formatNumber(item?.signedOriginalCurrency || 0) },
           { value: this.formatNumber(item?.signedOriginalLocal || 0) },
           { value: this.formatNumber(item?.signedOutstandingCurrency || 0) },
@@ -230,7 +230,7 @@ export class OutstandingReportComponent {
 
     rows.push({
       cells: [
-        { value: 'TOTAL :', colspan: 7 },
+        { value: 'TOTAL :', colspan: 7 , alignment:{horizontal:'right'} },
 
         { value: this.formatNumber(this.getLocalTotal(transactions)) },
         { value: '' },

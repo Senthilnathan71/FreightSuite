@@ -65,14 +65,14 @@ export class DoIssueListComponent {
 
     const rows: ExcelRow[] = (this.fullData?.data || []).map(item => {
       const cells: ExcelCell[] = [
-        { value: item.HBLNo || '' },
-        { value: this.formatDate(item.HBLDate) },
-        { value: item.MBLNo || '' },
+        { value: item.HBLNo || '' , alignment:{horizontal:'left'} },
+        { value: this.formatDate(item.HBLDate) , alignment:{horizontal:'center'} },
+        { value: item.MBLNo || '' , alignment:{horizontal:'left'} },
         { value: item.BookingNo || '' },
         { value: item.Shipper || '' },
         { value: item.Consignee || '' },
-        { value: item.POL || '' },
-        { value: item.POD || '' },
+        { value: item.POL || '' , alignment:{horizontal:'center'} },
+        { value: item.POD || '' , alignment:{horizontal:'center'} },
         { value: item.jobStatus || '' }
       ];
       return { cells, style: 'data' };
@@ -93,7 +93,7 @@ export class DoIssueListComponent {
       },
       tableHeaders,
       rows,
-      columnWidths: [20, 10, 20, 15, 25, 25,8,8, 10] // adjust widths as needed
+      columnWidths: [20, 10, 20, 20, 25, 25,7,7, 10] // adjust widths as needed
     };
   }
 

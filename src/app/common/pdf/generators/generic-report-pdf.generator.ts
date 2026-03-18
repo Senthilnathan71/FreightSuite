@@ -373,7 +373,7 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
   // Keep a visible gap between header parameter info and table content.
   const paramCount = exportConfig.reportHeader.additionalInfo?.length || 0;
   const paramRows = Math.ceil(paramCount / 2);
-  const topMargin = 155 + (paramRows * 10) + 10;
+  const topMargin = 142 + (paramRows * 11) + 6;
 
   return {
     pageSize: 'A4',
@@ -418,7 +418,19 @@ function buildPdfRow(row: ExcelRow, colCount: number): any[] {
       fontSize: 7
     };
     if (fillColor) pdfCell.fillColor = fillColor;
-    if (isNumeric) pdfCell.alignment = 'right';
+    if (cell.alignment?.horizontal) {
+      pdfCell.alignment = cell.alignment.horizontal;
+    } else if (isNumeric) {
+      pdfCell.alignment = 'right';
+    }
+    if (cell.alignment?.vertical) {
+      const verticalMap: Record<'top' | 'middle' | 'bottom', 'top' | 'middle' | 'bottom'> = {
+        top: 'top',
+        middle: 'middle',
+        bottom: 'bottom'
+      };
+      pdfCell.verticalAlignment = verticalMap[cell.alignment.vertical];
+    }
     if (cell.colspan && cell.colspan > 1) {
       pdfCell.colSpan = cell.colspan;
       cells.push(pdfCell);

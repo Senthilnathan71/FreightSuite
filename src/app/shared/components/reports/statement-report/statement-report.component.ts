@@ -153,8 +153,8 @@ export class StatementReportComponent {
     if (openingBalance !== 0) {
 
       const openingCells: ExcelCell[] = [
-        { value: 'Opening Balance' },
-        { value: this.formatDate(this.params?.FromDate) },
+        { value: 'Opening Balance' , alignment:{horizontal:'center'} },
+        { value: this.formatDate(this.params?.FromDate) , alignment:{horizontal:'center'} },
         { value: '' },
         { value: '' },
         { value: '' },
@@ -173,11 +173,11 @@ export class StatementReportComponent {
 
       const cells: ExcelCell[] = [
         { value: item?.voucherNumber || '' },
-        { value: this.formatDate(item?.voucherDate) },
-        { value: item?.voucherType || '' },
+        { value: this.formatDate(item?.voucherDate) , alignment:{horizontal:'center'} },
+        { value: item?.voucherType || '' , alignment:{horizontal:'center'} },
         { value: item?.naration || '' },
-        { value: item?.drCr?.toUpperCase() || '' },
-        { value: item?.currencyCode || '' },
+        { value: item?.drCr?.toUpperCase() || '' , alignment:{horizontal:'center'} },
+        { value: item?.currencyCode || '' , alignment:{horizontal:'center'} },
         { value: this.formatNumber(item?.signedOriginalCurrency) },
         { value: this.formatNumber(item?.signedLocalAmt) },
         { value: this.formatNumber(item?.signedOutstandingCurrency) },
@@ -194,7 +194,7 @@ export class StatementReportComponent {
     const totalCells: ExcelCell[] = [
 
       // TOTAL label should span first 6 columns
-      { value: 'TOTAL', colspan: 7 },
+      { value: 'TOTAL', colspan: 7 , alignment:{horizontal:'right'} },
 
       // Totals
       // { value: this.formatNumber(this.getTotal(transactions, 'signedOriginalCurrency')) },

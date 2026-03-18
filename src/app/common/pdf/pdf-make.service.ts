@@ -21,6 +21,9 @@ import {
   MasterJobDocumentType,
   QuotationDocumentType,
   InvoicePdfData,
+  JobCardPdfData,
+  ShipmentReportPdfData,
+  CargoArrivalPdfData,
   CreditNotePdfData,
   ReceiptPdfData,
   PaymentPdfData
@@ -34,6 +37,18 @@ import { generateMasterJobDocument, transformMasterJobApiData } from './generato
 import { generateGenericReportDocument, GenericReportPdfData } from './generators/generic-report-pdf.generator';
 import { ComplexReportExportConfig } from 'src/app/shared/excel-report-service';
 import { generateInvoiceDocument, transformInvoiceApiData } from './generators/invoice-pdf.generator';
+import {
+  generateShipmentReportDocument,
+  transformShipmentReportApiData
+} from './generators/shipment-report-pdf.generator';
+import {
+  generateJobCardDocument,
+  transformJobCardApiData
+} from './generators/job-card-pdf.generator';
+import {
+  generateCargoArrivalDocument,
+  transformCargoArrivalApiData
+} from './generators/cargo-arrival-pdf.generator';
 import { generateCreditNoteDocument, transformCreditNoteApiData } from './generators/credit-note-pdf.generator';
 import { generateReceiptDocument, transformReceiptApiData } from './generators/receipt-pdf.generator';
 import { generatePaymentDocument, transformPaymentApiData } from './generators/payment-pdf.generator';
@@ -483,6 +498,169 @@ export class PdfMakeService {
   ): Promise<Blob> {
     const pdfData = transformInvoiceApiData(apiData, company, branch, userData, logo, lookups, options);
     return this.generateInvoiceBlob(pdfData);
+  }
+
+  // ==================== Shipment Report ====================
+
+  generateShipmentReport(data: ShipmentReportPdfData): void {
+    const docDefinition = generateShipmentReportDocument(data);
+    const filename = `Shipment_${data.shipmentNo || 'Report'}.pdf`;
+    this.download(docDefinition, filename);
+  }
+
+  async generateShipmentReportBlob(data: ShipmentReportPdfData): Promise<Blob> {
+    const docDefinition = generateShipmentReportDocument(data);
+    return this.getBlob(docDefinition);
+  }
+
+  generateShipmentReportFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    options?: {
+      chargeList?: any[];
+      profitSummary?: any[];
+      customerWiseSummary?: { revenue?: any[]; cost?: any[] };
+      containerTypeList?: any[];
+      selectedFCLLCL?: string;
+      portList?: any[];
+    }
+  ): void {
+    const pdfData = transformShipmentReportApiData(apiData, company, branch, userData, logo, options);
+    this.generateShipmentReport(pdfData);
+  }
+
+  async generateShipmentReportBlobFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    options?: {
+      chargeList?: any[];
+      profitSummary?: any[];
+      customerWiseSummary?: { revenue?: any[]; cost?: any[] };
+      containerTypeList?: any[];
+      selectedFCLLCL?: string;
+      portList?: any[];
+    }
+  ): Promise<Blob> {
+    const pdfData = transformShipmentReportApiData(apiData, company, branch, userData, logo, options);
+    return this.generateShipmentReportBlob(pdfData);
+  }
+
+  // ==================== Job Card ====================
+
+  generateJobCard(data: JobCardPdfData): void {
+    const docDefinition = generateJobCardDocument(data);
+    const filename = `Job_Card_${data.jobInfo?.jobNo || 'Report'}.pdf`;
+    this.download(docDefinition, filename);
+  }
+
+  async generateJobCardBlob(data: JobCardPdfData): Promise<Blob> {
+    const docDefinition = generateJobCardDocument(data);
+    return this.getBlob(docDefinition);
+  }
+
+  generateJobCardFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    options?: {
+      containerTypeList?: any[];
+      currencyList?: any[];
+      chargeList?: any[];
+      profitSummary?: any[];
+      salesmenList?: any[];
+      uomList?: any[];
+      portList?: any[];
+      selectedDepartmentType?: string;
+    }
+  ): void {
+    const pdfData = transformJobCardApiData(apiData, company, branch, userData, logo, options);
+    this.generateJobCard(pdfData);
+  }
+
+  async generateJobCardBlobFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    options?: {
+      containerTypeList?: any[];
+      currencyList?: any[];
+      chargeList?: any[];
+      profitSummary?: any[];
+      salesmenList?: any[];
+      uomList?: any[];
+      portList?: any[];
+      selectedDepartmentType?: string;
+    }
+  ): Promise<Blob> {
+    const pdfData = transformJobCardApiData(apiData, company, branch, userData, logo, options);
+    return this.generateJobCardBlob(pdfData);
+  }
+
+  // ==================== Cargo Arrival ====================
+
+  generateCargoArrival(data: CargoArrivalPdfData): void {
+    const docDefinition = generateCargoArrivalDocument(data);
+    const filename = `Cargo_Arrival_${data.referenceInfo?.hblNo || data.referenceInfo?.bookingNo || 'Report'}.pdf`;
+    this.download(docDefinition, filename);
+  }
+
+  async generateCargoArrivalBlob(data: CargoArrivalPdfData): Promise<Blob> {
+    const docDefinition = generateCargoArrivalDocument(data);
+    return this.getBlob(docDefinition);
+  }
+
+  generateCargoArrivalFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    options?: {
+      masterJobContainers?: any[];
+      withOrWithoutCharge?: boolean;
+      selectedFCLLCL?: string;
+      currencyList?: any[];
+      uomList?: any[];
+      containerTypeList?: any[];
+      packageTypeList?: any[];
+      portList?: any[];
+      amountInWords?: string;
+    }
+  ): void {
+    const pdfData = transformCargoArrivalApiData(apiData, company, branch, userData, logo, options);
+    this.generateCargoArrival(pdfData);
+  }
+
+  async generateCargoArrivalBlobFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    options?: {
+      masterJobContainers?: any[];
+      withOrWithoutCharge?: boolean;
+      selectedFCLLCL?: string;
+      currencyList?: any[];
+      uomList?: any[];
+      containerTypeList?: any[];
+      packageTypeList?: any[];
+      portList?: any[];
+      amountInWords?: string;
+    }
+  ): Promise<Blob> {
+    const pdfData = transformCargoArrivalApiData(apiData, company, branch, userData, logo, options);
+    return this.generateCargoArrivalBlob(pdfData);
   }
 
 

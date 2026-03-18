@@ -95,26 +95,26 @@ export class UnbilledCostReportComponent {
             style: 'data',
             cells: isDetail
               ? [
-                { value: 'House' },
+                { value: 'House' , alignment:{horizontal:'center'} },
                 { value: item.branchName || '' },
                 { value: item.houseDept || '' },
-                { value: item.MBLNo || '' },
-                { value: item.HBLNo || '' },
+                { value: item.MBLNo || '' , alignment:{horizontal:'left'} },
+                { value: item.HBLNo || '' , alignment:{horizontal:'left'} },
                 { value: item.houseStatus || '' },
                 { value: item.bookingNo || '' },
                 { value: cr.chargeName || '' },
-                { value: cr.PPCC || '' },
-                { value: cr.CostDrCr || '' },
+                { value: cr.PPCC || '' , alignment:{horizontal:'center'} },
+                { value: cr.CostDrCr || '' , alignment:{horizontal:'center'} },
                 { value: this.formatNumber(cr.CostAmount) || 0 },
                 { value: this.formatNumber(cr.CostLocalAmount) || 0 },
                 { value: cr.partyName || '' }
               ]
               : [
-                { value: 'House' },
+                { value: 'House' , alignment:{horizontal:'center'} },
                 { value: item.branchName || '' },
                 { value: item.houseDept || '' },
-                { value: item.MBLNo || '' },
-                { value: item.HBLNo || '' },
+                { value: item.MBLNo || '' , alignment:{horizontal:'left'} },
+                { value: item.HBLNo || '' , alignment:{horizontal:'left'} },
                 { value: item.houseStatus || '' },
                 { value: item.bookingNo || '' },
                 { value: this.formatNumber(cr.CostAmount) || 0 },
@@ -132,25 +132,25 @@ export class UnbilledCostReportComponent {
             style: 'data',
             cells: isDetail
               ? [
-                { value: 'Master' },
+                { value: 'Master' , alignment:{horizontal:'center'} },
                 { value: item.branchName || '' },
                 { value: item.masterDept || '' },
-                { value: item.MBLNo || '' },
+                { value: item.MBLNo || '' , alignment:{horizontal:'left'} },
                 { value: '' },
                 { value: '' },
                 { value: item.bookingNo || '' },
                 { value: cr.chargeName || '' },
-                { value: cr.PPCC },
-                { value: cr.CostDrCr || '' },
+                { value: cr.PPCC , alignment:{horizontal:'center'} },
+                { value: cr.CostDrCr || '' , alignment:{horizontal:'center'} },
                 { value: this.formatNumber(cr.CostAmount) || 0 },
                 { value: this.formatNumber(cr.CostLocalAmount) || 0  },
                 { value: cr.partyName || '' }
               ]
               : [
-                { value: 'Master' },
+                { value: 'Master' , alignment:{horizontal:'center'} },
                 { value: item.branchName || '' },
                 { value: item.masterDept || '' },
-                { value: item.MBLNo || '' },
+                { value: item.MBLNo || '' , alignment:{horizontal:'left'} },
                 { value: '' },
                 { value: '' },
                 { value: item.bookingNo || '' },
@@ -168,26 +168,26 @@ export class UnbilledCostReportComponent {
           style: 'data',
           cells: isDetail
             ? [
-              { value: 'Booking' },
+              { value: 'Booking' , alignment:{horizontal:'center'} },
               { value: item.branchName || '' },
               { value: item.dept || '' },
-              { value: item.MBLno || '' },
-              { value: item.HBLno || '' },
+              { value: item.MBLno || '' , alignment:{horizontal:'left'} },
+              { value: item.HBLno || '' , alignment:{horizontal:'left'} },
               { value: '' },
               { value: item.bookingNo || '' },
               { value: item.chargeName || '' },
-              { value: item.PPCC || '' },
-              { value: item.CostDrCr || '' },
+              { value: item.PPCC || '' , alignment:{horizontal:'center'} },
+              { value: item.CostDrCr || '' , alignment:{horizontal:'center'} },
               { value: this.formatNumber(item.CostAmount) || 0 },
               { value: this.formatNumber(item.CostLocalAmount) || 0  },
               { value: item.partyName || '' }
             ]
             : [
-              { value: 'Booking' },
+              { value: 'Booking' , alignment:{horizontal:'center'} },
               { value: item.branchName || '' },
               { value: item.dept || '' },
-              { value: item.MBLno || '' },
-              { value: item.HBLno || '' },
+              { value: item.MBLno || '' , alignment:{horizontal:'left'} },
+              { value: item.HBLno || '' , alignment:{horizontal:'left'} },
               { value: '' },
               { value: item.bookingNo || '' },
               { value: this.formatNumber(item.CostAmount) || 0 },
@@ -200,8 +200,8 @@ export class UnbilledCostReportComponent {
 
     // ================= COLUMN WIDTHS =================
     const columnWidths = isDetail
-      ? [8, 12, 10, 12, 12, 12, 12, 15, 8, 8, 12, 12, 15]
-      : [8, 12, 10, 12, 12, 12, 12, 12, 12, 15];
+      ? [6, 6, 7, 12, 16, 12, 16, 15, 8, 4, 12, 12, 15]
+      : [6, 6, 8, 14, 16, 12, 16, 12, 12, 16];
 
     // ================= RETURN =================
     return {

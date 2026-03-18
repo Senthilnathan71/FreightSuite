@@ -198,7 +198,7 @@ export class Vat210Component {
      ✅ VOUCHER SUMMARY (2 Columns Like HTML)
      ====================================================== */
 
-  rows.push(this.sectionRow('VOUCHER SUMMARY'));
+  rows.push(this.twoColumnHeaderRow('Particulars', 'Voucher Count'));
 
   rows.push({
     cells: [
@@ -239,7 +239,9 @@ export class Vat210Component {
      ✅ SALES (OUTWARDS)
      ====================================================== */
 
-  rows.push(this.sectionRow('SALES (OUTWARDS)'));
+  rows.push(this.blankRow());
+  rows.push(this.threeColumnHeaderRow('Particulars', 'Taxable Amount', 'Tax Amount'));
+  rows.push(this.sectionRow('Sales (Outwards) :'));
 
   // Local Supplies
   rows.push(this.subSectionRow('Local Supplies'));
@@ -290,7 +292,8 @@ export class Vat210Component {
      ✅ PURCHASES (INWARDS)
      ====================================================== */
 
-  rows.push(this.sectionRow('PURCHASES (INWARDS)'));
+  rows.push(this.blankRow());
+  rows.push(this.sectionRow('Purchases (Inwards) :'));
 
   // Local Purchases
   rows.push(this.subSectionRow('Local Purchases'));
@@ -346,18 +349,13 @@ export class Vat210Component {
     style: 'grandTotal'
   });
 
-    rows.push({
-    cells: [
-    { value: 'PAYMENT DATE', colspan: 2 },
-    {
-      value:
-        this.param?.FromDate && this.param?.ToDate
-          ? `${this.formatDate(this.param.FromDate)} - ${this.formatDate(this.param.ToDate)}`
-          : '',
-         alignment: { horizontal: 'right' }
-    }
-  ]
-  });
+  rows.push(this.blankRow());
+  rows.push(this.paymentHeaderRow(
+    'Payment Details',
+    this.param?.FromDate && this.param?.ToDate
+      ? `${this.formatDate(this.param.FromDate)} - ${this.formatDate(this.param.ToDate)}`
+      : ''
+  ));
 
   rows.push({
     cells: [
@@ -410,6 +408,7 @@ export class Vat210Component {
     },
 
     tableHeaders,
+    includeTableHeaders: false,
     rows,
 
     columnWidths: [45, 20, 20],
@@ -437,7 +436,45 @@ export class Vat210Component {
   private subSectionRow(title: string): ExcelRow {
     return {
       cells: [{ value: title, colspan: 3 }],
+      style: 'data'
+    };
+  }
 
+  private twoColumnHeaderRow(col1: string, col2: string): ExcelRow {
+    return {
+      cells: [
+        { value: col1, colspan: 2, alignment: { horizontal: 'left' } },
+        { value: col2, alignment: { horizontal: 'center' } }
+      ],
+      style: 'header'
+    };
+  }
+
+  private threeColumnHeaderRow(col1: string, col2: string, col3: string): ExcelRow {
+    return {
+      cells: [
+        { value: col1, alignment: { horizontal: 'left' } },
+        { value: col2, alignment: { horizontal: 'center' } },
+        { value: col3, alignment: { horizontal: 'center' } }
+      ],
+      style: 'header'
+    };
+  }
+
+  private paymentHeaderRow(label: string, value: string): ExcelRow {
+    return {
+      cells: [
+        { value: label, colspan: 2, alignment: { horizontal: 'left' } },
+        { value, alignment: { horizontal: 'right' } }
+      ],
+      style: 'header'
+    };
+  }
+
+  private blankRow(): ExcelRow {
+    return {
+      cells: [{ value: '', colspan: 3 }],
+      style: 'data'
     };
   }
 

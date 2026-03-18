@@ -55,7 +55,7 @@ export class TradelaneProfitabilityComponent {
 
   getExcelData(): ComplexReportExportConfig {
     const tableHeaders: ExcelHeader[] = [
-      { key: 'refNo', label: 'Ref No' },
+      { key: 'bookingNo', label: 'Booking No' },
       { key: 'revenue', label: 'Revenue' },
       { key: 'cost', label: 'Cost' },
       { key: 'profit', label: 'Profit' },
@@ -128,7 +128,7 @@ export class TradelaneProfitabilityComponent {
         route.masterRows.forEach(item => {
           rows.push({
             cells: [
-              { value: item.MBLNo || '' },
+              { value: item.MBLNo || '' , alignment:{horizontal:'left'} },
               { value: this.formatNumber(item.revenueLocalAmt ?? 0) },
               { value: this.formatNumber(item.costLocalAmt ?? 0) },
               { value: this.formatNumber(item.profit ?? 0) },
@@ -169,7 +169,7 @@ export class TradelaneProfitabilityComponent {
         route.houseRows.forEach(item => {
           rows.push({
             cells: [
-              { value: item.HBLNo || '' },
+              { value: item.HBLNo || '' , alignment:{horizontal:'left'} },
               { value: this.formatNumber(item.revenueLocalAmt ?? 0) },
               { value: this.formatNumber(item.costLocalAmt ?? 0) },
               { value: this.formatNumber(item.profit ?? 0) },

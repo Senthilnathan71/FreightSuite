@@ -245,6 +245,264 @@ export interface HouseJobSummary {
 }
 
 // =====================
+// SHIPMENT REPORT PDF DATA
+// =====================
+export interface ShipmentReportPdfData extends PdfDocumentBase {
+  reportTitle: string;
+  shipmentNo?: string;
+  selectedFclLcl?: string;
+  parties: {
+    customerName?: string;
+    customerAddress?: string;
+    shipperName?: string;
+    shipperAddress?: string;
+    consigneeName?: string;
+    consigneeAddress?: string;
+    notifyName?: string;
+    notifyAddress?: string;
+  };
+  shipmentInfo: {
+    shipmentNo?: string;
+    mblNo?: string;
+    hblNo?: string;
+    jobNo?: string;
+    placeOfReceipt?: string;
+    portOfLoading?: string;
+    portOfReceipt?: string;
+    portOfDischarge?: string;
+    finalDestination?: string;
+    placeOfDelivery?: string;
+    etd?: Date | string;
+    eta?: Date | string;
+    carrier?: string;
+    shipmentTerms?: string;
+    vesselName?: string;
+    voyageNo?: string;
+    freightTerms?: string;
+  };
+  products: ShipmentProductPdfRow[];
+  productTotals: {
+    totalPackages: number;
+    totalGrossWeight: number;
+    totalNetWeight: number;
+    totalVolume: number;
+  };
+  charges: ShipmentChargePdfRow[];
+  chargeTotals: {
+    totalPCurrRevenue: number;
+    totalPCurrExpense: number;
+    totalPCurrGP: number;
+    totalLocalRevenue: number;
+    totalLocalExpense: number;
+    totalLocalGP: number;
+  };
+  revenueSummary: ShipmentPartyAmountRow[];
+  expenseSummary: ShipmentPartyAmountRow[];
+  summaryTotals: {
+    totalRevenue: number;
+    totalExpense: number;
+  };
+}
+
+export interface ShipmentProductPdfRow {
+  containerNo?: string;
+  containerType?: string;
+  commodity?: string;
+  noOfPackage?: number;
+  grossWeight?: number;
+  netWeight?: number;
+  volume?: number;
+}
+
+export interface ShipmentChargePdfRow {
+  chargeName?: string;
+  pCurrRevenue?: number;
+  pCurrExpense?: number;
+  pCurrGP?: number;
+  localRevenue?: number;
+  localExpense?: number;
+  localGP?: number;
+}
+
+export interface ShipmentPartyAmountRow {
+  customerName?: string;
+  amount?: number;
+}
+
+// =====================
+// JOB CARD PDF DATA
+// =====================
+export interface JobCardPdfData extends PdfDocumentBase {
+  reportTitle: string;
+  selectedDepartmentType?: string;
+  parties: {
+    clientName?: string;
+    clientAddress?: string;
+    shipperName?: string;
+    shipperAddress?: string;
+    consigneeName?: string;
+    consigneeAddress?: string;
+    forwarderName?: string;
+    forwarderAddress?: string;
+  };
+  jobInfo: {
+    jobNo?: string;
+    houseNo?: string;
+    masterNo?: string;
+    pol?: string;
+    pod?: string;
+    fpd?: string;
+    serviceType?: string;
+    salesPerson?: string;
+    placeOfReceipt?: string;
+    placeOfDelivery?: string;
+    eta?: Date | string;
+    etd?: Date | string;
+    vesselOrFlight?: string;
+    carrier?: string;
+    freightTerms?: string;
+  };
+  products: JobCardProductPdfRow[];
+  productTotals: {
+    totalLength: number;
+    totalWidth: number;
+    totalHeight: number;
+    totalVolumetric: number;
+    totalPackages: number;
+    totalGrossWeight: number;
+    totalVolume: number;
+    totalNetWeight: number;
+  };
+  profitSummary: JobCardProfitPdfRow[];
+  profitTotals: {
+    totalSales: number;
+    totalCost: number;
+    profit: number;
+  };
+  costRevenueCharges: JobCardChargePdfRow[];
+  revenueByParty: JobCardPartyAmountRow[];
+  expenseByParty: JobCardPartyAmountRow[];
+  internalRemarks?: string;
+}
+
+export interface JobCardProductPdfRow {
+  commodity?: string;
+  containerNo?: string;
+  containerType?: string;
+  length?: number;
+  width?: number;
+  height?: number;
+  volumetric?: number;
+  noOfPackage?: number;
+  grossWeight?: number;
+  volume?: number;
+  netWeight?: number;
+}
+
+export interface JobCardProfitPdfRow {
+  chargeName?: string;
+  totalSales?: number;
+  totalCost?: number;
+  profit?: number;
+}
+
+export interface JobCardChargePdfRow {
+  chargeName?: string;
+  unit?: string;
+  revenueCurrency?: string;
+  revenueExchangeRate?: number;
+  revenueRate?: number;
+  revenueLocalAmount?: number;
+  costCurrency?: string;
+  costExchangeRate?: number;
+  costRate?: number;
+  costLocalAmount?: number;
+}
+
+export interface JobCardPartyAmountRow {
+  party?: string;
+  amount?: number;
+}
+
+// =====================
+// CARGO ARRIVAL PDF DATA
+// =====================
+export interface CargoArrivalPdfData extends PdfDocumentBase {
+  reportTitle: string;
+  withOrWithoutCharge: boolean;
+  selectedFclLcl?: string;
+  customerBlock?: string;
+  referenceInfo: {
+    hblNo?: string;
+    hblDate?: Date | string;
+    bookingNo?: string;
+  };
+  parties: {
+    shipperName?: string;
+    shipperAddress?: string;
+    consigneeName?: string;
+    consigneeAddress?: string;
+    notifyName?: string;
+    notifyAddress?: string;
+    goodsAvailableAt?: string;
+  };
+  releaseInfo: {
+    releaseType?: string;
+    clearedBy?: string;
+    oceanBillOfLading?: string;
+    goodsDescription?: string;
+    commodity?: string;
+    orderReference?: string;
+    finalDestination?: string;
+    marksAndNumber?: string;
+  };
+  routingInfo: {
+    mode?: string;
+    vessel?: string;
+    voyage?: string;
+    finalDestination?: string;
+    portOfLoading?: string;
+    portOfDischarge?: string;
+    etd?: Date | string;
+    eta?: Date | string;
+  };
+  fclContainers: CargoArrivalContainerPdfRow[];
+  lclSummary: {
+    noOfPackages?: number;
+    grossWeight?: number;
+    netWeight?: number;
+    volume?: number;
+  };
+  charges: CargoArrivalChargePdfRow[];
+  chargeTotals: {
+    totalPerUnit: number;
+    totalAmount: number;
+    totalLocalAmount: number;
+  };
+  amountInWords?: string;
+  signatoryName?: string;
+}
+
+export interface CargoArrivalContainerPdfRow {
+  containerNo?: string;
+  containerType?: string;
+  seal?: string;
+  packageType?: string;
+  grossWeight?: number;
+  volume?: number;
+}
+
+export interface CargoArrivalChargePdfRow {
+  chargeDescription?: string;
+  unit?: string;
+  currency?: string;
+  exchangeRate?: number;
+  perUnit?: number;
+  amount?: number;
+  localAmount?: number;
+}
+
+// =====================
 // INVOICE PDF DATA
 // =====================
 export interface InvoicePdfData extends PdfDocumentBase {

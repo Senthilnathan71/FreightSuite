@@ -167,10 +167,10 @@ export class ShipmentSummaryReportComponent {
         { value: item.localShipment || 0 },
         { value: item.totalShipment || 0 },
         { value: item.NoofPkg || 0 },
-        { value: item.weight || 0 },
-        { value: item.Volumetric || 0 },
-        { value: item.volume || 0 },
-        { value: item.chargeable || 0 },
+        { value: this.formatNumber(item.weight || 0) },
+        { value: this.formatNumber(item.Volumetric || 0) },
+        { value: this.formatNumber(item.volume || 0) },
+        { value: this.formatNumber(item.chargeable || 0) },
         { value: item.nofcontainer || 0 },
         { value: item.containerNoList || '' },
         { value: item.numberOfTwentyFt || 0 },
@@ -181,8 +181,8 @@ export class ShipmentSummaryReportComponent {
         { value: item.Notify || '' }, 
         { value: item.Forwarder || '' },
         { value: item.houseStatus || '' },
-        { value: item.transhipmentVol || 0 },
-        { value: item.localShipmentVol || 0 }
+        { value: this.formatNumber(item.transhipmentVol || 0) },
+        { value: this.formatNumber(item.localShipmentVol || 0) }
       ];
       return { cells, style: 'data' };
     });
@@ -220,5 +220,16 @@ export class ShipmentSummaryReportComponent {
   }
 
 
+private formatNumber(value: any): string {
+  if (value === null || value === undefined) return '';
+
+  const num = Number(value);
+  if (isNaN(num)) return '';
+
+  return num.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
 
 }
