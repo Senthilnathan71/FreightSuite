@@ -1518,7 +1518,7 @@ tr:hover td { background: rgba($brand, 0.03); }
   }
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 991.98px) {
   .charts-row { grid-template-columns: 1fr; }
   .insights-row { grid-template-columns: 1fr; }
   .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
