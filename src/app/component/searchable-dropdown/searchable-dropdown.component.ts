@@ -159,7 +159,7 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
       this.columnWidths[index] = Math.max(this.columnWidths[index], estimatedWidth);
     });
 
-    this.columnWidths = this.columnWidths.map((width) => width + 24);
+    this.columnWidths = this.columnWidths.map((width) => Math.min(width + 24, 200));
   }
 
   searchFn = (term: string, item: any): boolean => {
@@ -197,7 +197,8 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
 
     // Cap panel width at viewport width minus margins
     const maxWidth = windowWidth - 32;
-    const panelWidth = Math.min(Math.max(totalContentWidth, 400), maxWidth);
+    const minWidth = Math.max(rect.width, 200);
+    const panelWidth = Math.min(Math.max(totalContentWidth, minWidth), maxWidth);
 
     const panels = document.querySelectorAll('.ng-dropdown-panel');
     const dropdownPanel = panels[panels.length - 1] as HTMLElement;
