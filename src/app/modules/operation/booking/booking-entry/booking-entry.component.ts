@@ -4532,7 +4532,8 @@ deepEqual(obj1: any, obj2: any): boolean {
     ETA: selectedVoyage?.ETA ? new Date(selectedVoyage.ETA) : (this.b['ETA']?.value ? new Date(this.b['ETA']?.value) : null),
     CutOffDate: selectedVoyage?.PortCutoff ? new Date(selectedVoyage.PortCutoff) : (this.b['CutOffDate']?.value ? new Date(this.b['CutOffDate']?.value): null),
     shipmentList: shipmentList,
-    screenName : this.selectedDepartmentType === "AIR" ? "Master Air Waybill" : "Master Job"
+    screenName : this.selectedDepartmentType === "AIR" ? "Master Air Waybill" : "Master Job",
+    sourceScreen: 'Booking'
   };
 
   console.log('Generate Job Payload:', payload);
@@ -4561,7 +4562,7 @@ deepEqual(obj1: any, obj2: any): boolean {
     },
     error: (error) => {
       this.spinner.hide();
-      this.appSettingService.showError('Failed to generate master job');
+      this.appSettingService.showError(error?.error?.message || 'Failed to generate master job');
       console.error('Error generating master job:', error);
     }
   });

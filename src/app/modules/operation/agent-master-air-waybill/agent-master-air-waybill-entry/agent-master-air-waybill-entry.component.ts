@@ -159,9 +159,11 @@ selectedCustomer: any;
 notifyManuallyChanged = false;
 fyMinDate: NgbDateStruct | null = null;
 fyMaxDate: NgbDateStruct | null = null;
-mawbStockList: any[] = [];
-mawbStockSource: 'ALLOCATED' | 'FREE' | 'NONE' | null = null;
-isMawbDropdownDisabled = false;
+  mawbStockList: any[] = [];
+  mawbStockSource: 'ALLOCATED' | 'FREE' | 'NONE' | null = null;
+  isMawbDropdownDisabled = false;
+  isMawbStockAllocationEnabled = false;
+  allowManualMawbEntryOnAutoAllocationError = false;
 mawbStockLookupConfig = {
   displayFields: ['MasterBillNumber', 'AgentName'],
   displayLabels: ['MAWB', 'AirLine'],
@@ -1460,16 +1462,39 @@ loadHeaderMandatoryParts() {
     ),
     customers: this.operationService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(err => of([]))),
     ports: this.operationService.getAllPorts().pipe(catchError(err => of({ data: [] }))),
+    mawbStockAllocationConfig: this.masterService.getConfigurationValue(CompanyMasterSid, 'MawbStockAllocation').pipe(catchError(() => of(null))),
     
   }).pipe(tap(({ 
-      departments, customers, ports }) => {
+      departments, customers, ports, mawbStockAllocationConfig }) => {
     if (!this.isEditMode) {
       this.spinner.hide();
     }
     this.departmentList = departments.data || [];
     this.customerList = customers;
     this.portList = (ports.data || []).map(p => ({ ...p, Country: p.countryMaster?.countryName }));
+    this.isMawbStockAllocationEnabled = this.parseCompanyBoolean(mawbStockAllocationConfig);
   }));
+}
+
+private parseCompanyBoolean(value: any): boolean {
+  if (value === true || value === false) {
+    return value;
+  }
+
+  const normalized = String(value ?? '').trim().toUpperCase();
+  return ['Y', 'YES', 'TRUE', '1'].includes(normalized);
+}
+
+private enableManualMawbEntryFallback(message?: string): void {
+  this.allowManualMawbEntryOnAutoAllocationError = true;
+  this.houseJobForm.get('MBLNo')?.enable();
+  this.houseJobForm.get('MBLNo')?.setValidators([Validators.required, Validators.maxLength(50)]);
+  this.houseJobForm.get('MBLNo')?.updateValueAndValidity();
+  this.b['isMawbFreeText']?.setValue(true);
+  this.isMawbDropdownDisabled = true;
+  this.appSettingService.showWarning(
+    message || 'No allocated/customer/common/carrier MAWB stock found. Enter MAWB manually.'
+  );
 }
 
 loadHeaderLookups() {
@@ -2444,7 +2469,11 @@ onCurrencyChange(event: any) {
             this.router.navigate(['/operation/agent-master-air-waybill/list']);
           }
         } else {
-          this.appSettingService.showError(resp.message || 'Error creating Agent Master Air Waybill.');
+          if (resp.message?.includes('No MAWB stock available for auto allocation')) {
+            this.enableManualMawbEntryFallback(resp.message);
+          } else {
+            this.appSettingService.showError(resp.message || 'Error creating Agent Master Air Waybill.');
+          }
           console.error('Create error:', resp.message);
         }
       },
@@ -2452,7 +2481,11 @@ onCurrencyChange(event: any) {
         this.isSubmitting = false;
         this.isSaving = false;
         this.isLoading = false;
-        this.appSettingService.showError('Failed to create Agent Master Air Waybill. Please try again.');
+        if (err.error?.message?.includes('No MAWB stock available for auto allocation')) {
+          this.enableManualMawbEntryFallback(err.error?.message);
+        } else {
+          this.appSettingService.showError('Failed to create Agent Master Air Waybill. Please try again.');
+        }
         console.error('Create API error:', err);
       }
     });
@@ -2471,7 +2504,11 @@ onCurrencyChange(event: any) {
             this.router.navigate(['/operation/agent-master-air-waybill/entry', this.HouseJobSid]);
           });
         } else {
-          this.appSettingService.showError('Error updating Agent Master Air Waybill.');
+          if (resp.message?.includes('No MAWB stock available for auto allocation')) {
+            this.enableManualMawbEntryFallback(resp.message);
+          } else {
+            this.appSettingService.showError(resp.message || 'Error updating Agent Master Air Waybill.');
+          }
           console.error(resp.message);
         }
       },
@@ -2479,7 +2516,11 @@ onCurrencyChange(event: any) {
         this.isSubmitting = false;
         this.isSaving = false;
         this.isLoading = false;
-        this.appSettingService.showError('Failed to update Agent Master Air Waybill.');
+        if (err.error?.message?.includes('No MAWB stock available for auto allocation')) {
+          this.enableManualMawbEntryFallback(err.error?.message);
+        } else {
+          this.appSettingService.showError('Failed to update Agent Master Air Waybill.');
+        }
         console.error(err);
       }
     });
@@ -2554,81 +2595,77 @@ private getAgentNameById(agentId: number): string {
     this.blClauseOptions = [];
     this.o['BlClause']?.setValue('');
     this.handleHBLNoField('');
-    
-    // Reset MAWB fields
     this.b['isMawbFreeText']?.setValue(false);
     this.mawbStockList = [];
+    this.mawbStockSource = 'NONE';
     this.isMawbDropdownDisabled = false;
+    this.allowManualMawbEntryOnAutoAllocationError = false;
     return;
   }
-  
-  // Set department properties
+
   this.selectedDepartment = department;
   this.selectedDepartmentType = department.departmentType ? department.departmentType.toUpperCase() : '';
   this.handleHBLNoField(department.ExportImport);
   this.filterTabs();
-  this.selectedFCLLCL = this.selectedDepartmentType === "SEA" 
-    ? (department.FCLLCL ? department.FCLLCL.toUpperCase() : "LCL") 
-    : "AIR";
+  this.selectedFCLLCL = this.selectedDepartmentType === 'SEA'
+    ? (department.FCLLCL ? department.FCLLCL.toUpperCase() : 'LCL')
+    : 'AIR';
 
-  // Handle MAWB field based on department type
   const mblNoControl = this.houseJobForm.get('MBLNo');
+  const isAirExport = department.ExportImport?.toUpperCase() === 'EXPORT';
+  const isAirImport = department.ExportImport?.toUpperCase() === 'IMPORT';
+
   this.b['isMawbFreeText']?.setValue(false);
-  
+  this.mawbStockList = [];
+  this.mawbStockSource = 'NONE';
+  this.isMawbDropdownDisabled = this.selectedDepartmentType !== 'AIR';
+  this.allowManualMawbEntryOnAutoAllocationError = false;
+
   if (this.selectedDepartmentType === 'AIR') {
-    const isAirExport = department.ExportImport?.toUpperCase() === 'EXPORT';
-    const isAirImport = department.ExportImport?.toUpperCase() === 'IMPORT';
-    
-    if (this.isEditMode) {
-      // In edit mode, enable for editing
+    if (isAirImport) {
       mblNoControl?.enable();
-      
-      if (isAirImport) {
-        // Air Import - required
-        mblNoControl?.setValidators([Validators.required, Validators.maxLength(50)]);
-        // this.appSettingService?.showInfo('MAWB is required for Air Import');
-      } else if (isAirExport) {
-        // Air Export - required in edit mode (must have MAWB to edit)
-        mblNoControl?.setValidators([Validators.required, Validators.maxLength(50)]);
-      } else {
-        mblNoControl?.setValidators([Validators.maxLength(50)]);
-      }
+      mblNoControl?.setValidators([Validators.required, Validators.maxLength(50)]);
+      this.isMawbDropdownDisabled = true;
+    } else if (isAirExport && !this.isMawbStockAllocationEnabled) {
+      mblNoControl?.enable();
+      mblNoControl?.setValidators(
+        this.isEditMode
+          ? [Validators.required, Validators.maxLength(50)]
+          : [Validators.maxLength(50)]
+      );
+      this.isMawbDropdownDisabled = false;
     } else {
-      // Create mode
-      if (isAirExport) {
-        // Air Export - disable (auto-allocated)
-        mblNoControl?.disable();
-        mblNoControl?.clearValidators();
-        if (!this.houseJobForm.get('MBLNo')?.value) {
-          mblNoControl?.setValue('');
-        }
-      } else if (isAirImport) {
-        // Air Import - enable, required
+      mblNoControl?.setValidators([Validators.maxLength(50)]);
+      this.isMawbDropdownDisabled = true;
+
+      if (this.isEditMode) {
         mblNoControl?.enable();
-        mblNoControl?.setValidators([Validators.required, Validators.maxLength(50)]);
       } else {
-        // Air without ExportImport specified
         mblNoControl?.disable();
-        mblNoControl?.clearValidators();
         if (!this.houseJobForm.get('MBLNo')?.value) {
           mblNoControl?.setValue('');
         }
-        this.b['isMawbFreeText']?.setValue(false);
       }
     }
   } else {
-    // Non-Air departments - optional
     mblNoControl?.enable();
     mblNoControl?.clearValidators();
     mblNoControl?.setValidators([Validators.maxLength(50)]);
+    this.isMawbDropdownDisabled = true;
   }
-  
+
   mblNoControl?.updateValueAndValidity();
+
+  if (this.selectedDepartmentType === 'AIR' && isAirExport && !this.isMawbStockAllocationEnabled && this.bookingData) {
+    setTimeout(() => {
+      this.loadMawbStock(this.bookingData);
+    }, 300);
+  }
 
   if (this.bookingProducts.length > 0) {
     this.bookingProducts.controls.forEach((productGroup: FormGroup, index) => {
       const isAirOrLCL = this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL';
-      
+
       const dimensionFields = ['UomMasterSid', 'Volumetric'];
       dimensionFields.forEach(field => {
         const control = productGroup.get(field);
@@ -2641,36 +2678,29 @@ private getAgentNameById(agentId: number): string {
       });
     });
   }
-  
+
   this.b['DepartmentMasterSid'].setValue(department.DepartmentMasterSid);
   this.loadDefaultBLClauses(department.DepartmentMasterSid);
   this.autoSetJobType(department);
-  
-  if (this.selectedDepartmentType === "AIR") {
+
+  if (this.selectedDepartmentType === 'AIR') {
     this.b['IncoTerms']?.setValue('CIF');
     this.b['FreightTerms']?.setValue('Prepaid');
     this.c['ModeOfTransport']?.setValue('Flight');
   } else {
-    this.selectedDepartmentType === "SEA" ? this.c['ModeOfTransport']?.setValue('Vessel') : null;
+    this.selectedDepartmentType === 'SEA' ? this.c['ModeOfTransport']?.setValue('Vessel') : null;
   }
-  
-  if (this.selectedFCLLCL === "LCL" && department.ExportImport === "Export") {
+
+  if (this.selectedFCLLCL === 'LCL' && department.ExportImport === 'Export') {
     this.cargoForm.get('StuffingAt')?.setValue('Dock');
     this.cargoForm.get('StuffingAt')?.disable();
   } else {
     this.cargoForm.get('StuffingAt')?.enable();
   }
-  
+
   this.handleCFSOrYard();
   this.onRouteChange();
   this.handleImportExport();
-  
-  // Load MAWB stock if in edit mode for Air department
-  if (this.isEditMode && this.selectedDepartmentType === 'AIR' && this.bookingData) {
-    setTimeout(() => {
-      this.loadMawbStock(this.bookingData);
-    }, 300);
-  }
 }
 private handleHBLNoField(exportImport: string): void {
   const hblNoControl = this.houseJobForm.get('HBLNo');
@@ -2724,6 +2754,20 @@ validateImportMAWBLNo(): boolean {
       }
     }, 100);
     
+    return false;
+  }
+
+  if (
+    exportImportType === 'Export' &&
+    (
+      (this.isEditMode && !this.isMawbStockAllocationEnabled) ||
+      this.allowManualMawbEntryOnAutoAllocationError
+    ) &&
+    (!mblNo || mblNo.trim() === '')
+  ) {
+    this.appSettingService.showWarning('MAWBL Number is required for Air Export.');
+    this.houseJobForm.get('MBLNo')?.markAsTouched();
+    this.houseJobForm.get('MBLNo')?.setErrors({ required: true });
     return false;
   }
   
@@ -5336,7 +5380,14 @@ getProductFormGroup(index: number): FormGroup {
 
 loadMawbStock(data: any): void {
   const isAirDept = this.selectedDepartment?.departmentType?.toUpperCase() === 'AIR';
-  if (!isAirDept) return;
+  const isAirExport = this.selectedDepartment?.ExportImport?.toUpperCase() === 'EXPORT';
+  if (!isAirDept || !isAirExport || this.isMawbStockAllocationEnabled) {
+    this.mawbStockList = [];
+    this.mawbStockSource = 'NONE';
+    this.isMawbDropdownDisabled = true;
+    this.b['isMawbFreeText']?.setValue(false);
+    return;
+  }
 
   const companyId = this.currentCompany?.CompanyMasterSid;
   const branchId = this.currentBranch?.BranchMasterSid;
@@ -5415,5 +5466,6 @@ interface CustomerProfit {
   CustomerName : string,
   Amount : number
 }
+
 
 

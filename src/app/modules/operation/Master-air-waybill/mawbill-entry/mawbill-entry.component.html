@@ -293,7 +293,7 @@
                                                 </div>
                                         
                                                 <!-- For Air Export - Show dropdown with toggle (existing logic) -->
-                                                <div *ngIf="isAirDepartment && selectedDepartment?.ExportImport === 'Export'">
+                                                <div *ngIf="isAirDepartment && selectedDepartment?.ExportImport === 'Export' && !isMawbStockAllocationEnabled">
                                                     <!-- Dropdown mode (when stock available and not in manual mode) -->
                                                     <div class="custom-form-group custom-form-group-select inputChnages mt-md-1" 
                                                     [class.filled]="masterJobForm.get('MBLNo')?.value"
@@ -335,6 +335,14 @@
                                                         <label class="input-label">MAWB</label>
                                                     </div>
                                                 </div>
+
+                                                <div class="custom-form-group custom-form-group-select inputChnages mt-md-1"
+                                                    [class.filled]="masterJobForm.get('MBLNo')?.value"
+                                                    *ngIf="isAirDepartment && selectedDepartment?.ExportImport === 'Export' && isMawbStockAllocationEnabled">
+                                                    <input type="text" class="custom-input-field sm" formControlName="MBLNo" placeholder=""
+                                                        [readonly]="!allowManualMawbEntryOnAutoAllocationError">
+                                                    <label class="input-label">MAWB</label>
+                                                </div>
                                         
                                                 <!-- For Non-Air departments - Simple input -->
                                                 <div class="custom-form-group" *ngIf="!isAirDepartment">
@@ -361,6 +369,9 @@
                                                 <div class="error-message" *ngIf="masterJobForm.get('MBLNo')?.touched && masterJobForm.get('MBLNo')?.invalid">
                                                     <span *ngIf="masterJobForm.get('MBLNo')?.hasError('required')">
                                                         MAWB is required
+                                                    </span>
+                                                    <span *ngIf="masterJobForm.get('MBLNo')?.hasError('duplicate')">
+                                                        MAWB already exists
                                                     </span>
                                                 </div>
                                             </div>

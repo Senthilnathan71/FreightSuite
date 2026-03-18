@@ -182,7 +182,7 @@
     </div>
 
     <!-- For Air Export - Show dropdown with toggle -->
-    <div *ngIf="selectedDepartmentType === 'AIR' && selectedDepartment?.ExportImport === 'Export'">
+    <div *ngIf="selectedDepartmentType === 'AIR' && selectedDepartment?.ExportImport === 'Export' && !isMawbStockAllocationEnabled">
       <!-- Dropdown mode (when stock available and not in manual mode) -->
       <div class="custom-form-group custom-form-group-select inputChnages mt-md-1"
         [class.filled]="houseJobForm.get('MBLNo')?.value"
@@ -220,6 +220,13 @@
         </div>
         <label class="input-label">MAWBL No</label>
       </div>
+    </div>
+
+    <div class="custom-form-group custom-form-group-select inputChnages mt-md-1"
+      [class.filled]="houseJobForm.get('MBLNo')?.value"
+      *ngIf="selectedDepartmentType === 'AIR' && selectedDepartment?.ExportImport === 'Export' && isMawbStockAllocationEnabled">
+      <input type="text" class="custom-input-field sm" formControlName="MBLNo" placeholder="" [readonly]="!allowManualMawbEntryOnAutoAllocationError">
+      <label class="input-label">MAWBL No</label>
     </div>
 
     <!-- For Non-Air departments - Simple input -->
