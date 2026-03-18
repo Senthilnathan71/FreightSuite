@@ -3,7 +3,8 @@ import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { firstValueFrom } from 'rxjs';
-import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
+import { generateSailingConfirmationDocument, transformSailingConfirmationApiData } from 'src/app/common/pdf/generators/sailing-confirmation-pdf.generator';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
@@ -42,7 +43,7 @@ export class SailingConfimationComponent {
     private masterService: MasterService,
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
-    private pdfService: PdfDownloadService,
+    private pdfMakeService: PdfMakeService,
     public logoService: LogoService
   ) { }
 
@@ -121,22 +122,28 @@ getUniqueContainers(): string[] {
 
 
   async downloadPDF() {
-    this.showPrintLogo = false;
-    this.showPdfLogo = true;
-
-    setTimeout(async () => {
-      this.spinner.show();
-      try {
-        await this.pdfService.downloadBalancedPDF(
-          'printContent',
-          `Sailing_Confirmation${this.masterJobData?.MasterJobNumber || 'Report'}`,
-          () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-          (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
-        );
-      } finally {
-        this.spinner.hide();
-      }
-    }, 50);
+    this.spinner.show();
+    try {
+      const logo = this.pdfMakeService.getReportLogo();
+      const pdfData = transformSailingConfirmationApiData(
+        this.housejobData,
+        this.masterJobData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        { ports: this.portList }
+      );
+      const docDefinition = generateSailingConfirmationDocument(pdfData);
+      const fileName = `Sailing_Confirmation${this.masterJobData?.MasterJobNumber || 'Report'}`;
+      this.pdfMakeService.download(docDefinition, fileName);
+      this.appSettingService.showSuccess('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('Sailing Confirmation PDF generation error:', error);
+      this.appSettingService.showError('Error generating PDF. Please try again.');
+    } finally {
+      this.spinner.hide();
+    }
   }
 
 

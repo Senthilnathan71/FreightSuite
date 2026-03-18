@@ -191,6 +191,116 @@ export interface CroContainerData {
 }
 
 // =====================
+// SAILING CONFIRMATION PDF DATA
+// =====================
+export interface SailingConfirmationPdfData extends PdfDocumentBase {
+  sailing: {
+    mblNo?: string;
+    hblNo?: string;
+    eta?: Date | string;
+    etd?: Date | string;
+    containerList?: string[];
+    shipmentNo?: string;
+    placeOfReceipt?: string;
+    portOfLoading?: string;
+    finalDestination?: string;
+    carrier?: string;
+    freightTerms?: string;
+    vesselName?: string;
+    voyageNo?: string;
+    jobNo?: string;
+    portOfReceipt?: string;
+    portOfDischarge?: string;
+    placeOfDelivery?: string;
+    movementType?: string;
+    masterJobNumber?: string;
+  };
+}
+
+// =====================
+// PACKING LIST PDF DATA
+// =====================
+export interface PackingListPdfData extends PdfDocumentBase {
+  selectedFclLcl?: string;
+  terms?: string[];
+  packing: {
+    shipperName?: string;
+    shipperAddress?: string;
+    clientName?: string;
+    clientAddress?: string;
+    consigneeName?: string;
+    consigneeAddress?: string;
+    shipmentNo?: string;
+    jobNo?: string;
+    mblNo?: string;
+    hblNo?: string;
+    placeOfReceipt?: string;
+    portOfLoading?: string;
+    portOfDischarge?: string;
+    placeOfDelivery?: string;
+    finalDestination?: string;
+    eta?: Date | string;
+    etd?: Date | string;
+    vesselVoyage?: string;
+    carrier?: string;
+    movementType?: string;
+    freightTerms?: string;
+    remarks?: string;
+  };
+  products: Array<{
+    productName?: string;
+    length?: number | string;
+    width?: number | string;
+    height?: number | string;
+    packageType?: string;
+    packageQty?: number;
+    grossWeight?: number;
+    volume?: number;
+  }>;
+}
+
+// =====================
+// COMMERCIAL INVOICE PDF DATA
+// =====================
+export interface CommercialInvoicePdfData extends PdfDocumentBase {
+  invoice: {
+    hblNo?: string;
+    jobNo?: string;
+    toName?: string;
+    toAddress?: string;
+    shipperName?: string;
+    shipperAddress?: string;
+    consigneeName?: string;
+    consigneeAddress?: string;
+    notifyName?: string;
+    notifyAddress?: string;
+    commodityDescription?: string;
+    currency?: string;
+    noOfPackage?: number;
+    grossWeight?: number;
+    netWeight?: number;
+    volume?: number;
+    goodsValue?: number;
+    totalValue?: string;
+  };
+  products: Array<{
+    commodity?: string;
+    containerNo?: string;
+    containerType?: string;
+    packageQty?: number;
+    grossWeight?: number;
+    netWeight?: number;
+    volume?: number;
+  }>;
+  totals: {
+    totalPkg: number;
+    totalGrossWeight: number;
+    totalNetWeight: number;
+    totalVolume: number;
+  };
+}
+
+// =====================
 // MASTER JOB PDF DATA
 // =====================
 export interface MasterJobPdfData extends PdfDocumentBase {
