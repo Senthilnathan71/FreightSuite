@@ -100,9 +100,7 @@ export class EmailTriggerService {
         const configs = resp.data.filter((config: any) =>
           Number(config.MenuMasterSid) === menuSid &&
           config.Trigger === 'M' &&
-          config.Status === 'A' &&
-          this.matchesAction(config.Action, action) &&
-          this.matchesUpdateFields(config, action, changedFields)
+          config.Status === 'A'
         );
 
         if (configs.length === 0) {
