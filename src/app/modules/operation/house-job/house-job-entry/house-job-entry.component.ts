@@ -3283,6 +3283,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
       CompanyMasterSid,
       DepartmentMasterSid,
       BookingHeaderSid,
+      HouseJobSid: this.HouseJobSid,
       MasterJobNumber,
       MasterJobSid,
       ParentSid: this.HouseJobSid,

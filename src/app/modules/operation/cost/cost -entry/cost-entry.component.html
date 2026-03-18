@@ -651,11 +651,19 @@
 
   <div class="modern-table-container" *ngIf="selectedTab === 'Profit'">
 
-    @if(profitSummary.length > 0){
+    <div *ngIf="isProfitProrateLoading" class="text-center py-4">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading prorated profit...</span>
+      </div>
+      <div class="mt-2">Loading prorated profit...</div>
+    </div>
+
+    @if(!isProfitProrateLoading && profitSummary.length > 0){
     <div class="modern-table-wrapper">
       <table class="modern-table">
         <thead>
           <tr>
+            <th>Type</th>
             <th>Charge</th>
             <th>Revenue Amt</th>
             <th>Cost Amt</th>
@@ -666,6 +674,26 @@
         <tbody>
           <!-- Regular rows -->
           <tr class="table-row" *ngFor="let row of profitSummary">
+            <td>
+              <span
+                style="
+                  display: inline-flex;
+                  align-items: center;
+                  justify-content: center;
+                  min-width: 58px;
+                  padding: 2px 8px;
+                  border-radius: 4px;
+                  font-size: 10px;
+                  font-weight: 700;
+                  text-transform: uppercase;
+                  letter-spacing: 0.5px;
+                  color: #fff;
+                "
+                [style.background]="row.sourceType === 'Prorate' ? '#16a34a' : '#2563eb'"
+              >
+                {{ row.sourceType }}
+              </span>
+            </td>
             <td>{{ row.chargeName }}</td>
             <td>{{ row.totalSales }}</td>
             <td>{{ row.totalCost }}</td>
@@ -675,6 +703,7 @@
 
           <!-- Total row with computed values -->
           <tr class="table-row table-total" style="font-weight: bold;">
+            <td>-</td>
             <td>Total</td>
             <td>{{ calculateTotal('totalSales') | number:'1.2-2' }}</td>
             <td>{{ calculateTotal('totalCost') | number:'1.2-2' }}</td>
@@ -685,7 +714,7 @@
 
       </table>
     </div>
-    } @else {
+    } @else if (!isProfitProrateLoading) {
     <div class="col-12">
       <div class="alert alert-info text-center">No Records found.</div>
     </div>
