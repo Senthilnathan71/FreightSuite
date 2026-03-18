@@ -1074,63 +1074,73 @@ openEDoc() {
   }
 
   getAuditLog() {
-    this.operationService.getAuditLogsBooking(
-      'HouseJob',
-      this.HouseJobSid.toString()
-    ).subscribe({
-      next: (logs: any[]) => {
-        const ignoredFields = ['updatedOn', 'updatedBy']; // ✅ add more if needed later
+  this.operationService.getAuditLogsservicejob(
+    'HouseJob',
+    this.HouseJobSid.toString()
+  ).subscribe({
+    next: (logs: any[]) => {
 
-        const formatFields = (val: any) => {
-          if (!val) return [];
-          const obj = typeof val === 'string' ? JSON.parse(val) : val;
-          if (Object.keys(obj).length === 0) return [];
-          return Object.entries(obj)
-            .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-            .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-        };
+      const ignoredFields = ['updatedOn','updatedBy','createdOn','createdBy'];
 
-        this.auditLogs = logs
-          .map(log => ({
-            ...log,
-            oldValDisplay: formatFields(log.oldVal),
-            newValDisplay: formatFields(log.newVal),
-          }))
-          .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
+      const normalize = (val:any) => {
+        if (val === null || val === undefined || val === '') return null;
+        return String(val).trim();
+      };
 
-        this.houseStatusTimeline = logs
-          .filter(log => log.newVal?.BookingStatus)
-          .sort((a, b) => new Date(b.changedAt).getTime() - new Date(a.changedAt).getTime())
-          .map(log => ({
-            status: log.newVal.BookingStatus,
-            at: log.changedAt
-          }));
+      const groups: any = {};
 
-        // ✅ Check if Cargo Received exists but Booked does not
-        const hasCargoReceived = this.houseStatusTimeline.some(l => l.status === 'Cargo Received');
-        const hasBooked = this.houseStatusTimeline.some(l => l.status === 'Booked');
+      logs.forEach(log => {
 
-        if (hasCargoReceived && !hasBooked) {
-          const cargoLog = this.houseStatusTimeline.find(l => l.status === 'Cargo Received');
+        const key = `${log.changedAt}-${log.changedBy}`;
 
-          // create Booked log 1 second before Cargo Received
-          const bookedDate = new Date(new Date(cargoLog.at).getTime() - 1000).toISOString();
-
-          this.houseStatusTimeline.push({
-            status: 'Booked',
-            at: bookedDate
-          });
+        if (!groups[key]) {
+          groups[key] = {
+            changedAt: log.changedAt,
+            changedBy: log.changedBy,
+            operation: log.operation,
+            oldValDisplay: [],
+            newValDisplay: []
+          };
         }
 
-        // ✅ Resort descending and take latest 3
-        this.houseStatusTimeline = this.houseStatusTimeline
-          .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
-          .slice(0, 3);
+        const oldObj = log.oldVal || {};
+        const newObj = log.newVal || {};
 
-      },
-      error: err => console.error('Error fetching audit logs:', err)
-    });
-  }
+        const keys = new Set([
+          ...Object.keys(oldObj),
+          ...Object.keys(newObj)
+        ]);
+
+        keys.forEach(k => {
+
+          if (ignoredFields.includes(k)) return;
+
+          const oldVal = normalize(oldObj[k]);
+          const newVal = normalize(newObj[k]);
+
+          if (oldVal !== newVal) {
+
+            groups[key].oldValDisplay.push(
+              `${k}: ${oldVal ?? '-'}`
+            );
+
+            groups[key].newValDisplay.push(
+              `${k}: ${newVal ?? '-'}`
+            );
+
+          }
+
+        });
+
+      });
+
+      this.auditLogs = Object.values(groups)
+        .filter((g:any)=> g.oldValDisplay.length > 0);
+
+    },
+    error: err => console.error('Error fetching audit logs:', err)
+  });
+}
 
   getContainerDisplay(): string {
     const containerCount = this.c['NoofContainers']?.value;

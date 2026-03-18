@@ -1,8 +1,8 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, TemplateRef } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgbAccordionModule, NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAccordionModule, NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal, NgbModalRef, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
@@ -89,6 +89,8 @@ export class CreditRequestEntryComponent {
     AuthorityDetailSid: null,
     ApprovedBy: ''
   };
+  auditLogs: any[] = []; // Stores audit logs
+    auditLogModalRef!: NgbModalRef;
   allApprovalStatus = [
     { value : "Pending" , name :"Waiting for Approval"},
     { value : "WaitingForFinalApproval" , name :"Waiting for Final Approval"},
@@ -1214,6 +1216,115 @@ getDepartmentName(deptId: number, rowIndex: number): string {
     openFollowup() {
   
     }
+
+    openAuditLogs(modal: TemplateRef<any>) {
+  if (!this.customerId) {
+    this.appSettingService.showError('Customer not found for audit logs.');
+    return;
+  }
+
+  this.getAuditLog();
+
+  this.auditLogModalRef = this.modalService.open(modal, {
+    centered: true,
+    scrollable: true,
+    windowClass: 'audit-log-modal'
+  });
+}
+
+    getAuditLog() {
+  this.operationService.getAuditLogsCreditRequest(
+    'CustomerMaster',
+    this.customerId.toString()
+  ).subscribe({
+    next: (logs: any[]) => {
+
+      const ignoreWords = [
+        'updatedon',
+        'updatedby',
+        'createdon',
+        'createdby'
+      ];
+
+      const normalize = (val: any) => {
+        if (val === null || val === undefined || val === '') return null;
+        return String(val).trim();
+      };
+
+      const sortedLogs = [...logs].sort(
+        (a, b) => new Date(a.changedAt).getTime() - new Date(b.changedAt).getTime()
+      );
+
+      const groups: any[] = [];
+      const MERGE_WINDOW_MS = 5000;
+
+      sortedLogs.forEach((log: any) => {
+        const logTime = new Date(log.changedAt).getTime();
+
+        let group = groups.find(g =>
+          g.changedBy === log.changedBy &&
+          g.operation === log.operation &&
+          (logTime - g.lastChangedAtTime) <= MERGE_WINDOW_MS
+        );
+
+        if (!group) {
+          group = {
+            changedAt: log.changedAt,
+            changedBy: log.changedBy,
+            operation: log.operation,
+            oldValDisplay: [],
+            newValDisplay: [],
+            lastChangedAtTime: logTime
+          };
+          groups.push(group);
+        } else {
+          group.lastChangedAtTime = logTime;
+        }
+
+        const oldObj = log.oldVal || {};
+        const newObj = log.newVal || {};
+
+        const keys = new Set([
+          ...Object.keys(oldObj),
+          ...Object.keys(newObj)
+        ]);
+
+        keys.forEach((k: string) => {
+          const lowerKey = k.toLowerCase();
+          if (ignoreWords.some(x => lowerKey.includes(x))) return;
+
+          const oldVal = normalize(oldObj[k]);
+          const newVal = normalize(newObj[k]);
+
+          if (oldVal !== newVal) {
+            const oldLine = `${k}: ${oldVal ?? '-'}`;
+            const newLine = `${k}: ${newVal ?? '-'}`;
+
+            if (!group.oldValDisplay.includes(oldLine)) {
+              group.oldValDisplay.push(oldLine);
+            }
+
+            if (!group.newValDisplay.includes(newLine)) {
+              group.newValDisplay.push(newLine);
+            }
+          }
+        });
+      });
+
+      this.auditLogs = groups
+        .filter(g => g.oldValDisplay.length > 0)
+        .map(({ lastChangedAtTime, ...rest }) => rest)
+        .sort(
+          (a, b) => new Date(b.changedAt).getTime() - new Date(a.changedAt).getTime()
+        );
+    },
+    error: err => {
+      console.error('Error fetching audit logs:', err);
+      this.appSettingService.showError('Failed to fetch audit logs');
+    }
+  });
+}
+
 }
 
 

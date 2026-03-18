@@ -2297,40 +2297,82 @@ handleEdocChange(event: any) {
 
   openAuditLogs(modal: TemplateRef<any>) {
     if (!this.masterJobSid) return;
-  
-    this.operationService.getAuditLogsmasterjob(
-      'MasterJob',
-      this.masterJobSid.toString()
-    ).subscribe({
-      next: (logs: any[]) => {
-        const ignoredFields = ['updatedOn','updatedBy']; // ✅ add more if needed later
-  
-        const formatFields = (val: any) => {
-          if (!val) return [];
-          const obj = typeof val === 'string' ? JSON.parse(val) : val;
-          if (Object.keys(obj).length === 0) return [];
-          return Object.entries(obj)
-            .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-            .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-        };
-  
-        this.auditLogs = logs
-          .map(log => ({
-            ...log,
-            oldValDisplay: formatFields(log.oldVal),
-            newValDisplay: formatFields(log.newVal),
-          }))
-          .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
-  
-        this.auditLogModalRef = this.modalService.open(modal, {
-          centered: true,
-          scrollable: true,
-          windowClass: 'audit-log-modal'
-        });
-      },
-      error: err => console.error('Error fetching audit logs:', err)
+    this.getAuditLog()
+    this.auditLogModalRef = this.modalService.open(modal, {
+      centered: true,
+      scrollable: true,
+      windowClass: 'audit-log-modal'
     });
   }
+
+ getAuditLog() {
+  this.operationService.getAuditLogsmasterjob(
+    'MasterJob',
+    this.masterJobSid.toString()
+  ).subscribe({
+    next: (logs: any[]) => {
+
+      const ignoredFields = ['UpdatedOn','UpdatedBy','CreatedOn','CreatedBy'];
+
+      const normalize = (val:any) => {
+        if (val === null || val === undefined || val === '') return null;
+        return String(val).trim();
+      };
+
+      const groups: any = {};
+
+      logs.forEach(log => {
+
+        const key = `${log.changedAt}-${log.changedBy}`;
+
+        if (!groups[key]) {
+          groups[key] = {
+            changedAt: log.changedAt,
+            changedBy: log.changedBy,
+            operation: log.operation,
+            oldValDisplay: [],
+            newValDisplay: []
+          };
+        }
+
+        const oldObj = log.oldVal || {};
+        const newObj = log.newVal || {};
+
+        const keys = new Set([
+          ...Object.keys(oldObj),
+          ...Object.keys(newObj)
+        ]);
+
+        keys.forEach(k => {
+
+          if (ignoredFields.includes(k)) return;
+
+          const oldVal = normalize(oldObj[k]);
+          const newVal = normalize(newObj[k]);
+
+          if (oldVal !== newVal) {
+
+            groups[key].oldValDisplay.push(
+              `${k}: ${oldVal ?? '-'}`
+            );
+
+            groups[key].newValDisplay.push(
+              `${k}: ${newVal ?? '-'}`
+            );
+
+          }
+
+        });
+
+      });
+
+      this.auditLogs = Object.values(groups)
+        .filter((g:any)=> g.oldValDisplay.length > 0);
+
+    },
+    error: err => console.error('Error fetching audit logs:', err)
+  });
+}
 
   openTandC() {
       this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
