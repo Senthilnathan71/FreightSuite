@@ -1909,6 +1909,18 @@ getDefaultBLClausesByDepartment(DepartmentMasterSid: number) {
     return this.http.post<any>('pro-rate/calculate', payload).pipe(map(resp => resp));
   }
 
+  applyProRate(payload: { CompanyMasterSid: number; BranchMasterSid: number; MasterJobSid: number }) {
+    return this.http.post<any>('pro-rate/apply', payload).pipe(map(resp => resp));
+  }
+
+  getHouseProratedCharges(payload: { HouseJobSid: number }) {
+    return this.http.post<any>('pro-rate/house-charges', payload).pipe(map(resp => resp));
+  }
+
+  getHouseProrateStatus(payload: { HouseJobSid: number }) {
+    return this.http.post<any>('pro-rate/house-status', payload).pipe(map(resp => resp));
+  }
+
   getCompanyConfig(CompanyMasterSid: number, Configurationname: string) {
     return this.http.get<any>(`company-config/value/${CompanyMasterSid}/${Configurationname}`).pipe(
       map((resp) => resp)
