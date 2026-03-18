@@ -1,10 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
+import { generateCommercialInvoiceDocument, transformCommercialInvoiceApiData } from 'src/app/common/pdf/generators/commercial-invoice-pdf.generator';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
@@ -81,7 +80,7 @@ export class CommericalInvoiceComponent {
       private activeModal: NgbActiveModal,
       private appSettingService: AppSettingsService,
       private masterService: MasterService,
-      private pdfService: PdfDownloadService,
+      private pdfMakeService: PdfMakeService,
       private spinner: NgxSpinnerService,
       public logoService : LogoService
     ) { }
@@ -97,65 +96,27 @@ export class CommericalInvoiceComponent {
 
 
   async downloadPDF() {
-  this.showPrintLogo = false;
-  this.showPdfLogo = true;
-
-  setTimeout(async () => {
     this.spinner.show();
-   try {
-       const HouseJob = this.housejobData?.ShipmentNo || 'Receipt';
-      await this.pdfService.downloadBalancedPDF(
-        'printContent',
-        `Commercial_Invoice`,
-        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-        (error) => this.appSettingService.showError('Error generating PDF. Please try again.'),
-        'landscape'
+    try {
+      const logo = this.pdfMakeService.getReportLogo();
+      const pdfData = transformCommercialInvoiceApiData(
+        this.housejobData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        { containerTypes: this.containerTypeList }
       );
+      const docDefinition = generateCommercialInvoiceDocument(pdfData);
+      this.pdfMakeService.download(docDefinition, 'Commercial_Invoice');
+      this.appSettingService.showSuccess('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('Commercial Invoice PDF generation error:', error);
+      this.appSettingService.showError('Error generating PDF. Please try again.');
     } finally {
       this.spinner.hide();
     }
-  }, 50);
-}
-
-    async generatePDFBlob(): Promise<Blob | null> {
-          const printContent = document.getElementById('printContent');
-          if (!printContent) {
-            return null;
-          }
-      
-          try {
-            const canvas = await html2canvas(printContent, {
-              scale: 2,
-              useCORS: true,
-              logging: false,
-              backgroundColor: '#ffffff'
-            });
-      
-            const imgWidth = 210;
-            const pageHeight = 297;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            let heightLeft = imgHeight;
-            let position = 0;
-      
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const imgData = canvas.toDataURL('image/png');
-      
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-      
-            while (heightLeft > 0) {
-              position = heightLeft - imgHeight;
-              pdf.addPage();
-              pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-              heightLeft -= pageHeight;
-            }
-      
-            return pdf.output('blob');
-          } catch (error) {
-            console.error('Error generating PDF blob:', error);
-            return null;
-          }
-        }
+  }
 
 
    printDiv(divId: string): void {
