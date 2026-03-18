@@ -57,8 +57,26 @@ export class OperationService {
     );
   }
 
+  getAuditLogsCreditNote(tableName: string, recordId?: string) {
+    let url = `credit-note/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
+  getAuditLogsCreditRequest(tableName: string, recordId?: string) {
+    let url = `credit-request/audit/logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
   geAuditLogsHouseJob(tableName: string, recordId?: string) {
-    let url = `ff-booking/audit-logs?tableName=${tableName}`;
+    let url = `house-job/audit-logs?tableName=${tableName}`;
     if (recordId) url += `&recordId=${recordId}`;
 
     return this.http.get<{ data: any }>(url).pipe(
@@ -775,6 +793,15 @@ processProductUpload(payload: any): Observable<any> {
   }
   getAuditLogsmasterjob(tableName: string, recordId?: string) {
     let url = `master-job/audit-logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
+
+  getAuditLogsservicejob(tableName: string, recordId?: string) {
+    let url = `service-job/audit-logs?tableName=${tableName}`;
     if (recordId) url += `&recordId=${recordId}`;
 
     return this.http.get<{ data: any }>(url).pipe(

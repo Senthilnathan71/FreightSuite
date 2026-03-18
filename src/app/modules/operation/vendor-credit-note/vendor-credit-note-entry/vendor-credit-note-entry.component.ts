@@ -176,6 +176,8 @@ export class VendorCreditNoteEntryComponent {
   originalRateList : Map<number,rateComparison> = new Map();
   chargeTaxGroupMap: Map<number, any[]> = new Map();
   masterHouseMap: Map<number, any[]> = new Map();
+  auditLogs: any[] = []; // Stores audit logs
+    auditLogModalRef!: NgbModalRef;
 
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   chargeLookupConfig = DROPDOWN_CONFIGS.CHARGE;
@@ -3563,5 +3565,108 @@ export class VendorCreditNoteEntryComponent {
     modalRef.componentInstance.item = this.vendorCreditNoteData;
     modalRef.componentInstance.idLabel = 'Vendor Credit Note Id';
     modalRef.componentInstance.idValue = this.vendorCreditNoteData?.VoucherHeaderSid;
+  }
+
+  openAuditLogs(modal: TemplateRef<any>) {
+        if (!this.vendorCreditNoteData?.VoucherHeaderSid) return;
+        this.getAuditLog()
+        this.auditLogModalRef = this.modalService.open(modal, {
+          centered: true,
+          scrollable: true,
+          windowClass: 'audit-log-modal'
+        });
+      }
+  
+      getAuditLog() {
+    this.operationService.getAuditLogsCreditNote(
+      'VoucherHeader',
+      this.vendorCreditNoteData?.VoucherHeaderSid.toString()
+    ).subscribe({
+      next: (logs: any[]) => {
+  
+        const ignoreWords = [
+          'updatedon',
+          'updatedby',
+          'createdon',
+          'createdby'
+        ];
+  
+        const normalize = (val: any) => {
+          if (val === null || val === undefined || val === '') return null;
+          return String(val).trim();
+        };
+  
+        const sortedLogs = [...logs].sort(
+          (a, b) => new Date(a.changedAt).getTime() - new Date(b.changedAt).getTime()
+        );
+  
+        const groups: any[] = [];
+        const MERGE_WINDOW_MS = 5000;
+  
+        sortedLogs.forEach(log => {
+          const logTime = new Date(log.changedAt).getTime();
+  
+          let group = groups.find(g =>
+            g.changedBy === log.changedBy &&
+            g.operation === log.operation &&
+            (logTime - g.lastChangedAtTime) <= MERGE_WINDOW_MS
+          );
+  
+          if (!group) {
+            group = {
+              changedAt: log.changedAt,
+              changedBy: log.changedBy,
+              operation: log.operation,
+              oldValDisplay: [],
+              newValDisplay: [],
+              lastChangedAtTime: logTime
+            };
+            groups.push(group);
+          } else {
+            group.lastChangedAtTime = logTime;
+          }
+  
+          const oldObj = log.oldVal || {};
+          const newObj = log.newVal || {};
+  
+          const keys = new Set([
+            ...Object.keys(oldObj),
+            ...Object.keys(newObj)
+          ]);
+  
+          keys.forEach(k => {
+            const lowerKey = k.toLowerCase();
+  
+            if (ignoreWords.some(x => lowerKey.includes(x))) return;
+  
+            const oldVal = normalize(oldObj[k]);
+            const newVal = normalize(newObj[k]);
+  
+            if (oldVal !== newVal) {
+              const oldLine = `${k}: ${oldVal ?? '-'}`;
+              const newLine = `${k}: ${newVal ?? '-'}`;
+  
+              if (!group.oldValDisplay.includes(oldLine)) {
+                group.oldValDisplay.push(oldLine);
+              }
+  
+              if (!group.newValDisplay.includes(newLine)) {
+                group.newValDisplay.push(newLine);
+              }
+            }
+          });
+        });
+  
+        this.auditLogs = groups
+          .filter(g => g.oldValDisplay.length > 0)
+          .map(({ lastChangedAtTime, ...rest }) => rest)
+          .sort(
+            (a, b) =>
+              new Date(b.changedAt).getTime() -
+              new Date(a.changedAt).getTime()
+          );
+      },
+      error: err => console.error('Error fetching audit logs:', err)
+    });
   }
 }
