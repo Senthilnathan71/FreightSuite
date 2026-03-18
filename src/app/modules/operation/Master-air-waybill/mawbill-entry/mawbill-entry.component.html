@@ -675,6 +675,10 @@
                                                 </dofi-searchable-dropdown>
                                                 <label class="input-label">Carrier<span
                                                         class="text-danger"></span></label>
+                                                <div class="error-message"
+                                                    *ngIf="masterJobForm.get('CarrierName')?.touched && masterJobForm.get('CarrierName')?.hasError('required')">
+                                                    <span>Carrier is required</span>
+                                                </div>
                                             </div>
                                         </aside>
 

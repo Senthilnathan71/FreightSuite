@@ -383,6 +383,14 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     if(this.selectedDepartmentType === "AIR"){
       const selectedCarrier = this.carrierList.find(carrier => carrier.CustomerName === carrierName);
       this.onCarrierChangeForAir(selectedCarrier);
+      if (this.selectedDepartment?.ExportImport?.toUpperCase() === 'EXPORT' && !this.isMawbStockAllocationEnabled) {
+        this.loadMawbStock({
+          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+          BranchMasterSid: this.currentBranch?.BranchMasterSid,
+          voyages: [{ CarrierName: carrierName || null }],
+          houseJob: this.masterAirWayData?.houseJob || []
+        });
+      }
     }
   });
   }
@@ -805,6 +813,7 @@ toggleMawbInputType(event: MouseEvent): void {
     this.filteredDestinationAgents = [...this.agentList];
     this.filteredOriginAgents = [...this.agentList];
     this.customerList = customers.data;
+    this.updateCarrierValidation(this.selectedDepartment);
 
     // default filtered ports
     this.filteredPorts = this.portList.filter(port => port.PortType === 'Air');
@@ -821,6 +830,25 @@ private parseCompanyBoolean(value: any): boolean {
 
   const normalized = String(value ?? '').trim().toUpperCase();
   return ['Y', 'YES', 'TRUE', '1'].includes(normalized);
+}
+
+private updateCarrierValidation(department?: any): void {
+  const carrierControl = this.masterJobForm.get('CarrierName');
+  if (!carrierControl) {
+    return;
+  }
+
+  const isAirExport =
+    String(department?.departmentType ?? '').toUpperCase() === 'AIR' &&
+    String(department?.ExportImport ?? '').toUpperCase() === 'EXPORT';
+
+  if (isAirExport && this.isMawbStockAllocationEnabled) {
+    carrierControl.setValidators([Validators.required]);
+  } else {
+    carrierControl.clearValidators();
+  }
+
+  carrierControl.updateValueAndValidity({ emitEvent: false });
 }
 
 private enableManualMawbEntryFallback(message?: string): void {
@@ -909,13 +937,24 @@ loadMawbStock(data: any): void {
 
   // Extract optional values
   const customerId: number | null = data?.houseJob?.[0]?.CustomerMasterSid ?? null;
-  const carrierName: string | null = data?.voyages?.[0]?.CarrierName ?? null;
+  const carrierName: string | null = data?.voyages?.[0]?.CarrierName ?? this.masterJobForm.get('CarrierName')?.value ?? null;
+  const selectedCarrier = carrierName
+    ? this.carrierList?.find(
+        (carrier: any) => carrier.CustomerName?.trim().toLowerCase() === carrierName.trim().toLowerCase()
+      )
+    : null;
 
   // Resolve airlineId from airlineList using carrierName
   const airlineId: number | null = carrierName
-    ? (this.airlineList?.find(
-        (a: any) => a.CustomerName?.trim().toLowerCase() === carrierName.trim().toLowerCase()
-      )?.CustomerMasterSid ?? null)
+    ? (
+        selectedCarrier?.CustomerMasterSid ??
+        this.airlineList?.find(
+          (a: any) =>
+            a.CustomerName?.trim().toLowerCase() === carrierName.trim().toLowerCase() ||
+            (selectedCarrier?.AirlineCode && a.AirlineCode === selectedCarrier.AirlineCode)
+        )?.CustomerMasterSid ??
+        null
+      )
     : null;
 
   // If BOTH are null → disable immediately, no API call
@@ -1368,6 +1407,7 @@ loadMawbStock(data: any): void {
       this.masterJobForm.get('MBLNo')?.enable();
       this.masterJobForm.get('MBLNo')?.clearValidators();
     }
+    this.updateCarrierValidation(null);
     this.masterJobForm.get('MBLNo')?.updateValueAndValidity();
     return;
   }
@@ -1398,10 +1438,11 @@ loadMawbStock(data: any): void {
       this.isMawbDropdownDisabled = true;
     } else if (isAirExport && !this.isMawbStockAllocationEnabled) {
       mblNoControl?.enable();
-      mblNoControl?.setValidators([
-        Validators.required,
-        Validators.maxLength(50)
-      ]);
+      mblNoControl?.setValidators(
+        this.isEditMode
+          ? [Validators.required, Validators.maxLength(50)]
+          : [Validators.maxLength(50)]
+      );
       this.isMawbDropdownDisabled = false;
     } else {
       mblNoControl?.setValidators([Validators.maxLength(50)]);
@@ -1424,6 +1465,7 @@ loadMawbStock(data: any): void {
   }
 
   mblNoControl?.updateValueAndValidity();
+  this.updateCarrierValidation(department);
 
   this.enableManualMawbEntryForBlankEditRecord();
 
@@ -1559,11 +1601,16 @@ onRouteChange(): void {
     this.selectedDepartment?.departmentType?.toUpperCase() === 'AIR' &&
     this.selectedDepartment?.ExportImport?.toUpperCase() === 'EXPORT'
   );
+    const carrierControl = this.masterJobForm.get('CarrierName');
+    if (isAirExport && this.isMawbStockAllocationEnabled && carrierControl?.invalid) {
+        carrierControl.markAsTouched();
+        this.toastr.warning('Please select Carrier for Air Export', 'Carrier Required');
+        return;
+    }
     const mblNoValue = this.masterJobForm.get('MBLNo')?.value;
     const requiresAirExportMawb =
-        !this.isMawbStockAllocationEnabled ||
         this.allowManualMawbEntryOnAutoAllocationError ||
-        (this.isEditMode && this.isMawbStockAllocationEnabled);
+        this.isEditMode;
 
     if (
         isAirExport &&
@@ -1756,7 +1803,7 @@ if (polSid && !podSid) {
                         this.router.navigate(['/operation/mawbill/entry', masterJobSid]);
                     }
                 } else {
-                    this.toastr.error(response.message || 'Failed to update Master Job');
+                    this.handleMawbSaveError({ error: response }, 'update');
                 }
             },
             error: (error) => {
@@ -1803,7 +1850,7 @@ if (polSid && !podSid) {
       }
 
     } else {
-      this.toastr.error(response.message || 'Failed to create Master Air Waybill');
+      this.handleMawbSaveError({ error: response }, 'create');
     }
   },
 

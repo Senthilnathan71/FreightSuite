@@ -1473,6 +1473,7 @@ loadHeaderMandatoryParts() {
     this.customerList = customers;
     this.portList = (ports.data || []).map(p => ({ ...p, Country: p.countryMaster?.countryName }));
     this.isMawbStockAllocationEnabled = this.parseCompanyBoolean(mawbStockAllocationConfig);
+    this.updateCarrierValidation(this.selectedDepartment);
   }));
 }
 
@@ -1483,6 +1484,25 @@ private parseCompanyBoolean(value: any): boolean {
 
   const normalized = String(value ?? '').trim().toUpperCase();
   return ['Y', 'YES', 'TRUE', '1'].includes(normalized);
+}
+
+private updateCarrierValidation(department?: any): void {
+  const carrierControl = this.houseJobForm.get('CarrierName');
+  if (!carrierControl) {
+    return;
+  }
+
+  const isAirExport =
+    String(department?.departmentType ?? '').toUpperCase() === 'AIR' &&
+    String(department?.ExportImport ?? '').toUpperCase() === 'EXPORT';
+
+  if (isAirExport && this.isMawbStockAllocationEnabled) {
+    carrierControl.setValidators([Validators.required]);
+  } else {
+    carrierControl.clearValidators();
+  }
+
+  carrierControl.updateValueAndValidity({ emitEvent: false });
 }
 
 private enableManualMawbEntryFallback(message?: string): void {
@@ -2600,6 +2620,7 @@ private getAgentNameById(agentId: number): string {
     this.mawbStockSource = 'NONE';
     this.isMawbDropdownDisabled = false;
     this.allowManualMawbEntryOnAutoAllocationError = false;
+    this.updateCarrierValidation(null);
     return;
   }
 
@@ -2655,6 +2676,7 @@ private getAgentNameById(agentId: number): string {
   }
 
   mblNoControl?.updateValueAndValidity();
+  this.updateCarrierValidation(department);
 
   if (this.selectedDepartmentType === 'AIR' && isAirExport && !this.isMawbStockAllocationEnabled && this.bookingData) {
     setTimeout(() => {
