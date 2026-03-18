@@ -167,6 +167,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   isPrintLoading: boolean;
   currentCompany: any;
   currentBranch: any;
+  isMawbStockAllocationEnabled = false;
   MenuMasterSid: any;
   filterOption: any;
   isFormDisabled: boolean = false;
@@ -1411,8 +1412,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       forwarder: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['forwarder'] }).pipe(catchError(err => of([]))),
       yard: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['yard'] }).pipe(catchError(err => of([]))),
       cfs: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['cFS'] }).pipe(catchError(err => of([]))),
+      mawbStockAllocationConfig: this.masterService.getConfigurationValue(CompanyMasterSid, 'MawbStockAllocation').pipe(catchError(() => of(null))),
 
-    }).pipe(tap(({ shippers, consignees, notify, carriers,airline, vessels, incos, salesmans, agents, forwarder, yard, cfs, }) => {
+    }).pipe(tap(({ shippers, consignees, notify, carriers,airline, vessels, incos, salesmans, agents, forwarder, yard, cfs, mawbStockAllocationConfig }) => {
       this.shipperList = shippers.data;
       this.filteredShipperList = shippers.data;
       this.consigneeList = consignees.data;
@@ -1427,10 +1429,40 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       this.agentList = agents.data;
       this.forwarderList = forwarder.data;
       this.yardlist = yard.data;
+      this.isMawbStockAllocationEnabled = this.parseCompanyBoolean(mawbStockAllocationConfig);
+      this.updateCarrierValidation(this.selectedDepartment);
       if (this.bookingData) {
         this.evaluateDropdownOrFreeText();
       }
     }))
+  }
+
+  private parseCompanyBoolean(value: any): boolean {
+    if (value === true || value === false) {
+      return value;
+    }
+
+    const normalized = String(value ?? '').trim().toUpperCase();
+    return ['Y', 'YES', 'TRUE', '1'].includes(normalized);
+  }
+
+  private updateCarrierValidation(department?: any): void {
+    const carrierControl = this.bookingForm.get('CarrierName');
+    if (!carrierControl) {
+      return;
+    }
+
+    const isAirExport =
+      String(department?.departmentType ?? '').toUpperCase() === 'AIR' &&
+      String(department?.ExportImport ?? '').toUpperCase() === 'EXPORT';
+
+    if (isAirExport && this.isMawbStockAllocationEnabled) {
+      carrierControl.setValidators([Validators.required]);
+    } else {
+      carrierControl.clearValidators();
+    }
+
+    carrierControl.updateValueAndValidity({ emitEvent: false });
   }
 
   loadCargoLookups() {
@@ -2574,6 +2606,7 @@ onCarrierChangeForAir(carrier: any): void {
       this.b['CutOffDate'].setValue('');
       this.b['MovementType'].setValue(null);
        this.b['JobType'].setValue('');
+      this.updateCarrierValidation(null);
       this.handleImportExport();
       this.handleCFSOrYard()
       return;
@@ -2601,6 +2634,7 @@ onCarrierChangeForAir(carrier: any): void {
     });
   }
      this.autoSetJobType(department);
+    this.updateCarrierValidation(department);
     const isFCLDepartment = this.selectedFCLLCL === "FCL";
   const isStuffedStatus = this.b['BookingStatus']?.value === 'Stuffed';
   
@@ -4532,8 +4566,16 @@ deepEqual(obj1: any, obj2: any): boolean {
     ETA: selectedVoyage?.ETA ? new Date(selectedVoyage.ETA) : (this.b['ETA']?.value ? new Date(this.b['ETA']?.value) : null),
     CutOffDate: selectedVoyage?.PortCutoff ? new Date(selectedVoyage.PortCutoff) : (this.b['CutOffDate']?.value ? new Date(this.b['CutOffDate']?.value): null),
     shipmentList: shipmentList,
-    screenName : this.selectedDepartmentType === "AIR" ? "Master Air Waybill" : "Master Job"
+    screenName : this.selectedDepartmentType === "AIR" ? "Master Air Waybill" : "Master Job",
+    sourceScreen: 'Booking'
   };
+
+  const carrierControl = this.bookingForm.get('CarrierName');
+  if (carrierControl?.invalid) {
+    carrierControl.markAsTouched();
+    this.appSettingService.showWarning('Please select Carrier for Air Export', 'Carrier Required');
+    return;
+  }
 
   console.log('Generate Job Payload:', payload);
   this.isSaving = true;
@@ -4561,7 +4603,7 @@ deepEqual(obj1: any, obj2: any): boolean {
     },
     error: (error) => {
       this.spinner.hide();
-      this.appSettingService.showError('Failed to generate master job');
+      this.appSettingService.showError(error?.error?.message || 'Failed to generate master job');
       console.error('Error generating master job:', error);
     }
   });

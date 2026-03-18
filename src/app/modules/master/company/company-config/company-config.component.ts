@@ -76,6 +76,12 @@ export class CompanyConfigComponent implements OnInit {
       type: 'boolean' as const,
       defaultValue: false
     },
+    {
+      name: 'MawbStockAllocation',
+      displayName: 'MAWB Stock Auto Allocation',
+      type: 'boolean' as const,
+      defaultValue: false
+    },
     
   ];
 
@@ -529,7 +535,7 @@ export class CompanyConfigComponent implements OnInit {
     if (value === false || value === null || value === undefined) return false;
 
     const normalized = String(value).trim().toUpperCase();
-    if (configName === 'SaveAsFilePath') {
+    if (['SaveAsFilePath', 'MawbStockAllocation'].includes(configName)) {
       return normalized === 'Y' || normalized === 'YES' || normalized === 'TRUE' || normalized === '1';
     }
     return normalized === 'TRUE' || normalized === '1';
@@ -537,7 +543,7 @@ export class CompanyConfigComponent implements OnInit {
 
   private formatBooleanValue(value: any, configName: string): string {
     const normalized = Boolean(value);
-    if (configName === 'SaveAsFilePath') {
+    if (['SaveAsFilePath', 'MawbStockAllocation'].includes(configName)) {
       return normalized ? 'Y' : 'N';
     }
     return normalized.toString();
