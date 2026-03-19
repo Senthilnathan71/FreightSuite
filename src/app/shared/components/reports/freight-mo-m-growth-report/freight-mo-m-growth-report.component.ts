@@ -25,14 +25,11 @@ export class FreightMoMGrowthReportComponent {
     private appSettingsService: AppSettingsService,
     private reportRegistryService: ReportRegistryService
   ) {
-    console.log('Outstanding Report Data:', this.data);
   }
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingsService.getCurrentCompanyInfo();
     this.currentBranch = this.appSettingsService.getCurrentBranchInfo();
-    console.log('Current Company:', this.currentCompany);
-    console.log('Current Branch:', this.currentBranch);
     this.orientation = this.reportRegistryService.getReportConfig('freight-mom-growth').pdfOrientation;
   }
 
@@ -115,6 +112,25 @@ export class FreightMoMGrowthReportComponent {
     ];
 
     const rows: ExcelRow[] = [];
+    const colCount = tableHeaders.length;
+    const sectionHeaderValues = [
+      'Month',
+      'Total Shipments',
+      'Revenue',
+      'Cost',
+      'Gross Profit',
+      'GP %',
+      'Total Weight (KGS)',
+      'Total Volume (CBM)',
+      'TEUs',
+      'Active Customers',
+      'Avg Revenue per Shipment',
+      'Avg GP per Shipment'
+    ];
+    const buildHeaderRow = (): ExcelRow => ({
+      cells: sectionHeaderValues.map(value => ({ value, alignment: { horizontal: 'center' } })),
+      style: 'header'
+    });
 
     const currentMonth = new Date(this.fullData?.currentPeriod?.from).toLocaleString('default', { month: 'long' });
     const previousMonth = new Date(this.fullData?.previousPeriod?.from).toLocaleString('default', { month: 'long' });
@@ -124,10 +140,11 @@ export class FreightMoMGrowthReportComponent {
       // ---------- Department Title Row ----------
       rows.push({
         cells: [
-          { value: dept.department, }
+          { value: dept.department, colspan: colCount }
         ],
         style: 'section'
       });
+      rows.push(buildHeaderRow());
 
       // ---------- Current Period ----------
       rows.push(this.buildDeptRow(dept, currentMonth));
@@ -144,9 +161,6 @@ export class FreightMoMGrowthReportComponent {
         rows.push(this.buildTotalRow(total));
       }
 
-      // ---------- Empty spacer ----------
-      rows.push({ cells: [{ value: '' }] });
-
     });
 
     return {
@@ -160,6 +174,8 @@ export class FreightMoMGrowthReportComponent {
           { label: 'To Date', value: this.formatDate(this.params?.ToDate) }
         ]
       },
+      includeTableHeaders: false,
+      suppressSectionBorders: true,
       tableHeaders,
       rows,
       columnWidths: [14, 16, 14, 14, 14, 10, 16, 16, 10, 16, 18, 18],
@@ -195,15 +211,15 @@ export class FreightMoMGrowthReportComponent {
     return {
       cells: [
         { value: monthLabel },
-        { value: dept.totalShipment },
+        { value: dept.totalShipment , alignment:{horizontal:'center'}},
         { value: this.formatNumber(dept.totalRevenue) },
         { value: this.formatNumber(dept.totalCost) },
         { value: this.formatNumber(dept.grossProfit) },
-        { value: gpPercent.toFixed(2) + ' %' },
+        { value: gpPercent.toFixed(2) + ' %'  , alignment:{horizontal:'right'}},
         { value: this.formatNumber(dept.totalGrossWt) },
         { value: this.formatNumber(dept.totalVolume) },
-        { value: dept.totalNoOfTEU },
-        { value: dept.jobCount },
+        { value: dept.totalNoOfTEU , alignment:{horizontal:'center'}},
+        { value: dept.jobCount , alignment:{horizontal:'center'}},
         { value: avgRevenue.toFixed(2) },
         { value: avgGP.toFixed(2) }
       ],
@@ -215,16 +231,16 @@ export class FreightMoMGrowthReportComponent {
   private buildTotalRow(total: any): ExcelRow {
     return {
       cells: [
-        { value: 'Total' },
-        { value: total.totalShipment },
+        { value: 'Total' , alignment:{horizontal:'right'}},
+        { value: total.totalShipment , alignment:{horizontal:'center'}},
         { value: this.formatNumber(total.totalRevenue) },
         { value: this.formatNumber(total.totalCost) },
         { value: this.formatNumber(total.grossProfit) },
         { value: '' },
         { value: this.formatNumber(total.totalGrossWt) },
         { value: this.formatNumber(total.totalVolume) },
-        { value: total.totalNoOfTEU },
-        { value: total.jobCount },
+        { value: total.totalNoOfTEU , alignment:{horizontal:'center'}},
+        { value: total.jobCount , alignment:{horizontal:'center'}},
         { value: '' },
         { value: '' }
       ],

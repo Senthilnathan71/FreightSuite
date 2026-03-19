@@ -922,7 +922,11 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
   isQuickFormExpanded = false;
 
   resetForm() {
-    this.patchValues(this.serviceJobData);
+    if(this.isEditMode){
+      this.patchValues(this.serviceJobData);
+    }else{
+      this.serviceJobForm.reset({ status : 'A' });
+    }
   }
 
   toNgbDateStruct(date: Date | null): NgbDateStruct | null {

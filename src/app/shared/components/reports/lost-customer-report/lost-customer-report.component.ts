@@ -67,7 +67,7 @@ export class LostCustomerReportComponent {
         { value: item.CustomerAddress || '' },
         { value: item.ContactNo || '' , alignment:{horizontal:'left'} },
         { value: item.BookingNo || '' },
-        { value: this.formatDate(item.BookingDateTime) , alignment:{horizontal:'center'} },
+        { value: this.formatDate(item.BookingDateTime)  },
         { value: item.SalesmanName || '' },
         { value: this.formatNumber(item.GP) ?? 0 },
         { value: item.days ?? 0 , alignment:{horizontal:'center'} }

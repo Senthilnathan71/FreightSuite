@@ -230,7 +230,7 @@ export class Vat210Component {
 
   rows.push({
     cells: [
-      { value: 'Audit File Info Not Provided (Unposted)', colspan: 2 },
+      { value: 'Information required for generating Audit File not provided', colspan: 2 },
       { value: this.summary?.unpostedVoucher || 0 }
     ]
   });
@@ -387,8 +387,9 @@ export class Vat210Component {
 
   rows.push({
     cells: [
-      { value: 'Balance VAT Payable', colspan: 2 },
-      { value: this.formatNumber(this.vatPayableAmountLocal) }
+      { value: 'Balance VAT Payable' },
+      { value: this.formatNumber(this.vatPayableAmountLocal), alignment: { horizontal: 'right' } },
+      { value: this.formatNumber(this.vatPayableAmountOversea) , alignment: { horizontal: 'right' } }
     ],
     style: 'grandTotal'
   });
@@ -414,7 +415,7 @@ export class Vat210Component {
     columnWidths: [45, 20, 20],
 
     notes: [
-      'Total Vouchers: Includes all posted invoices, credit notes, vendor invoices, etc.',
+      'Total Vouchers: Includes all vouchers (posted) and (unposted), such as invoices, creditnotes, vendor invoices, and vendor credit notes.',
       'Included in Return: Includes vouchers containing VAT-related transactions.',
       'Not Relevant: Includes vouchers with no VAT transactions.',
       'Audit File Info Not Provided: Includes unposted vouchers.',

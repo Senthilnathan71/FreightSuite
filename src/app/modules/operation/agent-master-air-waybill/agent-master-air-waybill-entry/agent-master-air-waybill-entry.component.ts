@@ -3574,8 +3574,16 @@ getVoyageTypeBasedOnDept(deptId: number) {
   isQuickFormExpanded = false;
 
 resetForm() {
+  if (this.isEditMode) {
+    this.patchValues(this.bookingData);
+    return;
+  }
+
   this.houseJobForm.reset({
-    status: 'Active'
+    status: 'Active',
+    HouseStatus: 'Job Generated',
+    NominatedBy: 'Self',
+    JobType: 'Agent',
   });
 
   this.filteredPorts = [];

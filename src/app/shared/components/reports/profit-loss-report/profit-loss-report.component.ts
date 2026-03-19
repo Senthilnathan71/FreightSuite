@@ -29,7 +29,7 @@ export class ProfitLossReportComponent {
     private leadService: LeadService,
     private reportRegistryService: ReportRegistryService
   ) {
-    console.log('Outstanding Report Data:', this.data);
+    console.log('Profit Loss Report Data:', this.data);
   }
 
   ngOnInit(): void {
@@ -131,9 +131,7 @@ getExcelData(): ComplexReportExportConfig {
   ======================== */
   rows.push({
     cells: [
-      { value: 'REVENUE' },
-      { value: '' }, // Ledger placeholder
-      ...yearKeys.map(() => ({ value: '' }))
+      { value: 'REVENUE' , colspan:3},
     ],
     style: 'section'
   });
@@ -146,9 +144,13 @@ getExcelData(): ComplexReportExportConfig {
         const cells: ExcelCell[] = [];
 
         if (index === 0) {
-          cells.push({ value: group.subGroupName }); // Subgroup
+          cells.push({
+            value: group.subGroupName,
+            rowspan: group.items.length + 1,
+            marginTop: Math.max(0, group.items.length * 8)
+          }); // Subgroup
         } else {
-          cells.push({ value: '' }); // blank for other rows
+          cells.push({ value: '' }); // placeholder row for rowspan
         }
 
         cells.push({ value: item.LedgerName }); // Ledger
@@ -163,8 +165,8 @@ getExcelData(): ComplexReportExportConfig {
       // Total row
       rows.push({
         cells: [
-          { value: `Total ${group.subGroupName}` },
           { value: '' }, // blank for ledger
+          { value: `Total ${group.subGroupName}` , alignment:{horizontal:'right'} },
           ...yearKeys.map(y => ({ value: this.formatNumber(this.getGroupTotal(group.items, y)) }))
         ],
         style: 'total'
@@ -176,9 +178,7 @@ getExcelData(): ComplexReportExportConfig {
   ======================== */
   rows.push({
     cells: [
-      { value: 'EXPENSES' },
-      { value: '' }, // Ledger placeholder
-      ...yearKeys.map(() => ({ value: '' }))
+      { value: 'EXPENSES' , colspan:3},
     ],
     style: 'section'
   });
@@ -191,9 +191,13 @@ getExcelData(): ComplexReportExportConfig {
         const cells: ExcelCell[] = [];
 
         if (index === 0) {
-          cells.push({ value: group.subGroupName });
+          cells.push({
+            value: group.subGroupName,
+            rowspan: group.items.length + 1,
+            marginTop: Math.max(0, group.items.length * 8)
+          });
         } else {
-          cells.push({ value: '' });
+          cells.push({ value: '' }); // placeholder row for rowspan
         }
 
         cells.push({ value: item.LedgerName });
@@ -208,8 +212,8 @@ getExcelData(): ComplexReportExportConfig {
       // Total row
       rows.push({
         cells: [
-          { value: `Total ${group.subGroupName}` },
           { value: '' },
+          { value: `Total ${group.subGroupName}` , alignment:{horizontal:'right'} },
           ...yearKeys.map(y => ({ value: this.formatNumber(this.getGroupTotal(group.items, y)) }))
         ],
         style: 'total'
@@ -221,8 +225,7 @@ getExcelData(): ComplexReportExportConfig {
   ======================== */
   rows.push({
     cells: [
-      { value: 'Gross Profit' },
-      { value: '' },
+      { value: 'Gross Profit' ,  colspan:2 , alignment:{horizontal:'right'} },
       ...yearKeys.map(y => ({ value: this.formatNumber(this.getGrossProfit(y)) }))
     ],
     style: 'grandTotal'
@@ -233,8 +236,7 @@ getExcelData(): ComplexReportExportConfig {
   ======================== */
   rows.push({
     cells: [
-      { value: 'Net Profit' },
-      { value: '' },
+      { value: 'Net Profit' , colspan:2 , alignment:{horizontal:'right'} },
       ...yearKeys.map(y => ({ value: this.formatNumber(this.getNetProfit(y)) }))
     ],
     style: 'grandTotal'
@@ -251,6 +253,10 @@ getExcelData(): ComplexReportExportConfig {
         { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
         { label: 'Branch', value: this.fullData?.BranchInvolved || '' }
       ]
+    },
+    sectionRowFillByText: {
+      REVENUE: '#dceff4',
+      EXPENSES: '#f2dcdc'
     },
     tableHeaders,
     rows,

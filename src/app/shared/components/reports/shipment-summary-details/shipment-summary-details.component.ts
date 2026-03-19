@@ -49,11 +49,16 @@ export class ShipmentSummaryDetailsComponent {
     return this.fullData?.bucketLabels || [];
   }
   
-  getFilteredCustomerType(customerType: string[]): string {
-    if (!customerType || !Array.isArray(customerType)) return '';
-    const allowed = ['consignee', 'shipper'];
-    return customerType.filter(c => allowed.includes(c)).join(', ');
-  }
+getFilteredCustomerType(customerType: string[]): string {
+  if (!customerType || !Array.isArray(customerType)) return '';
+
+  const allowed = ['consignee', 'shipper', 'customer'];
+
+  return customerType
+    .filter(c => allowed.includes(c))
+    .map(c => c.charAt(0).toUpperCase() + c.slice(1).toLowerCase())
+    .join(', ');
+}
 
 
   getExcelData(): ComplexReportExportConfig {

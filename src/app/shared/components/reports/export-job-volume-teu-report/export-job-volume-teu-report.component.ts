@@ -116,6 +116,9 @@ export class ExportJobVolumeTeuReportComponent {
       12, // TEU
       15, // Weight
       18  // Chargeable Wt
+    ],
+    notes:[
+      'This report includes all records taken from the Export Master Job.'
     ]
   };
 }

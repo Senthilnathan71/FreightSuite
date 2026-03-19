@@ -23,6 +23,10 @@ export interface ExcelExportConfig {
 export interface ExcelCell {
   value: string | number;
   colspan?: number;
+  rowspan?: number;
+  border?: [boolean, boolean, boolean, boolean];
+  fillColor?: string;
+  marginTop?: number;
   alignment?: {
     horizontal?: 'left' | 'center' | 'right';
     vertical?: 'top' | 'middle' | 'bottom';
@@ -55,6 +59,10 @@ export interface ComplexReportExportConfig {
   reportHeader: ReportHeaderConfig;
   tableHeaders: ExcelHeader[];
   includeTableHeaders?: boolean;
+  suppressSectionBorders?: boolean;
+  suppressSectionBordersByText?: string[];
+  suppressInnerDataRowLines?: boolean;
+  sectionRowFillByText?: Record<string, string>;
   rows: ExcelRow[];
   columnWidths?: number[];
   summaryTable?: {

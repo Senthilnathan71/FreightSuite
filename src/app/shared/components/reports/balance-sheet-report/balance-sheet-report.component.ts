@@ -167,10 +167,10 @@ export class BalanceSheetReportComponent {
     const nonAssetCategories = (this.processedFunds || []).filter(cat => cat.category !== 'Asset');
     const assetCategories = (this.processedFunds || []).filter(cat => cat.category === 'Asset');
     const panelHeaderCells: ExcelCell[] = [
-      { value: 'Group' },
-      { value: 'SubGroup' },
-      { value: 'Ledger' },
-      { value: 'Balance' }
+      { value: 'Group', alignment: { horizontal: 'center' } },
+      { value: 'SubGroup', alignment: { horizontal: 'center' } },
+      { value: 'Ledger', alignment: { horizontal: 'center' } },
+      { value: 'Balance', alignment: { horizontal: 'center' } }
     ];
 
     const leftRows: ExcelRow[] = [];
@@ -178,14 +178,26 @@ export class BalanceSheetReportComponent {
 
     const pushPanelCategoryRows = (target: ExcelRow[], cat: any): void => {
       target.push({ cells: [{ value: cat.category, colspan: 4 }], style: 'section' });
-      target.push({ cells: panelHeaderCells, style: 'section' });
+      target.push({ cells: panelHeaderCells, style: 'header' });
       (cat.items || []).forEach((item: any) => {
         target.push({
           cells: [
-            { value: item.showGroup ? (item.groupName || '') : '' },
-            { value: item.showSubGroup ? (item.subgroupName || '') : '' },
+            item.showGroup
+              ? {
+                  value: item.groupName || '',
+                  rowspan: item.groupRowSpan || 1,
+                  marginTop: Math.max(0, ((item.groupRowSpan || 1) - 1) * 8)
+                }
+              : { value: '' },
+            item.showSubGroup
+              ? {
+                  value: item.subgroupName || '',
+                  rowspan: item.subGroupRowSpan || 1,
+                  marginTop: Math.max(0, ((item.subGroupRowSpan || 1) - 1) * 8)
+                }
+              : { value: '' },
             { value: item.ledgerName || '' },
-            { value: this.formatNumber(item.LocalAmt) }
+            { value: this.formatNumber(item.LocalAmt), alignment: { horizontal: 'right' } }
           ],
           style: 'data'
         });
@@ -193,35 +205,35 @@ export class BalanceSheetReportComponent {
 
       target.push({
         cells: [
-          { value: 'Category Total', colspan: 3 },
-          { value: this.formatNumber(cat.categoryTotal) }
+          { value: 'Category Total', colspan: 3, alignment: { horizontal: 'right' } },
+          { value: this.formatNumber(cat.categoryTotal), alignment: { horizontal: 'right' } }
         ],
         style: 'total'
       });
-      target.push({ cells: [{ value: '', colspan: 4 }], style: 'data' });
     };
 
     // Build LEFT panel rows (Source of Funds side)
+    leftRows.push({ cells: [{ value: 'Source of Funds', colspan: 4 }], style: 'section' });
+    leftRows.push({ cells: [{ value: 'Equity', colspan: 4 }], style: 'section' });
+    leftRows.push({ cells: panelHeaderCells, style: 'header' });
+    leftRows.push({
+      cells: [
+        { value: 'Reserve & Surplus' },
+        { value: 'Retained Earning' },
+        { value: 'Retained Earning 2024' },
+        { value: this.formatNumber(retainedEarning), alignment: { horizontal: 'right' } }
+      ],
+      style: 'data'
+    });
+    leftRows.push({
+      cells: [
+        { value: 'Category Total', colspan: 3, alignment: { horizontal: 'right' } },
+        { value: this.formatNumber(retainedEarning), alignment: { horizontal: 'right' } }
+      ],
+      style: 'total'
+    });
+
     nonAssetCategories.forEach(cat => {
-      leftRows.push({ cells: [{ value: 'Source of Funds', colspan: 4 }], style: 'section' });
-      leftRows.push({ cells: [{ value: 'Equity', colspan: 4 }], style: 'section' });
-      leftRows.push({ cells: panelHeaderCells, style: 'section' });
-      leftRows.push({
-        cells: [
-          { value: 'Reserve & Surplus' },
-          { value: 'Retained Earning' },
-          { value: 'Retained Earning 2024' },
-          { value: this.formatNumber(retainedEarning) }
-        ],
-        style: 'data'
-      });
-      leftRows.push({
-        cells: [
-          { value: 'Category Total', colspan: 3 },
-          { value: this.formatNumber(retainedEarning) }
-        ],
-        style: 'total'
-      });
       pushPanelCategoryRows(leftRows, cat);
     });
 
@@ -232,20 +244,30 @@ export class BalanceSheetReportComponent {
     });
 
     // Merge left and right panel rows into one "flex-like" Excel sheet
-    const emptyPanelRow: ExcelRow = { cells: [{ value: '', colspan: 4 }], style: 'data' };
+    const emptyPanelCells: ExcelCell[] = Array.from({ length: 4 }, () => ({
+      value: '',
+      border: [false, false, false, false],
+      fillColor: '#ffffff'
+    }));
     const totalRows = Math.max(leftRows.length, rightRows.length);
 
     for (let i = 0; i < totalRows; i++) {
-      const left = leftRows[i] || emptyPanelRow;
-      const right = rightRows[i] || emptyPanelRow;
+      const left = leftRows[i];
+      const right = rightRows[i];
+      const leftCells = left?.cells || emptyPanelCells;
+      const rightCells = right?.cells || emptyPanelCells;
+      const mergedStyle =
+        left?.style === right?.style
+          ? left?.style
+          : (left?.style === 'data' || right?.style === 'data' ? 'data' : 'section');
 
       rows.push({
         cells: [
-          ...left.cells,
-          { value: '' }, // center gap column to separate both panels
-          ...right.cells
+          ...leftCells,
+          { value: '', border: [false, false, false, false], fillColor: '#ffffff' },
+          ...rightCells
         ],
-        style: left.style || right.style || 'data'
+        style: mergedStyle || 'data'
       });
     }
 
@@ -262,9 +284,11 @@ export class BalanceSheetReportComponent {
         ]
       },
       includeTableHeaders: false,
+      suppressSectionBorders: true,
+      suppressSectionBordersByText: ['Source of Funds', 'Application of Funds'],
       tableHeaders,
       rows,
-      columnWidths: [16, 16, 20, 14, 3, 16, 16, 20, 14]
+      columnWidths: [16, 16, 20, 14, 0.3, 16, 16, 20, 14]
     };
   }
 

@@ -73,17 +73,17 @@ export class HouseJobLossReportComponent {
     const rows: ExcelRow[] = (this.fullData?.data || []).map(item => ({
       cells: [
         { value: item.HouseNo || '' },
-        { value: this.formatDate(item.jobDate) },
-        { value: item.houseDept || '' },
-        { value: item.MBLNo || '' },
-        { value: item.HBLNo || '' },
+        { value: this.formatDate(item.jobDate) , alignment:{horizontal:'center'} },
+        { value: item.houseDept || '' , alignment:{horizontal:'center'} },
+        { value: item.MBLNo || '' , alignment:{horizontal:'left'} },
+        { value: item.HBLNo || '' , alignment:{horizontal:'left'} },
         { value: item.houseStatus || '' },
-        { value: item.jobType || '' },
+        { value: item.jobType || '' , alignment:{horizontal:'center'} },
         { value: item.customerName || '' },
 
         {
           value: `${item.vesselName || ''}${item.vesselName && item.voyNo ? ' / ' : ''
-            }${item.voyNo || ''}`
+            }${item.voyNo || ''}` , alignment:{horizontal:'left'}
         },
 
         { value: item.originAgent || '' },

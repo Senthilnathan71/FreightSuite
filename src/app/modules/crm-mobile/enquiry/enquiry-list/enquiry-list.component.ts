@@ -483,12 +483,14 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
   onAdvancedSearch(event: { searchValue: string; filters: AdvancedFilterValues }): void {
     this.filterValue = event.searchValue;
     this.currentFilters = event.filters;
+    this.updatePortFilterOptionsFromCurrentFilters();
     this.page = 1;
     this.search();
   }
 
   onDepartmentFilterChanged(departmentSid: number | null): void {
-    this.setFilteredPortOptions(departmentSid);
+    const selectedPolCode = this.currentFilters.pol ? String(this.currentFilters.pol) : null;
+    this.setFilteredPortOptions(departmentSid, selectedPolCode);
   }
 
   report(): void {
@@ -731,6 +733,7 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
   resetFilters(): void {
     this.filterValue = '';
     this.currentFilters = {};
+    this.updatePortFilterOptionsFromCurrentFilters();
     this.sortColumn = "EnquiryNumber"
     this.sortDirection = "asc"
     this.enquiryItems = [];
@@ -761,11 +764,11 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
         displayName: `${port.PortName} (${port.PortCode})`
       }));
 
-      this.setFilteredPortOptions(null);
+      this.updatePortFilterOptionsFromCurrentFilters();
     });
   }
 
-  private setFilteredPortOptions(departmentSid: number | null): void {
+  private setFilteredPortOptions(departmentSid: number | null, selectedPolCode?: string | null): void {
     const normalizedDepartmentSid = departmentSid !== null ? Number(departmentSid) : null;
     const selectedDepartment = this.departmentFilterConfig.options.find(
       (dept: any) => Number(dept?.DepartmentMasterSid) === normalizedDepartmentSid
@@ -779,8 +782,21 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
           return departmentType === 'AIR' ? portType === 'AIR' : portType === 'SEA';
       });
 
+    const normalizedSelectedPolCode = selectedPolCode
+      ? String(selectedPolCode).trim().toUpperCase()
+      : null;
+    const podOptions = normalizedSelectedPolCode
+      ? filteredPorts.filter((port: any) => String(port?.PortCode || '').trim().toUpperCase() !== normalizedSelectedPolCode)
+      : filteredPorts;
+
     this.polFilterConfig = { ...this.polFilterConfig, options: filteredPorts };
-    this.podFilterConfig = { ...this.podFilterConfig, options: filteredPorts };
+    this.podFilterConfig = { ...this.podFilterConfig, options: podOptions };
+  }
+
+  private updatePortFilterOptionsFromCurrentFilters(): void {
+    const departmentSid = this.currentFilters.departmentSid ? Number(this.currentFilters.departmentSid) : null;
+    const selectedPolCode = this.currentFilters.pol ? String(this.currentFilters.pol) : null;
+    this.setFilteredPortOptions(departmentSid, selectedPolCode);
   }
 
   private getPortSidByCode(portCode: string | null | undefined): number | null {

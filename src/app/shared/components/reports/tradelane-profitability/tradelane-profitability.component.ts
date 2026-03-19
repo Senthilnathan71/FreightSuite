@@ -65,24 +65,29 @@ export class TradelaneProfitabilityComponent {
     ];
 
     const rows: ExcelRow[] = [];
+    const colCount = tableHeaders.length;
+    const bookingHeaderValues = ['Booking No', 'Revenue', 'Cost', 'Profit', 'Gross Wt', 'Net Wt', 'CBM'];
+    const masterHeaderValues = ['MBL No', 'Revenue', 'Cost', 'Profit', 'Gross Wt', 'Net Wt', 'CBM'];
+    const houseHeaderValues = ['HBL No', 'Revenue', 'Cost', 'Profit', 'Gross Wt', 'Net Wt', 'CBM'];
+    const buildHeaderRow = (values: string[]): ExcelRow => ({
+      cells: values.map(value => ({ value, alignment: { horizontal: 'center' } })),
+      style: 'header'
+    });
 
     (this.fullData?.groupedRoutes || []).forEach(route => {
       // ---- Route title row ----
       rows.push({
-        cells: [
-          { value: `Route: ${route.route}` },
-          { value: '' }, { value: '' }, { value: '' },
-          { value: '' }, { value: '' }, { value: '' }
-        ],
+        cells: [{ value: `Route: ${route.route}`, colspan: colCount }],
         style: 'section'
       });
 
       // ---- Booking Section ----
       if (route.bookingRows?.length > 0) {
         rows.push({
-          cells: [{ value: 'Booking' }, ...Array(6).fill({ value: '' })],
+          cells: [{ value: 'Booking', colspan: colCount }],
           style: 'section'
         });
+        rows.push(buildHeaderRow(bookingHeaderValues));
 
         route.bookingRows.forEach(item => {
           rows.push({
@@ -113,17 +118,18 @@ export class TradelaneProfitabilityComponent {
         });
 
         rows.push({
-          cells: Array(7).fill({ value: '' }),
-          style: 'data'
+          cells: [{ value: '', colspan: colCount }],
+          style: 'section'
         });
       }
 
       // ---- Master Job Section ----
       if (route.masterRows?.length > 0) {
         rows.push({
-          cells: [{ value: 'Master Job' }, ...Array(6).fill({ value: '' })],
+          cells: [{ value: 'Master Job', colspan: colCount }],
           style: 'section'
         });
+        rows.push(buildHeaderRow(masterHeaderValues));
 
         route.masterRows.forEach(item => {
           rows.push({
@@ -154,17 +160,18 @@ export class TradelaneProfitabilityComponent {
         });
 
         rows.push({
-          cells: Array(7).fill({ value: '' }),
-          style: 'data'
+          cells: [{ value: '', colspan: colCount }],
+          style: 'section'
         });
       }
 
       // ---- House Job Section ----
       if (route.houseRows?.length > 0) {
         rows.push({
-          cells: [{ value: 'House Job' }, ...Array(6).fill({ value: '' })],
+          cells: [{ value: 'House Job', colspan: colCount }],
           style: 'section'
         });
+        rows.push(buildHeaderRow(houseHeaderValues));
 
         route.houseRows.forEach(item => {
           rows.push({
@@ -195,8 +202,8 @@ export class TradelaneProfitabilityComponent {
         });
 
         rows.push({
-          cells: Array(7).fill({ value: '' }),
-          style: 'data'
+          cells: [{ value: '', colspan: colCount }],
+          style: 'section'
         });
       }
     });
@@ -215,6 +222,8 @@ export class TradelaneProfitabilityComponent {
           { label: 'POD', value: this.fullData?.filters?.POD || '' }
         ]
       },
+      includeTableHeaders: false,
+      suppressSectionBorders: true,
       tableHeaders,
       rows,
       columnWidths: [15, 12, 12, 12, 12, 12, 12]

@@ -30,11 +30,59 @@ const COMPACT_TABLE_LAYOUT = {
   paddingBottom: () => 2
 };
 
+function buildMainTableLayout(
+  rowMeta: Array<{ style: string; borderlessSection: boolean }>,
+  suppressSectionBorders = false,
+  suppressInnerDataRowLines = false
+) {
+  if (!suppressSectionBorders && !suppressInnerDataRowLines) {
+    return COMPACT_TABLE_LAYOUT;
+  }
+
+  return {
+    ...COMPACT_TABLE_LAYOUT,
+    hLineWidth: (i: number) => {
+      const prev = i > 0 ? rowMeta[i - 1] : undefined;
+      const next = i < rowMeta.length ? rowMeta[i] : undefined;
+      const prevStyle = prev?.style;
+      const nextStyle = next?.style;
+      if (suppressInnerDataRowLines && prevStyle === 'data' && nextStyle === 'data') {
+        return 0;
+      }
+      if (
+        suppressSectionBorders &&
+        prevStyle === 'section' &&
+        nextStyle === 'section' &&
+        prev?.borderlessSection &&
+        !next?.borderlessSection
+      ) {
+        return 0.5;
+      }
+      if (prevStyle === 'total' && nextStyle === 'section') {
+        return 0.5;
+      }
+      if (
+        suppressSectionBorders &&
+        ((prevStyle === 'section' && prev?.borderlessSection) || (nextStyle === 'section' && next?.borderlessSection))
+      ) {
+        return 0;
+      }
+      return 0.5;
+    }
+  };
+}
+
 export function generateGenericReportDocument(data: GenericReportPdfData): any {
   const { exportConfig, company, branch, userData, logo, orientation } = data;
   const isLandscape = orientation === 'landscape';
   const logoHeight = 80;
   const colCount = exportConfig.tableHeaders.length;
+  const includeTableHeaders = exportConfig.includeTableHeaders !== false;
+  const suppressSectionBorders = exportConfig.suppressSectionBorders === true;
+  const suppressInnerDataRowLines = exportConfig.suppressInnerDataRowLines === true;
+  const borderlessSectionTextSet = new Set(
+    (exportConfig.suppressSectionBordersByText || []).map(v => String(v).trim().toUpperCase())
+  );
 
   // --- A) Fix column widths: scale proportionally, accounting for border+padding overhead ---
   const pageWidth = isLandscape ? 842 : 595;
@@ -279,7 +327,15 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
   const hasDataRows = exportConfig.rows.some(r => r.style !== 'total' && r.style !== 'grandTotal' && r.style !== 'section');
   let bodyRows: any[][];
   if (hasDataRows) {
-    bodyRows = exportConfig.rows.map(row => buildPdfRow(row, colCount));
+    bodyRows = exportConfig.rows.map(row =>
+      buildPdfRow(
+        row,
+        colCount,
+        suppressSectionBorders,
+        borderlessSectionTextSet,
+        exportConfig.sectionRowFillByText
+      )
+    );
   } else {
     // No actual data — show "No Record Found" spanning all columns
     const noRecordRow: any[] = [
@@ -288,17 +344,35 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
     for (let i = 1; i < colCount; i++) noRecordRow.push({ text: '' });
     bodyRows = [noRecordRow];
   }
+  const mainRowMeta = [
+    ...(includeTableHeaders ? [{ style: 'header', borderlessSection: false }] : []),
+    ...exportConfig.rows.map(r => {
+      const style = r.style || 'data';
+      const text = String(r.cells?.[0]?.value ?? '').trim().toUpperCase();
+      const borderlessSection =
+        style === 'section' &&
+        (suppressSectionBorders
+          ? (borderlessSectionTextSet.size === 0 || borderlessSectionTextSet.has(text))
+          : false);
+      return { style, borderlessSection };
+    })
+  ];
+  const mainTableLayout = buildMainTableLayout(
+    mainRowMeta,
+    suppressSectionBorders,
+    suppressInnerDataRowLines
+  );
 
   // Build content array
   const content: any[] = [
     // Main data table
     {
       table: {
-        headerRows: 1,
+        headerRows: includeTableHeaders ? 1 : 0,
         widths: widths,
-        body: [headerRow, ...bodyRows]
+        body: includeTableHeaders ? [headerRow, ...bodyRows] : bodyRows
       },
-      layout: COMPACT_TABLE_LAYOUT,
+      layout: mainTableLayout,
       fontSize: 7,
       margin: [0, 0, 0, 10]
     }
@@ -400,12 +474,32 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
 }
 
 /** Convert an ExcelRow to a pdfmake row (array of cells) */
-function buildPdfRow(row: ExcelRow, colCount: number): any[] {
+function buildPdfRow(
+  row: ExcelRow,
+  colCount: number,
+  suppressSectionBorders = false,
+  borderlessSectionTextSet?: Set<string>,
+  sectionRowFillByText?: Record<string, string>
+): any[] {
   const cells: any[] = [];
-  const isBold = row.style === 'total' || row.style === 'grandTotal' || row.style === 'section';
+  const isBold =
+    row.style === 'total' ||
+    row.style === 'grandTotal' ||
+    row.style === 'section' ||
+    row.style === 'header';
+  const sectionLabel = String(row.cells?.[0]?.value ?? '').trim().toUpperCase();
+  const isBorderlessSection =
+    row.style === 'section' &&
+    suppressSectionBorders &&
+    (!borderlessSectionTextSet || borderlessSectionTextSet.size === 0 || borderlessSectionTextSet.has(sectionLabel));
+  const mappedSectionFill =
+    row.style === 'section' && sectionRowFillByText
+      ? sectionRowFillByText[sectionLabel] || sectionRowFillByText[String(row.cells?.[0]?.value ?? '').trim()]
+      : undefined;
   const fillColor = row.style === 'grandTotal' ? '#e0e0e0'
                    : row.style === 'total' ? '#f2f2f2'
-                   : row.style === 'section' ? '#f7f7f7'
+                   : row.style === 'header' ? '#116897'
+                   : row.style === 'section' ? (mappedSectionFill || '#f7f7f7')
                    : null;
 
   for (const cell of row.cells) {
@@ -417,7 +511,16 @@ function buildPdfRow(row: ExcelRow, colCount: number): any[] {
       bold: isBold,
       fontSize: 7
     };
-    if (fillColor) pdfCell.fillColor = fillColor;
+    if (cell.fillColor) {
+      pdfCell.fillColor = cell.fillColor;
+    } else if (fillColor) {
+      pdfCell.fillColor = fillColor;
+    }
+    if (typeof cell.marginTop === 'number') {
+      pdfCell.margin = [0, cell.marginTop, 0, 0];
+    }
+    if (cell.border) pdfCell.border = cell.border;
+    if (row.style === 'header') pdfCell.color = '#ffffff';
     if (cell.alignment?.horizontal) {
       pdfCell.alignment = cell.alignment.horizontal;
     } else if (isNumeric) {
@@ -432,11 +535,24 @@ function buildPdfRow(row: ExcelRow, colCount: number): any[] {
       pdfCell.verticalAlignment = verticalMap[cell.alignment.vertical];
     }
     if (cell.colspan && cell.colspan > 1) {
+      if (isBorderlessSection) {
+        pdfCell.border = [false, false, false, false];
+      }
       pdfCell.colSpan = cell.colspan;
       cells.push(pdfCell);
       // push empty cells for colspan
-      for (let i = 1; i < cell.colspan; i++) cells.push({ text: '' });
+      for (let i = 1; i < cell.colspan; i++) {
+        cells.push(isBorderlessSection
+          ? { text: '', border: [false, false, false, false] }
+          : { text: '' });
+      }
     } else {
+      if (cell.rowspan && cell.rowspan > 1) {
+        pdfCell.rowSpan = cell.rowspan;
+      }
+      if (isBorderlessSection) {
+        pdfCell.border = [false, false, false, false];
+      }
       cells.push(pdfCell);
     }
   }
