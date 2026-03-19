@@ -8,13 +8,34 @@ import { buildHeader } from '../builders/pdf-header.builder';
 import { buildDivider } from '../builders/pdf-section.builder';
 import { createFooterFunction } from '../builders/pdf-footer.builder';
 import { getPdfStyles, PDF_DEFAULT_CONFIG } from '../styles/pdf-styles';
-import { formatNumber } from '../helpers/pdf-formatters';
+import { formatDate, formatNumber } from '../helpers/pdf-formatters';
+import { fontWeight } from 'html2canvas/dist/types/css/property-descriptors/font-weight';
 
 export function generateCommercialInvoiceDocument(data: CommercialInvoicePdfData): any {
+  const baseStyles = getPdfStyles();
+  const styles = {
+    ...baseStyles,
+    documentTitle: { ...baseStyles.documentTitle, fontSize: 14 },
+    labelBold: { ...baseStyles.labelBold, fontSize: 12 },
+    tableHeader: { ...baseStyles.tableHeader, fontSize: 12 },
+    tableCell: { ...baseStyles.tableCell, fontSize: 12 },
+    tableCellBold: { ...baseStyles.tableCellBold, fontSize: 12, bold: true }
+  };
+  const lightBorderedLayout = {
+    hLineWidth: () => 0.5,
+    vLineWidth: () => 0.5,
+    hLineColor: () => '#000000',
+    vLineColor: () => '#000000',
+    paddingLeft: () => 4,
+    paddingRight: () => 4,
+    paddingTop: () => 3,
+    paddingBottom: () => 3
+  };
+
   return {
     pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
     pageOrientation: data.config?.pageOrientation || 'landscape',
-    pageMargins: data.config?.pageMargins || [20, 20, 20, 60],
+    pageMargins: data.config?.pageMargins || [20, 20, 20, 30],
     background: function (currentPage, pageSize) {
       return {
         canvas: [
@@ -31,44 +52,68 @@ export function generateCommercialInvoiceDocument(data: CommercialInvoicePdfData
         logoHeight: 70,
         compact: true
       }),
-      buildDivider({ width: 770, margin: [0, 4, 0, 6], thickness: 1 }),
+      buildDivider({ width: 800, margin: [0, 4, 0, 6], thickness: 1 }),
       {
         text: 'Commercial Invoice',
         alignment: 'center',
         bold: true,
-        fontSize: 16,
+        fontSize: 14,
         margin: [0, 0, 0, 8]
       },
-      buildHeaderBlocks(data),
-      buildPartyBlocks(data),
-      buildCargoSummary(data),
-      buildCargoTotals(data),
-      buildCargoTable(data)
+      buildHeaderBlocks(data, lightBorderedLayout),
+      buildPartyBlocks(data, lightBorderedLayout),
+      buildCargoSummary(data, lightBorderedLayout),
+      buildCargoTotals(data, lightBorderedLayout),
+      buildCargoTable(data, lightBorderedLayout)
     ],
-    footer: createFooterFunction(data.userData),
-    styles: getPdfStyles(),
-    defaultStyle: PDF_DEFAULT_CONFIG.defaultStyle
+    footer: () => ({
+      columns: [
+        {
+          text: `Printed By : ${data.userData?.userName || ''}`,
+          fontSize: 8,
+          alignment: 'left',
+          width: '25%'
+        },
+        {
+          text: 'This document is computer-generated and does not require a signature.',
+          fontSize: 8,
+          alignment: 'center',
+          width: '*'
+        },
+        {
+          text: `Printed On : ${formatDate(new Date())}`,
+          fontSize: 8,
+          alignment: 'right',
+          width: '25%'
+        }
+      ],
+      margin: [25, -6, 25, 0]
+    }),
+    styles,
+    defaultStyle: { ...PDF_DEFAULT_CONFIG.defaultStyle, fontSize: 12 }
   };
 }
 
-function buildHeaderBlocks(data: CommercialInvoicePdfData): any {
+function buildHeaderBlocks(data: CommercialInvoicePdfData, layout: any): any {
   return {
     table: {
       widths: ['50%', '50%'],
+      heights: [24],
       body: [[
         buildKeyRow('HBL No.', data.invoice?.hblNo || ''),
         buildKeyRow('Job No.', data.invoice?.jobNo || '')
       ]]
     },
-    layout: 'bordered',
+    layout,
     margin: [0, 0, 0, 0]
   };
 }
 
-function buildPartyBlocks(data: CommercialInvoicePdfData): any {
+function buildPartyBlocks(data: CommercialInvoicePdfData, layout: any): any {
   return {
     table: {
       widths: ['50%', '50%'],
+      heights: [55, 55],
       body: [
         [
           buildPartyBox('To', data.invoice?.toName, data.invoice?.toAddress),
@@ -80,7 +125,7 @@ function buildPartyBlocks(data: CommercialInvoicePdfData): any {
         ]
       ]
     },
-    layout: 'bordered',
+    layout,
     margin: [0, 0, 0, 0]
   };
 }
@@ -89,12 +134,13 @@ function buildPartyBox(title: string, line1?: string, line2?: string): any {
   const stack: any[] = [
     { text: title, style: 'labelBold', margin: [0, 0, 0, 4] }
   ];
-  if (line1) stack.push({ text: line1 });
-  if (line2) stack.push({ text: line2 });
+  if (line1) stack.push({ text: line1, margin: [24, 0, 0, 2] });
+  if (line2) stack.push({ text: line2, margin: [24, 0, 0, 0] });
+  stack.push({ text: ' ', margin: [0, 4, 0, 0] });
 
   return {
     stack,
-    margin: [8, 6, 8, 6]
+    margin: [6, 4, 6, 4]
   };
 }
 
@@ -105,11 +151,11 @@ function buildKeyRow(label: string, value: string): any {
       { text: ':', width: 6 },
       { text: value || '', width: '*' }
     ],
-    margin: [6, 4, 6, 4]
+    margin: [4, 2, 4, 2]
   };
 }
 
-function buildCargoSummary(data: CommercialInvoicePdfData): any {
+function buildCargoSummary(data: CommercialInvoicePdfData, layout: any): any {
   return {
     table: {
       widths: ['25%', '25%', '25%', '25%'],
@@ -120,12 +166,12 @@ function buildCargoSummary(data: CommercialInvoicePdfData): any {
         buildSummaryCell('Gross Weight', formatNumber(data.invoice?.grossWeight, 3))
       ]]
     },
-    layout: 'bordered',
+    layout,
     margin: [0, 0, 0, 0]
   };
 }
 
-function buildCargoTotals(data: CommercialInvoicePdfData): any {
+function buildCargoTotals(data: CommercialInvoicePdfData, layout: any): any {
   return {
     table: {
       widths: ['25%', '25%', '25%', '25%'],
@@ -136,7 +182,7 @@ function buildCargoTotals(data: CommercialInvoicePdfData): any {
         buildSummaryCell('Total Value', data.invoice?.totalValue || '')
       ]]
     },
-    layout: 'bordered',
+    layout,
     margin: [0, 0, 0, 6]
   };
 }
@@ -151,7 +197,7 @@ function buildSummaryCell(label: string, value: string): any {
   };
 }
 
-function buildCargoTable(data: CommercialInvoicePdfData): any {
+function buildCargoTable(data: CommercialInvoicePdfData, layout: any): any {
   const rows = data.products || [];
 
   const headerRow = [
@@ -178,10 +224,10 @@ function buildCargoTable(data: CommercialInvoicePdfData): any {
   const totalRow = [
     { text: 'Total', colSpan: 3, style: 'tableCell', alignment: 'right' },
     {}, {},
-    { text: formatNumber(totals.totalPkg, 0), style: 'tableCell', alignment: 'right' },
-    { text: formatNumber(totals.totalGrossWeight, 3), style: 'tableCell', alignment: 'right' },
-    { text: formatNumber(totals.totalNetWeight, 3), style: 'tableCell', alignment: 'right' },
-    { text: formatNumber(totals.totalVolume, 3), style: 'tableCell', alignment: 'right' }
+    { text: formatNumber(totals.totalPkg, 0), style: 'tableCell', alignment: 'right' , fontWeight: 'bold' },
+    { text: formatNumber(totals.totalGrossWeight, 3), style: 'tableCell', alignment: 'right', fontWeight: 'bold'},
+    { text: formatNumber(totals.totalNetWeight, 3), style: 'tableCell', alignment: 'right', fontWeight: 'bold' },
+    { text: formatNumber(totals.totalVolume, 3), style: 'tableCell', alignment: 'right', fontWeight: 'bold' }
   ];
 
   return {
@@ -190,7 +236,7 @@ function buildCargoTable(data: CommercialInvoicePdfData): any {
       widths: ['*', 90, 90, 70, 70, 70, 70],
       body: [headerRow, ...dataRows, totalRow]
     },
-    layout: 'bordered',
+    layout,
     margin: [0, 6, 0, 0]
   };
 }
