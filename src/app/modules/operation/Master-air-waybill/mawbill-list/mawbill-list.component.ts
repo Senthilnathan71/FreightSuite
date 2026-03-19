@@ -466,6 +466,12 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
         tooltip: 'View',
         state: !this.mps.can('view')
       },
+      {
+        label: 'Pro Rate',
+        icon: 'fas fa-percentage',
+        action: 'pro_rate',
+        tooltip: 'Pro-Rate',
+      },
       // {
       //       icon: 'fas fa-trash',
       //       label: 'Delete',
@@ -489,7 +495,10 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
   // Table event handlers
  onTableActionClick(event: TableEventData): void {
   if (event.action === 'view') {
-    this.viewMasterJob(event.row.MasterJobSid); // ✅ only the ID
+    this.viewMasterJob(event.row.MasterJobSid);
+  }
+  if (event.action === 'pro_rate') {
+    this.router.navigate(['operation/pro-rate', event.row.MasterJobSid]);
   }
 }
 

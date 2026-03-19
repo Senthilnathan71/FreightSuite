@@ -82,6 +82,11 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   hasLoadedProfitProrate = false;
   hasResolvedProrateStatus = false;
   resolvedJobToSubjob: 'Y' | 'N' = 'N';
+  isResolvingProrateStatus = false;
+  resolvingProrateStatusForHouseJobSid: number | null = null;
+  isFetchingProfitProratedCharges = false;
+  fetchingProfitProratedChargesForHouseJobSid: number | null = null;
+  pendingProrateStatusCallbacks: Array<() => void> = [];
   costDataLength: number = 0;
   page = 1;
   pageSize = 5;
@@ -140,11 +145,6 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   selectTab(tab: string) {
     this.selectedTab = tab;
 
-    if (tab === 'Sales and cost') {
-      this.ensureProrateStatusResolved();
-      return;
-    }
-
     if (tab === 'Profit') {
       this.loadProfitView();
     }
@@ -198,6 +198,11 @@ export class CostEntryComponent implements OnInit, OnDestroy {
       this.hasLoadedProfitProrate = false;
       this.hasResolvedProrateStatus = false;
       this.resolvedJobToSubjob = 'N';
+      this.isResolvingProrateStatus = false;
+      this.resolvingProrateStatusForHouseJobSid = null;
+      this.isFetchingProfitProratedCharges = false;
+      this.fetchingProfitProratedChargesForHouseJobSid = null;
+      this.pendingProrateStatusCallbacks = [];
       this.slicedCostFormArray = [];
       this.slicedRevenueFormArray = [];
     }
@@ -224,6 +229,11 @@ export class CostEntryComponent implements OnInit, OnDestroy {
       this.hasLoadedProfitProrate = false;
       this.hasResolvedProrateStatus = false;
       this.resolvedJobToSubjob = 'N';
+      this.isResolvingProrateStatus = false;
+      this.resolvingProrateStatusForHouseJobSid = null;
+      this.isFetchingProfitProratedCharges = false;
+      this.fetchingProfitProratedChargesForHouseJobSid = null;
+      this.pendingProrateStatusCallbacks = [];
       this.slicedCostFormArray = [];
       this.slicedRevenueFormArray = [];
     }
@@ -242,6 +252,7 @@ export class CostEntryComponent implements OnInit, OnDestroy {
       this.parentFormValue = value;
       if (previousHouseJobSid !== this.parentFormValue?.HouseJobSid) {
         this.resetProrateProfitState();
+        this.prefetchProrateStatus();
       }
       this.setParentData(value);
       if(this.parentFormValue?.departmentName && this.previousDepartmentName !== this.parentFormValue?.departmentName){
@@ -250,6 +261,7 @@ export class CostEntryComponent implements OnInit, OnDestroy {
       }
     } else {
       this.parentFormValue = {};
+      this.resetProrateProfitState();
     }
   }
 
@@ -459,6 +471,8 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   if (this._dataItems && this._dataItems.length > 0) {
     this.patchValues(this._dataItems);
   }
+
+  this.prefetchProrateStatus();
 }
   ngOnChanges(){
     if(!this.dataItems){
@@ -1406,44 +1420,68 @@ createRateFormGroup(data?: any): FormGroup {
       return;
     }
 
-    const houseJobSid = this.getProfitHouseJobSid();
-    const shouldShowLoader = !!houseJobSid
-      && (!this.hasResolvedProrateStatus || (this.resolvedJobToSubjob === 'Y' && !this.hasLoadedProfitProrate));
+    const proratePayload = this.getHouseProratePayload();
+    if (!proratePayload) {
+      this.isProfitProrateLoading = false;
+      this.calculateProfit();
+      return;
+    }
 
-    this.isProfitProrateLoading = shouldShowLoader;
+    const { HouseJobSid: houseJobSid } = proratePayload;
 
-    this.ensureProrateStatusResolved(() => {
-      if (!this.shouldFetchProratedProfitRows()) {
-        this.isProfitProrateLoading = false;
-        this.calculateProfit();
-        return;
-      }
-
-      if (this.hasLoadedProfitProrate) {
-        this.isProfitProrateLoading = false;
-        this.calculateProfit();
-        return;
-      }
-
-      if (!houseJobSid) {
-        this.isProfitProrateLoading = false;
-        this.calculateProfit();
-        return;
-      }
-
+    if (!this.hasResolvedProrateStatus) {
       this.isProfitProrateLoading = true;
-      this.operationService.getHouseProratedCharges({ HouseJobSid: houseJobSid }).subscribe({
-        next: (resp: any) => {
-          this.profitProratedCharges = resp?.data?.proratedCharges || [];
-          this.hasLoadedProfitProrate = true;
-          this.isProfitProrateLoading = false;
-          this.calculateProfit();
-        },
-        error: () => {
-          this.isProfitProrateLoading = false;
-          this.calculateProfit();
+      this.ensureProrateStatusResolved(() => this.loadProfitView());
+      return;
+    }
+
+    if (!this.shouldFetchProratedProfitRows()) {
+      this.isProfitProrateLoading = false;
+      this.calculateProfit();
+      return;
+    }
+
+    if (this.hasLoadedProfitProrate) {
+      this.isProfitProrateLoading = false;
+      this.calculateProfit();
+      return;
+    }
+
+    if (this.isFetchingProfitProratedCharges
+      && this.fetchingProfitProratedChargesForHouseJobSid === houseJobSid) {
+      this.isProfitProrateLoading = true;
+      return;
+    }
+
+    this.isProfitProrateLoading = true;
+    this.isFetchingProfitProratedCharges = true;
+    this.fetchingProfitProratedChargesForHouseJobSid = houseJobSid;
+
+    this.operationService.getHouseProratedCharges(proratePayload).subscribe({
+      next: (resp: any) => {
+        if (this.getProfitHouseJobSid() !== houseJobSid) {
+          return;
         }
-      });
+
+        this.profitProratedCharges = resp?.data?.proratedCharges || [];
+        this.hasLoadedProfitProrate = true;
+        this.isProfitProrateLoading = false;
+        this.calculateProfit();
+      },
+      error: () => {
+        if (this.getProfitHouseJobSid() !== houseJobSid) {
+          return;
+        }
+
+        this.isProfitProrateLoading = false;
+        this.calculateProfit();
+      },
+      complete: () => {
+        if (this.fetchingProfitProratedChargesForHouseJobSid === houseJobSid) {
+          this.isFetchingProfitProratedCharges = false;
+          this.fetchingProfitProratedChargesForHouseJobSid = null;
+        }
+      }
     });
   }
 
@@ -1458,26 +1496,89 @@ createRateFormGroup(data?: any): FormGroup {
       return;
     }
 
-    const houseJobSid = this.getProfitHouseJobSid();
-    if (!houseJobSid) {
+    const proratePayload = this.getHouseProratePayload();
+    if (!proratePayload) {
       this.hasResolvedProrateStatus = true;
       this.resolvedJobToSubjob = 'N';
       onResolved?.();
       return;
     }
 
-    this.operationService.getHouseProrateStatus({ HouseJobSid: houseJobSid }).subscribe({
+    const { HouseJobSid: houseJobSid } = proratePayload;
+
+    if (this.isResolvingProrateStatus
+      && this.resolvingProrateStatusForHouseJobSid === houseJobSid) {
+      if (onResolved) {
+        this.pendingProrateStatusCallbacks.push(onResolved);
+      }
+      return;
+    }
+
+    if (onResolved) {
+      this.pendingProrateStatusCallbacks.push(onResolved);
+    }
+
+    this.isResolvingProrateStatus = true;
+    this.resolvingProrateStatusForHouseJobSid = houseJobSid;
+
+    this.operationService.getHouseProrateStatus(proratePayload).subscribe({
       next: (resp: any) => {
+        if (this.getProfitHouseJobSid() !== houseJobSid) {
+          return;
+        }
+
         this.resolvedJobToSubjob = resp?.data?.JobtoSubjob === 'Y' ? 'Y' : 'N';
         this.hasResolvedProrateStatus = true;
-        onResolved?.();
+        const callbacks = [...this.pendingProrateStatusCallbacks];
+        this.pendingProrateStatusCallbacks = [];
+        callbacks.forEach(callback => callback());
       },
       error: () => {
+        if (this.getProfitHouseJobSid() !== houseJobSid) {
+          return;
+        }
+
         this.resolvedJobToSubjob = 'N';
         this.hasResolvedProrateStatus = true;
-        onResolved?.();
+        const callbacks = [...this.pendingProrateStatusCallbacks];
+        this.pendingProrateStatusCallbacks = [];
+        callbacks.forEach(callback => callback());
+      },
+      complete: () => {
+        if (this.resolvingProrateStatusForHouseJobSid === houseJobSid) {
+          this.isResolvingProrateStatus = false;
+          this.resolvingProrateStatusForHouseJobSid = null;
+        }
       }
     });
+  }
+
+  private prefetchProrateStatus() {
+    if (!this.isHouseScopedProrateScreen()) {
+      return;
+    }
+
+    this.ensureProrateStatusResolved();
+  }
+
+  private getHouseProratePayload(): {
+    HouseJobSid: number;
+    CompanyMasterSid: number;
+    BranchMasterSid: number;
+  } | null {
+    const houseJobSid = this.getProfitHouseJobSid();
+    const companyMasterSid = Number(this.currentCompany?.CompanyMasterSid || 0);
+    const branchMasterSid = Number(this.currentBranch?.BranchMasterSid || 0);
+
+    if (!houseJobSid || !companyMasterSid || !branchMasterSid) {
+      return null;
+    }
+
+    return {
+      HouseJobSid: houseJobSid,
+      CompanyMasterSid: companyMasterSid,
+      BranchMasterSid: branchMasterSid,
+    };
   }
 
   private shouldUseProratedProfitRows(): boolean {
@@ -1517,6 +1618,11 @@ createRateFormGroup(data?: any): FormGroup {
     this.hasLoadedProfitProrate = false;
     this.hasResolvedProrateStatus = false;
     this.resolvedJobToSubjob = 'N';
+    this.isResolvingProrateStatus = false;
+    this.resolvingProrateStatusForHouseJobSid = null;
+    this.isFetchingProfitProratedCharges = false;
+    this.fetchingProfitProratedChargesForHouseJobSid = null;
+    this.pendingProrateStatusCallbacks = [];
   }
 
   calculateTotal(field: string): number {
