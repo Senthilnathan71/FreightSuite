@@ -1940,11 +1940,19 @@ getDefaultBLClausesByDepartment(DepartmentMasterSid: number) {
     return this.http.post<any>('pro-rate/apply', payload).pipe(map(resp => resp));
   }
 
-  getHouseProratedCharges(payload: { HouseJobSid: number }) {
+  getHouseProratedCharges(payload: {
+    HouseJobSid: number;
+    CompanyMasterSid: number;
+    BranchMasterSid: number;
+  }) {
     return this.http.post<any>('pro-rate/house-charges', payload).pipe(map(resp => resp));
   }
 
-  getHouseProrateStatus(payload: { HouseJobSid: number }) {
+  getHouseProrateStatus(payload: {
+    HouseJobSid: number;
+    CompanyMasterSid: number;
+    BranchMasterSid: number;
+  }) {
     return this.http.post<any>('pro-rate/house-status', payload).pipe(map(resp => resp));
   }
 
