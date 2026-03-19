@@ -124,7 +124,7 @@ export class CreditRequestEntryComponent {
   TandCList: any[]=[];
   currentClauseId: any;
 
-  expandedIndex: number | null = null;
+  expandedIndex: number | null = 0;
   private kycFileNameMap = new Map<string, string>();
 
   constructor(

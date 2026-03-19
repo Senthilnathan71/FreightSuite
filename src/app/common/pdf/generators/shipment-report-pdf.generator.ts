@@ -415,7 +415,7 @@ function getShipmentStyles(): any {
     pageTitle: { fontSize: 11, bold: true, alignment: 'center' },
     sectionLabel: { fontSize: 8, bold: true },
     valueText: { fontSize: 8 },
-    tableHeader: { fontSize: 8, bold: true, fillColor: '#e9ecef', alignment: 'center' },
+    tableHeader: { fontSize: 8, bold: true, alignment: 'center' },
     tableCell: { fontSize: 8 },
     tableCellBold: { fontSize: 8, bold: true }
   };
@@ -425,9 +425,9 @@ function buildShipmentFooter(data: ShipmentReportPdfData): any {
   return {
     margin: [24, 0, 24, 12],
     columns: [
-      { text: `Printed By : ${data.userData?.userName || ''}`, alignment: 'left', width: '30%', fontSize: 9 },
-      { text: 'This document is computer-generated and does not require a signature.', alignment: 'center', width: '40%', fontSize: 9 },
-      { text: `Printed On : ${formatDate(new Date())}`, alignment: 'right', width: '30%', fontSize: 9 }
+      { text: `Printed By : ${data.userData?.userName || ''}`, alignment: 'left', width: '30%', fontSize: 7 },
+      { text: 'This document is computer-generated and does not require a signature.', alignment: 'center', width: '40%', fontSize: 7 },
+      { text: `Printed On : ${formatDate(new Date())}`, alignment: 'right', width: '30%', fontSize: 7 }
     ]
   };
 }

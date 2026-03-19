@@ -1,168 +1,166 @@
 <div class="row compact-form">
-    <div class="col-12 px-0">
-        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
-            <div class="col-md-4 d-flex pb-1">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="brand-icon">
-                        <i class="fas fa-file-signature"></i>
-                    </div>
-                    <h5 class="page-title mb-0 text-info">Credit Request</h5>
-                    @if(isEditMode){
+  <div class="col-12 px-0">
+    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+      <div class="col-md-4 d-flex pb-1">
+        <div class="d-flex align-items-center gap-2">
+          <div class="brand-icon">
+            <i class="fas fa-file-signature"></i>
+          </div>
+          <h5 class="page-title mb-0 text-info">Credit Request</h5>
+          @if(isEditMode){
           <a class="text-info  d-flex align-items-center w-2 h-2 crusor-pointer" (click)="showInfo()">
             <i class="fas fs-6 fa-info-circle"></i>
           </a>
           }
-                </div>
-            </div>
-            <div class="col-md-8 pb-1">
-                <div class="d-flex justify-content-end gap-2">
-        <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-          (click)="openAuditLogs(auditLogModal)" *ngIf="isEditMode">
-          <i class="fas fa-history  me-1"></i>
-          <span>Logs</span>
-        </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="goBack()">
-                        <i class="fas fa-chevron-left me-1"></i> Back
-                    </button>
-                    <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="resetForm()">
-                        <i class="fas fa-sync-alt me-1"></i> Reset
-                    </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
-                        appPreventMultiClick
-                        (click)="onSubmit()" [disabled]="isSaveDisabled()"
-                        >
-                        <i class="fas fa-save me-1"></i>
-                        <span>{{ isSaving ? "Saving..." : "Save" }}</span>
-                    </button>
-                    <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
+        </div>
+      </div>
+      <div class="col-md-8 pb-1">
+        <div class="d-flex justify-content-end gap-2">
+          <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="openAuditLogs(auditLogModal)" *ngIf="isEditMode">
+            <i class="fas fa-history  me-1"></i>
+            <span>Logs</span>
+          </button>
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
+            <i class="fas fa-chevron-left me-1"></i> Back
+          </button>
+          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="resetForm()">
+            <i class="fas fa-sync-alt me-1"></i> Reset
+          </button>
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" appPreventMultiClick
+            (click)="onSubmit()" [disabled]="isSaveDisabled()">
+            <i class="fas fa-save me-1"></i>
+            <span>{{ isSaving ? "Saving..." : "Save" }}</span>
+          </button>
+          <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
             <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
               ngbDropdownToggle>
               <i class="fas fa-ellipsis-v"></i>
             </button>
             <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-              <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc(0,0)"><i
-                  class="fas fa-file-alt me-1"></i> Edoc</button>
-              <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
-                  class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-              <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
-                  class="fas fa-shield-alt me-1"></i> Authorize</button>
-              <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
-                  class="fas fa-envelope me-1"></i> Email</button>
-              <button *ngIf="mps.has('follow_up')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openFollowup()"><i
-                  class="fas fa-paperclip me-1"></i> Followup</button>
+              <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                (click)="openEDoc(0,0)"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+              <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+              <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
+              <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+              <button *ngIf="mps.has('follow_up')" class="text-dark" ngbDropdownItem appPreventMultiClick
+                (click)="openFollowup()"><i class="fas fa-paperclip me-1"></i> Followup</button>
             </div>
           </div>
-                </div>
-            </div>
         </div>
+      </div>
     </div>
-
-    <div class="col-12 px-0">
-        <form [formGroup]="cusForm">
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="card h-100 mb-0">
-                        <div class="card-body">
-                            <div class="row ">
-                              <aside class="col-md-1 d-md-block d-none "></aside>
-                                <!-- Customer Name -->
-                                <aside class="col-md-3 ms-md-4">
-                                    <div class="custom-form-group"
-                                        [class.filled]="!!cusForm.get('CustomerName')?.value">
-                                        <input type="text" id="CustomerName" formControlName="CustomerName"
-                                            class="custom-input-field sm" placeholder="" readonly />
-                                        <label for="CustomerName" class="input-label">Customer</label>
-                                    </div>
-                                </aside>
-
-                                <!-- Country -->
-                                <aside class="col-md-3">
-                                    <div class="custom-form-group"
-                                        [class.filled]="!!cusForm.get('CountryMasterSid')?.value">
-                                        <input type="text" id="CountryMasterSid" formControlName="CountryMasterSid"
-                                            class="custom-input-field sm" placeholder="" readonly />
-                                        <label for="CountryMasterSid" class="input-label">Country</label>
-                                    </div>
-                                </aside>
-
-                                <!-- Status -->
-                                <aside class="col-md-3">
-                                    <div class="custom-form-group custom-form-group-select"
-                                        [class.filled]="!!cusForm.get('status')?.value">
-                                        <ng-select 
-                                            formControlName="status" 
-                                            [items]="typeofStatus" 
-                                            bindLabel="name"
-                                            bindValue="id" 
-                                            placeholder=""
-                                            [disabled]="!isEditMode">
-                                        </ng-select>
-                                        <label class="input-label">Status</label>
-                                        <div *ngIf="cusForm.get('status')?.touched && cusForm.get('status')?.invalid"
-                                            class="error-message">
-                                            <span *ngIf="cusForm.get('status')?.hasError('required')">Required</span>
-                                        </div>
-                                    </div>
-                                </aside>
-                                <aside class="col-md-2 d-md-block d-none"></aside>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Credit Request Section -->
-                <div class="col-md-12 mt-1">
-                    <div class="card">
-  <div class=" d-flex justify-content-between align-items-center   p-1 px-2" style="border-radius: 5px 5px 0px 0px;" >
-    <h6 class="mb-0">
-      <i class="fas fa-file-signature me-1"></i>Credit Request Details
-    </h6>
-    <button
-      type="button"
-      class="btn btn-sm btn-secondary"
-      (click)="addCreditRequestRow()"
-      title="Adds a new row in the same branch scope and starts from the next available effective date">
-      <i class="fas fa-plus"></i> Add Credit Request
-    </button>
   </div>
 
-  <div class="card-body p-1 py-0">
-    @if(creditRequest.controls.length === 0) {
-      <div class="col-12 text-center py-3 text-danger">
-        At least one credit request is required
-      </div>
-    }
+  <div class="col-12 px-0">
+    <form [formGroup]="cusForm">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card h-100 mb-0">
+            <div class="card-body">
+              <div class="row ">
+                <aside class="col-md-1 d-md-block d-none "></aside>
+                <!-- Customer Name -->
+                <aside class="col-md-3 ms-md-4">
+                  <div class="custom-form-group" [class.filled]="!!cusForm.get('CustomerName')?.value">
+                    <input type="text" id="CustomerName" formControlName="CustomerName" class="custom-input-field sm"
+                      placeholder="" readonly />
+                    <label for="CustomerName" class="input-label">Customer</label>
+                  </div>
+                </aside>
 
-    @if(creditRequest.controls.length > 0) {
-      <div class="col-12">
-        <div ngbAccordion #acc="ngbAccordion" [closeOthers]="true" class="custom-accordion" formArrayName="creditRequest">
-          @for (credit of creditRequest.controls; track credit; let i = $index) {
-            <div ngbAccordionItem [formGroupName]="i" class="mb-2" [collapsed]="i !== expandedIndex">
+                <!-- Country -->
+                <aside class="col-md-3">
+                  <div class="custom-form-group" [class.filled]="!!cusForm.get('CountryMasterSid')?.value">
+                    <input type="text" id="CountryMasterSid" formControlName="CountryMasterSid"
+                      class="custom-input-field sm" placeholder="" readonly />
+                    <label for="CountryMasterSid" class="input-label">Country</label>
+                  </div>
+                </aside>
 
-              <!-- Header -->
-              <h2 ngbAccordionHeader>
-  <button
-    ngbAccordionButton
-    class="d-flex justify-content-between align-items-center w-100 text-light px-3 py-1 position-relative"
-    style="background-color: #1177aa; border-top-left-radius: 6px; border-top-right-radius: 6px;"
-  >
-    <!-- Left Side (Branch + Department) -->
-    <div class="d-flex align-items-center gap-3">
-      <h6 class="fw-bold mb-0 text-light" style="font-size: 14px;">
-        {{ getBranchName(credit.get('CustomerBranchSid')?.value) || 'N/A' }}
-      </h6>
-      <span style="font-size: 13px; color: rgba(255,255,255,0.8);">
-        {{ getDepartmentName(credit.get('DepartmentMasterSid')?.value, i) || '' }}
-      </span>
-    </div>
+                <!-- Status -->
+                <aside class="col-md-3">
+                  <div class="custom-form-group custom-form-group-select"
+                    [class.filled]="!!cusForm.get('status')?.value">
+                    <ng-select formControlName="status" [items]="typeofStatus" bindLabel="name" bindValue="id"
+                      placeholder="" [disabled]="!isEditMode">
+                    </ng-select>
+                    <label class="input-label">Status</label>
+                    <div *ngIf="cusForm.get('status')?.touched && cusForm.get('status')?.invalid" class="error-message">
+                      <span *ngIf="cusForm.get('status')?.hasError('required')">Required</span>
+                    </div>
+                  </div>
+                </aside>
+                <aside class="col-md-2 d-md-block d-none"></aside>
+              </div>
+            </div>
+          </div>
+        </div>
 
-    <!-- Right Side (Approval Status + Delete) -->
-    <div class="d-flex align-items-center gap-2">
-      <span
-        class="px-2 py-1 rounded text-white"
-        [ngStyle]="{
+        <!-- Credit Request Section -->
+        <div class="col-md-12 mt-1">
+          <div class="card border-0 shadow-sm"
+            style="border: 1px solid #e6e9ee; border-radius: 10px; background: #ffffff;">
+            <div class="d-flex align-items-center justify-content-between bg-info"
+              style="gap: 12px; padding: 3px 10px; border-bottom: 1px solid #e9edf3;  border-radius: 10px 10px 0 0; position: relative; overflow: hidden;">
+              <div class="d-flex align-items-center gap-3">
+                <div class="d-inline-flex align-items-center justify-content-center"
+                  style="width: 36px; height: 36px; border-radius: 10px; color: #0b5f8f; background: #eef6fb; border: 1px solid #d7e6f1; box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);">
+                  <i class="fas fa-file-signature"></i>
+                </div>
+                <div>
+                  <h6 class="mb-0" style="color:white; font-weight: 700; letter-spacing: 0.3px;">Credit Request Details
+                  </h6>
+                  <small style="color:whitesmoke; font-size: 12px;">Branch-wise credit setup and approvals</small>
+                </div>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline-light"
+                style="border-radius: 5px; padding: 3px 5px; font-weight: 700; letter-spacing: 0.2px; border-width: 2px;"
+                (click)="addCreditRequestRow()"
+                title="Adds a new row in the same branch scope and starts from the next available effective date">
+                <i class="fas fa-plus me-1"></i> Add Credit Request
+              </button>
+            </div>
+
+            <div class="card-body p-1">
+              @if(creditRequest.controls.length === 0) {
+              <div class="col-12 text-center py-3 text-danger">
+                At least one credit request is required
+              </div>
+              }
+
+              @if(creditRequest.controls.length > 0) {
+              <div class="col-12">
+                <div ngbAccordion #acc="ngbAccordion" [closeOthers]="true" class="custom-accordion"
+                  formArrayName="creditRequest">
+                  @for (credit of creditRequest.controls; track credit; let i = $index) {
+                  <div ngbAccordionItem [formGroupName]="i" class="mb-1 border-0 shadow-sm"
+                    style="border: 1px solid #eef1f5; border-radius: 10px; overflow: hidden;"
+                    [collapsed]="i !== expandedIndex">
+
+                    <!-- Header -->
+                    <h2 ngbAccordionHeader>
+                      <button ngbAccordionButton
+                        class="d-flex justify-content-between align-items-center w-100 px-3 py-1 position-relative"
+                        style="color: #0f172a; background: #f8fafc; border-radius: 10px 10px 0 0;">
+                        <!-- Left Side (Branch + Department) -->
+                        <div class="d-flex align-items-center gap-3">
+                          <h6 class="fw-bold mb-0 text-light" style="font-size: 14px;">
+                            {{ getBranchName(credit.get('CustomerBranchSid')?.value) || 'N/A' }}
+                          </h6>
+                          <span style="font-size: 13px; color: rgba(15, 23, 42, 0.6);">
+                            {{ getDepartmentName(credit.get('DepartmentMasterSid')?.value, i) || '' }}
+                          </span>
+                        </div>
+
+                        <!-- Right Side (Approval Status + Delete) -->
+                        <div class="d-flex align-items-center gap-2">
+                          <span class="px-2 py-1 rounded text-white"
+                            style="letter-spacing: 0.6px; border: 1px solid rgba(255, 255, 255, 0.25);" [ngStyle]="{
           'background-color':
             credit.get('ApprovalStatus')?.value === 'Approved'
               ? '#28a745'
@@ -172,255 +170,213 @@
           'font-size': '10px',
           'font-weight': '600',
           'text-transform': 'uppercase'
-        }"
-      >
-        {{ getApprovalStatusLabel(credit.get('ApprovalStatus')?.value) }}
-      </span>
-      <span
-        *ngIf="credit.get('ApprovalStatus')?.value === 'Pending'"
-        class="btn btn-sm btn-danger py-0 px-2"
-        (click)="deleteCreditRequestRow(i); $event.stopPropagation()"
-        title="Delete Credit Request"
-      >
-        <i class="fas fa-trash"></i>
-      </span>
-    </div>
-  </button>
-</h2>
-
-              <!-- Collapsible content -->
-              <div ngbAccordionCollapse>
-                <div class="card-body p-1 " >
-                  <div class="row">
-
-                    <!-- Branch -->
-                    <aside class="col-md-2">
-                      <div class="custom-form-group custom-form-group-select"
-                           [class.filled]="!!credit.get('CustomerBranchSid')?.value">
-                        <ng-select
-                          formControlName="CustomerBranchSid"
-                          [items]="branchList"
-                          bindLabel="name"
-                          bindValue="id"
-                          placeholder=""
-                          [disabled]="isApprovedRow(credit)"
-                          (change)="onBranchSelect($event, i)"
-                          appendTo="body">
-                        </ng-select>
-                        <label class="input-label">Branch</label>
-                      </div>
-                    </aside>
-
-                  
-
-                    <!-- Sales Person -->
-                    <aside class="col-md-2">
-                      <div class="custom-form-group custom-form-group-select"
-                           [class.filled]="!!credit.get('SalesmanSid')?.value">
-                        <ng-select
-                          formControlName="SalesmanSid"
-                          [items]="salesmanListPerRow[i]"
-                          bindLabel="userName"
-                          bindValue="UserMasterSid"
-                          placeholder=""
-                          [disabled]="isApprovedRow(credit)"
-                          appendTo="body">
-                        </ng-select>
-                        <label class="input-label">Sales Person</label>
-                      </div>
-                    </aside>
-
-                    <!-- Credit Days -->
-                    <aside class="col-md-2">
-                      <div class="custom-form-group"
-                           [class.filled]="credit.get('CreditDays')?.value !== null && credit.get('CreditDays')?.value !== ''">
-                        <input type="number" formControlName="CreditDays"
-                               class="custom-input-field sm" min="0" placeholder=""
-                               [disabled]="isApprovedRow(credit)" />
-                        <label class="input-label">Credit Days <span class="text-danger">*</span></label>
-                      </div>
-                    </aside>
-
-                    <!-- Credit Limit -->
-                    <aside class="col-md-2">
-                      <div class="custom-form-group"
-                           [class.filled]="credit.get('CreditLimit')?.value !== null && credit.get('CreditLimit')?.value !== ''">
-                        <input type="number" formControlName="CreditLimit"
-                               class="custom-input-field sm" min="0" step="0.01" placeholder=""
-                               [disabled]="isApprovedRow(credit)" />
-                        <label class="input-label">Credit Limit <span class="text-danger">*</span></label>
-                      </div>
-                    </aside>
-
-                    <!-- Published Days -->
-                    <aside class="col-md-2">
-                      <div class="custom-form-group"
-                           [class.filled]="credit.get('PublishedDays')?.value !== null && credit.get('PublishedDays')?.value !== ''">
-                        <input type="number" formControlName="PublishedDays"
-                               class="custom-input-field sm" min="0" placeholder=""
-                               [disabled]="isApprovedRow(credit)" />
-                        <label class="input-label">Published Days</label>
-                      </div>
-                    </aside>
-
-                    <!-- Published Limit -->
-                    <aside class="col-md-2">
-                      <div class="custom-form-group"
-                           [class.filled]="credit.get('PublishedLimit')?.value !== null && credit.get('PublishedLimit')?.value !== ''">
-                        <input type="number" formControlName="PublishedLimit"
-                               class="custom-input-field sm" min="0" step="0.01" placeholder=""
-                               [disabled]="isApprovedRow(credit)" />
-                        <label class="input-label">Published Limit</label>
-                      </div>
-                    </aside>
-
-                    <!-- Effective From -->
-                    <aside class="col-md-2">
-                      <div class="custom-form-group custom-form-group-select-date">
-                        <div class="input-group">
-                          <input class="form-control"
-                                 placeholder="DD-MMM-YYYY"
-                                 ngbDatepicker #d1="ngbDatepicker"
-                                 (click)="d1.toggle()"
-                                 formControlName="EffectiveFrom"
-                                 [disabled]="isApprovedRow(credit)"
-                                 [minDate]="today" container="body" />
-                          <button class="btn px-0" (click)="d1.toggle()" type="button" [disabled]="isApprovedRow(credit)">
-                            <i-feather name="calendar" class="feather-sm"></i-feather>
-                          </button>
+        }">
+                            {{ getApprovalStatusLabel(credit.get('ApprovalStatus')?.value) }}
+                          </span>
+                          <span *ngIf="credit.get('ApprovalStatus')?.value === 'Pending'"
+                            class="btn btn-sm btn-danger py-0 px-2"
+                            (click)="deleteCreditRequestRow(i); $event.stopPropagation()" title="Delete Credit Request">
+                            <i class="fas fa-trash"></i>
+                          </span>
                         </div>
-                        <label class="input-label">Effective From <span class="text-danger">*</span></label>
-                      </div>
-                    </aside>
+                      </button>
+                    </h2>
 
-                    <!-- Effective To -->
-                    <aside class="col-md-2">
-                      <div class="custom-form-group custom-form-group-select-date">
-                        <div class="input-group">
-                          <input class="form-control"
-                                 placeholder="DD-MMM-YYYY"
-                                 ngbDatepicker #d2="ngbDatepicker"
-                                 (click)="d2.toggle()"
-                                 formControlName="EffectiveTo"
-                                  [minDate]="getEffectiveToMinDate(i)"
-                                  container="body" />
-                          <button class="btn px-0" (click)="d2.toggle()" type="button">
-                            <i-feather name="calendar" class="feather-sm"></i-feather>
-                          </button>
+                    <!-- Collapsible content -->
+                    <div ngbAccordionCollapse>
+                      <div class="card-body p-3" style="background: #ffffff;">
+                        <div class="row row-cols-1 row-cols-md-5 g-2">
+
+                          <!-- Branch -->
+                          <aside class="col">
+                            <div class="custom-form-group custom-form-group-select"
+                              [class.filled]="!!credit.get('CustomerBranchSid')?.value">
+                              <ng-select formControlName="CustomerBranchSid" [items]="branchList" bindLabel="name"
+                                bindValue="id" placeholder="" [disabled]="isApprovedRow(credit)"
+                                (change)="onBranchSelect($event, i)" appendTo="body">
+                              </ng-select>
+                              <label class="input-label">Branch</label>
+                            </div>
+                          </aside>
+
+
+
+                          <!-- Sales Person -->
+                          <aside class="col">
+                            <div class="custom-form-group custom-form-group-select"
+                              [class.filled]="!!credit.get('SalesmanSid')?.value">
+                              <ng-select formControlName="SalesmanSid" [items]="salesmanListPerRow[i]"
+                                bindLabel="userName" bindValue="UserMasterSid" placeholder=""
+                                [disabled]="isApprovedRow(credit)" appendTo="body">
+                              </ng-select>
+                              <label class="input-label">Sales Person</label>
+                            </div>
+                          </aside>
+
+                          <!-- Credit Days -->
+                          <aside class="col">
+                            <div class="custom-form-group"
+                              [class.filled]="credit.get('CreditDays')?.value !== null && credit.get('CreditDays')?.value !== ''">
+                              <input type="number" formControlName="CreditDays" class="custom-input-field sm" min="0"
+                                placeholder="" [disabled]="isApprovedRow(credit)" />
+                              <label class="input-label">Credit Days <span class="text-danger">*</span></label>
+                            </div>
+                          </aside>
+
+                          <!-- Credit Limit -->
+                          <aside class="col">
+                            <div class="custom-form-group"
+                              [class.filled]="credit.get('CreditLimit')?.value !== null && credit.get('CreditLimit')?.value !== ''">
+                              <input type="number" formControlName="CreditLimit" class="custom-input-field sm" min="0"
+                                step="0.01" placeholder="" [disabled]="isApprovedRow(credit)" />
+                              <label class="input-label">Credit Limit <span class="text-danger">*</span></label>
+                            </div>
+                          </aside>
+
+                          <!-- Published Days -->
+                          <aside class="col">
+                            <div class="custom-form-group"
+                              [class.filled]="credit.get('PublishedDays')?.value !== null && credit.get('PublishedDays')?.value !== ''">
+                              <input type="number" formControlName="PublishedDays" class="custom-input-field sm" min="0"
+                                placeholder="" [disabled]="isApprovedRow(credit)" />
+                              <label class="input-label">Published Days</label>
+                            </div>
+                          </aside>
                         </div>
-                        <label class="input-label">Effective To <span class="text-danger">*</span></label>
-                      </div>
-                    </aside>
 
-                    <!-- Approval Status -->
-                    <aside class="col-md-2">
-                      <div class="custom-form-group custom-form-group-select"
-                           [class.filled]="!!credit.get('ApprovalStatus')?.value">
-                        <!-- <input type="text" formControlName="ApprovalStatus"
+                        <div class="row row-cols-1 row-cols-md-5 g-2 mt-0">
+
+                          <!-- Published Limit -->
+                          <aside class="col">
+                            <div class="custom-form-group"
+                              [class.filled]="credit.get('PublishedLimit')?.value !== null && credit.get('PublishedLimit')?.value !== ''">
+                              <input type="number" formControlName="PublishedLimit" class="custom-input-field sm"
+                                min="0" step="0.01" placeholder="" [disabled]="isApprovedRow(credit)" />
+                              <label class="input-label">Published Limit</label>
+                            </div>
+                          </aside>
+
+                          <!-- Effective From -->
+                          <aside class="col">
+                            <div class="custom-form-group custom-form-group-select-date">
+                              <div class="input-group">
+                                <input class="form-control" placeholder="DD-MMM-YYYY" ngbDatepicker #d1="ngbDatepicker"
+                                  (click)="d1.toggle()" formControlName="EffectiveFrom"
+                                  [disabled]="isApprovedRow(credit)" [minDate]="today" container="body" />
+                                <button class="btn px-0 btn-light" (click)="d1.toggle()" type="button"
+                                  [disabled]="isApprovedRow(credit)">
+                                  <i-feather name="calendar" class="feather-sm"></i-feather>
+                                </button>
+                              </div>
+                              <label class="input-label">Effective From <span class="text-danger">*</span></label>
+                            </div>
+                          </aside>
+
+                          <!-- Effective To -->
+                          <aside class="col">
+                            <div class="custom-form-group custom-form-group-select-date">
+                              <div class="input-group">
+                                <input class="form-control" placeholder="DD-MMM-YYYY" ngbDatepicker #d2="ngbDatepicker"
+                                  (click)="d2.toggle()" formControlName="EffectiveTo"
+                                  [minDate]="getEffectiveToMinDate(i)" container="body" />
+                                <button class="btn px-0" (click)="d2.toggle()" type="button">
+                                  <i-feather name="calendar" class="feather-sm"></i-feather>
+                                </button>
+                              </div>
+                              <label class="input-label">Effective To <span class="text-danger">*</span></label>
+                            </div>
+                          </aside>
+
+                          <!-- Approval Status -->
+                          <aside class="col">
+                            <div class="custom-form-group custom-form-group-select"
+                              [class.filled]="!!credit.get('ApprovalStatus')?.value">
+                              <!-- <input type="text" formControlName="ApprovalStatus"
                                class="custom-input-field sm" placeholder=""/> -->
-                               <ng-select 
-                                            formControlName="ApprovalStatus" 
-                                            [items]="approvalStatus" 
-                                            bindLabel="name"
-                                            bindValue="value" 
-                                            placeholder=""
-                                            [disabled]="true"
-                                            >
-                                        </ng-select>
-                        <label class="input-label">Approval Status</label>
-                      </div>
-                    </aside>
+                              <ng-select formControlName="ApprovalStatus" [items]="approvalStatus" bindLabel="name"
+                                bindValue="value" placeholder="" [disabled]="true">
+                              </ng-select>
+                              <label class="input-label">Approval Status</label>
+                            </div>
+                          </aside>
 
-                    <aside class="col-md-2">
-                                    <div class="custom-form-group custom-form-group-select"
-                                        [class.filled]="!!credit.get('Status')?.value">
-                                        <ng-select 
-                                            formControlName="Status" 
-                                            [items]="typeofStatus" 
-                                            bindLabel="name"
-                                            bindValue="id" 
-                                            placeholder=""
-                                            >
-                                        </ng-select>
-                                        <label class="input-label">Status</label>
-                                        <div *ngIf="credit.get('Status')?.touched && credit.get('Status')?.invalid"
-                                            class="error-message">
-                                            <span *ngIf="credit.get('Status')?.hasError('required')">Required</span>
-                                        </div>
-                                    </div>
-                                </aside>
-                    <!-- KYC Section -->
-                    <div class="col-12" style="width: 80%; margin: 0 auto;">
-                      <div class="d-flex justify-content-between align-items-center ">
-                        <h6 class="mb-0">
-                          <i class="fas fa-layer-group me-2"></i>KYC Documents
-                        </h6>
-                        <button type="button" class="btn btn-sm btn-info"
-                                (click)="addKycRow(i)" [disabled]="isApprovedRow(credit)">
-                          <i class="fas fa-plus"></i> Add KYC
-                        </button>
-                      </div>
-
-                      <div [formArrayName]="'customerKyc'">
-                        @if(getKycArray(i).controls.length === 0) {
-                          <div class="text-center py-1 text-muted">
-                            <i class="fas fa-folder-open fa-2x mb-1"></i>
-                            <p class="mb-0">No KYC documents added yet</p>
-                            <small>Add at least one KYC document to enable Save.</small>
+                          <aside class="col">
+                            <div class="custom-form-group custom-form-group-select"
+                              [class.filled]="!!credit.get('Status')?.value">
+                              <ng-select formControlName="Status" [items]="typeofStatus" bindLabel="name" bindValue="id"
+                                placeholder="">
+                              </ng-select>
+                              <label class="input-label">Status</label>
+                              <div *ngIf="credit.get('Status')?.touched && credit.get('Status')?.invalid"
+                                class="error-message">
+                                <span *ngIf="credit.get('Status')?.hasError('required')">Required</span>
+                              </div>
+                            </div>
+                          </aside>
+                        </div>
+                        <!-- KYC Section -->
+                        <div class="col-12" style="width: 80%; margin: 0 auto;">
+                          <div class="d-flex justify-content-between align-items-center"
+                            style=" padding-top: 12px;">
+                            <h6 class="mb-0" style="color: #0b5f8f; font-weight: 600;">
+                              <i class="fas fa-layer-group me-2"></i> KYC Documents
+                            </h6>
+                            <button type="button" class="btn btn-sm btn-info" (click)="addKycRow(i)"
+                              [disabled]="isApprovedRow(credit)">
+                              <i class="fas fa-plus"></i> Add KYC
+                            </button>
                           </div>
-                        }
 
-                        @if(getKycArray(i).controls.length > 0) {
-                          <div class="table-responsive table-borderless pt-1" >
-                            <table class="table table-hover table-sm mb-0">
-                              <thead class="bg-info">
-                                <tr>
-                                   <th class="bg-transparent text-light" width="3%"></th>
-                                  <th width="2%" class="bg-transparent text-light">S.No</th>
-                                  <th width class="bg-transparent text-light">Document Name</th>
-                                  <th class="bg-transparent text-light">Document No.</th>
-                                  <th class="bg-transparent text-light"  width="8%">E-Doc</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                @for (kyc of getKycArray(i).controls; track kyc; let k = $index) {
+                          <div [formArrayName]="'customerKyc'">
+                            @if(getKycArray(i).controls.length === 0) {
+                            <div class="text-center py-1 text-muted">
+                              <i class="fas fa-folder-open fa-2x mb-1"></i>
+                              <p class="mb-0">No KYC documents added yet</p>
+                              <small>Add at least one KYC document to enable Save.</small>
+                            </div>
+                            }
+
+                            @if(getKycArray(i).controls.length > 0) {
+                            <div class="table-responsive table-borderless pt-2">
+                              <table class="table table-hover table-sm mb-0">
+                                <thead class="bg-info">
+                                  <tr>
+                                    <th class="bg-transparent text-light" width="3%"></th>
+                                    <th width="2%" class="bg-transparent text-light">S.No</th>
+                                    <th width class="bg-transparent text-light">Document Name</th>
+                                    <th class="bg-transparent text-light">Document No.</th>
+                                    <th class="bg-transparent text-light" width="8%">E-Doc</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  @for (kyc of getKycArray(i).controls; track kyc; let k = $index) {
                                   <tr [formGroupName]="k">
                                     <td>
-                                      <button type="button" class="btn btn-sm border-0"
-                                              (click)="deleteKycRow(i, k)" [disabled]="isApprovedRow(credit)">
+                                      <button type="button" class="btn btn-sm border-0" (click)="deleteKycRow(i, k)"
+                                        [disabled]="isApprovedRow(credit)">
                                         <i class="fas fa-trash text-danger"></i>
                                       </button>
                                     </td>
                                     <td class="text-center pt-1">{{ k + 1 }}</td>
                                     <td>
-                                      <ng-select
-                                        formControlName="KycDocName"
-                                        [items]="docName"
-                                        bindLabel="name"
-                                        bindValue="id"
-                                        placeholder=""
-                                        [disabled]="isApprovedRow(credit)"
+                                      <ng-select formControlName="KycDocName" [items]="docName" bindLabel="name"
+                                        bindValue="id" placeholder="" [disabled]="isApprovedRow(credit)"
                                         appendTo="body">
                                       </ng-select>
                                     </td>
                                     <td>
-                                      <input type="text" formControlName="KycDocNumber"
-                                             class="custom-input-field sm"
-                                             placeholder=""
-                                             [disabled]="isApprovedRow(credit)" />
+                                      <input type="text" formControlName="KycDocNumber" class="custom-input-field sm"
+                                        placeholder="" [disabled]="isApprovedRow(credit)" />
                                     </td>
                                     <td>
-                                      <button *ngIf="!kyc.get('AttachDocumentSid')?.value"
-                                              type="button"
-                                              class="btn btn-sm btn-secondary dofi-min-w-80"
-                                              (click)="openEDoc(i, k)" [disabled]="isApprovedRow(credit) && !approvalStatusChanged">
+                                      <button *ngIf="!kyc.get('AttachDocumentSid')?.value" type="button"
+                                        class="btn btn-sm btn-secondary dofi-min-w-80" (click)="openEDoc(i, k)"
+                                        [disabled]="isApprovedRow(credit) && !approvalStatusChanged">
                                         <i class="fas fa-upload me-1"></i> Upload
                                       </button>
-                                     
-                                      <button *ngIf="kyc.get('AttachDocumentSid')?.value"
-                                        type="button"
-                                        class="badge bg-success ms-1 border-0"
-                                        (click)="openEDoc(i, k)"
+
+                                      <button *ngIf="kyc.get('AttachDocumentSid')?.value" type="button"
+                                        class="badge bg-success ms-1 border-0" (click)="openEDoc(i, k)"
                                         [disabled]="isApprovedRow(credit) && !approvalStatusChanged">
                                         Attached
                                       </button>
@@ -428,32 +384,31 @@
                                         {{ getKycFileName(i, k) }}
                                       </div>
                                     </td>
-                                    
+
                                   </tr>
-                                }
-                              </tbody>
-                            </table>
+                                  }
+                                </tbody>
+                              </table>
+                            </div>
+                            }
                           </div>
-                        }
+                        </div>
+
                       </div>
                     </div>
-
                   </div>
+
+                  }
                 </div>
               </div>
-
+              }
             </div>
-          }
+          </div>
+
         </div>
       </div>
-    }
+    </form>
   </div>
-</div>
-
-                </div>
-            </div>
-        </form>
-    </div>
 </div>
 
 <ng-template #auditLogModal let-modal>
