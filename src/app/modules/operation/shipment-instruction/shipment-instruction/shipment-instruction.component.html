@@ -13,13 +13,13 @@
 
       <div class="col-md-4 pb-1 ">
           <!-- Search HBL -->
-          <div *ngIf="showShipmentInstruction"   class="d-flex align-items-center gap-2">
-            <input type="text" class="form-control" placeholder="Enter HBL Number" [(ngModel)]="searchHbl"
+          <div *ngIf="showShipmentInstruction || showSearchResults"   class="d-flex align-items-center gap-2">
+            <input type="text" class="form-control" placeholder="Enter Shipment No / HBL No / MBL No" [(ngModel)]="searchHbl"
               (keyup.enter)="searchShipment()">
-            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" fdprocessedid="4bbi3"><i
+            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="searchShipment()"><i
                 class="fas fa-search me-1"></i> Search </button>
           </div>
-        
+
       </div>
 
       <div class="col-md-4">
@@ -42,9 +42,10 @@
               Edit
             </button>
             <button *ngIf="showShipmentInstruction && isEditMode" type="button"
-              class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="saveShipmentInstruction()">
+              class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="saveShipmentInstruction()"
+              [disabled]="isSaving">
               <i class="fas fa-save me-1"></i>
-              Save
+              {{ isSaving ? 'Saving...' : 'Save' }}
             </button>
           </div>
         </div>
@@ -54,7 +55,7 @@
   </div>
 
   <!-- Search Section -->
-  <div class="col-12" *ngIf="!showShipmentInstruction">
+  <div class="col-12" *ngIf="!showShipmentInstruction && !showSearchResults">
     <div class="card h-100" style="min-height:calc(100vh - 180px)">
       <div class="card-body py-3 px-3">
         <!-- Empty State for Shipment Instruction (BL Format) -->
@@ -65,7 +66,7 @@
           <!-- Headline & Description -->
           <h4 class="fw-semibold mb-0">Search for Shipment Instructions</h4>
           <p class="text-body-secondary mb-3">
-            Enter a BL number or keyword to view details.
+            Enter a Shipment No, HBL No or MBL No to view details.
           </p>
 
           <!-- Search Input -->
@@ -78,14 +79,6 @@
           <!-- Skeleton Table Preview -->
           <div class="table-responsive">
             <table class="table table-borderless">
-              <!-- <thead class="table-light">
-                <tr>
-                  <th>BL No.</th>
-                  <th>Consignee</th>
-                  <th>Port</th>
-                  <th>Date</th>
-                </tr>
-              </thead> -->
               <tbody>
                 <!-- Skeleton rows using Bootstrap 5 placeholders -->
                 <tr>
@@ -145,7 +138,41 @@
     </div>
   </div>
 
-
+  <!-- Search Results Section (Multiple MBL results) -->
+  <div class="col-12" *ngIf="showSearchResults && !showShipmentInstruction">
+    <div class="card h-100" style="min-height:calc(100vh - 180px)">
+      <div class="card-body py-3 px-3">
+        <h6 class="fw-bold mb-3">Multiple House Jobs found for MBL No: <span class="text-info">{{searchHbl}}</span> — Select one to view</h6>
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="small">#</th>
+                <th class="small">HBL No</th>
+                <th class="small">Shipment No</th>
+                <th class="small">Customer Name</th>
+                <th class="small">Shipper</th>
+                <th class="small">POL</th>
+                <th class="small">POD</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let result of searchResults; let i = index" (click)="selectHouseJob(result)"
+                style="cursor: pointer;">
+                <td>{{i + 1}}</td>
+                <td>{{result.HBLNo || '-'}}</td>
+                <td>{{result.ShipmentNo || '-'}}</td>
+                <td>{{result.CustomerName || '-'}}</td>
+                <td>{{result.ShipperName || '-'}}</td>
+                <td>{{result.POL || '-'}}</td>
+                <td>{{result.POD || '-'}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Bill of Lading Format Section -->
   <div class="col-12" *ngIf="showShipmentInstruction">
@@ -426,6 +453,15 @@
                   [(ngModel)]="shipmentData.riderDesc" [readonly]="!isEditMode" rows="3" style="resize: none;"
                   placeholder="Rider Description" />
               </div>
+            </div>
+          </div>
+
+          <!-- Remarks Section -->
+          <div class="border-top">
+            <h6 class="text-center fw-bold py-2 mb-0 bg-light">Remarks</h6>
+            <div class="p-2">
+              <textarea class="form-control editable-field" [(ngModel)]="remarks" [readonly]="!isEditMode" rows="3"
+                placeholder="Enter remarks..." style="resize: none;"></textarea>
             </div>
           </div>
         </div>

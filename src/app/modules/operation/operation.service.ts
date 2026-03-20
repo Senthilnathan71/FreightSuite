@@ -320,13 +320,19 @@ searchHouseJob(payload: any) {
   }
 
   getBookingByBookingNumber(BookingNumber: string) {
-    return this.http.get<{ data: any }>(`house-job/shiping_Ins/fetch/${BookingNumber}`).pipe(
+    const encoded = encodeURIComponent(BookingNumber);
+    return this.http.get<{ data: any }>(`house-job/shiping_Ins/fetch?bookingNumber=${encoded}`).pipe(
       map((resp) => {
         let response = resp;
         return response;
       })
     );
   }
+
+  createShippingInstruction(payload: any) {
+    return this.http.post<any>('shipping-instruction/create', payload);
+  }
+
   // Permissions
   getRoleMenuPermissions(menuId: number, roleId: number) {
     return this.http.get<{ data: any }>(`role-menu/permissions/${menuId}/${roleId}`).pipe(
