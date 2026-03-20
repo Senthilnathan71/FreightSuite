@@ -79,6 +79,7 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
   // Unsaved changes related varaible declarations
   isDirty: boolean = false;
   isSaving: boolean = false;
+  isCancelling: boolean = false;
   private initialFormValue: any = null;
   private destroy$ = new Subject<void>();
   private formChangesSub$ = new Subject<void>();
@@ -853,6 +854,9 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
   get isPosted(): boolean {
     return this.voucherMatchingForm.get('PostStatus')?.value === 'Posted';
   }
+  get isActive(): boolean {
+    return this.voucherMatchingForm.get('Status')?.value === 'Active';
+  }
   get sourceTotalCurrAmt() { return this.getTotal(this.sourceItems, 'OriginalCurrencyAmount'); }
   get sourceTotalLocalAmt() { return this.getTotal(this.sourceItems, 'OriginalLocalAmount'); }
   get sourceTotalOsCurrAmt() { return this.getTotal(this.sourceItems, 'OutstandingCurrencyAmount'); }
@@ -1223,6 +1227,42 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
     this.subledgerList = [];
     this.clearCreateDetail();
     this.isDirty = false;
+  }
+
+  cancelVoucherMatching() {
+    this.confirmService.confirm(
+      'Are you sure you want to cancel this voucher matching? This action cannot be undone. Any associated Exchange JV will be reversed.',
+      'Cancel Voucher Matching',
+      'Yes, Proceed'
+    ).then((confirmed) => {
+      if (!confirmed) return;
+      this.isCancelling = true;
+      const payload = {
+        VoucherMatchingHeaderSid: this.VoucherMatchingHeaderSid,
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
+        YearMasterSid: this.currentFinancialYear?.YearMasterSid,
+        LocalCurrencyMasterSid: this.currentCompany.CurrencyMasterSid ||  this.currentCompanyCurrency?.currencyMasterSid,
+        LocalCurrencyCode: this.currentCompanyCurrency?.code,
+        cancelledBy: this.userData?.userEmail || '',
+      };
+      this.voucherMatchingService.cancelVoucherMatching(payload).subscribe({
+        next: (resp: any) => {
+          this.isCancelling = false;
+          if (resp?.status) {
+            this.toastr.success('Voucher matching cancelled successfully');
+            this.navigateToBack();
+          } else {
+            this.toastr.error(resp?.message || 'Failed to cancel voucher matching');
+          }
+        },
+        error: (err: any) => {
+          this.isCancelling = false;
+          this.toastr.error('Failed to cancel voucher matching');
+          console.error('Cancel voucher matching error:', err);
+        },
+      });
+    });
   }
 
   navigateToBack() {

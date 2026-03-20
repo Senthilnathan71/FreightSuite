@@ -154,5 +154,13 @@ export class VoucherMatchingService {
       )
   }
 
+  cancelVoucherMatching(payload: any) {
+    return this.http.post<ResponseData>('voucher-matching/cancel', payload)
+      .pipe(
+        catchError((error) => {
+          return handleError(error);
+        })
+      )
+  }
 
 }
