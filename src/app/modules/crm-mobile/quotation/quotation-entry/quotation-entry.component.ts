@@ -281,12 +281,21 @@ dataFromEnqPage:any;
   }
 
    selectedTab1= 'Quotation';
-   tabs1 = [
+  tabs1 = [
     { name:'Quotation', icon: 'fas fa-file-signature' },
    { name: 'Route Details', icon: 'fas fa-layer-group' }
   ];
   selectTab1(tab: string) {
     this.selectedTab1 = tab;
+  }
+
+  private getApprovalUrl(quoteHeaderSid: number | null | undefined): string {
+    const baseUrl = (window.location.origin || '').replace(/\/$/, '');
+    return `${baseUrl}/crm/quotation/entry/${quoteHeaderSid}`;
+  }
+
+  private getApprovalLinkText(quoteHeaderSid: number | null | undefined): string {
+    return `Approval Hyper link ${this.getApprovalUrl(quoteHeaderSid)}`;
   }
 
   // Lookup Configuration
@@ -2057,7 +2066,7 @@ isRateLockDisabled(): boolean {
                 customerName: this.quotationData?.CustomerName,
                 userName: this.userData?.userName,
                 menuEmail: this.quotationData?.Email || '',
-                approvalLink: 'Approval Hyper link ' + window.location.origin + '/crm/quotation/entry/' + this.QuoteHeaderSid
+                approvalLink: this.getApprovalLinkText(this.QuoteHeaderSid)
               }
             });
              this.loadQuotation(this.QuoteHeaderSid);
@@ -2103,7 +2112,7 @@ isRateLockDisabled(): boolean {
                 customerName: this.quotationForm.get('CustomerName')?.value || this.quotationForm.get('customerName')?.value,
                 userName: this.userData?.userName,
                 menuEmail: this.quotationForm.get('Email')?.value || '',
-                approvalLink: 'Approval Hyper link ' + window.location.origin + '/crm/quotation/entry/' + resp.data?.quoteHeader?.QuoteHeaderSid
+                approvalLink: this.getApprovalLinkText(resp.data?.quoteHeader?.QuoteHeaderSid)
               }
             });
             const id = resp.data?.quoteHeader?.QuoteHeaderSid;
@@ -2993,7 +3002,7 @@ canGetTariff(routeIndex: number): boolean {
 Please find enclosed the quotation as requested.
 Kindly review the details at your convenience.
 Looking forward to your feedback and the opportunity to work together.
-Approval Hyper link https://xxxxxxxxx
+${this.getApprovalLinkText(this.QuoteHeaderSid)}
 Best Regards,
 ${this.userData.userName}`;
     
@@ -3070,7 +3079,7 @@ ${this.userData.userName}`;
         customerName: this.quotationData?.CustomerName,
         userName: this.userData?.userName,
         menuEmail: this.quotationData?.Email || '',
-        approvalLink: 'Approval Hyper link ' + window.location.origin + '/crm/quotation/entry/' + this.QuoteHeaderSid
+        approvalLink: this.getApprovalLinkText(this.QuoteHeaderSid)
       }
     });
   }
@@ -3673,7 +3682,7 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
           <p>Looking forward to your feedback and the opportunity to work together.</p>
           <p>
             Approval Hyperlink:
-            <a href="https://xxxxxxxxx" target="_blank" style="color: #1a73e8;">Click here to approve</a>
+            <a href="${this.getApprovalUrl(this.QuoteHeaderSid)}" target="_blank" style="color: #1a73e8;">Click here to approve</a>
           </p>
           <p>Best Regards,</p>
           <p>${this.userData['userEmail']}</p>
