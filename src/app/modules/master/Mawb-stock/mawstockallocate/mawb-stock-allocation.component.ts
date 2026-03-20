@@ -26,7 +26,7 @@ export class MawbStockAllocationComponent implements OnInit {
   airlineList: any[] = [];
   customerList: any[] = [];
   clientlist: any[] = [];
-  stockStatusList = ["Free", "Utilised","Void", "Return", "Hold"]; // Removed "Void" as per your requirement
+  stockStatusList = ["Free","Void", "Return"]; // Removed "Void" as per your requirement
 
   currentCompany: any;
   currentBranch: any;
