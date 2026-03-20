@@ -1968,6 +1968,15 @@ getDefaultBLClausesByDepartment(DepartmentMasterSid: number) {
     );
   }
 
+  getAuditLogs(tableName: string, recordId?: string,screenName?: string) {
+    let url = `audit-log/logs?tableName=${tableName}`;
+    if (recordId) url += `&recordId=${recordId}`;
+    if (screenName)url += `&screenName=${screenName}`;
+
+    return this.http.get<{ data: any }>(url).pipe(
+      map((resp) => resp.data)
+    );
+  }
 
 
 }

@@ -68,6 +68,7 @@ import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service
 import { th } from 'date-fns/locale';
 import * as JsBarcode from 'jsbarcode';
 import { CreditValidationApiService } from '../../credit-request.service';
+import { AuditLogComponent } from '../../audit-log/audit-log.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -618,7 +619,6 @@ get visibleTabs() {
           if (this.BookingHeaderSid) {
             this.isEditMode = true;
             this.loadBookingById(this.BookingHeaderSid);
-            this.getAuditLog();
           } else {
             this.minDate = this.today;
           }
@@ -3858,112 +3858,19 @@ ${this.userData['userName']}`;
     })
   }
 
-  //   openAuditLogs(modal: TemplateRef<any>) {
-  //   if (!this.BookingHeaderSid) return;
-
-  //   this.operationService.getAuditLogsBooking('BookingHeader', this.BookingHeaderSid.toString()).subscribe({
-  //     next: (logs: any[]) => {
-  //       const formatFields = (val: any) => {
-  //         if (!val) return ['NA'];
-  //         const obj = typeof val === 'string' ? JSON.parse(val) : val;
-  //         delete obj.updatedOn; // Remove updatedOn field
-  //         // If no fields exist after deleting updatedOn
-  //         if (Object.keys(obj).length === 0) return ['NA'];
-  //         return Object.entries(obj).map(
-  //           ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-  //         );
-  //       };
-
-  //       this.auditLogs = logs.map(log => ({
-  //         ...log,
-  //         oldValDisplay: formatFields(log.oldVal),
-  //         newValDisplay: formatFields(log.newVal)
-  //       }));
-
-  //       this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
-  //     },
-  //     error: err => console.error('Error fetching audit logs:', err)
-  //   });
-  // }
-
-  openAuditLogs(modal: TemplateRef<any>) {
+  openAuditLogs() {
     if (!this.BookingHeaderSid) return;
-    this.getAuditLog()
-    this.auditLogModalRef = this.modalService.open(modal, {
-      centered: true,
-      scrollable: true,
-      windowClass: 'audit-log-modal'
-    });
-  }
-
- getAuditLog() {
-  this.operationService.getAuditLogsBooking(
-    'BookingHeader',
-    this.BookingHeaderSid.toString()
-  ).subscribe({
-    next: (logs: any[]) => {
-
-      const ignoredFields = ['updatedOn','updatedBy','createdOn','createdBy'];
-
-      const normalize = (val:any) => {
-        if (val === null || val === undefined || val === '') return null;
-        return String(val).trim();
-      };
-
-      const groups: any = {};
-
-      logs.forEach(log => {
-
-        const key = `${log.changedAt}-${log.changedBy}`;
-
-        if (!groups[key]) {
-          groups[key] = {
-            changedAt: log.changedAt,
-            changedBy: log.changedBy,
-            operation: log.operation,
-            oldValDisplay: [],
-            newValDisplay: []
-          };
-        }
-
-        const oldObj = log.oldVal || {};
-        const newObj = log.newVal || {};
-
-        const keys = new Set([
-          ...Object.keys(oldObj),
-          ...Object.keys(newObj)
-        ]);
-
-        keys.forEach(k => {
-
-          if (ignoredFields.includes(k)) return;
-
-          const oldVal = normalize(oldObj[k]);
-          const newVal = normalize(newObj[k]);
-
-          if (oldVal !== newVal) {
-
-            groups[key].oldValDisplay.push(
-              `${k}: ${oldVal ?? '-'}`
-            );
-
-            groups[key].newValDisplay.push(
-              `${k}: ${newVal ?? '-'}`
-            );
-
-          }
-
-        });
-
-      });
-
-      this.auditLogs = Object.values(groups)
-        .filter((g:any)=> g.oldValDisplay.length > 0);
-
-    },
-    error: err => console.error('Error fetching audit logs:', err)
+    const modalRef = this.modalService.open(AuditLogComponent, {
+    centered: true,
+    scrollable: true,
+    size: 'xl',
+    windowClass: 'audit-log-modal'
   });
-}
+  modalRef.componentInstance.title = 'Booking Logs';
+  modalRef.componentInstance.tableName = 'BookingHeader';
+  modalRef.componentInstance.recordId = this.BookingHeaderSid.toString();
+  modalRef.componentInstance.screenName = 'Booking';
+  }
 
   getContainerDisplay(): string {
     const containerCount = this.c['NoofContainers']?.value;
