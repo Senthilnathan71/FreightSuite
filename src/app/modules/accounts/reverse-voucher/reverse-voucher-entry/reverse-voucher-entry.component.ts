@@ -134,6 +134,7 @@ export class ReverseVoucherEntryComponent {
   };
   isDirty: boolean = false;
   isSaving: boolean = false;
+  suspendedMatchingHeaders: { VoucherMatchingHeaderSid: number; VoucherMatchingNo: string }[] = [];
   private initialFormValue: any = null;
   private destroy$ = new Subject<void>();
   bookingModeCountry: string = 'india';
@@ -464,6 +465,7 @@ export class ReverseVoucherEntryComponent {
       next: (resp: any) => {
         if (resp?.status && resp.data) {
           const data = resp.data;
+          this.suspendedMatchingHeaders = data.suspendedMatchings || [];
           this.reverseVoucherForm.patchValue({
             ReversalVoucher: data.VoucherHeaderSid,
           });
@@ -473,6 +475,14 @@ export class ReverseVoucherEntryComponent {
           this.patchVoucherData(data);
           this.appSettingService.showSuccess('Voucher data loaded successfully');
         } else {
+          try {
+            const errorData = JSON.parse(resp.message);
+            if (errorData.type === 'VOUCHER_MATCHING_EXISTS') {
+              this.suspendedMatchingHeaders = errorData.matchingHeaders || [];
+              this.appSettingService.showError(errorData.message);
+              return;
+            }
+          } catch (e) { /* not structured, fall through */ }
           this.appSettingService.showError(resp.message || 'Error loading voucher data');
         }
       },
@@ -483,6 +493,10 @@ export class ReverseVoucherEntryComponent {
     });
   }
 
+
+  navigateToVoucherMatching(sid: number) {
+    this.router.navigate(['/accounts/voucher-matching/entry', sid]);
+  }
 
   private patchVoucherData(data: any) {
     const header = data;

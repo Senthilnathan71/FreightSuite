@@ -17,6 +17,13 @@
           <i class="fas fs-6 fa-info-circle"></i>
         </a>
         }
+        @for(header of suspendedMatchingHeaders; track header.VoucherMatchingHeaderSid) {
+          <a class="text-danger cursor-pointer text-decoration-underline fw-bold small ms-2"
+             (click)="navigateToVoucherMatching(header.VoucherMatchingHeaderSid)"
+             title="Go to Voucher Matching">
+            {{ header.VoucherMatchingNo }}
+          </a>
+        }
       </div>
 
       <div class="col-md-8 pb-1">

@@ -1633,10 +1633,11 @@ createRateFormGroup(data?: any): FormGroup {
     const totalSales = this.calculateTotal('totalSales');
     const totalCost = this.calculateTotal('totalCost');
     const totalProfit = this.calculateTotal('profit');
-    if (totalSales !== 0 && totalSales > totalCost) {
+    if (totalSales > totalCost) {
       return totalProfit / totalSales * 100;
+    } else {
+      return totalProfit / totalCost * 100;
     }
-    return totalSales !== 0 ? (totalProfit / totalCost) * 100 : 0;
   }
 
   getTotalProfitPercent(): string {

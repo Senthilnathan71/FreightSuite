@@ -162,6 +162,13 @@
             (click)="onReset()" [disabled]="isSaving || isPosting || isPosted">
             <i class="fas fa-undo me-1"></i> Reset
           </button>
+          @if (isEditMode && isPosted && isActive) {
+            <button type="button" class="btn btn-danger btn-sm dofi-min-w-100 dofi-max-w-100"
+              (click)="cancelVoucherMatching()" [disabled]="isCancelling">
+              <i class="fas fa-times-circle me-1"></i>
+              {{ isCancelling ? 'Cancelling...' : 'Cancel' }}
+            </button>
+          }
           @if(isAutoPosting){
           <button type="button" class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
             [ngClass]="{ 'btn-info': !isDirty, 'btn-warning': isDirty }" (click)="onSubmit(undefined)" [disabled]="
