@@ -1,0 +1,90 @@
+<div class="modal-header modalHeaderpart">
+  <h5 class="modal-title mb-0 d-flex align-items-center gap-2">
+    <i class="fas fa-history"></i>
+    {{ title }}
+  </h5>
+
+  <button
+    type="button"
+    class="btn-close btn-close-white"
+    aria-label="Close"
+    (click)="activeModal.dismiss()">
+  </button>
+</div>
+
+<div class="modal-body audit-body">
+  <div *ngIf="loading" class="audit-loading-state">
+    <div class="spinner-border text-primary audit-spinner" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <div class="audit-loading-title">Loading logs...</div>
+    <div class="audit-loading-subtitle">Please wait fetching logs</div>
+  </div>
+
+  <ng-container *ngIf="!loading">
+    <div *ngIf="auditLogs?.length > 0; else noLogs" class="audit-log-list">
+      <div class="audit-log-card" *ngFor="let log of auditLogs">
+        <div class="audit-log-top">
+          <div>
+            <div class="audit-user">{{ log.changedBy || '-' }}</div>
+            <div class="audit-time">{{ log.changedAt | date:'dd-MM-yyyy hh:mm a' }}</div>
+          </div>
+
+          <span class="audit-badge" [ngClass]="getOperationClass(log.operation)">
+            {{ log.operation }}
+          </span>
+        </div>
+
+        <div *ngFor="let section of log.sections" class="audit-section">
+          <div class="audit-section-title">{{ section.title }}</div>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="audit-panel audit-old">
+                <div class="audit-panel-heading">Old Value</div>
+
+                <ul class="audit-list" *ngIf="section.oldValDisplay?.length; else emptyOld">
+                  <li *ngFor="let field of section.oldValDisplay">{{ field }}</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="audit-panel audit-new">
+                <div class="audit-panel-heading">New Value</div>
+
+                <ul class="audit-list" *ngIf="section.newValDisplay?.length; else emptyNew">
+                  <li *ngFor="let field of section.newValDisplay">{{ field }}</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noLogs>
+      <div class="audit-empty-state">
+        <div class="audit-empty-icon">
+          <i class="fas fa-folder-open"></i>
+        </div>
+        <div class="audit-empty-title">No logs found</div>
+        <div class="audit-empty-subtitle">There are no audit entries available for this record.</div>
+      </div>
+    </ng-template>
+
+    <ng-template #emptyOld>
+      <div class="audit-empty-value">-</div>
+    </ng-template>
+
+    <ng-template #emptyNew>
+      <div class="audit-empty-value">-</div>
+    </ng-template>
+  </ng-container>
+</div>
+
+<div class="modal-footer audit-footer">
+  <button type="button" class="btn btn-outline-secondary px-4" (click)="activeModal.close()">
+    Close
+  </button>
+</div>
