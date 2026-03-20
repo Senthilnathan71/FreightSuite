@@ -4,15 +4,45 @@
 <div class="row compact-form">
   <div class="col-12 px-2">
     <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
-      <div class="col-md-5  d-flex pb-1">
-        <i class="bi bi-check-circle-fill text-success"></i>
-        <h5 class="mb-0">Job Close - {{ masterJob.MasterJobNumber }}</h5>
+
+      <!-- Left: Title ONLY CHANGED -->
+      <div class="col-md-5 d-flex align-items-center gap-2 pb-1">
+        <div>
+          <div
+            style="
+              font-size: 14px;
+              font-weight: 800;
+              color: #05608d;
+              display: flex;
+              align-items: center;
+              gap: 6px;
+            "
+          >
+            Job Close -
+            <span
+              style="
+                background: #e0f2fe;
+                border: 1px solid #7dd3fc;
+                border-radius: 6px;
+                padding: 1px 8px;
+                font-size: 13px;
+                font-weight: 800;
+                color: #05608d;
+              "
+            >
+              {{ masterJob.MasterJobNumber }}
+            </span>
+          </div>
+        </div>
       </div>
+
+      <!-- Right: Buttons UNCHANGED -->
       <div class="col-md-7 d-flex gap-2 justify-content-end pb-1">
         <button
           type="button"
           class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80 btn-sm"
-        (click)="cancel()">
+          (click)="cancel()"
+        >
           <i class="fas fa-chevron-left me-1"></i> Back
         </button>
         <button
@@ -24,6 +54,7 @@
           <i class="fas fa-save me-1"></i> Save
         </button>
       </div>
+
     </div>
   </div>
 </div>
@@ -282,158 +313,131 @@
     </h5>
 
     <!-- Accordion Body -->
-    <div id="collapseClosure"
-         class="accordion-collapse "
-         aria-labelledby="headingClosure"
-         data-bs-parent="#closureAccordion">
+    <!-- Accordion Body -->
+<div id="collapseClosure"
+     class="accordion-collapse"
+     aria-labelledby="headingClosure"
+     data-bs-parent="#closureAccordion">
 
-      <div class="accordion-body py-2 bg-white">
-        <div class="row">
+  <div class="accordion-body py-2 bg-white">
+    <div class="row" style="align-items: stretch;">
 
-          <!-- Documentation Closer -->
-          <div class="col-md-3">
-            <div class="closer-section">
-              <h6 class="closer-title text-info">Documentation Closer</h6>
+      <!-- Documentation Closer -->
+      <div class="col-md-3">
+        <div class="closer-section" style="display: flex; flex-direction: column; height: 100%;">
+          <h6 class="closer-title text-info">Documentation Closer</h6>
 
-              <div class="milestone-list">
-                <div *ngFor="let m of milestoneChecks.documentation" class="milestone-item">
-                  <i class="fas"
-                     [ngClass]="m.passed ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'">
-                  </i>
-                  <span class="ms-1 small" style="color: black;">{{ m.passed ? m.label : m.failedLabel }}</span>
-                </div>
-              </div>
-
-              <div class="mt-2 border-top pt-2">
-                <div class="form-check">
-                  <input class="form-check-input"
-                         type="checkbox"
-                         id="docClose"
-                         [(ngModel)]="docClose"
-                         (change)="onDocCloseChange()">
-
-                  <label class="small text-info" for="docClose">
-                    Documentation Close
-                  </label>
-                </div>
-
-                <div class="mt-1 small ">
-                  <div><span class="text-info"> Date :</span> {{ formatDate(closureStatus.DocClosedDate) }}</div>
-                  <div><span class="text-info"> By :</span> {{ closureStatus.DocClosedBy || '' }}</div>
-                </div>
-              </div>
+          <div class="milestone-list" style="flex-grow: 1;">
+            <div *ngFor="let m of milestoneChecks.documentation" class="milestone-item">
+              <i class="fas"
+                 [ngClass]="m.passed ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'">
+              </i>
+              <span class="ms-1 small" style="color: black;">{{ m.passed ? m.label : m.failedLabel }}</span>
             </div>
           </div>
 
-          <!-- Operation Closer -->
-          <div class="col-md-3">
-            <div class="closer-section">
-              <h6 class="closer-title  text-info">Operation Closer</h6>
+          <div class="mt-2 border-top pt-2" style="margin-top: auto;">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="docClose"
+                     [(ngModel)]="docClose" (change)="onDocCloseChange()">
+              <label class="small text-info" for="docClose">Documentation Close</label>
+            </div>
+            <div class="mt-1 small">
+              <div><span class="text-info">Date :</span> {{ formatDate(closureStatus.DocClosedDate) }}</div>
+              <div><span class="text-info">By :</span> {{ closureStatus.DocClosedBy || '' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-              <div class="milestone-list">
-                <div *ngFor="let m of milestoneChecks.operation" class="milestone-item">
-                  <i class="fas"
-                     [ngClass]="m.passed ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'">
-                  </i>
-                  <span class="ms-1 small" style="color: black;">{{ m.passed ? m.label : m.failedLabel }}</span>
-                </div>
-              </div>
+      <!-- Operation Closer -->
+      <div class="col-md-3">
+        <div class="closer-section" style="display: flex; flex-direction: column; height: 100%;">
+          <h6 class="closer-title text-info">Operation Closer</h6>
 
-              <div class="mt-2 border-top pt-2">
-                <div class="form-check">
-                  <input class="form-check-input"
-                         type="checkbox"
-                         id="opsClose"
-                         [(ngModel)]="opsClose"
-                         (change)="onOpsCloseChange()">
-
-                  <label class="small text-info" for="opsClose">
-                    Operation Close
-                  </label>
-                </div>
-
-                <div class="mt-1 small">
-                  <div><span class="text-info"> Date :</span> {{ formatDate(closureStatus.OpsClosedDate) }}</div>
-                  <div><span class="text-info"> By :</span> {{ closureStatus.OpsClosedBy || '' }}</div>
-                </div>
-              </div>
+          <div class="milestone-list" style="flex-grow: 1;">
+            <div *ngFor="let m of milestoneChecks.operation" class="milestone-item">
+              <i class="fas"
+                 [ngClass]="m.passed ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'">
+              </i>
+              <span class="ms-1 small" style="color: black;">{{ m.passed ? m.label : m.failedLabel }}</span>
             </div>
           </div>
 
-          <!-- Accounts Closer -->
-          <div class="col-md-3">
-            <div class="closer-section">
-              <h6 class="closer-title  text-info">Accounts Closer</h6>
+          <div class="mt-2 border-top pt-2" style="margin-top: auto;">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="opsClose"
+                     [(ngModel)]="opsClose" (change)="onOpsCloseChange()">
+              <label class="small text-info" for="opsClose">Operation Close</label>
+            </div>
+            <div class="mt-1 small">
+              <div><span class="text-info">Date :</span> {{ formatDate(closureStatus.OpsClosedDate) }}</div>
+              <div><span class="text-info">By :</span> {{ closureStatus.OpsClosedBy || '' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-              <div class="milestone-list">
-                <div *ngFor="let m of milestoneChecks.accounts" class="milestone-item">
-                  <i class="fas"
-                     [ngClass]="m.passed ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'">
-                  </i>
-                  <span class="ms-1 small" style="color: black;">{{ m.passed ? m.label : m.failedLabel }}</span>
-                </div>
-              </div>
+      <!-- Accounts Closer -->
+      <div class="col-md-3">
+        <div class="closer-section" style="display: flex; flex-direction: column; height: 100%;">
+          <h6 class="closer-title text-info">Accounts Closer</h6>
 
-              <div class="mt-2 border-top pt-2">
-                <div class="form-check">
-                  <input class="form-check-input"
-                         type="checkbox"
-                         id="accClose"
-                         [(ngModel)]="accClose"
-                         (change)="onAccCloseChange()">
-
-                  <label class=" small text-info" for="accClose">
-                     Accounts Close 
-                  </label>
-                </div>
-
-                <div class="mt-1 small">
-                  <div> <span class="text-info"> Date :</span> {{ formatDate(closureStatus.AccClosedDate) }}</div>
-                  <div><span class="text-info"> By :</span> {{ closureStatus.AccClosedBy || '' }}</div>
-                </div>
-              </div>
+          <div class="milestone-list" style="flex-grow: 1;">
+            <div *ngFor="let m of milestoneChecks.accounts" class="milestone-item">
+              <i class="fas"
+                 [ngClass]="m.passed ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'">
+              </i>
+              <span class="ms-1 small" style="color: black;">{{ m.passed ? m.label : m.failedLabel }}</span>
             </div>
           </div>
 
-          <!-- Job Closer -->
-          <div class="col-md-3">
-            <div class="closer-section">
-              <h6 class="closer-title  text-info">Job Closer</h6>
+          <div class="mt-2 border-top pt-2" style="margin-top: auto;">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="accClose"
+                     [(ngModel)]="accClose" (change)="onAccCloseChange()">
+              <label class="small text-info" for="accClose">Accounts Close</label>
+            </div>
+            <div class="mt-1 small">
+              <div><span class="text-info">Date :</span> {{ formatDate(closureStatus.AccClosedDate) }}</div>
+              <div><span class="text-info">By :</span> {{ closureStatus.AccClosedBy || '' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-              <div class="milestone-list">
-                <div *ngFor="let m of milestoneChecks.jobClose" class="milestone-item">
-                  <i class="fas"
-                     [ngClass]="m.passed ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'">
-                  </i>
-                  <span class="ms-1 small" style="color: black;">{{ m.passed ? m.label : m.failedLabel }}</span>
-                </div>
-              </div>
+      <!-- Job Closer -->
+      <div class="col-md-3">
+        <div class="closer-section" style="display: flex; flex-direction: column; height: 100%;">
+          <h6 class="closer-title text-info">Job Closer</h6>
 
-              <div class="mt-2 border-top pt-2">
-                <div class="form-check">
-                  <input class="form-check-input"
-                         type="checkbox"
-                         id="jobClose"
-                         [(ngModel)]="jobCloseCheck"
-                         (change)="onJobCloseChange()">
-
-                  <label class="small text-info" for="jobClose">
-                     Job Close
-                  </label>
-                </div>
-
-                <div class="mt-1 small">
-                  <div><span class="text-info">  Date : </span>{{ formatDate(closureStatus.JobClosedDate) }}</div>
-                  <div> <span class="text-info"> By : </span> {{ closureStatus.JobClosedBy || '' }} </div>
-                </div>
-              </div>
+          <div class="milestone-list" style="flex-grow: 1;">
+            <div *ngFor="let m of milestoneChecks.jobClose" class="milestone-item">
+              <i class="fas"
+                 [ngClass]="m.passed ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'">
+              </i>
+              <span class="ms-1 small" style="color: black;">{{ m.passed ? m.label : m.failedLabel }}</span>
             </div>
           </div>
 
+          <div class="mt-2 border-top pt-2" style="margin-top: auto;">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="jobClose"
+                     [(ngModel)]="jobCloseCheck" (change)="onJobCloseChange()">
+              <label class="small text-info" for="jobClose">Job Close</label>
+            </div>
+            <div class="mt-1 small">
+              <div><span class="text-info">Date :</span> {{ formatDate(closureStatus.JobClosedDate) }}</div>
+              <div><span class="text-info">By :</span> {{ closureStatus.JobClosedBy || '' }}</div>
+            </div>
+          </div>
         </div>
       </div>
 
     </div>
+  </div>
+</div>
+
   </div>
 </div>
 
