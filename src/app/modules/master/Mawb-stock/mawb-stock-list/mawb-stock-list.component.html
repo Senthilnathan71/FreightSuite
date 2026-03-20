@@ -124,8 +124,13 @@
                                     </a>
                                 
                                     @if(hasPermission('Delete')) {
-                                    <a class="text-danger mx-2 ps-3 border-start cursor-pointer"
-                                        (click)="deleteMawbStock(item.MawbStockSid)">
+                                    <a class="text-danger mx-2 ps-3 border-start"
+                                        [class.cursor-pointer]="item.canDelete"
+                                        [style.pointer-events]="item.canDelete ? 'auto' : 'none'"
+                                        [style.opacity]="item.canDelete ? '1' : '0.5'"
+                                        [attr.aria-disabled]="!item.canDelete"
+                                        [attr.title]="item.canDelete ? 'Delete' : 'Utilised MAWB cannot be deleted'"
+                                        (click)="deleteBy(item)">
                                         <i-feather name="trash-2" class="feather-sm"></i-feather>
                                     </a>
                                 }

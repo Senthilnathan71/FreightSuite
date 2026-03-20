@@ -353,6 +353,10 @@ export class MawbStockListComponent extends BaseListComponent implements OnInit 
   }
 
   deleteBy(row: any) {
+    if (!row.canDelete) {
+      this.appSettingService.showError('Utilised MAWB cannot be deleted');
+      return;
+    }
     this.deleteMawbStock(row.MawbStockSid)
   }
   onTableRowClick(row: any): void {

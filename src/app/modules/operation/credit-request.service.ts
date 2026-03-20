@@ -18,15 +18,21 @@ export interface OutstandingRequest {
 }
 
 export interface ValidateCreditRequest {
-  CompanyMasterSid: number;
-  BranchMasterSid: number;
-  CustomerMasterSid: number;
-  CustomerBranchSid?: number;
-  DocumentDate : string;
+  companyMasterSid: number;
+  branchMasterSid: number;
+  customerMasterSid: number;
+  customerBranchSid?: number;
   // Allow forwards-compatible fields without breaking compilation.
   // [key: string]: any;
 }
 
+export interface ValidateBLDORequest {
+  CompanyMasterSid: number;
+  BranchMasterSid: number;
+  CustomerMasterSid: number;
+  CustomerBranchSid: number;
+  DocumentDate: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class CreditValidationApiService {
@@ -56,6 +62,12 @@ export class CreditValidationApiService {
 
   // Validate credit
   validateCredit(request: ValidateCreditRequest): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/validate`, request)
+      .pipe(map(response => response));
+  }
+
+  // Validate BL/DO release credit rules
+  validateBLDORelease(request: ValidateBLDORequest): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/validate-bldo`, request)
       .pipe(map(response => response));
   }

@@ -482,7 +482,7 @@ creditForm.get('ApprovalStatus')?.valueChanges.subscribe(() => {
       return;
     }
 
-    if (!this.hasAnyKycRows()) {
+    if (this.hasApprovedRowsWithoutKyc()) {
       this.appSettingService.showError('Please add at least one KYC document before saving');
       this.isSaving = false;
       return;
@@ -695,12 +695,7 @@ creditForm.get('ApprovalStatus')?.valueChanges.subscribe(() => {
   if (this.approvalStatusChanged) return false;
 
   if ((!this.mps.can('update') && this.isEditMode)) return true;
-
-  const anyApprovedInvalid = this.creditRequest?.controls?.some(ctrl => this.isApprovedRowInvalid(ctrl));
-  const anyMissingUploads = this.getMissingKycUploads().length > 0;
-  const hasAnyKyc = this.hasAnyKycRows();
-
-  return !!anyApprovedInvalid || anyMissingUploads || !hasAnyKyc;
+  return false;
 }
 
   getApprovalStatusLabel(raw: any): string {
@@ -724,35 +719,55 @@ getDepartmentName(deptId: number, rowIndex: number): string {
   return dept ? dept.departmentName : '';
 }
 
+  private normalizeUserSid(userSid: any): number | null {
+    if (userSid === null || userSid === undefined || userSid === '') {
+      return null;
+    }
+    const value = Number(userSid);
+    return Number.isFinite(value) ? value : null;
+  }
+
   private applySalesmenForRow(rowIndex: number) {
     const branchSid = this.creditRequest.at(rowIndex).get('CustomerBranchSid')?.value;
-    if (!branchSid) return;
+    this.salesmanListPerRow[rowIndex] = [...this.salesmanList];
 
-    const branch = this.customerData?.CustomerBranch?.find((b: any) => b.CustomerBranchSid === branchSid);
-    let list = this.salesmanList;
-    let ids: any[] = [];
+    if (!branchSid) {
+      this.creditRequest.at(rowIndex).get('SalesmanSid')?.reset();
+      return;
+    }
+
+    const normalizedBranchSid = this.normalizeBranchSid(branchSid);
+    const branch = this.customerData?.CustomerBranch?.find(
+      (b: any) => this.normalizeBranchSid(b?.CustomerBranchSid) === normalizedBranchSid
+    );
+    let ids: number[] = [];
 
     if (branch?.CustomerSalesTeam?.length) {
       ids = branch.CustomerSalesTeam
-        .map((t: any) => t?.Salesman)
-        .filter((id: any) => id != null);
-      if (ids.length) {
-        list = this.salesmanList.filter(s => ids.includes(s.UserMasterSid));
-      }
+        .filter((t: any) => String(t?.status || 'A') === 'A')
+        .map((t: any) => this.normalizeUserSid(t?.Salesman))
+        .filter((id: number | null): id is number => id !== null);
+
+      ids = [...new Set(ids)];
     }
 
-    this.salesmanListPerRow[rowIndex] = list;
+    const current = this.normalizeUserSid(this.creditRequest.at(rowIndex).get('SalesmanSid')?.value);
+    const isCurrentValid = current !== null && this.salesmanList.some(s => this.normalizeUserSid(s.UserMasterSid) === current);
 
-    const current = this.creditRequest.at(rowIndex).get('SalesmanSid')?.value;
-    if (!current) {
-      const autoId = ids.length === 1
-        ? ids[0]
-        : list.length === 1
-          ? list[0].UserMasterSid
-          : list[0]?.UserMasterSid;
-      if (autoId) {
-        this.creditRequest.at(rowIndex).get('SalesmanSid')?.setValue(autoId);
-      }
+    if (isCurrentValid) {
+      return;
+    }
+
+    const autoId = ids.length === 1
+      ? ids[0]
+      : this.salesmanList.length === 1
+        ? this.normalizeUserSid(this.salesmanList[0].UserMasterSid)
+        : null;
+
+    if (autoId !== null) {
+      this.creditRequest.at(rowIndex).get('SalesmanSid')?.setValue(autoId);
+    } else if (current !== null) {
+      this.creditRequest.at(rowIndex).get('SalesmanSid')?.reset();
     }
   }
 
@@ -815,8 +830,8 @@ getDepartmentName(deptId: number, rowIndex: number): string {
 
   private addDays(date: Date, days: number): Date {
     const next = new Date(date);
-    next.setHours(0, 0, 0, 0);
-    next.setDate(next.getDate() + days);
+    next.setUTCHours(0, 0, 0, 0);
+    next.setUTCDate(next.getUTCDate() + days);
     return next;
   }
 
@@ -907,14 +922,7 @@ getDepartmentName(deptId: number, rowIndex: number): string {
     return;
   }
 
-  this.salesmanListPerRow[rowIndex] = this.salesmanList;
-
-  const current = this.creditRequest.at(rowIndex).get('SalesmanSid')?.value;
-  if (!current && this.salesmanListPerRow[rowIndex].length === 1) {
-    this.creditRequest.at(rowIndex)
-      .get('SalesmanSid')
-      ?.setValue(this.salesmanListPerRow[rowIndex][0].UserMasterSid);
-  }
+  this.applySalesmenForRow(rowIndex);
 }
 
   private loadAllSalesmen() {
@@ -924,7 +932,9 @@ getDepartmentName(deptId: number, rowIndex: number): string {
       next: (resp: any) => {
         const salesmen = resp?.data || resp || [];
         this.salesmanList = (salesmen || []).map((s: any) => ({
-          UserMasterSid: s.salesman?.UserMasterSid ?? s.Salesman ?? s.SalesmanSid ?? s.UserMasterSid ?? null,
+          UserMasterSid: this.normalizeUserSid(
+            s.salesman?.UserMasterSid ?? s.Salesman ?? s.SalesmanSid ?? s.UserMasterSid ?? null
+          ),
           userName: s.salesman?.userName || s.userName || s.SalesmanName || 'Unknown'
         }));
         this.creditRequest?.controls?.forEach((ctrl, idx) => {
@@ -1143,10 +1153,11 @@ getDepartmentName(deptId: number, rowIndex: number): string {
     return missing;
   }
 
-  private hasAnyKycRows(): boolean {
+  private hasApprovedRowsWithoutKyc(): boolean {
     return this.creditRequest?.controls?.some(ctrl => {
+      if (!this.isApprovedRow(ctrl)) return false;
       const kycArray = ctrl.get('customerKyc') as FormArray | null;
-      return (kycArray?.length || 0) > 0;
+      return (kycArray?.length || 0) === 0;
     }) ?? false;
   }
 

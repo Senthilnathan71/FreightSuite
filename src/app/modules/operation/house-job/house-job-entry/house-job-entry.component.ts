@@ -776,33 +776,33 @@ private setupCargoCalculationSubscriptions(): void {
   }
 
  private calculateChargeableWeight(): void {
-  // Skip if patching or manual override
+  // During patching, don't recalculate - use the patched value
   if (this.isPatching || this.chargeableWeightManualOverride) {
     return;
   }
 
-  const grossWeight = Number(this.c['GrossWeight']?.value) || 0;
-  const volume = Number(this.c['Volume']?.value) || 0;
   const volumetric = Number(this.c['Volumetric']?.value) || 0;
+  const volume = Number(this.c['Volume']?.value) || 0;
+  const grossWeight = Number(this.c['GrossWeight']?.value) || 0;
 
   let chargeableWeight = 0;
 
-  if (this.selectedFCLLCL === 'AIR') {
-    // AIR: max(actual gross kg, volumetric kg)
-    chargeableWeight = Math.max(grossWeight, volumetric);
-  } else if (this.selectedFCLLCL === 'LCL') {
-    // LCL W/M: max(CBM, gross weight in metric tons)
-    const grossWeightInTon = grossWeight / 1000;
-    chargeableWeight = Math.max(volume, grossWeightInTon);
+  // Match booking logic:
+  // AIR/LCL => compare Volumetric vs Gross Weight
+  // Others => compare Volume vs Gross Weight
+  if (this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL') {
+    chargeableWeight = Math.max(volumetric, grossWeight);
   } else {
-    // Existing behavior for non-AIR/LCL segments
     chargeableWeight = Math.max(volume, grossWeight);
   }
 
-  this.c['ChargeableWeight']?.setValue(
-    Number(chargeableWeight.toFixed(this.decimalAfterPrecision)),
-    { emitEvent: false }
-  );
+  const currentValue = Number(this.c['ChargeableWeight']?.value) || 0;
+  if (Math.abs(chargeableWeight - currentValue) > 0.001) {
+    this.c['ChargeableWeight']?.setValue(
+      chargeableWeight > 0 ? Number(chargeableWeight.toFixed(this.decimalAfterPrecision)) : '',
+      { emitEvent: false }
+    );
+  }
 }
 toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
   event.stopPropagation();
@@ -4207,7 +4207,7 @@ ${this.userData['userName']}`;
 
         try {
           const resp: any = await firstValueFrom(
-            this.creditValidationApiService.validateCredit({
+            this.creditValidationApiService.validateBLDORelease({
               CompanyMasterSid : companyMasterSid,
               BranchMasterSid : branchMasterSid,
               CustomerMasterSid : customerMasterSid,

@@ -1194,9 +1194,9 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       UomMasterSid: [data?.UomMasterSid || 2,isAirOrLCL ? [Validators.required] : []],
       CargoRecDate: [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null]
     });
-      if (!isPatching) {
- this.setupProductCalculationSubscriptions(productForm);
-      }
+    // Always attach subscriptions so patched rows can recalculate on later edits.
+    // The subscription itself already skips while `isPatching` is true.
+    this.setupProductCalculationSubscriptions(productForm);
       // Check if department is LCL or AIR
   const isLCLorAIR = this.selectedFCLLCL === 'LCL' || this.selectedFCLLCL === 'AIR';
   
@@ -1261,8 +1261,8 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
   
   dimensionFields.forEach(field => {
     productForm.get(field)?.valueChanges.subscribe(() => {
-      if (this.isPatching) {
-      this.calculateProductFormCBMAndVolumetric(productForm);
+      if (!this.isPatching) {
+        this.calculateProductFormCBMAndVolumetric(productForm);
       }
     });
   });
@@ -2286,7 +2286,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         Volume: parseFloat(product.Volume) || 0,
         IsHaz: product.IsHaz ? 'Y' : 'N',
         ImcoClass: product.ImcoClass || '',
-        UnNo: product.UnNo || '',
+        UnNo: String(product.UnNo ?? ''),
         PkgGroup: product.PkgGroup || '',
         Length: parseFloat(product.Length),
         Width: parseFloat(product.Width),
@@ -5286,7 +5286,6 @@ async generatePDFBlob(type: 'booking' | 'cro'  = 'booking'): Promise<Blob | null
     const raw = this.bookingForm.getRawValue();
     const customerMasterSid = raw?.CustomerMasterSid ?? null;
     const customerBranchSid = raw?.CustomerBranchSid ?? null;
-    const BookingDateTime= raw?.BookingDateTime?? null;
 
     if (!customerMasterSid) {
       return true;
@@ -5304,11 +5303,10 @@ async generatePDFBlob(type: 'booking' | 'cro'  = 'booking'): Promise<Blob | null
     try {
       const resp: any = await firstValueFrom(
         this.creditValidationApiService.validateCredit({
-          CompanyMasterSid: companyMasterSid,
-          BranchMasterSid: branchMasterSid,
-          CustomerMasterSid: customerMasterSid,
-          CustomerBranchSid: customerBranchSid,
-          DocumentDate: BookingDateTime
+          companyMasterSid: companyMasterSid,
+          branchMasterSid: branchMasterSid,
+          customerMasterSid: customerMasterSid,
+          customerBranchSid: customerBranchSid,
         })
       );
 
