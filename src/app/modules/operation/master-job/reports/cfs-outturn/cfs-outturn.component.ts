@@ -1,8 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import { firstValueFrom } from 'rxjs';
+import { take } from 'rxjs/operators';
+import {
+  generateCfsOutturnDocument,
+  transformCfsOutturnApiData,
+} from 'src/app/common/pdf/generators/cfs-outturn-pdf.generator';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
@@ -44,6 +49,7 @@ export class CfsOutturnComponent {
 
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
+  private pdfDepsPromise?: Promise<{ pdfMake: any }>;
 
   ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
@@ -197,7 +203,6 @@ groupProductsByContainer(): void {
     private activeModal: NgbActiveModal,
     private appSettingService: AppSettingsService,
     private masterService: MasterService,
-    private pdfService: PdfDownloadService,
     private spinner: NgxSpinnerService,
     public logoService : LogoService
   ) { }
@@ -357,21 +362,90 @@ getTotalDamage(containerNo: string): number {
   async downloadPDF() {
     this.showPrintLogo = false;
     this.showPdfLogo = true;
+    this.spinner.show();
 
-    setTimeout(async () => {
-      this.spinner.show();
-      try {
-        await this.pdfService.downloadBalancedPDF(
-          'printContent',
-          `CFS_Outturn_Report_${this.housejobData?.ShipmentNo || 'Report'}`,
-          () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-          (error) => this.appSettingService.showError('Error generating PDF. Please try again.'),
-          'landscape'
-        );
-      } finally {
-        this.spinner.hide();
-      }
-    }, 50);
+    try {
+      const { pdfMake } = await this.getPdfDependencies();
+      const logo = await this.resolveReportLogo();
+      const pdfData = transformCfsOutturnApiData(
+        this.masterJobData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        {
+          agentList: this.agentList,
+          yardList: this.yardList,
+        },
+      );
+      const docDefinition = generateCfsOutturnDocument(pdfData);
+      pdfMake
+        .createPdf(docDefinition)
+        .download(`CFS_Outturn_Report_${this.housejobData?.ShipmentNo || 'Report'}.pdf`);
+      this.appSettingService.showSuccess('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('CFS Outturn PDF generation error:', error);
+      this.appSettingService.showError('Error generating PDF. Please try again.');
+    } finally {
+      this.spinner.hide();
+    }
+  }
+
+  private async getPdfDependencies(): Promise<{ pdfMake: any }> {
+    if (this.pdfDepsPromise) {
+      return this.pdfDepsPromise;
+    }
+
+    this.pdfDepsPromise = (async () => {
+      const pdfMakeModule = await import('pdfmake/build/pdfmake');
+      const pdfFontsModule = await import('pdfmake/build/vfs_fonts');
+
+      const pdfMake: any = (pdfMakeModule as any).default || pdfMakeModule;
+      const pdfFonts: any = (pdfFontsModule as any).default || pdfFontsModule;
+      pdfMake.vfs = pdfFonts?.pdfMake?.vfs || pdfFonts;
+
+      return { pdfMake };
+    })();
+
+    return this.pdfDepsPromise;
+  }
+
+  private async resolveReportLogo(): Promise<string | undefined> {
+    const logoFromStream = await firstValueFrom(
+      this.logoService.reportLogo$.pipe(take(1)),
+    );
+    const logoSource =
+      logoFromStream || localStorage.getItem('current_report_logo') || '';
+
+    if (!logoSource) return undefined;
+    if (logoSource.startsWith('data:image')) return logoSource;
+
+    return this.imageUrlToBase64(logoSource);
+  }
+
+  private imageUrlToBase64(url: string): Promise<string | undefined> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          resolve(undefined);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      };
+
+      img.onerror = () => resolve(undefined);
+      img.src = url;
+    });
   }
 
 

@@ -194,7 +194,7 @@ getGrandTotal(field: string): number {
 
     rows.push({
       cells: [
-        { value: 'GRAND TOTAL', colspan: 21 },
+        { value: 'GRAND TOTAL', colspan: 21 , alignment: { horizontal: 'right' } },
         { value: this.formatNumber(this.getGrandTotal('pSale')) },
         { value: this.formatNumber(this.getGrandTotal('pCost')) },
         { value: this.formatNumber(this.getGrandTotal('pGp')) },

@@ -298,7 +298,7 @@ export function generateHblDocument(data: HblPdfData): any {
         margin: [0, 0, 0, 0],
       },
 
-      { text: '', margin: [0, 0, 0, 240] },
+      { text: '', margin: [0, 0, 0, 235] },
 
       {
         table: {

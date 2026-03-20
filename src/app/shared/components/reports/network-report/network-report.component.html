@@ -41,6 +41,7 @@
                         <th class="bg-transparent text-light text-center">Revenue</th>
                         <th class="bg-transparent text-light text-center">Cost</th>
                         <th class="bg-transparent text-light text-center">Profit</th>
+                        <th class="bg-transparent text-light text-center">Profit %</th>
                         <th class="bg-transparent text-light text-center">Nomination</th>
                         <th class="bg-transparent text-light text-center">Origin Agent</th>
                         <th class="bg-transparent text-light text-center">Origin Agent Network</th>
@@ -64,6 +65,7 @@
                         <td class="text-end">{{item.totalRevenue | number:'1.3-3'}}</td>
                         <td class="text-end">{{item.totalCost | number:'1.3-3'}}</td>
                         <td class="text-end">{{item.profit | number:'1.3-3'}}</td>
+                        <td class="text-end">{{item.totalGP | number:'1.2-2'}}%</td>
                         <td>{{ item.nominationBy || '' }}</td>
                         <td>{{ item.originAgent || '' }}</td>
                         <td>{{ item.originNetwork || ''}}</td>
