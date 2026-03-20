@@ -13,8 +13,10 @@
 >
   <div *ngIf="masterJob">
     <!-- Header -->
+    <!-- CHANGE 1: Added border-left, border-top, title color & weight, job number color -->
     <div
       class="bg-white rounded-3 shadow-sm d-flex align-items-center justify-content-between flex-wrap gap-2 px-3 py-1 mb-1"
+      style="border-left: 4px solid #05608d;"
     >
       <div class="d-flex align-items-center gap-3">
         <div
@@ -31,11 +33,11 @@
         <div>
           <div
             class="fw-bold"
-            style="font-size: 15px; color: #111827; line-height: 1.2"
+            style="font-size: 15px; color: #05608d; line-height: 1.2; font-weight: 800 !important; letter-spacing: 0.3px;"
           >
             Pro Rate
           </div>
-          <div style="font-size: 12px; color: #6b7280">
+          <div style="font-size: 12px; color: #374151; font-weight: 700;">
             {{ masterJob.MasterJobNumber }}
           </div>
         </div>
@@ -82,7 +84,7 @@
     <!-- Job Info + Summary + Containers (compact) -->
     <div class="bg-white rounded-3 shadow-sm mb-2 overflow-hidden">
       <!-- Job info row -->
-      <div class="d-flex" style="border-bottom: 1px solid #e5e7eb">
+      <div class="d-flex" style="border-bottom: 1px solid #e5e7eb; border-left:4px solid #0dcaf0;">
         <div
           class="flex-fill px-3 py-1"
           style="border-right: 1px solid #e5e7eb"
@@ -93,7 +95,7 @@
               color: #6b7280;
               text-transform: uppercase;
               letter-spacing: 0.3px;
-              font-weight: 700;
+              font-weight: 800;
             "
             >Dept :
           </span>
@@ -111,7 +113,7 @@
               color: #6b7280;
               text-transform: uppercase;
               letter-spacing: 0.3px;
-              font-weight: 700;
+              font-weight: 800;
             "
             >Job No :
           </span>
@@ -129,7 +131,7 @@
               color: #6b7280;
               text-transform: uppercase;
               letter-spacing: 0.3px;
-              font-weight: 700;
+              font-weight: 800;
             "
             >Job Date :
           </span>
@@ -137,28 +139,46 @@
             {{ masterJob.MasterJobDate | formatDate }}</span
           >
         </div>
-        <div class="flex-fill px-3 py-1">
-          <span
-            style="
-              font-size: 10px;
-              color: #6b7280;
-              text-transform: uppercase;
-              letter-spacing: 0.3px;
-              font-weight: 700;
-            "
-            >Status :
-          </span>
-          <span style="font-size: 12px; font-weight: 600; color: #111827">
-            {{ masterJob.JobStatus || "-" }}</span
-          >
-        </div>
+       <div class="flex-fill px-3 py-1">
+  <span
+    style="
+      font-size: 10px;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      font-weight: 800;
+    "
+    >Status :
+  </span>
+  <span
+    [ngStyle]="{
+      'display': 'inline-block',
+      'font-size': '11px',
+      'font-weight': '800',
+      'padding': '2px 10px',
+      'border-radius': '20px',
+      'letter-spacing': '0.3px',
+      'background': masterJob.JobStatus === 'Job Generated' ? '#dcfce7' :
+                    masterJob.JobStatus === 'Job Closed'    ? '#fee2e2' :
+                    masterJob.JobStatus === 'In Progress'   ? '#fef9c3' : '#f1f5f9',
+      'color':      masterJob.JobStatus === 'Job Generated' ? '#15803d' :
+                    masterJob.JobStatus === 'Job Closed'    ? '#dc2626' :
+                    masterJob.JobStatus === 'In Progress'   ? '#a16207' : '#475569',
+      'border':     masterJob.JobStatus === 'Job Generated' ? '1px solid #bbf7d0' :
+                    masterJob.JobStatus === 'Job Closed'    ? '1px solid #fecaca' :
+                    masterJob.JobStatus === 'In Progress'   ? '1px solid #fde68a' : '1px solid #e2e8f0'
+    }"
+  >
+    {{ masterJob.JobStatus || "-" }}
+  </span>
+</div>
       </div>
       <!-- Summary row -->
       <div class="d-flex" style="border-bottom: 1px solid #e5e7eb">
         <div
           class="flex-fill d-flex align-items-center gap-2 px-3 py-1"
           style="
-            border-left: 3px solid #0dcaf0;
+            border-left: 4px solid #0dcaf0;
             border-right: 1px solid #e5e7eb;
           "
         >
@@ -169,7 +189,7 @@
                 color: #6b7280;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
-                font-weight: 700;
+                font-weight: 800;
               "
             >
               Revenue
@@ -193,7 +213,7 @@
                 color: #6b7280;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
-                font-weight: 700;
+                font-weight: 800;
               "
             >
               Cost
@@ -217,7 +237,7 @@
                 color: #6b7280;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
-                font-weight: 700;
+                font-weight: 800;
               "
             >
               Profit / Loss
@@ -239,7 +259,7 @@
                 color: #6b7280;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
-                font-weight: 700;
+                font-weight: 800;
               "
             >
               Houses
@@ -264,7 +284,7 @@
             <th
               style="
                 padding: 4px 12px;
-                font-weight: 700;
+                font-weight: 800;
                 font-size: 10px;
                 text-transform: uppercase;
                 letter-spacing: 0.3px;
@@ -277,7 +297,7 @@
             <th
               style="
                 padding: 4px 12px;
-                font-weight: 700;
+                font-weight: 800;
                 font-size: 10px;
                 text-transform: uppercase;
                 letter-spacing: 0.3px;
@@ -291,7 +311,7 @@
               class="text-end"
               style="
                 padding: 4px 12px;
-                font-weight: 700;
+                font-weight: 800;
                 font-size: 10px;
                 text-transform: uppercase;
                 letter-spacing: 0.3px;
@@ -305,7 +325,7 @@
               class="text-end"
               style="
                 padding: 4px 12px;
-                font-weight: 700;
+                font-weight: 800;
                 font-size: 10px;
                 text-transform: uppercase;
                 letter-spacing: 0.3px;
@@ -346,6 +366,7 @@
           </tr>
         </tbody>
       </table>
+      
     </div>
 
     <!-- Master-Level Charges -->
@@ -353,23 +374,25 @@
       class="bg-white rounded-3 shadow-sm mb-2 overflow-hidden"
       *ngIf="masterCharges.length > 0; else noMasterCharges"
     >
+      <!-- CHANGE 2: Badge changed to solid white with #05608d text -->
       <div
         class="d-flex align-items-center justify-content-between px-3 py-1 text-white"
         style="background: #05608d"
       >
         <span
           class="d-inline-flex align-items-center gap-2"
-          style="font-size: 13px; font-weight: 600"
+          style="font-size: 13px; font-weight: 700; letter-spacing: 0.3px;"
         >
           <i class="fas fa-layer-group"></i> Master-Level Charges
         </span>
         <span
           style="
-            background: rgba(255, 255, 255, 0.2);
+            background: #fff;
+            color: #05608d;
             padding: 2px 10px;
             border-radius: 10px;
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 800;
           "
           >{{ masterCharges.length }}</span
         >
@@ -386,7 +409,7 @@
                 class="align-middle"
                 style="
                   padding: 5px 8px;
-                  font-weight: 700;
+                  font-weight: 800;
                   font-size: 10px;
                   text-transform: uppercase;
                   letter-spacing: 0.3px;
@@ -402,7 +425,7 @@
                 class="align-middle"
                 style="
                   padding: 5px 8px;
-                  font-weight: 700;
+                  font-weight: 800;
                   font-size: 10px;
                   text-transform: uppercase;
                   letter-spacing: 0.3px;
@@ -418,7 +441,7 @@
                 class="align-middle text-end"
                 style="
                   padding: 5px 8px;
-                  font-weight: 700;
+                  font-weight: 800;
                   font-size: 10px;
                   text-transform: uppercase;
                   letter-spacing: 0.3px;
@@ -437,7 +460,7 @@
                   background: #0dcaf0;
                   color: #fff;
                   font-size: 11px;
-                  font-weight: 800;
+                  font-weight: 900;
                   border-bottom: none;
                 "
               >
@@ -451,7 +474,7 @@
                   background: #ee9d01;
                   color: #fff;
                   font-size: 11px;
-                  font-weight: 800;
+                  font-weight: 900;
                   border-bottom: none;
                 "
               >
@@ -934,7 +957,8 @@
         </span>
         <span
           style="
-            background: rgba(255, 255, 255, 0.2);
+            background:white;
+            color: #05608d;
             padding: 2px 10px;
             border-radius: 10px;
             font-size: 11px;
@@ -946,217 +970,284 @@
       </button>
 
       <div *ngIf="isHouseExpanded(i)">
-        <!-- House Info -->
-        <div class="table-responsive">
-          <table
-            class="table align-middle mb-0"
-            style="font-size: 11px; width: auto; min-width: 100%"
+      <!-- House Info -->
+<!-- House Info -->
+<div class="table-responsive">
+  <table
+    class="table align-middle mb-0"
+    style="font-size: 11px; width: auto; min-width: 100%"
+  >
+    <thead>
+      <tr style="background: #f9fafb">
+        <th
+          style="
+            padding: 4px 8px;
+            font-weight: 800;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border-bottom: 2px solid #e5e7eb;
+            color: #6b7280;
+            white-space: nowrap;
+          "
+        >
+          HBL No
+        </th>
+        <th
+          style="
+            padding: 4px 8px;
+            font-weight: 800;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border-bottom: 2px solid #e5e7eb;
+            color: #6b7280;
+            white-space: nowrap;
+          "
+        >
+          Shipment No
+        </th>
+        <th
+          style="
+            padding: 4px 8px;
+            font-weight: 800;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border-bottom: 2px solid #e5e7eb;
+            color: #6b7280;
+            white-space: nowrap;
+          "
+        >
+          Total Pkg
+        </th>
+        <th
+          class="text-end"
+          style="
+            padding: 4px 8px;
+            font-weight: 800;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border-bottom: 2px solid #e5e7eb;
+            color: #6b7280;
+            white-space: nowrap;
+          "
+        >
+          Gross Wt
+        </th>
+        <th
+          class="text-end"
+          style="
+            padding: 4px 8px;
+            font-weight: 800;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border-bottom: 2px solid #e5e7eb;
+            color: #6b7280;
+            white-space: nowrap;
+          "
+        >
+          Net Wt
+        </th>
+        <th
+          class="text-end"
+          style="
+            padding: 4px 8px;
+            font-weight: 800;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border-bottom: 2px solid #e5e7eb;
+            color: #6b7280;
+            white-space: nowrap;
+          "
+        >
+          CBM
+        </th>
+        <th
+          class="text-end"
+          style="
+            padding: 4px 8px;
+            font-weight: 800;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border-bottom: 2px solid #e5e7eb;
+            color: #6b7280;
+            white-space: nowrap;
+          "
+        >
+          Chargeable Wt
+        </th>
+        <th
+          class="text-end"
+          style="
+            padding: 4px 8px;
+            font-weight: 800;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border-bottom: 2px solid #e5e7eb;
+            color: #6b7280;
+            white-space: nowrap;
+          "
+        >
+          Container No.
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+
+        <!-- HBL No - show badge ONLY if value exists -->
+        <td
+          style="
+            padding: 4px 8px;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+          "
+        >
+          <!-- With value: show badge -->
+          <span
+            *ngIf="house.houseJob?.HBLNo; else hblEmpty"
+            style="
+              display: inline-flex;
+              align-items: center;
+              gap: 5px;
+              background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+              border: 1px solid #7dd3fc;
+              border-radius: 6px;
+              padding: 3px 10px;
+              font-size: 11px;
+              font-weight: 800;
+              color: #0369a1;
+              letter-spacing: 0.2px;
+              white-space: nowrap;
+            "
           >
-            <thead>
-              <tr style="background: #f9fafb">
-                <th
-                  style="
-                    padding: 4px 8px;
-                    font-weight: 700;
-                    font-size: 10px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.3px;
-                    border-bottom: 2px solid #e5e7eb;
-                    color: #6b7280;
-                    white-space: nowrap;
-                  "
-                >
-                  HBL No
-                </th>
-                <th
-                  style="
-                    padding: 4px 8px;
-                    font-weight: 700;
-                    font-size: 10px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.3px;
-                    border-bottom: 2px solid #e5e7eb;
-                    color: #6b7280;
-                    white-space: nowrap;
-                  "
-                >
-                  Shipment No
-                </th>
-                <th
-                  style="
-                    padding: 4px 8px;
-                    font-weight: 700;
-                    font-size: 10px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.3px;
-                    border-bottom: 2px solid #e5e7eb;
-                    color: #6b7280;
-                    white-space: nowrap;
-                  "
-                >
-                  Total Pkg
-                </th>
-                <th
-                  class="text-end"
-                  style="
-                    padding: 4px 8px;
-                    font-weight: 700;
-                    font-size: 10px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.3px;
-                    border-bottom: 2px solid #e5e7eb;
-                    color: #6b7280;
-                    white-space: nowrap;
-                  "
-                >
-                  Gross Wt
-                </th>
-                <th
-                  class="text-end"
-                  style="
-                    padding: 4px 8px;
-                    font-weight: 700;
-                    font-size: 10px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.3px;
-                    border-bottom: 2px solid #e5e7eb;
-                    color: #6b7280;
-                    white-space: nowrap;
-                  "
-                >
-                  Net Wt
-                </th>
-                <th
-                  class="text-end"
-                  style="
-                    padding: 4px 8px;
-                    font-weight: 700;
-                    font-size: 10px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.3px;
-                    border-bottom: 2px solid #e5e7eb;
-                    color: #6b7280;
-                    white-space: nowrap;
-                  "
-                >
-                  CBM
-                </th>
-                <th
-                  class="text-end"
-                  style="
-                    padding: 4px 8px;
-                    font-weight: 700;
-                    font-size: 10px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.3px;
-                    border-bottom: 2px solid #e5e7eb;
-                    color: #6b7280;
-                    white-space: nowrap;
-                  "
-                >
-                  Chargeable Wt
-                </th>
-                <th
-                  class="text-end"
-                  style="
-                    padding: 4px 8px;
-                    font-weight: 700;
-                    font-size: 10px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.3px;
-                    border-bottom: 2px solid #e5e7eb;
-                    color: #6b7280;
-                    white-space: nowrap;
-                  "
-                >
-                  Container No.
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td
-                  style="
-                    padding: 4px 8px;
-                    border-bottom: 1px solid #e5e7eb;
-                    font-weight: 600;
-                    white-space: nowrap;
-                  "
-                >
-                  {{ house.houseJob?.HBLNo || "-" }}
-                </td>
-                <td
-                  style="
-                    padding: 4px 8px;
-                    border-bottom: 1px solid #e5e7eb;
-                    white-space: nowrap;
-                  "
-                >
-                  {{ house.houseJob?.ShipmentNo || "-" }}
-                </td>
-                <td
-                  style="
-                    padding: 4px 8px;
-                    border-bottom: 1px solid #e5e7eb;
-                    white-space: nowrap;
-                  "
-                >
-                  {{ house.cargo?.totalPkg || 0 }}
-                </td>
-                <td
-                  class="text-end"
-                  style="
-                    padding: 4px 8px;
-                    border-bottom: 1px solid #e5e7eb;
-                    white-space: nowrap;
-                  "
-                >
-                  {{ house.cargo?.grossWeight | numberFormat }}
-                </td>
-                <td
-                  class="text-end"
-                  style="
-                    padding: 4px 8px;
-                    border-bottom: 1px solid #e5e7eb;
-                    white-space: nowrap;
-                  "
-                >
-                  {{ house.cargo?.netWeight | numberFormat }}
-                </td>
-                <td
-                  class="text-end"
-                  style="
-                    padding: 4px 8px;
-                    border-bottom: 1px solid #e5e7eb;
-                    white-space: nowrap;
-                  "
-                >
-                  {{ house.cargo?.cbm | numberFormat }}
-                </td>
-                <td
-                  class="text-end"
-                  style="
-                    padding: 4px 8px;
-                    border-bottom: 1px solid #e5e7eb;
-                    white-space: nowrap;
-                  "
-                >
-                  {{ house.cargo?.chargeableWeight | numberFormat }}
-                </td>
-                <td
-                  class="text-end"
-                  style="
-                    padding: 4px 8px;
-                    border-bottom: 1px solid #e5e7eb;
-                    white-space: nowrap;
-                  "
-                >
-                  {{ house.cargo?.noOfContainers || 0 }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+            <i class="fas fa-file-alt" style="font-size: 9px; opacity: 0.8;"></i>
+            {{ house.houseJob?.HBLNo }}
+          </span>
+          <!-- No value: show plain dash -->
+          <ng-template #hblEmpty>
+            <span style="color: #9ca3af; font-size: 11px; font-weight: 500;">-</span>
+          </ng-template>
+        </td>
+
+        <!-- Shipment No - show badge ONLY if value exists -->
+        <td
+          style="
+            padding: 4px 8px;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+          "
+        >
+          <!-- With value: show badge -->
+          <span
+            *ngIf="house.houseJob?.ShipmentNo; else shipmentEmpty"
+            style="
+              display: inline-flex;
+              align-items: center;
+              gap: 5px;
+              background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
+              border: 1px solid #c4b5fd;
+              border-radius: 6px;
+              padding: 3px 10px;
+              font-size: 11px;
+              font-weight: 700;
+              color: #7c3aed;
+              letter-spacing: 0.2px;
+              white-space: nowrap;
+            "
+          >
+            <i class="fas fa-ship" style="font-size: 9px; opacity: 0.8;"></i>
+            {{ house.houseJob?.ShipmentNo }}
+          </span>
+          <!-- No value: show plain dash -->
+          <ng-template #shipmentEmpty>
+            <span style="color: #9ca3af; font-size: 11px; font-weight: 500;">-</span>
+          </ng-template>
+        </td>
+
+        <!-- Rest of cells unchanged -->
+        <td
+          style="
+            padding: 4px 8px;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+            font-weight: 600;
+            color: #374151;
+          "
+        >
+          {{ house.cargo?.totalPkg || 0 }}
+        </td>
+        <td
+          class="text-end"
+          style="
+            padding: 4px 8px;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+            font-weight: 600;
+            color: #374151;
+          "
+        >
+          {{ house.cargo?.grossWeight | numberFormat }}
+        </td>
+        <td
+          class="text-end"
+          style="
+            padding: 4px 8px;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+            font-weight: 600;
+            color: #374151;
+          "
+        >
+          {{ house.cargo?.netWeight | numberFormat }}
+        </td>
+        <td
+          class="text-end"
+          style="
+            padding: 4px 8px;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+            font-weight: 600;
+            color: #374151;
+          "
+        >
+          {{ house.cargo?.cbm | numberFormat }}
+        </td>
+        <td
+          class="text-end"
+          style="
+            padding: 4px 8px;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+            font-weight: 600;
+            color: #374151;
+          "
+        >
+          {{ house.cargo?.chargeableWeight | numberFormat }}
+        </td>
+        <td
+          class="text-end"
+          style="
+            padding: 4px 8px;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+            font-weight: 600;
+            color: #374151;
+          "
+        >
+          {{ house.cargo?.noOfContainers || 0 }}
+        </td>
+
+      </tr>
+    </tbody>
+  </table>
+</div>
 
         <!-- House Charges -->
         <div
@@ -1174,7 +1265,7 @@
                   class="align-middle text-center"
                   style="
                     padding: 4px 8px;
-                    font-weight: 700;
+                    font-weight: 800;
                     font-size: 10px;
                     text-transform: uppercase;
                     letter-spacing: 0.3px;
@@ -1191,7 +1282,7 @@
                   class="align-middle"
                   style="
                     padding: 4px 8px;
-                    font-weight: 700;
+                    font-weight: 800;
                     font-size: 10px;
                     text-transform: uppercase;
                     letter-spacing: 0.3px;
@@ -1208,7 +1299,7 @@
                   class="align-middle"
                   style="
                     padding: 4px 8px;
-                    font-weight: 700;
+                    font-weight: 800;
                     font-size: 10px;
                     text-transform: uppercase;
                     letter-spacing: 0.3px;
@@ -1225,7 +1316,7 @@
                   class="align-middle text-end"
                   style="
                     padding: 4px 8px;
-                    font-weight: 700;
+                    font-weight: 800;
                     font-size: 10px;
                     text-transform: uppercase;
                     letter-spacing: 0.3px;
@@ -1270,7 +1361,7 @@
                 <th
                   style="
                     padding: 4px 8px;
-                    font-weight: 600;
+                    font-weight: 800;
                     font-size: 10px;
                     text-transform: uppercase;
                     letter-spacing: 0.3px;
@@ -1286,7 +1377,7 @@
                   class="text-end"
                   style="
                     padding: 4px 8px;
-                    font-weight: 600;
+                    font-weight: 800;
                     font-size: 10px;
                     text-transform: uppercase;
                     letter-spacing: 0.3px;
@@ -1302,7 +1393,7 @@
                   class="text-end"
                   style="
                     padding: 4px 8px;
-                    font-weight: 600;
+                    font-weight: 800;
                     font-size: 10px;
                     text-transform: uppercase;
                     letter-spacing: 0.3px;
@@ -1317,7 +1408,7 @@
                 <th
                   style="
                     padding: 4px 8px;
-                    font-weight: 600;
+                    font-weight: 800;
                     font-size: 10px;
                     text-transform: uppercase;
                     letter-spacing: 0.3px;
@@ -1332,7 +1423,7 @@
                 <th
                   style="
                     padding: 4px 8px;
-                    font-weight: 600;
+                    font-weight: 800;
                     font-size: 10px;
                     text-transform: uppercase;
                     letter-spacing: 0.3px;
@@ -1348,7 +1439,7 @@
                   class="text-end"
                   style="
                     padding: 4px 8px;
-                    font-weight: 600;
+                    font-weight: 800;
                     font-size: 10px;
                     text-transform: uppercase;
                     letter-spacing: 0.3px;
@@ -1364,7 +1455,7 @@
                   class="text-end"
                   style="
                     padding: 4px 8px;
-                    font-weight: 600;
+                    font-weight: 800;
                     font-size: 10px;
                     text-transform: uppercase;
                     letter-spacing: 0.3px;
@@ -1379,7 +1470,7 @@
                 <th
                   style="
                     padding: 4px 8px;
-                    font-weight: 600;
+                    font-weight: 00;
                     font-size: 10px;
                     text-transform: uppercase;
                     letter-spacing: 0.3px;
@@ -1818,6 +1909,7 @@
           </div>
         </ng-template>
       </div>
+      
     </div>
 
     <!-- No Houses -->
