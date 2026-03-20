@@ -593,23 +593,33 @@ export class LoadingPlanEntryComponent {
     this.slicedAvailableBookings = this.availableBookings.slice(start, end);
   }
 
-  toggleBooking(event, booking) {
-    const target = event.target as HTMLInputElement;
-    if (event instanceof KeyboardEvent) {
-      target.checked = !target.checked;
-    }
-    const key = booking.BookingHeaderSid ?? booking.HouseJobSid;
-    const currentState = target.checked;
-    if (currentState) {
-      if (!this.selectedBookings.some(b => b.BookingHeaderSid ?? b.HouseJobSid === key)) {
-      this.selectedBookings.push(booking);
-      }
-    } else {
-      this.selectedBookings = this.selectedBookings.filter(b => (b.BookingHeaderSid ?? b.HouseJobSid )!== key);
-    }
-    this.handleMultipleVoyages();
-    this.calculateTotal();
+  toggleBooking(event: Event | KeyboardEvent, booking: any) {
+  const target = event.target as HTMLInputElement;
+
+  if (event instanceof KeyboardEvent) {
+    target.checked = !target.checked;
   }
+
+  const key = booking.BookingHeaderSid ?? booking.HouseJobSid;
+  const currentState = target.checked;
+
+  if (currentState) {
+    const alreadyExists = this.selectedBookings.some(
+      b => (b.BookingHeaderSid ?? b.HouseJobSid) === key
+    );
+
+    if (!alreadyExists) {
+      this.selectedBookings.push(booking);
+    }
+  } else {
+    this.selectedBookings = this.selectedBookings.filter(
+      b => (b.BookingHeaderSid ?? b.HouseJobSid) !== key
+    );
+  }
+
+  this.handleMultipleVoyages();
+  this.calculateTotal();
+}
 
   handleMultipleVoyages() {
     const uniqueVoyages = new Map();
@@ -1205,10 +1215,12 @@ formatContainerNumber(): void {
       }
     });
   }
-  existInSelected(item) {
-    const key = item.BookingHeaderSid ?? item.HouseJobSid;
-    return this.selectedBookings.find(b => b.BookingHeaderSid ?? b.HouseJobSid) === key;
-  }
+  existInSelected(item: any): boolean {
+  const key = item.BookingHeaderSid ?? item.HouseJobSid;
+  return this.selectedBookings.some(
+    b => (b.BookingHeaderSid ?? b.HouseJobSid) === key
+  );
+}
 
   getVesselVoy(booking: any) {
     const vessel = booking.VesselName;
