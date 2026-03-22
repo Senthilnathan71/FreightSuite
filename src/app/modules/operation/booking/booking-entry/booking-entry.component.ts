@@ -2357,7 +2357,8 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
                 consigneeName: this.bookingData?.ConsigneeName,
                 userName: this.userData?.userName,
                 ShipmentNo: this.bookingData?.ShipmentNo,
-                menuEmail: this.selectedCustomerBranch?.Email || ''
+                menuEmail: this.selectedCustomerBranch?.Email || '',
+                customerBranchSid: this.selectedCustomerBranch?.CustomerBranchSid || this.bookingData?.CustomerBranchSid || null
               }
             });
           } else {
@@ -2402,7 +2403,8 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
                 consigneeName: this.b['ConsigneeName']?.value,
                 userName: this.userData?.userName,
                 ShipmentNo: resp.data?.bookingHeader?.ShipmentNo,
-                menuEmail: this.selectedCustomerBranch?.Email || ''
+                menuEmail: this.selectedCustomerBranch?.Email || '',
+                customerBranchSid: this.selectedCustomerBranch?.CustomerBranchSid || this.bookingData?.CustomerBranchSid || null
               }
             });
           } else {

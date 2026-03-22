@@ -7,11 +7,13 @@
           <div class="brand-icon">
             <i class="fas fa-file-contract"></i>
           </div>
-          <h5 class="page-title mb-0 text-info">Shipment Instruction (BL Format)</h5>
+          <h5 class="page-title mb-0 text-info">
+            Shipment Instruction (BL Format)
+          </h5>
         </div>
       </div>
 
-      <div class="col-md-4 pb-1 ">
+      <div class="col-md-4 pb-1 " *ngIf="!isPublicMode">
           <!-- Search HBL -->
           <div *ngIf="showShipmentInstruction || showSearchResults"   class="d-flex align-items-center gap-2">
             <input type="text" class="form-control" placeholder="Enter Shipment No / HBL No / MBL No" [(ngModel)]="searchHbl"
@@ -22,7 +24,7 @@
 
       </div>
 
-      <div class="col-md-4">
+      <div class="col-md-4" *ngIf="!isPublicMode">
         <div>
           <div
             class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
@@ -51,11 +53,31 @@
         </div>
       </div>
 
+      <!-- Public mode action buttons -->
+      <div class="col-md-8" *ngIf="isPublicMode">
+        <div>
+          <div
+            class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+            <button *ngIf="showShipmentInstruction && !isEditMode" type="button"
+              class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="toggleEditMode()">
+              <i class="fas fa-edit me-1"></i>
+              Edit
+            </button>
+            <button *ngIf="showShipmentInstruction && isEditMode" type="button"
+              class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="saveShipmentInstruction()"
+              [disabled]="isSaving">
+              <i class="fas fa-save me-1"></i>
+              {{ isSaving ? 'Saving...' : 'Save' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
   <!-- Search Section -->
-  <div class="col-12" *ngIf="!showShipmentInstruction && !showSearchResults">
+  <div class="col-12" *ngIf="!showShipmentInstruction && !showSearchResults && !isPublicMode">
     <div class="card h-100" style="min-height:calc(100vh - 180px)">
       <div class="card-body py-3 px-3">
         <!-- Empty State for Shipment Instruction (BL Format) -->
@@ -139,7 +161,7 @@
   </div>
 
   <!-- Search Results Section (Multiple MBL results) -->
-  <div class="col-12" *ngIf="showSearchResults && !showShipmentInstruction">
+  <div class="col-12" *ngIf="showSearchResults && !showShipmentInstruction && !isPublicMode">
     <div class="card h-100" style="min-height:calc(100vh - 180px)">
       <div class="card-body py-3 px-3">
         <h6 class="fw-bold mb-3">Multiple House Jobs found for MBL No: <span class="text-info">{{searchHbl}}</span> — Select one to view</h6>

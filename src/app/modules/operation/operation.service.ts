@@ -333,6 +333,18 @@ searchHouseJob(payload: any) {
     return this.http.post<any>('shipping-instruction/create', payload);
   }
 
+  sendSIMail(payload: any) {
+    return this.http.post<any>('shipping-instruction/send-mail', payload);
+  }
+
+  getPublicSIData(token: string) {
+    return this.http.get<any>(`shipping-instruction/public/fetch?token=${token}`);
+  }
+
+  savePublicSI(payload: any) {
+    return this.http.post<any>('shipping-instruction/public/save', payload);
+  }
+
   // Permissions
   getRoleMenuPermissions(menuId: number, roleId: number) {
     return this.http.get<{ data: any }>(`role-menu/permissions/${menuId}/${roleId}`).pipe(

@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { firstValueFrom } from 'rxjs';
 import { EmailModuleService } from './email.service';
 import { SettingsService } from '../settings/settings.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { EmailEntryComponent } from '../settings/email/email-entry/email-entry.component';
+import { OperationService } from '../operation/operation.service';
 
 export interface EmailTriggerParams {
   companyId: number;
@@ -44,7 +46,8 @@ export class EmailTriggerService {
     private emailService: EmailModuleService,
     private settingsService: SettingsService,
     private appSettingService: AppSettingsService,
-    private ngbModal: NgbModal
+    private ngbModal: NgbModal,
+    private operationService: OperationService
   ) {}
 
   triggerEmails(params: EmailTriggerParams): void {
@@ -136,19 +139,34 @@ export class EmailTriggerService {
     return changedFields.some(field => configFields.includes(field));
   }
 
-  private enrichContext(context?: { [key: string]: any }): { [key: string]: any } {
+  private async enrichContext(context?: { [key: string]: any }): Promise<{ [key: string]: any }> {
     const userData = this.appSettingService.getDecryptedUserProfile();
+
+    // Resolve menuEmail from CustomerBrEmail if customerBranchSid is provided
+    let menuEmail = context?.['menuEmail'] || '';
+    if (!menuEmail && context?.['customerBranchSid']) {
+      try {
+        const resp: any = await firstValueFrom(
+          this.operationService.getCustomerBranchEmail(context['customerBranchSid'])
+        );
+        menuEmail = resp?.data?.Email || '';
+      } catch (e) {
+        console.error('Failed to fetch CustomerBrEmail', e);
+      }
+    }
+
     return {
       ...context,
-      organizationEmail: context?.['menuEmail'] || '',
+      menuEmail: menuEmail,
+      organizationEmail: menuEmail,
       userEmail: userData?.userEmail || '',
       userName: context?.['userName'] || userData?.userName || ''
     };
   }
 
-  private sendAutoEmail(config: any, companyId: number, branchId: number, context?: { [key: string]: any }): void {
+  private async sendAutoEmail(config: any, companyId: number, branchId: number, context?: { [key: string]: any }): Promise<void> {
     const userData = this.appSettingService.getDecryptedUserProfile();
-    const enrichedContext = this.enrichContext(context);
+    const enrichedContext = await this.enrichContext(context);
     const subject = this.replacePlaceholders(config.MailSubject, enrichedContext);
     const body = this.replacePlaceholders(config.MailBody, enrichedContext);
     const toEmail = this.replacePlaceholders(config.ToEmailidFrom || '', enrichedContext);
@@ -179,8 +197,8 @@ export class EmailTriggerService {
     });
   }
 
-  private openEmailPopup(config: any, context?: { [key: string]: any }): void {
-    const enrichedContext = this.enrichContext(context);
+  private async openEmailPopup(config: any, context?: { [key: string]: any }): Promise<void> {
+    const enrichedContext = await this.enrichContext(context);
     const subject = this.replacePlaceholders(config.MailSubject, enrichedContext);
     const body = this.replacePlaceholders(config.MailBody, enrichedContext);
     const toEmail = this.replacePlaceholders(config.ToEmailidFrom || '', enrichedContext);
