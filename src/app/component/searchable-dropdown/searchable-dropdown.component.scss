@@ -15,6 +15,13 @@
   overflow-x: auto !important;
 }
 
+/* Header wrapper — must stretch to match item rows */
+:host ::ng-deep .ng-dropdown-header {
+  min-width: max-content;
+  background-color: #05608d;
+  padding-left: 5px;
+}
+
 /* Scrollable wrapper inside panel */
 :host ::ng-deep .ng-dropdown-panel-items-wrapper {
   display: block;
@@ -58,11 +65,13 @@
 
 .dropdown-header {
   font-weight: 700;
-  background-color: rgb(240, 236, 236);
+  background-color: #05608d;
   position: sticky;
-  color: black;
+  color: #fff;
   top: 0;
   z-index: 5;
+  min-width: max-content;
+  padding-left: 5px;
   box-shadow: 0 2px 2px -2px rgba(0,0,0,0.1);
 }
 
