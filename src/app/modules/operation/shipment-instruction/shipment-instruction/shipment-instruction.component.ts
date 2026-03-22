@@ -439,6 +439,7 @@ export class ShipmentInstructionComponent {
       BranchMasterSid: bookingFormValue.BranchMasterSid,
       HouseJobSid: HouseJobSid,
       Remarks: this.remarks,
+      SIStatus: 'Confirmed',
       CreatedBy: this.isPublicMode ? 'Public-SI' : (this.userData?.userName || this.userData?.UserName || '')
     };
 
