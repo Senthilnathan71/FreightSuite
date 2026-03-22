@@ -5,6 +5,7 @@ import { FullComponent } from './layouts/full/full.component';
 import { BlankComponent } from './layouts/blank/blank.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { ShortcutComponent } from './modules/shortcut/shortcut.component';
+import { ShipmentInstructionComponent } from './modules/operation/shipment-instruction/shipment-instruction/shipment-instruction.component';
 
 export const Approutes: Routes = [
   {
@@ -77,6 +78,10 @@ export const Approutes: Routes = [
           ),
       },
     ],
+  },
+  {
+    path: 'public/shipment-instruction',
+    component: ShipmentInstructionComponent
   },
   {
     path: '**',

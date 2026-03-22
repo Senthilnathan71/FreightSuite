@@ -87,7 +87,8 @@ export class MailConfigurationEntryComponent implements OnInit {
 
   actionOptions = [
     { value: 'CREATE', label: 'Create' },
-    { value: 'UPDATE', label: 'Update' }
+    { value: 'UPDATE', label: 'Update' },
+    { value: 'SendSIMail', label: 'Send SI Mail' }
   ];
 
   updateFieldOptions = ALL_PLACEHOLDERS.map(p => ({ key: p.key, label: p.label }));
@@ -134,7 +135,7 @@ export class MailConfigurationEntryComponent implements OnInit {
         if (resp.status && resp.data) {
           this.rows = resp.data.map((item: any) => {
             const actionStr = item.Action || '';
-            const selectedActions = actionStr ? actionStr.split(',').map((a: string) => a.trim().toUpperCase()).filter((a: string) => a) : [];
+            const selectedActions = actionStr ? actionStr.split(',').map((a: string) => a.trim()).filter((a: string) => a) : [];
             const updateFieldsStr = item.UpdateFields || '';
             const selectedUpdateFields = updateFieldsStr ? updateFieldsStr.split(',').map((f: string) => f.trim()).filter((f: string) => f) : [];
             return {

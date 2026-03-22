@@ -255,6 +255,7 @@ creditValidationSummary: any = null;
   bookingHeader: any;
   isSubmitting = false; 
   isSaving: boolean = false;
+  isSendingSIMail: boolean = false;
   selectedCustomerBranch : any;
   edocData : any;
   edocResetTrigger : any;
@@ -3533,6 +3534,52 @@ ${this.userData['userName']}`;
       backdrop: 'static',
       centered: true,
     })
+  }
+
+  sendSIMail() {
+    if (this.isSendingSIMail || !this.HouseJobSid) return;
+    this.isSendingSIMail = true;
+
+    const payload = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      HouseJobSid: this.HouseJobSid,
+      appBaseUrl: window.location.origin,
+      userEmail: this.userData?.userEmail || '',
+      userName: this.userData?.userName || ''
+    };
+
+    this.operationService.sendSIMail(payload).subscribe({
+      next: (resp: any) => {
+        this.isSendingSIMail = false;
+        if (resp.status) {
+          const data = resp.data;
+          if (data?.showPopup && data?.emailData) {
+            // Open email popup for user to review and send
+            const modalRef = this.modalService.open(EmailEntryComponent, {
+              size: 'lg',
+              centered: true,
+              backdrop: 'static'
+            });
+            modalRef.componentInstance.setContent = {
+              EmailTo: data.emailData.toEmail,
+              EmailCC: data.emailData.ccEmail,
+              EmailBCC: '',
+              Subject: data.emailData.subject,
+              Mailbody: data.emailData.body
+            };
+          } else {
+            this.appSettingService.showSuccess('SI Mail sent successfully');
+          }
+        } else {
+          this.appSettingService.showError(resp.message || 'Failed to send SI Mail');
+        }
+      },
+      error: (err) => {
+        this.isSendingSIMail = false;
+        this.appSettingService.showError(err?.error?.message || 'Failed to send SI Mail');
+      }
+    });
   }
 
   openAuditLogs(modal: TemplateRef<any>) {

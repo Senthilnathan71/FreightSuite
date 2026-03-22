@@ -2057,7 +2057,8 @@ isRateLockDisabled(): boolean {
                 customerName: this.quotationData?.CustomerName,
                 userName: this.userData?.userName,
                 menuEmail: this.quotationData?.Email || '',
-                approvalLink: 'Approval Hyper link ' + window.location.origin + '/crm/quotation/entry/' + this.QuoteHeaderSid
+                customerBranchSid: this.quotationData?.CustomerBranchSid || null,
+                approvalLink: window.location.origin + '/crm/quotation/entry/' + this.QuoteHeaderSid
               }
             });
              this.loadQuotation(this.QuoteHeaderSid);
@@ -2103,7 +2104,8 @@ isRateLockDisabled(): boolean {
                 customerName: this.quotationForm.get('CustomerName')?.value || this.quotationForm.get('customerName')?.value,
                 userName: this.userData?.userName,
                 menuEmail: this.quotationForm.get('Email')?.value || '',
-                approvalLink: 'Approval Hyper link ' + window.location.origin + '/crm/quotation/entry/' + resp.data?.quoteHeader?.QuoteHeaderSid
+                customerBranchSid: this.quotationForm.get('CustomerBranchSid')?.value || null,
+                approvalLink: window.location.origin + '/crm/quotation/entry/' + resp.data?.quoteHeader?.QuoteHeaderSid
               }
             });
             const id = resp.data?.quoteHeader?.QuoteHeaderSid;
@@ -3070,7 +3072,8 @@ ${this.userData.userName}`;
         customerName: this.quotationData?.CustomerName,
         userName: this.userData?.userName,
         menuEmail: this.quotationData?.Email || '',
-        approvalLink: 'Approval Hyper link ' + window.location.origin + '/crm/quotation/entry/' + this.QuoteHeaderSid
+        customerBranchSid: this.quotationData?.CustomerBranchSid || null,
+        approvalLink: window.location.origin + '/crm/quotation/entry/' + this.QuoteHeaderSid
       }
     });
   }
