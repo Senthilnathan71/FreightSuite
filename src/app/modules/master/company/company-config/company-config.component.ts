@@ -82,6 +82,12 @@ export class CompanyConfigComponent implements OnInit {
       type: 'boolean' as const,
       defaultValue: false
     },
+    {
+      name: 'TermsandConditions',
+      displayName: 'Terms and Conditions',
+      type: 'boolean' as const,
+      defaultValue: false
+    }
     
   ];
 
@@ -519,7 +525,11 @@ export class CompanyConfigComponent implements OnInit {
   }
 
   private inferTypeFromValue(value: any): 'string' | 'number' | 'boolean' | 'email-array' {
-    if (value === 'Y' || value === 'N' || value === true || value === false) return 'boolean';
+    if (value === true || value === false) return 'boolean';
+    if (value !== null && value !== undefined) {
+      const normalized = String(value).trim().toUpperCase();
+      if (['Y', 'N', 'YES', 'NO', 'TRUE', 'FALSE', '1', '0'].includes(normalized)) return 'boolean';
+    }
     if (value !== null && value !== undefined && String(value).trim() !== '' && !isNaN(Number(value))) {
       return 'number';
     }
@@ -535,18 +545,12 @@ export class CompanyConfigComponent implements OnInit {
     if (value === false || value === null || value === undefined) return false;
 
     const normalized = String(value).trim().toUpperCase();
-    if (['SaveAsFilePath', 'MawbStockAllocation'].includes(configName)) {
-      return normalized === 'Y' || normalized === 'YES' || normalized === 'TRUE' || normalized === '1';
-    }
-    return normalized === 'TRUE' || normalized === '1';
+    return normalized === 'Y' || normalized === 'YES' || normalized === 'TRUE' || normalized === '1';
   }
 
   private formatBooleanValue(value: any, configName: string): string {
     const normalized = Boolean(value);
-    if (['SaveAsFilePath', 'MawbStockAllocation'].includes(configName)) {
-      return normalized ? 'Y' : 'N';
-    }
-    return normalized.toString();
+    return normalized ? 'Y' : 'N';
   }
 
   resetConfiguration() {

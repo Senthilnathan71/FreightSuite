@@ -301,9 +301,9 @@ export class RoleComponent extends BaseListComponent implements OnInit {
       case 'edoc':
         this.openEDoc();
         break;
-      case 'terms':
-        this.openTandC();
-        break;
+      // case 'terms':
+      //   this.openTandC();
+      //   break;
       case 'authority':
         this.openAuthority();
         break;
@@ -695,31 +695,31 @@ export class RoleComponent extends BaseListComponent implements OnInit {
     modalRef.componentInstance.idValue = this.roleData?.RoleMasterSid;
   }
 
-  openTandC() {
-    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
-    const payload = { MenuMasterSid: this.currentMenuId };
-    this.settingsService.getTandCByCondition(payload).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          this.TandCList = resp.data;
-          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-            size: 'lg',
-            backdrop: 'static',
-            centered: true
-          });
-          modalRef.componentInstance.terms = this.TandCList;
-          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-          modalRef.componentInstance.DocumentSid = this.RoleMasterSid;
+  // openTandC() {
+  //   this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+  //   const payload = { MenuMasterSid: this.currentMenuId };
+  //   this.settingsService.getTandCByCondition(payload).subscribe(
+  //     (resp: any) => {
+  //       if (resp.status) {
+  //         this.TandCList = resp.data;
+  //         const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+  //           size: 'lg',
+  //           backdrop: 'static',
+  //           centered: true
+  //         });
+  //         modalRef.componentInstance.terms = this.TandCList;
+  //         modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+  //         modalRef.componentInstance.DocumentSid = this.RoleMasterSid;
 
-        } else {
-          this.appSettingService.showError('Error loading Terms and Conditions');
-        }
-      },
-      (error) => {
-        this.appSettingService.showError('Error loading Terms and Conditions', error);
-      }
-    );
-  }
+  //       } else {
+  //         this.appSettingService.showError('Error loading Terms and Conditions');
+  //       }
+  //     },
+  //     (error) => {
+  //       this.appSettingService.showError('Error loading Terms and Conditions', error);
+  //     }
+  //   );
+  // }
 
   openEmail() {
     if (!this.roleData) return;

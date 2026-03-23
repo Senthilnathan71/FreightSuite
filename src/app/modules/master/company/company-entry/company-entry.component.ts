@@ -233,7 +233,7 @@ reportLogoRemoved: boolean = false;
 	
 
 	hasAnyDropdownPermission(): boolean {
-    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    const dropdownButtons = ['Edoc', 'Authority', 'Email'];
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));
     }
 
@@ -1532,31 +1532,31 @@ openAuditLogs(modal: TemplateRef<any>) {
 		modalRef.componentInstance.idValue = this.bankData?.BranchBankSid;
 	}
 
-	openTandC() {
-		this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
-		const payload = { MenuMasterSid: this.currentMenuId };
-		this.masterService.getTandCByCondition(payload).subscribe(
-			(resp: any) => {
-				if (resp.status) {
-					this.TandCList = resp.data;
-					const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-						size: 'lg',
-						backdrop: 'static',
-						centered: true
-					});
-					modalRef.componentInstance.terms = this.TandCList;
-					modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-					modalRef.componentInstance.DocumentSid = this.CompanyMasterSid;
+	// openTandC() {
+	// 	this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+	// 	const payload = { MenuMasterSid: this.currentMenuId };
+	// 	this.masterService.getTandCByCondition(payload).subscribe(
+	// 		(resp: any) => {
+	// 			if (resp.status) {
+	// 				this.TandCList = resp.data;
+	// 				const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+	// 					size: 'lg',
+	// 					backdrop: 'static',
+	// 					centered: true
+	// 				});
+	// 				modalRef.componentInstance.terms = this.TandCList;
+	// 				modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+	// 				modalRef.componentInstance.DocumentSid = this.CompanyMasterSid;
 
-				} else {
-					this.appSettingService.showError('Error loading terms and conditions.');
-				}
-			},
-			(error) => {
-				this.appSettingService.showError('Error loading terms and conditions.', error);
-			}
-		);
-	}
+	// 			} else {
+	// 				this.appSettingService.showError('Error loading terms and conditions.');
+	// 			}
+	// 		},
+	// 		(error) => {
+	// 			this.appSettingService.showError('Error loading terms and conditions.', error);
+	// 		}
+	// 	);
+	// }
 	openEmail() {
 		if (!this.companyData) return;
 		const modalRef = this.modalService.open(EmailEntryComponent, {

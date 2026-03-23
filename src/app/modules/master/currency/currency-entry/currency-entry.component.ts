@@ -114,7 +114,7 @@ export class CurrencyEntryComponent implements OnInit {
   
 
 hasAnyDropdownPermission(): boolean {
-    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    const dropdownButtons = ['Edoc','Authority', 'Email'];
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));
     }
     
@@ -410,31 +410,31 @@ else {
     modalRef.componentInstance.idValue = this.currencyData?.CurrencyMasterSid;
   }
 
-  openTandC() {
-    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
-    const payload = { MenuMasterSid: this.currentMenuId };
-    this.masterService.getTandCByCondition(payload).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          this.TandCList = resp.data;
-          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-            size: 'lg',
-            backdrop: 'static',
-            centered: true
-          });
-          modalRef.componentInstance.terms = this.TandCList;
-          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-          modalRef.componentInstance.DocumentSid = this.currencyID;
+  // openTandC() {
+  //   this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+  //   const payload = { MenuMasterSid: this.currentMenuId };
+  //   this.masterService.getTandCByCondition(payload).subscribe(
+  //     (resp: any) => {
+  //       if (resp.status) {
+  //         this.TandCList = resp.data;
+  //         const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+  //           size: 'lg',
+  //           backdrop: 'static',
+  //           centered: true
+  //         });
+  //         modalRef.componentInstance.terms = this.TandCList;
+  //         modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+  //         modalRef.componentInstance.DocumentSid = this.currencyID;
 
-        } else {
-          this.appSettingService.showError('Error loading Terms and Conditions');
-        }
-      },
-      (error) => {
-        this.appSettingService.showError('Error loading Terms and Conditions', error);
-      }
-    );
-  }
+  //       } else {
+  //         this.appSettingService.showError('Error loading Terms and Conditions');
+  //       }
+  //     },
+  //     (error) => {
+  //       this.appSettingService.showError('Error loading Terms and Conditions', error);
+  //     }
+  //   );
+  // }
   openEmail() {
     if (!this.currencyData) return;
     const modalRef = this.modalService.open(EmailEntryComponent, {

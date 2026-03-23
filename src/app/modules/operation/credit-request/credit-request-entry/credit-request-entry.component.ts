@@ -80,6 +80,7 @@ export class CreditRequestEntryComponent {
   isAuthorizedUser: boolean = false;
   creditRequestAuthorized: boolean = false;
   creditRequestApproved: boolean = false;
+  isTermsAndConditionsEnabled: boolean = true;
   
   authorizerDetails = {
     isAuthorizer: false,
@@ -147,6 +148,7 @@ export class CreditRequestEntryComponent {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.MenuMasterSid = sessionStorage.getItem('currentMenuId');
+    this.loadTermsAndConditionsConfig();
     this.mps.init().subscribe();
     this.loadAllSalesmen();
     this.route.params.subscribe(params => {
@@ -174,6 +176,34 @@ export class CreditRequestEntryComponent {
 
   get creditRequest(): FormArray {
     return this.cusForm.get('creditRequest') as FormArray;
+  }
+
+  private loadTermsAndConditionsConfig(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+      this.isTermsAndConditionsEnabled = true;
+      return;
+    }
+
+    this.masterService.getConfigurationValue(companyId, 'TermsandConditions').subscribe({
+      next: (resp: any) => {
+        const rawValue = resp?.ConfigurationValue ?? resp?.value ?? resp;
+        this.isTermsAndConditionsEnabled = this.parseConfigBoolean(rawValue, true);
+      },
+      error: () => {
+        // Default to enabled if config fetch fails
+        this.isTermsAndConditionsEnabled = true;
+      }
+    });
+  }
+
+  private parseConfigBoolean(value: any, defaultValue: boolean): boolean {
+    if (value === true || value === false) return value;
+    if (value === null || value === undefined) return defaultValue;
+    const normalized = String(value).trim().toUpperCase();
+    if (['Y', 'YES', 'TRUE', '1'].includes(normalized)) return true;
+    if (['N', 'NO', 'FALSE', '0'].includes(normalized)) return false;
+    return defaultValue;
   }
 
   createCreditRequest(data?: any): FormGroup {
@@ -1176,19 +1206,32 @@ getDepartmentName(deptId: number, rowIndex: number): string {
       }
       openTandC() {
         this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
-        const payload = { MenuMasterSid: this.currentMenuId };
-        this.masterService.getTandCByCondition(payload).subscribe(
-          (resp: any) => {
-            if (resp.status) {
-              this.TandCList = resp.data;
-              const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+        const payload = { 
+          MenuMasterSid: this.currentMenuId,
+          DocumentSid: this.customerData?.CustomerMasterSid
+        };
+        const openModal = (terms: any[]) => {
+          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
                 size: 'lg',
                 backdrop: 'static',
                 centered: true
               });
-              modalRef.componentInstance.terms = this.TandCList;
+              modalRef.componentInstance.terms = terms || [];
               modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-              modalRef.componentInstance.DocumentSid = this.currentClauseId;
+              modalRef.componentInstance.DocumentSid = this.customerData?.CustomerMasterSid;
+              modalRef.componentInstance.loadAllOnGet = !this.isTermsAndConditionsEnabled;
+          };
+
+          if (!this.isTermsAndConditionsEnabled) {
+      this.TandCList = [];
+      openModal(this.TandCList);
+      return;
+    }
+        this.masterService.getTandCByCondition(payload).subscribe(
+          (resp: any) => {
+            if (resp.status) {
+              this.TandCList = resp.data;
+              openModal(this.TandCList);
     
             } else {
               this.appSettingService.showError('Error loading Terms and Conditions');

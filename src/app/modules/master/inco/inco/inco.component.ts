@@ -263,7 +263,7 @@ export class IncoComponent extends BaseListComponent implements OnInit {
 
 
   hasAnyDropdownPermission(): boolean {
-    const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+    const dropdownButtons = ['Edoc', 'Authority', 'Email'];
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));
     }
 
@@ -358,12 +358,12 @@ export class IncoComponent extends BaseListComponent implements OnInit {
         action: 'edoc',
         
       },
-      {
-        label: 'Terms & Condition',
-        icon: 'fas fa-clipboard',
-        action: 'terms',
+      // {
+      //   label: 'Terms & Condition',
+      //   icon: 'fas fa-clipboard',
+      //   action: 'terms',
        
-      },
+      // },
       {
         label: 'Authorize',
         icon: 'fas fa-shield-alt',
@@ -400,9 +400,9 @@ export class IncoComponent extends BaseListComponent implements OnInit {
       case 'edoc':
         this.openEDoc();
         break;
-      case 'terms':
-        this.openTandC();
-        break;
+      // case 'terms':
+      //   this.openTandC();
+      //   break;
       case 'authority':
         this.openAuthority();
         break;
@@ -868,31 +868,31 @@ export class IncoComponent extends BaseListComponent implements OnInit {
     modalRef.componentInstance.idValue = this.incoData?.IncoMasterSid;
   }
 
-  openTandC() {
-    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
-    const payload = { MenuMasterSid: this.currentMenuId };
-    this.masterService.getTandCByCondition(payload).subscribe(
-      (resp: any) => {
-        if (resp.Status) {
-          this.TandCList = resp.data;
-          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-            size: 'lg',
-            backdrop: 'static',
-            centered: true
-          });
-          modalRef.componentInstance.terms = this.TandCList;
-          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-          modalRef.componentInstance.DocumentSid = this.IncoMasterSid;
+  // openTandC() {
+  //   this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+  //   const payload = { MenuMasterSid: this.currentMenuId };
+  //   this.masterService.getTandCByCondition(payload).subscribe(
+  //     (resp: any) => {
+  //       if (resp.Status) {
+  //         this.TandCList = resp.data;
+  //         const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+  //           size: 'lg',
+  //           backdrop: 'static',
+  //           centered: true
+  //         });
+  //         modalRef.componentInstance.terms = this.TandCList;
+  //         modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+  //         modalRef.componentInstance.DocumentSid = this.IncoMasterSid;
 
-        } else {
-          this.appSettingService.showError('Error loading Terms and Conditions');
-        }
-      },
-      (error) => {
-        this.appSettingService.showError('Error loading Terms and Conditions', error);
-      }
-    );
-  }
+  //       } else {
+  //         this.appSettingService.showError('Error loading Terms and Conditions');
+  //       }
+  //     },
+  //     (error) => {
+  //       this.appSettingService.showError('Error loading Terms and Conditions', error);
+  //     }
+  //   );
+  // }
   openEmail() {
     if (!this.incoData) return;
     const modalRef = this.modalService.open(EmailEntryComponent, {

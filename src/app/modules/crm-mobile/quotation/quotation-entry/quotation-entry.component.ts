@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, ElementRef, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
+import { ChangeDetectorRef, Component, effect, ElementRef, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
 import {
   NgbAccordionModule,
   NgbCalendar,
@@ -197,6 +197,7 @@ export class QuotationEntryComponent implements OnInit {
    showPrintLogo: boolean = false;
     showPdfLogo: boolean = true;
     isSaving: boolean = false;
+    isTermsAndConditionsEnabled: boolean = true;
 
   // PDF caching properties for performance optimization
   private cachedPdfBlob: Blob | null = null;
@@ -345,6 +346,7 @@ dataFromEnqPage:any;
     public logoService : LogoService,
     private sideBarService : VerticalSidebarService,
     private operationService: OperationService,
+    private cdr: ChangeDetectorRef,
     private emailTriggerService: EmailTriggerService,
   ) {
     effect(() =>{
@@ -376,6 +378,7 @@ dataFromEnqPage:any;
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
+    this.loadTermsAndConditionsConfig();
     this.loadCityName();
     this.mps.init().subscribe();
     
@@ -410,6 +413,36 @@ dataFromEnqPage:any;
       }
     })
     
+  }
+
+  private loadTermsAndConditionsConfig(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+      this.isTermsAndConditionsEnabled = true;
+      return;
+    }
+
+    this.masterService.getConfigurationValue(companyId, 'TermsandConditions').subscribe({
+      next: (resp: any) => {
+        const rawValue = resp?.ConfigurationValue ?? resp?.value ?? resp;
+        this.isTermsAndConditionsEnabled = this.parseConfigBoolean(rawValue, true);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        // Default to enabled if config fetch fails
+        this.isTermsAndConditionsEnabled = true;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private parseConfigBoolean(value: any, defaultValue: boolean): boolean {
+    if (value === true || value === false) return value;
+    if (value === null || value === undefined) return defaultValue;
+    const normalized = String(value).trim().toUpperCase();
+    if (['Y', 'YES', 'TRUE', '1'].includes(normalized)) return true;
+    if (['N', 'NO', 'FALSE', '0'].includes(normalized)) return false;
+    return defaultValue;
   }
 
   patchEnqPageValues(enqData: any) { 
@@ -2914,23 +2947,32 @@ canGetTariff(routeIndex: number): boolean {
     Carrier: carrier,
     DocumentSid: this.QuoteHeaderSid
   };
-
-  this.masterService.getTandCByCondition(payload).subscribe((resp: any) => {
-    if (resp.status) {
-      this.TandCList = resp.data;
-      const modalRef = this.ngbModal.open(TermsAndConditionsComponent, {
+  const openModal = (terms: any[]) => {
+    const modalRef = this.ngbModal.open(TermsAndConditionsComponent, {
         size: 'lg',
         backdrop: 'static',
         centered: true,
       });
-
-      modalRef.componentInstance.terms = this.TandCList;
+      modalRef.componentInstance.terms = terms || [];
       modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
       modalRef.componentInstance.DocumentSid = this.QuoteHeaderSid;
       modalRef.componentInstance.DepartmentMasterSid = departmentSid;
       modalRef.componentInstance.POL = pol;
       modalRef.componentInstance.POD = pod;
       modalRef.componentInstance.Carrier = carrier;
+      modalRef.componentInstance.loadAllOnGet = !this.isTermsAndConditionsEnabled;
+  };
+
+  if (!this.isTermsAndConditionsEnabled) {
+      this.TandCList = [];
+      openModal(this.TandCList);
+      return;
+    }
+
+  this.masterService.getTandCByCondition(payload).subscribe((resp: any) => {
+    if (resp.status) {
+      this.TandCList = resp.data;
+      openModal(this.TandCList);
     } else {
       this.appSettingService.showError('Error loading Terms and Conditions');
     }

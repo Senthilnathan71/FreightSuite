@@ -1,4 +1,5 @@
 import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { NgbActiveModal, NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -22,6 +23,7 @@ export class TermsAndConditionsComponent implements OnInit {
   @Input() POL?: string;
   @Input() POD?: string;
   @Input() Carrier?: number;
+  @Input() loadAllOnGet: boolean = false;
   @Output() termsUpdated = new EventEmitter<void>(); // Event to notify parent
   isAgreed: boolean = false;
   toggleBtn: boolean;
@@ -135,6 +137,51 @@ editForm: FormGroup;
     Carrier: this.Carrier,
     DocumentSid: this.DocumentSid
   };
+
+  if (this.loadAllOnGet) {
+    forkJoin({
+      defaults: this.masterService.getTandCByCondition(payload),
+      nonDefaults: this.masterService.getTandCByNCondition(payload)
+    }).subscribe(
+      (resp: any) => {
+        const defaultData = resp?.defaults?.status ? (resp.defaults.data || []) : [];
+        const nonDefaultData = resp?.nonDefaults?.status ? (resp.nonDefaults.data || []) : [];
+        const combined = [...defaultData, ...nonDefaultData];
+
+        if (!combined.length) {
+          this.appSettingService.showWarning('No Terms Found');
+          this.showEmptyTemplate = this.terms.length === 0 && !this.showAddRow;
+          return;
+        }
+
+        const newTerms = combined.filter((newItem: any) =>
+          !this.terms.some((existing: any) =>
+            (
+              existing?.TandCTransactionSid &&
+              newItem?.TandCTransactionSid &&
+              existing.TandCTransactionSid === newItem.TandCTransactionSid
+            ) ||
+            (
+              (existing?.TandC || '').trim().toLowerCase() === (newItem?.TandC || '').trim().toLowerCase() &&
+              (existing?.DocumentSid ?? null) === (newItem?.DocumentSid ?? null)
+            )
+          )
+        );
+
+        this.terms = [...this.terms, ...newTerms];
+        this.showEmptyTemplate = this.terms.length === 0 && !this.showAddRow;
+
+        if (!newTerms.length) {
+          this.appSettingService.showWarning('Terms already added');
+        }
+      },
+      (error) => {
+        console.error(error);
+        this.appSettingService.showError('Error loading Terms');
+      }
+    );
+    return;
+  }
 
   this.masterService.getTandCByNCondition(payload).subscribe(
     (resp: any) => {

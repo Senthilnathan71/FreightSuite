@@ -319,44 +319,44 @@ export class CargoReceiptEntryComponent implements OnInit {
         modalRef.componentInstance.idLabel = 'Cargo Receipt Id';
         modalRef.componentInstance.idValue = this.bookingData?.BookingHeaderSid;
       }
-      openTandC() {
-        this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
-        const departmentSid = this.bookingData?.departmentMaster?.DepartmentMasterSid;
-        const pol = this.bookingData?.POL;
-        const pod = this.bookingData?.POD;
-        const fdc = this.bookingData?.FPD;
-        const payload = { 
-          MenuMasterSid: this.currentMenuId,
-          DepartmentMasterSid: departmentSid,
-          POL: pol,
-          POD: pod,
-          FDC: fdc,
-         };
-        this.masterService.getTandCByCondition(payload).subscribe(
-          (resp: any) => {
-            if (resp.status) {
-              this.TandCList = resp.data;
-              const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-                size: 'lg',
-                backdrop: 'static',
-                centered: true
-              });
-              modalRef.componentInstance.terms = this.TandCList;
-              modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-              modalRef.componentInstance.DocumentSid = this.currentClauseId;
-              modalRef.componentInstance.DepartmentMasterSid = departmentSid;
-              modalRef.componentInstance.POL = pol;
-              modalRef.componentInstance.POD = pod;
-              modalRef.componentInstance.FDC = fdc;
-            } else {
-              this.appSettingService.showError('Error loading Terms and Conditions');
-            }
-          },
-          (error) => {
-            this.appSettingService.showError('Error loading Terms and Conditions', error);
-          }
-        );
-      }
+      // openTandC() {
+      //   this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+      //   const departmentSid = this.bookingData?.departmentMaster?.DepartmentMasterSid;
+      //   const pol = this.bookingData?.POL;
+      //   const pod = this.bookingData?.POD;
+      //   const fdc = this.bookingData?.FPD;
+      //   const payload = { 
+      //     MenuMasterSid: this.currentMenuId,
+      //     DepartmentMasterSid: departmentSid,
+      //     POL: pol,
+      //     POD: pod,
+      //     FDC: fdc,
+      //    };
+      //   this.masterService.getTandCByCondition(payload).subscribe(
+      //     (resp: any) => {
+      //       if (resp.status) {
+      //         this.TandCList = resp.data;
+      //         const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+      //           size: 'lg',
+      //           backdrop: 'static',
+      //           centered: true
+      //         });
+      //         modalRef.componentInstance.terms = this.TandCList;
+      //         modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+      //         modalRef.componentInstance.DocumentSid = this.currentClauseId;
+      //         modalRef.componentInstance.DepartmentMasterSid = departmentSid;
+      //         modalRef.componentInstance.POL = pol;
+      //         modalRef.componentInstance.POD = pod;
+      //         modalRef.componentInstance.FDC = fdc;
+      //       } else {
+      //         this.appSettingService.showError('Error loading Terms and Conditions');
+      //       }
+      //     },
+      //     (error) => {
+      //       this.appSettingService.showError('Error loading Terms and Conditions', error);
+      //     }
+      //   );
+      // }
     
       openEmail() {
       if (!this.bookingData) return;

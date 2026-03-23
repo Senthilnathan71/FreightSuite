@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, TemplateRef, input, HostListener } from '@angular/core';
+import { Component, OnInit, ViewChild, TemplateRef, input, HostListener, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import {
   FormBuilder,
@@ -141,6 +141,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
   masterJobList: any[] = [];
   houseJobList: any[][] = [];
   taxGroupList : any[] = [];
+  isTermsAndConditionsEnabled: boolean = true;
   chargeTaxGroupMap : Map<number,any> = new Map();
   masterHouseMap: Map<number, any[]> = new Map();
   
@@ -288,6 +289,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
     private operationService: OperationService,
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
+    private cdr: ChangeDetectorRef,
     private companySettings: CompanySettingsManagerService,
     private commonService: CommonService,
     private masterService: MasterService,
@@ -347,6 +349,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
     const paramValue = this.route.snapshot.queryParamMap.get('isNonJob');
     this.isNonJob = paramValue === 'true'; 
 
+    this.loadTermsAndConditionsConfig();
     this.checkVoucherPostingMechanism();
     this.initForm();
     this.loadVoucherPeriods();
@@ -485,6 +488,36 @@ export class VendorInvoiceEntryComponent implements OnInit {
         });
     });
 
+  }
+
+  private loadTermsAndConditionsConfig(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+      this.isTermsAndConditionsEnabled = true;
+      return;
+    }
+
+    this.masterService.getConfigurationValue(companyId, 'TermsandConditions').subscribe({
+      next: (resp: any) => {
+        const rawValue = resp?.ConfigurationValue ?? resp?.value ?? resp;
+        this.isTermsAndConditionsEnabled = this.parseConfigBoolean(rawValue, true);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        // Default to enabled if config fetch fails
+        this.isTermsAndConditionsEnabled = true;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private parseConfigBoolean(value: any, defaultValue: boolean): boolean {
+    if (value === true || value === false) return value;
+    if (value === null || value === undefined) return defaultValue;
+    const normalized = String(value).trim().toUpperCase();
+    if (['Y', 'YES', 'TRUE', '1'].includes(normalized)) return true;
+    if (['N', 'NO', 'FALSE', '0'].includes(normalized)) return false;
+    return defaultValue;
   }
 
   @HostListener('window:beforeunload', ['$event'])
@@ -2825,20 +2858,29 @@ export class VendorInvoiceEntryComponent implements OnInit {
       DocumentSid: this.vendorInvoiceData?.VoucherHeaderSid
     };
 
+    const openModal = (terms: any[]) => {
+      const modelRef = this.modalService.open(TermsAndConditionsComponent, {
+              size: 'lg',
+              backdrop: 'static',
+              centered: true,
+            });
+            modelRef.componentInstance.terms = terms || [];
+          modelRef.componentInstance.MenuMasterSid = this.currentMenuId;
+          modelRef.componentInstance.DocumentSid = this.vendorInvoiceData?.VoucherHeaderSid;
+          modelRef.componentInstance.loadAllOnGet = !this.isTermsAndConditionsEnabled;
+    };
+
+    if (!this.isTermsAndConditionsEnabled) {
+      this.TandCList = [];
+      openModal(this.TandCList);
+      return;
+    }
+
     this.masterService.getTandCByCondition(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
           this.TandCList = resp.data;
-          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-            size: 'lg',
-            backdrop: 'static',
-            centered: true
-          });
-
-          modalRef.componentInstance.terms = this.TandCList;
-          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-          modalRef.componentInstance.DocumentSid = this.vendorInvoiceData?.VoucherHeaderSid;
-
+          openModal(this.TandCList);
         } else {
           this.appSettingService.showError('Error loading Terms and Conditions');
         }

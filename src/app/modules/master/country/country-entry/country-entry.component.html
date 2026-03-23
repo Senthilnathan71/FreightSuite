@@ -53,8 +53,8 @@
           <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
             <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
               (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-            <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
-              (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
+            <!-- <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
+              (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button> -->
             <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
               (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
             <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick

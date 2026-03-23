@@ -189,6 +189,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   selectedFCLLCL: string = '';
   connectionResult : any[] =[];
   connectionResetTrigger = false;
+  isTermsAndConditionsEnabled: boolean = true;
   masterjobConnectionArr:any[]=[];
   currentFormValue: any;
   customerList: any[] = []; 
@@ -334,6 +335,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     this.countryOfCompany = this.currentCompany?.CountryName;
     this.currentBranch = this.appSettingsService.decrypt(localStorage.getItem('selected-branch'));
      const storedMenuId = sessionStorage.getItem('currentMenuId');
+     this.loadTermsAndConditionsConfig();
      this.mps.init().subscribe();
   // console.log('📋 localStorage currentMenuId:', storedMenuId);
   
@@ -393,6 +395,36 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
       }
     }
   });
+  }
+
+  private loadTermsAndConditionsConfig(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+      this.isTermsAndConditionsEnabled = true;
+      return;
+    }
+
+    this.masterService.getConfigurationValue(companyId, 'TermsandConditions').subscribe({
+      next: (resp: any) => {
+        const rawValue = resp?.ConfigurationValue ?? resp?.value ?? resp;
+        this.isTermsAndConditionsEnabled = this.parseConfigBoolean(rawValue, true);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        // Default to enabled if config fetch fails
+        this.isTermsAndConditionsEnabled = true;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private parseConfigBoolean(value: any, defaultValue: boolean): boolean {
+    if (value === true || value === false) return value;
+    if (value === null || value === undefined) return defaultValue;
+    const normalized = String(value).trim().toUpperCase();
+    if (['Y', 'YES', 'TRUE', '1'].includes(normalized)) return true;
+    if (['N', 'NO', 'FALSE', '0'].includes(normalized)) return false;
+    return defaultValue;
   }
 onCarrierChangeForAir(carrier: any): void {
   // Only apply for Air department
@@ -2388,21 +2420,30 @@ handleEdocChange(event: any) {
         Carrier: carrier,
         DocumentSid: this.masterJobData?.MasterJobSid
        };
-      this.masterService.getTandCByCondition(payload).subscribe((resp: any) => {
-        if (resp.status) {
-          this.TandCList = resp.data;
-          const modelRef = this.modalService.open(TermsAndConditionsComponent, {
+       const openModal = (terms: any[]) => {
+        const modelRef = this.modalService.open(TermsAndConditionsComponent, {
             size: 'lg',
             backdrop: 'static',
             centered: true,
           });
-          modelRef.componentInstance.terms = this.TandCList;
+          modelRef.componentInstance.terms = terms || [];
           modelRef.componentInstance.MenuMasterSid = this.currentMenuId;
           modelRef.componentInstance.DocumentSid = this.masterJobData?.MasterJobSid;
           modelRef.componentInstance.DepartmentMasterSid = departmentSid;
           modelRef.componentInstance.POL = pol;
           modelRef.componentInstance.POD = pod;
           modelRef.componentInstance.Carrier = carrier;
+          modelRef.componentInstance.loadAllOnGet = !this.isTermsAndConditionsEnabled;
+       };
+       if (!this.isTermsAndConditionsEnabled) {
+      this.TandCList = [];
+      openModal(this.TandCList);
+      return;
+    }
+      this.masterService.getTandCByCondition(payload).subscribe((resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          openModal(this.TandCList);
         } else {
           this.appSettingsService.showError('Error loading Terms and Conditions');
         }
