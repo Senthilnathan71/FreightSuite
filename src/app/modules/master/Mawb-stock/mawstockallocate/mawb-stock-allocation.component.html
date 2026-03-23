@@ -136,7 +136,7 @@
 
   <button class="btn btn-info btn-sm" 
     (click)="confirm()" 
-    [disabled]="!hasSelectedStocks() || loading">
+    [disabled]="!hasSelectedStocks() || !hasSelectedCustomer() || loading">
     <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
     Confirm
   </button>

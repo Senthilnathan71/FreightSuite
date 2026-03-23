@@ -2020,6 +2020,20 @@ private loadMasterJobDetails(masterJobSid: number): void {
   return fieldLabels[fieldName] || fieldName;
 }
 
+  private getProductValidationMessage(): string {
+    const hasNetWeightError = this.bookingProducts.controls.some(control => {
+      const productGroup = control as FormGroup;
+      return productGroup.get('NetWeight')?.hasError('netGreaterThanGross')
+        || productGroup.get('GrossWeight')?.hasError('grossLessThanNet');
+    });
+
+    if (hasNetWeightError) {
+      return 'Net Weight cannot be greater than Gross Weight';
+    }
+
+    return 'Please fill all required product fields correctly.';
+  }
+
   handleConnectionChange(allConnections:any[]){
   
     if(allConnections.length > 0){
@@ -2090,7 +2104,7 @@ if (this.bookingProducts.length > 0) {
   
   if (hasInvalidProduct) {
     this.bookingProducts.markAllAsTouched();
-    this.appSettingService.showWarning('Please fill all required product fields correctly.');
+    this.appSettingService.showWarning(this.getProductValidationMessage());
     this.selectedTab = 'Cargo';
     return;
   }

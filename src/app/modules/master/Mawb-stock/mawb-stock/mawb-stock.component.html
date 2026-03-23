@@ -88,6 +88,7 @@
     <ng-select 
       [items]="['Airline', 'Other']"
       formControlName="AirwayBillType"
+      [readonly]="isEditMode"
       [searchable]="false"
       [clearable]="false">
     </ng-select>
@@ -106,6 +107,7 @@
       [items]="customerList"
       bindLabel="CustomerName"
       bindValue="CustomerMasterSid"
+      [readonly]="isEditMode"
       placeholder="">
     </ng-select>
     <label class="input-label">
@@ -208,14 +210,16 @@
                                 class="form-control mb-0" 
                                         placeholder="dd-mm-yyyy" 
                                         name="dp" ngbDatepicker #d2="ngbDatepicker"
-                                        (click)="d2.toggle()" 
-                                        readonly 
+                                        (click)="!isEditMode && d2.toggle()" 
+                                        [readonly]="isEditMode"
                                         formControlName="ReceivedDate" 
+                                        
                                         [footerTemplate]="footerTemplate2"  
                               />
                               <button 
                                 class="btn bi bi-calendar3" 
-                                (click)="d2.toggle()" 
+                                (click)="!isEditMode && d2.toggle()" 
+                                [disabled]="isEditMode"
                                 type="button">
                                 <i-feather name="calendar" class="feather-sm"></i-feather>
                               </button>

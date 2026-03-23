@@ -459,7 +459,6 @@ export class FullcalendarComponent implements OnInit {
 
       if (meetingRes.status && meetingRes.data.length) {
         meetingEvents = meetingRes.data
-          .filter((meeting) => meeting.meetingStatus !== "Confirmed")
           .map((meeting: any) => {
             const hasFollowUp = !!meeting.followUpDate;
             const isLead = meeting.LeadOrCustomer === "L";
@@ -487,7 +486,6 @@ export class FullcalendarComponent implements OnInit {
 
           if (followRes.status && followRes.data.length) {
             followUpEvents = followRes.data
-              .filter((meeting) => meeting.meetingStatus !== "Confirmed")
               .map((meeting: any) => {
                 const meetingData = meeting.preCustomerMeeting;
                 const isCustomer = meetingData.LeadOrCustomer === "C";
