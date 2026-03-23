@@ -253,10 +253,10 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
   gap: 4px;
 
   label {
-    font-size: 9px;
+    font-size: 9x;
     font-weight: 800;
     color: $brand;
-    text-transform: uppercase;
+    // text-transform: uppercase;
     letter-spacing: 1px;
   }
 
@@ -605,10 +605,14 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
     border-color: rgba($color-green, 0.2);
   }
 
-  &.dial-amber {
-    background: linear-gradient(180deg, rgba($color-amber, 0.14), rgba($color-amber, 0.05));
-    border-color: rgba($color-amber, 0.22);
-  }
+ &.dial-amber {
+  background: linear-gradient(
+    180deg,
+    rgba($color-amber, 0.30),
+    rgba($color-amber, 0.12)
+  );
+  border-color: rgba($color-amber, 0.45);
+}
 
   &.dial-orange {
     background: linear-gradient(180deg, rgba($color-orange, 0.14), rgba($color-orange, 0.05));
@@ -641,7 +645,10 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0),
+    0 4px 10px rgba(0, 0, 0, 0.08); // add depth
 }
 
 .dial-inner {
@@ -952,7 +959,7 @@ th {
   font-weight: 700;
   color: #fff;
   text-align: left;
-  text-transform: uppercase;
+  // text-transform: uppercase;
   letter-spacing: 0.8px;
   white-space: nowrap;
   background: $brand;

@@ -105,26 +105,37 @@
         <div class="col-md-12 mt-1">
           <div class="card border-0 shadow-sm"
             style="border: 1px solid #e6e9ee; border-radius: 10px; background: #ffffff;">
-            <div class="d-flex align-items-center justify-content-between bg-info"
-              style="gap: 12px; padding: 3px 10px; border-bottom: 1px solid #e9edf3;  border-radius: 10px 10px 0 0; position: relative; overflow: hidden;">
-              <div class="d-flex align-items-center gap-3">
-                <div class="d-inline-flex align-items-center justify-content-center"
-                  style="width: 36px; height: 36px; border-radius: 10px; color: #0b5f8f; background: #eef6fb; border: 1px solid #d7e6f1; box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);">
-                  <i class="fas fa-file-signature"></i>
-                </div>
-                <div>
-                  <h6 class="mb-0" style="color:white; font-weight: 700; letter-spacing: 0.3px;">Credit Request Details
-                  </h6>
-                  <small style="color:whitesmoke; font-size: 12px;">Branch-wise credit setup and approvals</small>
-                </div>
-              </div>
-              <button type="button" class="btn btn-sm btn-outline-light"
-                style="border-radius: 5px; padding: 3px 5px; font-weight: 700; letter-spacing: 0.2px; border-width: 2px;"
-                (click)="addCreditRequestRow()"
-                title="Adds a new row in the same branch scope and starts from the next available effective date">
-                <i class="fas fa-plus me-1"></i> Add Credit Request
-              </button>
-            </div>
+         <div class="d-flex align-items-center justify-content-between p-1 px-2  pb-0  "
+  style="gap: 12px; border-bottom: 1px solid #e9edf3; border-radius: 10px 10px 0 0; background: hsl(214, 100%, 97%)   ; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+
+  <!-- Left Section -->
+  <div class="d-flex align-items-center gap-3">
+    
+    <!-- Icon -->
+ 
+
+    <!-- Text -->
+    <div>
+      <h6 class="mb-0 text-info" style=" font-weight: 800; letter-spacing: 0.3px;">
+        Credit Request Details
+      </h6>
+      <small style="font-size: 12px;" class="text-info">
+        Branch-wise credit setup and approvals
+      </small>
+    </div>
+
+  </div>
+
+  <!-- Button -->
+  <button type="button" class="btn btn-sm"
+    style="border-radius: 6px; padding: 5px 10px; font-weight: 600; letter-spacing: 0.2px; background: #0b5f8f; color: #fff; border: none;"
+    (click)="addCreditRequestRow()"
+    title="Adds a new row in the same branch scope and starts from the next available effective date">
+
+    <i class="fas fa-plus me-1"></i> Add Credit Request
+  </button>
+
+</div>
 
             <div class="card-body p-1">
               @if(creditRequest.controls.length === 0) {
@@ -174,9 +185,9 @@
                             {{ getApprovalStatusLabel(credit.get('ApprovalStatus')?.value) }}
                           </span>
                           <span *ngIf="credit.get('ApprovalStatus')?.value === 'Pending'"
-                            class="btn btn-sm btn-danger py-0 px-2"
+                            class=" py-0 px-2"
                             (click)="deleteCreditRequestRow(i); $event.stopPropagation()" title="Delete Credit Request">
-                            <i class="fas fa-trash"></i>
+                            <i class="fas fa-trash text-danger"></i>
                           </span>
                         </div>
                       </button>

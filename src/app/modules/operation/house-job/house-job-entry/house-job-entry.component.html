@@ -348,7 +348,12 @@
 </div>
 
   <!-- Modern Navigation Pills -->
-  <div class="nav-pills-container">
+  <div class="nav-pills-container" style="
+  background:#e6e8eb;
+  padding:1px 10px;
+  border-radius:5px;
+  border:1px solid #d1d5db;
+">
     <div class="nav-pills">
       <div class="nav-pill" *ngFor="let tab of filteredTabs" [class.active]="selectedTab === tab.name"
         (click)="selectTab(tab.name)">

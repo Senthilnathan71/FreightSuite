@@ -34,20 +34,89 @@
 
   <div class="content">
     <div class="filter-bar">
-      <div class="filter-group">
-        <label>Date From</label>
-        <div class="date-input-wrap">
-          <input class="date-input" placeholder="Select date" [(ngModel)]="dateFromInput" [maxDate]="getMaxDateFrom()" (ngModelChange)="onDateFromChange()" ngbDatepicker #dateFromPicker="ngbDatepicker" (click)="dateFromPicker.toggle()" readonly>
-          <button type="button" class="date-toggle" (click)="dateFromPicker.toggle()"><i class="fas fa-calendar-alt"></i></button>
-        </div>
-      </div>
-      <div class="filter-group">
-        <label>Date To</label>
-        <div class="date-input-wrap">
-          <input class="date-input" placeholder="Select date" [(ngModel)]="dateToInput" [minDate]="getMinDateTo()" [maxDate]="maxDateTo" (ngModelChange)="onDateToChange()" ngbDatepicker #dateToPicker="ngbDatepicker" (click)="dateToPicker.toggle()" readonly>
-          <button type="button" class="date-toggle" (click)="dateToPicker.toggle()"><i class="fas fa-calendar-alt"></i></button>
-        </div>
-      </div>
+    <div class="filter-group">
+  <label>Date From</label>
+
+  <div class="date-input-wrap">
+
+    <input
+      class="date-input pt-0"
+      placeholder="Select date"
+      [(ngModel)]="dateFromInput"
+      [maxDate]="getMaxDateFrom()"
+      (ngModelChange)="onDateFromChange()"
+      ngbDatepicker
+      #dateFromPicker="ngbDatepicker"
+      (click)="dateFromPicker.toggle()"
+      readonly
+
+      style="
+        border-top:none;
+        border-left:none;
+        border-right:none;
+        border-bottom:2px solid #ced4da;
+        border-radius:0;
+        box-shadow:none;
+        padding-left:0;
+      "
+    />
+
+    <button
+      type="button"
+      class="date-toggle"
+      (click)="dateFromPicker.toggle()"
+      style="
+        border:none;
+        background:transparent;
+      "
+    >
+      <i class="fas fa-calendar-alt"></i>
+    </button>
+
+  </div>
+</div>
+<div class="filter-group">
+  <label>Date To</label>
+
+  <div class="date-input-wrap">
+
+    <input
+      class="date-input pt-0"
+      placeholder="Select date"
+      [(ngModel)]="dateToInput"
+      [minDate]="getMinDateTo()"
+      [maxDate]="maxDateTo"
+      (ngModelChange)="onDateToChange()"
+      ngbDatepicker
+      #dateToPicker="ngbDatepicker"
+      (click)="dateToPicker.toggle()"
+      readonly
+
+      style="
+        border-top:none;
+        border-left:none;
+        border-right:none;
+        border-bottom:2px solid #ced4da;
+        border-radius:0;
+        box-shadow:none;
+        padding-left:0;
+      "
+    />
+
+    <button
+      type="button"
+      class="date-toggle"
+      (click)="dateToPicker.toggle()"
+      style="
+        border:none;
+        background:transparent;
+      "
+    >
+      <i class="fas fa-calendar-alt"></i>
+    </button>
+
+  </div>
+</div>
       <div class="preset-buttons">
         <button class="preset-btn" [class.active]="activePreset === 'today'" (click)="setPreset('today')">Today</button>
         <button class="preset-btn" [class.active]="activePreset === 'week'" (click)="setPreset('week')">This Week</button>
@@ -111,26 +180,26 @@
         <div class="chart-card">
           <div class="chart-title chart-title-with-count">
             <span><i class="fas fa-hourglass-half ct-icon"></i> Lead Aging Overview</span>
-            <span class="chart-title-count" *ngIf="getLeadAgeCohorts() as cohorts">Leads Not Converted Into Customer: {{ cohorts.total }}</span>
+            <span class="chart-title-count" *ngIf="getLeadAgeCohorts() as cohorts">1. Leads Not Converted Into Customer: {{ cohorts.total }}</span>
           </div>
           <ng-container *ngIf="getLeadAgeCohorts() as cohorts">
             <div class="age-cohorts" *ngIf="cohorts.total > 0; else noAgeCohorts">
               <div class="cohort-dial-grid">
                 <div class="cohort-dial-card dial-green" [title]="cohorts.days0to7 + ' leads aged 0-7 days'">
                   <div class="dial-head">
-                    <div class="risk-label">0-7 Days</div>
-                    <div class="risk-value">{{ cohorts.days0to7 }}</div>
+                    <div class="risk-label text-black fs-2">0-7 Days</div>
+                    <div class="risk-value ">{{ cohorts.days0to7 }}</div>
                   </div>
                   <div class="dial-wrap">
                     <div class="dial-ring" [style.background]="getAgeDialStyle(cohorts.days0to7, cohorts.total, '#16a34a')">
                       <div class="dial-inner">{{ getAgeCohortPct(cohorts.days0to7, cohorts.total) }}%</div>
                     </div>
                   </div>
-                  <div class="risk-share">Fresh leads in selected range</div>
+                  <div class="risk-share text-black">Fresh leads in selected range</div>
                 </div>
                 <div class="cohort-dial-card dial-amber" [title]="cohorts.days7to30 + ' leads aged 7-30 days'">
                   <div class="dial-head">
-                    <div class="risk-label">7-30 Days</div>
+                    <div class="risk-label text-black fs-2">8-30 Days</div>
                     <div class="risk-value">{{ cohorts.days7to30 }}</div>
                   </div>
                   <div class="dial-wrap">
@@ -138,11 +207,11 @@
                       <div class="dial-inner">{{ getAgeCohortPct(cohorts.days7to30, cohorts.total) }}%</div>
                     </div>
                   </div>
-                  <div class="risk-share">Warming up without conversion</div>
+                  <div class="risk-share text-black">Warming up without conversion</div>
                 </div>
                 <div class="cohort-dial-card dial-orange" [title]="cohorts.days30to60 + ' leads aged 30-60 days'">
                   <div class="dial-head">
-                    <div class="risk-label">30-60 Days</div>
+                    <div class="risk-label text-black fs-2">31-60 Days</div>
                     <div class="risk-value">{{ cohorts.days30to60 }}</div>
                   </div>
                   <div class="dial-wrap">
@@ -150,11 +219,11 @@
                       <div class="dial-inner">{{ getAgeCohortPct(cohorts.days30to60, cohorts.total) }}%</div>
                     </div>
                   </div>
-                  <div class="risk-share">Attention needed soon</div>
+                  <div class="risk-share text-black">Attention needed soon</div>
                 </div>
                 <div class="cohort-dial-card dial-red" [title]="cohorts.days60plus + ' leads aged 60+ days'">
                   <div class="dial-head">
-                    <div class="risk-label">60+ Days</div>
+                    <div class="risk-label text-black fs-2">61+ Days</div>
                     <div class="risk-value">{{ cohorts.days60plus }}</div>
                   </div>
                   <div class="dial-wrap">
@@ -162,7 +231,7 @@
                       <div class="dial-inner">{{ getAgeCohortPct(cohorts.days60plus, cohorts.total) }}%</div>
                     </div>
                   </div>
-                  <div class="risk-share">High-risk stale leads</div>
+                  <div class="risk-share text-black">High-risk stale leads</div>
                 </div>
               </div>
             </div>
@@ -178,7 +247,7 @@
                 <div class="pipeline-kpi-head">
                   <div>
                     <div class="pipeline-label">Quotations</div>
-                    <div class="pipeline-meta">{{ dashboardCounts.summaryKpis.quotes.totalQuotes }} total</div>
+                    <div class="pipeline-meta text-black fs-2">{{ dashboardCounts.summaryKpis.quotes.totalQuotes }} Total</div>
                   </div>
                   <div class="pipeline-badge">{{ getPipelinePct(dashboardCounts.summaryKpis.quotes.quotesFromEnquiry, dashboardCounts.summaryKpis.quotes.totalQuotes) }}%</div>
                 </div>
@@ -209,7 +278,7 @@
                 <div class="pipeline-kpi-head">
                   <div>
                     <div class="pipeline-label">Bookings</div>
-                    <div class="pipeline-meta">{{ dashboardCounts.summaryKpis.bookings.totalBookings }} total</div>
+                    <div class="pipeline-meta text-black fs-2">{{ dashboardCounts.summaryKpis.bookings.totalBookings }} Total</div>
                   </div>
                   <div class="pipeline-badge">{{ getPipelinePct(dashboardCounts.summaryKpis.bookings.bookingsFromQuote, dashboardCounts.summaryKpis.bookings.totalBookings) }}%</div>
                 </div>
@@ -494,7 +563,7 @@
         <div class="table-wrap" *ngIf="expandedSections[7]">
           <div class="table-scroll" (scroll)="onSectionScroll($event, 7)">
             <table>
-              <thead><tr><th>#</th><th>Quote No</th><th>Date</th><th>Customer</th><th>Dept</th><th>POL</th><th>POD</th><th>Status</th><th>Action</th></tr></thead>
+              <thead><tr><th>#</th><th>Quote No</th><th>Date</th><th>Customer</th><th>Dept</th><th>POL</th><th>POD</th><th>Status</th><th></th></tr></thead>
               <tbody>
                 <tr *ngFor="let quote of getQuotesNotApprovedRows(); let i = index">
                   <td class="row-num">{{ i + 1 }}</td>
