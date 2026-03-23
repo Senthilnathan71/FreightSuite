@@ -24,6 +24,7 @@ import {
   JobCardPdfData,
   ShipmentReportPdfData,
   CargoArrivalPdfData,
+  DeliveryOrderPdfData,
   CreditNotePdfData,
   ReceiptPdfData,
   PaymentPdfData
@@ -49,6 +50,10 @@ import {
   generateCargoArrivalDocument,
   transformCargoArrivalApiData
 } from './generators/cargo-arrival-pdf.generator';
+import {
+  generateDeliveryOrderDocument,
+  transformDeliveryOrderApiData
+} from './generators/delivery-order-pdf.generator';
 import { generateCreditNoteDocument, transformCreditNoteApiData } from './generators/credit-note-pdf.generator';
 import { generateReceiptDocument, transformReceiptApiData } from './generators/receipt-pdf.generator';
 import { generatePaymentDocument, transformPaymentApiData } from './generators/payment-pdf.generator';
@@ -661,6 +666,61 @@ export class PdfMakeService {
   ): Promise<Blob> {
     const pdfData = transformCargoArrivalApiData(apiData, company, branch, userData, logo, options);
     return this.generateCargoArrivalBlob(pdfData);
+  }
+
+  // ==================== Delivery Order ====================
+
+  generateDeliveryOrder(data: DeliveryOrderPdfData): void {
+    const docDefinition = generateDeliveryOrderDocument(data);
+    const filename = `Delivery_Order_${data.referenceInfo?.shipmentNo || data.referenceInfo?.hblNo || 'Report'}.pdf`;
+    this.download(docDefinition, filename);
+  }
+
+  async generateDeliveryOrderBlob(data: DeliveryOrderPdfData): Promise<Blob> {
+    const docDefinition = generateDeliveryOrderDocument(data);
+    return this.getBlob(docDefinition);
+  }
+
+  generateDeliveryOrderFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    options?: {
+      masterJobContainers?: any[];
+      selectedFCLLCL?: string;
+      currencyList?: any[];
+      uomList?: any[];
+      containerTypeList?: any[];
+      packageTypeList?: any[];
+      terms?: any[];
+      amountInWords?: string;
+    }
+  ): void {
+    const pdfData = transformDeliveryOrderApiData(apiData, company, branch, userData, logo, options);
+    this.generateDeliveryOrder(pdfData);
+  }
+
+  async generateDeliveryOrderBlobFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    options?: {
+      masterJobContainers?: any[];
+      selectedFCLLCL?: string;
+      currencyList?: any[];
+      uomList?: any[];
+      containerTypeList?: any[];
+      packageTypeList?: any[];
+      terms?: any[];
+      amountInWords?: string;
+    }
+  ): Promise<Blob> {
+    const pdfData = transformDeliveryOrderApiData(apiData, company, branch, userData, logo, options);
+    return this.generateDeliveryOrderBlob(pdfData);
   }
 
 

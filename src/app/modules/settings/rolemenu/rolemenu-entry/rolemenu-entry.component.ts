@@ -9,6 +9,9 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { forkJoin } from 'rxjs';
 import { FeatherModule } from 'angular-feather';
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
+import { CommonEntryHeaderComponent } from 'src/app/shared/components/common-entry-header/common-entry-header.component';
+import { CommonPaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
+import { PaginationConfig } from 'src/app/shared/interfaces/pagination.interface';
 
 @Component({
   selector: 'app-rolemenu-entry',
@@ -20,7 +23,9 @@ import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/mul
     NgSelectModule,
     FeatherModule,
     NgxSpinnerModule,
-    MultiSelectComponent
+    MultiSelectComponent,
+    CommonEntryHeaderComponent,
+    CommonPaginationComponent
   ],
   templateUrl: './rolemenu-entry.component.html',
   styleUrls: ['./rolemenu-entry.component.scss'],
@@ -37,6 +42,15 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
   isLoading = false;
   moduleWithMenuMap: Map<number, any[]> = new Map<number, any[]>();
   originalMenuList: any[] = [];
+  dynamicMenuPage = 1;
+  dynamicMenuPageSize = 10;
+  dynamicMenuPaginationConfig: PaginationConfig = {
+    page: 1,
+    pageSize: 10,
+    totalRecords: 0,
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3,
+  };
 
   modeOfStatus = [
     { value: 'A', name: 'Active' },
@@ -186,6 +200,7 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
   onModuleChange(selectedModules: any[]): void {
     if (!selectedModules?.length) {
       this.dynamicMenuList = [];
+      this.updateDynamicMenuPagination();
       return;
     }
 
@@ -227,6 +242,7 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
       const m = a.ModuleName.localeCompare(b.ModuleName);
       return m !== 0 ? m : a.MenuName.localeCompare(b.MenuName);
     });
+    this.updateDynamicMenuPagination();
   }
 
 
@@ -364,6 +380,8 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
           }
         });
 
+        this.updateDynamicMenuPagination();
+
         this.spinner.hide();
       },
       error: (err) => {
@@ -493,6 +511,7 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
         status: 'Active',
       });
       this.dynamicMenuList = [];
+      this.updateDynamicMenuPagination();
       this.roleMenuForm.markAsPristine();
       this.roleMenuForm.markAsUntouched();
       this.appSettingService.showInfo('Form has been reset');
@@ -552,6 +571,45 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
 
   navigateBack(): void {
     this.router.navigate(['/settings/rolemenu']);
+  }
+
+  get paginatedDynamicMenuList(): any[] {
+    const startIndex = (this.dynamicMenuPage - 1) * this.dynamicMenuPageSize;
+    const endIndex = startIndex + this.dynamicMenuPageSize;
+    return this.dynamicMenuList.slice(startIndex, endIndex);
+  }
+
+  onDynamicMenuPageChange(page: number): void {
+    this.dynamicMenuPage = page;
+    this.updateDynamicMenuPagination(false);
+  }
+
+  onDynamicMenuPageSizeChange(pageSize: number): void {
+    this.dynamicMenuPageSize = Number(pageSize);
+    this.dynamicMenuPage = 1;
+    this.updateDynamicMenuPagination(false);
+  }
+
+  private updateDynamicMenuPagination(resetPage: boolean = true): void {
+    if (resetPage) {
+      this.dynamicMenuPage = 1;
+    }
+
+    const totalPages = Math.max(
+      1,
+      Math.ceil(this.dynamicMenuList.length / this.dynamicMenuPageSize),
+    );
+
+    if (this.dynamicMenuPage > totalPages) {
+      this.dynamicMenuPage = totalPages;
+    }
+
+    this.dynamicMenuPaginationConfig = {
+      ...this.dynamicMenuPaginationConfig,
+      page: this.dynamicMenuPage,
+      pageSize: this.dynamicMenuPageSize,
+      totalRecords: this.dynamicMenuList.length,
+    };
   }
 
   ngOnDestroy(): void {

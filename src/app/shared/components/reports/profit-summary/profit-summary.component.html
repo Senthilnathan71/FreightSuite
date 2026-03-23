@@ -25,12 +25,16 @@
                     <strong style="width: 130px;">Dept </strong>
                     <p class="my-0">: {{ fullData?.DeptNames }}</p>
                 </div>
+                <div class="d-flex align-items-center">
+                    <strong style="width: 130px;">With Pro Rate </strong>
+                    <p class="my-0">: {{ params?.['With Pro Rate'] ? 'Yes' : 'No' }}</p>
+                </div>
             </div>
         </div>
         <div class="table-responsive">
             <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
                 <thead>
-                    <tr class="bg-info">
+                    <tr class="bg-info" style="white-space: nowrap;">
                         <th class="bg-transparent text-light text-center">Job No</th>
                         <th class="bg-transparent text-light text-center">Dept</th>
                         <th class="bg-transparent text-light text-center">MBL No</th>

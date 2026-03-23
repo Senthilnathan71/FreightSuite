@@ -48,6 +48,7 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
 
   // Table configuration
   tableConfig: TableConfig = {
+    showPagination: true,
     columns: [
       { key: 'ReportName', label: 'Report Name', sortable: true, filterable: true },
       { key: 'ReportDisplayName', label: 'Display Report Name', sortable: true, filterable: true },
@@ -77,7 +78,7 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
   // Component configuration
   protected config: ListComponentConfig = {
     storageKey: 'report-master-list-state',
-    defaultPageSize: 50,
+    defaultPageSize: 10,
     defaultSortColumn: 'ReportName',
     defaultSortDirection: 'asc',
     pageSizeOptions: [10, 20, 50, 100, 500],
@@ -125,6 +126,8 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
       
     }
 
+    this.paginationService.clearState(this.config.storageKey);
+
     // Call parent ngOnInit which will handle state restoration and initial load
     super.ngOnInit();
   }
@@ -133,6 +136,7 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
   // Abstract methods implementation
   protected searchItems(): Observable<any> {
     this.tableLoading = true;
+    this.spinner.show();
     return this.masterService.searchReportMaster(this.getSearchParams());
   }
 
@@ -150,6 +154,7 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
 
   protected processSearchResults(response: any): void {
     this.tableLoading = false;
+    this.spinner.hide();
     if (response.status) {
       this.allReports = response.data.items || [];
       this.totalLengthOfCollection = response.data.totalCount || 0;
@@ -159,6 +164,14 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
       this.allReports = [];
       this.totalLengthOfCollection = 0;
     }
+  }
+
+  protected override handleSearchError(error: any): void {
+    this.tableLoading = false;
+    this.spinner.hide();
+    this.appSettingService.showError('Error searching reports.');
+    console.error('Error searching reports', error);
+    super.handleSearchError(error);
   }
 
   // Permission methods

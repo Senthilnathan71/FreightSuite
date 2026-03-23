@@ -155,16 +155,16 @@
 
         <!-- Permissions Table -->
         <div class="col-12 px-0" *ngIf="dynamicMenuList.length > 0">
-          <div class="card">
-            <div class="card-body">
+          <div class="">
+            <div class="">
               <div class="table-responsive">
                 <table class="table table-hover align-middle table-sm table-borderless mb-1">
                   <thead class="bg-info">
                     <tr>
-                      <th class="bg-transparent text-light">Module Name</th>
-                      <th class="bg-transparent text-light">Menu Name</th>
-                      <th class="bg-transparent text-light">Display Name</th>
-                      <th class="bg-transparent text-light text-center" style="width: 80px;">
+                      <th class="bg-transparent text-light pb-2" style="border-top-left-radius: 5px;">Module Name</th>
+                      <th class="bg-transparent text-light pb-2">Menu Name</th>
+                      <th class="bg-transparent text-light pb-2">Display Name</th>
+                      <th class="bg-transparent text-light text-center" style="width: 80px;" >
                         <div class="d-flex flex-column align-items-center">
                           <span>Add</span>
                           <div class="mt-1">
@@ -206,7 +206,7 @@
                           </div>
                         </div>
                       </th>
-                      <th class="bg-transparent text-light text-center" style="width: 80px;">
+                      <th class="bg-transparent text-light text-center" style="width: 80px;border-top-right-radius: 5px;">
                         <div class="d-flex flex-column align-items-center">
                           <span>Delete</span>
                           <div class="mt-1">
@@ -223,12 +223,12 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let menu of dynamicMenuList; let i = index">
+                    <tr *ngFor="let menu of paginatedDynamicMenuList; let i = index">
                       <!-- Module Name -->
-                      <td>{{ menu.ModuleName }}</td>
+                      <td style="font-weight: 600;color: #000;">{{ menu.ModuleName }}</td>
                       
                       <!-- Menu Name -->
-                      <td>{{ menu.MenuName }}</td>
+                      <td style="font-weight: 600;color: #000;">{{ menu.MenuName }}</td>
                       
                       <!-- Display Name (Editable) -->
                       <td>
@@ -294,6 +294,11 @@
               </div>
             </div>
           </div>
+          <app-common-pagination
+            [config]="dynamicMenuPaginationConfig"
+            (pageChange)="onDynamicMenuPageChange($event)"
+            (pageSizeChange)="onDynamicMenuPageSizeChange($event)">
+          </app-common-pagination>
         </div>
 
         <!-- Empty State -->

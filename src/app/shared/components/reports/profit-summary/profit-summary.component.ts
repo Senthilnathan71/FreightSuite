@@ -216,7 +216,8 @@ getGrandTotal(field: string): number {
           { label: 'From Date', value: this.formatDate(this.params?.FromJobDt) },
           { label: 'To Date', value: this.formatDate(this.params?.ToJobDt) },
           { label: 'Branch', value: this.fullData?.brancesInvoled || 'All' },
-          { label: 'Dept', value: this.fullData?.DeptNames || 'All' }
+          { label: 'Dept', value: this.fullData?.DeptNames || 'All' },
+          { label: 'With Pro Rate', value: this.params?.['With Pro Rate'] ? 'Yes' : 'No' },
         ]
       },
 

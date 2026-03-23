@@ -219,7 +219,8 @@ export class TradelaneProfitabilityComponent {
           { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
           { label: 'Branch', value: this.fullData?.resolvedBranchNames || '' },
           { label: 'POL', value: this.fullData?.filters?.POL || '' },
-          { label: 'POD', value: this.fullData?.filters?.POD || '' }
+          { label: 'POD', value: this.fullData?.filters?.POD || '' },
+          { label: 'With Pro Rate', value: this.params?.['With Pro Rate'] ? 'Yes' : 'No' }
         ]
       },
       includeTableHeaders: false,

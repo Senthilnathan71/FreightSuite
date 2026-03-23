@@ -613,6 +613,76 @@ export interface CargoArrivalChargePdfRow {
 }
 
 // =====================
+// DELIVERY ORDER PDF DATA
+// =====================
+export interface DeliveryOrderPdfData extends PdfDocumentBase {
+  reportTitle: string;
+  selectedFclLcl?: string;
+  amountInWords?: string;
+  releaseTo?: {
+    name?: string;
+    address?: string;
+  };
+  referenceInfo: {
+    hblNo?: string;
+    doNumber?: string;
+    doDate?: Date | string;
+    shipmentNo?: string;
+  };
+  parties: {
+    shipperName?: string;
+    shipperAddress?: string;
+    consigneeName?: string;
+    consigneeAddress?: string;
+    notifyName?: string;
+    notifyAddress?: string;
+    goodsAvailableAt?: string;
+  };
+  releaseInfo: {
+    releaseType?: string;
+    orderReference?: string;
+    oceanBillOfLading?: string;
+    commodity?: string;
+  };
+  fclContainers: DeliveryOrderContainerPdfRow[];
+  lclSummary: {
+    noOfPackages?: number;
+    grossWeight?: number;
+    netWeight?: number;
+    volume?: number;
+  };
+  descriptionInfo: {
+    marksAndNumber?: string;
+    goodsDescription?: string;
+  };
+  charges: DeliveryOrderChargePdfRow[];
+  chargeTotals: {
+    totalPerUnit: number;
+    totalAmount: number;
+    totalLocalAmount: number;
+  };
+  terms: string[];
+}
+
+export interface DeliveryOrderContainerPdfRow {
+  containerNo?: string;
+  containerType?: string;
+  seal?: string;
+  packageType?: string;
+  grossWeight?: number;
+  volume?: number;
+}
+
+export interface DeliveryOrderChargePdfRow {
+  chargeDescription?: string;
+  unit?: string;
+  currency?: string;
+  perUnit?: number;
+  amount?: number;
+  localAmount?: number;
+}
+
+// =====================
 // INVOICE PDF DATA
 // =====================
 export interface InvoicePdfData extends PdfDocumentBase {

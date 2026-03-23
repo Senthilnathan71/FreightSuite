@@ -48,10 +48,10 @@
 
 
           <!-- CHECKBOX -->
-          <div class="form-check mt-3" *ngIf="param.ParameterFieldType === 'CHECKBOX'">
+          <div class="form-check mt-2" *ngIf="param.ParameterFieldType === 'CHECKBOX'">
             <input 
               type="checkbox" 
-              class="focus-ring form-check-input"
+              class="focus-ring form-check-input cursor-pointer"
               [id]="param.ParameterName" 
               [formControlName]="param.ParameterName" 
             />
