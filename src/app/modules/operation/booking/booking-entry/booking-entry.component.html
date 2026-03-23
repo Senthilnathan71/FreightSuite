@@ -2565,6 +2565,8 @@
             <span>Gross Weight cannot exceed 9,999,999.999</span>
             } @else if (productForm.get('GrossWeight')?.errors?.['decimalPrecision']) {
             <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+            } @else if (productForm.get('GrossWeight')?.errors?.['grossLessThanNet']) {
+            <span>Gross Weight cannot be less than Net Weight</span>
             }
           </div>
           }
@@ -2584,6 +2586,8 @@
             <span>Net Wt cannot exceed 9,999,999.999</span>
             } @else if (productForm.get('NetWeight')?.errors?.['decimalPrecision']) {
             <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
+            } @else if (productForm.get('NetWeight')?.errors?.['netGreaterThanGross']) {
+            <span>Net Weight cannot be greater than Gross Weight</span>
             }
           </div>
           }

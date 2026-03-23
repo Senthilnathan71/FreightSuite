@@ -61,6 +61,7 @@ export class MawbStockComponent implements OnInit{
     currentMenuId: number;
     TandCList: any[]=[];
     mawstockData: any;
+    originalStockStatus: string | null = null;
     btnDisable: boolean = false;
     permissions: string[] = [];
     currentMenuPermissions: any = {};
@@ -111,6 +112,7 @@ export class MawbStockComponent implements OnInit{
         if (id) {
           this.MawbStockSid = +id;
           this.isEditMode = true;
+          this.toggleEditLockedFields();
           this.loadMawbData(this.MawbStockSid);
         }
       });
@@ -179,6 +181,29 @@ export class MawbStockComponent implements OnInit{
       this.mawbForm.get('MasterBillNumber').setValue('');
     }
   }
+
+  toggleEditLockedFields(): void {
+    const airwayBillTypeControl = this.mawbForm.get('AirwayBillType');
+    const agentControl = this.mawbForm.get('Agent');
+    const masterBillNumberControl = this.mawbForm.get('MasterBillNumber');
+    const mawbSerialControl = this.mawbForm.get('MAWBSerial');
+    const numberofMawbControl = this.mawbForm.get('NumberofMAWB');
+
+    if (this.isEditMode) {
+      airwayBillTypeControl?.disable({ emitEvent: false });
+      agentControl?.disable({ emitEvent: false });
+      masterBillNumberControl?.disable({ emitEvent: false });
+      mawbSerialControl?.disable({ emitEvent: false });
+      numberofMawbControl?.disable({ emitEvent: false });
+      return;
+    }
+
+    airwayBillTypeControl?.enable({ emitEvent: false });
+    agentControl?.enable({ emitEvent: false });
+    masterBillNumberControl?.enable({ emitEvent: false });
+    mawbSerialControl?.enable({ emitEvent: false });
+    numberofMawbControl?.enable({ emitEvent: false });
+  }
      
 
   hasAnyDropdownPermission(): boolean {
@@ -240,10 +265,39 @@ export class MawbStockComponent implements OnInit{
     this.updateAgentDropdown(value);
   });
   
-  this.mawbForm.statusChanges.subscribe(status => {
-    this.btnDisable = status !== 'VALID';
+  this.mawbForm.statusChanges.subscribe(() => {
+    this.updateSaveButtonState();
   });
+
+  this.mawbForm.get('StockStatus')?.valueChanges.subscribe(() => {
+    this.updateSaveButtonState();
+  });
+
+  this.toggleEditLockedFields();
+  this.updateSaveButtonState();
     }
+    canSaveForStockStatus(): boolean {
+  const currentStockStatus = this.mawbForm.get('StockStatus')?.value;
+
+  if (!this.isEditMode || !this.originalStockStatus) {
+    return true;
+  }
+
+  if (this.originalStockStatus === 'Hold' || this.originalStockStatus === 'Return') {
+    return currentStockStatus === 'Free';
+  }
+
+  if (currentStockStatus === 'Free' && this.originalStockStatus !== 'Free') {
+    return false;
+  }
+
+  return true;
+}
+
+updateSaveButtonState(): void {
+  this.btnDisable = this.mawbForm.invalid || !this.canSaveForStockStatus();
+}
+
     updateFormValidation(awbType: string): void {
   const agentControl = this.mawbForm.get('Agent');
   // Both "Airline" and "Other" require Agent field, just with different dropdown options
@@ -347,7 +401,9 @@ export class MawbStockComponent implements OnInit{
         BranchMasterSid: this.currentBranch?.BranchMasterSid,
       });
 
+      this.originalStockStatus = mawbData.StockStatus;
       this.mawstockData = mawbData;
+      this.updateSaveButtonState();
     },
     error => {
       this.appSettingsService.showError('Error loading MAWB data.');
@@ -357,7 +413,7 @@ export class MawbStockComponent implements OnInit{
   
   
     preparePayload(): any {
-      const formValue = this.mawbForm.value;
+      const formValue = this.mawbForm.getRawValue();
       return {
         ...formValue,
        status: formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
@@ -428,7 +484,7 @@ export class MawbStockComponent implements OnInit{
     }
   
     navigateBack(): void {
-      history.back();
+      this.router.navigate(['/master/mawb-stock/list']);
     }
   
     resetForm(): void {

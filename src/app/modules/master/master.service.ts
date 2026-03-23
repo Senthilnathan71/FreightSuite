@@ -202,9 +202,9 @@ export class MasterService {
   }
 
   updateCustomerById(id: number, payload: any) {
-    return this.http.patch<{ data: any }>(`customer/update/${id}`, payload).pipe(
+    return this.http.patch<any>(`customer/update/${id}`, payload).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
     );

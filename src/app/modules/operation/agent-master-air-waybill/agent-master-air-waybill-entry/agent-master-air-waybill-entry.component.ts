@@ -160,7 +160,7 @@ notifyManuallyChanged = false;
 fyMinDate: NgbDateStruct | null = null;
 fyMaxDate: NgbDateStruct | null = null;
   mawbStockList: any[] = [];
-  mawbStockSource: 'ALLOCATED' | 'FREE' | 'NONE' | null = null;
+  mawbStockSource: 'ALLOCATED' | 'FREE' | 'OTHER' | 'NONE' | null = null;
   isMawbDropdownDisabled = false;
   isMawbStockAllocationEnabled = false;
   allowManualMawbEntryOnAutoAllocationError = false;
@@ -5425,12 +5425,23 @@ loadMawbStock(data: any): void {
   // Extract optional values
   const customerId: number | null = data?.CustomerMasterSid ?? null;
   const carrierName: string | null = data?.CarrierName ?? null;
+  const selectedCarrier = carrierName
+    ? this.carrierList?.find(
+        (carrier: any) => carrier.CustomerName?.trim().toLowerCase() === carrierName.trim().toLowerCase()
+      )
+    : null;
 
-  // Resolve airlineId from airlineList using carrierName
+  // Resolve airlineId from the selected party using carrier and airline lookups
   const airlineId: number | null = carrierName
-    ? (this.airlineList?.find(
-        (a: any) => a.CustomerName?.trim().toLowerCase() === carrierName.trim().toLowerCase()
-      )?.CustomerMasterSid ?? null)
+    ? (
+        selectedCarrier?.CustomerMasterSid ??
+        this.airlineList?.find(
+          (a: any) =>
+            a.CustomerName?.trim().toLowerCase() === carrierName.trim().toLowerCase() ||
+            (selectedCarrier?.AirlineCode && a.AirlineCode === selectedCarrier.AirlineCode)
+        )?.CustomerMasterSid ??
+        null
+      )
     : null;
 
   // If BOTH are null → disable immediately, no API call
@@ -5496,6 +5507,7 @@ interface CustomerProfit {
   CustomerName : string,
   Amount : number
 }
+
 
 
 

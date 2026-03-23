@@ -26,7 +26,7 @@ export class MawbStockAllocationComponent implements OnInit {
   airlineList: any[] = [];
   customerList: any[] = [];
   clientlist: any[] = [];
-  stockStatusList = ["Free","Void", "Return"]; // Removed "Void" as per your requirement
+  stockStatusList = ["Free","Void"]; // Removed "Void" as per your requirement
 
   currentCompany: any;
   currentBranch: any;
@@ -197,6 +197,10 @@ export class MawbStockAllocationComponent implements OnInit {
     return this.stocksArray.controls.some(control => control.get('selected')?.value);
   }
 
+  hasSelectedCustomer(): boolean {
+    return !!this.allocationForm.get('customerId')?.value;
+  }
+
   // ===============================
   // Confirm Allocation / Deallocation
   // ===============================
@@ -205,6 +209,11 @@ export class MawbStockAllocationComponent implements OnInit {
     if (!selectedStocks.length) return;
 
     const customerId = this.allocationForm.get('customerId')?.value;
+    if (!customerId) {
+      this.allocationForm.get('customerId')?.markAsTouched();
+      this.appSettingService.showWarning('Select Customer');
+      return;
+    }
 
     // Prepare payload as per requirement
     const payload: any = {

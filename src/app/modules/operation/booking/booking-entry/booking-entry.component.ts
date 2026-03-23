@@ -959,6 +959,12 @@ subscribeToFormChanges() {
       UomMasterSid: [2,isAirOrLCL ? [Validators.required] : []],
       CargoRecDate: [null]
     });
+    this.productForm.get('GrossWeight')?.valueChanges.subscribe(() => {
+      this.setOrResetWeightError(this.productForm);
+    });
+    this.productForm.get('NetWeight')?.valueChanges.subscribe(() => {
+      this.setOrResetWeightError(this.productForm);
+    });
     this.setupImmediateCBMCalculation();
     this.setupImmediateVolumetricCalculation(this.productForm)
   }
@@ -1193,6 +1199,12 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       Volumetric: [data?.Volumetric|| '',isAirOrLCL ? [Validators.required] : []],
       UomMasterSid: [data?.UomMasterSid || 2,isAirOrLCL ? [Validators.required] : []],
       CargoRecDate: [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null]
+    });
+    productForm.get('GrossWeight')?.valueChanges.subscribe(() => {
+      this.setOrResetWeightError(productForm);
+    });
+    productForm.get('NetWeight')?.valueChanges.subscribe(() => {
+      this.setOrResetWeightError(productForm);
     });
     // Always attach subscriptions so patched rows can recalculate on later edits.
     // The subscription itself already skips while `isPatching` is true.
@@ -2496,6 +2508,14 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
             }
           }
         });
+
+        const grossWeightControl = productGroup.get('GrossWeight');
+        const netWeightControl = productGroup.get('NetWeight');
+
+        if (grossWeightControl?.hasError('grossLessThanNet') || netWeightControl?.hasError('netGreaterThanGross')) {
+          errorMessages.push(`Product ${index + 1}: ${this.getProductValidationMessage()}`);
+        }
+
         isValid = false;
       }
 
@@ -4218,20 +4238,27 @@ getFormattedPort(code: string): string {
 
   setOrResetWeightError(formGroup: FormGroup) {
     const grossCtrl = formGroup.get('GrossWeight');
+    const netCtrl = formGroup.get('NetWeight');
     const grossValue = formGroup.get('GrossWeight')?.value;
     const netValue = formGroup.get('NetWeight')?.value;
 
-    if (!grossValue || !netValue) {
-      grossCtrl.setErrors(null);
+    if (!grossCtrl || !netCtrl) {
       return;
     }
-    if (grossCtrl) {
-      if (Number(grossValue) <= Number(netValue)) {
-        grossCtrl.setErrors({ grossNotGreater: true });
-      } else {
-        grossCtrl.setErrors(null);
-      }
+
+    const grossErrors = { ...(grossCtrl.errors || {}) };
+    const netErrors = { ...(netCtrl.errors || {}) };
+
+    delete grossErrors['grossLessThanNet'];
+    delete netErrors['netGreaterThanGross'];
+
+    if (grossValue && netValue && Number(grossValue) < Number(netValue)) {
+      grossErrors['grossLessThanNet'] = true;
+      netErrors['netGreaterThanGross'] = true;
     }
+
+    grossCtrl.setErrors(Object.keys(grossErrors).length ? grossErrors : null);
+    netCtrl.setErrors(Object.keys(netErrors).length ? netErrors : null);
   }
 
   getBookingStatus() {
@@ -5780,6 +5807,21 @@ getFieldLabel(fieldName: string): string {
   
   return fieldLabels[fieldName] || fieldName;
 }
+
+private getProductValidationMessage(): string {
+  const hasNetWeightError = this.bookingProducts.controls.some(control => {
+    const productGroup = control as FormGroup;
+    return productGroup.get('NetWeight')?.hasError('netGreaterThanGross')
+      || productGroup.get('GrossWeight')?.hasError('grossLessThanNet');
+  });
+
+  if (hasNetWeightError) {
+    return 'Net Weight cannot be greater than Gross Weight';
+  }
+
+  return 'Please fill all required product fields correctly.';
+}
+
 get isTranshipmentMode(): boolean {
   return this.b['JobType']?.value === 'Transhipment';
 }

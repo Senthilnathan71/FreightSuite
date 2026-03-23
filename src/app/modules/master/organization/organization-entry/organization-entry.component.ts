@@ -320,17 +320,19 @@ onCountryChange(): void {
 }
 
 private autoSelectCurrency(): void {
-   if (this.isEditMode) return;
   const countryId = this.customerForm.get('CountryMasterSid')?.value;
+  const currencyControl = this.customerForm.get('CurrencyMasterSid');
+  const currentCurrencyId = currencyControl?.value;
   
   if (!countryId || !this.countryList || !this.currencyList) return;
+  if (currentCurrencyId !== null && currentCurrencyId !== undefined && currentCurrencyId !== '') return;
   
   // Find the selected country
   const selectedCountry = this.countryList.find((c: any) => c.CountryMasterSid == countryId);
   
   if (selectedCountry && selectedCountry.CurrencyMasterSid) {
     // Set the CurrencyMasterSid to match the country's currency
-    this.customerForm.get('CurrencyMasterSid')?.setValue(selectedCountry.CurrencyMasterSid);
+    currencyControl?.setValue(selectedCountry.CurrencyMasterSid);
   }
 }
 
@@ -2069,16 +2071,7 @@ loadCustomerData(customerId: number) {
       // Convert backend status ('A', 'S') to frontend display values
       const formattedStatus = customerData.status === 'A' ? 'Active' : 'Suspended';
       
-      let customerType = customerData.CustomerType;
-
-      if (typeof customerType === 'string') {
-        try {
-          customerType = JSON.parse(customerType);
-        } catch (e) {
-          console.error('Error parsing CustomerType:', e);
-          customerType = {};
-        }
-      }
+      const customerType = this.normalizeCustomerTypeValue(customerData.CustomerType);
       const hasPanOrVat = customerData.PanType || customerData.PanName;
       const panAvailable = hasPanOrVat ? true : false;
       // Patch main customer form
@@ -2102,6 +2095,7 @@ loadCustomerData(customerId: number) {
         this.customerForm.get('CurrencyMasterSid')?.disable();
         this.customerForm.get('CustomerName')?.disable();
       }
+      this.autoSelectCurrency();
       this.updateTaxIdLabel();
 
       // Handle customer types
@@ -2122,6 +2116,44 @@ loadCustomerData(customerId: number) {
       this.appSettingService.showError('Error loading customer data.');
     }
   );
+}
+
+private normalizeCustomerTypeValue(customerType: any): Record<string, string> {
+  if (!customerType) {
+    return {};
+  }
+
+  if (typeof customerType === 'object' && !Array.isArray(customerType)) {
+    return customerType;
+  }
+
+  if (typeof customerType === 'string') {
+    const trimmedValue = customerType.trim();
+
+    if (!trimmedValue) {
+      return {};
+    }
+
+    try {
+      const parsedValue = JSON.parse(trimmedValue);
+      if (parsedValue && typeof parsedValue === 'object' && !Array.isArray(parsedValue)) {
+        return parsedValue;
+      }
+    } catch {
+      const normalizedCustomerTypes: Record<string, string> = {};
+      trimmedValue
+        .split(',')
+        .map((type: string) => type.trim())
+        .filter((type: string) => !!type)
+        .forEach((type: string) => {
+          normalizedCustomerTypes[this.toCamelCase(type)] = 'isTrue';
+        });
+
+      return normalizedCustomerTypes;
+    }
+  }
+
+  return {};
 }
   private loadAllCustomerDataFromResponse(customerData: any): void {
     // 1. Load branches (with contacts, emails, logins)
@@ -3351,7 +3383,7 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
       },
       error: (error) => {
         console.error('HTTP Error:', error);
-        const errorMsg = error.error?.message || error.message || 'Error creating customer';
+        const errorMsg = this.extractApiErrorMessage(error, 'Error creating customer');
         this.appSettingService.showError(errorMsg);
         reject(error);
       }
@@ -3385,11 +3417,28 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
       },
       error: (error) => {
         console.error('Error updating customer:', error);
-        this.appSettingService.showError('Error updating customer');
+        const errorMsg = this.extractApiErrorMessage(error, 'Error updating customer');
+        this.appSettingService.showError(errorMsg);
         reject(error);
       }
     });
   });
+}
+
+private extractApiErrorMessage(error: any, fallbackMessage: string): string {
+  if (typeof error?.error?.message === 'string' && error.error.message.trim()) {
+    return error.error.message.trim();
+  }
+
+  if (typeof error?.message === 'string' && error.message.trim()) {
+    return error.message.trim();
+  }
+
+  if (typeof error?.error === 'string' && error.error.trim()) {
+    return error.error.trim();
+  }
+
+  return fallbackMessage;
 }
 
 

@@ -118,7 +118,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   public emailComponent = EmailEntryComponent;
 
   mawbStockList: any[] = [];
-  mawbStockSource: 'ALLOCATED' | 'FREE' | 'NONE' | null = null;
+  mawbStockSource: 'ALLOCATED' | 'FREE' | 'OTHER' | 'NONE' | null = null;
   isMawbDropdownDisabled = false;
   isMawbStockAllocationEnabled = false;
   allowManualMawbEntryOnAutoAllocationError = false;
@@ -2996,6 +2996,7 @@ onYardChange(selectedYard: any): void {
 
       
 }
+
 
 
 
