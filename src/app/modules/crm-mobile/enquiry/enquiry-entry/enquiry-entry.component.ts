@@ -102,6 +102,7 @@ export class EnquiryEntryComponent implements OnInit {
   enquiryData: any;
   selectedDepartment: any = '';
   isMobile: boolean = false;
+  isTermsAndConditionsEnabled: boolean = true;
   rateRequestForm!: FormGroup;
   EnquiryHeaderSid: any;
   isEditMode = false; // Flag for edit mode
@@ -400,7 +401,6 @@ export class EnquiryEntryComponent implements OnInit {
         this.stopVoiceGuide();
       }
     });
-
     this.mps.init().subscribe(() => {
       this.initializeActionMenu();
     });
@@ -417,6 +417,7 @@ export class EnquiryEntryComponent implements OnInit {
     console.log(this.currentBranchCityId, "CITY")
     this.loadCityName();
     this.MenuMasterSid = Number(sessionStorage.getItem('currentMenuId'));
+    this.loadTermsAndConditionsConfig();
     this.loadAllLookups().subscribe(() => {
       this.loadOtherFormLookups();
       // Check for voice enquiry data first
@@ -510,6 +511,36 @@ export class EnquiryEntryComponent implements OnInit {
         this.openDocRef();
         break;
     }
+  }
+
+  private loadTermsAndConditionsConfig(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+      this.isTermsAndConditionsEnabled = true;
+      return;
+    }
+
+    this.masterService.getConfigurationValue(companyId, 'TermsandConditions').subscribe({
+      next: (resp: any) => {
+        const rawValue = resp?.ConfigurationValue ?? resp?.value ?? resp;
+        this.isTermsAndConditionsEnabled = this.parseConfigBoolean(rawValue, true);
+        this.cdRef.markForCheck();
+      },
+      error: () => {
+        // Default to enabled if config fetch fails
+        this.isTermsAndConditionsEnabled = true;
+        this.cdRef.markForCheck();
+      }
+    });
+  }
+
+  private parseConfigBoolean(value: any, defaultValue: boolean): boolean {
+    if (value === true || value === false) return value;
+    if (value === null || value === undefined) return defaultValue;
+    const normalized = String(value).trim().toUpperCase();
+    if (['Y', 'YES', 'TRUE', '1'].includes(normalized)) return true;
+    if (['N', 'NO', 'FALSE', '0'].includes(normalized)) return false;
+    return defaultValue;
   }
 
   loadCityName(): void {
@@ -2305,23 +2336,34 @@ private parseFloatSafe(value: any): number {
       Carrier: carrier,
       DocumentSid: this.EnquiryHeaderSid
     };
-  
-    this.masterService.getTandCByCondition(payload).subscribe((resp: any) => {
-      if (resp.status) {
-        this.TandCList = resp.data;
-        const modalRef = this.ngbModal.open(TermsAndConditionsComponent, {
+
+    const openModal = (terms: any[]) => {
+      const modalRef = this.ngbModal.open(TermsAndConditionsComponent, {
           size: 'lg',
           backdrop: 'static',
           centered: true,
         });
   
-        modalRef.componentInstance.terms = this.TandCList;
+        modalRef.componentInstance.terms = terms || [];
         modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
         modalRef.componentInstance.DocumentSid = this.EnquiryHeaderSid;
         modalRef.componentInstance.DepartmentMasterSid = departmentSid;
         modalRef.componentInstance.POL = pol;
         modalRef.componentInstance.POD = pod;
         modalRef.componentInstance.Carrier = carrier;
+        modalRef.componentInstance.loadAllOnGet = !this.isTermsAndConditionsEnabled;
+    };
+
+    if (!this.isTermsAndConditionsEnabled) {
+      this.TandCList = [];
+      openModal(this.TandCList);
+      return;
+    }
+  
+    this.masterService.getTandCByCondition(payload).subscribe((resp: any) => {
+      if (resp.status) {
+        this.TandCList = resp.data;
+        openModal(this.TandCList);
       } else {
         this.appSettingService.showError('Error loading Terms and Conditions');
       }

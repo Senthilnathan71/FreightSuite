@@ -430,31 +430,31 @@ openAuditLogs(modal: TemplateRef<any>) {
     modalRef.componentInstance.idValue = this.supplierTDSdata?.SupplierTdsMappingSid;
   }
 
-  openTandC() {
-      this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
-      const payload = { MenuMasterSid: this.currentMenuId };
-      this.accountService.getTandCByCondition(payload).subscribe(
-        (resp: any) => {
-          if (resp.status) {
-            this.TandCList = resp.data;
-            const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-              size: 'lg',
-              backdrop: 'static',
-              centered: true
-            });
-            modalRef.componentInstance.terms = this.TandCList;
-            modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-            modalRef.componentInstance.DocumentSid = this.SupplierTdsMappingSid;
+  // openTandC() {
+  //     this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+  //     const payload = { MenuMasterSid: this.currentMenuId };
+  //     this.accountService.getTandCByCondition(payload).subscribe(
+  //       (resp: any) => {
+  //         if (resp.status) {
+  //           this.TandCList = resp.data;
+  //           const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+  //             size: 'lg',
+  //             backdrop: 'static',
+  //             centered: true
+  //           });
+  //           modalRef.componentInstance.terms = this.TandCList;
+  //           modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+  //           modalRef.componentInstance.DocumentSid = this.SupplierTdsMappingSid;
   
-          } else {
-            this.appSettingService.showError('Error loading Terms and Conditions');
-          }
-        },
-        (error) => {
-          this.appSettingService.showError('Error loading Terms and Conditions', error);
-        }
-      );
-    }
+  //         } else {
+  //           this.appSettingService.showError('Error loading Terms and Conditions');
+  //         }
+  //       },
+  //       (error) => {
+  //         this.appSettingService.showError('Error loading Terms and Conditions', error);
+  //       }
+  //     );
+  //   }
   
     openEmail() {
       if (!this.supplierTDSdata) return;

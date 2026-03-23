@@ -254,7 +254,7 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
 
 
   hasAnyDropdownPermission(): boolean {
-  const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
+  const dropdownButtons = ['Edoc', 'Authority', 'Email'];
   return dropdownButtons.some((btn) => this.permissions?.includes(btn));
 }
   // Implement abstract methods from BaseListComponent
@@ -348,12 +348,12 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
         action: 'edoc',
         // condition: this.hasPermission('Edoc')
       },
-      {
-        label: 'Terms & Condition',
-        icon: 'fas fa-clipboard',
-        action: 'terms',
-        // condition: this.hasPermission('Terms and Condition')
-      },
+      // {
+      //   label: 'Terms & Condition',
+      //   icon: 'fas fa-clipboard',
+      //   action: 'terms',
+      //   // condition: this.hasPermission('Terms and Condition')
+      // },
       {
         label: 'Authorize',
         icon: 'fas fa-shield-alt',
@@ -390,9 +390,9 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
       case 'edoc':
         this.openEDoc();
         break;
-      case 'terms':
-        this.openTandC();
-        break;
+      // case 'terms':
+      //   this.openTandC();
+      //   break;
       case 'authority':
         this.openAuthority();
         break;
@@ -938,35 +938,35 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
     modalRef.componentInstance.idValue = this.divisionData?.DivisionMasterSid;
   }
 
-  openTandC() {
-    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
-    const payload = { MenuMasterSid: this.currentMenuId };
-    this.masterService.getTandCByCondition(payload).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          this.TandCList = resp.data;
-          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-            size: 'lg',
-            backdrop: 'static',
-            centered: true,
-          });
-          modalRef.componentInstance.terms = this.TandCList;
-          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-          modalRef.componentInstance.DocumentSid = this.DivisionMasterSid;
-        } else {
-          this.appSettingService.showError(
-            'Error loading Terms and Conditions'
-          );
-        }
-      },
-      (error) => {
-        this.appSettingService.showError(
-          'Error loading Terms and Conditions',
-          error
-        );
-      }
-    );
-  }
+  // openTandC() {
+  //   this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+  //   const payload = { MenuMasterSid: this.currentMenuId };
+  //   this.masterService.getTandCByCondition(payload).subscribe(
+  //     (resp: any) => {
+  //       if (resp.status) {
+  //         this.TandCList = resp.data;
+  //         const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+  //           size: 'lg',
+  //           backdrop: 'static',
+  //           centered: true,
+  //         });
+  //         modalRef.componentInstance.terms = this.TandCList;
+  //         modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+  //         modalRef.componentInstance.DocumentSid = this.DivisionMasterSid;
+  //       } else {
+  //         this.appSettingService.showError(
+  //           'Error loading Terms and Conditions'
+  //         );
+  //       }
+  //     },
+  //     (error) => {
+  //       this.appSettingService.showError(
+  //         'Error loading Terms and Conditions',
+  //         error
+  //       );
+  //     }
+  //   );
+  // }
   openEmail() {
     if (!this.divisionData) return;
     const modalRef = this.modalService.open(EmailEntryComponent, {

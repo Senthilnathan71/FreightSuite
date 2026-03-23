@@ -185,6 +185,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   yardList: any[] = [];
   TandCList: any[] = [];
   isSaving : boolean = false;
+  isTermsAndConditionsEnabled: boolean = true;
   decimalAfterPrecision = 3;
   chargeList: any[] = [];
   filteredDestinationAgents: any[] = [];
@@ -402,6 +403,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     this.currentCompany = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
     this.countryOfCompany = this.currentCompany?.CountryName;
     this.currentBranch = this.appSettingsService.decrypt(localStorage.getItem('selected-branch'));
+    this.loadTermsAndConditionsConfig();
     const storedMenuId = sessionStorage.getItem('currentMenuId');
     this.mps.init().subscribe();
 
@@ -454,6 +456,36 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
         this.syncFormValueWithContainerActivityComponent();
       });
 
+  }
+
+  private loadTermsAndConditionsConfig(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+      this.isTermsAndConditionsEnabled = true;
+      return;
+    }
+
+    this.masterService.getConfigurationValue(companyId, 'TermsandConditions').subscribe({
+      next: (resp: any) => {
+        const rawValue = resp?.ConfigurationValue ?? resp?.value ?? resp;
+        this.isTermsAndConditionsEnabled = this.parseConfigBoolean(rawValue, true);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        // Default to enabled if config fetch fails
+        this.isTermsAndConditionsEnabled = true;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private parseConfigBoolean(value: any, defaultValue: boolean): boolean {
+    if (value === true || value === false) return value;
+    if (value === null || value === undefined) return defaultValue;
+    const normalized = String(value).trim().toUpperCase();
+    if (['Y', 'YES', 'TRUE', '1'].includes(normalized)) return true;
+    if (['N', 'NO', 'FALSE', '0'].includes(normalized)) return false;
+    return defaultValue;
   }
 
   // ===== UNSAVED CHANGES DETECTION ===== //
@@ -4828,21 +4860,33 @@ findElementByTextContent(selector: string, text: string): Element | null {
        Carrier: carrier,
        DocumentSid: this.masterJobData?.MasterJobSid,
        };
+    const openModal = (terms: any[]) => {
+      const modelRef = this.modalService.open(TermsAndConditionsComponent, {
+        size: 'lg',
+        backdrop: 'static',
+        centered: true,
+      });
+      modelRef.componentInstance.terms = terms || [];
+      modelRef.componentInstance.MenuMasterSid = this.currentMenuId;
+      modelRef.componentInstance.DocumentSid = this.masterJobData?.MasterJobSid;
+      modelRef.componentInstance.DepartmentMasterSid = departmentSid;
+      modelRef.componentInstance.POL = pol;
+      modelRef.componentInstance.POD = pod;
+      modelRef.componentInstance.Carrier = carrier;
+      modelRef.componentInstance.loadAllOnGet = !this.isTermsAndConditionsEnabled;
+    };
+
+    // If disabled by config, don't auto-load defaults. User can click "Get" inside modal.
+    if (!this.isTermsAndConditionsEnabled) {
+      this.TandCList = [];
+      openModal(this.TandCList);
+      return;
+    }
+
     this.masterService.getTandCByCondition(payload).subscribe((resp: any) => {
       if (resp.status) {
         this.TandCList = resp.data;
-        const modelRef = this.modalService.open(TermsAndConditionsComponent, {
-          size: 'lg',
-          backdrop: 'static',
-          centered: true,
-        });
-        modelRef.componentInstance.terms = this.TandCList;
-        modelRef.componentInstance.MenuMasterSid = this.currentMenuId;
-        modelRef.componentInstance.DocumentSid = this.masterJobData?.MasterJobSid;
-        modelRef.componentInstance.DepartmentMasterSid = departmentSid;
-        modelRef.componentInstance.POL = pol;
-        modelRef.componentInstance.POD = pod;
-        modelRef.componentInstance.Carrier = carrier;
+        openModal(this.TandCList);
       } else {
         this.appSettingService.showError('Error loading Terms and Conditions');
       }

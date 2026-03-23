@@ -93,6 +93,7 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
   isPosted = false;
   todayDateInNgbStruct!: NgbDateStruct;
   isSaving = false;
+  isTermsAndConditionsEnabled: boolean = true;
   isAutoPosting: boolean = true;
   formatCurrencyAmountBeforeConcludingLocal: boolean = true;
   currentMenuId: number;
@@ -195,6 +196,7 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
       }
     this.loadUserAndCompanyData();
     this.mps.init().subscribe();
+    this.loadTermsAndConditionsConfig();
     this.checkVoucherPostingMechanism();
     this.initializeForm();
     this.setTodayDate();
@@ -208,6 +210,34 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
       this.subscribeToFormChanges();
     }, 0);
   }
+  }
+
+  private loadTermsAndConditionsConfig(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+      this.isTermsAndConditionsEnabled = true;
+      return;
+    }
+
+    this.masterService.getConfigurationValue(companyId, 'TermsandConditions').subscribe({
+      next: (resp: any) => {
+        const rawValue = resp?.ConfigurationValue ?? resp?.value ?? resp;
+        this.isTermsAndConditionsEnabled = this.parseConfigBoolean(rawValue, true);
+      },
+      error: () => {
+        // Default to enabled if config fetch fails
+        this.isTermsAndConditionsEnabled = true;
+      }
+    });
+  }
+
+  private parseConfigBoolean(value: any, defaultValue: boolean): boolean {
+    if (value === true || value === false) return value;
+    if (value === null || value === undefined) return defaultValue;
+    const normalized = String(value).trim().toUpperCase();
+    if (['Y', 'YES', 'TRUE', '1'].includes(normalized)) return true;
+    if (['N', 'NO', 'FALSE', '0'].includes(normalized)) return false;
+    return defaultValue;
   }
 
   @HostListener('window:beforeunload', ['$event'])
@@ -2409,18 +2439,27 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
       MenuMasterSid: this.currentMenuId,
       DocumentSid: this.voucherData?.VoucherHeaderSid
      };
-    this.masterService.getTandCByCondition(payload).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          this.TandCList = resp.data;
-          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+     const openModal = (terms: any[]) => {
+      const modalRef = this.modalService.open(TermsAndConditionsComponent, {
             size: 'lg',
             backdrop: 'static',
             centered: true
           });
-          modalRef.componentInstance.terms = this.TandCList;
+          modalRef.componentInstance.terms = terms || [];
           modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
           modalRef.componentInstance.DocumentSid = this.voucherData?.VoucherHeaderSid;
+          modalRef.componentInstance.loadAllOnGet = !this.isTermsAndConditionsEnabled;
+     };
+     if (!this.isTermsAndConditionsEnabled) {
+      this.TandCList = [];
+      openModal(this.TandCList);
+      return;
+    }
+    this.masterService.getTandCByCondition(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          openModal(this.TandCList);
         } else {
           this.appSettingService.showError('Error loading Terms and Conditions');
         }

@@ -927,35 +927,35 @@ export class UserEntryComponent implements OnInit {
     );
   }
 
-  openTandC() {
-    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
-    const payload = { MenuMasterSid: this.currentMenuId };
-    this.masterService.getTandCByCondition(payload).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          this.TandCList = resp.data;
-          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-            size: 'lg',
-            backdrop: 'static',
-            centered: true,
-          });
-          modalRef.componentInstance.terms = this.TandCList;
-          modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-          modalRef.componentInstance.DocumentSid = this.UserMasterSid;
-        } else {
-          this.appSettingService.showError(
-            'Error loading Terms and Conditions'
-          );
-        }
-      },
-      (error) => {
-        this.appSettingService.showError(
-          'Error loading Terms and Conditions',
-          error
-        );
-      }
-    );
-  }
+  // openTandC() {
+  //   this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+  //   const payload = { MenuMasterSid: this.currentMenuId };
+  //   this.masterService.getTandCByCondition(payload).subscribe(
+  //     (resp: any) => {
+  //       if (resp.status) {
+  //         this.TandCList = resp.data;
+  //         const modalRef = this.modalService.open(TermsAndConditionsComponent, {
+  //           size: 'lg',
+  //           backdrop: 'static',
+  //           centered: true,
+  //         });
+  //         modalRef.componentInstance.terms = this.TandCList;
+  //         modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
+  //         modalRef.componentInstance.DocumentSid = this.UserMasterSid;
+  //       } else {
+  //         this.appSettingService.showError(
+  //           'Error loading Terms and Conditions'
+  //         );
+  //       }
+  //     },
+  //     (error) => {
+  //       this.appSettingService.showError(
+  //         'Error loading Terms and Conditions',
+  //         error
+  //       );
+  //     }
+  //   );
+  // }
 
   private findInvalidControlsRecursive(form: FormGroup | FormArray): string[] {
     let invalidControls: string[] = [];

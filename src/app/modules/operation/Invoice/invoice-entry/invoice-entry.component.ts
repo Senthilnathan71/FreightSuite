@@ -135,7 +135,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   currentBranchCityName: string | null;
   salesmanFetched : boolean = false;
   salesmanName : string | null = null;
-
   fyMinDate: NgbDateStruct | null = null;
   fyMaxDate: NgbDateStruct | null = null;
 
@@ -235,6 +234,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   // Declaration not exist in Vendor Invoice
   TandCFetched : boolean = false;
   TandCList: any[] = [];
+  isTermsAndConditionsEnabled: boolean = true;
   isBankFetched : boolean = false;
   bankDetails: any;
   emailForm!: FormGroup;
@@ -371,6 +371,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       this.currentCompany = null;
       this.currentBranch = null;
     }
+    this.loadTermsAndConditionsConfig();
     this.checkVoucherPostingMechanism();
     this.initForm();
     this.loadVoucherPeriods();
@@ -2879,54 +2880,58 @@ isSeaDepartment(): boolean {
   }
   
   openTandC() {
-    this.currentMenuId = Number(localStorage.getItem('currentMenuId'));
-    if (this.currentCompany?.CompanyMasterSid === 13) {
-    const staticTerms = [
-      { sno: 1, TandC: 'If any discrepancy is noticed in the invoice, kindly inform us in writing within 7 days, otherwise the above amount will be considered as correct.' },
-      { sno: 2, TandC: 'Please mention our invoice number(s) on your remittance instructions.' },
-    ];
-    const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-      size: 'lg',
-      backdrop: 'static',
-      centered: true,
-    });
-    modalRef.componentInstance.terms = staticTerms;
-    modalRef.componentInstance.MenuMasterSid = this.invoiceData?.voucherTypeMaster?.MenuMasterSid;
-    modalRef.componentInstance.DocumentSid = this.headerId;
-    return;
-  }
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+    const menuMasterSid =
+      this.invoiceData?.voucherTypeMaster?.MenuMasterSid ?? this.currentMenuId;
+    const documentSid = this.invoiceData?.VoucherHeaderSid ?? this.headerId;
 
-    // If already fetched simply open the modal
-    if(this.TandCFetched){
+    const payload = {
+      MenuMasterSid: menuMasterSid,
+      DocumentSid: documentSid,
+    };
+
+    const openModal = (terms: any[]) => {
       const modalRef = this.modalService.open(TermsAndConditionsComponent, {
         size: 'lg',
         backdrop: 'static',
         centered: true,
       });
-      modalRef.componentInstance.terms = this.TandCList;
-      modalRef.componentInstance.MenuMasterSid = this.invoiceData?.voucherTypeMaster?.MenuMasterSid;
-      modalRef.componentInstance.DocumentSid = this.headerId;
+      modalRef.componentInstance.terms = terms || [];
+      modalRef.componentInstance.MenuMasterSid = menuMasterSid;
+      modalRef.componentInstance.DocumentSid = documentSid;
+      modalRef.componentInstance.loadAllOnGet = !this.isTermsAndConditionsEnabled;
+    };
+
+    if (this.currentCompany?.CompanyMasterSid === 13) {
+      const staticTerms = [
+        { sno: 1, TandC: 'If any discrepancy is noticed in the invoice, kindly inform us in writing within 7 days, otherwise the above amount will be considered as correct.' },
+        { sno: 2, TandC: 'Please mention our invoice number(s) on your remittance instructions.' },
+      ];
+      openModal(staticTerms);
       return;
     }
 
-    const payload = {
-      MenuMasterSid: this.invoiceData?.voucherTypeMaster?.MenuMasterSid,
-      DocumentSid: this.invoiceData?.VoucherHeaderSid
+    // If disabled by config, don't auto-load defaults. User can click "Get" inside modal.
+    if (!this.isTermsAndConditionsEnabled) {
+      this.TandCList = [];
+      this.TandCFetched = true;
+      openModal(this.TandCList);
+      return;
     }
+
+    // If already fetched simply open the modal
+    if (this.TandCFetched) {
+      openModal(this.TandCList);
+      return;
+    }
+
     // If not fetched then fetch and open the modal
     this.masterService.getTandCByCondition(payload).subscribe(
       (resp: any) => {
         if (resp.status) {
           this.TandCFetched = true;
           this.TandCList = resp.data;
-          const modalRef = this.modalService.open(TermsAndConditionsComponent, {
-            size: 'lg',
-            backdrop: 'static',
-            centered: true,
-          });
-          modalRef.componentInstance.terms = this.TandCList;
-          modalRef.componentInstance.MenuMasterSid = this.invoiceData?.voucherTypeMaster?.MenuMasterSid;
-          modalRef.componentInstance.DocumentSid = this.invoiceData?.VoucherHeaderSid;
+          openModal(this.TandCList);
         } else {
           this.appSettingService.showError(
             'Error loading Terms and Conditions'
@@ -2942,8 +2947,42 @@ isSeaDepartment(): boolean {
     );
   }
 
+
+  private loadTermsAndConditionsConfig(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+      this.isTermsAndConditionsEnabled = true;
+      return;
+    }
+
+    this.masterService.getConfigurationValue(companyId, 'TermsandConditions').subscribe({
+      next: (resp: any) => {
+        const rawValue = resp?.ConfigurationValue ?? resp?.value ?? resp;
+        this.isTermsAndConditionsEnabled = this.parseConfigBoolean(rawValue, true);
+      },
+      error: () => {
+        // Default to enabled if config fetch fails
+        this.isTermsAndConditionsEnabled = true;
+      }
+    });
+  }
+
+  private parseConfigBoolean(value: any, defaultValue: boolean): boolean {
+    if (value === true || value === false) return value;
+    if (value === null || value === undefined) return defaultValue;
+    const normalized = String(value).trim().toUpperCase();
+    if (['Y', 'YES', 'TRUE', '1'].includes(normalized)) return true;
+    if (['N', 'NO', 'FALSE', '0'].includes(normalized)) return false;
+    return defaultValue;
+  }
+
   async getAndStoreTandC() : Promise<void> {
     try {
+      if (!this.isTermsAndConditionsEnabled) {
+        this.TandCList = [];
+        this.TandCFetched = true;
+        return;
+      }
       const result = await firstValueFrom(this.getTandC());
       this.TandCFetched = true;
       if(result.status){
