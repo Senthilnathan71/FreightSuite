@@ -64,7 +64,7 @@
           <span>Logs</span>
         </button>
       </div>
-      <div class="action-group" *ngIf="isEditMode">
+      <div class="action-group" *ngIf="isEditMode && !otherForm.get('SIConfirmationDate')?.value">
         <button class="btn btn-light-secondary btn-sm dofi-min-w-80" style="white-space: nowrap;"
           (click)="sendSIMail()" [disabled]="isSendingSIMail">
           <i class="fas me-1" [ngClass]="isSendingSIMail ? 'fa-spinner fa-spin' : 'fa-envelope'"></i>
