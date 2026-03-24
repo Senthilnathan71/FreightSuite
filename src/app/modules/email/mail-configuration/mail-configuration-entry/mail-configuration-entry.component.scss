@@ -1,25 +1,86 @@
 // Mail Configuration Card Grid + Detail Form styles
 
+.page-header {
+  background: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  padding: 0 0.75rem;
+}
+
+.header-icon {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0dcaf0, #3dd5f3);
+  color: #ffffff;
+  box-shadow: 0 6px 12px rgba(13, 202, 240, 0.25);
+}
+
+.btn-pill {
+  border-radius: 999px;
+  padding: 0.3rem 0.85rem;
+}
+
 .mail-config-card {
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
+  border: 1px solid #e6eaf1;
+  border-radius: 12px;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   cursor: default;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05);
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
   }
+}
 
-  .card-header {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #eee;
-    border-radius: 8px 8px 0 0;
-  }
+.mail-card-header {
+  background: linear-gradient(135deg, #f9fbff 0%, #eef6ff 100%);
+  border-bottom: 1px solid #eef2f7;
+  padding: 0.55rem 0.85rem;
+}
 
-  .card-footer {
-    border-top: 1px solid #eee;
-  }
+.mail-title {
+  font-size: 0.88rem;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  display: inline-block;
+  border-radius: 999px;
+}
+
+.status-badge {
+  font-size: 0.7rem;
+}
+
+.mail-card-body {
+  font-size: 0.8rem;
+  padding: 0.6rem 0.85rem;
+}
+
+.mail-card-meta {
+  font-size: 0.75rem;
+}
+
+.mail-card-tags .badge {
+  font-size: 0.7rem;
+}
+
+.mail-card-subject {
+  font-size: 0.75rem;
+}
+
+.mail-card-footer {
+  border-top: 1px solid #eef2f7;
+  background: #ffffff;
+  padding: 0.4rem 0.7rem;
+  border-radius: 0 0 12px 12px;
 }
 
 .card-active {
