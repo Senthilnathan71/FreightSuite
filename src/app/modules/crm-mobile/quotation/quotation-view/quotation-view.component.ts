@@ -346,6 +346,13 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
           dataType: 'string'
         },
         {
+          key: 'createdBy',
+          label: 'Created By',  
+          sortable: true, 
+          filterable: true,
+          visible: true,
+        },
+        {
           key: 'status',
           label: 'Status',
           sortable: true,

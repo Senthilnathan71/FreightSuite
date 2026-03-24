@@ -61,7 +61,7 @@
                     <span>Logs</span>
                 </button>
             </div>
-               <div class="action-group" *ngIf="isEditMode">
+            <div class="action-group" *ngIf="isEditMode">
                 <div ngbDropdown container="body" class="d-inline-block">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" id="dropdownUpload" ngbDropdownToggle
                         [disabled]="!masterJobData ||  masterJobForm.dirty" title="{{ masterJobData ? 'Print Master Job' : 'Load Job data to enable print' }}">
@@ -90,6 +90,27 @@
                             <button class="text-dark" ngbDropdownItem (click)="reportLoadingPlan()">Loading Plan</button>
                     </div>
                 </div>
+            </div>
+            <div class="action-group pull-to-import-group" *ngIf="canPullToImportBranch">
+                <dofi-searchable-dropdown
+                    class="me-2"
+                    [items]="availableTransferBranches"
+                    [(ngModel)]="selectedTransferBranchSid"
+                    [displayFields]="branchLookupConfig.displayFields"
+                    [displayLabels]="branchLookupConfig.displayLabels"
+                    [labelFields]="branchLookupConfig.labelFields"
+                    bindValue="BranchMasterSid"
+                    placeholder="Destination Branch"
+                    [clearable]="false">
+                </dofi-searchable-dropdown>
+                <button
+                    class="btn btn-outline-info btn-sm"
+                    (click)="pullMasterJobToImportBranch()"
+                    [disabled]="masterJobForm.dirty || isPullingToImportBranch || !selectedTransferBranchSid"
+                    >
+                    <i class="fas fa-download me-1"></i>
+                    <span>{{ isPullingToImportBranch ? 'Pulling...' : 'Pull To Import' }}</span>
+                </button>
             </div>
             <div class="action-group" >
                 <div ngbDropdown container="body" class="d-inline-block">

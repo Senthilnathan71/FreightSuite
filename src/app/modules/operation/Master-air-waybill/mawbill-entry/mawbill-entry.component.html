@@ -671,7 +671,8 @@
                                                     [displayFields]="customerLookupConfig.displayFields"
                                                     [displayLabels]="customerLookupConfig.displayLabels"
                                                     [labelFields]="customerLookupConfig.labelFields"
-                                                    bindLabel="CustomerName" bindValue="CustomerName">
+                                                    bindLabel="CustomerName" bindValue="CustomerName"
+                                                    (itemSelected)="onCarrierDropdownSelection($event)">
                                                 </dofi-searchable-dropdown>
                                                 <label class="input-label">Carrier<span
                                                         class="text-danger"></span></label>

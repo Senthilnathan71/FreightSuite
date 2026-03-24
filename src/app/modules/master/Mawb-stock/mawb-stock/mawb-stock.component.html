@@ -154,8 +154,11 @@
                                 <label for="MasterBillNumber" class="input-label">Airline No. <span
                                         class="text-danger fw-bold">*</span></label>
                                 <div class="error-message">
-                                    @if(mawbForm.get('MasterBillNumber')?.touched && 
-                                    mawbForm.get('MasterBillNumber')?.invalid){
+                                    @if(mawbForm.get('MasterBillNumber')?.hasError('duplicatePrefix')){
+                                    <span>Airline No already exists</span>
+                                    }
+                                    @else if(mawbForm.get('MasterBillNumber')?.touched && 
+                                    mawbForm.get('MasterBillNumber')?.hasError('required')){
                                     <span>Required</span>
                                     }
                                     @else if(mawbForm.get('MasterBillNumber')?.hasError('pattern')){

@@ -172,6 +172,8 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   filteredPOL: any[] = [];
   filteredPOD: any[] = [];
   carrierList: any[] = [];
+  private previousCarrierName: string | null = null;
+  private skipNextCarrierValueChange = false;
   agentList: any[] = [];
   forwarderList: any[] = [];
   cfsList: any[] = [];
@@ -382,18 +384,21 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
         // this.syncFormValueWithContainerActivityComponent();
       });
   this.masterJobForm.get('CarrierName')?.valueChanges.subscribe((carrierName) => {
-    if(this.selectedDepartmentType === "AIR"){
-      const selectedCarrier = this.carrierList.find(carrier => carrier.CustomerName === carrierName);
-      this.onCarrierChangeForAir(selectedCarrier);
-      if (this.selectedDepartment?.ExportImport?.toUpperCase() === 'EXPORT' && !this.isMawbStockAllocationEnabled) {
-        this.loadMawbStock({
-          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-          BranchMasterSid: this.currentBranch?.BranchMasterSid,
-          voyages: [{ CarrierName: carrierName || null }],
-          houseJob: this.masterAirWayData?.houseJob || []
-        });
-      }
+    if (this.selectedDepartmentType !== 'AIR') {
+      return;
     }
+
+    if (this.skipNextCarrierValueChange) {
+      this.skipNextCarrierValueChange = false;
+      return;
+    }
+
+    const selectedCarrier = this.carrierList.find(
+      carrier => carrier.CustomerName?.trim().toLowerCase() === carrierName?.trim().toLowerCase()
+    );
+    const carrierChanged = this.normalizeCarrierName(this.previousCarrierName) !== this.normalizeCarrierName(carrierName);
+
+    this.handleCarrierSelectionChange(selectedCarrier, carrierName, carrierChanged && !!this.previousCarrierName);
   });
   }
 
@@ -457,6 +462,47 @@ onCarrierChangeForAir(carrier: any): void {
     // Carrier doesn't have an AirlineCode
     this.masterJobForm.get('VesselName')?.setValue(null);
   }
+}
+
+onCarrierDropdownSelection(carrier: any): void {
+  if (this.selectedDepartmentType !== 'AIR') {
+    return;
+  }
+
+  this.skipNextCarrierValueChange = true;
+  const carrierName = carrier?.CustomerName ?? null;
+  const carrierChanged = this.normalizeCarrierName(this.previousCarrierName) !== this.normalizeCarrierName(carrierName);
+
+  this.handleCarrierSelectionChange(carrier, carrierName, carrierChanged);
+}
+
+private handleCarrierSelectionChange(carrier: any, carrierName: string | null, clearSelectedMawb: boolean): void {
+  if (clearSelectedMawb) {
+    this.clearSelectedMawb();
+  }
+
+  this.onCarrierChangeForAir(carrier);
+
+  if (this.selectedDepartment?.ExportImport?.toUpperCase() === 'EXPORT' && !this.isMawbStockAllocationEnabled) {
+    this.loadMawbStock({
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      voyages: [{ CarrierName: carrierName || null }],
+      houseJob: this.masterAirWayData?.houseJob || []
+    });
+  }
+
+  this.previousCarrierName = carrierName || null;
+}
+
+private clearSelectedMawb(): void {
+  this.masterJobForm.get('MBLNo')?.reset();
+  this.mawbStockList = [];
+  this.mawbStockSource = 'NONE';
+}
+
+private normalizeCarrierName(carrierName: string | null | undefined): string {
+  return (carrierName || '').trim().toLowerCase();
 }
   ngOnDestroy(): void {
     this.destroy$.next();

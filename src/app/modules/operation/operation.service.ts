@@ -767,6 +767,20 @@ processProductUpload(payload: any): Observable<any> {
     );
   }
 
+  pullMasterJobToImportBranch(payload: {
+    MasterJobSid: number;
+    CompanyMasterSid: number;
+    SourceBranchMasterSid: number;
+    DestinationBranchMasterSid: number;
+    CreatedBy: string;
+  }) {
+    return this.http.post<{ data: any }>('master-job/pull-to-import-branch', payload).pipe(
+      map((resp) => {
+        return resp;
+      })
+    );
+  }
+
   detachBooking(BookingHeaderSid: number,userEmail: string) {
     return this.http.delete<{ data: any }>(`master-job/detach/${BookingHeaderSid}`,{
       params: { email: userEmail }
