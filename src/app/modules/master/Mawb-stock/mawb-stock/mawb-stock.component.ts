@@ -70,6 +70,7 @@ export class MawbStockComponent implements OnInit{
     currentCompany: any;
     currentBranch:any;
     MenuMasterSid: any;
+    private readonly duplicatePrefixMessage = 'Airline No already exists for this company and branch.';
   constructor(  
     private fb: FormBuilder,
       private masterService: MasterService,
@@ -239,7 +240,7 @@ export class MawbStockComponent implements OnInit{
     //   );
     // }
   
-    initForm(): void {
+  initForm(): void {
       const today = getDefaultTodayDate();
       this.mawbForm = this.fb.group({
         AirwayBillType: ['Airline', Validators.required],
@@ -267,6 +268,15 @@ export class MawbStockComponent implements OnInit{
   
   this.mawbForm.statusChanges.subscribe(() => {
     this.updateSaveButtonState();
+  });
+
+  ['AirwayBillType', 'Agent', 'MasterBillNumber', 'MAWBSerial', 'NumberofMAWB'].forEach((controlName) => {
+    this.mawbForm.get(controlName)?.valueChanges.subscribe(() => {
+      this.generatedAWBList = [];
+      if (controlName === 'MasterBillNumber') {
+        this.clearDuplicatePrefixError();
+      }
+    });
   });
 
   this.mawbForm.get('StockStatus')?.valueChanges.subscribe(() => {
@@ -462,13 +472,41 @@ updateSaveButtonState(): void {
         this.appSettingsService.showSuccess(resp.message);
         this.router.navigate(['master/mawb-stock/list']);
       } else {
+        this.applyServerValidation(resp.message);
         this.appSettingsService.showError(resp.message);
+        this.btnDisable = false;
       }
     }
   
     handleError(error: any): void {
-      this.appSettingsService.showError(error.message);
+      const message = error?.error?.message || error?.message || 'Something went wrong.';
+      this.applyServerValidation(message);
+      this.appSettingsService.showError(message);
+      this.btnDisable = false;
       console.error('Error:', error);
+    }
+
+    private applyServerValidation(message: string): void {
+      if (!message) return;
+
+      if (message.includes(this.duplicatePrefixMessage)) {
+        const masterBillNumberControl = this.mawbForm.get('MasterBillNumber');
+        masterBillNumberControl?.setErrors({
+          ...(masterBillNumberControl.errors || {}),
+          duplicatePrefix: true
+        });
+        masterBillNumberControl?.markAsTouched();
+      }
+    }
+
+    private clearDuplicatePrefixError(): void {
+      const masterBillNumberControl = this.mawbForm.get('MasterBillNumber');
+      if (!masterBillNumberControl?.hasError('duplicatePrefix')) {
+        return;
+      }
+
+      const { duplicatePrefix, ...remainingErrors } = masterBillNumberControl.errors || {};
+      masterBillNumberControl.setErrors(Object.keys(remainingErrors).length ? remainingErrors : null);
     }
   
     showInfo(): void {
