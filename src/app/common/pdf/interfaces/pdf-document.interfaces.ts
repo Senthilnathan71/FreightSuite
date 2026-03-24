@@ -613,6 +613,25 @@ export interface CargoArrivalChargePdfRow {
 }
 
 // =====================
+// EXIT FORM PDF DATA
+// =====================
+export interface ExitFormPdfData extends PdfDocumentBase {
+  reportTitle: string;
+  exporterName?: string;
+  hblNo?: string;
+  hblDate?: Date | string;
+  countryOfOrigin?: string;
+  pointOfExit?: string;
+  destination?: string;
+  quantities: string[];
+  commodityDescription?: string;
+  totalQuantity?: string;
+  totalWeight?: string;
+  containerNumbers?: string;
+  customsSealNumbers?: string;
+}
+
+// =====================
 // DELIVERY ORDER PDF DATA
 // =====================
 export interface DeliveryOrderPdfData extends PdfDocumentBase {

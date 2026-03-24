@@ -32,12 +32,12 @@
         </div>
 
         <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" id="detailRadio" name="viewMode" (change)="viewMode = 'detail'"
+            <input class="form-check-input cursor-pointer" type="radio" id="detailRadio" name="viewMode" (change)="viewMode = 'detail'"
                 [checked]="viewMode === 'detail'">
             <label class="form-check-label" for="detailRadio">Detail</label>
         </div>
         <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" id="summaryRadio" name="viewMode"
+            <input class="form-check-input cursor-pointer" type="radio" id="summaryRadio" name="viewMode"
                 (change)="viewMode = 'summary'" [checked]="viewMode === 'summary'">
             <label class="form-check-label" for="summaryRadio">Summary</label>
         </div>

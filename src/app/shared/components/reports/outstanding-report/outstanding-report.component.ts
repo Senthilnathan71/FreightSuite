@@ -221,7 +221,7 @@ export class OutstandingReportComponent {
           { value: this.formatNumber(item?.signedOutstandingCurrency || 0) },
           { value: this.formatNumber(item?.signedOutstandingLocal || 0) },
           { value: this.formatNumber(item?.cumulativeOutstanding || 0) },
-          { value: item?.ageingDays || 0 }
+          { value: item?.ageingDays || 0 , alignment:{horizontal:'center'} },
         ],
         style: 'data'
       });

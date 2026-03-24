@@ -92,7 +92,7 @@ export class VatPayableComponent {
       const cells: ExcelCell[] = [
         { value: this.formatDate(item?.voucherDate) },
         { value: item?.subledgerName || '' },
-        { value: item?.panType || '' },
+        { value: item?.panType || '' , alignment:{horizontal:'left'} },
         { value: item?.vocuherType || '' },   // same as HTML
         { value: item?.voucherNo || '' },
         { value: supplierRef },
@@ -117,12 +117,7 @@ export class VatPayableComponent {
 
     rows.push({
       cells: [
-        {value:''},
-        {value:''},
-        {value:''},
-        {value: ''},
-        {value:''},
-        { value: 'TOTAL'},
+        { value: 'TOTAL' , alignment:{horizontal:'right'} , colspan:6},
         { value: this.formatNumber(totalTaxable) },
         { value: this.formatNumber(totalTax) }
       ],

@@ -92,8 +92,8 @@ getExcelData(): ComplexReportExportConfig {
     const cells: ExcelCell[] = [
       { value: this.formatDate(item?.voucherDate) },
       { value: item?.subledgerName || '' },
-      { value: item?.panType || '' },
-      { value: item?.vocuherType || '' },     // ✅ matches HTML
+      { value: item?.panType || '' , alignment:{horizontal:'left'} },
+      { value: item?.vocuherType || '' },     
       { value: item?.voucherNo || '' },
       { value: supplierRef },
       { value: this.formatNumber(item?.taxableAmt) },
@@ -117,12 +117,7 @@ getExcelData(): ComplexReportExportConfig {
 
   rows.push({
     cells: [
-      {value:''},
-      {value:''},
-      {value:''},
-      {value:''},
-      {value:''},
-      { value: 'TOTAL'},
+      { value: 'TOTAL' , colspan:6, alignment:{horizontal:'right'} },
       { value: this.formatNumber(totalTaxable) },
       { value: this.formatNumber(totalTax) }
     ],

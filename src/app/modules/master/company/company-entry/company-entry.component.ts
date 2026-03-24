@@ -850,7 +850,7 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 			postalCode: formValue.branchPostalCode,
 			webSite: formValue.branchWebSite,
 			phoneCode: formValue.branchPhoneCode,
-			phoneNumber: this.withDialCode(formValue.branchPhoneNumber, formValue.branchPhoneCode),
+			phoneNumber: formValue.branchPhoneNumber,
 			email: formValue.branchEmail,
 			timeZone: formValue.branchTimeZone,
 			remarks: formValue.branchRemarks,

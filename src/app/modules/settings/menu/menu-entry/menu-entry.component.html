@@ -193,47 +193,51 @@
         </div>
     </div>
 
-    <div class="col-md-auto">
-        <div class="card">
-            <div class="card-header-title d-flex align-items-center gap-2">
-                <i class="fas fa-lock fs-4"></i>
-                <h5 class="card-titlename mb-0">Menu Permission</h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-sm dofi-max-w-200 mb-0">
+    <div class="col-12 px-0">
+        <div class="row permission-inline-layout g-3 mx-0">
+            <div class="col-lg-4 col-md-5">
+                <div class="card permission-inline-card h-100">
+                    <div class="permission-inline-card__header">
+                        <div class="permission-inline-card__title">
+                            <span class="permission-inline-card__icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </span>
+                            <div>
+                                <h5 class="mb-0">Menu Permission</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body permission-inline-card__body">
+                        <div class="table-responsive">
+                            <table class="table permission-inline-table permission-inline-table--menu mb-0">
                         <thead>
-                            <tr class="">
-                                <td class="bg-info text-white px-2">Add</td>
-                                <td class="bg-info text-white px-2">Modify</td>
-                                <td class="bg-info text-white px-2">View</td>
-                                <td class="bg-info text-white px-2">Delete</td>
+                            <tr>
+                                <td>Add</td>
+                                <td>Modify</td>
+                                <td>View</td>
+                                <td>Delete</td>
                             </tr>
                         </thead>
                         <tbody [formGroup]="menuPermissionsGroup">
                             <tr>
                                 <td class="text-center">
-                                    <div class="form-check form-check-inline me-0 ms-2">
-                                        <input type="checkbox" formControlName="add" class="form-check-input">
-                                        <!-- <label for="add1" class="form-check-label">&nbsp;</label> -->
+                                    <div class="form-check form-check-inline permission-inline-check">
+                                        <input type="checkbox" formControlName="add" class="form-check-input permission-inline-check__input">
                                     </div>
                                 </td>
                                 <td class="text-center">
-                                    <div class="form-check form-check-inline me-0 ms-2">
-                                        <input type="checkbox" formControlName="edit" class="form-check-input">
-                                        <!-- <label for="modify1" class="form-check-label">&nbsp;</label> -->
+                                    <div class="form-check form-check-inline permission-inline-check">
+                                        <input type="checkbox" formControlName="edit" class="form-check-input permission-inline-check__input">
                                     </div>
                                 </td>
                                 <td class="text-center">
-                                    <div class="form-check form-check-inline me-0 ms-2">
-                                        <input type="checkbox" formControlName="view" class="form-check-input">
-                                        <!-- <label for="modify1" class="form-check-label">&nbsp;</label> -->
+                                    <div class="form-check form-check-inline permission-inline-check">
+                                        <input type="checkbox" formControlName="view" class="form-check-input permission-inline-check__input">
                                     </div>
                                 </td>
                                 <td class="text-center">
-                                    <div class="form-check form-check-inline me-0 ms-2">
-                                        <input type="checkbox" formControlName="delete" class="form-check-input">
-                                        <!-- <label for="delete1" class="form-check-label">&nbsp;</label> -->
+                                    <div class="form-check form-check-inline permission-inline-check">
+                                        <input type="checkbox" formControlName="delete" class="form-check-input permission-inline-check__input">
                                     </div>
                                 </td>
                             </tr>
@@ -242,73 +246,76 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="col-md-auto">
-        <div class="card">
-            <div class="card-header-title d-flex align-items-center gap-2">
-                <i class="fas fa-lock fs-4"></i>
-                <h5 class="card-titlename mb-0">Other Permission</h5>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-sm dofi-max-w-450 mb-0">
+
+            <div class="col-lg-8 col-md-7">
+                <div class="card permission-inline-card h-100">
+                    <div class="permission-inline-card__header">
+                        <div class="permission-inline-card__title">
+                            <span class="permission-inline-card__icon permission-inline-card__icon--soft">
+                                <i class="fas fa-sliders-h"></i>
+                            </span>
+                            <div>
+                                <h5 class="mb-0">Other Permission</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body permission-inline-card__body">
+                        <div class="table-responsive">
+                            <table class="table permission-inline-table permission-inline-table--other mb-0">
                         <thead>
-                            <tr class="">
-                                <td class="bg-info text-white px-2 text-center">Edoc</td>
-                                <td class="bg-info text-white px-2 text-center">T&C</td>
-                                <td class="bg-info text-white px-2 text-center">Authority</td>
-                                <td class="bg-info text-white px-2 text-center">Email</td>
-                                <td class="bg-info text-white px-2 text-center">follow up</td>
-                                <td class="bg-info text-white px-2 text-center">Doc.Ref</td>
+                            <tr>
+                                <td class="text-center">Edoc</td>
+                                <td class="text-center">T&C</td>
+                                <td class="text-center">Authority</td>
+                                <td class="text-center">Email</td>
+                                <td class="text-center">Follow Up</td>
+                                <td class="text-center">Doc.Ref</td>
                             </tr>
                         </thead>
                         <tbody [formGroup]="otherPermissionsGroup">
                             <tr>
                                 <td class="text-center">
-                                    <div class="form-check form-check-inline me-0 ms-2">
-                                        <input type="checkbox" formControlName="edoc" class="form-check-input">
-                                        <!-- <label for="eDoc1" class="form-check-label">&nbsp;</label> -->
+                                    <div class="form-check form-check-inline permission-inline-check">
+                                        <input type="checkbox" formControlName="edoc" class="form-check-input permission-inline-check__input">
                                     </div>
                                 </td>
                                 <td class="text-center">
-                                    <div class="form-check form-check-inline me-0 ms-2">
+                                    <div class="form-check form-check-inline permission-inline-check">
                                         <input type="checkbox" formControlName="terms_and_condition"
-                                            class="form-check-input">
-                                        <!-- <label for="termsAndCondition1" class="form-check-label">&nbsp;</label> -->
+                                            class="form-check-input permission-inline-check__input">
                                     </div>
                                 </td>
                                 <td class="text-center">
-                                    <div class="form-check form-check-inline me-0 ms-2">
+                                    <div class="form-check form-check-inline permission-inline-check">
                                         <input type="checkbox" formControlName="authority"
-                                            class="form-check-input">
-                                        <!-- <label for="authority1" class="form-check-label">&nbsp;</label> -->
+                                            class="form-check-input permission-inline-check__input">
                                     </div>
                                 </td>
                                 <td class="text-center">
-                                    <div class="form-check form-check-inline me-0 ms-2">
+                                    <div class="form-check form-check-inline permission-inline-check">
                                         <input type="checkbox" formControlName="email"
-                                            class="form-check-input">
-                                        <!-- <label for="eMail1" class="form-check-label">&nbsp;</label> -->
+                                            class="form-check-input permission-inline-check__input">
                                     </div>
                                 </td>
                                 <td class="text-center">
-                                    <div class="form-check form-check-inline me-0 ms-2">
+                                    <div class="form-check form-check-inline permission-inline-check">
                                         <input type="checkbox" formControlName="followUp"
-                                            class="form-check-input">
-                                        <!-- <label for="followUp" class="form-check-label">&nbsp;</label> -->
+                                            class="form-check-input permission-inline-check__input">
                                     </div>
                                 </td>
                                 <td class="text-center">
-                                    <div class="form-check form-check-inline me-0 ms-2">
+                                    <div class="form-check form-check-inline permission-inline-check">
                                         <input type="checkbox" formControlName="docRef"
-                                            class="form-check-input">
+                                            class="form-check-input permission-inline-check__input">
                                     </div>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
             </div>
         </div>
     </div>
