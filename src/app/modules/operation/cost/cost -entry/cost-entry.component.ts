@@ -56,7 +56,8 @@ import { ModalService } from 'src/app/core/common-modal/common-modal.service';
   templateUrl: './cost-entry.component.html',
   styleUrls: ['./cost-entry.component.scss'],
   providers: [
-    CustomDatePipe
+    CustomDatePipe,
+    TaxCalculationService
   ]
 })
 export class CostEntryComponent implements OnInit, OnDestroy {
@@ -121,6 +122,11 @@ export class CostEntryComponent implements OnInit, OnDestroy {
     { id: 'REIMB', name: 'Reimbursement' },
     { id: 'BOS', name: 'Bill of Supply' },
     { id: 'NONGST', name: 'Non GST/Zero' },
+  ];
+
+  exportGstTypes = [
+    { id: 'EXPWP', name: 'Export With Payment' },
+    { id: 'EXPWOP', name: 'Export Without Payment' },
   ];
 
   ModeofStatus = [
@@ -336,6 +342,7 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   billingPartyBranchDetails : any = null;
   billingPartyAddress: string = '';
   billingGST_VAT: string = '';
+  billingIsUnionTerritory: boolean = false;
   billingPartyCurrency: any = null;
   taxGroupList: any[] = [];
   currentCountry: Number;
@@ -351,19 +358,6 @@ export class CostEntryComponent implements OnInit, OnDestroy {
     totalPartyAmount : '',
   }
 
-
-  /**
-   * //NOTE - It is used for hashing a charge's Tax Group with it's Tax Masters 
-   */
-  taxMasterMap : Map<string,any[]> = new Map();
-  buildKey(
-    TaxGroupSid: number,
-    InputOrOutput: 'Input' | 'Output',
-    taxCategory : 'Inter' | 'Intra',
-    countrySid : number
-  ): string {
-    return `${TaxGroupSid}_${InputOrOutput}_${taxCategory}_${countrySid}`;
-  }
 
   currentCompanyCountry : {
     CountryMasterSid: number;
@@ -408,7 +402,7 @@ export class CostEntryComponent implements OnInit, OnDestroy {
     private currencyConfigService : CurrencyConfigurationService,
     private currencyFormatter: CurrencyFormatService,
     private spinner : NgxSpinnerService,
-    private taxCalculationService: TaxCalculationService,
+    public taxCalculationService: TaxCalculationService,
     private companySettings: CompanySettingsManagerService,
     private masterService: MasterService,
     private router : Router,
@@ -1923,11 +1917,13 @@ createRateFormGroup(data?: any): FormGroup {
   if (!customerBranch) {
     formGroup.get('RevenueCustomerBranchSid')?.setValue(null);
     this.billingGST_VAT = '';
+    this.billingIsUnionTerritory = false;
     return;
   }
 
   formGroup.get('RevenueCustomerBranchSid')?.setValue(customerBranch.CustomerBranchSid);
-  
+  this.billingIsUnionTerritory = customerBranch?.stateMaster?.IsUnionTerritory === 'Y';
+
   // Get the customer master data from the branch
   const customerMaster = customerBranch.revenueCustomerMaster;
   
@@ -1940,7 +1936,7 @@ createRateFormGroup(data?: any): FormGroup {
       console.log('GST-VAT set from branch GSTNo:', this.billingGST_VAT);
     } else {
       // For other countries - use PanType from customer master
-      this.billingGST_VAT = customerMaster.PanType || '';
+      this.billingGST_VAT = customerBranch?.customerMaster?.PanType || '';
       console.log('GST-VAT set from customer PanType:', this.billingGST_VAT);
     }
   } else {
@@ -2140,7 +2136,7 @@ createRateFormGroup(data?: any): FormGroup {
       GST_VAT : [{ value : '', disabled : true }],
       InvoiceType : ['REG'],
       TaxNumber : [''],
-      GSTType : ['B2B'],
+      GSTType : [''],
       Remarks : [''],
       DepartmentMasterSid : [null,[Validators.required]],
       HouseNumber : [{ value : '' , disabled : true }],
@@ -2156,7 +2152,7 @@ createRateFormGroup(data?: any): FormGroup {
       DocumentNumber : [null],
       DocumentDate : [null],
       SetoffStatus : [null],
-      TaxType : ['VAT'],
+      TaxType : [this.currentCompanyCountryCode === 'in' ? 'GST' : 'VAT'],
       VoucherTypeMasterSid : [null],
       VoucherHeaderSid : [null],
       PostStatus : [null],
@@ -2193,6 +2189,29 @@ createRateFormGroup(data?: any): FormGroup {
     this.voucherForm.setValidators(
       consistentExchangeRatesValidator(currentCompanyCurrencyId,currentCompanyCurrencyCode)
     );
+
+    this.subscribeToVoucherValueChanges();
+  }
+
+  private subscribeToVoucherValueChanges() {
+    this.voucherForm.get('InvoiceType')?.valueChanges.subscribe((invoiceType) => {
+      if (!this.voucherForm.get('PlaceOfSupply')?.value) {
+        return;
+      }
+
+      const classification = this.refreshVoucherTaxClassification(invoiceType as any);
+      this.voucherForm.get('GSTType')?.setValue(classification.formGSTType, { emitEvent: false });
+      this.recalculateVoucherTaxes();
+    });
+
+    this.voucherForm.get('GSTType')?.valueChanges.subscribe(() => {
+      if (!this.voucherForm.get('PlaceOfSupply')?.value) {
+        return;
+      }
+
+      this.refreshVoucherTaxClassification();
+      this.recalculateVoucherTaxes();
+    });
   }
 
   get voucher() : { [key : string] : AbstractControl<any,any> } {
@@ -2306,8 +2325,17 @@ createRateFormGroup(data?: any): FormGroup {
     });
   }
 
-  selectVoucherType(voucherType: 'Invoice' | 'Vendor Invoice') {
+  async selectVoucherType(voucherType: 'Invoice' | 'Vendor Invoice') {
     this.selectedVoucherType = voucherType;
+    const documentSide = this.selectedVoucherType === 'Invoice' ? 'SALES' : 'PURCHASE';
+    await this.taxCalculationService.init({
+      documentSide,
+      companyCountryCode: this.currentCompanyCountryCode,
+      companyCountryMasterSid: this.currentCompany?.CountryMasterSid,
+      branchStateName: this.currentBranch?.stateMaster?.stateName,
+      branchStateMasterSid: this.currentBranch?.StateMasterSid,
+    });
+    await this.taxCalculationService.fetchTaxMasters(documentSide);
     this.voucherTypeModalRef?.close();
 
     // Based on voucher type, determine charges to include
@@ -2607,8 +2635,10 @@ createRateFormGroup(data?: any): FormGroup {
       const PartyLedgerMasterSid = customerFromLookup?.SubledgerMasterSid;
       const PartyCOAMasterSid = customerFromLookup?.COAMappedId;
       const placeOfSupply = this.determinePlaceOfSupply();
-      const GST_VAT = this.isIndianCompany() ? customer?.GSTNo || '' : customer?.PanType || '';
-      const GSTType = this.determineTaxType();
+      const GST_VAT = this.isIndianCompany()
+        ? customerBranch?.GSTNo || customer?.GSTNo || ''
+        : customer?.PanType || '';
+      const GSTType = this.determineTaxType(customer, customerBranch, placeOfSupply, GST_VAT);
       const customerCurrency = customerFromLookup?.currencyMaster;
       this.billingPartyCurrency = customerCurrency ?? null;
       const currentCompanyCurrencyId = this.currentCompany?.CurrencyMasterSid;
@@ -2650,10 +2680,10 @@ createRateFormGroup(data?: any): FormGroup {
         PlaceOfSupply: placeOfSupply || '',
         CurrencyMasterSid : customerCurrency?.CurrencyMasterSid ?? currentCompanyCurrencyId,
         CurrencyCode : customerCurrency?.currencyCode ?? currentCompanyCurrencyCode,
-        State: placeOfSupply || '',
+        State: this.taxCalculationService.context?.taxCategory || 'Inter',
         GST_VAT: GST_VAT || '',
-        GSTType : GSTType,
-        TaxType: GSTType,
+        GSTType: this.currentCompanyCountryCode !== 'in' ? 'VAT' : GSTType,
+        TaxType: this.currentCompanyCountryCode !== 'in' ? 'VAT' : 'GST',
         ...(this.parentFormValue?.parentMenuName === 'Service Job' && isRevenue ? { DocumentNumber: this.parentFormValue?.ShipmentNo || null } : {}),
       })
 
@@ -2838,7 +2868,7 @@ createRateFormGroup(data?: any): FormGroup {
   public async calculateTaxAmountForRow(rowIndex: number): Promise<void> {
     const detail = this.details.at(rowIndex) as FormGroup;
     const isSelected = detail?.get('isSelected')?.value;
-    const localCurrency = detail?.get('CurrencyMasterSid')?.getRawValue();
+    const localCurrency = this.currentCompany?.CurrencyMasterSid;
 
     const applyFallBack = () => {
       detail.patchValue({
@@ -2852,165 +2882,56 @@ createRateFormGroup(data?: any): FormGroup {
       })
     }
 
-    if(!isSelected){
-      console.log('Not a selected detail , default tax to 0');
+    if (!isSelected) {
       applyFallBack();
       this.handleDisplayFields();
       return;
     }
-    
+
     const rawValue = detail.getRawValue();
     const hssacInForm = rawValue.HSSACMasterSid;
-    if(!hssacInForm) {
-      console.log('HSSAC not found in form , default tax to 0');
+    if (!hssacInForm) {
       applyFallBack();
       return;
     }
 
-    const selectedHSSAC = (this.chargeHSSACMapping[rowIndex] || []).find(x => x.HSSACMasterSid === hssacInForm);
-    if(!selectedHSSAC) {
-      console.error('Cannot find HSSAC for rowIndex:', rowIndex);
+    const selectedHSSAC = (this.chargeHSSACMapping[rowIndex] || []).find(
+      (x: any) => x.HSSACMasterSid === hssacInForm
+    );
+    if (!selectedHSSAC) {
       applyFallBack();
       return;
     }
 
-    if(!selectedHSSAC.TaxGroupSid){
-      this.appSettingService.showWarning(`Tax Group not found for HSSAC: ${selectedHSSAC.HSSACCode}`);
-      applyFallBack();
-      return;
-    }
-
-    //NOTE Taken i) TaxGroup
-    const taxGroupSid = selectedHSSAC.TaxGroupSid;
-
-    //NOTE  Taken ii) Tax Category (inter / intra)
-    const customerState = this.voucher['State']?.value;
-    const companyState = this.currentBranch?.stateMaster?.stateName;
-    const customerCountry = this.getCustomerCountry();
-    const  taxCategory = this.determineTaxCategory(companyState , customerState , customerCountry);
-
-    //NOTE Taken iii) Input or Output Tax
-    const inputOrOutput = this.selectedVoucherType === 'Invoice' ? 'Input' : 'Output';
-
-    //NOTE Taken iv) Country
-    const countrySid = this.currentCompany?.CountryMasterSid;
-
-    try {
-
-      const key = this.buildKey(taxGroupSid , inputOrOutput , taxCategory , countrySid);
-
-      if(this.taxMasterMap.has(key)){
-        const taxMasters = this.taxMasterMap.get(key);
-        this.applyTaxMastersForARow(rowIndex,taxMasters);
-        return;
-      }
-      
-      const response = await firstValueFrom(
-        this.operationService.getLedgerForTaxGroup({
-          taxGroup: taxGroupSid,
-          InputOrOutput: inputOrOutput,
-          TaxCategory : taxCategory,
-          CountryMasterSid: countrySid
-        })
+    if (!selectedHSSAC.TaxGroupSid) {
+      this.appSettingService.showWarning(
+        `Tax Group not found for HSSAC: ${selectedHSSAC.HSSACCode}`
       );
-
-      if (!response?.status) {
-        throw new Error('Tax ledger not found');
-      }
-
-      const taxMasters = (response.data?.[0]?.taxMaster || []);
-      
-      if(!taxMasters.length){
-        console.warn('No tax master found for this hssac')
-      }
-      
-      // ✅ Store tax masters against Key
-      this.taxMasterMap.set(key,taxMasters);
-      this.applyTaxMastersForARow(rowIndex,taxMasters);
-
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  applyTaxMastersForARow(rowIndex:number , taxMasters : any[]) {
-    console.log('applyTaxMastersForARow', rowIndex , taxMasters);
-    const localCurrency = this.currentCompany?.CurrencyMasterSid;
-    const detail = this.details.at(rowIndex) as FormGroup;
-    const rawValue = detail.getRawValue();
-
-    const applyFallBack = () => {
-      detail.patchValue({
-        TaxPercentage1 : this.getFormattedAndPaddedAmount(0,localCurrency),
-        TaxAmount1 : this.getFormattedAndPaddedAmount(0,localCurrency),
-        TaxPercentage2 : this.getFormattedAndPaddedAmount(0,localCurrency),
-        TaxAmount2 : this.getFormattedAndPaddedAmount(0,localCurrency),
-        TotalTaxAmount : this.getFormattedAndPaddedAmount(0,localCurrency),
-        TaxLabel : '',
-        TotalAmount : this.getFormattedAndPaddedAmount(rawValue.LocalAmount,localCurrency),
-      })
-      this.handleDisplayFields();
-    }
-
-    if(!detail || !taxMasters || !taxMasters.length){
       applyFallBack();
-      console.warn('No tax masters found for selected HSN/SAC');
       return;
     }
 
-    //NOTE - Check what tax is applicable for this company and customer
-    const taxNeedToApply = this.determineTaxApplicable();
+    this.refreshVoucherTaxClassification();
 
-    if(!taxNeedToApply) {
-      applyFallBack();
-      console.warn('Cannot find tax type need to apply.');
-      return;
-    }
+    const taxResult = this.taxCalculationService.calculateRowTax({
+      taxableAmount: rawValue.TaxableAmount,
+      taxGroupSid: selectedHSSAC.TaxGroupSid,
+    });
 
-    let taxPercentage1 = 0;
-    let taxPercentage2 = 0;
-    let taxAmount1 = 0;
-    let taxAmount2 = 0;
-    let taxLabel = '';
-
-    if(taxNeedToApply === 'VAT'){
-      const taxMaster = taxMasters.find(t => t.TaxCode === 'VAT')
-      console.log(taxMaster,taxMasters);
-      taxPercentage1 = toNumber(taxMaster?.TaxRate) || 0;
-      taxAmount1 = (rawValue.TaxableAmount * taxPercentage1) / 100;
-      taxPercentage2 = 0;
-      taxAmount2 = 0;
-      taxLabel = taxMaster?.TaxCode ? `${taxMaster?.TaxCode} ${taxMaster?.TaxRate}%` : '';
-    } else if(taxNeedToApply === 'CGST+SGST'){
-      const cgstTaxMaster = taxMasters.find(t => t.TaxCode === 'CGST')
-      const sgstTaxMaster = taxMasters.find(t => t.TaxCode === 'SGST')
-      taxPercentage1 = toNumber(cgstTaxMaster?.TaxRate) || 0;
-      taxAmount1 = (rawValue.TaxableAmount * taxPercentage1) / 100;
-      taxPercentage2 = toNumber(sgstTaxMaster?.TaxRate) || 0;
-      taxAmount2 = (rawValue.TaxableAmount * taxPercentage2) / 100;
-      taxLabel = cgstTaxMaster?.TaxCode && sgstTaxMaster?.TaxCode ? `${cgstTaxMaster?.TaxCode} ${taxPercentage1}% + ${sgstTaxMaster?.TaxCode} ${taxPercentage2}%` : '';
-    } else if(taxNeedToApply === 'IGST'){
-      const igstTaxMaster = taxMasters.find(t => t.TaxCode === 'IGST')
-      taxPercentage1 = toNumber(igstTaxMaster?.TaxRate) || 0;
-      taxAmount1 = (rawValue.TaxableAmount * taxPercentage1) / 100;
-      taxPercentage2 = 0;
-      taxAmount2 = 0;
-      taxLabel = igstTaxMaster?.TaxCode ? `${igstTaxMaster?.TaxCode} ${igstTaxMaster?.TaxRate}%` : '';
-    } else {
-      console.warn('Invalid Tax tried to applied', taxNeedToApply);
-    }
-
-    const totalTaxAmount = this.getFormattedAndPaddedAmount(taxAmount1 + taxAmount2, localCurrency);
-    const totalAmount = toNumber(rawValue.LocalAmount) + taxAmount1 + taxAmount2;
+    const totalTaxAmount = this.getFormattedAndPaddedAmount(
+      taxResult.TotalTaxAmount,
+      localCurrency
+    );
+    const totalAmount = toNumber(rawValue.LocalAmount) + taxResult.TotalTaxAmount;
 
     detail.patchValue({
-      TaxPercentage1: taxPercentage1,
-      TaxAmount1: this.getFormattedAndPaddedAmount(taxAmount1, localCurrency),
-      TaxPercentage2: taxPercentage2,
-      TaxAmount2: this.getFormattedAndPaddedAmount(taxAmount2, localCurrency),
-      TotalTaxAmount : totalTaxAmount,
-      TaxLabel : taxLabel,
-      TotalAmount : this.getFormattedAndPaddedAmount(totalAmount, localCurrency)
+      TaxPercentage1: taxResult.TaxPercentage1,
+      TaxAmount1: this.getFormattedAndPaddedAmount(taxResult.TaxAmount1, localCurrency),
+      TaxPercentage2: taxResult.TaxPercentage2,
+      TaxAmount2: this.getFormattedAndPaddedAmount(taxResult.TaxAmount2, localCurrency),
+      TotalTaxAmount: totalTaxAmount,
+      TaxLabel: taxResult.TaxLabel,
+      TotalAmount: this.getFormattedAndPaddedAmount(totalAmount, localCurrency),
     });
 
     this.handleDisplayFields();
@@ -3307,7 +3228,9 @@ createRateFormGroup(data?: any): FormGroup {
 
     // india
     if (this.currentCompanyCountryCode === 'in') {
-      const customerState = this.voucherForm.get('State')?.value;
+      const customerState = this.billingPartyBranchDetails?.stateMaster?.stateName
+        || this.voucherForm.get('PlaceOfSupply')?.value
+        || '';
       const currentCompanyState = this.currentBranchStateName;
       if (currentCompanyState === customerState) {
         interOrIntra = 'Inter';
@@ -3516,14 +3439,95 @@ createRateFormGroup(data?: any): FormGroup {
     return this.billingPartyBranchDetails?.stateMaster?.stateName;
   }
 
-  private determineTaxType() : string {
-    if(this.isIndianCompany()){
-      return 'GST';
-    } else if(this.isUAECompany()){
+  private determineTaxType(
+    customer: any,
+    customerBranch: any,
+    placeOfSupply: string,
+    gstVat: string
+  ) : string {
+    if (!this.isIndianCompany()) {
       return 'VAT';
-    } else {
-      return 'TAX';
     }
+
+    if (!placeOfSupply) {
+      return '';
+    }
+
+    const classification = this.taxCalculationService.updateParty(
+      this.buildVoucherPartyTaxProfile(customer, customerBranch, placeOfSupply, gstVat),
+      this.voucher['InvoiceType']?.value as any
+    );
+
+    return classification.formGSTType || '';
+  }
+
+  private buildVoucherPartyTaxProfile(
+    customer?: any,
+    customerBranch?: any,
+    placeOfSupply?: string,
+    gstVat?: string
+  ) {
+    return {
+      countryCode: this.getCustomerCountry() || this.currentCompanyCountryCode,
+      stateName:
+        placeOfSupply ||
+        this.billingPartyBranchDetails?.stateMaster?.stateName ||
+        this.voucher['PlaceOfSupply']?.value ||
+        '',
+      stateMasterSid:
+        customerBranch?.stateMaster?.StateMasterSid ||
+        this.billingPartyBranchDetails?.stateMaster?.StateMasterSid,
+      gstNumber: gstVat ?? this.voucher['GST_VAT']?.value ?? '',
+      customerGstType:
+        customerBranch?.CustomerGstType ||
+        customer?.CustomerGstType ||
+        this.billingPartyBranchDetails?.CustomerGstType ||
+        this.billingPartyDetails?.CustomerGstType ||
+        'Regular',
+      isUnionTerritory:
+        customerBranch?.stateMaster?.IsUnionTerritory === 'Y' ||
+        this.billingIsUnionTerritory,
+      selectedGstType: this.voucher['GSTType']?.value || '',
+    };
+  }
+
+  private refreshVoucherTaxClassification(invoiceType?: any) {
+    return this.taxCalculationService.updateParty(
+      this.buildVoucherPartyTaxProfile(),
+      (invoiceType ?? this.voucher['InvoiceType']?.value) as any
+    );
+  }
+
+  private recalculateVoucherTaxes() {
+    this.details.controls.forEach((_, index) => {
+      this.calculateTaxAmountForRow(index);
+    });
+  }
+
+  determineTaxApplicable(): string {
+    const mode = this.taxCalculationService.context?.appliedTaxMode;
+
+    if (mode === 'CGST_SGST') {
+      return 'CGST+SGST';
+    }
+
+    if (mode === 'IGST') {
+      return 'IGST';
+    }
+
+    if (mode === 'VAT') {
+      return 'VAT';
+    }
+
+    if (this.isIndianCompany()) {
+      return 'IGST';
+    }
+
+    if (this.isUAECompany()) {
+      return 'VAT';
+    }
+
+    return this.isIndianCompany() ? 'GST' : 'VAT';
   }
 
   private autoGenerateNarration(): string {
@@ -3590,47 +3594,9 @@ createRateFormGroup(data?: any): FormGroup {
     return narration;
   }
 
-  determineTaxApplicable() : string {
-    if(this.isIndianCompany()){
-      if(this.getCompanyState() === this.voucher['State']?.getRawValue()){
-        return 'CGST+SGST';
-      } else {
-        return 'IGST';
-      }
-    } else {
-      return 'VAT';
-    }
-  }
-
-  /**
-   * Determine tax category based on company state and place of supply
-   */
-  private determineTaxCategory(companyState: string, billingPartyState: string, customerCountryCode: string): 'Inter' | 'Intra' {
-    if (!companyState || !billingPartyState) {
-      return 'Inter';
-    }
-
-    // Normalize country codes for comparison
-    const normalizedCustomerCountry = customerCountryCode?.toLowerCase() || '';
-    const isIndianCustomer = normalizedCustomerCountry === 'in';
-    const isInternationalCustomer = !isIndianCustomer && normalizedCustomerCountry !== '';
-
-    // For international customers (like Dubai), use 'Inter' category for VAT
-    if (isInternationalCustomer) {
-      return 'Inter';
-    }
-
-    // For Indian customers, check if same state or different state
-    const normalizedCompanyState = companyState.trim().toLowerCase();
-    const normalizedBillingState = billingPartyState.trim().toLowerCase();
-
-    const isSameState = normalizedCompanyState === normalizedBillingState;
-    return isSameState ? 'Inter' : 'Intra';
-  }
-
   // Add this method to check if current company is in India
   isIndianCompany(): boolean {
-    return this.currentCompanyCountryCode === 'in';
+    return this.taxCalculationService.isIndiaGST;
   }
 
   // Add this method to check if current company is in UAE

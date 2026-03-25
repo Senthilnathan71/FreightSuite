@@ -989,15 +989,35 @@
                </div>
                
                <!-- GST Type - Only show for Indian companies -->
-               <div class="col-md-3" *ngIf="isIndianCompany()">
-                 <label class="form-label fw-bold">GST Type</label>
-                 <ng-select formControlName="GSTType" [clearable]="false">
-                   <ng-option value="B2B">B2B </ng-option>
-                   <ng-option value="B2C">B2C </ng-option>
-                   <ng-option value="EXWP">EXWP</ng-option>
-                   <ng-option value="EXWOP"> EXWOP</ng-option>
-                 </ng-select>
-               </div>
+               @if (currentCompanyCountryCode === 'in') {
+                 <div class="col-md-3">
+                   <div class="custom-form-group" 
+                        [class.custom-form-group-select]="taxCalculationService.isExportOrSEZ" 
+                        [class.filled]="taxCalculationService.isExportOrSEZ &&  !!voucherForm.get('GSTType')?.value"
+                      >
+                     @if (taxCalculationService.isExportOrSEZ) {
+                         <ng-select
+                           formControlName="GSTType"
+                           [clearable]="false"
+                           class="ng-select"
+                         >
+                           @for (type of exportGstTypes; track type.id) {
+                             <ng-option [value]="type.id">{{ type.name }}</ng-option>
+                           }
+                         </ng-select>
+                     } @else {
+                       <input
+                         type="text"
+                         formControlName="GSTType"
+                         class="custom-input-field sm"
+                         readonly
+                         style="cursor: not-allowed"
+                       >
+                     }
+                     <label class="input-label">GST Type</label>
+                   </div>
+                 </div>
+               }
 
                <!-- Place of Supply - Show for all companies -->
                <div class="col-md-3">

@@ -1283,14 +1283,14 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       PartyAddress: formValue.PartyAddress,
       CustomerBranchSid: formValue.CustomerBranchSid,
       PlaceOfSupply: formValue.PlaceOfSupply,
-      State: formValue.State,
+      State: interOrIntra,
       COAMasterSid: formValue.COAMasterSid,
       BankCOA: formValue.BankCOA,
       BankPartyName: formValue.BankPartyName,
       GST_VAT: formValue.GST_VAT,
       ReversalVoucher: formValue.ReversalVoucher,
       TaxNumber: formValue.TaxNumber,
-      GSTType: formValue.GSTType,
+      GSTType: this.currentCompanyCountryCode !== 'in' ? 'VAT' : (formValue.GSTType || ''),
       Remarks: formValue.Remarks,
       CurrencyMasterSid: formValue.CurrencyMasterSid,
       CurrencyCode: formValue.CurrencyCode,
@@ -1299,12 +1299,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       LocalAmount: 0,
       NetAmount: 0,
       TaxType:
-        this.currentCompanyCountryCode === 'in'
-          ? 'GST'
-          : this.currentCompanyCountryCode === 'ae' ||
-            this.currentCompanyCountryCode === 'us'
-          ? 'VAT'
-          : '',
+        this.currentCompanyCountryCode === 'in' ? 'GST' : 'VAT',
       InstrumentMode: formValue.InstrumentMode,
       InstrumentNumber: formValue.InstrumentNumber,
       InstrumentDate: formValue.InstrumentDate,
@@ -3206,7 +3201,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       COAMasterSid: party.COAMappedId,
       LedgerMasterSid: party.SubledgerMasterSid,
       GST_VAT:
-        partyCountry === 'united arab emirates' ? party.PanType : party.GSTNo,
+        this.currentCompanyCountryCode !== 'in' ? party.PanType : party.GSTNo,
     });
 
     // Default header currency from the party's configured currency

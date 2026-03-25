@@ -74,9 +74,11 @@ export function formatNumberWithCommas(value: any, decimals: number = 2): string
   const num = parseFloat(value);
   if (isNaN(num)) return '';
 
-  return num.toFixed(decimals);
+  return num.toLocaleString('en-IN', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
 }
-
 
 /**
  * Format currency with symbol and thousand separators

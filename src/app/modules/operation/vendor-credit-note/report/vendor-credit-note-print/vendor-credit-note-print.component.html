@@ -1,0 +1,1028 @@
+<div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center">
+  <h5 class="modal-title">Vendor Credit Note</h5>
+  <div class="d-flex gap-1 align-items-center">
+    <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
+      <i class="fas fa-download me-1"></i> Download PDF
+    </button>
+    <button type="button" class="btn btn-sm btn-success rounded-5 py-0"
+      (click)="openEmailModal(); activeModal.dismiss()">
+      <i class="fas fa-envelope me-1"></i> Send Email
+    </button>
+    <button type="button" class="btn-close btn-close-white" (click)="activeModal.dismiss()"></button>
+  </div>
+</div>
+
+<div class="modal-body">
+  <div id="printContent">
+    <div style="
+            width: 280mm;
+            min-height: 350mm;
+            margin: 10px;
+            background: #fff;
+            border: 1px solid #000;
+            box-sizing: border-box;
+            position: relative;
+            color: #000;
+            page-break-after: always;
+            font-size: 16px;
+            position: relative;
+          ">
+      <!-- Company Info -->
+      <div style="
+              display: flex;
+              flex-direction: column;
+              margin-bottom: 0;
+              width: 100%;
+              padding-top: 5px;
+              padding-left: 20px;
+            ">
+        <div style="
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            flex-wrap: wrap;
+                          ">
+          <div style="
+                              display: flex;
+                              flex-direction: column;
+                            ">
+            <!-- Print logo -->
+            <img [src]="logoService.reportLogo$ | async" alt="Company Logo" class="company-logo img-fluid"
+              style="width:auto; height: 110px" />
+          </div>
+          <div style="
+                              flex: 1;
+                              text-align:right;
+                              font-size: 17px;
+                              padding-right: 3%;
+                            ">
+            <h3 style="margin: 0; font-weight: 900">
+              {{ currentCompany?.companyName || "Company Name" }}
+            </h3>
+            <!-- <h5 style="margin: 0; font-weight: 900">
+                              {{ currentBranch?.branchName || "Company Branch" }}
+                            </h5> -->
+            <p style="margin: 0px 0; font-size: 16px">
+              {{ currentBranch?.addressLine1 || "" }}
+            </p>
+            <p style="margin: 0px 0; font-size: 16px">
+              <ng-container *ngIf="currentBranch?.addressLine2 as addr">
+                {{ addr }},
+              </ng-container>
+              <!-- {{
+                                currentBranch?.cityMaster?.cityName ||
+                                  currentCompany?.City ||
+                                  ""
+                              }} -->
+              {{ currentBranch?.branchName || "Company Branch" }}
+
+              <!-- <ng-container *ngIf="currentcountryCode?.countryCode as code">
+                    - {{ code }}
+                  </ng-container> -->
+              <ng-container *ngIf="currentBranch?.branchCode as code">
+                - {{ code }}
+              </ng-container>
+
+            </p>
+            <div *ngIf="currentBranch?.postalCode || currentBranch?.ZipCode"
+              style="display:flex;justify-content:right;align-items:center;gap:6px;width:100%;font-size:16px;">
+              <span>Postal Code</span>
+              <span>: {{ currentBranch?.postalCode || currentBranch?.ZipCode }}</span>
+            </div>
+
+            <div *ngIf="currentBranch?.phoneNumber || currentBranch?.Phone"
+              style="display:flex;justify-content:right;align-items:center;gap:6px;width:100%;font-size:16px;">
+              <span>Phone No</span>
+              <span>: {{ currentBranch?.phoneNumber || currentBranch?.Phone }}</span>
+            </div>
+
+            <div style="display: flex;justify-content: right;align-items: center;gap: 6px;width: 100%;font-size: 16px;">
+              <span *ngIf="currentCompanyCountryCode?.toLowerCase() === 'in'">GST No</span>
+              <span *ngIf="currentCompanyCountryCode?.toLowerCase() !== 'in'">VAT No</span>
+              <span>: {{ currentCompany?.Pan || '' }}</span>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Invoice Title -->
+      <div style="
+              text-align: center;
+              border-top: 1px solid black;
+              padding-top: 4px;
+            ">
+        <h3 style="margin: 2px 0; font-weight: bolder; font-size: 20px">
+          <strong>{{ vendorCreditNoteData?.invoiceTitle }}</strong>
+        </h3>
+        <p style="font-size: 12px; margin: 2px 0" *ngIf="currentCompanyCountryCode === 'in'">
+          <strong>GST Code :</strong>
+          {{
+          vendorCreditNoteData?.GSTCode
+          }}
+        </p>
+      </div>
+
+      <!-- Billing Info -->
+      <div style="
+              display: flex;
+              justify-content: space-between;
+              border-bottom: 1px solid black;
+              margin-top: 8px;
+              padding-bottom: 8px;
+              padding: 0 20px;
+            ">
+        <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
+          <strong style="font-weight: bolder">BILLED TO</strong><br />
+          <div style="padding-left: 30px">
+            <span>{{ vendorCreditNoteData?.BilledTo }}</span><br />
+            {{ vendorCreditNoteData?.BillingAddress }}<br />
+            <div style="display: flex" *ngIf="currentCompanyCountryCode === 'in'">
+              <span style="font-weight: 600">PAN:</span>
+              {{ vendorCreditNoteData?.PAN }}
+            </div>
+          </div>
+        </div>
+        <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
+          <div>
+            <div style="display: flex">
+              <div style="width: 200px; font-weight: bolder">
+                <strong>Vendor Credit Note No.</strong>
+              </div>
+              <div>
+                : {{ vendorCreditNoteData?.InvoiceNo }}
+              </div>
+            </div>
+            <div style="display: flex">
+              <div style="width: 200px; font-weight: bolder">
+                <strong>Vendor Credit Note Date</strong>
+              </div>
+              <div>
+                : {{ vendorCreditNoteData?.VoucherDate | formatDate }}
+              </div>
+            </div>
+            <div style="display: flex">
+              <div style="width: 200px; font-weight: bolder">
+                <strong *ngIf="currentCompanyCountryCode === 'in'">GST No.</strong>
+                <strong *ngIf="currentCompanyCountryCode !== 'in'">VAT No.</strong>
+              </div>
+              <div>: {{ vendorCreditNoteData?.GST_VAT }}</div>
+            </div>
+            <div style="display: flex" *ngIf="currentCompanyCountryCode === 'in'">
+              <div style="width: 200px; font-weight: bolder">
+                <strong>IRN No.</strong>
+              </div>
+              <div>: {{ vendorCreditNoteData?.IRNNumber }}</div>
+            </div>
+            <!-- Show GST Type only for India -->
+            <!-- <div style="display:flex;" *ngIf="currentCompanyCountryCode === 'in'">
+                <div style="width:180px;"><strong>GST Type</strong></div>
+                <div>: {{invoiceForm.get('GSTType')?.value || ''}}</div>
+              </div> -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Shipment Details -->
+      <div style="
+              display: flex;
+              margin-top: 8px;
+              font-size: 16px;
+              padding: 0 20px;
+            ">
+        <div style="flex: 0 0 50%; max-width: 50%">
+
+          <!-- Shipper -->
+          <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+            <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
+              <strong>Shipper</strong>
+            </div>
+            <div style="width: 15px;text-align: center;">:</div>
+            <div style="flex: 1;line-height: 1.4;">
+              {{ vendorCreditNoteData?.ShipperName }}
+            </div>
+          </div>
+
+          <!-- Consignee / Notify -->
+          <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+            <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
+              <strong>Consignee / Notify</strong>
+            </div>
+            <div style="width: 15px;text-align: center;">:</div>
+            <div style="flex: 1;line-height: 1.4;">
+              {{ vendorCreditNoteData?.ConsigneeName }}
+            </div>
+          </div>
+
+          <!-- Vessel -->
+          <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+            <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
+              <strong>{{isSeaDepartment() ? 'Vessel Name ' : 'Flight Name'}}</strong>
+            </div>
+            <div style="width: 15px;text-align: center;">:</div>
+            <div style="flex: 1;line-height: 1.4;">
+              {{ vendorCreditNoteData?.Vessel }}
+            </div>
+          </div>
+
+          <!-- Vessel / Flight No -->
+          <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+            <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
+              <strong>{{isSeaDepartment() ? 'Voyage No.' : 'Flight No.'}}</strong>
+            </div>
+            <div style="width: 15px;text-align: center;">:</div>
+            <div style="flex: 1;line-height: 1.4;">
+              {{ vendorCreditNoteData?.VoyageNo }}
+            </div>
+          </div>
+
+          <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+            <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
+              <strong>Bill No.</strong>
+            </div>
+            <div style="width: 15px;text-align: center;">:</div>
+            <div style="flex: 1;line-height: 1.4;">
+              {{ vendorCreditNoteData?.DocumentNumber }}
+            </div>
+          </div>
+
+          <!-- POL -->
+          <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+            <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
+              <strong>Loading Port</strong>
+            </div>
+            <div style="width: 15px;text-align: center;">:</div>
+            <div style="flex: 1;line-height: 1.4;">
+              {{ vendorCreditNoteData?.POL }}
+            </div>
+          </div>
+
+          <!-- Place of Supply -->
+          <!-- <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+                  <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
+                      <strong>Place of Supply</strong>
+                  </div>
+                  <div style="width: 15px;text-align: center;">:</div>
+                      <div style="flex: 1;line-height: 1.4;">
+                         {{ vendorCreditNoteData?.PlaceofSupply }}
+                  </div>
+               </div> -->
+
+          <!-- Final Destionation -->
+          <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+            <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
+              <strong>Final Destination</strong>
+            </div>
+            <div style="width: 15px;text-align: center;">:</div>
+            <div style="flex: 1;line-height: 1.4;">
+              {{ vendorCreditNoteData?.FPD }}
+            </div>
+          </div>
+
+
+          <div style="display: flex">
+            <div style="width: 165px; font-weight: bolder">
+              <strong>ETD</strong>
+            </div>
+            <div>: {{ vendorCreditNoteData?.ETD | formatDate }}</div>
+          </div>
+
+          <div style="display: flex">
+            <div style="width: 165px; font-weight: bolder">
+              <strong>ETA</strong>
+            </div>
+            <div>: {{ vendorCreditNoteData?.ETA | formatDate }}</div>
+          </div>
+
+        </div>
+
+        <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
+          @if(vendorCreditNoteData?.IsServiceJob !== 'Y'){
+          @if(vendorCreditNoteData?.JobType !== 'Agent'){
+          <div style="display: flex">
+            <div style="width: 180px; font-weight: bolder">
+              <strong> {{isSeaDepartment() ? 'HBL' : 'HAWB'}}</strong>
+            </div>
+            <div>: {{ vendorCreditNoteData?.HBLNo }}</div>
+          </div>
+          }
+
+          <div style="display: flex">
+            <div style="width: 180px; font-weight: bolder">
+              <strong> {{isSeaDepartment() ? 'MBL' : 'MAWB'}}</strong>
+            </div>
+            <div>: {{ vendorCreditNoteData?.MBLNo }}</div>
+          </div>
+          }
+          <div style="display: flex">
+            <div style="width: 180px; font-weight: bolder">
+              <strong>Job No.</strong>
+            </div>
+
+            <div *ngIf="vendorCreditNoteData?.MasterJobNumber || vendorCreditNoteData?.MasterJobDate">
+              :
+              <span *ngIf="vendorCreditNoteData?.MasterJobNumber">
+                {{ vendorCreditNoteData.MasterJobNumber }}
+              </span>
+
+              <span *ngIf="vendorCreditNoteData?.MasterJobNumber && vendorCreditNoteData?.MasterJobDate">
+
+              </span>
+
+              <!-- <span *ngIf="vendorCreditNoteData?.MasterJobDate">
+      {{ vendorCreditNoteData.MasterJobDate  | formatDate}}
+    </span> -->
+
+            </div>
+          </div>
+
+
+
+
+          <div style="display: flex">
+            <div style="width: 180px; font-weight: bolder">
+              <strong>Booking No.</strong>
+            </div>
+            <div>
+              :
+              {{ vendorCreditNoteData?.BookingNumber }}
+            </div>
+          </div>
+
+          <div style="display: flex">
+            <div style="width: 180px; font-weight: bolder">
+              <strong>Bill Date</strong>
+            </div>
+            <div>
+              :
+              {{ vendorCreditNoteData?.DocumentDate | formatDate }}
+            </div>
+          </div>
+
+          <div style="display: flex">
+            <div style="width: 180px; font-weight: bolder">
+              <strong>Freight Terms</strong>
+            </div>
+            <div>
+              :
+              {{ vendorCreditNoteData?.FreightTerms }}
+            </div>
+          </div>
+
+          <div style="display: flex">
+            <div style="width: 180px; font-weight: bolder">
+              <strong>Currency / Ex-Rate</strong>
+            </div>
+            <div>
+              : {{ vendorCreditNoteData?.CurrExRate }}
+            </div>
+          </div>
+
+          <!-- <div style="display: flex">
+                <div style="width: 180px; font-weight: bolder">
+                  <strong>Sales Person</strong>
+                </div>
+                <div>
+                  : {{ vendorCreditNoteData?.SalesPerson }}
+                </div>
+              </div> -->
+
+          <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
+            <thead>
+              <tr style="font-size: 12px">
+                <!-- PKG -->
+                <th style="
+          border: 1px solid black;
+          padding: 2px 8px;
+          font-weight: bolder;
+          text-align: center;
+          width: 8%;
+        ">
+                  <strong>Pkg</strong>
+                </th>
+
+                <!-- COMMODITY -->
+                <th style="
+          border: 1px solid black;
+          padding: 2px 8px;
+          font-weight: bolder;
+          text-align: center;
+          width: 35%;
+        ">
+                  <strong>Commodity Desc</strong>
+                </th>
+
+                <!-- GROSS WT -->
+                <th style="
+          border: 1px solid black;
+          padding: 2px 8px;
+          font-weight: bolder;
+          text-align: center;
+          width: 15%;
+        ">
+                  <strong>Gross Wt.</strong>
+                </th>
+
+                <!-- CHARGEABLE WT (AIR ONLY) -->
+
+
+
+
+                <!-- CBM (AIR SEA ONLY) -->
+
+                <th style="
+          border: 1px solid black;
+          padding: 2px 8px;
+          font-weight: bolder;
+          text-align: center;
+          width: 20%;
+        ">
+                  <strong> {{isSeaDepartment() ? 'CBM ' : 'Charge Wt.'}}</strong>
+                </th>
+
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr style="font-size: 12px">
+                <!-- PKG -->
+                <td style="
+          border: 1px solid black;
+          padding: 2px 8px;
+          text-align: right;
+        ">
+                  {{ vendorCreditNoteData?.pkg }}
+                </td>
+
+                <!-- COMMODITY -->
+                <td style="
+          border: 1px solid black;
+          padding: 2px 8px;
+        ">
+                  {{ vendorCreditNoteData?.desc }}
+                </td>
+
+                <!-- GROSS WT -->
+                <td style="
+          border: 1px solid black;
+          padding: 2px 8px;
+          text-align: right;
+        ">
+                  {{ vendorCreditNoteData?.grosswt | number:'1.3-3'}}
+                </td>
+
+                <!-- CHARGEABLE WT (AIR ONLY) -->
+
+                <td style="
+    border: 1px solid black;
+    padding: 2px 8px;
+    text-align: right;
+  ">
+                  {{
+                  (
+                  isSeaDepartment()
+                  ? (vendorCreditNoteData?.cbm ?? 0)
+                  : (vendorCreditNoteData?.ChargeableWeight ?? 0)
+                  ) | number:'1.3-3'
+                  }}
+                </td>
+
+
+              </tr>
+            </tbody>
+          </table>
+
+        </div>
+      </div>
+
+      <!-- Table with Dynamic Tax Columns -->
+      <div style="width: 100%; overflow-x: auto; margin-top: 8px">
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px">
+          <thead>
+            <tr>
+              <th style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      font-weight: bolder;
+                      text-align: center;
+                      width: 20px;
+                      border-left: none;
+                    ">
+                <strong>S.No.</strong>
+              </th>
+              <th style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      font-weight: bolder;
+                      text-align: center;
+                    ">
+                <strong>Particulars</strong>
+              </th>
+              <th *ngIf="currentCompanyCountryCode?.toLowerCase() !== 'ae'" style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align: center;
+                      font-weight: bolder;
+                    ">
+                <strong>HSN/SAC</strong>
+              </th>
+              <th style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align: left;
+                      font-weight: bolder;
+                    ">
+                <strong>Curr.</strong>
+              </th>
+              <th style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align:center;
+                      font-weight: bolder;
+                    ">
+                <strong>No. of Unit</strong>
+              </th>
+              <th style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align:center;
+                      font-weight: bolder;
+                    ">
+                <strong>Rate</strong>
+              </th>
+              <th style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align:center;
+                      font-weight: bolder;
+                    ">
+                <strong>ROE</strong>
+              </th>
+              <th style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align:center;
+                      font-weight: bolder;
+                    ">
+                <strong>Taxable Amt</strong>
+              </th>
+
+              <!-- Dynamic Tax Columns based on Country and GST Type -->
+              <ng-container *ngIf="getTaxDisplayConfig().showCGST">
+                <th style="
+                        border: 1px solid black;
+                        padding: 2px 8px;
+                        text-align:center;
+                        font-weight: bolder;
+                      ">
+                  <strong>CGST %</strong>
+                </th>
+                <th style="
+                        border: 1px solid black;
+                        padding: 2px 8px;
+                        text-align:center;
+                        font-weight: bolder;
+                      ">
+                  <strong>CGST Amt.</strong>
+                </th>
+              </ng-container>
+
+              <ng-container *ngIf="getTaxDisplayConfig().showSGST">
+                <th style="
+                        border: 1px solid black;
+                        padding: 2px 8px;
+                        text-align: center;
+                        font-weight: bolder;
+                      ">
+                  <strong>SGST %</strong>
+                </th>
+                <th style="
+                        border: 1px solid black;
+                        padding: 2px 8px;
+                        text-align:center;
+                        font-weight: bolder;
+                      ">
+                  <strong>SGST Amt.</strong>
+                </th>
+              </ng-container>
+
+              <ng-container *ngIf="getTaxDisplayConfig().showIGST">
+                <th style="
+                        border: 1px solid black;
+                        padding: 2px 8px;
+                        text-align:center;
+                        font-weight: bolder;
+                      ">
+                  <strong>IGST %</strong>
+                </th>
+                <th style="
+                        border: 1px solid black;
+                        padding: 2px 8px;
+                        text-align: center;
+                        font-weight: bolder;
+                      ">
+                  <strong>IGST Amt.</strong>
+                </th>
+              </ng-container>
+
+              <ng-container *ngIf="getTaxDisplayConfig().showVAT">
+                <th style="
+                        border: 1px solid black;
+                        padding: 2px 8px;
+                        text-align:center;
+                        font-weight: bolder;
+                      ">
+                  <strong>VAT %</strong>
+                </th>
+                <th style="
+                        border: 1px solid black;
+                        padding: 2px 8px;
+                        text-align:center;
+                        font-weight: bolder;
+                      ">
+                  <strong>VAT Amt.</strong>
+                </th>
+              </ng-container>
+
+              <th [style.border-right]="shouldShowForeignCurrencyColumn() ? '1px solid black' : 'none'" style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align:center;
+                    ">
+                <strong>Amt In {{ currentCompanyCurrency?.code }}</strong>
+              </th>
+              <th *ngIf="shouldShowForeignCurrencyColumn()" style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align:center;
+                      border-right: none;
+                    ">
+                <strong>Amt In {{ vendorCreditNoteData?.CurrencyCode }}</strong>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let detail of vendorCreditNoteData?.voucherDetails; let i = index">
+              <td style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      border-left: none;
+                      text-align: center;
+                    ">
+                {{ detail.Sno }}
+              </td>
+              <td style="border: 1px solid black; padding: 2px 8px">
+                {{ detail.ChargeDescription }}
+              </td>
+              <td *ngIf="currentCompanyCountryCode?.toLowerCase() !== 'ae'"
+                style="border: 1px solid black; padding: 2px 8px">
+                {{ detail.HSSACCode }}
+              </td>
+              <td style="border: 1px solid black; padding: 2px 8px">
+                {{ detail.CurrencyCode }}
+              </td>
+              <td style="border: 1px solid black; padding: 2px 8px; text-align:right;">
+                {{ detail.NumberOfUnit }}
+              </td>
+              <td style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align: right;
+                    ">
+                {{ detail.Rate }}
+              </td>
+              <td style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align: right;
+                    ">
+                {{ detail.ExchangeRate }}
+              </td>
+              <td style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align: right;
+                    ">
+                {{ detail.TaxableAmount }}
+              </td>
+
+              <!-- Dynamic Tax Values -->
+              <ng-container *ngIf="getTaxDisplayConfig().showCGST">
+                <td style="
+                        border: 1px solid black;
+                        padding: 2px 8px;
+                        text-align: right;
+                      ">
+                  {{ detail.cgstRate }}
+                </td>
+                <td style="
+                        border: 1px solid black;
+                        padding: 2px 8px;
+                        text-align: right;
+                      ">
+                  {{ detail.cgstAmt }}
+                </td>
+              </ng-container>
+
+              <ng-container *ngIf="getTaxDisplayConfig().showSGST">
+                <td style="
+                        border: 1px solid black;
+                        padding: 2px 8px;
+                        text-align: right;
+                      ">
+                  {{ detail.sgstRate }}
+                </td>
+                <td style="
+                        border: 1px solid black;
+                        padding: 2px 8px;
+                        text-align: right;
+                      ">
+                  {{ detail.sgstAmt }}
+                </td>
+              </ng-container>
+
+              <ng-container *ngIf="getTaxDisplayConfig().showIGST">
+                <td style="
+                        border: 1px solid black;
+                        padding: 2px 8px;
+                        text-align: right;
+                      ">
+                  {{ detail.igstRate }}
+                </td>
+                <td style="
+                        border: 1px solid black;
+                        padding: 2px 8px;
+                        text-align: right;
+                      ">
+                  {{ detail.igstAmt }}
+                </td>
+              </ng-container>
+
+              <ng-container *ngIf="getTaxDisplayConfig().showVAT">
+                <td style="
+                        border: 1px solid black;
+                        padding: 2px 8px;
+                        text-align: right;
+                      ">
+                  {{ detail.vatRate }}
+                </td>
+                <td style="
+                        border: 1px solid black;
+                        padding: 2px 8px;
+                        text-align: right;
+                      ">
+                  {{ detail.vatAmt }}
+                </td>
+              </ng-container>
+              <td [style.border-right]="shouldShowForeignCurrencyColumn() ? '1px solid black' : 'none'" style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align: right;
+                    ">
+                {{ detail?.LocalAmount }}
+              </td>
+              <td *ngIf="shouldShowForeignCurrencyColumn()" style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      border-right: none;
+                      text-align: right;
+                    ">
+                {{ detail?.PartyAmount }}
+                <!-- {{ getPartyCurrDebitAmt() }} -->
+              </td>
+            </tr>
+
+            <!-- Total Row with dynamic colspan -->
+            <tr style="font-weight: bolder">
+              <td [attr.colspan]="calculateTotalColspan() + (shouldShowForeignCurrencyColumn() ? 1 : 0)" style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align: right;
+                      border-left: none;
+                    ">
+                <strong>Total</strong>
+              </td>
+              <td style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      border-right: none;
+                      text-align: right;
+                    ">
+                <strong>{{ vendorCreditNoteData?.totalPartyAmount }}</strong>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Amount in words -->
+      <div style="display: flex;margin-top: 8px;font-size: 16px;padding: 0 20px;">
+        <p style="font-weight: bolder;width: 165px;margin: 0;font-weight: bolder;">
+          <strong>Amount In Words</strong>
+        </p>
+        <p style="margin: 0">: {{ vendorCreditNoteData?.AmountInWords }}</p>
+      </div>
+
+      <!--Container No and type-->
+      <!-- <div style="display: flex; margin-top: 8px; font-size: 16px; padding: 0 20px;">
+  <p style="font-weight: bolder; width: 165px; margin: 0">
+    <strong>Container No./ Type</strong>
+  </p>
+
+  <p style="margin: 0">
+    :
+    {{ vendorCreditNoteData?.ContainerNumber }}
+    {{
+      vendorCreditNoteData?.ContainerNumber && vendorCreditNoteData?.ContainerType
+        ? ' / ' + vendorCreditNoteData?.ContainerType
+        : vendorCreditNoteData?.ContainerType || ''
+    }}
+  </p>
+</div> -->
+
+
+      <!-- Remarks -->
+      <div style="display: flex;margin-top: 8px;padding: 0 20px;font-size: 13px">
+        <p style="font-weight: bolder; width: 165px; margin: 0"><strong>Remarks</strong></p>
+        <p style="margin: 0">
+          : {{ vendorCreditNoteData?.Remarks }}
+        </p>
+      </div>
+
+      <!-- Bank Details -->
+      <div *ngIf="bankDetails && bankDetails.length > 0" class="px-3" style="font-size:16px">
+        <h5 class="fw-bold my-1"><strong>Bank Details</strong></h5>
+        <div class="table-responsive">
+          <table class="table align-middle mb-0" style="
+            border-collapse: collapse;
+            /* display: inline-table; */
+            color: #000;
+            /* border : 1px solid #000; */
+            font-size: 13px;
+             border: 0.5px solid #000;
+          " [ngStyle]="{
+    width: bankDetails.length === 1 ? 'auto' : '100%',
+    'table-layout': bankDetails.length === 1 ? 'auto' : 'fixed'
+  }">
+            <thead>
+              <tr>
+                <th
+                  style="width:180px;padding:0px;color:#000;border-color:#000; text-align: center; border: 0.5px solid #000;">
+                  <strong>Details</strong>
+                </th>
+                <th *ngFor="let bankDetail of bankDetails; let i = index"
+                  style="padding:0px 6px;color:#000;border-color:#000; text-align: start;border: 0.5px solid #000;">
+                  <strong>Bank ({{ vendorCreditNoteData?.CurrencyCode }})</strong>
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr>
+                <th style="padding:0px 6px;color:#000;border-color:#000;  border: 0.5px solid #000;"><strong>Beneficiary
+                    Name</strong></th>
+                <td *ngFor="let bankDetail of bankDetails"
+                  style="padding:2px;color:#000;border-color:#000;  white-space: normal;  word-break: break-word; border: 0.5px solid #000;">
+                  {{ bankDetail.BeneficiaryName }}
+                </td>
+              </tr>
+
+              <tr>
+                <th style="padding:0px 6px;color:#000;border-color:#000; border: 0.5px solid #000;"><strong>Account
+                    No.</strong></th>
+                <td *ngFor="let bankDetail of bankDetails"
+                  style="padding:2px;color:#000;border-color:#000;  word-break: break-word;  white-space: normal; border: 0.5px solid #000;">
+                  {{ bankDetail.BankAccountNo }}
+                </td>
+              </tr>
+
+
+              <tr>
+                <th style="padding:0px 6px;color:#000;border-color:#000; border: 0.5px solid #000;">
+                  <strong>{{ isVATMode ? 'IBAN' : 'IFSC' }}</strong>
+                </th>
+                <td *ngFor="let bankDetail of bankDetails"
+                  style="padding:2px;color:#000;border-color:#000;  word-break: break-word;white-space: normal; border: 0.5px solid #000; ">
+                  {{ bankDetail.IFSCCode }}
+                </td>
+              </tr>
+
+              <tr>
+                <th style="padding:0px 6px;color:#000;border-color:#000; border: 0.5px solid #000;">
+                  <strong>Swift Code</strong>
+                </th>
+                <td *ngFor="let bankDetail of bankDetails"
+                  style="padding:2px;color:#000;border-color:#000;  word-break: break-word;white-space: normal; border: 0.5px solid #000; ">
+                  {{ bankDetail.BankCode }}
+                </td>
+              </tr>
+
+              <tr>
+                <th style="padding:0px 6px;color:#000;border-color:#000; border: 0.5px solid #000;"><strong>Bank
+                    Name</strong></th>
+                <td *ngFor="let bankDetail of bankDetails"
+                  style="padding:2px;color:#000;border-color:#000;white-space: normal;   word-break: break-word; border: 0.5px solid #000;">
+                  {{ bankDetail.BankName }}
+                </td>
+              </tr>
+
+              <tr>
+                <th style="padding:0px 6px;color:#000;border-color:#000; border: 0.5px solid #000;">
+                  <strong>Branch</strong>
+                </th>
+                <td *ngFor="let bankDetail of bankDetails"
+                  style="padding:2px;color:#000;border-color:#000;  white-space: normal;  word-break: break-word; border: 0.5px solid #000;">
+                  {{ bankDetail.BankAddress }}
+                </td>
+              </tr>
+
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="margin-top: 1rem; font-size: 12px; padding: 0 20px">
+        <h5 style="margin-bottom: 0.5rem; font-weight: bolder">
+          <strong>Terms and Conditions</strong>
+        </h5>
+
+        @if (currentCompany?.CompanyMasterSid === 13) {
+        <!-- For CompanyMasterSid 55 - Show static terms -->
+        <ul style="margin-top: 0; padding-left: 1.5rem; font-size: 12px;">
+          <li>If any discrepancy is noticed in the invoice, kindly inform us in writing within 7 days, otherwise <br>
+            the above amount will be considered as correct.</li>
+          <li>Please mention our invoice number(s) on your remittance instructions.</li>
+        </ul>
+        } @else {
+        <!-- For other companies - Use the existing TandCList -->
+        <ul style="margin-top: 0; padding-left: 1.2rem">
+          @for (term of TandCList; track term) {
+          <li>{{ term.TandC }}</li>
+          }
+        </ul>
+        }
+      </div>
+
+      <!-- <div style="margin-top: 1rem; font-size: 16px; padding: 0 20px;">
+  <h5 style="margin-bottom: 0.5rem; font-weight: bolder;">
+    <strong>Terms and Conditions</strong>
+  </h5>
+
+  <ul style="margin: 0; padding-left: 25px;">
+    <li>
+      If any discrepancy is noticed in the invoice, kindly inform us in writing within 7 days;
+      otherwise, the above amount will be considered as correct.
+    </li>
+    <li>
+      Please mention our invoice number(s) on your remittance instructions.
+    </li>
+  </ul>
+</div> -->
+
+
+      <!-- Footer -->
+      <div style="
+              display: flex;
+              flex-direction: column;
+              margin-top: 12px;
+              text-align: end;
+              padding: 0 20px;
+            ">
+        <strong>For {{ currentCompany?.companyName || "Company Name" }}</strong>
+        <p>Authorised Signatory</p>
+      </div>
+
+      <!-- Footer -->
+      <!-- Page wrapper -->
+      <div style="
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+">
+        <!-- Your main content goes here -->
+        <main style="flex: 1;">
+          <!-- invoice content -->
+        </main>
+
+        <!-- Footer pushed to bottom -->
+        <footer style="
+    width: 100%;
+    font-size: 10pt;
+    padding: 10px;
+    box-sizing: border-box;
+    margin-top: auto;
+  ">
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <div>Printed By : {{ userData.userName }}</div>
+            <span>This document is computer-generated and does not require a signature.</span>
+            <div>Printed On : {{ currentDate | formatDate }}</div>
+          </div>
+        </footer>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -101,6 +101,7 @@ interface NgbDateStructLike {
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
     CustomDatePipe,
+    TaxCalculationService,
   ],
 })
 export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestroy {
@@ -141,6 +142,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   invoiceForm!: FormGroup;
   dueDate : any;
   headerId: number | null = null;
+  private taxMastersReady: Promise<void> = Promise.resolve();
   invoiceData: any;
   currentMenuId: number;
   isViewMode: boolean = false;
@@ -205,8 +207,13 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   gstTypes = [
     { id: 'B2B', name: 'B2B - Business to Business' },
     { id: 'B2C', name: 'B2C - Business to Customer' },
-    { id: 'EXWP', name: 'Export With Payment' },
-    { id: 'EXWOP', name: 'Export Without Payment' },
+    { id: 'EXPWP', name: 'Export With Payment' },
+    { id: 'EXPWOP', name: 'Export Without Payment' },
+    { id: 'VAT', name: 'VAT' },
+  ];
+  exportGstTypes = [
+    { id: 'EXPWP', name: 'Export With Payment' },
+    { id: 'EXPWOP', name: 'Export Without Payment' },
   ];
   
   ModeofStatus = [
@@ -246,25 +253,15 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   private destroy$ = new Subject<void>();
 
   bookingModeCountry: string = 'india';
-  taxGroupMap: Map<string, any[]> = new Map();
-  buildKey(
-    TaxGroupSid: number,
-    InputOrOutput: 'Input' | 'Output',
-    placeOfSupply: string,
-    CountryMasterSid: number
-  ): string {
-    return `${TaxGroupSid}_${InputOrOutput}_${placeOfSupply}_${CountryMasterSid}`;
-  }
-  
   private pendingBranchToSelect: number | null = null;
-  
-  // Tax display mode based on country
+
+  // Tax display mode — delegated to TaxCalculationService
   get isIndiaGST(): boolean {
-    return this.currentCompanyCountryCode === 'in';
+    return this.taxCalculationService.isIndiaGST;
   }
 
   get isVATMode(): boolean {
-    return this.currentCompanyCountryCode !== 'in'; // VAT for non-India countries
+    return this.taxCalculationService.isVATMode;
   }
 
   get f(): { [key: string]: AbstractControl } {
@@ -300,7 +297,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     private companySettings: CompanySettingsManagerService,
     public mps: MenuPermissionService,
     private commonService: CommonService,
-    private taxCalculationService: TaxCalculationService,
+    public taxCalculationService: TaxCalculationService,
     private currencyConfigService: CurrencyConfigurationService,
     private currencyFormatter: CurrencyFormatService,
     private pdfService: PdfDownloadService,
@@ -385,8 +382,18 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       this.headerId = Number(id);
     }
 
+    // Preload tax masters for synchronous row-level calculation
+    this.taxMastersReady = this.taxCalculationService.init({
+      documentSide: 'SALES',
+      companyCountryCode: this.currentCompanyCountryCode,
+      companyCountryMasterSid: this.currentCountry,
+      branchStateName: this.currentBranchStateName,
+      branchStateMasterSid: this.currentBranchState?.StateMasterSid,
+    }).then(() => this.taxCalculationService.fetchTaxMasters('SALES'));
+
     this.loadLookups().subscribe({
-      next: () => {
+      next: async () => {
+        await this.taxMastersReady;
         if (this.headerId) {
           this.loadInvoiceById(this.headerId);
         } else {
@@ -462,11 +469,15 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   }
 
   subscribeToValueChanges() {
-    this.invoiceForm.get('GSTType')?.valueChanges
-    .pipe(takeUntil(this.destroy$))
-      .subscribe((value) => {
-      this.recalculateAllRows();
-    });
+    this.invoiceForm.get('InvoiceType')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((invoiceType) => {
+        if (!this.invoiceForm.get('PlaceOfSupply')?.value) return;
+        const classification = this.taxCalculationService.updateInvoiceType(invoiceType as any);
+        this.invoiceForm.get('GSTType')?.setValue(classification.formGSTType, { emitEvent: false });
+        if (this.isPosted) return;
+        this.recalculateAllRows();
+      });
 
     ['GSTType', 'CurrencyCode', 'ExchangeRate'].forEach((field) => {
       this.invoiceForm.get(field)?.valueChanges
@@ -710,12 +721,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         currencyCode: localCurrencyCode
       })
 
-      // Set default InvoiceType based on country
-      if (this.currentCompanyCountryCode === 'in') {
-        this.invoiceForm.get('InvoiceType')?.setValue('B2B');
-      } else {
-        this.invoiceForm.get('InvoiceType')?.setValue('REG');
-      }
+      this.invoiceForm.get('InvoiceType')?.setValue('REG');
       this.invoiceForm.get('GSTType')?.setValue('');
       return;
     }
@@ -726,27 +732,13 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     const customerCurrency = customer.currencyMaster || {};
     const countryCode = this.getCustomerCountryCode(customer);
 
-    // Check if customer has GST in any branch to determine B2B vs B2C
-    const customerBranches = this.customerBranchList.filter(
-      (b) => b.CustomerMasterSid === customerMasterSid
-    );
-    const hasGSTInBranches = customerBranches.some(
-      (branch) => branch.GSTNo && branch.GSTNo.trim() !== ''
-    );
     if (customer) {
       this.invoiceForm.patchValue({
         CustomerMasterSid: customer.CustomerMasterSid,
         PartyName: customer.CustomerName || '',
         PartyMasterSid: customer.SubledgerMasterSid || null,
         COAMasterSid: customer.COAMappedId || null,
-        InvoiceType:
-          countryCode === 'in'
-            ? hasGSTInBranches || customer.GSTNo
-              ? 'B2B'
-              : 'B2C'
-            : 'REG',
-        GST_VAT:
-          (countryCode === 'in' ? customer.GSTNo : customer.PanType) || '',
+        InvoiceType: 'REG',
         CurrencyMasterSid : customerCurrency?.CurrencyMasterSid ?? localCurrencyId,
         CurrencyCode : customerCurrency?.currencyCode ?? localCurrencyCode,
       });
@@ -805,6 +797,11 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         PartyAddress: foundBranch.Address,
         PlaceOfSupply: placeOfSupply,
       });
+      if (this.currentCompanyCountryCode === 'in') {
+        this.invoiceForm.get('GST_VAT')?.setValue(foundBranch?.GSTNo || '');
+      } else {
+        this.invoiceForm.get('GST_VAT')?.setValue(foundBranch?.customerMaster?.PanType || '');
+      }
     } else {
       this.invoiceForm.get('PartyAddress')?.setValue('');
       this.invoiceForm.get('PlaceOfSupply')?.setValue('');
@@ -819,47 +816,31 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       return;
     }
 
+    const customerBranchSid = this.invoiceForm.get('CustomerBranchSid')?.value;
+    const foundBranch = this.customerBranchList.find(
+      (branch) => Number(branch.CustomerBranchSid) === Number(customerBranchSid)
+    );
     const customerTaxNo = this.invoiceForm.get('GST_VAT')?.value;
     const invoiceType = this.invoiceForm.get('InvoiceType')?.value;
+    const customerCountry = this.getCustomerCountry();
 
-    const normalizedCompanyState = this.currentBranchStateName
-      ?.trim()
-      .toLowerCase();
-    const normalizedPlaceOfSupply = placeOfSupply?.trim().toLowerCase();
+    const classification = this.taxCalculationService.updateParty(
+      {
+        countryCode: customerCountry || this.currentCompanyCountryCode,
+        stateName: placeOfSupply,
+        stateMasterSid: foundBranch?.stateMaster?.StateMasterSid,
+        gstNumber: customerTaxNo,
+        customerGstType: foundBranch?.CustomerGstType || 'Regular',
+        isUnionTerritory: foundBranch?.stateMaster?.IsUnionTerritory === 'Y',
+      },
+      invoiceType as any
+    );
 
-    // Check if GST number is valid (not empty or undefined)
-    const hasValidGST =
-      customerTaxNo &&
-      customerTaxNo.trim() !== '' &&
-      customerTaxNo !== 'undefined';
+    this.invoiceForm.get('GSTType')?.setValue(classification.formGSTType);
 
-    if (!this.isIndiaGST) {
+    if (this.currentCompanyCountryCode !== 'in') {
       this.invoiceForm.get('GSTType')?.setValue('VAT');
-      return;
-    }
-
-    // India GST scenarios (only for India)
-    if (this.isIndiaGST) {
-      // Scenario 1: Export (Customer outside India)
-      if (invoiceType === 'EXWP' || invoiceType === 'EXWOP') {
-        this.invoiceForm.get('GSTType')?.setValue('EXWP');
-        return;
-      }
-
-      // Scenario 2 & 3: Regular India GST scenarios
-      if (hasValidGST) {
-        // Customer has GST number
-        if (normalizedPlaceOfSupply === normalizedCompanyState) {
-          // Same State - CGST + SGST
-          this.invoiceForm.get('GSTType')?.setValue('CGST+SGST');
-        } else {
-          // Different State - IGST
-          this.invoiceForm.get('GSTType')?.setValue('IGST');
-        }
-      } else {
-        // Customer doesn't have GST number - B2C
-        this.invoiceForm.get('GSTType')?.setValue('B2C');
-      }
+      this.invoiceForm.get('TaxType')?.setValue('VAT');
     }
   }
 
@@ -973,6 +954,12 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       this.filterChargeBasedOnDept(data.departmentMaster);
     }
 
+    if (data.CustomerMasterSid) {
+      this.getCustomerBranchByCustomer(Number(data.CustomerMasterSid));
+    } else {
+      this.customerBranchList = [];
+    }
+
     this.invoiceForm.patchValue(
       {
         VoucherNumber: data.VoucherNumber,
@@ -1065,6 +1052,16 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           Remarks: det.Remarks,
           PartyAmount: det.PartyAmount,
           IsAutoGenerated: det.IsAutoGenerated,
+          CostRevenueChargesSid:
+            det.CostRevenueChargesSid != null
+              ? Number(det.CostRevenueChargesSid)
+              : null,
+          BookingRateSid:
+            det.BookingRateSid != null
+              ? Number(det.BookingRateSid)
+              : det.BookingRatesSid != null
+              ? Number(det.BookingRatesSid)
+              : null,
         })
       );
       this.fetchHSN(this.details.length - 1,false);
@@ -1119,10 +1116,26 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         VoucherReverseSid: null,
       });
     }
+    // Set up party context for tax calculation on subsequent changes
+    const customer = this.customerList.find(
+      (c) => c.SubledgerMasterSid === data.PartyMasterSid
+    );
+    this.taxCalculationService.updateParty(
+      {
+        countryCode: customer?.countryMaster?.countryCode || this.currentCompanyCountryCode,
+        stateName: data.PlaceOfSupply || '',
+        stateMasterSid: data.customerBranch?.stateMaster?.StateMasterSid,
+        gstNumber: data.GST_VAT || '',
+        customerGstType: data.customerBranch?.CustomerGstType || 'Regular',
+        isUnionTerritory: data.customerBranch?.stateMaster?.IsUnionTerritory === 'Y',
+      },
+      data.InvoiceType as any
+    );
+
     this.spinner.hide();
   }
 
-  
+
   filterChargeBasedOnDept(dept: any) {
     if (!dept || !dept.departmentName) return;
 
@@ -1524,7 +1537,8 @@ isSeaDepartment(): boolean {
       LedgerMasterSid: [data?.LedgerMasterSid || null],
       COAMasterSid: [data?.COAMasterSid || null],
       IsAutoGenerated: [data?.IsAutoGenerated === 'Y' || false],
-      CostRevenueChargesSid: [data?.CostRevenueChargesSid || null]
+      CostRevenueChargesSid: [data?.CostRevenueChargesSid || null],
+      BookingRateSid: [data?.BookingRateSid || null]
     });
     this.disableControlsIfVoucherExists(group);
     return group;
@@ -1646,302 +1660,56 @@ isSeaDepartment(): boolean {
       this.recalcRow(index);
     }
   }
-  private async recalcRow(index: number) {
+  private recalcRow(index: number) {
     const row = this.details.at(index);
     if (!row) return;
-    if (this.isPosted) {
-      return;
-    }
+    if (this.isPosted) return;
+
     const rawValue = row.getRawValue();
     const unit = toNumber(row.get('NumberOfUnit')?.value || 0);
     const rate = toNumber(
-      this.getFormattedAmount(
-        row.get('Rate')?.value || 0,
-        rawValue.CurrencyMasterSid
-      )
+      this.getFormattedAmount(row.get('Rate')?.value || 0, rawValue.CurrencyMasterSid)
     );
     const exRate = toNumber(
-      this.getFormattedExchangeRate(
-        row.get('ExchangeRate')?.value || 0,
-        rawValue.CurrencyMasterSid
-      )
+      this.getFormattedExchangeRate(row.get('ExchangeRate')?.value || 0, rawValue.CurrencyMasterSid)
     );
 
-    // Calculate basic amounts
     const amount = unit * rate;
     const taxableAmount = amount * exRate;
     const localAmount = amount * exRate;
 
-    // Get GST Type and determine tax applicability - IMPORTANT: Get from form, not from currentUserCountry
-    const gstType = this.invoiceForm.get('GSTType')?.value;
-    const placeOfSupply = this.invoiceForm.get('PlaceOfSupply')?.value;
-
-    // Initialize tax variables
-    let cgstRate = 0,
-      sgstRate = 0,
-      igstRate = 0,
-      vatRate = 0;
-    let cgstAmt = 0,
-      sgstAmt = 0,
-      igstAmt = 0,
-      vatAmt = 0;
-
-    // Get charge data for tax ledger lookup
-    const chargeSid = row.get('ChargeMasterSid')?.value;
-    const charge = this.chargeList.find((c) => c.ChargeMasterSid === chargeSid);
-
-    if (charge) {
-      const HSSACMasterSid = row.get('HSSACMasterSid')?.value;
-      const hssacItem = (this.hssacList[index] || []).find(
-        (c) => c.HSSACMasterSid === HSSACMasterSid
-      );
-
-      if (HSSACMasterSid) {
-        let taxLedgers: any[] = [];
-        const inputOrOutput: 'Input' | 'Output' = 'Input';
-        const companyState = this.currentBranchState.stateName;
-        const currentCountry = Number(this.currentCompany?.CountryMasterSid);
-        const customerCountry = this.getCustomerCountry();
-        const taxCategory = this.determineTaxCategory(
-          companyState,
-          placeOfSupply,
-          customerCountry
-        );
-
-        const key = this.buildKey(
-          hssacItem?.TaxGroupSid,
-          inputOrOutput,
-          taxCategory,
-          currentCountry
-        );
-
-        if (this.taxGroupMap.has(key)) {
-          const alreadyFetched = this.taxGroupMap.get(key);
-          taxLedgers = alreadyFetched;
-        } else {
-          taxLedgers = await this.getTaxLedgerForHSSAC(
-            hssacItem,
-            placeOfSupply
-          );
-        }
-
-        if (taxLedgers && taxLedgers.length > 0) {
-          // Extract individual tax rates from tax master records
-          for (const tax of taxLedgers) {
-            switch (tax.TaxCode) {
-              case 'CGST':
-                cgstRate = parseFloat(tax.TaxRate || 0);
-                break;
-              case 'SGST':
-                sgstRate = parseFloat(tax.TaxRate || 0);
-                break;
-              case 'IGST':
-                igstRate = parseFloat(tax.TaxRate || 0);
-                break;
-              case 'VAT':
-                vatRate = parseFloat(tax.TaxRate || 0);
-                break;
-            }
-          }
-          // CRITICAL FIX: Apply tax based on GST type from form, not country
-          if (gstType === 'VAT') {
-            // VAT scenario - apply VAT for UAE/non-India
-            vatAmt = (taxableAmount * vatRate) / 100;
-          } else if (gstType === 'CGST+SGST') {
-            // Same state - apply CGST + SGST (India)
-            cgstAmt = (taxableAmount * cgstRate) / 100;
-            sgstAmt = (taxableAmount * sgstRate) / 100;
-          } else if (gstType === 'IGST') {
-            // Different state - apply IGST (India)
-            igstAmt = (taxableAmount * igstRate) / 100;
-          } else if (gstType === 'B2C') {
-            if (cgstRate > 0) {
-              cgstAmt = (taxableAmount * cgstRate) / 100;
-            } else if (igstRate > 0) {
-              // IMPORTANT FIX: If we have IGST but GST Type is B2C, we might want to:
-              // 1. Apply IGST as the tax amount
-              // 2. Or decide based on business logic
-              // For now, let's apply IGST for B2C when CGST is not available
-              igstAmt = (taxableAmount * igstRate) / 100;
-            }
-          } else if (gstType === 'EXWP' || gstType === 'EXWOP') {
-            // Export - no tax
-          } else {
-            // Default fallback based on country
-            if (this.isIndiaGST) {
-              // India default
-              igstAmt = (taxableAmount * igstRate) / 100;
-            } else {
-              // Non-India default (VAT)
-              vatAmt = (taxableAmount * vatRate) / 100;
-            }
-          }
-        } else {
-          // Fallback to HSSAC tax rate
-          this.applyFallbackTax(
-            index,
-            row,
-            taxableAmount,
-            gstType,
-            cgstRate,
-            cgstAmt,
-            sgstRate,
-            sgstAmt,
-            igstRate,
-            igstAmt,
-            vatRate,
-            vatAmt
-          );
-        }
-      }
-    } else {
-      this.applyFallbackTax(
-        index,
-        row,
-        taxableAmount,
-        gstType,
-        cgstRate,
-        cgstAmt,
-        sgstRate,
-        sgstAmt,
-        igstRate,
-        igstAmt,
-        vatRate,
-        vatAmt
-      );
-    }
+    // Synchronous tax calculation via preloaded TaxMasters
+    const HSSACMasterSid = row.get('HSSACMasterSid')?.value;
+    const hssacItem = (this.hssacList[index] || []).find(
+      (c: any) => c.HSSACMasterSid === HSSACMasterSid
+    );
+    const taxResult = this.taxCalculationService.calculateRowTax({
+      taxableAmount,
+      taxGroupSid: hssacItem?.TaxGroupSid,
+    });
 
     const companyCurrency = this.currentCompany?.CurrencyMasterSid;
-    // Update row values
-    row
-      .get('Amount')
-      ?.setValue(
-        toNumber(this.getFormattedAmount(amount, rawValue.CurrencyMasterSid))
-      );
-    row
-      .get('TaxableAmount')
-      ?.setValue(
-        toNumber(this.getFormattedAmount(taxableAmount, companyCurrency))
-      );
-    row.get('TaxPercentage1')?.setValue(0.0);
-    row
-      .get('TaxAmount1')
-      ?.setValue(toNumber(this.getFormattedAmount(0.0, companyCurrency)));
-    row.get('TaxPercentage2')?.setValue(0);
-    row
-      .get('TaxAmount2')
-      ?.setValue(toNumber(this.getFormattedAmount(0.0, companyCurrency)));
-
-    if (gstType === 'VAT') {
-      // VAT - use TaxPercentage1 and TaxAmount1 for VAT
-      row.get('TaxPercentage1')?.setValue(vatRate);
-      row
-        .get('TaxAmount1')
-        ?.setValue(toNumber(this.getFormattedAmount(vatAmt, companyCurrency)));
-    } else if (gstType === 'CGST+SGST') {
-      // CGST+SGST
-      row.get('TaxPercentage1')?.setValue(cgstRate);
-      row
-        .get('TaxAmount1')
-        ?.setValue(toNumber(this.getFormattedAmount(cgstAmt, companyCurrency)));
-      row.get('TaxPercentage2')?.setValue(this.round(sgstRate));
-      row
-        .get('TaxAmount2')
-        ?.setValue(toNumber(this.getFormattedAmount(sgstAmt, companyCurrency)));
-    } else if (gstType === 'IGST') {
-      // IGST or B2C - use TaxPercentage1 and TaxAmount1 only
-      const rate = gstType === 'IGST' ? igstRate : cgstRate;
-      const amount = gstType === 'IGST' ? igstAmt : cgstAmt;
-      row.get('TaxPercentage1')?.setValue(rate);
-      row
-        .get('TaxAmount1')
-        ?.setValue(toNumber(this.getFormattedAmount(amount, companyCurrency)));
-    } else {
-      // Default based on country
-      if (this.isIndiaGST) {
-        // India default - use TaxPercentage1 and TaxAmount1
-        row.get('TaxPercentage1')?.setValue(igstRate);
-        row
-          .get('TaxAmount1')
-          ?.setValue(
-            toNumber(this.getFormattedAmount(igstAmt, companyCurrency))
-          );
-      } else {
-        // Non-India default (VAT)
-        row.get('TaxPercentage1')?.setValue(vatRate);
-        row.get('TaxAmount1')?.setValue(this.getFormattedAmount(vatAmt,companyCurrency));
-      }
-    }
-
-    row.get('LocalAmount')?.setValue(this.getFormattedAmount(localAmount,companyCurrency));
+    row.get('Amount')?.setValue(
+      toNumber(this.getFormattedAmount(amount, rawValue.CurrencyMasterSid))
+    );
+    row.get('TaxableAmount')?.setValue(
+      toNumber(this.getFormattedAmount(taxableAmount, companyCurrency))
+    );
+    row.get('TaxPercentage1')?.setValue(taxResult.TaxPercentage1);
+    row.get('TaxAmount1')?.setValue(
+      toNumber(this.getFormattedAmount(taxResult.TaxAmount1, companyCurrency))
+    );
+    row.get('TaxPercentage2')?.setValue(taxResult.TaxPercentage2);
+    row.get('TaxAmount2')?.setValue(
+      toNumber(this.getFormattedAmount(taxResult.TaxAmount2, companyCurrency))
+    );
+    row.get('LocalAmount')?.setValue(this.getFormattedAmount(localAmount, companyCurrency));
     row.get('PartyAmount')?.setValue(this.getPartyAmount(index));
 
     this.updateBillAmount();
     this.invoiceForm.updateValueAndValidity();
   }
 
-  private applyFallbackTax(
-    index: number,
-    row: any,
-    taxableAmount: number,
-    gstType: string,
-    cgstRate: number,
-    cgstAmt: number,
-    sgstRate: number,
-    sgstAmt: number,
-    igstRate: number,
-    igstAmt: number,
-    vatRate: number,
-    vatAmt: number
-  ) {
-    const hssacSid = row.get('HSSACMasterSid')?.value;
-    const hssac =
-      this.hssacList[index] || [].find((h) => h.HSSACMasterSid === hssacSid);
-
-    // Determine tax rate based on GST type
-    if (gstType === 'VAT') {
-      // VAT - use 5% as default for UAE/non-India
-      vatRate = hssac?.TaxRate || 5;
-      vatAmt = (taxableAmount * vatRate) / 100;
-    } else {
-      // India GST - use 18% as default
-      const defaultTaxRate = hssac?.TaxRate || 18;
-
-      switch (gstType) {
-        case 'CGST+SGST':
-          // Same state - split tax rate for CGST and SGST
-          cgstRate = defaultTaxRate / 2;
-          cgstAmt = (taxableAmount * cgstRate) / 100;
-          sgstRate = defaultTaxRate / 2;
-          sgstAmt = (taxableAmount * sgstRate) / 100;
-          break;
-        case 'IGST':
-          // Different state - full tax rate for IGST
-          igstRate = defaultTaxRate;
-          igstAmt = (taxableAmount * igstRate) / 100;
-          break;
-        case 'B2C':
-          // B2C - apply full tax as CGST
-          cgstRate = defaultTaxRate;
-          cgstAmt = (taxableAmount * cgstRate) / 100;
-          break;
-        case 'EXWP':
-        case 'EXWOP':
-          // Export - no tax
-          break;
-        default:
-          // Default to IGST for India, VAT for non-India
-          if (this.isIndiaGST) {
-            igstRate = defaultTaxRate;
-            igstAmt = (taxableAmount * igstRate) / 100;
-          } else {
-            vatRate = hssac?.TaxRate || 5;
-            vatAmt = (taxableAmount * vatRate) / 100;
-          }
-          break;
-      }
-    }
-  }
 
   updateBillAmount() {
     const totalLocalAmount = this.calculateTotalLocalAmount();
@@ -2332,7 +2100,8 @@ isSeaDepartment(): boolean {
           MasterJobSid: d.MasterJobSid ? Number(d.MasterJobSid) : null,
           HouseJobSid: d.HouseJobSid ? Number(d.HouseJobSid) : null,
           YearMasterSid: YearMasterSid,
-          CostRevenueChargesSid: d.CostRevenueChargesSid ? Number(d.CostRevenueChargesSid) : null
+          CostRevenueChargesSid: d.CostRevenueChargesSid ? Number(d.CostRevenueChargesSid) : null,
+          BookingRateSid: d.BookingRateSid ? Number(d.BookingRateSid) : null
         };
         return detail;
       }
@@ -2364,6 +2133,7 @@ isSeaDepartment(): boolean {
       InvoiceType: raw.InvoiceType || 'REG',
       GSTType: raw.GSTType || '',
       TaxType : raw.TaxType || "VAT",
+      State: this.taxCalculationService.context?.taxCategory || 'Inter',
       CurrencyMasterSid: raw.CurrencyMasterSid ?? null,
       PostStatus: raw.PostStatus || 'U',
       CurrencyCode: raw.CurrencyCode || undefined,
@@ -3422,121 +3192,12 @@ isSeaDepartment(): boolean {
     });
   }
 
-  private async getTaxLedgerForHSSAC(
-    hssacItem: any,
-    placeOfSupplyState: string
-  ): Promise<any> {
-    try {
-      const taxGroupSid = hssacItem?.TaxGroupSid;
-
-      if (!taxGroupSid) {
-        return null;
-      }
-
-      const currentCountry = Number(this.currentCompany?.CountryMasterSid);
-
-      // Determine Input/Output - INVOICE = OUTPUT (selling goods/services)
-      const inputOrOutput: 'Input' | 'Output' = 'Input';
-
-      const companyState = this.currentBranchStateName;
-      const customerCountry = this.getCustomerCountry();
-      const taxCategory = this.determineTaxCategory(
-        companyState,
-        placeOfSupplyState,
-        customerCountry
-      );
-
-      const payload = {
-        taxGroup: taxGroupSid,
-        InputOrOutput: inputOrOutput,
-        TaxCategory: taxCategory,
-        CountryMasterSid: currentCountry,
-      };
-
-      const response = await firstValueFrom(
-        this.operationService.getLedgerForTaxGroup(payload).pipe(
-          catchError((error) => {
-            console.error('Error calling getLedgerForTaxGroup:', error);
-            return of(null);
-          })
-        )
-      );
-
-      let key = this.buildKey(
-        payload.taxGroup,
-        payload.InputOrOutput,
-        payload.TaxCategory,
-        payload.CountryMasterSid
-      );
-
-      if (this.taxGroupMap.has(key)) {
-        return this.taxGroupMap.get(key);
-      }
-
-      if (response?.status && response.data && response.data.length > 0) {
-        const taxGroupData = response.data[0];
-
-        // Return individual tax master records for proper calculation
-        if (taxGroupData.taxMaster && Array.isArray(taxGroupData.taxMaster)) {
-          const taxMasters = taxGroupData.taxMaster || [];
-          this.taxGroupMap.set(key, taxMasters);
-          return taxGroupData.taxMaster;
-        }
-
-        // Fallback to tax group rate if no individual tax masters
-        const taxMasters = taxGroupData;
-        this.taxGroupMap.set(key, taxMasters);
-        return [taxGroupData];
-      } else {
-        console.warn(
-          'No tax ledger data found for HSSACCode:',
-          hssacItem?.HSSACCode
-        );
-        return null;
-      }
-    } catch (error) {
-      console.error('Error fetching tax ledger:', error);
-      return null;
-    }
-  }
-
   private getCustomerCountry(): string {
     const customer = this.customerList.find(
-      (c) =>
+      (c: any) =>
         c.SubledgerMasterSid === this.invoiceForm.get('PartyMasterSid')?.value
     );
     return customer?.countryMaster?.countryCode || '';
-  }
-
-  /**
-   * Determine tax category based on company state and place of supply
-   */
-  private determineTaxCategory(
-    companyState: string,
-    billingPartyState: string,
-    customerCountry: string
-  ): 'Inter' | 'Intra' {
-    if (!companyState || !billingPartyState) {
-      return 'Inter';
-    }
-
-    // Normalize country codes for comparison
-    const normalizedCustomerCountry = customerCountry?.toLowerCase() || '';
-    const isIndianCustomer = normalizedCustomerCountry === 'in';
-    const isInternationalCustomer =
-      !isIndianCustomer && normalizedCustomerCountry !== '';
-
-    // For international customers (like Dubai), use 'Inter' category for VAT
-    if (isInternationalCustomer) {
-      return 'Inter';
-    }
-
-    // For Indian customers, check if same state or different state
-    const normalizedCompanyState = companyState.trim().toLowerCase();
-    const normalizedBillingState = billingPartyState.trim().toLowerCase();
-
-    const isSameState = normalizedCompanyState === normalizedBillingState;
-    return isSameState ? 'Inter' : 'Intra';
   }
 
   printDiv(divId: string): void {
@@ -3758,65 +3419,11 @@ isSeaDepartment(): boolean {
   getTaxDisplayConfig(): {
     showCGST: boolean;
     showSGST: boolean;
+    showUGST: boolean;
     showIGST: boolean;
     showVAT: boolean;
   } {
-    const gstType = this.invoiceForm.get('GSTType')?.value;
-    const isIndia = this.currentCompanyCountryCode === 'in';
-
-    if (!isIndia) {
-      // Non-India countries (like UAE) - show VAT only
-      return {
-        showCGST: false,
-        showSGST: false,
-        showIGST: false,
-        showVAT: true,
-      };
-    }
-
-    // India GST logic
-    if (gstType === 'CGST+SGST') {
-      // Same state - show CGST and SGST
-      return {
-        showCGST: true,
-        showSGST: true,
-        showIGST: false,
-        showVAT: false,
-      };
-    } else if (gstType === 'IGST') {
-      // Different state - show IGST only
-      return {
-        showCGST: false,
-        showSGST: false,
-        showIGST: true,
-        showVAT: false,
-      };
-    } else if (gstType === 'B2C') {
-      // B2C - show CGST only (for B2C in India)
-      return {
-        showCGST: true,
-        showSGST: false,
-        showIGST: false,
-        showVAT: false,
-      };
-    } else if (gstType === 'VAT') {
-      // VAT (shouldn't happen for India, but just in case)
-      return {
-        showCGST: false,
-        showSGST: false,
-        showIGST: false,
-        showVAT: true,
-      };
-    }
-
-    
-    // Default: Show all GST columns for India
-    return {
-      showCGST: true,
-      showSGST: true,
-      showIGST: true,
-      showVAT: false,
-    };
+    return this.taxCalculationService.getTaxDisplayConfig();
   }
 
   
@@ -3844,30 +3451,23 @@ isSeaDepartment(): boolean {
     igstRate: number;
     vatRate: number;
   } {
-    const gstType = this.invoiceForm.get('GSTType')?.value;
+    const mode = this.taxCalculationService.context?.appliedTaxMode;
 
-    if (gstType === 'CGST+SGST') {
+    if (mode === 'CGST_SGST') {
       return {
         cgstRate: detail.TaxPercentage1 || 0,
         sgstRate: detail.TaxPercentage2 || 0,
         igstRate: 0,
         vatRate: 0,
       };
-    } else if (gstType === 'IGST') {
+    } else if (mode === 'IGST') {
       return {
         cgstRate: 0,
         sgstRate: 0,
         igstRate: detail.TaxPercentage1 || 0,
         vatRate: 0,
       };
-    } else if (gstType === 'B2C') {
-      return {
-        cgstRate: detail.TaxPercentage1 || 0,
-        sgstRate: 0,
-        igstRate: 0,
-        vatRate: 0,
-      };
-    } else if (gstType === 'VAT') {
+    } else if (mode === 'VAT') {
       return {
         cgstRate: 0,
         sgstRate: 0,
@@ -3879,8 +3479,8 @@ isSeaDepartment(): boolean {
     return {
       cgstRate: detail.TaxPercentage1 || 0,
       sgstRate: detail.TaxPercentage2 || 0,
-      igstRate: detail.TaxPercentage1 || 0,
-      vatRate: detail.TaxPercentage1 || 0,
+      igstRate: 0,
+      vatRate: 0,
     };
   }
   getTaxAmountForDisplay(detail: any): {
@@ -3889,37 +3489,23 @@ isSeaDepartment(): boolean {
     igstAmt: number;
     vatAmt: number;
   } {
-    const taxType = this.invoiceForm.get('TaxType')?.value;
-    const currentCompanyState = toNumber(this.currentBranch?.StateMasterSid)
-    const customerBranchFromForm = toNumber(this.invoiceForm.get('CustomerBranchSid')?.value);
-    const customerState = this.customerBranchList.find(
-      c => c.CustomerBranchSid === customerBranchFromForm
-    )?.StateMasterSid;
-    console.log("DEBUG getTaxAmountForDisplay",{
-      taxType,
-      currentCompanyCountry : this.currentCompanyCountryCode,
-      currentCompanyState,
-      customerBranchFromForm,
-      customerState
-    })
-    if(this.currentCompanyCountryCode === 'in'){
-      if(currentCompanyState === customerState){
-        return {
-          cgstAmt: detail.TaxAmount1 || 0,
-          sgstAmt: detail.TaxAmount2 || 0,
-          igstAmt: 0,
-          vatAmt: 0,
-        }
-      } else {
-        return {
-          cgstAmt: detail.TaxAmount1 || 0,
-          sgstAmt: 0,
-          igstAmt: 0,
-          vatAmt: 0,
-        }
-      }
-    }
-    if (taxType === 'VAT') {
+    const mode = this.taxCalculationService.context?.appliedTaxMode;
+
+    if (mode === 'CGST_SGST') {
+      return {
+        cgstAmt: detail.TaxAmount1 || 0,
+        sgstAmt: detail.TaxAmount2 || 0,
+        igstAmt: 0,
+        vatAmt: 0,
+      };
+    } else if (mode === 'IGST') {
+      return {
+        cgstAmt: 0,
+        sgstAmt: 0,
+        igstAmt: detail.TaxAmount1 || 0,
+        vatAmt: 0,
+      };
+    } else if (mode === 'VAT') {
       return {
         cgstAmt: 0,
         sgstAmt: 0,
@@ -3931,8 +3517,8 @@ isSeaDepartment(): boolean {
     return {
       cgstAmt: toNumber(detail.TaxAmount1) || 0,
       sgstAmt: toNumber(detail.TaxAmount2) || 0,
-      igstAmt: toNumber(detail.TaxAmountIGST) || 0,
-      vatAmt: toNumber(detail.TaxAmount1) || 0
+      igstAmt: 0,
+      vatAmt: 0,
     };
   }
   
@@ -4216,7 +3802,8 @@ patchUninvoicedChargeToDetails(charge: any) {
     COAMasterSid: null,
     IsAutoGenerated: false,
     CostRevenue: 'Revenue',
-    CostRevenueChargesSid: charge.CostRevenueChargesSid
+    CostRevenueChargesSid: charge.CostRevenueChargesSid,
+    BookingRateSid: charge.BookingRateSid
   });
 
    // Add to form array first
@@ -4243,7 +3830,8 @@ patchUninvoicedChargeToDetails(charge: any) {
     'DepartmentMasterSid',
     'LedgerMasterSid',
     'COAMasterSid',
-    'CostRevenueChargesSid'
+    'CostRevenueChargesSid',
+    'BookingRateSid'
   ];
    controlsToDisable.forEach(controlName => {
     const control = this.details.at(index).get(controlName);
