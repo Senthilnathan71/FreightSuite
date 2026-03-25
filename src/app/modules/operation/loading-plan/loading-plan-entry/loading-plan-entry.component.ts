@@ -412,21 +412,7 @@ export class LoadingPlanEntryComponent {
       this.filteredPOD = [];
       return;
     }
-    const deptType = this.selectedDepartment?.departmentType;
-    const selectedFCLLCL = deptType === "Sea" ? this.selectedDepartment?.FCLLCL.toUpperCase() : deptType.toUpperCase();
-    if (selectedFCLLCL === 'LCL' || selectedFCLLCL === 'FCL') {
-      this.filteredPorts = this.portList.filter(port => port.PortType === 'Sea');
-      const pol = this.filteredPorts.find(port => port.PortCode === this.selectedDepartment?.POL);
-      const pod = this.filteredPorts.find(port => port.PortCode === this.selectedDepartment?.POD);
-      this.handlePOLChange(pol);
-      this.handlePODChange(pod);
-    } else {
-      this.filteredPorts = this.portList.filter(port => port.PortType === 'Air');
-      const pol = this.filteredPorts.find(port => port.PortCode === this.selectedDepartment?.POL);
-      const pod = this.filteredPorts.find(port => port.PortCode === this.selectedDepartment?.POD);
-      this.handlePOLChange(pol);
-      this.handlePODChange(pod);
-    }
+    this.refreshPortFilters();
   }
 
   handlePOLChange(selectedPort: any) {
@@ -441,11 +427,11 @@ export class LoadingPlanEntryComponent {
     this.loadingPlanForm.get('vesselVoyage')?.setValue(null);
     if (!selectedPort) {
       this.selectedPOL = null;
-      this.filteredPOD = [...this.filteredPorts];
+      this.refreshPortFilters();
       return;
     }
     this.selectedPOL = selectedPort;
-    this.filteredPOD = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPort.PortMasterSid);
+    this.refreshPortFilters();
     this.fetchVesselForCondition();
   }
 
@@ -461,12 +447,152 @@ export class LoadingPlanEntryComponent {
     this.loadingPlanForm.get('vesselVoyage')?.setValue(null);
     if (!selectedPort) {
       this.selectedPOD = null;
-      this.filteredPOL = [...this.filteredPorts];
+      this.refreshPortFilters();
       return;
     }
     this.selectedPOD = selectedPort;
-    this.filteredPOL = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPort.PortMasterSid);
+    this.refreshPortFilters();
     this.fetchVesselForCondition();
+  }
+
+  private refreshPortFilters(): void {
+    const filteredLists = this.buildPortFilterLists();
+    this.filteredPorts = filteredLists.filteredPorts;
+    this.filteredPOL = filteredLists.filteredPOL;
+    this.filteredPOD = filteredLists.filteredPOD;
+
+    if (this.clearInvalidSelectedPorts(filteredLists)) {
+      const updatedLists = this.buildPortFilterLists();
+      this.filteredPorts = updatedLists.filteredPorts;
+      this.filteredPOL = updatedLists.filteredPOL;
+      this.filteredPOD = updatedLists.filteredPOD;
+    }
+  }
+
+  private buildPortFilterLists() {
+    if (!this.selectedDepartment) {
+      return {
+        filteredPorts: [],
+        filteredPOL: [],
+        filteredPOD: []
+      };
+    }
+
+    const segment = this.getSelectedSegment();
+    const basePorts = this.getFilteredPortsBySegment(segment);
+    const shipmentDirection = this.getShipmentDirection();
+    const foreignPorts = basePorts.filter(port => this.isForeignCountryPort(port));
+    const companyCountryPorts = basePorts.filter(port => this.isCompanyCountryPort(port));
+
+    let polPorts = [...basePorts];
+    let podPorts = [...basePorts];
+
+    if (shipmentDirection === 'EXPORT') {
+      polPorts = [...companyCountryPorts];
+      podPorts = [...foreignPorts];
+    } else if (shipmentDirection === 'IMPORT') {
+      polPorts = [...foreignPorts];
+      podPorts = [...companyCountryPorts];
+    }
+
+    const selectedPOLCode = this.selectedPOL?.PortCode ?? this.loadingPlanForm.get('pol')?.value;
+    const selectedPODCode = this.selectedPOD?.PortCode ?? this.loadingPlanForm.get('pod')?.value;
+
+    return {
+      filteredPorts: basePorts,
+      filteredPOL: polPorts.filter(port => port.PortCode !== selectedPODCode),
+      filteredPOD: podPorts.filter(port => port.PortCode !== selectedPOLCode)
+    };
+  }
+
+  private clearInvalidSelectedPorts(filteredLists: any): boolean {
+    let hasChanges = false;
+
+    if (this.selectedPOL && !filteredLists.filteredPOL.some(port => port.PortCode === this.selectedPOL?.PortCode)) {
+      this.selectedPOL = null;
+      this.loadingPlanForm.get('pol')?.setValue(null, { emitEvent: false });
+      hasChanges = true;
+    }
+
+    if (this.selectedPOD && !filteredLists.filteredPOD.some(port => port.PortCode === this.selectedPOD?.PortCode)) {
+      this.selectedPOD = null;
+      this.loadingPlanForm.get('pod')?.setValue(null, { emitEvent: false });
+      hasChanges = true;
+    }
+
+    return hasChanges;
+  }
+
+  private getSelectedSegment(): string {
+    const departmentType = this.normalizePortText(this.selectedDepartment?.departmentType);
+    return departmentType === 'SEA'
+      ? this.normalizePortText(this.selectedDepartment?.FCLLCL)
+      : departmentType;
+  }
+
+  private getFilteredPortsBySegment(segment: string): any[] {
+    if (segment === 'AIR') {
+      return this.portList.filter(port => this.normalizePortText(port?.PortType) === 'AIR');
+    }
+
+    if (segment === 'FCL' || segment === 'LCL' || segment === 'SEA') {
+      return this.portList.filter(port => this.normalizePortText(port?.PortType) === 'SEA');
+    }
+
+    if (segment === 'ROAD') {
+      return this.portList.filter(port => {
+        const portType = this.normalizePortText(port?.PortType);
+        return portType === 'ROAD' || portType.includes('ROAD') || portType.includes('LAND') || portType.includes('LOCATION');
+      });
+    }
+
+    return [];
+  }
+
+  private getShipmentDirection(): 'EXPORT' | 'IMPORT' | '' {
+    const direction = this.normalizePortText(this.selectedDepartment?.ExportImport);
+    if (direction === 'EXPORT' || direction === 'IMPORT') {
+      return direction as 'EXPORT' | 'IMPORT';
+    }
+
+    return '';
+  }
+
+  private isCompanyCountryPort(port: any): boolean {
+    const companyCountryId = this.toNumericValue(this.currentCompany?.CountryMasterSid);
+    const portCountryId = this.toNumericValue(port?.CountryMasterSid);
+
+    if (companyCountryId && portCountryId) {
+      return companyCountryId === portCountryId;
+    }
+
+    const companyCountryName = this.normalizePortText(this.currentCompany?.CountryName || this.currentCompany?.countryMaster?.countryName);
+    const portCountryName = this.normalizePortText(port?.Country || port?.countryMaster?.countryName);
+
+    return !!companyCountryName && !!portCountryName && companyCountryName === portCountryName;
+  }
+
+  private isForeignCountryPort(port: any): boolean {
+    const companyCountryId = this.toNumericValue(this.currentCompany?.CountryMasterSid);
+    const portCountryId = this.toNumericValue(port?.CountryMasterSid);
+
+    if (companyCountryId && portCountryId) {
+      return companyCountryId !== portCountryId;
+    }
+
+    const companyCountryName = this.normalizePortText(this.currentCompany?.CountryName || this.currentCompany?.countryMaster?.countryName);
+    const portCountryName = this.normalizePortText(port?.Country || port?.countryMaster?.countryName);
+
+    return !!companyCountryName && !!portCountryName && companyCountryName !== portCountryName;
+  }
+
+  private normalizePortText(value: any): string {
+    return String(value ?? '').trim().toUpperCase();
+  }
+
+  private toNumericValue(value: any): number | null {
+    const parsedValue = Number(value);
+    return Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : null;
   }
 
   fetchVesselForCondition() {

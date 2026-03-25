@@ -91,27 +91,6 @@
                     </div>
                 </div>
             </div>
-            <div class="action-group pull-to-import-group" *ngIf="canPullToImportBranch">
-                <dofi-searchable-dropdown
-                    class="me-2"
-                    [items]="availableTransferBranches"
-                    [(ngModel)]="selectedTransferBranchSid"
-                    [displayFields]="branchLookupConfig.displayFields"
-                    [displayLabels]="branchLookupConfig.displayLabels"
-                    [labelFields]="branchLookupConfig.labelFields"
-                    bindValue="BranchMasterSid"
-                    placeholder="Destination Branch"
-                    [clearable]="false">
-                </dofi-searchable-dropdown>
-                <button
-                    class="btn btn-outline-info btn-sm"
-                    (click)="pullMasterJobToImportBranch()"
-                    [disabled]="masterJobForm.dirty || isPullingToImportBranch || !selectedTransferBranchSid"
-                    >
-                    <i class="fas fa-download me-1"></i>
-                    <span>{{ isPullingToImportBranch ? 'Pulling...' : 'Pull To Import' }}</span>
-                </button>
-            </div>
             <div class="action-group" >
                 <div ngbDropdown container="body" class="d-inline-block">
                     <button type="button" class="btn btn-info btn-sm" id="dropdownUpload" ngbDropdownToggle>
@@ -461,7 +440,7 @@
                                                     {{ item.PortCode | uppercase }} - {{ item.PortName }}
                                                 </ng-template>
                                             </ng-select> -->
-                                            <dofi-searchable-dropdown [items]="portList" formControlName="POO" placeholder=""
+                                            <dofi-searchable-dropdown [items]="filteredPOO" formControlName="POO" placeholder=""
                         [displayFields]="portLookupConfig.displayFields"
                         [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
                         bindLabel="PortCode" bindValue="PortMasterSid"
@@ -538,7 +517,7 @@
                                                     {{ item.PortCode | uppercase }} - {{ item.PortName }}
                                                 </ng-template>
                                             </ng-select> -->
-                                            <dofi-searchable-dropdown [items]="portList" formControlName="FPD" placeholder=""
+                                            <dofi-searchable-dropdown [items]="filteredFPOD" formControlName="FPD" placeholder=""
                         [displayFields]="portLookupConfig.displayFields"
                         [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
                         bindLabel="PortCode" bindValue="PortMasterSid"
@@ -1678,6 +1657,44 @@
                                         </div>
                                     </aside>
 
+                    <div class="col-md-12 mt-2" *ngIf="canPullToImportBranch">
+                        <div class="pull-import-panel">
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-4">
+                                    <div class="custom-form-group custom-form-group-select"
+                                        [class.filled]="!!selectedTransferBranchSid">
+                                        <dofi-searchable-dropdown
+                                            [items]="availableTransferBranches"
+                                            [(ngModel)]="selectedTransferBranchSid"
+                                            [displayFields]="branchLookupConfig.displayFields"
+                                            [displayLabels]="branchLookupConfig.displayLabels"
+                                            [labelFields]="branchLookupConfig.labelFields"
+                                            bindValue="BranchMasterSid"
+                                            placeholder=""
+                                            [ngModelOptions]="{ standalone: true }"
+                                            [readonly]="isExportToImportCompleted"
+                                            [clearable]="false">
+                                        </dofi-searchable-dropdown>
+                                        <label class="input-label">Destination Branch</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end">
+                                    <button
+                                        class="btn btn-outline-info btn-sm w-100"
+                                        (click)="pullMasterJobToImportBranch()"
+                                        [disabled]="masterJobForm.dirty || isPullingToImportBranch || !selectedTransferBranchSid || isExportToImportCompleted">
+                                        <i class="fas fa-download me-1"></i>
+                                        <span>{{ isPullingToImportBranch ? 'Pulling...' : (isExportToImportCompleted ? 'Pull To Import Successful' : 'Pull To Import') }}</span>
+                                    </button>
+                                </div>
+                                <div class="col-md-5 d-flex align-items-center">
+                                    <small class="text-muted">
+                                        Pull this export master job into the selected import branch after you finish the export side.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                 </div>
                 <div class="row mt-3" *ngIf="isTranshipment">

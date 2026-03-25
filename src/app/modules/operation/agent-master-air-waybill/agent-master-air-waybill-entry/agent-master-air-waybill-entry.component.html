@@ -31,7 +31,7 @@
       </div> -->
       <div class="action-group" *ngIf="isEditMode">
         <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-          (click)="openAuditLogs(auditLogModal)">
+          (click)="openAuditLogs()">
           <i class="fas fa-history me-1"></i>
           <span>Logs</span>
         </button>
@@ -789,7 +789,7 @@
                           }
                         </div>
                       </aside>
-                      <aside class="col-md-6" [formGroup]="cargoForm">
+                      <!-- <aside class="col-md-6" [formGroup]="cargoForm">
                         <div class="custom-form-group custom-form-group-select"
                           [class.filled]="!!cargoForm.get('ModeOfTransport')?.value">
                           <ng-select [items]="modeoftransport" bindLabel="name" bindValue="name" class="ng-select"
@@ -798,7 +798,7 @@
                           <label for="text-input" class="input-label">Mode of Transport<span
                               class="text-danger"></span></label>
                         </div>
-                      </aside>
+                      </aside> -->
                       @if(selectedDepartmentType === "SEA"){
                       <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select"
@@ -2651,6 +2651,7 @@
 
         <div class="workspace-content" [hidden]="selectedTab !== 'Connection'">
           <app-connection screenName="Booking" [dataItems]="bookingConnectionsArr"
+            [connectionIdField]="'TransactionSid'"
             [resetTrigger]="resetTriggerConnection" [minDate]="minStartDate" [portList]="portList"
             [disableAdd]="PODandFPODsame" [vesselList]="vesselList" (dataEmitter)="handleConnectionChange($event)">
           </app-connection>
