@@ -1399,8 +1399,8 @@
                 <span>Gross Weight cannot exceed 9,999,999.999</span>
                 } @else if (cargoForm.get('GrossWeight')?.errors?.['decimalPrecision']) {
                 <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
-                } @else if (cargoForm.get('GrossWeight')?.errors?.['grossLessThanNet']) {
-                <span>Gross Weight cannot be less than Net Weight</span>
+                <!-- } @else if (cargoForm.get('GrossWeight')?.errors?.['grossLessThanNet']) {
+                <span>Gross Weight cannot be less than Net Weight</span> -->
                 }
                 @else if (cargoForm.get('GrossWeight')?.errors?.['required']) {
                 <span>Required</span>
@@ -1426,8 +1426,8 @@
                 <span>Net Weight cannot exceed 9,999,999.999</span>
                 } @else if (cargoForm.get('NetWeight')?.errors?.['decimalPrecision']) {
                 <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
-                } @else if (cargoForm.get('NetWeight')?.errors?.['netGreaterThanGross']) {
-                <span>Net Weight cannot be greater than Gross Weight</span>
+                <!-- } @else if (cargoForm.get('NetWeight')?.errors?.['netGreaterThanGross']) {
+                <span>Net Weight cannot be greater than Gross Weight</span> -->
                 }
               </div>
               }

@@ -210,3 +210,15 @@ User Profile
   height: 40px;
   background: $dark;
 }
+
+
+.custom-dropdown-item.keyboard-active {
+  background: linear-gradient(135deg, #05608d 0%, #056a9c 100%);
+  color: #fff !important;
+  border-radius: 15px;
+}
+
+.custom-dropdown-item.keyboard-active i,
+.custom-dropdown-item.keyboard-active span {
+  color: #fff !important;
+}

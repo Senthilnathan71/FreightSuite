@@ -166,9 +166,10 @@ isTermsAndConditionsEnabled: boolean = true;
 // Customs pre-save validation modal
 showCustomsValidationModal = false;
 customsValidationErrors: { recordType: string; fieldRef: string; fieldName: string; tabName?: string }[] = [];
-showCreditValidationModal = false;
-creditValidationActionLabel = '';
-creditValidationSummary: any = null;
+  showCreditValidationModal = false;
+  creditValidationActionLabel = '';
+  creditValidationSummary: any = null;
+  private weightMismatchToastState = new WeakMap<FormGroup, boolean>();
 
   //Variable Declaration - Common
   detailForm !: FormGroup;
@@ -3365,7 +3366,11 @@ getVoyageTypeBasedOnDept(deptId: number) {
   isQuickFormExpanded = false;
 
 resetForm() {
-  this.houseJobForm.reset({
+  if(this.isEditMode){
+    this.patchValues(this.housejobData);
+  }
+  else{
+      this.houseJobForm.reset({
     status: 'Active'
   });
 
@@ -3390,6 +3395,8 @@ resetForm() {
 
   this.cargoForm.reset();
   this.otherForm.reset();
+  }
+
 }
 
   toNgbDateStruct(date: Date | null): NgbDateStruct | null {
@@ -5379,13 +5386,23 @@ volumeAmount(): number {
     delete grossErrors['grossLessThanNet'];
     delete netErrors['netGreaterThanGross'];
 
-    if (grossValue && netValue && Number(grossValue) < Number(netValue)) {
+    const hasWeightMismatch = !!grossValue && !!netValue && Number(grossValue) < Number(netValue);
+
+    if (hasWeightMismatch) {
       grossErrors['grossLessThanNet'] = true;
       netErrors['netGreaterThanGross'] = true;
     }
 
     grossCtrl.setErrors(Object.keys(grossErrors).length ? grossErrors : null);
     netCtrl.setErrors(Object.keys(netErrors).length ? netErrors : null);
+
+    const wasMismatchShown = this.weightMismatchToastState.get(formGroup) === true;
+    if (hasWeightMismatch && !wasMismatchShown) {
+      this.appSettingService.showWarning('Gross Weight cannot be less than Net Weight');
+      this.weightMismatchToastState.set(formGroup, true);
+    } else if (!hasWeightMismatch && wasMismatchShown) {
+      this.weightMismatchToastState.set(formGroup, false);
+    }
   }
  toggleProductInputType(formGroup: FormGroup, mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
   event.stopPropagation();

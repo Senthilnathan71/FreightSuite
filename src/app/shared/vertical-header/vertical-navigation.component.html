@@ -261,8 +261,10 @@
                     class="dropdown-item d-flex align-items-center py-1 custom-dropdown-item"
                     [class.active]="i === menuActiveIndex"
                     [class.bg-light]="i === menuActiveIndex"
+                    [class.keyboard-active]="i === menuActiveIndex"
                     href="javascript:void(0)"
                     (mousedown)="navigateToMenu(result)"
+                    #menuItem
                   >
 
                       <!-- ICON with fixed width -->
@@ -335,8 +337,10 @@
                 class="dropdown-item custom-dropdown-item d-flex align-items-center py-2"
                 [class.active]="i === docActiveIndex"
                 [class.bg-light]="i === docActiveIndex"
+                [class.keyboard-active]="i === docActiveIndex"
                 href="javascript:void(0)"
-                (mousedown)="navigateToDocument(result)">
+                (mousedown)="navigateToDocument(result)"
+                #docItem>
                 <span class="badge me-2"
                   [ngClass]="{
                     'bg-primary': result.documentType === 'BOOKING',

@@ -76,6 +76,7 @@ branchList: any[] = [];
   private menuSearchSubject = new Subject<string>();
   @ViewChild('searchMenuInput') searchMenuInput!: ElementRef<HTMLInputElement>;
   @ViewChild('menuSearchDropdown') menuSearchDropdown!: NgbDropdown;
+  @ViewChildren('menuItem') menuItems!: QueryList<ElementRef<HTMLElement>>;
   menuActiveIndex = -1;
 
   // Document Search Related Variables
@@ -85,6 +86,7 @@ branchList: any[] = [];
   private docSearchSubject = new Subject<string>();
   @ViewChild('docSearchInput') docSearchInput!: ElementRef<HTMLInputElement>;
   @ViewChild('docSearchDropdown') docSearchDropdown!: NgbDropdown;
+  @ViewChildren('docItem') docItems!: QueryList<ElementRef<HTMLElement>>;
   docActiveIndex = -1;
   @ViewChild('resetTemplate') resetTemplate!: TemplateRef<any>;
   resetPasswordForm!: FormGroup;
@@ -620,18 +622,32 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
 
   onMenuSearchKeyDown(event: KeyboardEvent) {
     const max = this.menuSearchResults.length - 1;
+    if (max < 0) {
+      return;
+    }
+
     if (event.key === 'ArrowDown') {
       this.menuActiveIndex = this.menuActiveIndex < max ? this.menuActiveIndex + 1 : 0;
       event.preventDefault();
+      this.scrollActiveMenuIntoView();
     } else if (event.key === 'ArrowUp') {
       this.menuActiveIndex = this.menuActiveIndex > 0 ? this.menuActiveIndex - 1 : max;
       event.preventDefault();
+      this.scrollActiveMenuIntoView();
     } else if (event.key === 'Enter' && this.menuActiveIndex !== -1) {
       const item = this.menuSearchResults[this.menuActiveIndex];
       this.addToRecent(item);
       this.router.navigate([item.path]);
       this.clearMenuSearch();
     }
+  }
+
+  private scrollActiveMenuIntoView(): void {
+    setTimeout(() => {
+      const items = this.menuItems?.toArray() || [];
+      const activeItem = items[this.menuActiveIndex]?.nativeElement;
+      activeItem?.scrollIntoView({ block: 'nearest' });
+    }, 0);
   }
 
   navigateToMenu(item){
@@ -761,18 +777,32 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
 
   onDocSearchKeyDown(event: KeyboardEvent): void {
     const max = this.docSearchResults.length - 1;
+    if (max < 0) {
+      return;
+    }
+
     if (event.key === 'ArrowDown') {
       this.docActiveIndex = this.docActiveIndex < max ? this.docActiveIndex + 1 : 0;
       event.preventDefault();
+      this.scrollActiveDocIntoView();
     } else if (event.key === 'ArrowUp') {
       this.docActiveIndex = this.docActiveIndex > 0 ? this.docActiveIndex - 1 : max;
       event.preventDefault();
+      this.scrollActiveDocIntoView();
     } else if (event.key === 'Enter' && this.docActiveIndex !== -1) {
       const item = this.docSearchResults[this.docActiveIndex];
       this.navigateToDocument(item);
     } else if (event.key === 'Escape') {
       this.clearDocSearch();
     }
+  }
+
+  private scrollActiveDocIntoView(): void {
+    setTimeout(() => {
+      const items = this.docItems?.toArray() || [];
+      const activeItem = items[this.docActiveIndex]?.nativeElement;
+      activeItem?.scrollIntoView({ block: 'nearest' });
+    }, 0);
   }
 
   navigateToDocument(result: DocumentSearchResult): void {
