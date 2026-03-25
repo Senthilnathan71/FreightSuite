@@ -991,15 +991,20 @@
                <!-- GST Type - Only show for Indian companies -->
                @if (currentCompanyCountryCode === 'in') {
                  <div class="col-md-3">
-                   <div class="custom-form-group">
+                   <div class="custom-form-group" 
+                        [class.custom-form-group-select]="taxCalculationService.isExportOrSEZ" 
+                        [class.filled]="taxCalculationService.isExportOrSEZ &&  !!voucherForm.get('GSTType')?.value"
+                      >
                      @if (taxCalculationService.isExportOrSEZ) {
-                       <div class="custom-form-group-select" [class.filled]="!!voucherForm.get('GSTType')?.value">
-                         <ng-select formControlName="GSTType" [clearable]="false" class="custom-input-field sm">
+                         <ng-select
+                           formControlName="GSTType"
+                           [clearable]="false"
+                           class="ng-select"
+                         >
                            @for (type of exportGstTypes; track type.id) {
                              <ng-option [value]="type.id">{{ type.name }}</ng-option>
                            }
                          </ng-select>
-                       </div>
                      } @else {
                        <input
                          type="text"

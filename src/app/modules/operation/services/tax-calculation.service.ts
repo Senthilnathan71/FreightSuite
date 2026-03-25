@@ -22,6 +22,7 @@ export interface PartyTaxProfile {
   gstNumber?: string;
   customerGstType?: string;
   isUnionTerritory?: boolean;
+  selectedGstType?: 'B2B' | 'B2C' | 'EXPWP' | 'EXPWOP' | 'RCM' | 'VAT' | '';
 }
 
 export interface CompanyTaxProfile {
@@ -262,10 +263,12 @@ export class TaxCalculationService {
     if (this._context.appliedTaxMode === 'NONE') return zero;
     if (!input.taxGroupSid) return zero;
 
+    const taxCategoryForMaster = this.getTaxCategoryForAppliedMode(this._context.appliedTaxMode);
+
     const matches = this.workingTaxMasters.filter(
       (t: any) =>
         Number(t.TaxGroupSid) === Number(input.taxGroupSid) &&
-        t.TaxCategory === this._context!.taxCategory
+        t.TaxCategory === taxCategoryForMaster
     );
 
     if (!matches.length) return zero;
@@ -455,7 +458,7 @@ export class TaxCalculationService {
         formGSTType = '';
       } else if (tradeFlow === 'EXPORT' || tradeFlow === 'IMPORT') {
         // Export/Import
-        if (this.isWithoutPaymentProfile(party)) {
+        if (this.getExportGstType(party) === 'EXPWOP') {
           documentClass = 'EXPWOP';
           appliedTaxMode = 'NONE';
           formGSTType = 'EXPWOP';
@@ -466,7 +469,7 @@ export class TaxCalculationService {
         }
       } else if (party.customerGstType === 'SEZ') {
         // SEZ — domestic but treated like export
-        if (this.isWithoutPaymentProfile(party)) {
+        if (this.getExportGstType(party) === 'EXPWOP') {
           documentClass = 'EXPWOP';
           appliedTaxMode = 'NONE';
           formGSTType = 'EXPWOP';
@@ -569,6 +572,26 @@ export class TaxCalculationService {
 
   private isWithoutPaymentProfile(party: PartyTaxProfile): boolean {
     return party.customerGstType === 'Zero Rated';
+  }
+
+  private getExportGstType(party: PartyTaxProfile): 'EXPWP' | 'EXPWOP' {
+    if (party.selectedGstType === 'EXPWP' || party.selectedGstType === 'EXPWOP') {
+      return party.selectedGstType;
+    }
+
+    return this.isWithoutPaymentProfile(party) ? 'EXPWOP' : 'EXPWP';
+  }
+
+  private getTaxCategoryForAppliedMode(mode: AppliedTaxMode): TaxCategory {
+    if (mode === 'IGST') {
+      return 'Intra';
+    }
+
+    if (mode === 'CGST_SGST' || mode === 'CGST_UGST') {
+      return 'Inter';
+    }
+
+    return this._context?.taxCategory || 'Inter';
   }
 
   private emptyClassification(): TaxClassification {

@@ -2189,6 +2189,29 @@ createRateFormGroup(data?: any): FormGroup {
     this.voucherForm.setValidators(
       consistentExchangeRatesValidator(currentCompanyCurrencyId,currentCompanyCurrencyCode)
     );
+
+    this.subscribeToVoucherValueChanges();
+  }
+
+  private subscribeToVoucherValueChanges() {
+    this.voucherForm.get('InvoiceType')?.valueChanges.subscribe((invoiceType) => {
+      if (!this.voucherForm.get('PlaceOfSupply')?.value) {
+        return;
+      }
+
+      const classification = this.refreshVoucherTaxClassification(invoiceType as any);
+      this.voucherForm.get('GSTType')?.setValue(classification.formGSTType, { emitEvent: false });
+      this.recalculateVoucherTaxes();
+    });
+
+    this.voucherForm.get('GSTType')?.valueChanges.subscribe(() => {
+      if (!this.voucherForm.get('PlaceOfSupply')?.value) {
+        return;
+      }
+
+      this.refreshVoucherTaxClassification();
+      this.recalculateVoucherTaxes();
+    });
   }
 
   get voucher() : { [key : string] : AbstractControl<any,any> } {
@@ -2888,16 +2911,7 @@ createRateFormGroup(data?: any): FormGroup {
       return;
     }
 
-    // Update party context for correct tax category
-    const customerState = this.billingPartyBranchDetails?.stateMaster?.stateName
-      || this.voucher['PlaceOfSupply']?.value
-      || '';
-    const customerCountry = this.getCustomerCountry();
-    this.taxCalculationService.updateParty({
-      countryCode: customerCountry || this.currentCompanyCountryCode,
-      stateName: customerState,
-      isUnionTerritory: this.billingIsUnionTerritory,
-    });
+    this.refreshVoucherTaxClassification();
 
     const taxResult = this.taxCalculationService.calculateRowTax({
       taxableAmount: rawValue.TaxableAmount,
@@ -3440,21 +3454,54 @@ createRateFormGroup(data?: any): FormGroup {
     }
 
     const classification = this.taxCalculationService.updateParty(
-      {
-        countryCode: this.getCustomerCountry() || this.currentCompanyCountryCode,
-        stateName: placeOfSupply,
-        stateMasterSid: customerBranch?.stateMaster?.StateMasterSid,
-        gstNumber: gstVat,
-        customerGstType:
-          customerBranch?.CustomerGstType ||
-          customer?.CustomerGstType ||
-          'Regular',
-        isUnionTerritory: customerBranch?.stateMaster?.IsUnionTerritory === 'Y',
-      },
+      this.buildVoucherPartyTaxProfile(customer, customerBranch, placeOfSupply, gstVat),
       this.voucher['InvoiceType']?.value as any
     );
 
     return classification.formGSTType || '';
+  }
+
+  private buildVoucherPartyTaxProfile(
+    customer?: any,
+    customerBranch?: any,
+    placeOfSupply?: string,
+    gstVat?: string
+  ) {
+    return {
+      countryCode: this.getCustomerCountry() || this.currentCompanyCountryCode,
+      stateName:
+        placeOfSupply ||
+        this.billingPartyBranchDetails?.stateMaster?.stateName ||
+        this.voucher['PlaceOfSupply']?.value ||
+        '',
+      stateMasterSid:
+        customerBranch?.stateMaster?.StateMasterSid ||
+        this.billingPartyBranchDetails?.stateMaster?.StateMasterSid,
+      gstNumber: gstVat ?? this.voucher['GST_VAT']?.value ?? '',
+      customerGstType:
+        customerBranch?.CustomerGstType ||
+        customer?.CustomerGstType ||
+        this.billingPartyBranchDetails?.CustomerGstType ||
+        this.billingPartyDetails?.CustomerGstType ||
+        'Regular',
+      isUnionTerritory:
+        customerBranch?.stateMaster?.IsUnionTerritory === 'Y' ||
+        this.billingIsUnionTerritory,
+      selectedGstType: this.voucher['GSTType']?.value || '',
+    };
+  }
+
+  private refreshVoucherTaxClassification(invoiceType?: any) {
+    return this.taxCalculationService.updateParty(
+      this.buildVoucherPartyTaxProfile(),
+      (invoiceType ?? this.voucher['InvoiceType']?.value) as any
+    );
+  }
+
+  private recalculateVoucherTaxes() {
+    this.details.controls.forEach((_, index) => {
+      this.calculateTaxAmountForRow(index);
+    });
   }
 
   determineTaxApplicable(): string {
