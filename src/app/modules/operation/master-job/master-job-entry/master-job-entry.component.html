@@ -101,15 +101,16 @@
                     [labelFields]="branchLookupConfig.labelFields"
                     bindValue="BranchMasterSid"
                     placeholder="Destination Branch"
+                    [readonly]="isExportToImportCompleted"
                     [clearable]="false">
                 </dofi-searchable-dropdown>
                 <button
                     class="btn btn-outline-info btn-sm"
                     (click)="pullMasterJobToImportBranch()"
-                    [disabled]="masterJobForm.dirty || isPullingToImportBranch || !selectedTransferBranchSid"
+                    [disabled]="masterJobForm.dirty || isPullingToImportBranch || !selectedTransferBranchSid || isExportToImportCompleted"
                     >
                     <i class="fas fa-download me-1"></i>
-                    <span>{{ isPullingToImportBranch ? 'Pulling...' : 'Pull To Import' }}</span>
+                    <span>{{ isPullingToImportBranch ? 'Pulling...' : (isExportToImportCompleted ? 'Pull To Import Successful' : 'Pull To Import') }}</span>
                 </button>
             </div>
             <div class="action-group" >
@@ -461,7 +462,7 @@
                                                     {{ item.PortCode | uppercase }} - {{ item.PortName }}
                                                 </ng-template>
                                             </ng-select> -->
-                                            <dofi-searchable-dropdown [items]="portList" formControlName="POO" placeholder=""
+                                            <dofi-searchable-dropdown [items]="filteredPOO" formControlName="POO" placeholder=""
                         [displayFields]="portLookupConfig.displayFields"
                         [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
                         bindLabel="PortCode" bindValue="PortMasterSid"
@@ -538,7 +539,7 @@
                                                     {{ item.PortCode | uppercase }} - {{ item.PortName }}
                                                 </ng-template>
                                             </ng-select> -->
-                                            <dofi-searchable-dropdown [items]="portList" formControlName="FPD" placeholder=""
+                                            <dofi-searchable-dropdown [items]="filteredFPOD" formControlName="FPD" placeholder=""
                         [displayFields]="portLookupConfig.displayFields"
                         [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
                         bindLabel="PortCode" bindValue="PortMasterSid"

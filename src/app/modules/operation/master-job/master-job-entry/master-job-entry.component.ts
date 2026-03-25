@@ -180,8 +180,10 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   containerTypeList: any[] = [];
   currencyList: any[] = [];
   filteredPorts: any[] = [];
+  filteredPOO: any[] = [];
   filteredPOL: any[] = [];
   filteredPOD: any[] = [];
+  filteredFPOD: any[] = [];
   headerVesselList: any[] = [];
   carrierList: any[] = [];
   agentList: any[] = [];
@@ -598,7 +600,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       AgentRef: formValue.AgentRef,
       ExportDoDate: formValue.ExportDoDate,
       SOBDate: formValue.SOBDate,
-      JobtoSubjob: formValue.JobtoSubjob
+      JobtoSubjob: formValue.JobtoSubjob,
+      ExportToImport: formValue.ExportToImport || 'N'
     };
 
     const formData: any = {
@@ -914,6 +917,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       CarrierName: [''],
       // Others fields
       MasterJobOthersSid: [null],
+      ExportToImport: ['N'],
       Yard: [null],
       YardAddress: [''],
       Transporter: [''],
@@ -1280,10 +1284,11 @@ onETDDateSelect(): void {
       this.filteredOriginAgents = [...this.agentList];
       this.customerList = customers.data;
 
-      // default filtered ports
-      this.filteredPorts = [...this.portList];
-      this.filteredPOL = [...this.filteredPorts];
-      this.filteredPOD = [...this.filteredPorts];
+      this.filteredPorts = [];
+      this.filteredPOO = [];
+      this.filteredPOL = [];
+      this.filteredPOD = [];
+      this.filteredFPOD = [];
     }));
 
   }
@@ -1482,6 +1487,7 @@ onETDDateSelect(): void {
           CarrierRef: othersData.CarrierRef || '',
           AgentRef: othersData.AgentRef || '',
           JobtoSubjob: othersData.JobtoSubjob,
+          ExportToImport: othersData.ExportToImport || 'N',
           ExportDoDate: othersData.ExportDoDate ? new Date(othersData.ExportDoDate) : null,
           SOBDate: othersData.SOBDate ? new Date(othersData.SOBDate) : null,
         });
@@ -1730,6 +1736,10 @@ onETDDateSelect(): void {
       this.selectedDepartmentType = '';
       this.selectedFCLLCL = 'LCL';
       this.filteredPorts = [];
+      this.filteredPOO = [];
+      this.filteredPOL = [];
+      this.filteredPOD = [];
+      this.filteredFPOD = [];
       this.masterJobForm.get('POO')?.setValue(null);
       this.masterJobForm.get('POL')?.setValue(null);
       this.masterJobForm.get('POD')?.setValue(null);
@@ -1743,14 +1753,11 @@ onETDDateSelect(): void {
 
     this.selectedDepartmentType = department.departmentType?.toUpperCase() || '';
     this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ?
-      (department.FCLLCL?.toUpperCase() || "LCL") : "AIR";
+      (department.FCLLCL?.toUpperCase() || "LCL") : this.selectedDepartmentType;
 
     this.updateMBLValidation(department.DepartmentMasterSid);
 
-    // Filter ports based on department type
-    this.filteredPorts = this.getFilteredPortsBySegment(this.selectedFCLLCL);
-    this.filteredPOL = [...this.filteredPorts];
-    this.filteredPOD = [...this.filteredPorts];
+    this.refreshPortFilters();
 
     // if (this.selectedDepartmentType === "SEA") {
     //   this.masterJobForm.get('MovementType')?.setValue('Sea');
@@ -1760,6 +1767,10 @@ onETDDateSelect(): void {
 
     // Trigger vessel search after department change
     this.triggerVesselSearch();
+  }
+
+  get isExportToImportCompleted(): boolean {
+    return this.masterJobForm.get('ExportToImport')?.value === 'Y';
   }
 
   get canPullToImportBranch(): boolean {
@@ -1774,6 +1785,11 @@ onETDDateSelect(): void {
 
     if (!this.selectedTransferBranchSid) {
       this.toastr.warning('Please choose the destination branch first.');
+      return;
+    }
+
+    if (this.isExportToImportCompleted) {
+      this.toastr.info('Pull To Import already completed for this master job.');
       return;
     }
 
@@ -1812,6 +1828,7 @@ onETDDateSelect(): void {
           ? `Import master job ${createdJobNumber} created${destinationDepartmentName ? ` in ${destinationDepartmentName}` : ''}.`
           : 'Import master job created successfully.';
 
+        this.masterJobForm.get('ExportToImport')?.setValue('Y');
         this.toastr.success(successMessage);
       },
       error: () => {
@@ -1822,28 +1839,17 @@ onETDDateSelect(): void {
   }
 
   onRouteChange(): void {
-    if (this.isEditMode) {
-        // Don't change route logic in edit mode
-        return;
-    }
     const polSid = this.masterJobForm.get('POL')?.value;
     const podSid = this.masterJobForm.get('POD')?.value;
-    const segment = this.selectedFCLLCL;
-
-    this.filteredPorts = this.getFilteredPortsBySegment(segment);
-
-    // Filter POL and POD to exclude each other
-    // Values are PortMasterSid, so compare accordingly
-    this.filteredPOL = this.filteredPorts.filter(port => port.PortMasterSid !== podSid);
-    this.filteredPOD = this.filteredPorts.filter(port => port.PortMasterSid !== polSid);
+    this.refreshPortFilters();
 
     if (polSid && podSid && polSid === podSid) {
-      this.masterJobForm.get('POD')?.setErrors({ samePort: true });
-      this.masterJobForm.get('POL')?.setErrors({ samePort: true });
+      this.setControlError(this.masterJobForm.get('POD'), 'samePort', true);
+      this.setControlError(this.masterJobForm.get('POL'), 'samePort', true);
       this.toastr.warning('POL and POD cannot be the same');
     } else {
-      this.masterJobForm.get('POD')?.setErrors(null);
-      this.masterJobForm.get('POL')?.setErrors(null);
+      this.clearControlError(this.masterJobForm.get('POD'), 'samePort');
+      this.clearControlError(this.masterJobForm.get('POL'), 'samePort');
     }
 
     // Trigger vessel search after route change
@@ -1852,22 +1858,208 @@ onETDDateSelect(): void {
 
   getFilteredPortsBySegment(segment: string): any[] {
     if (segment === 'AIR') {
-      return this.portList.filter(port => port.PortType === 'Air');
-    } else if (segment === 'FCL' || segment === 'LCL') {
-      return this.portList.filter(port => port.PortType === 'Sea');
+      return this.portList.filter(port => this.normalizePortText(port?.PortType) === 'AIR');
+    } else if (segment === 'FCL' || segment === 'LCL' || segment === 'SEA') {
+      return this.portList.filter(port => this.normalizePortText(port?.PortType) === 'SEA');
+    } else if (segment === 'ROAD') {
+      return this.portList.filter(port => {
+        const portType = this.normalizePortText(port?.PortType);
+        return portType === 'ROAD' || portType.includes('ROAD') || portType.includes('LAND') || portType.includes('LOCATION');
+      });
     }
-    return this.portList;
+    return [];
+  }
+
+  private refreshPortFilters(): void {
+    const filteredLists = this.buildPortFilterLists();
+    this.applyPortFilterLists(filteredLists);
+
+    if (this.clearInvalidPortSelections(filteredLists)) {
+      this.applyPortFilterLists(this.buildPortFilterLists());
+    }
+  }
+
+  private buildPortFilterLists() {
+    if (!this.selectedDepartmentType) {
+      return {
+        filteredPorts: [],
+        filteredPOO: [],
+        filteredPOL: [],
+        filteredPOD: [],
+        filteredFPOD: []
+      };
+    }
+
+    const segment = this.selectedFCLLCL || this.selectedDepartmentType;
+    const basePorts = this.getFilteredPortsBySegment(segment);
+    const shipmentDirection = this.getShipmentDirection();
+    const foreignPorts = basePorts.filter(port => this.isForeignCountryPort(port));
+    const companyCountryPorts = basePorts.filter(port => this.isCompanyCountryPort(port));
+
+    let pooPorts = [...basePorts];
+    let polPorts = [...basePorts];
+    let podPorts = [...basePorts];
+    let fpodPorts = [...basePorts];
+
+    if (shipmentDirection === 'EXPORT') {
+      pooPorts = [...companyCountryPorts];
+      polPorts = [...companyCountryPorts];
+      podPorts = [...foreignPorts];
+      fpodPorts = this.getPortsByReferenceCountry('POD', foreignPorts);
+    } else if (shipmentDirection === 'IMPORT') {
+      pooPorts = this.getPortsByReferenceCountry('POL', foreignPorts);
+      polPorts = [...foreignPorts];
+      podPorts = [...companyCountryPorts];
+      fpodPorts = this.getPortsByReferenceCountry('POD', companyCountryPorts);
+    }
+
+    const selectedPOL = this.masterJobForm.get('POL')?.value;
+    const selectedPOD = this.masterJobForm.get('POD')?.value;
+
+    return {
+      filteredPorts: basePorts,
+      filteredPOO: pooPorts,
+      filteredPOL: polPorts.filter(port => port.PortMasterSid !== selectedPOD),
+      filteredPOD: podPorts.filter(port => port.PortMasterSid !== selectedPOL),
+      filteredFPOD: fpodPorts
+    };
+  }
+
+  private applyPortFilterLists(filteredLists: any): void {
+    this.filteredPorts = filteredLists.filteredPorts;
+    this.filteredPOO = filteredLists.filteredPOO;
+    this.filteredPOL = filteredLists.filteredPOL;
+    this.filteredPOD = filteredLists.filteredPOD;
+    this.filteredFPOD = filteredLists.filteredFPOD;
+  }
+
+  private clearInvalidPortSelections(filteredLists: any): boolean {
+    let hasChanges = false;
+
+    hasChanges = this.clearPortControlIfInvalid('POO', filteredLists.filteredPOO) || hasChanges;
+    hasChanges = this.clearPortControlIfInvalid('POL', filteredLists.filteredPOL) || hasChanges;
+    hasChanges = this.clearPortControlIfInvalid('POD', filteredLists.filteredPOD) || hasChanges;
+    hasChanges = this.clearPortControlIfInvalid('FPD', filteredLists.filteredFPOD) || hasChanges;
+
+    return hasChanges;
+  }
+
+  private clearPortControlIfInvalid(controlName: 'POO' | 'POL' | 'POD' | 'FPD', allowedPorts: any[]): boolean {
+    const control = this.masterJobForm.get(controlName);
+    const selectedValue = control?.value;
+
+    if (!selectedValue) {
+      return false;
+    }
+
+    const isValid = allowedPorts.some(port => port.PortMasterSid === selectedValue);
+    if (!isValid) {
+      control?.setValue(null, { emitEvent: false });
+      return true;
+    }
+
+    return false;
+  }
+
+  private getShipmentDirection(): 'EXPORT' | 'IMPORT' | '' {
+    const departmentDirection = this.normalizePortText(this.selectedDepartment?.ExportImport);
+    if (departmentDirection === 'EXPORT' || departmentDirection === 'IMPORT') {
+      return departmentDirection as 'EXPORT' | 'IMPORT';
+    }
+
+    const jobType = this.normalizePortText(this.masterJobForm.get('JobType')?.value);
+    if (jobType === 'EXPORT' || jobType === 'IMPORT') {
+      return jobType as 'EXPORT' | 'IMPORT';
+    }
+
+    return '';
+  }
+
+  private getPortsByReferenceCountry(controlName: 'POL' | 'POD', fallbackPorts: any[]): any[] {
+    const referencePort = this.getPortBySid(this.masterJobForm.get(controlName)?.value);
+    if (!referencePort) {
+      return [...fallbackPorts];
+    }
+
+    const referenceCountryId = this.toNumericValue(referencePort?.CountryMasterSid);
+    if (!referenceCountryId) {
+      return [...fallbackPorts];
+    }
+
+    return fallbackPorts.filter(port => this.toNumericValue(port?.CountryMasterSid) === referenceCountryId);
+  }
+
+  private isCompanyCountryPort(port: any): boolean {
+    const companyCountryId = this.toNumericValue(this.currentCompany?.CountryMasterSid);
+    const portCountryId = this.toNumericValue(port?.CountryMasterSid);
+
+    if (companyCountryId && portCountryId) {
+      return companyCountryId === portCountryId;
+    }
+
+    const companyCountryName = this.normalizePortText(this.currentCompany?.CountryName || this.countryOfCompany);
+    const portCountryName = this.normalizePortText(port?.Country || port?.countryMaster?.countryName);
+
+    return !!companyCountryName && !!portCountryName && companyCountryName === portCountryName;
+  }
+
+  private isForeignCountryPort(port: any): boolean {
+    const companyCountryId = this.toNumericValue(this.currentCompany?.CountryMasterSid);
+    const portCountryId = this.toNumericValue(port?.CountryMasterSid);
+
+    if (companyCountryId && portCountryId) {
+      return companyCountryId !== portCountryId;
+    }
+
+    const companyCountryName = this.normalizePortText(this.currentCompany?.CountryName || this.countryOfCompany);
+    const portCountryName = this.normalizePortText(port?.Country || port?.countryMaster?.countryName);
+
+    return !!companyCountryName && !!portCountryName && companyCountryName !== portCountryName;
+  }
+
+  private getPortBySid(portSid: number | null | undefined): any | null {
+    if (!portSid) {
+      return null;
+    }
+
+    return this.portList.find(port => port.PortMasterSid === portSid) || null;
+  }
+
+  private normalizePortText(value: any): string {
+    return String(value ?? '').trim().toUpperCase();
+  }
+
+  private toNumericValue(value: any): number | null {
+    const parsedValue = Number(value);
+    return Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : null;
+  }
+
+  private setControlError(control: AbstractControl | null, errorKey: string, value: any): void {
+    if (!control) {
+      return;
+    }
+
+    control.setErrors({ ...(control.errors || {}), [errorKey]: value });
+  }
+
+  private clearControlError(control: AbstractControl | null, errorKey: string): void {
+    if (!control?.errors?.[errorKey]) {
+      return;
+    }
+
+    const updatedErrors = { ...(control.errors || {}) };
+    delete updatedErrors[errorKey];
+    control.setErrors(Object.keys(updatedErrors).length ? updatedErrors : null);
   }
 
   // Handle POL change
   handlePOLChange(selectedPort: any) {
     if (!selectedPort) {
-      this.filteredPOD = [...this.filteredPorts];
+      this.refreshPortFilters();
       this.clearVesselAndVoyageData();
       return;
     }
     const selectedPortSid = selectedPort.PortMasterSid ?? selectedPort;
-    this.filteredPOD = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPortSid);
     this.masterJobForm.get('POL')?.setValue(selectedPortSid, { emitEvent: false });
     this.onRouteChange();
     this.triggerVesselSearch();
@@ -1875,25 +2067,17 @@ onETDDateSelect(): void {
 
   // Handle POD change
   handlePODChange(selectedPort: any) {
-      if (this.isEditMode) {
-        // Don't allow changes in edit mode
-        return;
-    }
     if (!selectedPort) {
-      this.filteredPOL = [...this.filteredPorts];
       this.clearVesselAndVoyageData();
-       this.masterJobForm.get('POD')?.setErrors({ required: true });
-    this.masterJobForm.get('POD')?.markAsTouched();
-      // Clear FPOD if POD is cleared
+      this.setControlError(this.masterJobForm.get('POD'), 'required', true);
+      this.masterJobForm.get('POD')?.markAsTouched();
       this.masterJobForm.get('FPD')?.setValue(null);
+      this.refreshPortFilters();
       return;
     }
 
     const selectedPortSid = selectedPort.PortMasterSid ?? selectedPort;
-    this.filteredPOL = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPortSid);
     this.masterJobForm.get('POD')?.setValue(selectedPortSid, { emitEvent: false });
-
-    // ✅ Auto-set FPOD to the same value as POD
     this.masterJobForm.get('FPD')?.setValue(selectedPortSid);
     this.onRouteChange();
 
@@ -2346,7 +2530,8 @@ onETDDateSelect(): void {
       AgentRef: formValue.AgentRef,
       ExportDoDate: formValue.ExportDoDate,
       SOBDate: formValue.SOBDate,
-      JobtoSubjob: formValue.JobtoSubjob
+      JobtoSubjob: formValue.JobtoSubjob,
+      ExportToImport: formValue.ExportToImport || 'N'
     };
 
     const formData: any = {

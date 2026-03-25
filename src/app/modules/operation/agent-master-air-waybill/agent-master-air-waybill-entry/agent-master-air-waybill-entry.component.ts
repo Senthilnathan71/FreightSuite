@@ -164,6 +164,7 @@ fyMaxDate: NgbDateStruct | null = null;
   isMawbDropdownDisabled = false;
   isMawbStockAllocationEnabled = false;
   allowManualMawbEntryOnAutoAllocationError = false;
+  private lastNoMawbStockWarningKey: string | null = null;
 mawbStockLookupConfig = {
   displayFields: ['MasterBillNumber', 'AgentName'],
   displayLabels: ['MAWB', 'AirLine'],
@@ -5438,11 +5439,25 @@ getProductFormGroup(index: number): FormGroup {
   const isFreeText = this.b['isMawbFreeText']?.value;
   this.b['isMawbFreeText']?.setValue(!isFreeText);
   this.houseJobForm.get('MBLNo')?.reset();
+  this.lastNoMawbStockWarningKey = null;
   
   // If toggling to dropdown mode and no stock available, force back to manual
   if (!isFreeText && this.isMawbDropdownDisabled) {
     this.b['isMawbFreeText']?.setValue(true);
   }
+}
+
+private getCurrentMawbValue(): string {
+  return String(this.houseJobForm.get('MBLNo')?.value ?? '').trim();
+}
+
+private showNoMawbStockWarningOnce(warningKey: string): void {
+  if (this.getCurrentMawbValue() || this.lastNoMawbStockWarningKey === warningKey) {
+    return;
+  }
+
+  this.lastNoMawbStockWarningKey = warningKey;
+  this.toastr?.warning('No MAWB Stock Available');
 }
 
 loadMawbStock(data: any): void {
@@ -5497,6 +5512,7 @@ loadMawbStock(data: any): void {
     companyId,
     branchId
   };
+  const warningKey = `${companyId ?? 'null'}|${branchId ?? 'null'}|${customerId ?? 'null'}|${airlineId ?? 'null'}`;
 
   this.operationService.getMawbStockForHouseJob(payload).subscribe({
     next: (resp: any) => {
@@ -5517,8 +5533,9 @@ loadMawbStock(data: any): void {
       if (this.mawbStockSource === 'NONE' || this.mawbStockList.length === 0) {
         this.isMawbDropdownDisabled = true;
         this.b['isMawbFreeText']?.setValue(true);
-        this.toastr?.warning('No MAWB Stock Available');
+        this.showNoMawbStockWarningOnce(warningKey);
       } else {
+        this.lastNoMawbStockWarningKey = null;
         this.isMawbDropdownDisabled = false;
         this.b['isMawbFreeText']?.setValue(false);
       }

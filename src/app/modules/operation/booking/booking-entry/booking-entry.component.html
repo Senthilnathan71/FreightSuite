@@ -789,7 +789,7 @@
                       <!-- <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                         formControlName="POO" appendTo="body" placeholder="">
                       </ng-select> -->
-                      <dofi-searchable-dropdown [items]="portList" formControlName="POO" placeholder=""
+                      <dofi-searchable-dropdown [items]="filteredPOO" formControlName="POO" placeholder=""
                         [displayFields]="portLookupConfig.displayFields"
                         [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
                         bindLabel="PortCode" bindValue="PortCode">
@@ -852,7 +852,7 @@
                       <!-- <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                         formControlName="FPD" appendTo="body" placeholder="" (change)="handleFPODChange($event)">
                       </ng-select> -->
-                      <dofi-searchable-dropdown [items]="portList" formControlName="FPD" placeholder=""
+                      <dofi-searchable-dropdown [items]="filteredFPOD" formControlName="FPD" placeholder=""
                         [displayFields]="portLookupConfig.displayFields"
                         [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
                         bindLabel="PortCode" bindValue="PortCode" (itemSelected)="handleFPODChange($event)">

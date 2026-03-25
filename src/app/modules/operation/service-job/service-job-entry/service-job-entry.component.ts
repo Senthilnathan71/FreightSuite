@@ -792,7 +792,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       return;
     }
     this.selectedDepartmentType = department.departmentType.toUpperCase();
-    this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? department.FCLLCL.toUpperCase() : "AIR";
+    this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? department.FCLLCL.toUpperCase() : this.selectedDepartmentType;
     // this.b['JobType'].setValue(department.ExportImport);
     
     this.onRouteChange()
@@ -834,27 +834,173 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
   onRouteChange(): void {
     const polSid = this.b['POL']?.value;
     const podSid = this.b['POD']?.value;
-    const segment = this.selectedFCLLCL
-
-    this.filteredPorts = this.getFilteredPortsBySegment(segment);
-    this.filteredPOL = this.filteredPorts.filter(port => port.PortCode !== podSid);
-    this.filteredPOD = this.filteredPorts.filter(port => port.PortCode !== polSid);
+    this.refreshPortFilters();
     if (polSid && podSid && polSid === podSid) {
-      this.b['POD']?.setErrors({ samePort: true });
-      this.b['POL']?.setErrors({ samePort: true });
+      this.setControlError(this.b['POD'], 'samePort', true);
+      this.setControlError(this.b['POL'], 'samePort', true);
     } else {
-      this.b['POD']?.setErrors(null);
-      this.b['POL']?.setErrors(null);
+      this.clearControlError(this.b['POD'], 'samePort');
+      this.clearControlError(this.b['POL'], 'samePort');
     }
   }
 
   getFilteredPortsBySegment(segment: string): any[] {
     if (segment === 'AIR') {
-      return this.portList.filter(port => port.PortType === 'Air');
-    } else if (segment === 'FCL' || segment === 'LCL') {
-      return this.portList.filter(port => port.PortType === 'Sea');
+      return this.portList.filter(port => this.normalizePortText(port?.PortType) === 'AIR');
+    } else if (segment === 'FCL' || segment === 'LCL' || segment === 'SEA') {
+      return this.portList.filter(port => this.normalizePortText(port?.PortType) === 'SEA');
+    } else if (segment === 'ROAD') {
+      return this.portList.filter(port => {
+        const portType = this.normalizePortText(port?.PortType);
+        return portType === 'ROAD' || portType.includes('ROAD') || portType.includes('LAND') || portType.includes('LOCATION');
+      });
     }
     return [];
+  }
+
+  private refreshPortFilters(): void {
+    const filteredLists = this.buildPortFilterLists();
+    this.filteredPorts = filteredLists.filteredPorts;
+    this.filteredPOL = filteredLists.filteredPOL;
+    this.filteredPOD = filteredLists.filteredPOD;
+
+    if (this.clearInvalidPortSelections(filteredLists)) {
+      const updatedLists = this.buildPortFilterLists();
+      this.filteredPorts = updatedLists.filteredPorts;
+      this.filteredPOL = updatedLists.filteredPOL;
+      this.filteredPOD = updatedLists.filteredPOD;
+    }
+  }
+
+  private buildPortFilterLists() {
+    if (!this.selectedDepartmentType) {
+      return {
+        filteredPorts: [],
+        filteredPOL: [],
+        filteredPOD: []
+      };
+    }
+
+    const segment = this.selectedFCLLCL || this.selectedDepartmentType;
+    const basePorts = this.getFilteredPortsBySegment(segment);
+    const shipmentDirection = this.getShipmentDirection();
+    const foreignPorts = basePorts.filter(port => this.isForeignCountryPort(port));
+    const companyCountryPorts = basePorts.filter(port => this.isCompanyCountryPort(port));
+
+    let polPorts = [...basePorts];
+    let podPorts = [...basePorts];
+
+    if (shipmentDirection === 'EXPORT') {
+      polPorts = [...companyCountryPorts];
+      podPorts = [...foreignPorts];
+    } else if (shipmentDirection === 'IMPORT') {
+      polPorts = [...foreignPorts];
+      podPorts = [...companyCountryPorts];
+    }
+
+    const selectedPOL = this.b['POL']?.value;
+    const selectedPOD = this.b['POD']?.value;
+
+    return {
+      filteredPorts: basePorts,
+      filteredPOL: polPorts.filter(port => port.PortCode !== selectedPOD),
+      filteredPOD: podPorts.filter(port => port.PortCode !== selectedPOL)
+    };
+  }
+
+  private clearInvalidPortSelections(filteredLists: any): boolean {
+    let hasChanges = false;
+
+    hasChanges = this.clearPortControlIfInvalid('POL', filteredLists.filteredPOL) || hasChanges;
+    hasChanges = this.clearPortControlIfInvalid('POD', filteredLists.filteredPOD) || hasChanges;
+
+    return hasChanges;
+  }
+
+  private clearPortControlIfInvalid(controlName: 'POL' | 'POD', allowedPorts: any[]): boolean {
+    const control = this.b[controlName];
+    const selectedValue = control?.value;
+
+    if (!selectedValue) {
+      return false;
+    }
+
+    const isValid = allowedPorts.some(port => port.PortCode === selectedValue);
+    if (!isValid) {
+      control?.setValue(null, { emitEvent: false });
+      return true;
+    }
+
+    return false;
+  }
+
+  private getShipmentDirection(): 'EXPORT' | 'IMPORT' | '' {
+    const departmentDirection = this.normalizePortText(this.selectedDepartment?.ExportImport);
+    if (departmentDirection === 'EXPORT' || departmentDirection === 'IMPORT') {
+      return departmentDirection as 'EXPORT' | 'IMPORT';
+    }
+
+    const jobType = this.normalizePortText(this.b['JobType']?.value);
+    if (jobType === 'EXPORT' || jobType === 'IMPORT') {
+      return jobType as 'EXPORT' | 'IMPORT';
+    }
+
+    return '';
+  }
+
+  private isCompanyCountryPort(port: any): boolean {
+    const companyCountryId = this.toNumericValue(this.currentCompany?.CountryMasterSid);
+    const portCountryId = this.toNumericValue(port?.CountryMasterSid);
+
+    if (companyCountryId && portCountryId) {
+      return companyCountryId === portCountryId;
+    }
+
+    const companyCountryName = this.normalizePortText(this.currentCompany?.CountryName || this.countryOfCompany);
+    const portCountryName = this.normalizePortText(port?.Country || port?.countryMaster?.countryName);
+
+    return !!companyCountryName && !!portCountryName && companyCountryName === portCountryName;
+  }
+
+  private isForeignCountryPort(port: any): boolean {
+    const companyCountryId = this.toNumericValue(this.currentCompany?.CountryMasterSid);
+    const portCountryId = this.toNumericValue(port?.CountryMasterSid);
+
+    if (companyCountryId && portCountryId) {
+      return companyCountryId !== portCountryId;
+    }
+
+    const companyCountryName = this.normalizePortText(this.currentCompany?.CountryName || this.countryOfCompany);
+    const portCountryName = this.normalizePortText(port?.Country || port?.countryMaster?.countryName);
+
+    return !!companyCountryName && !!portCountryName && companyCountryName !== portCountryName;
+  }
+
+  private normalizePortText(value: any): string {
+    return String(value ?? '').trim().toUpperCase();
+  }
+
+  private toNumericValue(value: any): number | null {
+    const parsedValue = Number(value);
+    return Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : null;
+  }
+
+  private setControlError(control: AbstractControl | null, errorKey: string, value: any): void {
+    if (!control) {
+      return;
+    }
+
+    control.setErrors({ ...(control.errors || {}), [errorKey]: value });
+  }
+
+  private clearControlError(control: AbstractControl | null, errorKey: string): void {
+    if (!control?.errors?.[errorKey]) {
+      return;
+    }
+
+    const updatedErrors = { ...(control.errors || {}) };
+    delete updatedErrors[errorKey];
+    control.setErrors(Object.keys(updatedErrors).length ? updatedErrors : null);
   }
 
 
@@ -876,18 +1022,16 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
 
   handlePOLChange(selectedPort: any) {
     if (!selectedPort) {
-      this.filteredPOD = [...this.filteredPorts];
+      this.refreshPortFilters();
       return;
     }
-    this.filteredPOD = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPort.PortMasterSid);
   }
 
   handlePODChange(selectedPort: any) {
     if (!selectedPort) {
-      this.filteredPOL = [...this.filteredPorts];
+      this.refreshPortFilters();
       return;
     }
-    this.filteredPOL = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPort.PortMasterSid);
   }
 
 
