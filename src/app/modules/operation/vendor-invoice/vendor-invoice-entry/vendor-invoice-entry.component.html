@@ -47,7 +47,16 @@
             class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80" disabled>
             <i class="fas fa-check-circle me-1"></i> Posted
           </button> -->
-
+          <button
+            type="button"
+            class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+            *ngIf="isEditMode"
+            (click)="openPrintModal()"
+            [disabled]="!vendorInvoiceData"
+          >
+            <i class="fas fa-print me-1"></i> Print
+          </button>
+          
           <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
           (click)="openAuditLogs(auditLogModal)" *ngIf="isEditMode">
           <i class="fas fa-history  me-1"></i>

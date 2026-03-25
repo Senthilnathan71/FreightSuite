@@ -71,6 +71,8 @@ import {
 } from 'src/app/core/ValidationFn/exRateConsistency.validators';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { VendorCreditNotePrintComponent } from '../report/vendor-credit-note-print/vendor-credit-note-print.component';
+import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { TaxCalculationService } from '../../services/tax-calculation.service';
 
 interface NgbDateStructLike {
@@ -152,6 +154,10 @@ export class VendorCreditNoteEntryComponent {
   headerId: number | null = null;
   private taxMastersReady: Promise<void> = Promise.resolve();
   vendorCreditNoteData: any;
+  vendorCreditNotePrintData: any;
+  isBankFetched: boolean = false;
+  TandCFetched: boolean = false;
+  bankDetails: any[] = [];
   currentMenuId: number;
   TandCList: any[] = [];
   isViewMode: boolean = false;
@@ -344,6 +350,7 @@ export class VendorCreditNoteEntryComponent {
     private currencyConfigService: CurrencyConfigurationService,
     private datePipe: CustomDatePipe,
     private voucherPeriodService: VoucherPeriodValidationService,
+    private numberToWords: NumberToWordsService,
     public taxCalculationService: TaxCalculationService,
   ) {}
 
@@ -3066,6 +3073,295 @@ export class VendorCreditNoteEntryComponent {
       igstAmt: 0,
       vatAmt: detail.TaxAmount1 || 0,
     };
+  }
+
+  getShipmentFieldValue(
+    fieldName: 'VesselName' | 'VoyageNo' | 'POL' | 'FPD' | 'ETD' | 'ETA',
+  ): any {
+    const data = this.vendorCreditNoteData || {};
+    const hasHouseJob = !!data?.HouseJobSid;
+    const hasMasterJob = !!data?.MasterJobSid;
+    const bookingHeader = data?.BookingHeader || data?.bookingHeader;
+
+    if (hasHouseJob && data?.houseJob) {
+      const value = data.houseJob?.[fieldName];
+      if (value !== null && value !== undefined && value !== '') {
+        return value;
+      }
+    }
+
+    if (hasMasterJob && data?.masterJob) {
+      const directValue = data.masterJob?.[fieldName];
+      if (directValue !== null && directValue !== undefined && directValue !== '') {
+        return directValue;
+      }
+
+      const voyageValue = data.masterJob?.voyages?.[0]?.[fieldName];
+      if (voyageValue !== null && voyageValue !== undefined && voyageValue !== '') {
+        return voyageValue;
+      }
+    }
+
+    if (bookingHeader) {
+      const bookingValue = bookingHeader?.[fieldName];
+      if (bookingValue !== null && bookingValue !== undefined && bookingValue !== '') {
+        return bookingValue;
+      }
+    }
+
+    return null;
+  }
+
+  getAmountInWords(total: number, currencySid: number): string {
+    if (!total) return '';
+    return this.numberToWords.convert(total, currencySid);
+  }
+
+  async getAndStoreVendorCreditNoteBankDetails(): Promise<void> {
+    try {
+      const partyCurrencyId =
+        this.vendorCreditNoteData?.CurrencyMasterSid ||
+        this.vendorCreditNoteForm.get('CurrencyMasterSid')?.getRawValue();
+      const payload = {
+        CurrencyMasterSid: partyCurrencyId,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      };
+
+      const resp: any = await firstValueFrom(this.operationService.getBankDetails(payload));
+      this.isBankFetched = true;
+      this.bankDetails = resp?.status && resp.data ? resp.data : [];
+    } catch (err) {
+      console.error('Error fetching vendor credit note bank details', err);
+      this.bankDetails = [];
+    }
+  }
+
+  async getAndStoreVendorCreditNoteTandC(): Promise<void> {
+    try {
+      this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+      const payload = {
+        MenuMasterSid: this.currentMenuId,
+        DocumentSid: this.vendorCreditNoteData?.VoucherHeaderSid,
+      };
+      const resp: any = await firstValueFrom(this.masterService.getTandCByCondition(payload));
+      this.TandCFetched = true;
+      this.TandCList = resp?.status && Array.isArray(resp?.data) ? resp.data : [];
+    } catch (err) {
+      console.error('Error fetching vendor credit note terms and conditions', err);
+      this.TandCList = [];
+    }
+  }
+
+  async prepareVendorCreditNotePrintData() {
+    if (!this.currencyList || this.currencyList.length === 0) {
+      try {
+        const currenciesResp: any = await firstValueFrom(this.operationService.getAllCurrencies());
+        this.currencyList = currenciesResp?.data || [];
+      } catch {
+        this.currencyList = [];
+      }
+    }
+    if (this.currencyList.length > 0) {
+      this.numberToWords.initializeCurrencies(this.currencyList);
+    }
+
+    const isBookingInvoice = this.vendorCreditNoteData?.BookingHeaderSid;
+    const isHouseJobInvoice = this.vendorCreditNoteData?.HouseJobSid && this.vendorCreditNoteData?.MasterJobSid;
+    const isMasterJobInvoice = this.vendorCreditNoteData?.MasterJobSid && !this.vendorCreditNoteData?.HouseJobSid;
+    const bookingHeader = this.vendorCreditNoteData?.BookingHeader || this.vendorCreditNoteData?.bookingHeader || {};
+    const houseJob = this.vendorCreditNoteData?.houseJob || {};
+    const masterJob = this.vendorCreditNoteData?.masterJob || {};
+    const allDetails: any[] = this.vendorCreditNoteData?.VoucherDetail || [];
+
+    const voucherDetails = allDetails
+      .filter((d) => d.IsAutoGenerated !== 'Y')
+      .map((detail, index) => {
+        const taxPercentages = this.getTaxPercentageForDisplay(detail);
+        const taxAmounts = this.getTaxAmountForDisplay(detail);
+        const hssacCode = detail?.HSSACCode || detail?.hssacMaster?.HSSACCode || detail?.hssacMaster?.hsnCode || '-';
+
+        const totalTaxAmount =
+          toNumber(taxAmounts.cgstAmt) +
+          toNumber(taxAmounts.sgstAmt) +
+          toNumber(taxAmounts.igstAmt) +
+          toNumber(taxAmounts.vatAmt);
+        const actualLocalAmount = toNumber(detail.LocalAmount) + totalTaxAmount;
+        const exchangeRate = toNumber(this.vendorCreditNoteData?.ExchangeRate) || 1;
+        const correctedTaxAmount =
+          this.vendorCreditNoteData?.CurrencyMasterSid === this.currentCompany.CurrencyMasterSid
+            ? totalTaxAmount
+            : totalTaxAmount / exchangeRate;
+        const actualPartyAmount = toNumber(detail.PartyAmount) + correctedTaxAmount;
+
+        return {
+          Sno: index + 1,
+          ChargeDescription: detail.ChargeDescription || '',
+          HSSACCode: hssacCode,
+          DrCr: detail.DrCr || '',
+          CurrencyMasterSid: detail.CurrencyMasterSid,
+          CurrencyCode: detail.CurrencyCode || '',
+          NumberOfUnit: Number(detail.NumberOfUnit || 0).toFixed(3),
+          Rate: this.getFormattedAmount(detail.Rate, detail.CurrencyMasterSid),
+          ExchangeRate: this.getFormattedAndPaddedExchangeRate(toNumber(detail.ExchangeRate), detail.CurrencyMasterSid),
+          TaxableAmount: this.getFormattedAmount(detail.TaxableAmount, this.currentCompany.CurrencyMasterSid),
+          cgstRate: Number(taxPercentages.cgstRate || 0).toFixed(3),
+          cgstAmt: this.getFormattedAmount(taxAmounts.cgstAmt, this.currentCompany.CurrencyMasterSid),
+          sgstRate: Number(taxPercentages.sgstRate || 0).toFixed(3),
+          sgstAmt: this.getFormattedAmount(taxAmounts.sgstAmt, this.currentCompany.CurrencyMasterSid),
+          igstRate: Number(taxPercentages.igstRate || 0).toFixed(3),
+          igstAmt: this.getFormattedAmount(taxAmounts.igstAmt, this.currentCompany.CurrencyMasterSid),
+          vatRate: Number(taxPercentages.vatRate || 0).toFixed(3),
+          vatAmt: this.getFormattedAmount(taxAmounts.vatAmt, this.currentCompany.CurrencyMasterSid),
+          LocalAmount: this.getFormattedAmount(actualLocalAmount, this.currentCompany.CurrencyMasterSid),
+          PartyAmount: this.getFormattedAmount(actualPartyAmount, this.vendorCreditNoteData?.CurrencyMasterSid),
+        };
+      });
+
+    const totalPartyAmount = voucherDetails.reduce((sum, detail) => {
+        return sum + toNumber(detail.PartyAmount);
+    }, 0);
+
+    if (!this.isBankFetched) {
+      await this.getAndStoreVendorCreditNoteBankDetails();
+    }
+    const bankDetails = this.bankDetails ?? this.vendorCreditNoteData?.BankDetails ?? [];
+
+    if (!this.TandCFetched) {
+      await this.getAndStoreVendorCreditNoteTandC();
+    }
+    const tandc = this.TandCList || [];
+
+    const resolvedCurrencySid =
+      this.vendorCreditNoteData?.CurrencyMasterSid ||
+      this.vendorCreditNoteForm.get('CurrencyMasterSid')?.getRawValue() ||
+      this.currencyList.find(
+        (c: any) => c.currencyCode === this.vendorCreditNoteData?.CurrencyCode
+      )?.CurrencyMasterSid ||
+      this.currentCompanyCurrency?.currencyMasterSid;
+    const amountInWords = this.getAmountInWords(totalPartyAmount, resolvedCurrencySid);
+
+    this.vendorCreditNotePrintData = {
+      invoiceTitle: 'Vendor Credit Note',
+      GSTCode: this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
+      CurrencyMasterSid: this.vendorCreditNoteData?.CurrencyMasterSid || 0,
+      CurrencyCode: this.vendorCreditNoteData?.CurrencyCode || '',
+      VoucherDate: this.vendorCreditNoteData?.VoucherDate || '',
+      CreditNo: this.vendorCreditNoteData?.VoucherNumber || '',
+      CreditDate: this.vendorCreditNoteData?.VoucherDate || '',
+      InvoiceNo: this.vendorCreditNoteData?.VoucherNumber || '',
+      InvoiceDate: this.vendorCreditNoteData?.VoucherDate || '',
+      InvoiceDueDate: this.vendorCreditNoteData?.DueDate || '',
+      BilledTo: this.vendorCreditNoteData?.PartyName || this.vendorCreditNoteData?.subledgerMaster?.SubledgerName || '',
+      BillingAddress: this.vendorCreditNoteData?.PartyAddress || this.vendorCreditNoteData?.subledgerMaster?.Address || '',
+      PAN: this.currentCompany?.Pan || this.currentCompany?.PAN || '',
+      GST_VAT: this.vendorCreditNoteData?.GST_VAT || '',
+      IRNNumber: this.vendorCreditNoteData?.IRNNumber || '',
+      ShipperName: isHouseJobInvoice ? houseJob?.ShipperName : (isBookingInvoice ? bookingHeader?.ShipperName : ''),
+      ConsigneeName: isHouseJobInvoice ? houseJob?.ConsigneeName : (isBookingInvoice ? bookingHeader?.ConsigneeName : ''),
+      Vessel: this.getShipmentFieldValue('VesselName') || '',
+      VoyageNo: this.getShipmentFieldValue('VoyageNo') || '',
+      POL: this.getShipmentFieldValue('POL') || '',
+      PlaceofSupply: this.vendorCreditNoteData?.PlaceOfSupply || '',
+      FPD: this.getShipmentFieldValue('FPD') || '',
+      ETD: this.getShipmentFieldValue('ETD') || '',
+      ETA: this.getShipmentFieldValue('ETA') || '',
+      MasterJobNumber: masterJob?.MasterJobNumber || '',
+      MasterJobDate: masterJob?.MasterJobDate || '',
+      HBLNo: houseJob?.HBLNo || '',
+      MBLNo: masterJob?.MBLNo || '',
+      DocumentNumber: this.vendorCreditNoteData?.DocumentNumber || '',
+      DocumentDate: this.vendorCreditNoteData?.DocumentDate || '',
+      ContainerType: masterJob?.containers?.[0]?.ContainerType || '',
+      ContainerNumber: masterJob?.containers?.[0]?.ContainerNumber || '',
+      DepartmentMasterSid: masterJob?.DepartmentMasterSid || '',
+      FreightTerms: isHouseJobInvoice
+        ? houseJob?.FreightTerms
+        : (isBookingInvoice
+            ? bookingHeader?.FreightTerms
+            : (isMasterJobInvoice ? masterJob?.FreightPPCC : '')),
+      JobType: isHouseJobInvoice
+        ? houseJob?.JobType
+        : (isBookingInvoice
+            ? bookingHeader?.JobType
+            : (isMasterJobInvoice ? masterJob?.JobType : '')),
+      IsServiceJob: isHouseJobInvoice ? houseJob?.IsServiceJob : '',
+      BookingNumber: isHouseJobInvoice ? houseJob?.BookingNo : (isBookingInvoice ? bookingHeader?.BookingNo : ''),
+      CurrExRate: `${this.vendorCreditNoteData?.CurrencyCode || ''} / ${this.getFormattedAndPaddedExchangeRate(toNumber(this.vendorCreditNoteData?.ExchangeRate), this.vendorCreditNoteData?.CurrencyMasterSid)}`,
+      SalesPerson: '',
+      Remarks: this.vendorCreditNoteData?.Remarks || '',
+      voucherDetails,
+      totalPartyAmount: this.getFormattedAmount(totalPartyAmount, resolvedCurrencySid),
+      AmountInWords: amountInWords,
+      BankDetails: bankDetails,
+      TermsAndConditions: tandc,
+      pkg: isHouseJobInvoice
+        ? (houseJob?.Cargo?.[0]?.NoOfPackage ?? ' ')
+        : isBookingInvoice
+          ? (bookingHeader?.bookingCargo?.[0]?.NoOfPackage ?? ' ')
+          : isMasterJobInvoice
+            ? (masterJob?.NoOfPkg ?? ' ')
+            : ' ',
+      grosswt: isHouseJobInvoice
+        ? (houseJob?.Cargo?.[0]?.GrossWeight ?? ' ')
+        : isBookingInvoice
+          ? (bookingHeader?.bookingCargo?.[0]?.GrossWeight ?? ' ')
+          : isMasterJobInvoice
+            ? (masterJob?.GrossWeight ?? ' ')
+            : ' ',
+      desc: isHouseJobInvoice
+        ? (houseJob?.Cargo?.[0]?.CommodityDescription ?? ' ')
+        : isBookingInvoice
+          ? (bookingHeader?.bookingCargo?.[0]?.CommodityDescription ?? ' ')
+          : isMasterJobInvoice
+            ? (masterJob?.CommodityDescription ?? ' ')
+            : ' ',
+      ChargeableWeight: isHouseJobInvoice
+        ? (houseJob?.Cargo?.[0]?.ChargeableWeight ?? ' ')
+        : isBookingInvoice
+          ? (bookingHeader?.bookingCargo?.[0]?.ChargeableWeight ?? ' ')
+          : isMasterJobInvoice
+            ? (masterJob?.ChargeableWeight ?? ' ')
+            : ' ',
+      cbm: isHouseJobInvoice
+        ? (houseJob?.Cargo?.[0]?.Volume ?? ' ')
+        : isBookingInvoice
+          ? (bookingHeader?.bookingCargo?.[0]?.Volume ?? ' ')
+          : isMasterJobInvoice
+            ? (masterJob?.Volume ?? ' ')
+            : ' ',
+    };
+  }
+
+  async openPrintModal() {
+    if (!this.headerId) {
+      this.appSettingService.showWarning('Please save the vendor credit note first.');
+      return;
+    }
+
+    this.spinner.show();
+    try {
+      await this.prepareVendorCreditNotePrintData();
+
+      const modalRef = this.modalService.open(VendorCreditNotePrintComponent, {
+        size: 'xl',
+        scrollable: true,
+      });
+
+      modalRef.componentInstance.sourceVendorCreditNoteData = this.vendorCreditNoteData;
+      modalRef.componentInstance.vendorCreditNoteData = this.vendorCreditNotePrintData;
+      modalRef.componentInstance.printData = this.vendorCreditNotePrintData;
+      modalRef.componentInstance.currentCompany = this.currentCompany;
+      modalRef.componentInstance.currentBranch = this.currentBranch;
+      modalRef.componentInstance.currentCompanyCountryCode = this.currentCompanyCountryCode;
+      modalRef.componentInstance.currentCompanyCurrency = this.currentCompanyCurrency;
+      modalRef.componentInstance.bankDetails = this.vendorCreditNotePrintData?.BankDetails || [];
+      modalRef.componentInstance.TandCList = this.vendorCreditNotePrintData?.TermsAndConditions || [];
+      modalRef.componentInstance.userData = this.userData;
+      modalRef.componentInstance.isVATMode = this.isVATMode;
+      modalRef.componentInstance.currentDate = this.currentDate;
+    } finally {
+      this.spinner.hide();
+    }
   }
 
   shouldShowGSTTypeField(): boolean {

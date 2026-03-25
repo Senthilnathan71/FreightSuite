@@ -45,6 +45,8 @@ import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-d
 import { ToastrService } from 'ngx-toastr';
 import { consistentExchangeRatesValidator, getExchangeRateErrorMessage } from 'src/app/core/ValidationFn/exRateConsistency.validators';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { VendorInvoicePrintComponent } from '../report/vendor-invoice-print/vendor-invoice-print.component';
+import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { offset } from '@popperjs/core';
 import { TaxCalculationService } from '../../services/tax-calculation.service';
 
@@ -119,6 +121,9 @@ export class VendorInvoiceEntryComponent implements OnInit {
   vendorInvoiceData: any;
   currentMenuId : number;
   TandCList: any[] = [];
+  isBankFetched: boolean = false;
+  TandCFetched: boolean = false;
+  bankDetails: any[] = [];
   isViewMode: boolean = false;
   isNonJob: boolean = false;
   get isEditMode() { 
@@ -200,6 +205,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   currentDate = new Date();
   isAutoPosting : boolean = false;
+  vendorInvoicePrintData: any;
 
   // Voucher period constraints
   voucherConstraints: VoucherDateConstraints = {
@@ -299,6 +305,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
     private datePipe : CustomDatePipe,
     private voucherPeriodService: VoucherPeriodValidationService,
     private toastr: ToastrService,
+    private numberToWords: NumberToWordsService,
     public taxCalculationService: TaxCalculationService
   ) { }
 
@@ -685,6 +692,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
           next: ({ currencies, uom, departments, masterJobs, hssac }: any) => {
             this.currencyList = currencies.data || [];
             this.currencyConfigService.initializeConfigurations(this.currencyList);
+            this.numberToWords.initializeCurrencies(this.currencyList);
             this.uomList = uom.data || [];
             this.departmentList = departments.data || [];
             this.masterJobList = masterJobs.data || [];
@@ -2750,6 +2758,84 @@ export class VendorInvoiceEntryComponent implements OnInit {
     };
   }
 
+ 
+  getShipmentFieldValue(
+    fieldName: 'VesselName' | 'VoyageNo' | 'POL' | 'FPD' | 'ETD' | 'ETA'
+  ): any {
+    const data = this.vendorInvoiceData || {};
+    const hasHouseJob = !!data?.HouseJobSid;
+    const hasMasterJob = !!data?.MasterJobSid;
+    const bookingHeader = data?.BookingHeader || data?.bookingHeader;
+
+    if (hasHouseJob && data?.houseJob) {
+      const value = data.houseJob?.[fieldName];
+      if (value !== null && value !== undefined && value !== '') {
+        return value;
+      }
+    }
+
+    if (hasMasterJob && data?.masterJob) {
+      const directValue = data.masterJob?.[fieldName];
+      if (directValue !== null && directValue !== undefined && directValue !== '') {
+        return directValue;
+      }
+
+      const voyageValue = data.masterJob?.voyages?.[0]?.[fieldName];
+      if (voyageValue !== null && voyageValue !== undefined && voyageValue !== '') {
+        return voyageValue;
+      }
+    }
+
+    if (bookingHeader) {
+      const bookingValue = bookingHeader?.[fieldName];
+      if (bookingValue !== null && bookingValue !== undefined && bookingValue !== '') {
+        return bookingValue;
+      }
+    }
+
+    return null;
+  }
+
+  getAmountInWords(total: number, currencySid: number): string {
+    if (!total) return '';
+    return this.numberToWords.convert(total, currencySid);
+  }
+
+  async getAndStoreVendorBankDetails(): Promise<void> {
+    try {
+      const partyCurrencyId =
+        this.vendorInvoiceData?.CurrencyMasterSid ||
+        this.vendorInvoiceForm.get('CurrencyMasterSid')?.getRawValue();
+      const payload = {
+        CurrencyMasterSid: partyCurrencyId,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      };
+
+      const resp: any = await firstValueFrom(this.operationService.getBankDetails(payload));
+      this.isBankFetched = true;
+      this.bankDetails = resp?.status && resp.data ? resp.data : [];
+    } catch (err) {
+      console.error('Error fetching vendor bank details', err);
+      this.bankDetails = [];
+    }
+  }
+
+  async getAndStoreVendorTandC(): Promise<void> {
+    try {
+      this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+      const payload = {
+        MenuMasterSid: this.currentMenuId,
+        DocumentSid: this.vendorInvoiceData?.VoucherHeaderSid
+      };
+      const resp: any = await firstValueFrom(this.masterService.getTandCByCondition(payload));
+      this.TandCFetched = true;
+      this.TandCList = resp?.status && Array.isArray(resp?.data) ? resp.data : [];
+    } catch (err) {
+      console.error('Error fetching vendor terms and conditions', err);
+      this.TandCList = [];
+    }
+  }
+
   shouldShowGSTTypeField(): boolean {
     return this.currentCompanyCountryCode === 'in';
   }
@@ -3487,4 +3573,216 @@ Please configure the missing mappings and try again.`
       });
     }
 
+
+    async prepareVendorPrintData() {
+      if (!this.currencyList || this.currencyList.length === 0) {
+        try {
+          const currenciesResp: any = await firstValueFrom(this.operationService.getAllCurrencies());
+          this.currencyList = currenciesResp?.data || [];
+        } catch {
+          this.currencyList = [];
+        }
+      }
+      if (this.currencyList.length > 0) {
+        this.numberToWords.initializeCurrencies(this.currencyList);
+      }
+
+      const isBookingInvoice = this.vendorInvoiceData?.BookingHeaderSid;
+      const isHouseJobInvoice = this.vendorInvoiceData?.HouseJobSid && this.vendorInvoiceData?.MasterJobSid;
+      const isMasterJobInvoice = this.vendorInvoiceData?.MasterJobSid && !this.vendorInvoiceData?.HouseJobSid;
+      const bookingHeader = this.vendorInvoiceData?.BookingHeader || this.vendorInvoiceData?.bookingHeader || {};
+      const houseJob = this.vendorInvoiceData?.houseJob || {};
+      const masterJob = this.vendorInvoiceData?.masterJob || {};
+      const allDetails: any[] = this.vendorInvoiceData?.VoucherDetail || [];
+      const voucherDetails = allDetails
+        .filter((d) => d.IsAutoGenerated !== 'Y')
+        .map((detail, index) => {
+          const taxPercentages = this.getTaxPercentageForDisplay(detail);
+          const taxAmounts = this.getTaxAmountForDisplay(detail);
+          const hssacCode = detail?.HSSACCode || detail?.hssacMaster?.HSSACCode || detail?.hssacMaster?.hsnCode || '-';
+
+          const totalTaxAmount = toNumber(taxAmounts.cgstAmt) + toNumber(taxAmounts.sgstAmt) + toNumber(taxAmounts.igstAmt) + toNumber(taxAmounts.vatAmt);
+          const actualLocalAmount = toNumber(detail.LocalAmount) + totalTaxAmount;
+          const exchangeRate = toNumber(this.vendorInvoiceData?.ExchangeRate) || 1;
+          const correctedTaxAmount =
+            this.vendorInvoiceData?.CurrencyMasterSid === this.currentCompany.CurrencyMasterSid
+              ? totalTaxAmount
+              : (totalTaxAmount / exchangeRate);
+          const actualPartyAmount = toNumber(detail.PartyAmount) + correctedTaxAmount;
+
+          return {
+            Sno: index + 1,
+            ChargeDescription: detail.ChargeDescription || '',
+            HSSACCode: hssacCode,
+            DrCr: detail.DrCr || '',
+            CurrencyMasterSid: detail.CurrencyMasterSid,
+            CurrencyCode: detail.CurrencyCode || '',
+            NumberOfUnit: Number(detail.NumberOfUnit || 0).toFixed(3),
+            Rate: this.getFormattedAmount(detail.Rate, detail.CurrencyMasterSid),
+            ExchangeRate: this.getFormattedAndPaddedExchangeRate(toNumber(detail.ExchangeRate), detail.CurrencyMasterSid),
+            TaxableAmount: this.getFormattedAmount(detail.TaxableAmount, this.currentCompany.CurrencyMasterSid),
+            cgstRate: Number(taxPercentages.cgstRate || 0).toFixed(3),
+            cgstAmt: this.getFormattedAmount(taxAmounts.cgstAmt, this.currentCompany.CurrencyMasterSid),
+            sgstRate: Number(taxPercentages.sgstRate || 0).toFixed(3),
+            sgstAmt: this.getFormattedAmount(taxAmounts.sgstAmt, this.currentCompany.CurrencyMasterSid),
+            igstRate: Number(taxPercentages.igstRate || 0).toFixed(3),
+            igstAmt: this.getFormattedAmount(taxAmounts.igstAmt, this.currentCompany.CurrencyMasterSid),
+            vatRate: Number(taxPercentages.vatRate || 0).toFixed(3),
+            vatAmt: this.getFormattedAmount(taxAmounts.vatAmt, this.currentCompany.CurrencyMasterSid),
+            LocalAmount: this.getFormattedAmount(actualLocalAmount, this.currentCompany.CurrencyMasterSid),
+            PartyAmount: this.getFormattedAmount(actualPartyAmount, this.vendorInvoiceData?.CurrencyMasterSid)
+          };
+        });
+
+      const totalPartyAmount = voucherDetails.reduce((sum, detail) => {
+        if (detail.DrCr === 'D') {
+          return sum + toNumber(detail.PartyAmount);
+        }
+        return sum - toNumber(detail.PartyAmount);
+      }, 0);
+
+      if (!this.isBankFetched) {
+        await this.getAndStoreVendorBankDetails();
+      }
+      const bankDetails = this.bankDetails ?? this.vendorInvoiceData?.BankDetails ?? [];
+
+      if (!this.TandCFetched) {
+        await this.getAndStoreVendorTandC();
+      }
+      const tandc = this.TandCList || [];
+      const salesmanName = this.vendorInvoiceData?.SalesmanName || '';
+      const resolvedCurrencySid =
+        this.vendorInvoiceData?.CurrencyMasterSid ||
+        this.vendorInvoiceForm.get('CurrencyMasterSid')?.getRawValue() ||
+        this.currencyList.find(
+          (c: any) => c.currencyCode === this.vendorInvoiceData?.CurrencyCode
+        )?.CurrencyMasterSid ||
+        this.currentCompanyCurrency?.currencyMasterSid;
+      const totalForWords = Number(Math.abs(totalPartyAmount).toFixed(2));
+      const amountInWords = this.getAmountInWords(totalForWords, resolvedCurrencySid);
+
+      this.vendorInvoicePrintData = {
+        invoiceTitle: 'Vendor Invoice',
+        GSTCode: this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
+        CurrencyMasterSid: this.vendorInvoiceData?.CurrencyMasterSid || 0,
+        CurrencyCode: this.vendorInvoiceData?.CurrencyCode || '',
+        VoucherDate: this.vendorInvoiceData?.VoucherDate || '',
+        InvoiceNo: this.vendorInvoiceData?.VoucherNumber || '',
+        InvoiceDate: this.vendorInvoiceData?.VoucherDate || '',
+        InvoiceDueDate: this.vendorInvoiceData?.DueDate || this.vendorInvoiceForm.get('DueDate')?.value || '',
+        BilledTo: this.vendorInvoiceData?.PartyName || this.vendorInvoiceData?.subledgerMaster?.SubledgerName || '',
+        BillingAddress: this.vendorInvoiceData?.PartyAddress || this.vendorInvoiceData?.subledgerMaster?.Address || '',
+        PAN: this.currentCompany?.Pan || this.currentCompany?.PAN || '',
+        GST_VAT: this.vendorInvoiceData?.GST_VAT || '',
+        IRNNumber: this.vendorInvoiceData?.IRNNumber || '',
+        ShipperName: isHouseJobInvoice ? houseJob?.ShipperName : (isBookingInvoice ? bookingHeader?.ShipperName : ''),
+        ConsigneeName: isHouseJobInvoice ? houseJob?.ConsigneeName : (isBookingInvoice ? bookingHeader?.ConsigneeName : ''),
+        Vessel: this.getShipmentFieldValue('VesselName') || '',
+        VoyageNo: this.getShipmentFieldValue('VoyageNo') || '',
+        POL: this.getShipmentFieldValue('POL') || '',
+        PlaceofSupply: this.vendorInvoiceData?.PlaceOfSupply || '',
+        FPD: this.getShipmentFieldValue('FPD') || '',
+        ETD: this.getShipmentFieldValue('ETD') || '',
+        ETA: this.getShipmentFieldValue('ETA') || '',
+        MasterJobNumber: masterJob?.MasterJobNumber || '',
+        MasterJobDate: masterJob?.MasterJobDate || '',
+        DocumentNumber: this.vendorInvoiceData?.DocumentNumber || '',
+        DocumentDate: this.vendorInvoiceData?.DocumentDate || '',
+        ContainerType: masterJob?.containers?.[0]?.ContainerType || '',
+        ContainerNumber: masterJob?.containers?.[0]?.ContainerNumber || '',
+        DepartmentMasterSid: masterJob?.DepartmentMasterSid || '',
+        HBLNo: houseJob?.HBLNo || '',
+        MBLNo: masterJob?.MBLNo || '',
+        isPosted: this.isPosted,
+        FreightTerms: isHouseJobInvoice
+          ? houseJob?.FreightTerms
+          : (isBookingInvoice
+              ? bookingHeader?.FreightTerms
+              : (isMasterJobInvoice ? masterJob?.FreightPPCC : '')),
+        JobType: isHouseJobInvoice
+          ? houseJob?.JobType
+          : (isBookingInvoice
+              ? bookingHeader?.JobType
+              : (isMasterJobInvoice ? masterJob?.JobType : '')),
+        IsServiceJob: isHouseJobInvoice ? houseJob?.IsServiceJob : '',
+        BookingNumber: isHouseJobInvoice
+          ? houseJob?.BookingNo
+          : (isBookingInvoice ? bookingHeader?.BookingNo : ''),
+        CurrExRate: `${this.vendorInvoiceData?.CurrencyCode || ''} / ${this.getFormattedAndPaddedExchangeRate(toNumber(this.vendorInvoiceData?.ExchangeRate), this.vendorInvoiceData?.CurrencyMasterSid)}`,
+        SalesPerson: salesmanName,
+        Remarks: this.vendorInvoiceData?.Remarks || '',
+        voucherDetails,
+        totalPartyAmount: this.getFormattedAmount(totalPartyAmount, resolvedCurrencySid),
+        AmountInWords: amountInWords,
+        BankDetails: bankDetails,
+        TermsAndConditions: tandc,
+        pkg: isHouseJobInvoice
+          ? (houseJob?.Cargo?.[0]?.NoOfPackage ?? ' ')
+          : isBookingInvoice
+            ? (bookingHeader?.bookingCargo?.[0]?.NoOfPackage ?? ' ')
+            : isMasterJobInvoice
+              ? (masterJob?.NoOfPkg ?? ' ')
+              : ' ',
+        grosswt: isHouseJobInvoice
+          ? (houseJob?.Cargo?.[0]?.GrossWeight ?? ' ')
+          : isBookingInvoice
+            ? (bookingHeader?.bookingCargo?.[0]?.GrossWeight ?? ' ')
+            : isMasterJobInvoice
+              ? (masterJob?.GrossWeight ?? ' ')
+              : ' ',
+        desc: isHouseJobInvoice
+          ? (houseJob?.Cargo?.[0]?.CommodityDescription ?? ' ')
+          : isBookingInvoice
+            ? (bookingHeader?.bookingCargo?.[0]?.CommodityDescription ?? ' ')
+            : isMasterJobInvoice
+              ? (masterJob?.CommodityDescription ?? ' ')
+              : ' ',
+        ChargeableWeight: isHouseJobInvoice
+          ? (houseJob?.Cargo?.[0]?.ChargeableWeight ?? ' ')
+          : isBookingInvoice
+            ? (bookingHeader?.bookingCargo?.[0]?.ChargeableWeight ?? ' ')
+            : isMasterJobInvoice
+              ? (masterJob?.ChargeableWeight ?? ' ')
+              : ' ',
+        cbm: isHouseJobInvoice
+          ? (houseJob?.Cargo?.[0]?.Volume ?? ' ')
+          : isBookingInvoice
+            ? (bookingHeader?.bookingCargo?.[0]?.Volume ?? ' ')
+            : isMasterJobInvoice
+              ? (masterJob?.Volume ?? ' ')
+              : ' '
+      };
+    }
+
+    async openPrintModal(){
+      if (!this.headerId) {
+        this.appSettingService.showWarning('Please save the vendor invoice first.');
+        return;
+      }
+
+      this.spinner.show();
+      try {
+        await this.prepareVendorPrintData();
+
+        const modalRef = this.modalService.open(VendorInvoicePrintComponent, {
+          size: 'xl',
+          scrollable: true
+        });
+
+        modalRef.componentInstance.sourceVendorInvoiceData = this.vendorInvoiceData;
+        modalRef.componentInstance.vendorInvoiceData = this.vendorInvoicePrintData;
+        modalRef.componentInstance.printData = this.vendorInvoicePrintData;
+        modalRef.componentInstance.currentCompany = this.currentCompany;
+        modalRef.componentInstance.currentBranch = this.currentBranch;
+        modalRef.componentInstance.currentCompanyCountryCode = this.currentCompanyCountryCode;
+        modalRef.componentInstance.currentCompanyCurrency = this.currentCompanyCurrency;
+        modalRef.componentInstance.bankDetails = this.vendorInvoicePrintData?.BankDetails || [];
+        modalRef.componentInstance.TandCList = this.vendorInvoicePrintData?.TermsAndConditions || [];
+        modalRef.componentInstance.userData = this.userData;
+        modalRef.componentInstance.isVATMode = this.isVATMode;
+        modalRef.componentInstance.currentDate = this.currentDate;
+      } finally {
+        this.spinner.hide();
+      }
+    }
 }

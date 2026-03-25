@@ -21,6 +21,8 @@ import {
   MasterJobDocumentType,
   QuotationDocumentType,
   InvoicePdfData,
+  VendorInvoicePdfData,
+  VendorCreditNotePdfData,
   JobCardPdfData,
   ShipmentReportPdfData,
   CargoArrivalPdfData,
@@ -38,6 +40,14 @@ import { generateMasterJobDocument, transformMasterJobApiData } from './generato
 import { generateGenericReportDocument, GenericReportPdfData } from './generators/generic-report-pdf.generator';
 import { ComplexReportExportConfig } from 'src/app/shared/excel-report-service';
 import { generateInvoiceDocument, transformInvoiceApiData } from './generators/invoice-pdf.generator';
+import {
+  generateVendorInvoiceDocument,
+  transformVendorInvoiceApiData
+} from './generators/vendor-invoice-pdf.generator';
+import {
+  generateVendorCreditNoteDocument,
+  transformVendorCreditNoteApiData
+} from './generators/vendor-credit-note-pdf.generator';
 import {
   generateShipmentReportDocument,
   transformShipmentReportApiData
@@ -503,6 +513,234 @@ export class PdfMakeService {
   ): Promise<Blob> {
     const pdfData = transformInvoiceApiData(apiData, company, branch, userData, logo, lookups, options);
     return this.generateInvoiceBlob(pdfData);
+  }
+
+  /**
+   * Generate and download Vendor Invoice PDF
+   */
+  generateVendorInvoice(data: VendorInvoicePdfData): void {
+    const docDefinition = generateVendorInvoiceDocument(data);
+    const filename = `Vendor_Invoice_${data.invoice?.invoiceNo || 'Draft'}.pdf`;
+    this.download(docDefinition, filename);
+  }
+
+  /**
+   * Get Vendor Invoice PDF as Blob
+   */
+  async generateVendorInvoiceBlob(data: VendorInvoicePdfData): Promise<Blob> {
+    try {
+      const docDefinition = generateVendorInvoiceDocument(data);
+      return this.getBlob(docDefinition);
+    } catch (error) {
+      console.error('Vendor Invoice PDF Generation Error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate Vendor Invoice from raw API data
+   */
+  generateVendorInvoiceFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    lookups?: {
+      hssacMaster?: any[];
+      currencyMaster?: any[];
+    },
+    options?: {
+      taxDisplayConfig?: {
+        showCGST: boolean;
+        showSGST: boolean;
+        showIGST: boolean;
+        showVAT: boolean;
+      };
+      bankDetails?: any[];
+      terms?: any[];
+      amountInWords?: string;
+      localCurrency?: string;
+      invoiceTitle?: string;
+      isSeaMode?: boolean;
+      isVATMode?: boolean;
+      companyVatNo?: string;
+      shipmentDetails?: any;
+      cargoDetails?: any;
+      vendorInvoiceData?: any;
+      invoicePrintData?: any;
+    }
+  ): void {
+    const pdfData = transformVendorInvoiceApiData(
+      apiData,
+      company,
+      branch,
+      userData,
+      logo,
+      lookups,
+      options
+    );
+    this.generateVendorInvoice(pdfData);
+  }
+
+  /**
+   * Get Vendor Invoice Blob from raw API data
+   */
+  async generateVendorInvoiceBlobFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    lookups?: {
+      hssacMaster?: any[];
+      currencyMaster?: any[];
+    },
+    options?: {
+      taxDisplayConfig?: {
+        showCGST: boolean;
+        showSGST: boolean;
+        showIGST: boolean;
+        showVAT: boolean;
+      };
+      bankDetails?: any[];
+      terms?: any[];
+      amountInWords?: string;
+      localCurrency?: string;
+      invoiceTitle?: string;
+      isSeaMode?: boolean;
+      isVATMode?: boolean;
+      companyVatNo?: string;
+      shipmentDetails?: any;
+      cargoDetails?: any;
+      vendorInvoiceData?: any;
+      invoicePrintData?: any;
+    }
+  ): Promise<Blob> {
+    const pdfData = transformVendorInvoiceApiData(
+      apiData,
+      company,
+      branch,
+      userData,
+      logo,
+      lookups,
+      options
+    );
+    return this.generateVendorInvoiceBlob(pdfData);
+  }
+
+  /**
+   * Generate and download Vendor Credit Note PDF
+   */
+  generateVendorCreditNote(data: VendorCreditNotePdfData): void {
+    const docDefinition = generateVendorCreditNoteDocument(data);
+    const filename = `Vendor_Credit_Note_${data.invoice?.invoiceNo || 'Draft'}.pdf`;
+    this.download(docDefinition, filename);
+  }
+
+  /**
+   * Get Vendor Credit Note PDF as Blob
+   */
+  async generateVendorCreditNoteBlob(data: VendorCreditNotePdfData): Promise<Blob> {
+    try {
+      const docDefinition = generateVendorCreditNoteDocument(data);
+      return this.getBlob(docDefinition);
+    } catch (error) {
+      console.error('Vendor Credit Note PDF Generation Error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate Vendor Credit Note from raw API data
+   */
+  generateVendorCreditNoteFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    lookups?: {
+      hssacMaster?: any[];
+      currencyMaster?: any[];
+    },
+    options?: {
+      taxDisplayConfig?: {
+        showCGST: boolean;
+        showSGST: boolean;
+        showIGST: boolean;
+        showVAT: boolean;
+      };
+      bankDetails?: any[];
+      terms?: any[];
+      amountInWords?: string;
+      localCurrency?: string;
+      invoiceTitle?: string;
+      isSeaMode?: boolean;
+      isVATMode?: boolean;
+      companyVatNo?: string;
+      shipmentDetails?: any;
+      cargoDetails?: any;
+      vendorCreditNoteData?: any;
+      creditNotePrintData?: any;
+    }
+  ): void {
+    const pdfData = transformVendorCreditNoteApiData(
+      apiData,
+      company,
+      branch,
+      userData,
+      logo,
+      lookups,
+      options
+    );
+    this.generateVendorCreditNote(pdfData);
+  }
+
+  /**
+   * Get Vendor Credit Note Blob from raw API data
+   */
+  async generateVendorCreditNoteBlobFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    lookups?: {
+      hssacMaster?: any[];
+      currencyMaster?: any[];
+    },
+    options?: {
+      taxDisplayConfig?: {
+        showCGST: boolean;
+        showSGST: boolean;
+        showIGST: boolean;
+        showVAT: boolean;
+      };
+      bankDetails?: any[];
+      terms?: any[];
+      amountInWords?: string;
+      localCurrency?: string;
+      invoiceTitle?: string;
+      isSeaMode?: boolean;
+      isVATMode?: boolean;
+      companyVatNo?: string;
+      shipmentDetails?: any;
+      cargoDetails?: any;
+      vendorCreditNoteData?: any;
+      creditNotePrintData?: any;
+    }
+  ): Promise<Blob> {
+    const pdfData = transformVendorCreditNoteApiData(
+      apiData,
+      company,
+      branch,
+      userData,
+      logo,
+      lookups,
+      options
+    );
+    return this.generateVendorCreditNoteBlob(pdfData);
   }
 
   // ==================== Shipment Report ====================

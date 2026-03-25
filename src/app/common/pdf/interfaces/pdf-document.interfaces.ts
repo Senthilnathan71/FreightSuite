@@ -810,6 +810,12 @@ export interface InvoiceChargeData extends PdfChargeItem {
   roe?: number;
 }
 
+// =====================
+// VENDOR INVOICE PDF DATA
+// =====================
+export interface VendorInvoicePdfData extends InvoicePdfData {}
+export interface VendorCreditNotePdfData extends InvoicePdfData {}
+
 
 
 // =====================
