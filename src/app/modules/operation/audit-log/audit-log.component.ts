@@ -41,7 +41,19 @@ export class AuditLogComponent implements OnInit {
         const groupedLogs: any = {};
 
         logs.forEach((log: any) => {
-          const groupKey = `${log.changedAt}-${log.changedBy}-${log.operation}`;
+          const changedDate = new Date(log.changedAt);
+
+        // group by minute
+        const roundedTime = new Date(
+          changedDate.getFullYear(),
+          changedDate.getMonth(),
+          changedDate.getDate(),
+          changedDate.getHours(),
+          changedDate.getMinutes(),
+          0,
+          0
+        ).toISOString();
+          const groupKey = `${roundedTime}-${log.changedBy}-${log.operation}`;
 
           if (!groupedLogs[groupKey]) {
             groupedLogs[groupKey] = {

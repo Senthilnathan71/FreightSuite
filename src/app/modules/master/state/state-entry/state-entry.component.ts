@@ -171,7 +171,8 @@ export class StateEntryComponent implements OnInit {
       ZoneMasterSid: [{value:'', disabled: true}, Validators.required],
       region: [''],
       status: [{value: 'A', disabled: true}, Validators.required],
-      Remarks: ['']
+      Remarks: [''],
+      IsUnionTerritory: [false]
     });
 
      this.stateForm.get('CountryMasterSid')?.valueChanges.subscribe(selectedCountryId => {
@@ -275,7 +276,8 @@ export class StateEntryComponent implements OnInit {
           ZoneMasterSid: state.ZoneMasterSid,
           region: state.region || '',
           status: state.status || 'A',
-          Remarks: state.Remarks || ''
+          Remarks: state.Remarks || '',
+          IsUnionTerritory: state.IsUnionTerritory === 'Y' ? true: false,
         });
         setTimeout(() => {
         this.stateForm.patchValue({
@@ -348,6 +350,7 @@ openAuditLogs(modal: TemplateRef<any>) {
       ...formValue,
       CountryMasterSid: Number(formValue.CountryMasterSid),
       ZoneMasterSid: Number(formValue.ZoneMasterSid),
+      IsUnionTerritory: formValue.IsUnionTerritory === false ? 'N' : 'Y',
       status: this.isEditMode ? formValue.status : 'A',
       ...(this.isEditMode ? updatedBy : createdBy)
     };
@@ -388,7 +391,8 @@ openAuditLogs(modal: TemplateRef<any>) {
         ZoneMasterSid: '',
         region: '',
         status: 'A',
-        Remarks: ''
+        Remarks: '',
+        IsUnionTerritory: false
       });
       // Disable status control when not in edit mode
       this.stateForm.get('status')?.disable();
