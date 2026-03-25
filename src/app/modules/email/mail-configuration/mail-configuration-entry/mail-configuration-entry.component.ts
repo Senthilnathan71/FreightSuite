@@ -169,12 +169,12 @@ export class MailConfigurationEntryComponent implements OnInit {
   }
 
   private readonly defaultMailSubjects: { [key: string]: string } = {
-    'Enquiry': 'Enquiry No.{{EnquiryNo}} Date: {{date}} {{POO}} - {{POD}}',
-    'Quotation': 'Quotation No.{{quotationNumber}} Date: {{date}} {{POO}} - {{POD}}',
-    'Booking': 'Booking No.{{BookingNo}} Date: {{date}} {{POO}} - {{POD}}',
+    'Enquiry': 'Enquiry Received | No: {{EnquiryNo}} | Date: {{date}} | {{POO}} -> {{POD}}',
+    'Quotation': 'Quotation Ready | No: {{quotationNumber}} | Date: {{date}} | {{POO}} -> {{POD}}',
+    'Booking': 'Booking Confirmed | No: {{BookingNo}} | Date: {{date}} | {{POO}} -> {{POD}}',
   };
 
-  private readonly defaultMailSubject = '{{date}} {{POO}} - {{POD}}';
+  private readonly defaultMailSubject = 'Notification | {{date}} | {{POO}} -> {{POD}}';
 
   getDefaultMailSubject(menuName: string): string {
     return this.defaultMailSubjects[menuName] || this.defaultMailSubject;

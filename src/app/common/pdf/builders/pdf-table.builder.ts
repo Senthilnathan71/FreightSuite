@@ -214,7 +214,7 @@ export function buildCargoTable(
   fclLcl: 'FCL' | 'LCL' | 'AIR',
   options: TableOptions = {}
 ): any {
-  const opts = { ...DEFAULT_TABLE_OPTIONS, ...options };
+  const opts = { ...DEFAULT_TABLE_OPTIONS, layout: 'bordered', ...options };
 
   if (!cargo || cargo.length === 0) {
     return { text: '' };
@@ -226,19 +226,20 @@ export function buildCargoTable(
   if (fclLcl === 'AIR') {
     columns = [
       { header: 'Cargo Type', field: 'CargoType', width: 58 },
-      { header: 'Cargo Desc', field: 'CargoDesc', width: 72 },
-      { header: 'Product Name', field: 'ProductName', width: 82 },
-      { header: 'Chargeable Wt.', field: 'ChargeableWeight', width: 72, alignment: 'right', format: 'number', decimals: 3 },
-      { header: 'Pkg Type', field: 'PackageType', width: 52 },
-      { header: 'Qty.', field: 'Qty', width: 35, alignment: 'right', format: 'number', decimals: 2 },
-      { header: 'Gross Wt.', field: 'GrossWeight', width: 56, alignment: 'right', format: 'number', decimals: 3 },
-      { header: 'CBM', field: 'Volume', width: 55, alignment: 'right', format: 'number', decimals: 3 }
+      { header: 'Cargo Desc', field: 'CargoDesc', width: '*' },
+      { header: 'Product Name', field: 'ProductName', width: 62 },
+      { header: 'Chargeable Wt.', field: 'ChargeableWeight', width: 70, alignment: 'right', format: 'number', decimals: 3 },
+      { header: 'Pkg Type', field: 'PackageType', width: 42 },
+      { header: 'Qty.', field: 'Qty', width: 30, alignment: 'right', format: 'number', decimals: 2 },
+      { header: 'Gross Wt.', field: 'GrossWeight', width: 46, alignment: 'right', format: 'number', decimals: 3 },
+      { header: 'CBM', field: 'Volume', width: 44, alignment: 'right', format: 'number', decimals: 3 }
     ];
 
     const headerRow = columns.map(col => ({
       text: col.header,
       style: opts.headerStyle,
-      alignment: col.alignment || 'left'
+      alignment: 'center',
+      noWrap: true
     }));
 
     const dataRows = cargo.map((row, rowIndex) => {
@@ -285,9 +286,17 @@ export function buildCargoTable(
     totalRow[7] = { text: formatNumber(totalVolume, 3), style: opts.cellStyle, alignment: 'right' };
 
     const widths = columns.map(col => col.width || '*');
-    const layout = typeof opts.layout === 'string'
-      ? PDF_TABLE_LAYOUTS[opts.layout] || PDF_TABLE_LAYOUTS.bordered
-      : opts.layout;
+    const layout = {
+      hLineWidth: () => 1,
+      vLineWidth: (i: number, node: any) =>
+        (i === 0 || i === node.table.widths.length) ? 0 : 1,
+      hLineColor: () => '#000000',
+      vLineColor: () => '#000000',
+      paddingLeft: () => 4,
+      paddingRight: () => 4,
+      paddingTop: () => 3,
+      paddingBottom: () => 3
+    };
 
     return {
       table: {
@@ -303,19 +312,20 @@ export function buildCargoTable(
   if (fclLcl === 'FCL') {
     columns = [
       { header: 'Cargo Type', field: 'CargoType', width: 58 },
-      { header: 'Cargo Desc', field: 'CargoDesc', width: 72 },
-      { header: 'Product Name', field: 'ProductName', width: 82 },
-      { header: 'Cont. Type', field: 'ContainerType', width: 60 },
-      { header: 'No. of Cont.', field: 'NoofContainers', width: 50, alignment: 'right', format: 'number' },
-      { header: 'Pkg Type', field: 'PackageType', width: 46 },
-      { header: 'Gross Wt.', field: 'GrossWeight', width: 52, alignment: 'right', format: 'number', decimals: 3 },
-      { header: 'CBM', field: 'Volume', width: 44, alignment: 'right', format: 'number', decimals: 3 }
+      { header: 'Cargo Desc', field: 'CargoDesc', width: '*' },
+      { header: 'Product Name', field: 'ProductName', width: 62 },
+      { header: 'Cont. Type', field: 'ContainerType', width: 50 },
+      { header: 'No. of Cont.', field: 'NoofContainers', width: 42, alignment: 'right', format: 'number' },
+      { header: 'Pkg Type', field: 'PackageType', width: 38 },
+      { header: 'Gross Wt.', field: 'GrossWeight', width: 44, alignment: 'right', format: 'number', decimals: 3 },
+      { header: 'CBM', field: 'Volume', width: 40, alignment: 'right', format: 'number', decimals: 3 }
     ];
 
     const headerRow = columns.map(col => ({
       text: col.header,
       style: opts.headerStyle,
-      alignment: col.alignment || 'left'
+      alignment: 'center',
+      noWrap: true
     }));
 
     const dataRows = cargo.map((row, rowIndex) => {
@@ -360,9 +370,17 @@ export function buildCargoTable(
     totalRow[7] = { text: formatNumber(totalVolume, 3), style: opts.cellStyle, alignment: 'right' };
 
     const widths = columns.map(col => col.width || '*');
-    const layout = typeof opts.layout === 'string'
-      ? PDF_TABLE_LAYOUTS[opts.layout] || PDF_TABLE_LAYOUTS.bordered
-      : opts.layout;
+    const layout = {
+      hLineWidth: () => 1,
+      vLineWidth: (i: number, node: any) =>
+        (i === 0 || i === node.table.widths.length) ? 0 : 1,
+      hLineColor: () => '#000000',
+      vLineColor: () => '#000000',
+      paddingLeft: () => 4,
+      paddingRight: () => 4,
+      paddingTop: () => 3,
+      paddingBottom: () => 3
+    };
 
     return {
       table: {
@@ -377,20 +395,21 @@ export function buildCargoTable(
 
   columns = [
     { header: 'Cargo Type', field: 'CargoType', width: 60 },
-    { header: 'Cargo Desc', field: 'CargoDesc', width: 72 },
-    { header: 'Product Name', field: 'ProductName', width: 78 },
-    { header: 'Chargeable Wt.', field: 'ChargeableWeight', width: 72, alignment: 'right', format: 'number', decimals: 3 },
-    { header: 'Qty.', field: 'Qty', width: 32, alignment: 'right', format: 'number' },
-    { header: 'Wt.Unit', field: 'WeightUnit', width: 40 },
-    { header: 'Pkg Type', field: 'PackageType', width: 45 },
-    { header: 'Gross Wt.', field: 'GrossWeight', width: 50, alignment: 'right', format: 'number', decimals: 3 },
-    { header: 'CBM', field: 'Volume', width: 40, alignment: 'right', format: 'number', decimals: 3 }
+    { header: 'Cargo Desc', field: 'CargoDesc', width: '*' },
+    { header: 'Product Name', field: 'ProductName', width: 62 },
+    { header: 'Chargeable Wt.', field: 'ChargeableWeight', width: 68, alignment: 'right', format: 'number', decimals: 3 },
+    { header: 'Qty.', field: 'Qty', width: 28, alignment: 'right', format: 'number' },
+    { header: 'Wt.Unit', field: 'WeightUnit', width: 34 },
+    { header: 'Pkg Type', field: 'PackageType', width: 38 },
+    { header: 'Gross Wt.', field: 'GrossWeight', width: 44, alignment: 'right', format: 'number', decimals: 3 },
+    { header: 'CBM', field: 'Volume', width: 34, alignment: 'right', format: 'number', decimals: 3 }
   ];
 
   const headerRow = columns.map(col => ({
     text: col.header,
     style: opts.headerStyle,
-    alignment: col.alignment || 'left'
+    alignment: 'center',
+    noWrap: true
   }));
 
   const dataRows = cargo.map((row, rowIndex) => {
@@ -437,9 +456,17 @@ export function buildCargoTable(
   totalRow[8] = { text: formatNumber(totalVolume, 3), style: opts.cellStyle, alignment: 'right' };
 
   const widths = columns.map(col => col.width || '*');
-  const layout = typeof opts.layout === 'string'
-    ? PDF_TABLE_LAYOUTS[opts.layout] || PDF_TABLE_LAYOUTS.bordered
-    : opts.layout;
+  const layout = {
+    hLineWidth: () => 1,
+    vLineWidth: (i: number, node: any) =>
+      (i === 0 || i === node.table.widths.length) ? 0 : 1,
+    hLineColor: () => '#000000',
+    vLineColor: () => '#000000',
+    paddingLeft: () => 4,
+    paddingRight: () => 4,
+    paddingTop: () => 3,
+    paddingBottom: () => 3
+  };
 
   return {
     table: {

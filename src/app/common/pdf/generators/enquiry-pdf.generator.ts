@@ -161,7 +161,7 @@ function buildCargoSection(data: EnquiryPdfData): any[] {
     WeightUnit: cargo.weightUnit || ''
   }));
 
-  content.push(buildCargoTable(cargoData, data.fclLcl, { margin: [0, 0, 0, 15] }));
+  content.push(buildCargoTable(cargoData, data.fclLcl, { margin: [-10, 0, -10, 15] }));
 
   return content;
 }
@@ -291,7 +291,7 @@ export function transformEnquiryApiData(
       shipmentFreq: enquiryOther?.ShipmentFreq || ''
     },
     routes: routes.map((route: any) => ({
-      poo: getPortInfo(route.POOSid),
+      poo: getPortInfo(route.POOSid || route.PORSid),
       pol: getPortInfo(route.POLSid),
       pod: getPortInfo(route.PODSid),
       fpd: getPortInfo(route.FDPSid || route.FDCSid),
