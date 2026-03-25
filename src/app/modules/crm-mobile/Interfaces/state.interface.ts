@@ -14,6 +14,7 @@ export interface State {
     updatedOn: string,
     Remarks: string,
     region: string,
+    IsUnionTerritory: 'N' | 'Y',
     
     countryMaster: {
         countryName: string;
