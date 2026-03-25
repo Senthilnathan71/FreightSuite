@@ -63,6 +63,7 @@ import { ToastrService } from 'ngx-toastr';
 import { AwbDraftComponent } from '../report/awb-draft/awb-draft.component';
 import { AwbPreprintComponent } from '../report/awb-preprint/awb-preprint.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { AuditLogComponent } from '../../audit-log/audit-log.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -2303,6 +2304,13 @@ onCurrencyChange(event: any) {
   const boeData = this.boeComponent ? this.boeComponent.getBoeData() : [];
   const vehicleData = this.vehicleComponent ? this.vehicleComponent.getVehicleData() : [];
   const customsData = this.customsComponent ? this.customsComponent.getCustomsData() : [];
+  const normalizedConnections = (this.connectionResult || []).map((connection: any) => ({
+    ...connection,
+    HouseJobConnectionSid:
+      connection?.HouseJobConnectionSid ??
+      connection?.TransactionSid ??
+      null
+  }));
 
   // Validate customs required fields before saving
   if (customsData.length > 0 && this.customsComponent) {
@@ -2493,7 +2501,7 @@ onCurrencyChange(event: any) {
     houseJobBOE: boeData,
     houseJobVehicle: vehicleData,
     houseJobCustoms: customsData,
-    houseConnections: this.connectionResult,
+    houseConnections: normalizedConnections,
     bookingRates: this.rateResult,
     milestones: this.milestoneResult,
     createdBy: !this.isEditMode ? currUserEmail : undefined,
@@ -3833,118 +3841,19 @@ ${this.userData['userName']}`;
     })
   }
 
-  openAuditLogs(modal: TemplateRef<any>) {
-        if (!this.HouseJobSid) return;
-        this.getAuditLog()
-        this.auditLogModalRef = this.modalService.open(modal, {
-          centered: true,
-          scrollable: true,
-          windowClass: 'audit-log-modal'
-        });
-      }
-
-     getAuditLog() {
-  this.operationService.getAuditLogsAgentMasterAirWaybill(
-    'HouseJob',
-    this.HouseJobSid.toString()
-  ).subscribe({
-    next: (logs: any[]) => {
-
-      const ignoreWords = [
-        'updatedon',
-        'updatedby',
-        'createdon',
-        'createdby'
-      ];
-
-      const normalize = (val:any) => {
-        if (val === null || val === undefined || val === '') return null;
-        return String(val).trim();
-      };
-
-      const sortedLogs = [...logs].sort(
-        (a,b) =>
-          new Date(a.changedAt).getTime() -
-          new Date(b.changedAt).getTime()
-      );
-
-      const groups:any[] = [];
-
-      sortedLogs.forEach(log => {
-
-        const logTime = new Date(log.changedAt).getTime();
-
-        let group = groups.find(g =>
-          g.changedBy === log.changedBy &&
-          g.operation === log.operation &&
-          Math.abs(
-            new Date(g.changedAt).getTime() - logTime
-          ) <= 6000
-        );
-
-        if (!group) {
-          group = {
-            changedAt: log.changedAt,
-            changedBy: log.changedBy,
-            operation: log.operation,
-            oldValDisplay: [],
-            newValDisplay: []
-          };
-
-          groups.push(group);
-        }
-
-        const oldObj = log.oldVal || {};
-        const newObj = log.newVal || {};
-
-        const keys = new Set([
-          ...Object.keys(oldObj),
-          ...Object.keys(newObj)
-        ]);
-
-        keys.forEach(k => {
-
-          // ignore updated / created fields (case insensitive)
-          const lowerKey = k.toLowerCase();
-
-          if (
-            ignoreWords.some(x => lowerKey.includes(x))
-          ) return;
-
-          const oldVal = normalize(oldObj[k]);
-          const newVal = normalize(newObj[k]);
-
-          if (oldVal !== newVal) {
-
-            const oldLine = `${k}: ${oldVal ?? '-'}`;
-            const newLine = `${k}: ${newVal ?? '-'}`;
-
-            if (!group.oldValDisplay.includes(oldLine)) {
-              group.oldValDisplay.push(oldLine);
-            }
-
-            if (!group.newValDisplay.includes(newLine)) {
-              group.newValDisplay.push(newLine);
-            }
-
-          }
-
-        });
-
-      });
-
-      this.auditLogs = groups
-        .filter(g => g.oldValDisplay.length > 0)
-        .sort(
-          (a,b) =>
-            new Date(b.changedAt).getTime() -
-            new Date(a.changedAt).getTime()
-        );
-
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+  openAuditLogs() {
+    if (!this.HouseJobSid) return;
+    const modalRef = this.modalService.open(AuditLogComponent, {
+      centered: true,
+      scrollable: true,
+      size: 'xl',
+      windowClass: 'audit-log-modal'
+    });
+    modalRef.componentInstance.title = 'Agent Master AirWaybill Logs';
+    modalRef.componentInstance.tableName = 'AgentMasterAirWaybill';
+    modalRef.componentInstance.recordId = this.HouseJobSid.toString();
+    modalRef.componentInstance.screenName = 'AgentMasterAirWaybill';
+  }
   
   getContainerDisplay(): string {
     const containerCount = this.c['NoofContainers']?.value;
