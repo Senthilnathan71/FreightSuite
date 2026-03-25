@@ -3388,6 +3388,12 @@ getFieldConfiguration() {
     );
   }
 
+  getTaxByCountryAndType(countryMasterSid: number, taxType: string) {
+    return this.http.get<{ data: any[] }>(
+      `tax/filter?CountryMasterSid=${countryMasterSid}&TaxType=${taxType}`
+    ).pipe(map((resp: any) => resp.data));
+  }
+
 
   fetchTaxById(id: number) {
     return this.http.get<{ data: any }>(`tax/fetch/${id}`).pipe(

@@ -989,15 +989,24 @@
                </div>
                
                <!-- GST Type - Only show for Indian companies -->
-               <div class="col-md-3" *ngIf="isIndianCompany()">
-                 <label class="form-label fw-bold">GST Type</label>
-                 <ng-select formControlName="GSTType" [clearable]="false">
-                   <ng-option value="B2B">B2B </ng-option>
-                   <ng-option value="B2C">B2C </ng-option>
-                   <ng-option value="EXWP">EXWP</ng-option>
-                   <ng-option value="EXWOP"> EXWOP</ng-option>
-                 </ng-select>
-               </div>
+               @if (currentCompanyCountryCode === 'in') {
+                 <div class="col-md-3">
+                   <label class="form-label fw-bold">GST Type</label>
+                   @if (taxCalculationService.isExportOrSEZ) {
+                     <ng-select formControlName="GSTType" [clearable]="false">
+                       <ng-option value="EXPWP">Export With Payment</ng-option>
+                       <ng-option value="EXPWOP">Export Without Payment</ng-option>
+                     </ng-select>
+                   } @else {
+                     <ng-select formControlName="GSTType" [clearable]="false">
+                       <ng-option value="B2B">B2B</ng-option>
+                       <ng-option value="B2C">B2C</ng-option>
+                       <ng-option value="EXPWP">EXPWP</ng-option>
+                       <ng-option value="EXPWOP">EXPWOP</ng-option>
+                     </ng-select>
+                   }
+                 </div>
+               }
 
                <!-- Place of Supply - Show for all companies -->
                <div class="col-md-3">

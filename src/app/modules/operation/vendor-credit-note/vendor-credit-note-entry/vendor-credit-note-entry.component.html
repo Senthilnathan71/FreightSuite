@@ -428,23 +428,35 @@
             </aside>
 
             <!-- GST Type -->
-            <aside class="col-md-3">
-              <div class="custom-form-group">
-                <input
-                  type="text"
-                  class="custom-input-field sm"
-                  formControlName="GSTType"
-                  placeholder=""
-                  readonly
-                  style="cursor: not-allowed"
-                />
-                @if (currentCompanyCountryCode === "in") {
+            @if (currentCompanyCountryCode === 'in') {
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  @if (taxCalculationService.isExportOrSEZ) {
+                    <div class="custom-form-group-select" [class.filled]="!!vendorCreditNoteForm.get('GSTType')?.value">
+                      <ng-select
+                        formControlName="GSTType"
+                        [clearable]="false"
+                        class="custom-input-field sm"
+                      >
+                        @for (type of exportGstTypes; track type.id) {
+                          <ng-option [value]="type.id">{{ type.name }}</ng-option>
+                        }
+                      </ng-select>
+                    </div>
+                  } @else {
+                    <input
+                      type="text"
+                      class="custom-input-field sm"
+                      formControlName="GSTType"
+                      placeholder=""
+                      readonly
+                      style="cursor: not-allowed"
+                    />
+                  }
                   <label class="input-label">GST Type</label>
-                } @else {
-                  <label class="input-label">Tax Type</label>
-                }
-              </div>
-            </aside>
+                </div>
+              </aside>
+            }
 
             <!-- Add this temporarily for debugging -->
             <aside class="col-md-3">
@@ -827,87 +839,14 @@
                         Taxable Amt
                       </th>
 
-                      <!-- Dynamic Tax Headers Based on Country and GST Type -->
-                      @if (currentCompanyCountryCode === "in") {
-                        <!-- India GST Logic -->
-                        <ng-container
-                          *ngIf="
-                            vendorCreditNoteForm
-                              .get('GSTType')
-                              ?.getRawValue() === 'CGST+SGST'
-                          "
-                        >
-                          <!-- CGST+SGST for same state -->
-                          <th
-                            colspan="2"
-                            class="text-center bg-transparent text-light"
-                          >
-                            CGST
-                          </th>
-                          <th
-                            colspan="2"
-                            class="text-center bg-transparent text-light"
-                          >
-                            SGST
-                          </th>
-                        </ng-container>
-                        <ng-container
-                          *ngIf="
-                            vendorCreditNoteForm
-                              .get('GSTType')
-                              ?.getRawValue() === 'IGST'
-                          "
-                        >
-                          <!-- IGST for different state -->
-                          <th
-                            colspan="2"
-                            class="text-center bg-transparent text-light"
-                          >
-                            IGST
-                          </th>
-                        </ng-container>
-                        <ng-container
-                          *ngIf="
-                            vendorCreditNoteForm
-                              .get('GSTType')
-                              ?.getRawValue() === 'B2C'
-                          "
-                        >
-                          <!-- B2C - CGST only -->
-                          <th
-                            colspan="2"
-                            class="text-center bg-transparent text-light"
-                          >
-                            CGST
-                          </th>
-                        </ng-container>
-                        <ng-container
-                          *ngIf="
-                            vendorCreditNoteForm
-                              .get('GSTType')
-                              ?.getRawValue() === 'EXWP' ||
-                            vendorCreditNoteForm
-                              .get('GSTType')
-                              ?.getRawValue() === 'EXWOP'
-                          "
-                        >
-                          <!-- Export - No Tax Headers -->
-                        </ng-container>
-                      } @else if (currentCompanyCountryCode === "ae") {
-                        <!-- Dubai VAT Logic -->
-                        <th
-                          colspan="2"
-                          class="text-center bg-transparent text-light"
-                        >
-                          VAT
-                        </th>
-                      } @else {
-                        <th
-                          colspan="2"
-                          class="text-center bg-transparent text-light"
-                        >
-                          TAX
-                        </th>
+                      <!-- Dynamic Tax Headers Based on Tax Mode -->
+                      @if (shouldShowCGSTSGST()) {
+                        <th colspan="2" class="text-center bg-transparent text-light">CGST</th>
+                        <th colspan="2" class="text-center bg-transparent text-light">SGST</th>
+                      } @else if (shouldShowIGST()) {
+                        <th colspan="2" class="text-center bg-transparent text-light">IGST</th>
+                      } @else if (shouldShowVAT()) {
+                        <th colspan="2" class="text-center bg-transparent text-light">VAT</th>
                       }
 
                       <th
@@ -951,100 +890,15 @@
 
                     <!-- Second Header Row for Tax Sub-headers -->
                     <tr class="align-middle bg-info">
-                      <ng-container *ngIf="currentCompanyCountryCode === 'in'">
-                        <!-- India GST Sub-headers -->
-                        <ng-container
-                          *ngIf="
-                            vendorCreditNoteForm
-                              .get('GSTType')
-                              ?.getRawValue() === 'CGST+SGST'
-                          "
-                        >
-                          <!-- CGST+SGST sub-headers -->
-                          <th
-                            class="text-center bg-transparent text-light"
-                            style="min-width: 80px"
-                          >
-                            Rate
-                          </th>
-                          <th
-                            class="text-center bg-transparent text-light"
-                            style="min-width: 100px"
-                          >
-                            Amount
-                          </th>
-                          <th
-                            class="text-center bg-transparent text-light"
-                            style="min-width: 80px"
-                          >
-                            Rate
-                          </th>
-                          <th
-                            class="text-center bg-transparent text-light"
-                            style="min-width: 100px"
-                          >
-                            Amount
-                          </th>
-                        </ng-container>
-                        <ng-container
-                          *ngIf="
-                            vendorCreditNoteForm
-                              .get('GSTType')
-                              ?.getRawValue() === 'IGST'
-                          "
-                        >
-                          <!-- IGST sub-headers -->
-                          <th
-                            class="text-center bg-transparent text-light"
-                            style="min-width: 80px"
-                          >
-                            Rate
-                          </th>
-                          <th
-                            class="text-center bg-transparent text-light"
-                            style="min-width: 100px"
-                          >
-                            Amount
-                          </th>
-                        </ng-container>
-                        <ng-container
-                          *ngIf="
-                            vendorCreditNoteForm
-                              .get('GSTType')
-                              ?.getRawValue() === 'B2C'
-                          "
-                        >
-                          <!-- B2C sub-headers -->
-                          <th
-                            class="text-center bg-transparent text-light"
-                            style="min-width: 80px"
-                          >
-                            Rate
-                          </th>
-                          <th
-                            class="text-center bg-transparent text-light"
-                            style="min-width: 100px"
-                          >
-                            Amount
-                          </th>
-                        </ng-container>
-                      </ng-container>
-
-                      <!-- Non-India VAT Sub-headers -->
-                      <ng-container *ngIf="currentCompanyCountryCode !== 'in'">
-                        <th
-                          class="text-center bg-transparent text-light"
-                          style="min-width: 80px"
-                        >
-                          Rate
-                        </th>
-                        <th
-                          class="text-center bg-transparent text-light"
-                          style="min-width: 100px"
-                        >
-                          Amount
-                        </th>
-                      </ng-container>
+                      @if (shouldShowCGSTSGST()) {
+                        <th class="text-center bg-transparent text-light" style="min-width: 80px">Rate</th>
+                        <th class="text-center bg-transparent text-light" style="min-width: 100px">Amount</th>
+                        <th class="text-center bg-transparent text-light" style="min-width: 80px">Rate</th>
+                        <th class="text-center bg-transparent text-light" style="min-width: 100px">Amount</th>
+                      } @else if (shouldShowIGST() || shouldShowVAT()) {
+                        <th class="text-center bg-transparent text-light" style="min-width: 80px">Rate</th>
+                        <th class="text-center bg-transparent text-light" style="min-width: 100px">Amount</th>
+                      }
                     </tr>
                   </thead>
                   <tbody formArrayName="voucherDetails">
@@ -1276,223 +1130,52 @@
                           }}</span>
                         </td>
 
-                        <!-- India GST Columns -->
-                        <ng-container
-                          *ngIf="currentCompanyCountryCode === 'in'"
-                        >
-                          <!-- CGST+SGST Scenario -->
-                          <ng-container
-                            *ngIf="
-                              vendorCreditNoteForm.get('GSTType')?.value ===
-                              'CGST+SGST'
-                            "
-                          >
-                            <!-- CGST Rate -->
-                            <td>
-                              <div class="input-group input-group-sm">
-                                <div class="d-flex">
-                                  <input
-                                    type="number"
-                                    class="custom-input-field sm"
-                                    formControlName="TaxPercentage1"
-                                    (input)="
-                                      onDetailChange(i, 'TaxPercentage1')
-                                    "
-                                    readonly
-                                  />
-                                  <span
-                                    class="pt-1"
-                                    style="font-weight: 600; color: black"
-                                    >%</span
-                                  >
-                                </div>
-                              </div>
-                            </td>
-                            <!-- CGST Amount -->
-                            <td>
-                              <span
-                                class="pt-1"
-                                style="font-weight: 600; color: black"
-                                >{{
-                                  getFormattedAmount(
-                                    row.get("TaxAmount1")?.getRawValue(),
-                                    currentCompany.CurrencyMasterSid
-                                  )
-                                }}</span
-                              >
-                            </td>
-                            <!-- SGST Rate -->
-                            <td>
-                              <div class="input-group input-group-sm">
-                                <div class="d-flex gap-1">
-                                  <input
-                                    type="number"
-                                    class="custom-input-field sm"
-                                    formControlName="TaxPercentage2"
-                                    (input)="
-                                      onDetailChange(i, 'TaxPercentage2')
-                                    "
-                                    readonly
-                                  />
-                                  <span
-                                    class="pt-1"
-                                    style="font-weight: 600; color: black"
-                                    >%</span
-                                  >
-                                </div>
-                              </div>
-                            </td>
-                            <!-- SGST Amount -->
-                            <td>
-                              <span
-                                class="pt-1"
-                                style="font-weight: 600; color: black"
-                                >{{
-                                  getFormattedAmount(
-                                    row.get("TaxAmount2")?.getRawValue(),
-                                    currentCompany.CurrencyMasterSid
-                                  )
-                                }}</span
-                              >
-                            </td>
-                          </ng-container>
-
-                          <!-- IGST Scenario -->
-                          <ng-container
-                            *ngIf="
-                              vendorCreditNoteForm.get('GSTType')?.value ===
-                              'IGST'
-                            "
-                          >
-                            <!-- IGST Rate -->
-                            <td>
-                              <div class="input-group input-group-sm">
-                                <div class="d-flex gap-1">
-                                  <input
-                                    type="number"
-                                    class="custom-input-field sm"
-                                    formControlName="TaxPercentage1"
-                                    (input)="
-                                      onDetailChange(i, 'TaxPercentage1')
-                                    "
-                                    readonly
-                                  />
-                                  <span
-                                    class="pt-1"
-                                    style="font-weight: 600; color: black"
-                                    >%</span
-                                  >
-                                </div>
-                              </div>
-                            </td>
-                            <!-- IGST Amount -->
-                            <td>
-                              <span
-                                class="pt-1"
-                                style="font-weight: 600; color: black"
-                                >{{
-                                  getFormattedAmount(
-                                    row.get("TaxAmount1")?.getRawValue(),
-                                    currentCompany.CurrencyMasterSid
-                                  )
-                                }}</span
-                              >
-                            </td>
-                          </ng-container>
-
-                          <!-- B2C Scenario -->
-                          <ng-container
-                            *ngIf="
-                              vendorCreditNoteForm.get('GSTType')?.value ===
-                              'B2C'
-                            "
-                          >
-                            <!-- CGST Rate (for B2C) -->
-                            <td>
-                              <div class="input-group input-group-sm">
-                                <div class="d-flex">
-                                  <input
-                                    type="number"
-                                    class="custom-input-field sm"
-                                    formControlName="TaxPercentage1"
-                                    (input)="
-                                      onDetailChange(i, 'TaxPercentage1')
-                                    "
-                                    readonly
-                                  />
-                                  <span
-                                    class="pt-1"
-                                    style="font-weight: 600; color: black"
-                                    >%</span
-                                  >
-                                </div>
-                              </div>
-                            </td>
-                            <!-- CGST Amount (for B2C) -->
-                            <td>
-                              <span
-                                class="pt-1"
-                                style="font-weight: 600; color: black"
-                                >{{
-                                  getFormattedAmount(
-                                    row.get("TaxAmount1")?.getRawValue(),
-                                    currentCompany.CurrencyMasterSid
-                                  )
-                                }}</span
-                              >
-                            </td>
-                          </ng-container>
-
-                          <!-- Export (No Tax Columns) -->
-                          <ng-container
-                            *ngIf="
-                              vendorCreditNoteForm.get('GSTType')?.value ===
-                                'EXWP' ||
-                              vendorCreditNoteForm.get('GSTType')?.value ===
-                                'EXWOP'
-                            "
-                          >
-                            <!-- No tax columns for export -->
-                          </ng-container>
-                        </ng-container>
-
-                        <!-- Non-India VAT Columns -->
-                        <ng-container
-                          *ngIf="currentCompanyCountryCode !== 'in'"
-                        >
-                          <!-- VAT Rate -->
+                        <!-- Tax Columns — driven by service appliedTaxMode -->
+                        @if (shouldShowCGSTSGST()) {
+                          <!-- CGST -->
                           <td>
                             <div class="input-group input-group-sm">
                               <div class="d-flex">
-                                <input
-                                  type="number"
-                                  class="custom-input-field sm"
-                                  formControlName="TaxPercentage1"
-                                  (input)="onDetailChange(i, 'TaxPercentage1')"
-                                  readonly
-                                />
-                                <span
-                                  class="pt-1"
-                                  style="font-weight: 600; color: black"
-                                  >%</span
-                                >
+                                <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1" readonly />
+                                <span class="pt-1" style="font-weight: 600; color: black">%</span>
                               </div>
                             </div>
                           </td>
-                          <!-- VAT Amount -->
                           <td>
-                            <span
-                              class="pt-1"
-                              style="font-weight: 600; color: black"
-                              >{{
-                                getFormattedAmount(
-                                  row.get("TaxAmount1")?.getRawValue(),
-                                  currentCompany.CurrencyMasterSid
-                                )
-                              }}</span
-                            >
+                            <span class="pt-1" style="font-weight: 600; color: black">{{
+                              getFormattedAmount(row.get("TaxAmount1")?.getRawValue(), currentCompany.CurrencyMasterSid)
+                            }}</span>
                           </td>
-                        </ng-container>
+                          <!-- SGST -->
+                          <td>
+                            <div class="input-group input-group-sm">
+                              <div class="d-flex gap-1">
+                                <input type="number" class="custom-input-field sm" formControlName="TaxPercentage2" readonly />
+                                <span class="pt-1" style="font-weight: 600; color: black">%</span>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <span class="pt-1" style="font-weight: 600; color: black">{{
+                              getFormattedAmount(row.get("TaxAmount2")?.getRawValue(), currentCompany.CurrencyMasterSid)
+                            }}</span>
+                          </td>
+                        } @else if (shouldShowIGST() || shouldShowVAT()) {
+                          <!-- IGST or VAT (single tax column) -->
+                          <td>
+                            <div class="input-group input-group-sm">
+                              <div class="d-flex">
+                                <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1" readonly />
+                                <span class="pt-1" style="font-weight: 600; color: black">%</span>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <span class="pt-1" style="font-weight: 600; color: black">{{
+                              getFormattedAmount(row.get("TaxAmount1")?.getRawValue(), currentCompany.CurrencyMasterSid)
+                            }}</span>
+                          </td>
+                        }
 
                         <!-- Local Amount -->
                         <td>

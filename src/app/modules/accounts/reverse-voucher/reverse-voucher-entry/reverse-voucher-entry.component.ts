@@ -915,11 +915,15 @@ export class ReverseVoucherEntryComponent {
         this.reverseVoucherForm.get('InvoiceType')?.setValue('B2B');
         console.log('Invoice Type: B2B (Indian vendor with GST)');
       } else if (countryCode !== 'IN') {
-        this.reverseVoucherForm.get('InvoiceType')?.setValue('EXWP');
-        console.log('Invoice Type: EXWP (Export vendor)');
+        this.reverseVoucherForm.get('InvoiceType')?.setValue('EXPWP');
+        console.log('Invoice Type: EXPWP (Export vendor)');
       } else {
         this.reverseVoucherForm.get('InvoiceType')?.setValue('B2C');
         console.log('Invoice Type: B2C (Indian vendor without GST)');
+      }
+
+      if (this.currentCompanyCountryCode !== 'in') {
+        this.reverseVoucherForm.get('GSTType')?.setValue('VAT');
       }
 
       // Load TDS configuration
@@ -1492,7 +1496,8 @@ export class ReverseVoucherEntryComponent {
       HBLNo: formValue.HBLNo,
       PostStatus: formValue.PostStatus,
       InvoiceType: formValue.InvoiceType,
-      GSTType: formValue.GSTType,
+      GSTType: this.currentCompanyCountryCode !== 'in' ? 'VAT' : (formValue.GSTType || ''),
+      State: this.currentCompanyCountryCode !== 'in' ? 'Inter' : (formValue.PlaceOfSupply === this.currentBranchState?.stateName ? 'Inter' : 'Intra'),
       Narration: formValue.Narration,
       MasterJobSid: formValue.MasterJobSid,
       HouseJobSid: formValue.HouseJobSid,
