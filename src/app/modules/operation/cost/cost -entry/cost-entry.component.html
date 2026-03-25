@@ -991,20 +991,26 @@
                <!-- GST Type - Only show for Indian companies -->
                @if (currentCompanyCountryCode === 'in') {
                  <div class="col-md-3">
-                   <label class="form-label fw-bold">GST Type</label>
-                   @if (taxCalculationService.isExportOrSEZ) {
-                     <ng-select formControlName="GSTType" [clearable]="false">
-                       <ng-option value="EXPWP">Export With Payment</ng-option>
-                       <ng-option value="EXPWOP">Export Without Payment</ng-option>
-                     </ng-select>
-                   } @else {
-                     <ng-select formControlName="GSTType" [clearable]="false">
-                       <ng-option value="B2B">B2B</ng-option>
-                       <ng-option value="B2C">B2C</ng-option>
-                       <ng-option value="EXPWP">EXPWP</ng-option>
-                       <ng-option value="EXPWOP">EXPWOP</ng-option>
-                     </ng-select>
-                   }
+                   <div class="custom-form-group">
+                     @if (taxCalculationService.isExportOrSEZ) {
+                       <div class="custom-form-group-select" [class.filled]="!!voucherForm.get('GSTType')?.value">
+                         <ng-select formControlName="GSTType" [clearable]="false" class="custom-input-field sm">
+                           @for (type of exportGstTypes; track type.id) {
+                             <ng-option [value]="type.id">{{ type.name }}</ng-option>
+                           }
+                         </ng-select>
+                       </div>
+                     } @else {
+                       <input
+                         type="text"
+                         formControlName="GSTType"
+                         class="custom-input-field sm"
+                         readonly
+                         style="cursor: not-allowed"
+                       >
+                     }
+                     <label class="input-label">GST Type</label>
+                   </div>
                  </div>
                }
 

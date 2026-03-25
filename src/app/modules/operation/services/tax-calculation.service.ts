@@ -1,4 +1,88 @@
 import { Injectable } from '@angular/core';
+import { MasterService } from 'src/app/modules/master/master.service';
+import { firstValueFrom } from 'rxjs';
+
+// ── Types ──────────────────────────────────────────────────────────────────────
+
+export type TaxRegime = 'GST' | 'VAT' | 'NONE';
+export type TradeFlow = 'DOMESTIC' | 'EXPORT' | 'IMPORT';
+export type DocumentSide = 'SALES' | 'PURCHASE';
+export type AppliedTaxMode = 'CGST_SGST' | 'CGST_UGST' | 'IGST' | 'VAT' | 'NONE';
+export type DocumentClass = 'B2B' | 'B2C' | 'EXPWP' | 'EXPWOP' | 'RCM' | 'VAT';
+export type InvoiceType = 'REG' | 'REIMB' | 'NONGST' | 'BOS' | 'RCM';
+export type TaxCategory = 'Inter' | 'Intra';
+export type InputOrOutput = 'Input' | 'Output';
+
+// ── Interfaces ─────────────────────────────────────────────────────────────────
+
+export interface PartyTaxProfile {
+  countryCode: string;
+  stateName: string;
+  stateMasterSid?: number;
+  gstNumber?: string;
+  customerGstType?: string;
+  isUnionTerritory?: boolean;
+}
+
+export interface CompanyTaxProfile {
+  countryCode: string;
+  countryMasterSid: number;
+  stateName: string;
+  stateMasterSid?: number;
+  taxRegime: TaxRegime;
+}
+
+export interface TaxContext {
+  company: CompanyTaxProfile;
+  party: PartyTaxProfile;
+  documentSide: DocumentSide;
+  inputOrOutput: InputOrOutput;
+  invoiceType: InvoiceType;
+  documentClass: DocumentClass;
+  appliedTaxMode: AppliedTaxMode;
+  taxCategory: TaxCategory;
+  tradeFlow: TradeFlow;
+  isRCM: boolean;
+}
+
+export interface TaxClassification {
+  documentClass: DocumentClass;
+  appliedTaxMode: AppliedTaxMode;
+  taxCategory: TaxCategory;
+  tradeFlow: TradeFlow;
+  formGSTType: string;
+  isRCM: boolean;
+}
+
+export interface RowTaxInput {
+  taxableAmount: number;
+  taxGroupSid: number;
+}
+
+export interface RowTaxResult {
+  TaxPercentage1: number;
+  TaxAmount1: number;
+  TaxPercentage2: number;
+  TaxAmount2: number;
+  TotalTaxAmount: number;
+  TaxLabel: string;
+}
+
+export interface VoucherTaxTotals {
+  totalTaxAmount1: number;
+  totalTaxAmount2: number;
+  totalTaxAmount: number;
+  totalLocalAmount: number;
+  totalAmountWithTax: number;
+}
+
+// Backward-compatible legacy shape still referenced by invoice-new.
+export interface TaxCalculationResult {
+  type: 'GST' | 'VAT' | 'NONE';
+  lineItems: any[];
+}
+
+// ── Retained interfaces from old service ───────────────────────────────────────
 
 export interface BillingPartyDetails {
   CustomerMasterSid: number;
@@ -29,364 +113,514 @@ export interface BookingRateDetails {
   ChargeMaster?: {
     chargeName: string;
     HSNSAC?: string;
-    chargeTaxMaster?: Array<{    
+    chargeTaxMaster?: Array<{
       ChargeTaxMasterSid: number;
       hssacMaster: {
-          HSSACMasterSid: number,
-          HSSACCode: string,
-          TaxRate: number,
-          TaxType: string,
-          TaxGroupSid: number
-      }
+        HSSACMasterSid: number;
+        HSSACCode: string;
+        TaxRate: number;
+        TaxType: string;
+        TaxGroupSid: number;
+      };
     }>;
   };
   customerMaster?: BillingPartyDetails;
 }
 
-export interface TaxCalculationParams {
-  companyMasterSid: number;
-  branchMasterSid: number;
-  billingParty: BillingPartyDetails;
-  charges: BookingRateDetails[];
-}
+// ── Service ────────────────────────────────────────────────────────────────────
 
-export interface GSTLineItem {
-  description: string;
-  hsn: string;
-  amount: number;
-  cgstRate: number;
-  sgstRate: number;
-  igstRate: number;
-  cgstAmount: number;
-  sgstAmount: number;
-  igstAmount: number;
-  totalTaxAmount: number;
-}
-
-export interface VATLineItem {
-  description: string;
-  hsn: string;
-  amount: number;
-  vatRate: number;
-  vatAmount: number;
-  totalTaxAmount: number;
-}
-
-export interface GSTResult {
-  type: 'GST';
-  isInterState: boolean;
-  isSameState: boolean;
-  lineItems: GSTLineItem[];
-  subtotal: number;
-  totalAmount: number;
-  totalCGST: number;
-  totalCGSTAmount: number;
-  totalSGST: number;
-  totalSGSTAmount: number;
-  totalIGST: number;
-  totalIGSTAmount: number;
-  totalTaxAmount: number;
-  grandTotal: number;
-  totalInvoiceAmount: number;
-}
-
-export interface VATResult {
-  type: 'VAT';
-  lineItems: VATLineItem[];
-  subtotal: number;
-  totalAmount: number;
-  totalVAT: number;
-  totalVATAmount: number;
-  totalTaxAmount: number;
-  grandTotal: number;
-  totalInvoiceAmount: number;
-  vatRate: number;
-}
-
-export type TaxCalculationResult = GSTResult | VATResult;
-
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class TaxCalculationService {
+  private _context: TaxContext | null = null;
+  private workingTaxMasters: any[] = [];
 
-  constructor() { }
+  constructor(private masterService: MasterService) {}
 
-  /**
-  //  * Main method to calculate tax based on company location and billing party
-  //  */
-  // calculateTax(params: TaxCalculationParams): TaxCalculationResult {
-  //   const companyCountry = this.getCompanyCountry(params.companyMasterSid);
-  //   const taxType = this.determineTaxType(companyCountry);
+  // ── Getters ────────────────────────────────────────────────────────────────
 
-  //   if (taxType === 'GST') {
-  //     return this.calculateGST(params);
-  //   } else {
-  //     return this.calculateVAT(params);
-  //   }
-  // }
+  get context(): TaxContext | null {
+    return this._context;
+  }
 
-  /**
-   * Determine tax type based on company country
-   */
-  determineTaxType(companyCountry: string): 'GST' | 'VAT' {
-    const country = companyCountry.toLowerCase().trim();
+  get isIndiaGST(): boolean {
+    return this._context?.company.taxRegime === 'GST';
+  }
 
-    if (country === 'india') {
-      return 'GST';
-    } else if (country === 'uae' || country === 'dubai' || country === 'united arab emirates') {
-      return 'VAT';
+  get isVATMode(): boolean {
+    return this._context?.company.taxRegime === 'VAT';
+  }
+
+  get isExportOrSEZ(): boolean {
+    return this._context?.tradeFlow === 'EXPORT' || this._context?.tradeFlow === 'IMPORT'
+      || this._context?.party?.customerGstType === 'SEZ';
+  }
+
+  // ── init() — Sets up company context (no API call) ────────────────────────
+
+  async init(params: {
+    documentSide: DocumentSide;
+    companyCountryCode: string;
+    companyCountryMasterSid: number;
+    branchStateName: string;
+    branchStateMasterSid?: number;
+  }): Promise<void> {
+    const countryCode = (params.companyCountryCode || '').trim().toLowerCase();
+    const taxRegime: TaxRegime = countryCode === 'in' ? 'GST' : 'VAT';
+    const inputOrOutput: InputOrOutput =
+      params.documentSide === 'SALES' ? 'Input' : 'Output';
+
+    this._context = {
+      company: {
+        countryCode,
+        countryMasterSid: params.companyCountryMasterSid,
+        stateName: params.branchStateName || '',
+        stateMasterSid: params.branchStateMasterSid,
+        taxRegime,
+      },
+      party: { countryCode: '', stateName: '' },
+      documentSide: params.documentSide,
+      inputOrOutput,
+      invoiceType: 'REG',
+      documentClass: 'B2B',
+      appliedTaxMode: taxRegime === 'GST' ? 'IGST' : 'VAT',
+      taxCategory: 'Inter',
+      tradeFlow: 'DOMESTIC',
+      isRCM: false,
+    };
+  }
+
+  // ── fetchTaxMasters() — Filtered API call ────────────────────────────────
+
+  async fetchTaxMasters(documentSide: DocumentSide): Promise<void> {
+    if (!this._context) return;
+
+    const inputOrOutput: InputOrOutput =
+      documentSide === 'SALES' ? 'Input' : 'Output';
+    this._context.documentSide = documentSide;
+    this._context.inputOrOutput = inputOrOutput;
+
+    try {
+      const taxRecords = await firstValueFrom(
+        this.masterService.getTaxByCountryAndType(
+          this._context.company.countryMasterSid,
+          inputOrOutput
+        )
+      );
+      this.workingTaxMasters = taxRecords || [];
+    } catch (err) {
+      console.error('TaxCalculationService: Failed to fetch TaxMasters', err);
+      this.workingTaxMasters = [];
+    }
+  }
+
+  // ── Re-init for document side change (Cost Entry) ─────────────────────────
+
+  async reinitForDocumentSide(documentSide: DocumentSide): Promise<void> {
+    if (!this._context) return;
+    await this.fetchTaxMasters(documentSide);
+  }
+
+  // ── updateParty() ─────────────────────────────────────────────────────────
+
+  updateParty(
+    party: PartyTaxProfile,
+    invoiceType?: InvoiceType
+  ): TaxClassification {
+    if (!this._context) {
+      return this.emptyClassification();
+    }
+    this._context.party = party;
+    if (invoiceType !== undefined) {
+      this._context.invoiceType = invoiceType;
+    }
+    return this.deriveClassification();
+  }
+
+  // ── updateInvoiceType() ───────────────────────────────────────────────────
+
+  updateInvoiceType(invoiceType: InvoiceType): TaxClassification {
+    if (!this._context) {
+      return this.emptyClassification();
+    }
+    this._context.invoiceType = invoiceType;
+    return this.deriveClassification();
+  }
+
+  // ── calculateRowTax() — SYNCHRONOUS ───────────────────────────────────────
+
+  calculateRowTax(input: RowTaxInput): RowTaxResult {
+    const zero: RowTaxResult = {
+      TaxPercentage1: 0,
+      TaxAmount1: 0,
+      TaxPercentage2: 0,
+      TaxAmount2: 0,
+      TotalTaxAmount: 0,
+      TaxLabel: '',
+    };
+
+    if (!this._context) return zero;
+    if (this._context.appliedTaxMode === 'NONE') return zero;
+    if (!input.taxGroupSid) return zero;
+
+    const matches = this.workingTaxMasters.filter(
+      (t: any) =>
+        Number(t.TaxGroupSid) === Number(input.taxGroupSid) &&
+        t.TaxCategory === this._context!.taxCategory
+    );
+
+    if (!matches.length) return zero;
+
+    const taxable = input.taxableAmount || 0;
+    const mode = this._context.appliedTaxMode;
+
+    if (mode === 'VAT') {
+      const vatRecord = matches.find((t: any) => t.TaxCode === 'VAT');
+      const vatRate = parseFloat(vatRecord?.TaxRate || 0);
+      const vatAmt = (taxable * vatRate) / 100;
+      return {
+        TaxPercentage1: vatRate,
+        TaxAmount1: vatAmt,
+        TaxPercentage2: 0,
+        TaxAmount2: 0,
+        TotalTaxAmount: vatAmt,
+        TaxLabel: `VAT ${vatRate}%`,
+      };
     }
 
-    // Default to VAT for other countries
-    return 'VAT';
+    if (mode === 'CGST_SGST') {
+      const cgstRecord = matches.find((t: any) => t.TaxCode === 'CGST');
+      const sgstRecord = matches.find((t: any) => t.TaxCode === 'SGST');
+      const cgstRate = parseFloat(cgstRecord?.TaxRate || 0);
+      const sgstRate = parseFloat(sgstRecord?.TaxRate || 0);
+      const cgstAmt = (taxable * cgstRate) / 100;
+      const sgstAmt = (taxable * sgstRate) / 100;
+      return {
+        TaxPercentage1: cgstRate,
+        TaxAmount1: cgstAmt,
+        TaxPercentage2: sgstRate,
+        TaxAmount2: sgstAmt,
+        TotalTaxAmount: cgstAmt + sgstAmt,
+        TaxLabel:
+          cgstRate || sgstRate
+            ? `CGST ${cgstRate}% + SGST ${sgstRate}%`
+            : '',
+      };
+    }
+
+    if (mode === 'CGST_UGST') {
+      const cgstRecord = matches.find((t: any) => t.TaxCode === 'CGST');
+      const ugstRecord = matches.find((t: any) => t.TaxCode === 'UGST');
+      const cgstRate = parseFloat(cgstRecord?.TaxRate || 0);
+      const ugstRate = parseFloat(ugstRecord?.TaxRate || 0);
+      const cgstAmt = (taxable * cgstRate) / 100;
+      const ugstAmt = (taxable * ugstRate) / 100;
+      return {
+        TaxPercentage1: cgstRate,
+        TaxAmount1: cgstAmt,
+        TaxPercentage2: ugstRate,
+        TaxAmount2: ugstAmt,
+        TotalTaxAmount: cgstAmt + ugstAmt,
+        TaxLabel:
+          cgstRate || ugstRate
+            ? `CGST ${cgstRate}% + UGST ${ugstRate}%`
+            : '',
+      };
+    }
+
+    if (mode === 'IGST') {
+      const igstRecord = matches.find((t: any) => t.TaxCode === 'IGST');
+      const igstRate = parseFloat(igstRecord?.TaxRate || 0);
+      const igstAmt = (taxable * igstRate) / 100;
+      return {
+        TaxPercentage1: igstRate,
+        TaxAmount1: igstAmt,
+        TaxPercentage2: 0,
+        TaxAmount2: 0,
+        TotalTaxAmount: igstAmt,
+        TaxLabel: igstRate ? `IGST ${igstRate}%` : '',
+      };
+    }
+
+    return zero;
+  }
+
+  // ── calculateTotals() ─────────────────────────────────────────────────────
+
+  calculateTotals(rows: RowTaxResult[]): VoucherTaxTotals {
+    let totalTaxAmount1 = 0;
+    let totalTaxAmount2 = 0;
+    for (const r of rows) {
+      totalTaxAmount1 += r.TaxAmount1;
+      totalTaxAmount2 += r.TaxAmount2;
+    }
+    return {
+      totalTaxAmount1,
+      totalTaxAmount2,
+      totalTaxAmount: totalTaxAmount1 + totalTaxAmount2,
+      totalLocalAmount: 0,
+      totalAmountWithTax: 0,
+    };
+  }
+
+  // ── getTaxDisplayConfig() ─────────────────────────────────────────────────
+
+  getTaxDisplayConfig(): {
+    showCGST: boolean;
+    showSGST: boolean;
+    showUGST: boolean;
+    showIGST: boolean;
+    showVAT: boolean;
+  } {
+    if (!this._context) {
+      return { showCGST: false, showSGST: false, showUGST: false, showIGST: false, showVAT: false };
+    }
+
+    const mode = this._context.appliedTaxMode;
+
+    if (mode === 'VAT') {
+      return { showCGST: false, showSGST: false, showUGST: false, showIGST: false, showVAT: true };
+    }
+    if (mode === 'CGST_SGST') {
+      return { showCGST: true, showSGST: true, showUGST: false, showIGST: false, showVAT: false };
+    }
+    if (mode === 'CGST_UGST') {
+      return { showCGST: true, showSGST: false, showUGST: true, showIGST: false, showVAT: false };
+    }
+    if (mode === 'IGST') {
+      return { showCGST: false, showSGST: false, showUGST: false, showIGST: true, showVAT: false };
+    }
+
+    // NONE or default — show based on regime
+    if (this._context.company.taxRegime === 'GST') {
+      return { showCGST: true, showSGST: true, showUGST: false, showIGST: true, showVAT: false };
+    }
+    return { showCGST: false, showSGST: false, showUGST: false, showIGST: false, showVAT: true };
+  }
+
+  // ── Classification Logic (private) ────────────────────────────────────────
+
+  private deriveClassification(): TaxClassification {
+    const ctx = this._context!;
+    const company = ctx.company;
+    const party = ctx.party;
+
+    // Step 1 — Trade Flow
+    const sameCountry =
+      (party.countryCode || '').toLowerCase() === company.countryCode ||
+      !party.countryCode;
+    let tradeFlow: TradeFlow;
+    if (sameCountry) {
+      tradeFlow = 'DOMESTIC';
+    } else if (ctx.documentSide === 'SALES') {
+      tradeFlow = 'EXPORT';
+    } else {
+      tradeFlow = 'IMPORT';
+    }
+
+    // Step 2 — Tax Category (for VoucherHeader.State)
+    const taxCategory = this.determineTaxCategory(
+      company.stateName,
+      party.stateName,
+      party.countryCode,
+      company.stateMasterSid,
+      party.stateMasterSid
+    );
+
+    // Step 3 — Document Class + Applied Tax Mode
+    let documentClass: DocumentClass = 'B2B';
+    let appliedTaxMode: AppliedTaxMode;
+    let formGSTType = '';
+    let isRCM = false;
+
+    if (company.taxRegime === 'VAT') {
+      // Non-India: VAT for domestic, zero tax for overseas party
+      documentClass = 'VAT';
+      appliedTaxMode = sameCountry ? 'VAT' : 'NONE';
+      formGSTType = 'VAT';
+    } else {
+      // India GST
+      let stateTaxMode: AppliedTaxMode;
+      if (taxCategory === 'Intra') {
+        stateTaxMode = 'IGST';
+      } else if (party.isUnionTerritory) {
+        stateTaxMode = 'CGST_UGST';
+      } else {
+        stateTaxMode = 'CGST_SGST';
+      }
+
+      if (ctx.invoiceType === 'NONGST' || ctx.invoiceType === 'BOS') {
+        // NONGST → 0 tax
+        documentClass = this.hasValidGST(party) ? 'B2B' : 'B2C';
+        appliedTaxMode = 'NONE';
+        formGSTType = '';
+      } else if (tradeFlow === 'EXPORT' || tradeFlow === 'IMPORT') {
+        // Export/Import
+        if (this.isWithoutPaymentProfile(party)) {
+          documentClass = 'EXPWOP';
+          appliedTaxMode = 'NONE';
+          formGSTType = 'EXPWOP';
+        } else {
+          documentClass = 'EXPWP';
+          appliedTaxMode = 'IGST';
+          formGSTType = 'EXPWP';
+        }
+      } else if (party.customerGstType === 'SEZ') {
+        // SEZ — domestic but treated like export
+        if (this.isWithoutPaymentProfile(party)) {
+          documentClass = 'EXPWOP';
+          appliedTaxMode = 'NONE';
+          formGSTType = 'EXPWOP';
+        } else {
+          documentClass = 'EXPWP';
+          appliedTaxMode = 'IGST';
+          formGSTType = 'EXPWP';
+        }
+      } else if (
+        party.customerGstType === 'Exempt' ||
+        party.customerGstType === 'Composite'
+      ) {
+        documentClass = this.hasValidGST(party) ? 'B2B' : 'B2C';
+        appliedTaxMode = 'NONE';
+        formGSTType = '';
+      } else if (
+        party.customerGstType === 'RCM Others' ||
+        party.customerGstType === 'RCM Specified'
+      ) {
+        documentClass = 'RCM';
+        appliedTaxMode = stateTaxMode;
+        formGSTType = 'RCM';
+        isRCM = true;
+      } else if (this.hasValidGST(party)) {
+        // Regular + has GST number → B2B
+        documentClass = 'B2B';
+        appliedTaxMode = stateTaxMode;
+        formGSTType = 'B2B';
+      } else {
+        // Regular + no GST number → B2C
+        documentClass = 'B2C';
+        appliedTaxMode = stateTaxMode;
+        formGSTType = 'B2C';
+      }
+    }
+
+    // Update context
+    ctx.tradeFlow = tradeFlow;
+    ctx.taxCategory = taxCategory;
+    ctx.documentClass = documentClass;
+    ctx.appliedTaxMode = appliedTaxMode;
+    ctx.isRCM = isRCM;
+
+    return {
+      documentClass,
+      appliedTaxMode,
+      taxCategory,
+      tradeFlow,
+      formGSTType,
+      isRCM,
+    };
   }
 
   /**
-   * Calculate GST for Indian companies
-  //  */
-  // calculateGST(params: TaxCalculationParams): GSTResult {
-  //   const { billingParty, charges } = params;
-
-  //   // Get company and billing party states
-  //   const companyState = this.getCompanyState(params.companyMasterSid, params.branchMasterSid);
-  //   const billingPartyState = billingParty.StateName?.toLowerCase().trim();
-
-  //   // Determine if it's inter-state transaction
-  //   const isInterState = companyState !== billingPartyState;
-
-  //   const lineItems: GSTLineItem[] = [];
-  //   let totalAmount = 0;
-  //   let totalCGSTAmount = 0;
-  //   let totalSGSTAmount = 0;
-  //   let totalIGSTAmount = 0;
-
-  //   charges.forEach(charge => {
-  //     const amount = Number(charge.RevenueLocalAmount) || 0;
-  //     totalAmount += amount;
-
-  //     // Get tax rate from charge master or default
-  //     const taxRate = this.getChargeTaxRate(charge);
-
-  //     let cgstRate = 0;
-  //     let sgstRate = 0;
-  //     let igstRate = 0;
-  //     let cgstAmount = 0;
-  //     let sgstAmount = 0;
-  //     let igstAmount = 0;
-
-  //     if (isInterState) {
-  //       // Inter-state: IGST
-  //       igstRate = taxRate;
-  //       igstAmount = (amount * igstRate) / 100;
-  //       totalIGSTAmount += igstAmount;
-  //     } else {
-  //       // Intra-state: CGST + SGST
-  //       cgstRate = taxRate / 2;
-  //       sgstRate = taxRate / 2;
-  //       cgstAmount = (amount * cgstRate) / 100;
-  //       sgstAmount = (amount * sgstRate) / 100;
-  //       totalCGSTAmount += cgstAmount;
-  //       totalSGSTAmount += sgstAmount;
-  //     }
-
-  //     const totalTaxAmount = cgstAmount + sgstAmount + igstAmount;
-
-  //     lineItems.push({
-  //       description: charge.ChargeDescription,
-  //       hsn: this.getChargeHSN(charge),
-  //       amount,
-  //       cgstRate,
-  //       sgstRate,
-  //       igstRate,
-  //       cgstAmount,
-  //       sgstAmount,
-  //       igstAmount,
-  //       totalTaxAmount
-  //     });
-  //   });
-
-  //   const totalTaxAmount = totalCGSTAmount + totalSGSTAmount + totalIGSTAmount;
-  //   const totalInvoiceAmount = totalAmount + totalTaxAmount;
-
-  //   return {
-  //     type: 'GST',
-  //     isInterState,
-  //     isSameState: !isInterState,
-  //     lineItems,
-  //     subtotal: totalAmount,
-  //     totalAmount,
-  //     totalCGST: totalCGSTAmount,
-  //     totalCGSTAmount,
-  //     totalSGST: totalSGSTAmount,
-  //     totalSGSTAmount,
-  //     totalIGST: totalIGSTAmount,
-  //     totalIGSTAmount,
-  //     totalTaxAmount,
-  //     grandTotal: totalInvoiceAmount,
-  //     totalInvoiceAmount
-  //   };
-  // }
-
-  /**
-   * Calculate VAT for UAE/Dubai companies
+   * Determine tax category: same state → 'Inter', different state → 'Intra'.
+   * International → 'Inter'.
+   * NOTE: 'Inter' = same state is INTENTIONAL — matches existing DB convention.
    */
-  // calculateVAT(params: TaxCalculationParams): VATResult {
-  //   const { charges } = params;
+  determineTaxCategory(
+    companyState: string,
+    billingPartyState: string,
+    customerCountry: string,
+    companyStateMasterSid?: number,
+    partyStateMasterSid?: number
+  ): TaxCategory {
+    const normalizedCustomerCountry = (customerCountry || '').toLowerCase();
+    const isIndianCustomer =
+      normalizedCustomerCountry === 'in' ||
+      normalizedCustomerCountry === 'india' ||
+      normalizedCustomerCountry === '';
 
-  //   const lineItems: VATLineItem[] = [];
-  //   let totalAmount = 0;
-  //   let totalVATAmount = 0;
+    if (!isIndianCustomer) {
+      return 'Inter';
+    }
 
-  //   // Get VAT rate (standard 5% for UAE/Dubai)
-  //   const vatRate = this.getVATRate();
+    if (companyStateMasterSid && partyStateMasterSid) {
+      return Number(companyStateMasterSid) === Number(partyStateMasterSid)
+        ? 'Inter'
+        : 'Intra';
+    }
 
-  //   charges.forEach(charge => {
-  //     const amount = Number(charge.RevenueLocalAmount) || 0;
-  //     totalAmount += amount;
+    if (!companyState || !billingPartyState) {
+      return 'Inter';
+    }
 
-  //     const vatAmount = (amount * vatRate) / 100;
-  //     totalVATAmount += vatAmount;
+    const normalizedCompanyState = companyState.trim().toLowerCase();
+    const normalizedBillingState = billingPartyState.trim().toLowerCase();
+    return normalizedCompanyState === normalizedBillingState ? 'Inter' : 'Intra';
+  }
 
-  //     lineItems.push({
-  //       description: charge.ChargeDescription,
-  //       hsn: this.getChargeHSN(charge),
-  //       amount,
-  //       vatRate,
-  //       vatAmount,
-  //       totalTaxAmount: vatAmount
-  //     });
-  //   });
+  // ── Helpers ───────────────────────────────────────────────────────────────
 
-  //   const totalInvoiceAmount = totalAmount + totalVATAmount;
+  private hasValidGST(party: PartyTaxProfile): boolean {
+    return !!(
+      party.gstNumber &&
+      party.gstNumber.trim() !== '' &&
+      party.gstNumber !== 'undefined'
+    );
+  }
 
-  //   return {
-  //     type: 'VAT',
-  //     lineItems,
-  //     subtotal: totalAmount,
-  //     totalAmount,
-  //     totalVAT: totalVATAmount,
-  //     totalVATAmount,
-  //     totalTaxAmount: totalVATAmount,
-  //     grandTotal: totalInvoiceAmount,
-  //     totalInvoiceAmount,
-  //     vatRate
-  //   };
-  // }
+  private isWithoutPaymentProfile(party: PartyTaxProfile): boolean {
+    return party.customerGstType === 'Zero Rated';
+  }
 
-  /**
-   * Filter charges for pending invoices (no voucher created)
-   * Revenue: uses CustomerMasterSid, Cost: uses AgentMasterSid
-   */
-  filterPendingCharges(charges: BookingRateDetails[], billingPartySid: number, type: 'revenue' | 'cost' = 'revenue'): BookingRateDetails[] {
+  private emptyClassification(): TaxClassification {
+    return {
+      documentClass: 'B2B',
+      appliedTaxMode: 'NONE',
+      taxCategory: 'Inter',
+      tradeFlow: 'DOMESTIC',
+      formGSTType: '',
+      isRCM: false,
+    };
+  }
+
+  // ── Retained utility methods (used by other parts of the app) ─────────────
+
+  filterPendingCharges(
+    charges: BookingRateDetails[],
+    billingPartySid: number,
+    type: 'revenue' | 'cost' = 'revenue'
+  ): BookingRateDetails[] {
     return charges.filter((charge: any) => {
-        const billingPartyField = type === 'revenue' ? charge.RevenueCustomerMasterSid : charge.CostAgentMasterSid;
-        return billingPartyField === billingPartySid;
+      const billingPartyField =
+        type === 'revenue'
+          ? charge.RevenueCustomerMasterSid
+          : charge.CostAgentMasterSid;
+      return billingPartyField === billingPartySid;
     });
   }
 
-  /**
-   * Get unique billing parties from charges
-   * Revenue: uses CustomerMasterSid, Cost: uses AgentMasterSid
-   */
-  getUniqueBillingParties(charges: BookingRateDetails[], type: 'revenue' | 'cost' = 'revenue'): number[] {
+  getUniqueBillingParties(
+    charges: BookingRateDetails[],
+    type: 'revenue' | 'cost' = 'revenue'
+  ): number[] {
     const uniqueParties = new Set<number>();
-      charges.forEach((charge: any) => {
-        const billingPartySid = type === 'revenue' ? charge.RevenueCustomerMasterSid : charge.CostAgentMasterSid;
-        if (billingPartySid) {
-          uniqueParties.add(billingPartySid);
-        }
-      });
+    charges.forEach((charge: any) => {
+      const billingPartySid =
+        type === 'revenue'
+          ? charge.RevenueCustomerMasterSid
+          : charge.CostAgentMasterSid;
+      if (billingPartySid) {
+        uniqueParties.add(billingPartySid);
+      }
+    });
     return Array.from(uniqueParties);
   }
 
-  /**
-   * Generate invoice number
-   */
   generateInvoiceNumber(companyCode?: string): string {
     const date = new Date();
     const year = date.getFullYear().toString().slice(-2);
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const timestamp = Date.now().toString().slice(-6);
-
     const prefix = companyCode || 'INV';
     return `${prefix}${year}${month}${timestamp}`;
-  }
-
-  // Private helper methods
-
-  private getCompanyCountry(companyMasterSid: number): string {
-    try {
-      const company = JSON.parse(localStorage.getItem('selected-company') || '{}');
-      return company?.countryMaster?.CountryName || company?.countryName || 'india';
-    } catch {
-      return 'india';
-    }
-  }
-
-  private getCompanyState(companyMasterSid: number, branchMasterSid: number): string {
-    try {
-      const branch = JSON.parse(localStorage.getItem('selected-branch') || '{}');
-      return branch?.stateMaster?.StateName?.toLowerCase().trim() ||
-             branch?.stateName?.toLowerCase().trim() || 'maharashtra';
-    } catch {
-      return 'maharashtra';
-    }
-  }
-
-  // private getChargeTaxRate(charge: BookingRateDetails): number {
-  //   // Try to get tax rate from charge master tax mapping
-  //   if (charge.ChargeMaster?.chargeTaxMaster?.length > 0) {
-  //     const taxMapping = charge.ChargeMaster.chargeTaxMaster[0];
-  //     if (taxMapping.TaxRate) {
-  //       return Number(taxMapping.TaxRate);
-  //     }
-  //   }
-
-  //   // Default tax rates based on charge type
-  //   const chargeName = charge.ChargeDescription?.toLowerCase() || '';
-
-  //   if (chargeName.includes('freight') || chargeName.includes('ocean freight')) {
-  //     return 0; // Ocean freight is usually exempt or 0%
-  //   } else if (chargeName.includes('documentation') || chargeName.includes('handling')) {
-  //     return 18; // Service charges are usually 18%
-  //   } else if (chargeName.includes('insurance')) {
-  //     return 18; // Insurance services
-  //   } else {
-  //     return 18; // Default GST rate for services
-  //   }
-  // }
-
-  // private getChargeHSN(charge: BookingRateDetails): string {
-  //   // Try to get HSN from charge master
-  //   if (charge.ChargeMaster?.HSNSAC) {
-  //     return charge.ChargeMaster.HSNSAC;
-  //   }
-
-  //   // Try to get from tax mapping
-  //   if (charge.ChargeMaster?.chargeTaxMaster?.length > 0) {
-  //     const taxMapping = charge.ChargeMaster.chargeTaxMaster[0];
-  //     if (taxMapping.HSNCode) {
-  //       return taxMapping.HSNCode;
-  //     }
-  //   }
-
-  //   // Default HSN codes based on charge type
-  //   const chargeName = charge.ChargeDescription?.toLowerCase() || '';
-
-  //   if (chargeName.includes('freight') || chargeName.includes('ocean freight')) {
-  //     return '996511'; // Goods transport by sea
-  //   } else if (chargeName.includes('documentation') || chargeName.includes('handling')) {
-  //     return '996519'; // Other supporting transport services
-  //   } else if (chargeName.includes('insurance')) {
-  //     return '996411'; // Insurance services
-  //   } else {
-  //     return '996519'; // Default for freight forwarding services
-  //   }
-  // }
-
-  private getVATRate(): number {
-    // Standard VAT rate for UAE/Dubai
-    return 5;
   }
 }

@@ -956,6 +956,12 @@ export class VendorInvoiceEntryComponent implements OnInit {
       this.filterChargeBasedOnDept(data.departmentMaster);
     }
 
+    if (data.CustomerMasterSid) {
+      this.getVendorBranchByVendor(Number(data.CustomerMasterSid));
+    } else {
+      this.vendorBranchList = [];
+    }
+
     this.vendorInvoiceForm.patchValue({
       VoucherNumber: data.VoucherNumber,
       VoucherDate: data.VoucherDate ? new Date(data.VoucherDate) : null,
@@ -1684,7 +1690,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
       const customerBranchFromForm = toNumber(this.vendorInvoiceForm.get('CustomerBranchSid')?.value);
       const customerState = this.vendorBranchList.find(
         c => c.CustomerBranchSid === customerBranchFromForm
-      )
+      )?.StateMasterSid;
       let interOrIntra = 'Inter';
       // india
       if(this.currentCompanyCountryCode === 'in'){

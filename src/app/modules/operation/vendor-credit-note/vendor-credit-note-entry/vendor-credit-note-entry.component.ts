@@ -1287,6 +1287,11 @@ export class VendorCreditNoteEntryComponent {
   }
 
   patchValues(data: any) {
+    if (data.CustomerMasterSid) {
+      this.getVendorBranchByVendor(Number(data.CustomerMasterSid));
+    } else {
+      this.vendorBranchList = [];
+    }
 
     this.vendorCreditNoteForm.patchValue(
       {
@@ -2131,7 +2136,7 @@ export class VendorCreditNoteEntryComponent {
       );
       const customerState = this.vendorBranchList.find(
         (c) => c.CustomerBranchSid === customerBranchFromForm,
-      );
+      )?.StateMasterSid;
       let interOrIntra = 'Inter';
       // india
       if (this.currentCompanyCountryCode === 'in') {

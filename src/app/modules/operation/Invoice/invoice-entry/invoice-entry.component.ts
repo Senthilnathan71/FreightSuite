@@ -954,6 +954,12 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       this.filterChargeBasedOnDept(data.departmentMaster);
     }
 
+    if (data.CustomerMasterSid) {
+      this.getCustomerBranchByCustomer(Number(data.CustomerMasterSid));
+    } else {
+      this.customerBranchList = [];
+    }
+
     this.invoiceForm.patchValue(
       {
         VoucherNumber: data.VoucherNumber,

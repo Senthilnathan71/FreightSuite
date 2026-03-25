@@ -2136,7 +2136,7 @@ createRateFormGroup(data?: any): FormGroup {
       GST_VAT : [{ value : '', disabled : true }],
       InvoiceType : ['REG'],
       TaxNumber : [''],
-      GSTType : ['B2B'],
+      GSTType : [''],
       Remarks : [''],
       DepartmentMasterSid : [null,[Validators.required]],
       HouseNumber : [{ value : '' , disabled : true }],
@@ -2152,7 +2152,7 @@ createRateFormGroup(data?: any): FormGroup {
       DocumentNumber : [null],
       DocumentDate : [null],
       SetoffStatus : [null],
-      TaxType : ['VAT'],
+      TaxType : [this.currentCompanyCountryCode === 'in' ? 'GST' : 'VAT'],
       VoucherTypeMasterSid : [null],
       VoucherHeaderSid : [null],
       PostStatus : [null],
@@ -2612,8 +2612,10 @@ createRateFormGroup(data?: any): FormGroup {
       const PartyLedgerMasterSid = customerFromLookup?.SubledgerMasterSid;
       const PartyCOAMasterSid = customerFromLookup?.COAMappedId;
       const placeOfSupply = this.determinePlaceOfSupply();
-      const GST_VAT = this.isIndianCompany() ? customer?.GSTNo || '' : customer?.PanType || '';
-      const GSTType = this.determineTaxType();
+      const GST_VAT = this.isIndianCompany()
+        ? customerBranch?.GSTNo || customer?.GSTNo || ''
+        : customer?.PanType || '';
+      const GSTType = this.determineTaxType(customer, customerBranch, placeOfSupply, GST_VAT);
       const customerCurrency = customerFromLookup?.currencyMaster;
       this.billingPartyCurrency = customerCurrency ?? null;
       const currentCompanyCurrencyId = this.currentCompany?.CurrencyMasterSid;
@@ -2658,7 +2660,7 @@ createRateFormGroup(data?: any): FormGroup {
         State: this.taxCalculationService.context?.taxCategory || 'Inter',
         GST_VAT: GST_VAT || '',
         GSTType: this.currentCompanyCountryCode !== 'in' ? 'VAT' : GSTType,
-        TaxType: this.currentCompanyCountryCode !== 'in' ? 'VAT' : GSTType,
+        TaxType: this.currentCompanyCountryCode !== 'in' ? 'VAT' : 'GST',
         ...(this.parentFormValue?.parentMenuName === 'Service Job' && isRevenue ? { DocumentNumber: this.parentFormValue?.ShipmentNo || null } : {}),
       })
 
@@ -2887,11 +2889,13 @@ createRateFormGroup(data?: any): FormGroup {
     }
 
     // Update party context for correct tax category
-    const customerState = this.voucher['State']?.value;
+    const customerState = this.billingPartyBranchDetails?.stateMaster?.stateName
+      || this.voucher['PlaceOfSupply']?.value
+      || '';
     const customerCountry = this.getCustomerCountry();
     this.taxCalculationService.updateParty({
       countryCode: customerCountry || this.currentCompanyCountryCode,
-      stateName: customerState || '',
+      stateName: customerState,
       isUnionTerritory: this.billingIsUnionTerritory,
     });
 
@@ -3210,7 +3214,9 @@ createRateFormGroup(data?: any): FormGroup {
 
     // india
     if (this.currentCompanyCountryCode === 'in') {
-      const customerState = this.voucherForm.get('State')?.value;
+      const customerState = this.billingPartyBranchDetails?.stateMaster?.stateName
+        || this.voucherForm.get('PlaceOfSupply')?.value
+        || '';
       const currentCompanyState = this.currentBranchStateName;
       if (currentCompanyState === customerState) {
         interOrIntra = 'Inter';
@@ -3419,14 +3425,36 @@ createRateFormGroup(data?: any): FormGroup {
     return this.billingPartyBranchDetails?.stateMaster?.stateName;
   }
 
-  private determineTaxType() : string {
-    if(this.isIndianCompany()){
-      return 'GST';
-    } else if(this.isUAECompany()){
+  private determineTaxType(
+    customer: any,
+    customerBranch: any,
+    placeOfSupply: string,
+    gstVat: string
+  ) : string {
+    if (!this.isIndianCompany()) {
       return 'VAT';
-    } else {
-      return 'TAX';
     }
+
+    if (!placeOfSupply) {
+      return '';
+    }
+
+    const classification = this.taxCalculationService.updateParty(
+      {
+        countryCode: this.getCustomerCountry() || this.currentCompanyCountryCode,
+        stateName: placeOfSupply,
+        stateMasterSid: customerBranch?.stateMaster?.StateMasterSid,
+        gstNumber: gstVat,
+        customerGstType:
+          customerBranch?.CustomerGstType ||
+          customer?.CustomerGstType ||
+          'Regular',
+        isUnionTerritory: customerBranch?.stateMaster?.IsUnionTerritory === 'Y',
+      },
+      this.voucher['InvoiceType']?.value as any
+    );
+
+    return classification.formGSTType || '';
   }
 
   determineTaxApplicable(): string {
@@ -3452,7 +3480,7 @@ createRateFormGroup(data?: any): FormGroup {
       return 'VAT';
     }
 
-    return this.determineTaxType();
+    return this.isIndianCompany() ? 'GST' : 'VAT';
   }
 
   private autoGenerateNarration(): string {

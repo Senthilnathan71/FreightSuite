@@ -22,7 +22,7 @@ import { IMatchingDetail, IVoucherMatching, VoucherMatchingFetchResponse, Vouche
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
-import { FetchVoucherMatchingByIdDto, FetchVoucherMatchingResponse, MatchingDetail, VoucherMatchingService } from '../../services/voucher-matching.service';
+import { FetchVoucherMatchingByIdDto, FetchVoucherMatchingResponse, MatchingDetail, VoucherMatchingCancellationWarnings, VoucherMatchingService } from '../../services/voucher-matching.service';
 import { errorLoggerWithToastr, ValidationMessageConfig } from 'src/app/common/error-handling/form-error-handler';
 import { ToastrService } from 'ngx-toastr';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
@@ -75,6 +75,7 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
   voucherMatchingForm!: FormGroup;
   VoucherMatchingHeaderSid!: number;
   voucherMatchingData: any;
+  cancellationWarnings: VoucherMatchingCancellationWarnings | null = null;
 
   // Unsaved changes related varaible declarations
   isDirty: boolean = false;
@@ -358,6 +359,7 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
         this.spinner.hide();
         if (resp?.status && resp.data) {
           this.voucherMatchingData = resp.data;
+          this.cancellationWarnings = resp.data.cancellationWarnings ?? null;
           this.patchValues(resp.data);
         }
         else this.appSettingService.showError('Error Loading Data');
@@ -1231,7 +1233,7 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
 
   cancelVoucherMatching() {
     this.confirmService.confirm(
-      'Are you sure you want to cancel this voucher matching? This action cannot be undone. Any associated Exchange JV will be reversed.',
+      this.buildCancelVoucherMatchingMessage(),
       'Cancel Voucher Matching',
       'Yes, Proceed'
     ).then((confirmed) => {
@@ -1263,6 +1265,88 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
         },
       });
     });
+  }
+
+  private buildCancelVoucherMatchingMessage(): string {
+    const warnings = this.cancellationWarnings;
+    if (!warnings?.hasWarning) {
+      return 'Are you sure you want to cancel this voucher matching? This action cannot be undone. Any associated Exchange JV will be reversed.';
+    }
+
+    const sections: string[] = [];
+    const hasAffected = !!warnings.affectedVouchers?.length;
+    const hasExchangeJV = !!warnings.exchangeJVs?.length;
+    const docType = warnings.documentTypeName || 'Receipt/Payment';
+
+    // Warning header
+    sections.push(`<div style="font-size:13px;font-weight:600;color:#664d03;margin-bottom:8px;"><i class="bi bi-exclamation-triangle-fill" style="font-size:13px;margin-right:5px;"></i>Cancelling this matching affects related vouchers.</div>`);
+
+    // Write-Off / Exchange Gain Or Loss section
+    if (hasAffected) {
+      const pills = warnings.affectedVouchers
+        .map((item) => {
+          const href = this.getVoucherHref(item.voucherType, item.voucherHeaderSid);
+          const label = `${this.escapeConfirmHtml(item.voucherType)} ${this.escapeConfirmHtml(item.voucherNumber)}`;
+          return `<a href="${href}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:4px;background:#fef2f2;border:1px solid #fca5a5;color:#dc2626;font-size:12px;font-weight:600;text-decoration:none;"><i class="bi bi-file-earmark-text" style="font-size:11px;"></i>${label}</a>`;
+        })
+        .join(' ');
+
+      sections.push(`<div style="border-radius:5px;border:1px solid #e2e8f0;overflow:hidden;margin-bottom:6px;">
+        <div style="padding:3px 10px;background:#dc3545;color:#fff;font-size:11px;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;"><i class="bi bi-exclamation-circle-fill" style="font-size:11px;margin-right:4px;"></i>Write-Off / Exchange Gain or Loss</div>
+        <div style="padding:6px 10px;font-size:12px;color:#64748b;">Needs manual attention: ${pills}</div>
+      </div>`);
+    }
+
+    // Exchange JV section
+    if (hasExchangeJV) {
+      const pills = warnings.exchangeJVs
+        .map((item) => {
+          const href = this.getVoucherHref(item.voucherType, item.voucherHeaderSid);
+          const label = `${this.escapeConfirmHtml(item.voucherType)} ${this.escapeConfirmHtml(item.voucherNumber)}`;
+          return `<a href="${href}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:4px;background:#fff7ed;border:1px solid #fdba74;color:#c2410c;font-size:12px;font-weight:600;text-decoration:none;"><i class="bi bi-arrow-left-right" style="font-size:11px;"></i>${label}</a>`;
+        })
+        .join(' ');
+
+      sections.push(`<div style="border-radius:5px;border:1px solid #e2e8f0;overflow:hidden;margin-bottom:6px;">
+        <div style="padding:3px 10px;background:#e67700;color:#fff;font-size:11px;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;"><i class="bi bi-arrow-repeat" style="font-size:11px;margin-right:4px;"></i>Exchange JV — Auto Reversal</div>
+        <div style="padding:6px 10px;font-size:12px;color:#64748b;">An Exchange Gain or Loss JV is involved. It will be automatically reversed. ${pills}</div>
+      </div>`);
+    }
+
+    // Contextual suggestion
+    const tips: string[] = [];
+    if (hasAffected) {
+      tips.push(`Reverse the entire ${this.escapeConfirmHtml(docType)} and create a new one.`);
+      tips.push('Pass a Journal Voucher against Write-Off / Exchange Gain or Loss Ledger.');
+    }
+    if (hasExchangeJV) {
+      tips.push('Exchange Gain or Loss JV will be automatically reversed during cancellation.');
+    }
+    const tipHtml = tips.map((t) => `<li style="margin-bottom:2px;">${t}</li>`).join('');
+    sections.push(`<div style="padding:5px 10px;border-radius:5px;background:#f0f9ff;border:1px solid #bae6fd;font-size:12px;color:#0c4a6e;line-height:1.4;">
+      <strong style="color:#0369a1;"><i class="bi bi-lightbulb-fill" style="font-size:12px;color:#0ea5e9;margin-right:3px;"></i>Suggestion</strong>
+      <ul style="margin:4px 0 0;padding-left:18px;list-style-type:disc;">${tipHtml}</ul>
+    </div>`);
+
+    return `<div style="white-space:normal;line-height:1.4;">${sections.join('')}</div>`;
+  }
+
+  private getVoucherHref(voucherType: string | number | null | undefined, voucherHeaderSid: string | number | null | undefined): string {
+    const route = this.getVoucherEntryLink(voucherType, voucherHeaderSid);
+    if (!route?.length) {
+      return '#';
+    }
+    const normalizedRoute = route.join('/');
+    return normalizedRoute.startsWith('/') ? normalizedRoute : `/${normalizedRoute}`;
+  }
+
+  private escapeConfirmHtml(value: string | number | null | undefined): string {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   navigateToBack() {
