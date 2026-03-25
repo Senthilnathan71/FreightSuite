@@ -310,11 +310,33 @@ export class EmailEntryComponent implements OnInit {
   }
 
   private buildFooterTemplate(): string {
-    const companyName = this.currentCompany?.companyName || 'Company Name';
     return `
-      <div style="background:#05608D;color:#fff;text-align:center;padding:12px;font-size:14px;">
-        <p style="margin:0;">&copy; ${new Date().getFullYear()} ${companyName}</p>
+      <div style="background:#f5f7fb;padding:6px 22px 14px 22px">
+        <div style="
+          max-width:640px;
+          margin:0 auto;
+          background:#05608D;
+          color:#fff;
+          text-align:center;
+          padding:12px 16px;
+          border-radius:14px;
+          font-size:13px;
+        ">
+          <div style="margin-bottom:8px">
+            <a href="#" style="color:#fff;text-decoration:none;margin:0 8px">Terms</a>
+            <span>|</span>
+            <a href="#" style="color:#fff;text-decoration:none;margin:0 8px">Privacy</a>
+            <span>|</span>
+            <a href="#" style="color:#fff;text-decoration:none;margin:0 8px">Contact</a>
+            <span>|</span>
+            <a href="#" style="color:#fff;text-decoration:none;margin:0 8px">Unsubscribe</a>
+          </div>
+          <div style="opacity:0.8">
+            Â© ${new Date().getFullYear()} Dofi Infosys. All rights reserved.
+          </div>
+        </div>
       </div>
     `;
   }
+  
 }

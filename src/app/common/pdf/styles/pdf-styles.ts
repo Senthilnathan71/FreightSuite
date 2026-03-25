@@ -188,6 +188,18 @@ export const PDF_TABLE_LAYOUTS = {
     paddingBottom: () => 3
   },
 
+  // Light bordered table (softer lines)
+  lightBordered: {
+    hLineWidth: () => 0.6,
+    vLineWidth: () => 0.6,
+    hLineColor: () => '#4d4d4d',
+    vLineColor: () => '#4d4d4d',
+    paddingLeft: () => 4,
+    paddingRight: () => 4,
+    paddingTop: () => 3,
+    paddingBottom: () => 3
+  },
+
   // Table with horizontal lines only
   horizontalLines: {
     hLineWidth: (i: number, node: any) => (i === 0 || i === node.table.body.length) ? 1 : 0.5,

@@ -1,3 +1,6 @@
+
+
+
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, effect, ElementRef, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
 import {
@@ -3049,6 +3052,7 @@ Looking forward to your feedback and the opportunity to work together.
 ${this.getApprovalLinkText(this.QuoteHeaderSid)}
 Best Regards,
 ${this.userData.userName}`;
+    const mailHtml = this.emailTriggerService.buildCommonTemplate(mailBody, subject, { menuName: 'Quotation' });
     
     this.spinner.hide();
 
@@ -3057,7 +3061,7 @@ ${this.userData.userName}`;
       EmailCC: ccEmail,
       EmailBCC: [],
       Subject: subject,
-      Mailbody: mailBody,
+      Mailbody: mailHtml,
       attachments: [pdfFile]
     };
 
@@ -3719,20 +3723,19 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
       });
 
       formData.append('Subject', `Quotation No.${this.selectedItem.QuoteNumber} Date:${new Date(this.selectedItem.QuoteDate)} ${this.getFormattedPort(this.selectedItem.quoteRoute[0].POLSid)} - ${this.getFormattedPort(this.selectedItem.quoteRoute[0].PODSid)}`);
-      formData.append('Mailbody', `
-        <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
-          <p>Dear Sir/Madam,</p>
-          <p>Please find enclosed the quotation as requested.</p>
-          <p>Kindly review the details at your convenience.</p>
-          <p>Looking forward to your feedback and the opportunity to work together.</p>
-          <p>
-            Approval Hyperlink:
-            <a href="${this.getApprovalUrl(this.QuoteHeaderSid)}" target="_blank" style="color: #1a73e8;">Click here to approve</a>
-          </p>
-          <p>Best Regards,</p>
-          <p>${this.userData['userEmail']}</p>
-        </div>
-      `);
+      const mailBody = `Dear Sir/Madam,
+Please find enclosed the quotation as requested.
+Kindly review the details at your convenience.
+Looking forward to your feedback and the opportunity to work together.
+Approval Hyperlink: <a href="${this.getApprovalUrl(this.QuoteHeaderSid)}" target="_blank" style="color:#0b6aa1;font-weight:600;">Click here to approve</a>
+Best Regards,
+${this.userData['userEmail']}`;
+      const mailHtml = this.emailTriggerService.buildCommonTemplate(
+        mailBody,
+        `Quotation No.${this.selectedItem.QuoteNumber} Date:${new Date(this.selectedItem.QuoteDate)} ${this.getFormattedPort(this.selectedItem.quoteRoute[0].POLSid)} - ${this.getFormattedPort(this.selectedItem.quoteRoute[0].PODSid)}`,
+        { menuName: 'Quotation' }
+      );
+      formData.append('Mailbody', mailHtml);
       if (this.QuoteHeaderSid) {
         formData.append('QuoteHeaderSid', String(this.QuoteHeaderSid));
       }
