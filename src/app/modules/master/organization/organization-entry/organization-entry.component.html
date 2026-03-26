@@ -736,7 +736,7 @@
                         {{ city.cityName }} - {{ city.cityCode }}
                       </ng-option>
                     </ng-select> -->
-                    <dofi-searchable-dropdown [items]="cityList" formControlName="CustBranchCity" placeholder=""
+                    <dofi-searchable-dropdown [items]="getBranchCities(branchIndex)" formControlName="CustBranchCity" placeholder=""
                         [displayFields]="cityLookupConfig.displayFields"
                         [displayLabels]="cityLookupConfig.displayLabels"
                         [labelFields]="cityLookupConfig.labelFields" bindLabel="cityName"

@@ -147,6 +147,8 @@ export class EnquiryEntryComponent implements OnInit {
   finalShipperList: any[] = [];
   filteredPOLPorts: any[][] = [];
   filteredPODPorts: any[][] = [];
+  filteredPOOPorts: any[][] = [];
+  filteredFDCPorts: any[][] = [];
   userData: any;
   active = 1;
   quotationCustomerId: number;
@@ -662,6 +664,7 @@ export class EnquiryEntryComponent implements OnInit {
         this.departments = departments;
         this.ports = ports.map(p => ({ ...p, Country: p.countryMaster?.countryName }));
         this.filteredPorts = [...this.ports];
+        this.routes?.controls?.forEach((_, routeIndex: number) => this.refreshRoutePortFilters(routeIndex));
         this.customers = customers;
         this.leadList = leads.data;
         this.incoList = incos;
@@ -886,8 +889,10 @@ export class EnquiryEntryComponent implements OnInit {
     this.subscribeToRouteChanges(routeForm, this.routes.length - 1);
     this.addCargo(this.routes.length - 1);
     const initialPorts = this.getFilteredPortsBySegment();
+    this.filteredPOOPorts[this.routes.length - 1] = initialPorts;
     this.filteredPOLPorts[this.routes.length - 1] = initialPorts;
     this.filteredPODPorts[this.routes.length - 1] = initialPorts;
+    this.filteredFDCPorts[this.routes.length - 1] = initialPorts;
 
     //POD Selected Automatically changed the FDC Value 
 
@@ -903,7 +908,7 @@ export class EnquiryEntryComponent implements OnInit {
       const currentFDC = fdcControl?.value;
 
       // ✅ Only assign when FDC is empty or null
-      if (!currentFDC || currentFDC.trim() === '') {
+      if (!currentFDC) {
         fdcControl?.setValue(podValue, { emitEvent: false });
       }
     });
@@ -1251,8 +1256,10 @@ private parseFloatSafe(value: any): number {
       });
 
       const initialPorts = this.getFilteredPortsBySegment();
+      this.filteredPOOPorts[index] = initialPorts;
       this.filteredPOLPorts[index] = initialPorts;
       this.filteredPODPorts[index] = initialPorts;
+      this.filteredFDCPorts[index] = initialPorts;
 
       // Update cargo validators
       const cargoArray = routeGroup.get('cargo') as FormArray;
@@ -1262,10 +1269,8 @@ private parseFloatSafe(value: any): number {
     });
 
     // Filter ports based on selected segment
-    this.filteredPorts = this.ports.filter(port => {
-      if (this.selectedFCLLCL === 'AIR') return port.PortType === 'Air';
-      return port.PortType === 'Sea';
-    });
+    this.filteredPorts = this.getFilteredPortsBySegment();
+    this.routes.controls.forEach((_, routeIndex: number) => this.refreshRoutePortFilters(routeIndex));
   }
 
 
@@ -1938,8 +1943,10 @@ private parseFloatSafe(value: any): number {
     // Clear and re-create routes (preserve lookups like ports)
     const routesArray = this.rateRequestForm.get('routes') as FormArray;
     routesArray.clear();
+    this.filteredPOOPorts = [];
     this.filteredPOLPorts = [];
     this.filteredPODPorts = [];
+    this.filteredFDCPorts = [];
     this.filteredPorts = [...this.ports]; // reset filtered ports to full list
     this.addRoute(); // adds one default route and one cargo row (same as init)
 
@@ -2130,47 +2137,228 @@ private parseFloatSafe(value: any): number {
   }
 
   updateFilteredPorts(index: number, selectedValue: any, type: 'POL' | 'POD'): void {
-    const routesArray = this.rateRequestForm.get('routes') as FormArray;
-    const currentRoute = routesArray.at(index);
-
-    const polValue = currentRoute.get('POL')?.value;
-    const podValue = currentRoute.get('POD')?.value;
-
-    const basePorts = this.getFilteredPortsBySegment();
-
-    if (type === 'POL') {
-      this.filteredPODPorts[index] = basePorts.filter(p => p.PortMasterSid !== selectedValue);
-    }
-
-    if (type === 'POD') {
-      this.filteredPOLPorts[index] = basePorts.filter(p => p.PortMasterSid !== selectedValue);
-    }
-
-    if (!polValue) {
-      this.filteredPODPorts[index] = basePorts;
-    }
-    if (!podValue) {
-      this.filteredPOLPorts[index] = basePorts;
-    }
+    this.refreshRoutePortFilters(index);
   }
 
   onRouteChange(routeIndex: number): void {
-    const pod = this.routes.at(routeIndex).get('POD')?.value;
-    const pol = this.routes.at(routeIndex).get('POL')?.value;
-
-    this.filteredPorts = this.getFilteredPortsBySegment(); // Just get by segment
-
-    this.filteredPOLPorts[routeIndex] = this.filteredPorts.filter(port => port.PortMasterSid !== pod);
-    this.filteredPODPorts[routeIndex] = this.filteredPorts.filter(port => port.PortMasterSid !== pol);
+    this.refreshRoutePortFilters(routeIndex);
   }
 
   getFilteredPortsBySegment(): any[] {
     if (this.selectedFCLLCL === 'AIR') {
-      return this.ports.filter(port => port.PortType === 'Air');
-    } else if (this.selectedFCLLCL === 'FCL' || this.selectedFCLLCL === 'LCL') {
-      return this.ports.filter(port => port.PortType === 'Sea');
+      return this.ports.filter(port => this.normalizePortText(port?.PortType) === 'AIR');
+    } else if (this.selectedFCLLCL === 'FCL' || this.selectedFCLLCL === 'LCL' || this.selectedFCLLCL === 'SEA') {
+      return this.ports.filter(port => this.normalizePortText(port?.PortType) === 'SEA');
+    } else if (this.selectedFCLLCL === 'ROAD') {
+      return this.ports.filter(port => {
+        const portType = this.normalizePortText(port?.PortType);
+        return portType === 'ROAD' || portType.includes('ROAD') || portType.includes('LAND') || portType.includes('LOCATION');
+      });
     }
-    return this.ports;
+    return [];
+  }
+
+  private refreshRoutePortFilters(routeIndex: number): void {
+    const routeForm = this.routes.at(routeIndex) as FormGroup;
+    if (!routeForm) {
+      return;
+    }
+
+    const filteredLists = this.buildRoutePortFilterLists(routeForm);
+    this.applyRoutePortFilterLists(routeIndex, filteredLists);
+    this.syncRouteValidation(routeForm);
+
+    if (this.clearInvalidRoutePortSelections(routeForm, filteredLists)) {
+      this.applyRoutePortFilterLists(routeIndex, this.buildRoutePortFilterLists(routeForm));
+      this.syncRouteValidation(routeForm);
+    }
+  }
+
+  private buildRoutePortFilterLists(routeForm: FormGroup) {
+    const basePorts = this.getFilteredPortsBySegment();
+    const department = this.departments.find(
+      dept => Number(dept.DepartmentMasterSid) === Number(this.rateRequestForm.get('DepartmentMasterSid')?.value)
+    );
+    const shipmentDirection = this.getShipmentDirection(department);
+    const foreignPorts = basePorts.filter(port => this.isForeignCountryPort(port));
+    const companyCountryPorts = basePorts.filter(port => this.isCompanyCountryPort(port));
+
+    let pooPorts = [...basePorts];
+    let polPorts = [...basePorts];
+    let podPorts = [...basePorts];
+    let fdcPorts = [...basePorts];
+
+    if (shipmentDirection === 'EXPORT') {
+      pooPorts = [...companyCountryPorts];
+      polPorts = [...companyCountryPorts];
+      podPorts = [...foreignPorts];
+      fdcPorts = this.getPortsByReferenceCountry(routeForm.get('POD')?.value, foreignPorts);
+    } else if (shipmentDirection === 'IMPORT') {
+      pooPorts = this.getPortsByReferenceCountry(routeForm.get('POL')?.value, foreignPorts);
+      polPorts = [...foreignPorts];
+      podPorts = [...companyCountryPorts];
+      fdcPorts = this.getPortsByReferenceCountry(routeForm.get('POD')?.value, companyCountryPorts);
+    }
+
+    const selectedPOL = routeForm.get('POL')?.value;
+    const selectedPOD = routeForm.get('POD')?.value;
+
+    return {
+      filteredPorts: basePorts,
+      filteredPOOPorts: pooPorts,
+      filteredPOLPorts: polPorts.filter(port => port.PortMasterSid !== selectedPOD),
+      filteredPODPorts: podPorts.filter(port => port.PortMasterSid !== selectedPOL),
+      filteredFDCPorts: fdcPorts
+    };
+  }
+
+  private applyRoutePortFilterLists(routeIndex: number, filteredLists: any): void {
+    this.filteredPorts = filteredLists.filteredPorts;
+    this.filteredPOOPorts[routeIndex] = filteredLists.filteredPOOPorts;
+    this.filteredPOLPorts[routeIndex] = filteredLists.filteredPOLPorts;
+    this.filteredPODPorts[routeIndex] = filteredLists.filteredPODPorts;
+    this.filteredFDCPorts[routeIndex] = filteredLists.filteredFDCPorts;
+  }
+
+  private clearInvalidRoutePortSelections(routeForm: FormGroup, filteredLists: any): boolean {
+    let hasChanges = false;
+
+    hasChanges = this.clearRoutePortControlIfInvalid(routeForm, 'POO', filteredLists.filteredPOOPorts) || hasChanges;
+    hasChanges = this.clearRoutePortControlIfInvalid(routeForm, 'POL', filteredLists.filteredPOLPorts) || hasChanges;
+    hasChanges = this.clearRoutePortControlIfInvalid(routeForm, 'POD', filteredLists.filteredPODPorts) || hasChanges;
+    hasChanges = this.clearRoutePortControlIfInvalid(routeForm, 'FDC', filteredLists.filteredFDCPorts) || hasChanges;
+
+    return hasChanges;
+  }
+
+  private clearRoutePortControlIfInvalid(
+    routeForm: FormGroup,
+    controlName: 'POO' | 'POL' | 'POD' | 'FDC',
+    allowedPorts: any[]
+  ): boolean {
+    const control = routeForm.get(controlName);
+    const selectedValue = control?.value;
+
+    if (!selectedValue) {
+      return false;
+    }
+
+    const isValid = allowedPorts.some(port => port.PortMasterSid === selectedValue);
+    if (!isValid) {
+      control?.setValue(null, { emitEvent: false });
+      return true;
+    }
+
+    return false;
+  }
+
+  private syncRouteValidation(routeForm: FormGroup): void {
+    const selectedPOL = routeForm.get('POL')?.value;
+    const selectedPOD = routeForm.get('POD')?.value;
+
+    if (selectedPOL && selectedPOD && selectedPOL === selectedPOD) {
+      this.setControlError(routeForm.get('POL'), 'samePort', true);
+      this.setControlError(routeForm.get('POD'), 'samePort', true);
+    } else {
+      this.clearControlError(routeForm.get('POL'), 'samePort');
+      this.clearControlError(routeForm.get('POD'), 'samePort');
+    }
+  }
+
+  private getShipmentDirection(department?: any): 'EXPORT' | 'IMPORT' | '' {
+    const departmentDirection = this.normalizePortText(department?.ExportImport);
+    if (departmentDirection === 'EXPORT' || departmentDirection === 'IMPORT') {
+      return departmentDirection as 'EXPORT' | 'IMPORT';
+    }
+
+    return '';
+  }
+
+  private getPortsByReferenceCountry(referencePortSid: number | null | undefined, fallbackPorts: any[]): any[] {
+    const referencePort = this.getPortBySid(referencePortSid);
+    if (!referencePort) {
+      return [...fallbackPorts];
+    }
+
+    const referenceCountryId = this.toNumericValue(referencePort?.CountryMasterSid);
+    if (referenceCountryId) {
+      return fallbackPorts.filter(port => this.toNumericValue(port?.CountryMasterSid) === referenceCountryId);
+    }
+
+    const referenceCountryName = this.normalizePortText(referencePort?.Country || referencePort?.countryMaster?.countryName);
+    if (!referenceCountryName) {
+      return [...fallbackPorts];
+    }
+
+    return fallbackPorts.filter(port => {
+      const portCountryName = this.normalizePortText(port?.Country || port?.countryMaster?.countryName);
+      return portCountryName === referenceCountryName;
+    });
+  }
+
+  private isCompanyCountryPort(port: any): boolean {
+    const companyCountryId = this.toNumericValue(this.currentCompany?.CountryMasterSid);
+    const portCountryId = this.toNumericValue(port?.CountryMasterSid);
+
+    if (companyCountryId && portCountryId) {
+      return companyCountryId === portCountryId;
+    }
+
+    const companyCountryName = this.normalizePortText(this.currentCompany?.CountryName);
+    const portCountryName = this.normalizePortText(port?.Country || port?.countryMaster?.countryName);
+
+    return !!companyCountryName && !!portCountryName && companyCountryName === portCountryName;
+  }
+
+  private isForeignCountryPort(port: any): boolean {
+    const companyCountryId = this.toNumericValue(this.currentCompany?.CountryMasterSid);
+    const portCountryId = this.toNumericValue(port?.CountryMasterSid);
+
+    if (companyCountryId && portCountryId) {
+      return companyCountryId !== portCountryId;
+    }
+
+    const companyCountryName = this.normalizePortText(this.currentCompany?.CountryName);
+    const portCountryName = this.normalizePortText(port?.Country || port?.countryMaster?.countryName);
+
+    return !!companyCountryName && !!portCountryName && companyCountryName !== portCountryName;
+  }
+
+  private getPortBySid(portSid: number | null | undefined): any | null {
+    if (!portSid) {
+      return null;
+    }
+
+    return this.ports.find(port => port.PortMasterSid === portSid) || null;
+  }
+
+  private normalizePortText(value: any): string {
+    return String(value ?? '').trim().toUpperCase();
+  }
+
+  private toNumericValue(value: any): number | null {
+    const parsedValue = Number(value);
+    return Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : null;
+  }
+
+  private setControlError(control: AbstractControl | null, errorKey: string, value: any): void {
+    if (!control) {
+      return;
+    }
+
+    control.setErrors({
+      ...(control.errors || {}),
+      [errorKey]: value
+    });
+  }
+
+  private clearControlError(control: AbstractControl | null, errorKey: string): void {
+    if (!control?.errors?.[errorKey]) {
+      return;
+    }
+
+    const { [errorKey]: _, ...remainingErrors } = control.errors || {};
+    control.setErrors(Object.keys(remainingErrors).length ? remainingErrors : null);
   }
 
   statusRequiredValidator(control: AbstractControl): ValidationErrors | null {

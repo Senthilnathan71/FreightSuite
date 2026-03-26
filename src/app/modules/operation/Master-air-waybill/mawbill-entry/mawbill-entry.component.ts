@@ -162,6 +162,11 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   portLookupConfig = DROPDOWN_CONFIGS.PORT;
+  branchLookupConfig = {
+    displayFields: ['branchName'],
+    displayLabels: ['Branch'],
+    labelFields: ['branchName'],
+  };
   
   // Lookup data
   departments: any[] = [];
@@ -185,6 +190,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   chargeList : any[]=[];
   filteredDestinationAgents: any[] = [];
   filteredOriginAgents: any[] = [];
+  availableTransferBranches: any[] = [];
   packageTypeList: any[] = [];
   hssacList: any[] = [];
   airlineList: any[] = [];
@@ -232,6 +238,8 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   currentMenuId: any;
   masterJobData:any;
   selectedReport: 'MAWB' | 'MAWBDraft' = 'MAWB';
+  selectedTransferBranchSid: number | null = null;
+  isPullingToImportBranch = false;
   tabs = [
     { name: 'Master', icon: 'fas fa-database' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
@@ -339,6 +347,10 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     this.currentCompany = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
     this.countryOfCompany = this.currentCompany?.CountryName;
     this.currentBranch = this.appSettingsService.decrypt(localStorage.getItem('selected-branch'));
+    const currentCompanyInfo = this.appSettingsService.getCurrentCompanyInfo();
+    this.availableTransferBranches = (currentCompanyInfo?.userBranchMaster || [])
+      .filter((ubm: any) => ubm?.GiveAccess === 'Y' && ubm?.branchMaster?.BranchMasterSid !== this.currentBranch?.BranchMasterSid)
+      .map((ubm: any) => ubm.branchMaster);
      const storedMenuId = sessionStorage.getItem('currentMenuId');
      this.loadTermsAndConditionsConfig();
      this.mps.init().subscribe();
@@ -750,6 +762,7 @@ private showNoMawbStockWarningOnce(warningKey: string): void {
       SOBDate: [null],
       CarrierRef: [''],
       AgentRef: [''],
+      ExportToImport: ['N'],
 
       // Added fields for cut offs
       SiCutoffDate: [null],
@@ -1302,9 +1315,11 @@ loadMawbStock(data: any): void {
       ExportDoNo: othersData.ExportDoNo || '',
       CarrierRef: othersData.CarrierRef || '',
           AgentRef: othersData.AgentRef || '',
+      ExportToImport: othersData.ExportToImport || 'N',
       ExportDoDate: othersData.ExportDoDate ? new Date(othersData.ExportDoDate) : null,
       SOBDate: othersData.SOBDate ? new Date(othersData.SOBDate) : null,
     });
+    this.selectedTransferBranchSid = othersData.DestinationBranchMasterSid || data.DestinationBranchMasterSid || null;
     if (othersData.Coload === 'Y') {
       this.masterJobForm.get('CoLoader')?.enable();
     } else {
@@ -1469,6 +1484,75 @@ loadMawbStock(data: any): void {
   getPackageTypeName(pkgTypeSid: number): string {
     const packageType = this.packageTypeList.find(pt => pt.UOMMasterSid === pkgTypeSid);
     return packageType ? packageType.UOMName : 'Unknown';
+  }
+
+  get isExportToImportCompleted(): boolean {
+    return this.masterJobForm.get('ExportToImport')?.value === 'Y';
+  }
+
+  get canPullToImportBranch(): boolean {
+    const exportImport = (this.selectedDepartment?.ExportImport || '').toString().toLowerCase();
+    return this.isEditMode && exportImport === 'export' && this.availableTransferBranches.length > 0;
+  }
+
+  async pullMasterJobToImportBranch(): Promise<void> {
+    if (!this.masterJobSid || !this.canPullToImportBranch) {
+      return;
+    }
+
+    if (!this.selectedTransferBranchSid) {
+      this.toastr.warning('Please choose the destination branch first.');
+      return;
+    }
+
+    if (this.isExportToImportCompleted) {
+      this.toastr.info('Pull To Import already completed for this master job.');
+      return;
+    }
+
+    const selectedBranch = this.availableTransferBranches.find(
+      branch => branch?.BranchMasterSid === this.selectedTransferBranchSid
+    );
+
+    const proceed = confirm(
+      `Pull this export master job and its active house jobs to ${selectedBranch?.branchName || 'the selected branch'} as an import job?`
+    );
+
+    if (!proceed) {
+      return;
+    }
+
+    this.isPullingToImportBranch = true;
+
+    this.operationService.pullMasterJobToImportBranch({
+      MasterJobSid: this.masterJobSid,
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      SourceBranchMasterSid: this.currentBranch?.BranchMasterSid,
+      DestinationBranchMasterSid: this.selectedTransferBranchSid,
+      CreatedBy: this.appSettingsService.userSettingSource.value?.['userEmail'],
+    }).subscribe({
+      next: (response: any) => {
+        this.isPullingToImportBranch = false;
+
+        if (!response?.status) {
+          this.toastr.error(response?.message || 'Failed to pull master job to import branch.');
+          return;
+        }
+
+        const createdJobNumber = response?.data?.masterJobNumber;
+        const destinationDepartmentName = response?.data?.destinationDepartmentName;
+        const successMessage = createdJobNumber
+          ? `Import master job ${createdJobNumber} created${destinationDepartmentName ? ` in ${destinationDepartmentName}` : ''}.`
+          : 'Import master job created successfully.';
+
+        this.masterJobForm.get('ExportToImport')?.setValue('Y');
+        this.toastr.success(successMessage);
+      },
+      error: () => {
+        this.isPullingToImportBranch = false;
+        this.toastr.error('Failed to pull master job to import branch.');
+      }
+    });
   }
 
   setAddress(controlName: string, item: any) {
@@ -1984,6 +2068,7 @@ if (polSid && !podSid) {
         ExportDoNo: formValue.ExportDoNo,
         ExportDoDate: formValue.ExportDoDate,
         SOBDate: formValue.SOBDate,
+        ExportToImport: formValue.ExportToImport || 'N',
     };
 
     const formData: any = {
@@ -2204,8 +2289,11 @@ if (polSid && !podSid) {
       NoofOriginal: 3,
       WeightIn: 'Kg(s)',
       Haz: false,
-      FreightPPCC: 'Prepaid'
+      FreightPPCC: 'Prepaid',
+      ExportToImport: 'N'
     });
+    this.selectedTransferBranchSid = null;
+    this.isPullingToImportBranch = false;
     
     this.connections.clear();
     this.masterJobContainers.clear();
