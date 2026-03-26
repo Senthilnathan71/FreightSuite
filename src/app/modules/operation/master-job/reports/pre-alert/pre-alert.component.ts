@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { firstValueFrom } from 'rxjs';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
@@ -10,6 +10,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { InsertMilestoneByMasterJobPayload, ShipmentMilestoneService } from 'src/app/modules/operation/services/shipment-milestone.service';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 
@@ -53,7 +54,8 @@ export class PreAlertComponent {
      private spinner: NgxSpinnerService,
      private pdfService: PdfDownloadService,
     public logoService : LogoService,
-    private milestoneService: ShipmentMilestoneService
+    private milestoneService: ShipmentMilestoneService,
+    private modalService: NgbModal
    ) { }
  
     showPrintLogo: boolean = false;
@@ -351,6 +353,38 @@ export class PreAlertComponent {
      }
    }, 50); 
  }
+
+ async sendEmail() {
+    this.spinner.show();
+    try {
+      const docDefinition = await this.buildPreAlertDocDefinition();
+      if (!docDefinition) {
+        this.appSettingService.showError('No data available');
+        return;
+      }
+      const { pdfMake } = await this.getPdfDependencies();
+      const blob = await new Promise<Blob>((resolve) => {
+        pdfMake.createPdf(docDefinition).getBlob(resolve);
+      });
+      const fileName = `Pre_Alert_${this.masterJobData?.MasterJobNumber || ''}.pdf`;
+      const file = new File([blob], fileName, { type: 'application/pdf' });
+
+      const emailRef = this.modalService.open(EmailEntryComponent, { size: 'lg' });
+      emailRef.componentInstance.setContent = {
+        Subject: `Pre Alert - ${this.masterJobData?.MasterJobNumber || ''}`,
+        Mailbody: `Please find attached the Pre Alert for Job No: ${this.masterJobData?.MasterJobNumber || ''}`,
+        attachments: [file]
+      };
+      emailRef.componentInstance.dataChange.subscribe(() => {
+        this.insertMilestoneSafelyForPrint();
+      });
+    } catch (error) {
+      console.error('Pre alert email error:', error);
+      this.appSettingService.showError('Error preparing email');
+    } finally {
+      this.spinner.hide();
+    }
+  }
 
  private async insertMilestoneSafelyForPrint(): Promise<void> {
    if (!this.autoInsertMilestone || !this.milestonePayload || this.milestoneInserted) {
