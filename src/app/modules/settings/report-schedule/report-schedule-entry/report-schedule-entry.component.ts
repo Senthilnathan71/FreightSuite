@@ -30,6 +30,7 @@ import {
     NgxSpinnerModule,
   ],
   templateUrl: './report-schedule-entry.component.html',
+  styleUrl: './report-schedule-entry.component.scss',
 })
 export class ReportScheduleEntryComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();

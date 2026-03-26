@@ -33,8 +33,10 @@
       <div class="col-lg-8">
         <div class="bg-white rounded border p-2 h-100">
           <form [formGroup]="form">
-            <div class="mb-1">
-              <h6 class="text-info"><i class="fas fa-file-alt me-1"></i> Report Details</h6>
+            <div class="section-card border rounded-3 p-2 mb-2 shadow-sm bg-white">
+              <h6 class="text-info d-flex align-items-center gap-2 mb-2 fw-semibold bg-light border-start border-4 border-info px-2 py-1 rounded">
+                <i class="fas fa-file-alt"></i> Report Details
+              </h6>
               <div class="row g-2">
                 <aside class="col-md-6">
                   <div class="custom-form-group">
@@ -72,8 +74,10 @@
               </div>
             </div>
 
-            <div class="mb-1">
-              <h6 class="text-info"><i class="fas fa-filter me-1 fs-2"></i> Filters</h6>
+            <div class="section-card border rounded-3 p-2 mb-2 shadow-sm bg-white">
+              <h6 class="text-info d-flex align-items-center gap-2 mb-2 fw-semibold bg-light border-start border-4 border-info px-2 py-1 rounded">
+                <i class="fas fa-filter"></i> Filters
+              </h6>
               <div class="row g-2">
                 <aside class="col-md-4">
                   <div class="custom-form-group custom-form-group-select" [class.filled]="!!form.get('SubledgerMasterSid')?.value">
@@ -104,8 +108,10 @@
               </div>
             </div>
 
-            <div class="mb-1">
-              <h6 class="text-info"><i class="fas fa-clock me-1"></i> Schedule Settings</h6>
+            <div class="section-card border rounded-3 p-2 mb-2 shadow-sm bg-white">
+              <h6 class="text-info d-flex align-items-center gap-2 mb-2 fw-semibold bg-light border-start border-4 border-info px-2 py-1 rounded">
+                <i class="fas fa-clock"></i> Schedule Settings
+              </h6>
               <div class="row g-2">
                 <aside class="col-md-4">
                   <div class="custom-form-group custom-form-group-select" [class.filled]="!!form.get('Frequency')?.value">
@@ -145,8 +151,10 @@
               </div>
             </div>
 
-            <div>
-              <h6 class="text-info"><i class="fas fa-envelope me-1"></i> Recipients</h6>
+            <div class="section-card border rounded-3 p-2 shadow-sm bg-white">
+              <h6 class="text-info d-flex align-items-center gap-2 mb-2 fw-semibold bg-light border-start border-4 border-info px-2 py-1 rounded">
+                <i class="fas fa-envelope"></i> Recipients
+              </h6>
               <div class="row g-2">
                 <aside class="col-md-6">
                   <div class="custom-form-group custom-form-group-select-date">
@@ -173,10 +181,12 @@
       </div>
 
       <div class="col-lg-4 d-flex align-self-stretch">
-        <div class="bg-white rounded  border p-2 w-100 flex-fill d-flex flex-column">
-           <div class="d-flex align-items-center justify-content-between mb-2">
-            <h6 class="text-info mb-0"><i class="fas fa-sliders-h me-1"></i> Report Parameters</h6>
-            <span class="badge bg-muted text-white">Dynamic</span>
+        <div class="bg-white rounded-3 border p-2 w-100 flex-fill d-flex flex-column shadow-sm">
+          <div class="d-flex align-items-center justify-content-between mb-2 bg-light border-start border-4 border-info px-2 py-1 rounded">
+            <h6 class="text-info mb-0 d-flex align-items-center gap-2 fw-semibold">
+              <i class="fas fa-sliders-h"></i> Report Parameters
+            </h6>
+            <span class="badge bg-info text-white">Dynamic</span>
           </div>
           <small class="text-muted d-block mb-2" *ngIf="selectedReportDetails.length > 0">
             Date range parameters (FromDate/ToDate) are automatically calculated based on the selected frequency.
@@ -238,3 +248,6 @@
     </div>
   </div>
 </div>
+
+
+

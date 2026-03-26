@@ -513,9 +513,12 @@ export class EmailTriggerService {
       const subjectPattern = /^(\S+)\s+([0-9]{1,2}\/[0-9]{1,2}\/[0-9]{2,4})\s+(.+?)\s*-\s*([A-Z0-9]{3,5})\s+(.+?)\s*-\s*([A-Z0-9]{3,5})/;
       const directMatch = subject.trim().match(subjectPattern);
       if (directMatch) {
-        const refLabel = /enquiry/i.test(headerLabel || '') ? 'Enquiry No' : 'Reference No';
+        const isEnquiry = /enquiry/i.test(headerLabel || '');
+        const isBooking = /booking/i.test(headerLabel || '');
+        const refLabel = isEnquiry ? 'Enquiry No' : 'Reference No';
+        const dateLabel = isEnquiry ? 'Enquiry Date' : isBooking ? 'Booking Date' : 'Date';
         rows.push({ label: refLabel, value: directMatch[1].trim() });
-        rows.push({ label: 'Date', value: directMatch[2].trim() });
+        rows.push({ label: dateLabel, value: directMatch[2].trim() });
         rows.push({
           label: 'Route',
           value: `${directMatch[3].trim()} (${directMatch[4].trim()}) → ${directMatch[5].trim()} (${directMatch[6].trim()})`
@@ -525,8 +528,11 @@ export class EmailTriggerService {
     if (bookingMatch?.[1] && !rows.some(row => row.label === 'Booking No')) {
       rows.push({ label: 'Booking No', value: bookingMatch[1].trim() });
     }
-    if (dateMatch?.[1] && !rows.some(row => row.label === 'Date')) {
-      rows.push({ label: 'Date', value: dateMatch[1].trim() });
+    const isEnquiryHeader = /enquiry/i.test(headerLabel || '');
+    const isBookingHeader = /booking/i.test(headerLabel || '');
+    const dateLabel = isEnquiryHeader ? 'Enquiry Date' : isBookingHeader ? 'Booking Date' : 'Date';
+    if (dateMatch?.[1] && !rows.some(row => row.label === dateLabel)) {
+      rows.push({ label: dateLabel, value: dateMatch[1].trim() });
     }
     if (route && !rows.some(row => row.label === 'Route')) {
       rows.push({ label: 'Route', value: route });
@@ -557,8 +563,9 @@ export class EmailTriggerService {
       if (refNo && !rows.some(row => row.label === refLabel)) {
         rows.unshift({ label: refLabel, value: refNo });
       }
-      if (dateOnly && !rows.some(row => row.label === 'Date')) {
-        rows.push({ label: 'Date', value: dateOnly });
+      const enquiryDateLabel = 'Enquiry Date';
+      if (dateOnly && !rows.some(row => row.label === enquiryDateLabel)) {
+        rows.push({ label: enquiryDateLabel, value: dateOnly });
       }
 
       if (!rows.some(row => row.label === 'Route')) {
