@@ -380,19 +380,20 @@
               <!-- 11. GSTType -->
               @if (currentCompanyCountryCode === 'in') {
                 <aside class="col-md-3">
-                  <div class="custom-form-group">
+                  <div 
+                    class="custom-form-group" 
+                    [class.custom-form-group-select]="taxCalculationService.isExportOrSEZ"
+                    [class.filled]="taxCalculationService.isExportOrSEZ && !!invoiceForm.get('GSTType')?.value"
+                  >
                     @if (taxCalculationService.isExportOrSEZ) {
-                      <div class="custom-form-group-select" [class.filled]="!!invoiceForm.get('GSTType')?.value">
                         <ng-select
                           formControlName="GSTType"
                           [clearable]="false"
-                          class="custom-input-field sm"
                         >
                           @for (type of exportGstTypes; track type.id) {
                             <ng-option [value]="type.id">{{ type.name }}</ng-option>
                           }
                         </ng-select>
-                      </div>
                     } @else {
                       <input
                         type="text"
@@ -403,7 +404,13 @@
                         style="cursor: not-allowed"
                       />
                     }
-                    <label class="input-label">GST Type</label>
+                    <label class="input-label">GST Type
+                      @if (taxCalculationService.isOversea) {
+                        <span class="ms-1" style="color: #dc2626; font-weight: 600; font-size: 11px;">[Oversea]</span>
+                      } @else if (taxCalculationService.isSEZ) {
+                        <span class="ms-1" style="color: #dc2626; font-weight: 600; font-size: 11px;">[SEZ]</span>
+                      }
+                    </label>
                   </div>
                 </aside>
               }
@@ -719,6 +726,7 @@
                             <ng-container *ngIf="getTaxDisplayConfig() as taxCfg">
                               <th *ngIf="taxCfg.showCGST" colspan="2" class="text-center bg-transparent text-light">CGST</th>
                               <th *ngIf="taxCfg.showSGST" colspan="2" class="text-center bg-transparent text-light">SGST</th>
+                              <th *ngIf="taxCfg.showUGST" colspan="2" class="text-center bg-transparent text-light">UGST</th>
                               <th *ngIf="taxCfg.showIGST" colspan="2" class="text-center bg-transparent text-light">IGST</th>
                               <th *ngIf="taxCfg.showVAT" colspan="2" class="text-center bg-transparent text-light">VAT</th>
                             </ng-container>
@@ -768,6 +776,10 @@
                                 <th class="text-center bg-transparent text-light" style="min-width: 100px">Amount</th>
                               </ng-container>
                               <ng-container *ngIf="taxCfg.showSGST">
+                                <th class="text-center bg-transparent text-light" style="min-width: 80px">Rate</th>
+                                <th class="text-center bg-transparent text-light" style="min-width: 100px">Amount</th>
+                              </ng-container>
+                              <ng-container *ngIf="taxCfg.showUGST">
                                 <th class="text-center bg-transparent text-light" style="min-width: 80px">Rate</th>
                                 <th class="text-center bg-transparent text-light" style="min-width: 100px">Amount</th>
                               </ng-container>
@@ -1010,6 +1022,23 @@
                                 </ng-container>
                                 <!-- SGST Rate + Amount -->
                                 <ng-container *ngIf="taxCfg.showSGST">
+                                  <td class="text-center">
+                                    <div class="input-group input-group-sm">
+                                      <div class="d-flex gap-1">
+                                        <input type="number" class="custom-input-field sm" formControlName="TaxPercentage2"
+                                          (input)="onDetailChange(i, 'TaxPercentage2')" />
+                                        <span style="font-weight: 600; color: black">%</span>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td class="text-center pt-1">
+                                    <span style="font-weight: 600; color: black">{{
+                                      getFormattedAmount(row.get("TaxAmount2")?.value, currentCompany.CurrencyMasterSid)
+                                    }}</span>
+                                  </td>
+                                </ng-container>
+                                <!-- UGST Rate + Amount -->
+                                <ng-container *ngIf="taxCfg.showUGST">
                                   <td class="text-center">
                                     <div class="input-group input-group-sm">
                                       <div class="d-flex gap-1">
@@ -2000,6 +2029,29 @@
                     </th>
                   </ng-container>
 
+                  <ng-container *ngIf="getTaxDisplayConfig().showUGST">
+                    <th
+                      style="
+                        border: 1px solid black;
+                        padding: 2px 8px;
+                        text-align: center;
+                        font-weight: bolder;
+                      "
+                    >
+                      <strong>UGST %</strong>
+                    </th>
+                    <th
+                      style="
+                        border: 1px solid black;
+                        padding: 2px 8px;
+                        text-align:center;
+                        font-weight: bolder;
+                      "
+                    >
+                      <strong>UGST Amt.</strong>
+                    </th>
+                  </ng-container>
+
                   <ng-container *ngIf="getTaxDisplayConfig().showIGST">
                     <th
                       style="
@@ -2163,6 +2215,27 @@
                       "
                     >
                       {{ detail.sgstAmt }}
+                    </td>
+                  </ng-container>
+
+                  <ng-container *ngIf="getTaxDisplayConfig().showUGST">
+                    <td
+                      style="
+                        border: 1px solid black;
+                        padding: 2px 8px;
+                        text-align: right;
+                      "
+                    >
+                      {{ detail.ugstRate }}
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid black;
+                        padding: 2px 8px;
+                        text-align: right;
+                      "
+                    >
+                      {{ detail.ugstAmt }}
                     </td>
                   </ng-container>
 
