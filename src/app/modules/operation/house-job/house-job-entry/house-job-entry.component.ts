@@ -65,6 +65,7 @@ import { ExitFormComponent } from '../report/exit-form/exit-form.component';
 import { JobCardComponent } from '../report/job-card/job-card.component';
 import { ProofOfDeliveryComponent } from '../report/proof-of-delivery/proof-of-delivery.component';
 import { SafeInsertShipmentMilestone } from '../../services/shipment-milestone.service';
+import { AuditLogComponent } from '../../audit-log/audit-log.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -3830,80 +3831,19 @@ ${this.userData['userName']}`;
     });
   }
 
-  openAuditLogs(modal: TemplateRef<any>) {
-    if (!this.HouseJobSid) return;
-    this.getAuditLog();
-    this.auditLogModalRef = this.modalService.open(modal, {
+  openAuditLogs() {
+      if (!this.HouseJobSid) return;
+      const modalRef = this.modalService.open(AuditLogComponent, {
       centered: true,
       scrollable: true,
+      size: 'xl',
       windowClass: 'audit-log-modal'
     });
-  }
-
-  getAuditLog() {
-    this.operationService.geAuditLogsHouseJob(
-      'HouseJob',
-      this.HouseJobSid.toString()
-    ).subscribe({
-      next: (logs: any[]) => {
-        const ignoredFields = ['updatedOn', 'updatedBy', 'createdOn', 'createdBy'];
-
-        const normalize = (val: any) => {
-          if (val === null || val === undefined || val === '') return null;
-          return String(val).trim();
-        };
-
-        const groups: any = {};
-
-        logs.forEach(log => {
-          const key = `${log.changedAt}-${log.changedBy}`;
-
-          if (!groups[key]) {
-            groups[key] = {
-              changedAt: log.changedAt,
-              changedBy: log.changedBy,
-              operation: log.operation,
-              oldValDisplay: [],
-              newValDisplay: []
-            };
-          }
-
-          const oldObj = log.oldVal || {};
-          const newObj = log.newVal || {};
-
-          const keys = new Set([
-            ...Object.keys(oldObj),
-            ...Object.keys(newObj)
-          ]);
-
-          keys.forEach(k => {
-
-          if (ignoredFields.includes(k)) return;
-
-          const oldVal = normalize(oldObj[k]);
-          const newVal = normalize(newObj[k]);
-
-          if (oldVal !== newVal) {
-
-            groups[key].oldValDisplay.push(
-              `${k}: ${oldVal ?? '-'}`
-            );
-
-            groups[key].newValDisplay.push(
-              `${k}: ${newVal ?? '-'}`
-            );
-
-          }
-
-        });
-        });
-
-        this.auditLogs = Object.values(groups)
-          .filter((g: any) => g.oldValDisplay.length > 0 || g.newValDisplay.length > 0);
-      },
-      error: err => console.error('Error fetching audit logs:', err)
-    });
-  }
+    modalRef.componentInstance.title = 'House Logs';
+    modalRef.componentInstance.tableName = 'HouseJob';
+    modalRef.componentInstance.recordId = this.HouseJobSid.toString();
+    modalRef.componentInstance.screenName = 'HouseAirwaybill';
+    }
   // openAuditLogs(modal: TemplateRef<any>) {
   //   if (!this.HouseJobSid) return;
   //   this.operationService.geAuditLogsHouseJob('HouseJob', this.HouseJobSid.toString()).subscribe({
