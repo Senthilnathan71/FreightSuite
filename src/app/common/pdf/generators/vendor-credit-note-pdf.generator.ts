@@ -42,7 +42,7 @@
           configuredMargins[2] ?? 20,
           configuredMargins[3] ?? 60
         ]
-      : [20, dynamicTopMargin, 20, 60];
+      : [20, dynamicTopMargin, 20, 25];
 
     return {
       pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
@@ -74,7 +74,7 @@
 
             
           ],
-          margin: [20, 10, 20, 0] // Add margin to header content
+          margin: [20, 10, 10, 0] // Add margin to header content
         };
       },
 
@@ -84,13 +84,9 @@
         buildChargesTable(data),
         buildTotalsSection(data),
         buildAmountInWords(data),
-        ...(data.invoice?.remarks ? [buildRemarks(data.invoice.remarks)] : []),
-        ...buildBankDetailsSection(data),
-        ...(data.terms && data.terms.length > 0
-  ? [
-      buildTermsSectionWithBullets(data.terms)
-    ]
-  : []),
+        buildRemarks(data.invoice?.remarks || ''),
+        // ...buildBankDetailsSection(data),
+        buildTermsSectionWithBullets(data.terms || []),
         ...buildAuthorisedSignatory(data)
       ],
       footer: createFooterFunction(data.userData, {
@@ -150,6 +146,16 @@
     if (cityCountry) {
       companyInfoStack.push({
         text: cityCountry,
+        style: 'addressText',
+        alignment: 'right',
+        margin: [0, 0, 0, 6]
+      });
+    }
+
+    const postalCode = branch?.postalCode || (branch as any)?.ZipCode || company?.postalCode;
+    if (postalCode) {
+      companyInfoStack.push({
+        text: `Postal Code : ${postalCode}`,
         style: 'addressText',
         alignment: 'right',
         margin: [0, 0, 0, 6]
@@ -239,20 +245,20 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
 
   const leftStack: any[] = [
     {
-      text: 'Billed To',
+      text: 'BILLED BY',
       style: 'labelBold',
       margin: [0, 0, 0, 3]
     },
     {
       text: billedTo,
-      margin: [0, 0, 0, 3]
+      margin: [8, 0, 0, 3]
     }
   ];
 
   if (billingAddress) {
     leftStack.push({
       text: billingAddress,
-      margin: [0, 0, 0, 3]
+      margin: [8, 0, 0, 3]
     });
   }
 
@@ -328,7 +334,7 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
       }
     ],
     columnGap: 0,
-    margin: [15, 0, 0, 0]
+    margin: [10, 0, 0, 0]
   };
 
   // -----------------------------
@@ -366,6 +372,8 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
   const printData = (data as any).vendorCreditNoteData || (data as any).invoicePrintData;
   const cargo = data.cargoDetails;
   const isSeaMode = data.isSeaMode !== false;
+  const PAGE_LEFT = -10;
+  const PAGE_RIGHT = 565;
 
   const RIGHT_LABEL_WIDTH = 88;
   const COLON_WIDTH = 5;
@@ -426,7 +434,7 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
       { text: ':', width: COLON_WIDTH },
       { text: item.value, width: '*' }
     ],
-    margin: [10, 2, 0, 3]
+    margin: [5, 2, 0, 3]
   }));
 
   // -----------------------------
@@ -487,14 +495,32 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
   // Final Layout
   // -----------------------------
   return {
-    table: {
-      widths: ['50%', '50%'],
-      body: [[
-        { stack: leftStack, margin: [5, 2, 5, 2] },
-        { stack: rightStack, margin: [5, 2, 5, 2] }
-      ]]
-    },
-    layout: 'noBorders',
+    stack: [
+      {
+        canvas: [
+          {
+            type: 'line',
+            x1: PAGE_LEFT,
+            y1: 0,
+            x2: PAGE_RIGHT,
+            y2: 0,
+            lineWidth: 0.8
+          }
+        ],
+        margin: [0, 0, 0, 4]
+      },
+      {
+        table: {
+          widths: ['50%', '50%'],
+          body: [[
+            { stack: leftStack, margin: [5, 2, 5, 2] },
+            { stack: rightStack, margin: [5, 2, 5, 2] }
+          ]]
+        },
+        layout: 'noBorders',
+        margin: [0, 0, 0, 0]
+      }
+    ],
     margin: [0, 0, 0, 0]
   };
 }
@@ -778,233 +804,231 @@ function buildRemarks(remarks: string): any {
    * Build bank details section
    */
 
-function buildBankDetailsSection(data: VendorCreditNotePdfData): any[] {
-  const bankDetails = data.bankDetails || [];
-  const isVATMode = data.isVATMode !== false;
+// function buildBankDetailsSection(data: VendorCreditNotePdfData): any[] {
+//   const bankDetails = data.bankDetails || [];
+//   const isVATMode = data.isVATMode !== false;
 
-  // Get just the currency code (e.g., USD, AED)
-  const invoiceCurrency = data.invoice?.currencyCode || '';
-  const localCurrency = data.localCurrency || '';
-  const currencyCode = invoiceCurrency || localCurrency;
+//   // Get just the currency code (e.g., USD, AED)
+//   const invoiceCurrency = data.invoice?.currencyCode || '';
+//   const localCurrency = data.localCurrency || '';
+//   const currencyCode = invoiceCurrency || localCurrency;
 
-  if (bankDetails.length === 0) return [];
+//   if (bankDetails.length === 0) return [];
 
-  // Filter valid banks with at least one field populated
-  const validBanks = bankDetails.filter(bank => 
-    bank.beneficiaryName || 
-    bank.accountNo || 
-    bank.bankName || 
-    bank.iban || 
-    bank.ifscCode || 
-    bank.swiftCode ||
-    bank.bankAddress || 
-    bank.branchName
-  );
+//   // Filter valid banks with at least one field populated
+//   const validBanks = bankDetails.filter(bank => 
+//     bank.beneficiaryName || 
+//     bank.accountNo || 
+//     bank.bankName || 
+//     bank.iban || 
+//     bank.ifscCode || 
+//     bank.swiftCode ||
+//     bank.bankAddress || 
+//     bank.branchName
+//   );
 
-  if (validBanks.length === 0) return [];
+//   if (validBanks.length === 0) return [];
 
-  // Limit to maximum 3 banks to prevent overflow
-  const banksToDisplay = validBanks.slice(0, 3);
+//   // Limit to maximum 3 banks to prevent overflow
+//   const banksToDisplay = validBanks.slice(0, 3);
 
-  // Create header row
-  const headers = [
-    { text: 'Details', style: 'tableHeader', alignment: 'center' }
-  ];
+//   // Create header row
+//   const headers = [
+//     { text: 'Details', style: 'tableHeader', alignment: 'center' }
+//   ];
 
-  // Add bank columns dynamically
-  for (let i = 0; i < banksToDisplay.length; i++) {
-    if (currencyCode) {
-      headers.push({ 
-        text: `Bank (${currencyCode})`, 
-        style: 'tableHeader', 
-        alignment: 'center' 
-      });
-    } else {
-      headers.push({ 
-        text: `Bank ${i + 1}`, 
-        style: 'tableHeader', 
-        alignment: 'center' 
-      });
-    }
-  }
+//   // Add bank columns dynamically
+//   for (let i = 0; i < banksToDisplay.length; i++) {
+//     if (currencyCode) {
+//       headers.push({ 
+//         text: `Bank (${currencyCode})`, 
+//         style: 'tableHeader', 
+//         alignment: 'center' 
+//       });
+//     } else {
+//       headers.push({ 
+//         text: `Bank ${i + 1}`, 
+//         style: 'tableHeader', 
+//         alignment: 'center' 
+//       });
+//     }
+//   }
 
-  const rows: any[] = [headers];
+//   const rows: any[] = [headers];
 
-  // Beneficiary Name row
-  const beneficiaryRow: any[] = [{ 
-    text: 'Beneficiary Name', 
-    style: 'labelBold', 
-    alignment: 'left',
-    fontSize: 8  // Reduced font size
-  }];
-  for (let i = 0; i < banksToDisplay.length; i++) {
-    beneficiaryRow.push({ 
-      text: banksToDisplay[i].beneficiaryName || '', 
-      alignment: 'left',
-      noWrap: false,
-      fontSize: 8  // Reduced font size
-    });
-  }
-  rows.push(beneficiaryRow);
+//   // Beneficiary Name row
+//   const beneficiaryRow: any[] = [{ 
+//     text: 'Beneficiary Name', 
+//     style: 'labelBold', 
+//     alignment: 'left',
+//     fontSize: 8  // Reduced font size
+//   }];
+//   for (let i = 0; i < banksToDisplay.length; i++) {
+//     beneficiaryRow.push({ 
+//       text: banksToDisplay[i].beneficiaryName || '', 
+//       alignment: 'left',
+//       noWrap: false,
+//       fontSize: 8  // Reduced font size
+//     });
+//   }
+//   rows.push(beneficiaryRow);
 
-  // Account No. row
-  const accountRow: any[] = [{ 
-    text: 'Account No.', 
-    style: 'labelBold', 
-    alignment: 'left',
-    fontSize: 8
-  }];
-  for (let i = 0; i < banksToDisplay.length; i++) {
-    accountRow.push({ 
-      text: banksToDisplay[i].accountNo || '', 
-      alignment: 'left',
-      noWrap: false,
-      fontSize: 8
-    });
-  }
-  rows.push(accountRow);
+//   // Account No. row
+//   const accountRow: any[] = [{ 
+//     text: 'Account No.', 
+//     style: 'labelBold', 
+//     alignment: 'left',
+//     fontSize: 8
+//   }];
+//   for (let i = 0; i < banksToDisplay.length; i++) {
+//     accountRow.push({ 
+//       text: banksToDisplay[i].accountNo || '', 
+//       alignment: 'left',
+//       noWrap: false,
+//       fontSize: 8
+//     });
+//   }
+//   rows.push(accountRow);
 
-  // IBAN/IFSC row
-  const ibanRow: any[] = [{ 
-    text: isVATMode ? 'IBAN' : 'IFSC Code', 
-    style: 'labelBold', 
-    alignment: 'left',
-    fontSize: 8
-  }];
-  for (let i = 0; i < banksToDisplay.length; i++) {
-    if (isVATMode) {
-      ibanRow.push({ 
-        text: banksToDisplay[i].iban || '', 
-        alignment: 'left',
-        noWrap: false,
-        fontSize: 8
-      });
-    } else {
-      ibanRow.push({ 
-        text: banksToDisplay[i].ifscCode || '', 
-        alignment: 'left',
-        noWrap: false,
-        fontSize: 8
-      });
-    }
-  }
-  rows.push(ibanRow);
+//   // IBAN/IFSC row
+//   const ibanRow: any[] = [{ 
+//     text: isVATMode ? 'IBAN' : 'IFSC Code', 
+//     style: 'labelBold', 
+//     alignment: 'left',
+//     fontSize: 8
+//   }];
+//   for (let i = 0; i < banksToDisplay.length; i++) {
+//     if (isVATMode) {
+//       ibanRow.push({ 
+//         text: banksToDisplay[i].iban || '', 
+//         alignment: 'left',
+//         noWrap: false,
+//         fontSize: 8
+//       });
+//     } else {
+//       ibanRow.push({ 
+//         text: banksToDisplay[i].ifscCode || '', 
+//         alignment: 'left',
+//         noWrap: false,
+//         fontSize: 8
+//       });
+//     }
+//   }
+//   rows.push(ibanRow);
 
-  // Swift Code row
-  const swiftRow: any[] = [{ 
-    text: 'Swift Code', 
-    style: 'labelBold', 
-    alignment: 'left',
-    fontSize: 8
-  }];
-  for (let i = 0; i < banksToDisplay.length; i++) {
-    swiftRow.push({ 
-      text: banksToDisplay[i].swiftCode || '', 
-      alignment: 'left',
-      noWrap: false,
-      fontSize: 8
-    });
-  }
-  rows.push(swiftRow);
+//   // Swift Code row
+//   const swiftRow: any[] = [{ 
+//     text: 'Swift Code', 
+//     style: 'labelBold', 
+//     alignment: 'left',
+//     fontSize: 8
+//   }];
+//   for (let i = 0; i < banksToDisplay.length; i++) {
+//     swiftRow.push({ 
+//       text: banksToDisplay[i].swiftCode || '', 
+//       alignment: 'left',
+//       noWrap: false,
+//       fontSize: 8
+//     });
+//   }
+//   rows.push(swiftRow);
 
-  // Bank Name row
-  const bankNameRow: any[] = [{ 
-    text: 'Bank Name', 
-    style: 'labelBold', 
-    alignment: 'left',
-    fontSize: 8
-  }];
-  for (let i = 0; i < banksToDisplay.length; i++) {
-    bankNameRow.push({ 
-      text: banksToDisplay[i].bankName || '', 
-      alignment: 'left',
-      noWrap: false,
-      fontSize: 8
-    });
-  }
-  rows.push(bankNameRow);
+//   // Bank Name row
+//   const bankNameRow: any[] = [{ 
+//     text: 'Bank Name', 
+//     style: 'labelBold', 
+//     alignment: 'left',
+//     fontSize: 8
+//   }];
+//   for (let i = 0; i < banksToDisplay.length; i++) {
+//     bankNameRow.push({ 
+//       text: banksToDisplay[i].bankName || '', 
+//       alignment: 'left',
+//       noWrap: false,
+//       fontSize: 8
+//     });
+//   }
+//   rows.push(bankNameRow);
 
-  // Branch row
-  const branchRow: any[] = [{ 
-    text: 'Branch', 
-    style: 'labelBold', 
-    alignment: 'left',
-    fontSize: 8
-  }];
-  for (let i = 0; i < banksToDisplay.length; i++) {
-    branchRow.push({ 
-      text: banksToDisplay[i].bankAddress || banksToDisplay[i].branchName || '', 
-      alignment: 'left',
-      noWrap: false,
-      lineHeight: 1.1,  // Reduced from 1.2
-      fontSize: 8
-    });
-  }
-  rows.push(branchRow);
+//   // Branch row
+//   const branchRow: any[] = [{ 
+//     text: 'Branch', 
+//     style: 'labelBold', 
+//     alignment: 'left',
+//     fontSize: 8
+//   }];
+//   for (let i = 0; i < banksToDisplay.length; i++) {
+//     branchRow.push({ 
+//       text: banksToDisplay[i].bankAddress || banksToDisplay[i].branchName || '', 
+//       alignment: 'left',
+//       noWrap: false,
+//       lineHeight: 1.1,  // Reduced from 1.2
+//       fontSize: 8
+//     });
+//   }
+//   rows.push(branchRow);
 
-  // Width behavior:
-  // - 1 bank: fit to content (no forced extra empty space on the right)
-  // - 2/3 banks: distribute available width evenly
-  const DETAILS_COLUMN_WIDTH = 110;
-  const bankCount = Math.max(1, banksToDisplay.length);
-  const widths: (number | string)[] = [DETAILS_COLUMN_WIDTH];
+//   // Width behavior:
+//   // - 1 bank: fit to content (no forced extra empty space on the right)
+//   // - 2/3 banks: distribute available width evenly
+//   const DETAILS_COLUMN_WIDTH = 110;
+//   const bankCount = Math.max(1, banksToDisplay.length);
+//   const widths: (number | string)[] = [DETAILS_COLUMN_WIDTH];
 
-  if (bankCount === 1) {
-    widths.push('auto');
-  } else {
-    const TOTAL_WIDTH = 500; // Total available width (accounting for page margins)
-    const REMAINING_WIDTH = TOTAL_WIDTH - DETAILS_COLUMN_WIDTH;
-    const BANK_COLUMN_WIDTH = REMAINING_WIDTH / bankCount;
-    for (let i = 0; i < banksToDisplay.length; i++) {
-      widths.push(BANK_COLUMN_WIDTH);
-    }
-  }
+//   if (bankCount === 1) {
+//     widths.push('auto');
+//   } else {
+//     const TOTAL_WIDTH = 500; // Total available width (accounting for page margins)
+//     const REMAINING_WIDTH = TOTAL_WIDTH - DETAILS_COLUMN_WIDTH;
+//     const BANK_COLUMN_WIDTH = REMAINING_WIDTH / bankCount;
+//     for (let i = 0; i < banksToDisplay.length; i++) {
+//       widths.push(BANK_COLUMN_WIDTH);
+//     }
+//   }
 
-  return [
-    buildSectionTitle('Bank Details', { margin: [0, 10, 0, 3] }),  // Reduced margin
-    {
-      table: {
-        headerRows: 1,
-        widths: widths,
-        body: rows,
-        dontBreakRows: true
-      },
-      layout: {
-        hLineWidth: () => 1,
-        vLineWidth: () => 1,
-        hLineColor: () => '#000',
-        vLineColor: () => '#000',
-        paddingLeft: () => 3,      // Reduced from 6
-        paddingRight: () => 3,     // Reduced from 6
-        paddingTop: () => 2,       // Reduced from 5
-        paddingBottom: () => 2     // Reduced from 5
-      },
-      margin: [0, 0, 0, 5],  // Reduced bottom margin from 10 to 5
-      style: { noWrap: false }
-    }
-  ];
-}
+//   return [
+//     buildSectionTitle('Bank Details', { margin: [0, 10, 0, 3] }),  // Reduced margin
+//     {
+//       table: {
+//         headerRows: 1,
+//         widths: widths,
+//         body: rows,
+//         dontBreakRows: true
+//       },
+//       layout: {
+//         hLineWidth: () => 1,
+//         vLineWidth: () => 1,
+//         hLineColor: () => '#000',
+//         vLineColor: () => '#000',
+//         paddingLeft: () => 3,      // Reduced from 6
+//         paddingRight: () => 3,     // Reduced from 6
+//         paddingTop: () => 2,       // Reduced from 5
+//         paddingBottom: () => 2     // Reduced from 5
+//       },
+//       margin: [0, 0, 0, 5],  // Reduced bottom margin from 10 to 5
+//       style: { noWrap: false }
+//     }
+//   ];
+// }
 
   /**
    * Build terms section with bullet points
    */
   function buildTermsSectionWithBullets(terms: (PdfTermItem | string)[]): any {
-    if (!terms || terms.length === 0) {
-      return { text: '' };
-    }
-
-    const termsList = terms.map((term) => {
+    const termsList = (terms || []).map((term) => {
       const content = typeof term === 'string' ? term : term.content;
       return content;
-    });
+    }).filter((content) => !!content?.trim());
 
     return {
       stack: [
         { text: 'Terms and Conditions', style: 'sectionTitle', margin: [0, 10, 0, 5] },
-        {
-          ul: termsList,
-          margin: [0, 0, 0, 10]
-        }
+        ...(termsList.length > 0
+          ? [{
+              ul: termsList,
+              margin: [0, 0, 0, 10]
+            }]
+          : [])
       ],
       margin: [0, 0, 0, 15]
     };
@@ -1172,7 +1196,7 @@ function buildBankDetailsSection(data: VendorCreditNotePdfData): any[] {
         addressLine1: branch?.addressLine1 || '',
         addressLine2: branch?.addressLine2 || '',
         cityName: branch?.cityMaster?.cityName || '',
-        postalCode: branch?.postalCode || '',
+        postalCode: branch?.postalCode || branch?.ZipCode || '',
         phoneNumber: branch?.phoneNumber || '',
         cityMaster: branch?.cityMaster
       },

@@ -1,80 +1,88 @@
-<div class="">
-        <div class="modal-header modalHeaderpart">
-            <h4 class="modal-title ">Details</h4>
-            <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeModal()"></button>
+<div class="details-modal-shell">
+    <div class="modal-header modalHeaderpart border-0 pb-2">
+        <div>
+            <h4 class="modal-title mb-0">Details</h4>
         </div>
-        <div class="modal-body py-1">
-            <div class="row">
-                <div class="d-flex justify-content-center align-items-center">
-                    <label class="">{{idLabel}} : </label>
-                    <div class="bg-light-secondary ms-2 px-1 rounded d-inline-flex align-items-center">
-                        {{idValue}}
-                    </div>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeModal()"></button>
+    </div>
+
+    <div class="modal-body pt-2 pb-1">
+        <div class="card border-0 bg-light-subtle mb-2">
+            <div class="card-body py-0 px-3">
+                <div class="d-flex flex-wrap justify-content-center align-items-center gap-2 text-center text-md-start">
+                    <span class="fw-semibold text-black">{{ idLabel }}</span>
+                    <span class="text-secondary">:</span>
+                    <span class="badge rounded-pill bg-light-secondary text-dark px-3 py-2 fw-semibold">
+                        {{ idValue }}
+                    </span>
                 </div>
             </div>
-            <div class="table-responsive mt-1 table-borderless">
-                <table class="table table-hover align-middle no-wrap  table-sm mb-1">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="50%">Created By</th>
-                            <th class="bg-transparent text-light" scope="col" width="50%">Created Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <div class="text-truncate">{{item.createdBy || item.CreatedBy || ''}}</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate" *ngIf="item.createdOn">{{item.createdOn | formatDate : true}}</div>
-                                <div class="text-truncate" *ngIf="item.CreatedOn">{{item.CreatedOn | formatDate : true}}
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <table class="table table-hover align-middle no-wrap  table-sm my-1">
-                    <thead>
-                        <tr class="bg-info">
-                            <th class="bg-transparent text-light" scope="col" width="50%">Last Updated By</th>
-                            <th class="bg-transparent text-light" scope="col" width="50%">Last Updated Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if(item.updatedBy){
-                        <tr>
-                            <td>
-                                <div class="text-truncate">{{item.updatedBy || 'Not updated yet'}}</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">{{item.updatedBy ? (item.updatedOn | formatDate) : 'Not updated yet'}}</div>
-                            </td>
-                        </tr>
-                        } @else if(item.UpdatedBy){
-                        <tr>
-                            <td>
-                                <div class="text-truncate">{{item.UpdatedBy || 'Not updated yet'}}</div>
-                            </td>
-                            <td>
-                                <div class="text-truncate">{{item.UpdatedBy ? (item.UpdatedOn | formatDate : true) : 'Not updated yet'}}</div>
-                            </td>
-                        </tr>
-                        } @else {
-                            <tr>
-                                <td>
-                                    <div class="text-truncate">Not updated yet</div>
-                                </td>
-                                <td>
-                                    <div class="text-truncate">Not updated yet</div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
         </div>
-        <div class="modal-footer py-1">
-            <button type="button" class="btn btn-secondary btn-sm" (click)="closeModal()">Close</button>
+
+        <div class="table-responsive table-borderless">
+            <table class="table table-hover align-middle table-sm mb-2 border rounded overflow-hidden">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col" width="50%">Created By</th>
+                        <th class="bg-transparent text-light" scope="col" width="50%">Created Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="text-truncate fw-medium text-black">{{ item.createdBy || item.CreatedBy || '-' }}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate text-black" *ngIf="item.createdOn">{{ item.createdOn | formatDate : true }}</div>
+                            <div class="text-truncate text-black" *ngIf="item.CreatedOn">{{ item.CreatedOn | formatDate : true }}</div>
+                            <div class="text-truncate text-black" *ngIf="!item.createdOn && !item.CreatedOn">-</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table class="table table-hover align-middle table-sm mb-1 border rounded overflow-hidden">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light" scope="col" width="50%">Last Updated By</th>
+                        <th class="bg-transparent text-light" scope="col" width="50%">Last Updated Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if(item.updatedBy){
+                    <tr>
+                        <td>
+                            <div class="text-truncate fw-medium text-black">{{ item.updatedBy || 'Not updated yet' }}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate text-black">{{ item.updatedBy ? (item.updatedOn | formatDate) : 'Not updated yet' }}</div>
+                        </td>
+                    </tr>
+                    } @else if(item.UpdatedBy){
+                    <tr>
+                        <td>
+                            <div class="text-truncate fw-medium text-black">{{ item.UpdatedBy || 'Not updated yet' }}</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate text-black">{{ item.UpdatedBy ? (item.UpdatedOn | formatDate : true) : 'Not updated yet' }}</div>
+                        </td>
+                    </tr>
+                    } @else {
+                    <tr>
+                        <td>
+                            <div class="text-truncate text-black">Not updated yet</div>
+                        </td>
+                        <td>
+                            <div class="text-truncate text-black">Not updated yet</div>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
+
+    <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-secondary btn-sm px-3" (click)="closeModal()">Close</button>
+    </div>
+</div>

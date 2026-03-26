@@ -29,17 +29,11 @@ export class ShipmentSummaryReportComponent {
     private leadService: LeadService,
     private reportRegistryService: ReportRegistryService
   ) {
-    console.log('Outstanding Report Data:', this.data);
-    console.log('Report params:', this.data?.params);
-    console.log('FromMBLDt:', this.data?.params?.FromMBLDt);
-    console.log('ToMBLDt:', this.data?.params?.ToMBLDt);
   }
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingsService.getCurrentCompanyInfo();
     this.currentBranch = this.appSettingsService.getCurrentBranchInfo();
-    console.log('Current Company:', this.currentCompany);
-    console.log('Current Branch:', this.currentBranch);
     this.orientation = this.reportRegistryService.getReportConfig('shipment-summary').pdfOrientation;
   }
 
@@ -196,8 +190,8 @@ export class ShipmentSummaryReportComponent {
         additionalInfo: [
           { label: 'From Date', value: this.formatDate(this.params?.FromHblDt) },
           { label: 'To Date', value: this.formatDate(this.params?.ToHblDt) },
-          { label: 'Branch', value: this.currentBranch?.branchName || '' },
-          { label: 'Dept', value: this.departmentNamesList || '' },
+          { label: 'Branch', value: this.fullData?.branchInvolved || '' },
+          { label: 'Dept', value: this.fullData?.departmentNames || '' },
           { label: 'House Status', value: this.params?.HouseStatus }
         ]
       },

@@ -142,6 +142,33 @@
                 </table>
             </div>
         </div>
+        <div *ngIf="!fullData?.currentPeriod?.data || fullData.currentPeriod.data.length === 0" class="table-responsive">
+            <table class="table tablebordered table-sm my-0" style="font-size: 12px;">
+                <thead class="bg-info">
+                    <tr>
+                        <th class="bg-transparent text-light text-center">Month</th>
+                        <th class="bg-transparent text-light text-center">Total Shipments</th>
+                        <th class="bg-transparent text-light text-center">Revenue</th>
+                        <th class="bg-transparent text-light text-center">Cost</th>
+                        <th class="bg-transparent text-light text-center">Gross Profit</th>
+                        <th class="bg-transparent text-light text-center">GP %</th>
+                        <th class="bg-transparent text-light text-center">Total Weight (KGS)</th>
+                        <th class="bg-transparent text-light text-center">Total Volume (CBM)</th>
+                        <th class="bg-transparent text-light text-center">TEUs</th>
+                        <th class="bg-transparent text-light text-center">Active Customers</th>
+                        <th class="bg-transparent text-light text-center">Avg Revenue per Shipment</th>
+                        <th class="bg-transparent text-light text-center">Avg GP per Shipment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="12" class="text-center fw-bold py-1">
+                            No Record Found
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <div class="pt-2">
             Note :
             <ul>

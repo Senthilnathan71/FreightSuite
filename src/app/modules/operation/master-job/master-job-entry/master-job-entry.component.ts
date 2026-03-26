@@ -2822,16 +2822,21 @@ onETDDateSelect(): void {
   }
 
   onReset(): void {
-    this.masterJobForm.reset({
+    if (this.isEditMode) {
+      this.patchFormValues(this.masterJobData)
+    }
+    else{
+        this.masterJobForm.reset({
       BLReleaseType: 'Original',
       NoofOriginal: 3,
       WeightIn: 'Kg(s)',
       Haz: false,
-      FreightPPCC: 'Prepaid'
+      FreightPPCC: 'Prepaid',
+      JobStatus : 'Job Generated'
     });
     if (!this.isEditMode) {
     this.masterJobForm.get('DepartmentMasterSid')?.enable();
-  }
+    }
 
     this.connections.clear();
     this.masterJobContainers.clear();
@@ -2842,6 +2847,7 @@ onETDDateSelect(): void {
     this.headerVesselList = [];
     this.voyageList = [];
     this.lastVesselSearchParams = null;
+    }
   }
 
   onHazChange(): void {

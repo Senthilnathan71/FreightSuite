@@ -58,7 +58,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let item of fullData?.data;" style="white-space: nowrap;">
+                    <ng-container>
+                        <tr *ngFor="let item of fullData?.data;" style="white-space: nowrap;">
                         <td>{{ item.jobNumber || '' }}</td>
                         <td>{{ item.Mbl || ''}}</td>
                         <td>{{ item.dept || ''}}</td>
@@ -81,7 +82,7 @@
                         <td class="text-end">{{ item.Vol | number:'1.2-2' }}</td>
                          <td class="text-end">{{ item.space | number:'1.2-2' }}</td>
                     </tr>
-                    <tr>
+                    <tr *ngIf="fullData?.data && fullData.data.length > 0">
                         <td colspan="5" class="text-end fw-bold">Grand Total</td>
                         <td class="text-end fw-bold">{{grandtotalRevenueWithHouse() | number:'1.2-2'}}</td>
                         <td class="text-end fw-bold">{{grandtotalCostWithHouse() | number:'1.2-2'}}</td>
@@ -100,8 +101,9 @@
                         <td class="text-end fw-bold">{{grnadVol() | number:'1.2-2'}}</td>
                         <td class="text-end fw-bold">{{grandspace() | number:'1.2-2'}}</td>
                     </tr>
+                    </ng-container>         
                      <tr *ngIf="!fullData?.data || fullData.data.length === 0">
-                        <td colspan="18" class="text-center fw-bold py-1">
+                        <td colspan="21" class="text-center fw-bold py-1">
                             No Record Found
                         </td>
                     </tr>

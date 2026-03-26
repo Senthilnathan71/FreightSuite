@@ -2972,7 +2972,13 @@ export class VendorCreditNoteEntryComponent {
       this.vendorCreditNoteData?.VoucherHeaderSid;
   }
 
-  openFollowup() {}
+  openFollowup() {
+      const modalRef = this.modalService.open(FollowUpComponent, {
+          size: 'lg',
+          centered: true,
+          backdrop: 'static',
+        });
+  }
 
   // Helper methods for tax display logic
   shouldShowCGSTSGST(): boolean {

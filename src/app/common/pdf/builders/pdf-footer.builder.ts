@@ -21,7 +21,7 @@ const DEFAULT_FOOTER_OPTIONS: FooterOptions = {
   showPageNumbers: false,
   showDisclaimer: true,
   disclaimerText: 'This document is computer-generated and does not require a signature.',
-  pageMargins: [30, 10, 30, 15]
+  pageMargins: [30, 0, 30, 5]
 };
 
 /**
@@ -80,7 +80,7 @@ export function buildFooter(
 
   return {
     columns,
-    margin: [40, 60, 38, -6]
+    margin: opts.pageMargins
   };
 }
 

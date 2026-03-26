@@ -18,6 +18,14 @@ export interface GenericReportPdfData {
   orientation?: 'portrait' | 'landscape';
 }
 
+type HeaderPosition = 'left' | 'center' | 'right';
+
+interface GenericHeaderPrintSettings {
+  logoPosition: HeaderPosition;
+  companyPosition: HeaderPosition;
+  companyAlignment: 'left' | 'center' | 'right';
+}
+
 /** Compact table layout with reduced padding to fit more columns */
 const COMPACT_TABLE_LAYOUT = {
   hLineWidth: () => 0.5,
@@ -29,6 +37,76 @@ const COMPACT_TABLE_LAYOUT = {
   paddingTop: () => 2,
   paddingBottom: () => 2
 };
+
+function getGenericHeaderPrintSettings(): GenericHeaderPrintSettings {
+  try {
+    const raw = localStorage.getItem('companyPrintSettings');
+    if (!raw) {
+      return {
+        logoPosition: 'left',
+        companyPosition: 'center',
+        companyAlignment: 'center'
+      };
+    }
+
+    const parsed = JSON.parse(raw);
+    return {
+      logoPosition: parsed?.logoPosition || 'left',
+      companyPosition: parsed?.companyPosition || 'center',
+      companyAlignment: parsed?.companyAlignment || 'center'
+    };
+  } catch {
+    return {
+      logoPosition: 'left',
+      companyPosition: 'center',
+      companyAlignment: 'center'
+    };
+  }
+}
+
+function buildHeaderSlots(
+  logoNode: any,
+  companyNode: any,
+  printSettings: GenericHeaderPrintSettings,
+  _sideColumnWidth = 170
+): any[] {
+  const slots: Record<HeaderPosition, any> = {
+    left: { width: '*', stack: [], alignment: 'left' },
+    center: { width: '*', stack: [], alignment: 'center' },
+    right: { width: '*', stack: [], alignment: 'right' }
+  };
+
+  if (logoNode) {
+    slots[printSettings.logoPosition].stack.push({
+      ...logoNode,
+      alignment: printSettings.logoPosition
+    });
+  }
+
+  if (companyNode) {
+    slots[printSettings.companyPosition].stack.push({
+      ...companyNode,
+      alignment: printSettings.companyAlignment
+    });
+  }
+
+  return (['left', 'center', 'right'] as HeaderPosition[]).map(position => {
+    const slot = slots[position];
+    if (!slot.stack.length) {
+      return {
+        text: '',
+        width: slot.width,
+        alignment: slot.alignment
+      };
+    }
+
+    return {
+      width: slot.width,
+      stack: slot.stack,
+      alignment: slot.alignment
+    };
+  });
+}
 
 function buildMainTableLayout(
   rowMeta: Array<{ style: string; borderlessSection: boolean }>,
@@ -74,6 +152,7 @@ function buildMainTableLayout(
 
 export function generateGenericReportDocument(data: GenericReportPdfData): any {
   const { exportConfig, company, branch, userData, logo, orientation } = data;
+  const printSettings = getGenericHeaderPrintSettings();
   const isLandscape = orientation === 'landscape';
   const logoHeight = 80;
   const colCount = exportConfig.tableHeaders.length;
@@ -136,51 +215,70 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
     const companyStack: any[] = [];
     if (company?.companyName)
       companyStack.push({
-        text: company.companyName,
+        text: String(company.companyName).toUpperCase(),
         bold: true,
         fontSize: 12,
-        alignment: 'center',
+        alignment: printSettings.companyAlignment,
       });
     if (branch?.branchName)
       companyStack.push({
         text: branch.branchName,
         fontSize: 9,
-        alignment: 'center',
-        color: '#666666',
+        alignment: printSettings.companyAlignment,
+        color: '#000000',
       });
     const addressLine = branch?.addressLine1 || company?.addressLine1 || '';
     if (addressLine)
       companyStack.push({
         text: addressLine,
         fontSize: 8,
-        alignment: 'center',
-        color: '#666666',
+        alignment: printSettings.companyAlignment,
+        color: '#000000',
       });
 
-    const addressParts: string[] = [];
-    if (branch?.addressLine2) addressParts.push(branch.addressLine2);
-    if (branch?.cityMaster?.cityName)
-      addressParts.push(branch.cityMaster.cityName);
-    if (branch?.postalCode) addressParts.push(branch.postalCode);
-    if (branch?.phoneNumber) addressParts.push(branch.phoneNumber);
-    if (addressParts.length)
+    const portraitAddressLine2 = branch?.addressLine2 || '';
+    const portraitCityName = branch?.cityMaster?.cityName || branch?.cityName || '';
+    const portraitPostalCode =
+      branch?.postalCode || (branch as any)?.ZipCode || company?.postalCode || (company as any)?.ZipCode || '';
+    const portraitPhoneNumber =
+      branch?.phoneNumber || (branch as any)?.Phone || company?.phoneNumber || (company as any)?.Phone || '';
+
+    const portraitLineParts: any[] = [];
+    if (portraitAddressLine2) {
+      portraitLineParts.push({ text: portraitAddressLine2 });
+    }
+    if (portraitCityName) {
+      portraitLineParts.push({ text: `${portraitLineParts.length ? ', ' : ''}${portraitCityName}` });
+    }
+    if (portraitPostalCode) {
+      portraitLineParts.push({ text: `${portraitLineParts.length ? ', ' : ''}` });
+      portraitLineParts.push({ text: 'Postal Code : ', bold: true });
+      portraitLineParts.push({ text: portraitPostalCode });
+    }
+    if (portraitPhoneNumber) {
+      portraitLineParts.push({ text: `${portraitLineParts.length ? ', ' : ''}` });
+      portraitLineParts.push({ text: 'Ph.no : ', bold: true });
+      portraitLineParts.push({ text: portraitPhoneNumber });
+    }
+    if (portraitLineParts.length) {
       companyStack.push({
-        text: addressParts.join(', '),
+        text: portraitLineParts,
         fontSize: 8,
-        alignment: 'center',
-        color: '#666666',
+        alignment: printSettings.companyAlignment,
+        color: '#000000',
       });
+    }
 
-    // Logo on top in portrait
-    if (logo)
-      stack.push({
-        image: logo,
-        height: logoHeight,
-        alignment: 'center',
-        margin: [0, 0, 0, 4],
-      });
+    const slots = buildHeaderSlots(
+      logo ? { image: logo, height: logoHeight, alignment: printSettings.logoPosition } : null,
+      { stack: companyStack, alignment: printSettings.companyAlignment },
+      printSettings
+    );
 
-    stack.push(...companyStack);
+    stack.push({
+      columns: slots,
+      margin: [0, 0, 0, 4]
+    });
 
     // Report title
     if (exportConfig.reportHeader.reportTitle) {
@@ -226,10 +324,10 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
     // Company name
     if (company?.companyName) {
       companyStack.push({
-        text: company.companyName,
+        text: String(company.companyName).toUpperCase(),
         bold: true,
         fontSize: 12,
-        alignment: 'center'
+        alignment: printSettings.companyAlignment
       });
     }
 
@@ -238,8 +336,8 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
       companyStack.push({
         text: branch.branchName,
         fontSize: 9,
-        alignment: 'center',
-        color: '#666666'
+        alignment: printSettings.companyAlignment,
+        color: '#000000'
       });
     }
 
@@ -249,39 +347,58 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
       companyStack.push({
         text: addressLine,
         fontSize: 8,
-        alignment: 'center',
-        color: '#666666'
+        alignment: printSettings.companyAlignment,
+        color: '#000000'
       });
     }
 
     // Address line 2 (addressLine2, city, postalCode, phone)
-    const addressParts: string[] = [];
-    if (branch?.addressLine2) addressParts.push(branch.addressLine2.trim());
+    const landscapeAddressLine2 = branch?.addressLine2?.trim() || '';
     const cityName = branch?.cityMaster?.cityName || branch?.cityName || '';
-    if (cityName) addressParts.push(cityName);
-    if (branch?.postalCode) addressParts.push(branch.postalCode);
-    if (branch?.phoneNumber) addressParts.push(branch.phoneNumber);
-    if (addressParts.length) {
+    const landscapePostalCode =
+      branch?.postalCode || (branch as any)?.ZipCode || company?.postalCode || (company as any)?.ZipCode || '';
+    const landscapePhoneNumber =
+      branch?.phoneNumber || (branch as any)?.Phone || company?.phoneNumber || (company as any)?.Phone || '';
+
+    const landscapeLineParts: any[] = [];
+    if (landscapeAddressLine2) {
+      landscapeLineParts.push({ text: landscapeAddressLine2 });
+    }
+    if (cityName) {
+      landscapeLineParts.push({ text: `${landscapeLineParts.length ? ', ' : ''}${cityName}` });
+    }
+    if (landscapePostalCode) {
+      landscapeLineParts.push({ text: `${landscapeLineParts.length ? ', ' : ''}` });
+      landscapeLineParts.push({ text: 'Postal Code : ', bold: true });
+      landscapeLineParts.push({ text: landscapePostalCode });
+    }
+    if (landscapePhoneNumber) {
+      landscapeLineParts.push({ text: `${landscapeLineParts.length ? ', ' : ''}` });
+      landscapeLineParts.push({ text: 'Ph.no : ', bold: true });
+      landscapeLineParts.push({ text: landscapePhoneNumber });
+    }
+    if (landscapeLineParts.length) {
       companyStack.push({
-        text: addressParts.join(', '),
+        text: landscapeLineParts,
         fontSize: 8,
-        alignment: 'center',
-        color: '#666666'
+        alignment: printSettings.companyAlignment,
+        color: '#000000'
       });
     }
 
-    // Header with logo | company info | spacer
     stack.push({
-      columns: [
+      columns: buildHeaderSlots(
         logo
           ? {
-              width: sideColumnWidth,
-              stack: [{ image: logo, height: logoHeight, alignment: 'left' }]
+              image: logo,
+              height: logoHeight,
+              alignment: printSettings.logoPosition
             }
-          : { text: '', width: sideColumnWidth },
-        { stack: companyStack, width: '*' },
-        { text: '', width: sideColumnWidth } // spacer for balance
-      ],
+          : null,
+        { stack: companyStack, alignment: printSettings.companyAlignment },
+        printSettings,
+        sideColumnWidth
+      ),
       margin: [0, 2, 0, 2]
     });
 
@@ -452,7 +569,7 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
   return {
     pageSize: 'A4',
     pageOrientation: orientation || 'portrait',
-    pageMargins: [30, topMargin, 30, 60] as [number, number, number, number],
+    pageMargins: [30, topMargin, 30, 30] as [number, number, number, number],
     background: (_currentPage: number, pageSize: any) => ({
       canvas: [{
         type: 'rect',

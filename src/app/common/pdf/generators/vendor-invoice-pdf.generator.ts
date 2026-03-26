@@ -40,9 +40,9 @@
           configuredMargins[0] ?? 20,
           Math.max(configuredMargins[1] ?? dynamicTopMargin, dynamicTopMargin),
           configuredMargins[2] ?? 20,
-          configuredMargins[3] ?? 60
+          configuredMargins[3] ?? 30
         ]
-      : [20, dynamicTopMargin, 20, 60];
+      : [20, dynamicTopMargin, 20, 25];
 
     return {
       pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
@@ -86,11 +86,7 @@
         buildAmountInWords(data),
         ...(data.invoice?.remarks ? [buildRemarks(data.invoice.remarks)] : []),
         // ...buildBankDetailsSection(data),
-        ...(data.terms && data.terms.length > 0
-  ? [
-      buildTermsSectionWithBullets(data.terms)
-    ]
-  : []),
+        buildTermsSectionWithBullets(data.terms || []),
         ...buildAuthorisedSignatory(data)
       ],
       footer: createFooterFunction(data.userData,{showPageNumbers:true}),
@@ -145,6 +141,16 @@
     if (cityCountry) {
       companyInfoStack.push({
         text: cityCountry,
+        style: 'addressText',
+        alignment: 'right',
+        margin: [0, 0, 0, 6]
+      });
+    }
+
+    const postalCode = branch?.postalCode || (branch as any)?.ZipCode || company?.postalCode;
+    if (postalCode) {
+      companyInfoStack.push({
+        text: `Postal Code : ${postalCode}`,
         style: 'addressText',
         alignment: 'right',
         margin: [0, 0, 0, 6]
@@ -234,20 +240,20 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
 
   const leftStack: any[] = [
     {
-      text: 'Billed By',
+      text: 'BILLED BY',
       style: 'labelBold',
       margin: [0, 0, 0, 3]
     },
     {
       text: billedTo,
-      margin: [0, 0, 0, 3]
+      margin: [10, 0, 0, 3]
     }
   ];
 
   if (billingAddress) {
     leftStack.push({
       text: billingAddress,
-      margin: [0, 0, 0, 3]
+      margin: [10, 0, 0, 3]
     });
   }
 
@@ -361,6 +367,8 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
   const printData = (data as any).vendorInvoiceData || (data as any).invoicePrintData;
   const cargo = data.cargoDetails;
   const isSeaMode = data.isSeaMode !== false;
+  const PAGE_LEFT = -10;
+  const PAGE_RIGHT = 565;
 
   const RIGHT_LABEL_WIDTH = 88;
   const COLON_WIDTH = 5;
@@ -482,14 +490,32 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
   // Final Layout
   // -----------------------------
   return {
-    table: {
-      widths: ['50%', '50%'],
-      body: [[
-        { stack: leftStack, margin: [5, 2, 5, 2] },
-        { stack: rightStack, margin: [5, 2, 5, 2] }
-      ]]
-    },
-    layout: 'noBorders',
+    stack: [
+      {
+        canvas: [
+          {
+            type: 'line',
+            x1: PAGE_LEFT,
+            y1: 0,
+            x2: PAGE_RIGHT,
+            y2: 0,
+            lineWidth: 0.8
+          }
+        ],
+        margin: [0, 0, 0, 4]
+      },
+      {
+        table: {
+          widths: ['50%', '50%'],
+          body: [[
+            { stack: leftStack, margin: [5, 2, 5, 2] },
+            { stack: rightStack, margin: [5, 2, 5, 2] }
+          ]]
+        },
+        layout: 'noBorders',
+        margin: [0, 0, 0, 0]
+      }
+    ],
     margin: [0, 0, 0, 0]
   };
 }
@@ -988,22 +1014,20 @@ function buildRemarks(remarks: string): any {
    * Build terms section with bullet points
    */
   function buildTermsSectionWithBullets(terms: (PdfTermItem | string)[]): any {
-    if (!terms || terms.length === 0) {
-      return { text: '' };
-    }
-
-    const termsList = terms.map((term) => {
+    const termsList = (terms || []).map((term) => {
       const content = typeof term === 'string' ? term : term.content;
       return content;
-    });
+    }).filter((content) => !!content?.trim());
 
     return {
       stack: [
         { text: 'Terms and Conditions', style: 'sectionTitle', margin: [0, 10, 0, 5] },
-        {
-          ul: termsList,
-          margin: [0, 0, 0, 10]
-        }
+        ...(termsList.length > 0
+          ? [{
+              ul: termsList,
+              margin: [0, 0, 0, 10]
+            }]
+          : [])
       ],
       margin: [0, 0, 0, 15]
     };
@@ -1171,7 +1195,7 @@ function buildRemarks(remarks: string): any {
         addressLine1: branch?.addressLine1 || '',
         addressLine2: branch?.addressLine2 || '',
         cityName: branch?.cityMaster?.cityName || '',
-        postalCode: branch?.postalCode || '',
+        postalCode: branch?.postalCode || branch?.ZipCode || '',
         phoneNumber: branch?.phoneNumber || '',
         cityMaster: branch?.cityMaster
       },

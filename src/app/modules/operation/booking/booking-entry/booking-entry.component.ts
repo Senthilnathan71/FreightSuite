@@ -3772,6 +3772,9 @@ getVesselVoyBasedOnPorts() {
   isQuickFormExpanded = false;
 
   resetForm() {
+    if(this.isEditMode){
+      this.patchValues(this.bookingForm.getRawValue())
+    }else{
     const today = new Date();
     this.bookingForm.reset({
     status: 'Active',
@@ -3806,6 +3809,7 @@ getVesselVoyBasedOnPorts() {
     this.cargoForm.reset();
     this.otherForm.reset();
     this.croForm.reset();
+  }
   }
   get cr(): { [key: string]: AbstractControl<any, any> } {
   return this.croForm.controls || {}

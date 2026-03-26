@@ -156,7 +156,24 @@
         </div>
 
         <ng-template #noRowsTemplate>
-            <p class="text-center mt-3">No Record Found</p>
+            <table class="table table-sm tablebordered my-1" style="font-size: 12px;">
+                <thead class="bg-info">
+                    <tr>
+                        <th class="bg-transparent text-light text-center">Reference No</th>
+                        <th class="bg-transparent text-light text-center">Revenue</th>
+                        <th class="bg-transparent text-light text-center">Cost</th>
+                        <th class="bg-transparent text-light text-center">Profit</th>
+                        <th class="bg-transparent text-light text-center">Gross Wt</th>
+                        <th class="bg-transparent text-light text-center">Net Wt</th>
+                        <th class="bg-transparent text-light text-center">CBM</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="7" class="text-center fw-bold py-1">No Record Found</td>
+                    </tr>
+                </tbody>
+            </table>
         </ng-template>
 
     </div>
