@@ -305,6 +305,7 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   isEditMode: boolean;
   availableBillingParties: any[] = [];
   selectedVoucherType: 'Invoice' | 'Vendor Invoice' | null = null;
+  isProcessingVoucherType = false;
   currentVoucherTypeFilter: 'revenue' | 'cost' = 'revenue';
   @ViewChild('voucherTypeModal') voucherTypeModal!: TemplateRef<any>;
   @ViewChild('billingPartyModal') billingPartyModal!: TemplateRef<any>;
@@ -2326,33 +2327,40 @@ createRateFormGroup(data?: any): FormGroup {
   }
 
   async selectVoucherType(voucherType: 'Invoice' | 'Vendor Invoice') {
-    this.selectedVoucherType = voucherType;
-    const documentSide = this.selectedVoucherType === 'Invoice' ? 'SALES' : 'PURCHASE';
-    await this.taxCalculationService.init({
-      documentSide,
-      companyCountryCode: this.currentCompanyCountryCode,
-      companyCountryMasterSid: this.currentCompany?.CountryMasterSid,
-      branchStateName: this.currentBranch?.stateMaster?.stateName,
-      branchStateMasterSid: this.currentBranch?.StateMasterSid,
-    });
-    await this.taxCalculationService.fetchTaxMasters(documentSide);
-    this.voucherTypeModalRef?.close();
+    if (this.isProcessingVoucherType) return;
+    this.isProcessingVoucherType = true;
 
-    // Based on voucher type, determine charges to include
-    if (voucherType === 'Invoice') {
-      this.voucherForm.patchValue({
-        VoucherType: 'INV',
-        TaxType: 'Input'
-      })
-      this.processPendingCharges('revenue');
-    } else {
-      this.voucherForm.patchValue({
-        VoucherType: 'VIN',
-        TaxType: 'Output'
-      })
-      this.processPendingCharges('cost');
+    try {
+      this.selectedVoucherType = voucherType;
+      const documentSide = this.selectedVoucherType === 'Invoice' ? 'SALES' : 'PURCHASE';
+      await this.taxCalculationService.init({
+        documentSide,
+        companyCountryCode: this.currentCompanyCountryCode,
+        companyCountryMasterSid: this.currentCompany?.CountryMasterSid,
+        branchStateName: this.currentBranch?.stateMaster?.stateName,
+        branchStateMasterSid: this.currentBranch?.StateMasterSid,
+      });
+      await this.taxCalculationService.fetchTaxMasters(documentSide);
+      this.voucherTypeModalRef?.close();
+
+      // Based on voucher type, determine charges to include
+      if (voucherType === 'Invoice') {
+        this.voucherForm.patchValue({
+          VoucherType: 'INV',
+          TaxType: 'Input'
+        })
+        this.processPendingCharges('revenue');
+      } else {
+        this.voucherForm.patchValue({
+          VoucherType: 'VIN',
+          TaxType: 'Output'
+        })
+        this.processPendingCharges('cost');
+      }
+      this.checkVoucherPostingMechanism();
+    } finally {
+      this.isProcessingVoucherType = false;
     }
-    this.checkVoucherPostingMechanism();
   }
 
   checkVoucherPostingMechanism() {
@@ -2625,6 +2633,7 @@ createRateFormGroup(data?: any): FormGroup {
 
       this.billingPartyDetails = customer;
       this.billingPartyBranchDetails = customerBranch;
+      this.billingIsUnionTerritory = customerBranch?.stateMaster?.IsUnionTerritory === 'Y';
 
       let customerFromLookup : any;
       if (isRevenue) {
@@ -3240,6 +3249,14 @@ createRateFormGroup(data?: any): FormGroup {
     } else if (['ae', 'us'].includes(this.currentCompanyCountryCode)) {
       interOrIntra = 'Inter';
     }
+    // Union territory uses same TaxCategory as same-state (Inter)
+    if (this.billingIsUnionTerritory) {
+      interOrIntra = 'Inter';
+    }
+    // SEZ/Export with payment uses IGST regardless of state match
+    if (this.taxCalculationService.context?.appliedTaxMode === 'IGST' && this.taxCalculationService.isExportOrSEZ) {
+      interOrIntra = 'Intra';
+    }
 
     // Map VoucherDetail - only include selected charges
     const VoucherDetail = details
@@ -3327,7 +3344,11 @@ createRateFormGroup(data?: any): FormGroup {
         countryCode: this.currentCompanyCountryCode,
         TaxCategory: interOrIntra,
         EffectiveFrom: getDefaultTodayDate(),
-        TaxType: this.selectedVoucherType === 'Invoice' ? 'Input' : 'Output'
+        TaxType: this.selectedVoucherType === 'Invoice' ? 'Input' : 'Output',
+        IsUnionTerritory: this.billingIsUnionTerritory,
+        CustomerGstType: this.billingPartyBranchDetails?.CustomerGstType
+          || this.billingPartyDetails?.CustomerGstType
+          || ''
       }
     };
 
@@ -3431,9 +3452,14 @@ createRateFormGroup(data?: any): FormGroup {
    *  Determine Place Of Supply (billing party state name )
    */
   private determinePlaceOfSupply() : string {
-    console.log("INSIDE PLACE OF SUPPLY",this.billingPartyBranchDetails);
     if(!this.billingPartyBranchDetails){
       return '';
+    }
+
+    // Overseas party → Place of Supply is the seller's (company's) state
+    const customerCountry = this.getCustomerCountry()?.toLowerCase();
+    if (customerCountry && customerCountry !== this.currentCompanyCountryCode) {
+      return this.currentBranchStateName || '';
     }
 
     return this.billingPartyBranchDetails?.stateMaster?.stateName;
@@ -3509,6 +3535,10 @@ createRateFormGroup(data?: any): FormGroup {
 
     if (mode === 'CGST_SGST') {
       return 'CGST+SGST';
+    }
+
+    if (mode === 'CGST_UGST') {
+      return 'CGST+UGST';
     }
 
     if (mode === 'IGST') {

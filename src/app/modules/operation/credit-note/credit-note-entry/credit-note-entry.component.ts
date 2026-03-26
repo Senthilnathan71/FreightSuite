@@ -1192,7 +1192,12 @@ export class CreditNoteEntryComponent {
     const foundBranch = this.customerBranchList.find(
       (b) => Number(b.CustomerBranchSid) === Number(branchSid),
     );
-    const placeOfSupply = foundBranch?.stateMaster?.stateName || '';
+    // Overseas party → Place of Supply is the seller's (company's) state
+    const customerCountry = this.getCustomerCountry()?.toLowerCase();
+    const isOverseas = customerCountry && customerCountry !== this.currentCompanyCountryCode;
+    const placeOfSupply = isOverseas
+      ? (this.currentBranchStateName || '')
+      : (foundBranch?.stateMaster?.stateName || '');
     if (foundBranch) {
       this.creditNoteForm.patchValue({
         PartyAddress: foundBranch.Address,
@@ -2415,6 +2420,14 @@ export class CreditNoteEntryComponent {
       } else if (['ae', 'us'].includes(this.currentCompanyCountryCode)) {
         interOrIntra = 'Inter';
       }
+      // Union territory uses same TaxCategory as same-state (Inter)
+      if (this.taxCalculationService.context?.appliedTaxMode === 'CGST_UGST') {
+        interOrIntra = 'Inter';
+      }
+      // SEZ/Export with payment uses IGST regardless of state match
+      if (this.taxCalculationService.context?.appliedTaxMode === 'IGST' && this.taxCalculationService.isExportOrSEZ) {
+        interOrIntra = 'Intra';
+      }
 
       if (
         !voucherHeaderSid ||
@@ -2446,6 +2459,8 @@ export class CreditNoteEntryComponent {
             this.creditNoteForm.get('VoucherDate')?.getRawValue() ??
             new Date().toISOString(),
           TaxType: 'Output',
+          IsUnionTerritory: this.taxCalculationService.context?.appliedTaxMode === 'CGST_UGST',
+          CustomerGstType: this.taxCalculationService.context?.party?.customerGstType || '',
         },
       };
 
@@ -2722,6 +2737,14 @@ export class CreditNoteEntryComponent {
     } else if (['ae', 'us'].includes(this.currentCompanyCountryCode)) {
       interOrIntra = 'Inter';
     }
+    // Union territory uses same TaxCategory as same-state (Inter)
+    if (this.taxCalculationService.context?.appliedTaxMode === 'CGST_UGST') {
+      interOrIntra = 'Inter';
+    }
+    // SEZ/Export with payment uses IGST regardless of state match
+    if (this.taxCalculationService.context?.appliedTaxMode === 'IGST' && this.taxCalculationService.isExportOrSEZ) {
+      interOrIntra = 'Intra';
+    }
 
     payload.PostingInfo = {
       LocalCurrencyMasterSid: currentCurrency,
@@ -2734,6 +2757,7 @@ export class CreditNoteEntryComponent {
           this.creditNoteForm.get('VoucherDate')?.getRawValue() ??
           new Date().toISOString(),
         TaxType: 'Output',
+        IsUnionTerritory: this.taxCalculationService.context?.appliedTaxMode === 'CGST_UGST',
       },
     };
 
@@ -3346,6 +3370,7 @@ export class CreditNoteEntryComponent {
   getTaxPercentageForDisplay(detail: any): {
     cgstRate: number;
     sgstRate: number;
+    ugstRate: number;
     igstRate: number;
     vatRate: number;
   } {
@@ -3355,6 +3380,15 @@ export class CreditNoteEntryComponent {
       return {
         cgstRate: detail.TaxPercentage1 || 0,
         sgstRate: detail.TaxPercentage2 || 0,
+        ugstRate: 0,
+        igstRate: 0,
+        vatRate: 0,
+      };
+    } else if (mode === 'CGST_UGST') {
+      return {
+        cgstRate: detail.TaxPercentage1 || 0,
+        sgstRate: 0,
+        ugstRate: detail.TaxPercentage2 || 0,
         igstRate: 0,
         vatRate: 0,
       };
@@ -3362,6 +3396,7 @@ export class CreditNoteEntryComponent {
       return {
         cgstRate: 0,
         sgstRate: 0,
+        ugstRate: 0,
         igstRate: detail.TaxPercentage1 || 0,
         vatRate: 0,
       };
@@ -3369,6 +3404,7 @@ export class CreditNoteEntryComponent {
       return {
         cgstRate: 0,
         sgstRate: 0,
+        ugstRate: 0,
         igstRate: 0,
         vatRate: detail.TaxPercentage1 || 0,
       };
@@ -3377,6 +3413,7 @@ export class CreditNoteEntryComponent {
     return {
       cgstRate: detail.TaxPercentage1 || 0,
       sgstRate: detail.TaxPercentage2 || 0,
+      ugstRate: 0,
       igstRate: 0,
       vatRate: detail.TaxPercentage1 || 0,
     };
@@ -3385,6 +3422,7 @@ export class CreditNoteEntryComponent {
   getTaxAmountForDisplay(detail: any): {
     cgstAmt: number;
     sgstAmt: number;
+    ugstAmt: number;
     igstAmt: number;
     vatAmt: number;
   } {
@@ -3394,6 +3432,17 @@ export class CreditNoteEntryComponent {
       return {
         cgstAmt: detail.TaxAmount1 || 0,
         sgstAmt: detail.TaxAmount2 || 0,
+        ugstAmt: 0,
+        igstAmt: 0,
+        vatAmt: 0,
+      };
+    }
+
+    if (mode === 'CGST_UGST') {
+      return {
+        cgstAmt: detail.TaxAmount1 || 0,
+        sgstAmt: 0,
+        ugstAmt: detail.TaxAmount2 || 0,
         igstAmt: 0,
         vatAmt: 0,
       };
@@ -3403,6 +3452,7 @@ export class CreditNoteEntryComponent {
       return {
         cgstAmt: 0,
         sgstAmt: 0,
+        ugstAmt: 0,
         igstAmt: detail.TaxAmount1 || 0,
         vatAmt: 0,
       };
@@ -3412,6 +3462,7 @@ export class CreditNoteEntryComponent {
       return {
         cgstAmt: 0,
         sgstAmt: 0,
+        ugstAmt: 0,
         igstAmt: 0,
         vatAmt: detail.TaxAmount1 || 0,
       };
@@ -3420,6 +3471,7 @@ export class CreditNoteEntryComponent {
     return {
       cgstAmt: toNumber(detail.TaxAmount1) || 0,
       sgstAmt: toNumber(detail.TaxAmount2) || 0,
+      ugstAmt: 0,
       igstAmt: 0,
       vatAmt: toNumber(detail.TaxAmount1) || 0,
     };
@@ -3491,6 +3543,7 @@ export class CreditNoteEntryComponent {
     // Add tax columns based on what's visible
     if (config.showCGST) baseColumns += 2; // CGST % + CGST Amt
     if (config.showSGST) baseColumns += 2; // SGST % + SGST Amt
+    if (config.showUGST) baseColumns += 2; // UGST % + UGST Amt
     if (config.showIGST) baseColumns += 2; // IGST % + IGST Amt
     if (config.showVAT) baseColumns += 2; // VAT % + VAT Amt
 

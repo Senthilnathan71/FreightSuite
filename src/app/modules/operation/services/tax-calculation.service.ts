@@ -156,6 +156,14 @@ export class TaxCalculationService {
       || this._context?.party?.customerGstType === 'SEZ';
   }
 
+  get isSEZ(): boolean {
+    return this._context?.party?.customerGstType === 'SEZ';
+  }
+
+  get isOversea(): boolean {
+    return this._context?.tradeFlow === 'EXPORT' || this._context?.tradeFlow === 'IMPORT';
+  }
+
   // ── init() — Sets up company context (no API call) ────────────────────────
 
   async init(params: {
@@ -438,15 +446,20 @@ export class TaxCalculationService {
     if (company.taxRegime === 'VAT') {
       // Non-India: VAT for domestic, zero tax for overseas party
       documentClass = 'VAT';
-      appliedTaxMode = sameCountry ? 'VAT' : 'NONE';
+      if (ctx.invoiceType === 'NONGST' || ctx.invoiceType === 'BOS') {
+        // Zero Rated / Bill of Supply: zero tax amounts, columns still visible
+        appliedTaxMode = 'NONE';
+      } else {
+        appliedTaxMode = sameCountry ? 'VAT' : 'NONE';
+      }
       formGSTType = 'VAT';
     } else {
       // India GST
       let stateTaxMode: AppliedTaxMode;
-      if (taxCategory === 'Intra') {
-        stateTaxMode = 'IGST';
-      } else if (party.isUnionTerritory) {
+      if (party.isUnionTerritory) {
         stateTaxMode = 'CGST_UGST';
+      } else if (taxCategory === 'Intra') {
+        stateTaxMode = 'IGST';
       } else {
         stateTaxMode = 'CGST_SGST';
       }

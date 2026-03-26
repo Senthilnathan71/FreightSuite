@@ -462,7 +462,13 @@
                       style="cursor: not-allowed"
                     />
                   }
-                  <label class="input-label">GST Type</label>
+                  <label class="input-label">GST Type
+                    @if (taxCalculationService.isOversea) {
+                      <span class="ms-1" style="color: #dc2626; font-weight: 600; font-size: 11px;">[Oversea]</span>
+                    } @else if (taxCalculationService.isSEZ) {
+                      <span class="ms-1" style="color: #dc2626; font-weight: 600; font-size: 11px;">[SEZ]</span>
+                    }
+                  </label>
                 </div>
               </aside>
             }

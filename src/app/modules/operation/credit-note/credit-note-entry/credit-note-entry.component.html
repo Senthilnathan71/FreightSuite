@@ -455,7 +455,13 @@
                         style="cursor: not-allowed"
                       />
                     }
-                    <label class="input-label">GST Type</label>
+                    <label class="input-label">GST Type
+                      @if (taxCalculationService.isOversea) {
+                        <span class="ms-1" style="color: #dc2626; font-weight: 600; font-size: 11px;">[Oversea]</span>
+                      } @else if (taxCalculationService.isSEZ) {
+                        <span class="ms-1" style="color: #dc2626; font-weight: 600; font-size: 11px;">[SEZ]</span>
+                      }
+                    </label>
                   </div>
                 </aside>
               }
@@ -2033,6 +2039,29 @@
                   </th>
                 </ng-container>
 
+                <ng-container *ngIf="getTaxDisplayConfig().showUGST">
+                  <th
+                    style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align: center;
+                      font-weight: bolder;
+                    "
+                  >
+                    <strong>UGST %</strong>
+                  </th>
+                  <th
+                    style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align: center;
+                      font-weight: bolder;
+                    "
+                  >
+                    <strong>UGST Amt.</strong>
+                  </th>
+                </ng-container>
+
                 <ng-container *ngIf="getTaxDisplayConfig().showIGST">
                   <th
                     style="
@@ -2212,6 +2241,27 @@
                     "
                   >
                     {{ detail.sgstAmt }}
+                  </td>
+                </ng-container>
+
+                <ng-container *ngIf="getTaxDisplayConfig().showUGST">
+                  <td
+                    style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align: right;
+                    "
+                  >
+                    {{ detail.ugstRate }}
+                  </td>
+                  <td
+                    style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align: right;
+                    "
+                  >
+                    {{ detail.ugstAmt }}
                   </td>
                 </ng-container>
 
