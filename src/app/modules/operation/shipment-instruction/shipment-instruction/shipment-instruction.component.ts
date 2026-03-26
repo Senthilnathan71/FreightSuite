@@ -17,6 +17,7 @@ export class ShipmentInstructionComponent {
 
   isPublicMode = false;
   publicToken = '';
+  siConfirmed = false;
 
   constructor(
     private operationService: OperationService,
@@ -85,6 +86,7 @@ export class ShipmentInstructionComponent {
           this.shipmentData = this.initializeShipmentData(resp.data);
           this.showShipmentInstruction = true;
           this.isEditMode = false;
+          this.siConfirmed = resp.data.SIStatus === 'Confirmed';
         } else {
           this.showShipmentInstruction = false;
         }
@@ -453,6 +455,7 @@ export class ShipmentInstructionComponent {
           this.isSaving = false;
           this.isEditMode = false;
           if (resp.status) {
+            this.siConfirmed = true;
             this.appSettingService.showSuccess('Shipment instruction saved successfully.');
           } else {
             this.appSettingService.showError(resp.message || 'Failed to save shipment instruction.');

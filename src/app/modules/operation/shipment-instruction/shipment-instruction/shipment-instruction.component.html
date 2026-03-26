@@ -54,7 +54,7 @@
       </div>
 
       <!-- Public mode action buttons -->
-      <div class="col-md-8" *ngIf="isPublicMode">
+      <div class="col-md-8" *ngIf="isPublicMode && !siConfirmed">
         <div>
           <div
             class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
@@ -69,6 +69,15 @@
               <i class="fas fa-save me-1"></i>
               {{ isSaving ? 'Saving...' : 'Save' }}
             </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SI already confirmed notification -->
+      <div class="col-md-8" *ngIf="isPublicMode && siConfirmed">
+        <div class="d-flex justify-content-end">
+          <div class="alert alert-success mb-0 py-1 px-3">
+            <i class="fas fa-check-circle me-1"></i> Shipment Instruction already confirmed.
           </div>
         </div>
       </div>
