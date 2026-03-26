@@ -411,6 +411,7 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
         action: 'delete',
         tooltip: 'Delete Quotation',
         class:"text-danger",
+        disabledCondition: (row) => row?.QuoteHeaderSid !== null && row?.QuoteHeaderSid !== undefined,
         state: !this.mps.can('delete')
       }
     ],
@@ -436,6 +437,9 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
     // Handle view action - navigate to enquiry entry page
     this.viewEnquiry(event.row);
   } else if(event.action === 'delete'){
+    if (event.row?.QuoteHeaderSid !== null && event.row?.QuoteHeaderSid !== undefined) {
+      return;
+    }
     this.deleteEnquiry(event.row.EnquiryHeaderSid);
   } else if (event.action === 'file') {
     // Handle file action

@@ -1451,6 +1451,59 @@
                         </div>
                     </aside>
 
+                    <aside class="col-md-3 d-flex align-items-center">
+                        <div class="form-check form-check-inline p-0">
+                            <div class="form-check d-flex align-items-center">
+                                <input
+                                    type="checkbox"
+                                    id="exportToImportCheckbox"
+                                    class="focus-ring form-check-input sm p-0"
+                                    [checked]="masterJobForm.get('ExportToImport')?.value === 'Y'"
+                                    disabled>
+                                <label for="exportToImportCheckbox" class="form-check-label sm">Export To Import</label>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <div class="col-md-12 mt-2" *ngIf="canPullToImportBranch">
+                        <div class="pull-import-panel">
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-4">
+                                    <div class="custom-form-group custom-form-group-select"
+                                        [class.filled]="!!selectedTransferBranchSid">
+                                        <dofi-searchable-dropdown
+                                            [items]="availableTransferBranches"
+                                            [(ngModel)]="selectedTransferBranchSid"
+                                            [displayFields]="branchLookupConfig.displayFields"
+                                            [displayLabels]="branchLookupConfig.displayLabels"
+                                            [labelFields]="branchLookupConfig.labelFields"
+                                            bindValue="BranchMasterSid"
+                                            placeholder=""
+                                            [ngModelOptions]="{ standalone: true }"
+                                            [readonly]="isExportToImportCompleted"
+                                            [clearable]="false">
+                                        </dofi-searchable-dropdown>
+                                        <label class="input-label">Destination Branch</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end">
+                                    <button
+                                        class="btn btn-outline-info btn-sm w-100"
+                                        (click)="pullMasterJobToImportBranch()"
+                                        [disabled]="masterJobForm.dirty || isPullingToImportBranch || !selectedTransferBranchSid || isExportToImportCompleted">
+                                        <i class="fas fa-download me-1"></i>
+                                        <span>{{ isPullingToImportBranch ? 'Pulling...' : (isExportToImportCompleted ? 'Pull To Import Successful' : 'Pull To Import') }}</span>
+                                    </button>
+                                </div>
+                                <div class="col-md-5 d-flex align-items-center">
+                                    <small class="text-muted">
+                                        Pull this export master job into the selected import branch after you finish the export side.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
 
                 </div>
 

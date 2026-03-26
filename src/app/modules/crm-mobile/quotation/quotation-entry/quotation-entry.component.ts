@@ -176,8 +176,10 @@ export class QuotationEntryComponent implements OnInit {
   departments: any[] = [];
   ports: any[] = [];
   filteredPorts: any[] = [];
+  filteredPORPorts: any[][] = [];
   filteredPOLPorts: any[][] = [];
   filteredPODPorts: any[][] = [];
+  filteredFPODPorts: any[][] = [];
   chargeMaster: any[] = [];
   filteredCharges : any[] = [];
   currencyMaster: any[] = [];
@@ -933,8 +935,10 @@ private extractCargoData(enquiryCargo: any[]): any {
     const routeIndex = this.quoteRoutes.length;
     this.quoteRoutes.push(routeForm);
     
+    this.filteredPORPorts[routeIndex] = [];
     this.filteredPOLPorts[routeIndex] = [];
     this.filteredPODPorts[routeIndex] = [];
+    this.filteredFPODPorts[routeIndex] = [];
     this.onRouteChange(routeIndex);
     this.handleValidationOnDept(routeIndex,data?.segmentType || 'LCL');
     if (data === null || data === undefined || !data) {
@@ -974,6 +978,10 @@ private extractCargoData(enquiryCargo: any[]): any {
 
   removeRoute(routeIndex: number, QuoteRouteSid: number) {
     const route = this.quoteRoutes.at(routeIndex)?.value;
+    if (this.isRouteApproved(routeIndex)) {
+      this.appSettingService.showError("Approved route cannot be deleted.");
+      return;
+    }
      if (route?.bookingHeader) {
     this.appSettingService.showError("Booking already created. Cannot delete this route.");
     return;
@@ -996,8 +1004,10 @@ private extractCargoData(enquiryCargo: any[]): any {
   removeQuoteRoute(routeIndex: number) {
     this.quoteRoutes.removeAt(routeIndex);
     this.filteredUnits.splice(routeIndex, 1);
+    this.filteredPORPorts.splice(routeIndex, 1);
     this.filteredPOLPorts.splice(routeIndex, 1);
     this.filteredPODPorts.splice(routeIndex, 1);
+    this.filteredFPODPorts.splice(routeIndex, 1);
   }
 
 
@@ -1052,6 +1062,7 @@ private extractCargoData(enquiryCargo: any[]): any {
   const status = form.get('authorizerStatus')?.value;
   const approvedByControl = form.get('ApprovedBy');
   const remarksControl = form.get('authorizerRemarks');
+  const isApproved = status === 'Approved';
   
   // Clear existing validators first
   approvedByControl?.clearValidators();
@@ -1059,15 +1070,23 @@ private extractCargoData(enquiryCargo: any[]): any {
   
   if (status === 'Approved' || status === 'Rejected') {
     approvedByControl?.setValidators([Validators.required]);
-    approvedByControl?.enable();
+    if (isApproved) {
+      approvedByControl?.disable({ emitEvent: false });
+    } else {
+      approvedByControl?.enable({ emitEvent: false });
+    }
   } else {
-    approvedByControl?.disable();
+    approvedByControl?.disable({ emitEvent: false });
   }
   
   if (status === 'Counter') {
     remarksControl?.setValidators([Validators.required]);
   }
-  remarksControl?.enable();
+  if (isApproved) {
+    remarksControl?.disable({ emitEvent: false });
+  } else {
+    remarksControl?.enable({ emitEvent: false });
+  }
   
   approvedByControl?.updateValueAndValidity();
   remarksControl?.updateValueAndValidity();
@@ -1609,6 +1628,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       this.customerlist = customerlist|| [];
       this.departments = departments || [];
       this.ports = (ports || []).map(p => ({...p,Country : p.countryMaster?.countryName}));
+      this.quoteRoutes.controls.forEach((_, routeIndex: number) => this.refreshRoutePortFilters(routeIndex));
       this.chargeMaster = masters.charges || [];
       this.currencyMaster = masters.currencies || [];
       this.chargeUnitMaster = chargeUnits.data || [];
@@ -2246,6 +2266,7 @@ isRateLockDisabled(): boolean {
     if (!dept || dept === undefined) {
       routeForm.get('segmentType').setValue('LCL');
       this.handleValidationOnDept(routeIndex, 'LCL');
+      this.refreshRoutePortFilters(routeIndex);
       return;
     }
     const deptType = dept?.departmentType;
@@ -2253,7 +2274,7 @@ isRateLockDisabled(): boolean {
     const selectedFCLLCL = deptType === "Sea" ? dept?.FCLLCL : deptType.toUpperCase()
     routeForm.get('segmentType').setValue(selectedFCLLCL);
     this.handleValidationOnDept(routeIndex, selectedFCLLCL);
-    this.onRouteChange(routeIndex);
+    this.refreshRoutePortFilters(routeIndex);
     this.quoteRoutes.controls.forEach((route:FormGroup)=>{
       this.handleSegmentChangeOnAllProducts(routeIndex);
     })
@@ -2279,12 +2300,17 @@ isRateLockDisabled(): boolean {
   
   if (!event || event === undefined) {
     routeForm.get('FPODSid')?.setValue(null);
+    this.refreshRoutePortFilters(routeIndex);
     return;
   }
   
   // Auto-set FPOD with the same value as POD
-  const selectedPortId = event.PortMasterSid;
-  routeForm.get('FPODSid')?.setValue(selectedPortId);
+  const selectedPortId = typeof event === 'object' ? event.PortMasterSid : event;
+  this.refreshRoutePortFilters(routeIndex);
+  const allowedFPOD = this.filteredFPODPorts[routeIndex] || [];
+  routeForm.get('FPODSid')?.setValue(
+    allowedFPOD.some(port => port.PortMasterSid === selectedPortId) ? selectedPortId : null
+  );
 }
 
   onChargeChange(charge: any, routeIndex: number, carrierIndex: number, chargeIndex: number) {
@@ -2354,30 +2380,244 @@ isRateLockDisabled(): boolean {
   // }
 
   onRouteChange(routeIndex: number): void {
-    const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
-    const polSid = routeForm.get('POLSid')?.value;
-    const podSid = routeForm.get('PODSid')?.value;
-    const segment = routeForm.get('segmentType')?.value;
+    this.refreshRoutePortFilters(routeIndex);
+  }
 
-    this.filteredPorts = this.getFilteredPortsBySegment(segment);
-    this.filteredPOLPorts[routeIndex] = this.filteredPorts.filter(port => port.PortMasterSid !== podSid);
-    this.filteredPODPorts[routeIndex] = this.filteredPorts.filter(port => port.PortMasterSid !== polSid);
-    if (polSid && podSid && polSid === podSid) {
-      routeForm.get('PODSid')?.setErrors({ samePort: true });
-      routeForm.get('POLSid')?.setErrors({ samePort: true });
-    } else {
-      routeForm.get('PODSid')?.setErrors(null);
-      routeForm.get('POLSid')?.setErrors(null);
+  private refreshRoutePortFilters(routeIndex: number): void {
+    const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+
+    if (!routeForm) {
+      return;
     }
+
+    const filteredLists = this.buildRoutePortFilterLists(routeIndex);
+    this.applyRoutePortFilterLists(routeIndex, filteredLists);
+    this.syncRouteValidation(routeForm);
+
+    if (this.clearInvalidRoutePortSelections(routeForm, filteredLists)) {
+      this.applyRoutePortFilterLists(routeIndex, this.buildRoutePortFilterLists(routeIndex));
+      this.syncRouteValidation(routeForm);
+    }
+  }
+
+  private buildRoutePortFilterLists(routeIndex: number) {
+    const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+    if (!routeForm) {
+      return {
+        filteredPorts: [],
+        filteredPORPorts: [],
+        filteredPOLPorts: [],
+        filteredPODPorts: [],
+        filteredFPODPorts: []
+      };
+    }
+
+    const segment = routeForm.get('segmentType')?.value;
+    const basePorts = this.getFilteredPortsBySegment(segment);
+    const department = this.getRouteDepartment(routeForm);
+    const shipmentDirection = this.getShipmentDirectionForRoute(department);
+    const foreignPorts = basePorts.filter(port => this.isForeignCountryPort(port));
+    const companyCountryPorts = basePorts.filter(port => this.isCompanyCountryPort(port));
+
+    let porPorts = [...basePorts];
+    let polPorts = [...basePorts];
+    let podPorts = [...basePorts];
+    let fpodPorts = [...basePorts];
+
+    if (shipmentDirection === 'EXPORT') {
+      porPorts = [...companyCountryPorts];
+      polPorts = [...companyCountryPorts];
+      podPorts = [...foreignPorts];
+      fpodPorts = this.getPortsByReferenceCountry(routeForm.get('PODSid')?.value, foreignPorts);
+    } else if (shipmentDirection === 'IMPORT') {
+      porPorts = this.getPortsByReferenceCountry(routeForm.get('POLSid')?.value, foreignPorts);
+      polPorts = [...foreignPorts];
+      podPorts = [...companyCountryPorts];
+      fpodPorts = this.getPortsByReferenceCountry(routeForm.get('PODSid')?.value, companyCountryPorts);
+    }
+
+    const selectedPOL = routeForm.get('POLSid')?.value;
+    const selectedPOD = routeForm.get('PODSid')?.value;
+
+    return {
+      filteredPorts: basePorts,
+      filteredPORPorts: porPorts,
+      filteredPOLPorts: polPorts.filter(port => port.PortMasterSid !== selectedPOD),
+      filteredPODPorts: podPorts.filter(port => port.PortMasterSid !== selectedPOL),
+      filteredFPODPorts: fpodPorts
+    };
   }
 
   getFilteredPortsBySegment(segment: string): any[] {
     if (segment === 'AIR') {
-      return this.ports.filter(port => port.PortType === 'Air');
-    } else if (segment === 'FCL' || segment === 'LCL') {
-      return this.ports.filter(port => port.PortType === 'Sea');
+      return this.ports.filter(port => this.normalizePortText(port?.PortType) === 'AIR');
+    } else if (segment === 'FCL' || segment === 'LCL' || segment === 'SEA') {
+      return this.ports.filter(port => this.normalizePortText(port?.PortType) === 'SEA');
+    } else if (segment === 'ROAD') {
+      return this.ports.filter(port => {
+        const portType = this.normalizePortText(port?.PortType);
+        return portType === 'ROAD' || portType.includes('ROAD') || portType.includes('LAND') || portType.includes('LOCATION');
+      });
     }
     return [];
+  }
+
+  private applyRoutePortFilterLists(routeIndex: number, filteredLists: any): void {
+    this.filteredPorts = filteredLists.filteredPorts;
+    this.filteredPORPorts[routeIndex] = filteredLists.filteredPORPorts;
+    this.filteredPOLPorts[routeIndex] = filteredLists.filteredPOLPorts;
+    this.filteredPODPorts[routeIndex] = filteredLists.filteredPODPorts;
+    this.filteredFPODPorts[routeIndex] = filteredLists.filteredFPODPorts;
+  }
+
+  private clearInvalidRoutePortSelections(routeForm: FormGroup, filteredLists: any): boolean {
+    let hasChanges = false;
+
+    hasChanges = this.clearRoutePortControlIfInvalid(routeForm, 'PORSid', filteredLists.filteredPORPorts) || hasChanges;
+    hasChanges = this.clearRoutePortControlIfInvalid(routeForm, 'POLSid', filteredLists.filteredPOLPorts) || hasChanges;
+    hasChanges = this.clearRoutePortControlIfInvalid(routeForm, 'PODSid', filteredLists.filteredPODPorts) || hasChanges;
+    hasChanges = this.clearRoutePortControlIfInvalid(routeForm, 'FPODSid', filteredLists.filteredFPODPorts) || hasChanges;
+
+    return hasChanges;
+  }
+
+  private clearRoutePortControlIfInvalid(
+    routeForm: FormGroup,
+    controlName: 'PORSid' | 'POLSid' | 'PODSid' | 'FPODSid',
+    allowedPorts: any[]
+  ): boolean {
+    const control = routeForm.get(controlName);
+    const selectedValue = control?.value;
+
+    if (!selectedValue) {
+      return false;
+    }
+
+    const isValid = allowedPorts.some(port => port.PortMasterSid === selectedValue);
+    if (!isValid) {
+      control?.setValue(null, { emitEvent: false });
+      return true;
+    }
+
+    return false;
+  }
+
+  private syncRouteValidation(routeForm: FormGroup): void {
+    const selectedPOL = routeForm.get('POLSid')?.value;
+    const selectedPOD = routeForm.get('PODSid')?.value;
+
+    if (selectedPOL && selectedPOD && selectedPOL === selectedPOD) {
+      this.setControlError(routeForm.get('POLSid'), 'samePort', true);
+      this.setControlError(routeForm.get('PODSid'), 'samePort', true);
+    } else {
+      this.clearControlError(routeForm.get('POLSid'), 'samePort');
+      this.clearControlError(routeForm.get('PODSid'), 'samePort');
+    }
+  }
+
+  private getRouteDepartment(routeForm: FormGroup): any {
+    const departmentSid = routeForm.get('DepartmentMasterSid')?.value;
+    if (!departmentSid) {
+      return null;
+    }
+
+    return this.departments.find(dept => dept.DepartmentMasterSid === departmentSid) || null;
+  }
+
+  private getShipmentDirectionForRoute(department?: any): 'EXPORT' | 'IMPORT' | '' {
+    const departmentDirection = this.normalizePortText(department?.ExportImport);
+    if (departmentDirection === 'EXPORT' || departmentDirection === 'IMPORT') {
+      return departmentDirection as 'EXPORT' | 'IMPORT';
+    }
+
+    return '';
+  }
+
+  private getPortsByReferenceCountry(referencePortSid: number | null | undefined, fallbackPorts: any[]): any[] {
+    const referencePort = this.getPortBySid(referencePortSid);
+    if (!referencePort) {
+      return [...fallbackPorts];
+    }
+
+    const referenceCountryId = this.toNumericValue(referencePort?.CountryMasterSid);
+    if (referenceCountryId) {
+      return fallbackPorts.filter(port => this.toNumericValue(port?.CountryMasterSid) === referenceCountryId);
+    }
+
+    const referenceCountryName = this.normalizePortText(referencePort?.Country || referencePort?.countryMaster?.countryName);
+    if (!referenceCountryName) {
+      return [...fallbackPorts];
+    }
+
+    return fallbackPorts.filter(port => {
+      const portCountryName = this.normalizePortText(port?.Country || port?.countryMaster?.countryName);
+      return portCountryName === referenceCountryName;
+    });
+  }
+
+  private isCompanyCountryPort(port: any): boolean {
+    const companyCountryId = this.toNumericValue(this.currentCompany?.CountryMasterSid);
+    const portCountryId = this.toNumericValue(port?.CountryMasterSid);
+
+    if (companyCountryId && portCountryId) {
+      return companyCountryId === portCountryId;
+    }
+
+    const companyCountryName = this.normalizePortText(this.currentCompany?.CountryName);
+    const portCountryName = this.normalizePortText(port?.Country || port?.countryMaster?.countryName);
+
+    return !!companyCountryName && !!portCountryName && companyCountryName === portCountryName;
+  }
+
+  private isForeignCountryPort(port: any): boolean {
+    const companyCountryId = this.toNumericValue(this.currentCompany?.CountryMasterSid);
+    const portCountryId = this.toNumericValue(port?.CountryMasterSid);
+
+    if (companyCountryId && portCountryId) {
+      return companyCountryId !== portCountryId;
+    }
+
+    const companyCountryName = this.normalizePortText(this.currentCompany?.CountryName);
+    const portCountryName = this.normalizePortText(port?.Country || port?.countryMaster?.countryName);
+
+    return !!companyCountryName && !!portCountryName && companyCountryName !== portCountryName;
+  }
+
+  private getPortBySid(portSid: number | null | undefined): any | null {
+    if (!portSid) {
+      return null;
+    }
+
+    return this.ports.find(port => port.PortMasterSid === portSid) || null;
+  }
+
+  private normalizePortText(value: any): string {
+    return String(value ?? '').trim().toUpperCase();
+  }
+
+  private toNumericValue(value: any): number | null {
+    const parsedValue = Number(value);
+    return Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : null;
+  }
+
+  private setControlError(control: AbstractControl | null, errorKey: string, value: any): void {
+    if (!control) {
+      return;
+    }
+
+    control.setErrors({
+      ...(control.errors || {}),
+      [errorKey]: value
+    });
+  }
+
+  private clearControlError(control: AbstractControl | null, errorKey: string): void {
+    if (!control?.errors?.[errorKey]) {
+      return;
+    }
+
+    const { [errorKey]: _, ...remainingErrors } = control.errors || {};
+    control.setErrors(Object.keys(remainingErrors).length ? remainingErrors : null);
   }
 
   getCustomerBranches(CustomerMasterSid: number) {
@@ -3163,8 +3403,10 @@ ${this.userData.userName}`;
   // Clear any cached or derived UI state related to routes/charges
   this.quoteRoutes.clear();
   this.filteredUnits = [];
+  this.filteredPORPorts = [];
   this.filteredPOLPorts = [];
   this.filteredPODPorts = [];
+  this.filteredFPODPorts = [];
   this.tariffDetails = [];
   this.enquiryNumber = '';
 
@@ -3500,7 +3742,7 @@ onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status:
 
   // Enable the status control before setting value
   const statusCtrl = currentCarrier.get('authorizerStatus');
-  if (statusCtrl) {
+  if (statusCtrl && !this.isCarrierApproved(routeIndex, carrierIndex)) {
     statusCtrl.enable({ emitEvent: false });
     statusCtrl.setValue(status?.value, { emitEvent: false });
   }
@@ -3522,6 +3764,16 @@ private hasBookingForRoute(routeIndex: number, routeData?: any): boolean {
   return !!formBookingSid || !!formBookingNo || !!dataBookingSid || !!dataBookingNo;
 }
 
+private isCarrierApproved(routeIndex: number, carrierIndex: number, routeData?: any): boolean {
+  const dataCarrier = routeData?.quoteCarrier?.[carrierIndex];
+  if (dataCarrier?.ApprovalStatus === 'Approved') {
+    return true;
+  }
+
+  const carrierForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+  return carrierForm?.get('authorizerStatus')?.value === 'Approved';
+}
+
 private routeHasApprovedCarrier(routeIndex: number, routeData?: any): boolean {
   if (routeData?.quoteCarrier?.length) {
     return routeData.quoteCarrier.some(carrier => carrier?.ApprovalStatus === "Approved");
@@ -3536,15 +3788,27 @@ isBookingLockedForRoute(routeIndex: number): boolean {
   return this.hasBookingForRoute(routeIndex) && this.routeHasApprovedCarrier(routeIndex);
 }
 
+isCarrierApprovalLocked(routeIndex: number, carrierIndex: number): boolean {
+  return this.isCarrierApproved(routeIndex, carrierIndex) || this.isBookingLockedForRoute(routeIndex);
+}
+
 private applyBookingLockForRoute(routeIndex: number, routeData?: any): void {
-  const shouldLock = this.hasBookingForRoute(routeIndex, routeData) && this.routeHasApprovedCarrier(routeIndex, routeData);
   const carrierArr = this.quoteCarriers(routeIndex);
 
   carrierArr.controls.forEach((_, carrierIndex: number) => {
+    const shouldLock =
+      this.isCarrierApproved(routeIndex, carrierIndex, routeData) ||
+      (this.hasBookingForRoute(routeIndex, routeData) && this.routeHasApprovedCarrier(routeIndex, routeData));
+
     this.setCarrierControlsDisabled(routeIndex, carrierIndex, shouldLock);
   });
 
-  if (!shouldLock) {
+  const routeFullyUnlocked = carrierArr.controls.every((_, carrierIndex: number) =>
+    !this.isCarrierApproved(routeIndex, carrierIndex, routeData) &&
+    !(this.hasBookingForRoute(routeIndex, routeData) && this.routeHasApprovedCarrier(routeIndex, routeData))
+  );
+
+  if (routeFullyUnlocked) {
     carrierArr.controls.forEach((carrierCtrl: AbstractControl) => {
       this.updateCarrierValidationBasedOnStatus(carrierCtrl as FormGroup);
     });
