@@ -830,8 +830,11 @@
 
     <div class="row g-3">
       <div class="col-md-6">
-        <div class="voucher-type-card" (click)="selectVoucherType('Invoice')">
-          <div class="card h-100 border-2 border-primary voucher-card-hover cursor-pointer">
+        <div class="voucher-type-card" (click)="!isProcessingVoucherType && selectVoucherType('Invoice')">
+          <div class="card h-100 border-2 border-primary voucher-card-hover"
+            [class.cursor-pointer]="!isProcessingVoucherType"
+            [class.opacity-50]="isProcessingVoucherType"
+            [style.pointer-events]="isProcessingVoucherType ? 'none' : 'auto'">
             <div class="card-body text-center py-1">
               <div class="voucher-icon mb-1">
                 <i class="fas fa-file-invoice fa-3x text-primary"></i>
@@ -849,8 +852,11 @@
       </div>
 
       <div class="col-md-6">
-        <div class="voucher-type-card" (click)="selectVoucherType('Vendor Invoice')">
-          <div class="card h-100 border-2 border-warning voucher-card-hover cursor-pointer">
+        <div class="voucher-type-card" (click)="!isProcessingVoucherType && selectVoucherType('Vendor Invoice')">
+          <div class="card h-100 border-2 border-warning voucher-card-hover"
+            [class.cursor-pointer]="!isProcessingVoucherType"
+            [class.opacity-50]="isProcessingVoucherType"
+            [style.pointer-events]="isProcessingVoucherType ? 'none' : 'auto'">
             <div class="card-body text-center py-1">
               <div class="voucher-icon mb-1">
                 <i class="fas fa-file-import fa-3x text-warning"></i>

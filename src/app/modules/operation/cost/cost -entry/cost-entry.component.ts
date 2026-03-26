@@ -2349,13 +2349,13 @@ createRateFormGroup(data?: any): FormGroup {
           VoucherType: 'INV',
           TaxType: 'Input'
         })
-        this.processPendingCharges('revenue');
+        await this.processPendingCharges('revenue');
       } else {
         this.voucherForm.patchValue({
           VoucherType: 'VIN',
           TaxType: 'Output'
         })
-        this.processPendingCharges('cost');
+        await this.processPendingCharges('cost');
       }
       this.checkVoucherPostingMechanism();
     } finally {
@@ -2555,12 +2555,20 @@ createRateFormGroup(data?: any): FormGroup {
   }
 
   private proceedToInvoiceGeneration(billingPartySid: number, pendingCharges: BookingRateDetails[]) {
-    // Show charge selection modal
-    pendingCharges.forEach((charge,index) =>{
+    this.resetVoucherChargeSelectionState();
+    pendingCharges.forEach((charge, index) => {
       this.chargeHSSACMapping[index] = charge?.ChargeMaster?.chargeTaxMaster?.map(tax => tax.hssacMaster) || [];
-    })
-    this.availableCharges = pendingCharges;
+    });
+    this.availableCharges = [...pendingCharges];
     this.showChargeSelectionModal(billingPartySid, pendingCharges);
+  }
+
+  private resetVoucherChargeSelectionState() {
+    this.details.clear();
+    this.availableCharges = [];
+    this.selectedCharges.clear();
+    this.chargeHSSACMapping = [];
+    this.currentBillingPartySid = null;
   }
 
   private async showChargeSelectionModal(
@@ -2805,7 +2813,6 @@ createRateFormGroup(data?: any): FormGroup {
   private async setUpInvoiceDetail(allCharges: any[]) {
     console.log(allCharges);
 
-    let stopGenerating = false;
     let chargeIndex = 0;
 
     // Determiners
@@ -2824,6 +2831,8 @@ createRateFormGroup(data?: any): FormGroup {
       this.isCurrentScreen('Master Air Waybill');
     
     const localCurrency = this.currentCompany?.CurrencyMasterSid;
+
+    this.details.clear();
 
     for(const charge of allCharges) {
       const NumberOfUnit = isRevenue ? charge.RevenueNumberOfUnit : charge.CostNumberOfUnit;

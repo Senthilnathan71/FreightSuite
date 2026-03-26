@@ -1520,10 +1520,13 @@ export class VendorInvoiceEntryComponent implements OnInit {
       this.operationService.getChargeTaxForChargeId(ChargeMasterSid).subscribe({
         next: (res: any) => {
           if (res.status) {
-            this.hssacList[index] = res.data;
+            const sanitizedHssacList = (res.data || []).filter(
+              (item: any) => item && item.HSSACMasterSid
+            );
+            this.hssacList[index] = sanitizedHssacList;
             if (patch) {
               this.details.at(index).patchValue({
-                HSSACMasterSid: res.data[0]?.HSSACMasterSid || null,
+                HSSACMasterSid: sanitizedHssacList[0]?.HSSACMasterSid || null,
               });
             }
             this.recalcRow(index);
