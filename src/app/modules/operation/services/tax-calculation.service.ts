@@ -176,7 +176,7 @@ export class TaxCalculationService {
     const countryCode = (params.companyCountryCode || '').trim().toLowerCase();
     const taxRegime: TaxRegime = countryCode === 'in' ? 'GST' : 'VAT';
     const inputOrOutput: InputOrOutput =
-      params.documentSide === 'SALES' ? 'Input' : 'Output';
+      params.documentSide === 'SALES' ? 'Output' : 'Input';
 
     this._context = {
       company: {
@@ -204,7 +204,7 @@ export class TaxCalculationService {
     if (!this._context) return;
 
     const inputOrOutput: InputOrOutput =
-      documentSide === 'SALES' ? 'Input' : 'Output';
+      documentSide === 'SALES' ? 'Output' : 'Input';
     this._context.documentSide = documentSide;
     this._context.inputOrOutput = inputOrOutput;
 
@@ -271,7 +271,25 @@ export class TaxCalculationService {
     if (this._context.appliedTaxMode === 'NONE') return zero;
     if (!input.taxGroupSid) return zero;
 
+    const isZeroRated = this._context.invoiceType === 'NONGST';
     const taxCategoryForMaster = this.getTaxCategoryForAppliedMode(this._context.appliedTaxMode);
+    const mode = this._context.appliedTaxMode;
+
+    if (isZeroRated) {
+      if (mode === 'VAT') {
+        return { TaxPercentage1: 0, TaxAmount1: 0, TaxPercentage2: 0, TaxAmount2: 0, TotalTaxAmount: 0, TaxLabel: 'VAT 0%' };
+      }
+      if (mode === 'CGST_SGST') {
+        return { TaxPercentage1: 0, TaxAmount1: 0, TaxPercentage2: 0, TaxAmount2: 0, TotalTaxAmount: 0, TaxLabel: 'CGST 0% + SGST 0%' };
+      }
+      if (mode === 'CGST_UGST') {
+        return { TaxPercentage1: 0, TaxAmount1: 0, TaxPercentage2: 0, TaxAmount2: 0, TotalTaxAmount: 0, TaxLabel: 'CGST 0% + UGST 0%' };
+      }
+      if (mode === 'IGST') {
+        return { TaxPercentage1: 0, TaxAmount1: 0, TaxPercentage2: 0, TaxAmount2: 0, TotalTaxAmount: 0, TaxLabel: 'IGST 0%' };
+      }
+      return zero;
+    }
 
     const matches = this.workingTaxMasters.filter(
       (t: any) =>
@@ -282,7 +300,6 @@ export class TaxCalculationService {
     if (!matches.length) return zero;
 
     const taxable = input.taxableAmount || 0;
-    const mode = this._context.appliedTaxMode;
 
     if (mode === 'VAT') {
       const vatRecord = matches.find((t: any) => t.TaxCode === 'VAT');
@@ -446,9 +463,11 @@ export class TaxCalculationService {
     if (company.taxRegime === 'VAT') {
       // Non-India: VAT for domestic, zero tax for overseas party
       documentClass = 'VAT';
-      if (ctx.invoiceType === 'NONGST' || ctx.invoiceType === 'BOS') {
-        // Zero Rated / Bill of Supply: zero tax amounts, columns still visible
+      if (ctx.invoiceType === 'BOS') {
         appliedTaxMode = 'NONE';
+      } else if (ctx.invoiceType === 'NONGST') {
+        // Zero Rated: show VAT columns with 0% amounts for domestic
+        appliedTaxMode = sameCountry ? 'VAT' : 'NONE';
       } else {
         appliedTaxMode = sameCountry ? 'VAT' : 'NONE';
       }
@@ -458,16 +477,20 @@ export class TaxCalculationService {
       let stateTaxMode: AppliedTaxMode;
       if (party.isUnionTerritory) {
         stateTaxMode = 'CGST_UGST';
-      } else if (taxCategory === 'Intra') {
+      } else if (taxCategory === 'Inter') {
         stateTaxMode = 'IGST';
       } else {
         stateTaxMode = 'CGST_SGST';
       }
 
-      if (ctx.invoiceType === 'NONGST' || ctx.invoiceType === 'BOS') {
-        // NONGST → 0 tax
+      if (ctx.invoiceType === 'BOS') {
         documentClass = this.hasValidGST(party) ? 'B2B' : 'B2C';
         appliedTaxMode = 'NONE';
+        formGSTType = '';
+      } else if (ctx.invoiceType === 'NONGST') {
+        // Zero Rated: use real tax mode so columns show with 0% amounts
+        documentClass = this.hasValidGST(party) ? 'B2B' : 'B2C';
+        appliedTaxMode = stateTaxMode;
         formGSTType = '';
       } else if (tradeFlow === 'EXPORT' || tradeFlow === 'IMPORT') {
         // Export/Import
@@ -537,9 +560,8 @@ export class TaxCalculationService {
   }
 
   /**
-   * Determine tax category: same state → 'Inter', different state → 'Intra'.
+   * Determine tax category: same state → 'Intra', different state → 'Inter'.
    * International → 'Inter'.
-   * NOTE: 'Inter' = same state is INTENTIONAL — matches existing DB convention.
    */
   determineTaxCategory(
     companyState: string,
@@ -560,17 +582,17 @@ export class TaxCalculationService {
 
     if (companyStateMasterSid && partyStateMasterSid) {
       return Number(companyStateMasterSid) === Number(partyStateMasterSid)
-        ? 'Inter'
-        : 'Intra';
+        ? 'Intra'
+        : 'Inter';
     }
 
     if (!companyState || !billingPartyState) {
-      return 'Inter';
+      return 'Intra';
     }
 
     const normalizedCompanyState = companyState.trim().toLowerCase();
     const normalizedBillingState = billingPartyState.trim().toLowerCase();
-    return normalizedCompanyState === normalizedBillingState ? 'Inter' : 'Intra';
+    return normalizedCompanyState === normalizedBillingState ? 'Intra' : 'Inter';
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
@@ -597,21 +619,21 @@ export class TaxCalculationService {
 
   private getTaxCategoryForAppliedMode(mode: AppliedTaxMode): TaxCategory {
     if (mode === 'IGST') {
-      return 'Intra';
-    }
-
-    if (mode === 'CGST_SGST' || mode === 'CGST_UGST') {
       return 'Inter';
     }
 
-    return this._context?.taxCategory || 'Inter';
+    if (mode === 'CGST_SGST' || mode === 'CGST_UGST') {
+      return 'Intra';
+    }
+
+    return this._context?.taxCategory || 'Intra';
   }
 
   private emptyClassification(): TaxClassification {
     return {
       documentClass: 'B2B',
       appliedTaxMode: 'NONE',
-      taxCategory: 'Inter',
+      taxCategory: 'Intra',
       tradeFlow: 'DOMESTIC',
       formGSTType: '',
       isRCM: false,

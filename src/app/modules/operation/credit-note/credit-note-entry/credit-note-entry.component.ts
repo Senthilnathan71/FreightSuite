@@ -2410,24 +2410,24 @@ export class CreditNoteEntryComponent {
       const customerState = this.customerBranchList.find(
         (c) => c.CustomerBranchSid === customerBranchFromForm,
       )?.StateMasterSid;
-      let interOrIntra = 'Inter';
+      let interOrIntra = 'Intra';
       // india
       if (this.currentCompanyCountryCode === 'in') {
         if (currentCompanyState === customerState) {
-          interOrIntra = 'Inter';
-        } else {
           interOrIntra = 'Intra';
+        } else {
+          interOrIntra = 'Inter';
         }
       } else if (['ae', 'us'].includes(this.currentCompanyCountryCode)) {
         interOrIntra = 'Inter';
       }
-      // Union territory uses same TaxCategory as same-state (Inter)
+      // Union territory uses same TaxCategory as same-state (Intra)
       if (this.taxCalculationService.context?.appliedTaxMode === 'CGST_UGST') {
-        interOrIntra = 'Inter';
+        interOrIntra = 'Intra';
       }
       // SEZ/Export with payment uses IGST regardless of state match
       if (this.taxCalculationService.context?.appliedTaxMode === 'IGST' && this.taxCalculationService.isExportOrSEZ) {
-        interOrIntra = 'Intra';
+        interOrIntra = 'Inter';
       }
 
       if (
@@ -2727,24 +2727,24 @@ export class CreditNoteEntryComponent {
       (c) => c.CustomerBranchSid === customerBranchFromForm,
     )?.stateMaster?.StateMasterSid;
 
-    let interOrIntra = 'Inter';
+    let interOrIntra = 'Intra';
     // india
     if (this.currentCompanyCountryCode === 'in') {
       if (currentCompanyState === customerState) {
-        interOrIntra = 'Inter';
-      } else {
         interOrIntra = 'Intra';
+      } else {
+        interOrIntra = 'Inter';
       }
     } else if (['ae', 'us'].includes(this.currentCompanyCountryCode)) {
       interOrIntra = 'Inter';
     }
-    // Union territory uses same TaxCategory as same-state (Inter)
+    // Union territory uses same TaxCategory as same-state (Intra)
     if (this.taxCalculationService.context?.appliedTaxMode === 'CGST_UGST') {
-      interOrIntra = 'Inter';
+      interOrIntra = 'Intra';
     }
     // SEZ/Export with payment uses IGST regardless of state match
     if (this.taxCalculationService.context?.appliedTaxMode === 'IGST' && this.taxCalculationService.isExportOrSEZ) {
-      interOrIntra = 'Intra';
+      interOrIntra = 'Inter';
     }
 
     payload.PostingInfo = {

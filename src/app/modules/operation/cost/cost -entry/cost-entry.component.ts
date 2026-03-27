@@ -2347,13 +2347,13 @@ createRateFormGroup(data?: any): FormGroup {
       if (voucherType === 'Invoice') {
         this.voucherForm.patchValue({
           VoucherType: 'INV',
-          TaxType: 'Input'
+          TaxType: 'Output'
         })
         await this.processPendingCharges('revenue');
       } else {
         this.voucherForm.patchValue({
           VoucherType: 'VIN',
-          TaxType: 'Output'
+          TaxType: 'Input'
         })
         await this.processPendingCharges('cost');
       }
@@ -3242,7 +3242,7 @@ createRateFormGroup(data?: any): FormGroup {
     const narration = this.autoGenerateNarration();
     const vendorInvoiceRemarks = String(rawValue.Remarks ?? '').trim();
     const headerRemarks = isInvoice ? narration : (vendorInvoiceRemarks || narration);
-    let interOrIntra = 'Inter';
+    let interOrIntra = 'Intra';
 
     // india
     if (this.currentCompanyCountryCode === 'in') {
@@ -3251,20 +3251,20 @@ createRateFormGroup(data?: any): FormGroup {
         || '';
       const currentCompanyState = this.currentBranchStateName;
       if (currentCompanyState === customerState) {
-        interOrIntra = 'Inter';
-      } else {
         interOrIntra = 'Intra';
+      } else {
+        interOrIntra = 'Inter';
       }
     } else if (['ae', 'us'].includes(this.currentCompanyCountryCode)) {
       interOrIntra = 'Inter';
     }
-    // Union territory uses same TaxCategory as same-state (Inter)
+    // Union territory uses same TaxCategory as same-state (Intra)
     if (this.billingIsUnionTerritory) {
-      interOrIntra = 'Inter';
+      interOrIntra = 'Intra';
     }
     // SEZ/Export with payment uses IGST regardless of state match
     if (this.taxCalculationService.context?.appliedTaxMode === 'IGST' && this.taxCalculationService.isExportOrSEZ) {
-      interOrIntra = 'Intra';
+      interOrIntra = 'Inter';
     }
 
     // Map VoucherDetail - only include selected charges
@@ -3353,7 +3353,7 @@ createRateFormGroup(data?: any): FormGroup {
         countryCode: this.currentCompanyCountryCode,
         TaxCategory: interOrIntra,
         EffectiveFrom: getDefaultTodayDate(),
-        TaxType: this.selectedVoucherType === 'Invoice' ? 'Input' : 'Output',
+        TaxType: this.selectedVoucherType === 'Invoice' ? 'Output' : 'Input',
         IsUnionTerritory: this.billingIsUnionTerritory,
         CustomerGstType: this.billingPartyBranchDetails?.CustomerGstType
           || this.billingPartyDetails?.CustomerGstType

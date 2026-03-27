@@ -207,8 +207,8 @@ export class LedgerMappingComponent implements OnInit {
             canEditAccrualCOA: !item.AccrualCOAMasterSid,
             canEditDebtorCOA: !item.DrCOAMasterSid,
             canEditCreditorCOA: !item.CrCOAMasterSid,
-            canEditInputTaxCOA: !item.CrCOAMasterSid,
-            canEditOutputTaxCOA: !item.DrCOAMasterSid,
+            canEditInputTaxCOA: !item.DrCOAMasterSid,
+            canEditOutputTaxCOA: !item.CrCOAMasterSid,
             hasChanges: false,
             departmentName: item.departmentMaster?.departmentName || '',
             Status: item.Status,
@@ -382,9 +382,9 @@ export class LedgerMappingComponent implements OnInit {
   onCOAChange(item: any, coaSid: number, coaType: string): void {
     if (this.selectedTab ==='Tax'){
       if (coaType === 'input') {
-        item.CrCOAMasterSid = coaSid;
-      } else if (coaType === 'output') {
         item.DrCOAMasterSid = coaSid;
+      } else if (coaType === 'output') {
+        item.CrCOAMasterSid = coaSid;
       }
     }else{
     if (coaType === 'debtor') {
