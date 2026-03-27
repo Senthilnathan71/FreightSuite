@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, TemplateRef, ViewChild } from '@angular/core';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import {
   ReactiveFormsModule,
   FormsModule,
@@ -336,6 +337,7 @@ export class CreditNoteEntryComponent {
     private toastr: ToastrService,
     private pdfMakeService: PdfMakeService,
     public taxCalculationService: TaxCalculationService,
+    private emailTriggerService: EmailTriggerService,
   ) {}
   ngOnInit(): void {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
@@ -3049,6 +3051,25 @@ export class CreditNoteEntryComponent {
       }, 0),
       headerCurrency,
     );
+  }
+
+  async sendManualMail(): Promise<void> {
+    const pdfBlob = await this.generatePDFBlob();
+    let attachmentFile: File | undefined;
+    if (pdfBlob) {
+      attachmentFile = new File([pdfBlob], (this.creditNoteData?.CreditNoteNo || 'CreditNote') + '.pdf', { type: 'application/pdf' });
+    }
+    this.emailTriggerService.triggerManualEmails({
+      companyId: this.currentCompany?.CompanyMasterSid,
+      branchId: this.currentBranch?.BranchMasterSid,
+      menuMasterSid: this.MenuMasterSid,
+      action: 'UPDATE',
+      attachmentFile,
+      context: {
+        userName: this.userData?.userName,
+        menuEmail: ''
+      }
+    });
   }
 
   onCancel() {

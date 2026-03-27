@@ -1,4 +1,5 @@
 import { Component, ViewChild, TemplateRef, OnInit, Input } from '@angular/core';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -543,6 +544,7 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
      private toastr: ToastrService,
      public mps: MenuPermissionService,
     private volumetricAndCbmCalculationService: VolumetricAndCbmCalculationService,
+    private emailTriggerService: EmailTriggerService,
   ) {
     this.today = this.calendar.getToday();
    }
@@ -3810,6 +3812,26 @@ getVoyageTypeBasedOnDept(deptId: number) {
   }
 
 
+
+  async sendManualMail(): Promise<void> {
+    const pdfBlob = await this.generatePDFBlob();
+    let attachmentFile: File | undefined;
+    if (pdfBlob) {
+      attachmentFile = new File([pdfBlob], (this.bookingData?.ShipmentNo || 'MAWB') + '.pdf', { type: 'application/pdf' });
+    }
+    this.emailTriggerService.triggerManualEmails({
+      companyId: this.currentCompany?.CompanyMasterSid,
+      branchId: this.currentBranch?.BranchMasterSid,
+      menuMasterSid: this.bookingData?.MenuMasterSid,
+      action: 'UPDATE',
+      attachmentFile,
+      context: {
+        ShipmentNo: this.bookingData?.ShipmentNo,
+        userName: this.userData?.userName,
+        menuEmail: ''
+      }
+    });
+  }
 
   navigateBack() {
     history.back();

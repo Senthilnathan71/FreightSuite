@@ -1,4 +1,5 @@
 import { Component, ViewChild, TemplateRef, OnInit, OnDestroy, ChangeDetectorRef, ViewEncapsulation, HostListener } from '@angular/core';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import {
   NgbAccordionModule,
   NgbDatepickerModule,
@@ -393,7 +394,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     private datePipe: DatePipe,
     private exportExcelService: ExcelExportService,
     public mps: MenuPermissionService,
-    private sidebarService : VerticalSidebarService
+    private sidebarService : VerticalSidebarService,
+    private emailTriggerService: EmailTriggerService,
   ) {
     this.initForm();
     this.initContainerForm();
@@ -3406,6 +3408,19 @@ onETDDateSelect(): void {
 
   navigateToBooking(): void {
     this.router.navigate(['operation/booking/entry']);
+  }
+
+  sendManualMail(): void {
+    this.emailTriggerService.triggerManualEmails({
+      companyId: this.currentCompany?.CompanyMasterSid,
+      branchId: this.currentBranch?.BranchMasterSid,
+      menuMasterSid: this.MenuMasterSid,
+      action: 'UPDATE',
+      context: {
+        userName: this.userData?.userName,
+        menuEmail: ''
+      }
+    });
   }
 
   navigateBack(): void {
