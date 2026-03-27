@@ -933,7 +933,7 @@ createRateFormGroup(data?: any): FormGroup {
 
   deleteRate(index: number, RatesSid?: number) {
     const formGroup = this.rateFormArray.at(index) as FormGroup;
-
+    const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
     // Check if voucher exists
     // Check the hidden ID fields for voucher existence
     if (formGroup.get('_costVoucherHeaderSid')?.value || formGroup.get('_revenueVoucherHeaderSid')?.value) {
@@ -943,7 +943,7 @@ createRateFormGroup(data?: any): FormGroup {
 
     if (RatesSid) {
       const api = this.isBooking ?
-      this.operationService.deleteBookingRate(RatesSid) :
+      this.operationService.deleteBookingRate(RatesSid,updatedBy) :
       this.operationService.deleteCostRevenueCharge(RatesSid);
       api.subscribe({
         next: (resp: any) => {
