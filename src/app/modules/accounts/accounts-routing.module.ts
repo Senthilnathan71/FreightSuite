@@ -20,6 +20,7 @@ import { JournalVoucherListComponent } from './journal-voucher/journal-voucher-l
 import { VoucherMatchingEntryComponent } from './voucher-matching/voucher-matching-entry/voucher-matching-entry.component';
 import { VoucherMatchingViewComponent } from './voucher-matching/voucher-matching-view/voucher-matching-view.component';
 import { TrialBalanceReportComponent } from './trial-balance/trial-balance-report.component';
+import { BankReconciliationComponent } from './bank-reconciliation/bank-reconciliation.component';
 import { AccountsReportsComponent } from '../../accounts/components/accounts-reports/accounts-reports.component';
 import { ManagementReportsComponent } from '../../accounts/components/management-reports/management-reports.component';
 import { JournalVoucherEntryComponent } from './journal-voucher/journal-voucher-entry/journal-voucher-entry.component';
@@ -429,6 +430,17 @@ export const AccountRoutes: Routes = [
           urls: [
             { title: "Accounts", url: "/accounts" },
             { title: "Trial Balance" },
+          ],
+        },
+      },
+      {
+        path: "bank-reconciliation",
+        component: BankReconciliationComponent,
+        data: {
+          title: "Bank Reconciliation",
+          urls: [
+            { title: "Accounts", url: "/accounts" },
+            { title: "Bank Reconciliation" },
           ],
         },
       },
