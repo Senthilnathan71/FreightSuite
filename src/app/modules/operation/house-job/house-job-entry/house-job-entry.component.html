@@ -2562,9 +2562,9 @@
 
 
     <div class="workspace-content" [hidden]="selectedTab !== 'Connection'">
-      <app-connection screenName="Booking" [dataItems]="bookingConnectionsArr" [resetTrigger]="resetTriggerConnection"
+      <app-connection screenName="HouseJob" [dataItems]="bookingConnectionsArr" [resetTrigger]="resetTriggerConnection"
         [minDate]="minStartDate" [portList]="portList" [disableAdd]="PODandFPODsame" [vesselList]="vesselList"
-        (dataEmitter)="handleConnectionChange($event)">
+        (dataEmitter)="handleConnectionChange($event)" [connectionIdField]="'HouseJobConnectionSid'">
       </app-connection>
       <!-- <ng-container *ngComponentOutlet="connectionComponent"></ng-container> -->
     </div>

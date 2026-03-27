@@ -2067,9 +2067,14 @@ private loadMasterJobDetails(masterJobSid: number): void {
   }
 
   handleConnectionChange(allConnections:any[]){
-  
-    if(allConnections.length > 0){
-      this.connectionResult = [...allConnections];
+    this.connectionResult = [...allConnections];
+    this.bookingConnectionsArr = [...allConnections];
+
+    if (this.housejobData) {
+      this.housejobData = {
+        ...this.housejobData,
+        Connections: [...allConnections]
+      };
     }
   }
 
@@ -3605,7 +3610,7 @@ resetForm() {
       if(!this.bookingData) return;
       const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
       modalRef.componentInstance.item = this.bookingData;
-      modalRef.componentInstance.idLabel = 'Booking Id';
+      modalRef.componentInstance.idLabel = 'HouseJobSid';
       modalRef.componentInstance.idValue = this.bookingData?.HouseJobSid;
     }
 
