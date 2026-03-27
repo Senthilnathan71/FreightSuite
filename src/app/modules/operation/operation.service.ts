@@ -170,7 +170,7 @@ searchHouseJob(payload: any) {
     );
   }
 
-  deleteBookingConnection(id: number, updatedBy: string) {
+  deleteBookingConnection(id: number, updatedBy?: string) {
     return this.http.delete<{ data: any }>(`ff-booking/connection/${id}`,{body: {updatedBy}}).pipe(
       map((resp) => {
         return resp;
