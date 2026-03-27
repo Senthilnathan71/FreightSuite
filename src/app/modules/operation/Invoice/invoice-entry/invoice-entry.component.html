@@ -74,6 +74,11 @@
             </button>
           </div> -->
 
+          <button type="button" class="btn btn-info btn-sm text-nowrap" *ngIf="isEditMode"
+            (click)="sendManualMail()">
+            <i class="fas fa-envelope me-1"></i> Send Mail
+          </button>
+
           @if(isAutoPosting){
           <button
             type="button"
