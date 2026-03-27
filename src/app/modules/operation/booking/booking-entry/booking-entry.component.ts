@@ -3742,12 +3742,19 @@ getVesselVoyBasedOnPorts() {
   }
 
 
-  sendManualMail(): void {
+  async sendManualMail(): Promise<void> {
+    const pdfBlob = await this.generatePDFBlob();
+    let attachmentFile: File | undefined;
+    if (pdfBlob) {
+      attachmentFile = new File([pdfBlob], (this.bookingData?.BookingNo || 'Booking') + '.pdf', { type: 'application/pdf' });
+    }
+
     this.emailTriggerService.triggerManualEmails({
       companyId: this.currentCompany.CompanyMasterSid,
       branchId: this.currentBranch.BranchMasterSid,
       menuMasterSid: this.MenuMasterSid,
       action: 'UPDATE',
+      attachmentFile,
       context: {
         BookingNo: this.bookingData?.BookingNo,
         date: this.datePipe.transform(this.bookingData?.BookingDateTime),

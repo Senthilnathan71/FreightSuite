@@ -1,4 +1,5 @@
 import { Component, HostListener, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import {
   FormBuilder,
@@ -307,7 +308,8 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     public logoService: LogoService,
     private numberToWords: NumberToWordsService,
     private voucherPeriodService: VoucherPeriodValidationService,
-    private pdfFileSaveService: PdfFileSaveService
+    private pdfFileSaveService: PdfFileSaveService,
+    private emailTriggerService: EmailTriggerService,
   ) {}
 
   ngOnInit(): void {
@@ -2344,6 +2346,25 @@ isSeaDepartment(): boolean {
 
   onReset() {
     this.invoiceForm.reset({ status: 'A' });
+  }
+
+  async sendManualMail(): Promise<void> {
+    const pdfBlob = await this.generatePDFBlob();
+    let attachmentFile: File | undefined;
+    if (pdfBlob) {
+      attachmentFile = new File([pdfBlob], (this.invoiceData?.InvoiceNo || 'Invoice') + '.pdf', { type: 'application/pdf' });
+    }
+    this.emailTriggerService.triggerManualEmails({
+      companyId: this.currentCompany?.CompanyMasterSid,
+      branchId: this.currentBranch?.BranchMasterSid,
+      menuMasterSid: this.jobMenuMasterSid,
+      action: 'UPDATE',
+      attachmentFile,
+      context: {
+        userName: this.userData?.userName,
+        menuEmail: ''
+      }
+    });
   }
 
   goBack() {
