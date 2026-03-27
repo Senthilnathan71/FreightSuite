@@ -532,8 +532,9 @@ export class ConnectionComponent implements OnInit {
 
   deleteBookingConnection(connectionIndex: number, TransactionSid?: number) {
     const realIndex = ((this.page1 - 1 ) * this.pageSize1) + connectionIndex;
+    const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
     if (TransactionSid) {
-      this.operationService.deleteBookingConnection(TransactionSid).subscribe(
+      this.operationService.deleteBookingConnection(TransactionSid,updatedBy).subscribe(
         (resp: any) => {
           if (resp.status) {
             this.connectionFormArray.removeAt(realIndex);

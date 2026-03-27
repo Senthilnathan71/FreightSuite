@@ -3503,8 +3503,9 @@ getVesselVoyBasedOnPorts() {
 
   deleteBookingProduct(productIndex: number, BookingProductSid?: number) {
     const productToDelete = this.bookingProducts.at(productIndex);
+    const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
     if (BookingProductSid) {
-      this.operationService.deleteBookingProduct(BookingProductSid).subscribe(
+      this.operationService.deleteBookingProduct(BookingProductSid,updatedBy).subscribe(
         (resp: any) => {
           if (resp.status) {
             this.bookingProducts.removeAt(productIndex);
