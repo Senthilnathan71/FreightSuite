@@ -10,6 +10,11 @@ import {
 } from '../helpers/pdf-formatters';
 import { getPdfStyles } from '../styles/pdf-styles';
 
+const RIGHT_LABEL_WIDTH = 100;
+const RIGHT_COLON_WIDTH = 10;
+const RIGHT_VALUE_OFFSET = RIGHT_LABEL_WIDTH + RIGHT_COLON_WIDTH;
+const CONSIGNEE_VALUE_OFFSET = 20;
+
 export function generateDeliveryOrderDocument(data: DeliveryOrderPdfData): any {
   const isFcl = (data.selectedFclLcl || '').toUpperCase() === 'FCL';
 
@@ -69,48 +74,59 @@ function buildHeader(data: DeliveryOrderPdfData): any {
     .join(', ');
 
   return {
-    columns: [
-      { width: '*', text: '' },
-      {
-        width: '*',
-        stack: [
-          data.logo
-            ? {
-                image: data.logo,
-                fit: [50, 50],
-                alignment: 'center',
-                margin: [0, 6, 0, 0],
-              }
-            : { text: '' },
+    table: {
+      widths: [75, '*'],
+      body: [
+        [
           {
-            text: (company?.companyName || '').toUpperCase(),
-            bold: true,
-            fontSize: 14,
+            border: [false, false, false, false],
             alignment: 'center',
+            margin: [0, 4, 0, 4],
+            stack: [
+              data.logo
+                ? {
+                    image: data.logo,
+                    fit: [55, 55],
+                    alignment: 'center',
+                  }
+                : { text: '' },
+            ],
           },
           {
-            text: branch?.branchName || '',
-            bold: true,
-            fontSize: 11,
-            alignment: 'center',
-            margin: [0, 1, 0, 0],
-          },
-          {
-            text: detailLine1,
-            fontSize: 9,
-            alignment: 'center',
-            margin: [0, 1, 0, 0],
-          },
-          {
-            text: detailLine2,
-            fontSize: 9,
-            alignment: 'center',
-            margin: [0, 1, 0, 0],
+            border: [false, false, false, false],
+            stack: [
+              {
+                text: (company?.companyName || '').toUpperCase(),
+                bold: true,
+                fontSize: 14,
+                alignment: 'right',
+              },
+              {
+                text: branch?.branchName || '',
+                bold: true,
+                fontSize: 11,
+                alignment: 'right',
+                margin: [0, 2, 0, 0],
+              },
+              {
+                text: detailLine1,
+                fontSize: 9,
+                alignment: 'right',
+                margin: [0, 2, 0, 0],
+              },
+              {
+                text: detailLine2,
+                fontSize: 9,
+                alignment: 'right',
+                margin: [0, 2, 0, 0],
+              },
+            ],
+            margin: [0, 6, 20, 0],
           },
         ],
-      },
-      { width: '*', text: '' },
-    ],
+      ],
+    },
+    layout: 'noBorders',
     margin: [0, 0, 0, 2],
   };
 }
@@ -125,7 +141,7 @@ function buildTitle(data: DeliveryOrderPdfData): any {
             text: data.reportTitle,
             bold: true,
             alignment: 'center',
-            fontSize: 10,
+            fontSize: 12,
             margin: [0, 4, 0, 4],
           },
         ],
@@ -153,18 +169,31 @@ function buildReleaseSection(data: DeliveryOrderPdfData): any {
               '\n',
             ),
             style: 'releaseValue',
-            margin: [24, 0, 0, 0],
+            margin: [20, 0, 0, 0],
           },
         ],
       },
       {
         width: '50%',
         stack: [
-          buildKeyValueRow('HBL No.', data.referenceInfo.hblNo, 90),
-          buildKeyValueRow('DO Number', data.referenceInfo.doNumber, 90),
-          buildKeyValueRow('DO Date', formatDate(data.referenceInfo.doDate), 90),
-          buildKeyValueRow('Shipment', data.referenceInfo.shipmentNo, 90),
+          buildKeyValueRow('HBL No.', data.referenceInfo.hblNo, RIGHT_LABEL_WIDTH),
+          buildKeyValueRow(
+            'DO Number',
+            data.referenceInfo.doNumber,
+            RIGHT_LABEL_WIDTH,
+          ),
+          buildKeyValueRow(
+            'DO Date',
+            formatDate(data.referenceInfo.doDate),
+            RIGHT_LABEL_WIDTH,
+          ),
+          buildKeyValueRow(
+            'Shipment',
+            data.referenceInfo.shipmentNo,
+            RIGHT_LABEL_WIDTH,
+          ),
         ],
+        margin: [20, 0, 0, 0],
       },
     ],
     margin: [5, 0, 5, 6],
@@ -197,7 +226,7 @@ function buildPartySection(data: DeliveryOrderPdfData): any {
                 margin: [20, 0, 0, 0],
               },
             ],
-            margin: [5, 8, 5, 8],
+            margin: [5, 4, 5, 8],
           },
           {
             stack: [
@@ -208,10 +237,10 @@ function buildPartySection(data: DeliveryOrderPdfData): any {
                   '\n',
                 ),
                 style: 'value',
-                margin: [20, 0, 0, 0],
+                margin: [CONSIGNEE_VALUE_OFFSET, 0, 0, 0],
               },
             ],
-            margin: [5, 8, 5, 8],
+            margin: [20, 4, 5, 8],
           },
         ],
       ],
@@ -223,8 +252,8 @@ function buildPartySection(data: DeliveryOrderPdfData): any {
       hLineColor: () => '#000',
       paddingLeft: () => 5,
       paddingRight: () => 5,
-      paddingTop: () => 6,
-      paddingBottom: () => 6,
+      paddingTop: () => 2,
+      paddingBottom: () => 8,
     },
     margin: [0, 0, 0, 0],
   };
@@ -247,8 +276,8 @@ function buildNotifySection(data: DeliveryOrderPdfData): any {
             stack: [
               {
                 columns: [
-                  { width: 110, text: 'Goods Available At', style: 'label' },
-                  { width: 10, text: ':' },
+                  { width: RIGHT_LABEL_WIDTH, text: 'Goods Available At', style: 'label' },
+                  { width: RIGHT_COLON_WIDTH, text: ':' },
                   {
                     width: '*',
                     text: data.parties.goodsAvailableAt || '',
@@ -258,10 +287,20 @@ function buildNotifySection(data: DeliveryOrderPdfData): any {
               },
             ],
             border: [false, false, false, false],
-            margin: [5, 8, 5, 8],
+            margin: [20, 4, 5, 8],
           },
         ],
       ],
+    },
+    layout: {
+      hLineWidth: (i: number, node: any) =>
+        i === 0 || i === node.table.body.length ? 1 : 0,
+      vLineWidth: () => 0,
+      hLineColor: () => '#000',
+      paddingLeft: () => 5,
+      paddingRight: () => 5,
+      paddingTop: () => 2,
+      paddingBottom: () => 8,
     },
     margin: [0, 0, 0, 0],
   };
@@ -287,14 +326,14 @@ function buildOtherInfoSection(data: DeliveryOrderPdfData): any {
               buildWrappedKeyValueRow(label, value, 90),
             ),
             border: [false, true, false, true],
-            margin: [5, 6, 5, 6],
+            margin: [5, 3, 5, 6],
           },
           {
             stack: rightItems.map(([label, value]) =>
-              buildWrappedKeyValueRow(label, value, 90),
+              buildWrappedKeyValueRow(label, value, RIGHT_LABEL_WIDTH),
             ),
             border: [false, true, false, true],
-            margin: [5, 6, 5, 6],
+            margin: [20, 3, 5, 6],
           },
         ],
       ],
@@ -304,6 +343,8 @@ function buildOtherInfoSection(data: DeliveryOrderPdfData): any {
         i === 0 || i === node.table.body.length ? 1 : 0,
       vLineWidth: () => 0,
       hLineColor: () => '#000',
+      paddingTop: () => 2,
+      paddingBottom: () => 6,
     },
     margin: [0, 0, 0, 8],
   };
@@ -386,7 +427,7 @@ function buildDescriptionSection(data: DeliveryOrderPdfData): any {
               },
             ],
             border: [false, true, false, true],
-            margin: [10, 6, 10, 10],
+            margin: [10, 3, 10, 10],
           },
           {
             stack: [
@@ -398,7 +439,7 @@ function buildDescriptionSection(data: DeliveryOrderPdfData): any {
               },
             ],
             border: [false, true, false, true],
-            margin: [10, 6, 10, 10],
+            margin: [10, 3, 10, 10],
           },
         ],
       ],
@@ -408,6 +449,8 @@ function buildDescriptionSection(data: DeliveryOrderPdfData): any {
         i === 0 || i === node.table.body.length ? 1 : 0,
       vLineWidth: () => 0,
       hLineColor: () => '#000',
+      paddingTop: () => 2,
+      paddingBottom: () => 6,
     },
     margin: [0, 0, 0, 8],
   };
@@ -523,7 +566,7 @@ function buildPartyCell(title: string, name?: string, address?: string): any {
       },
     ],
     border: [false, false, false, false],
-    margin: [5, 8, 5, 8],
+    margin: [5, 4, 5, 8],
   };
 }
 
@@ -531,7 +574,7 @@ function buildKeyValueRow(label: string, value?: string, labelWidth = 120): any 
   return {
     columns: [
       { width: labelWidth, text: label, style: 'label' },
-      { width: 10, text: ':' },
+      { width: RIGHT_COLON_WIDTH, text: ':' },
       { width: '*', text: value || '', style: 'value' },
     ],
     margin: [0, 0, 0, 2],
@@ -546,7 +589,7 @@ function buildWrappedKeyValueRow(
   return {
     columns: [
       { width: labelWidth, text: label, style: 'label' },
-      { width: 5, text: ':' },
+      { width: RIGHT_COLON_WIDTH, text: ':' },
       { width: '*', text: value || '', style: 'value' },
     ],
     margin: [0, 0, 0, 4],
@@ -608,45 +651,45 @@ function edgeOpenTableLayout(): any {
 function getDeliveryOrderStyles(): any {
   return {
     ...getPdfStyles(),
-    subTitle: { fontSize: 11, bold: true },
-    label: { fontSize: 8.5, bold: true },
-    value: { fontSize: 8.5 },
-    valueBold: { fontSize: 8.5, bold: true },
-    releaseValue: { fontSize: 8.5, bold: true },
-    sectionLabel: { fontSize: 9, bold: true },
+    subTitle: { fontSize: 12, bold: true },
+    label: { fontSize: 10.5, bold: true },
+    value: { fontSize: 10.5 },
+    valueBold: { fontSize: 10.5, bold: true },
+    releaseValue: { fontSize: 10.5, bold: true },
+    sectionLabel: { fontSize: 11, bold: true },
     tableHeader: {
-      fontSize: 8,
+      fontSize: 9,
       bold: true,
       alignment: 'center',
-      fillColor: '#e9ecef',
     },
-    tableCell: { fontSize: 8 },
-    tableCellBold: { fontSize: 8, bold: true },
-    termsItem: { fontSize: 8.5 },
+    tableCell: { fontSize: 9 },
+    tableCellBold: { fontSize: 9, bold: true },
+    termsItem: { fontSize: 9.5 },
   };
 }
 
 function buildFooter(data: DeliveryOrderPdfData): any {
   return {
-    margin: [24, 0, 24, 12],
+    margin: [24, 0, 24, 6],
     columns: [
       {
         text: `Printed By : ${data.userData?.userName || ''}`,
         alignment: 'left',
-        width: '30%',
-        fontSize: 9,
+        width: 140,
+        fontSize: 8,
       },
       {
         text: 'This document is computer-generated and does not require a signature.',
         alignment: 'center',
-        width: '40%',
-        fontSize: 9,
+        width: '*',
+        fontSize: 8,
+        noWrap: true,
       },
       {
         text: `Printed On : ${formatDate(new Date())}`,
         alignment: 'right',
-        width: '30%',
-        fontSize: 9,
+        width: 140,
+        fontSize: 8,
       },
     ],
   };
@@ -746,7 +789,7 @@ export function transformDeliveryOrderApiData(
     branch,
     userData,
     logo,
-    reportTitle: 'DELIVERY ORDER',
+    reportTitle: 'Delivery Order',
     selectedFclLcl: options?.selectedFCLLCL || '',
     amountInWords: options?.amountInWords || '',
     releaseTo: {
