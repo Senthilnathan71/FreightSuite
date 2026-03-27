@@ -808,6 +808,15 @@ processProductUpload(payload: any): Observable<any> {
     );
   }
 
+  softDeleteHouseJobConnection(HouseJobConnectionSid: number) {
+  return this.http.delete<{ data: any }>(`house-job/connection/delete/${HouseJobConnectionSid}`).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
+
   softDeleteMasterJobContainer(MasterJobContainerSid: number) {
     return this.http.delete<{ data: any }>(`master-job/container/delete/${MasterJobContainerSid}`).pipe(
       map((resp) => {
