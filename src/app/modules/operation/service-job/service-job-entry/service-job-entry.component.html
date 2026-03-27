@@ -163,6 +163,93 @@
               </div>
             </aside>
             <aside class="col-md-2">
+              <div class="custom-form-group custom-form-group-select"
+                [class.filled]="!!serviceJobForm.get('CustomerAddress')?.value">
+                <ng-select [items]="customerBranchList" bindLabel="Address" bindValue="Address" class="ng-select"
+                  formControlName="CustomerAddress" placeholder="" (change)="onCustomerBranchChange($event)"
+                  appendTo="body">
+                </ng-select>
+                <label for="text-input" class="input-label">Customer Address <span class="text-danger"></span></label>
+              
+              </div>
+            </aside>
+            <aside class="col-md-2">
+              <div class="custom-form-group custom-form-group-select inputChnages"
+                [class.filled]="!!serviceJobForm.get('ShipperName')?.value">
+                <div class="d-flex align-items-center" *ngIf="!this.b['isShipperFreeText']?.value">
+                  <div style="flex:1; min-width:0; overflow:hidden;">
+                    <dofi-searchable-dropdown [items]="filteredShipperList" formControlName="ShipperName"
+                      placeholder="" [displayFields]="customerLookupConfig.displayFields"
+                      [displayLabels]="customerLookupConfig.displayLabels"
+                      [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                      bindValue="CustomerName"
+                      (itemSelected)="setAddress('ShipperAddress', $event); onShipperChange($event)"
+                      style="display:block; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    </dofi-searchable-dropdown>
+                  </div>
+                  <button class="btn bi bi-calendar3 ps-0" type="button"
+                    (click)="toggleInputType('ShipperName','isShipperFreeText',$event)" style="flex-shrink:0;">
+                    <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
+                  </button>
+                </div>
+                <div class="d-flex" *ngIf="this.b['isShipperFreeText']?.value">
+                  <input type="text" formControlName="ShipperName" placeholder="" class="custom-input-field sm" style="width: 85%"/>
+                  <button class="btn bi bi-calendar3" type="button"
+                    (click)="toggleInputType('ShipperName','isShipperFreeText',$event)">
+                    <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
+                  </button>
+                </div>
+                <label for="text-input" class="input-label">Shipper Name <span class="text-danger"></span></label>
+               
+              </div>
+            </aside>
+            <aside class="col-md-2">
+              <div class="custom-form-group" [class.filled]="!!serviceJobForm.get('ShipperAddress')?.value">
+                <input type="text" id="shipper-address-input" placeholder="" class="form-control custom-input-field sm"
+                  formControlName="ShipperAddress">
+                <label for="shipper-address-input" class="input-label">Shipper Address <span class="text-danger"></span></label>
+               
+              </div>
+            </aside>
+            <aside class="col-md-2">
+              <div class="custom-form-group custom-form-group-select inputChnages"
+                [class.filled]="!!serviceJobForm.get('ConsigneeName')?.value">
+                <div class="d-flex align-items-center" *ngIf="!this.b['isConsigneeFreeText']?.value">
+                  <div style="flex:1; min-width:0; overflow:hidden;">
+                    <dofi-searchable-dropdown [items]="filteredConsigneeList" formControlName="ConsigneeName"
+                      placeholder="" [displayFields]="customerLookupConfig.displayFields"
+                      [displayLabels]="customerLookupConfig.displayLabels"
+                      [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
+                      bindValue="CustomerName"
+                      (itemSelected)="setAddress('ConsigneeAddress', $event); onConsigneeChange($event)"
+                      style="display:block; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    </dofi-searchable-dropdown>
+                  </div>
+                  <button class="btn bi bi-calendar3 ps-0" type="button"
+                    (click)="toggleInputType('ConsigneeName','isConsigneeFreeText',$event)" style="flex-shrink:0;">
+                    <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
+                  </button>
+                </div>
+                <div class="d-flex" *ngIf="this.b['isConsigneeFreeText']?.value">
+                  <input type="text" formControlName="ConsigneeName" placeholder="" class="custom-input-field sm" style="width: 85%"/>
+                  <button class="btn bi bi-calendar3" type="button"
+                    (click)="toggleInputType('ConsigneeName','isConsigneeFreeText',$event)">
+                    <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
+                  </button>
+                </div>
+                <label for="text-input" class="input-label">Consignee Name <span class="text-danger"></span></label>
+                
+              </div>
+            </aside>
+            <aside class="col-md-2">
+              <div class="custom-form-group" [class.filled]="!!serviceJobForm.get('ConsigneeAddress')?.value">
+                <input type="text" id="consignee-address-input" placeholder="" class="form-control custom-input-field sm"
+                  formControlName="ConsigneeAddress">
+                <label for="consignee-address-input" class="input-label">Consignee Address <span class="text-danger"></span></label>
+                
+              </div>
+            </aside>
+            <aside class="col-md-2">
               <div class="custom-form-group" style="margin-top: 8px;">
                 <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
                   formControlName="ShipmentNo">

@@ -552,7 +552,7 @@ hblModalRef?: NgbModalRef;
   this.userData = this.appSettingService.getDecryptedUserProfile();
   this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
   this.countryOfCompany = this.currentCompany?.CountryName;
-  this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+  this.currentBranch = this.appSettingService.getCurrentBranchInfo();
 
   this.currentFinacialYear = this.appSettingService.getCurrentFinancialYear();
   this.startFinanceYr = this.currentFinacialYear?.StartDate ? new Date(this.currentFinacialYear.StartDate) : null;
@@ -2773,31 +2773,17 @@ validateHBLNo(): boolean {
   }
 
   private isCompanyCountryPort(port: any): boolean {
-    const companyCountryId = this.toNumericValue(this.currentCompany?.CountryMasterSid);
+    const companyCountryId = this.toNumericValue(this.currentBranch?.CountryMasterSid);
     const portCountryId = this.toNumericValue(port?.CountryMasterSid);
 
-    if (companyCountryId && portCountryId) {
-      return companyCountryId === portCountryId;
-    }
-
-    const companyCountryName = this.normalizePortText(this.currentCompany?.CountryName || this.countryOfCompany);
-    const portCountryName = this.normalizePortText(port?.Country || port?.countryMaster?.countryName);
-
-    return !!companyCountryName && !!portCountryName && companyCountryName === portCountryName;
+    return !!companyCountryId && !!portCountryId && companyCountryId === portCountryId;
   }
 
   private isForeignCountryPort(port: any): boolean {
-    const companyCountryId = this.toNumericValue(this.currentCompany?.CountryMasterSid);
+    const companyCountryId = this.toNumericValue(this.currentBranch?.CountryMasterSid);
     const portCountryId = this.toNumericValue(port?.CountryMasterSid);
 
-    if (companyCountryId && portCountryId) {
-      return companyCountryId !== portCountryId;
-    }
-
-    const companyCountryName = this.normalizePortText(this.currentCompany?.CountryName || this.countryOfCompany);
-    const portCountryName = this.normalizePortText(port?.Country || port?.countryMaster?.countryName);
-
-    return !!companyCountryName && !!portCountryName && companyCountryName !== portCountryName;
+    return !!companyCountryId && !!portCountryId && companyCountryId !== portCountryId;
   }
 
   private getPortByCode(portCode: string | null | undefined): any | null {

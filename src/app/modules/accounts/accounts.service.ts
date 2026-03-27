@@ -267,6 +267,37 @@ export class AccountsService {
     );
   }
 
+  // Bank Reconciliation
+  searchBankReconciliationBookTransactions(payload: any) {
+    return this.http.post<any>('accounts/bank-reconciliation/search-book', payload).pipe(
+      map((resp: any) => resp)
+    );
+  }
+
+  autoMatchBankReconciliation(payload: any) {
+    return this.http.post<any>('accounts/bank-reconciliation/auto-match', payload).pipe(
+      map((resp: any) => resp)
+    );
+  }
+
+  manualMatchBankReconciliation(payload: any) {
+    return this.http.post<any>('accounts/bank-reconciliation/manual-match', payload).pipe(
+      map((resp: any) => resp)
+    );
+  }
+
+  unmatchBankReconciliation(payload: any) {
+    return this.http.post<any>('accounts/bank-reconciliation/unmatch', payload).pipe(
+      map((resp: any) => resp)
+    );
+  }
+
+  generateBankReconciliationReport(payload: any) {
+    return this.http.post<any>('accounts/bank-reconciliation/report', payload).pipe(
+      map((resp: any) => resp)
+    );
+  }
+
   getPostedVoucherWithDetails(voucherHeaderSid: number) {
     return this.http.get<any>(`voucher-matching/posted-voucher/${voucherHeaderSid}`).pipe(
       map((resp: any) => resp)
