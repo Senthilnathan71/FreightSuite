@@ -1,4 +1,5 @@
 import { Component, ViewChild, TemplateRef, OnInit, Input, OnDestroy } from '@angular/core';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef, NgbPaginationModule, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -264,6 +265,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
     private ngbModal: NgbModal,
     private commonModalService : ModalService,
      private toastr: ToastrService,
+    private emailTriggerService: EmailTriggerService,
   ) {
     this.today = this.calendar.getToday();
   }
@@ -1267,6 +1269,25 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
     }
   }
 
+
+  async sendManualMail(): Promise<void> {
+    const pdfBlob = await this.generatePDFBlob();
+    let attachmentFile: File | undefined;
+    if (pdfBlob) {
+      attachmentFile = new File([pdfBlob], (this.serviceJobData?.ServiceJobNo || 'ServiceJob') + '.pdf', { type: 'application/pdf' });
+    }
+    this.emailTriggerService.triggerManualEmails({
+      companyId: this.currentCompany?.CompanyMasterSid,
+      branchId: this.currentBranch?.BranchMasterSid,
+      menuMasterSid: this.MenuMasterSid,
+      action: 'UPDATE',
+      attachmentFile,
+      context: {
+        userName: this.userData?.userName,
+        menuEmail: ''
+      }
+    });
+  }
 
   navigateBack() {
     this.router.navigate(['operation/service-job/list']);
