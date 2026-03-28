@@ -224,6 +224,13 @@ export class CreditNoteEntryComponent {
     { id: 'BOS', name: 'Bill of Supply' },
     { id: 'NONGST', name: 'Non GST/Zero' },
   ];
+  vatInvoiceTypes = [
+    { id: 'REG', name: 'Regular' },
+    { id: 'NONGST', name: 'Zero Rated' },
+    { id: 'EXE', name: 'Exempt' },
+    { id: 'OOS', name: 'Out of Scope' },
+  ];
+  get activeInvoiceTypes() { return this.isVATMode ? this.vatInvoiceTypes : this.invoiceTypes; }
   gstTypes = [
     { id: 'B2B', name: 'B2B - Business to Business' },
     { id: 'B2C', name: 'B2C - Business to Customer' },

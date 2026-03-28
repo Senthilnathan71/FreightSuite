@@ -478,7 +478,7 @@
                   [class.filled]="!!creditNoteForm.get('InvoiceType')?.value"
                 >
                   <ng-select
-                    [items]="invoiceTypes"
+                    [items]="activeInvoiceTypes"
                     bindLabel="name"
                     bindValue="id"
                     formControlName="InvoiceType"
@@ -489,9 +489,9 @@
                       <i class="fas fa-info-circle text-danger ms-1 ivt-pulse-icon"
                          [ngbTooltip]="'Zero Rated selected — tax rows will be created at 0%'"
                          placement="top" container="body"></i>
-                    } @else if (creditNoteForm.get('InvoiceType')?.value === 'BOS') {
+                    } @else if (creditNoteForm.get('InvoiceType')?.value === 'BOS' || creditNoteForm.get('InvoiceType')?.value === 'EXE' || creditNoteForm.get('InvoiceType')?.value === 'OOS') {
                       <i class="fas fa-info-circle text-danger ms-1 ivt-pulse-icon"
-                         [ngbTooltip]="'Exempt selected — no tax rows will be created'"
+                         [ngbTooltip]="'No tax rows will be created for this invoice type'"
                          placement="top" container="body"></i>
                     }
                   </label>
