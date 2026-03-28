@@ -123,13 +123,6 @@ export class CostEntryComponent implements OnInit, OnDestroy {
     { id: 'BOS', name: 'Bill of Supply' },
     { id: 'NONGST', name: 'Non GST/Zero' },
   ];
-  vatInvoiceTypes = [
-    { id: 'REG', name: 'Regular' },
-    { id: 'NONGST', name: 'Zero Rated' },
-    { id: 'EXE', name: 'Exempt' },
-    { id: 'OOS', name: 'Out of Scope' },
-  ];
-  get activeInvoiceTypes() { return this.isVATMode ? this.vatInvoiceTypes : this.invoiceTypes; }
 
   exportGstTypes = [
     { id: 'EXPWP', name: 'Export With Payment' },

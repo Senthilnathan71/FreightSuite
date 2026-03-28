@@ -9,7 +9,7 @@ export type TradeFlow = 'DOMESTIC' | 'EXPORT' | 'IMPORT';
 export type DocumentSide = 'SALES' | 'PURCHASE';
 export type AppliedTaxMode = 'CGST_SGST' | 'CGST_UGST' | 'IGST' | 'VAT' | 'NONE';
 export type DocumentClass = 'B2B' | 'B2C' | 'EXPWP' | 'EXPWOP' | 'RCM' | 'VAT';
-export type InvoiceType = 'REG' | 'REIMB' | 'NONGST' | 'BOS' | 'RCM' | 'EXE' | 'OOS';
+export type InvoiceType = 'REG' | 'REIMB' | 'NONGST' | 'BOS' | 'RCM';
 export type TaxCategory = 'Inter' | 'Intra';
 export type InputOrOutput = 'Input' | 'Output';
 
@@ -478,8 +478,7 @@ export class TaxCalculationService {
     if (company.taxRegime === 'VAT') {
       // Non-India: VAT for domestic, zero tax for overseas party
       documentClass = 'VAT';
-      if (ctx.invoiceType === 'BOS' || ctx.invoiceType === 'EXE' || ctx.invoiceType === 'OOS') {
-        // Exempt / Out of Scope — no tax rows
+      if (ctx.invoiceType === 'BOS') {
         appliedTaxMode = 'NONE';
       } else if (ctx.invoiceType === 'NONGST') {
         // Zero Rated: show VAT columns with 0% amounts for domestic

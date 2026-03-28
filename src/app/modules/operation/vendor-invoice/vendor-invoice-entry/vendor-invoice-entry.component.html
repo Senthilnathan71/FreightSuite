@@ -416,7 +416,7 @@
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!vendorInvoiceForm.get('InvoiceType')?.value">
                 <ng-select
-                  [items]="activeInvoiceTypes"
+                  [items]="invoiceTypes"
                   bindLabel="name"
                   bindValue="id"
                   formControlName="InvoiceType"
@@ -427,9 +427,9 @@
                     <i class="fas fa-info-circle text-danger ms-1 ivt-pulse-icon"
                        [ngbTooltip]="'Zero Rated selected — tax rows will be created at 0%'"
                        placement="top" container="body"></i>
-                  } @else if (vendorInvoiceForm.get('InvoiceType')?.value === 'BOS' || vendorInvoiceForm.get('InvoiceType')?.value === 'EXE' || vendorInvoiceForm.get('InvoiceType')?.value === 'OOS') {
+                  } @else if (vendorInvoiceForm.get('InvoiceType')?.value === 'BOS') {
                     <i class="fas fa-info-circle text-danger ms-1 ivt-pulse-icon"
-                       [ngbTooltip]="'No tax rows will be created for this invoice type'"
+                       [ngbTooltip]="'Exempt selected — no tax rows will be created'"
                        placement="top" container="body"></i>
                   }
                 </label>
