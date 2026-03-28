@@ -292,6 +292,12 @@ export class AccountsService {
     );
   }
 
+  updateBankReconciliationClearance(payload: any) {
+    return this.http.post<any>('accounts/bank-reconciliation/update-clearance', payload).pipe(
+      map((resp: any) => resp)
+    );
+  }
+
   generateBankReconciliationReport(payload: any) {
     return this.http.post<any>('accounts/bank-reconciliation/report', payload).pipe(
       map((resp: any) => resp)
