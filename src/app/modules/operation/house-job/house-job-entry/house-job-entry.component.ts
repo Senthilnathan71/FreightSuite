@@ -3554,8 +3554,20 @@ getVoyageTypeBasedOnDept(deptId: number) {
       attachmentFile,
       context: {
         ShipmentNo: this.bookingData?.ShipmentNo,
+        BookingNo: this.bookingData?.BookingNo || this.bookingHeader?.BookingNo,
+        JobNo: this.bookingData?.JobNo,
+        HBLNo: this.housejobData?.HBLNo,
+        date: this.datePipe.transform(this.bookingHeader?.HBLDate || this.bookingData?.HBLDate),
+        POO: this.getFormattedPort(this.housejobData?.POO),
+        POL: this.getFormattedPort(this.housejobData?.POL),
+        POD: this.getFormattedPort(this.housejobData?.POD),
+        FPD: this.getFormattedPort(this.housejobData?.FPD),
+        customerName: this.bookingData?.CustomerName,
+        shipperName: this.bookingData?.ShipperName,
+        consigneeName: this.bookingData?.ConsigneeName,
         userName: this.userData?.userName,
-        menuEmail: this.bookingData?.Email || ''
+        menuEmail: this.bookingData?.Email || this.selectedCustomerBranch?.Email || '',
+        customerBranchSid: this.bookingData?.CustomerBranchSid || null
       }
     });
   }

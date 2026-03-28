@@ -1825,7 +1825,7 @@ private parseFloatSafe(value: any): number {
               action: 'UPDATE',
               context: {
                 EnquiryNo: this.enquiryData?.EnquiryNumber,
-                date: this.enquiryData?.EnquiryDate ? new Date(this.enquiryData.EnquiryDate).toLocaleDateString() : '',
+                date: this.enquiryData?.EnquiryDate ? this.datePipe.transform(this.enquiryData.EnquiryDate) : '',
                 POO: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.PORSid),
                 POL: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.POLSid),
                 POD: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.PODSid),
@@ -2004,7 +2004,7 @@ private parseFloatSafe(value: any): number {
       attachmentFile,
       context: {
         EnquiryNo: this.enquiryData?.EnquiryNumber,
-        date: this.enquiryData?.EnquiryDate ? new Date(this.enquiryData.EnquiryDate).toLocaleDateString() : '',
+        date: this.enquiryData?.EnquiryDate ? this.datePipe.transform(this.enquiryData.EnquiryDate) : '',
         POO: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.PORSid),
         POL: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.POLSid),
         POD: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.PODSid),

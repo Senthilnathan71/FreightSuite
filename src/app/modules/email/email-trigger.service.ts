@@ -148,10 +148,10 @@ export class EmailTriggerService {
 
   private matchesUpdateFields(config: any, action: string, changedFields?: string[]): boolean {
     if (action !== 'UPDATE') return true;
-    if (!config.UpdateFields) return true;
+    if (!config.UpdateFields?.length) return true;
     if (!changedFields?.length) return true;
 
-    const configFields = config.UpdateFields.split(',').map((f: string) => f.trim());
+    const configFields: string[] = Array.isArray(config.UpdateFields) ? config.UpdateFields : [];
     return changedFields.some(field => configFields.includes(field));
   }
 
@@ -268,7 +268,7 @@ export class EmailTriggerService {
       EmailCC: this.replacePlaceholders(config.CcEmailidFrom || '', enrichedContext),
       EmailBCC: '',
       Subject: this.replacePlaceholders(config.MailSubject, enrichedContext),
-      Mailbody: this.replacePlaceholders(config.MailBody, enrichedContext),
+      Mailbody: this.replacePlaceholders(config.MailBody, enrichedContext).replace(/<br\s*\/?>/gi, '\n'),
       ...(config.AttachmentRequire === 'Y' && attachmentFile ? { attachments: [attachmentFile] } : {})
     };
   }

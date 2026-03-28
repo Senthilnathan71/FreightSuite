@@ -97,7 +97,7 @@ export class EmailEntryComponent implements OnInit {
       EmailCC: Array.isArray(value.EmailCC) ? value.EmailCC.join(', ') : value.EmailCC || '',
       EmailBCC: Array.isArray(value.EmailBCC) ? value.EmailBCC.join(', ') : value.EmailBCC || '',
       Subject: value.Subject || '',
-      Mailbody: value.Mailbody || '',
+      Mailbody: (value.Mailbody || '').replace(/<br\s*\/?>/gi, '\n'),
     });
 
     if (value.attachments) {
