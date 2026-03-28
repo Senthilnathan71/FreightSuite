@@ -499,4 +499,12 @@ export class MailConfigurationEntryComponent implements OnInit {
       this.router.navigate(['/dashboard']);
     }
   }
+
+  get activeCount(): number {
+    return (this.rows?.filter(r => r.Status === 'A')?.length) || 0;
+  }
+
+  get manualTriggerCount(): number {
+    return (this.rows?.filter(r => r.Trigger === 'M')?.length) || 0;
+  }
 }

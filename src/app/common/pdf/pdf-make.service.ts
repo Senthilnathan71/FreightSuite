@@ -29,7 +29,9 @@ import {
   DeliveryOrderPdfData,
   CreditNotePdfData,
   ReceiptPdfData,
-  PaymentPdfData
+  PaymentPdfData,
+  JournalVoucherPdfData,
+  ReleaseLetterPdfData
 } from './interfaces/pdf-document.interfaces';
 
 // Import generators
@@ -67,6 +69,14 @@ import {
 import { generateCreditNoteDocument, transformCreditNoteApiData } from './generators/credit-note-pdf.generator';
 import { generateReceiptDocument, transformReceiptApiData } from './generators/receipt-pdf.generator';
 import { generatePaymentDocument, transformPaymentApiData } from './generators/payment-pdf.generator';
+import {
+  generateJournalVoucherDocument,
+  transformJournalVoucherApiData
+} from './generators/journal-voucher-pdf.generator';
+import {
+  generateReleaseLetterDocument,
+  transformReleaseLetterApiData
+} from './generators/release-letter-pdf.generator';
 
 @Injectable({ providedIn: 'root' })
 export class PdfMakeService {
@@ -1181,6 +1191,96 @@ export class PdfMakeService {
   ): Promise<Blob> {
     const pdfData = transformPaymentApiData(apiData, company, branch, userData, logo, options);
     return this.generatePaymentBlob(pdfData);
+  }
+
+  // ==================== Journal Voucher ====================
+
+  generateJournalVoucher(data: JournalVoucherPdfData): void {
+    const docDefinition = generateJournalVoucherDocument(data);
+    const filename = `Journal_Voucher_${data.voucher?.voucherNumber || 'Draft'}.pdf`;
+    this.download(docDefinition, filename);
+  }
+
+  async generateJournalVoucherBlob(data: JournalVoucherPdfData): Promise<Blob> {
+    const docDefinition = generateJournalVoucherDocument(data);
+    return this.getBlob(docDefinition);
+  }
+
+  generateJournalVoucherFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    lookups?: {
+      coaList?: any[];
+      subledgerList?: any[];
+    }
+  ): void {
+    const pdfData = transformJournalVoucherApiData(apiData, company, branch, userData, logo, lookups);
+    this.generateJournalVoucher(pdfData);
+  }
+
+  async generateJournalVoucherBlobFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    lookups?: {
+      coaList?: any[];
+      subledgerList?: any[];
+    }
+  ): Promise<Blob> {
+    const pdfData = transformJournalVoucherApiData(apiData, company, branch, userData, logo, lookups);
+    return this.generateJournalVoucherBlob(pdfData);
+  }
+
+  // ==================== Release Letter ====================
+
+  generateReleaseLetter(data: ReleaseLetterPdfData): void {
+    const docDefinition = generateReleaseLetterDocument(data);
+    const filename = `Release_Letter_${data.info?.ourBookingRef || 'Report'}.pdf`;
+    this.download(docDefinition, filename);
+  }
+
+  async generateReleaseLetterBlob(data: ReleaseLetterPdfData): Promise<Blob> {
+    const docDefinition = generateReleaseLetterDocument(data);
+    return this.getBlob(docDefinition);
+  }
+
+  generateReleaseLetterFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    options?: {
+      containerTypeList?: any[];
+      portList?: any[];
+      selectedFclLcl?: 'FCL' | 'LCL';
+      cfsList?: any[];
+    }
+  ): void {
+    const pdfData = transformReleaseLetterApiData(apiData, company, branch, userData, logo, options);
+    this.generateReleaseLetter(pdfData);
+  }
+
+  async generateReleaseLetterBlobFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    options?: {
+      containerTypeList?: any[];
+      portList?: any[];
+      selectedFclLcl?: 'FCL' | 'LCL';
+      cfsList?: any[];
+    }
+  ): Promise<Blob> {
+    const pdfData = transformReleaseLetterApiData(apiData, company, branch, userData, logo, options);
+    return this.generateReleaseLetterBlob(pdfData);
   }
 
 

@@ -50,7 +50,10 @@ export function generatePackingListDocument(data: PackingListPdfData): any {
         margin: [-10, 0, -10, 0]
       }
     ],
-    footer: createFooterFunction(data.userData),
+    footer: createFooterFunction(data.userData, {
+      showPageNumbers: true,
+      pageMargins: [30, 8, 30, 0]
+    }),
     styles: getPdfStyles(),
     defaultStyle: PDF_DEFAULT_CONFIG.defaultStyle
   };

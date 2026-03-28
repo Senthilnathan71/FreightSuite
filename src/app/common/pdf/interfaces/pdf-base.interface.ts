@@ -7,6 +7,7 @@ export interface PdfCompanyInfo {
   addressLine1?: string;
   addressLine2?: string;
   city?: string;
+  countryCode?: string;
   postalCode?: string;
   phoneNumber?: string;
   email?: string;
@@ -17,6 +18,7 @@ export interface PdfBranchInfo {
   addressLine1?: string;
   addressLine2?: string;
   cityName?: string;
+  countryCode?: string;
   postalCode?: string;
   phoneNumber?: string;
   cityMaster?: {

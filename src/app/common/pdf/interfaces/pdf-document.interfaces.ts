@@ -1015,6 +1015,65 @@ export interface PaymentPdfData extends PdfDocumentBase {
   amountInWords?: string;
 }
 
+// =====================
+// JOURNAL VOUCHER PDF DATA
+// =====================
+export interface JournalVoucherDetailRow {
+  ledgerName?: string;
+  subledgerName?: string;
+  currencyCode?: string;
+  exchangeRate?: number;
+  currencyAmount?: number;
+  localAmount?: number;
+  drCr?: string;
+  narration?: string;
+}
+
+export interface JournalVoucherPdfData extends PdfDocumentBase {
+  voucher: {
+    narration?: string;
+    voucherNumber?: string;
+    voucherDate?: Date | string;
+    postDate?: Date | string;
+    postStatus?: string;
+  };
+  details: JournalVoucherDetailRow[];
+  totals: {
+    totalDebit: number;
+    totalCredit: number;
+    difference: number;
+  };
+}
+
+// =====================
+// RELEASE LETTER PDF DATA
+// =====================
+export interface ReleaseLetterPdfData extends PdfDocumentBase {
+  selectedFclLcl?: 'FCL' | 'LCL';
+  info: {
+    cfs?: string;
+    attn?: string;
+    shipper?: string;
+    vessel?: string;
+    voyage?: string;
+    date?: Date | string;
+    yourBookingRef?: string;
+    ourBookingRef?: string;
+    portOfDischarge?: string;
+    finalDestination?: string;
+  };
+  cargo: {
+    noOfContainers?: number | string;
+    containerType?: string;
+    noOfPackages?: number | string;
+    grossWeight?: number | string;
+    volume?: number | string;
+    marksAndNumber?: string;
+  };
+  releaseTo?: string;
+  remarks?: string;
+}
+
 export interface PaymentLineData {
   ledgerName?: string;
   narration?: string;

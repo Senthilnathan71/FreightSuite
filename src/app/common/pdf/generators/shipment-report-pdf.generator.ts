@@ -36,7 +36,8 @@ export function generateShipmentReportDocument(data: ShipmentReportPdfData): any
       buildChargesTable(data),
       buildSummaryTables(data)
     ],
-    footer: () => buildShipmentFooter(data),
+    footer: (currentPage: number, pageCount: number) =>
+      buildShipmentFooter(data, currentPage, pageCount),
     styles: getShipmentStyles(),
     defaultStyle: {
       fontSize: 10,
@@ -421,13 +422,42 @@ function getShipmentStyles(): any {
   };
 }
 
-function buildShipmentFooter(data: ShipmentReportPdfData): any {
+function buildShipmentFooter(
+  data: ShipmentReportPdfData,
+  currentPage?: number,
+  pageCount?: number
+): any {
   return {
     margin: [24, 0, 24, 12],
     columns: [
-      { text: `Printed By : ${data.userData?.userName || ''}`, alignment: 'left', width: '30%', fontSize: 7 },
-      { text: 'This document is computer-generated and does not require a signature.', alignment: 'center', width: '40%', fontSize: 7 },
-      { text: `Printed On : ${formatDate(new Date())}`, alignment: 'right', width: '30%', fontSize: 7 }
+      {
+        text: `Printed By : ${data.userData?.userName || ''}`,
+        alignment: 'left',
+        width: 120,
+        fontSize: 7,
+        noWrap: true
+      },
+      {
+        text: 'This document is computer-generated and does not require a signature.',
+        alignment: 'center',
+        width: '*',
+        fontSize: 7,
+        noWrap: true
+      },
+      {
+        text: `Printed On : ${formatDate(new Date())}`,
+        alignment: 'right',
+        width: 120,
+        fontSize: 7,
+        noWrap: true
+      },
+      {
+        text: currentPage && pageCount ? `Page ${currentPage} of ${pageCount}` : '',
+        alignment: 'right',
+        width: 60,
+        fontSize: 7,
+        noWrap: true
+      }
     ]
   };
 }

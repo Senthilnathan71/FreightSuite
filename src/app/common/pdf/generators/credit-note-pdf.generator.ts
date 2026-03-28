@@ -78,7 +78,30 @@ export function generateCreditNoteDocument(data: CreditNotePdfData): any {
         : []),
       ...buildAuthorisedSignatory(data)
     ],
-    footer: createFooterFunction(data.userData, { showPageNumbers: true }),
+    footer: (currentPage: number, pageCount: number) => ({
+      columns: [
+        {
+          text: `Printed By : ${data.userData?.userName || ''}`,
+          fontSize: 7,
+          alignment: 'left',
+          width: '25%'
+        },
+        {
+          text: 'This document is computer-generated and does not require a signature.',
+          fontSize: 7,
+          alignment: 'center',
+          noWrap: true,
+          width: '*'
+        },
+        {
+          text: `Printed On : ${formatDate(new Date())}  Page: ${currentPage} of ${pageCount}`,
+          fontSize: 7,
+          alignment: 'right',
+          width: '30%'
+        }
+      ],
+      margin: [30, 0, 30, 0]
+    }),
     styles: getPdfStyles(),
     defaultStyle: PDF_DEFAULT_CONFIG.defaultStyle
   };

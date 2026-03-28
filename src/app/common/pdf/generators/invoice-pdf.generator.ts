@@ -8,7 +8,6 @@
 
   import { InvoicePdfData, InvoiceChargeData, InvoiceBankDetail } from '../interfaces/pdf-document.interfaces';
   import { PdfTermItem } from '../interfaces/pdf-base.interface';
-  import { createFooterFunction } from '../builders/pdf-footer.builder';
   import { buildTwoColumnInfo } from '../builders/pdf-table.builder';
   import {
     buildTitle,
@@ -40,7 +39,7 @@
           configuredMargins[0] ?? 20,
           Math.max(configuredMargins[1] ?? dynamicTopMargin, dynamicTopMargin),
           configuredMargins[2] ?? 20,
-          configuredMargins[3] ?? 60
+          configuredMargins[3] ?? 12
         ]
       : [20, dynamicTopMargin, 20, 60];
 
@@ -93,11 +92,34 @@
   : []),
         ...buildAuthorisedSignatory(data)
       ],
-      footer: createFooterFunction(data.userData,{showPageNumbers:true}),
+      footer: (currentPage: number, pageCount: number) => buildInvoiceFooter(data, currentPage, pageCount),
       styles: getPdfStyles(),
       defaultStyle: PDF_DEFAULT_CONFIG.defaultStyle
     };
     
+  }
+
+  function buildInvoiceFooter(data: InvoicePdfData, currentPage: number, pageCount: number): any {
+    return {
+      margin: [24, 0, 24, 0],
+      columns: [
+        { text: `Printed By : ${data.userData?.userName || ''}`, alignment: 'left', width: '25%', fontSize: 7, noWrap: true },
+        {
+          text: 'This document is computer-generated and does not require a signature.',
+          alignment: 'center',
+          width: '*',
+          fontSize: 7,
+          noWrap: true
+        },
+        {
+          text: `Printed On : ${formatDate(new Date())}  Page: ${currentPage} of ${pageCount}`,
+          alignment: 'right',
+          width: '30%',
+          fontSize: 7,
+          noWrap: true
+        }
+      ]
+    };
   }
 
 

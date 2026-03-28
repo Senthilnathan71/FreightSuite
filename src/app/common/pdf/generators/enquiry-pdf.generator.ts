@@ -23,7 +23,7 @@ export function generateEnquiryDocument(data: EnquiryPdfData): any {
   return {
     pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
     pageOrientation: data.config?.pageOrientation || PDF_DEFAULT_CONFIG.pageOrientation,
-    pageMargins: data.config?.pageMargins || [20, 20, 20, 100],
+    pageMargins: data.config?.pageMargins || [20, 20, 20, 30],
     
       background: function (currentPage, pageSize) {
       return {
@@ -63,7 +63,30 @@ export function generateEnquiryDocument(data: EnquiryPdfData): any {
       // Remarks
       buildRemarks(data.enquiry?.remarks || '', { title: 'Enquiry Remarks', labelWidth: 105 }),
     ],
-    footer: createFooterFunction(data.userData),
+    footer: (currentPage: number, pageCount: number) => ({
+      columns: [
+        {
+          text: `Printed By : ${data.userData?.userName || ''}`,
+          fontSize: 7,
+          alignment: 'left',
+          width: '25%'
+        },
+        {
+          text: 'This document is computer-generated and does not require a signature.',
+          fontSize: 7,
+          alignment: 'center',
+          noWrap: true,
+          width: '*'
+        },
+        {
+          text: `Printed On : ${formatDate(new Date())}  Page: ${currentPage} of ${pageCount}`,
+          fontSize: 7,
+          alignment: 'right',
+          width: '30%'
+        }
+      ],
+      margin: [30, 0, 30, 5]
+    }),
     styles: getPdfStyles(),
     defaultStyle: PDF_DEFAULT_CONFIG.defaultStyle
   };

@@ -35,7 +35,7 @@ export function generateQuotationDocument(
       buildClosingMessage(),
       buildSignature(data)
     ],
-    footer: () => buildFooter(data),
+    footer: (currentPage: number, pageCount: number) => buildFooter(data, currentPage, pageCount),
     defaultStyle: {
       fontSize: 10,
       color: '#000'
@@ -352,13 +352,13 @@ function buildSignature(data: QuotationPdfData): any {
   };
 }
 
-function buildFooter(data: QuotationPdfData): any {
+function buildFooter(data: QuotationPdfData, currentPage: number, pageCount: number): any {
   return {
     margin: [24, 0, 24, 12],
     columns: [
-      { text: `Printed By : ${data.userData?.userName || ''}`, alignment: 'left', width: '30%', fontSize: 9 },
-      { text: 'This document is computer-generated and does not require a signature.', alignment: 'center', width: '40%', fontSize: 9 },
-      { text: `Printed On : ${formatDate(new Date())}`, alignment: 'right', width: '30%', fontSize: 9 }
+      { text: `Printed By : ${data.userData?.userName || ''}`, alignment: 'left', width: '25%', fontSize: 7 },
+      { text: 'This document is computer-generated and does not require a signature.', alignment: 'center', width: '*', fontSize: 7, noWrap: true },
+      { text: `Printed On : ${formatDate(new Date())}  Page: ${currentPage} of ${pageCount}`, alignment: 'right', width: '30%', fontSize: 7 }
     ]
   };
 }

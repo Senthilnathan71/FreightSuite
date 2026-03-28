@@ -50,7 +50,8 @@ export function generateDeliveryOrderDocument(data: DeliveryOrderPdfData): any {
       buildTermsSection(data),
       buildAgentOnlySection(data),
     ],
-    footer: () => buildFooter(data),
+    footer: (currentPage: number, pageCount: number) =>
+      buildFooter(data, currentPage, pageCount),
     styles: getDeliveryOrderStyles(),
     defaultStyle: {
       fontSize: 10,
@@ -668,14 +669,18 @@ function getDeliveryOrderStyles(): any {
   };
 }
 
-function buildFooter(data: DeliveryOrderPdfData): any {
+function buildFooter(
+  data: DeliveryOrderPdfData,
+  currentPage?: number,
+  pageCount?: number,
+): any {
   return {
     margin: [24, 0, 24, 6],
     columns: [
       {
         text: `Printed By : ${data.userData?.userName || ''}`,
         alignment: 'left',
-        width: 140,
+        width: 120,
         fontSize: 8,
       },
       {
@@ -688,7 +693,16 @@ function buildFooter(data: DeliveryOrderPdfData): any {
       {
         text: `Printed On : ${formatDate(new Date())}`,
         alignment: 'right',
-        width: 140,
+        width: 120,
+        fontSize: 8,
+      },
+      {
+        text:
+          currentPage && pageCount
+            ? `Page ${currentPage} of ${pageCount}`
+            : '',
+        alignment: 'right',
+        width: 60,
         fontSize: 8,
       },
     ],

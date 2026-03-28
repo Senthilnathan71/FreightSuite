@@ -89,12 +89,35 @@
         buildTermsSectionWithBullets(data.terms || []),
         ...buildAuthorisedSignatory(data)
       ],
-      footer: createFooterFunction(data.userData, {
-        showPrintedBy: true,
-        showPrintedOn: true,
-        showDisclaimer: true,
-        showPageNumbers: true
-      }),
+      footer: (currentPage: number, pageCount: number) => {
+        const disclaimerText = 'This document is computer-generated and does not require a signature.';
+        return {
+          columns: [
+            {
+              text: `Printed By : ${data.userData?.userName || ''}`,
+              fontSize: 7,
+              alignment: 'left',
+              width: '25%',
+              noWrap: true
+            },
+            {
+              text: disclaimerText,
+              fontSize: 7,
+              alignment: 'center',
+              noWrap: true,
+              width: '*'
+            },
+            {
+              text: `Printed On : ${formatDate(new Date())}  Page ${currentPage} of ${pageCount}`,
+              fontSize: 7,
+              alignment: 'right',
+              width: '30%',
+              noWrap: true
+            }
+          ],
+          margin: [30, 0, 30, 5]
+        };
+      },
       styles: getPdfStyles(),
       defaultStyle: PDF_DEFAULT_CONFIG.defaultStyle
     };
@@ -142,7 +165,11 @@
 
     const cityName = branch?.cityMaster?.cityName || branch?.cityName || company?.city;
     const addressLine2 = branch?.addressLine2 || company?.addressLine2;
-    const cityCountry = joinNonEmpty([addressLine2, cityName], ', ');
+    const countryCode = branch?.countryCode || company?.countryCode;
+    const cityWithCountry = cityName && countryCode
+      ? `${cityName} - ${countryCode}`
+      : (cityName || countryCode || '');
+    const cityCountry = joinNonEmpty([addressLine2, cityWithCountry], ', ');
     if (cityCountry) {
       companyInfoStack.push({
         text: cityCountry,
@@ -751,7 +778,7 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
     }
 
     return {
-      margin: [0, 0, 0, 0],
+      margin: [0, 4, 0, 6],
       columns: [
         {
           width: 88,
@@ -779,7 +806,7 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
    */
 function buildRemarks(remarks: string): any {
   return {
-    margin: [0, 2, 0, 2],
+    margin: [0, 2, 0, 8],
     columns: [
       {
         width: 90,
@@ -1188,6 +1215,7 @@ function buildRemarks(remarks: string): any {
         addressLine1: company?.addressLine1 || company?.Address || '',
         addressLine2: company?.addressLine2 || '',
         city: company?.City || '',
+        countryCode: company?.countryMaster?.countryCode || company?.CountryCode || company?.countryCode || company?.country?.countryCode || '',
         postalCode: company?.postal_code || company?.ZipCode || '',
         phoneNumber: company?.phoneNumber || company?.Phone || ''
       },
@@ -1196,6 +1224,7 @@ function buildRemarks(remarks: string): any {
         addressLine1: branch?.addressLine1 || '',
         addressLine2: branch?.addressLine2 || '',
         cityName: branch?.cityMaster?.cityName || '',
+        countryCode: branch?.countryMaster?.countryCode || branch?.CountryCode || branch?.countryCode || branch?.country?.countryCode || '',
         postalCode: branch?.postalCode || branch?.ZipCode || '',
         phoneNumber: branch?.phoneNumber || '',
         cityMaster: branch?.cityMaster

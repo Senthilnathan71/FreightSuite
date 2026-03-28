@@ -89,7 +89,35 @@
         buildTermsSectionWithBullets(data.terms || []),
         ...buildAuthorisedSignatory(data)
       ],
-      footer: createFooterFunction(data.userData,{showPageNumbers:true}),
+      footer: (currentPage: number, pageCount: number) => {
+        const disclaimerText = 'This document is computer-generated and does not require a signature.';
+        return {
+          columns: [
+            {
+              text: `Printed By : ${data.userData?.userName || ''}`,
+              fontSize: 7,
+              alignment: 'left',
+              width: '25%',
+              noWrap: true
+            },
+            {
+              text: disclaimerText,
+              fontSize: 7,
+              alignment: 'center',
+              noWrap: true,
+              width: '*'
+            },
+            {
+              text: `Printed On : ${formatDate(new Date())}  Page ${currentPage} of ${pageCount}`,
+              fontSize: 7,
+              alignment: 'right',
+              width: '30%',
+              noWrap: true
+            }
+          ],
+          margin: [30, 0, 30, 5]
+        };
+      },
       styles: getPdfStyles(),
       defaultStyle: PDF_DEFAULT_CONFIG.defaultStyle
     };

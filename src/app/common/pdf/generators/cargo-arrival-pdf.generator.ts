@@ -43,7 +43,8 @@ export function generateCargoArrivalDocument(data: CargoArrivalPdfData): any {
         : []),
       buildClosing(data),
     ],
-    footer: () => buildFooter(data),
+    footer: (currentPage: number, pageCount: number) =>
+      buildFooter(data, currentPage, pageCount),
     styles: getCargoArrivalStyles(),
     defaultStyle: {
       fontSize: 10,
@@ -621,7 +622,6 @@ function getCargoArrivalStyles(): any {
     tableHeader: {
       fontSize: 8,
       bold: true,
-      fillColor: '#e9ecef',
       alignment: 'center',
     },
     tableCell: { fontSize: 8 },
@@ -629,27 +629,44 @@ function getCargoArrivalStyles(): any {
   };
 }
 
-function buildFooter(data: CargoArrivalPdfData): any {
+function buildFooter(
+  data: CargoArrivalPdfData,
+  currentPage?: number,
+  pageCount?: number,
+): any {
   return {
     margin: [24, 0, 24, 12],
     columns: [
       {
         text: `Printed By : ${data.userData?.userName || ''}`,
         alignment: 'left',
-        width: '30%',
-        fontSize: 9,
+        width: 120,
+        fontSize: 8,
+        noWrap: true,
       },
       {
         text: 'This document is computer-generated and does not require a signature.',
         alignment: 'center',
-        width: '40%',
-        fontSize: 9,
+        width: '*',
+        fontSize: 8,
+        noWrap: true,
       },
       {
         text: `Printed On : ${formatDate(new Date())}`,
         alignment: 'right',
-        width: '30%',
-        fontSize: 9,
+        width: 120,
+        fontSize: 8,
+        noWrap: true,
+      },
+      {
+        text:
+          currentPage && pageCount
+            ? `Page ${currentPage} of ${pageCount}`
+            : '',
+        alignment: 'right',
+        width: 60,
+        fontSize: 8,
+        noWrap: true,
       },
     ],
   };

@@ -66,13 +66,13 @@ export function generateCommercialInvoiceDocument(data: CommercialInvoicePdfData
       buildCargoTotals(data, lightBorderedLayout),
       buildCargoTable(data, lightBorderedLayout)
     ],
-    footer: () => ({
+    footer: (currentPage: number, pageCount: number) => ({
       columns: [
         {
           text: `Printed By : ${data.userData?.userName || ''}`,
           fontSize: 8,
           alignment: 'left',
-          width: '25%'
+          width: 120
         },
         {
           text: 'This document is computer-generated and does not require a signature.',
@@ -84,7 +84,13 @@ export function generateCommercialInvoiceDocument(data: CommercialInvoicePdfData
           text: `Printed On : ${formatDate(new Date())}`,
           fontSize: 8,
           alignment: 'right',
-          width: '25%'
+          width: 120
+        },
+        {
+          text: currentPage && pageCount ? `Page ${currentPage} of ${pageCount}` : '',
+          fontSize: 8,
+          alignment: 'right',
+          width: 60
         }
       ],
       margin: [25, -6, 25, 0]

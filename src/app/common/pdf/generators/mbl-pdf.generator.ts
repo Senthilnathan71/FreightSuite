@@ -589,22 +589,33 @@ export function generateMblDocument(data: MblPdfData): any {
         margin: [0, 0, 0, 18],
       },
 
-      {
-        columns: [
-          { text: `Printed By: ${data.printedBy || ''}`, fontSize: 8 },
-          {
-            text: 'This document is computer-generated and does not require a signature.',
-            fontSize: 8,
-            alignment: 'center',
-          },
-          {
-            text: `Printed On: ${data.printedOn || ''}`,
-            fontSize: 8,
-            alignment: 'right',
-          },
-        ],
-      },
     ],
+    footer: (currentPage: number, pageCount: number) => ({
+      columns: [
+        {
+          text: `Printed By: ${data.printedBy || ''}`,
+          fontSize: 8,
+          alignment: 'left',
+          width: '25%',
+          noWrap: true,
+        },
+        {
+          text: 'This document is computer-generated and does not require a signature.',
+          fontSize: 8,
+          alignment: 'center',
+          width: '*',
+          noWrap: true,
+        },
+        {
+          text: `Printed On: ${data.printedOn || ''}  Page ${currentPage} of ${pageCount}`,
+          fontSize: 8,
+          alignment: 'right',
+          width: '30%',
+          noWrap: true,
+        },
+      ],
+      margin: [30, 0, 30, 5],
+    }),
   };
 }
 

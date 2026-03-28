@@ -41,7 +41,8 @@ export function generateSailingConfirmationDocument(data: SailingConfirmationPdf
       buildSailingDetails(data),
       buildLetterSection(data, containerText, jobNumberForLetter)
     ],
-    footer: () => buildSailingFooter(data),
+    footer: (currentPage: number, pageCount: number) =>
+      buildSailingFooter(data, currentPage, pageCount),
     styles: getPdfStyles(),
     defaultStyle: PDF_DEFAULT_CONFIG.defaultStyle
   };
@@ -132,26 +133,36 @@ function buildLetterSection(
   };
 }
 
-function buildSailingFooter(data: SailingConfirmationPdfData): any {
+function buildSailingFooter(
+  data: SailingConfirmationPdfData,
+  currentPage?: number,
+  pageCount?: number
+): any {
   return {
     columns: [
       {
         text: `Printed By: ${data.userData?.userName || ''}`,
         fontSize: 7,
         alignment: 'left',
-        width: '25%'
+        width: 120
       },
       {
         text: 'This document is computer-generated and does not require a signature.',
         fontSize: 7,
         alignment: 'center',
-        width: '50%'
+        width: '*'
       },
       {
         text: `Printed On: ${formatDate(new Date())}`,
         fontSize: 7,
         alignment: 'right',
-        width: '25%'
+        width: 120
+      },
+      {
+        text: currentPage && pageCount ? `Page ${currentPage} of ${pageCount}` : '',
+        fontSize: 7,
+        alignment: 'right',
+        width: 60
       }
     ],
     margin: [20, -2, 20, 8]

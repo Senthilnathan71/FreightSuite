@@ -37,7 +37,7 @@ export function generateJobCardDocument(data: JobCardPdfData): any {
       buildRevenueExpenseSection(data),
       buildInternalRemarks(data)
     ],
-    footer: () => buildFooter(data),
+    footer: (currentPage: number, pageCount: number) => buildFooter(data, currentPage, pageCount),
     styles: getJobCardStyles(),
     defaultStyle: {
       fontSize: 10,
@@ -443,19 +443,31 @@ function getJobCardStyles(): any {
     pageTitle: { fontSize: 10, bold: true, alignment: 'center' },
     sectionLabel: { fontSize: 8, bold: true },
     valueText: { fontSize: 8 },
-    tableHeader: { fontSize: 8, bold: true, fillColor: '#e9ecef', alignment: 'center' },
+    tableHeader: { fontSize: 8, bold: true, alignment: 'center' },
     tableCell: { fontSize: 8 },
     tableCellBold: { fontSize: 8, bold: true }
   };
 }
 
-function buildFooter(data: JobCardPdfData): any {
+function buildFooter(data: JobCardPdfData, currentPage: number, pageCount: number): any {
   return {
-    margin: [24, 0, 24, 12],
+    margin: [24, 0, 24, 6],
     columns: [
-      { text: `Printed By : ${data.userData?.userName || ''}`, alignment: 'left', width: '30%', fontSize: 9 },
-      { text: 'This document is computer-generated and does not require a signature.', alignment: 'center', width: '40%', fontSize: 9 },
-      { text: `Printed On : ${formatDate(new Date())}`, alignment: 'right', width: '30%', fontSize: 9 }
+      { text: `Printed By : ${data.userData?.userName || ''}`, alignment: 'left', width: '30%', fontSize: 7, noWrap: true },
+      {
+        text: 'This document is computer-generated and does not require a signature.',
+        alignment: 'center',
+        width: '40%',
+        fontSize: 7,
+        noWrap: true
+      },
+      {
+        text: `Printed On : ${formatDate(new Date())}  Page: ${currentPage} of ${pageCount}`,
+        alignment: 'right',
+        width: '30%',
+        fontSize: 7,
+        noWrap: true
+      }
     ]
   };
 }
