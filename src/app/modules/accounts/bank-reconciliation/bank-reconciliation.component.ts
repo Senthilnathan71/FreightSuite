@@ -14,6 +14,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { GlobalDateFormatService } from 'src/app/core/services/global-date-format.service';
 import { PageHeaderComponent, HeaderAction } from 'src/app/shared/components/header-list/header-list.component';
 import { AccountsService } from '../accounts.service';
+import {  FeatherModule } from 'angular-feather';
 
 interface BankTransactionRow {
   TransactionDate: Date | string | NgbDateStruct | null;
@@ -56,6 +57,7 @@ interface BankBookRow {
     NgbDatepickerModule,
     NgxSpinnerModule,
     PageHeaderComponent,
+    FeatherModule
   ],
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
