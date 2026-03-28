@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { BehaviorSubject, forkJoin, map, Observable, observable } from "rxjs";
 import { StorageMap } from "@ngx-pwa/local-storage";
-import { ActiveToast, ToastrService } from "ngx-toastr";
+import { ActiveToast, IndividualConfig, ToastrService } from "ngx-toastr";
 import * as CryptoJS from 'crypto-js';
 
 export interface FinancialYear {
@@ -198,7 +198,7 @@ export class AppSettingsService {
     showError(
         message = '',
         title = "Oops!",
-        option = { closeButton: true }
+        option: Partial<IndividualConfig> = { closeButton: true }
     ): ActiveToast<any> {
         return this.toaster.error(message, title, option)
     }
@@ -206,7 +206,7 @@ export class AppSettingsService {
     showWarning(
         message = '',
         title = "Alert!",
-        option = { closeButton: true }
+        option: Partial<IndividualConfig> = { closeButton: true }
     ): ActiveToast<any> {
         return this.toaster.warning(message, title, option)
     }

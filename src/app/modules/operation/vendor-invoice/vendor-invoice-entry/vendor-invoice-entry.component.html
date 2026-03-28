@@ -415,14 +415,24 @@
             <aside class="col-md-2">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!vendorInvoiceForm.get('InvoiceType')?.value">
-                <ng-select 
-                  [items]="invoiceTypes" 
-                  bindLabel="name" 
-                  bindValue="id" 
+                <ng-select
+                  [items]="invoiceTypes"
+                  bindLabel="name"
+                  bindValue="id"
                   formControlName="InvoiceType"
                 >
                 </ng-select>
-                <label class="input-label">Invoice Type</label>
+                <label class="input-label">Invoice Type
+                  @if (vendorInvoiceForm.get('InvoiceType')?.value === 'NONGST') {
+                    <i class="fas fa-info-circle text-danger ms-1 ivt-pulse-icon"
+                       [ngbTooltip]="'Zero Rated selected — tax rows will be created at 0%'"
+                       placement="top" container="body"></i>
+                  } @else if (vendorInvoiceForm.get('InvoiceType')?.value === 'BOS') {
+                    <i class="fas fa-info-circle text-danger ms-1 ivt-pulse-icon"
+                       [ngbTooltip]="'Exempt selected — no tax rows will be created'"
+                       placement="top" container="body"></i>
+                  }
+                </label>
               </div>
             </aside>
 

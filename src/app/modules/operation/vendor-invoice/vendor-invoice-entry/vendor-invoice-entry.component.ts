@@ -11,7 +11,7 @@ import {
   ValidatorFn,
   ValidationErrors
 } from '@angular/forms';
-import { NgbModal, NgbDatepickerModule, NgbModalRef, NgbDropdownModule, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbDatepickerModule, NgbModalRef, NgbDropdownModule, NgbTooltipModule, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CommonModule } from '@angular/common';
@@ -60,6 +60,7 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     NgSelectModule,
     FeatherModule,
     NgbDatepickerModule,
+    NgbTooltipModule,
     ReactiveFormsModule,
     FormsModule,
     NgxSpinnerModule,
@@ -230,6 +231,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
   isSaving: boolean = false;
   private initialFormValue : any = null;
   private destroy$ = new Subject<void>();
+  private _originalHSSACValues: (number | null)[] = [];
+  private _previousInvoiceType: string = 'REG';
   
   /** OTHERS */
   // Declaration for Get OS
@@ -490,11 +493,62 @@ export class VendorInvoiceEntryComponent implements OnInit {
   }
 
 
+  private getHSSACListForRow(i: number): any[] {
+    return this.isNonJob ? (this.hssacListForNonJob || []) : (this.hssacList[i] || []);
+  }
+
+  private handleZeroRatedSwitch(invoiceType: string): boolean {
+    if (invoiceType === 'NONGST') {
+      const failedCharges: string[] = [];
+      for (let i = 0; i < this.details.length; i++) {
+        const row = this.details.at(i) as FormGroup;
+        const zeroRated = this.taxCalculationService.findZeroRatedHSSAC(this.getHSSACListForRow(i));
+        if (!zeroRated) {
+          const chargeSid = row.get('ChargeMasterSid')?.value;
+          const name = this.chargeList.find((c: any) => c.ChargeMasterSid === chargeSid)?.chargeName || `Row ${i + 1}`;
+          failedCharges.push(name);
+        }
+      }
+      if (failedCharges.length > 0) {
+        this.appSettingService.showError(
+          `The following charges are not mapped to a Zero Rated HSSAC:<br>${failedCharges.map(n => `&bull; ${n}`).join('<br>')}<br><br>Please update the Charge Master or select a different charge.`,
+          'Zero Rated — HSSAC Missing',
+          { closeButton: true, enableHtml: true }
+        );
+        return false;
+      }
+      for (let i = 0; i < this.details.length; i++) {
+        const row = this.details.at(i) as FormGroup;
+        const zeroRated = this.taxCalculationService.findZeroRatedHSSAC(this.getHSSACListForRow(i))!;
+        this._originalHSSACValues[i] = row.get('HSSACMasterSid')?.value;
+        row.get('HSSACMasterSid')?.setValue(zeroRated.HSSACMasterSid, { emitEvent: false });
+        row.get('HSSACMasterSid')?.disable({ emitEvent: false });
+      }
+      return true;
+    } else {
+      if (this._originalHSSACValues.length > 0) {
+        for (let i = 0; i < this.details.length; i++) {
+          const row = this.details.at(i) as FormGroup;
+          row.get('HSSACMasterSid')?.enable({ emitEvent: false });
+          row.get('HSSACMasterSid')?.setValue(this._originalHSSACValues[i] ?? null, { emitEvent: false });
+        }
+        this._originalHSSACValues = [];
+      }
+      return true;
+    }
+  }
+
   subscribeToValueChanges() {
     this.vendorInvoiceForm.get('InvoiceType')?.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe((invoiceType) => {
         if (!this.vendorInvoiceForm.get('PlaceOfSupply')?.value) return;
+        const ok = this.handleZeroRatedSwitch(invoiceType);
+        if (!ok) {
+          this.vendorInvoiceForm.get('InvoiceType')?.setValue(this._previousInvoiceType, { emitEvent: false });
+          return;
+        }
+        this._previousInvoiceType = invoiceType;
         const classification = this.taxCalculationService.updateInvoiceType(invoiceType as any);
         this.vendorInvoiceForm.get('GSTType')?.setValue(classification.formGSTType, { emitEvent: false });
         if (this.isPosted) return;
@@ -1203,6 +1257,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
     // All validations passed
     this.details.push(this.createDetailGroup());
+    this._originalHSSACValues.push(null);
     this.onDetailChange(this.details.length - 1, 'CurrencyCode');
     this.vendorInvoiceForm.updateValueAndValidity();
   }
@@ -1295,6 +1350,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   removeDetailRow(index: number) {
     if (this.details.length > index) this.details.removeAt(index);
+    if (this._originalHSSACValues.length > index) this._originalHSSACValues.splice(index, 1);
     this.vendorInvoiceForm.updateValueAndValidity();
     this.recalculateAllRows();
   }
@@ -1541,6 +1597,27 @@ export class VendorInvoiceEntryComponent implements OnInit {
               });
             }
             this.recalcRow(index);
+            // If NONGST mode, override with zero-rated HSSAC
+            if (patch && this.vendorInvoiceForm.get('InvoiceType')?.value === 'NONGST') {
+              const hssacSource = this.getHSSACListForRow(index);
+              const zeroRated = this.taxCalculationService.findZeroRatedHSSAC(hssacSource);
+              if (zeroRated) {
+                this._originalHSSACValues[index] = this.details.at(index).get('HSSACMasterSid')?.value;
+                this.details.at(index).get('HSSACMasterSid')?.setValue(zeroRated.HSSACMasterSid, { emitEvent: false });
+                this.details.at(index).get('HSSACMasterSid')?.disable({ emitEvent: false });
+              } else {
+                this.details.at(index).patchValue(
+                  { ChargeMasterSid: null, ChargeDescription: '', HSSACMasterSid: null, ChargeUOMSid: null, LedgerMasterSid: null, COAMasterSid: null },
+                  { emitEvent: false }
+                );
+                this.hssacList[index] = [];
+                this.appSettingService.showError(
+                  `<b>${chargeName}</b> is not mapped to a Zero Rated HSSAC.<br><br>Please update the Charge Master or select a different charge.`,
+                  'Zero Rated — HSSAC Missing',
+                  { closeButton: true, enableHtml: true }
+                );
+              }
+            }
           } else {
             this.appSettingService.showError(`Error fetching HSSAC details for ${chargeName}`);
             this.hssacList[index] = null;
@@ -1580,6 +1657,28 @@ export class VendorInvoiceEntryComponent implements OnInit {
       this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
       if (resolve) resolve(false);
       return;
+    }
+
+    // Zero Rated guard: every row must have a zero-rated HSSAC applied
+    if (this.vendorInvoiceForm.get('InvoiceType')?.value === 'NONGST') {
+      const failedRows: string[] = [];
+      for (let i = 0; i < this.details.length; i++) {
+        const hssacSid = this.details.at(i).getRawValue().HSSACMasterSid;
+        const hssacSource = this.isNonJob ? (this.hssacListForNonJob || []) : (this.hssacList[i] || []);
+        const hssac = hssacSource.find((h: any) => h.HSSACMasterSid === hssacSid);
+        if (!hssac || parseFloat(hssac.TaxRate) !== 0) {
+          failedRows.push(`Row ${i + 1}`);
+        }
+      }
+      if (failedRows.length > 0) {
+        this.appSettingService.showError(
+          `The following rows do not have a Zero Rated HSSAC applied:<br>${failedRows.map(r => `&bull; ${r}`).join('<br>')}<br><br>Please select a charge with a Zero Rated HSSAC.`,
+          'Zero Rated — Validation Failed',
+          { closeButton: true, enableHtml: true }
+        );
+        if (resolve) resolve(false);
+        return;
+      }
     }
 
     const raw = this.vendorInvoiceForm.getRawValue();

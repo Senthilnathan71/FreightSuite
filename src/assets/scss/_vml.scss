@@ -2,6 +2,20 @@
   --vml: true;
 }
 
+// Invoice type info icon — used in invoice-entry, vendor-invoice-entry, cost-entry, credit-note-entry, vendor-credit-note-entry
+.ivt-pulse-icon {
+  font-size: 15px;
+  cursor: pointer;
+  vertical-align: middle;
+  pointer-events: auto;
+  animation: ivt-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes ivt-pulse {
+  0%, 100% { opacity: 1;    transform: scale(1);    }
+  50%       { opacity: 0.5; transform: scale(1.2);  }
+}
+
 .modal-container {
   position: fixed;
   top: 0;

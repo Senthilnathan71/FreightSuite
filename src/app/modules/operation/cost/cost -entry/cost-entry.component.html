@@ -1077,15 +1077,25 @@
               <!-- Invoice Type -->
               <div class="col-md-3">
                 <div class="custom-form-group custom-form-group-select" [class.filled]="!!voucherForm.get('InvoiceType')?.value">
-                <ng-select 
-                  formControlName="InvoiceType"
-                  [items]="invoiceTypes" 
-                  bindLabel="name"
-                  bindValue="id"
-                  [clearable]="false"
-                >
-                </ng-select>
-                <label class="input-label fw-bold">Invoice Type</label>
+                  <ng-select
+                    formControlName="InvoiceType"
+                    [items]="invoiceTypes"
+                    bindLabel="name"
+                    bindValue="id"
+                    [clearable]="false"
+                  >
+                  </ng-select>
+                  <label class="input-label fw-bold">Invoice Type
+                    @if (voucherForm.get('InvoiceType')?.value === 'NONGST') {
+                      <i class="fas fa-info-circle text-danger ms-1 ivt-pulse-icon"
+                         [ngbTooltip]="'Zero Rated selected — tax rows will be created at 0%'"
+                         placement="top" container="body"></i>
+                    } @else if (voucherForm.get('InvoiceType')?.value === 'BOS') {
+                      <i class="fas fa-info-circle text-danger ms-1 ivt-pulse-icon"
+                         [ngbTooltip]="'Exempt selected — no tax rows will be created'"
+                         placement="top" container="body"></i>
+                    }
+                  </label>
                 </div>
               </div>
               <!-- Billing Currency -->
@@ -1218,7 +1228,7 @@
           <tr *ngFor="let detail of details.controls ; let i = index" [formGroupName]="i" [class.table-primary]="detail.get('isSelected')?.value">
             <td>
               <input type="checkbox" class="form-check-input" formControlName="isSelected"
-                (change)="calculateTaxAmountForRow(i)">
+                (change)="onRowSelectChange(i)">
             </td>
             <td>
               {{ detail.get('ChargeCode')?.value || '-' }}

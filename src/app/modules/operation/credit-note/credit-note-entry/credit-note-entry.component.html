@@ -484,7 +484,17 @@
                     formControlName="InvoiceType"
                   >
                   </ng-select>
-                  <label class="input-label">Invoice Type</label>
+                  <label class="input-label">Invoice Type
+                    @if (creditNoteForm.get('InvoiceType')?.value === 'NONGST') {
+                      <i class="fas fa-info-circle text-danger ms-1 ivt-pulse-icon"
+                         [ngbTooltip]="'Zero Rated selected — tax rows will be created at 0%'"
+                         placement="top" container="body"></i>
+                    } @else if (creditNoteForm.get('InvoiceType')?.value === 'BOS') {
+                      <i class="fas fa-info-circle text-danger ms-1 ivt-pulse-icon"
+                         [ngbTooltip]="'Exempt selected — no tax rows will be created'"
+                         placement="top" container="body"></i>
+                    }
+                  </label>
                 </div>
               </aside>
 

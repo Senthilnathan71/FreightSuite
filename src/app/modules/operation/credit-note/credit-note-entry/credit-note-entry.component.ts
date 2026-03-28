@@ -18,6 +18,7 @@ import {
   NgbDatepickerModule,
   NgbDateStruct,
   NgbDropdownModule,
+  NgbTooltipModule,
   NgbModal,
   NgbModalRef,
 } from '@ng-bootstrap/ng-bootstrap';
@@ -107,6 +108,7 @@ interface rateComparison {
     NgSelectModule,
     FeatherModule,
     NgbDatepickerModule,
+    NgbTooltipModule,
     ReactiveFormsModule,
     FormsModule,
     NgxSpinnerModule,

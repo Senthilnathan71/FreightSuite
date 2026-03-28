@@ -261,6 +261,10 @@ export class TaxCalculationService {
     return this.deriveClassification();
   }
 
+  findZeroRatedHSSAC(hssacList: any[]): any | null {
+    return hssacList?.find(h => parseFloat(h.TaxRate) === 0) ?? null;
+  }
+
   // ── calculateRowTax() — SYNCHRONOUS ───────────────────────────────────────
 
   calculateRowTax(input: RowTaxInput): RowTaxResult {

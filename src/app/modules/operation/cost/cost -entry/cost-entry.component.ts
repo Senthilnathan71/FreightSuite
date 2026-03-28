@@ -2194,12 +2194,94 @@ createRateFormGroup(data?: any): FormGroup {
     this.subscribeToVoucherValueChanges();
   }
 
+  private _originalHSSACValues: (number | null)[] = [];
+  private _previousInvoiceType: string = 'REG';
+
+  private getHSSACListForRow(i: number): any[] {
+    return this.chargeHSSACMapping[i] || [];
+  }
+
+  private applyZeroRatedToRow(index: number): void {
+    if (this.voucherForm.get('InvoiceType')?.value !== 'NONGST') return;
+    const row = this.details.at(index) as FormGroup;
+    if (!row.get('isSelected')?.value) return;
+    const zeroRated = this.taxCalculationService.findZeroRatedHSSAC(this.getHSSACListForRow(index));
+    if (zeroRated) {
+      this._originalHSSACValues[index] = row.get('HSSACMasterSid')?.value;
+      row.get('HSSACMasterSid')?.setValue(zeroRated.HSSACMasterSid, { emitEvent: false });
+      row.get('HSSACMasterSid')?.disable({ emitEvent: false });
+    } else {
+      const chargeSid = row.get('ChargeMasterSid')?.value;
+      const name = this.chargeList.find((c: any) => c.ChargeMasterSid === chargeSid)?.chargeName || `Row ${index + 1}`;
+      row.get('isSelected')?.setValue(false, { emitEvent: false });
+      this.calculateTaxAmountForRow(index);
+      this.appSettingService.showError(
+        `<b>${name}</b> is not mapped to a Zero Rated HSSAC.<br>The row has been deselected.<br><br>Please update the Charge Master or select a different charge.`,
+        'Zero Rated — HSSAC Missing',
+        { closeButton: true, enableHtml: true }
+      );
+    }
+  }
+
+  onRowSelectChange(index: number): void {
+    this.calculateTaxAmountForRow(index);
+    this.applyZeroRatedToRow(index);
+  }
+
+  private handleZeroRatedSwitch(invoiceType: string): boolean {
+    if (invoiceType === 'NONGST') {
+      const failedCharges: string[] = [];
+      for (let i = 0; i < this.details.length; i++) {
+        const row = this.details.at(i) as FormGroup;
+        if (!row.get('isSelected')?.value) continue;
+        const zeroRated = this.taxCalculationService.findZeroRatedHSSAC(this.getHSSACListForRow(i));
+        if (!zeroRated) {
+          const chargeSid = row.get('ChargeMasterSid')?.value;
+          const name = this.chargeList.find((c: any) => c.ChargeMasterSid === chargeSid)?.chargeName || `Row ${i + 1}`;
+          failedCharges.push(name);
+        }
+      }
+      if (failedCharges.length > 0) {
+        this.appSettingService.showError(
+          `The following charges are not mapped to a Zero Rated HSSAC:<br>${failedCharges.map(n => `&bull; ${n}`).join('<br>')}<br><br>Please update the Charge Master or select a different charge.`,
+          'Zero Rated — HSSAC Missing',
+          { closeButton: true, enableHtml: true }
+        );
+        return false;
+      }
+      for (let i = 0; i < this.details.length; i++) {
+        const row = this.details.at(i) as FormGroup;
+        if (!row.get('isSelected')?.value) continue;
+        const zeroRated = this.taxCalculationService.findZeroRatedHSSAC(this.getHSSACListForRow(i))!;
+        this._originalHSSACValues[i] = row.get('HSSACMasterSid')?.value;
+        row.get('HSSACMasterSid')?.setValue(zeroRated.HSSACMasterSid, { emitEvent: false });
+        row.get('HSSACMasterSid')?.disable({ emitEvent: false });
+      }
+      return true;
+    } else {
+      if (this._originalHSSACValues.length > 0) {
+        for (let i = 0; i < this.details.length; i++) {
+          const row = this.details.at(i) as FormGroup;
+          row.get('HSSACMasterSid')?.enable({ emitEvent: false });
+          row.get('HSSACMasterSid')?.setValue(this._originalHSSACValues[i] ?? null, { emitEvent: false });
+        }
+        this._originalHSSACValues = [];
+      }
+      return true;
+    }
+  }
+
   private subscribeToVoucherValueChanges() {
     this.voucherForm.get('InvoiceType')?.valueChanges.subscribe((invoiceType) => {
       if (!this.voucherForm.get('PlaceOfSupply')?.value) {
         return;
       }
-
+      const ok = this.handleZeroRatedSwitch(invoiceType);
+      if (!ok) {
+        this.voucherForm.get('InvoiceType')?.setValue(this._previousInvoiceType, { emitEvent: false });
+        return;
+      }
+      this._previousInvoiceType = invoiceType;
       const classification = this.refreshVoucherTaxClassification(invoiceType as any);
       this.voucherForm.get('GSTType')?.setValue(classification.formGSTType, { emitEvent: false });
       this.recalculateVoucherTaxes();
@@ -3061,12 +3143,11 @@ createRateFormGroup(data?: any): FormGroup {
   }
 
   selectAllCharges() {
-    this.details.controls.forEach((group,index) => {
-      group.patchValue({
-        isSelected: true
-      });
+    this.details.controls.forEach((group, index) => {
+      group.patchValue({ isSelected: true });
       this.calculateTaxAmountForRow(index);
-    })
+      this.applyZeroRatedToRow(index);
+    });
   }
 
   deselectAllCharges() {
@@ -3127,6 +3208,30 @@ createRateFormGroup(data?: any): FormGroup {
 
       
       if(!userDecision){
+        return;
+      }
+    }
+
+    // Zero Rated guard: every selected row must have a zero-rated HSSAC applied
+    if (this.voucherForm.get('InvoiceType')?.value === 'NONGST') {
+      const failedCharges: string[] = [];
+      for (let i = 0; i < this.details.length; i++) {
+        const row = this.details.at(i) as FormGroup;
+        if (!row.get('isSelected')?.value) continue;
+        const hssacSid = row.getRawValue().HSSACMasterSid;
+        const hssac = this.getHSSACListForRow(i).find((h: any) => h.HSSACMasterSid === hssacSid);
+        if (!hssac || parseFloat(hssac.TaxRate) !== 0) {
+          const chargeSid = row.get('ChargeMasterSid')?.value;
+          const name = this.chargeList.find((c: any) => c.ChargeMasterSid === chargeSid)?.chargeName || `Row ${i + 1}`;
+          failedCharges.push(name);
+        }
+      }
+      if (failedCharges.length > 0) {
+        this.appSettingService.showError(
+          `The following charges do not have a Zero Rated HSSAC applied:<br>${failedCharges.map(n => `&bull; ${n}`).join('<br>')}<br><br>Please select charges with a Zero Rated HSSAC or untick the affected rows.`,
+          'Zero Rated — Validation Failed',
+          { closeButton: true, enableHtml: true }
+        );
         return;
       }
     }
