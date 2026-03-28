@@ -1,4 +1,5 @@
 import { Component, ViewChild, TemplateRef, OnInit, OnDestroy, ChangeDetectorRef, ViewEncapsulation, HostListener } from '@angular/core';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import {
   NgbAccordionModule,
   NgbDatepickerModule,
@@ -393,7 +394,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     private datePipe: DatePipe,
     private exportExcelService: ExcelExportService,
     public mps: MenuPermissionService,
-    private sidebarService : VerticalSidebarService
+    private sidebarService : VerticalSidebarService,
+    private emailTriggerService: EmailTriggerService,
   ) {
     this.initForm();
     this.initContainerForm();
@@ -412,8 +414,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     this.userData = this.appSettingsService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
     this.countryOfCompany = this.currentCompany?.CountryName;
-    this.currentBranch = this.appSettingsService.decrypt(localStorage.getItem('selected-branch'));
-    const currentCompanyInfo = this.appSettingsService.getCurrentCompanyInfo();
+    this.currentBranch = this.appSettingsService.getCurrentBranchInfo();
+        const currentCompanyInfo = this.appSettingsService.getCurrentCompanyInfo();
     this.availableTransferBranches = (currentCompanyInfo?.userBranchMaster || [])
       .filter((ubm: any) => ubm?.GiveAccess === 'Y' && ubm?.branchMaster?.BranchMasterSid !== this.currentBranch?.BranchMasterSid)
       .map((ubm: any) => ubm.branchMaster);
@@ -1990,31 +1992,17 @@ onETDDateSelect(): void {
   }
 
   private isCompanyCountryPort(port: any): boolean {
-    const companyCountryId = this.toNumericValue(this.currentCompany?.CountryMasterSid);
+    const companyCountryId = this.toNumericValue(this.currentBranch?.CountryMasterSid ?? this.currentBranch?.branchMaster?.CountryMasterSid);
     const portCountryId = this.toNumericValue(port?.CountryMasterSid);
 
-    if (companyCountryId && portCountryId) {
-      return companyCountryId === portCountryId;
-    }
-
-    const companyCountryName = this.normalizePortText(this.currentCompany?.CountryName || this.countryOfCompany);
-    const portCountryName = this.normalizePortText(port?.Country || port?.countryMaster?.countryName);
-
-    return !!companyCountryName && !!portCountryName && companyCountryName === portCountryName;
+    return !!companyCountryId && !!portCountryId && companyCountryId === portCountryId;
   }
 
   private isForeignCountryPort(port: any): boolean {
-    const companyCountryId = this.toNumericValue(this.currentCompany?.CountryMasterSid);
+    const companyCountryId = this.toNumericValue(this.currentBranch?.CountryMasterSid ?? this.currentBranch?.branchMaster?.CountryMasterSid);
     const portCountryId = this.toNumericValue(port?.CountryMasterSid);
 
-    if (companyCountryId && portCountryId) {
-      return companyCountryId !== portCountryId;
-    }
-
-    const companyCountryName = this.normalizePortText(this.currentCompany?.CountryName || this.countryOfCompany);
-    const portCountryName = this.normalizePortText(port?.Country || port?.countryMaster?.countryName);
-
-    return !!companyCountryName && !!portCountryName && companyCountryName !== portCountryName;
+    return !!companyCountryId && !!portCountryId && companyCountryId !== portCountryId;
   }
 
   private getPortBySid(portSid: number | null | undefined): any | null {
@@ -3406,6 +3394,19 @@ onETDDateSelect(): void {
 
   navigateToBooking(): void {
     this.router.navigate(['operation/booking/entry']);
+  }
+
+  sendManualMail(): void {
+    this.emailTriggerService.triggerManualEmails({
+      companyId: this.currentCompany?.CompanyMasterSid,
+      branchId: this.currentBranch?.BranchMasterSid,
+      menuMasterSid: this.MenuMasterSid,
+      action: 'UPDATE',
+      context: {
+        userName: this.userData?.userName,
+        menuEmail: ''
+      }
+    });
   }
 
   navigateBack(): void {

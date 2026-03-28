@@ -139,8 +139,14 @@
           <span>Reset</span>
         </button>
       </div>
+      <div class="action-group" *ngIf="isEditMode">
+        <button class="btn btn-info btn-sm text-nowrap" (click)="sendManualMail()">
+          <i class="fas fa-envelope me-1"></i>
+          <span>Send Mail</span>
+        </button>
+      </div>
       <div class="action-group primary">
-        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" 
+        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
         appPreventMultiClick
         (click)="onSubmit()"
         [disabled]="isSaving">
@@ -2562,9 +2568,9 @@
 
 
     <div class="workspace-content" [hidden]="selectedTab !== 'Connection'">
-      <app-connection screenName="Booking" [dataItems]="bookingConnectionsArr" [resetTrigger]="resetTriggerConnection"
+      <app-connection screenName="HouseJob" [dataItems]="bookingConnectionsArr" [resetTrigger]="resetTriggerConnection"
         [minDate]="minStartDate" [portList]="portList" [disableAdd]="PODandFPODsame" [vesselList]="vesselList"
-        (dataEmitter)="handleConnectionChange($event)">
+        (dataEmitter)="handleConnectionChange($event)" [connectionIdField]="'HouseJobConnectionSid'">
       </app-connection>
       <!-- <ng-container *ngComponentOutlet="connectionComponent"></ng-container> -->
     </div>

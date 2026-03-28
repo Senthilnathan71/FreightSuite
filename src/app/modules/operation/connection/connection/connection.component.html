@@ -21,7 +21,7 @@
             <table class="modern-table">
                 <thead>
                     <tr>
-                        <th width="10%">Actions</th>
+                        <th width="5%"></th>
                         <th>Mode</th>
                         <th>{{ getVesselLabel() }}</th>
                         <th>{{ getVoyageLabel() }}</th>
@@ -38,15 +38,19 @@
                     @for(connection of slicedConnectionFormArr ; track connection ; let connectionIndex = $index){
                     <tr class="table-row">
                         <td class="actions-cell">
-                            <div class="d-flex align-items-center justify-content-center">
-                            <a class="text-info mx-2" class="link mx-2 ps-3"
+                            <div class="d-flex align-items-center">
+                            <a class="text-info mx-2" class="link"
                                 (click)="openConnectionModal(connectionModal,connection,connectionIndex)">
-                                <i-feather class="feather-sm text-info" name="eye"></i-feather>
+                               <i class="fas fa-eye text-center fs-2"></i>
                             </a>
 
-                            <a class="text-danger mx-2 ps-3 border-start"
-                                (click)="deleteBookingConnection(connectionIndex,connection.TransactionSid)">
-                                <i-feather name="trash-2" class="feather-sm"></i-feather>
+                            <a class="text-danger mx-2 ps-2"
+                                (click)="deleteBookingConnection(connectionIndex, connection[connectionIdField])">
+                               <span *ngIf="deletingConnectionIndex === ((page1 - 1) * pageSize1) + connectionIndex; else deleteIcon"
+                                 class="spinner-border spinner-border-sm text-danger" role="status" aria-hidden="true"></span>
+                               <ng-template #deleteIcon>
+                                 <i class="fas fa-trash text-center fs-2"></i>
+                               </ng-template>
                             </a>
 
                         </div>
@@ -69,7 +73,7 @@
             </table>
             <div class="mt-2">
                 <ngb-pagination class="d-flex justify-content-end" [collectionSize]="connectionDataLength" [pageSize]="pageSize1"
-                    [(page)]="page1" (pageChange)="updateConnectionPagination()" [rotate]="true" [ellipses]="false" [maxSize]="10">
+                    [(page)]="page1" (pageChange)="updateConnectionPagination()" [rotate]="true" [ellipses]="false" [maxSize]="10" size="sm">
                 </ngb-pagination>
             </div>
         </div>

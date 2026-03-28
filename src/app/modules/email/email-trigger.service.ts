@@ -16,6 +16,7 @@ export interface EmailTriggerParams {
   action: 'CREATE' | 'UPDATE';
   context?: { [key: string]: any };
   changedFields?: string[];
+  attachmentFile?: File;
 }
 
 @Injectable({
@@ -83,7 +84,7 @@ export class EmailTriggerService {
   ) {}
 
   triggerEmails(params: EmailTriggerParams): void {
-    const { companyId, branchId, menuMasterSid, action, context, changedFields } = params;
+    const { companyId, branchId, menuMasterSid, action, context, changedFields, attachmentFile } = params;
     const menuSid = Number(menuMasterSid);
 
     this.emailService.getAllByCompany(companyId).subscribe({
@@ -100,9 +101,9 @@ export class EmailTriggerService {
 
         for (const config of configs) {
           if (config.AutoPopup === 'A') {
-            this.sendAutoEmail(config, companyId, branchId, context);
+            this.sendAutoEmail(config, companyId, branchId, context, attachmentFile);
           } else if (config.AutoPopup === 'P') {
-            this.openEmailPopup(config, context);
+            this.openEmailPopup(config, context, attachmentFile);
           }
         }
       }
@@ -110,7 +111,7 @@ export class EmailTriggerService {
   }
 
   triggerManualEmails(params: EmailTriggerParams): void {
-    const { companyId, branchId, menuMasterSid, context } = params;
+    const { companyId, branchId, menuMasterSid, context, attachmentFile } = params;
     const menuSid = Number(menuMasterSid);
 
     this.emailService.getAllByCompany(companyId).subscribe({
@@ -130,9 +131,9 @@ export class EmailTriggerService {
 
         for (const config of configs) {
           if (config.AutoPopup === 'A') {
-            this.sendAutoEmail(config, companyId, branchId, context);
+            this.sendAutoEmail(config, companyId, branchId, context, attachmentFile);
           } else {
-            this.openEmailPopup(config, context);
+            this.openEmailPopup(config, context, attachmentFile);
           }
         }
       }
@@ -204,7 +205,7 @@ export class EmailTriggerService {
   }
 
   // ðŸ”¥ MAIN DESIGN UPGRADE HERE
-  private async sendAutoEmail(config: any, companyId: number, branchId: number, context?: any): Promise<void> {
+  private async sendAutoEmail(config: any, companyId: number, branchId: number, context?: any, attachmentFile?: File): Promise<void> {
     const userData = this.appSettingService.getDecryptedUserProfile();
     const enrichedContext = await this.enrichContext(context);
 
@@ -236,6 +237,10 @@ export class EmailTriggerService {
 
     formData.append('CreatedBy', userData?.userEmail || '');
 
+    if (config.AttachmentRequire === 'Y' && attachmentFile) {
+      formData.append('attachments', attachmentFile, attachmentFile.name);
+    }
+
     this.settingsService.createNewEmailLog(formData).subscribe({
       next: (resp: any) => {
         if (resp.status) {
@@ -249,7 +254,7 @@ export class EmailTriggerService {
       }
     });
   }
-  private async openEmailPopup(config: any, context?: any): Promise<void> {
+  private async openEmailPopup(config: any, context?: any, attachmentFile?: File): Promise<void> {
     const enrichedContext = await this.enrichContext(context);
 
     const modalRef = this.ngbModal.open(EmailEntryComponent, {
@@ -263,7 +268,8 @@ export class EmailTriggerService {
       EmailCC: this.replacePlaceholders(config.CcEmailidFrom || '', enrichedContext),
       EmailBCC: '',
       Subject: this.replacePlaceholders(config.MailSubject, enrichedContext),
-      Mailbody: this.replacePlaceholders(config.MailBody, enrichedContext)
+      Mailbody: this.replacePlaceholders(config.MailBody, enrichedContext),
+      ...(config.AttachmentRequire === 'Y' && attachmentFile ? { attachments: [attachmentFile] } : {})
     };
   }
 

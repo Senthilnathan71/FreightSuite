@@ -1989,12 +1989,19 @@ private parseFloatSafe(value: any): number {
   }
 
 
-  sendManualMail(): void {
+  async sendManualMail(): Promise<void> {
+    const pdfBlob = await this.generatePDFBlob();
+    let attachmentFile: File | undefined;
+    if (pdfBlob) {
+      attachmentFile = new File([pdfBlob], (this.enquiryData?.EnquiryNumber || 'Enquiry') + '.pdf', { type: 'application/pdf' });
+    }
+
     this.emailTriggerService.triggerManualEmails({
       companyId: this.currentCompany?.CompanyMasterSid,
       branchId: this.currentBranch?.BranchMasterSid,
       menuMasterSid: this.MenuMasterSid,
       action: 'UPDATE',
+      attachmentFile,
       context: {
         EnquiryNo: this.enquiryData?.EnquiryNumber,
         date: this.enquiryData?.EnquiryDate ? new Date(this.enquiryData.EnquiryDate).toLocaleDateString() : '',

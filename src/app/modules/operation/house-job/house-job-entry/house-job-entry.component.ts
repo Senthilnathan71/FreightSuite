@@ -1,4 +1,5 @@
 import { Component, ViewChild, TemplateRef, OnInit, Input } from '@angular/core';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -532,6 +533,7 @@ hblModalRef?: NgbModalRef;
     private spinner: NgxSpinnerService,
     private volumetricAndCbmCalculationService: VolumetricAndCbmCalculationService,
     private creditValidationApiService: CreditValidationApiService,
+    private emailTriggerService: EmailTriggerService,
   ) {
     this.today = this.calendar.getToday();
    }
@@ -552,7 +554,7 @@ hblModalRef?: NgbModalRef;
   this.userData = this.appSettingService.getDecryptedUserProfile();
   this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
   this.countryOfCompany = this.currentCompany?.CountryName;
-  this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+  this.currentBranch = this.appSettingService.getCurrentBranchInfo();
 
   this.currentFinacialYear = this.appSettingService.getCurrentFinancialYear();
   this.startFinanceYr = this.currentFinacialYear?.StartDate ? new Date(this.currentFinacialYear.StartDate) : null;
@@ -2067,9 +2069,14 @@ private loadMasterJobDetails(masterJobSid: number): void {
   }
 
   handleConnectionChange(allConnections:any[]){
-  
-    if(allConnections.length > 0){
-      this.connectionResult = [...allConnections];
+    this.connectionResult = [...allConnections];
+    this.bookingConnectionsArr = [...allConnections];
+
+    if (this.housejobData) {
+      this.housejobData = {
+        ...this.housejobData,
+        Connections: [...allConnections]
+      };
     }
   }
 
@@ -2773,31 +2780,17 @@ validateHBLNo(): boolean {
   }
 
   private isCompanyCountryPort(port: any): boolean {
-    const companyCountryId = this.toNumericValue(this.currentCompany?.CountryMasterSid);
+    const companyCountryId = this.toNumericValue(this.currentBranch?.CountryMasterSid);
     const portCountryId = this.toNumericValue(port?.CountryMasterSid);
 
-    if (companyCountryId && portCountryId) {
-      return companyCountryId === portCountryId;
-    }
-
-    const companyCountryName = this.normalizePortText(this.currentCompany?.CountryName || this.countryOfCompany);
-    const portCountryName = this.normalizePortText(port?.Country || port?.countryMaster?.countryName);
-
-    return !!companyCountryName && !!portCountryName && companyCountryName === portCountryName;
+    return !!companyCountryId && !!portCountryId && companyCountryId === portCountryId;
   }
 
   private isForeignCountryPort(port: any): boolean {
-    const companyCountryId = this.toNumericValue(this.currentCompany?.CountryMasterSid);
+    const companyCountryId = this.toNumericValue(this.currentBranch?.CountryMasterSid);
     const portCountryId = this.toNumericValue(port?.CountryMasterSid);
 
-    if (companyCountryId && portCountryId) {
-      return companyCountryId !== portCountryId;
-    }
-
-    const companyCountryName = this.normalizePortText(this.currentCompany?.CountryName || this.countryOfCompany);
-    const portCountryName = this.normalizePortText(port?.Country || port?.countryMaster?.countryName);
-
-    return !!companyCountryName && !!portCountryName && companyCountryName !== portCountryName;
+    return !!companyCountryId && !!portCountryId && companyCountryId !== portCountryId;
   }
 
   private getPortByCode(portCode: string | null | undefined): any | null {
@@ -3547,6 +3540,26 @@ getVoyageTypeBasedOnDept(deptId: number) {
 
 
 
+  async sendManualMail(): Promise<void> {
+    const pdfBlob = await this.generatePDFBlob();
+    let attachmentFile: File | undefined;
+    if (pdfBlob) {
+      attachmentFile = new File([pdfBlob], (this.bookingData?.ShipmentNo || 'HouseJob') + '.pdf', { type: 'application/pdf' });
+    }
+    this.emailTriggerService.triggerManualEmails({
+      companyId: this.currentCompany?.CompanyMasterSid,
+      branchId: this.currentBranch?.BranchMasterSid,
+      menuMasterSid: this.bookingData?.MenuMasterSid,
+      action: 'UPDATE',
+      attachmentFile,
+      context: {
+        ShipmentNo: this.bookingData?.ShipmentNo,
+        userName: this.userData?.userName,
+        menuEmail: this.bookingData?.Email || ''
+      }
+    });
+  }
+
   navigateBack() {
    history.back();
   }
@@ -3605,7 +3618,7 @@ resetForm() {
       if(!this.bookingData) return;
       const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
       modalRef.componentInstance.item = this.bookingData;
-      modalRef.componentInstance.idLabel = 'Booking Id';
+      modalRef.componentInstance.idLabel = 'HouseJobSid';
       modalRef.componentInstance.idValue = this.bookingData?.HouseJobSid;
     }
 

@@ -266,24 +266,6 @@
                   <label class="input-label">Attachment</label>
                 </div>
               </div>
-              @if (editingRow.AttachmentRequire === 'Y') {
-                <div class="col-12 mb-2">
-                  <div class="border rounded p-2 bg-light" (drop)="onDrop($event)" (dragover)="onDragOver($event)">
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                      <button type="button" class="btn btn-sm btn-outline-info" (click)="fileInput.click()">
-                        <i class="fas fa-paperclip me-1"></i>Choose Files
-                      </button>
-                      <small class="text-muted">or drag & drop files here</small>
-                      <input #fileInput type="file" multiple hidden (change)="onFileChange($event)">
-                    </div>
-                    @for (file of editingFiles; track file.name; let fi = $index) {
-                      <span class="badge bg-light text-dark border me-1 mb-1">
-                        {{ file.name }} <i class="fas fa-times ms-1 text-danger" style="cursor:pointer" (click)="removeFile(fi)"></i>
-                      </span>
-                    }
-                  </div>
-                </div>
-              }
               <div class="col-md-3 mb-2">
                 <div class="custom-form-group custom-form-group-select filled">
                   <ng-select

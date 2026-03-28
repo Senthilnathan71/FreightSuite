@@ -3351,12 +3351,19 @@ ${this.userData.userName}`;
   logFormValue() {
   }
 
-  sendManualMail(): void {
+  async sendManualMail(): Promise<void> {
+    const pdfBlob = await this.generatePDFBlob();
+    let attachmentFile: File | undefined;
+    if (pdfBlob) {
+      attachmentFile = new File([pdfBlob], (this.quotationData?.QuoteNumber || 'Quotation') + '.pdf', { type: 'application/pdf' });
+    }
+
     this.emailTriggerService.triggerManualEmails({
       companyId: this.currentCompany?.CompanyMasterSid,
       branchId: this.currentBranch?.BranchMasterSid,
       menuMasterSid: this.MenuMasterSid,
       action: 'UPDATE',
+      attachmentFile,
       context: {
         quotationNumber: this.quotationData?.QuoteNumber,
         date: this.datePipe.transform(this.quotationData?.QuoteDate),

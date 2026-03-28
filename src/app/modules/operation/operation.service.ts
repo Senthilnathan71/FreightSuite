@@ -132,16 +132,16 @@ export class OperationService {
     );
   }
 
-  deleteBookingById(BookingHeaderSid: number) {
-    return this.http.delete<{ status: boolean;data: any }>(`ff-booking/deleteBooking/${BookingHeaderSid}`).pipe(
+  deleteBookingById(BookingHeaderSid: number,updatedBy: string) {
+    return this.http.delete<{ status: boolean;data: any }>(`ff-booking/deleteBooking/${BookingHeaderSid}`,{body: {updatedBy}}).pipe(
       map((resp) => {
         return resp;
       })
     );
   }
 
-  deleteBookingProduct(id: number) {
-    return this.http.delete<{ data: any }>(`ff-booking/product/${id}`).pipe(
+  deleteBookingProduct(id: number, updatedBy: string) {
+    return this.http.delete<{ data: any }>(`ff-booking/product/${id}`,{body: {updatedBy}}).pipe(
       map((resp) => {
         return resp;
       })
@@ -170,16 +170,16 @@ searchHouseJob(payload: any) {
     );
   }
 
-  deleteBookingConnection(id: number) {
-    return this.http.delete<{ data: any }>(`ff-booking/connection/${id}`).pipe(
+  deleteBookingConnection(id: number, updatedBy?: string) {
+    return this.http.delete<{ data: any }>(`ff-booking/connection/${id}`,{body: {updatedBy}}).pipe(
       map((resp) => {
         return resp;
       })
     );
   }
 
-  deleteBookingRate(BookingRatesSid: number) {
-    return this.http.delete<{ data: any }>(`ff-booking/rates/${BookingRatesSid}`).pipe(
+  deleteBookingRate(BookingRatesSid: number, updatedBy: string) {
+    return this.http.delete<{ data: any }>(`ff-booking/rates/${BookingRatesSid}`, {body: {updatedBy}}).pipe(
       map((resp) => {
         return resp;
       })
@@ -807,6 +807,15 @@ processProductUpload(payload: any): Observable<any> {
       })
     );
   }
+
+  softDeleteHouseJobConnection(HouseJobConnectionSid: number) {
+  return this.http.delete<{ data: any }>(`house-job/connection/delete/${HouseJobConnectionSid}`).pipe(
+    map((resp) => {
+      return resp;
+    })
+  );
+}
+
 
   softDeleteMasterJobContainer(MasterJobContainerSid: number) {
     return this.http.delete<{ data: any }>(`master-job/container/delete/${MasterJobContainerSid}`).pipe(

@@ -1,4 +1,5 @@
 import { Component, ViewChild, TemplateRef, OnInit, Input, OnDestroy } from '@angular/core';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef, NgbPaginationModule, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -144,6 +145,11 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
   isTermsAndConditionsEnabled: boolean = true;
   departmentList: any[] = [];
   customerList: any[] = [];
+  customerBranchList: any[] = [];
+  shipperList: any[] = [];
+  filteredShipperList: any[] = [];
+  consigneeList: any[] = [];
+  filteredConsigneeList: any[] = [];
   portList: any[] = [];
   filteredPorts: any[] = [];
   filteredPOL: any[] = [];
@@ -151,6 +157,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
   TandCList: any[] = [];
   currencyList : any[] = [];
   houseData: any;
+  selectedCustomerBranch: any;
 
 
   auditLogs: any[] = []; // Stores audit logs
@@ -258,6 +265,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
     private ngbModal: NgbModal,
     private commonModalService : ModalService,
      private toastr: ToastrService,
+    private emailTriggerService: EmailTriggerService,
   ) {
     this.today = this.calendar.getToday();
   }
@@ -371,7 +379,13 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       CustomerMasterSid: [null, [Validators.required]],
       CustomerBranchSid: [''],
       CustomerName: [''],
-      CustomerAddress: [null, [Validators.required]],
+      CustomerAddress: [null],
+      ShipperName: [null],
+      ShipperAddress: [null],
+      ConsigneeName: [null],
+      ConsigneeAddress: [null],
+      isShipperFreeText: [false],
+      isConsigneeFreeText: [false],
       ShipmentNo : [],
       MasterJobNumber : [{ value: '', disabled: true }],
       HBLNo: [{value: '', disabled: true}],
@@ -449,18 +463,24 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
     return forkJoin({
       departments: this.operationService.getAllDepartments(CompanyMasterSid).pipe(catchError(err => of([]))),
       customers: this.operationService.getAllCustomersWithBranch(CompanyMasterSid).pipe(catchError(err => of([]))),
+      shippers: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['shipper'] }).pipe(catchError(err => of({ data: [] }))),
+      consignees: this.operationService.getCustomerByItsType({ CompanyMasterSid, types: ['consignee'] }).pipe(catchError(err => of({ data: [] }))),
       ports: this.operationService.getAllPorts().pipe(catchError(err => of([]))),
       userCountry: this.operationService.getCountryById(this.currentCompany.CountryMasterSid).pipe(catchError(err => of({}))),
       currencies : this.operationService.getAllCurrencies().pipe(catchError(err => of([]))),
 
     }).pipe(tap(({
-      departments, customers, ports, userCountry,currencies
+      departments, customers, shippers, consignees, ports, userCountry,currencies
     }) => {
       if (!this.isEditMode) {
         this.spinner.hide();
       }
       this.departmentList = departments.data;
       this.customerList = customers;
+      this.shipperList = shippers.data || [];
+      this.filteredShipperList = [...this.shipperList];
+      this.consigneeList = consignees.data || [];
+      this.filteredConsigneeList = [...this.consigneeList];
       this.countryOfCompany = String((userCountry?.data?.countryName)).trim().toLowerCase();
       this.portList = (ports.data || []).map(p => ({ ...p, Country: p.countryMaster?.countryName }));
       this.currencyList = (currencies.data || []).map(c => ({ ...c, Country: c?.countryMaster?.countryName }));
@@ -507,6 +527,12 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       CustomerBranchSid: response.CustomerBranchSid,
       CustomerName: response.CustomerName,
       CustomerAddress: response.CustomerAddress,
+      ShipperName: response.ShipperName,
+      ShipperAddress: response.ShipperAddress,
+      ConsigneeName: response.ConsigneeName,
+      ConsigneeAddress: response.ConsigneeAddress,
+      isShipperFreeText: !!response.ShipperName && !this.existsInList(this.shipperList, response.ShipperName),
+      isConsigneeFreeText: !!response.ConsigneeName && !this.existsInList(this.consigneeList, response.ConsigneeName),
       MasterJobNumber : response.masterJob?.MasterJobNumber || "",
       HBLNo: response.HBLNo,
       JobType: response.JobType,
@@ -631,6 +657,10 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       CustomerBranchSid: serviceFormValue.CustomerBranchSid || null,
       CustomerName: serviceFormValue.CustomerName,
       CustomerAddress: serviceFormValue.CustomerAddress,
+      ShipperName: serviceFormValue.ShipperName,
+      ShipperAddress: serviceFormValue.ShipperAddress,
+      ConsigneeName: serviceFormValue.ConsigneeName,
+      ConsigneeAddress: serviceFormValue.ConsigneeAddress,
       ShipmentNo : serviceFormValue.ShipmentNo || "",
       FreightPPCC: cargoFormValue.FreightTerms || "Prepaid",
       status: serviceFormValue.status === 'Active' ? 'A' : 'S',
@@ -1005,18 +1035,29 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
 
 
   onCustomerChange(customer: any) {
-    console.log(customer);
     if (!customer) {
       this.b['CustomerName']?.setValue('');
       this.b['CustomerAddress']?.setValue(null);
       this.b['CustomerBranchSid']?.setValue(null);
+      this.selectedCustomerBranch = null;
+      this.customerBranchList = [];
       this.selectedCustomer = null;
+      this.b['ShipperName']?.setValue(null);
+      this.b['ShipperAddress']?.setValue('');
+      this.b['ConsigneeName']?.setValue(null);
+      this.b['ConsigneeAddress']?.setValue('');
+      this.b['isShipperFreeText']?.setValue(false);
+      this.b['isConsigneeFreeText']?.setValue(false);
+      this.filteredShipperList = [...this.shipperList];
+      this.filteredConsigneeList = [...this.consigneeList];
       return;
     }
     this.b['CustomerName']?.setValue(customer.CustomerName);
     this.b['CustomerAddress']?.setValue(customer.Address);
     this.b['CustomerBranchSid']?.setValue(customer.CustomerBranchSid);
     this.selectedCustomer = customer;
+    this.getCustomerBranchByCustomer(customer.CustomerMasterSid);
+    this.handleImportExport();
   }
 
 
@@ -1031,6 +1072,142 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
     if (!selectedPort) {
       this.refreshPortFilters();
       return;
+    }
+  }
+
+  getCustomerBranchByCustomer(CustomerMasterSid: number) {
+    this.operationService.getCustomerBranchByCustomer(CustomerMasterSid).subscribe((resp: any) => {
+      if (resp.status) {
+        this.customerBranchList = resp.data || [];
+        if (this.isEditMode && this.serviceJobData?.CustomerBranchSid) {
+          this.selectedCustomerBranch = this.customerBranchList.find(
+            branch => branch.CustomerBranchSid === this.serviceJobData.CustomerBranchSid
+          ) || null;
+        }
+      } else {
+        this.appSettingService.showError("Error loading customer's branch.");
+      }
+    });
+  }
+
+  onCustomerBranchChange(customerBranch: any) {
+    const selectedBranch = typeof customerBranch === 'string'
+      ? this.customerBranchList.find(branch => branch.Address === customerBranch)
+      : customerBranch;
+
+    if (!selectedBranch) {
+      this.b['CustomerAddress']?.setValue(null);
+      this.b['CustomerBranchSid']?.setValue(null);
+      this.selectedCustomerBranch = null;
+      this.handleImportExport();
+      return;
+    }
+    this.b['CustomerAddress']?.setValue(selectedBranch.Address || selectedBranch.CustomerAddress1 || customerBranch || '');
+    this.b['CustomerBranchSid']?.setValue(selectedBranch.CustomerBranchSid || null);
+    this.selectedCustomerBranch = selectedBranch;
+    this.handleImportExport();
+  }
+
+  toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
+    event.stopPropagation();
+    const value = this.b[flagCtrl]?.value;
+    this.b[flagCtrl]?.setValue(!value);
+    this.b[mainCtrl]?.reset();
+  }
+
+  setAddress(controlName: string, item: any) {
+    this.b[controlName]?.setValue(item ? (item.CustomerAddress1 || item.Address || '') : '');
+  }
+
+  onShipperChange(shipper?: any) {
+    if (!shipper) {
+      this.filteredConsigneeList = [...this.consigneeList];
+      return;
+    }
+    this.filteredConsigneeList = this.consigneeList.filter(c => c.CustomerMasterSid !== shipper.CustomerMasterSid);
+  }
+
+  onConsigneeChange(consignee?: any) {
+    if (!consignee) {
+      this.filteredShipperList = [...this.shipperList];
+      return;
+    }
+    this.filteredShipperList = this.shipperList.filter(s => s.CustomerMasterSid !== consignee.CustomerMasterSid);
+  }
+
+  handleImportExport() {
+    if (!this.selectedDepartment) {
+      this.b['ShipperName']?.setValue(null);
+      this.b['ShipperAddress']?.setValue('');
+      this.b['ConsigneeName']?.setValue(null);
+      this.b['ConsigneeAddress']?.setValue('');
+      this.b['isShipperFreeText']?.setValue(false);
+      this.b['isConsigneeFreeText']?.setValue(false);
+      this.filteredShipperList = [...this.shipperList];
+      this.filteredConsigneeList = [...this.consigneeList];
+      this.onShipperChange();
+      this.onConsigneeChange();
+      return;
+    }
+
+    const exportImportType = this.selectedDepartment.ExportImport;
+    const customerBranchSid = this.b['CustomerBranchSid']?.value;
+
+    if (exportImportType === 'Export') {
+      if (!customerBranchSid) {
+        this.b['ShipperName']?.setValue(null);
+        this.b['ShipperAddress']?.setValue('');
+        this.onShipperChange();
+        return;
+      }
+
+      const shipperExist = this.shipperList.find(s => s.CustomerBranchSid === customerBranchSid);
+      const shipperExistInFiltered = this.filteredShipperList.find(s => s.CustomerBranchSid === customerBranchSid);
+
+      if (shipperExist && shipperExistInFiltered) {
+        this.b['ShipperName']?.setValue(shipperExistInFiltered.CustomerName);
+        this.b['ShipperAddress']?.setValue(shipperExistInFiltered.Address || shipperExistInFiltered.CustomerAddress1 || '');
+        this.onShipperChange(shipperExistInFiltered);
+        this.onConsigneeChange();
+      } else if (shipperExist) {
+        this.b['ShipperName']?.setValue(shipperExist.CustomerName);
+        this.b['ShipperAddress']?.setValue(shipperExist.Address || shipperExist.CustomerAddress1 || '');
+        this.onShipperChange(shipperExist);
+        this.onConsigneeChange();
+      } else {
+        this.b['ShipperName']?.setValue(null);
+        this.b['ShipperAddress']?.setValue('');
+        this.onShipperChange();
+      }
+      return;
+    }
+
+    if (exportImportType === 'Import') {
+      if (!customerBranchSid) {
+        this.b['ConsigneeName']?.setValue(null);
+        this.b['ConsigneeAddress']?.setValue('');
+        this.onConsigneeChange();
+        return;
+      }
+
+      const consigneeExist = this.consigneeList.find(c => c.CustomerBranchSid === customerBranchSid);
+      const consigneeExistInFiltered = this.filteredConsigneeList.find(c => c.CustomerBranchSid === customerBranchSid);
+
+      if (consigneeExist && consigneeExistInFiltered) {
+        this.b['ConsigneeName']?.setValue(consigneeExistInFiltered.CustomerName);
+        this.b['ConsigneeAddress']?.setValue(consigneeExistInFiltered.Address || consigneeExistInFiltered.CustomerAddress1 || '');
+        this.onConsigneeChange(consigneeExistInFiltered);
+        this.onShipperChange();
+      } else if (consigneeExist) {
+        this.b['ConsigneeName']?.setValue(consigneeExist.CustomerName);
+        this.b['ConsigneeAddress']?.setValue(consigneeExist.Address || consigneeExist.CustomerAddress1 || '');
+        this.onConsigneeChange(consigneeExist);
+        this.onShipperChange();
+      } else {
+        this.b['ConsigneeName']?.setValue(null);
+        this.b['ConsigneeAddress']?.setValue('');
+        this.onConsigneeChange();
+      }
     }
   }
 
@@ -1065,6 +1242,12 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       ParentSid : HouseJobSid,
       CustomerMasterSid,
       CustomerBranchSid,
+      CustomerName: this.b['CustomerName']?.value || '',
+      CustomerAddress: this.b['CustomerAddress']?.value || '',
+      ShipperName: this.b['ShipperName']?.value || '',
+      ShipperAddress: this.b['ShipperAddress']?.value || '',
+      ConsigneeName: this.b['ConsigneeName']?.value || '',
+      ConsigneeAddress: this.b['ConsigneeAddress']?.value || '',
       departmentName,
       MBLNo,
       HBLNo,
@@ -1087,6 +1270,25 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
   }
 
 
+  async sendManualMail(): Promise<void> {
+    const pdfBlob = await this.generatePDFBlob();
+    let attachmentFile: File | undefined;
+    if (pdfBlob) {
+      attachmentFile = new File([pdfBlob], (this.serviceJobData?.ServiceJobNo || 'ServiceJob') + '.pdf', { type: 'application/pdf' });
+    }
+    this.emailTriggerService.triggerManualEmails({
+      companyId: this.currentCompany?.CompanyMasterSid,
+      branchId: this.currentBranch?.BranchMasterSid,
+      menuMasterSid: this.MenuMasterSid,
+      action: 'UPDATE',
+      attachmentFile,
+      context: {
+        userName: this.userData?.userName,
+        menuEmail: ''
+      }
+    });
+  }
+
   navigateBack() {
     this.router.navigate(['operation/service-job/list']);
   }
@@ -1098,7 +1300,16 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
     if(this.isEditMode){
       this.patchValues(this.serviceJobData);
     }else{
-      this.serviceJobForm.reset({ status : 'A' });
+      this.serviceJobForm.reset({
+        status : 'Active',
+        isShipperFreeText: false,
+        isConsigneeFreeText: false
+      });
+      this.selectedCustomer = null;
+      this.selectedCustomerBranch = null;
+      this.customerBranchList = [];
+      this.filteredShipperList = [...this.shipperList];
+      this.filteredConsigneeList = [...this.consigneeList];
     }
   }
 

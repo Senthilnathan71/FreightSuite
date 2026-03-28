@@ -93,8 +93,6 @@ export class MailConfigurationEntryComponent implements OnInit {
 
   updateFieldOptions = ALL_PLACEHOLDERS.map(p => ({ key: p.key, label: p.label }));
 
-  editingFiles: File[] = [];
-
   constructor(
     private fb: FormBuilder,
     private emailService: EmailModuleService,
@@ -247,7 +245,6 @@ export class MailConfigurationEntryComponent implements OnInit {
     this.editingIndex = this.rows.length - 1;
     this.editingRow = this.rows[this.editingIndex];
     this.editingSnapshot = null;
-    this.editingFiles = [];
     this.scrollToDetailForm();
   }
 
@@ -287,7 +284,6 @@ export class MailConfigurationEntryComponent implements OnInit {
     this.editingSnapshot = { ...this.rows[index] };
     this.editingIndex = index;
     this.editingRow = this.rows[index];
-    this.editingFiles = [];
     this.rows[index].isEditing = true;
     this.scrollToDetailForm();
   }
@@ -461,33 +457,6 @@ export class MailConfigurationEntryComponent implements OnInit {
 
   onUpdateFieldsChange(row: MailConfigRow): void {
     row.UpdateFields = (row.selectedUpdateFields || []).join(',');
-  }
-
-  onFileChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files) {
-      for (let i = 0; i < input.files.length; i++) {
-        this.editingFiles.push(input.files[i]);
-      }
-    }
-    input.value = '';
-  }
-
-  removeFile(index: number): void {
-    this.editingFiles.splice(index, 1);
-  }
-
-  onDrop(event: DragEvent): void {
-    event.preventDefault();
-    if (event.dataTransfer?.files) {
-      for (let i = 0; i < event.dataTransfer.files.length; i++) {
-        this.editingFiles.push(event.dataTransfer.files[i]);
-      }
-    }
-  }
-
-  onDragOver(event: DragEvent): void {
-    event.preventDefault();
   }
 
   getMenuName(menuMasterSid: number | null): string {

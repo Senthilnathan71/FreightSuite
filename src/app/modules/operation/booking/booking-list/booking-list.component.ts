@@ -358,12 +358,13 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
             );
             return;
         }
+        const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
         const dialogRef = this.dialog.open(DeleteWarningComponent);
     
         dialogRef.afterClosed().subscribe(result => {
           if (result === true) {
             this.spinner.show();
-            this.operationService.deleteBookingById(Booking.BookingHeaderSid).subscribe({
+            this.operationService.deleteBookingById(Booking.BookingHeaderSid,updatedBy).subscribe({
               next: (response) => {
                 this.spinner.hide();
                 if (response.status) {

@@ -14,6 +14,7 @@ import { Search } from 'angular-feather/icons';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-connection',
@@ -27,7 +28,8 @@ import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumber
     ReactiveFormsModule,
     NgbPaginationModule,
     SearchableDropdown,
-    TextWithNumbersDirective 
+    TextWithNumbersDirective,
+    NgxSpinnerModule
   ],
   templateUrl: './connection.component.html',
   styleUrl: './connection.component.scss',
@@ -45,6 +47,7 @@ export class ConnectionComponent implements OnInit {
   connectionDataLength: number;
   connectionFormArray: FormArray;
   slicedConnectionFormArr: any[];
+  deletingConnectionIndex: number | null = null;
 
   selectedMode: string;
   filteredPorts: any[] = [];
@@ -161,7 +164,8 @@ export class ConnectionComponent implements OnInit {
     private appSettingService: AppSettingsService,
     private operationService: OperationService,
     private excelExportService : ExcelExportService,
-    private datePipe : CustomDatePipe
+    private datePipe : CustomDatePipe,
+    private spinner: NgxSpinnerService
   ) { }
 
   ngOnInit(): void {
@@ -530,32 +534,56 @@ export class ConnectionComponent implements OnInit {
   }
 
 
-  deleteBookingConnection(connectionIndex: number, TransactionSid?: number) {
-    const realIndex = ((this.page1 - 1 ) * this.pageSize1) + connectionIndex;
-    if (TransactionSid) {
-      this.operationService.deleteBookingConnection(TransactionSid).subscribe(
-        (resp: any) => {
-          if (resp.status) {
-            this.connectionFormArray.removeAt(realIndex);
-            this.connectionDataLength = this.connectionFormArray.length;
-            this.appSettingService.showSuccess('Connection Deleted Successfully');
-            this.connectionFormArray.updateValueAndValidity();
-            this.adjustConnectionPageAfterDelete();
-            this.updateConnectionPagination();
-            this.syncDataWithParentComponent();
-          } else {
-            this.appSettingService.showError("Error deleting Connection.");
-          }
-        });
-    } else {
-      this.connectionFormArray.removeAt(realIndex);
-      this.connectionFormArray.updateValueAndValidity();
-      this.connectionDataLength = this.connectionFormArray.length;
-      this.adjustConnectionPageAfterDelete();
-      this.updateConnectionPagination();
-      this.syncDataWithParentComponent();
+  deleteBookingConnection(connectionIndex: number, connectionSid?: number) {
+  const realIndex = ((this.page1 - 1) * this.pageSize1) + connectionIndex;
+
+  if (connectionSid) {
+    let deleteApi$;
+
+    if (this.screenName === 'Booking') {
+      deleteApi$ = this.operationService.deleteBookingConnection(connectionSid);
+    } else if (this.screenName === 'MasterJob') {
+      deleteApi$ = this.operationService.softDeleteMasterJobConnection(connectionSid);
+    } else if (this.screenName === 'HouseJob') {
+      deleteApi$ = this.operationService.softDeleteHouseJobConnection(connectionSid);
     }
+
+    if (!deleteApi$) {
+      this.appSettingService.showError('Delete API not configured.');
+      return;
+    }
+
+    this.deletingConnectionIndex = realIndex;
+    this.spinner.show();
+    deleteApi$.subscribe((resp: any) => {
+      if (resp.status) {
+        this.connectionFormArray.removeAt(realIndex);
+        this.connectionDataLength = this.connectionFormArray.length;
+        this.appSettingService.showSuccess('Connection Deleted Successfully');
+        this.connectionFormArray.updateValueAndValidity();
+        this.adjustConnectionPageAfterDelete();
+        this.updateConnectionPagination();
+        this.syncDataWithParentComponent();
+      } else {
+        this.appSettingService.showError('Error deleting Connection.');
+      }
+      this.deletingConnectionIndex = null;
+      this.spinner.hide();
+    }, () => {
+      this.deletingConnectionIndex = null;
+      this.spinner.hide();
+      this.appSettingService.showError('Error deleting Connection.');
+    });
+  } else {
+    this.connectionFormArray.removeAt(realIndex);
+    this.connectionFormArray.updateValueAndValidity();
+    this.connectionDataLength = this.connectionFormArray.length;
+    this.adjustConnectionPageAfterDelete();
+    this.updateConnectionPagination();
+    this.syncDataWithParentComponent();
   }
+}
+
 
 
   adjustConnectionPageAfterDelete() {
@@ -618,7 +646,12 @@ getVoyageLabel(): string {
 }
 
   reportConnections(): void {
-    const allConnections = this.slicedConnectionFormArr;
+    const allConnections = this.connectionFormArray.getRawValue();
+
+    if (!allConnections?.length) {
+      this.appSettingService.showWarning('No connections available to export');
+      return;
+    }
 
     const formattedData = allConnections.map(connection => {
       const isAirMode = connection.Mode?.toLowerCase() === 'air';
@@ -650,6 +683,12 @@ getVoyageLabel(): string {
     });
 
     const companyName = this.currentCompany?.companyName ?? 'Company';
+    const reportPrefix =
+      this.screenName === 'HouseJob'
+        ? 'House-Job'
+        : this.screenName === 'MasterJob'
+          ? 'Master-Job'
+          : 'Booking';
 
 
     const headers = [
@@ -675,7 +714,7 @@ getVoyageLabel(): string {
     this.excelExportService.exportAsExcel({
       data: formattedData,
       headers: headers,
-      fileName: 'Booking-Connections-Report',
+      fileName: `${reportPrefix}-Connections-Report`,
       title: companyName
     });
   }
