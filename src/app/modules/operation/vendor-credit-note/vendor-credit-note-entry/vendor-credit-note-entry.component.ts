@@ -75,6 +75,7 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { VendorCreditNotePrintComponent } from '../report/vendor-credit-note-print/vendor-credit-note-print.component';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { TaxCalculationService } from '../../services/tax-calculation.service';
+import { AuditLogComponent } from '../../audit-log/audit-log.component';
 
 interface NgbDateStructLike {
   day: number;
@@ -3544,15 +3545,19 @@ export class VendorCreditNoteEntryComponent {
     modalRef.componentInstance.idValue = this.vendorCreditNoteData?.VoucherHeaderSid;
   }
 
-  openAuditLogs(modal: TemplateRef<any>) {
-        if (!this.vendorCreditNoteData?.VoucherHeaderSid) return;
-        this.getAuditLog()
-        this.auditLogModalRef = this.modalService.open(modal, {
-          centered: true,
-          scrollable: true,
-          windowClass: 'audit-log-modal'
-        });
-      }
+  openAuditLogs() {
+    if (!this.vendorCreditNoteData?.VoucherHeaderSid) return;
+    const modalRef = this.modalService.open(AuditLogComponent, {
+      centered: true,
+      scrollable: true,
+      size: 'xl',
+      windowClass: 'audit-log-modal'
+    });
+    modalRef.componentInstance.title = 'Vendor Credit Note Logs';
+    modalRef.componentInstance.tableName = 'VoucherHeader';
+    modalRef.componentInstance.recordId = this.vendorCreditNoteData?.VoucherHeaderSid.toString();
+    modalRef.componentInstance.screenName = 'VendorCreditNote';
+  }
   
       getAuditLog() {
     this.operationService.getAuditLogsCreditNote(

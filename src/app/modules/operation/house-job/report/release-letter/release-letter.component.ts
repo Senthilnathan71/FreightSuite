@@ -1,11 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { NgxSpinnerService } from 'ngx-spinner';
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { firstValueFrom } from 'rxjs';
-import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import {
+  generateReleaseLetterDocument,
+  transformReleaseLetterApiData
+} from 'src/app/common/pdf/generators/release-letter-pdf.generator';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
@@ -13,6 +16,8 @@ import { MasterService } from 'src/app/modules/master/master.service';
 import { SafeInsertShipmentMilestone, ShipmentMilestoneService } from 'src/app/modules/operation/services/shipment-milestone.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
+
+(pdfMake as any).vfs = (pdfFonts as any).pdfMake?.vfs || pdfFonts;
 
 @Component({
   selector: 'app-release-letter',
@@ -48,7 +53,6 @@ export class ReleaseLetterComponent {
     private appSettingsService: AppSettingsService,
     private activeModal: NgbActiveModal,
     private masterService: MasterService,
-    private pdfService: PdfDownloadService,
     private spinner: NgxSpinnerService,
     public logoService : LogoService,
     private milestoneService: ShipmentMilestoneService
@@ -154,12 +158,19 @@ get totalVolume(): number {
     this.spinner.show();
    try {
       await this.insertMilestoneSafelyForPrint();
-      await this.pdfService.downloadBalancedPDF(
-        'printContent',
-        `Release_Letter${this.housejobData?.ShipmentNo || 'Report'}`,
-        () => this.appSettingsService.showSuccess('PDF downloaded successfully!'),
-        (error) => this.appSettingsService.showError('Error generating PDF. Please try again.')
+      const logo = localStorage.getItem('current_report_logo') || undefined;
+      const pdfData = transformReleaseLetterApiData(
+        this.housejobData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        this.getReleaseLetterPdfOptions()
       );
+      const docDefinition = generateReleaseLetterDocument(pdfData);
+      const filename = `Release_Letter_${pdfData.releaseInfo?.bookingRef || 'Draft'}.pdf`;
+      pdfMake.createPdf(docDefinition).download(filename);
+      this.appSettingsService.showSuccess('PDF downloaded successfully!');
     } finally {
       this.spinner.hide();
     }
@@ -173,44 +184,41 @@ get totalVolume(): number {
 
     async generatePDFBlob(): Promise<Blob | null> {
           await this.insertMilestoneSafelyForPrint();
-          const printContent = document.getElementById('printContent');
-          if (!printContent) {
-            return null;
-          }
-      
           try {
-            const canvas = await html2canvas(printContent, {
-              scale: 2,
-              useCORS: true,
-              logging: false,
-              backgroundColor: '#ffffff'
+            const logo = localStorage.getItem('current_report_logo') || undefined;
+            const pdfData = transformReleaseLetterApiData(
+              this.housejobData,
+              this.currentCompany,
+              this.currentBranch,
+              this.userData,
+              logo,
+              this.getReleaseLetterPdfOptions()
+            );
+            const docDefinition = generateReleaseLetterDocument(pdfData);
+            return await new Promise<Blob>((resolve, reject) => {
+              try {
+                pdfMake.createPdf(docDefinition).getBlob((blob: Blob) => resolve(blob));
+              } catch (error) {
+                reject(error);
+              }
             });
-      
-            const imgWidth = 210;
-            const pageHeight = 297;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            let heightLeft = imgHeight;
-            let position = 0;
-      
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const imgData = canvas.toDataURL('image/png');
-      
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-      
-            while (heightLeft > 0) {
-              position = heightLeft - imgHeight;
-              pdf.addPage();
-              pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-              heightLeft -= pageHeight;
-            }
-      
-            return pdf.output('blob');
           } catch (error) {
             console.error('Error generating PDF blob:', error);
             return null;
           }
         }
+
+  private getReleaseLetterPdfOptions(): {
+    containerTypeList: any[];
+    selectedFCLLCL: string;
+    portList: any[];
+  } {
+    return {
+      containerTypeList: this.containerTypeList || [],
+      selectedFCLLCL: this.selectedFCLLCL || '',
+      portList: this.portList || []
+    };
+  }
 
 
 // Print
