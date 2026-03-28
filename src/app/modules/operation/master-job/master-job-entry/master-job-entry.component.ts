@@ -206,6 +206,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   availableTransferCompanies: any[] = [];
   availableTransferBranches: any[] = [];
   filteredTransferBranches: any[] = [];
+  allTransferCompanyMasters: any[] = [];
+  allTransferBranchMasters: any[] = [];
   packageTypeList: any[] = [];
   hssacList: any[] = [];
   // Department info
@@ -262,6 +264,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   selectedTransferCompanySid: number | null = null;
   selectedTransferBranchSid: number | null = null;
   isPullingToImportBranch = false;
+  private readonly exportToImportCompanyConfigName = 'ExportToImportCompanyMasterSid';
   selectedContainerFile: File | null = null;
   containerUploadErrors: any[] = [];
   isProcessingContainerUpload = false;
@@ -1498,6 +1501,16 @@ onETDDateSelect(): void {
           ExportDoDate: othersData.ExportDoDate ? new Date(othersData.ExportDoDate) : null,
           SOBDate: othersData.SOBDate ? new Date(othersData.SOBDate) : null,
         });
+        this.selectedTransferCompanySid = othersData.DestinationCompanyMasterSid || data.DestinationCompanyMasterSid || this.selectedTransferCompanySid;
+        this.selectedTransferBranchSid = othersData.DestinationBranchMasterSid || data.DestinationBranchMasterSid || null;
+        if (this.selectedTransferCompanySid) {
+          this.onTransferCompanyChange(this.selectedTransferCompanySid);
+          if (this.selectedTransferBranchSid && !this.filteredTransferBranches.some(
+            (branch: any) => Number(branch?.BranchMasterSid) === Number(this.selectedTransferBranchSid)
+          )) {
+            this.selectedTransferBranchSid = null;
+          }
+        }
         if (othersData.Coload === 'Y') {
           this.masterJobForm.get('CoLoader')?.enable();
         } else {
@@ -1786,15 +1799,115 @@ onETDDateSelect(): void {
   }
 
   private initializeTransferOptions(): void {
-    const allCompanies = this.userData?.userCompanyMaster || [];
+    const currentCompanySid = Number(this.currentCompany?.CompanyMasterSid || 0);
+    if (!currentCompanySid) {
+      this.availableTransferCompanies = [];
+      this.selectedTransferCompanySid = null;
+      this.selectedTransferBranchSid = null;
+      this.filteredTransferBranches = [];
+      return;
+    }
 
-    this.availableTransferCompanies = allCompanies
-      .map((ucm: any) => ucm?.companyMaster)
-      .filter((company: any) => !!company?.CompanyMasterSid);
+    this.masterService.getConfigurationValue(currentCompanySid, this.exportToImportCompanyConfigName).subscribe({
+      next: (resp: any) => {
+        const rawValue = resp?.ConfigurationValue ?? resp?.value ?? resp;
+        const configuredCompanyIds = this.parseTransferCompanyConfigValue(rawValue);
+        this.loadTransferCompanyMasters(configuredCompanyIds);
+      },
+      error: () => {
+        this.loadTransferCompanyMasters([]);
+      }
+    });
+  }
 
-    this.selectedTransferCompanySid = null;
+  private loadTransferCompanyMasters(configuredCompanyIds: number[]): void {
+    forkJoin({
+      companies: this.masterService.getAllCompanies().pipe(catchError(() => of([]))),
+      branches: this.masterService.getAllBranches().pipe(catchError(() => of([])))
+    }).subscribe({
+      next: ({ companies, branches }) => {
+        this.allTransferCompanyMasters = Array.isArray(companies) ? companies : [];
+        this.allTransferBranchMasters = Array.isArray(branches) ? branches : [];
+        this.applyTransferCompanyOptions(configuredCompanyIds);
+      },
+      error: () => {
+        this.allTransferCompanyMasters = [];
+        this.allTransferBranchMasters = [];
+        this.applyTransferCompanyOptions(configuredCompanyIds);
+      }
+    });
+  }
+
+  private parseTransferCompanyConfigValue(value: any): number[] {
+    if (Array.isArray(value)) {
+      return value
+        .map((item: any) => Number(item))
+        .filter((item: number) => Number.isFinite(item) && item > 0);
+    }
+
+    const raw = String(value ?? '').trim();
+    if (!raw) {
+      return [];
+    }
+
+    return raw
+      .split(',')
+      .map((item: string) => Number(item.trim()))
+      .filter((item: number) => Number.isFinite(item) && item > 0);
+  }
+
+  private applyTransferCompanyOptions(configuredCompanyIds: number[]): void {
+    const currentCompanySid = Number(this.currentCompany?.CompanyMasterSid || 0);
+    const currentCompanyHasAlternateBranch = this.getTransferBranchesForCompany(currentCompanySid).length > 0;
+    const allowedCompanyIds = new Set<number>(configuredCompanyIds);
+
+    if (currentCompanySid && currentCompanyHasAlternateBranch) {
+      allowedCompanyIds.add(currentCompanySid);
+    }
+
+    this.availableTransferCompanies = (this.allTransferCompanyMasters || [])
+      .filter((company: any) =>
+        !!company?.CompanyMasterSid &&
+        allowedCompanyIds.has(Number(company.CompanyMasterSid))
+      );
+
+    const preferredCompanySid = this.availableTransferCompanies.some(
+      (company: any) => Number(company?.CompanyMasterSid) === currentCompanySid
+    )
+      ? currentCompanySid
+      : Number(this.availableTransferCompanies[0]?.CompanyMasterSid || 0);
+
+    this.selectedTransferCompanySid = preferredCompanySid || null;
     this.selectedTransferBranchSid = null;
     this.filteredTransferBranches = [];
+
+    if (this.selectedTransferCompanySid) {
+      this.onTransferCompanyChange(this.selectedTransferCompanySid);
+    }
+  }
+
+  private getTransferBranchesForCompany(companySid: number): any[] {
+    if (!companySid) {
+      return [];
+    }
+
+    const selectedCompany = (this.allTransferCompanyMasters || []).find(
+      (company: any) => Number(company?.CompanyMasterSid) === Number(companySid)
+    );
+
+    return (this.allTransferBranchMasters || [])
+      .filter((branch: any) =>
+        Number(branch?.CompanyMasterSid) === Number(companySid) &&
+        (
+          Number(companySid) !== Number(this.currentCompany?.CompanyMasterSid) ||
+          Number(branch?.BranchMasterSid) !== Number(this.currentBranch?.BranchMasterSid)
+        )
+      )
+      .map((branch: any) => ({
+        ...branch,
+        CompanyMasterSid: selectedCompany?.CompanyMasterSid,
+        companyName: selectedCompany?.companyName,
+      }));
   }
 
   onTransferCompanyChange(companySid: number | null): void {
@@ -1806,23 +1919,7 @@ onETDDateSelect(): void {
       return;
     }
 
-    const selectedCompany = (this.userData?.userCompanyMaster || []).find(
-      (ucm: any) => ucm?.CompanyMasterSid === this.selectedTransferCompanySid
-    )?.companyMaster;
-
-    this.filteredTransferBranches = (selectedCompany?.userBranchMaster || [])
-      .filter((ubm: any) =>
-        ubm?.GiveAccess === 'Y' &&
-        (
-          selectedCompany?.CompanyMasterSid !== this.currentCompany?.CompanyMasterSid ||
-          ubm?.branchMaster?.BranchMasterSid !== this.currentBranch?.BranchMasterSid
-        )
-      )
-      .map((ubm: any) => ({
-        ...ubm.branchMaster,
-        CompanyMasterSid: selectedCompany?.CompanyMasterSid,
-        companyName: selectedCompany?.companyName,
-      }));
+    this.filteredTransferBranches = this.getTransferBranchesForCompany(this.selectedTransferCompanySid);
   }
 
   async pullMasterJobToImportBranch(): Promise<void> {

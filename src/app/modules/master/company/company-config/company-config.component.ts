@@ -87,6 +87,12 @@ export class CompanyConfigComponent implements OnInit {
       displayName: 'Terms and Conditions',
       type: 'boolean' as const,
       defaultValue: false
+    },
+    {
+      name: 'ExportToImportCompanyMasterSid',
+      displayName: 'Export To Import Companies',
+      type: 'string' as const,
+      defaultValue: ''
     }
     
   ];
@@ -168,6 +174,9 @@ export class CompanyConfigComponent implements OnInit {
       case 'boolean':
         return [];
       default:
+        if (configName === 'ExportToImportCompanyMasterSid') {
+          return [];
+        }
         return [Validators.required];
     }
   }

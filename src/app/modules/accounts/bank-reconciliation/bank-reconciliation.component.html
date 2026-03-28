@@ -54,9 +54,9 @@
           <div class="col-md-2">
             <div class="custom-form-group custom-form-group-select"
               [class.filled]="!!filterForm.get('ClearanceFilter')?.value">
-              <ng-select class="ng-select" formControlName="ClearanceFilter">
+              <ng-select class="ng-select" formControlName="ClearanceFilter" appendTo="body">
                 <ng-option value="ALL">All</ng-option>
-                <ng-option value="WITH">With Clearance Date</ng-option>
+                <ng-option value="WITH">With Clearance Date</ng-option>  
                 <ng-option value="WITHOUT">Without Clearance Date</ng-option>
               </ng-select>
               <label class="input-label">Clearance Filter</label>
