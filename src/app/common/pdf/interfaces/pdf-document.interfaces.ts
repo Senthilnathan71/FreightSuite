@@ -1036,6 +1036,80 @@ export interface PaymentMatchingData {
   BillDate?: Date | string;
 }
 
+// =====================
+// JOURNAL VOUCHER PDF DATA
+// =====================
+export interface JournalVoucherPdfData extends PdfDocumentBase {
+  printSettings?: {
+    logoPosition: 'left' | 'center' | 'right';
+    companyPosition: 'left' | 'center' | 'right';
+    companyAlignment: 'left' | 'center' | 'right';
+  };
+  journalVoucher: {
+    narration?: string;
+    voucherNumber?: string;
+    voucherDate?: Date | string;
+    postDate?: Date | string;
+    postStatus?: string;
+  };
+  details: JournalVoucherLineData[];
+  totals: {
+    totalDebit: number;
+    totalCredit: number;
+    difference: number;
+  };
+  amountInWords?: string;
+}
+
+export interface JournalVoucherLineData {
+  ledgerName?: string;
+  subledgerName?: string;
+  currencyCode?: string;
+  exchangeRate?: number;
+  amount?: number;
+  localAmount?: number;
+  drCr?: string;
+  narration?: string;
+}
+
+// =====================
+// RELEASE LETTER PDF DATA
+// =====================
+export interface ReleaseLetterPdfData extends PdfDocumentBase {
+  reportTitle: string;
+  selectedFclLcl?: string;
+  releaseInfo: {
+    cfs?: string;
+    attention?: string;
+    shipper?: string;
+    vessel?: string;
+    voyage?: string;
+    date?: Date | string;
+    customerBookingRef?: string;
+    bookingRef?: string;
+    portOfDischarge?: string;
+    finalDestination?: string;
+  };
+  fclCargo: ReleaseLetterFclCargoRow[];
+  lclCargo: {
+    noOfPackages?: number;
+    grossWeight?: number;
+    volume?: number;
+  };
+  releaseTo?: string;
+  marksAndNumber?: string;
+  remarks?: string;
+  signatureCompanyName?: string;
+}
+
+export interface ReleaseLetterFclCargoRow {
+  containerCount?: number;
+  containerType?: string;
+  noOfPackages?: number;
+  grossWeight?: number;
+  volume?: number;
+}
+
 
 // =====================
 // DOCUMENT TYPE ENUMS

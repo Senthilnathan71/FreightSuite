@@ -88,8 +88,8 @@ export class AuditLogComponent implements OnInit {
             const newVal = normalize(newObj[field]);
 
             if (oldVal !== newVal) {
-              groupedLogs[groupKey].sections[sectionTitle].oldValDisplay.push(`${field}: ${oldVal}`);
-              groupedLogs[groupKey].sections[sectionTitle].newValDisplay.push(`${field}: ${newVal}`);
+              groupedLogs[groupKey].sections[sectionTitle].oldValDisplay.push(`${field} : ${oldVal}`);
+              groupedLogs[groupKey].sections[sectionTitle].newValDisplay.push(`${field} : ${newVal}`);
             }
           });
         });

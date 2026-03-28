@@ -1,6 +1,6 @@
 
 .audit-body {
-  background: #f8fafc;
+  // background: #f8fafc;
   padding: 0.75rem;
   min-height: 220px;
   max-height: 70vh;
@@ -48,10 +48,10 @@
 
 .audit-log-card {
   background: #fff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #d3d5d8;
   border-radius: 14px;
   padding: 0.75rem;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+  // box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
 }
 
 .audit-log-top {
@@ -61,7 +61,7 @@
   gap: 1rem;
   margin-bottom: 0.2rem;
   padding-bottom: 0.2rem;
-  border-bottom: 1px solid #eef2f7;
+  border-bottom: 1px solid #d3d5d8;
 }
 
 .audit-user {
@@ -106,7 +106,7 @@
 .audit-section + .audit-section {
   margin-top: 0.6rem;
   padding-top: 0.6rem;
-  border-top: 1px dashed #e2e8f0;
+  border-top: 1px dashed #d3d5d8;
 }
 
 .audit-section-title {
@@ -136,7 +136,7 @@
   font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.2rem;
   letter-spacing: 0.3px;
 }
 
