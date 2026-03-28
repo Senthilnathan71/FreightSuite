@@ -482,13 +482,23 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         this.recalculateAllRows();
       });
 
-    ['GSTType', 'CurrencyCode', 'ExchangeRate'].forEach((field) => {
-      this.invoiceForm.get(field)?.valueChanges
+    this.invoiceForm.get('GSTType')?.valueChanges
       .pipe(takeUntil(this.destroy$))
-        .subscribe(() => {
+      .subscribe((gstType) => {
         if (this.isPosted) return;
+        if (gstType === 'EXPWP' || gstType === 'EXPWOP') {
+          this.taxCalculationService.updateSelectedGstType(gstType);
+        }
         this.recalculateAllRows();
       });
+
+    ['CurrencyCode', 'ExchangeRate'].forEach((field) => {
+      this.invoiceForm.get(field)?.valueChanges
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          if (this.isPosted) return;
+          this.recalculateAllRows();
+        });
     });
 
     ['CustomerBranchSid', 'PartyMasterSid', 'VoucherDate'].forEach((field) => {
@@ -1136,6 +1146,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         gstNumber: data.GST_VAT || '',
         customerGstType: data.customerBranch?.CustomerGstType || 'Regular',
         isUnionTerritory: data.customerBranch?.stateMaster?.IsUnionTerritory === 'Y',
+        selectedGstType: (data.GSTType === 'EXPWP' || data.GSTType === 'EXPWOP') ? data.GSTType : undefined,
       },
       data.InvoiceType as any
     );
@@ -2245,29 +2256,7 @@ isSeaDepartment(): boolean {
       const currentCompanyCountry = toNumber(this.currentCompany?.CountryMasterSid);
       const currentCompanyState = toNumber(this.currentBranch?.StateMasterSid)
       const currentCurrency = toNumber(this.currentCompany?.CurrencyMasterSid);
-      const customerBranchFromForm = toNumber(this.invoiceForm.get('CustomerBranchSid')?.value);
-      const customerState = this.customerBranchList.find(
-        c => c.CustomerBranchSid === customerBranchFromForm
-      )?.StateMasterSid;
-      let interOrIntra = 'Intra';
-      // india
-      if(this.currentCompanyCountryCode === 'in'){
-        if(currentCompanyState === customerState){
-          interOrIntra = 'Intra';
-        } else {
-          interOrIntra = 'Inter';
-        }
-      } else if(['ae', 'us'].includes(this.currentCompanyCountryCode)){
-        interOrIntra = 'Inter';
-      }
-      // Union territory uses same TaxCategory as same-state (Intra)
-      if (this.taxCalculationService.context?.appliedTaxMode === 'CGST_UGST') {
-        interOrIntra = 'Intra';
-      }
-      // SEZ/Export with payment uses IGST regardless of state match
-      if (this.taxCalculationService.context?.appliedTaxMode === 'IGST' && this.taxCalculationService.isExportOrSEZ) {
-        interOrIntra = 'Inter';
-      }
+      const interOrIntra = this.taxCalculationService.context?.taxCategory || 'Intra';
 
       if (
         !voucherHeaderSid ||

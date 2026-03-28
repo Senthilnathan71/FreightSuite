@@ -255,6 +255,12 @@ export class TaxCalculationService {
     return this.deriveClassification();
   }
 
+  updateSelectedGstType(selectedGstType: 'EXPWP' | 'EXPWOP'): TaxClassification {
+    if (!this._context?.party) return this.emptyClassification();
+    this._context.party = { ...this._context.party, selectedGstType };
+    return this.deriveClassification();
+  }
+
   // ── calculateRowTax() — SYNCHRONOUS ───────────────────────────────────────
 
   calculateRowTax(input: RowTaxInput): RowTaxResult {
@@ -270,6 +276,11 @@ export class TaxCalculationService {
     if (!this._context) return zero;
     if (this._context.appliedTaxMode === 'NONE') return zero;
     if (!input.taxGroupSid) return zero;
+
+    // EXPWOP: show IGST column but always at 0%
+    if (this._context.documentClass === 'EXPWOP') {
+      return { TaxPercentage1: 0, TaxAmount1: 0, TaxPercentage2: 0, TaxAmount2: 0, TotalTaxAmount: 0, TaxLabel: 'IGST 0%' };
+    }
 
     const isZeroRated = this._context.invoiceType === 'NONGST';
     const taxCategoryForMaster = this.getTaxCategoryForAppliedMode(this._context.appliedTaxMode);
@@ -331,7 +342,7 @@ export class TaxCalculationService {
         TaxLabel:
           cgstRate || sgstRate
             ? `CGST ${cgstRate}% + SGST ${sgstRate}%`
-            : '',
+            : 'CGST 0% + SGST 0%',
       };
     }
 
@@ -351,7 +362,7 @@ export class TaxCalculationService {
         TaxLabel:
           cgstRate || ugstRate
             ? `CGST ${cgstRate}% + UGST ${ugstRate}%`
-            : '',
+            : 'CGST 0% + UGST 0%',
       };
     }
 
@@ -365,7 +376,7 @@ export class TaxCalculationService {
         TaxPercentage2: 0,
         TaxAmount2: 0,
         TotalTaxAmount: igstAmt,
-        TaxLabel: igstRate ? `IGST ${igstRate}%` : '',
+        TaxLabel: `IGST ${igstRate}%`,
       };
     }
 
@@ -496,7 +507,7 @@ export class TaxCalculationService {
         // Export/Import
         if (this.getExportGstType(party) === 'EXPWOP') {
           documentClass = 'EXPWOP';
-          appliedTaxMode = 'NONE';
+          appliedTaxMode = 'IGST'; // show IGST column at 0%
           formGSTType = 'EXPWOP';
         } else {
           documentClass = 'EXPWP';
@@ -507,7 +518,7 @@ export class TaxCalculationService {
         // SEZ — domestic but treated like export
         if (this.getExportGstType(party) === 'EXPWOP') {
           documentClass = 'EXPWOP';
-          appliedTaxMode = 'NONE';
+          appliedTaxMode = 'IGST'; // show IGST column at 0%
           formGSTType = 'EXPWOP';
         } else {
           documentClass = 'EXPWP';
