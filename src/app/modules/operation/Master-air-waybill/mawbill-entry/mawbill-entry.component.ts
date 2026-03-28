@@ -167,6 +167,11 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     displayLabels: ['Branch'],
     labelFields: ['branchName'],
   };
+  companyLookupConfig = {
+    displayFields: ['companyName', 'companyCode'],
+    displayLabels: ['Company', 'Code'],
+    labelFields: ['companyName'],
+  };
   
   // Lookup data
   departments: any[] = [];
@@ -190,7 +195,9 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   chargeList : any[]=[];
   filteredDestinationAgents: any[] = [];
   filteredOriginAgents: any[] = [];
+  availableTransferCompanies: any[] = [];
   availableTransferBranches: any[] = [];
+  filteredTransferBranches: any[] = [];
   packageTypeList: any[] = [];
   hssacList: any[] = [];
   airlineList: any[] = [];
@@ -238,6 +245,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   currentMenuId: any;
   masterJobData:any;
   selectedReport: 'MAWB' | 'MAWBDraft' = 'MAWB';
+  selectedTransferCompanySid: number | null = null;
   selectedTransferBranchSid: number | null = null;
   isPullingToImportBranch = false;
   tabs = [
@@ -347,10 +355,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     this.currentCompany = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
     this.countryOfCompany = this.currentCompany?.CountryName;
     this.currentBranch = this.appSettingsService.getCurrentBranchInfo();
-    const currentCompanyInfo = this.appSettingsService.getCurrentCompanyInfo();
-    this.availableTransferBranches = (currentCompanyInfo?.userBranchMaster || [])
-      .filter((ubm: any) => ubm?.GiveAccess === 'Y' && ubm?.branchMaster?.BranchMasterSid !== this.currentBranch?.BranchMasterSid)
-      .map((ubm: any) => ubm.branchMaster);
+    this.initializeTransferOptions();
      const storedMenuId = sessionStorage.getItem('currentMenuId');
      this.loadTermsAndConditionsConfig();
      this.mps.init().subscribe();
@@ -1319,7 +1324,16 @@ loadMawbStock(data: any): void {
       ExportDoDate: othersData.ExportDoDate ? new Date(othersData.ExportDoDate) : null,
       SOBDate: othersData.SOBDate ? new Date(othersData.SOBDate) : null,
     });
+    this.selectedTransferCompanySid = othersData.DestinationCompanyMasterSid || data.DestinationCompanyMasterSid || null;
     this.selectedTransferBranchSid = othersData.DestinationBranchMasterSid || data.DestinationBranchMasterSid || null;
+    if (this.selectedTransferCompanySid) {
+      this.onTransferCompanyChange(this.selectedTransferCompanySid);
+      if (this.selectedTransferBranchSid && !this.filteredTransferBranches.some(
+        (branch: any) => branch?.BranchMasterSid === this.selectedTransferBranchSid
+      )) {
+        this.selectedTransferBranchSid = null;
+      }
+    }
     if (othersData.Coload === 'Y') {
       this.masterJobForm.get('CoLoader')?.enable();
     } else {
@@ -1492,11 +1506,56 @@ loadMawbStock(data: any): void {
 
   get canPullToImportBranch(): boolean {
     const exportImport = (this.selectedDepartment?.ExportImport || '').toString().toLowerCase();
-    return this.isEditMode && exportImport === 'export' && this.availableTransferBranches.length > 0;
+    return this.isEditMode && exportImport === 'export' && this.availableTransferCompanies.length > 0;
+  }
+
+  private initializeTransferOptions(): void {
+    const allCompanies = this.userData?.userCompanyMaster || [];
+
+    this.availableTransferCompanies = allCompanies
+      .map((ucm: any) => ucm?.companyMaster)
+      .filter((company: any) => !!company?.CompanyMasterSid);
+
+    this.selectedTransferCompanySid = null;
+    this.selectedTransferBranchSid = null;
+    this.filteredTransferBranches = [];
+  }
+
+  onTransferCompanyChange(companySid: number | null): void {
+    this.selectedTransferCompanySid = companySid ? Number(companySid) : null;
+    this.selectedTransferBranchSid = null;
+
+    if (!this.selectedTransferCompanySid) {
+      this.filteredTransferBranches = [];
+      return;
+    }
+
+    const selectedCompany = (this.userData?.userCompanyMaster || []).find(
+      (ucm: any) => ucm?.CompanyMasterSid === this.selectedTransferCompanySid
+    )?.companyMaster;
+
+    this.filteredTransferBranches = (selectedCompany?.userBranchMaster || [])
+      .filter((ubm: any) =>
+        ubm?.GiveAccess === 'Y' &&
+        (
+          selectedCompany?.CompanyMasterSid !== this.currentCompany?.CompanyMasterSid ||
+          ubm?.branchMaster?.BranchMasterSid !== this.currentBranch?.BranchMasterSid
+        )
+      )
+      .map((ubm: any) => ({
+        ...ubm.branchMaster,
+        CompanyMasterSid: selectedCompany?.CompanyMasterSid,
+        companyName: selectedCompany?.companyName,
+      }));
   }
 
   async pullMasterJobToImportBranch(): Promise<void> {
     if (!this.masterJobSid || !this.canPullToImportBranch) {
+      return;
+    }
+
+    if (!this.selectedTransferCompanySid) {
+      this.toastr.warning('Please choose the destination company first.');
       return;
     }
 
@@ -1510,12 +1569,16 @@ loadMawbStock(data: any): void {
       return;
     }
 
-    const selectedBranch = this.availableTransferBranches.find(
+    const selectedCompany = this.availableTransferCompanies.find(
+      (company: any) => company?.CompanyMasterSid === this.selectedTransferCompanySid
+    );
+
+    const selectedBranch = this.filteredTransferBranches.find(
       branch => branch?.BranchMasterSid === this.selectedTransferBranchSid
     );
 
     const proceed = confirm(
-      `Pull this export master job and its active house jobs to ${selectedBranch?.branchName || 'the selected branch'} as an import job?`
+      `Pull this export master job and its active house jobs to ${selectedBranch?.branchName || 'the selected branch'} under ${selectedCompany?.companyName || 'the selected company'} as an import job?`
     );
 
     if (!proceed) {
@@ -1528,6 +1591,7 @@ loadMawbStock(data: any): void {
       MasterJobSid: this.masterJobSid,
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       SourceBranchMasterSid: this.currentBranch?.BranchMasterSid,
+      DestinationCompanyMasterSid: this.selectedTransferCompanySid,
       DestinationBranchMasterSid: this.selectedTransferBranchSid,
       CreatedBy: this.appSettingsService.userSettingSource.value?.['userEmail'],
     }).subscribe({
@@ -2277,7 +2341,9 @@ if (polSid && !podSid) {
       FreightPPCC: 'Prepaid',
       ExportToImport: 'N'
     });
+    this.selectedTransferCompanySid = null;
     this.selectedTransferBranchSid = null;
+    this.filteredTransferBranches = [];
     this.isPullingToImportBranch = false;
     
     this.connections.clear();

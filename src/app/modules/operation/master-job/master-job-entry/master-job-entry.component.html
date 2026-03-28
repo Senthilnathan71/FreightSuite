@@ -1682,9 +1682,28 @@
                             <div class="row g-2 align-items-end">
                                 <div class="col-md-4">
                                     <div class="custom-form-group custom-form-group-select"
+                                        [class.filled]="!!selectedTransferCompanySid">
+                                        <dofi-searchable-dropdown
+                                            [items]="availableTransferCompanies"
+                                            [(ngModel)]="selectedTransferCompanySid"
+                                            [displayFields]="companyLookupConfig.displayFields"
+                                            [displayLabels]="companyLookupConfig.displayLabels"
+                                            [labelFields]="companyLookupConfig.labelFields"
+                                            bindValue="CompanyMasterSid"
+                                            placeholder=""
+                                            [ngModelOptions]="{ standalone: true }"
+                                            (ngModelChange)="onTransferCompanyChange($event)"
+                                            [readonly]="isExportToImportCompleted"
+                                            [clearable]="false">
+                                        </dofi-searchable-dropdown>
+                                        <label class="input-label">Destination Company</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="custom-form-group custom-form-group-select"
                                         [class.filled]="!!selectedTransferBranchSid">
                                         <dofi-searchable-dropdown
-                                            [items]="availableTransferBranches"
+                                            [items]="filteredTransferBranches"
                                             [(ngModel)]="selectedTransferBranchSid"
                                             [displayFields]="branchLookupConfig.displayFields"
                                             [displayLabels]="branchLookupConfig.displayLabels"
@@ -1698,18 +1717,18 @@
                                         <label class="input-label">Destination Branch</label>
                                     </div>
                                 </div>
-                                <div class="col-md-3 d-flex align-items-end">
+                                <div class="col-md-2 d-flex align-items-end">
                                     <button
                                         class="btn btn-outline-info btn-sm w-100"
                                         (click)="pullMasterJobToImportBranch()"
-                                        [disabled]="masterJobForm.dirty || isPullingToImportBranch || !selectedTransferBranchSid || isExportToImportCompleted">
+                                        [disabled]="masterJobForm.dirty || isPullingToImportBranch || !selectedTransferCompanySid || !selectedTransferBranchSid || isExportToImportCompleted">
                                         <i class="fas fa-download me-1"></i>
                                         <span>{{ isPullingToImportBranch ? 'Pulling...' : (isExportToImportCompleted ? 'Pull To Import Successful' : 'Pull To Import') }}</span>
                                     </button>
                                 </div>
-                                <div class="col-md-5 d-flex align-items-center">
+                                <div class="col-md-2 d-flex align-items-center">
                                     <small class="text-muted">
-                                        Pull this export master job into the selected import branch after you finish the export side.
+                                        Select company and branch for the import-side job.
                                     </small>
                                 </div>
                             </div>
