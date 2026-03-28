@@ -109,4 +109,45 @@ box-shadow: 0 6px 24px rgba(15, 23, 42, 0.04);
   word-break: break-word;
 }
 
+.book-search-box {
+  min-width: 280px;
+  max-width: 360px;
+}
+
+.book-clearance-box {
+  min-width: 220px;
+  max-width: 280px;
+}
+
+.book-action-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.book-search-box .form-label {
+  font-size: 11px;
+  color: #64748b;
+}
+
+@media (max-width: 992px) {
+  .book-search-box {
+    min-width: 220px;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .book-clearance-box {
+    min-width: 180px;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .book-action-group {
+    width: 100%;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+}
+
 

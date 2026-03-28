@@ -33,12 +33,38 @@
 
           <div class="col-lg-2 col-md-4">
             <label class="form-label">From Date <span class="text-danger">*</span></label>
-            <input type="date" class="form-control" formControlName="FromDate" />
+            <div class="input-group">
+              <input
+                class="form-control"
+                placeholder="dd-mm-yyyy"
+                name="fromDate"
+                formControlName="FromDate"
+                ngbDatepicker
+                #fromDatePicker="ngbDatepicker"
+                (click)="fromDatePicker.toggle()"
+                container="body" />
+              <button class="btn btn-outline-secondary" type="button" (click)="fromDatePicker.toggle()">
+                <i class="fas fa-calendar-alt"></i>
+              </button>
+            </div>
           </div>
 
           <div class="col-lg-2 col-md-4">
             <label class="form-label">To Date <span class="text-danger">*</span></label>
-            <input type="date" class="form-control" formControlName="ToDate" />
+            <div class="input-group">
+              <input
+                class="form-control"
+                placeholder="dd-mm-yyyy"
+                name="toDate"
+                formControlName="ToDate"
+                ngbDatepicker
+                #toDatePicker="ngbDatepicker"
+                (click)="toDatePicker.toggle()"
+                container="body" />
+              <button class="btn btn-outline-secondary" type="button" (click)="toDatePicker.toggle()">
+                <i class="fas fa-calendar-alt"></i>
+              </button>
+            </div>
           </div>
 
           <div class="col-lg-2 col-md-4">
@@ -50,33 +76,41 @@
             </select>
           </div>
 
-          <div class="col-lg-3 col-md-4">
-            <label class="form-label">Search</label>
-            <input type="text" class="form-control" formControlName="Search" placeholder="Voucher no, ref no, narration" />
+          <div class="col-lg-2 col-md-4 d-flex align-items-end">
+            <button type="button" class="btn btn-primary w-100" (click)="searchBookTransactions()">
+              <i class="fas fa-search me-2"></i>Search
+            </button>
           </div>
+
         </form>
       </div>
     </div>
   </div>
 
-  <div class="col-lg-4 mb-3">
-     <div class="card recon-card h-100">
-      <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <h6 class="mb-0">Bank Statement Rows</h6>
-        <small class="text-muted">{{ bankTransactions.length }} row(s)</small>
+  <div class="col-12 mb-3">
+    <div class="card recon-card panel-card bank-panel">
+      <div class="card-header panel-header d-flex justify-content-between align-items-start">
+        <div>
+          <div class="panel-title">Bank Statement Rows</div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="panel-count">{{ bankTransactions.length }} row(s)</span>
+          <button type="button" class="btn btn-sm btn-outline-primary" (click)="addBankRow()">
+            <i class="fas fa-plus me-1"></i>Add Row
+          </button>
+        </div>
       </div>
-      <div class="card-body p-0">
+      <div class="card-body p-0 panel-body">
         <div [formGroup]="filterForm">
           <div formArrayName="bankTransactions" class="table-responsive recon-table-wrap">
             <table class="table table-sm table-hover align-middle mb-0 recon-table">
               <thead>
                 <tr>
-                  <th style="width: 100px;">Date</th>
-                  <th style="width: 110px;">Ref No.</th>
-                  <th>Narration</th>
-                  <th style="width: 80px;">Dr/Cr</th>
-                  <th style="width: 110px;" class="text-end">Amount</th>
-                  <th style="width: 110px;">Status</th>
+                  <th style="width: 110px;">Date</th>
+                  <th style="width: 130px;">Ref No.</th>
+                  <th style="width: 90px;">Dr/Cr</th>
+                  <th style="width: 130px;" class="text-end">Amount</th>
+                  <th style="width: 120px;">Status</th>
                   <th style="width: 90px;"></th>
                 </tr>
               </thead>
@@ -87,22 +121,31 @@
                   [class.table-active]="isSelectedBankRow(i)"
                   (click)="selectBankRow(i, $event)">
                   <td>
-                    <input type="date" class="form-control form-control-sm" formControlName="TransactionDate" />
+                    <div class="input-group input-group-sm">
+                      <input
+                        class="form-control"
+                        placeholder="dd-mm-yyyy"
+                        formControlName="TransactionDate"
+                        ngbDatepicker
+                        #bankDatePicker="ngbDatepicker"
+                        (click)="bankDatePicker.toggle()"
+                        container="body" />
+                      <button class="btn btn-outline-secondary" type="button" (click)="bankDatePicker.toggle()">
+                        <i class="fas fa-calendar-alt"></i>
+                      </button>
+                    </div>
                   </td>
                   <td>
                     <input type="text" class="form-control form-control-sm" formControlName="ReferenceNumber" />
                   </td>
                   <td>
-                    <input type="text" class="form-control form-control-sm" formControlName="Narration" />
-                  </td>
-                  <td>
                     <select class="form-select form-select-sm" formControlName="DrCr">
-                      <option value="D">D</option>
-                      <option value="C">C</option>
+                      <option value="D">Debit</option>
+                      <option value="C">Credit</option>
                     </select>
                   </td>
                   <td>
-                     <input type="number" class="form-control form-control-sm text-end" formControlName="Amount" step="0.01" />
+                    <input type="number" class="form-control form-control-sm text-end" formControlName="Amount" step="0.01"  />
                   </td>
                   <td>
                     <span class="badge rounded-pill" [ngClass]="row.get('Status')?.value === 'Reconciled' ? 'bg-success' : 'bg-secondary'">
@@ -123,7 +166,9 @@
                   </td>
                 </tr>
                 <tr *ngIf="bankTransactions.length === 0">
-                  <td colspan="7" class="text-center text-muted py-3">Add bank statement rows to start matching.</td>
+                  <td colspan="6" class="text-center text-muted py-3">
+                    Add bank statement rows to start matching.
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -133,26 +178,78 @@
     </div>
   </div>
 
-  <div class="col-lg-8 mb-3">
-    <div class="card recon-card h-100">
-      <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <h6 class="mb-0">Book Transactions</h6>
-        <small class="text-muted">{{ bookRows.length }} row(s)</small>
+  <div class="col-12 mb-3">
+    <div class="card recon-card panel-card book-panel">
+        <div class="card-header panel-header d-flex justify-content-between align-items-start">
+          <div>
+            <div class="panel-title">Book Transactions</div>
+          </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+          <span class="panel-count">{{ bookRows.length }} row(s)</span>
+          <div class="book-action-group">
+              <!-- <button type="button" class="btn btn-sm btn-primary" (click)="autoMatch()">
+                <i class="fas fa-magic me-1"></i>Auto Match
+              </button> -->
+              <button type="button" class="btn btn-sm btn-primary" (click)="manualMatchSelected()">
+                <i class="fas fa-link me-1"></i>Manual Match
+              </button>
+              <button type="button" class="btn btn-sm btn-warning" (click)="updateClearanceSelected()">
+                <i class="fas fa-calendar-check me-1"></i>Update Clearance
+              </button>
+            </div>
+            <div class="book-clearance-box">
+              <label class="form-label mb-1">Clearance Date</label>
+              <div class="input-group input-group-sm">
+                <input
+                  class="form-control"
+                  placeholder="dd-mm-yyyy"
+                  [formControl]="clearanceDateControl"
+                  ngbDatepicker
+                  #clearanceDatePicker="ngbDatepicker"
+                  (click)="clearanceDatePicker.toggle()"
+                  container="body" />
+                <button type="button" class="btn btn-primary" (click)="clearanceDatePicker.toggle()">
+                  <i class="fas fa-calendar-alt"></i>
+                </button>
+              </div>
+            </div>
+            <div class="book-search-box">
+              <div class="input-group input-group-sm">
+                <input
+                  type="text"
+                  class="form-control"
+                  [formControl]="searchControl"
+                  placeholder="Voucher no, ref no, narration"
+                  (keyup.enter)="searchBookTransactions()" />
+              <button type="button" class="btn btn-primary" (click)="searchBookTransactions()">
+                <i class="fas fa-search"></i>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="card-body p-0 ">
+      <div class="card-body p-0 panel-body">
         <div class="table-responsive recon-table-wrap">
           <table class="table table-sm table-hover align-middle mb-0 recon-table">
             <thead>
               <tr>
-                <th style="width: 120px;">Voucher No.</th>
+                <th style="width: 60px;" class="text-center">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    [checked]="isAllBookRowsSelected()"
+                    [indeterminate]="isSomeBookRowsSelected()"
+                    (change)="toggleSelectAllBookRows($any($event.target).checked, $event)"
+                  />
+                </th>
+                <th style="width: 140px;">Voucher No.</th>
                 <th style="width: 70px;">Type</th>
-                <th style="width: 100px;">Voucher Date</th>
-                <th style="width: 120px;">Ref No.</th>
+                <th style="width: 110px;">Voucher Date</th>
+                <th style="width: 130px;">Ref No.</th>
                 <th>Narration</th>
-                <th style="width: 90px;" class="text-end">Amount</th>
-                <th style="width: 110px;">Clearance</th>
-                <th style="width: 110px;">Status</th>
-                <th style="width: 90px;"></th>
+                <th style="width: 110px;" class="text-end">Amount</th>
+                <th style="width: 120px;">Clearance</th>
+                <th style="width: 120px;">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -160,6 +257,14 @@
                 *ngFor="let row of bookRows"
                 [class.table-active]="isSelectedBookRow(row)"
                 (click)="selectBookRow(row, $event)">
+                <td class="text-center">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    [checked]="isBookRowSelected(row)"
+                    (change)="toggleBookRowSelection(row, $any($event.target).checked, $event)"
+                  />
+                </td>
                 <td>
                   <ng-container *ngIf="getVoucherRoute(row) as voucherLink; else plainVoucher">
                     <a [routerLink]="voucherLink" class="text-decoration-none fw-semibold">
@@ -169,28 +274,19 @@
                   <ng-template #plainVoucher>{{ row.VoucherNumber }}</ng-template>
                 </td>
                 <td>{{ row.VoucherTypeCode || '-' }}</td>
-                <td>{{ row.VoucherDate | date:'dd/MM/yyyy' }}</td>
+                <td>{{ formatDisplayDate(row.VoucherDate) }}</td>
                 <td>{{ row.ReferenceNumber || '-' }}</td>
                 <td>{{ row.Narration || '-' }}</td>
                 <td class="text-end">{{ row.LocalAmount | number:'1.2-2' }}</td>
-                <td>{{ row.ClearanceDate ? (row.ClearanceDate | date:'dd/MM/yyyy') : '-' }}</td>
+                <td>{{ row.ClearanceDate ? formatDisplayDate(row.ClearanceDate) : '-' }}</td>
                 <td>
                   <span class="badge rounded-pill" [ngClass]="row.status === 'Reconciled' ? 'bg-success' : 'bg-secondary'">
                     {{ row.status || 'Unreconciled' }}
                   </span>
                 </td>
-                <td class="text-end">
-                  <button
-                    type="button"
-                    class="btn btn-sm"
-                    [ngClass]="isSelectedBookRow(row) ? 'btn-primary' : 'btn-outline-primary'"
-                    (click)="selectBookRow(row, $event)">
-                    {{ isSelectedBookRow(row) ? 'Selected' : 'Select' }}
-                  </button>
-                </td>
               </tr>
               <tr *ngIf="!loadingBooks && !bookRows.length">
-                  <td colspan="9" class="text-center text-muted py-4">
+                <td colspan="9" class="text-center text-muted py-4">
                   No book transactions found. Run Search after selecting a bank ledger and date range.
                 </td>
               </tr>
