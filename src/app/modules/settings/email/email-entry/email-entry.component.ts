@@ -175,7 +175,7 @@ export class EmailEntryComponent implements OnInit {
     formData.append('Subject', formValue.Subject);
     formData.append(
       'Mailbody',
-      this.buildCommonTemplate(formValue.Mailbody, formValue.Subject)
+      this.buildCommonTemplate(formValue.Mailbody, formValue.Subject, this.parentMailContent?.context)
     );
     formData.append('CreatedBy', userEmail);
 
@@ -306,17 +306,16 @@ customEmailValidator(): ValidatorFn {
     `;
   }
 
-    private buildFooterTemplate(): string {
+  private buildFooterTemplate(): string {
     return `
-      <div style="background:#f5f7fb;padding:6px 22px 14px 22px">
+      <div style="background:#f5f7fb;padding:0 22px 14px 22px">
         <div style="
-          max-width:640px;
+          max-width:680px;
           margin:0 auto;
           background:#05608D;
           color:#fff;
           text-align:center;
           padding:12px 16px;
-          border-radius:14px;
           font-size:13px;
         ">
           <div style="margin-bottom:8px">
@@ -336,17 +335,17 @@ customEmailValidator(): ValidatorFn {
     `;
   }
 
-  private buildCommonTemplate(body: string, subject: string): string {
+  private buildCommonTemplate(body: string, subject: string, context?: any): string {
     const bodyHtml = this.formatEmailBody(body);
     const headerLabel = this.getHeaderLabel(subject || '');
-    const summaryHtml = this.buildSummaryChips(body, subject, headerLabel);
+    const summaryHtml = this.buildSummaryChips(body, subject, headerLabel, context);
     const formattedBody = this.buildFormattedBody(bodyHtml, summaryHtml, headerLabel);
     return this.buildHeaderTemplate() + formattedBody + this.buildFooterTemplate();
   }
 
   private buildFormattedBody(bodyHtml: string, summaryHtml: string, headerLabel: string): string {
     return `
-      <div style="background:#f5f7fb;padding:28px 22px">
+      <div style="background:#f5f7fb;padding:28px 22px 0 22px">
         
         <div style="
           max-width:700px;
@@ -394,7 +393,7 @@ customEmailValidator(): ValidatorFn {
           <div style="
             margin-top:16px;
             background:#ffffff;
-            border-radius:16px;
+            border-radius:16px 16px 0 0;
             border:1px solid #e6edf5;
             box-shadow:0 8px 20px rgba(5,96,141,0.08);
             overflow:hidden;
@@ -532,6 +531,10 @@ customEmailValidator(): ValidatorFn {
   }
 
   private getHeaderLabel(subject: string): string {
+    const mailBody = (this.parentMailContent?.Mailbody || this.parentMailContent?.mailbody || '').toString();
+    const enquiryHints = `${subject || ''}\n${mailBody}`;
+    if (/enquiry/i.test(enquiryHints)) return 'Enquiry';
+
     const candidates = [
       this.parentMailContent?.menuName,
       this.parentMailContent?.MenuName,
@@ -557,7 +560,7 @@ customEmailValidator(): ValidatorFn {
     return 'Notification';
   }
 
-  private buildSummaryChips(rawBody: string, subject?: string, headerLabel?: string): string {
+  private buildSummaryChips(rawBody: string, subject?: string, headerLabel?: string, context?: any): string {
     if (!rawBody && !subject) return '';
 
     const combinedText = `${rawBody || ''}\n${subject || ''}`;
@@ -619,7 +622,7 @@ customEmailValidator(): ValidatorFn {
         const isEnquiry = /enquiry/i.test(headerLabel || '');
         const isQuotation = /quotation/i.test(headerLabel || '');
         const refLabel = isEnquiry ? 'Enquiry No' : isQuotation ? 'Quotation No' : 'Reference No';
-        const dateLabel = isQuotation ? 'Quotation Date' : 'Date';
+        const dateLabel = isEnquiry ? 'Enquiry Date' : isQuotation ? 'Quotation Date' : 'Date';
         rows.push({ label: refLabel, value: directMatch[1].trim() });
         rows.push({ label: dateLabel, value: directMatch[2].trim() });
         rows.push({
@@ -636,8 +639,9 @@ customEmailValidator(): ValidatorFn {
       rows.push({ label: 'Quotation No', value: quotationMatch[1].trim() });
     }
 
+    const isEnquiryHeader = /enquiry/i.test(headerLabel || '');
     const isQuotationHeader = /quotation/i.test(headerLabel || '');
-    const dateLabel = isQuotationHeader ? 'Quotation Date' : 'Date';
+    const dateLabel = isEnquiryHeader ? 'Enquiry Date' : isQuotationHeader ? 'Quotation Date' : 'Date';
     const dateValue = enquiryDateMatch?.[1] || dateMatch?.[1];
     if (dateValue && !rows.some(row => row.label === dateLabel)) {
       rows.push({ label: dateLabel, value: dateValue.trim() });
@@ -651,6 +655,27 @@ customEmailValidator(): ValidatorFn {
       }
       if (podMatch?.[1] && !rows.some(row => row.label === 'POD')) {
         rows.push({ label: 'POD', value: podMatch[1].trim() });
+      }
+    }
+
+    const departmentName =
+      context?.departmentName ||
+      context?.DepartmentName ||
+      context?.department ||
+      context?.Department ||
+      '';
+    if (departmentName && !rows.some(row => row.label === 'Department')) {
+      rows.push({ label: 'Department', value: departmentName });
+    }
+
+    if (subject && /quotation/i.test(headerLabel || '') && !rows.some(row => row.label === 'Route')) {
+      const afterDateMatch = subject.match(/Date\s*[:\-]?\s*[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{2,4}\s*[-–—]?\s*(.+)$/i);
+      const routeText = (afterDateMatch?.[1] || '').trim();
+      if (routeText) {
+        const parsedRoute = this.parseRouteText(stripRefAndDate(routeText));
+        if (parsedRoute) {
+          rows.push({ label: 'Route', value: parsedRoute });
+        }
       }
     }
 
@@ -672,8 +697,9 @@ customEmailValidator(): ValidatorFn {
       if (refNo && !rows.some(row => row.label === refLabel)) {
         rows.unshift({ label: refLabel, value: refNo });
       }
-      if (dateOnly && !rows.some(row => row.label === 'Date')) {
-        rows.push({ label: 'Date', value: dateOnly });
+      const enquiryDateLabel = 'Enquiry Date';
+      if (dateOnly && !rows.some(row => row.label === enquiryDateLabel)) {
+        rows.push({ label: enquiryDateLabel, value: dateOnly });
       }
 
       if (!rows.some(row => row.label === 'Route')) {
@@ -681,6 +707,10 @@ customEmailValidator(): ValidatorFn {
         if (parsedRoute) {
           rows.push({ label: 'Route', value: parsedRoute });
         }
+      }
+      const deptLabel = 'Department';
+      if (departmentName && !rows.some(row => row.label === deptLabel)) {
+        rows.push({ label: deptLabel, value: departmentName });
       }
     }
 
@@ -720,6 +750,15 @@ customEmailValidator(): ValidatorFn {
     }
 
     if (normalizedRows.length === 0) return '';
+
+    const enforceEnquiryDateLabel = /enquiry/i.test(headerLabel || '');
+    if (enforceEnquiryDateLabel) {
+      for (const row of normalizedRows) {
+        if (labelKey(row.label) === 'date') {
+          row.label = 'Enquiry Date';
+        }
+      }
+    }
 
     const rowHtml = normalizedRows
       .map(

@@ -1,10 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
+import {
+  generateImdemintyDocument,
+  transformImdemintyApiData
+} from 'src/app/common/pdf/generators/imdeminty-pdf.generator';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
@@ -94,7 +96,7 @@ export class ImdemintyComponent {
     private activeModal: NgbActiveModal,
     private appSettingService: AppSettingsService,
     private masterService: MasterService,
-    private pdfService: PdfDownloadService,
+    private pdfMakeService: PdfMakeService,
     private spinner: NgxSpinnerService,
     public logoService : LogoService
   ) { }
@@ -116,14 +118,22 @@ async downloadPDF() {
 
   setTimeout(async () => {
     this.spinner.show();
-   try {
-  const HouseJob = this.housejobData?.ShipmentNo || '';
-      await this.pdfService.downloadBalancedPDF(
-        'printContent',
-         `Indemnity_${HouseJob}`,
-        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+    try {
+      const logo = this.pdfMakeService.getReportLogo();
+      const pdfData = transformImdemintyApiData(
+        this.housejobData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo
       );
+      const docDefinition = generateImdemintyDocument(pdfData);
+      const houseJob = this.housejobData?.ShipmentNo || this.housejobData?.HBLNo || 'Report';
+      this.pdfMakeService.download(docDefinition, `Indemnity_${houseJob}`);
+      this.appSettingService.showSuccess('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('Indemnity PDF generation failed:', error);
+      this.appSettingService.showError('Error generating PDF. Please try again.');
     } finally {
       this.spinner.hide();
     }
@@ -131,39 +141,17 @@ async downloadPDF() {
 }
 
     async generatePDFBlob(): Promise<Blob | null> {
-          const printContent = document.getElementById('printContent');
-          if (!printContent) {
-            return null;
-          }
-      
           try {
-            const canvas = await html2canvas(printContent, {
-              scale: 2,
-              useCORS: true,
-              logging: false,
-              backgroundColor: '#ffffff'
-            });
-      
-            const imgWidth = 210;
-            const pageHeight = 297;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            let heightLeft = imgHeight;
-            let position = 0;
-      
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const imgData = canvas.toDataURL('image/png');
-      
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-      
-            while (heightLeft > 0) {
-              position = heightLeft - imgHeight;
-              pdf.addPage();
-              pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-              heightLeft -= pageHeight;
-            }
-      
-            return pdf.output('blob');
+            const logo = this.pdfMakeService.getReportLogo();
+            const pdfData = transformImdemintyApiData(
+              this.housejobData,
+              this.currentCompany,
+              this.currentBranch,
+              this.userData,
+              logo
+            );
+            const docDefinition = generateImdemintyDocument(pdfData);
+            return await this.pdfMakeService.getBlob(docDefinition);
           } catch (error) {
             console.error('Error generating PDF blob:', error);
             return null;

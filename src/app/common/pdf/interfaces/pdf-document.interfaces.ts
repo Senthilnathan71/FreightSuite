@@ -1110,6 +1110,22 @@ export interface ReleaseLetterFclCargoRow {
   volume?: number;
 }
 
+// =====================
+// INDEMNITY PDF DATA
+// =====================
+export interface ImdemintyPdfData extends PdfDocumentBase {
+  containerList: string[];
+  houseJob: {
+    vesselName?: string;
+    eta?: Date | string;
+    voyageNo?: string;
+    hblDate?: Date | string;
+    hblNo?: string;
+    marksAndNumbers?: string;
+    goodsDescription?: string;
+  };
+}
+
 
 // =====================
 // DOCUMENT TYPE ENUMS
