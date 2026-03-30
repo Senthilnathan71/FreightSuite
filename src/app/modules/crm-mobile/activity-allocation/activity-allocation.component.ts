@@ -556,6 +556,10 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
     this.openWorkload(stage, row);
   }
 
+  openConfig(): void {
+    this.router.navigate(['/crm/activity-allocation/config']);
+  }
+
   onReportClick(): void {
     if (!this.displayRows.length) {
       this.appSettingService.showWarning('No data available to export.');

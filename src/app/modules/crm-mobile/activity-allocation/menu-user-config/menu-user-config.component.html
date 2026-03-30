@@ -1,0 +1,142 @@
+<div class="menu-user-config-page">
+  <!-- Header -->
+  <header class="page-header d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h1 class="page-title mb-1">
+        <i class="fas fa-cogs me-2 text-primary" aria-hidden="true"></i>
+        Menu wise User Configuration
+      </h1>
+      <p class="text-muted small mb-0">
+        Configure which user handles each stage per branch
+      </p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="goBack()">
+        <i class="fas fa-arrow-left me-1" aria-hidden="true"></i> Back
+      </button>
+    </div>
+  </header>
+
+  <!-- Branch Selector -->
+  <section class="branch-selector mb-3">
+    <div class="card">
+      <div class="card-body py-2">
+        <div class="row align-items-center">
+          <div class="col-auto">
+            <label for="branchSelect" class="form-label mb-0 fw-semibold">
+              <i class="fas fa-code-branch me-1 text-primary"></i> Branch:
+            </label>
+          </div>
+          <div class="col-md-4">
+            <ng-select
+              id="branchSelect"
+              [items]="branches"
+              bindLabel="BranchName"
+              bindValue="BranchMasterSid"
+              [(ngModel)]="selectedBranchSid"
+              (change)="onBranchChange()"
+              placeholder="Select Branch"
+              [clearable]="false">
+            </ng-select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="text-center py-5">
+    <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+    <p class="text-muted mt-2">Loading configuration...</p>
+  </div>
+
+  <!-- Config Table -->
+  <section *ngIf="!isLoading && configRows.length > 0" class="config-table-section">
+    <div class="card">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr class="table-header">
+                <th class="col-stage">Menu / Stage</th>
+                <th class="col-role">Assigned Role</th>
+                <th class="col-user">Assigned User</th>
+                <th class="col-status text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of configRows" [class.row-dirty]="row.dirty">
+                <td class="col-stage">
+                  <span class="stage-label">
+                    <i class="fas fa-circle me-2 stage-dot" aria-hidden="true"></i>
+                    {{ row.stageLabel }}
+                  </span>
+                </td>
+                <td class="col-role">
+                  <select
+                    class="form-select form-select-sm"
+                    [(ngModel)]="row.assignedRole"
+                    (ngModelChange)="onRoleChange(row)">
+                    <option [ngValue]="null">-- None --</option>
+                    <option value="CS">Customer Service (CS)</option>
+                    <option value="Doc">Documentation (Doc)</option>
+                  </select>
+                </td>
+                <td class="col-user">
+                  <ng-select
+                    *ngIf="row.assignedRole"
+                    [items]="getUsersForRole(row.assignedRole)"
+                    bindLabel="userName"
+                    bindValue="userSid"
+                    [(ngModel)]="row.UserMasterSid"
+                    (change)="onUserChange(row, $event)"
+                    placeholder="Select User"
+                    [clearable]="true"
+                    appendTo="body"
+                    class="user-select-sm">
+                  </ng-select>
+                  <span *ngIf="!row.assignedRole" class="text-muted small">
+                    Select a role first
+                  </span>
+                </td>
+                <td class="col-status text-center">
+                  <span *ngIf="row.dirty" class="badge bg-warning text-dark">
+                    <i class="fas fa-pencil-alt me-1"></i> Modified
+                  </span>
+                  <span *ngIf="!row.dirty && row.UserMasterSid" class="badge bg-success">
+                    <i class="fas fa-check me-1"></i> Configured
+                  </span>
+                  <span *ngIf="!row.dirty && !row.UserMasterSid" class="badge bg-secondary">
+                    <i class="fas fa-minus me-1"></i> Not Set
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Save Button -->
+    <div class="d-flex justify-content-end mt-3 gap-2">
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="!hasDirtyRows || isSaving"
+        (click)="saveConfig()">
+        <ng-container *ngIf="!isSaving">
+          <i class="fas fa-save me-1"></i> Save Configuration
+        </ng-container>
+        <ng-container *ngIf="isSaving">
+          <i class="fas fa-spinner fa-spin me-1"></i> Saving...
+        </ng-container>
+      </button>
+    </div>
+  </section>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && configRows.length === 0 && selectedBranchSid" class="text-center py-5">
+    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+    <p class="text-muted">No configuration data available for this branch.</p>
+  </div>
+</div>

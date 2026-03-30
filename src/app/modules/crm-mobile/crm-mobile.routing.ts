@@ -12,6 +12,7 @@ import { EnquiryListComponent } from './enquiry/enquiry-list/enquiry-list.compon
 import { QuotationEntryComponent } from './quotation/quotation-entry/quotation-entry.component';
 import { ActivityAllocationComponent } from './activity-allocation/activity-allocation.component';
 import { ActivityAllocationEntryComponent } from './activity-allocation/activity-allocation-entry/activity-allocation-entry.component';
+import { MenuUserConfigComponent } from './activity-allocation/menu-user-config/menu-user-config.component';
 
 
 export const CrmMobileRoutes: Routes = [
@@ -234,10 +235,18 @@ export const CrmMobileRoutes: Routes = [
   },
 },
 {
-        path: 'activity-allocation/entry',          // <-- NEW
+        path: 'activity-allocation/entry',
         component: ActivityAllocationEntryComponent,
         data: {
           title: 'Work Load Detail',
+          backOption: [{ title: 'Back', url: '/crm/activity-allocation' }],
+        },
+      },
+      {
+        path: 'activity-allocation/config',
+        component: MenuUserConfigComponent,
+        data: {
+          title: 'Menu wise User Configuration',
           backOption: [{ title: 'Back', url: '/crm/activity-allocation' }],
         },
       },

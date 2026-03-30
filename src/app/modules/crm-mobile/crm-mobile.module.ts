@@ -8,8 +8,9 @@ import { NgxSpinnerModule } from 'ngx-spinner';
 import { NgSelectModule } from '@ng-select/ng-select'; 
 import { ActivityAllocationComponent } from './activity-allocation/activity-allocation.component';
 import { ActivityAllocationEntryComponent } from './activity-allocation/activity-allocation-entry/activity-allocation-entry.component';
+import { MenuUserConfigComponent } from './activity-allocation/menu-user-config/menu-user-config.component';
 @NgModule({
-  declarations: [ ActivityAllocationComponent, ActivityAllocationEntryComponent,],
+  declarations: [ ActivityAllocationComponent, ActivityAllocationEntryComponent, MenuUserConfigComponent,],
   imports: [
     CommonModule,
     FormsModule,

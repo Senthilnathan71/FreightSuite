@@ -71,6 +71,8 @@ export class ActivityAllocationEntryComponent
   showKeyboardHints = false;
 
   selectedUserByActivityId: { [activityId: number]: number | null } = {};
+  selectedCSByActivityId: { [activityId: number]: number | null } = {};
+  csUsers: AllocateUser[] = [];
   selectedActivityIds = new Set<number>();
   bulkSelectedUserSid: number | null = null;
 
@@ -125,6 +127,8 @@ export class ActivityAllocationEntryComponent
 
         this.loadData();
       });
+
+    this.loadCSUsers();
 
     setTimeout(() => {
       this.showKeyboardHints = true;
@@ -207,6 +211,7 @@ export class ActivityAllocationEntryComponent
 
           for (const row of this.rows) {
             this.selectedUserByActivityId[row.activityId] = this.userSid || null;
+            this.selectedCSByActivityId[row.activityId] = row.customerServiceSid || null;
           }
 
           this.lastRefreshed = new Date();
@@ -220,6 +225,44 @@ export class ActivityAllocationEntryComponent
           this.totalPages = 1;
           this.handleApiError(err, 'Failed to load workload details');
           this.isLoading = false;
+        },
+      });
+  }
+
+  private loadCSUsers(): void {
+    this.activityService
+      .getCSUsers()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (users) => {
+          this.csUsers = users;
+        },
+        error: () => {
+          console.error('Failed to load CS users');
+        },
+      });
+  }
+
+  onCSPersonChange(row: WorkloadRow, user: AllocateUser | null): void {
+    if (!user?.userSid) return;
+
+    this.activityService
+      .updateCSPerson(row.activityId, user.userSid)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          if (res.success) {
+            row.customerServiceName = user.userName;
+            row.customerServiceSid = user.userSid;
+            this.appSettingService.showSuccess(
+              `CS person updated to ${user.userName}.`,
+            );
+          } else {
+            this.appSettingService.showError(res.message || 'Failed to update CS person.');
+          }
+        },
+        error: () => {
+          this.appSettingService.showError('Failed to update CS person.');
         },
       });
   }
@@ -536,6 +579,7 @@ export class ActivityAllocationEntryComponent
   }
 
   private getEtdFilterStatus(row: WorkloadRow): string {
+    if (row.jobStatus && row.jobStatus !== 'Closed') return 'jobNotClosed';
     if (!row.etd) return '';
 
     const etdDate = new Date(row.etd);
@@ -547,9 +591,8 @@ export class ActivityAllocationEntryComponent
     const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
 
     if (diffDays < 0) return 'overdue';
-    if (diffDays === 0) return 'today';
-    if (diffDays <= 7) return 'thisWeek';
-    return 'upcoming';
+    if (diffDays <= 15) return 'within15days';
+    return 'beyond15days';
   }
 
   sortBy(column: keyof WorkloadRow): void {

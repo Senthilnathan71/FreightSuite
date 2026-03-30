@@ -700,73 +700,60 @@ $shadow-lg: 0 10px 40px rgba(15, 23, 42, 0.15);
 .count-badge {
   display: inline-block;
   padding: 0.3rem 0.7rem;
-  border-radius: 999px;
-  font-size: 0.8rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   transition: $transition-base;
   min-width: 40px;
   text-align: center;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+  background: transparent;
+  color: #0056b3;
+  text-decoration: none;
 
-  &:not(.badge-empty):hover {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
-  }
+  &:not(.badge-empty) {
+    color: #0056b3;
+    background: rgba(0, 86, 179, 0.06);
+    border: 1px solid rgba(0, 86, 179, 0.15);
 
-  &:not(.badge-empty):active {
-    transform: translateY(0) scale(1.02);
-    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
+    &:hover {
+      color: #003d80;
+      text-decoration: underline;
+      background: rgba(0, 86, 179, 0.12);
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+      background: rgba(0, 86, 179, 0.18);
+    }
   }
 
   &.badge-empty {
     background: $gray-100;
     color: $gray-400;
     cursor: default;
-    font-size: 0.7rem;
-    box-shadow: none;
+    font-size: 0.75rem;
+    border: 1px solid $gray-200;
 
     &:hover {
       transform: none;
+      text-decoration: none;
     }
   }
 
-
-  &.badge-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-  }
-  &.badge-info {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    color: white;
-  }
-  &.badge-warning {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    color: white;
-  }
-  &.badge-success {
-    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-    color: white;
-  }
-  &.badge-danger {
-    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-    color: white;
-  }
-  &.badge-purple {
-    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-    color: $gray-900;
-  }
-  &.badge-teal {
-    background: linear-gradient(135deg, #00c9ff 0%, #92fe9d 100%);
-    color: white;
-  }
-  &.badge-orange {
-    background: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%);
-    color: white;
-  }
+  &.badge-primary,
+  &.badge-info,
+  &.badge-warning,
+  &.badge-success,
+  &.badge-danger,
+  &.badge-purple,
+  &.badge-teal,
+  &.badge-orange,
   &.badge-pink {
-    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-    color: $gray-900;
+    color: #0056b3;
+    background: rgba(0, 86, 179, 0.06);
+    border: 1px solid rgba(0, 86, 179, 0.15);
   }
 }
 

@@ -1,0 +1,127 @@
+$primary-blue: #05608d;
+$primary-blue-light: #0778b8;
+
+.menu-user-config-page {
+  padding: 1rem;
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+.page-header {
+  .page-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #212529;
+    margin: 0;
+  }
+}
+
+.branch-selector {
+  .card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  }
+}
+
+.config-table-section {
+  .card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+  }
+
+  .table-header {
+    background: linear-gradient(135deg, $primary-blue 0%, $primary-blue-light 100%);
+
+    th {
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0.75rem 1rem;
+      border: none;
+      white-space: nowrap;
+    }
+  }
+
+  .table {
+    tbody tr {
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: rgba($primary-blue, 0.04);
+      }
+
+      &.row-dirty {
+        background-color: rgba(#ffc107, 0.08);
+      }
+
+      td {
+        padding: 0.6rem 1rem;
+        vertical-align: middle;
+        font-size: 0.875rem;
+        border-bottom: 1px solid #e9ecef;
+      }
+    }
+  }
+
+  .col-stage {
+    width: 25%;
+  }
+
+  .col-role {
+    width: 25%;
+  }
+
+  .col-user {
+    width: 35%;
+  }
+
+  .col-status {
+    width: 15%;
+  }
+
+  .stage-label {
+    font-weight: 500;
+    color: #343a40;
+  }
+
+  .stage-dot {
+    font-size: 0.5rem;
+    color: $primary-blue;
+  }
+
+  .user-select-sm {
+    ::ng-deep {
+      .ng-select-container {
+        min-height: 32px !important;
+        font-size: 0.85rem;
+      }
+
+      .ng-value-container {
+        padding-top: 0 !important;
+      }
+
+      .ng-input > input {
+        font-size: 0.85rem;
+      }
+    }
+  }
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, $primary-blue 0%, $primary-blue-light 100%);
+  border: none;
+  font-weight: 500;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, darken($primary-blue, 5%) 0%, darken($primary-blue-light, 5%) 100%);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}

@@ -68,6 +68,15 @@
       <div class="filters-actions d-flex gap-2">
         <button
           type="button"
+          class="btn btn-sm btn-outline-primary"
+          (click)="openConfig()"
+          title="Menu wise User Configuration"
+        >
+          <i class="fas fa-cogs me-1" aria-hidden="true"></i> Configure
+        </button>
+
+        <button
+          type="button"
           class="btn btn-sm btn-primary"
           [disabled]="!displayRows.length"
           (click)="onReportClick()"

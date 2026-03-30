@@ -83,6 +83,18 @@
 
         
         <div class="action-buttons-right">
+          <select
+            class="form-select form-select-sm etd-filter-select"
+            [(ngModel)]="advancedFilters.etdStatus"
+            aria-label="Filter by ETD status"
+          >
+            <option value="">All ETD</option>
+            <option value="overdue">Overdue</option>
+            <option value="within15days">Within 15 Days</option>
+            <option value="beyond15days">Beyond 15 Days</option>
+            <option value="jobNotClosed">Job Not Closed</option>
+          </select>
+
           <button
             type="button"
             class="btn-action btn-export"
@@ -454,7 +466,17 @@
               <td>{{ row.customerName || '—' }}</td>
               <td>{{ row.salesPersonName || '—' }}</td>
               <td *ngIf="visibleColumns?.customerService">
-                {{ row.customerServiceName || '—' }}
+                <ng-select
+                  [items]="csUsers"
+                  bindLabel="userName"
+                  bindValue="userSid"
+                  [(ngModel)]="selectedCSByActivityId[row.activityId]"
+                  (change)="onCSPersonChange(row, $event)"
+                  placeholder="Select CS"
+                  [clearable]="true"
+                  appendTo="body"
+                  class="cs-select-sm">
+                </ng-select>
               </td>
               <td *ngIf="visibleColumns?.documentation">
                 {{ row.documentationName || '—' }}
