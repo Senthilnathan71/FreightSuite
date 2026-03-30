@@ -1197,7 +1197,7 @@ export class PdfMakeService {
 
   generateJournalVoucher(data: JournalVoucherPdfData): void {
     const docDefinition = generateJournalVoucherDocument(data);
-    const filename = `Journal_Voucher_${data.voucher?.voucherNumber || 'Draft'}.pdf`;
+    const filename = `Journal_Voucher_${data.journalVoucher?.voucherNumber || 'Draft'}.pdf`;
     this.download(docDefinition, filename);
   }
 
@@ -1240,7 +1240,7 @@ export class PdfMakeService {
 
   generateReleaseLetter(data: ReleaseLetterPdfData): void {
     const docDefinition = generateReleaseLetterDocument(data);
-    const filename = `Release_Letter_${data.info?.ourBookingRef || 'Report'}.pdf`;
+    const filename = `Release_Letter_${data.releaseInfo?.bookingRef || data.releaseInfo?.customerBookingRef || 'Report'}.pdf`;
     this.download(docDefinition, filename);
   }
 
