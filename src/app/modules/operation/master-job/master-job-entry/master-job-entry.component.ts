@@ -62,6 +62,7 @@ import { CustomsComponent } from '../../house-job/customs/customs.component';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { getDefaultTodayDate,toNgbDateStruct, toNumber } from 'src/app/common/helper';
+import { extractBackendErrorMessage } from 'src/app/common/error-handling/payload-validation-handler';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
@@ -554,8 +555,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   async saveChanges(): Promise<boolean> {
     return new Promise((resolve) => {
       if (this.masterJobForm.invalid) {
-        this.toastr.error('Please fill all required fields');
         this.masterJobForm.markAllAsTouched();
+        this.showFirstFormError();
         resolve(false);
         return;
       }
@@ -668,13 +669,13 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
             this.formSaved = true;
             resolve(true);
           } else {
-            this.toastr.error(response.message || 'Failed to update Master Job');
+            this.showBackendError(response, 'Failed to update Master Job');
             resolve(false);
           }
         },
         error: (error) => {
           this.isLoading = false;
-          this.toastr.error('Failed to update Master Job');
+          this.showBackendError(error, 'Failed to update Master Job');
           resolve(false);
         }
       });
@@ -688,13 +689,13 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
             this.formSaved = true;
             resolve(true);
           } else {
-            this.toastr.error(response.message || 'Failed to create Master Job');
+            this.showBackendError(response, 'Failed to create Master Job');
             resolve(false);
           }
         },
         error: (error) => {
           this.isLoading = false;
-          this.toastr.error('Failed to create Master Job');
+          this.showBackendError(error, 'Failed to create Master Job');
           resolve(false);
         }
       });
@@ -1645,6 +1646,21 @@ onETDDateSelect(): void {
 
     if (data.allShipments.length > 0) {
       this.patchShipments(allShipments);
+    }
+  }
+
+  onStatusChange(): void {
+    const status = this.masterJobForm.get('Status')?.getRawValue();
+    const hasHouseJobs = Array.isArray(this.masterJobData?.houseJob) && this.masterJobData.houseJob.length > 0;
+
+    if (hasHouseJobs && (status === 'Suspended' || !status)) {
+      const firstHouseJob = this.masterJobData?.houseJob?.[0];
+      const hblNo = firstHouseJob?.HBLNo ? `\n\nHouse Job with HBL No: ${firstHouseJob.HBLNo} is associated with it.` : '';
+
+      this.appSettingService.showWarning(
+        `This master job cannot be suspended.${hblNo}`
+      );
+      this.masterJobForm.get('Status')?.setValue('Active');
     }
   }
 
@@ -2752,14 +2768,14 @@ onETDDateSelect(): void {
             this.resetDirtyState();
             this.loadMasterJobData(this.masterJobSid);
           } else {
-            this.toastr.error(response.message || 'Failed to update Master Job');
+            this.showBackendError(response, 'Failed to update Master Job');
           }
         },
         error: (error) => {
           this.isLoading = false;
           this.isSaving = false;
           this.spinner.hide();
-          this.toastr.error('Failed to update Master Job');
+          this.showBackendError(error, 'Failed to update Master Job');
           console.error('Error updating master job:', error);
         }
       });
@@ -2787,14 +2803,14 @@ onETDDateSelect(): void {
               this.router.navigate(['/operation/master-job/list']);
             }
           } else {
-            this.toastr.error(response.message || 'Failed to create Master Job');
+            this.showBackendError(response, 'Failed to create Master Job');
           }
         },
         error: (error) => {
           this.isLoading = false;
           this.isSaving = false;
           this.spinner.hide();
-          this.toastr.error('Failed to create Master Job');
+          this.showBackendError(error, 'Failed to create Master Job');
         }
       });
     }
@@ -2850,6 +2866,10 @@ onETDDateSelect(): void {
     }
 
     this.toastr.error('Please correct the highlighted fields');
+  }
+
+  private showBackendError(source: any, fallbackMessage: string): void {
+    this.toastr.error(extractBackendErrorMessage(source, fallbackMessage));
   }
 
   private mergeValidationError(controlName: string, errorKey: string): void {

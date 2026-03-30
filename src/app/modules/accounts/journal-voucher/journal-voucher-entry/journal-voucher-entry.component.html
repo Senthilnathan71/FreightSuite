@@ -34,6 +34,11 @@
     <i class="fas fa-sync-alt me-1"></i>
     Reset
 </button>
+<button *ngIf="editMode" type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+    (click)="copyJournalVoucher()" [disabled]="!voucherData || isSaving">
+    <i class="fas fa-copy me-1"></i>
+    Copy
+</button>
 
 @if (isAutoPosting) {
             <button

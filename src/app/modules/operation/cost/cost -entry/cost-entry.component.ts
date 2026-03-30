@@ -3764,22 +3764,27 @@ createRateFormGroup(data?: any): FormGroup {
 
 
 isVoucherGenerationAllowed(): boolean {
-    if (this.screenName !== 'Booking') {
-        return true;
-    }
-    
     const status = this.parentFormValue?.status;
-    return status === 'Active' || status === 'A';
+    if (this.screenName === 'Booking' || this.screenName === 'House Job' || this.screenName === 'House Air Waybill') {
+        return status === 'Active' || status === 'A';
+    }
+
+    return true;
 }
 isHBLNoValid(): boolean {
-    if (this.screenName !== 'Booking') {
-        return true;
+    if (this.screenName === 'Booking') {
+        const HBLNo = this.parentFormValue?.HBLNo;
+        // Return true when HBLNo is null/undefined/empty (button enabled)
+        // Return false when HBLNo has a value (button disabled)
+        return !HBLNo;
     }
-    
-    const HBLNo = this.parentFormValue?.HBLNo;
-    // Return true when HBLNo is null/undefined/empty (button enabled)
-    // Return false when HBLNo has a value (button disabled)
-    return !HBLNo;
+
+    if (this.screenName === 'House Job' || this.screenName === 'House Air Waybill') {
+        const status = this.parentFormValue?.status;
+        return status === 'Active' || status === 'A';
+    }
+
+    return true;
 }
 isFromQuotation(index: number): boolean {
   const formGroup = this.rateFormArray.at(index) as FormGroup;

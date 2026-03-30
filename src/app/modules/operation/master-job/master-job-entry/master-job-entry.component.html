@@ -1637,9 +1637,9 @@
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!masterJobForm.get('JobtoSubjob')">
                             <ng-select [items]="jobToSubJobList" bindLabel="name" bindValue="name" formControlName="JobtoSubjob"
-                                placeholder="" appendTo="body">
+                                placeholder="" readonly appendTo="body">
                             </ng-select>
-                            <label class="input-label">Job To SubJob<span class="text-danger"></span></label>
+                            <label class="input-label">ProRate<span class="text-danger"></span></label>
                         </div>
                     </aside>
 
@@ -1662,7 +1662,8 @@
                                             [class.filled]="!!masterJobForm.get('Status')?.value">
                                             <ng-select *ngIf="isEditMode" formControlName="Status"
                                                 [items]="modeOfStatus" bindLabel="name" bindValue="name" placeholder=""
-                                                class="ng-select" appendTo="body"></ng-select>
+                                                class="ng-select" appendTo="body"
+                                                (change)="onStatusChange()"></ng-select>
                                             <input *ngIf="!isEditMode" type="text" name="Status"
                                                 class="custom-input-field sm" formControlName="Status" readonly>
                                             <label class="input-label">Status</label>
@@ -1723,7 +1724,7 @@
                                         (click)="pullMasterJobToImportBranch()"
                                         [disabled]="masterJobForm.dirty || isPullingToImportBranch || !selectedTransferCompanySid || !selectedTransferBranchSid || isExportToImportCompleted">
                                         <i class="fas fa-download me-1"></i>
-                                        <span>{{ isPullingToImportBranch ? 'Pulling...' : (isExportToImportCompleted ? 'Pull To Import Successful' : 'Pull To Import') }}</span>
+                                        <span>{{ isPullingToImportBranch ? 'Pulling...' : (isExportToImportCompleted ? 'Pull To Import Successful' : 'Create Import') }}</span>
                                     </button>
                                 </div>
                                 <div class="col-md-2 d-flex align-items-center">
