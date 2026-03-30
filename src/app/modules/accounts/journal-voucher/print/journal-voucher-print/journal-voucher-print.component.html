@@ -56,7 +56,6 @@
     width:100%;
     padding:0 80px;
     margin-top:10px;
-    font-size:17px;
     align-items:flex-start;
     justify-content:space-between;
 ">
@@ -90,7 +89,7 @@
 
         <div style="display:flex; margin-bottom:4px;">
             <div style="width:115px;font-weight: bolder;"><strong>Posted Status</strong></div>
-            <div>: </div>
+            <div>: {{ voucherData?.PostStatus || '' }}</div>
         </div>
     </div>
 
@@ -119,7 +118,7 @@
        <!-- Remittance section -->
 <div>
 
-<table style="width:100%; border-collapse:collapse;font-size: 17px;  margin-top:5px;">
+<table style="width:100%; border-collapse:collapse; margin-top:5px;">
     <tbody>
 
         <tr>
@@ -159,7 +158,7 @@
   "
 >
   <!-- Total Debit -->
-  <div style="font-size: 17px;">
+  <div>
     Total Debit :
     <span style="font-weight:bolder;">
       {{ totalDebit | number:'1.2-2' }}
@@ -167,7 +166,7 @@
   </div>
 
   <!-- Total Credit -->
-  <div style="font-size: 17px;">
+  <div>
     Total Credit :
     <span style="font-weight:bolder;">
       {{ totalCredit | number:'1.2-2' }}
@@ -175,7 +174,7 @@
   </div>
 
   <!-- Difference -->
-  <div style="font-size: 17px;">
+  <div>
     Difference :
     <span style="font-weight:bolder;">
       {{ difference | number:'1.2-2' }}
@@ -189,7 +188,7 @@
 </div>
 
 <!-- Checked By -->
-<div style="margin-top:20px; display:flex; justify-content:space-between; padding:0 20px;font-size: 17px;font-weight: bolder;">
+<div style="margin-top:20px; display:flex; justify-content:space-between; padding:0 20px;font-weight: bolder;">
     <strong>Checked By</strong>
     <strong>Approved By</strong>
 </div>

@@ -29,7 +29,7 @@ interface MailConfigRow {
   Trigger: string;
   AutoPopup: string;
   Status: string;
-  UpdateFields?: string;
+  UpdateFields?: string[];
   selectedActions: string[];
   selectedUpdateFields: string[];
   isEditing: boolean;
@@ -91,7 +91,76 @@ export class MailConfigurationEntryComponent implements OnInit {
     { value: 'SendSIMail', label: 'Send SI Mail' }
   ];
 
-  updateFieldOptions = ALL_PLACEHOLDERS.map(p => ({ key: p.key, label: p.label }));
+  filteredActionOptions = this.actionOptions.filter(o => o.value !== 'SendSIMail');
+
+  // Form fields per menu for "Trigger on Fields" dropdown
+  private menuFieldsMap: { [menuName: string]: { key: string; label: string }[] } = {
+    'booking': [
+      { key: 'CustomerMasterSid', label: 'Customer' },
+      { key: 'ShipperName', label: 'Shipper' },
+      { key: 'ConsigneeName', label: 'Consignee' },
+      { key: 'POO', label: 'Place of Origin' },
+      { key: 'POL', label: 'Port of Loading' },
+      { key: 'POD', label: 'Port of Discharge' },
+      { key: 'FPD', label: 'Final Place of Delivery' },
+      { key: 'CarrierName', label: 'Carrier' },
+      { key: 'VesselName', label: 'Vessel' },
+      { key: 'VoyageNo', label: 'Voyage' },
+      { key: 'ETD', label: 'ETD' },
+      { key: 'ETA', label: 'ETA' },
+      { key: 'BookingDateTime', label: 'Booking Date' },
+      { key: 'BookingStatus', label: 'Booking Status' },
+      { key: 'DepartmentMasterSid', label: 'Department' },
+      { key: 'NominatedBy', label: 'Nominated By' },
+      { key: 'FreightTerms', label: 'Freight Terms' },
+      { key: 'IncoTerms', label: 'Inco Terms' },
+      { key: 'DestinationAgent', label: 'Destination Agent' },
+      { key: 'ShipmentNo', label: 'Shipment No' },
+    ],
+    'house job': [
+      { key: 'CustomerMasterSid', label: 'Customer' },
+      { key: 'ShipperName', label: 'Shipper' },
+      { key: 'ConsigneeName', label: 'Consignee' },
+      { key: 'Notify', label: 'Notify Party' },
+      { key: 'POO', label: 'Place of Origin' },
+      { key: 'POL', label: 'Port of Loading' },
+      { key: 'POD', label: 'Port of Discharge' },
+      { key: 'FPD', label: 'Final Place of Delivery' },
+      { key: 'CarrierName', label: 'Carrier' },
+      { key: 'VesselName', label: 'Vessel' },
+      { key: 'VoyageNo', label: 'Voyage' },
+      { key: 'ETD', label: 'ETD' },
+      { key: 'ETA', label: 'ETA' },
+      { key: 'HBLDate', label: 'HBL Date' },
+      { key: 'HBLNo', label: 'HBL No' },
+      { key: 'HouseStatus', label: 'House Status' },
+      { key: 'DestinationAgent', label: 'Destination Agent' },
+      { key: 'FreightTerms', label: 'Freight Terms' },
+      { key: 'IncoTerms', label: 'Inco Terms' },
+      { key: 'MovementType', label: 'Movement Type' },
+    ],
+    'master job': [
+      { key: 'POO', label: 'Place of Origin' },
+      { key: 'POL', label: 'Port of Loading' },
+      { key: 'POD', label: 'Port of Discharge' },
+      { key: 'FPD', label: 'Final Place of Delivery' },
+      { key: 'CarrierName', label: 'Carrier' },
+      { key: 'VesselName', label: 'Vessel' },
+      { key: 'VoyageNo', label: 'Voyage' },
+      { key: 'ETD', label: 'ETD' },
+      { key: 'ETA', label: 'ETA' },
+      { key: 'MBLNo', label: 'MBL No' },
+      { key: 'MBLDate', label: 'MBL Date' },
+      { key: 'MasterJobDate', label: 'Master Job Date' },
+      { key: 'JobStatus', label: 'Job Status' },
+      { key: 'DepartmentMasterSid', label: 'Department' },
+      { key: 'DestinationAgent', label: 'Destination Agent' },
+      { key: 'FreightPPCC', label: 'Freight PPCC' },
+      { key: 'MovementType', label: 'Movement Type' },
+    ],
+  };
+
+  updateFieldOptions: { key: string; label: string }[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -114,7 +183,18 @@ export class MailConfigurationEntryComponent implements OnInit {
   private loadMenuList(): void {
     this.settingsService.getAllMenu().subscribe({
       next: (menus) => {
-        this.menuList = menus || [];
+        this.menuList = (menus || []).filter((m: any) =>
+          m.ModuleName?.toLowerCase().startsWith('operation')
+        );
+        // If already editing, recompute field options now that menuList is available
+        if (this.editingRow?.MenuMasterSid) {
+          const menuName = this.getMenuName(this.editingRow.MenuMasterSid);
+          this.updateFieldOptionsForMenu(menuName);
+          const isHouseJob = menuName?.toLowerCase().includes('house job');
+          this.filteredActionOptions = isHouseJob
+            ? this.actionOptions
+            : this.actionOptions.filter(o => o.value !== 'SendSIMail');
+        }
       },
       error: (err) => {
         this.appSettingService.showError('Error loading menu list.');
@@ -134,8 +214,7 @@ export class MailConfigurationEntryComponent implements OnInit {
           this.rows = resp.data.map((item: any) => {
             const actionStr = item.Action || '';
             const selectedActions = actionStr ? actionStr.split(',').map((a: string) => a.trim()).filter((a: string) => a) : [];
-            const updateFieldsStr = item.UpdateFields || '';
-            const selectedUpdateFields = updateFieldsStr ? updateFieldsStr.split(',').map((f: string) => f.trim()).filter((f: string) => f) : [];
+            const selectedUpdateFields = Array.isArray(item.UpdateFields) ? item.UpdateFields : [];
             return {
               MailConfigurationMasterSid: item.MailConfigurationMasterSid,
               Sno: Number(item.Sno),
@@ -150,7 +229,7 @@ export class MailConfigurationEntryComponent implements OnInit {
               Trigger: item.Trigger || 'A',
               AutoPopup: item.AutoPopup,
               Status: item.Status,
-              UpdateFields: updateFieldsStr,
+              UpdateFields: selectedUpdateFields,
               selectedActions,
               selectedUpdateFields,
               isEditing: false,
@@ -235,7 +314,7 @@ export class MailConfigurationEntryComponent implements OnInit {
       Trigger: 'A',
       AutoPopup: 'A',
       Status: 'A',
-      UpdateFields: '',
+      UpdateFields: [],
       selectedActions: [],
       selectedUpdateFields: [],
       isEditing: true,
@@ -269,6 +348,32 @@ export class MailConfigurationEntryComponent implements OnInit {
     if (isDefaultSubject) {
       row.MailSubject = this.getDefaultMailSubject(menuName);
     }
+
+    // Filter action options: show SendSIMail only for House Job
+    const isHouseJob = menuName?.toLowerCase().includes('house job');
+    this.filteredActionOptions = isHouseJob
+      ? this.actionOptions
+      : this.actionOptions.filter(o => o.value !== 'SendSIMail');
+
+    // If switching away from House Job, remove SendSIMail from selections
+    if (!isHouseJob && row.selectedActions?.includes('SendSIMail')) {
+      row.selectedActions = row.selectedActions.filter(a => a !== 'SendSIMail');
+      row.Action = row.selectedActions.join(',');
+    }
+
+    // Update trigger field options based on selected menu
+    this.updateFieldOptionsForMenu(menuName);
+
+    // Clear selected update fields when menu changes
+    row.selectedUpdateFields = [];
+    row.UpdateFields = [];
+  }
+
+  private updateFieldOptionsForMenu(menuName: string): void {
+    const key = Object.keys(this.menuFieldsMap).find(
+      k => menuName?.toLowerCase().includes(k)
+    );
+    this.updateFieldOptions = key ? this.menuFieldsMap[key] : [];
   }
 
   editRow(index: number): void {
@@ -285,6 +390,15 @@ export class MailConfigurationEntryComponent implements OnInit {
     this.editingIndex = index;
     this.editingRow = this.rows[index];
     this.rows[index].isEditing = true;
+
+    // Update filtered action options and trigger fields based on selected menu
+    const menuName = this.editingRow.MenuMasterSid ? this.getMenuName(this.editingRow.MenuMasterSid) : '';
+    const isHouseJob = menuName?.toLowerCase().includes('house job');
+    this.filteredActionOptions = isHouseJob
+      ? this.actionOptions
+      : this.actionOptions.filter(o => o.value !== 'SendSIMail');
+    this.updateFieldOptionsForMenu(menuName);
+
     this.scrollToDetailForm();
   }
 
@@ -312,26 +426,25 @@ export class MailConfigurationEntryComponent implements OnInit {
   saveRow(index: number): void {
     const row = this.rows[index];
 
-    // Check for duplicate MenuMasterSid + Trigger combination (excluding current row)
+    // Check for duplicate MenuMasterSid (excluding current row)
     const isDuplicate = this.rows.some((r, idx) =>
       idx !== index &&
-      r.MenuMasterSid === row.MenuMasterSid &&
-      r.Trigger === row.Trigger
+      r.MenuMasterSid === row.MenuMasterSid
     );
     if (isDuplicate) {
-      this.appSettingService.showWarning('A mail configuration already exists for this menu with the same trigger.');
+      this.appSettingService.showWarning('A mail configuration already exists for this menu.');
       return;
     }
 
     // Validation
-    if (!row.Sno || !row.MailName || !row.MenuMasterSid || !row.MailSubject || !row.MailBody) {
-      this.appSettingService.showWarning('Please fill all required fields (Sno, Mail Name, Menu, Subject, Body).');
+    if (!row.Sno || !row.MailName || !row.MenuMasterSid || !row.MailSubject || !row.MailBody || !row.selectedActions?.length) {
+      this.appSettingService.showWarning('Please fill all required fields (Sno, Mail Name, Menu, Subject, Body, Action).');
       return;
     }
 
     // Sync selectedActions back to Action CSV
     row.Action = (row.selectedActions || []).join(',');
-    row.UpdateFields = (row.selectedUpdateFields || []).join(',');
+    row.UpdateFields = row.selectedUpdateFields || [];
 
     const payload: any = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -347,7 +460,7 @@ export class MailConfigurationEntryComponent implements OnInit {
       Trigger: row.Trigger,
       AutoPopup: row.AutoPopup,
       Status: row.Status,
-      UpdateFields: row.UpdateFields || ''
+      UpdateFields: row.UpdateFields || []
     };
 
     this.spinner.show();
@@ -451,12 +564,12 @@ export class MailConfigurationEntryComponent implements OnInit {
     row.Action = (row.selectedActions || []).join(',');
     if (!row.selectedActions?.includes('UPDATE')) {
       row.selectedUpdateFields = [];
-      row.UpdateFields = '';
+      row.UpdateFields = [];
     }
   }
 
   onUpdateFieldsChange(row: MailConfigRow): void {
-    row.UpdateFields = (row.selectedUpdateFields || []).join(',');
+    row.UpdateFields = row.selectedUpdateFields || [];
   }
 
   getMenuName(menuMasterSid: number | null): string {

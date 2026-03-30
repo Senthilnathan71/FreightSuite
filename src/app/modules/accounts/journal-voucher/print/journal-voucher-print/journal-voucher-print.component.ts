@@ -1,18 +1,23 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { toNumber } from 'src/app/common/helper';
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
-import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import {
+  generateJournalVoucherDocument,
+  transformJournalVoucherApiData
+} from 'src/app/common/pdf/generators/journal-voucher-pdf.generator';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
+
+(pdfMake as any).vfs = (pdfFonts as any).pdfMake?.vfs || pdfFonts;
 
 @Component({
   selector: 'app-journal-voucher-print',
@@ -54,7 +59,10 @@ export class JournalVoucherPrintComponent {
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
     this.numberToWords.initializeCurrencies(this.currencyList);
-          this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
+    if (!this.currencyList?.length) {
+      this.loadCurrencyList();
+    }
+    this.currentUserCountry = String(this.currentCompany?.countryMaster?.countryName).trim().toLowerCase();
 
   }
 
@@ -103,9 +111,9 @@ export class JournalVoucherPrintComponent {
     private activeModal: NgbActiveModal,
     private appSettingService: AppSettingsService,
     private masterService: MasterService,
-    private pdfService: PdfDownloadService,
     private spinner: NgxSpinnerService,
     private numberToWords: NumberToWordsService,
+    private companySettings: CompanySettingsManagerService,
     public logoService : LogoService
   ) { }
 
@@ -145,7 +153,7 @@ getLedgerName(COAMasterSid: number): string {
     v => v.COAMasterSid === COAMasterSid
   );
 
-  return ledger.LedgerName || '';
+  return ledger?.LedgerName || '';
 }
 
 getSubledgerName(SubledgerMasterSid : number){
@@ -155,7 +163,7 @@ getSubledgerName(SubledgerMasterSid : number){
     sub => sub.SubledgerMasterSid === SubledgerMasterSid
   );
 
-  return ourSubledger.SubledgerName || "";
+  return ourSubledger?.SubledgerName || "";
 }
 
 
@@ -228,64 +236,90 @@ getSubledgerName(SubledgerMasterSid : number){
 
 
     async downloadPDF() {
-  this.showPrintLogo = false;
-  this.showPdfLogo = true;
+    this.showPrintLogo = false;
+    this.showPdfLogo = true;
 
-  setTimeout(async () => {
-    this.spinner.show();
-   try {
-      const JournalVoucher = this.voucherData?.VoucherNumber || 'Journal';
-      await this.pdfService.downloadBalancedPDF(
-        'printContent',
-        `Journal_Voucher_${JournalVoucher}`,
-        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+    setTimeout(async () => {
+      this.spinner.show();
+      try {
+        const logo = localStorage.getItem('current_report_logo') || undefined;
+        const pdfData = transformJournalVoucherApiData(
+          this.voucherData,
+          this.currentCompany,
+          this.currentBranch,
+          this.userData,
+          logo,
+          this.getPdfGenerationOptions()
+        );
+        const docDefinition = generateJournalVoucherDocument(pdfData);
+        const filename = `Journal_Voucher_${pdfData.journalVoucher?.voucherNumber || 'Draft'}.pdf`;
+        pdfMake.createPdf(docDefinition).download(filename);
+        this.appSettingService.showSuccess('PDF downloaded successfully!');
+      } catch (error) {
+        console.error('Journal voucher PDF generation failed:', error);
+        this.appSettingService.showError('Error generating PDF. Please try again.');
+      } finally {
+        this.spinner.hide();
+      }
+    }, 50);
+  }
+
+  private getPdfGenerationOptions(): {
+    coaList: any[];
+    subledgerList: any[];
+    amountInWords: string;
+    printSettings: {
+      logoPosition: 'left' | 'center' | 'right';
+      companyPosition: 'left' | 'center' | 'right';
+      companyAlignment: 'left' | 'center' | 'right';
+    };
+  } {
+    return {
+      coaList: this.coaList || [],
+      subledgerList: this.subledgerList || [],
+      amountInWords: String(this.getAmountInWords() || this.voucherData?.AmountInWords || this.voucherData?.amountInWords || ''),
+      printSettings: this.companySettings.getPrintSettings()
+    };
+  }
+
+  getAmountInWords(): string {
+    const total = this.totalDebit || this.totalCredit;
+    if (!total) return '';
+
+    const voucherCurrencySid = Number(this.voucherData?.CurrencyMasterSid);
+    const currencySid = Number.isFinite(voucherCurrencySid) && voucherCurrencySid > 0
+      ? voucherCurrencySid
+      : this.currency.find(
+          c => c?.currencyCode === this.voucherData?.CurrencyCode || c?.CurrencyCode === this.voucherData?.CurrencyCode
+        )?.CurrencyMasterSid;
+
+    return this.numberToWords.convert(total, currencySid);
+  }
+
+  async generatePDFBlob(): Promise<Blob | null> {
+    try {
+      const logo = localStorage.getItem('current_report_logo') || undefined;
+      const pdfData = transformJournalVoucherApiData(
+        this.voucherData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        this.getPdfGenerationOptions()
       );
-    } finally {
-      this.spinner.hide();
-    }
-  }, 50);
-}
-
-    async generatePDFBlob(): Promise<Blob | null> {
-          const printContent = document.getElementById('printContent');
-          if (!printContent) {
-            return null;
-          }
-      
-          try {
-            const canvas = await html2canvas(printContent, {
-              scale: 2,
-              useCORS: true,
-              logging: false,
-              backgroundColor: '#ffffff'
-            });
-      
-            const imgWidth = 210;
-            const pageHeight = 297;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            let heightLeft = imgHeight;
-            let position = 0;
-      
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const imgData = canvas.toDataURL('image/png');
-      
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-      
-            while (heightLeft > 0) {
-              position = heightLeft - imgHeight;
-              pdf.addPage();
-              pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-              heightLeft -= pageHeight;
-            }
-      
-            return pdf.output('blob');
-          } catch (error) {
-            console.error('Error generating PDF blob:', error);
-            return null;
-          }
+      const docDefinition = generateJournalVoucherDocument(pdfData);
+      return await new Promise<Blob>((resolve, reject) => {
+        try {
+          pdfMake.createPdf(docDefinition).getBlob((blob: Blob) => resolve(blob));
+        } catch (error) {
+          reject(error);
         }
+      });
+    } catch (error) {
+      console.error('Error generating PDF blob:', error);
+      return null;
+    }
+  }
 
         
 showPrintLogo: boolean = false;

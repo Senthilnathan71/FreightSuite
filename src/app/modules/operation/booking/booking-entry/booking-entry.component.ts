@@ -3743,7 +3743,7 @@ getVesselVoyBasedOnPorts() {
 
 
   async sendManualMail(): Promise<void> {
-    const pdfBlob = await this.generatePDFBlob();
+    const pdfBlob = await this.generatePDFBlob('mail-attachment');
     let attachmentFile: File | undefined;
     if (pdfBlob) {
       attachmentFile = new File([pdfBlob], (this.bookingData?.BookingNo || 'Booking') + '.pdf', { type: 'application/pdf' });
@@ -5180,7 +5180,8 @@ private getPdfElementId(type: string): string {
   switch (type) {
     case 'cro':
       return 'croPrintContent';
-    
+    case 'mail-attachment':
+      return 'pdfContent';
     case 'booking':
     default:
       return 'printContent';
@@ -5349,7 +5350,7 @@ private generateEmailContent(type: string): { subject: string; body: string } {
 }
 
 // Enhanced PDF blob generation method
-async generatePDFBlob(type: 'booking' | 'cro'  = 'booking'): Promise<Blob | null> {
+async generatePDFBlob(type: 'booking' | 'cro' | 'mail-attachment' = 'booking'): Promise<Blob | null> {
   const elementId = this.getPdfElementId(type);
   const printContent = document.getElementById(elementId);
   

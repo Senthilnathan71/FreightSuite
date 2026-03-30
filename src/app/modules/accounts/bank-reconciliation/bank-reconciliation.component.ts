@@ -1,18 +1,24 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import * as FileSaver from 'file-saver';
 import { finalize } from 'rxjs';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
+import { getDefaultTodayDate } from 'src/app/common/helper';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { GlobalDateFormatService } from 'src/app/core/services/global-date-format.service';
 import { PageHeaderComponent, HeaderAction } from 'src/app/shared/components/header-list/header-list.component';
 import { AccountsService } from '../accounts.service';
+import {  FeatherModule } from 'angular-feather';
 
 interface BankTransactionRow {
-  TransactionDate: string | null;
-  ValueDate: string | null;
+  TransactionDate: Date | string | NgbDateStruct | null;
+  ValueDate: Date | string | NgbDateStruct | null;
   ReferenceNumber: string;
   Narration: string;
   Amount: number | null;
@@ -27,8 +33,8 @@ interface BankBookRow {
   VoucherTransactionSid: number;
   VoucherNumber: string;
   VoucherTypeCode: string | null;
-  VoucherDate: string;
-  ClearanceDate: string | null;
+  VoucherDate: Date | string | NgbDateStruct;
+  ClearanceDate: Date | string | NgbDateStruct | null;
   Amount: number;
   LocalAmount: number;
   DrCr: 'D' | 'C';
@@ -48,8 +54,14 @@ interface BankBookRow {
     ReactiveFormsModule,
     RouterModule,
     NgSelectModule,
+    NgbDatepickerModule,
     NgxSpinnerModule,
     PageHeaderComponent,
+    FeatherModule
+  ],
+  providers: [
+    { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
   ],
   templateUrl: './bank-reconciliation.component.html',
   styleUrls: ['./bank-reconciliation.component.scss'],
@@ -68,6 +80,7 @@ export class BankReconciliationComponent implements OnInit {
 
   selectedBankIndex: number | null = null;
   selectedBookRow: BankBookRow | null = null;
+  selectedBookRowIds: Set<number> = new Set<number>();
 
   loadingBooks = false;
   loadingReport = false;
@@ -78,6 +91,7 @@ export class BankReconciliationComponent implements OnInit {
     private fb: FormBuilder,
     private accountsService: AccountsService,
     private appSettings: AppSettingsService,
+    private globalDateFormat: GlobalDateFormatService,
     private spinner: NgxSpinnerService,
     private router: Router,
   ) {}
@@ -97,7 +111,6 @@ export class BankReconciliationComponent implements OnInit {
     this.initializeHeaderActions();
     this.loadBankLedgers();
     this.addBankRow();
-    this.addBankRow();
   }
 
   private buildForm(): void {
@@ -108,6 +121,7 @@ export class BankReconciliationComponent implements OnInit {
       ToDate: [this.getToday(), Validators.required],
       ClearanceFilter: ['ALL'],
       Search: [''],
+      ClearanceDate: [this.getToday()],
       BankStatementBalance: [null],
       bankTransactions: this.bankRowsForm,
     });
@@ -115,19 +129,23 @@ export class BankReconciliationComponent implements OnInit {
 
   private initializeHeaderActions(): void {
     this.headerActions = [
-      { label: 'Search', icon: 'fas fa-search', action: 'search' },
-      { label: 'Auto Match', icon: 'fas fa-magic', action: 'auto' },
-      { label: 'Manual Match', icon: 'fas fa-link', action: 'manual' },
-      { label: 'Unmatch', icon: 'fas fa-unlink', action: 'unmatch' },
+      // { label: 'Unmatch', icon: 'fas fa-unlink', action: 'unmatch' },
       { label: 'Report', icon: 'fas fa-file-alt', action: 'report' },
       { label: 'Excel', icon: 'fas fa-file-excel', action: 'excel' },
-      { label: 'Add Row', icon: 'fas fa-plus', action: 'add-row' },
       { label: 'Reset', icon: 'fas fa-sync-alt', action: 'reset' },
     ];
   }
 
   get bankTransactions(): FormArray {
     return this.bankRowsForm;
+  }
+
+  get searchControl(): FormControl {
+    return this.filterForm.get('Search') as FormControl;
+  }
+
+  get clearanceDateControl(): FormControl {
+    return this.filterForm.get('ClearanceDate') as FormControl;
   }
 
   get selectedBankRowValue(): BankTransactionRow | null {
@@ -159,9 +177,6 @@ export class BankReconciliationComponent implements OnInit {
         break;
       case 'excel':
         this.downloadExcelReport();
-        break;
-      case 'add-row':
-        this.addBankRow();
         break;
       case 'reset':
         this.resetScreen();
@@ -195,6 +210,13 @@ export class BankReconciliationComponent implements OnInit {
   }
 
   removeBankRow(index: number): void {
+    if (this.bankTransactions.length <= 1) {
+      const ctrl = this.bankTransactions.at(0);
+      ctrl?.patchValue(this.createBankRowGroup().getRawValue());
+      this.selectedBankIndex = null;
+      return;
+    }
+
     this.bankTransactions.removeAt(index);
     if (this.selectedBankIndex === index) {
       this.selectedBankIndex = null;
@@ -220,6 +242,44 @@ export class BankReconciliationComponent implements OnInit {
     this.selectedBookRow = row;
   }
 
+  isBookRowSelected(row: BankBookRow): boolean {
+    return this.selectedBookRowIds.has(row.VoucherTransactionSid);
+  }
+
+  toggleBookRowSelection(row: BankBookRow, checked: boolean, event?: Event): void {
+    event?.stopPropagation();
+    const next = new Set(this.selectedBookRowIds);
+    if (checked) {
+      next.add(row.VoucherTransactionSid);
+      this.selectedBookRow = row;
+    } else {
+      next.delete(row.VoucherTransactionSid);
+      if (this.selectedBookRow?.VoucherTransactionSid === row.VoucherTransactionSid) {
+        this.selectedBookRow = null;
+      }
+    }
+    this.selectedBookRowIds = next;
+  }
+
+  toggleSelectAllBookRows(checked: boolean, event?: Event): void {
+    event?.stopPropagation();
+    if (checked) {
+      this.selectedBookRowIds = new Set(this.bookRows.map((row) => row.VoucherTransactionSid));
+      this.selectedBookRow = this.bookRows[0] || null;
+    } else {
+      this.selectedBookRowIds = new Set<number>();
+      this.selectedBookRow = null;
+    }
+  }
+
+  isAllBookRowsSelected(): boolean {
+    return this.bookRows.length > 0 && this.bookRows.every((row) => this.selectedBookRowIds.has(row.VoucherTransactionSid));
+  }
+
+  isSomeBookRowsSelected(): boolean {
+    return this.selectedBookRowIds.size > 0 && !this.isAllBookRowsSelected();
+  }
+
   isSelectedBankRow(index: number): boolean {
     return this.selectedBankIndex === index;
   }
@@ -234,7 +294,7 @@ export class BankReconciliationComponent implements OnInit {
     if (!row) return 'None selected';
     const ref = row.ReferenceNumber?.trim() || '-';
     const amount = this.formatAmount(row.Amount);
-    return `${row.TransactionDate || '-'} | Ref ${ref} | ${row.DrCr} ${amount}`;
+    return `${this.formatDisplayDate(row.TransactionDate)} | Ref ${ref} | ${row.DrCr} ${amount}`;
   }
 
   get selectedVoucherDisplay(): string {
@@ -258,14 +318,14 @@ export class BankReconciliationComponent implements OnInit {
     });
   }
 
-  private getToday(): string {
-    return new Date().toISOString().slice(0, 10);
+  private getToday(): Date {
+    return getDefaultTodayDate();
   }
 
-  private getDefaultFromDate(): string {
-    const date = new Date();
+  private getDefaultFromDate(): Date {
+    const date = getDefaultTodayDate();
     date.setDate(date.getDate() - 30);
-    return date.toISOString().slice(0, 10);
+    return date;
   }
 
   private buildPayload() {
@@ -295,7 +355,7 @@ export class BankReconciliationComponent implements OnInit {
       return false;
     }
 
-    return new Date(toDate) >= new Date(fromDate);
+    return this.toDateValue(toDate).getTime() >= this.toDateValue(fromDate).getTime();
   }
 
   private markRequiredFiltersTouched(): void {
@@ -320,8 +380,8 @@ export class BankReconciliationComponent implements OnInit {
 
   private serializeBankRow(row: BankTransactionRow): BankTransactionRow {
     return {
-      TransactionDate: row.TransactionDate,
-      ValueDate: row.ValueDate || null,
+      TransactionDate: this.toDateValue(row.TransactionDate),
+      ValueDate: row.ValueDate ? this.toDateValue(row.ValueDate) : null,
       ReferenceNumber: String(row.ReferenceNumber ?? '').trim(),
       Narration: String(row.Narration ?? '').trim(),
       Amount: this.normalizeAmount(row.Amount),
@@ -359,6 +419,7 @@ export class BankReconciliationComponent implements OnInit {
             status: item.status || (item.ClearanceDate ? 'Reconciled' : 'Unreconciled'),
           }));
           this.selectedBookRow = null;
+          this.selectedBookRowIds = new Set<number>();
           if (!this.bookRows.length) {
             this.appSettings.showInfo('No posted vouchers found for the selected filters');
           }
@@ -416,7 +477,19 @@ export class BankReconciliationComponent implements OnInit {
       this.appSettings.showWarning('Please select a bank row');
       return;
     }
-    if (!this.selectedBookRow) {
+    const selectedRows = this.bookRows.filter((row) => this.isBookRowSelected(row));
+    let voucherRow: BankBookRow | null = null;
+
+    if (selectedRows.length === 1) {
+      voucherRow = selectedRows[0];
+    } else if (selectedRows.length === 0 && this.selectedBookRow) {
+      voucherRow = this.selectedBookRow;
+    } else if (selectedRows.length > 1) {
+      this.appSettings.showWarning('Please tick only one voucher row for manual match');
+      return;
+    }
+
+    if (!voucherRow) {
       this.appSettings.showWarning('Please select a voucher row');
       return;
     }
@@ -433,8 +506,8 @@ export class BankReconciliationComponent implements OnInit {
     const payload = {
       ...this.buildPayload(),
       BankTransaction: bankRow,
-      VoucherHeaderSid: this.selectedBookRow.VoucherHeaderSid,
-      VoucherTransactionSid: this.selectedBookRow.VoucherTransactionSid,
+      VoucherHeaderSid: voucherRow.VoucherHeaderSid,
+      VoucherTransactionSid: voucherRow.VoucherTransactionSid,
       CreatedBy: this.userData?.userEmail || 'System',
     };
 
@@ -449,8 +522,8 @@ export class BankReconciliationComponent implements OnInit {
           }
           this.patchBankRow(this.selectedBankIndex, {
             Status: 'Reconciled',
-            LinkedVoucherHeaderSid: this.selectedBookRow?.VoucherHeaderSid ?? null,
-            LinkedVoucherTransactionSid: this.selectedBookRow?.VoucherTransactionSid ?? null,
+            LinkedVoucherHeaderSid: voucherRow.VoucherHeaderSid ?? null,
+            LinkedVoucherTransactionSid: voucherRow.VoucherTransactionSid ?? null,
           });
           this.appSettings.showSuccess(resp?.message || 'Manual match completed');
           this.searchBookTransactions();
@@ -458,6 +531,51 @@ export class BankReconciliationComponent implements OnInit {
         error: (error: any) => {
           console.error('Manual match error', error);
           this.appSettings.showError(error?.error?.message || 'Error running manual match');
+        },
+      });
+  }
+
+  updateClearanceSelected(): void {
+    const selectedRows = this.bookRows.filter((row) => this.isBookRowSelected(row));
+    if (!selectedRows.length) {
+      this.appSettings.showWarning('Please tick at least one voucher row');
+      return;
+    }
+
+    const clearanceDateValue = this.filterForm.get('ClearanceDate')?.value;
+    if (!clearanceDateValue) {
+      this.appSettings.showWarning('Please select a clearance date');
+      return;
+    }
+
+    const payload = {
+      ...this.buildPayload(),
+      VoucherHeaderSids: selectedRows.map((row) => row.VoucherHeaderSid),
+      ClearanceDate: this.toIsoDateString(clearanceDateValue),
+      CreatedBy: this.userData?.userEmail || 'System',
+    };
+
+    this.spinner.show();
+    this.accountsService.updateBankReconciliationClearance(payload)
+      .pipe(finalize(() => this.spinner.hide()))
+      .subscribe({
+        next: (resp: any) => {
+          if (resp?.status === false) {
+            this.appSettings.showError(resp?.message || 'Clearance update failed');
+            return;
+          }
+
+          const selectedIds = new Set(selectedRows.map((row) => row.VoucherHeaderSid));
+          this.bookRows = this.bookRows.map((row) => selectedIds.has(row.VoucherHeaderSid)
+            ? { ...row, ClearanceDate: clearanceDateValue, status: 'Reconciled' }
+            : row);
+          this.selectedBookRowIds = new Set<number>();
+          this.selectedBookRow = null;
+          this.appSettings.showSuccess(resp?.message || 'Clearance date updated successfully');
+        },
+        error: (error: any) => {
+          console.error('Update clearance error', error);
+          this.appSettings.showError(error?.error?.message || 'Error updating clearance date');
         },
       });
   }
@@ -558,15 +676,16 @@ export class BankReconciliationComponent implements OnInit {
       ToDate: this.getToday(),
       ClearanceFilter: 'ALL',
       Search: '',
+      ClearanceDate: this.getToday(),
       BankStatementBalance: null,
     });
     this.clearBankRows();
-    this.addBankRow();
     this.addBankRow();
     this.bookRows = [];
     this.reportData = null;
     this.selectedBookRow = null;
     this.selectedBankIndex = null;
+    this.selectedBookRowIds = new Set<number>();
   }
 
   private patchBankRow(index: number | null, patch: Partial<BankTransactionRow>): void {
@@ -798,13 +917,13 @@ export class BankReconciliationComponent implements OnInit {
     }).format(this.toNumber(value));
   }
 
-  private formatDisplayDate(value: any): string {
+  formatDisplayDate(value: any): string {
     if (!value) return '';
-    const date = new Date(value);
+    const date = this.toDateValue(value);
     if (Number.isNaN(date.getTime())) {
       return String(value);
     }
-    return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-');
+    return this.globalDateFormat.formatDate(date);
   }
 
   private formatDisplayDateTime(value: any): string {
@@ -826,5 +945,45 @@ export class BankReconciliationComponent implements OnInit {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+  }
+
+  private toDateValue(value: Date | string | NgbDateStruct | null | undefined): Date {
+    if (!value) {
+      return new Date('');
+    }
+
+    if (value instanceof Date) {
+      return value;
+    }
+
+    if (typeof value === 'string') {
+      const parsed = new Date(value);
+      return parsed;
+    }
+
+    if (this.isNgbDateStruct(value)) {
+      return new Date(Date.UTC(value.year, value.month - 1, value.day, 0, 0, 0, 0));
+    }
+
+    return new Date(value as any);
+  }
+
+  private toIsoDateString(value: Date | string | NgbDateStruct | null | undefined): string {
+    const date = this.toDateValue(value);
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private isNgbDateStruct(value: any): value is NgbDateStruct {
+    return !!value
+      && typeof value === 'object'
+      && typeof value.year === 'number'
+      && typeof value.month === 'number'
+      && typeof value.day === 'number';
   }
 }

@@ -270,7 +270,7 @@
                 <div class="custom-form-group custom-form-group-select filled">
                   <ng-select
                     [(ngModel)]="editingRow.selectedActions"
-                    [items]="actionOptions"
+                    [items]="filteredActionOptions"
                     bindLabel="label"
                     bindValue="value"
                     [multiple]="true"
@@ -281,29 +281,9 @@
                     class="ng-select"
                     (ngModelChange)="onActionChange(editingRow)">
                   </ng-select>
-                  <label class="input-label">Action</label>
+                  <label class="input-label">Action <span class="text-danger">*</span></label>
                 </div>
               </div>
-              @if (editingRow.selectedActions?.includes('UPDATE')) {
-                <div class="col-md-3 mb-2">
-                  <div class="custom-form-group custom-form-group-select filled">
-                    <ng-select
-                      [(ngModel)]="editingRow.selectedUpdateFields"
-                      [items]="updateFieldOptions"
-                      bindLabel="label"
-                      bindValue="key"
-                      [multiple]="true"
-                      [closeOnSelect]="false"
-                      [clearable]="true"
-                      placeholder="Which fields?"
-                      appendTo="body"
-                      class="ng-select"
-                      (ngModelChange)="onUpdateFieldsChange(editingRow)">
-                    </ng-select>
-                    <label class="input-label">Trigger on Fields</label>
-                  </div>
-                </div>
-              }
               <div class="col-md-3 mb-2">
                 <div class="custom-form-group custom-form-group-select filled">
                   <ng-select
@@ -338,11 +318,33 @@
                 </div>
               }
             </div>
+            @if (editingRow.selectedActions?.includes('UPDATE')) {
+              <div class="row mb-2">
+                <div class="col-md-6 mb-2">
+                  <div class="custom-form-group custom-form-group-select filled">
+                    <ng-select
+                      [(ngModel)]="editingRow.selectedUpdateFields"
+                      [items]="updateFieldOptions"
+                      bindLabel="label"
+                      bindValue="key"
+                      [multiple]="true"
+                      [closeOnSelect]="false"
+                      [clearable]="true"
+                      placeholder="Which fields?"
+                      appendTo="body"
+                      class="ng-select"
+                      (ngModelChange)="onUpdateFieldsChange(editingRow)">
+                    </ng-select>
+                    <label class="input-label">Trigger on Fields</label>
+                  </div>
+                </div>
+              </div>
+            }
           </div>
 
         </div>
       }
-      
+
     </div>
   </div>
 </div>

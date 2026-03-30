@@ -1,329 +1,327 @@
-/**
- * Release Letter PDF Generator
- * Mirrors release-letter.component.html layout
- */
-
-import { ReleaseLetterPdfData } from '../interfaces/pdf-document.interfaces';
-import { PDF_DEFAULT_CONFIG, getPdfStyles, PDF_TABLE_LAYOUTS } from '../styles/pdf-styles';
+import {
+  ReleaseLetterFclCargoRow,
+  ReleaseLetterPdfData
+} from '../interfaces/pdf-document.interfaces';
 import { formatDate, formatNumberWithCommas, joinNonEmpty } from '../helpers/pdf-formatters';
+import { getPdfStyles } from '../styles/pdf-styles';
 
-const LOGO_HEIGHT_PX = 100;
-const LOGO_HEIGHT_PT = LOGO_HEIGHT_PX * 0.75;
+function toNumber(value: any): number {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
 
 export function generateReleaseLetterDocument(data: ReleaseLetterPdfData): any {
-  const configuredMargins = data.config?.pageMargins as number[] | undefined;
-  const resolvedPageMargins = configuredMargins
-    ? [
-        configuredMargins[0] ?? 20,
-        configuredMargins[1] ?? 20,
-        configuredMargins[2] ?? 20,
-        configuredMargins[3] ?? 25
-      ]
-    : [20, 20, 20, 25];
+  const isFcl = (data.selectedFclLcl || '').toUpperCase() === 'FCL';
 
   return {
-    pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
-    pageOrientation: data.config?.pageOrientation || PDF_DEFAULT_CONFIG.pageOrientation,
-    pageMargins: resolvedPageMargins,
-    background: (currentPage: number, pageSize: any) => ({
-      canvas: [
-        { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.8 },
-        { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 },
-        { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.8 },
-        { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 }
-      ]
+    pageSize: data.config?.pageSize || 'A4',
+    pageOrientation: 'portrait',
+    pageMargins: [15, 10, 15, 28],
+    background: (_: number, pageSize: any) => ({
+      canvas: [{
+        type: 'rect',
+        x: 14,
+        y: 14,
+        w: pageSize.width - 28,
+        h: pageSize.height - 28,
+        lineWidth: 1,
+        lineColor: '#000'
+      }]
     }),
     content: [
       buildHeader(data),
-      buildTitle(),
-      buildInfoGrid(data),
-      buildCargoTitle(),
-      ...(data.selectedFclLcl === 'LCL' ? [buildLclTable(data)] : [buildFclTable(data)]),
-      buildReleaseToRow(data),
-      buildMarksRow(data),
-      buildRemarksRow(data),
-      buildSignOff(data)
+      buildTitle(data),
+      buildInfoSection(data),
+      buildCargoHeading(),
+      isFcl ? buildFclTable(data.fclCargo) : buildLclTable(data),
+      buildReleaseToSection(data),
+      buildMarksSection(data),
+      buildRemarksSection(data),
+      buildSignatureSection(data)
     ],
-    footer: (currentPage: number, pageCount: number) => buildFooter(data, currentPage, pageCount),
-    styles: getPdfStyles(),
+    footer: () => buildFooter(data),
+    styles: getReleaseLetterStyles(),
     defaultStyle: {
-      ...PDF_DEFAULT_CONFIG.defaultStyle,
-      fontSize: 16,
+      fontSize: 10,
       color: '#000'
     }
   };
 }
 
 function buildHeader(data: ReleaseLetterPdfData): any {
-  const company = data.company;
-  const branch = data.branch;
-  const logo = data.logo;
-
-  const logoColumn = logo
-    ? { image: logo, height: LOGO_HEIGHT_PT, alignment: 'left' as const }
-    : { text: '', width: LOGO_HEIGHT_PT };
-
-  const addressLine1 = branch?.addressLine1 || company?.addressLine1;
-  const addressLine2 = branch?.addressLine2 || company?.addressLine2;
-  const cityName = branch?.cityMaster?.cityName || branch?.cityName || company?.city || '';
-  const postalCode = branch?.postalCode || company?.postalCode;
-  const phone = branch?.phoneNumber || company?.phoneNumber;
-
-  let addressLine2Text = joinNonEmpty([addressLine2, cityName], ', ');
-  if (postalCode) {
-    addressLine2Text = addressLine2Text
-      ? `${addressLine2Text}, Postal Code : ${postalCode}`
-      : `Postal Code : ${postalCode}`;
-  }
-  if (phone) {
-    addressLine2Text = addressLine2Text
-      ? `${addressLine2Text}, Ph.no : ${phone}`
-      : `Ph.no : ${phone}`;
-  }
-
-  const companyStack: any[] = [];
-  if (company?.companyName) {
-    companyStack.push({
-      text: (company.companyName || '').toUpperCase(),
-      fontSize: 18,
-      bold: true,
-      alignment: 'center'
-    });
-  }
-
-  if (branch?.branchName) {
-    companyStack.push({
-      text: branch.branchName,
-      fontSize: 14,
-      bold: true,
-      alignment: 'center'
-    });
-  }
-
-  if (addressLine1) {
-    companyStack.push({
-      text: addressLine1,
-      fontSize: 12,
-      alignment: 'center'
-    });
-  }
-
-  if (addressLine2Text) {
-    companyStack.push({
-      text: addressLine2Text,
-      fontSize: 12,
-      alignment: 'center'
-    });
-  }
-
-  return {
-    columns: [
-      logoColumn,
-      { stack: companyStack, width: '*' },
-      { text: '', width: LOGO_HEIGHT_PT }
-    ],
-    margin: [20, 0, 20, 0]
-  };
-}
-
-function buildTitle(): any {
-  return {
-    stack: [
-      {
-        canvas: [{ type: 'line', x1: -10, y1: 0, x2: 565, y2: 0, lineWidth: 0.8 }],
-        margin: [0, 10, 0, 0]
-      },
-      {
-        text: 'RELEASE LETTER',
-        alignment: 'center',
-        bold: true,
-        fontSize: 20,
-        margin: [0, 8, 0, 6]
-      }
-    ]
-  };
-}
-
-function buildInfoGrid(data: ReleaseLetterPdfData): any {
-  const info = data.info || {};
-
-  const leftStack = [
-    buildInfoRow('CFS', info.cfs || ''),
-    buildInfoRow('Attn.', info.attn || ''),
-    buildInfoRow('Shipper', info.shipper || ''),
-    buildInfoRow('Vessel', info.vessel || ''),
-    buildInfoRow('Voyage', info.voyage || '')
+  const company: any = data.company || {};
+  const branch: any = data.branch || {};
+  const locationLine = joinNonEmpty([
+    branch?.addressLine2 || company?.addressLine2 || '',
+    branch?.cityName || branch?.cityMaster?.cityName || company?.city || '',
+    (branch?.postalCode || company?.postalCode) ? `Postal Code : ${branch?.postalCode || company?.postalCode}` : '',
+    (branch?.phoneNumber || company?.phoneNumber) ? `Ph.no : ${branch?.phoneNumber || company?.phoneNumber}` : ''
+  ], ', ');
+  const detailLine1 = branch?.addressLine1 || company?.addressLine1 || '';
+  const companyInfoStack = [
+    { text: (company?.companyName || '').toUpperCase(), bold: true, fontSize: 14, alignment: 'center' },
+    { text: branch?.branchName || '', bold: true, fontSize: 11, alignment: 'center', margin: [0, 1, 0, 0] },
+    { text: detailLine1, fontSize: 9, alignment: 'center', margin: [0, 1, 0, 0] },
+    { text: locationLine, fontSize: 9, alignment: 'center', margin: [0, 1, 0, 0] }
   ];
 
-  const rightStack = [
-    buildInfoRow('Date', info.date ? formatDate(info.date) : '', 150),
-    buildInfoRow('Your Booking Ref.', info.yourBookingRef || '', 150),
-    buildInfoRow('Our Booking Ref.', info.ourBookingRef || '', 150),
-    buildInfoRow('Port Of Discharge', info.portOfDischarge || '', 150),
-    buildInfoRow('Final Destination', info.finalDestination || '', 150)
-  ];
+  const buildSlot = (slot: 'left' | 'center' | 'right') => {
+    const stack: any[] = [];
+    if (slot === 'left' && data.logo) {
+      stack.push({
+        image: data.logo,
+        fit: [55, 55],
+        alignment: 'left',
+        margin: [6, 0, 0, 0]
+      });
+    }
+    if (slot === 'center') {
+      stack.push({ stack: companyInfoStack });
+    }
+    return { stack };
+  };
 
   return {
     table: {
-      widths: ['50%', '50%'],
-      body: [[
-        { stack: leftStack, margin: [0, 0, 0, 0] },
-        { stack: rightStack, margin: [0, 0, 0, 0] }
-      ]]
+      widths: ['20%', '60%', '20%'],
+      body: [[buildSlot('left'), buildSlot('center'), buildSlot('right')]]
     },
     layout: {
-      hLineWidth: () => 1,
-      vLineWidth: () => 1,
-      hLineColor: () => '#000',
-      vLineColor: () => '#000',
-      paddingLeft: () => 20,
-      paddingRight: () => 20,
-      paddingTop: () => 8,
-      paddingBottom: () => 8
+      hLineWidth: () => 0,
+      vLineWidth: () => 0,
+      paddingLeft: () => 0,
+      paddingRight: () => 0,
+      paddingTop: () => 0,
+      paddingBottom: () => 0
+    },
+    margin: [0, 6, 0, 6]
+  };
+}
+
+function buildTitle(data: ReleaseLetterPdfData): any {
+  return {
+    table: {
+      widths: ['*'],
+      body: [[{ text: data.reportTitle, bold: true, alignment: 'center', fontSize: 12, margin: [0, 4, 0, 4] }]]
+    },
+    layout: {
+      hLineWidth: (i: number) => (i === 0 ? 1 : 0),
+      vLineWidth: () => 0,
+      hLineColor: () => '#000'
     },
     margin: [0, 0, 0, 6]
   };
 }
 
-function buildInfoRow(label: string, value: string, labelWidth = 100): any {
+function buildInfoSection(data: ReleaseLetterPdfData): any {
+  const info = data.releaseInfo;
   return {
-    columns: [
-      { text: label, width: labelWidth, bold: true, fontSize: 16 },
-      { text: ':', width: 10, fontSize: 16 },
-      { text: value || '', width: '*', fontSize: 16 }
-    ],
-    margin: [0, 0, 0, 4]
+    table: {
+      widths: ['50%', '50%'],
+      body: [[
+        {
+          stack: [
+            buildKeyValueRow('CFS', info.cfs || '', 100),
+            buildKeyValueRow('Attn.', info.attention || '', 100),
+            buildKeyValueRow('Shipper', info.shipper || '', 100),
+            buildKeyValueRow('Vessel', info.vessel || '', 100),
+            buildKeyValueRow('Voyage', info.voyage || '', 100)
+          ],
+          border: [true, true, false, true],
+          margin: [10, 4, 0, 4]
+        },
+        {
+          stack: [
+            buildKeyValueRow('Date', formatDate(info.date), 120),
+            buildKeyValueRow('Your Booking Ref.', info.customerBookingRef || '', 120),
+            buildKeyValueRow('Our Booking Ref.', info.bookingRef || '', 120),
+            buildKeyValueRow('Port Of Discharge', info.portOfDischarge || '', 120),
+            buildKeyValueRow('Final Destination', info.finalDestination || '', 120)
+          ],
+          border: [false, true, true, true],
+          margin: [2, 4, 5, 4]
+        }
+      ]]
+    },
+    layout: boxedLayout(4, 8),
+    margin: [8, 0, 8, 8]
   };
 }
 
-function buildCargoTitle(): any {
+function buildCargoHeading(): any {
   return {
     text: 'CARGO DETAILS',
-    bold: true,
-    fontSize: 16,
-    margin: [25, 6, 0, 2]
+    style: 'sectionTitle',
+    margin: [10, 0, 0, 4]
   };
 }
 
-function buildFclTable(data: ReleaseLetterPdfData): any {
-  const cargo = data.cargo || {};
+function buildFclTable(rows: ReleaseLetterFclCargoRow[]): any {
   return {
     table: {
       headerRows: 1,
-      widths: [90, '*', 70, 80, 80],
+      widths: [85, '*', 70, 85, 85],
       body: [
         [
-          { text: 'No.Container', bold: true, alignment: 'center', noWrap: true },
-          { text: 'Container Type', bold: true, alignment: 'center' },
-          { text: 'No. of Pkgs', bold: true, alignment: 'center', noWrap: true },
-          { text: 'Gross Weight', bold: true, alignment: 'center', noWrap: true },
-          { text: 'Volume', bold: true, alignment: 'center', noWrap: true }
+          { text: 'No.Container', style: 'tableHeader' },
+          { text: 'Container Type', style: 'tableHeader' },
+          { text: 'No. of Pkgs', style: 'tableHeader' },
+          { text: 'Gross Weight', style: 'tableHeader' },
+          { text: 'Volume', style: 'tableHeader' }
         ],
-        [
-          { text: String(cargo.noOfContainers || ''), alignment: 'right' },
-          { text: cargo.containerType || '', alignment: 'left' },
-          { text: String(cargo.noOfPackages || ''), alignment: 'right' },
-          { text: formatNumberWithCommas(Number(cargo.grossWeight || 0), 3), alignment: 'right' },
-          { text: formatNumberWithCommas(Number(cargo.volume || 0), 3), alignment: 'right' }
-        ]
+        ...rows.map((item) => [
+          buildNumberCell(item.containerCount, 0),
+          buildTextCell(item.containerType),
+          buildNumberCell(item.noOfPackages, 0),
+          buildNumberCell(item.grossWeight, 3),
+          buildNumberCell(item.volume, 3)
+        ])
       ]
     },
-    layout: PDF_TABLE_LAYOUTS.bordered,
-    margin: [0, 2, 0, 6]
+    layout: borderedLayout(),
+    margin: [8, 0, 8, 14]
   };
 }
 
 function buildLclTable(data: ReleaseLetterPdfData): any {
-  const cargo = data.cargo || {};
+  const summary = data.lclCargo || {};
   return {
     table: {
       headerRows: 1,
       widths: ['*', '*', '*'],
       body: [
         [
-          { text: 'No. of Pkgs', bold: true, alignment: 'center' },
-          { text: 'Gross Weight', bold: true, alignment: 'center' },
-          { text: 'Volume', bold: true, alignment: 'center' }
+          { text: 'No. of Pkgs', style: 'tableHeader' },
+          { text: 'Gross Weight', style: 'tableHeader' },
+          { text: 'Volume', style: 'tableHeader' }
         ],
         [
-          { text: String(cargo.noOfPackages || ''), alignment: 'right' },
-          { text: formatNumberWithCommas(Number(cargo.grossWeight || 0), 3), alignment: 'right' },
-          { text: formatNumberWithCommas(Number(cargo.volume || 0), 3), alignment: 'right' }
+          buildNumberCell(summary.noOfPackages, 0),
+          buildNumberCell(summary.grossWeight, 3),
+          buildNumberCell(summary.volume, 3)
         ]
       ]
     },
-    layout: PDF_TABLE_LAYOUTS.bordered,
-    margin: [0, 2, 0, 6]
+    layout: borderedLayout(),
+    margin: [8, 0, 8, 14]
   };
 }
 
-function buildReleaseToRow(data: ReleaseLetterPdfData): any {
+function buildReleaseToSection(data: ReleaseLetterPdfData): any {
   return {
     columns: [
-      { text: 'Please release the above mentioned booking to', bold: true, width: 355 },
-      { text: `:  ${data.releaseTo || ''}`, width: '*' }
+      { text: 'Please release the above mentioned booking to', style: 'label', width: 250, margin: [10, 0, 0, 0] },
+      { text: ':', width: 8 },
+      { text: data.releaseTo || '', style: 'value', width: '*' }
     ],
-    margin: [25, 16, 0, 8]
+    margin: [0, 0, 0, 20]
   };
 }
 
-function buildMarksRow(data: ReleaseLetterPdfData): any {
+function buildMarksSection(data: ReleaseLetterPdfData): any {
   return {
     columns: [
-      { text: 'Mark and No.', bold: true, width: 105 },
-      { text: `: ${data.cargo?.marksAndNumber || ''}`, width: '*' }
+      { text: 'Mark and No.', style: 'label', width: 105, margin: [10, 0, 0, 0] },
+      { text: ':', width: 8 },
+      { text: data.marksAndNumber || '', style: 'value', width: '*' }
     ],
-    margin: [25, 0, 0, 10]
+    margin: [0, 0, 0, 20]
   };
 }
 
-function buildRemarksRow(data: ReleaseLetterPdfData): any {
+function buildRemarksSection(data: ReleaseLetterPdfData): any {
   return {
     columns: [
-      { text: 'Remarks', bold: true, width: 105 },
-      { text: `: ${data.remarks || ''}`, width: '*' }
+      { text: 'Remarks', style: 'label', width: 105, margin: [10, 0, 0, 0] },
+      { text: ':', width: 8 },
+      { text: data.remarks || '', style: 'value', width: '*' }
     ],
-    margin: [25, 12, 0, 10]
+    margin: [0, 0, 0, 24]
   };
 }
 
-function buildSignOff(data: ReleaseLetterPdfData): any {
+function buildSignatureSection(data: ReleaseLetterPdfData): any {
   return {
     stack: [
-      { text: "YOUR'S SINCERELY", bold: true, margin: [0, 0, 0, 6] },
-      { text: data.company?.companyName || 'Company Name', bold: true }
-    ],
-    margin: [28, 14, 0, 0]
+      { text: "YOUR'S SINCERELY", style: 'label', margin: [10, 0, 0, 6] },
+      { text: data.signatureCompanyName || 'Company Name', style: 'signatureName', margin: [10, 0, 0, 0] }
+    ]
   };
 }
 
-function buildFooter(data: ReleaseLetterPdfData, currentPage: number, pageCount: number): any {
-  const disclaimerText = 'This document is computer-generated and does not require a signature.';
+function buildFooter(data: ReleaseLetterPdfData): any {
+  return {
+    margin: [24, 0, 24, 0],
+    columns: [
+      { text: `Printed By : ${data.userData?.userName || ''}`, alignment: 'left', width: 140, fontSize: 8 },
+      { text: 'This document is computer-generated and does not require a signature.', alignment: 'center', width: '*', fontSize: 8, noWrap: true },
+      { text: `Printed On : ${formatDate(new Date())}`, alignment: 'right', width: 140, fontSize: 8 }
+    ]
+  };
+}
+
+function buildKeyValueRow(label: string, value?: string, labelWidth = 110): any {
   return {
     columns: [
-      {
-        text: `Printed By : ${data.userData?.userName || ''}`,
-        fontSize: 7,
-        alignment: 'left',
-        width: '25%',
-        noWrap: true
-      },
-      {
-        text: disclaimerText,
-        fontSize: 7,
-        alignment: 'center',
-        noWrap: true,
-        width: '*'
-      },
-      {
-        text: `Printed On : ${formatDate(new Date())}  Page ${currentPage} of ${pageCount}`,
-        fontSize: 7,
-        alignment: 'right',
-        width: '30%',
-        noWrap: true
-      }
+      { text: label, width: labelWidth, style: 'label' },
+      { text: ':', width: 10 },
+      { text: value || '', width: '*', style: 'value' }
     ],
-    margin: [30, 0, 30, 5]
+    margin: [0, 0, 0, 3]
+  };
+}
+
+function buildTextCell(value?: string, bold = false): any {
+  return {
+    text: value || '',
+    style: bold ? 'tableCellBold' : 'tableCell'
+  };
+}
+
+function buildNumberCell(value?: number, decimals = 2, bold = false): any {
+  return {
+    text: formatNumberWithCommas(toNumber(value), decimals),
+    style: bold ? 'tableCellBold' : 'tableCell',
+    alignment: 'right'
+  };
+}
+
+function boxedLayout(padding: number, sidePadding: number): any {
+  return {
+    hLineWidth: () => 1,
+    vLineWidth: () => 1,
+    hLineColor: () => '#000',
+    vLineColor: () => '#000',
+    paddingTop: () => padding,
+    paddingBottom: () => padding,
+    paddingLeft: () => sidePadding,
+    paddingRight: () => sidePadding
+  };
+}
+
+function borderedLayout(): any {
+  return {
+    hLineWidth: () => 1,
+    vLineWidth: () => 1,
+    hLineColor: () => '#000',
+    vLineColor: () => '#000',
+    paddingTop: () => 3,
+    paddingBottom: () => 3,
+    paddingLeft: () => 4,
+    paddingRight: () => 4
+  };
+}
+
+function getReleaseLetterStyles(): any {
+  return {
+    ...getPdfStyles(),
+    label: { fontSize: 10, bold: true },
+    value: { fontSize: 10 },
+    sectionTitle: { fontSize: 11, bold: true },
+    signatureName: { fontSize: 10, bold: true },
+    tableHeader: { fontSize: 9, bold: true, alignment: 'center' },
+    tableCell: { fontSize: 9 },
+    tableCellBold: { fontSize: 9, bold: true }
   };
 }
 
@@ -335,33 +333,25 @@ export function transformReleaseLetterApiData(
   logo?: string,
   options?: {
     containerTypeList?: any[];
+    selectedFCLLCL?: string;
     portList?: any[];
-    selectedFclLcl?: 'FCL' | 'LCL';
-    cfsList?: any[];
   }
 ): ReleaseLetterPdfData {
   const cargo = apiData?.Cargo?.[0] || {};
-  const others = apiData?.Others?.[0] || {};
-
-  const getPortName = (portCode?: string): string => {
-    if (!portCode) return '';
-    const port = (options?.portList || []).find((item: any) => item.PortCode === portCode);
-    return port ? `${port.PortCode} - ${port.PortName}` : portCode;
-  };
+  const other = apiData?.Others?.[0] || {};
 
   const getContainerName = (containerTypeMasterSid?: number): string => {
     if (!containerTypeMasterSid) return '';
-    const match = (options?.containerTypeList || []).find((item: any) => item.ContainerTypeMasterSid === containerTypeMasterSid);
+    const match = (options?.containerTypeList || []).find(
+      (item: any) => item.ContainerTypeMasterSid === containerTypeMasterSid
+    );
     return match?.ContainerName || '';
   };
 
-  const getCfsName = (cfsSid?: number | string): string => {
-    if (!cfsSid) return '';
-    const list = options?.cfsList || [];
-    const match = list.find((item: any) =>
-      item.CustomerMasterSid === cfsSid || item.CfsMasterSid === cfsSid || item.customerMasterSid === cfsSid
-    );
-    return match?.CustomerName || match?.CfsName || String(cfsSid);
+  const getPortName = (portCode?: string): string => {
+    if (!portCode) return '';
+    const match = (options?.portList || []).find((item: any) => item.PortCode === portCode);
+    return match ? `${match.PortCode} - ${match.PortName}` : portCode;
   };
 
   return {
@@ -383,31 +373,39 @@ export function transformReleaseLetterApiData(
       cityMaster: branch?.cityMaster
     },
     userData: {
-      userName: userData?.UserName || userData?.userName || ''
+      userName: userData?.UserName || userData?.userName || '',
+      email: userData?.Email || userData?.email || ''
     },
     logo,
-    selectedFclLcl: options?.selectedFclLcl || apiData?.selectedFclLcl || 'FCL',
-    info: {
-      cfs: getCfsName(others?.YardCFS) || String(others?.YardCFS || ''),
-      attn: '',
+    reportTitle: 'RELEASE LETTER',
+    selectedFclLcl: options?.selectedFCLLCL || '',
+    releaseInfo: {
+      cfs: other?.YardCFS || '',
+      attention: '',
       shipper: apiData?.ShipperName || '',
       vessel: apiData?.VesselName || '',
       voyage: apiData?.VoyageNo || '',
       date: apiData?.HBLDate || '',
-      yourBookingRef: others?.CustomerRefNo || '',
-      ourBookingRef: apiData?.BookingNo || '',
+      customerBookingRef: other?.CustomerRefNo || '',
+      bookingRef: apiData?.BookingNo || '',
       portOfDischarge: getPortName(apiData?.POD),
       finalDestination: getPortName(apiData?.FPD)
     },
-    cargo: {
-      noOfContainers: cargo?.NoofContainers || '',
+    fclCargo: [{
+      containerCount: toNumber(cargo?.NoofContainers),
       containerType: getContainerName(cargo?.ContainerType),
-      noOfPackages: cargo?.NoOfPackage || '',
-      grossWeight: cargo?.GrossWeight || '',
-      volume: cargo?.Volume || '',
-      marksAndNumber: cargo?.MarksAndNumber || ''
+      noOfPackages: toNumber(cargo?.NoOfPackage),
+      grossWeight: toNumber(cargo?.GrossWeight),
+      volume: toNumber(cargo?.Volume)
+    }],
+    lclCargo: {
+      noOfPackages: toNumber(cargo?.NoOfPackage),
+      grossWeight: toNumber(cargo?.GrossWeight),
+      volume: toNumber(cargo?.Volume)
     },
     releaseTo: apiData?.CustomerName || '',
-    remarks: apiData?.InternalNote || ''
+    marksAndNumber: cargo?.MarksAndNumber || '',
+    remarks: apiData?.InternalNote || '',
+    signatureCompanyName: company?.companyName || company?.CompanyName || ''
   };
 }

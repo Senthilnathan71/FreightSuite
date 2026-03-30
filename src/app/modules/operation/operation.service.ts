@@ -771,6 +771,7 @@ processProductUpload(payload: any): Observable<any> {
     MasterJobSid: number;
     CompanyMasterSid: number;
     SourceBranchMasterSid: number;
+    DestinationCompanyMasterSid: number;
     DestinationBranchMasterSid: number;
     CreatedBy: string;
   }) {

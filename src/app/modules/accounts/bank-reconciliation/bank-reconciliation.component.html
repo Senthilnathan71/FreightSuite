@@ -2,128 +2,163 @@
   <p style="color: white" class="m-0">Loading...</p>
 </ngx-spinner>
 
-<div class="row compact-form">
+<div class="row compact-form bank-recon-page">
   <div class="col-12">
-    <app-page-header
-      [title]="'Bank Reconciliation'"
-      [showFavorite]="false"
-      [showSearch]="false"
-      [actions]="headerActions"
-      (actionTriggered)="onActionTriggered($event)">
+    <app-page-header [title]="'Bank Reconciliation'" [showFavorite]="false" [showSearch]="false"
+      [actions]="headerActions" (actionTriggered)="onActionTriggered($event)">
     </app-page-header>
   </div>
 
-  <div class="col-12 mb-3">
-    <div class="card recon-card">
+  <div class="col-12 mb-1">
+    <div class="card mb-0 recon-card recon-filter-card">
       <div class="card-body">
-       
-
-        <form [formGroup]="filterForm" class="row g-3 align-items-end">
-          <div class="col-lg-3 col-md-4">
-            <label class="form-label">Bank Ledger <span class="text-danger">*</span></label>
-            <ng-select
-              [items]="bankLedgers"
-              bindLabel="LedgerName"
-              bindValue="COAMasterSid"
-              formControlName="BankCOAMasterSid"
-              placeholder="Select bank ledger"
-              [clearable]="true">
-            </ng-select>
+      
+        <form [formGroup]="filterForm" class="row">
+          <div class="col-md-1 d-md-block d-none"></div>
+          <div class="col-md-2 ms-md-5">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!filterForm.get('BankCOAMasterSid')?.value">
+              <ng-select [items]="bankLedgers" bindLabel="LedgerName" bindValue="COAMasterSid"
+                formControlName="BankCOAMasterSid" placeholder="" [clearable]="true" appendTo="body" class="ng-select">
+              </ng-select>
+              <label class="input-label">Bank Ledger <span class="text-danger">*</span></label>
+            </div>
           </div>
 
-          <div class="col-lg-2 col-md-4">
-            <label class="form-label">From Date <span class="text-danger">*</span></label>
-            <input type="date" class="form-control" formControlName="FromDate" />
+          <div class="col-md-2">
+            <div class="custom-form-group custom-form-group-select-date">
+              <div class="input-group">
+                <input class="form-control" placeholder="dd-mm-yyyy" name="fromDate" formControlName="FromDate"
+                  ngbDatepicker #fromDatePicker="ngbDatepicker" (click)="fromDatePicker.toggle()" container="body" />
+                <button class="btn bi bi-calendar3 px-0" (click)="fromDatePicker.toggle()" type="button">
+                  <i-feather name="calendar" class="feather-sm"></i-feather>
+                </button>
+              </div>
+              <label class="input-label">From Date <span class="text-danger">*</span></label>
+            </div>
           </div>
 
-          <div class="col-lg-2 col-md-4">
-            <label class="form-label">To Date <span class="text-danger">*</span></label>
-            <input type="date" class="form-control" formControlName="ToDate" />
+          <div class="col-md-2">
+            <div class="custom-form-group custom-form-group-select-date">
+              <div class="input-group">
+                <input class="form-control" placeholder="dd-mm-yyyy" name="toDate" formControlName="ToDate"
+                  ngbDatepicker #toDatePicker="ngbDatepicker" (click)="toDatePicker.toggle()" container="body" />
+                <button class="btn bi bi-calendar3 px-0" (click)="toDatePicker.toggle()" type="button">
+                  <i-feather name="calendar" class="feather-sm"></i-feather>
+                </button>
+              </div>
+              <label class="input-label">To Date <span class="text-danger">*</span></label>
+            </div>
           </div>
 
-          <div class="col-lg-2 col-md-4">
-            <label class="form-label">Clearance Filter</label>
-            <select class="form-select" formControlName="ClearanceFilter">
-              <option value="ALL">All</option>
-              <option value="WITH">With Clearance Date</option>
-              <option value="WITHOUT">Without Clearance Date</option>
-            </select>
+          <div class="col-md-2">
+            <div class="custom-form-group custom-form-group-select"
+              [class.filled]="!!filterForm.get('ClearanceFilter')?.value">
+              <ng-select class="ng-select" formControlName="ClearanceFilter" appendTo="body">
+                <ng-option value="ALL">All</ng-option>
+                <ng-option value="WITH">With Clearance Date</ng-option>  
+                <ng-option value="WITHOUT">Without Clearance Date</ng-option>
+              </ng-select>
+              <label class="input-label">Clearance Filter</label>
+            </div>
           </div>
 
-          <div class="col-lg-3 col-md-4">
-            <label class="form-label">Search</label>
-            <input type="text" class="form-control" formControlName="Search" placeholder="Voucher no, ref no, narration" />
+          <div class="col-md-2 d-flex align-items-end mb-2">
+            <button type="button" class="btn btn-info btn-sm" (click)="searchBookTransactions()">
+              <i class="fas fa-search me-2"></i>Search
+            </button>
           </div>
+          <div class="col-md-1 d-md-block d-none"></div>
         </form>
       </div>
     </div>
   </div>
 
-  <div class="col-lg-4 mb-3">
-     <div class="card recon-card h-100">
-      <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <h6 class="mb-0">Bank Statement Rows</h6>
-        <small class="text-muted">{{ bankTransactions.length }} row(s)</small>
+  <div class="col-12 mb-1">
+    <div class="card mb-0 recon-card recon-panel-card">
+      <div class="card-header panel-header d-flex justify-content-between align-items-center py-1">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <div class="recon-header-copy">
+            <div class="panel-title">Bank Statement Rows</div>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+          <span class="panel-count">{{ bankTransactions.length }} row(s)</span>
+          <button type="button" class="btn btn-sm btn-info recon-header-btn-solid" (click)="addBankRow()">
+            <i class="fas fa-plus me-1"></i>Add Row
+          </button>
+        </div>
       </div>
-      <div class="card-body p-0">
+      <div class="card-body p-0 panel-body">
         <div [formGroup]="filterForm">
           <div formArrayName="bankTransactions" class="table-responsive recon-table-wrap">
-            <table class="table table-sm table-hover align-middle mb-0 recon-table">
-              <thead>
+            <table class="table table-sm table-hover align-middle mb-0 recon-table1">
+              <thead class="recon-table-head recon-table-head--bank">
                 <tr>
-                  <th style="width: 100px;">Date</th>
-                  <th style="width: 110px;">Ref No.</th>
-                  <th>Narration</th>
-                  <th style="width: 80px;">Dr/Cr</th>
-                  <th style="width: 110px;" class="text-end">Amount</th>
+                  <th style="width: 42px;"></th>
+                  <th style="width: 130px;">Statement Date</th>
+                  <th style="width: 180px;">Reference No.</th>
+                  <th style="width: 110px;">Dr / Cr</th>
+                  <th style="width: 140px;">Amount</th>
                   <th style="width: 110px;">Status</th>
-                  <th style="width: 90px;"></th>
+                  <th style="width: 92px;" class="text-center"></th>
                 </tr>
               </thead>
               <tbody>
-                <tr
-                  *ngFor="let row of bankTransactions.controls; let i = index"
-                  [formGroupName]="i"
-                  [class.table-active]="isSelectedBankRow(i)"
+                <tr *ngFor="let row of bankTransactions.controls; let i = index" [formGroupName]="i"
+                  class="recon-table-row" [class.table-active]="isSelectedBankRow(i)"
                   (click)="selectBankRow(i, $event)">
-                  <td>
-                    <input type="date" class="form-control form-control-sm" formControlName="TransactionDate" />
+                  <td class="text-center">
+                     <button type="button" class="btn btn-sm recon-row-icon-btn"
+                      (click)="removeBankRow(i); $event.stopPropagation()">
+                      <i class="fas fa-trash text-danger"></i>
+                    </button>
                   </td>
                   <td>
+                    <div class="input-group input-group-sm recon-cell-date">
+                      <input class="form-control" placeholder="dd-mm-yyyy" formControlName="TransactionDate"
+                        ngbDatepicker #bankDatePicker="ngbDatepicker" (click)="bankDatePicker.toggle()"
+                        container="body" />
+                      <button class="btn bi bi-calendar3 px-0" (click)="bankDatePicker.toggle()" type="button">
+                        <i-feather name="calendar" class="feather-sm"></i-feather>
+                      </button>
+                    </div>
+                  </td>
+                  <td class="recon-cell-ref">
                     <input type="text" class="form-control form-control-sm" formControlName="ReferenceNumber" />
                   </td>
-                  <td>
-                    <input type="text" class="form-control form-control-sm" formControlName="Narration" />
+                  <td class="recon-cell-drcr">
+                    <ng-select class="ng-select" formControlName="DrCr" appendTo="body">
+                      <ng-option value="D">Debit</ng-option>
+                      <ng-option value="C">Credit</ng-option>
+                    </ng-select>
+                  </td>
+                  <td class="recon-cell-amount">
+                    <input type="number" class="form-control form-control-sm text-end" formControlName="Amount"
+                      step="0.01" />
                   </td>
                   <td>
-                    <select class="form-select form-select-sm" formControlName="DrCr">
-                      <option value="D">D</option>
-                      <option value="C">C</option>
-                    </select>
-                  </td>
-                  <td>
-                     <input type="number" class="form-control form-control-sm text-end" formControlName="Amount" step="0.01" />
-                  </td>
-                  <td>
-                    <span class="badge rounded-pill" [ngClass]="row.get('Status')?.value === 'Reconciled' ? 'bg-success' : 'bg-secondary'">
+                    <span class="badge rounded-pill recon-status-badge"
+                      [ngClass]="row.get('Status')?.value === 'Reconciled' ? 'bg-success' : 'bg-secondary'">
                       {{ row.get('Status')?.value }}
                     </span>
                   </td>
-                  <td class="text-end">
-                    <button
-                      type="button"
-                      class="btn btn-sm"
-                      [ngClass]="isSelectedBankRow(i) ? 'btn-primary' : 'btn-outline-primary'"
-                      (click)="selectBankRow(i, $event)">
-                      {{ isSelectedBankRow(i) ? 'Selected' : 'Select' }}
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-danger ms-2" (click)="removeBankRow(i); $event.stopPropagation()">
-                      <i class="fas fa-trash"></i>
-                    </button>
+                  <td class="text-center recon-cell-actions">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      [checked]="isSelectedBankRow(i)"
+                      (change)="selectBankRow(i, $event)" />
                   </td>
                 </tr>
                 <tr *ngIf="bankTransactions.length === 0">
-                  <td colspan="7" class="text-center text-muted py-3">Add bank statement rows to start matching.</td>
+                  <td colspan="7" class="text-center py-4">
+                    <div class="recon-empty">
+                      <i class="fas fa-university recon-empty__icon"></i>
+                      <div class="recon-empty__title">No bank statement rows</div>
+                      <div class="recon-empty__text">Add bank statement rows to start matching.</div>
+                    </div>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -133,65 +168,114 @@
     </div>
   </div>
 
-  <div class="col-lg-8 mb-3">
-    <div class="card recon-card h-100">
-      <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <h6 class="mb-0">Book Transactions</h6>
-        <small class="text-muted">{{ bookRows.length }} row(s)</small>
+  <div class="col-12 mb-1">
+    <div class="card recon-card panel-card book-panel recon-panel-card mb-0">
+      <div class="card-header panel-header py-1">
+        <div class="book-toolbar-line">
+          <div class="book-toolbar-line__title">
+            <div class="recon-header-copy">
+              <div class="panel-title">Book Transactions</div>
+            </div>
+            <span class="panel-count">{{ bookRows.length }} row(s)</span>
+          </div>
+
+          <div class="book-toolbar-line__controls">
+            <div class="book-inline-field book-inline-field--date">
+              <label class="form-label">Clearance Date</label>
+              <div class="input-group input-group-sm">
+                <input class="form-control" placeholder="dd-mm-yyyy" [formControl]="clearanceDateControl" ngbDatepicker
+                  #clearanceDatePicker="ngbDatepicker" (click)="clearanceDatePicker.toggle()" container="body" />
+                <button class="btn bi bi-calendar3 px-0" (click)="clearanceDatePicker.toggle()" type="button">
+                  <i-feather name="calendar" class="feather-sm"></i-feather>
+                </button>
+              </div>
+            </div>
+
+            <div class="book-inline-field book-inline-field--search">
+              <label class="form-label">Search Result Set</label>
+              <div class="input-group input-group-sm">
+                <input type="text" class="form-control" [formControl]="searchControl"
+                  placeholder="Voucher no, ref no, narration" (keyup.enter)="searchBookTransactions()" />
+                <button type="button" class="btn btn-info" (click)="searchBookTransactions()">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="book-action-group book-action-group--inline">
+              <button type="button" class="btn btn-sm btn-info" (click)="manualMatchSelected()">
+                <i class="fas fa-link me-1"></i>Manual Match
+              </button>
+              <button type="button" class="btn btn-sm btn-warning" (click)="updateClearanceSelected()">
+                <i class="fas fa-calendar-check me-1"></i>Update Clearance
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="card-body p-0 ">
+      <div class="card-body p-0 panel-body">
         <div class="table-responsive recon-table-wrap">
           <table class="table table-sm table-hover align-middle mb-0 recon-table">
-            <thead>
+            <thead class="recon-table-head recon-table-head--book">
               <tr>
-                <th style="width: 120px;">Voucher No.</th>
+                <th style="width: 60px;" class="text-center">
+                  <input type="checkbox" class="form-check-input" [checked]="isAllBookRowsSelected()"
+                    [indeterminate]="isSomeBookRowsSelected()"
+                    (change)="toggleSelectAllBookRows($any($event.target).checked, $event)" />
+                </th>
+                <th style="width: 150px;">Voucher No.</th>
                 <th style="width: 70px;">Type</th>
-                <th style="width: 100px;">Voucher Date</th>
-                <th style="width: 120px;">Ref No.</th>
-                <th>Narration</th>
-                <th style="width: 90px;" class="text-end">Amount</th>
-                <th style="width: 110px;">Clearance</th>
-                <th style="width: 110px;">Status</th>
-                <th style="width: 90px;"></th>
+                <th style="width: 110px;">Voucher Date</th>
+                <th style="width: 140px;">Ref No.</th>
+                <th style="min-width: 220px;">Narration</th>
+                <th style="width: 120px;" class="text-end">Amount</th>
+                <th style="width: 120px;">Clearance</th>
+                <th style="width: 120px;">Status</th>
               </tr>
             </thead>
             <tbody>
-              <tr
-                *ngFor="let row of bookRows"
-                [class.table-active]="isSelectedBookRow(row)"
+              <tr *ngFor="let row of bookRows" class="recon-table-row" [class.table-active]="isSelectedBookRow(row)"
                 (click)="selectBookRow(row, $event)">
+                <td class="text-center">
+                  <input type="checkbox" class="form-check-input" [checked]="isBookRowSelected(row)"
+                    (change)="toggleBookRowSelection(row, $any($event.target).checked, $event)" />
+                </td>
                 <td>
                   <ng-container *ngIf="getVoucherRoute(row) as voucherLink; else plainVoucher">
-                    <a [routerLink]="voucherLink" class="text-decoration-none fw-semibold">
+                    <a [routerLink]="voucherLink" class="recon-link">
                       {{ row.VoucherNumber }}
                     </a>
                   </ng-container>
                   <ng-template #plainVoucher>{{ row.VoucherNumber }}</ng-template>
                 </td>
                 <td>{{ row.VoucherTypeCode || '-' }}</td>
-                <td>{{ row.VoucherDate | date:'dd/MM/yyyy' }}</td>
+                <td>{{ formatDisplayDate(row.VoucherDate) }}</td>
                 <td>{{ row.ReferenceNumber || '-' }}</td>
-                <td>{{ row.Narration || '-' }}</td>
-                <td class="text-end">{{ row.LocalAmount | number:'1.2-2' }}</td>
-                <td>{{ row.ClearanceDate ? (row.ClearanceDate | date:'dd/MM/yyyy') : '-' }}</td>
+                <td class="recon-cell-narration">{{ row.Narration || '-' }}</td>
+                <td class="text-end fw-semibold">{{ row.LocalAmount | number:'1.2-2' }}</td>
+                <td>{{ row.ClearanceDate ? formatDisplayDate(row.ClearanceDate) : '-' }}</td>
                 <td>
-                  <span class="badge rounded-pill" [ngClass]="row.status === 'Reconciled' ? 'bg-success' : 'bg-secondary'">
+                  <span class="badge rounded-pill recon-status-badge"
+                    [ngClass]="row.status === 'Reconciled' ? 'bg-success' : 'bg-secondary'">
                     {{ row.status || 'Unreconciled' }}
                   </span>
                 </td>
-                <td class="text-end">
-                  <button
-                    type="button"
-                    class="btn btn-sm"
-                    [ngClass]="isSelectedBookRow(row) ? 'btn-primary' : 'btn-outline-primary'"
-                    (click)="selectBookRow(row, $event)">
-                    {{ isSelectedBookRow(row) ? 'Selected' : 'Select' }}
-                  </button>
+              </tr>
+              <tr *ngIf="loadingBooks">
+                <td colspan="9" class="text-center py-4">
+                  <div class="recon-empty">
+                    <i class="fas fa-spinner fa-spin recon-empty__icon"></i>
+                    <div class="recon-empty__title">Loading book transactions...</div>
+                  </div>
                 </td>
               </tr>
               <tr *ngIf="!loadingBooks && !bookRows.length">
-                  <td colspan="9" class="text-center text-muted py-4">
-                  No book transactions found. Run Search after selecting a bank ledger and date range.
+                <td colspan="9" class="text-center py-4">
+                  <div class="recon-empty">
+                    <i class="fas fa-search recon-empty__icon"></i>
+                    <div class="recon-empty__title">No book transactions found</div>
+                    <div class="recon-empty__text">Run Search after selecting a bank ledger and date range.</div>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -202,56 +286,73 @@
   </div>
 
   <div class="col-12 mb-3" *ngIf="reportData">
-    <div class="card recon-card">
-      <div class="card-header bg-white">
-        <h6 class="mb-0">Reconciliation Summary</h6>
+    <div class="card recon-card recon-summary-card recon-summary-card--compact">
+      <div class="card-header recon-summary-card__header">
+        <div>
+          <h6 class="mb-0 recon-summary-card__title">Reconciliation Summary</h6>
+        </div>
+        <div class="recon-summary-card__status" [class.is-balanced]="!reportData?.summary?.difference"
+          [class.is-unbalanced]="reportData?.summary?.difference">
+          <i class="fas" [ngClass]="!reportData?.summary?.difference ? 'fa-check-circle' : 'fa-exclamation-triangle'"></i>
+          <span>{{ !reportData?.summary?.difference ? 'Balanced' : 'Difference Found' }}</span>
+        </div>
       </div>
-      <div class="card-body">
-        <div class="row g-3">
-          <div class="col-md-3">
+      <div class="card-body recon-summary-card__body">
+        <div class="row g-2">
+          <div class="col-xl-2 col-md-4 col-sm-6">
             <div class="summary-box primary">
               <span>Balance as per Books</span>
               <strong>{{ reportData?.summary?.bookBalance | number:'1.2-2' }}</strong>
             </div>
           </div>
-          <div class="col-md-3">
+          <div class="col-xl-2 col-md-4 col-sm-6">
             <div class="summary-box info">
               <span>Balance as per Bank</span>
               <strong>{{ reportData?.summary?.bankStatementBalance | number:'1.2-2' }}</strong>
             </div>
           </div>
-          <div class="col-md-3">
+          <div class="col-xl-2 col-md-4 col-sm-6">
             <div class="summary-box success">
               <span>Add: Bank entries not in books</span>
               <strong>{{ reportData?.summary?.addBankEntriesNotInBooks | number:'1.2-2' }}</strong>
             </div>
           </div>
-          <div class="col-md-3">
+          <div class="col-xl-2 col-md-4 col-sm-6">
             <div class="summary-box warning">
               <span>Less: Book entries not cleared</span>
               <strong>{{ reportData?.summary?.lessBookEntriesNotClearedInBank | number:'1.2-2' }}</strong>
             </div>
           </div>
-          <div class="col-md-3">
+          <div class="col-xl-2 col-md-4 col-sm-6">
             <div class="summary-box dark">
               <span>Final Balance</span>
               <strong>{{ reportData?.summary?.finalBalance | number:'1.2-2' }}</strong>
             </div>
           </div>
-          <div class="col-md-3">
-            <div class="summary-box" [class.success]="!reportData?.summary?.difference" [class.danger]="reportData?.summary?.difference">
+          <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="summary-box" [class.success]="!reportData?.summary?.difference"
+              [class.danger]="reportData?.summary?.difference">
               <span>Difference</span>
               <strong>{{ reportData?.summary?.difference | number:'1.2-2' }}</strong>
             </div>
           </div>
-          <div class="col-md-6">
-            <div class="summary-box light">
+          <div class="col-12">
+            <div class="summary-box light summary-box--counts">
               <span>Counts</span>
-              <strong>
-                Book: {{ reportData?.counts?.bookRows || 0 }},
-                Bank: {{ reportData?.counts?.bankRows || 0 }},
-                Unmatched Bank: {{ reportData?.counts?.unmatchedBankRows || 0 }}
-              </strong>
+              <div class="summary-counts">
+                <div class="summary-counts__item">
+                  <small>Book</small>
+                  <strong>{{ reportData?.counts?.bookRows || 0 }}</strong>
+                </div>
+                <div class="summary-counts__item">
+                  <small>Bank</small>
+                  <strong>{{ reportData?.counts?.bankRows || 0 }}</strong>
+                </div>
+                <div class="summary-counts__item">
+                  <small>Unmatched Bank</small>
+                  <strong>{{ reportData?.counts?.unmatchedBankRows || 0 }}</strong>
+                </div>
+              </div>
             </div>
           </div>
         </div>

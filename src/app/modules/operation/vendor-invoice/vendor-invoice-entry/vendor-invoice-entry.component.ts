@@ -49,6 +49,7 @@ import { VendorInvoicePrintComponent } from '../report/vendor-invoice-print/vend
 import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { offset } from '@popperjs/core';
 import { TaxCalculationService } from '../../services/tax-calculation.service';
+import { AuditLogComponent } from '../../audit-log/audit-log.component';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -3608,15 +3609,19 @@ Please configure the missing mappings and try again.`
     this.temporaryForm.reset();
   }
   
-  openAuditLogs(modal: TemplateRef<any>) {
-          if (!this.vendorInvoiceData?.VoucherHeaderSid) return;
-          this.getAuditLog()
-          this.auditLogModalRef = this.modalService.open(modal, {
-            centered: true,
-            scrollable: true,
-            windowClass: 'audit-log-modal'
-          });
-        }
+  openAuditLogs() {
+      if (!this.vendorInvoiceData?.VoucherHeaderSid) return;
+      const modalRef = this.modalService.open(AuditLogComponent, {
+        centered: true,
+        scrollable: true,
+        size: 'xl',
+        windowClass: 'audit-log-modal'
+      });
+      modalRef.componentInstance.title = 'Vendor Invoice Logs';
+      modalRef.componentInstance.tableName = 'VoucherHeader';
+      modalRef.componentInstance.recordId = this.vendorInvoiceData?.VoucherHeaderSid.toString();
+      modalRef.componentInstance.screenName = 'VendorInvoice';
+    }
     
         getAuditLog() {
       this.operationService.getAuditLogsCreditNote(
