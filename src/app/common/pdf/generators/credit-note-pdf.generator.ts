@@ -31,7 +31,7 @@ export function generateCreditNoteDocument(data: CreditNotePdfData): any {
   return {
     pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
     pageOrientation: data.config?.pageOrientation || PDF_DEFAULT_CONFIG.pageOrientation,
-    pageMargins: resolvedPageMargins,
+    pageMargins: [resolvedPageMargins[0], resolvedPageMargins[1], resolvedPageMargins[2], 30],
 
     background: function (currentPage, pageSize) {
 

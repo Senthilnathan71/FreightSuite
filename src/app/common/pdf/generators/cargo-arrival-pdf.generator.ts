@@ -10,13 +10,16 @@ import {
 } from '../helpers/pdf-formatters';
 import { getPdfStyles } from '../styles/pdf-styles';
 
+const RIGHT_LABEL_WIDTH = 95;
+const COLON_WIDTH = 8;
+
 export function generateCargoArrivalDocument(data: CargoArrivalPdfData): any {
   const isFcl = (data.selectedFclLcl || '').toUpperCase() === 'FCL';
 
   return {
     pageSize: data.config?.pageSize || 'A4',
     pageOrientation: 'portrait',
-    pageMargins: [15, 10, 15, 46],
+    pageMargins: [15, 10, 15, 36],
     background: (_: number, pageSize: any) => ({
       canvas: [
         {
@@ -208,13 +211,13 @@ function buildCustomerReferenceSection(data: CargoArrivalPdfData): any {
       {
         width: '50%',
         stack: [
-          buildKeyValueRow('HBL', data.referenceInfo.hblNo, 90),
+          buildKeyValueRow('HBL', data.referenceInfo.hblNo, RIGHT_LABEL_WIDTH),
           buildKeyValueRow(
             'HBL Date',
             formatDate(data.referenceInfo.hblDate),
-            90,
+            RIGHT_LABEL_WIDTH,
           ),
-          buildKeyValueRow('Booking No.', data.referenceInfo.bookingNo, 90),
+          buildKeyValueRow('Booking No.', data.referenceInfo.bookingNo, RIGHT_LABEL_WIDTH),
         ],
       },
     ],
@@ -282,13 +285,13 @@ function buildReleaseSection(data: CargoArrivalPdfData): any {
             [
               {
                 stack: leftItems.map(([label, value]) =>
-                  buildWrappedKeyValueRow(label, value, 130),
+                  buildWrappedKeyValueRow(label, value, RIGHT_LABEL_WIDTH),
                 ),
                 border: [false, false, false, false],
               },
               {
                 stack: rightItems.map(([label, value]) =>
-                  buildWrappedKeyValueRow(label, value, 110),
+                  buildWrappedKeyValueRow(label, value, RIGHT_LABEL_WIDTH),
                 ),
                 border: [false, false, false, false],
               },
@@ -345,13 +348,13 @@ function buildRoutingSection(data: CargoArrivalPdfData): any {
             [
               {
                 stack: leftItems.map(([label, value]) =>
-                  buildKeyValueRow(label, value, 130),
+                  buildKeyValueRow(label, value, RIGHT_LABEL_WIDTH),
                 ),
                 border: [true, true, false, true],
               },
               {
                 stack: rightItems.map(([label, value]) =>
-                  buildKeyValueRow(label, value, 110),
+                  buildKeyValueRow(label, value, RIGHT_LABEL_WIDTH),
                 ),
                 border: [false, true, true, true],
               },
@@ -520,12 +523,12 @@ function buildPartyCell(label: string, line1?: string, line2?: string): any {
 function buildKeyValueRow(
   label: string,
   value?: string,
-  labelWidth = 110,
+  labelWidth = RIGHT_LABEL_WIDTH,
 ): any {
   return {
     columns: [
       { text: label, width: labelWidth, style: 'sectionLabel' },
-      { text: ':', width: 8, style: 'sectionLabel' },
+      { text: ':', width: COLON_WIDTH, style: 'sectionLabel' },
       { text: value || '', width: '*', style: 'sectionValue' },
     ],
     margin: [0, 0, 0, 3],
@@ -535,12 +538,12 @@ function buildKeyValueRow(
 function buildWrappedKeyValueRow(
   label: string,
   value?: string,
-  labelWidth = 110,
+  labelWidth = RIGHT_LABEL_WIDTH,
 ): any {
   return {
     columns: [
       { text: label, width: labelWidth, style: 'sectionLabel' },
-      { text: ':', width: 8, style: 'sectionLabel' },
+      { text: ':', width: COLON_WIDTH, style: 'sectionLabel' },
       { text: value || '', width: '*', style: 'sectionValue' },
     ],
     margin: [0, 0, 0, 4],
@@ -635,7 +638,7 @@ function buildFooter(
   pageCount?: number,
 ): any {
   return {
-    margin: [24, 0, 24, 12],
+    margin: [24, 0, 24, 2],
     columns: [
       {
         text: `Printed By : ${data.userData?.userName || ''}`,

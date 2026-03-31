@@ -947,7 +947,13 @@ export class EnquiryEntryComponent implements OnInit {
     const formattedFPD = getFormattedPort(this.ports, FPD);
     const departmentName =
       this.departments.find(dept => dept.DepartmentMasterSid === selectedItem?.DepartmentMasterSid)
-        ?.departmentName || '';
+        ?.departmentName ||
+      selectedItem?.departmentMaster?.departmentName ||
+      selectedItem?.department?.departmentName ||
+      selectedItem?.departmentName ||
+      selectedItem?.DepartmentName ||
+      selectedItem?.ShipmentType ||
+      '';
 
     const subject = `Enquiry No.${this.rateRequestData?.EnquiryNumber} Date: ${this.datePipe.transform(this.rateRequestData?.EnquiryDate)} ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''}`;
 
@@ -1004,8 +1010,14 @@ ${this.userData.userName}`;
     }).join(', ');
     const departmentName =
       this.departments.find(dept => dept.DepartmentMasterSid === selectedItem?.DepartmentMasterSid)
-        ?.departmentName || '';
-
+        ?.departmentName ||
+      selectedItem?.departmentMaster?.departmentName ||
+      selectedItem?.department?.departmentName ||
+      selectedItem?.departmentName ||
+      selectedItem?.DepartmentName ||
+      selectedItem?.ShipmentType ||
+      '';
+      
     const subject = `Rate Request for ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''}`;
 
     const mailBody = `Dear Sir/Madam,
@@ -2003,8 +2015,10 @@ private parseFloatSafe(value: any): number {
     if (pdfBlob) {
       attachmentFile = new File([pdfBlob], (this.enquiryData?.EnquiryNumber || 'Enquiry') + '.pdf', { type: 'application/pdf' });
     }
-
-    this.emailTriggerService.triggerManualEmails({
+    const departmentName =
+        this.departments.find(dept => Number(dept.DepartmentMasterSid) === Number(this.enquiryData?.DepartmentMasterSid))?.departmentName ||
+        this.selectedDepartment ||"";
+      this.emailTriggerService.triggerManualEmails({
       companyId: this.currentCompany?.CompanyMasterSid,
       branchId: this.currentBranch?.BranchMasterSid,
       menuMasterSid: this.MenuMasterSid,
@@ -2013,6 +2027,7 @@ private parseFloatSafe(value: any): number {
       context: {
         EnquiryNo: this.enquiryData?.EnquiryNumber,
         date: this.enquiryData?.EnquiryDate ? this.datePipe.transform(this.enquiryData.EnquiryDate) : '',
+        DepartmentName: departmentName,
         POO: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.PORSid),
         POL: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.POLSid),
         POD: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.PODSid),

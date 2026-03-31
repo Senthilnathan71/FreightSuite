@@ -139,6 +139,7 @@ export class QuotationEntryComponent implements OnInit {
   isLoading : boolean;
   selectedItem : any;
   quotationApproved : boolean;
+  selectedDepartment: any = '';
   quoteAuthorized : boolean;
   isStandardRate : boolean;
   authorizerDetails = {
@@ -3294,7 +3295,12 @@ Looking forward to your feedback and the opportunity to work together.
 ${this.getApprovalLinkText(this.QuoteHeaderSid)}
 Best Regards,
 ${this.userData.userName}`;
-    const mailHtml = this.emailTriggerService.buildCommonTemplate(mailBody, subject, { menuName: 'Quotation' });
+    const departmentName = this.getQuotationDepartmentName();
+    const mailHtml = this.emailTriggerService.buildCommonTemplate(
+      mailBody,
+      subject,
+      { menuName: 'Quotation', DepartmentName: departmentName, departmentName }
+    );
     
     this.spinner.hide();
 
@@ -3360,6 +3366,7 @@ ${this.userData.userName}`;
       attachmentFile = new File([pdfBlob], (this.quotationData?.QuoteNumber || 'Quotation') + '.pdf', { type: 'application/pdf' });
     }
 
+    const departmentName = this.getQuotationDepartmentName();
     this.emailTriggerService.triggerManualEmails({
       companyId: this.currentCompany?.CompanyMasterSid,
       branchId: this.currentBranch?.BranchMasterSid,
@@ -3369,6 +3376,7 @@ ${this.userData.userName}`;
       context: {
         quotationNumber: this.quotationData?.QuoteNumber,
         date: this.datePipe.transform(this.quotationData?.QuoteDate),
+        DepartmentName: departmentName,
         POO: this.getFormattedPort(this.quotationData?.quoteRoute?.[0]?.PORSid),
         POL: this.getFormattedPort(this.quotationData?.quoteRoute?.[0]?.POLSid),
         POD: this.getFormattedPort(this.quotationData?.quoteRoute?.[0]?.PODSid),
@@ -3380,6 +3388,38 @@ ${this.userData.userName}`;
         approvalLink: window.location.origin + '/crm/quotation/entry/' + this.QuoteHeaderSid
       }
     });
+  }
+
+  private getQuotationDepartmentName(): string {
+    const deptIds: number[] = [];
+
+    const headerDeptId = this.quotationData?.DepartmentMasterSid;
+    if (headerDeptId !== null && headerDeptId !== undefined) {
+      deptIds.push(Number(headerDeptId));
+    }
+
+    const routes = Array.isArray(this.quotationData?.quoteRoute) ? this.quotationData.quoteRoute : [];
+    for (const route of routes) {
+      if (route?.DepartmentMasterSid !== null && route?.DepartmentMasterSid !== undefined) {
+        deptIds.push(Number(route.DepartmentMasterSid));
+      }
+    }
+
+    if (this.quoteRoutes?.length) {
+      this.quoteRoutes.controls.forEach((routeCtrl: AbstractControl) => {
+        const routeDeptId = routeCtrl.get('DepartmentMasterSid')?.value;
+        if (routeDeptId !== null && routeDeptId !== undefined) {
+          deptIds.push(Number(routeDeptId));
+        }
+      });
+    }
+
+    const uniqueIds = Array.from(new Set(deptIds));
+    const names = uniqueIds
+      .map(id => this.departments.find(dept => Number(dept.DepartmentMasterSid) === id)?.departmentName)
+      .filter(Boolean) as string[];
+
+    return names.join(', ') || '';
   }
 
   back() {

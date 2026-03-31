@@ -21,7 +21,7 @@ export function generateDeliveryOrderDocument(data: DeliveryOrderPdfData): any {
   return {
     pageSize: data.config?.pageSize || 'A4',
     pageOrientation: 'portrait',
-    pageMargins: [15, 10, 15, 46],
+    pageMargins: [15, 10, 15, 28],
     background: (_: number, pageSize: any) => ({
       canvas: [
         {
@@ -227,7 +227,7 @@ function buildPartySection(data: DeliveryOrderPdfData): any {
                 margin: [20, 0, 0, 0],
               },
             ],
-            margin: [5, 4, 5, 8],
+            margin: [5, 4, 5, 4],
           },
           {
             stack: [
@@ -241,7 +241,7 @@ function buildPartySection(data: DeliveryOrderPdfData): any {
                 margin: [CONSIGNEE_VALUE_OFFSET, 0, 0, 0],
               },
             ],
-            margin: [20, 4, 5, 8],
+            margin: [20, 4, 5, 4],
           },
         ],
       ],
@@ -254,7 +254,7 @@ function buildPartySection(data: DeliveryOrderPdfData): any {
       paddingLeft: () => 5,
       paddingRight: () => 5,
       paddingTop: () => 2,
-      paddingBottom: () => 8,
+      paddingBottom: () => 4,
     },
     margin: [0, 0, 0, 0],
   };
@@ -288,7 +288,7 @@ function buildNotifySection(data: DeliveryOrderPdfData): any {
               },
             ],
             border: [false, false, false, false],
-            margin: [20, 4, 5, 8],
+            margin: [20, 4, 5, 4],
           },
         ],
       ],
@@ -301,7 +301,7 @@ function buildNotifySection(data: DeliveryOrderPdfData): any {
       paddingLeft: () => 5,
       paddingRight: () => 5,
       paddingTop: () => 2,
-      paddingBottom: () => 8,
+      paddingBottom: () => 4,
     },
     margin: [0, 0, 0, 0],
   };
@@ -644,8 +644,8 @@ function edgeOpenTableLayout(): any {
     vLineColor: () => '#000',
     paddingTop: () => 3,
     paddingBottom: () => 3,
-    paddingLeft: () => 4,
-    paddingRight: () => 4,
+    paddingLeft: () => 0,
+    paddingRight: () => 0,
   };
 }
 
@@ -675,7 +675,7 @@ function buildFooter(
   pageCount?: number,
 ): any {
   return {
-    margin: [24, 0, 24, 6],
+    margin: [24, 0, 24, 0],
     columns: [
       {
         text: `Printed By : ${data.userData?.userName || ''}`,

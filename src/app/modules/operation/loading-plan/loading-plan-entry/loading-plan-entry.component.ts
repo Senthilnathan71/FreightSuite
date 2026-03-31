@@ -12,7 +12,8 @@ import {
 import { NgbActiveModal, NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
-import { catchError, forkJoin, of, Subject } from 'rxjs';
+import { catchError, forkJoin, of, Subject, firstValueFrom } from 'rxjs';
+import { take } from 'rxjs/operators';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { OperationService } from '../../operation.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
@@ -23,9 +24,10 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
-import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import {
+  generateLoadingPlanEntryDocument,
+  transformLoadingPlanEntryApiData,
+} from 'src/app/common/pdf/generators/loading-plan-entry-pdf.generator';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
@@ -63,6 +65,7 @@ import { PrintHeaderComponent } from 'src/app/shared/components/print-header/pri
 export class LoadingPlanEntryComponent {
   @ViewChild('loadingPlanPrint') loadingPlanPrint!: TemplateRef<any>;
   private destroy$ = new Subject<void>();
+  private pdfDepsPromise?: Promise<{ pdfMake: any }>;
 
   @Input() screenName: string = "Loading Plan";
   @Input() masterJobFormValue = {
@@ -158,7 +161,6 @@ export class LoadingPlanEntryComponent {
     private datePipe: CustomDatePipe,
     private spinnerService: NgxSpinnerService,
     private spinner: NgxSpinnerService,
-    private pdfService: PdfDownloadService,
     private appSettingsService: AppSettingsService,
     private masterService: MasterService,
     public logoService : LogoService
@@ -1389,58 +1391,39 @@ formatContainerNumber(): void {
     this.showPrintLogo = false;
     this.showPdfLogo = true;
 
-    setTimeout(async () => {
-      this.spinner.show();
-      try {
-        await this.pdfService.downloadBalancedPDF(
-          'printContent',
-          ``,
-          () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-          (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
-        );
-      } finally {
-        this.spinner.hide();
-      }
-    }, 50);
-  }
-
-  async generatePDFBlob(): Promise<Blob | null> {
-    const printContent = document.getElementById('printContent');
-    if (!printContent) {
-      return null;
-    }
-
     try {
-      const canvas = await html2canvas(printContent, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
+      this.spinner.show();
+      const { pdfMake } = await this.getPdfDependencies();
+      const logo = await this.resolveReportLogo();
+      const pdfData = transformLoadingPlanEntryApiData(
+        this.loadingPlanData,
+        this.selectedBookings,
+        {
+          totalPkg: this.totalPkg,
+          totalGrossWeight: this.totalGrossWeight,
+          totalNetWeight: this.totalNetWeight,
+          totalVolume: this.totalVolume,
+        },
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        {
+          portList: this.portList,
+          carrier: this.loadingPlanForm.get('carrier')?.value || '',
+        },
+      );
+      const docDefinition = generateLoadingPlanEntryDocument(pdfData);
 
-      const imgWidth = 210;
-      const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgData = canvas.toDataURL('image/png');
-
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      return pdf.output('blob');
+      pdfMake
+        .createPdf(docDefinition)
+        .download(`Loading_Plan_${this.currentDate?.toISOString()?.slice(0, 10) || 'Report'}.pdf`);
+      this.appSettingService.showSuccess('PDF downloaded successfully!');
     } catch (error) {
-      console.error('Error generating PDF blob:', error);
-      return null;
+      console.error('Loading Plan PDF generation error:', error);
+      this.appSettingService.showError('Error generating PDF. Please try again.');
+    } finally {
+      this.spinner.hide();
     }
   }
 
@@ -1493,5 +1476,62 @@ formatContainerNumber(): void {
 
   // pdf download
 
+
+  private async getPdfDependencies(): Promise<{ pdfMake: any }> {
+    if (this.pdfDepsPromise) {
+      return this.pdfDepsPromise;
+    }
+
+    this.pdfDepsPromise = (async () => {
+      const pdfMakeModule = await import('pdfmake/build/pdfmake');
+      const pdfFontsModule = await import('pdfmake/build/vfs_fonts');
+
+      const pdfMake: any = (pdfMakeModule as any).default || pdfMakeModule;
+      const pdfFonts: any = (pdfFontsModule as any).default || pdfFontsModule;
+      pdfMake.vfs = pdfFonts?.pdfMake?.vfs || pdfFonts;
+
+      return { pdfMake };
+    })();
+
+    return this.pdfDepsPromise;
+  }
+
+  private async resolveReportLogo(): Promise<string | undefined> {
+    const logoFromStream = await firstValueFrom(
+      this.logoService.reportLogo$.pipe(take(1)),
+    );
+    const logoSource =
+      logoFromStream || localStorage.getItem('current_report_logo') || '';
+
+    if (!logoSource) return undefined;
+    if (logoSource.startsWith('data:image')) return logoSource;
+
+    return this.imageUrlToBase64(logoSource);
+  }
+
+  private imageUrlToBase64(url: string): Promise<string | undefined> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          resolve(undefined);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      };
+
+      img.onerror = () => resolve(undefined);
+      img.src = url;
+    });
+  }
 
 }

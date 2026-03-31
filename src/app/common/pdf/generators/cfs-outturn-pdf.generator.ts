@@ -80,7 +80,7 @@ export function generateCfsOutturnDocument(data: CfsOutturnPdfData): any {
   return {
     pageSize: data.config?.pageSize || 'A4',
     pageOrientation: data.config?.pageOrientation || 'landscape',
-    pageMargins: data.config?.pageMargins || [15, 98, 15, 46],
+    pageMargins: data.config?.pageMargins || [15, 98, 15, 36],
     header: () => ({
       stack: [buildHeader(data)],
       margin: [15, 10, 15, 4]
@@ -378,7 +378,7 @@ function getCfsOutturnStyles(): any {
     ...getPdfStyles(),
     sectionLabel: { fontSize: 8, bold: true },
     valueText: { fontSize: 8 },
-    tableHeader: { fontSize: 8, bold: true, fillColor: '#e9ecef', alignment: 'center' },
+    tableHeader: { fontSize: 8, bold: true, alignment: 'center' },
     tableCell: { fontSize: 8 },
     tableCellBold: { fontSize: 8, bold: true }
   };
@@ -386,7 +386,7 @@ function getCfsOutturnStyles(): any {
 
 function buildFooter(data: CfsOutturnPdfData, currentPage: number, pageCount: number): any {
   return {
-    margin: [24, 0, 24, 12],
+    margin: [24, 0, 24, 4],
     columns: [
       { text: `Printed By : ${data.userData?.userName || ''}`, alignment: 'left', width: '30%', fontSize: 9, noWrap: true },
       { text: 'This document is computer-generated and does not require a signature.', alignment: 'center', width: '*', fontSize: 9, noWrap: true },

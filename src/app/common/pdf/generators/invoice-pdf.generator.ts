@@ -39,9 +39,9 @@
           configuredMargins[0] ?? 20,
           Math.max(configuredMargins[1] ?? dynamicTopMargin, dynamicTopMargin),
           configuredMargins[2] ?? 20,
-          configuredMargins[3] ?? 12
+          configuredMargins[3] ?? 8
         ]
-      : [20, dynamicTopMargin, 20, 60];
+      : [20, dynamicTopMargin, 20, 30];
 
     return {
       pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
