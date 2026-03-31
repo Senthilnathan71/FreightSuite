@@ -85,6 +85,31 @@ export class FreightMoMGrowthReportComponent {
     return this.data || {};
   }
 
+get momGrowth(): any[] {
+  return this.data?.departmentWiseMoM || [];
+}
+
+getDeptMoM(department: string) {
+  return this.momGrowth.find((d: any) => d.department === department);
+}
+
+calculateMoM(current: number, previous: number): number {
+  if (!previous) return 0;
+  return ((current - previous) / previous) * 100;
+}
+
+getGpPercentage(row: any): number {
+  return row?.totalRevenue ? (row.grossProfit / row.totalRevenue) * 100 : 0;
+}
+
+getAvgRevenuePerShipment(row: any): number {
+  return row?.totalShipment ? row.totalRevenue / row.totalShipment : 0;
+}
+
+getAvgGpPerShipment(row: any): number {
+  return row?.totalShipment ? row.grossProfit / row.totalShipment : 0;
+}
+
   get params(): any {
     return this.data?.params || {};
   }
@@ -156,10 +181,7 @@ export class FreightMoMGrowthReportComponent {
       }
 
       // ---------- Total ----------
-      const total = this.getDeptTotal(dept);
-      if (total) {
-        rows.push(this.buildTotalRow(total));
-      }
+     rows.push(this.buildMoMRow(dept));
 
     });
 
@@ -171,7 +193,8 @@ export class FreightMoMGrowthReportComponent {
         reportTitle: 'Freight MoM Growth Report',
         additionalInfo: [
           { label: 'From Date', value: this.formatDate(this.params?.FromDate) },
-          { label: 'To Date', value: this.formatDate(this.params?.ToDate) }
+          { label: 'To Date', value: this.formatDate(this.params?.ToDate) },
+          {label:'' , value:''}
         ]
       },
       includeTableHeaders: false,
@@ -193,6 +216,52 @@ export class FreightMoMGrowthReportComponent {
     }
   }
 
+  private buildMoMRow(dept: any): ExcelRow {
+  const prevDept = this.getPreviousDept(dept.department);
+
+  if (!prevDept) return { cells: [] };
+
+  const mom = (c: number, p: number) =>
+    p ? ((c - p) / p) * 100 : 0;
+
+  const gpCurr = this.getGpPercentage(dept);
+  const gpPrev = this.getGpPercentage(prevDept);
+
+  const avgRevCurr = this.getAvgRevenuePerShipment(dept);
+  const avgRevPrev = this.getAvgRevenuePerShipment(prevDept);
+
+  const avgGpCurr = this.getAvgGpPerShipment(dept);
+  const avgGpPrev = this.getAvgGpPerShipment(prevDept);
+
+  return {
+    cells: [
+      { value: 'MoM Growth %', alignment: { horizontal: 'left' } },
+
+      { value: mom(dept.totalShipment, prevDept.totalShipment).toFixed(2) , alignment:{horizontal:'center'} },
+
+      { value: mom(dept.totalRevenue, prevDept.totalRevenue).toFixed(2) },
+
+      { value: mom(dept.totalCost, prevDept.totalCost).toFixed(2) },
+
+      { value: mom(dept.grossProfit, prevDept.grossProfit).toFixed(2) },
+
+      { value: mom(gpCurr, gpPrev).toFixed(2) + ' %' , alignment:{horizontal:'right'} },
+
+      { value: mom(dept.totalGrossWt, prevDept.totalGrossWt).toFixed(2) },
+
+      { value: mom(dept.totalVolume, prevDept.totalVolume).toFixed(2) },
+
+      { value: mom(dept.totalNoOfTEU, prevDept.totalNoOfTEU).toFixed(2) , alignment:{horizontal:'center'} },
+
+      { value: mom(dept.jobCount, prevDept.jobCount).toFixed(2) , alignment:{horizontal:'center'} },
+
+      { value: mom(avgRevCurr, avgRevPrev).toFixed(2) },
+
+      { value: mom(avgGpCurr, avgGpPrev).toFixed(2) }
+    ],
+    style: 'total'
+  };
+}
 
   private buildDeptRow(dept: any, monthLabel: string): ExcelRow {
 

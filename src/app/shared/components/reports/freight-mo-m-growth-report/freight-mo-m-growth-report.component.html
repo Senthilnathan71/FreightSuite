@@ -1,5 +1,5 @@
 <div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
-<app-print-header></app-print-header>
+    <app-print-header></app-print-header>
 
     <h4 class="text-center fw-bold py-2" style="margin: 0;">
         Freight MoM Growth Report
@@ -59,8 +59,8 @@
                                 0 }} %
                             </td>
 
-                            <td class="text-end">{{ dept.totalGrossWt | number:'1.3-3' }}</td>
-                            <td class="text-end">{{ dept.totalVolume | number:'1.3-3' }}</td>
+                            <td class="text-end">{{ dept.totalGrossWt | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ dept.totalVolume | number:'1.2-2' }}</td>
                             <td class="text-center">{{ dept.totalNoOfTEU }}</td>
                             <td class="text-center">{{ dept.jobCount }}</td>
 
@@ -87,8 +87,8 @@
                                 number:'1.2-2') : 0 }} %
                             </td>
 
-                            <td class="text-end">{{ prevDept.totalGrossWt | number:'1.3-3' }}</td>
-                            <td class="text-end">{{ prevDept.totalVolume | number:'1.3-3' }}</td>
+                            <td class="text-end">{{ prevDept.totalGrossWt | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ prevDept.totalVolume | number:'1.2-2' }}</td>
                             <td class="text-center">{{ prevDept.totalNoOfTEU }}</td>
                             <td class="text-center">{{ prevDept.jobCount }}</td>
 
@@ -104,45 +104,68 @@
                         </tr>
 
                         <!-- TOTAL ROW -->
-                        <tr class="fw-bold bg-light" *ngIf="getDeptTotal(dept) as total">
+                        <tr class="fw-bold bg-light" *ngIf="getDeptMoM(dept.department) as m"
+                            style="white-space: nowrap;">
+                            <td>MoM Growth %</td>
 
-                            <td class="text-end">Total</td>
+                            <td class="text-center">{{ m.shipmentCount | number:'1.2-2' }}</td>
 
-                            <td class="text-center">{{ total.totalShipment }}</td>
+                            <td class="text-end">{{ m.totalRevenue | number:'1.2-2' }}</td>
 
-                            <td class="text-end">{{ total.totalRevenue | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ m.totalCost | number:'1.2-2' }}</td>
 
-                            <td class="text-end">{{ total.totalCost | number:'1.2-2' }}</td>
-
-                            <td class="text-end">{{ total.grossProfit | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ m.grossProfit | number:'1.2-2' }}</td>
 
                             <td class="text-end">
-                                <!-- {{ total.gpPercentage | number:'1.2-2' }} % -->
+                                {{
+                                calculateMoM(
+                                getGpPercentage(dept),
+                                getPreviousDept(dept.department) ? getGpPercentage(getPreviousDept(dept.department)) : 0
+                                ) | number:'1.2-2'
+                                }} %
                             </td>
 
-                            <td class="text-end">{{ total.totalGrossWt | number:'1.3-3' }}</td>
+                            <td class="text-end">{{ m.grossWt | number:'1.2-2' }}</td>
 
-                            <td class="text-end">{{ total.totalVolume | number:'1.3-3' }}</td>
+                            <td class="text-end">{{ m.vol | number:'1.2-2' }}</td>
 
-                            <td class="text-center">{{ total.totalNoOfTEU }}</td>
+                            <td class="text-center">{{ m.totalNoOfTEU | number:'1.2-2' }}</td>
 
-                            <td class="text-center">{{ total.jobCount }}</td>
-
-                            <td class="text-end">
-                                <!-- {{ total.totalShipment ? (total.totalRevenue / total.totalShipment | number:'1.2-2') : 0
-                                }} -->
+                            <td class="text-center">
+                                {{
+                                calculateMoM(
+                                dept.jobCount,
+                                getPreviousDept(dept.department) ? getPreviousDept(dept.department).jobCount : 0
+                                ) | number:'1.2-2'
+                                }}
                             </td>
 
                             <td class="text-end">
-                                <!-- {{ total.totalShipment ? (total.grossProfit / total.totalShipment | number:'1.2-2') : 0
-                                }} -->
+                                {{
+                                calculateMoM(
+                                getAvgRevenuePerShipment(dept),
+                                getPreviousDept(dept.department) ?
+                                getAvgRevenuePerShipment(getPreviousDept(dept.department)) : 0
+                                ) | number:'1.2-2'
+                                }}
+                            </td>
+
+                            <td class="text-end">
+                                {{
+                                calculateMoM(
+                                getAvgGpPerShipment(dept),
+                                getPreviousDept(dept.department) ? getAvgGpPerShipment(getPreviousDept(dept.department))
+                                : 0
+                                ) | number:'1.2-2'
+                                }}
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-        <div *ngIf="!fullData?.currentPeriod?.data || fullData.currentPeriod.data.length === 0" class="table-responsive">
+        <div *ngIf="!fullData?.currentPeriod?.data || fullData.currentPeriod.data.length === 0"
+            class="table-responsive">
             <table class="table tablebordered table-sm my-0" style="font-size: 12px;">
                 <thead class="bg-info">
                     <tr>

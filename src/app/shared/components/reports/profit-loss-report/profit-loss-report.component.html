@@ -38,7 +38,7 @@
                         REVENUE
                     </td>
                     <ng-container *ngFor="let group of groupedData">
-                        <ng-container *ngIf="group.subGroupName.toLowerCase().includes('income')">
+                        <ng-container *ngIf="group.subGroupName">
 
                             <tr *ngFor="let item of group.items; let i = index">
 
@@ -66,7 +66,7 @@
                         EXPENSES
                     </td>
                     <ng-container *ngFor="let group of groupedData">
-                        <ng-container *ngIf="group.subGroupName.toLowerCase().includes('expense')">
+                        <ng-container *ngIf="group.subGroupName">
                             <tr *ngFor="let item of group.items; let i = index">
 
                                 <td *ngIf="i === 0" [attr.rowspan]="group.items.length + 1" style="font-weight: 700;"

@@ -83,7 +83,7 @@ export class BlIssueReportComponent {
     sheetName: 'BLIssueReport',
     reportHeader: {
       companyName: this.currentCompany?.companyName || 'Company',
-      reportTitle: `${this.params?.BLIssue ? 'BL Issue List' : 'BL Not Issue List'}`,
+      reportTitle: `${this.params?.BLIssue ? 'BL Issued List' : 'BL Not Issued List'}`,
       additionalInfo: [
         { label: 'HBL From Date', value: this.formatDate(this.params?.FromHblDt) },
         { label: 'HBL To Date', value: this.formatDate(this.params?.ToHblDt) },

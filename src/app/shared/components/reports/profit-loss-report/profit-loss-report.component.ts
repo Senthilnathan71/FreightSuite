@@ -62,11 +62,11 @@ export class ProfitLossReportComponent {
 
   getGrossProfit(year: string): number {
     const totalIncome = this.groupedData
-      .filter(g => g.subGroupName.toLowerCase().includes('income'))
+      .filter(g => g.subGroupName)
       .reduce((sum, group) => sum + this.getGroupTotal(group.items, year), 0);
 
     const totalExpenses = this.groupedData
-      .filter(g => g.subGroupName.toLowerCase().includes('expense'))
+      .filter(g => g.subGroupName)
       .reduce((sum, group) => sum + this.getGroupTotal(group.items, year), 0);
 
     return Math.abs(totalIncome) - Math.abs(totalExpenses);
@@ -77,23 +77,13 @@ export class ProfitLossReportComponent {
 
     const indirectOtherIncome = this.groupedData
       .filter(g =>
-        g.subGroupName &&
-        g.subGroupName.toLowerCase().includes('income') &&
-        (
-          g.subGroupName.toLowerCase().includes('indirect') ||
-          g.subGroupName.toLowerCase().includes('other')
-        )
+        g.subGroupName 
       )
       .reduce((sum, group) => sum + this.getGroupTotal(group.items, year), 0);
 
     const indirectOtherExpense = this.groupedData
       .filter(g =>
-        g.subGroupName &&
-        g.subGroupName.toLowerCase().includes('expense') &&
-        (
-          g.subGroupName.toLowerCase().includes('indirect') ||
-          g.subGroupName.toLowerCase().includes('other')
-        )
+        g.subGroupName
       )
       .reduce((sum, group) => sum + this.getGroupTotal(group.items, year), 0);
 
