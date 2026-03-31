@@ -160,6 +160,8 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
   private showWarningFlags: boolean[] = [];
   manuallyEditedNarrationRows: Set<number> = new Set<number>();
   private isPatchingEditData: boolean = false;
+  private copiedVoucherData: any = null;
+  private isCopiedVoucher: boolean = false;
   
 
   constructor(
@@ -182,6 +184,7 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
     private currencyConfigService: CurrencyConfigurationService,
     private voucherPeriodService: VoucherPeriodValidationService,
     private toastr: ToastrService,
+    private commonModalService: ModalService,
   ) { }
 
   ngOnInit(): void {
@@ -200,6 +203,14 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
     this.checkVoucherPostingMechanism();
     this.initializeForm();
     this.setTodayDate();
+
+    const historyState = history?.state;
+    this.copiedVoucherData = historyState?.copiedJournalVoucherData;
+    this.isCopiedVoucher = !!historyState?.isCopiedJournalVoucher;
+    if (this.isCopiedVoucher && this.copiedVoucherData) {
+      history.replaceState({}, '', location.pathname);
+    }
+
     this.loadMasterData();
     this.loadVoucherPeriods();
     this.checkEditMode();
@@ -309,7 +320,7 @@ private saveDraftWithCallback(resolve?: (value: boolean) => void) {
   this.saveJournalVoucherWithCallback(false, resolve);
 }
 
-private saveJournalVoucherWithCallback(isFinal: boolean, resolve?: (value: boolean) => void) {
+  private saveJournalVoucherWithCallback(isFinal: boolean, resolve?: (value: boolean) => void) {
   if (this.form.hasError('inconsistentExchangeRates')) {
     const errorMsg = getExchangeRateErrorMessage(this.form, this.currencyList);
     this.appSettingService.showError(errorMsg);
@@ -392,7 +403,57 @@ private saveJournalVoucherWithCallback(isFinal: boolean, resolve?: (value: boole
   });
 }
 
-private normalizeValue(value: any): any {
+  copyJournalVoucher(): void {
+    if (!this.voucherData) {
+      this.appSettingService.showWarning('No journal voucher data to copy');
+      return;
+    }
+
+    this.commonModalService.confirm(
+      'Are you sure you want to copy this journal voucher?',
+      'Copy Journal Voucher',
+      'Copy'
+    ).then((confirmed) => {
+      if (confirmed) {
+        this.performJournalVoucherCopy();
+      }
+    });
+  }
+
+  private performJournalVoucherCopy(): void {
+    this.spinner.show();
+    const copiedData = this.prepareCopiedJournalVoucherData();
+
+    this.router.navigate(['/accounts/journal-voucher/entry'], {
+      state: {
+        copiedJournalVoucherData: copiedData,
+        isCopiedJournalVoucher: true,
+      },
+    });
+  }
+
+  private prepareCopiedJournalVoucherData(): any {
+    const copiedData = { ...this.voucherData };
+
+    copiedData.VoucherHeaderSid = null;
+    copiedData.VoucherNumber = '';
+    copiedData.VoucherDate = getDefaultTodayDate();
+    copiedData.PostDate = null;
+    copiedData.PostStatus = 'U';
+    copiedData.Status = 'A';
+    copiedData.PostedOn = null;
+
+    if (Array.isArray(copiedData.VoucherDetail)) {
+      copiedData.VoucherDetail = copiedData.VoucherDetail.map((detail: any) => ({
+        ...detail,
+        VoucherDetailSid: null,
+      }));
+    }
+
+    return copiedData;
+  }
+
+  private normalizeValue(value: any): any {
   if (value === null || value === undefined || value === '') {
     return null;
   }
@@ -696,6 +757,8 @@ private deepEqual(obj1: any, obj2: any): boolean {
         // After all data is loaded, load voucher if in edit mode
         if (this.editMode && this.voucherHeaderSid) {
           this.loadVoucherForEdit(this.voucherHeaderSid);
+        } else if (this.isCopiedVoucher && this.copiedVoucherData) {
+          this.loadCopiedVoucherForNewEntry(this.copiedVoucherData);
         } else {
           this.spinner.hide();
         }
@@ -1036,6 +1099,164 @@ private deepEqual(obj1: any, obj2: any): boolean {
         this.spinner.hide();
       },
     });
+  }
+
+  async loadCopiedVoucherForNewEntry(voucher: any): Promise<void> {
+    this.isPatchingEditData = true;
+
+    if (!voucher) {
+      this.appSettingService.showWarning('No journal voucher data to copy');
+      this.spinner.hide();
+      this.isPatchingEditData = false;
+      return;
+    }
+
+    try {
+      const copiedVoucher = {
+        ...voucher,
+        VoucherHeaderSid: null,
+        VoucherNumber: '',
+        VoucherDate: getDefaultTodayDate(),
+        Narration: '',
+        PostDate: null,
+        PostStatus: 'U',
+        Status: 'A',
+        PostedOn: null,
+        VoucherDetail: Array.isArray(voucher.VoucherDetail)
+          ? voucher.VoucherDetail.map((detail: any) => ({
+              ...detail,
+              VoucherDetailSid: null,
+            }))
+          : [],
+      };
+
+      this.voucherData = copiedVoucher;
+      this.voucherHeaderSid = null;
+      this.isPosted = false;
+
+      const formPatchData: any = {
+        voucherNumber: '',
+        voucherDate: '',
+        narration: '',
+        DocumentNumber: '',
+        DocumentDate: '',
+        remarks: copiedVoucher.Remarks,
+        Status: 'A',
+        postStatus: 'Unposted',
+      };
+
+      this.form.patchValue(formPatchData, { emitEvent: false });
+
+      this.details.clear();
+      this.manuallyEditedNarrationRows.clear();
+      this.subledgerTypes = new Array(copiedVoucher.VoucherDetail.length).fill('');
+
+      if (copiedVoucher.VoucherDetail.length) {
+        const detailPromises = copiedVoucher.VoucherDetail.map(async (detail: any) => {
+          const detailGroup = this.createDetailGroup();
+
+          detailGroup.patchValue({
+            VoucherDetailSid: null,
+            coaMasterSid: detail.COAMasterSid,
+            ledgerMasterSid: detail.LedgerMasterSid,
+            currencyMasterSid: detail.CurrencyMasterSid,
+            currencyCode: detail.CurrencyCode,
+            exchangeRate: detail.ExchangeRate || 1,
+            currencyAmount: detail.Amount || 0.0,
+            localAmount: detail.LocalAmount || 0.0,
+            drCr: detail.DrCr,
+            narration: detail.Narration,
+            departmentMasterSid: detail.DepartmentMasterSid,
+            chargeMasterSid: detail.ChargeMasterSid,
+            chargeDescription: detail.ChargeDescription || '',
+            HSSACCode: detail.HSSACCode || '',
+            hssacMasterSid: detail.HSSACMasterSid || null,
+            masterJobSid: detail.MasterJobSid,
+            houseJobSid: detail.HouseJobSid,
+            taxPercentage: detail.TaxPercentage1 || 0,
+            taxAmount: detail.TaxAmount1 || 0,
+            costCenterMasterSid: detail.CostCenter,
+            profitCenterMasterSid: detail.ProfitCenter,
+            IsAutoGenerated: detail.IsAutoGenerated || 'N',
+          }, { emitEvent: false });
+
+          if (detail.IsAutoGenerated === 'Y') {
+            detailGroup.patchValue({
+              filteredSubledgers: [detail.subledgerMaster]
+            }, { emitEvent: false });
+          }
+
+          this.setupDetailCalculations(detailGroup);
+          this.details.push(detailGroup);
+
+          const rowIndex = this.details.length - 1;
+
+          if (detail.IsAutoGenerated === 'Y') {
+            this.subledgerTypes[rowIndex] = detail.subledgerMaster?.SubledgerType || 'Tax';
+            this.filteredChargeList[rowIndex] = [];
+            this.masterJobList[rowIndex] = [];
+            this.houseJobList[rowIndex] = [];
+            this.hssacList[rowIndex] = [];
+            this.disableChargeFieldsForRow(detailGroup);
+            detailGroup.get('coaMasterSid')?.disable();
+            detailGroup.get('ledgerMasterSid')?.disable();
+            return detailGroup;
+          }
+
+          const dept = this.departmentList.find(dep => dep.DepartmentMasterSid === detail.DepartmentMasterSid);
+          if (dept) {
+            this.filterDetailsWithDept(dept, rowIndex, true);
+          }
+
+          if (detail.ChargeMasterSid) {
+            await this.handleChargeForEdit(detailGroup, detail);
+          }
+
+          if (detail.MasterJobSid) {
+            await this.handleJobsForEdit(detailGroup, detail, rowIndex);
+          }
+
+          if (detail.COAMasterSid && this.currentCompany?.CompanyMasterSid) {
+            const payload = {
+              CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+              COAMasterSid: detail.COAMasterSid
+            };
+
+            try {
+              const subledgerResp = await firstValueFrom(
+                this.operationService.getSubledgerMasterById(payload)
+              );
+
+              if (subledgerResp && subledgerResp.data) {
+                this.subledgerTypes[rowIndex] = subledgerResp.data.SubledgerType || '';
+                this.updateChargeFieldStates(rowIndex);
+              }
+            } catch (err) {
+              console.error('Error fetching subledger type for copied voucher:', err);
+            }
+          }
+
+          await this.handleSubledgerForEdit(detailGroup, detail, rowIndex);
+          return detailGroup;
+        });
+
+        await Promise.all(detailPromises);
+
+        this.details.controls.forEach((_, index) => {
+          this.refreshSubledgerFiltersForRow(index, true);
+        });
+      }
+
+      this.isDirty = true;
+      this.form.markAsDirty();
+      this.appSettingService.showSuccess('Journal voucher copied successfully. Please review and save.');
+    } catch (err) {
+      console.error('Error copying journal voucher:', err);
+      this.appSettingService.showError('Failed to copy journal voucher.');
+    } finally {
+      this.isPatchingEditData = false;
+      this.spinner.hide();
+    }
   }
 
   async handleChargeForEdit(detailGroup: FormGroup, detail: any): Promise<void> {

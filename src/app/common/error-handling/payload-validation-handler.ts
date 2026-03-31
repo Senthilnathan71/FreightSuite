@@ -115,15 +115,63 @@ export function getFirstValidationError(messages: string | string[]): string {
   return sorted[0];
 }
 
-export function handleError(error: any) {
-  if (error.status === 400 && error.error) {
-    let backendMessage: string;
-    if (Array.isArray(error.error.message)) {
-      const sortedMessages = sortValidationErrors(error.error.message);
-      backendMessage = sortedMessages.join('\n');
-    } else {
-      backendMessage = error.error.message || 'Bad Request';
+function normalizeMessageValue(value: any): string {
+  if (value == null) {
+    return '';
+  }
+
+  if (typeof value === 'string') {
+    return value.trim();
+  }
+
+  if (Array.isArray(value)) {
+    return sortValidationErrors(
+      value
+        .map(item => normalizeMessageValue(item))
+        .filter((item): item is string => !!item)
+    ).join('\n');
+  }
+
+  if (typeof value === 'object') {
+    return (
+      normalizeMessageValue(value.message) ||
+      normalizeMessageValue(value.Message) ||
+      normalizeMessageValue(value.errors) ||
+      normalizeMessageValue(value.Errors) ||
+      normalizeMessageValue(value.error)
+    );
+  }
+
+  return '';
+}
+
+export function extractBackendErrorMessage(error: any, fallback = 'Something went wrong'): string {
+  const candidates = [
+    error,
+    error?.error,
+    error?.error?.data,
+    error?.response,
+    error?.response?.data,
+    error?.data,
+  ];
+
+  for (const candidate of candidates) {
+    const message = normalizeMessageValue(candidate);
+    if (message) {
+      return message;
     }
+  }
+
+  if (typeof error === 'string' && error.trim()) {
+    return error.trim();
+  }
+
+  return fallback;
+}
+
+export function handleError(error: any) {
+  if (error?.status === 400 || error?.error?.message || error?.error?.errors || error?.message) {
+    const backendMessage = extractBackendErrorMessage(error, 'Bad Request');
     const newError: ResponseData = {
       status: false,
       message: backendMessage,

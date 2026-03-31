@@ -10,6 +10,7 @@ import { finalize } from 'rxjs';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { getDefaultTodayDate } from 'src/app/common/helper';
+import { extractBackendErrorMessage } from 'src/app/common/error-handling/payload-validation-handler';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { GlobalDateFormatService } from 'src/app/core/services/global-date-format.service';
 import { PageHeaderComponent, HeaderAction } from 'src/app/shared/components/header-list/header-list.component';
@@ -129,7 +130,7 @@ export class BankReconciliationComponent implements OnInit {
 
   private initializeHeaderActions(): void {
     this.headerActions = [
-      // { label: 'Unmatch', icon: 'fas fa-unlink', action: 'unmatch' },
+      { label: 'Unmatch', icon: 'fas fa-unlink', action: 'unmatch' },
       { label: 'Report', icon: 'fas fa-file-alt', action: 'report' },
       { label: 'Excel', icon: 'fas fa-file-excel', action: 'excel' },
       { label: 'Reset', icon: 'fas fa-sync-alt', action: 'reset' },
@@ -427,7 +428,7 @@ export class BankReconciliationComponent implements OnInit {
         error: (error: any) => {
           console.error('Search book error', error);
           this.bookRows = [];
-          this.appSettings.showError(error?.error?.message || 'Error loading book transactions');
+          this.showBackendError(error, 'Error loading book transactions');
         },
       });
   }
@@ -466,7 +467,7 @@ export class BankReconciliationComponent implements OnInit {
         },
         error: (error: any) => {
           console.error('Auto match error', error);
-          this.appSettings.showError(error?.error?.message || 'Error running auto match');
+          this.showBackendError(error, 'Error running auto match');
         },
       });
   }
@@ -530,7 +531,7 @@ export class BankReconciliationComponent implements OnInit {
         },
         error: (error: any) => {
           console.error('Manual match error', error);
-          this.appSettings.showError(error?.error?.message || 'Error running manual match');
+          this.showBackendError(error, 'Error running manual match');
         },
       });
   }
@@ -575,7 +576,7 @@ export class BankReconciliationComponent implements OnInit {
         },
         error: (error: any) => {
           console.error('Update clearance error', error);
-          this.appSettings.showError(error?.error?.message || 'Error updating clearance date');
+          this.showBackendError(error, 'Error updating clearance date');
         },
       });
   }
@@ -614,7 +615,7 @@ export class BankReconciliationComponent implements OnInit {
         },
         error: (error: any) => {
           console.error('Unmatch error', error);
-          this.appSettings.showError(error?.error?.message || 'Error running unmatch');
+          this.showBackendError(error, 'Error running unmatch');
         },
       });
   }
@@ -652,7 +653,7 @@ export class BankReconciliationComponent implements OnInit {
         },
         error: (error: any) => {
           console.error('Report error', error);
-          this.appSettings.showError(error?.error?.message || 'Error generating report');
+          this.showBackendError(error, 'Error generating report');
         },
       });
   }
@@ -985,5 +986,9 @@ export class BankReconciliationComponent implements OnInit {
       && typeof value.year === 'number'
       && typeof value.month === 'number'
       && typeof value.day === 'number';
+  }
+
+  private showBackendError(error: any, fallback: string): void {
+    this.appSettings.showError(extractBackendErrorMessage(error, fallback));
   }
 }

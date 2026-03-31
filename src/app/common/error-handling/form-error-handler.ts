@@ -90,7 +90,7 @@ function buildErrorMessages(
 
     switch (errorKey) {
       case 'required':
-        messages.push(`${finalLabel} is required`);
+        messages.push(resolveRequiredMessage(finalLabel, config?.messages?.required));
         break;
 
 
@@ -146,8 +146,23 @@ function buildErrorMessages(
   return messages;
 }
 
+function resolveRequiredMessage(
+  label: string,
+  message?: string | ((label: string) => string)
+): string {
+  if (typeof message === 'function') {
+    return message(label);
+  }
+
+  if (typeof message === 'string' && message.trim()) {
+    return message;
+  }
+
+  return `${label} is required`;
+}
+
 function extractRowIndex(path: string): { cleanPath: string; row?: number } {
-  const match = path.match(/(\w+)\.(\d+)\.(.+)/);
+  const match = path.match(/^(.*)\.(\d+)\.(.+)$/);
 
   if (!match) {
     return { cleanPath: path };

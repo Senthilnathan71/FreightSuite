@@ -28,6 +28,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { CommonModule, NgComponentOutlet } from '@angular/common';
 import { ConnectionComponent } from '../../connection/connection/connection.component';
 import { ArApComponent } from '../../AR-AP/ar-ap/ar-ap.component';
+import { extractBackendErrorMessage } from 'src/app/common/error-handling/payload-validation-handler';
 
 import { toggleFullScreen } from 'src/app/shared/fullscreenToggle';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
@@ -2068,6 +2069,88 @@ private loadMasterJobDetails(masterJobSid: number): void {
     return 'Please fill all required product fields correctly.';
   }
 
+  private getHouseJobFieldLabel(fieldName: string): string {
+    const fieldLabels: Record<string, string> = {
+      DepartmentMasterSid: 'Department',
+      CustomerMasterSid: 'Customer',
+      CustomerAddress: 'Customer Address',
+      ShipperName: 'Shipper Name',
+      ShipperAddress: 'Shipper Address',
+      ConsigneeName: 'Consignee Name',
+      ConsigneeAddress: 'Consignee Address',
+      AgentName: 'Agent Name',
+      DestinationAgent: 'Destination Agent',
+      POL: 'POL',
+      POD: 'POD',
+      FPD: 'FPD',
+      IncoTerms: 'Inco Terms',
+      HBLNo: 'HBL No',
+      HBLDate: 'HBL Date',
+      status: 'Status',
+      HouseStatus: 'House Status',
+      CargoType: 'Cargo Type',
+      GrossWeight: 'Gross Weight'
+    };
+
+    return fieldLabels[fieldName] || fieldName;
+  }
+
+  private getHouseJobInvalidFields(): string[] {
+    const invalidFields: string[] = [];
+
+    Object.keys(this.houseJobForm.controls).forEach(key => {
+      const control = this.houseJobForm.get(key);
+      if (control && control.invalid) {
+        invalidFields.push(this.getHouseJobFieldLabel(key));
+      }
+    });
+
+    return invalidFields;
+  }
+
+  private formatHouseJobBackendMessage(message: string): string {
+    if (!message) {
+      return message;
+    }
+
+    const replacements: Array<[RegExp, string]> = [
+      [/\bDepartmentMasterSid\b|\bDepartment Master Sid\b/gi, 'Department'],
+      [/\bCustomerMasterSid\b|\bCustomer Master Sid\b/gi, 'Customer'],
+      [/\bBranchMasterSid\b|\bBranch Master Sid\b/gi, 'Branch'],
+      [/\bCompanyMasterSid\b|\bCompany Master Sid\b/gi, 'Company'],
+      [/\bSalesmanSid\b|\bSalesman Sid\b/gi, 'Salesman'],
+      [/\bCustomerAddress\b/gi, 'Customer Address'],
+      [/\bShipperName\b/gi, 'Shipper Name'],
+      [/\bShipperAddress\b/gi, 'Shipper Address'],
+      [/\bConsigneeName\b/gi, 'Consignee Name'],
+      [/\bConsigneeAddress\b/gi, 'Consignee Address'],
+      [/\bDestinationAgent\b/gi, 'Destination Agent'],
+      [/\bAgentName\b/gi, 'Agent Name'],
+      [/\bIncoTerms\b/gi, 'Inco Terms'],
+      [/\bHBLNo\b/gi, 'HBL No'],
+      [/\bHBLDate\b/gi, 'HBL Date'],
+      [/\bHouseStatus\b/gi, 'House Status']
+    ];
+
+    return message
+      .split('\n')
+      .map(line => {
+        let formatted = line;
+        replacements.forEach(([pattern, replacement]) => {
+          formatted = formatted.replace(pattern, replacement);
+        });
+        return formatted;
+      })
+      .join('\n');
+  }
+
+  private showHouseJobBackendError(error: any, fallback: string): void {
+    const message = this.formatHouseJobBackendMessage(
+      extractBackendErrorMessage(error, fallback)
+    );
+    this.appSettingService.showError(message);
+  }
+
   handleConnectionChange(allConnections:any[]){
     this.connectionResult = [...allConnections];
     this.bookingConnectionsArr = [...allConnections];
@@ -2131,7 +2214,12 @@ onCurrencyChange(event: any) {
   if (this.houseJobForm.invalid) {
     this.houseJobForm.markAllAsTouched();
     this.houseJobForm.updateValueAndValidity();
-    this.appSettingService.showWarning('Please fill all required fields correctly.');
+    const invalidFields = this.getHouseJobInvalidFields();
+    this.appSettingService.showWarning(
+      invalidFields.length
+        ? `Please fill required fields: ${invalidFields.join(', ')}`
+        : 'Please fill all required fields correctly.'
+    );
     return;
   }
   // In onSubmit() - Added this check:
@@ -2404,13 +2492,13 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
           // Optionally reload the data to get the generated IDs
           // this.loadHouseById(this.HouseJobSid);
         } else {
-          this.appSettingService.showError(resp.message || 'Error creating house job.');
+          this.showHouseJobBackendError(resp, 'Error creating house job.');
           console.error('Create error:', resp.message);
         }
       },
       error: (err) => {
         this.resetSaveState();
-        this.appSettingService.showError('Failed to create house job. Please try again.');
+        this.showHouseJobBackendError(err, 'Failed to create house job. Please try again.');
         console.error('Create API error:', err);
       }
     });
@@ -2427,13 +2515,13 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
             this.router.navigate(['/operation/house-job/entry', this.HouseJobSid]);
           });
         } else {
-          this.appSettingService.showError('Error updating booking.');
+          this.showHouseJobBackendError(resp, 'Error updating house job.');
           console.error(resp.message);
         }
       },
       error: (err) => {
         this.resetSaveState();
-        this.appSettingService.showError('Failed to update booking.');
+        this.showHouseJobBackendError(err, 'Failed to update house job.');
         console.error(err);
       }
     });
@@ -3502,6 +3590,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
     const CustomerMasterSid = this.b['CustomerMasterSid']?.getRawValue();
     const CustomerBranchSid = this.b['CustomerBranchSid']?.getRawValue();
     const BookingHeaderSid = this.b['BookingHeaderSid']?.value;
+    const status = this.b['status']?.value;
     const salesmanSid = this.b['SalesmanSid']?.value || '';
     const salesmanName = this.salesmanList.find(s => s.UserMasterSid === salesmanSid)?.userName || '';
 
@@ -3509,6 +3598,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
       CompanyMasterSid,
       DepartmentMasterSid,
       BookingHeaderSid,
+      status,
       HouseJobSid: this.HouseJobSid,
       MasterJobNumber,
       MasterJobSid,
@@ -5571,12 +5661,16 @@ getProductFormGroup(index: number): FormGroup {
 
   onStatusChange() {
     const status = this.b['status']?.getRawValue();
-    if (this.housejobData?.bookingHeader?.status === 'D' && (status === 'Active' || !status)) {
+    if (this.housejobData?.bookingHeader && (status === 'Suspended' || !status)) {
       this.appSettingService.showWarning(
-        `This house cannot be set to Active.\n\nAs it's linked Booking : ${this.housejobData?.bookingHeader?.BookingNo} is already deleted.`
+        `This house cannot be suspended.\n\nBooking No: ${this.housejobData?.bookingHeader?.BookingNo} is associated with it.`
       );
-      this.b['status']?.setValue('Suspended');
+      this.b['status']?.setValue('Active');
     }
+    this.currentFormValue = {
+      ...(this.currentFormValue || {}),
+      status: this.b['status']?.getRawValue()
+    };
   }
 
   closeCustomsValidationModal() {

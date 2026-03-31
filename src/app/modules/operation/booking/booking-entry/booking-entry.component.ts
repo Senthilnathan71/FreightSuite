@@ -62,6 +62,8 @@ import { getDefaultTodayDate, toNgbDateStruct } from 'src/app/common/helper';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { ToastrService } from 'ngx-toastr';
+import { errorLoggerWithToastr, ValidationMessageConfig } from 'src/app/common/error-handling/form-error-handler';
+import { extractBackendErrorMessage } from 'src/app/common/error-handling/payload-validation-handler';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { HostListener } from '@angular/core';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
@@ -330,6 +332,21 @@ export class BookingEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   productForm !: FormGroup;
   croForm !: FormGroup;
   countryOfCompany: string;
+  private readonly productValidationConfig: ValidationMessageConfig = {
+    labels: {
+      ProductName: 'Commodity',
+      ExternaPkg: 'External Package',
+      ExternlQty: 'External Quantity',
+      GrossWeight: 'Gross Weight',
+      NetWeight: 'Net Weight',
+      Volume: 'CBM',
+      Volumetric: 'Volumetric Weight',
+      UomMasterSid: 'UOM',
+    },
+    messages: {
+      required: (label: string) => `${label} is required.`,
+    },
+  };
 
   // Variable Declaration - Other Part
   YardCFSLabel: string = "CFS"
@@ -1959,7 +1976,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     if (this.productForm.invalid) {
       this.productForm.markAllAsTouched();
       this.productForm.updateValueAndValidity();
-      this.appSettingService.showWarning('Please fill all the required fields correctly.')
+      errorLoggerWithToastr(this.productForm, this.toastr, this.productValidationConfig);
       return;
     }
     if (this.currentProductIndex === -1) {
@@ -1979,6 +1996,21 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     this.handleProductRelatedCalculation();
     this.updateProductPagination();
     this.modalService.dismissAll();
+  }
+
+  private showBookingBackendMessage(
+    source: any,
+    fallbackMessage: string,
+    useWarning = false
+  ): void {
+    const message = extractBackendErrorMessage(source, fallbackMessage);
+
+    if (useWarning) {
+      this.appSettingService.showWarning(message);
+      return;
+    }
+
+    this.appSettingService.showError(message);
   }
 
   handleConnectionChange(allConnections: any[]) {
@@ -2405,14 +2437,14 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
               }
             });
           } else {
-            this.appSettingService.showError('Error updating booking.');
+            this.showBookingBackendMessage(resp, 'Error updating booking.', true);
             this.isSaving = false;
              if (resolve) resolve(false);
             console.error(resp.message);
           }
         },
         error: (err) => {
-          this.appSettingService.showError('Failed to update booking.');
+          this.showBookingBackendMessage(err, 'Failed to update booking.');
           this.isSaving = false;
            if (resolve) resolve(false);
           console.error(err);
@@ -2451,14 +2483,14 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
               }
             });
           } else {
-            this.appSettingService.showError('Error creating booking.');
+            this.showBookingBackendMessage(resp, 'Error creating booking.', true);
             this.isSaving = false;
             if (resolve) resolve(false);
             console.error(resp.message);
           }
         },
         error: (err) => {
-          this.appSettingService.showError('Failed to create booking.');
+          this.showBookingBackendMessage(err, 'Failed to create booking.');
           this.isSaving = false;
           if (resolve) resolve(false);
           console.error(err);
