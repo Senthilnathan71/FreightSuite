@@ -58,6 +58,7 @@ import { MasterService } from 'src/app/modules/master/master.service';
 import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
 import { getDefaultTodayDate,toNgbDateStruct } from 'src/app/common/helper';
 import { MawbPreprintComponent } from '../report/mawb-preprint/mawb-preprint.component';
+import { AuditLogComponent } from '../../audit-log/audit-log.component';
 @Component({
   selector: 'app-mawbill-entry',
   standalone: true,
@@ -2705,84 +2706,19 @@ handleEdocChange(event: any) {
   //   });
   // }
 
-  openAuditLogs(modal: TemplateRef<any>) {
-    if (!this.masterJobSid) return;
-    this.getAuditLog()
-    this.auditLogModalRef = this.modalService.open(modal, {
-      centered: true,
-      scrollable: true,
-      windowClass: 'audit-log-modal'
-    });
-  }
-
- getAuditLog() {
-  this.operationService.getAuditLogsmasterjob(
-    'MasterJob',
-    this.masterJobSid.toString()
-  ).subscribe({
-    next: (logs: any[]) => {
-
-      const ignoredFields = ['UpdatedOn','UpdatedBy','CreatedOn','CreatedBy'];
-
-      const normalize = (val:any) => {
-        if (val === null || val === undefined || val === '') return null;
-        return String(val).trim();
-      };
-
-      const groups: any = {};
-
-      logs.forEach(log => {
-
-        const key = `${log.changedAt}-${log.changedBy}`;
-
-        if (!groups[key]) {
-          groups[key] = {
-            changedAt: log.changedAt,
-            changedBy: log.changedBy,
-            operation: log.operation,
-            oldValDisplay: [],
-            newValDisplay: []
-          };
-        }
-
-        const oldObj = log.oldVal || {};
-        const newObj = log.newVal || {};
-
-        const keys = new Set([
-          ...Object.keys(oldObj),
-          ...Object.keys(newObj)
-        ]);
-
-        keys.forEach(k => {
-
-          if (ignoredFields.includes(k)) return;
-
-          const oldVal = normalize(oldObj[k]);
-          const newVal = normalize(newObj[k]);
-
-          if (oldVal !== newVal) {
-
-            groups[key].oldValDisplay.push(
-              `${k}: ${oldVal ?? '-'}`
-            );
-
-            groups[key].newValDisplay.push(
-              `${k}: ${newVal ?? '-'}`
-            );
-
-          }
-
-        });
-
+  openAuditLogs() {
+      if (!this.masterJobSid) return;
+      const modalRef = this.modalService.open(AuditLogComponent,{
+        centered: true,
+        scrollable: true,
+        size: 'xl',
+        windowClass: 'audit-log-modal'
       });
-
-      this.auditLogs = Object.values(groups)
-        .filter((g:any)=> g.oldValDisplay.length > 0);
-
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+      modalRef.componentInstance.title = 'MasterAirwayBill Logs';
+      modalRef.componentInstance.tableName = 'MasterJob';
+      modalRef.componentInstance.recordId = this.masterJobSid.toString();
+      modalRef.componentInstance.screenName = 'MasterAirwayBill';
+    }
 
   openTandC() {
       this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));

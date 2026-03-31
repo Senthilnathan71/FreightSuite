@@ -32,6 +32,7 @@ import { CurrencyFormatService } from 'src/app/core/services/currency-format.ser
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { ToastrService } from 'ngx-toastr';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -1759,6 +1760,21 @@ export class ReverseVoucherEntryComponent {
     modalRef.componentInstance.idLabel = 'Reverse Voucher Id';
     modalRef.componentInstance.idValue = this.reverseVoucherData?.VoucherHeaderSid;
   }
+
+  openAuditLogs() {
+        if (!this.reverseVoucherData?.VoucherHeaderSid) return;
+        const modalRef = this.modalService.open(AuditLogComponent, {
+        centered: true,
+        scrollable: true,
+        size: 'xl',
+        windowClass: 'audit-log-modal'
+      });
+      modalRef.componentInstance.title = 'RverseVoucher Logs';
+      modalRef.componentInstance.tableName = 'VoucherHeader';
+      modalRef.componentInstance.recordId = this.reverseVoucherData?.VoucherHeaderSid.toString();
+      modalRef.componentInstance.screenName = 'ReverseVoucher';
+      }
+
   openTandC() {
     this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
     const payload = { 

@@ -82,6 +82,7 @@ import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.i
 import { errorLoggerWithToastr, ValidationMessageConfig } from 'src/app/common/error-handling/form-error-handler';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 /**
  * Receipt Entry Component
@@ -3891,4 +3892,18 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         },
       });
   }
+
+  openAuditLogs() {
+          if (!this.receiptData?.VoucherHeaderSid) return;
+          const modalRef = this.modalService.open(AuditLogComponent, {
+          centered: true,
+          scrollable: true,
+          size: 'xl',
+          windowClass: 'audit-log-modal'
+        });
+        modalRef.componentInstance.title = 'Receipt Logs';
+        modalRef.componentInstance.tableName = 'VoucherHeader';
+        modalRef.componentInstance.recordId = this.receiptData?.VoucherHeaderSid.toString();
+        modalRef.componentInstance.screenName = 'Receipt';
+        }
 }
