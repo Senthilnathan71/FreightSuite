@@ -61,7 +61,7 @@ export function generateEnquiryDocument(data: EnquiryPdfData): any {
       ...buildCargoSection(data),
 
       // Remarks
-      buildRemarks(data.enquiry?.remarks || '', { title: 'Enquiry Remarks', labelWidth: 105 }),
+      buildRemarks(data.enquiry?.remarks || '', { title: 'Enquiry Remarks', labelWidth: 105, margin: [0, 2, 0, 6] }),
     ],
     footer: (currentPage: number, pageCount: number) => ({
       columns: [
@@ -165,7 +165,7 @@ function buildCargoSection(data: EnquiryPdfData): any[] {
     return content;
   }
 
-  content.push(buildSectionTitle('Product Details'));
+  content.push(buildSectionTitle('Product Details', { margin: [0, 6, 0, 6] }));
 
   // Transform cargo data for table
   const cargoData = allCargo.map(cargo => ({
@@ -184,7 +184,7 @@ function buildCargoSection(data: EnquiryPdfData): any[] {
     WeightUnit: cargo.weightUnit || ''
   }));
 
-  content.push(buildCargoTable(cargoData, data.fclLcl, { margin: [-10, 0, -10, 15] }));
+  content.push(buildCargoTable(cargoData, data.fclLcl, { margin: [-10, 0, -10, 6] }));
 
   return content;
 }

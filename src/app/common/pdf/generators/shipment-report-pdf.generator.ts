@@ -13,7 +13,7 @@ export function generateShipmentReportDocument(data: ShipmentReportPdfData): any
   return {
     pageSize: data.config?.pageSize || 'A4',
     pageOrientation: 'portrait',
-    pageMargins: [15, 10, 15, 46],
+    pageMargins: [15, 10, 15, 36],
     background: (_: number, pageSize: any) => ({
       canvas: [
         {
@@ -428,7 +428,7 @@ function buildShipmentFooter(
   pageCount?: number
 ): any {
   return {
-    margin: [24, 0, 24, 12],
+    margin: [24, 0, 24, 4],
     columns: [
       {
         text: `Printed By : ${data.userData?.userName || ''}`,

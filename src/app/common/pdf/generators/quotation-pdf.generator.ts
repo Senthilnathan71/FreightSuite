@@ -11,7 +11,7 @@ export function generateQuotationDocument(
   return {
     pageSize: 'A4',
     pageOrientation: 'portrait',
-    pageMargins: [15, 20, 15, 46],
+    pageMargins: [15, 20, 15, 28],
     background: (_: number, pageSize: any) => ({
       canvas: [
         {
@@ -159,11 +159,12 @@ function buildCustomerInfo(data: QuotationPdfData, isContract: boolean): any {
           infoLine(`${docType} No.`, q.quoteNumber || ''),
           infoLine(`${docType} Date`, formatDate(q.quoteDate)),
           infoLine('Reference', q.customerRef || '')
-        ]
+        ],
+        margin: [20, 0, 0, 0]
       }
     ],
     columnGap: 4,
-    margin: [8, 0, 8, 8]
+    margin: [8, 8, 8, 0]
   };
 }
 
@@ -174,14 +175,14 @@ function infoLine(label: string, value: string): any {
       { text: ':', width: 8 },
       { text: value || '', width: '*' }
     ],
-    margin: [52, 0, 0, 2]
+    margin: [52, 0, 0, 0]
   };
 }
 
 function buildGreeting(): any {
   return {
     stack: [
-      { text: 'Dear Sir/Mam,', bold: true, margin: [10, 0, 0, 2] },
+      { text: 'Dear Sir/Mam,', bold: true, margin: [10, 6, 0, 2] },
       {
         text: 'Thank you very much for the opportunity to quote for your esteemed organization.\nWe are pleased to submit our best rates as outlined below.',
         margin: [10, 0, 0, 10]
@@ -354,7 +355,7 @@ function buildSignature(data: QuotationPdfData): any {
 
 function buildFooter(data: QuotationPdfData, currentPage: number, pageCount: number): any {
   return {
-    margin: [24, 0, 24, 12],
+    margin: [24, 0, 24, 2],
     columns: [
       { text: `Printed By : ${data.userData?.userName || ''}`, alignment: 'left', width: '25%', fontSize: 7 },
       { text: 'This document is computer-generated and does not require a signature.', alignment: 'center', width: '*', fontSize: 7, noWrap: true },
