@@ -58,23 +58,23 @@ export function buildFooter(
     });
   }
 
-  // Page numbers (optional)
-  if (opts.showPageNumbers && currentPage !== undefined && pageCount !== undefined) {
-    columns.push({
-      text: `Page ${currentPage} of ${pageCount}`,
-      fontSize: 7,
-      alignment: 'center',
-      width: '10%'
-    });
-  }
-
   // Right column - Printed On
   if (opts.showPrintedOn) {
     columns.push({
       text: `Printed On : ${formatDate(new Date())}`,
       fontSize: 7,
       alignment: 'right',
-      width: '30%'
+      width: '25%'
+    });
+  }
+
+  // Page numbers (optional) - keep as last column
+  if (opts.showPageNumbers && currentPage !== undefined && pageCount !== undefined) {
+    columns.push({
+      text: `Page ${currentPage} of ${pageCount}`,
+      fontSize: 7,
+      alignment: 'right',
+      width: '10%'
     });
   }
 

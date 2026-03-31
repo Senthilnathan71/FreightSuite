@@ -216,7 +216,7 @@ export class EmailTriggerService {
 
     const bodyHtml = this.formatEmailBody(body);
     const headerLabel = this.getHeaderLabel(config, subject, enrichedContext);
-    const summaryHtml = this.buildSummaryChips(body, subject, headerLabel);
+    const summaryHtml = this.buildSummaryChips(body, subject, headerLabel, enrichedContext);
 
     // ðŸ”¥ Highlight Email UI (CONTENT NOT CHANGED)
     const formattedBody = this.buildFormattedBody(bodyHtml, summaryHtml, headerLabel);
@@ -269,6 +269,7 @@ export class EmailTriggerService {
       EmailBCC: '',
       Subject: this.replacePlaceholders(config.MailSubject, enrichedContext),
       Mailbody: this.replacePlaceholders(config.MailBody, enrichedContext).replace(/<br\s*\/?>/gi, '\n'),
+      context: enrichedContext,
       ...(config.AttachmentRequire === 'Y' && attachmentFile ? { attachments: [attachmentFile] } : {})
     };
   }
@@ -353,6 +354,9 @@ export class EmailTriggerService {
   }
 
   private getHeaderLabel(config: any, subject: string, context?: any): string {
+    if (context?.EnquiryNo || context?.enquiryNo || context?.enquiryNumber) {
+      return 'Enquiry';
+    }
     const candidates = [
       context?.menuName,
       config?.MenuMaster?.MenuName,
@@ -382,7 +386,7 @@ export class EmailTriggerService {
   public buildCommonTemplate(body: string, subject: string, context?: any, config?: any): string {
     const bodyHtml = this.formatEmailBody(body);
     const headerLabel = this.getHeaderLabel(config || {}, subject || '', context);
-    const summaryHtml = this.buildSummaryChips(body, subject, headerLabel);
+    const summaryHtml = this.buildSummaryChips(body, subject, headerLabel, context);
     const formattedBody = this.buildFormattedBody(bodyHtml, summaryHtml, headerLabel);
     return this.buildHeaderTemplate(context) + formattedBody + this.footerTemplate;
   }
@@ -473,7 +477,7 @@ export class EmailTriggerService {
     `;
   }
 
-  private buildSummaryChips(rawBody: string, subject?: string, headerLabel?: string): string {
+  private buildSummaryChips(rawBody: string, subject?: string, headerLabel?: string, context?: any): string {
     if (!rawBody && !subject) return '';
 
     const combinedText = `${rawBody || ''}\n${subject || ''}`;
@@ -551,6 +555,27 @@ export class EmailTriggerService {
       }
     }
 
+    const departmentName =
+      context?.departmentName ||
+      context?.DepartmentName ||
+      context?.department ||
+      context?.Department ||
+      '';
+    if (departmentName && /quotation/i.test(headerLabel || '') && !rows.some(row => row.label === 'Department')) {
+      rows.push({ label: 'Department', value: departmentName });
+    }
+
+    if (subject && /quotation/i.test(headerLabel || '') && !rows.some(row => row.label === 'Route')) {
+      const afterDateMatch = subject.match(/Date\s*[:\-]?\s*[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{2,4}\s*[-–—]?\s*(.+)$/i);
+      const routeText = (afterDateMatch?.[1] || '').trim();
+      if (routeText) {
+        const parsedRoute = this.parseRouteText(stripRefAndDate(routeText));
+        if (parsedRoute) {
+          rows.push({ label: 'Route', value: parsedRoute });
+        }
+      }
+    }
+
     if (subject && /enquiry/i.test(headerLabel || '')) {
       const dateOnlyMatch = subject.match(/([0-9]{1,2}\/[0-9]{1,2}\/[0-9]{2,4})/);
       const dateOnly = dateOnlyMatch?.[1];
@@ -618,6 +643,15 @@ export class EmailTriggerService {
     }
 
     if (normalizedRows.length === 0) return '';
+
+    const enforceEnquiryDateLabel = /enquiry/i.test(headerLabel || '');
+    if (enforceEnquiryDateLabel) {
+      for (const row of normalizedRows) {
+        if (labelKey(row.label) === 'date') {
+          row.label = 'Enquiry Date';
+        }
+      }
+    }
 
     const rowHtml = normalizedRows
       .map(

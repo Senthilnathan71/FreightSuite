@@ -945,6 +945,9 @@ export class EnquiryEntryComponent implements OnInit {
     const formattedPOL = getFormattedPort(this.ports, POL);
     const formattedPOD = getFormattedPort(this.ports, POD);
     const formattedFPD = getFormattedPort(this.ports, FPD);
+    const departmentName =
+      this.departments.find(dept => dept.DepartmentMasterSid === selectedItem?.DepartmentMasterSid)
+        ?.departmentName || '';
 
     const subject = `Enquiry No.${this.rateRequestData?.EnquiryNumber} Date: ${this.datePipe.transform(this.rateRequestData?.EnquiryDate)} ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''}`;
 
@@ -961,6 +964,7 @@ ${this.userData.userName}`;
       EmailBCC: [],
       Subject: subject,
       Mailbody: mailBody,
+      context: { departmentName },
       // attachments: [pdfFile]
     };
   }
@@ -998,6 +1002,9 @@ ${this.userData.userName}`;
     const containerTypes = (selectedItem?.enquiryRoute?.[0]?.enquiryCargo || []).map(cargo => {
       return this.containerTypes.find(type => type.ContainerName === cargo.ContainerType)?.ContainerCode;
     }).join(', ');
+    const departmentName =
+      this.departments.find(dept => dept.DepartmentMasterSid === selectedItem?.DepartmentMasterSid)
+        ?.departmentName || '';
 
     const subject = `Rate Request for ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''}`;
 
@@ -1013,6 +1020,7 @@ ${this.userData.userName}`;
       EmailBCC: [],
       Subject: subject,
       Mailbody: mailBody,
+      context: { departmentName },
       // attachments: [pdfFile]
     };
   }
