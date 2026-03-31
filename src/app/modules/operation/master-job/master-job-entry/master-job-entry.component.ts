@@ -1158,6 +1158,9 @@ onETDDateSelect(): void {
   }
   toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
     event.stopPropagation();
+    if (this.isExportToImportCompleted && !this.isLoading) {
+      return;
+    }
     const value = this.f[flagCtrl]?.value;
     this.f[flagCtrl]?.setValue(!value);
     this.masterJobForm.get(mainCtrl)?.reset();
@@ -1665,6 +1668,9 @@ onETDDateSelect(): void {
   }
 
   onDestinationAgentChange(selectedAgent: any) {
+    if (this.isExportToImportCompleted && !this.isLoading) {
+      return;
+    }
     if (!selectedAgent) {
       this.filteredOriginAgents = [...this.agentList];
       this.masterJobForm.get('DestinationAgentAddress')?.setValue('');
@@ -1809,9 +1815,13 @@ onETDDateSelect(): void {
     return this.masterJobForm.get('ExportToImport')?.value === 'Y';
   }
 
+  get hasHouseJobs(): boolean {
+    return Array.isArray(this.masterJobData?.houseJob) && this.masterJobData.houseJob.length > 0;
+  }
+
   get canPullToImportBranch(): boolean {
     const exportImport = (this.selectedDepartment?.ExportImport || '').toString().toLowerCase();
-    return this.isEditMode && exportImport === 'export' && this.availableTransferCompanies.length > 0;
+    return this.isEditMode && this.hasHouseJobs && exportImport === 'export' && this.availableTransferCompanies.length > 0;
   }
 
   private initializeTransferOptions(): void {
@@ -1992,6 +2002,7 @@ onETDDateSelect(): void {
           return;
         }
 
+        const createdMasterJobSid = response?.data?.masterJobSid;
         const createdJobNumber = response?.data?.masterJobNumber;
         const destinationDepartmentName = response?.data?.destinationDepartmentName;
         const successMessage = createdJobNumber
@@ -2000,6 +2011,11 @@ onETDDateSelect(): void {
 
         this.masterJobForm.get('ExportToImport')?.setValue('Y');
         this.toastr.success(successMessage);
+
+        if (createdMasterJobSid) {
+          this.masterJobSid = createdMasterJobSid;
+          this.loadMasterJobData(createdMasterJobSid);
+        }
       },
       error: () => {
         this.isPullingToImportBranch = false;
@@ -2357,6 +2373,9 @@ onETDDateSelect(): void {
 
   // Vessel change handler
   onVesselChange(vessel: any) {
+    if (this.isExportToImportCompleted && !this.isLoading) {
+      return;
+    }
     if (!vessel) {
       this.voyageList = [];
       this.masterJobForm.get('VoyageNo')?.setValue(null);
@@ -2446,6 +2465,9 @@ onETDDateSelect(): void {
   }
   // Voyage change handler
   onVoyageChange(voyage: any) {
+    if (this.isExportToImportCompleted && !this.isLoading) {
+      return;
+    }
     if (!voyage) {
       this.masterJobForm.get('ETA')?.setValue(null);
       this.masterJobForm.get('ETD')?.setValue(null);
@@ -2895,6 +2917,10 @@ onETDDateSelect(): void {
   }
 
   onContainerSubmit(): void {
+    if (this.isExportToImportCompleted) {
+      this.toastr.warning('Export To Import completed. Container data is read only.');
+      return;
+    }
     if (this.containerFormGroup.valid) {
       const containerData = this.containerFormGroup.value;
       if (this.selectedFCLLCL === 'FCL') {
@@ -3054,6 +3080,12 @@ onETDDateSelect(): void {
       });
     }
 
+    if (this.isExportToImportCompleted) {
+      this.containerFormGroup.disable({ emitEvent: false });
+    } else {
+      this.containerFormGroup.enable({ emitEvent: false });
+    }
+
     this.currentContainerModal = this.modalService.open(content, {
       size: 'lg',
       backdrop: 'static',
@@ -3111,6 +3143,10 @@ onETDDateSelect(): void {
     return 0;
   }
   removeContainer(index: number): void {
+    if (this.isExportToImportCompleted) {
+      this.toastr.warning('Export To Import completed. Container data is read only.');
+      return;
+    }
     const containerControl = this.masterJobContainers.at(index);
     const containerSid = containerControl.value.MasterJobContainerSid;
     const containerNumber = containerControl.value.ContainerNumber;
@@ -3187,6 +3223,8 @@ onETDDateSelect(): void {
       DepartmentMasterSid,
       MasterJobNumber,
       ParentSid: this.masterJobSid,
+      Status: this.masterJobForm.get('Status')?.getRawValue(),
+      status: this.masterJobForm.get('Status')?.getRawValue(),
       // CustomerMasterSid,
       // CustomerBranchSid,
       MBLNo,
@@ -3241,6 +3279,8 @@ onETDDateSelect(): void {
       DepartmentMasterSid,
       MasterJobNumber,
       ParentSid: this.masterJobSid,
+      Status: this.masterJobForm.get('Status')?.getRawValue(),
+      status: this.masterJobForm.get('Status')?.getRawValue(),
       MBLNo,
       departmentName,
       Segment: this.selectedFCLLCL,
@@ -3734,6 +3774,10 @@ onETDDateSelect(): void {
 
 
   detachBooking(shipmentIndex: number, booking: any) {
+    if (this.isExportToImportCompleted) {
+      this.toastr.warning('Export To Import completed. House cargo data is read only.');
+      return;
+    }
     const realIndex = ((this.page - 1) * this.pageSize) + shipmentIndex;
 
     const HouseJobSid = booking.HouseJobSid;
