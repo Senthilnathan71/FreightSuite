@@ -152,6 +152,12 @@
             Back
           </button>
 
+          <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+          (click)="openAuditLogs()" *ngIf="isEditMode">
+          <i class="fas fa-history  me-1"></i>
+          <span>Logs</span>
+        </button>
+
           <button
             type="button"
             class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"

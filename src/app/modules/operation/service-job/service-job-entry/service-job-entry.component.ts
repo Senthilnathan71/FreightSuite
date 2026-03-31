@@ -48,6 +48,7 @@ import { getDefaultTodayDate, getFormattedPort,toNgbDateStruct } from 'src/app/c
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { ToastrService } from 'ngx-toastr';
+import { AuditLogComponent } from '../../audit-log/audit-log.component';
 
 
 
@@ -316,7 +317,6 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
         if (this.HouseJobSid) {
           this.isEditMode = true;
           this.loadServiceJobById(this.HouseJobSid);
-          this.getAuditLog();
         }
       });
 
@@ -1462,84 +1462,19 @@ openEDoc() {
    modalRef.componentInstance.pdfContentId = 'quotationContent';
    }
 
-  openAuditLogs(modal: TemplateRef<any>) {
-    if (!this.HouseJobSid) return;
-    this.getAuditLog()
-    this.auditLogModalRef = this.modalService.open(modal, {
+  openAuditLogs() {
+      if (!this.HouseJobSid) return;
+      const modalRef = this.modalService.open(AuditLogComponent, {
       centered: true,
       scrollable: true,
+      size: 'xl',
       windowClass: 'audit-log-modal'
     });
-  }
-
-  getAuditLog() {
-  this.operationService.getAuditLogsservicejob(
-    'HouseJob',
-    this.HouseJobSid.toString()
-  ).subscribe({
-    next: (logs: any[]) => {
-
-      const ignoredFields = ['updatedOn','updatedBy','createdOn','createdBy'];
-
-      const normalize = (val:any) => {
-        if (val === null || val === undefined || val === '') return null;
-        return String(val).trim();
-      };
-
-      const groups: any = {};
-
-      logs.forEach(log => {
-
-        const key = `${log.changedAt}-${log.changedBy}`;
-
-        if (!groups[key]) {
-          groups[key] = {
-            changedAt: log.changedAt,
-            changedBy: log.changedBy,
-            operation: log.operation,
-            oldValDisplay: [],
-            newValDisplay: []
-          };
-        }
-
-        const oldObj = log.oldVal || {};
-        const newObj = log.newVal || {};
-
-        const keys = new Set([
-          ...Object.keys(oldObj),
-          ...Object.keys(newObj)
-        ]);
-
-        keys.forEach(k => {
-
-          if (ignoredFields.includes(k)) return;
-
-          const oldVal = normalize(oldObj[k]);
-          const newVal = normalize(newObj[k]);
-
-          if (oldVal !== newVal) {
-
-            groups[key].oldValDisplay.push(
-              `${k}: ${oldVal ?? '-'}`
-            );
-
-            groups[key].newValDisplay.push(
-              `${k}: ${newVal ?? '-'}`
-            );
-
-          }
-
-        });
-
-      });
-
-      this.auditLogs = Object.values(groups)
-        .filter((g:any)=> g.oldValDisplay.length > 0);
-
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+    modalRef.componentInstance.title = 'ServiceJob Logs';
+    modalRef.componentInstance.tableName = 'HouseJob';
+    modalRef.componentInstance.recordId = this.HouseJobSid.toString();
+    modalRef.componentInstance.screenName = 'ServiceJob';
+    }
 
   getContainerDisplay(): string {
     const containerCount = this.c['NoofContainers']?.value;
