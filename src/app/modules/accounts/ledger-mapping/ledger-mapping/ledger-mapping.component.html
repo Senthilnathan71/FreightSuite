@@ -510,7 +510,7 @@
                             <!-- Input Tax COA - Only show if TaxType is Input -->
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;" class="dofi-max-w-180">
                                 <ng-select *ngIf="item.TaxType === 'Input'"
-                                    [items]="getCOAOptions('output')"
+                                    [items]="getCOAOptions('input')"
                                     bindLabel="LedgerName" 
                                     bindValue="COAMasterSid"
                                     [compareWith]="compareWithCOA" 
@@ -532,7 +532,7 @@
                             <!-- Output Tax COA - Only show if TaxType is Output -->
                             <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;" class="dofi-max-w-180">
                                 <ng-select *ngIf="item.TaxType === 'Output'"
-                                    [items]="getCOAOptions('input')"
+                                    [items]="getCOAOptions('output')"
                                     bindLabel="LedgerName" 
                                     bindValue="COAMasterSid"
                                     [compareWith]="compareWithCOA" 

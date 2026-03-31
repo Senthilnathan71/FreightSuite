@@ -173,12 +173,27 @@ export class VendorInvoiceEntryComponent implements OnInit {
     { name: 'Others', icon: 'fas fa-ellipsis-h' }
   ];
 
-  invoiceTypes = [
-    { id: 'REG', name: 'Regular' },
-    { id: 'REIMB', name: 'Reimbursement' },
-    { id: 'BOS', name: 'Bill of Supply' },
-    { id: 'NONGST', name: 'Non GST/Zero' }
+  invoiceTypesSales = [
+    { id: 'REG',    name: 'Regular' },
+    { id: 'NONGST', name: 'Zero Rated' },
+    { id: 'EXE',    name: 'Exempt' },
+    { id: 'BOS',    name: 'Bill of Supply' },
   ];
+  invoiceTypesPurchase = [
+    { id: 'REG',    name: 'Regular' },
+    { id: 'NONGST', name: 'Zero Rated' },
+    { id: 'EXE',    name: 'Exempt' },
+    { id: 'BOS',    name: 'Bill of Supply' },
+    { id: 'RCM',    name: 'RCM - Reverse Charge' },
+    { id: 'REIMB',  name: 'Reimbursement (Pure Agent)' },
+  ];
+  vatInvoiceTypes = [
+    { id: 'REG', name: 'Regular' },
+    { id: 'NONGST', name: 'Zero Rated' },
+    { id: 'EXE', name: 'Exempt' },
+    { id: 'OOS', name: 'Out of Scope' },
+  ];
+  get activeInvoiceTypes() { return this.isVATMode ? this.vatInvoiceTypes : this.invoiceTypesPurchase; }
   
   gstTypes = [
     { id: 'B2B', name: 'B2B - Business to Business' },
@@ -234,6 +249,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
   private destroy$ = new Subject<void>();
   private _originalHSSACValues: (number | null)[] = [];
   private _previousInvoiceType: string = 'REG';
+  private _isInitialLoad = false;
   
   /** OTHERS */
   // Declaration for Get OS
@@ -499,6 +515,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
   }
 
   private handleZeroRatedSwitch(invoiceType: string): boolean {
+    if (this._isInitialLoad) return true;
     if (invoiceType === 'NONGST') {
       const failedCharges: string[] = [];
       for (let i = 0; i < this.details.length; i++) {
@@ -992,6 +1009,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
           this.vendorInvoiceData = resp.data;
 
           this.vendorInvoiceForm.markAllAsTouched();
+          this._isInitialLoad = true;
           this.patchValues(this.vendorInvoiceData);
           this.vendorInvoiceForm.get('PartyName')?.disable();
           this.vendorInvoiceForm.get('CustomerBranchSid')?.disable();
@@ -1007,6 +1025,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
             return;
           }
           setTimeout(() => {
+            this._isInitialLoad = false;
             this.initialFormValue = this.vendorInvoiceForm.getRawValue();
             this.isDirty = false;
             this.subscribeToFormChanges();
@@ -1592,6 +1611,13 @@ export class VendorInvoiceEntryComponent implements OnInit {
               (item: any) => item && item.HSSACMasterSid
             );
             this.hssacList[index] = sanitizedHssacList;
+            if (!patch && this.vendorInvoiceForm.get('InvoiceType')?.value === 'NONGST') {
+              const zeroRated = this.taxCalculationService.findZeroRatedHSSAC(this.getHSSACListForRow(index));
+              if (zeroRated) {
+                this._originalHSSACValues[index] = this.details.at(index).get('HSSACMasterSid')?.value;
+                this.details.at(index).get('HSSACMasterSid')?.disable({ emitEvent: false });
+              }
+            }
             if (patch) {
               this.details.at(index).patchValue({
                 HSSACMasterSid: sanitizedHssacList[0]?.HSSACMasterSid || null,

@@ -156,6 +156,9 @@ export class VendorCreditNoteEntryComponent {
   vendorCreditNoteForm!: FormGroup;
   headerId: number | null = null;
   private taxMastersReady: Promise<void> = Promise.resolve();
+  private _originalHSSACValues: (number | null)[] = [];
+  private _previousInvoiceType: string = 'REG';
+  private _isInitialLoad = false;
   vendorCreditNoteData: any;
   vendorCreditNotePrintData: any;
   isBankFetched: boolean = false;
@@ -219,6 +222,13 @@ export class VendorCreditNoteEntryComponent {
     { id: 'BOS', name: 'Bill of Supply' },
     { id: 'NONGST', name: 'Non GST/Zero' },
   ];
+  vatInvoiceTypes = [
+    { id: 'REG', name: 'Regular' },
+    { id: 'NONGST', name: 'Zero Rated' },
+    { id: 'EXE', name: 'Exempt' },
+    { id: 'OOS', name: 'Out of Scope' },
+  ];
+  get activeInvoiceTypes() { return this.isVATMode ? this.vatInvoiceTypes : this.invoiceTypes; }
 
   gstTypes = [
     { id: 'B2B', name: 'B2B - Business to Business' },
@@ -558,8 +568,54 @@ export class VendorCreditNoteEntryComponent {
     });
   }
 
+  private getHSSACListForRow(i: number): any[] {
+    return this.isNonJob ? (this.hssacListForNonJob || []) : (this.hssacList[i] || []);
+  }
+
+  private handleZeroRatedSwitch(invoiceType: string): boolean {
+    if (this._isInitialLoad) return true;
+    if (invoiceType === 'NONGST') {
+      const failedCharges: string[] = [];
+      for (let i = 0; i < this.details.length; i++) {
+        const row = this.details.at(i) as FormGroup;
+        const zeroRated = this.taxCalculationService.findZeroRatedHSSAC(this.getHSSACListForRow(i));
+        if (!zeroRated) {
+          const chargeSid = row.get('ChargeMasterSid')?.value;
+          const name = this.chargeList.find((c: any) => c.ChargeMasterSid === chargeSid)?.chargeName || `Row ${i + 1}`;
+          failedCharges.push(name);
+        }
+      }
+      if (failedCharges.length > 0) {
+        this.appSettingService.showError(
+          `The following charges are not mapped to a Zero Rated HSSAC:<br>${failedCharges.map(n => `&bull; ${n}`).join('<br>')}<br><br>Please update the Charge Master or select a different charge.`,
+          'Zero Rated — HSSAC Missing',
+          { closeButton: true, enableHtml: true }
+        );
+        return false;
+      }
+      for (let i = 0; i < this.details.length; i++) {
+        const row = this.details.at(i) as FormGroup;
+        const zeroRated = this.taxCalculationService.findZeroRatedHSSAC(this.getHSSACListForRow(i))!;
+        this._originalHSSACValues[i] = row.get('HSSACMasterSid')?.value;
+        row.get('HSSACMasterSid')?.setValue(zeroRated.HSSACMasterSid, { emitEvent: false });
+        row.get('HSSACMasterSid')?.disable({ emitEvent: false });
+      }
+      return true;
+    } else {
+      if (this._originalHSSACValues.length > 0) {
+        for (let i = 0; i < this.details.length; i++) {
+          const row = this.details.at(i) as FormGroup;
+          row.get('HSSACMasterSid')?.enable({ emitEvent: false });
+          row.get('HSSACMasterSid')?.setValue(this._originalHSSACValues[i] ?? null, { emitEvent: false });
+        }
+        this._originalHSSACValues = [];
+      }
+      return true;
+    }
+  }
+
   subscribeToValueChanges() {
-    ['GSTType', 'CurrencyCode', 'ExchangeRate'].forEach((field) => {
+    ['CurrencyCode', 'ExchangeRate'].forEach((field) => {
       this.vendorCreditNoteForm
         .get(field)
         ?.valueChanges.pipe(takeUntil(this.destroy$))
@@ -569,10 +625,26 @@ export class VendorCreditNoteEntryComponent {
         });
     });
 
+    this.vendorCreditNoteForm.get('GSTType')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((gstType) => {
+        if (this.isPosted) return;
+        if (gstType === 'EXPWP' || gstType === 'EXPWOP') {
+          this.taxCalculationService.updateSelectedGstType(gstType);
+        }
+        this.recalculateAllRows();
+      });
+
     this.vendorCreditNoteForm.get('InvoiceType')?.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe((invoiceType) => {
         if (!this.vendorCreditNoteForm.get('PlaceOfSupply')?.value) return;
+        const ok = this.handleZeroRatedSwitch(invoiceType);
+        if (!ok) {
+          this.vendorCreditNoteForm.get('InvoiceType')?.setValue(this._previousInvoiceType, { emitEvent: false });
+          return;
+        }
+        this._previousInvoiceType = invoiceType;
         const classification = this.taxCalculationService.updateInvoiceType(invoiceType as any);
         this.vendorCreditNoteForm.get('GSTType')?.setValue(classification.formGSTType, { emitEvent: false });
         if (this.isPosted) return;
@@ -1018,6 +1090,21 @@ export class VendorCreditNoteEntryComponent {
       this.invoiceOutstandingAmount = data.totalOSAmount;
       this.invoiceOutstandingLocalAmount = data.totalOSLocalAmount;
     }
+
+    // Set up party context for tax display (columns + row tax amounts)
+    this.taxCalculationService.updateParty(
+      {
+        countryCode: this.getVendorCountry() || this.currentCompanyCountryCode,
+        stateName: header.PlaceOfSupply || '',
+        stateMasterSid: header.customerBranch?.stateMaster?.StateMasterSid,
+        gstNumber: header.GST_VAT || '',
+        customerGstType: header.customerBranch?.CustomerGstType || 'Regular',
+        isUnionTerritory: header.customerBranch?.stateMaster?.IsUnionTerritory === 'Y',
+        selectedGstType: (header.GSTType === 'EXPWP' || header.GSTType === 'EXPWOP') ? header.GSTType : undefined,
+      },
+      header.InvoiceType as any
+    );
+
     this.spinner.hide();
   }
 
@@ -1442,6 +1529,7 @@ export class VendorCreditNoteEntryComponent {
         gstNumber: data.GST_VAT || '',
         customerGstType: data.customerBranch?.CustomerGstType || 'Regular',
         isUnionTerritory: data.customerBranch?.stateMaster?.IsUnionTerritory === 'Y',
+        selectedGstType: (data.GSTType === 'EXPWP' || data.GSTType === 'EXPWOP') ? data.GSTType : undefined,
       },
       data.InvoiceType as any
     );
@@ -1948,6 +2036,28 @@ export class VendorCreditNoteEntryComponent {
       return;
     }
 
+    // Zero Rated guard: every row must have a zero-rated HSSAC applied
+    if (this.vendorCreditNoteForm.get('InvoiceType')?.value === 'NONGST') {
+      const failedRows: string[] = [];
+      for (let i = 0; i < this.details.length; i++) {
+        const hssacSid = this.details.at(i).getRawValue().HSSACMasterSid;
+        const hssacSource = this.isNonJob ? (this.hssacListForNonJob || []) : (this.hssacList[i] || []);
+        const hssac = hssacSource.find((h: any) => h.HSSACMasterSid === hssacSid);
+        if (!hssac || parseFloat(hssac.TaxRate) !== 0) {
+          failedRows.push(`Row ${i + 1}`);
+        }
+      }
+      if (failedRows.length > 0) {
+        this.appSettingService.showError(
+          `The following rows do not have a Zero Rated HSSAC applied:<br>${failedRows.map(r => `&bull; ${r}`).join('<br>')}<br><br>Please select a charge with a Zero Rated HSSAC.`,
+          'Zero Rated — Validation Failed',
+          { closeButton: true, enableHtml: true }
+        );
+        if (resolve) resolve(false);
+        return;
+      }
+    }
+
     const raw = this.vendorCreditNoteForm.getRawValue();
 
     const autoPostingButNoPosted = this.isAutoPosting && !this.isPosted;
@@ -2144,33 +2254,8 @@ export class VendorCreditNoteEntryComponent {
       const currentCompanyCountry = toNumber(
         this.currentCompany?.CountryMasterSid,
       );
-      const currentCompanyState = toNumber(this.currentBranch?.StateMasterSid);
       const currentCurrency = toNumber(this.currentCompany?.CurrencyMasterSid);
-      const customerBranchFromForm = toNumber(
-        this.vendorCreditNoteForm.get('CustomerBranchSid')?.value,
-      );
-      const customerState = this.vendorBranchList.find(
-        (c) => c.CustomerBranchSid === customerBranchFromForm,
-      )?.StateMasterSid;
-      let interOrIntra = 'Intra';
-      // india
-      if (this.currentCompanyCountryCode === 'in') {
-        if (currentCompanyState === customerState) {
-          interOrIntra = 'Intra';
-        } else {
-          interOrIntra = 'Inter';
-        }
-      } else if (['ae', 'us'].includes(this.currentCompanyCountryCode)) {
-        interOrIntra = 'Inter';
-      }
-      // Union territory uses same TaxCategory as same-state (Intra)
-      if (this.taxCalculationService.context?.appliedTaxMode === 'CGST_UGST') {
-        interOrIntra = 'Intra';
-      }
-      // SEZ/Export with payment uses IGST regardless of state match
-      if (this.taxCalculationService.context?.appliedTaxMode === 'IGST' && this.taxCalculationService.isExportOrSEZ) {
-        interOrIntra = 'Inter';
-      }
+      const interOrIntra = this.taxCalculationService.context?.taxCategory || 'Inter';
 
       if (
         !voucherHeaderSid ||
@@ -2436,33 +2521,7 @@ export class VendorCreditNoteEntryComponent {
     const currentCompanyCountry = toNumber(
       this.currentCompany?.CountryMasterSid,
     );
-    const currentCompanyState = toNumber(this.currentBranch?.StateMasterSid);
-    const customerBranchFromForm = toNumber(
-      this.vendorCreditNoteForm.get('CustomerBranchSid')?.getRawValue(),
-    );
-    const customerState = this.vendorList.find(
-      (c) => c.CustomerBranchSid === customerBranchFromForm,
-    )?.stateMaster?.StateMasterSid;
-
-    let interOrIntra = 'Intra';
-    // india
-    if (this.currentCompanyCountryCode === 'in') {
-      if (currentCompanyState === customerState) {
-        interOrIntra = 'Intra';
-      } else {
-        interOrIntra = 'Inter';
-      }
-    } else if (['ae', 'us'].includes(this.currentCompanyCountryCode)) {
-      interOrIntra = 'Inter';
-    }
-    // Union territory uses same TaxCategory as same-state (Intra)
-    if (this.taxCalculationService.context?.appliedTaxMode === 'CGST_UGST') {
-      interOrIntra = 'Intra';
-    }
-    // SEZ/Export with payment uses IGST regardless of state match
-    if (this.taxCalculationService.context?.appliedTaxMode === 'IGST' && this.taxCalculationService.isExportOrSEZ) {
-      interOrIntra = 'Inter';
-    }
+    const interOrIntra = this.taxCalculationService.context?.taxCategory || 'Inter';
 
     payload.PostingInfo = {
       LocalCurrencyMasterSid : currentCurrency,

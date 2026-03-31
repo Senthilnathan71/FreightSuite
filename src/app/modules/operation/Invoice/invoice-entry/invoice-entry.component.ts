@@ -201,12 +201,27 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
   ];
 
-  invoiceTypes = [
-    { id: 'REG', name: 'Regular' },
-    { id: 'REIMB', name: 'Reimbursement' },
-    { id: 'BOS', name: 'Bill of Supply' },
-    { id: 'NONGST', name: 'Non GST/Zero' },
+  invoiceTypesSales = [
+    { id: 'REG',    name: 'Regular' },
+    { id: 'NONGST', name: 'Zero Rated' },
+    { id: 'EXE',    name: 'Exempt' },
+    { id: 'BOS',    name: 'Bill of Supply' },
   ];
+  invoiceTypesPurchase = [
+    { id: 'REG',    name: 'Regular' },
+    { id: 'NONGST', name: 'Zero Rated' },
+    { id: 'EXE',    name: 'Exempt' },
+    { id: 'BOS',    name: 'Bill of Supply' },
+    { id: 'RCM',    name: 'RCM - Reverse Charge' },
+    { id: 'REIMB',  name: 'Reimbursement (Pure Agent)' },
+  ];
+  vatInvoiceTypes = [
+    { id: 'REG', name: 'Regular' },
+    { id: 'NONGST', name: 'Zero Rated' },
+    { id: 'EXE', name: 'Exempt' },
+    { id: 'OOS', name: 'Out of Scope' },
+  ];
+  get activeInvoiceTypes() { return this.isVATMode ? this.vatInvoiceTypes : this.invoiceTypesSales; }
   
   gstTypes = [
     { id: 'B2B', name: 'B2B - Business to Business' },
@@ -254,6 +269,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   isDirty : boolean = false;
   isSaving : boolean = false;
   private initialFormValue : any = null;
+  private _isInitialLoad = false;
   private destroy$ = new Subject<void>();
   private _originalHSSACValues: (number | null)[] = [];
   private _previousInvoiceType: string = 'REG';
@@ -480,6 +496,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   }
 
   private handleZeroRatedSwitch(invoiceType: string): boolean {
+    if (this._isInitialLoad) return true;
     if (invoiceType === 'NONGST') {
       const failedCharges: string[] = [];
       for (let i = 0; i < this.details.length; i++) {
@@ -983,6 +1000,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           this.invoiceData['HBLNo'] = resp.data?.HouseNumber;
 
           this.invoiceForm.markAsUntouched();
+          this._isInitialLoad = true;
           this.patchValues(this.invoiceData);
           this.patchDueDate();
 
@@ -1001,6 +1019,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           }
           // unsaved changes related
           setTimeout(() => {
+            this._isInitialLoad = false;
             this.initialFormValue = this.invoiceForm.getRawValue();
             this.isDirty = false;
             this.subscribeToFormChanges();
@@ -2031,6 +2050,13 @@ isSeaDepartment(): boolean {
         next: (res: any) => {
           if (res.status) {
             this.hssacList[index] = res.data;
+            if (!patch && this.invoiceForm.get('InvoiceType')?.value === 'NONGST') {
+              const zeroRated = this.taxCalculationService.findZeroRatedHSSAC(res.data);
+              if (zeroRated) {
+                this._originalHSSACValues[index] = this.details.at(index).get('HSSACMasterSid')?.value;
+                this.details.at(index).get('HSSACMasterSid')?.disable({ emitEvent: false });
+              }
+            }
             if (patch) {
               this.details.at(index).patchValue({
                 HSSACMasterSid: res.data[0]?.HSSACMasterSid || null,
