@@ -56,8 +56,8 @@
               [class.filled]="!!filterForm.get('ClearanceFilter')?.value">
               <ng-select class="ng-select" formControlName="ClearanceFilter" appendTo="body">
                 <ng-option value="ALL">All</ng-option>
-                <ng-option value="WITH">With Clearance Date</ng-option>  
-                <ng-option value="WITHOUT">Without Clearance Date</ng-option>
+                <ng-option value="WITH">Clearance Exist</ng-option>  
+                <ng-option value="WITHOUT">Pending Clerance Date</ng-option>
               </ng-select>
               <label class="input-label">Clearance Filter</label>
             </div>
@@ -101,7 +101,7 @@
                   <th style="width: 110px;">Dr / Cr</th>
                   <th style="width: 140px;">Amount</th>
                   <th style="width: 110px;">Status</th>
-                  <th style="width: 92px;" class="text-center"></th>
+                  <!-- <th style="width: 92px;" class="text-center"></th> -->
                 </tr>
               </thead>
               <tbody>
@@ -134,8 +134,14 @@
                     </ng-select>
                   </td>
                   <td class="recon-cell-amount">
-                    <input type="number" class="form-control form-control-sm text-end" formControlName="Amount"
-                      step="0.01" />
+                    <input
+                      type="text"
+                      class="form-control form-control-sm text-end"
+                      formControlName="Amount"
+                      DecimalPrecision
+                      [DecimalPrecisionBefore]="15"
+                      [DecimalPrecisionAfter]="3"
+                    />
                   </td>
                   <td>
                     <span class="badge rounded-pill recon-status-badge"
@@ -143,13 +149,13 @@
                       {{ row.get('Status')?.value }}
                     </span>
                   </td>
-                  <td class="text-center recon-cell-actions">
+                  <!-- <td class="text-center recon-cell-actions">
                     <input
                       type="checkbox"
                       class="form-check-input"
                       [checked]="isSelectedBankRow(i)"
                       (change)="selectBankRow(i, $event)" />
-                  </td>
+                  </td> -->
                 </tr>
                 <tr *ngIf="bankTransactions.length === 0">
                   <td colspan="7" class="text-center py-4">
@@ -190,6 +196,14 @@
                 </button>
               </div>
             </div>
+             <div class="book-action-group book-action-group--inline">
+                <button type="button" class="btn btn-sm btn-warning" (click)="updateClearanceSelected()">
+                <i class="fas fa-calendar-check me-1"></i>Update Clearance
+              </button>
+              <button type="button" class="btn btn-sm btn-info" (click)="manualMatchSelected()">
+                <i class="fas fa-link me-1"></i>Manual Match
+              </button>
+            </div>
 
             <div class="book-inline-field book-inline-field--search">
               <label class="form-label">Search Result Set</label>
@@ -202,14 +216,7 @@
               </div>
             </div>
 
-            <div class="book-action-group book-action-group--inline">
-              <button type="button" class="btn btn-sm btn-info" (click)="manualMatchSelected()">
-                <i class="fas fa-link me-1"></i>Manual Match
-              </button>
-              <button type="button" class="btn btn-sm btn-warning" (click)="updateClearanceSelected()">
-                <i class="fas fa-calendar-check me-1"></i>Update Clearance
-              </button>
-            </div>
+           
           </div>
         </div>
       </div>
@@ -218,28 +225,26 @@
           <table class="table table-sm table-hover align-middle mb-0 recon-table">
             <thead class="recon-table-head recon-table-head--book">
               <tr>
+                
+                <th style="width: 150px;">Voucher No.</th>
+                <th style="width: 70px;">Type</th>
+                <th style="width: 110px;">Voucher Date</th>
+                <th style="width: 140px;">Ref No.</th>
+                <th style="min-width: 200px;">Narration</th>
+                <th style="width: 120px;">Amount</th>
+                <th style="width: 140px;">Clearance</th>  
+                <th style="width: 100px;">Status</th>
                 <th style="width: 60px;" class="text-center">
                   <input type="checkbox" class="form-check-input" [checked]="isAllBookRowsSelected()"
                     [indeterminate]="isSomeBookRowsSelected()"
                     (change)="toggleSelectAllBookRows($any($event.target).checked, $event)" />
                 </th>
-                <th style="width: 150px;">Voucher No.</th>
-                <th style="width: 70px;">Type</th>
-                <th style="width: 110px;">Voucher Date</th>
-                <th style="width: 140px;">Ref No.</th>
-                <th style="min-width: 220px;">Narration</th>
-                <th style="width: 120px;" class="text-end">Amount</th>
-                <th style="width: 120px;">Clearance</th>
-                <th style="width: 120px;">Status</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let row of bookRows" class="recon-table-row" [class.table-active]="isSelectedBookRow(row)"
                 (click)="selectBookRow(row, $event)">
-                <td class="text-center">
-                  <input type="checkbox" class="form-check-input" [checked]="isBookRowSelected(row)"
-                    (change)="toggleBookRowSelection(row, $any($event.target).checked, $event)" />
-                </td>
+              
                 <td>
                   <ng-container *ngIf="getVoucherRoute(row) as voucherLink; else plainVoucher">
                     <a [routerLink]="voucherLink" class="recon-link">
@@ -252,13 +257,38 @@
                 <td>{{ formatDisplayDate(row.VoucherDate) }}</td>
                 <td>{{ row.ReferenceNumber || '-' }}</td>
                 <td class="recon-cell-narration">{{ row.Narration || '-' }}</td>
-                <td class="text-end fw-semibold">{{ row.LocalAmount | number:'1.2-2' }}</td>
-                <td>{{ row.ClearanceDate ? formatDisplayDate(row.ClearanceDate) : '-' }}</td>
+                <td class="text-end fw-semibold">{{ row.LocalAmount | number:'1.3-3' }}</td>
+                <td>
+                  <div class="input-group input-group-sm recon-cell-date" (click)="$event.stopPropagation()">
+                    <input
+                      class="form-control"
+                      placeholder="dd-mm-yyyy"
+                      [(ngModel)]="row.ClearanceDate"
+                      [ngModelOptions]="{ standalone: true }"
+                      (ngModelChange)="saveBookRowClearanceDate(row)"
+                      ngbDatepicker
+                      #rowClearanceDatePicker="ngbDatepicker"
+                      (click)="rowClearanceDatePicker.toggle()"
+                      container="body"
+                    />
+                    <button
+                      class="btn bi bi-calendar3 px-0"
+                      type="button"
+                      (click)="rowClearanceDatePicker.toggle(); $event.stopPropagation()"
+                    >
+                      <i-feather name="calendar" class="feather-sm"></i-feather>
+                    </button>
+                  </div>
+                </td>
                 <td>
                   <span class="badge rounded-pill recon-status-badge"
-                    [ngClass]="row.status === 'Reconciled' ? 'bg-success' : 'bg-secondary'">
-                    {{ row.status || 'Unreconciled' }}
+                    [ngClass]="row.ClearanceDate ? 'bg-success' : 'bg-secondary'">
+                    {{ row.ClearanceDate ? 'Reconciled' : 'Unreconciled' }}
                   </span>
+                </td>
+                  <td class="text-center">
+                  <input type="checkbox" class="form-check-input" [checked]="isBookRowSelected(row)"
+                    (change)="toggleBookRowSelection(row, $any($event.target).checked, $event)" />
                 </td>
               </tr>
               <tr *ngIf="loadingBooks">
@@ -302,38 +332,38 @@
           <div class="col-xl-2 col-md-4 col-sm-6">
             <div class="summary-box primary">
               <span>Balance as per Books</span>
-              <strong>{{ reportData?.summary?.bookBalance | number:'1.2-2' }}</strong>
+              <strong>{{ reportData?.summary?.bookBalance | number:'1.3-3' }}</strong>
             </div>
           </div>
           <div class="col-xl-2 col-md-4 col-sm-6">
             <div class="summary-box info">
               <span>Balance as per Bank</span>
-              <strong>{{ reportData?.summary?.bankStatementBalance | number:'1.2-2' }}</strong>
+              <strong>{{ reportData?.summary?.bankStatementBalance | number:'1.3-3' }}</strong>
             </div>
           </div>
           <div class="col-xl-2 col-md-4 col-sm-6">
             <div class="summary-box success">
               <span>Add: Bank entries not in books</span>
-              <strong>{{ reportData?.summary?.addBankEntriesNotInBooks | number:'1.2-2' }}</strong>
+              <strong>{{ reportData?.summary?.addBankEntriesNotInBooks | number:'1.3-3' }}</strong>
             </div>
           </div>
           <div class="col-xl-2 col-md-4 col-sm-6">
             <div class="summary-box warning">
               <span>Less: Book entries not cleared</span>
-              <strong>{{ reportData?.summary?.lessBookEntriesNotClearedInBank | number:'1.2-2' }}</strong>
+              <strong>{{ reportData?.summary?.lessBookEntriesNotClearedInBank | number:'1.3-3' }}</strong>
             </div>
           </div>
           <div class="col-xl-2 col-md-4 col-sm-6">
             <div class="summary-box dark">
               <span>Final Balance</span>
-              <strong>{{ reportData?.summary?.finalBalance | number:'1.2-2' }}</strong>
+              <strong>{{ reportData?.summary?.finalBalance | number:'1.3-3' }}</strong>
             </div>
           </div>
           <div class="col-xl-2 col-md-4 col-sm-6">
             <div class="summary-box" [class.success]="!reportData?.summary?.difference"
               [class.danger]="reportData?.summary?.difference">
               <span>Difference</span>
-              <strong>{{ reportData?.summary?.difference | number:'1.2-2' }}</strong>
+              <strong>{{ reportData?.summary?.difference | number:'1.3-3' }}</strong>
             </div>
           </div>
           <div class="col-12">

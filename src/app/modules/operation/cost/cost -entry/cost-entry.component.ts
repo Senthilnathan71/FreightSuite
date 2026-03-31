@@ -3783,9 +3783,13 @@ createRateFormGroup(data?: any): FormGroup {
 
 
 isVoucherGenerationAllowed(): boolean {
-    const status = this.parentFormValue?.status;
+    const status = String(this.parentFormValue?.status ?? '').trim().toLowerCase();
     if (this.screenName === 'Booking' || this.screenName === 'House Job' || this.screenName === 'House Air Waybill') {
-        return status === 'Active' || status === 'A';
+        return status === 'active' || status === 'a';
+    }
+
+    if (this.screenName === 'Master Job') {
+        return !status || status === 'active' || status === 'a';
     }
 
     return true;
@@ -3799,8 +3803,13 @@ isHBLNoValid(): boolean {
     }
 
     if (this.screenName === 'House Job' || this.screenName === 'House Air Waybill') {
-        const status = this.parentFormValue?.status;
-        return status === 'Active' || status === 'A';
+        const status = String(this.parentFormValue?.status ?? '').trim().toLowerCase();
+        return status === 'active' || status === 'a';
+    }
+
+    if (this.screenName === 'Master Job') {
+        const status = String(this.parentFormValue?.status ?? '').trim().toLowerCase();
+        return !status || status === 'active' || status === 'a';
     }
 
     return true;

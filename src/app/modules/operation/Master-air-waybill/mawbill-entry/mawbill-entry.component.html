@@ -266,7 +266,8 @@
                                                     [displayLabels]="customerLookupConfig.displayLabels"
                                                     [labelFields]="customerLookupConfig.labelFields"
                                                     bindLabel="CustomerName" bindValue="CustomerMasterSid"
-                                                    (itemSelected)="onDestinationAgentChange($event)">
+                                                    (itemSelected)="onDestinationAgentChange($event)"
+                                                    [readonly]="isExportToImportCompleted">
                                                 </dofi-searchable-dropdown>
                                                 <label class="input-label">Destination Agent</label>
                                             </div>
@@ -276,7 +277,7 @@
                                         <aside class="col-md-6">
                                             <div class="custom-form-group " style="margin-top: 3px;">
                                                 <input type="text" formControlName="DestinationAgentAddress"
-                                                    class="custom-input-field sm" placeholder="">
+                                                    class="custom-input-field sm" placeholder="" [readonly]="isExportToImportCompleted">
                                                 <label class="input-label">Address</label>
                                             </div>
                                         </aside>
@@ -593,19 +594,19 @@
                                                     <dofi-searchable-dropdown [items]="airlineList" formControlName="VesselName" placeholder=""
                                                         [displayFields]="customerAirlineLookupConfig.displayFields"
                                                         [displayLabels]="customerAirlineLookupConfig.displayLabels" [labelFields]="customerAirlineLookupConfig.labelFields"
-                                                        bindLabel="CustomerName" bindValue="CustomerName" style="width : 100%;" (change)="onCarrierChangeForAir($event)">
+                                                        bindLabel="CustomerName" bindValue="CustomerName" style="width : 100%;" (change)="onCarrierChangeForAir($event)" [readonly]="isExportToImportCompleted">
                                                     </dofi-searchable-dropdown>
                                                     <button class="btn bi bi-calendar3 pe-0" type="button"
-                                                        (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
+                                                        (click)="toggleInputType('VesselName','isVesselFreeText',$event)" [disabled]="isExportToImportCompleted">
                                                         <i class="fas fa-exchange-alt"
                                                             title="Switch to manual entry"></i>
                                                     </button>
                                                 </div>
                                                 <div class="input-group" *ngIf="this.f['isVesselFreeText']?.value">
                                                     <input type="text" formControlName="VesselName" placeholder=""
-                                                        class="form-control" />
+                                                        class="form-control" [readonly]="isExportToImportCompleted" />
                                                     <button class="btn bi bi-calendar3 pe-0" type="button"
-                                                        (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
+                                                        (click)="toggleInputType('VesselName','isVesselFreeText',$event)" [disabled]="isExportToImportCompleted">
                                                         <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
                                                     </button>
                                                 </div>
@@ -619,7 +620,7 @@
                                         <aside class="col-md-4 ">
                                             <div class="custom-form-group">
                                                 <input type="text" id="voyage-input" placeholder=""
-                                                    class="custom-input-field sm" formControlName="VoyageNo">
+                                                    class="custom-input-field sm" formControlName="VoyageNo" [readonly]="isExportToImportCompleted">
                                                 <label for="text-input" class="input-label">Flight Number<span
                                                         class="text-danger"></span></label>
 
@@ -672,7 +673,8 @@
                                                     [displayLabels]="customerLookupConfig.displayLabels"
                                                     [labelFields]="customerLookupConfig.labelFields"
                                                     bindLabel="CustomerName" bindValue="CustomerName"
-                                                    (itemSelected)="onCarrierDropdownSelection($event)">
+                                                    (itemSelected)="onCarrierDropdownSelection($event)"
+                                                    [readonly]="isExportToImportCompleted">
                                                 </dofi-searchable-dropdown>
                                                 <label class="input-label">Carrier<span
                                                         class="text-danger"></span></label>
@@ -948,7 +950,7 @@
                                             </button>
                                             <!-- <button class="action-icon copy"><i class="fas fa-copy"></i></button> -->
                                             <button class="action-icon delete"
-                                                (click)="detachBooking(shipmentIndex,shipment)" ngbTooltip="Delete"> <i
+                                                (click)="detachBooking(shipmentIndex,shipment)" [disabled]="isExportToImportCompleted" ngbTooltip="Delete"> <i
                                                     class="fas fa-trash text-danger"></i></button>
                                         </div>
                                     </td>
@@ -1009,7 +1011,7 @@
 
                         </div>
                         <div class="toolbar-right">
-                            <button class="table-action-btn primary" (click)="openContainerModal(containerModal)">
+                            <button class="table-action-btn primary" (click)="openContainerModal(containerModal)" [disabled]="isExportToImportCompleted">
                                 <i class="fas fa-plus"></i> Add
                             </button>
                             <button class="table-action-btn export">
@@ -1049,7 +1051,7 @@
                                                 (click)="openContainerModal(containerModal, container.value, i)" ngbTooltip="View">
                                                 <i class="fas fa-eye text-info"></i>
                                             </button>
-                                            <button class="action-icon delete" (click)="removeContainer(i)" ngbTooltip="Delete">
+                                            <button class="action-icon delete" (click)="removeContainer(i)" [disabled]="isExportToImportCompleted" ngbTooltip="Delete">
                                                 <i class="fas fa-trash text-danger"></i>
                                             </button>
                                         </div>
@@ -2932,7 +2934,7 @@
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss(); ">Cancel</button>
             <button type="button" class="btn btn-info btn-sm" (click)="onContainerSubmit()"
-                [disabled]="containerFormGroup.invalid">Save</button>
+                [disabled]="containerFormGroup.invalid || isExportToImportCompleted">Save</button>
         </div>
     </ng-template>
 

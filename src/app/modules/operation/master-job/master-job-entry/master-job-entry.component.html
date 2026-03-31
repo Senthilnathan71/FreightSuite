@@ -325,7 +325,7 @@
                         [displayLabels]="customerLookupConfig.displayLabels"
                         [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
                         bindValue="CustomerMasterSid" (itemSelected)="onDestinationAgentChange($event)"
-                        >
+                        [readonly]="isExportToImportCompleted">
                       </dofi-searchable-dropdown>
                                             <label class="input-label">Destination Agent</label>
                                         </div>
@@ -335,7 +335,7 @@
                                     <aside class="col-md-6">
                                         <div class="custom-form-group " style="margin-top: 3px;">
                                             <input type="text" formControlName="DestinationAgentAddress"
-                                                class="custom-input-field sm" placeholder="">
+                                                class="custom-input-field sm" placeholder="" [readonly]="isExportToImportCompleted">
                                             <label class="input-label">Address</label>
                                         </div>
                                     </aside>
@@ -550,20 +550,21 @@
         [labelFields]="vesselVoyageLookupConfig.labelFields"
         bindValue="VesselName"
         (itemSelected)="onVesselChange($event)"
+        [readonly]="isExportToImportCompleted"
         style="display:block; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
       </dofi-searchable-dropdown>
     </div>
       <button class="btn bi bi-calendar3 px-0" type="button"
-        (click)="toggleInputType('VesselName','isVesselFreeText',$event)" style="flex-shrink:0;">
+        (click)="toggleInputType('VesselName','isVesselFreeText',$event)" [disabled]="isExportToImportCompleted" style="flex-shrink:0;">
         <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
       </button>
     </div>
 
     <!-- Manual Text Input -->
     <div *ngIf="this.f['isVesselFreeText']?.value" class="mt-md-1">
-      <input type="text" formControlName="VesselName" placeholder=""  [textWithNumbers]="100"class="custom-input-field sm" style="width: 85%" />
+      <input type="text" formControlName="VesselName" placeholder=""  [textWithNumbers]="100"class="custom-input-field sm" style="width: 85%" [readonly]="isExportToImportCompleted" />
       <button class="btn bi bi-calendar3 pe-0" type="button"
-        (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
+        (click)="toggleInputType('VesselName','isVesselFreeText',$event)" [disabled]="isExportToImportCompleted">
         <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
       </button>
     </div>
@@ -582,6 +583,7 @@
       <ng-select [items]="voyageList" bindLabel="VoyageNo" bindValue="VoyageNo"
         formControlName="VoyageNo" placeholder=""
         (change)="onVoyageChange($event)" appendTo="body"
+        [disabled]="isExportToImportCompleted"
         style="width: 85%">
         <ng-template ng-option-tmp let-item="item">
           <div style="text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 6px;">
@@ -599,16 +601,16 @@
       </ng-select>
       
       <button class="btn bi bi-calendar3 pe-0" type="button"
-        (click)="toggleInputType('VoyageNo','isVoyageFreeText',$event)">
+        (click)="toggleInputType('VoyageNo','isVoyageFreeText',$event)" [disabled]="isExportToImportCompleted">
         <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
       </button>
     </div>
 
     <!-- Manual Text Input -->
     <div class="mt-md-1" *ngIf="this.f['isVoyageFreeText']?.value">
-      <input type="text" formControlName="VoyageNo" placeholder=""  [textWithNumbers]="10" class="custom-input-field sm" style="width: 85%"/>
+      <input type="text" formControlName="VoyageNo" placeholder=""  [textWithNumbers]="10" class="custom-input-field sm" style="width: 85%" [readonly]="isExportToImportCompleted"/>
       <button class="btn bi bi-calendar3 pe-0" type="button"
-        (click)="toggleInputType('VoyageNo','isVoyageFreeText',$event)">
+        (click)="toggleInputType('VoyageNo','isVoyageFreeText',$event)" [disabled]="isExportToImportCompleted">
         <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
       </button>
     </div>
@@ -981,6 +983,7 @@
                                         </button>
                                         <!-- <button class="action-icon copy"><i class="fas fa-copy"></i></button> -->
                                         <button class="action-icon delete" (click)="detachBooking(shipmentIndex,shipment)"
+                                            [disabled]="isExportToImportCompleted"
                                             ngbTooltip="Detach from Master Job"> <i class="fas fa-unlink text-warning"></i></button>
                                         <span *ngIf="shipment.HouseJobSid && hasContainerMappingForShipment(shipment)" class="action-icon delete"
                                             ngbTooltip="Container Assigned">
@@ -1159,7 +1162,7 @@
     </button>
 </div>
                             <button class="table-action-btn primary" (click)="openContainerModal(containerModal)"
-                             [disabled]="selectedFCLLCL === 'FCL' && masterJobContainers.length >= getTotalAllowedContainers()">
+                             [disabled]="isExportToImportCompleted || (selectedFCLLCL === 'FCL' && masterJobContainers.length >= getTotalAllowedContainers())">
                                 <i class="fas fa-plus"></i> Add
                             </button>
                             <button class="table-action-btn export"
@@ -1204,7 +1207,7 @@
                                             </button>
                                                   <button class="action-icon delete" 
                     (click)="removeContainer(i)" 
-                    [disabled]="isContainerMapped(container.value.MasterJobContainerSid) || 
+                    [disabled]="isExportToImportCompleted || isContainerMapped(container.value.MasterJobContainerSid) ||
                                isDeletingContainer === i"
                     ngbTooltip="{{isContainerMapped(container.value.MasterJobContainerSid) ? 
                                'Cannot delete - Container is mapped to house job products' : 
@@ -3168,7 +3171,7 @@
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
-            <button type="button" class="btn btn-info btn-sm">Add</button>
+            <button type="button" class="btn btn-info btn-sm" [disabled]="containerFormGroup.invalid || isExportToImportCompleted">Add</button>
         </div>
     </ng-template>
 </div>

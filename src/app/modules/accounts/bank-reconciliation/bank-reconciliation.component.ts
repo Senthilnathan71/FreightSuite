@@ -10,6 +10,7 @@ import { finalize } from 'rxjs';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { getDefaultTodayDate } from 'src/app/common/helper';
+import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { extractBackendErrorMessage } from 'src/app/common/error-handling/payload-validation-handler';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { GlobalDateFormatService } from 'src/app/core/services/global-date-format.service';
@@ -58,7 +59,8 @@ interface BankBookRow {
     NgbDatepickerModule,
     NgxSpinnerModule,
     PageHeaderComponent,
-    FeatherModule
+    FeatherModule,
+    DecimalPrecisionDirective
   ],
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
@@ -581,6 +583,36 @@ export class BankReconciliationComponent implements OnInit {
       });
   }
 
+  saveBookRowClearanceDate(row: BankBookRow): void {
+    if (!row?.VoucherHeaderSid || !row.ClearanceDate) {
+      return;
+    }
+
+    const payload = {
+      ...this.buildPayload(),
+      VoucherHeaderSids: [row.VoucherHeaderSid],
+      ClearanceDate: this.toIsoDateString(row.ClearanceDate),
+      CreatedBy: this.userData?.userEmail || 'System',
+    };
+
+    this.accountsService.updateBankReconciliationClearance(payload)
+      .subscribe({
+        next: (resp: any) => {
+          if (resp?.status === false) {
+            this.appSettings.showError(resp?.message || 'Clearance update failed');
+            return;
+          }
+
+          row.status = 'Reconciled';
+          this.appSettings.showSuccess(resp?.message || 'Clearance date updated successfully');
+        },
+        error: (error: any) => {
+          console.error('Update clearance error', error);
+          this.showBackendError(error, 'Error updating clearance date');
+        },
+      });
+  }
+
   unmatchSelected(): void {
     const bankRow = this.selectedBankRowValue;
     if (!bankRow?.LinkedVoucherHeaderSid) {
@@ -913,8 +945,8 @@ export class BankReconciliationComponent implements OnInit {
 
   private formatAmount(value: any): string {
     return new Intl.NumberFormat('en-IN', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      minimumFractionDigits: 3,
+      maximumFractionDigits: 3,
     }).format(this.toNumber(value));
   }
 
