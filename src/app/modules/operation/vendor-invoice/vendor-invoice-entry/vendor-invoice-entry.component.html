@@ -376,6 +376,7 @@
                     <ng-select
                       formControlName="GSTType"
                       [clearable]="false"
+                      class="ng-select"
                     >
                       @for (type of exportGstTypes; track type.id) {
                         <ng-option [value]="type.id">{{ type.name }}</ng-option>
@@ -416,7 +417,7 @@
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!vendorInvoiceForm.get('InvoiceType')?.value">
                 <ng-select
-                  [items]="invoiceTypes"
+                  [items]="activeInvoiceTypes"
                   bindLabel="name"
                   bindValue="id"
                   formControlName="InvoiceType"
@@ -427,9 +428,9 @@
                     <i class="fas fa-info-circle text-danger ms-1 ivt-pulse-icon"
                        [ngbTooltip]="'Zero Rated selected — tax rows will be created at 0%'"
                        placement="top" container="body"></i>
-                  } @else if (vendorInvoiceForm.get('InvoiceType')?.value === 'BOS') {
+                  } @else if (vendorInvoiceForm.get('InvoiceType')?.value === 'BOS' || vendorInvoiceForm.get('InvoiceType')?.value === 'EXE' || vendorInvoiceForm.get('InvoiceType')?.value === 'OOS') {
                     <i class="fas fa-info-circle text-danger ms-1 ivt-pulse-icon"
-                       [ngbTooltip]="'Exempt selected — no tax rows will be created'"
+                       [ngbTooltip]="'No tax rows will be created for this invoice type'"
                        placement="top" container="body"></i>
                   }
                 </label>

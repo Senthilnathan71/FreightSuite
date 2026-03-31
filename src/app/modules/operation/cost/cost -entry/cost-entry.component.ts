@@ -117,12 +117,31 @@ export class CostEntryComponent implements OnInit, OnDestroy {
     { id: 2, name: 'C', value: 'C' }
   ]
 
-  invoiceTypes = [
-    { id: 'REG', name: 'Regular' },
-    { id: 'REIMB', name: 'Reimbursement' },
-    { id: 'BOS', name: 'Bill of Supply' },
-    { id: 'NONGST', name: 'Non GST/Zero' },
+  invoiceTypesSales = [
+    { id: 'REG',    name: 'Regular' },
+    { id: 'NONGST', name: 'Zero Rated' },
+    { id: 'EXE',    name: 'Exempt' },
+    { id: 'BOS',    name: 'Bill of Supply' },
   ];
+  invoiceTypesPurchase = [
+    { id: 'REG',    name: 'Regular' },
+    { id: 'NONGST', name: 'Zero Rated' },
+    { id: 'EXE',    name: 'Exempt' },
+    { id: 'BOS',    name: 'Bill of Supply' },
+    { id: 'RCM',    name: 'RCM - Reverse Charge' },
+    { id: 'REIMB',  name: 'Reimbursement (Pure Agent)' },
+  ];
+  vatInvoiceTypes = [
+    { id: 'REG', name: 'Regular' },
+    { id: 'NONGST', name: 'Zero Rated' },
+    { id: 'EXE', name: 'Exempt' },
+    { id: 'OOS', name: 'Out of Scope' },
+  ];
+  get isVATMode(): boolean { return this.taxCalculationService.isVATMode; }
+  get activeInvoiceTypes() {
+    if (this.isVATMode) return this.vatInvoiceTypes;
+    return this.selectedVoucherType === 'Vendor Invoice' ? this.invoiceTypesPurchase : this.invoiceTypesSales;
+  }
 
   exportGstTypes = [
     { id: 'EXPWP', name: 'Export With Payment' },

@@ -9,7 +9,7 @@ export type TradeFlow = 'DOMESTIC' | 'EXPORT' | 'IMPORT';
 export type DocumentSide = 'SALES' | 'PURCHASE';
 export type AppliedTaxMode = 'CGST_SGST' | 'CGST_UGST' | 'IGST' | 'VAT' | 'NONE';
 export type DocumentClass = 'B2B' | 'B2C' | 'EXPWP' | 'EXPWOP' | 'RCM' | 'VAT';
-export type InvoiceType = 'REG' | 'REIMB' | 'NONGST' | 'BOS' | 'RCM';
+export type InvoiceType = 'REG' | 'REIMB' | 'NONGST' | 'BOS' | 'RCM' | 'EXE' | 'OOS';
 export type TaxCategory = 'Inter' | 'Intra';
 export type InputOrOutput = 'Input' | 'Output';
 
@@ -478,7 +478,8 @@ export class TaxCalculationService {
     if (company.taxRegime === 'VAT') {
       // Non-India: VAT for domestic, zero tax for overseas party
       documentClass = 'VAT';
-      if (ctx.invoiceType === 'BOS') {
+      if (ctx.invoiceType === 'BOS' || ctx.invoiceType === 'EXE' || ctx.invoiceType === 'OOS') {
+        // Exempt / Out of Scope — no tax rows
         appliedTaxMode = 'NONE';
       } else if (ctx.invoiceType === 'NONGST') {
         // Zero Rated: show VAT columns with 0% amounts for domestic
@@ -498,7 +499,23 @@ export class TaxCalculationService {
         stateTaxMode = 'CGST_SGST';
       }
 
-      if (ctx.invoiceType === 'BOS') {
+      if (ctx.invoiceType === 'EXE') {
+        // Exempt — no tax columns
+        documentClass = this.hasValidGST(party) ? 'B2B' : 'B2C';
+        appliedTaxMode = 'NONE';
+        formGSTType = '';
+      } else if (ctx.invoiceType === 'REIMB') {
+        // Pure Agent Reimbursement — no tax columns
+        documentClass = this.hasValidGST(party) ? 'B2B' : 'B2C';
+        appliedTaxMode = 'NONE';
+        formGSTType = '';
+      } else if (ctx.invoiceType === 'RCM') {
+        // Reverse Charge — no tax columns (user creates separate JV for liability)
+        documentClass = 'RCM';
+        appliedTaxMode = 'NONE';
+        formGSTType = 'RCM';
+        isRCM = true;
+      } else if (ctx.invoiceType === 'BOS') {
         documentClass = this.hasValidGST(party) ? 'B2B' : 'B2C';
         appliedTaxMode = 'NONE';
         formGSTType = '';
