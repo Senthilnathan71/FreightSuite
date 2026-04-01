@@ -583,6 +583,7 @@
       <ng-select [items]="voyageList" bindLabel="VoyageNo" bindValue="VoyageNo"
         formControlName="VoyageNo" placeholder=""
         (change)="onVoyageChange($event)" appendTo="body"
+        [clearable]="false"
         [disabled]="isExportToImportCompleted"
         style="width: 85%">
         <ng-template ng-option-tmp let-item="item">
@@ -1657,6 +1658,20 @@
                                     disabled>
                                 <label for="exportToImportCheckbox" class="form-check-label sm">Export To Import</label>
                             </div>
+                        </div>
+                    </aside>
+
+                    <!-- <aside class="col-md-3">
+                        <div class="custom-form-group" [class.filled]="!!masterJobForm.get('ImportMasterJobSid')?.value">
+                            <input type="text" class="custom-input-field sm" formControlName="ImportMasterJobSid" readonly>
+                            <label class="input-label">Import Master Job Sid</label>
+                        </div>
+                    </aside> -->
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group" [class.filled]="!!masterJobForm.get('ImportMasterJobNumber')?.value">
+                            <input type="text" class="custom-input-field sm" formControlName="ImportMasterJobNumber" readonly>
+                            <label class="input-label">Import Master Job No</label>
                         </div>
                     </aside>
 

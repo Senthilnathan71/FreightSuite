@@ -1252,6 +1252,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       MBLNo,
       HBLNo,
       ShipmentNo: this.b['ShipmentNo']?.value || '',
+      status: this.b['status']?.value || '',
       parentMenuName: 'Service Job',
       Segment: this.selectedFCLLCL,
       POLSid,

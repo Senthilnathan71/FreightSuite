@@ -14,7 +14,9 @@ import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPr
 import { extractBackendErrorMessage } from 'src/app/common/error-handling/payload-validation-handler';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { GlobalDateFormatService } from 'src/app/core/services/global-date-format.service';
+import { CompanySettingsManagerService, CurrencySettings } from 'src/app/core/services/company-settings-manager.service';
 import { PageHeaderComponent, HeaderAction } from 'src/app/shared/components/header-list/header-list.component';
+import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { AccountsService } from '../accounts.service';
 import {  FeatherModule } from 'angular-feather';
 
@@ -76,6 +78,8 @@ export class BankReconciliationComponent implements OnInit {
   currentCompany: any;
   currentBranch: any;
   userData: any;
+  currentCompanyCurrency: CurrencySettings | null = null;
+  currencyList: any[] = [];
 
   bankLedgers: any[] = [];
   bookRows: BankBookRow[] = [];
@@ -94,6 +98,8 @@ export class BankReconciliationComponent implements OnInit {
     private fb: FormBuilder,
     private accountsService: AccountsService,
     private appSettings: AppSettingsService,
+    private companySettings: CompanySettingsManagerService,
+    private dropdownStore: DropdownStore,
     private globalDateFormat: GlobalDateFormatService,
     private spinner: NgxSpinnerService,
     private router: Router,
@@ -103,6 +109,7 @@ export class BankReconciliationComponent implements OnInit {
     this.currentCompany = this.appSettings.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettings.decrypt(localStorage.getItem('selected-branch'));
     this.userData = this.appSettings.getDecryptedUserProfile();
+    this.currentCompanyCurrency = this.companySettings.getCurrencySettings();
 
     if (!this.currentCompany) {
       this.appSettings.showError('Please select a company');
@@ -112,6 +119,7 @@ export class BankReconciliationComponent implements OnInit {
 
     this.buildForm();
     this.initializeHeaderActions();
+    this.loadCurrencyList();
     this.loadBankLedgers();
     this.addBankRow();
   }
@@ -766,6 +774,8 @@ export class BankReconciliationComponent implements OnInit {
     const companyName = this.currentCompany?.companyName || this.currentCompany?.CompanyName || 'Company';
     const locationName = this.currentBranch?.BranchName || this.currentBranch?.branchName || 'Location';
     const ledgerName = this.getSelectedBankLedgerName();
+    const ledgerCurrency = this.getSelectedBankLedgerCurrencyCode();
+    const bankCurrencyHeader = ledgerCurrency ? `Amount(${ledgerCurrency})` : 'Amount';
     const asOnDate = this.formatDisplayDate(this.filterForm.get('ToDate')?.value);
     const generatedBy = this.userData?.userName || this.userData?.UserName || this.userData?.userEmail || 'System';
     const generatedOn = this.formatDisplayDateTime(new Date());
@@ -773,8 +783,6 @@ export class BankReconciliationComponent implements OnInit {
     const summary = this.reportData?.summary || {};
     const bookBalance = this.toNumber(summary.bookBalance);
     const bankStatementBalance = this.toNumber(summary.bankStatementBalance ?? this.filterForm.get('BankStatementBalance')?.value);
-    const addBankEntries = this.toNumber(summary.addBankEntriesNotInBooks);
-    const lessBookEntries = this.toNumber(summary.lessBookEntriesNotClearedInBank);
 
     const bookEntries = Array.isArray(this.reportData?.bookEntriesNotCleared) ? this.reportData.bookEntriesNotCleared : [];
     const bankEntries = Array.isArray(this.reportData?.bankEntriesNotInBooks) ? this.reportData.bankEntriesNotInBooks : [];
@@ -784,30 +792,20 @@ export class BankReconciliationComponent implements OnInit {
     const creditBankEntries = bankEntries.filter((item: any) => this.normalizeDrCr(item?.DrCr) === 'C');
     const debitBankEntries = bankEntries.filter((item: any) => this.normalizeDrCr(item?.DrCr) === 'D');
 
-    const lines = [
-      `Bank : ${ledgerName}`,
-      `Location : ${locationName}`,
-      `As On Date : ${asOnDate}`,
-      '',
-      `Balance as per our books : ${this.formatAmount(bookBalance)} ${this.getDrCrLabel(bookBalance)}`,
-      `Add: Cheques issued but not presented : ${this.formatAmount(this.sumAmount(creditBookEntries))}`,
-      `Less: Cheques deposited in bank but not cleared : ${this.formatAmount(this.sumAmount(debitBookEntries))}`,
-      `Add: Credits by bank : ${creditBankEntries.length ? this.formatAmount(this.sumAmount(creditBankEntries)) : 'Nil'}`,
-      `Less: Debits by Bank : ${debitBankEntries.length ? this.formatAmount(this.sumAmount(debitBankEntries)) : 'Nil'}`,
-      `Balance as per Bank statement : ${this.formatAmount(bankStatementBalance)} ${this.getDrCrLabel(bankStatementBalance)}`,
-    ];
-
-    const summaryHtml = lines.map((line) => this.escapeHtml(line)).join('<br/>');
+    const bookChequesIssued = this.sumAmount(creditBookEntries);
+    const bookChequesDeposited = -this.sumAmount(debitBookEntries);
+    const bankCredits = this.sumAmount(creditBankEntries);
+    const bankDebits = -this.sumAmount(debitBankEntries);
 
     const sections: string[] = [];
-    sections.push(this.buildExcelSection('Cheques issued but not presented', creditBookEntries, bookBalance, 'C'));
-    sections.push(this.buildExcelSection('Cheques deposited in bank but not cleared', debitBookEntries, bookBalance, 'D'));
+    sections.push(this.buildExcelSection('Cheques issued but not presented', creditBookEntries, 'C'));
+    sections.push(this.buildExcelSection('Cheques deposited in bank but not cleared', debitBookEntries, 'D'));
 
     if (creditBankEntries.length) {
-      sections.push(this.buildExcelSection('Add: Credits by bank', creditBankEntries, bookBalance, 'C'));
+      sections.push(this.buildExcelSection('Add: Credits by bank', creditBankEntries, 'C'));
     }
     if (debitBankEntries.length) {
-      sections.push(this.buildExcelSection('Less: Debits by Bank', debitBankEntries, bookBalance, 'D'));
+      sections.push(this.buildExcelSection('Less: Debits by Bank', debitBankEntries, 'D'));
     }
 
     return `
@@ -819,7 +817,7 @@ export class BankReconciliationComponent implements OnInit {
             table { border-collapse: collapse; width: 100%; table-layout: fixed; }
             td, th { border: 1px solid #d9d9d9; padding: 4px 6px; vertical-align: middle; }
             .title { font-size: 14pt; font-weight: 700; text-align: center; white-space: pre-line; }
-            .summary { font-size: 11pt; white-space: pre-line; line-height: 1.55; }
+            .meta { font-size: 11pt; }
             .header { background: #507cd1; color: #fff; font-weight: 700; text-align: center; }
             .section { font-weight: 700; }
             .total { font-weight: 700; }
@@ -827,33 +825,85 @@ export class BankReconciliationComponent implements OnInit {
             .center { text-align: center; }
             .left { text-align: left; }
             .footer { font-size: 10pt; }
+            .amount { text-align: right; mso-number-format:'\\#,\\##0\\.000'; }
           </style>
         </head>
         <body>
-          <table>
+          <table class="meta">
             <tr>
-              <td colspan="12" class="title">${this.escapeHtml(companyName)}<br/>Reconciliation Statement</td>
+              <td colspan="3" class="title">${this.escapeHtml(companyName)}<br/>Bank Reconciliation Statement</td>
             </tr>
             <tr>
-              <td colspan="12" class="summary">${summaryHtml}</td>
+              <td colspan="3" class="left">${this.escapeHtml(`Bank : ${ledgerName}${ledgerCurrency ? `(${ledgerCurrency})` : ''}`)}</td>
             </tr>
+            <tr>
+              <td colspan="3" class="left">${this.escapeHtml(`Location : ${locationName}`)}</td>
+            </tr>
+            <tr>
+              <td colspan="3" class="left">${this.escapeHtml(`As On Date : ${asOnDate}`)}</td>
+            </tr>
+          </table>
+
+          <table class="meta" style="margin-top: 8px;">
             <tr class="header">
-              <th style="width: 9%">Transaction Date</th>
-              <th style="width: 13%">Transaction No.</th>
-              <th style="width: 18%">Organization</th>
-              <th style="width: 12%">Cheque/DD No.</th>
-              <th style="width: 11%">Cheque/DD Date</th>
-              <th style="width: 11%">Clearing Date</th>
-              <th style="width: 10%">Amount(INR)</th>
-              <th style="width: 6%">Type</th>
-              <th style="width: 10%">Balance(INR)</th>
-              <th style="width: 6%">Type</th>
-              <th style="width: 10%">Payee Name</th>
-              <th style="width: 20%">Narration</th>
+              <th style="width: 68%">Description</th>
+              <th style="width: 8%"></th>
+              <th style="width: 24%">Amount</th>
             </tr>
-            ${sections.join('')}
             <tr>
-              <td colspan="12" class="footer">${this.escapeHtml(`Generated by ${generatedBy} on ${generatedOn}`)}</td>
+              <td class="left">Balance as per our books :</td>
+              <td></td>
+              ${this.buildExcelAmountCell(bookBalance)}
+            </tr>
+            <tr>
+              <td class="left">Add: Cheques issued but not presented :</td>
+              <td></td>
+              ${this.buildExcelAmountCell(bookChequesIssued)}
+            </tr>
+            <tr>
+              <td class="left">Less: Cheques deposited in bank but not cleared :</td>
+              <td></td>
+              ${this.buildExcelAmountCell(bookChequesDeposited)}
+            </tr>
+            <tr>
+              <td class="left">Add: Credits by bank :</td>
+              <td></td>
+              ${this.buildExcelAmountCell(creditBankEntries.length ? bankCredits : '0.000')}
+            </tr>
+            <tr>
+              <td class="left">Less: Debits by Bank :</td>
+              <td></td>
+              ${this.buildExcelAmountCell(debitBankEntries.length && Math.abs(bankDebits) > 0 ? bankDebits : '-0.000')}
+            </tr>
+            <tr>
+              <td class="left">Balance as per Bank statement :</td>
+              <td></td>
+              ${this.buildExcelAmountCell(bankStatementBalance)}
+            </tr>
+          </table>
+
+          ${sections.length ? `
+            <table style="margin-top: 12px;">
+              <tr class="header">
+                <th style="width: 9%">Voucher Date</th>
+                <th style="width: 13%">Voucher No.</th>
+                <th style="width: 18%">Party Name</th>
+                <th style="width: 12%">Inst.No.</th>
+                <th style="width: 11%">Inst Date</th>
+                <th style="width: 11%">Clearing Date</th>
+                <th style="width: 10%">${this.escapeHtml(bankCurrencyHeader)}</th>
+                <th style="width: 6%">Type</th>
+                <th style="width: 10%">Local (${this.getCurrentCompanyCurrencyCode()})</th>
+                <th style="width: 10%">Paid To/Received From</th>
+                <th style="width: 20%">Narration</th>
+              </tr>
+              ${sections.join('')}
+            </table>
+          ` : ''}
+
+          <table style="margin-top: 8px;">
+            <tr>
+              <td colspan="11" class="footer">${this.escapeHtml(`Generated by ${generatedBy} on ${generatedOn}`)}</td>
             </tr>
           </table>
         </body>
@@ -861,34 +911,31 @@ export class BankReconciliationComponent implements OnInit {
     `;
   }
 
-  private buildExcelSection(title: string, rows: any[], startBalance: number, type: 'C' | 'D'): string {
+  private buildExcelSection(title: string, rows: any[], type: 'C' | 'D'): string {
     const sectionRows = Array.isArray(rows) ? rows : [];
-    let runningBalance = startBalance;
-    const direction = type === 'C' ? 1 : -1;
 
     const dataRows = sectionRows.map((row: any) => {
-      const amount = this.toNumber(row?.Amount ?? row?.LocalAmount);
-      runningBalance += direction * amount;
+      const amount = this.getAbsoluteAmount(row?.Amount ?? row?.LocalAmount);
       const transactionDate = this.formatDisplayDate(row?.TransactionDate ?? row?.VoucherDate);
       const chequeDate = this.formatDisplayDate(row?.ValueDate ?? row?.VoucherDate);
-      const clearingDate = this.formatDisplayDate(row?.ClearanceDate);
-      const organization = this.escapeHtml(row?.Organization || row?.LedgerName || row?.PartyName || '');
+      const clearingDate = this.formatDisplayDate(this.getRowClearanceDate(row));
+      const PartyName = this.escapeHtml(row?.PartyName || row?.Organization || row?.LedgerName || '');
       const transactionNo = this.escapeHtml(row?.TransactionNo || row?.VoucherNumber || '');
       const chequeNo = this.escapeHtml(row?.ReferenceNumber || row?.ChequeDDNo || '');
       const payeeName = this.escapeHtml(row?.PayeeName || row?.PartyName || row?.Organization || '');
       const narration = this.escapeHtml(row?.Narration || '');
+      const localAmount = this.toNumber(row?.LocalAmount ?? row?.Amount);
       return `
         <tr>
           <td class="left">${this.escapeHtml(transactionDate)}</td>
           <td class="left">${transactionNo}</td>
-          <td class="left">${organization}</td>
+          <td class="left">${PartyName}</td>
           <td class="left">${chequeNo}</td>
           <td class="left">${this.escapeHtml(chequeDate)}</td>
           <td class="left">${this.escapeHtml(clearingDate)}</td>
           <td class="right">${this.formatAmount(amount)}</td>
           <td class="center">${type === 'C' ? 'CR' : 'DR'}</td>
-          <td class="right">${this.formatAmount(runningBalance)}</td>
-          <td class="center">${this.getDrCrLabel(runningBalance)}</td>
+          <td class="right">${this.formatAmount(localAmount)}</td>
           <td class="left">${payeeName}</td>
           <td class="left">${narration}</td>
         </tr>
@@ -896,11 +943,11 @@ export class BankReconciliationComponent implements OnInit {
     }).join('');
 
     const totalAmount = this.sumAmount(sectionRows);
-    const totalBalance = sectionRows.length ? runningBalance : startBalance;
+    const totalLocalAmount = sectionRows.reduce((sum, row) => sum + this.toNumber(row?.LocalAmount ?? row?.Amount), 0);
 
     return `
       <tr>
-        <td colspan="12" class="section">${this.escapeHtml(title)}</td>
+        <td colspan="11" class="section">${this.escapeHtml(title)}</td>
       </tr>
       ${dataRows || ''}
       <tr class="total">
@@ -912,9 +959,8 @@ export class BankReconciliationComponent implements OnInit {
         <td></td>
         <td class="right">${this.formatAmount(totalAmount)}</td>
         <td class="center">${type === 'C' ? 'CR' : 'DR'}</td>
-        <td class="right">${sectionRows.length ? this.formatAmount(totalBalance) : ''}</td>
-        <td class="center">${sectionRows.length ? this.getDrCrLabel(totalBalance) : ''}</td>
-        <td></td>
+        <td class="right">${sectionRows.length ? this.formatAmount(totalLocalAmount) : ''}</td>
+        <td class="center">${sectionRows.length ? this.getDrCrLabel(totalLocalAmount) : ''}</td>
         <td></td>
       </tr>
     `;
@@ -924,6 +970,73 @@ export class BankReconciliationComponent implements OnInit {
     const selectedId = this.filterForm.get('BankCOAMasterSid')?.value;
     const selectedLedger = this.bankLedgers.find((item) => Number(item?.COAMasterSid) === Number(selectedId));
     return selectedLedger?.LedgerName || selectedLedger?.ledgerName || 'Bank';
+  }
+
+  private getSelectedBankLedgerCurrencyCode(): string {
+    const selectedId = this.filterForm.get('BankCOAMasterSid')?.value;
+    const selectedLedger = this.bankLedgers.find((item) => Number(item?.COAMasterSid) === Number(selectedId));
+    const ledgerCurrency = selectedLedger?.LedgerCurrency ?? selectedLedger?.ledgerCurrency ?? null;
+    const currencyCode = this.resolveCurrencyCode(ledgerCurrency);
+
+    return String(
+      currencyCode ||
+      selectedLedger?.CurrencyCode ||
+      selectedLedger?.currencyCode ||
+      selectedLedger?.currencyMaster?.currencyCode ||
+      selectedLedger?.CurrencyMaster?.currencyCode ||
+      ledgerCurrency ||
+      ''
+    ).trim().toUpperCase();
+  }
+
+  private loadCurrencyList(): void {
+    this.dropdownStore.loadCurrencies().subscribe({
+      next: (currencies: any[]) => {
+        this.currencyList = Array.isArray(currencies) ? currencies : [];
+      },
+      error: (error: any) => {
+        console.error('Error loading currencies', error);
+        this.currencyList = [];
+      },
+    });
+  }
+
+  private resolveCurrencyCode(currencyValue: any): string {
+    if (currencyValue === null || currencyValue === undefined || currencyValue === '') {
+      return '';
+    }
+
+    const numericCurrencySid = Number(currencyValue);
+    if (Number.isFinite(numericCurrencySid) && numericCurrencySid > 0) {
+      const currencies = this.currencyList.length ? this.currencyList : this.dropdownStore.currencies();
+      const currency = (currencies || []).find((item: any) => Number(item?.CurrencyMasterSid) === numericCurrencySid);
+      return String(currency?.currencyCode || currency?.CurrencyCode || '').trim().toUpperCase();
+    }
+
+    return String(currencyValue).trim().toUpperCase();
+  }
+
+  private getRowClearanceDate(row: any): any {
+    return (
+      row?.ClearanceDate ??
+      row?.clearanceDate ??
+      row?.ClearingDate ??
+      row?.clearingDate ??
+      row?.VoucherHeader?.ClearanceDate ??
+      row?.VoucherHeader?.clearanceDate ??
+      row?.VoucherHeader?.ClearingDate ??
+      row?.VoucherHeader?.clearingDate ??
+      null
+    );
+  }
+
+  private getCurrentCompanyCurrencyCode(): string {
+    return String(
+      this.currentCompanyCurrency?.code ||
+      this.currentCompany?.CurrencyCode ||
+      this.currentCompany?.currencyMaster?.currencyCode ||
+      'INR'
+    ).trim().toUpperCase();
   }
 
   private normalizeDrCr(value: any): 'D' | 'C' {
@@ -939,6 +1052,10 @@ export class BankReconciliationComponent implements OnInit {
     return Number.isFinite(parsed) ? parsed : 0;
   }
 
+  private getAbsoluteAmount(value: any): number {
+    return Math.abs(this.toNumber(value));
+  }
+
   private getDrCrLabel(amount: number): 'DR' | 'CR' {
     return this.toNumber(amount) >= 0 ? 'DR' : 'CR';
   }
@@ -948,6 +1065,21 @@ export class BankReconciliationComponent implements OnInit {
       minimumFractionDigits: 3,
       maximumFractionDigits: 3,
     }).format(this.toNumber(value));
+  }
+
+  private formatSignedAmount(value: any): string {
+    return new Intl.NumberFormat('en-IN', {
+      minimumFractionDigits: 3,
+      maximumFractionDigits: 3,
+    }).format(this.toNumber(value));
+  }
+
+  private buildExcelAmountCell(value: number | string): string {
+    if (typeof value === 'string') {
+      return `<td class="amount">${this.escapeHtml(value)}</td>`;
+    }
+
+    return `<td class="amount" style="mso-number-format:'\\#,\\##0\\.000';">${this.toNumber(value)}</td>`;
   }
 
   formatDisplayDate(value: any): string {
