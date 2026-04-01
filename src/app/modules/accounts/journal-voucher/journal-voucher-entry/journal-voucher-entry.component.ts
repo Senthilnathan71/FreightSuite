@@ -38,6 +38,7 @@ import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adap
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { ToastrService } from 'ngx-toastr';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
 @Component({
@@ -3186,4 +3187,17 @@ resetForm(): void {
     { emitEvent: false }
   );
 }
+  openAuditLogs() {
+    if (!this.voucherData?.VoucherHeaderSid) return;
+    const modalRef = this.modalService.open(AuditLogComponent, {
+      centered: true,
+      scrollable: true,
+      size: 'xl',
+      windowClass: 'audit-log-modal'
+    });
+    modalRef.componentInstance.title = 'JournalVoucher Logs';
+    modalRef.componentInstance.tableName = 'VoucherHeader';
+    modalRef.componentInstance.recordId = this.voucherData?.VoucherHeaderSid.toString();
+    modalRef.componentInstance.screenName = 'JournalVoucher';
+  }
 }

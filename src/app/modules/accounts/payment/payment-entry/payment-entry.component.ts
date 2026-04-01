@@ -83,6 +83,7 @@ import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.i
 import { errorLoggerWithToastr, ValidationMessageConfig } from 'src/app/common/error-handling/form-error-handler';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 /**
  * Payment Entry Component
@@ -3902,5 +3903,19 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           console.error('Error checking voucher posting mechanism:', error);
         },
       });
+  }
+
+  openAuditLogs() {
+    if (!this.paymentData?.VoucherHeaderSid) return;
+    const modalRef = this.modalService.open(AuditLogComponent, {
+      centered: true,
+      scrollable: true,
+      size: 'xl',
+      windowClass: 'audit-log-modal'
+    });
+    modalRef.componentInstance.title = 'Payment Logs';
+    modalRef.componentInstance.tableName = 'VoucherHeader';
+    modalRef.componentInstance.recordId = this.paymentData?.VoucherHeaderSid.toString();
+    modalRef.componentInstance.screenName = 'Payment';
   }
 }

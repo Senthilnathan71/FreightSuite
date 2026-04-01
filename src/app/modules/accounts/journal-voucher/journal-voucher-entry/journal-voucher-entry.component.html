@@ -29,6 +29,10 @@
                         <i class="fas fa-chevron-left me-1"></i>
                         Back
                     </button>
+                    <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openAuditLogs()" *ngIf="editMode">
+                        <i class="fas fa-history  me-1"></i>
+                        <span>Logs</span>
+                    </button>
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
     (click)="resetForm()" [disabled]="isPosted">
     <i class="fas fa-sync-alt me-1"></i>
