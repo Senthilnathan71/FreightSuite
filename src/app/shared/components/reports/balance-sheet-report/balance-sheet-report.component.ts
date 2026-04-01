@@ -149,6 +149,26 @@ export class BalanceSheetReportComponent {
     return this.fullData?.bucketLabels || [];
   }
 
+  get retainedEarning(): number {
+    return (this.data?.incomeTotal || 0) - (this.data?.expenseTotal || 0);
+  }
+
+  get sourceOfFundsCategories(): any[] {
+    return (this.processedFunds || []).filter(cat => cat.category !== 'Asset');
+  }
+
+  get assetCategories(): any[] {
+    return (this.processedFunds || []).filter(cat => cat.category === 'Asset');
+  }
+
+  get totalSourceOfFunds(): number {
+    return this.retainedEarning + this.sourceOfFundsCategories.reduce((sum, cat) => sum + (cat.categoryTotal || 0), 0);
+  }
+
+  get totalApplicationOfFunds(): number {
+    return this.assetCategories.reduce((sum, cat) => sum + (cat.categoryTotal || 0), 0);
+  }
+
   getExcelData(): ComplexReportExportConfig {
     const tableHeaders: ExcelHeader[] = [
       { key: 'LGroup', label: '' },
@@ -163,9 +183,9 @@ export class BalanceSheetReportComponent {
     ];
 
     const rows: ExcelRow[] = [];
-    const retainedEarning = (this.data?.incomeTotal || 0) - (this.data?.expenseTotal || 0);
-    const nonAssetCategories = (this.processedFunds || []).filter(cat => cat.category !== 'Asset');
-    const assetCategories = (this.processedFunds || []).filter(cat => cat.category === 'Asset');
+    const retainedEarning = this.retainedEarning;
+    const nonAssetCategories = this.sourceOfFundsCategories;
+    const assetCategories = this.assetCategories;
     const panelHeaderCells: ExcelCell[] = [
       { value: 'Group', alignment: { horizontal: 'center' } },
       { value: 'SubGroup', alignment: { horizontal: 'center' } },
@@ -178,7 +198,6 @@ export class BalanceSheetReportComponent {
 
     const pushPanelCategoryRows = (target: ExcelRow[], cat: any): void => {
       target.push({ cells: [{ value: cat.category, colspan: 4 }], style: 'section' });
-      target.push({ cells: panelHeaderCells, style: 'header' });
       (cat.items || []).forEach((item: any) => {
         target.push({
           cells: [
@@ -220,7 +239,7 @@ export class BalanceSheetReportComponent {
       cells: [
         { value: 'Reserve & Surplus' },
         { value: 'Retained Earning' },
-        { value: 'Retained Earning 2024' },
+        { value: '{{retainedEarningLabel}}' },
         { value: this.formatNumber(retainedEarning), alignment: { horizontal: 'right' } }
       ],
       style: 'data'
@@ -238,9 +257,27 @@ export class BalanceSheetReportComponent {
     });
 
     // Build RIGHT panel rows (Application of Funds side)
+    rightRows.push({ cells: [{ value: 'Application of Funds', colspan: 4 }], style: 'section' });
+    rightRows.push({ cells: [{ value: 'Asset', colspan: 4 }], style: 'section' });
+    rightRows.push({ cells: panelHeaderCells, style: 'header' });
     assetCategories.forEach(cat => {
-      rightRows.push({ cells: [{ value: 'Application of Funds', colspan: 4 }], style: 'section' });
       pushPanelCategoryRows(rightRows, cat);
+    });
+
+    leftRows.push({
+      cells: [
+        { value: 'Total Source of Funds', colspan: 3, alignment: { horizontal: 'right' } },
+        { value: this.formatNumber(this.totalSourceOfFunds), alignment: { horizontal: 'right' } }
+      ],
+      style: 'grandTotal'
+    });
+
+    rightRows.push({
+      cells: [
+        { value: 'Total Application of Funds', colspan: 3, alignment: { horizontal: 'right' } },
+        { value: this.formatNumber(this.totalApplicationOfFunds), alignment: { horizontal: 'right' } }
+      ],
+      style: 'grandTotal'
     });
 
     // Merge left and right panel rows into one "flex-like" Excel sheet
@@ -312,4 +349,13 @@ private formatNumber(value: any): string {
     maximumFractionDigits: 2,
   });
 }
+
+get retainedEarningLabel(): string {
+  const toDate = this.params?.ToDate;
+  if (!toDate) return 'Retained Earning';
+
+  const year = new Date(toDate).getFullYear();
+  return `Retained Earning ${year}`;
+}
+
 }

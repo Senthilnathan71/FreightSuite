@@ -44,50 +44,99 @@ export class ProfitLossReportComponent {
       this.yearKeys = Object.keys(this.fullData.profitLoss[0].amounts);
       const groups: { [key: string]: any[] } = {};
       this.fullData.profitLoss.forEach(item => {
-        if (!groups[item.SubGroupName]) {
-          groups[item.SubGroupName] = [];
+        const category = item.Category || 'Others';
+        const profitSection = item.ProfitSection || '';
+        const subGroupName = item.SubGroupName || 'Others';
+        const groupKey = `${category}__${profitSection}__${subGroupName}`;
+
+        if (!groups[groupKey]) {
+          groups[groupKey] = [];
         }
-        groups[item.SubGroupName].push(item);
+        groups[groupKey].push(item);
       });
-      this.groupedData = Object.keys(groups).map(subGroupName => ({
-        subGroupName,
-        items: groups[subGroupName]
-      }));
+      this.groupedData = Object.keys(groups).map(groupKey => {
+        const firstItem = groups[groupKey][0];
+        return {
+          category: firstItem?.Category || 'Others',
+          profitSection: firstItem?.ProfitSection || '',
+          groupName: firstItem?.GroupName || '',
+          subGroupName: firstItem?.SubGroupName || 'Others',
+          items: groups[groupKey]
+        };
+      });
     }
   }
 
-  getGroupTotal(items: any[], year: string): number {
-    return items.reduce((sum, item) => sum + (item.amounts[year] || 0), 0);
+  private normalizeValue(value: string | null | undefined): string {
+    return String(value || '').trim().toLowerCase();
+  }
+
+  getGroupsByCategory(category: string): any[] {
+    const normalizedCategory = this.normalizeValue(category);
+    return this.groupedData.filter(group => this.normalizeValue(group.category) === normalizedCategory);
+  }
+
+  private getGroupsByProfitSection(profitSection: string): any[] {
+    const normalizedProfitSection = this.normalizeValue(profitSection);
+    return this.groupedData.filter(group =>
+      this.normalizeValue(group.profitSection) === normalizedProfitSection
+    );
+  }
+
+  private getTotalForGroups(groups: any[], year: string): number {
+    return groups.reduce((sum, group) => sum + this.getGroupTotal(group.items, year), 0);
+  }
+
+  private getDirectIncomeTotal(year: string): number {
+    return this.getTotalForGroups(
+      this.getGroupsByProfitSection('DirectIncome'),
+      year
+    );
+  }
+
+  private getDirectExpenseTotal(year: string): number {
+    return this.getTotalForGroups(
+      this.getGroupsByProfitSection('DirectExpense'),
+      year
+    );
+  }
+
+  private getIndirectIncomeTotal(year: string): number {
+    return this.getTotalForGroups(
+      this.getGroupsByProfitSection('IndirectIncome'),
+      year
+    );
+  }
+
+  private getIndirectExpenseTotal(year: string): number {
+    return this.getTotalForGroups(
+      this.getGroupsByProfitSection('IndirectExpense'),
+      year
+    );
+  }
+
+  getRevenueGroups(): any[] {
+    return this.getGroupsByCategory('Income');
+  }
+
+  getExpenseGroups(): any[] {
+    return this.getGroupsByCategory('Expense');
   }
 
   getGrossProfit(year: string): number {
-    const totalIncome = this.groupedData
-      .filter(g => g.subGroupName)
-      .reduce((sum, group) => sum + this.getGroupTotal(group.items, year), 0);
-
-    const totalExpenses = this.groupedData
-      .filter(g => g.subGroupName)
-      .reduce((sum, group) => sum + this.getGroupTotal(group.items, year), 0);
-
-    return Math.abs(totalIncome) - Math.abs(totalExpenses);
+    return this.getDirectIncomeTotal(year) - this.getDirectExpenseTotal(year);
   }
 
   getNetProfit(year: string): number {
     const grossProfit = this.getGrossProfit(year);
-
-    const indirectOtherIncome = this.groupedData
-      .filter(g =>
-        g.subGroupName 
-      )
-      .reduce((sum, group) => sum + this.getGroupTotal(group.items, year), 0);
-
-    const indirectOtherExpense = this.groupedData
-      .filter(g =>
-        g.subGroupName
-      )
-      .reduce((sum, group) => sum + this.getGroupTotal(group.items, year), 0);
+    const indirectOtherIncome = this.getIndirectIncomeTotal(year);
+    const indirectOtherExpense = this.getIndirectExpenseTotal(year);
 
     return grossProfit + indirectOtherIncome - indirectOtherExpense;
+  }
+
+  getGroupTotal(items: any[], year: string): number {
+    return items.reduce((sum, item) => sum + (item.amounts[year] || 0), 0);
   }
 
 
@@ -126,8 +175,7 @@ getExcelData(): ComplexReportExportConfig {
     style: 'section'
   });
 
-  this.groupedData
-    .filter(g => g.subGroupName.toLowerCase().includes('income'))
+  this.getRevenueGroups()
     .forEach(group => {
 
       group.items.forEach((item, index) => {
@@ -173,8 +221,7 @@ getExcelData(): ComplexReportExportConfig {
     style: 'section'
   });
 
-  this.groupedData
-    .filter(g => g.subGroupName.toLowerCase().includes('expense'))
+  this.getExpenseGroups()
     .forEach(group => {
 
       group.items.forEach((item, index) => {

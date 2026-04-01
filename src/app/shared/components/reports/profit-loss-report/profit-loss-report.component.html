@@ -33,11 +33,12 @@
                     </tr>
                 </thead>
                 <tbody>
-
-                    <td [attr.colspan]="3 + yearKeys.length" style="font-weight: 700; background-color: #e0f7fa;">
-                        REVENUE
-                    </td>
-                    <ng-container *ngFor="let group of groupedData">
+                    <tr>
+                        <td [attr.colspan]="3 + yearKeys.length" style="font-weight: 700; background-color: #e0f7fa;">
+                            REVENUE
+                        </td>
+                    </tr>
+                    <ng-container *ngFor="let group of getRevenueGroups()">
                         <ng-container *ngIf="group.subGroupName">
 
                             <tr *ngFor="let item of group.items; let i = index">
@@ -54,7 +55,6 @@
                                 </td>
                             </tr>
                             <tr style="font-weight: 700; background-color: #f1f1f1;">
-
                                 <td class="text-end">Total {{ group.subGroupName }}</td>
                                 <td *ngFor="let year of yearKeys" class="text-end">
                                     {{ getGroupTotal(group.items, year) | number:'1.2-2' }}
@@ -62,10 +62,12 @@
                             </tr>
                         </ng-container>
                     </ng-container>
-                    <td [attr.colspan]="3 + yearKeys.length" style="font-weight: 700; background-color: #ffe0e0;">
-                        EXPENSES
-                    </td>
-                    <ng-container *ngFor="let group of groupedData">
+                    <tr>
+                        <td [attr.colspan]="3 + yearKeys.length" style="font-weight: 700; background-color: #ffe0e0;">
+                            EXPENSES
+                        </td>
+                    </tr>
+                    <ng-container *ngFor="let group of getExpenseGroups()">
                         <ng-container *ngIf="group.subGroupName">
                             <tr *ngFor="let item of group.items; let i = index">
 
