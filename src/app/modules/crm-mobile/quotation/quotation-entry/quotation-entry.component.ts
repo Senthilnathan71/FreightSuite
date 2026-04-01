@@ -1063,7 +1063,6 @@ private extractCargoData(enquiryCargo: any[]): any {
   const status = form.get('authorizerStatus')?.value;
   const approvedByControl = form.get('ApprovedBy');
   const remarksControl = form.get('authorizerRemarks');
-  const isApproved = status === 'Approved';
   
   // Clear existing validators first
   approvedByControl?.clearValidators();
@@ -1071,11 +1070,7 @@ private extractCargoData(enquiryCargo: any[]): any {
   
   if (status === 'Approved' || status === 'Rejected') {
     approvedByControl?.setValidators([Validators.required]);
-    if (isApproved) {
-      approvedByControl?.disable({ emitEvent: false });
-    } else {
-      approvedByControl?.enable({ emitEvent: false });
-    }
+    approvedByControl?.enable({ emitEvent: false });
   } else {
     approvedByControl?.disable({ emitEvent: false });
   }
@@ -1083,7 +1078,7 @@ private extractCargoData(enquiryCargo: any[]): any {
   if (status === 'Counter') {
     remarksControl?.setValidators([Validators.required]);
   }
-  if (isApproved) {
+  if (status === 'Approved') {
     remarksControl?.disable({ emitEvent: false });
   } else {
     remarksControl?.enable({ emitEvent: false });
@@ -3755,13 +3750,7 @@ onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status:
         // Selected carrier - set to Approved
         statusCtrl.setValue('Approved', { emitEvent: false });
         statusCtrl.enable({ emitEvent: false });
-        
-        // For the approved carrier, also set ApprovedBy
-        // const approvedByCtrl = carrierForm.get('ApprovedBy');
-        // if (approvedByCtrl) {
-        //   approvedByCtrl.setValue(this.userData?.userName || 'System', { emitEvent: false });
-        //   approvedByCtrl.enable({ emitEvent: false });
-        // }
+        this.updateCarrierValidationBasedOnStatus(carrierForm);
       } else {
         // Force change other carriers to "Pending" (not "Waiting For Approval")
         statusCtrl.setValue('Pending', { emitEvent: false });
@@ -3775,6 +3764,7 @@ onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status:
         }
         
         this.enableCarrierFields(routeIndex, index);
+        this.updateCarrierValidationBasedOnStatus(carrierForm);
       }
 
     
@@ -3799,6 +3789,7 @@ onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status:
 
   routeForm.get('isRouteApproved')?.setValue(false);
   this.enableCarrierFields(routeIndex, carrierIndex);
+  this.updateCarrierValidationBasedOnStatus(currentCarrier);
   this.applyBookingLockForRoute(routeIndex);
 
 }
@@ -3814,31 +3805,30 @@ private hasBookingForRoute(routeIndex: number, routeData?: any): boolean {
 }
 
 private isCarrierApproved(routeIndex: number, carrierIndex: number, routeData?: any): boolean {
-  const dataCarrier = routeData?.quoteCarrier?.[carrierIndex];
+  const sourceRoute = routeData || this.quotationData?.quoteRoute?.[routeIndex];
+  const dataCarrier = sourceRoute?.quoteCarrier?.[carrierIndex];
   if (dataCarrier?.ApprovalStatus === 'Approved') {
     return true;
   }
-
-  const carrierForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
-  return carrierForm?.get('authorizerStatus')?.value === 'Approved';
+  return false;
 }
 
 private routeHasApprovedCarrier(routeIndex: number, routeData?: any): boolean {
-  if (routeData?.quoteCarrier?.length) {
-    return routeData.quoteCarrier.some(carrier => carrier?.ApprovalStatus === "Approved");
+  const sourceRoute = routeData || this.quotationData?.quoteRoute?.[routeIndex];
+  if (sourceRoute?.quoteCarrier?.length) {
+    return sourceRoute.quoteCarrier.some(carrier => carrier?.ApprovalStatus === "Approved");
   }
-  const carrierArr = this.quoteCarriers(routeIndex);
-  return carrierArr.controls.some((carrier: FormGroup) =>
-    carrier.get('authorizerStatus')?.value === "Approved"
-  );
+  return false;
 }
 
 isBookingLockedForRoute(routeIndex: number): boolean {
-  return this.hasBookingForRoute(routeIndex) && this.routeHasApprovedCarrier(routeIndex);
+  return this.hasBookingForRoute(routeIndex, this.quotationData?.quoteRoute?.[routeIndex]) &&
+    this.routeHasApprovedCarrier(routeIndex, this.quotationData?.quoteRoute?.[routeIndex]);
 }
 
 isCarrierApprovalLocked(routeIndex: number, carrierIndex: number): boolean {
-  return this.isCarrierApproved(routeIndex, carrierIndex) || this.isBookingLockedForRoute(routeIndex);
+  return this.isCarrierApproved(routeIndex, carrierIndex, this.quotationData?.quoteRoute?.[routeIndex]) ||
+    this.isBookingLockedForRoute(routeIndex);
 }
 
 private applyBookingLockForRoute(routeIndex: number, routeData?: any): void {

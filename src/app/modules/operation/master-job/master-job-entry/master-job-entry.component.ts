@@ -881,6 +881,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       // Master Job fields
       DepartmentMasterSid: ['', Validators.required],
       MasterJobNumber: [{ value: '', disabled: true }],
+      ImportMasterJobNumber: [{ value: '', disabled: true }],
       MasterJobDate: [defaultMasterJobDate],
       FreightPPCC: ['Prepaid', Validators.required],
 
@@ -930,6 +931,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       // Others fields
       MasterJobOthersSid: [null],
       ExportToImport: ['N'],
+      ImportMasterJobSid: [null],
       Yard: [null],
       YardAddress: [''],
       Transporter: [''],
@@ -1344,6 +1346,7 @@ onETDDateSelect(): void {
           this.masterJobForm.get('MasterJobDate')?.disable();
 
           this.loadCustomsData();
+          this.loadLinkedMasterJobNumber(data?.others?.[0]?.ImportMasterJobSid || null);
         }
 
         // Handle AR/AP data - Ensure it's always an array
@@ -1384,6 +1387,26 @@ onETDDateSelect(): void {
         console.error('Error loading master job:', error);
         this.isLoading = false;
         this.spinner.hide();
+      }
+    });
+  }
+
+  private loadLinkedMasterJobNumber(importMasterJobSid: number | null): void {
+    const linkedControl = this.masterJobForm.get('ImportMasterJobNumber');
+    if (!importMasterJobSid) {
+      linkedControl?.setValue('');
+      return;
+    }
+
+    this.operationService.getMasterJobById({
+      MasterJobSid: importMasterJobSid,
+      screenName: 'Master Job'
+    }).subscribe({
+      next: (response: any) => {
+        linkedControl?.setValue(response?.data?.MasterJobNumber || '');
+      },
+      error: () => {
+        linkedControl?.setValue('');
       }
     });
   }
@@ -1502,10 +1525,12 @@ onETDDateSelect(): void {
           CarrierRef: othersData.CarrierRef || '',
           AgentRef: othersData.AgentRef || '',
           JobtoSubjob: othersData.JobtoSubjob,
+          ImportMasterJobSid: othersData.ImportMasterJobSid || null,
           ExportToImport: othersData.ExportToImport || 'N',
           ExportDoDate: othersData.ExportDoDate ? new Date(othersData.ExportDoDate) : null,
           SOBDate: othersData.SOBDate ? new Date(othersData.SOBDate) : null,
         });
+        this.applyVoyageLock();
         this.selectedTransferCompanySid = othersData.DestinationCompanyMasterSid || data.DestinationCompanyMasterSid || this.selectedTransferCompanySid;
         this.selectedTransferBranchSid = othersData.DestinationBranchMasterSid || data.DestinationBranchMasterSid || null;
         if (this.selectedTransferCompanySid) {
@@ -1564,6 +1589,7 @@ onETDDateSelect(): void {
           voyage.PortCutoffDate ? new Date(voyage.PortCutoffDate) :
             data.PortCutoffDate ? new Date(data.PortCutoffDate) : null,
       });
+      this.applyVoyageLock();
 
     }
     // ✅ Fixed: Populate carrier dropdown for edit mode
@@ -1814,6 +1840,19 @@ onETDDateSelect(): void {
 
   get isExportToImportCompleted(): boolean {
     return this.masterJobForm.get('ExportToImport')?.value === 'Y';
+  }
+
+  private applyVoyageLock(): void {
+    const voyageControl = this.masterJobForm.get('VoyageNo');
+    if (!voyageControl) {
+      return;
+    }
+
+    if (this.isExportToImportCompleted) {
+      voyageControl.disable({ emitEvent: false });
+    } else {
+      voyageControl.enable({ emitEvent: false });
+    }
   }
 
   get hasHouseJobs(): boolean {
@@ -2710,6 +2749,7 @@ onETDDateSelect(): void {
       ExportDoDate: formValue.ExportDoDate,
       SOBDate: formValue.SOBDate,
       JobtoSubjob: formValue.JobtoSubjob,
+      ImportMasterJobSid: formValue.ImportMasterJobSid || null,
       ExportToImport: formValue.ExportToImport || 'N'
     };
 
@@ -3021,6 +3061,7 @@ onETDDateSelect(): void {
       FreightPPCC: 'Prepaid',
       JobStatus : 'Job Generated'
     });
+    this.applyVoyageLock();
     if (!this.isEditMode) {
     this.masterJobForm.get('DepartmentMasterSid')?.enable();
     }

@@ -707,6 +707,7 @@ private showNoMawbStockWarningOnce(warningKey: string): void {
       // Master Job fields
       DepartmentMasterSid: ['', Validators.required],
       MasterJobNumber: [{ value :'' , disabled : true}],
+      ImportMasterJobNumber: [{ value: '', disabled: true }],
       MasterJobDate: [defaultMasterJobDate],
       FreightPPCC: ['Prepaid', Validators.required],
       DestinationAgent: [null],
@@ -775,6 +776,7 @@ private showNoMawbStockWarningOnce(warningKey: string): void {
       CarrierRef: [''],
       AgentRef: [''],
       ExportToImport: ['N'],
+      ImportMasterJobSid: [null],
 
       // Added fields for cut offs
       SiCutoffDate: [null],
@@ -1158,6 +1160,7 @@ loadMawbStock(data: any): void {
             Volume: aggregatedTotals?.Volume || data.Volume,
             WeightIn: aggregatedTotals?.WeightIn || data.WeightIn
           });
+          this.loadLinkedMasterJobNumber(data?.others?.[0]?.ImportMasterJobSid || null);
          setTimeout(() => {
           this.loadMawbStock(data);
         }, 1000);
@@ -1208,6 +1211,26 @@ loadMawbStock(data: any): void {
         this.isSaving = false;
         this.isLoading = false;
         this.spinner.hide();
+      }
+    });
+  }
+
+  private loadLinkedMasterJobNumber(importMasterJobSid: number | null): void {
+    const linkedControl = this.masterJobForm.get('ImportMasterJobNumber');
+    if (!importMasterJobSid) {
+      linkedControl?.setValue('');
+      return;
+    }
+
+    this.operationService.getMasterJobById({
+      MasterJobSid: importMasterJobSid,
+      screenName: 'Master Air Waybill'
+    }).subscribe({
+      next: (response: any) => {
+        linkedControl?.setValue(response?.data?.MasterJobNumber || '');
+      },
+      error: () => {
+        linkedControl?.setValue('');
       }
     });
   }
@@ -1327,6 +1350,7 @@ loadMawbStock(data: any): void {
       ExportDoNo: othersData.ExportDoNo || '',
       CarrierRef: othersData.CarrierRef || '',
           AgentRef: othersData.AgentRef || '',
+      ImportMasterJobSid: othersData.ImportMasterJobSid || null,
       ExportToImport: othersData.ExportToImport || 'N',
       ExportDoDate: othersData.ExportDoDate ? new Date(othersData.ExportDoDate) : null,
       SOBDate: othersData.SOBDate ? new Date(othersData.SOBDate) : null,
@@ -2133,6 +2157,7 @@ if (polSid && !podSid) {
         ExportDoNo: formValue.ExportDoNo,
         ExportDoDate: formValue.ExportDoDate,
         SOBDate: formValue.SOBDate,
+        ImportMasterJobSid: formValue.ImportMasterJobSid || null,
         ExportToImport: formValue.ExportToImport || 'N',
     };
 

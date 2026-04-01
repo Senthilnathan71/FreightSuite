@@ -523,21 +523,24 @@
         [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
         bindValue="CustomerName"
         (itemSelected)="setAddress('ConsigneeAddress',$event) ; onConsigneeChange($event)"
+        [readonly]="isExportToImportLinked"
          style="display:block; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
       </dofi-searchable-dropdown>
       </div>
       <!-- Swap icon -->
       <button class="btn bi bi-calendar3 ps-0" type="button"
-        (click)="toggleInputType('ConsigneeName','isConsigneeFreeText',$event)" style="flex-shrink:0;">
+        (click)="toggleInputType('ConsigneeName','isConsigneeFreeText',$event)" style="flex-shrink:0;"
+        [disabled]="isExportToImportLinked">
         <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
       </button>
     </div>
 
     <!-- Manual text input mode -->
     <div class="d-flex" *ngIf="this.b['isConsigneeFreeText']?.value">
-      <input type="text" formControlName="ConsigneeName" placeholder="" class="custom-input-field sm" style="width: 85%" />
+      <input type="text" formControlName="ConsigneeName" placeholder="" class="custom-input-field sm" style="width: 85%" [readonly]="isExportToImportLinked" />
       <button class="btn bi bi-calendar3" type="button"
-        (click)="toggleInputType('ConsigneeName','isConsigneeFreeText',$event)">
+        (click)="toggleInputType('ConsigneeName','isConsigneeFreeText',$event)"
+        [disabled]="isExportToImportLinked">
         <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
       </button>
     </div>
@@ -583,21 +586,24 @@
         bindValue="CustomerName"
        (itemSelected)="setAddress('NotifyAddress', $event); notifyManuallyChanged = true" 
        (clear)="notifyManuallyChanged = false"  
+        [readonly]="isExportToImportLinked"
          style="display:block; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
       </dofi-searchable-dropdown>
       </div>
       <!-- Swap icon -->
       <button class="btn bi bi-calendar3 ps-0" type="button"
-         (click)="toggleInputType('Notify','isNotifyFreeText',$event); notifyManuallyChanged = true" style="flex-shrink:0;">
+         (click)="toggleInputType('Notify','isNotifyFreeText',$event); notifyManuallyChanged = true" style="flex-shrink:0;"
+         [disabled]="isExportToImportLinked">
         <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
       </button>
     </div>
 
     <!-- Manual text input mode -->
     <div class="d-flex" *ngIf="this.b['isNotifyFreeText']?.value">
-      <input type="text" formControlName="Notify" placeholder="" class="custom-input-field sm" style="width: 85%" />
+      <input type="text" formControlName="Notify" placeholder="" class="custom-input-field sm" style="width: 85%" [readonly]="isExportToImportLinked" />
       <button class="btn bi bi-calendar3" type="button"
-        (click)="toggleInputType('Notify','isNotifyFreeText',$event); notifyManuallyChanged = true">
+        (click)="toggleInputType('Notify','isNotifyFreeText',$event); notifyManuallyChanged = true"
+        [disabled]="isExportToImportLinked">
         <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
       </button>
     </div>
@@ -1595,7 +1601,7 @@
           </div>
 
           <div class="toolbar-right">
-            <button class="table-action-btn primary" (click)="addProduct()">
+            <button class="table-action-btn primary" (click)="addProduct()" [disabled]="isExportToImportLinked">
               <i class="fas fa-plus"></i> Add Product
             </button>
             <button class="table-action-btn export" (click)="reportProducts()">
@@ -1641,14 +1647,16 @@
               <tr class="table-row">
                 <td>
                   <div class="d-flex align-items-center justify-content-center">
-                    <a class="text-info " class="link "
+                    <button type="button" class="btn btn-link text-info p-0 link"
+                      [disabled]="isExportToImportLinked"
                       (click)="openProductModal(productModal,productIndex,product.value)">
                      <i class="fas fa-eye text-info fs-2"></i>
-                    </a>
-                    <a class="text-danger  ps-2"
+                    </button>
+                    <button type="button" class="btn btn-link text-danger ps-2 p-0"
+                      [disabled]="isExportToImportLinked"
                       (click)="deleteBookingProduct(productIndex,product.value.HouseJobProductSid)">
                       <i class="fas fa-trash text-center fs-2"></i>
-                    </a>
+                    </button>
                   </div>
                 </td>
                 <td>{{product.value.ProductName}}</td>
@@ -1735,6 +1743,7 @@
                   class="py-0">
                   <td>
                     <button class="btn btn-link text-danger py-0 px-1"
+                      [disabled]="isExportToImportLinked"
                       (click)="deleteBookingProduct(productIndex,product.value.HouseJobProductSid)" ngbTooltip="Delete">
                       <i class="fas fa-trash text-center fs-2"></i>
                     </button>
@@ -1753,6 +1762,7 @@
               
                         <!-- Swap icon -->
                         <button class="btn bi bi-calendar3 p-0" type="button"
+                          [disabled]="isExportToImportLinked"
                           (click)="toggleProductInputType(getProductFormGroup(productIndex), 'ProductName', 'isProductFreeText', $event)">
                           <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
                         </button>
@@ -1762,6 +1772,7 @@
                       <div class="input-group" *ngIf="product.get('isProductFreeText')?.value">
                         <input type="text" formControlName="ProductName" placeholder="" class="form-control" />
                         <button class="btn bi bi-calendar3 p-0" type="button"
+                          [disabled]="isExportToImportLinked"
                           (click)="toggleProductInputType(getProductFormGroup(productIndex), 'ProductName', 'isProductFreeText', $event)">
                           <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
                         </button>

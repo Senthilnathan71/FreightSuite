@@ -381,12 +381,13 @@ auditLogs: any[] = []; // Stores audit logs
   rateResult : any[] = [];
   bookingRateArr : any[] = [];
   currentFormValue : any;
-  isShipperFreeText: boolean = false;
+isShipperFreeText: boolean = false;
 isConsigneeFreeText: boolean = false;
 isNotifyFreeText: boolean = false;
 isCarrierFreeText: boolean = false;
 isVesselFreeText: boolean = false;
 isVoyageFreeText: boolean = false;
+isExportToImportLinked: boolean = false;
   
   // Variable Declaration - Milestone Part
   resetTriggerMilestone : boolean;
@@ -1395,6 +1396,10 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 }
 
 addProduct() {
+    if (this.isExportToImportLinked) {
+      this.appSettingService.showInfo('Product entry is locked for export-to-import linked house jobs.');
+      return;
+    }
     const formGroup = this.createBookingProductGroup();
     formGroup.get('UomMasterSid')?.setValue(2, { emitEvent: true });
     this.bookingProducts.push(formGroup);
@@ -1670,6 +1675,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
   
   try {
     this.bookingHeader = response;
+    this.isExportToImportLinked = response?.masterJob?.others?.[0]?.ExportToImport === 'Y';
     const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
     this.selectedDepartment = selectedDepartment;
     this.selectedDepartmentType = selectedDepartment?.departmentType?.toUpperCase() || '';
@@ -1894,6 +1900,8 @@ private loadMasterJobDetails(masterJobSid: number): void {
     this.syncFormValueWithRateComponent();
     this.calculateChargeWiseProfit();
     this.calculateCustomerWiseAmount();
+    this.applyExportToImportFieldLocks();
+    this.applyProductTabLocks();
     
     setTimeout(() => {
       const otherData = response.Others[0];
@@ -1923,6 +1931,57 @@ private loadMasterJobDetails(masterJobSid: number): void {
   }
 }
 
+private applyExportToImportFieldLocks(): void {
+  if (!this.houseJobForm) {
+    return;
+  }
+
+  const lockFields = ['ConsigneeName', 'ConsigneeAddress', 'Notify', 'NotifyAddress'];
+  if (this.isExportToImportLinked) {
+    lockFields.forEach(field => this.houseJobForm.get(field)?.disable({ emitEvent: false }));
+    this.houseJobForm.patchValue({
+      isConsigneeFreeText: false,
+      isNotifyFreeText: false,
+    }, { emitEvent: false });
+  } else {
+    lockFields.forEach(field => this.houseJobForm.get(field)?.enable({ emitEvent: false }));
+  }
+}
+
+private applyCargoTabLocks(): void {
+  if (!this.cargoForm) {
+    return;
+  }
+
+  if (this.isExportToImportLinked) {
+    this.cargoForm.disable({ emitEvent: false });
+  } else {
+    this.cargoForm.enable({ emitEvent: false });
+  }
+}
+
+private applyProductTabLocks(): void {
+  if (this.productForm) {
+    if (this.isExportToImportLinked) {
+      this.productForm.disable({ emitEvent: false });
+    } else {
+      this.productForm.enable({ emitEvent: false });
+    }
+  }
+
+  if (!this.bookingProducts?.controls) {
+    return;
+  }
+
+  this.bookingProducts.controls.forEach(control => {
+    if (this.isExportToImportLinked) {
+      control.disable({ emitEvent: false });
+    } else {
+      control.enable({ emitEvent: false });
+    }
+  });
+}
+
   onContainerTypeChange(containerType : any){
     if(!containerType){
       this.selectedContainerType = '';
@@ -1932,6 +1991,10 @@ private loadMasterJobDetails(masterJobSid: number): void {
   }
 
   openProductModal(content: TemplateRef<any>, productIndex?: number, data?: any) {
+    if (this.isExportToImportLinked) {
+      this.appSettingService.showInfo('Product editing is locked for export-to-import linked house jobs.');
+      return;
+    }
     this.initProductForm();
     if (data) {
       this.productForm.patchValue({
@@ -1992,6 +2055,10 @@ private loadMasterJobDetails(masterJobSid: number): void {
   }
 
   onProductSubmit() {
+    if (this.isExportToImportLinked) {
+      this.appSettingService.showInfo('Product editing is locked for export-to-import linked house jobs.');
+      return;
+    }
     const grossWeight = this.productForm.get('GrossWeight')?.value;
   const netWeight = this.productForm.get('NetWeight')?.value;
   this.setOrResetWeightError(this.productForm);
@@ -2627,7 +2694,7 @@ private getAgentNameById(agentId: number): string {
   if (this.selectedFCLLCL === "LCL" && department.ExportImport === "Export") {
     this.cargoForm.get('StuffingAt')?.setValue('Dock');
     this.cargoForm.get('StuffingAt')?.disable();
-  } else {
+  } else if (!this.isExportToImportLinked) {
     this.cargoForm.get('StuffingAt')?.enable();
   }
   
@@ -2637,6 +2704,9 @@ private getAgentNameById(agentId: number): string {
   this.handleCFSOrYard();
   this.onRouteChange();
   this.handleImportExport();
+  this.applyExportToImportFieldLocks();
+  this.applyCargoTabLocks();
+  this.applyProductTabLocks();
 }
 private handleHBLNoField(exportImport: string): void {
   const hblNoControl = this.houseJobForm.get('HBLNo');
@@ -3430,6 +3500,10 @@ getVoyageTypeBasedOnDept(deptId: number) {
     }
 
   deleteBookingProduct(productIndex: number, HouseJobProductSid?: number) {
+    if (this.isExportToImportLinked) {
+      this.appSettingService.showInfo('Product deletion is locked for export-to-import linked house jobs.');
+      return;
+    }
     if (HouseJobProductSid) {
       this.operationService.deleteHouseJobProduct(HouseJobProductSid).subscribe(
         (resp: any) => {
@@ -3467,10 +3541,15 @@ getVoyageTypeBasedOnDept(deptId: number) {
   }
 
   handleProductRelatedCalculation() {
-     if (this.isPatching) {
+  if (this.isPatching) {
     return;
   }
-    if (this.bookingProducts.length === 0) {
+  if (this.bookingProducts.length === 0) {
+      if (this.isExportToImportLinked) {
+        this.cargoForm.disable({ emitEvent: false });
+        return;
+      }
+
       this.c['NoOfPackage']?.enable(); this.c['NoOfPackage']?.setValue(0);
       this.c['GrossWeight']?.enable(); this.c['GrossWeight']?.setValue(0);
       this.c['NetWeight']?.enable(); this.c['NetWeight']?.setValue(0);
@@ -3506,6 +3585,10 @@ getVoyageTypeBasedOnDept(deptId: number) {
     this.c['Volumetric']?.setValue(Number(totalVolumetric.toFixed(this.decimalAfterPrecision)));
     this.c['Volumetric']?.disable();
     this.calculateChargeableWeight();
+
+    if (this.isExportToImportLinked) {
+      this.cargoForm.disable({ emitEvent: false });
+    }
   }
 
   // ************ END OF PRODUCT RELATED FUNCTIONS *************
@@ -3674,6 +3757,7 @@ resetForm() {
     this.patchValues(this.housejobData);
   }
   else{
+    this.isExportToImportLinked = false;
       this.houseJobForm.reset({
     status: 'Active'
   });
@@ -3701,6 +3785,7 @@ resetForm() {
 
   this.cargoForm.reset();
   this.otherForm.reset();
+  this.applyExportToImportFieldLocks();
   }
 
 }
@@ -5651,6 +5736,9 @@ volumeAmount(): number {
   }
  toggleProductInputType(formGroup: FormGroup, mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
   event.stopPropagation();
+  if (this.isExportToImportLinked) {
+    return;
+  }
   const value = formGroup.get(flagCtrl)?.value;
   formGroup.get(flagCtrl)?.setValue(!value);
   formGroup.get(mainCtrl)?.reset();
