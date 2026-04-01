@@ -86,7 +86,7 @@
             [ngClass]="{ 'btn-info': !isDirty, 'btn-warning': isDirty }"
             (click)="onSubmit(undefined, true)"
             [disabled]="
-              isReadOnly || (!mps.can('update') && isEditMode) || isSaving
+              isReadOnly || (!mps.can('update') && isEditMode) || isSaving || voucherConstraints.isClosed
             "
           >
             <i class="fas fa-save me-1"></i>
@@ -118,7 +118,7 @@
             [ngClass]="{ 'btn-warning': isDirty, 'btn-info': !isDirty }"
             (click)="onSubmit()"
             [disabled]="
-              isReadOnly || (!mps.can('update') && isEditMode) || isSaving
+              isReadOnly || (!mps.can('update') && isEditMode) || isSaving || voucherConstraints.isClosed
             "
           >
             <i class="fas fa-save me-1"></i>
@@ -143,7 +143,8 @@
               isReadOnly ||
               (!mps.can('update') && isEditMode) ||
               isDirty ||
-              isSaving
+              isSaving ||
+              voucherConstraints.isClosed
             "
             [title]="
               isDirty ? 'Please save the draft first before posting' : ''

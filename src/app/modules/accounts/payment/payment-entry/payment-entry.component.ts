@@ -534,7 +534,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
   applyVoucherDateConstraints(): void {
     const voucherDate = this.paymentForm?.get('VoucherDate')?.value;
-    this.voucherConstraints = this.voucherPeriodService.applyConstraints(voucherDate, 'GL');
+    this.voucherConstraints = this.voucherPeriodService.applyConstraints(voucherDate, 'AP');
   }
 
   onVoucherDateChange(): void {

@@ -535,7 +535,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
   applyVoucherDateConstraints(): void {
     const voucherDate = this.receiptForm?.get('VoucherDate')?.value;
-    this.voucherConstraints = this.voucherPeriodService.applyConstraints(voucherDate, 'GL');
+    this.voucherConstraints = this.voucherPeriodService.applyConstraints(voucherDate, 'AR');
   }
 
   onVoucherDateChange(): void {

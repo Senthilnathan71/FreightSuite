@@ -79,7 +79,7 @@
               [ngClass]="{ 'btn-warning': isDirty, 'btn-info': !isDirty }"
               (click)="saveDraft()"
               [disabled]="
-                isReadOnly || (!mps.can('update') && editMode) || isSaving
+                isReadOnly || (!mps.can('update') && editMode) || isSaving || voucherConstraints.isClosed
               "
             >
               <i class="fas fa-save me-1"></i>
@@ -103,7 +103,8 @@
                 form.invalid ||
                 (!mps.can('update') && editMode) ||
                 isDirty ||
-                isSaving || isReadOnly
+                isSaving || isReadOnly ||
+                voucherConstraints.isClosed
               "
               [title]="
                 isDirty ? 'Please save the draft first before posting' : ''

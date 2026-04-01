@@ -3,9 +3,6 @@ import { Component, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
-import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
-import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
-import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -30,9 +27,6 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
     CommonModule,
     FeatherModule,
     FormsModule,
-    OnlyNumbersDirective,
-    OnlyTextDirective,
-    TextWithNumbersDirective,
     DatePipe,
     NgbDatepickerModule,
     PreventMultiClickDirective,

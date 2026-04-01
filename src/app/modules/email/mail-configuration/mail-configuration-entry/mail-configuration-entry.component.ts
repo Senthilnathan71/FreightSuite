@@ -139,6 +139,39 @@ export class MailConfigurationEntryComponent implements OnInit {
       { key: 'IncoTerms', label: 'Inco Terms' },
       { key: 'MovementType', label: 'Movement Type' },
     ],
+    'enquiry': [
+      { key: 'CustomerMasterSid', label: 'Customer' },
+      { key: 'ShipperName', label: 'Shipper' },
+      { key: 'ConsigneeName', label: 'Consignee' },
+      { key: 'EnquiryDate', label: 'Enquiry Date' },
+      { key: 'shipmentDate', label: 'Exp. Shipment Date' },
+      { key: 'PORSid', label: 'Place of Origin' },
+      { key: 'POLSid', label: 'Port of Loading' },
+      { key: 'PODSid', label: 'Port of Discharge' },
+      { key: 'FDCSid', label: 'Final Place of Delivery' },
+      { key: 'IncoTerms', label: 'Inco Terms' },
+      { key: 'FreightPPCC', label: 'Freight PP/CC' },
+      { key: 'CargoType', label: 'Cargo Type' },
+      { key: 'GrossWeight', label: 'Gross Weight' },
+      { key: 'ClearanceBy', label: 'Clearance By' },
+      { key: 'UserMasterSid', label: 'Salesman' },
+    ],
+    'quotation': [
+      { key: 'CustomerMasterSid', label: 'Customer' },
+      { key: 'CustomerAddress', label: 'Customer Address' },
+      { key: 'PORSid', label: 'Place of Origin' },
+      { key: 'POLSid', label: 'Port of Loading' },
+      { key: 'PODSid', label: 'Port of Discharge' },
+      { key: 'FPODSid', label: 'Final Place of Delivery' },
+      { key: 'effDate', label: 'Effective Date' },
+      { key: 'expDate', label: 'Expiry Date' },
+      { key: 'FreightPPCC', label: 'Freight PP/CC' },
+      { key: 'CargoType', label: 'Cargo Type' },
+      { key: 'CarrierMasterSid', label: 'Carrier' },
+      { key: 'SalesmanSid', label: 'Salesman' },
+      { key: 'AgreedRate', label: 'Rate Agreed' },
+      { key: 'segmentType', label: 'Mode of Transport' },
+    ],
     'master job': [
       { key: 'POO', label: 'Place of Origin' },
       { key: 'POL', label: 'Port of Loading' },
@@ -184,7 +217,8 @@ export class MailConfigurationEntryComponent implements OnInit {
     this.settingsService.getAllMenu().subscribe({
       next: (menus) => {
         this.menuList = (menus || []).filter((m: any) =>
-          m.ModuleName?.toLowerCase().startsWith('operation')
+          m.ModuleName?.toLowerCase().startsWith('operation') ||
+          (m.ModuleName?.toLowerCase() === 'crm' && ['Enquiry', 'Quotation'].includes(m.MenuName))
         );
         // If already editing, recompute field options now that menuList is available
         if (this.editingRow?.MenuMasterSid) {

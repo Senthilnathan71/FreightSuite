@@ -89,9 +89,9 @@
   </button>
 </div>
 <div class="action-group primary" *ngIf="isEditMode">
-  <button class="btn btn-sm btn-info text-nowrap" (click)="sendManualMail()">
-    <i class="fas fa-envelope me-1"></i>
-    <span>Send Mail</span>
+  <button class="btn btn-sm btn-info text-nowrap" (click)="sendManualMail()" [disabled]="isSendingMail">
+    <i class="fas me-1" [ngClass]="isSendingMail ? 'fa-spinner fa-spin' : 'fa-envelope'"></i>
+    <span>{{ isSendingMail ? 'Preparing...' : 'Send Mail' }}</span>
   </button>
 </div>
       <div class="action-group primary">

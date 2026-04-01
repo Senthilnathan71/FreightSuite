@@ -3774,34 +3774,43 @@ getVesselVoyBasedOnPorts() {
   }
 
 
-  async sendManualMail(): Promise<void> {
-    const pdfBlob = await this.generatePDFBlob('mail-attachment');
-    let attachmentFile: File | undefined;
-    if (pdfBlob) {
-      attachmentFile = new File([pdfBlob], (this.bookingData?.BookingNo || 'Booking') + '.pdf', { type: 'application/pdf' });
-    }
+  isSendingMail = false;
 
-    this.emailTriggerService.triggerManualEmails({
-      companyId: this.currentCompany.CompanyMasterSid,
-      branchId: this.currentBranch.BranchMasterSid,
-      menuMasterSid: this.MenuMasterSid,
-      action: 'UPDATE',
-      attachmentFile,
-      context: {
-        BookingNo: this.bookingData?.BookingNo,
-        date: this.datePipe.transform(this.bookingData?.BookingDateTime),
-        POO: this.getFormattedPort(this.bookingData?.POO),
-        POL: this.getFormattedPort(this.bookingData?.POL),
-        POD: this.getFormattedPort(this.bookingData?.POD),
-        FPD: this.getFormattedPort(this.bookingData?.FPD),
-        customerName: this.bookingData?.CustomerName,
-        shipperName: this.bookingData?.ShipperName,
-        consigneeName: this.bookingData?.ConsigneeName,
-        userName: this.userData?.userName,
-        ShipmentNo: this.bookingData?.ShipmentNo,
-        menuEmail: this.selectedCustomerBranch?.Email || ''
+  async sendManualMail(): Promise<void> {
+    this.isSendingMail = true;
+    this.spinner.show();
+    try {
+      const pdfBlob = await this.generatePDFBlob('mail-attachment');
+      let attachmentFile: File | undefined;
+      if (pdfBlob) {
+        attachmentFile = new File([pdfBlob], (this.bookingData?.BookingNo || 'Booking') + '.pdf', { type: 'application/pdf' });
       }
-    });
+
+      this.emailTriggerService.triggerManualEmails({
+        companyId: this.currentCompany.CompanyMasterSid,
+        branchId: this.currentBranch.BranchMasterSid,
+        menuMasterSid: this.MenuMasterSid,
+        action: 'UPDATE',
+        attachmentFile,
+        context: {
+          BookingNo: this.bookingData?.BookingNo,
+          date: this.datePipe.transform(this.bookingData?.BookingDateTime),
+          POO: this.getFormattedPort(this.bookingData?.POO),
+          POL: this.getFormattedPort(this.bookingData?.POL),
+          POD: this.getFormattedPort(this.bookingData?.POD),
+          FPD: this.getFormattedPort(this.bookingData?.FPD),
+          customerName: this.bookingData?.CustomerName,
+          shipperName: this.bookingData?.ShipperName,
+          consigneeName: this.bookingData?.ConsigneeName,
+          userName: this.userData?.userName,
+          ShipmentNo: this.bookingData?.ShipmentNo,
+          menuEmail: this.selectedCustomerBranch?.Email || ''
+        }
+      });
+    } finally {
+      this.isSendingMail = false;
+      this.spinner.hide();
+    }
   }
 
   navigateBack() {
@@ -5405,9 +5414,9 @@ async generatePDFBlob(type: 'booking' | 'cro' | 'mail-attachment' = 'booking'): 
 
     printContent.style.display = 'block';
     printContent.style.position = 'fixed';
-    printContent.style.left = '0';
+    printContent.style.left = '-9999px';
     printContent.style.top = '0';
-    printContent.style.zIndex = '9999';
+    printContent.style.zIndex = '-1';
     printContent.style.backgroundColor = 'white';
     printContent.style.width = '210mm';
     printContent.style.height = 'auto';
