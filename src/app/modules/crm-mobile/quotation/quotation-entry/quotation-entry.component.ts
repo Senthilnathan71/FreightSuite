@@ -65,6 +65,7 @@ import {
 } from 'src/app/common/pdf/generators/quotation-pdf.generator';
 import { GetStandardChargesComponent } from 'src/app/modules/operation/cost/get-standard-charges/get-standard-charges.component';
 import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/dial-code-dropdown.component';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -340,6 +341,7 @@ dataFromEnqPage:any;
     private leadService: LeadService,
     private calendar: NgbCalendar,
     private modalService: ModalService,
+    private modelService: NgbModal,
     private ngbModal: NgbModal,
     private toastr: ToastrService,
     private spinner: NgxSpinnerService,
@@ -3469,33 +3471,20 @@ ${this.userData.userName}`;
   try { (this as any).cdRef?.detectChanges(); } catch (e) { /* ignore if cdRef not available */ }
 }
 
-  openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.QuoteHeaderSid) return;
+  openAuditLogs() {
+    if (!this.quotationData?.QuoteHeaderSid) return;
+    const modalRef = this.modelService.open(AuditLogComponent, {
+      centered: true,
+      scrollable: true,
+      size: 'xl',
+      windowClass: 'audit-log-modal'
+    });
+    modalRef.componentInstance.title = 'Quotation Logs';
+    modalRef.componentInstance.tableName = 'QuoteHeader';
+    modalRef.componentInstance.recordId = this.quotationData?.QuoteHeaderSid.toString();
+    modalRef.componentInstance.screenName = 'Quotation';
+  }
 
-  this.leadService.getAuditLogsQuotation('QuoteHeader', this.QuoteHeaderSid.toString()).subscribe({
-    next: (logs: any[]) => {
-      const formatFields = (val: any) => {
-        if (!val) return ['NA'];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        delete obj.updatedOn; // Remove updatedOn field
-        // If no fields exist after deleting updatedOn
-        if (Object.keys(obj).length === 0) return ['NA'];
-        return Object.entries(obj).map(
-          ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-        );
-      };
-
-      this.auditLogs = logs.map(log => ({
-        ...log,
-        oldValDisplay: formatFields(log.oldVal),
-        newValDisplay: formatFields(log.newVal)
-      }));
-
-      this.auditLogModalRef = this.ngbModal.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
 
   // patchRevenueExchangeRate(routeIndex,carrierIndex, chargeIndex) {
   //   const chargeForm = this.quoteCharges(routeIndex,carrierIndex).at(chargeIndex) as FormGroup;

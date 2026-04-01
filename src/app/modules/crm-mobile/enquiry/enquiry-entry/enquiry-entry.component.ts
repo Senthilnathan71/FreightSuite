@@ -62,6 +62,8 @@ import { PrintFooterComponent } from 'src/app/shared/components/print-footer/pri
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/dial-code-dropdown.component';
+import { type } from 'os';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 @Component({
   selector: 'app-enquiry-entry',
   standalone: true,
@@ -379,7 +381,8 @@ export class EnquiryEntryComponent implements OnInit {
     private volumetricAndCbmCalculationService: VolumetricAndCbmCalculationService,
     public logoService: LogoService,
     private sidebarService : VerticalSidebarService,
-    private emailTriggerService: EmailTriggerService
+    private emailTriggerService: EmailTriggerService,
+    private modelService: NgbModal,
   ) {
     effect(() => {
       const customerTypeOutput = this.dropdownStore.customerTypeData()
@@ -1157,6 +1160,20 @@ ${this.userData.userName}`;
   });
 }
 
+  openAuditLogs() {
+    if (!this.enquiryData?.EnquiryHeaderSid) return;
+    const modalRef = this.modelService.open(AuditLogComponent, {
+      centered: true,
+      scrollable: true,
+      size: 'xl',
+      windowClass: 'audit-log-modal'
+    });
+    modalRef.componentInstance.title = 'Enquiry Logs';
+    modalRef.componentInstance.tableName = 'EnquiryHeader';
+    modalRef.componentInstance.recordId = this.enquiryData?.EnquiryHeaderSid.toString();
+    modalRef.componentInstance.screenName = 'Enquiry';
+  }
+
 private calculateCargoValues(cargoForm: FormGroup): void {
   const packageQty = this.parseFloatSafe(cargoForm.get('PackageQty')?.value);
   const length = this.parseFloatSafe(cargoForm.get('length')?.value);
@@ -1291,35 +1308,6 @@ private parseFloatSafe(value: any): number {
     // Filter ports based on selected segment
     this.filteredPorts = this.getFilteredPortsBySegment();
     this.routes.controls.forEach((_, routeIndex: number) => this.refreshRoutePortFilters(routeIndex));
-  }
-
-
-  openAuditLogs(modal: TemplateRef<any>) {
-    if (!this.EnquiryHeaderSid) return;
-
-    this.leadService.getAuditLogsEnquiry('EnquiryHeader', this.EnquiryHeaderSid.toString()).subscribe({
-      next: (logs: any[]) => {
-        const formatFields = (val: any) => {
-          if (!val) return ['NA'];
-          const obj = typeof val === 'string' ? JSON.parse(val) : val;
-          delete obj.updatedOn; // Remove updatedOn field
-          // If no fields exist after deleting updatedOn
-          if (Object.keys(obj).length === 0) return ['NA'];
-          return Object.entries(obj).map(
-            ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-          );
-        };
-
-        this.auditLogs = logs.map(log => ({
-          ...log,
-          oldValDisplay: formatFields(log.oldVal),
-          newValDisplay: formatFields(log.newVal)
-        }));
-
-        this.auditLogModalRef = this.ngbModal.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
-      },
-      error: err => console.error('Error fetching audit logs:', err)
-    });
   }
 
   openPrint() {
