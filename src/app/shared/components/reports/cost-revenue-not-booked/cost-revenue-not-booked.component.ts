@@ -12,11 +12,12 @@ import {
   ExcelRow,
 } from 'src/app/shared/excel-report-service';
 import { PrintHeaderComponent } from '../../print-header/print-header.component';
+import { PrintFooterComponent } from '../../print-footer/print-footer.component';
 
 @Component({
   selector: 'app-cost-revenue-not-booked',
   standalone: true,
-  imports: [CustomDatePipe, CommonModule, PrintHeaderComponent],
+  imports: [CustomDatePipe, CommonModule, PrintHeaderComponent,PrintFooterComponent],
   templateUrl: './cost-revenue-not-booked.component.html',
   styles: ``,
 })

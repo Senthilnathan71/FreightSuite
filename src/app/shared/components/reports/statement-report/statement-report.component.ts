@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Inject, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ComplexReportExportConfig, ExcelCell, ExcelHeader, ExcelRow } from 'src/app/shared/excel-report-service';
@@ -7,11 +8,14 @@ import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { REPORT_DATA } from 'src/app/shared/services/report.service';
 import { ReportRegistryService } from 'src/app/shared/services/report-registry.service';
 import { PrintHeaderComponent } from '../../print-header/print-header.component';
+import { PrintFooterComponent } from '../../print-footer/print-footer.component';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
+import { OperationService } from 'src/app/modules/operation/operation.service';
 
 @Component({
   selector: 'app-statement-report',
   standalone: true,
-  imports: [CustomDatePipe, CommonModule, PrintHeaderComponent],
+  imports: [CustomDatePipe, CommonModule, PrintHeaderComponent, PrintFooterComponent],
   templateUrl: './statement-report.component.html',
   styles: ``
 })
@@ -20,13 +24,20 @@ export class StatementReportComponent {
   currentCompany: any;
   currentBranch: any;
   salesmanList: any[];
+  companyCurrency: any;
+  currentCurrencyCode: string = '';
+  currentCurrency: number;
+  bankDetails: any[] = [];
+  showBankDetails = false;
   orientation: 'portrait' | 'landscape' = 'portrait';
 
   constructor(
     @Inject(REPORT_DATA) public data: any,
     private appSettingsService: AppSettingsService,
     private leadService: LeadService,
-    private reportRegistryService: ReportRegistryService
+    private reportRegistryService: ReportRegistryService,
+    private companySettings: CompanySettingsManagerService,
+    private operationService: OperationService
   ) {
     console.log('Outstanding Report Data:', this.data);
   }
@@ -37,6 +48,25 @@ export class StatementReportComponent {
     console.log('Current Company:', this.currentCompany);
     console.log('Current Branch:', this.currentBranch);
     this.orientation = this.reportRegistryService.getReportConfig('ledger-report').pdfOrientation;
+    this.companyCurrency = this.companySettings.getCurrencySettings();
+    this.currentCurrencyCode = this.companyCurrency.code;
+    this.currentCurrency = Number(this.currentCompany?.CurrencyMasterSid);
+
+    this.operationService
+      .getCompanyConfig(this.currentCompany?.CompanyMasterSid, 'bankreportdetails')
+      .subscribe((resp: any) => {
+        const configValue = resp?.data;
+        this.showBankDetails = configValue === 'Y';
+
+        if (!this.showBankDetails) {
+          this.bankDetails = [];
+          return;
+        }
+
+        this.getBankDetails().subscribe((bankResp: any) => {
+          this.bankDetails = bankResp?.data || [];
+        });
+      });
   }
 
   get fullData(): any {
@@ -84,6 +114,15 @@ export class StatementReportComponent {
     }
 
     return total;
+  }
+
+  getBankDetails(): Observable<any> {
+    const payload = {
+      CurrencyMasterSid: this.currentCurrency,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+    };
+
+    return this.operationService.getBankDetails(payload);
   }
 
   getLocalTotal(transactions: any[]): number {
@@ -190,7 +229,7 @@ export class StatementReportComponent {
       rows.push({ cells, style: 'data' });
     });
 
-
+    if(transactions && transactions.length > 0){
     const totalCells: ExcelCell[] = [
 
       // TOTAL label should span first 6 columns
@@ -213,6 +252,7 @@ export class StatementReportComponent {
     ];
 
     rows.push({ cells: totalCells, style: 'total' });
+  }
 
     return {
       fileName: 'Statement-Report',
@@ -230,7 +270,7 @@ export class StatementReportComponent {
       },
       tableHeaders,
       rows,
-      columnWidths: [20, 12, 3, 30, 3, 3, 15, 15, 15, 15, 15],
+      columnWidths: [20, 12, 4, 35, 4, 3, 13, 13, 13, 13, 13],
       notes: [
         'This Statement of Accounts report includes only posted voucher transactions.'
       ]

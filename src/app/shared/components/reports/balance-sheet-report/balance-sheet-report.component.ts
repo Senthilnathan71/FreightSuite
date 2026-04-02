@@ -7,11 +7,12 @@ import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { ReportRegistryService } from 'src/app/shared/services/report-registry.service';
 import { REPORT_DATA } from 'src/app/shared/services/report.service';
 import { PrintHeaderComponent } from '../../print-header/print-header.component';
+import { PrintFooterComponent } from '../../print-footer/print-footer.component';
 
 @Component({
   selector: 'app-balance-sheet-report',
   standalone: true,
-  imports: [CustomDatePipe, CommonModule,PrintHeaderComponent],
+  imports: [CustomDatePipe, CommonModule,PrintHeaderComponent,PrintFooterComponent],
   templateUrl: './balance-sheet-report.component.html',
   styles: ``
 })

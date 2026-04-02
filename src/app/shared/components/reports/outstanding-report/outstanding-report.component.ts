@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Inject, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ComplexReportExportConfig, ExcelCell, ExcelHeader, ExcelRow } from 'src/app/shared/excel-report-service';
@@ -8,11 +9,13 @@ import { ReportRegistryService } from 'src/app/shared/services/report-registry.s
 import { REPORT_DATA } from 'src/app/shared/services/report.service';
 import { PrintHeaderComponent } from '../../print-header/print-header.component';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
+import { PrintFooterComponent } from '../../print-footer/print-footer.component';
+import { OperationService } from 'src/app/modules/operation/operation.service';
 
 @Component({
   selector: 'app-outstanding-report',
   standalone: true,
-  imports: [CustomDatePipe, CommonModule, PrintHeaderComponent],
+  imports: [CustomDatePipe, CommonModule, PrintHeaderComponent, PrintFooterComponent],
   templateUrl: './outstanding-report.component.html',
   styles: ``
 })
@@ -26,12 +29,16 @@ export class OutstandingReportComponent {
   currentCurrencyCode: string = '';
   currentCurrency: number;
   orientation: 'portrait' | 'landscape' = 'portrait';
+  bankDetails: any[] = [];
+  showBankDetails = false;
+
   constructor(
     @Inject(REPORT_DATA) public data: any,
     private appSettingsService: AppSettingsService,
     private leadService: LeadService,
     private reportRegistryService: ReportRegistryService,
     private companySettings: CompanySettingsManagerService,
+    private operationService: OperationService,
   ) {
     console.log('Outstanding Report Data:', this.data);
   }
@@ -45,9 +52,26 @@ export class OutstandingReportComponent {
     this.orientation = this.reportRegistryService.getReportConfig('outstanding-report').pdfOrientation;
     this.companyCurrency = this.companySettings.getCurrencySettings();
     this.currentCurrencyCode = this.companyCurrency.code;
-    this.currentCurrency = Number(this.currentCompany?.CurrencyMasterSid)
+    this.currentCurrency = Number(this.currentCompany?.CurrencyMasterSid);
+
+    this.operationService
+      .getCompanyConfig(this.currentCompany?.CompanyMasterSid, 'bankreportdetails')
+      .subscribe((resp: any) => {
+        const configValue = resp?.data;
+        this.showBankDetails = configValue === 'Y';
+
+        if (!this.showBankDetails) {
+          this.bankDetails = [];
+          return;
+        }
+
+        this.getBankDetails().subscribe((bankResp: any) => {
+          this.bankDetails = bankResp?.data || [];
+        });
+      });
   }
 
+  
 
 
   get fullData(): any {
@@ -165,6 +189,15 @@ export class OutstandingReportComponent {
     }
 
     return total;
+  }
+
+  getBankDetails(): Observable<any> {
+    const payload = {
+      CurrencyMasterSid: this.currentCurrency,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+    };
+
+    return this.operationService.getBankDetails(payload);
   }
 
 

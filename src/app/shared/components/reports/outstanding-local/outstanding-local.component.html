@@ -108,6 +108,12 @@
                                 {{ getSubtotal(group.transactions,'outstandingCurrencyAmount') | number:'1.2-2' }}
                             </td> -->
 
+                            <td style="text-align: right;">
+                                  {{ fullData?.transactions?.[fullData.transactions.length -
+                            1]?.currencyWiseCumulative
+                            | number:'1.2-2' }}
+                            </td>
+
 
                         </tr>
 
@@ -212,4 +218,6 @@
             </div> -->
         </div>
     </div>
+
+    <app-print-footer></app-print-footer>
 </div>

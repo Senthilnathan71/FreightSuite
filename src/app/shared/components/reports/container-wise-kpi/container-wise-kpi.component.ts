@@ -12,11 +12,12 @@ import {
   ExcelRow,
 } from 'src/app/shared/excel-report-service';
 import { PrintHeaderComponent } from '../../print-header/print-header.component';
+import { PrintFooterComponent } from '../../print-footer/print-footer.component';
 
 @Component({
   selector: 'app-container-wise-kpi',
   standalone: true,
-  imports: [CustomDatePipe, CommonModule, PrintHeaderComponent],
+  imports: [CustomDatePipe, CommonModule, PrintHeaderComponent,PrintFooterComponent],
   templateUrl: './container-wise-kpi.component.html',
   styles: ``,
 })

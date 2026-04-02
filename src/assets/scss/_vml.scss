@@ -3735,8 +3735,9 @@
 .print-a4-landscape {
   width: 300mm;
   min-height: 210mm;
+  height: auto;
   margin: 5mm;
-  padding: 5px 5mm;
+  padding: 5px 5mm 25mm 5mm;
   background: #fff;
   border: 1px solid #000;
   box-sizing: border-box;
@@ -3841,14 +3842,14 @@
     overflow-x: auto;
   }
 
-  footer {
-    position: absolute;
-    bottom: 5mm;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 10pt;
-  }
+  // footer {
+  //   position: absolute;
+  //   bottom: 5mm;
+  //   left: 0;
+  //   right: 0;
+  //   text-align: center;
+  //   font-size: 10pt;
+  // }
 
   table, tr, td, th {
     page-break-inside: avoid;

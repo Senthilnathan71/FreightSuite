@@ -10,12 +10,13 @@ import { PrintHeaderComponent } from '../../print-header/print-header.component'
 import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { PrintFooterComponent } from '../../print-footer/print-footer.component';
 
 
 @Component({
   selector: 'app-outstanding-local',
   standalone: true,
-  imports: [CustomDatePipe, CommonModule, PrintHeaderComponent],
+  imports: [CustomDatePipe, CommonModule, PrintHeaderComponent,PrintFooterComponent],
   templateUrl: './outstanding-local.component.html',
   styles: ``
 })
@@ -266,7 +267,7 @@ export class OutstandingLocalComponent {
       { key: 'ageing', label: 'Ageing' }
     ];
 
-    const columnWidths = [15, 10,3, 30, 3, 10, 10, 10, 4];
+    const columnWidths = [15, 8,3, 35, 3, 10, 10, 10, 4];
 
     /* ================= LOOP CURRENCY GROUPS ================= */
 
@@ -277,7 +278,7 @@ export class OutstandingLocalComponent {
         cells: [
           { value: group.currencyCode, colspan: 9 }
         ],
-        style: 'header'
+        style: 'section'
       });
 
       // ✅ Transaction Rows
@@ -322,7 +323,8 @@ export class OutstandingLocalComponent {
             )
           },
 
-          { value: '', colspan: 2 }
+          {value: this.formatNumber(this.fullData?.transactions?.[this.fullData.transactions.length - 1]?.currencyWiseCumulative)},
+          { value: '', colspan: 1 }
         ],
         style: 'total'
       });

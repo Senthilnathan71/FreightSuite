@@ -8,11 +8,12 @@ import { MasterService } from 'src/app/modules/master/master.service';
 import { REPORT_DATA } from 'src/app/shared/services/report.service';
 import { ReportRegistryService } from 'src/app/shared/services/report-registry.service';
 import { PrintHeaderComponent } from '../../print-header/print-header.component';
+import { PrintFooterComponent } from '../../print-footer/print-footer.component';
 
 @Component({
   selector: 'app-trail-balance',
   standalone: true,
-  imports: [CustomDatePipe, CommonModule, PrintHeaderComponent],
+  imports: [CustomDatePipe, CommonModule, PrintHeaderComponent, PrintFooterComponent],
   templateUrl: './trail-balance.component.html',
   styles: ``
 })

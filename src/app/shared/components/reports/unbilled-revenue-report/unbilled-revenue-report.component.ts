@@ -7,11 +7,12 @@ import { ReportRegistryService } from 'src/app/shared/services/report-registry.s
 import { REPORT_DATA } from 'src/app/shared/services/report.service';
 import { ComplexReportExportConfig, ExcelCell, ExcelHeader, ExcelRow } from 'src/app/shared/excel-report-service';
 import { PrintHeaderComponent } from '../../print-header/print-header.component';
+import { PrintFooterComponent } from '../../print-footer/print-footer.component';
 
 @Component({
   selector: 'app-unbilled-revenue-report',
   standalone: true,
-  imports: [CustomDatePipe, CommonModule,PrintHeaderComponent],
+  imports: [CustomDatePipe, CommonModule,PrintHeaderComponent,PrintFooterComponent],
   templateUrl: './unbilled-revenue-report.component.html',
   styles: ``
 })

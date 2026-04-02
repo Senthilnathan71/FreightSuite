@@ -179,6 +179,85 @@
                 </tbody>
             </table>
         </div>
+
+    <div *ngIf="showBankDetails && bankDetails && bankDetails.length > 0" class="px-3" style="font-size:16px">
+        <h5 class="fw-bold my-1"><strong>Bank Details</strong></h5>
+    
+        <div class="table-responsive">
+            <table class="table align-middle mb-0"
+                style="border-collapse: collapse; color: #000; font-size: 13px; border: 0.5px solid #000;" [ngStyle]="{
+                    width: bankDetails.length === 1 ? 'auto' : '100%',
+                    'table-layout': bankDetails.length === 1 ? 'auto' : 'fixed'
+                }">
+    
+                <thead>
+                    <tr>
+                        <th
+                            style="width:180px;padding:0px;color:#000;border-color:#000;text-align:center;border:0.5px solid #000;">
+                            <strong>Details</strong>
+                        </th>
+                        <th *ngFor="let bankDetail of bankDetails"
+                            style="padding:0px 6px;color:#000;border-color:#000;text-align:start;border:0.5px solid #000;">
+                            <strong>Bank ({{ currentCurrencyCode }})</strong>
+                        </th>
+                    </tr>
+                </thead>
+    
+                <tbody>
+                    <tr>
+                        <th style="padding:0px 6px;color:#000;border:0.5px solid #000;"><strong>Beneficiary Name</strong>
+                        </th>
+                        <td *ngFor="let bankDetail of bankDetails"
+                            style="padding:2px;color:#000;white-space:normal;word-break:break-word;border:0.5px solid #000;">
+                            {{ bankDetail.BeneficiaryName }}
+                        </td>
+                    </tr>
+    
+                    <tr>
+                        <th style="padding:0px 6px;color:#000;border:0.5px solid #000;"><strong>Account No.</strong></th>
+                        <td *ngFor="let bankDetail of bankDetails"
+                            style="padding:2px;color:#000;white-space:normal;word-break:break-word;border:0.5px solid #000;">
+                            {{ bankDetail.BankAccountNo }}
+                        </td>
+                    </tr>
+    
+                    <tr>
+                        <th style="padding:0px 6px;color:#000;border:0.5px solid #000;"><strong>IFSC</strong></th>
+                        <td *ngFor="let bankDetail of bankDetails"
+                            style="padding:2px;color:#000;white-space:normal;word-break:break-word;border:0.5px solid #000;">
+                            {{ bankDetail.IFSCCode }}
+                        </td>
+                    </tr>
+    
+                    <tr>
+                        <th style="padding:0px 6px;color:#000;border:0.5px solid #000;"><strong>Swift Code</strong></th>
+                        <td *ngFor="let bankDetail of bankDetails"
+                            style="padding:2px;color:#000;white-space:normal;word-break:break-word;border:0.5px solid #000;">
+                            {{ bankDetail.BankCode }}
+                        </td>
+                    </tr>
+    
+                    <tr>
+                        <th style="padding:0px 6px;color:#000;border:0.5px solid #000;"><strong>Bank Name</strong></th>
+                        <td *ngFor="let bankDetail of bankDetails"
+                            style="padding:2px;color:#000;white-space:normal;word-break:break-word;border:0.5px solid #000;">
+                            {{ bankDetail.BankName }}
+                        </td>
+                    </tr>
+    
+                    <tr>
+                        <th style="padding:0px 6px;color:#000;border:0.5px solid #000;"><strong>Branch</strong></th>
+                        <td *ngFor="let bankDetail of bankDetails"
+                            style="padding:2px;color:#000;white-space:normal;word-break:break-word;border:0.5px solid #000;">
+                            {{ bankDetail.BankAddress }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
         <div>
             <!-- <div class="pt-2">
                 Note:
@@ -190,4 +269,6 @@
             </div> -->
         </div>
     </div>
+    
+    <app-print-footer></app-print-footer>
 </div>

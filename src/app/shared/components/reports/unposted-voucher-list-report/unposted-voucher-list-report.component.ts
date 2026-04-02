@@ -10,11 +10,12 @@ import { RouterModule } from '@angular/router';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { PrintHeaderComponent } from '../../print-header/print-header.component';
+import { PrintFooterComponent } from '../../print-footer/print-footer.component';
 
 @Component({
   selector: 'app-unposted-voucher-list-report',
   standalone: true,
-  imports: [CustomDatePipe, CommonModule, RouterModule,PrintHeaderComponent],
+  imports: [CustomDatePipe, CommonModule, RouterModule,PrintHeaderComponent,PrintFooterComponent],
   templateUrl: './unposted-voucher-list-report.component.html',
   styles: ``
 })

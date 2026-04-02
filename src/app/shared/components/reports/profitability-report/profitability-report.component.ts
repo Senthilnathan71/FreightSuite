@@ -12,11 +12,12 @@ import {
   ExcelRow,
 } from 'src/app/shared/excel-report-service';
 import { PrintHeaderComponent } from '../../print-header/print-header.component';
+import { PrintFooterComponent } from '../../print-footer/print-footer.component';
 
 @Component({
   selector: 'app-profitability-report',
   standalone: true,
-  imports: [CustomDatePipe, CommonModule, PrintHeaderComponent],
+  imports: [CustomDatePipe, CommonModule, PrintHeaderComponent,PrintFooterComponent],
   templateUrl: './profitability-report.component.html',
   styles: ``,
 })

@@ -7,11 +7,12 @@ import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { REPORT_DATA } from 'src/app/shared/services/report.service';
 import { ReportRegistryService } from 'src/app/shared/services/report-registry.service';
 import { PrintHeaderComponent } from '../../print-header/print-header.component';
+import { PrintFooterComponent } from '../../print-footer/print-footer.component';
 
 @Component({
   selector: 'app-ledger-report',
   standalone: true,
-  imports: [CustomDatePipe, CommonModule,PrintHeaderComponent],
+  imports: [CustomDatePipe, CommonModule,PrintHeaderComponent,PrintFooterComponent],
   templateUrl: './ledger-report.component.html',
   styles: ``
 })
@@ -159,7 +160,7 @@ getSignedTotal(transactions: any[]): number {
     if (openingBalance !== 0) {
 
       const openingCells: ExcelCell[] = [
-        { value: 'Opening Balance' },
+        { value: 'Opening Balance' , alignment:{horizontal:"center"}},
         { value: this.formatDate(this.params?.FromDate) },
         { value: '' },
         { value: '' },
@@ -193,7 +194,7 @@ getSignedTotal(transactions: any[]): number {
       rows.push({ cells, style: 'data' });
     });
 
-
+    if (transactions && transactions.length > 0) {
     const totalCells: ExcelCell[] = [
       { value: 'TOTAL', colspan: 7 , alignment:{horizontal:'right'} },
       { value: this.formatNumber(this.getLocalTotal(transactions)) },
@@ -208,6 +209,7 @@ getSignedTotal(transactions: any[]): number {
       }
     ];
     rows.push({ cells: totalCells, style: 'total' });
+  }
 
     return {
       fileName: 'Ledger-Report',
@@ -226,7 +228,7 @@ getSignedTotal(transactions: any[]): number {
       },
       tableHeaders,
       rows,
-      columnWidths: [12, 12, 3, 25, 3, 3, 15, 15, 15],
+      columnWidths: [12, 8, 3, 30, 3, 3, 12, 12, 12],
       notes: ['This ledger report includes only posted voucher transactions.']
     };
   }

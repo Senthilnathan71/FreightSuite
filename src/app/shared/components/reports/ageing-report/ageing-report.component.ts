@@ -6,6 +6,7 @@ import { ComplexReportExportConfig, ExcelCell, ExcelHeader, ExcelRow } from 'src
 import { ReportRegistryService } from 'src/app/shared/services/report-registry.service';
 import { REPORT_DATA } from 'src/app/shared/services/report.service';
 import { PrintHeaderComponent } from '../../print-header/print-header.component';
+import { PrintFooterComponent } from '../../print-footer/print-footer.component';
 
 @Component({
   selector: 'app-ageing-report',
@@ -13,7 +14,8 @@ import { PrintHeaderComponent } from '../../print-header/print-header.component'
   imports: [
     CommonModule,
     CustomDatePipe,
-    PrintHeaderComponent
+    PrintHeaderComponent,
+    PrintFooterComponent
   ],
   templateUrl: './ageing-report.component.html',
   styles: ``

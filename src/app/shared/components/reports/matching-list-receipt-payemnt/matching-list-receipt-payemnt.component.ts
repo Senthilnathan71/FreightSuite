@@ -13,11 +13,12 @@ import {
 } from 'src/app/shared/excel-report-service';
 import { PrintHeaderComponent } from '../../print-header/print-header.component';
 import { RouterModule } from '@angular/router';
+import { PrintFooterComponent } from '../../print-footer/print-footer.component';
 
 @Component({
   selector: 'app-matching-list-receipt-payemnt',
   standalone: true,
-  imports: [CustomDatePipe, PrintHeaderComponent, CommonModule, RouterModule],
+  imports: [CustomDatePipe, PrintHeaderComponent, CommonModule, RouterModule,PrintFooterComponent],
   templateUrl: './matching-list-receipt-payemnt.component.html',
   styles: ``,
 })
