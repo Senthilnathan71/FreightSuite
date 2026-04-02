@@ -1453,6 +1453,14 @@
                         </div>
                     </aside>
 
+                    
+                    <aside class="col-md-3">
+                        <div class="custom-form-group" [class.filled]="!!masterJobForm.get('ImportMasterJobNumber')?.value">
+                            <input type="text" class="custom-input-field sm" formControlName="ImportMasterJobNumber" readonly>
+                            <label class="input-label">Import Master Job No</label>
+                        </div>
+                    </aside>
+
                     <aside class="col-md-3 d-flex align-items-center">
                         <div class="form-check form-check-inline p-0">
                             <div class="form-check d-flex align-items-center">
@@ -1474,12 +1482,6 @@
                         </div>
                     </aside> -->
 
-                    <aside class="col-md-3">
-                        <div class="custom-form-group" [class.filled]="!!masterJobForm.get('ImportMasterJobNumber')?.value">
-                            <input type="text" class="custom-input-field sm" formControlName="ImportMasterJobNumber" readonly>
-                            <label class="input-label">Import Master Job No</label>
-                        </div>
-                    </aside>
 
                     <div class="col-md-12 mt-2" *ngIf="canPullToImportBranch">
                         <div class="pull-import-panel">

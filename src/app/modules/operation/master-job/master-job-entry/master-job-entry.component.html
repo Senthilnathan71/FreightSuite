@@ -1647,35 +1647,7 @@
                         </div>
                     </aside>
 
-                    <aside class="col-md-3 d-flex align-items-center">
-                        <div class="form-check form-check-inline p-0">
-                            <div class="form-check d-flex align-items-center">
-                                <input
-                                    type="checkbox"
-                                    id="exportToImportCheckbox"
-                                    class="focus-ring form-check-input sm p-0"
-                                    [checked]="masterJobForm.get('ExportToImport')?.value === 'Y'"
-                                    disabled>
-                                <label for="exportToImportCheckbox" class="form-check-label sm">Export To Import</label>
-                            </div>
-                        </div>
-                    </aside>
-
-                    <!-- <aside class="col-md-3">
-                        <div class="custom-form-group" [class.filled]="!!masterJobForm.get('ImportMasterJobSid')?.value">
-                            <input type="text" class="custom-input-field sm" formControlName="ImportMasterJobSid" readonly>
-                            <label class="input-label">Import Master Job Sid</label>
-                        </div>
-                    </aside> -->
-
-                    <aside class="col-md-3">
-                        <div class="custom-form-group" [class.filled]="!!masterJobForm.get('ImportMasterJobNumber')?.value">
-                            <input type="text" class="custom-input-field sm" formControlName="ImportMasterJobNumber" readonly>
-                            <label class="input-label">Import Master Job No</label>
-                        </div>
-                    </aside>
-
-                     <aside class="col-md-3">
+                           <aside class="col-md-3">
                                         <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!masterJobForm.get('Status')?.value">
                                             <ng-select *ngIf="isEditMode" formControlName="Status"
@@ -1694,7 +1666,37 @@
                                             </div>
                                             }
                                         </div>
-                                    </aside>
+                    </aside>
+
+                
+
+                    <!-- <aside class="col-md-3">
+                        <div class="custom-form-group" [class.filled]="!!masterJobForm.get('ImportMasterJobSid')?.value">
+                            <input type="text" class="custom-input-field sm" formControlName="ImportMasterJobSid" readonly>
+                            <label class="input-label">Import Master Job Sid</label>
+                        </div>
+                    </aside> -->
+
+                    <aside class="col-md-3">
+                        <div class="custom-form-group" [class.filled]="!!masterJobForm.get('ImportMasterJobNumber')?.value">
+                            <input type="text" class="custom-input-field sm" formControlName="ImportMasterJobNumber" readonly>
+                            <label class="input-label">Import Master Job No</label>
+                        </div>
+                    </aside>
+
+                  <aside class="col-md-3 d-flex align-items-center">
+                        <div class="form-check form-check-inline p-0">
+                            <div class="form-check d-flex align-items-center">
+                                <input
+                                    type="checkbox"
+                                    id="exportToImportCheckbox"
+                                    class="focus-ring form-check-input sm p-0"
+                                    [checked]="masterJobForm.get('ExportToImport')?.value === 'Y'"
+                                    disabled>
+                                <label for="exportToImportCheckbox" class="form-check-label sm">Export To Import</label>
+                            </div>
+                        </div>
+                    </aside>
 
                     <div class="col-md-12 mt-2" *ngIf="canPullToImportBranch">
                         <div class="pull-import-panel">
