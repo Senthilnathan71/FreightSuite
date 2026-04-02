@@ -555,9 +555,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
 
   async saveChanges(): Promise<boolean> {
     return new Promise((resolve) => {
-      if (this.masterJobForm.invalid) {
-        this.masterJobForm.markAllAsTouched();
-        this.showFirstFormError();
+      if (!this.validateBeforeSave()) {
         resolve(false);
         return;
       }
@@ -565,6 +563,98 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       // Call the existing submit logic
       this.saveAndResolve(resolve);
     });
+  }
+
+  private validateBeforeSave(): boolean {
+    this.clearValidationError('ETA', 'etaLessThanOrEqualEtd');
+    this.clearValidationError('MasterJobDate', 'invalidDate');
+    this.clearValidationError('POL', 'samePort');
+    this.clearValidationError('POD', 'samePort');
+
+    const fy = this.appSettingService.getCurrentFinancialYear();
+    if (fy) {
+      const masterJobDateValue = this.masterJobForm.getRawValue().MasterJobDate;
+      const masterJobDate = new Date(masterJobDateValue);
+      const fyStartDate = new Date(fy.StartDate);
+      const fyEndDate = new Date(fy.EndDate);
+
+      if (masterJobDateValue && (masterJobDate < fyStartDate || masterJobDate > fyEndDate)) {
+        this.masterJobForm.get('MasterJobDate')?.setErrors({ invalidDate: true });
+        this.masterJobForm.get('MasterJobDate')?.markAsTouched();
+        this.showControlValidationError('MasterJobDate');
+        return false;
+      }
+    }
+
+    const etdValue = this.masterJobForm.get('ETD')?.value;
+    const etaValue = this.masterJobForm.get('ETA')?.value;
+    if (etdValue && etaValue) {
+      const etdDate = new Date(etdValue);
+      const etaDate = new Date(etaValue);
+
+      if (!isNaN(etdDate.getTime()) && !isNaN(etaDate.getTime()) && etaDate <= etdDate) {
+        this.mergeValidationError('ETA', 'etaLessThanOrEqualEtd');
+        this.masterJobForm.get('ETA')?.markAsTouched();
+        this.showControlValidationError('ETA');
+        return false;
+      }
+    }
+
+    const polSid = this.masterJobForm.get('POL')?.value;
+    const podSid = this.masterJobForm.get('POD')?.value;
+
+    if (polSid && podSid && polSid === podSid) {
+      this.masterJobForm.get('POL')?.setErrors({ samePort: true });
+      this.masterJobForm.get('POD')?.setErrors({ samePort: true });
+      this.masterJobForm.get('POL')?.markAsTouched();
+      this.masterJobForm.get('POD')?.markAsTouched();
+      this.showControlValidationError('POL');
+      return false;
+    }
+
+    if (polSid && !podSid) {
+      this.masterJobForm.get('POD')?.setErrors({ required: true });
+      this.masterJobForm.get('POD')?.markAsTouched();
+      this.showControlValidationError('POD');
+      return false;
+    }
+
+    if (podSid && !polSid) {
+      this.masterJobForm.get('POL')?.setErrors({ required: true });
+      this.masterJobForm.get('POL')?.markAsTouched();
+      this.showControlValidationError('POL');
+      return false;
+    }
+
+    if (this.masterJobForm.invalid) {
+      this.masterJobForm.markAllAsTouched();
+      this.showFirstFormError();
+      return false;
+    }
+
+    if (this.costEntryComponent && !this.costEntryComponent.validateRateArray()) {
+      this.selectedTab = 'Rate';
+      return false;
+    }
+
+    const deptName = this.selectedDepartment?.departmentName?.toLowerCase() || '';
+    const isImportDepartment = deptName.includes('import');
+    const mblNo = this.masterJobForm.get('MBLNo')?.value?.toString().trim();
+    if (isImportDepartment && !mblNo) {
+      this.masterJobForm.get('MBLNo')?.setErrors({ required: true });
+      this.masterJobForm.get('MBLNo')?.markAsTouched();
+      this.showControlValidationError('MBLNo');
+      return false;
+    }
+
+    const customsData = this.customsComponent ? this.customsComponent.getCustomsData() : [];
+    if (customsData.length > 0 && this.customsComponent && !this.customsComponent.validateForSave()) {
+      this.selectedTab = 'Customs';
+      this.appSettingService.showWarning('Please fill all required fields in Customs tab correctly.');
+      return false;
+    }
+
+    return true;
   }
 
   private saveAndResolve(resolve: (value: boolean) => void): void {
@@ -646,6 +736,9 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       DestinationATA: this.formatDate(formValue.DestinationATA),
       Haz: formValue.Haz ? 'Y' : 'N',
       CreatedBy: this.appSettingsService.userSettingSource.value['userEmail'],
+      UpdatedBy: this.appSettingsService.userSettingSource.value['userEmail'],
+      createdBy: this.appSettingsService.userSettingSource.value['userEmail'],
+      updatedBy: this.appSettingsService.userSettingSource.value['userEmail'],
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       MenuMasterSid: Number(sessionStorage.getItem('currentMenuId')),
@@ -882,7 +975,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       DepartmentMasterSid: ['', Validators.required],
       MasterJobNumber: [{ value: '', disabled: true }],
       ImportMasterJobNumber: [{ value: '', disabled: true }],
-      MasterJobDate: [defaultMasterJobDate],
+      MasterJobDate: [defaultMasterJobDate, Validators.required],
       FreightPPCC: ['Prepaid', Validators.required],
 
       DestinationAgent: [null],
@@ -2608,80 +2701,11 @@ onETDDateSelect(): void {
     if (this.isSaving || this.isLoading) {
       return;
     }
-    this.clearValidationError('ETA', 'etaLessThanOrEqualEtd');
-    this.clearValidationError('MasterJobDate', 'invalidDate');
-
-    const fy = this.appSettingService.getCurrentFinancialYear();
-    if(fy){
-      const MasterJobDate =new Date (this. masterJobForm.getRawValue().MasterJobDate);
-      const fyStartDate = new Date(fy.StartDate);
-      const fyEndDate = new Date(fy.EndDate);
-      if(MasterJobDate < fyStartDate || MasterJobDate > fyEndDate){
-        this.toastr.error('The date of the master job must be between the financial year start date and end date');
-        this.masterJobForm.get('MasterJobDate')?.setErrors({ invalidDate: true });
-        return;
-      }
-    }
-
-    const etdValue = this.masterJobForm.get('ETD')?.value;
-    const etaValue = this.masterJobForm.get('ETA')?.value;
-    if (etdValue && etaValue) {
-      const etdDate = new Date(etdValue);
-      const etaDate = new Date(etaValue);
-      if (!isNaN(etdDate.getTime()) && !isNaN(etaDate.getTime()) && etaDate <= etdDate) {
-        this.toastr.error('ETA date should be greater than ETD date');
-        this.mergeValidationError('ETA', 'etaLessThanOrEqualEtd');
-        this.masterJobForm.get('ETA')?.markAsTouched();
-        this.selectedTab = 'Master';
-        return;
-      }
-    }
-
-    const polSid = this.masterJobForm.get('POL')?.value;
-  const podSid = this.masterJobForm.get('POD')?.value;
-  
-  if (polSid && podSid && polSid === podSid) {
-    this.toastr.error('POL and POD cannot be the same port');
-    this.masterJobForm.get('POL')?.setErrors({ samePort: true });
-    this.masterJobForm.get('POD')?.setErrors({ samePort: true });
-    return;
-  }
-  if (polSid && !podSid) {
-    this.toastr.error('POD is required when POL is selected');
-    this.masterJobForm.get('POD')?.setErrors({ required: true });
-    this.masterJobForm.get('POD')?.markAsTouched();
-    return;
-  }
-  if(podSid && !polSid){
-    this.toastr.error('POL is required when POD is selected');
-    this.masterJobForm.get('POL')?.setErrors({ required: true });
-    this.masterJobForm.get('POL')?.markAsTouched();
-    return;
-  }
-  //  Object.keys(this.masterJobForm.controls).forEach(key => {
-  //   const control = this.masterJobForm.get(key);
-  //   if (control && control.invalid) {
-  //     console.log('Invalid control:', key, control.errors, 'Value:', control.value);
-  //   }
-  // });
-    if (this.masterJobForm.invalid) {
-      this.masterJobForm.markAllAsTouched();
-      this.showFirstFormError();
+    if (this.isEditMode && !this.hasUnsavedChanges()) {
+      this.toastr.warning('No changes to save');
       return;
     }
-
-    if (!this.costEntryComponent.validateRateArray()) {
-      this.selectedTab = 'Rate';
-      return;
-    }
-
-    const deptName = this.selectedDepartment?.departmentName?.toLowerCase() || '';
-    const isImportDepartment = deptName.includes('import');
-    const mblNo = this.masterJobForm.get('MBLNo')?.value?.toString().trim();
-    if (isImportDepartment && !mblNo) {
-      this.appSettingService.showWarning('MAWBL Number is required for Import operations. Please enter a valid MAWBL Number.');
-      this.masterJobForm.get('MBLNo')?.setErrors({ required: true });
-      this.masterJobForm.get('MBLNo')?.markAsTouched();
+    if (!this.validateBeforeSave()) {
       return;
     }
 
@@ -2695,13 +2719,6 @@ onETDDateSelect(): void {
 
     const formValue = this.masterJobForm.getRawValue();
     const customsData = this.customsComponent ? this.customsComponent.getCustomsData() : [];
-
-    // Validate customs required fields before saving
-    if (customsData.length > 0 && this.customsComponent && !this.customsComponent.validateForSave()) {
-      this.selectedTab = 'Customs';
-      this.isLoading = false;
-      return;
-    }
 
     let CarrierSid = null;
     if (formValue.CarrierName) {
@@ -2879,6 +2896,73 @@ onETDDateSelect(): void {
     }
   }
 
+  private getControlLabel(controlName: string): string {
+    const controlLabelMap: { [key: string]: string } = {
+      DepartmentMasterSid: 'Department',
+      MasterJobNumber: 'Master Job Number',
+      MasterJobDate: 'Master Job Date',
+      FreightPPCC: 'Freight PP/CC',
+      MBLNo: 'MBL No',
+      MBLDate: 'MBL Date',
+      NoofOriginal: 'No Of Original',
+      POL: 'POL',
+      POD: 'POD',
+      Status: 'Status',
+      JobStatus: 'Job Status',
+      ETA: 'ETA',
+      ETD: 'ETD'
+    };
+
+    return controlLabelMap[controlName] || controlName;
+  }
+
+  private getControlTab(controlName: string): string {
+    const controlTabMap: { [key: string]: string } = {
+      Status: 'Others'
+    };
+
+    return controlTabMap[controlName] || 'Master';
+  }
+
+  private showControlValidationError(controlName: string): void {
+    const invalidControl = this.masterJobForm.get(controlName);
+    if (!invalidControl) {
+      this.toastr.error('Please correct the highlighted fields');
+      return;
+    }
+
+    this.selectedTab = this.getControlTab(controlName);
+    const label = this.getControlLabel(controlName);
+
+    if (invalidControl.hasError('required')) {
+      this.toastr.error(`${label} is required`);
+      return;
+    }
+
+    if (invalidControl.hasError('maxlength')) {
+      const maxlength = invalidControl.getError('maxlength')?.requiredLength;
+      this.toastr.error(maxlength ? `${label} allows maximum ${maxlength} characters` : `${label} exceeds allowed length`);
+      return;
+    }
+
+    if (invalidControl.hasError('samePort')) {
+      this.toastr.error('POL and POD cannot be the same port');
+      return;
+    }
+
+    if (invalidControl.hasError('invalidDate')) {
+      this.toastr.error('Master Job Date must be within the financial year');
+      return;
+    }
+
+    if (invalidControl.hasError('etaLessThanOrEqualEtd')) {
+      this.toastr.error('ETA date should be greater than ETD date');
+      return;
+    }
+
+    this.toastr.error(`${label} is invalid. Please correct it.`);
+  }
+
   private showFirstFormError(): void {
     const firstInvalidControlName = Object.keys(this.masterJobForm.controls)
       .find((controlName) => this.masterJobForm.get(controlName)?.invalid);
@@ -2888,47 +2972,7 @@ onETDDateSelect(): void {
       return;
     }
 
-    const invalidControl = this.masterJobForm.get(firstInvalidControlName);
-    const controlLabelMap: { [key: string]: string } = {
-      DepartmentMasterSid: 'Department',
-      MasterJobNumber: 'Master Job Number',
-      MasterJobDate: 'Master Job Date',
-      FreightPPCC: 'Freight PP/CC',
-      NoofOriginal: 'No Of Original',
-      POL: 'POL',
-      POD: 'POD',
-      Status: 'Status',
-      JobStatus: 'Job Status',
-      ETA: 'ETA',
-      ETD: 'ETD'
-    };
-    const controlTabMap: { [key: string]: string } = {
-      Status: 'Others'
-    };
-
-    this.selectedTab = controlTabMap[firstInvalidControlName] || 'Master';
-
-    if (invalidControl?.hasError('required')) {
-      this.toastr.error(`${controlLabelMap[firstInvalidControlName] || firstInvalidControlName} is required`);
-      return;
-    }
-
-    if (invalidControl?.hasError('samePort')) {
-      this.toastr.error('POL and POD cannot be the same port');
-      return;
-    }
-
-    if (invalidControl?.hasError('invalidDate')) {
-      this.toastr.error('The date of the master job must be between the financial year start date and end date');
-      return;
-    }
-
-    if (invalidControl?.hasError('etaLessThanOrEqualEtd')) {
-      this.toastr.error('ETA date should be greater than ETD date');
-      return;
-    }
-
-    this.toastr.error('Please correct the highlighted fields');
+    this.showControlValidationError(firstInvalidControlName);
   }
 
   private showBackendError(source: any, fallbackMessage: string): void {
