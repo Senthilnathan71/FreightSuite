@@ -806,10 +806,8 @@ subscribeToFormChanges() {
 
   isFormDirty(): boolean {
   if (!this.isEditMode) return false;
-  
-  return this.bookingForm.dirty || 
-         this.cargoForm.dirty || 
-         this.otherForm.dirty;
+
+  return this.isDirty;
 }
   /**
   |--------------------------------------------------
@@ -2410,6 +2408,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
             this.cargoForm.markAsPristine();
             this.otherForm.markAsPristine();
             this.croForm.markAsPristine();
+            this.detailForm.markAsPristine();
             if (resolve) resolve(true);
             this.isSaving = false;
             this.spinner.hide();
@@ -2502,10 +2501,18 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   private validateAllForms(): boolean {
   let isValid = true;
   const errorMessages: string[] = [];
+  let firstInvalidTab: string | null = null;
+
+  const setFirstInvalidTab = (tabName: string) => {
+    if (!firstInvalidTab) {
+      firstInvalidTab = tabName;
+    }
+  };
 
   // Validate Booking Form
   if (this.bookingForm.invalid) {
     this.bookingForm.markAllAsTouched();
+    setFirstInvalidTab('Shipment');
     
     Object.keys(this.bookingForm.controls).forEach(key => {
       const control = this.bookingForm.get(key);
@@ -2518,9 +2525,10 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     isValid = false;
   }
 
-  // Validate Cargo Form ONLY when on Cargo tab
-  if (this.selectedTab === 'Cargo' && this.cargoForm.invalid) {
+  // Validate Cargo Form
+  if (this.cargoForm.invalid) {
     this.cargoForm.markAllAsTouched();
+    setFirstInvalidTab('Cargo');
 
     Object.keys(this.cargoForm.controls).forEach(key => {
       const control = this.cargoForm.get(key);
@@ -2534,8 +2542,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   }
 
   // Validate CRO Form
-  if (this.selectedTab === 'CRO' && this.croForm.invalid) {
+  if (this.croForm.invalid) {
     this.croForm.markAllAsTouched();
+    setFirstInvalidTab('CRO');
     
     Object.keys(this.croForm.controls).forEach(key => {
       const control = this.croForm.get(key);
@@ -2554,6 +2563,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       // Check if product form is invalid
       if (productGroup.invalid) {
         productGroup.markAllAsTouched();
+        setFirstInvalidTab('Cargo');
         
         Object.keys(productGroup.controls).forEach(key => {
           const control = productGroup.get(key);
@@ -2591,6 +2601,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         if (grossWeight <= 0) {
           errorMessages.push(`Product ${index + 1}: Gross Weight is required`);
           productGroup.get('GrossWeight')?.setErrors({ min: true });
+          setFirstInvalidTab('Cargo');
           isValid = false;
         }
       }
@@ -2600,15 +2611,21 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         if (grossWeight <= 0) {
           errorMessages.push(`Product ${index + 1}: Gross Weight is required`);
           productGroup.get('GrossWeight')?.setErrors({ min: true });
+          setFirstInvalidTab('Cargo');
           isValid = false;
         }
         if (volume <= 0) {
           errorMessages.push(`Product ${index + 1}: CBM is required`);
           productGroup.get('Volume')?.setErrors({ min: true });
+          setFirstInvalidTab('Cargo');
           isValid = false;
         }
       }
     });
+  }
+
+  if (firstInvalidTab) {
+    this.selectedTab = firstInvalidTab;
   }
 
   // Show error messages if any

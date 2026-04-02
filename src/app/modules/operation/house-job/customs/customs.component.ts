@@ -15,6 +15,7 @@ import {
   ReactiveFormsModule,
   FormBuilder,
   FormGroup,
+  AbstractControl,
   Validators,
 } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -190,6 +191,16 @@ export class CustomsComponent implements OnInit, OnChanges {
 
   onFormChange() {
     this.emitData();
+  }
+
+  isFieldRequired(controlName: string): boolean {
+    const control = this.customsForm?.get(controlName);
+    if (!control) {
+      return false;
+    }
+
+    const validator = control.validator ? control.validator({} as AbstractControl) : null;
+    return !!validator?.['required'];
   }
 
   resetForm() {
