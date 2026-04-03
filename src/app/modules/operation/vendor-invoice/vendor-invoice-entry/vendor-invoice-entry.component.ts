@@ -1821,6 +1821,11 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   async postVoucher(notFromSubmit: boolean = false) : Promise<void> {
     if (this.isPosting) return;
+    this.applyVoucherDateConstraints();
+    if (this.voucherConstraints.isClosed) {
+      this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+      return;
+    }
     try {
       this.isPosting = true;
       this.spinner.show();

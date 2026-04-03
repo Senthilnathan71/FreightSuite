@@ -2504,6 +2504,11 @@ export class CreditNoteEntryComponent {
 
   async postVoucher(notFromSubmit: boolean = false): Promise<void> {
     if (this.isSaving) return;
+    this.applyVoucherDateConstraints();
+    if (this.voucherConstraints.isClosed) {
+      this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+      return;
+    }
     try {
       this.isSaving = true;
       this.spinner.show();

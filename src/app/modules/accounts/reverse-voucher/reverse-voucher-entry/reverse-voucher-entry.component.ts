@@ -715,6 +715,11 @@ export class ReverseVoucherEntryComponent {
   }
 
   onFinalSave() {
+    this.applyVoucherDateConstraints();
+    if (this.voucherConstraints.isClosed) {
+      this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+      return;
+    }
     if (this.reverseVoucherForm.invalid) {
       this.reverseVoucherForm.markAllAsTouched();
       this.appSettingService.showWarning('Please fill required reverse voucher fields.');

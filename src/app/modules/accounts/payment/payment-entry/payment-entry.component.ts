@@ -1391,6 +1391,11 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
   async postVoucher(notFromSubmit: boolean = false) {
     if (this.isSaving) return;
+    this.applyVoucherDateConstraints();
+    if (this.voucherConstraints.isClosed) {
+      this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+      return;
+    }
     try {
       this.isSaving = true;
       this.spinner.show();
