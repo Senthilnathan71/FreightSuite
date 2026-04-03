@@ -138,6 +138,7 @@ export class CompanyEntryComponent implements OnInit {
 	currentTaxIdLabel: string = 'PAN Number'; // Add this
     isPanAvailable: boolean = false; // Add this
     isPanRequired: boolean = false; // Add this
+	isCompanyDataLoaded: boolean = false;
 	branchPage = 1;
 	branchPageSize = 5;
 	totalBranches = 0;
@@ -702,6 +703,7 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 						});
 					});
 					this.onBranchesUpdated();
+					this.isCompanyDataLoaded = true;
 				}
 			},
 			(error) => {

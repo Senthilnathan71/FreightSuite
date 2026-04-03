@@ -95,7 +95,6 @@
           <button
             *ngIf="isEditMode"
             type="button"
-            appPreventMultiClick
             class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
             disabled="true"
           >
@@ -106,7 +105,6 @@
           <!-- Draft Save Button -->
           <button
             type="button"
-            appPreventMultiClick
             class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
             [ngClass]="{ 'btn-warning': isDirty, 'btn-info': !isDirty }"
             (click)="onSubmit()"
@@ -128,7 +126,6 @@
           <!-- Final Save/Post Button -->
           <button
             type="button"
-            appPreventMultiClick
             class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="postVoucher(true)"
             [disabled]="
@@ -137,6 +134,7 @@
               (!mps.can('update') && isEditMode) ||
               isDirty ||
               isSaving ||
+              isPosting ||
               voucherConstraints.isClosed
             "
             [title]="

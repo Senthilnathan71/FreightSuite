@@ -573,13 +573,13 @@
         </div>
         <div>
           <button type="button" class="btn btn-outline-info btn-sm dofi-min-w-100 dofi-max-w-100"
-            (click)="openConfigModal(true)" [hidden]="!isEditMode">
+            (click)="openConfigModal(true)" [hidden]="!isEditMode" [disabled]="!isCompanyDataLoaded">
             <i class="fas fa-cog me-1"></i> Configure
           </button>
         </div>
         <div>
             <button type="button" class="btn btn-outline-info btn-sm dofi-min-w-100 dofi-max-w-150" (click)="openConfigCompany()"
-            [hidden]="!isEditMode" appPreventMultiClick>
+            [hidden]="!isEditMode" [disabled]="!isCompanyDataLoaded" appPreventMultiClick>
             <i class="fas fa-cog me-1"></i> Valid Config
           </button>
         </div>

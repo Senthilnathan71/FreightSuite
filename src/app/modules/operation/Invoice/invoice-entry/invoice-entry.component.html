@@ -135,10 +135,10 @@
           <!-- Final Save/Post Button -->
           <button
             type="button"
-            appPreventMultiClick
             class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="postVoucher(true)"
             [disabled]="
+              isPosted ||
               invoiceForm.invalid ||
               isReadOnly ||
               (!mps.can('update') && isEditMode) ||
