@@ -1495,6 +1495,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       next: (resp: any) => {
         if (resp.status) {
           this.patchValues(resp.data);
+          this.applyVoucherDateConstraints();
           this.receiptPrintData = resp.data;
           this.voucherMatchingInfo = resp.data?.VoucherMatchingHeader?.[0];
         } else {

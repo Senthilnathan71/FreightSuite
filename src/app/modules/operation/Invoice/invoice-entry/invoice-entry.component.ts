@@ -1002,6 +1002,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           this.invoiceForm.markAsUntouched();
           this._isInitialLoad = true;
           this.patchValues(this.invoiceData);
+          this.applyVoucherDateConstraints();
           this.patchDueDate();
 
           this.invoiceForm.get('PartyName')?.disable();

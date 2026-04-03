@@ -1405,6 +1405,7 @@ export class CreditNoteEntryComponent {
           this.creditNoteData = resp.data;
           this.creditNoteForm.markAllAsTouched();
           this.patchValues(this.creditNoteData);
+          this.applyVoucherDateConstraints();
           this.creditNoteForm.get('PartyName')?.disable();
           this.creditNoteForm.get('CustomerBranchSid')?.disable();
           this.creditNoteForm.get('CurrencyMasterSid')?.disable();

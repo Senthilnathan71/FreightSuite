@@ -1298,6 +1298,7 @@ export class ReverseVoucherEntryComponent {
           console.log(response.data, 'loadReverseVoucherById')
           this.reverseVoucherData = response.data;
           this.populateForm(this.reverseVoucherData);
+          this.applyVoucherDateConstraints();
           if (this.isReadOnly) {
             this.details.disable({ emitEvent: false });
             this.isDirty = false;

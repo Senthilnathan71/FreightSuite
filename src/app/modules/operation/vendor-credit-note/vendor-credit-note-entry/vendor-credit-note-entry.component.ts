@@ -1348,6 +1348,7 @@ export class VendorCreditNoteEntryComponent {
           this.handleDropdownBasedOnJob().subscribe({
             next: () => {
               this.patchValues(data);
+              this.applyVoucherDateConstraints();
               // this.invoiceOutstandingAmount = data.netOutstandingForParty || 0;
 
               this.vendorCreditNoteForm.get('PartyName')?.disable();

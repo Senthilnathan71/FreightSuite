@@ -907,6 +907,7 @@ private deepEqual(obj1: any, obj2: any): boolean {
         }
 
         this.form.patchValue(formPatchData);
+        this.applyVoucherDateConstraints();
         const _paymentOrigDate = new Date(voucher.VoucherDate);
     if (!isNaN(_paymentOrigDate.getTime())) {
       const _y = _paymentOrigDate.getFullYear(), _m = _paymentOrigDate.getMonth() + 1;

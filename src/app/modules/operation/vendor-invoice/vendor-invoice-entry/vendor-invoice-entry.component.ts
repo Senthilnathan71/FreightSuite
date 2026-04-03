@@ -1012,6 +1012,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
           this.vendorInvoiceForm.markAllAsTouched();
           this._isInitialLoad = true;
           this.patchValues(this.vendorInvoiceData);
+          this.applyVoucherDateConstraints();
           this.vendorInvoiceForm.get('PartyName')?.disable();
           this.vendorInvoiceForm.get('CustomerBranchSid')?.disable();
           this.vendorInvoiceForm.get('CurrencyMasterSid')?.disable();

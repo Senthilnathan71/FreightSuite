@@ -1494,6 +1494,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       next: (resp: any) => {
         if (resp.status) {
           this.patchValues(resp.data);
+          this.applyVoucherDateConstraints();
           this.paymentDataPrint = resp.data;
           this.voucherMatchingInfo = resp.data?.VoucherMatchingHeader?.[0];
         } else {
