@@ -245,6 +245,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
   // Unsaved changes related varaible declarations
   isDirty : boolean = false;
   isSaving: boolean = false;
+  isPosting: boolean = false;
   private initialFormValue : any = null;
   private destroy$ = new Subject<void>();
   private _originalHSSACValues: (number | null)[] = [];
@@ -1333,22 +1334,12 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   private disableControlsIfVoucherExists(group: FormGroup): void {
     const voucherDetailSid = group.get('VoucherDetailSid')?.value;
-
-    console.log("Cost Revenue Charges Sid",group.get('CostRevenueChargesSid')?.value);
-    let fullDisabled = false;
-    if (group.get('CostRevenueChargesSid')?.value) {
-      Object.keys(group.controls).forEach((controlName) => {
-          group.get(controlName)?.disable({ emitEvent: false });
-      });
-      fullDisabled = true;
-    }
-
-    if (!voucherDetailSid || fullDisabled) {
+    
+    if (!voucherDetailSid) {
       return;
     }
 
-
-    const allowedControls = ['Rate', 'ExchangeRate', 'HSSACMasterSid','ChargeDescription','NumberOfUnit'];
+    const allowedControls = ['Rate', 'ExchangeRate', 'HSSACMasterSid', 'ChargeDescription'];
 
     Object.keys(group.controls).forEach((controlName) => {
       if (!allowedControls.includes(controlName)) {
@@ -1828,7 +1819,9 @@ export class VendorInvoiceEntryComponent implements OnInit {
   }
 
   async postVoucher(notFromSubmit: boolean = false) : Promise<void> {
+    if (this.isPosting) return;
     try {
+      this.isPosting = true;
       this.spinner.show();
       const voucherHeaderSid = this.headerId;
       const currentCompany = this.currentCompany;
@@ -1878,17 +1871,20 @@ export class VendorInvoiceEntryComponent implements OnInit {
       const result = await firstValueFrom(
         this.operationService.postVoucherByVoucherSid(postPayload)
       );
-      this.spinner.hide();
+      this.isPosting = false;
       if(result.status) {
         this.appSettingService.showSuccess(result.message);
         if (notFromSubmit) {
           this.loadVendorInvoiceById(this.headerId);
         }
       } else {
+        this.spinner.hide();
         this.appSettingService.showError(result.message);
       }
     } catch (error) {
       console.error('Post voucher error:', error);
+      this.isPosting = false;
+      this.spinner.hide();
       return null;
     }
   }
@@ -3038,7 +3034,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   gatherHyperLinkInfo(data: any) {
     const airDept = String(data?.departmentMaster?.departmentType)?.toUpperCase() === 'AIR';
-    const isHouseJobInvoice = data?.HouseJobSid && data?.MasterJobSid;
+    const isHouseJobInvoice = data?.HouseJobSid;
     const isMasterJobInvoice = data?.MasterJobSid && !data?.HouseJobSid;
     const isBookingInvoice = !!data?.BookingHeaderSid;
     const isAgentHouseJob = String(data?.houseJob?.JobType || '') === 'Agent';

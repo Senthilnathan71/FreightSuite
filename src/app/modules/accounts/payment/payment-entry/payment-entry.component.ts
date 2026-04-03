@@ -54,7 +54,7 @@ import {
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { AccountsService } from '../../accounts.service';
-import { errorLogger, getDefaultTodayDate, toNgbDateStruct, toNumber } from 'src/app/common/helper';
+import { errorLogger, getDefaultTodayDate, ngbDateStructToDate, toNgbDateStruct, toNumber } from 'src/app/common/helper';
 import { VoucherPeriodValidationService, VoucherDateConstraints } from 'src/app/common/voucher-period-validation.service';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
@@ -1390,7 +1390,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   async postVoucher(notFromSubmit: boolean = false) {
+    if (this.isSaving) return;
     try {
+      this.isSaving = true;
       this.spinner.show();
       const voucherHeaderSid = this.headerId;
       const currentCompany = this.currentCompany;
@@ -1459,6 +1461,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       );
 
       this.spinner.hide();
+      this.isSaving = false;
       if (result.status) {
         this.appSettingService.showSuccess(result.message);
         this.paymentData.PostStatus = 'P';
@@ -1467,10 +1470,12 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         }
       } else {
         this.spinner.hide();
+        this.isSaving = false;
         this.appSettingService.showError(result.message);
       }
     } catch (error) {
       this.spinner.hide();
+      this.isSaving = false;
       console.error('Post voucher error:', error);
     }
   }
@@ -2224,6 +2229,25 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
    * eg Party row -  Being Bank Transfer Recd. NEFT 7887
    * Bank row - Being NEFT 7887 from KRS Logistics
    */
+  private syncClearanceDate(mode: string, date: any) {
+    if (['NEFT', 'IMPS', 'RTGS'].includes(mode)) {
+      // dateSelect fires NgbDateStruct {year,month,day} — convert to Date so the
+      // form control stores the same type as CustomDateAdapter.toModel produces
+      const value = (date && 'year' in date) ? ngbDateStructToDate(date) : date;
+      this.paymentForm.get('ClearanceDate')?.setValue(value);
+    }
+  }
+
+  onInstrumentDateSelect(date: any) {
+    const mode = this.paymentForm.get('InstrumentMode')?.value;
+    this.syncClearanceDate(mode, date);
+  }
+
+  onInstrumentModeChange(event: any) {
+    const date = this.paymentForm.get('InstrumentDate')?.value;
+    this.syncClearanceDate(event?.value, date);
+  }
+
   updateDetailNarration() {
     const allDetails = this.detailItems.getRawValue();
     let partyDetailIndex = allDetails.findIndex(

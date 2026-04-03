@@ -700,6 +700,7 @@
                     bindLabel="label"
                     bindValue="value"
                     formControlName="InstrumentMode"
+                    (change)="onInstrumentModeChange($event)"
                   >
                   </ng-select>
                   <label
@@ -725,6 +726,7 @@
                       formControlName="InstrumentDate"
                       (click)="d2.toggle()"
                       (keydown.arrowDown)="d2.open()"
+                      (dateSelect)="onInstrumentDateSelect($event)"
                       readonly
                     />
                     <button

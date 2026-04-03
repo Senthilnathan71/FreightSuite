@@ -2502,7 +2502,9 @@ export class CreditNoteEntryComponent {
   }
 
   async postVoucher(notFromSubmit: boolean = false): Promise<void> {
+    if (this.isSaving) return;
     try {
+      this.isSaving = true;
       this.spinner.show();
       const voucherHeaderSid = this.headerId;
       const currentCompany = this.currentCompany;
@@ -2555,17 +2557,20 @@ export class CreditNoteEntryComponent {
       const result = await firstValueFrom(
         this.operationService.postVoucherByVoucherSid(postPayload),
       );
-      this.spinner.hide();
+      this.isSaving = false;
       if (result.status) {
         this.appSettingService.showSuccess(result.message);
         if (notFromSubmit) {
           this.loadCreditNoteById(this.headerId);
         }
       } else {
+        this.spinner.hide();
         this.appSettingService.showError(result.message);
       }
     } catch (error) {
       console.error('Post voucher error:', error);
+      this.isSaving = false;
+      this.spinner.hide();
       return null;
     }
   }

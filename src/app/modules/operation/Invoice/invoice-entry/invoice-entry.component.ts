@@ -1483,7 +1483,7 @@ isSeaDepartment(): boolean {
 
   gatherHyperLinkInfo(data){
     const airDept = String(data.departmentMaster?.departmentType)?.toUpperCase() === 'AIR';
-    const isHouseJobInvoice = data.HouseJobSid && data.MasterJobSid;
+    const isHouseJobInvoice = data.HouseJobSid;
     const isMasterJobInvoice = data.MasterJobSid && !data.HouseJobSid;
     const isBookingInvoice = !!data.BookingHeaderSid;
     const isAgentHouseJob = String(data?.houseJob?.JobType || '') === 'Agent';
@@ -2368,7 +2368,9 @@ isSeaDepartment(): boolean {
   }
 
   async postVoucher(notFromSubmit: boolean = false) : Promise<void> {
+    if (this.isSaving) return;
     try {
+      this.isSaving = true;
       this.spinner.show();
       const voucherHeaderSid = this.headerId;
       const currentCompany = this.currentCompany;
@@ -2418,7 +2420,7 @@ isSeaDepartment(): boolean {
       const result = await firstValueFrom(
         this.operationService.postVoucherByVoucherSid(postPayload)
       );
-      this.spinner.hide();
+      this.isSaving = false;
       if(result.status) {
         this.appSettingService.showSuccess(result.message);
         this.invoiceData.PostStatus = 'P';
@@ -2426,10 +2428,13 @@ isSeaDepartment(): boolean {
           this.loadInvoiceById(this.headerId);
         }
       } else {
+        this.spinner.hide();
         this.appSettingService.showError(result.message);
       }
     } catch (error) {
       console.error('Post voucher error:', error);
+      this.isSaving = false;
+      this.spinner.hide();
       return null;
     }
   }

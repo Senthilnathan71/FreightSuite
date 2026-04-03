@@ -199,6 +199,12 @@ export function getConcatenatedPorts(portName: String, portCode: String): string
   return portName ? `${portName} - ${portCode}` : '';
 }
 
+// Converts NgbDateStruct to a UTC-midnight Date
+export function ngbDateStructToDate(date: NgbDateStruct | null): Date | null {
+  if (!date) return null;
+  return new Date(Date.UTC(date.year, date.month - 1, date.day, 0, 0, 0, 0));
+}
+
 // Converts a JS Date to NgbDateStruct
 export function toNgbDateStruct(
   date: Date | string | null
