@@ -613,8 +613,8 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       COAMasterSid: [null, [Validators.required]],
       GST_VAT: [''],
       BankPartyName: [''],
-      Narration: ['', [Validators.required]],
-      Remarks: [''],
+      Narration: ['', [Validators.required, Validators.maxLength(300)]],
+      Remarks: ['', [Validators.maxLength(100)]],
       InstrumentMode: [PaymentMode.NEFT, Validators.required],
       InstrumentNumber: ['', [Validators.required]],
       InstrumentDate: [null, [Validators.required]],
@@ -1734,7 +1734,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       Amount: [data?.Amount || 0.0, Validators.required],
       LocalAmount: [data?.LocalAmount || 0.0, Validators.required],
 
-      Narration: [data?.Narration || ''],
+      Narration: [data?.Narration || '', [Validators.maxLength(300)]],
       CostCenter: [data?.CostCenter || null],
       ProfitCenter: [data?.ProfitCenter || null],
       DepartmentMasterSid: [data?.DepartmentMasterSid || null],
@@ -1756,7 +1756,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       TaxPercentage2: [data?.TaxPercentage2 || 0.0],
       TaxAmount2: [data?.TaxAmount2 || 0.0],
       InvoiceType: [data?.InvoiceType || ''],
-      Remarks: [data?.Remarks || ''],
+      Remarks: [data?.Remarks || '', [Validators.maxLength(100)]],
       PartyAmount: [data?.PartyAmount || 0.0],
 
       // Relational objects (used for dropdowns or display)
