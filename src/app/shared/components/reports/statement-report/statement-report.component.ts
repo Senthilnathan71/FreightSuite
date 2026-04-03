@@ -29,6 +29,7 @@ export class StatementReportComponent {
   currentCurrency: number;
   bankDetails: any[] = [];
   showBankDetails = false;
+  isBankDetailsLoading = false;
   orientation: 'portrait' | 'landscape' = 'portrait';
 
   constructor(
@@ -63,8 +64,13 @@ export class StatementReportComponent {
           return;
         }
 
+        this.isBankDetailsLoading = true;
         this.getBankDetails().subscribe((bankResp: any) => {
           this.bankDetails = bankResp?.data || [];
+          this.isBankDetailsLoading = false;
+        }, () => {
+          this.bankDetails = [];
+          this.isBankDetailsLoading = false;
         });
       });
   }
@@ -271,6 +277,61 @@ export class StatementReportComponent {
       tableHeaders,
       rows,
       columnWidths: [20, 12, 4, 35, 4, 3, 13, 13, 13, 13, 13],
+      additionalTables: this.showBankDetails && this.bankDetails && this.bankDetails.length > 0
+        ? [
+            {
+              title: 'Bank Details',
+              headers: [
+                'Details',
+                ...this.bankDetails.map(() => `Bank (${this.currentCurrencyCode})`)
+              ],
+              rows: [
+                {
+                  cells: [
+                    { value: 'Beneficiary Name' },
+                    ...this.bankDetails.map((bankDetail: any) => ({ value: bankDetail?.BeneficiaryName || '' }))
+                  ],
+                  style: 'data'
+                },
+                {
+                  cells: [
+                    { value: 'Account No.' },
+                    ...this.bankDetails.map((bankDetail: any) => ({ value: bankDetail?.BankAccountNo || '', alignment: { horizontal: 'left' } }))
+                  ],
+                  style: 'data'
+                },
+                {
+                  cells: [
+                    { value: 'IFSC' },
+                    ...this.bankDetails.map((bankDetail: any) => ({ value: bankDetail?.IFSCCode || '' }))
+                  ],
+                  style: 'data'
+                },
+                {
+                  cells: [
+                    { value: 'Swift Code' },
+                    ...this.bankDetails.map((bankDetail: any) => ({ value: bankDetail?.BankCode || '' }))
+                  ],
+                  style: 'data'
+                },
+                {
+                  cells: [
+                    { value: 'Bank Name' },
+                    ...this.bankDetails.map((bankDetail: any) => ({ value: bankDetail?.BankName || '' }))
+                  ],
+                  style: 'data'
+                },
+                {
+                  cells: [
+                    { value: 'Branch' },
+                    ...this.bankDetails.map((bankDetail: any) => ({ value: bankDetail?.BankAddress || '' }))
+                  ],
+                  style: 'data'
+                }
+              ]
+            }
+          ]
+        : undefined,
       notes: [
         'This Statement of Accounts report includes only posted voucher transactions.'
       ]

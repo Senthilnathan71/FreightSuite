@@ -71,6 +71,12 @@ export interface ComplexReportExportConfig {
     rows: ExcelRow[];
     columnWidths?: number[];
   };
+  additionalTables?: Array<{
+    title?: string;
+    headers: string[];
+    rows: ExcelRow[];
+    columnWidths?: number[];
+  }>;
   notes?: string[];
 }
 
@@ -245,6 +251,32 @@ export class ExcelExportService {
         while (summaryExcelRow.length < summaryHeaders.length) summaryExcelRow.push('');
         aoa.push(summaryExcelRow);
         currentRowIndex++;
+      }
+    }
+
+    if (config.additionalTables?.length) {
+      for (const table of config.additionalTables) {
+        aoa.push([]);
+        currentRowIndex++;
+
+        if (table.title) {
+          aoa.push([table.title]);
+          merges.push({ s: { r: currentRowIndex, c: 0 }, e: { r: currentRowIndex, c: totalCols - 1 } });
+          currentRowIndex++;
+        }
+
+        aoa.push(table.headers);
+        currentRowIndex++;
+
+        for (const row of table.rows) {
+          const extraExcelRow: any[] = [];
+          for (const cell of row.cells) {
+            extraExcelRow.push(cell.value ?? '');
+          }
+          while (extraExcelRow.length < table.headers.length) extraExcelRow.push('');
+          aoa.push(extraExcelRow);
+          currentRowIndex++;
+        }
       }
     }
 

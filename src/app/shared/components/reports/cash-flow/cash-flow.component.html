@@ -1,0 +1,100 @@
+<div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'" style="color: #000;">
+    <app-print-header></app-print-header>
+
+    <div style="margin-top: 1rem;">
+        <div style="max-width: 900px; margin: 0 auto;">
+            <div style="padding-top: 0.75rem; color: #000;">
+                <h4 class="fw-bold mb-0" style="color: #000;">
+                    {{ reportTitle }}
+                </h4>
+                <h5 class="fw-bold mb-0 mt-1" style="color: #000;">
+                    {{ reportSubTitle }}
+                </h5>
+                <div class="mt-1" style="font-size: 15px; color: #000;">
+                    ({{ currencyLabel }})
+                </div>
+            </div>
+
+            <div class="table-responsive mt-3">
+                <table class="table table-sm" style="margin: 0; font-size: 12px; border-collapse: separate; border-spacing: 0;">
+                    <thead>
+                        <tr style="font-weight: bold; color: #000;">
+                            <th style="width: 58%; border: 0; padding:6px; font-size: 14px; color: #000;">Particulars</th>
+                            <th *ngFor="let year of yearColumns"
+                                class="text-center"
+                                style="width: 21%; border: 0; padding:6px; font-size: 14px; color: #000;">
+                                {{ year }}
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <ng-container *ngFor="let section of cashFlowSections">
+                            <tr *ngIf="section?.title">
+                                <td [attr.colspan]="yearColumns.length + 1"
+                                    style="border: 0; padding: 4px; font-size: 14px; font-weight: bold; color: #000;">
+                                    {{ section?.title }}
+                                </td>
+                            </tr>
+
+                            <tr *ngFor="let row of section?.rows">
+                                <td *ngIf="!isSpacerRow(row)"
+                                    [style.font-weight]="isEmphasizedRow(row) ? '700' : '600'"
+                                    [style.padding-left.px]="row?.indent ? row.indent : 6"
+                                    [style.white-space]="isEmphasizedRow(row) ? 'normal' : 'nowrap'"
+                                    style="border: 0; padding-top: 2px; padding-bottom: 2px; vertical-align: top; line-height: 1.15; color: #000;">
+                                    {{ row?.label || row?.description || row?.title }}
+                                </td>
+
+                                <ng-container *ngIf="!isSpacerRow(row)">
+                                    <td *ngFor="let year of yearColumns"
+                                        class="text-end"
+                                        [style.font-weight]="isEmphasizedRow(row) ? '700' : '400'"
+                                        [style.border-top]="isEmphasizedRow(row) ? '1px solid #000' : '0'"
+                                        [style.border-bottom]="isEmphasizedRow(row) ? '1px solid #000' : '0'"
+                                        style="padding: 4px; vertical-align: top; line-height: 1.15; color: #000;">
+                                        {{ formatAmount(getRowValue(row, year)) }}
+                                    </td>
+                                </ng-container>
+
+                                <td *ngIf="isSpacerRow(row)"
+                                    [attr.colspan]="yearColumns.length + 1"
+                                    style="border: 0; height: 12px; padding: 4px;"></td>
+                            </tr>
+                        </ng-container>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-3" style="font-size: 12px; color: #000;">
+                <div class="fw-bold" style="font-size: 14px; color: #000;">Note:</div>
+
+                <div *ngFor="let note of noteRows" class="mt-1">
+                    <div class="fw-bold" *ngIf="note?.title" style="color: #000;">{{ note?.title }}</div>
+
+                    <table class="table table-sm"
+                        style="width: 100%; margin: 0; font-size: 12px; border-collapse: separate; border-spacing: 0;">
+                        <tbody>
+                            <tr *ngFor="let row of note?.rows">
+                                <td [style.font-weight]="isEmphasizedRow(row) ? '700' : '400'"
+                                    style="width: 58%; border: 0; padding: 4px; line-height: 1.15; color: #000;">
+                                    {{ row?.label || row?.description || row?.title }}
+                                </td>
+                                <td *ngFor="let year of yearColumns"
+                                    class="text-end"
+                                    [style.font-weight]="isEmphasizedRow(row) ? '700' : '400'"
+                                    [style.border-top]="isEmphasizedRow(row) ? '1px solid #000' : '0'"
+                                    [style.border-bottom]="isEmphasizedRow(row) ? '1px solid #000' : '0'"
+                                    style="width: 21%; padding: 4px; line-height: 1.15; color: #000;">
+                                    {{ formatAmount(getRowValue(row, year)) }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <app-print-footer></app-print-footer>
+</div>
