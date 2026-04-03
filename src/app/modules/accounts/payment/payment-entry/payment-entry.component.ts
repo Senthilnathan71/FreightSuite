@@ -84,6 +84,7 @@ import { errorLoggerWithToastr, ValidationMessageConfig } from 'src/app/common/e
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { OperationService } from 'src/app/modules/operation/operation.service';
 
 /**
  * Payment Entry Component
@@ -205,6 +206,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     VoucherMatchingHeaderSid: number;
     VoucherMatchingNo: string;
   };
+  paymentRequestSid: number | null = null;
   private isPatching = false;
 
   paymentValidationConfig: ValidationMessageConfig = {
@@ -367,7 +369,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     private confirmService: ModalService,
     private datePipe: CustomDatePipe,
     private cdr: ChangeDetectorRef,
-    private masterService: MasterService
+    private masterService: MasterService,
+    private operationService: OperationService
   ) {}
 
   ngOnInit(): void {
@@ -402,6 +405,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     this.loadDetailLookups();
     this.loadVoucherPeriods();
 
+    this.paymentRequestSid = Number(this.route.snapshot.queryParamMap.get('paymentRequestSid')) || null;
+
     // Check if editing existing payment
     const paymentId = this.route.snapshot.params['id'];
     if (paymentId) {
@@ -415,6 +420,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         this.loadPayment(this.headerId);
       } else {
         this.subscribeToPartyAndBankChanges();
+        if (this.paymentRequestSid) {
+          this.prefillFromPaymentRequest(this.paymentRequestSid);
+        }
       }
     });
   }
@@ -1314,6 +1322,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         };
       }),
       voucherMatching: voucherMatching,
+      PaymentRequestSid: this.paymentRequestSid,
       ...(this.isEditMode
         ? {
             UpdatedBy: currentUserEmail,
@@ -1512,6 +1521,79 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         console.error('Error loading payment:', error);
       },
     });
+  }
+
+  private prefillFromPaymentRequest(paymentRequestSid: number) {
+    this.operationService.getPaymentRequestById(paymentRequestSid).subscribe({
+      next: async (resp: any) => {
+        if (!resp.status) {
+          this.appSettingService.showWarning(resp.message || 'Unable to load payment request');
+          return;
+        }
+
+        const request = resp.data;
+        if (request?.PaymentRequestStatus !== 'Approved') {
+          this.appSettingService.showWarning('Payment voucher can be created only for approved payment request');
+          return;
+        }
+
+        if (request?.VoucherSid) {
+          this.appSettingService.showWarning('Payment voucher already created for this payment request');
+          return;
+        }
+
+        const firstDetail = request?.paymentRequestDetails?.[0];
+        const firstSource = firstDetail?.sourceCostRevenueCharge;
+        const party = this.partyList.find((item) => item.CustomerBranchSid === firstSource?.CostAgentBranchSid);
+
+        if (party) {
+          await this.onPartyChange(party, true);
+        }
+
+        const currencySid = firstDetail?.CostCurrencyMasterSid || this.r['CurrencyMasterSid']?.value;
+        this.paymentForm.patchValue({
+          VoucherDate: this.toInputDate(request.PaymentRequestDate),
+          CashOrBank: request.CashBank === 'Cash' ? 'C' : 'B',
+          CurrencyMasterSid: currencySid,
+          Narration: `Payment against request ${request.PaymentRequestNumber}`,
+          Remarks: request.Remarks || '',
+        });
+        this.setCurrencyCode(currencySid);
+        this.handleHeaderExchangeRate(currencySid);
+
+        if (this.bankTypedLedgers?.length) {
+          this.paymentForm.get('BankCOA')?.setValue(this.bankTypedLedgers[0]?.COAMasterSid);
+        }
+
+        (request.paymentRequestDetails || []).forEach((detail: any) => {
+          const source = detail.sourceCostRevenueCharge;
+          this.addDetailRow({
+            COAMasterSid: source?.ChargeCOAMasterSid || null,
+            LedgerMasterSid: source?.ChargeSubledgerMasterSid || null,
+            DrCr: 'D',
+            CurrencyMasterSid: detail.CostCurrencyMasterSid,
+            CurrencyCode: detail.currency?.currencyCode || '',
+            ExchangeRate: detail.CostExchangeRate || 1,
+            NumberOfUnit: detail.CostNumberOfUnit || 1,
+            Rate: detail.CostRate || 0,
+            Amount: detail.CostAmount || 0,
+            LocalAmount: detail.CostLocalAmount || 0,
+            DepartmentMasterSid: request.DepartmentMasterSid || null,
+            ChargeMasterSid: detail.ChargeMasterSid,
+            ChargeDescription: detail.ChargeDescription,
+            ChargeUOMSid: detail.CostChargeUomSid,
+            HouseJobSid: request.HouseJobSid || null,
+            MasterJobSid: request.MasterJobSid || null,
+            CostRevenue: 'Cost',
+            PartyAmount: detail.CostAmount || 0,
+          }, false);
+        });
+      },
+    });
+  }
+
+  private toInputDate(value: any) {
+    return value ? new Date(value).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
   }
 
   patchValues(response: any) {

@@ -92,6 +92,11 @@
           </div>
 
           <div class="buttons">
+            <button type="button" class="btn btn-warning btn-sm" (click)="openPaymentRequest()"
+              [disabled]="!isEditMode || !rateFormArray?.length || !isVoucherGenerationAllowed() || !isHBLNoValid()" title="Create payment request from prepaid cost rows">
+              <i class="fas fa-file-import me-1"></i>
+              Payment Request
+            </button>
             <button type="button" class="btn btn-success btn-sm" (click)="openVoucherTypeModal()"
               [disabled]="!isEditMode || !rateFormArray?.length || !isVoucherGenerationAllowed() || !isHBLNoValid()" title="Generate Invoice/Voucher from rates">
               <i class="fas fa-file-invoice me-1"></i>
@@ -853,20 +858,20 @@
 
       <div class="col-md-6">
         <div class="voucher-type-card" (click)="!isProcessingVoucherType && selectVoucherType('Vendor Invoice')">
-          <div class="card h-100 border-2 border-warning voucher-card-hover"
+          <div class="card h-100 border-2 border-success voucher-card-hover"
             [class.cursor-pointer]="!isProcessingVoucherType"
             [class.opacity-50]="isProcessingVoucherType"
             [style.pointer-events]="isProcessingVoucherType ? 'none' : 'auto'">
             <div class="card-body text-center py-1">
               <div class="voucher-icon mb-1">
-                <i class="fas fa-file-import fa-3x text-warning"></i>
+                <i class="fas fa-file-invoice-dollar fa-3x text-success"></i>
               </div>
-              <h5 class="card-title text-warning">Vendor Invoice</h5>
-              <p class="card-text text-muted">Generate vendor/supplier invoice from cost charges</p>
+              <h5 class="card-title text-success">Vendor Invoice</h5>
+              <p class="card-text text-muted">Generate vendor invoice directly from eligible cost charges</p>
               <ul class="list-unstyled text-start small">
-                <li><i class="fas fa-check text-success me-2"></i>Cost charges only</li>
-                <li><i class="fas fa-check text-success me-2"></i>Supplier billing</li>
-                <li><i class="fas fa-check text-success me-2"></i>Purchase documentation</li>
+                <li><i class="fas fa-check text-success me-2"></i>Pending cost charges only</li>
+                <li><i class="fas fa-check text-success me-2"></i>Blocked if payment request already exists</li>
+                <li><i class="fas fa-check text-success me-2"></i>Existing voucher flow unchanged</li>
               </ul>
             </div>
           </div>
@@ -890,7 +895,7 @@
 <!-- Billing Party Selection Modal -->
 <ng-template #billingPartyModal let-modal>
   <div class="modal-header modalHeaderpart">
-    <h4 class="modal-title">Select Billing Party</h4>
+    <h4 class="modal-title">{{ billingPartyModalTitle }}</h4>
     <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss('Cross click')">
       
     </button>
@@ -898,7 +903,7 @@
 
   <div class="modal-body">
     <div class="text-center mb-1">
-      <p class="text-muted">Multiple billing parties found. Please select one to proceed with invoice generation.</p>
+      <p class="text-muted">{{ billingPartyModalDescription }}</p>
     </div>
 
     <div class="billing-parties-list">
@@ -934,7 +939,7 @@
 
     <div class="alert alert-warning mt-3" *ngIf="!availableBillingParties?.length">
       <i class="fas fa-exclamation-triangle me-2"></i>
-      <strong>No billing parties found</strong> with pending charges for invoice generation.
+      <strong>No parties found.</strong> {{ billingPartyEmptyMessage }}
     </div>
   </div>
 
@@ -945,7 +950,7 @@
     <button type="button" class="btn btn-info btn-sm" [disabled]="selectedBillingPartyIndex === -1"
       (click)="proceedWithBillingParty()">
       
-      Proceed with Invoice
+      {{ billingPartyModalActionLabel }}
     </button>
   </div>
 </ng-template>

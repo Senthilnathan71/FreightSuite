@@ -31,6 +31,7 @@ import {
   DateTypeConfig,
   DropdownFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
+import { OperationService } from 'src/app/modules/operation/operation.service';
 
 /**
  * Payment List Component
@@ -59,6 +60,7 @@ import {
 })
 export class PaymentListComponent extends BaseListComponent implements OnInit {
   @ViewChild('paymentTable') paymentTable!: ReusableTableComponent;
+  @ViewChild('pendingPaymentTable') pendingPaymentTable!: ReusableTableComponent;
 
   searchType = 'VoucherNumber';
   results: any[] = [];
@@ -123,8 +125,12 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
     bindValue: 'value'
   };
   currentFilters: AdvancedFilterValues = {};
+  activeTab: 'payments' | 'pending-request' = 'payments';
+  pendingPaymentRequests: any[] = [];
+  pendingPaymentRequestRows: any[] = [];
 
   tableConfig: TableConfig ;
+  pendingPaymentTableConfig: TableConfig;
 
   headerActions: HeaderAction[] = [
     {
@@ -179,6 +185,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
     public excelService: ExcelExportService,
     private paymentService: PaymentService,
     private accountService: AccountsService,
+    private operationService: OperationService,
     private datePipe: CustomDatePipe,
     paginationService : PaginationService
   ) {
@@ -207,18 +214,19 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
       dateType: 'VoucherDate'
     };
     this.loadFilterLookups();
+    this.loadPendingPaymentRequests();
 
     super.ngOnInit();
   }
 
   initializeHeaderActions(): void {
     this.headerActions = [
-      {
-        label: 'Create',
-        icon: 'fas fa-plus',
-        action: 'create',
-        disabled : !this.mps.can('insert')
-      },
+      // {
+      //   label: 'Create',
+      //   icon: 'fas fa-plus',
+      //   action: 'create',
+      //   disabled : !this.mps.can('insert')
+      // },
       {
         label: 'Report',
         icon: 'fas fa-file-alt',
@@ -351,7 +359,68 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
       showColumnToggle: true,
       emptyMessage: 'No payment vouchers found',
       loadingMessage: 'Loading payments...'
-    }
+    };
+
+    this.pendingPaymentTableConfig = {
+      columns: [
+        {
+          key: 'PaymentRequestNumber',
+          label: 'Request No',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          width: '160px',
+        },
+        {
+          key: 'PaymentRequestDate',
+          label: 'Date',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          width: '140px'
+        },
+        {
+          key: 'PayableTo',
+          label: 'Payable To',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          width: '220px',
+          cellClass: 'text-truncate'
+        },
+        {
+          key: 'DepartmentName',
+          label: 'Department',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          width: '180px',
+          cellClass: 'text-truncate'
+        },
+        {
+          key: 'RowCount',
+          label: 'Rows',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          width: '90px',
+        }
+      ],
+      actions: [
+        {
+          icon: 'fas fa-plus',
+          label: 'Create Payment',
+          action: 'create-payment',
+          tooltip: 'Create Payment',
+          state: !this.mps.can('insert')
+        }
+      ],
+      selectable: true,
+      showPagination: true,
+      showColumnToggle: true,
+      emptyMessage: 'No approved payment requests pending voucher creation',
+      loadingMessage: 'Loading pending payment requests...'
+    };
   }
 
   protected searchItems(): Observable<any> {
@@ -449,6 +518,10 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
   }
 
   onTableSortChange(sort: TableSortConfig): void {
+    if (this.activeTab === 'pending-request') {
+      this.sortPendingPaymentRequests(sort);
+      return;
+    }
     this.sortColumn = sort.column;
     this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
     this.search();
@@ -476,6 +549,64 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
 
   navigateToCreate() {
     this.router.navigate(['accounts/payment/entry'])
+  }
+
+  setTab(tab: 'payments' | 'pending-request') {
+    this.activeTab = tab;
+    if (tab === 'pending-request') {
+      this.loadPendingPaymentRequests();
+    }
+  }
+
+  createPaymentFromRequest(item: any) {
+    this.router.navigate(['accounts/payment/entry'], {
+      queryParams: { paymentRequestSid: item.PaymentRequestSid }
+    });
+  }
+
+  private loadPendingPaymentRequests() {
+    if (!this.currentCompany?.CompanyMasterSid || !this.currentBranch?.BranchMasterSid) {
+      return;
+    }
+    this.tableLoading = true;
+    this.operationService
+      .getPendingPaymentRequests(this.currentCompany.CompanyMasterSid, this.currentBranch.BranchMasterSid)
+      .subscribe({
+        next: (resp: any) => {
+          this.pendingPaymentRequests = resp.status ? (resp.data || []) : [];
+          this.pendingPaymentRequestRows = this.pendingPaymentRequests.map((item: any) => ({
+            ...item,
+            PaymentRequestDateRaw: item.PaymentRequestDate,
+            PaymentRequestDate: this.datePipe.transform(item.PaymentRequestDate),
+            DepartmentName: item.dept?.departmentName || item.dept?.DepartmentName || '-',
+            RowCount: item.paymentRequestDetails?.length || 0
+          }));
+          this.tableLoading = false;
+        },
+        error: () => {
+          this.pendingPaymentRequests = [];
+          this.pendingPaymentRequestRows = [];
+          this.tableLoading = false;
+        }
+      });
+  }
+
+  private sortPendingPaymentRequests(sort: TableSortConfig): void {
+    if (!sort?.column || sort.direction === 'none') {
+      return;
+    }
+
+    const direction = sort.direction === 'asc' ? 1 : -1;
+    this.pendingPaymentRequestRows = [...this.pendingPaymentRequestRows].sort((a: any, b: any) => {
+      const aValue = a?.[sort.column];
+      const bValue = b?.[sort.column];
+
+      if (aValue == null && bValue == null) return 0;
+      if (aValue == null) return -1 * direction;
+      if (bValue == null) return 1 * direction;
+
+      return String(aValue).localeCompare(String(bValue), undefined, { numeric: true, sensitivity: 'base' }) * direction;
+    });
   }
 
 
@@ -525,6 +656,9 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
         break;
       case 'delete':
         this.deletePayment(payment);
+        break;
+      case 'create-payment':
+        this.createPaymentFromRequest(payment);
         break;
       default:
         console.log('Unknown action:', event.action);
@@ -630,11 +764,12 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
    * Export to Excel
    */
   exportToExcel(): void {
-    const formattedData = this.allItems;
+    const formattedData = this.activeTab === 'payments' ? this.allItems : this.pendingPaymentRequestRows;
     const companyName = this.currentCompany?.companyName ?? 'Company';
 
     // Get visible columns from table
-    const visibleColumns = this.paymentTable.getVisibleColumns();
+    const tableRef = this.activeTab === 'payments' ? this.paymentTable : this.pendingPaymentTable;
+    const visibleColumns = tableRef.getVisibleColumns();
     const dynamicHeaders = visibleColumns.map(column => ({
       key: column.key,
       label: column.label
@@ -643,7 +778,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
     this.excelService.exportAsExcel({
       data: formattedData,
       headers: dynamicHeaders,
-      fileName: 'Payment-Voucher-Report',
+      fileName: this.activeTab === 'payments' ? 'Payment-Voucher-Report' : 'Pending-To-Payment-Report',
       title: companyName
     });
   }
