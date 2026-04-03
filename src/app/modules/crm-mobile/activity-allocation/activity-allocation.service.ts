@@ -51,16 +51,6 @@ export interface WorkloadRow {
   updatedOn: string;
 }
 
-export interface MenuUserConfig {
-  MenuUserConfigSid?: number;
-  BranchMasterSid: number;
-  branchName?: string;
-  stage: Stage;
-  assignedRole: 'CS' | 'Doc' | null;
-  UserMasterSid?: number;
-  userName?: string;
-}
-
 export interface AllocateUser {
   userSid: number;
   userName: string;
@@ -196,46 +186,6 @@ export class ActivityAllocationService {
         map(res => res.data),
         catchError(err => {
           console.error('Error generating report:', err);
-          return throwError(() => err);
-        }),
-      );
-  }
-
-  getMenuUserConfig(branchSid?: number): Observable<MenuUserConfig[]> {
-    let params = new HttpParams();
-    if (branchSid) {
-      params = params.set('branchId', String(branchSid));
-    }
-    return this.http
-      .get<ResponseData<MenuUserConfig[]>>(`${this.baseUrl}/menu-user-config`, { params })
-      .pipe(
-        map(res => res.data || []),
-        catchError(err => {
-          console.error('Error fetching menu user config:', err);
-          return throwError(() => err);
-        }),
-      );
-  }
-
-  saveMenuUserConfig(configs: MenuUserConfig[]): Observable<any> {
-    return this.http
-      .post<ResponseData<any>>(`${this.baseUrl}/menu-user-config`, { configs })
-      .pipe(
-        map(res => res.data),
-        catchError(err => {
-          console.error('Error saving menu user config:', err);
-          return throwError(() => err);
-        }),
-      );
-  }
-
-  getCSUsers(): Observable<AllocateUser[]> {
-    return this.http
-      .get<ResponseData<AllocateUser[]>>(`${this.baseUrl}/cs-users`)
-      .pipe(
-        map(res => res.data || []),
-        catchError(err => {
-          console.error('Error fetching CS users:', err);
           return throwError(() => err);
         }),
       );

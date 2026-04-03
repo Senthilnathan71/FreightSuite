@@ -435,4 +435,25 @@ import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.meta
     );
   }
 
+  // ─── Menu User Config ────────────────────────────────────────
+
+  getMenuUserConfig(branchSid?: number) {
+    let url = 'menu-user-config';
+    if (branchSid) {
+      url += `?branchId=${branchSid}`;
+    }
+    return this.http.get<{ status: boolean; data: any[] }>(url).pipe(
+      map((resp) => resp.data || [])
+    );
+  }
+
+  saveMenuUserConfig(configs: any[]) {
+    return this.http.post<{ status: boolean; data: any; message: string }>(
+      'menu-user-config',
+      { configs }
+    ).pipe(
+      map((resp) => resp)
+    );
+  }
+
 }

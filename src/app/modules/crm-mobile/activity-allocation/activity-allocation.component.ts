@@ -6,6 +6,8 @@ import {
   OnDestroy,
   ChangeDetectorRef,
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import {
   ActivityAllocationService,
   ResourceSummaryRow,
@@ -31,6 +33,8 @@ type SummarySortColumn =
 
 @Component({
   selector: 'app-activity-allocation',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './activity-allocation.component.html',
   styleUrls: ['./activity-allocation.component.scss'],
 })
@@ -530,7 +534,7 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
       this.appSettingService.showWarning('User ID not available');
       return;
     }
-    this.router.navigate(['/crm/activity-allocation/entry'], {
+    this.router.navigate(['/settings/activity-allocation/entry'], {
       queryParams: {
         userSid: row.userSid,
         userName: row.userName,
@@ -557,7 +561,7 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
   }
 
   openConfig(): void {
-    this.router.navigate(['/crm/activity-allocation/config']);
+    this.router.navigate(['/settings/activity-allocation/config']);
   }
 
   onReportClick(): void {

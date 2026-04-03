@@ -1,18 +1,23 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import {
-  ActivityAllocationService,
-  MenuUserConfig,
-  Stage,
-  AllocateUser,
-} from '../activity-allocation.service';
+import { Stage } from '../activity-allocation.service';
+import { SettingsService } from 'src/app/modules/settings/settings.service';
+import { MasterService } from 'src/app/modules/master/master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 
 interface BranchOption {
   BranchMasterSid: number;
   BranchName: string;
+}
+
+interface AllocateUser {
+  userSid: number;
+  userName: string;
 }
 
 interface ConfigRow {
@@ -27,6 +32,8 @@ interface ConfigRow {
 
 @Component({
   selector: 'app-menu-user-config',
+  standalone: true,
+  imports: [CommonModule, FormsModule, NgSelectModule],
   templateUrl: './menu-user-config.component.html',
   styleUrls: ['./menu-user-config.component.scss'],
 })
@@ -56,7 +63,8 @@ export class MenuUserConfigComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private activityService: ActivityAllocationService,
+    private settingsService: SettingsService,
+    private masterService: MasterService,
     private appSettingService: AppSettingsService,
     private router: Router,
   ) {}
@@ -72,24 +80,12 @@ export class MenuUserConfigComponent implements OnInit, OnDestroy {
   }
 
   private loadBranches(): void {
-    const companyInfo = this.appSettingService.getCurrentCompanyInfo();
-    if (companyInfo?.CompanyMasterSid) {
-      this.activityService
-        .getMenuUserConfig()
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => {},
-          error: () => {},
-        });
-    }
-
-    // Load branches from localStorage or appSettingService
     const branchInfo = this.appSettingService.getCurrentBranchInfo();
     if (branchInfo) {
       this.branches = [
         {
           BranchMasterSid: branchInfo.BranchMasterSid,
-          BranchName: branchInfo.BranchName || branchInfo.BranchCode || 'Current Branch',
+          BranchName: branchInfo.branchName || branchInfo.branchCode || 'Current Branch',
         },
       ];
       this.selectedBranchSid = branchInfo.BranchMasterSid;
@@ -98,16 +94,43 @@ export class MenuUserConfigComponent implements OnInit, OnDestroy {
   }
 
   private loadUsers(): void {
-    this.activityService
-      .getCSUsers()
+    const companyInfo = this.appSettingService.getCurrentCompanyInfo();
+    const companyMasterSid = companyInfo?.CompanyMasterSid;
+    if (!companyMasterSid) return;
+
+    this.masterService
+      .getAllCS(companyMasterSid)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (users) => {
-          this.csUsers = users;
-          this.docUsers = users; // Same endpoint, backend can differentiate if needed
+        next: (resp: any) => {
+          const users = resp?.data || resp || [];
+          this.csUsers = Array.isArray(users)
+            ? users.map((u: any) => ({
+                userSid: u.UserMasterSid,
+                userName: u.userName,
+              }))
+            : [];
         },
         error: () => {
-          this.appSettingService.showError('Failed to load users.');
+          this.appSettingService.showError('Failed to load CS users.');
+        },
+      });
+
+    this.masterService
+      .getAllDoc(companyMasterSid)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (resp: any) => {
+          const users = resp?.data || resp || [];
+          this.docUsers = Array.isArray(users)
+            ? users.map((u: any) => ({
+                userSid: u.UserMasterSid,
+                userName: u.userName,
+              }))
+            : [];
+        },
+        error: () => {
+          this.appSettingService.showError('Failed to load Doc users.');
         },
       });
   }
@@ -120,11 +143,11 @@ export class MenuUserConfigComponent implements OnInit, OnDestroy {
     if (!this.selectedBranchSid) return;
 
     this.isLoading = true;
-    this.activityService
+    this.settingsService
       .getMenuUserConfig(this.selectedBranchSid)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (configs) => {
+        next: (configs: any[]) => {
           this.buildConfigRows(configs);
           this.isLoading = false;
         },
@@ -136,10 +159,10 @@ export class MenuUserConfigComponent implements OnInit, OnDestroy {
       });
   }
 
-  private buildConfigRows(existingConfigs: MenuUserConfig[]): void {
+  private buildConfigRows(existingConfigs: any[]): void {
     this.configRows = this.stages.map((s) => {
       const existing = existingConfigs.find(
-        (c) => c.stage === s.key && c.BranchMasterSid === this.selectedBranchSid,
+        (c: any) => c.stage === s.key && c.BranchMasterSid === this.selectedBranchSid,
       );
       return {
         stage: s.key,
@@ -179,7 +202,7 @@ export class MenuUserConfigComponent implements OnInit, OnDestroy {
     if (!this.selectedBranchSid) return;
 
     this.isSaving = true;
-    const configs: MenuUserConfig[] = this.configRows.map((r) => ({
+    const configs = this.configRows.map((r) => ({
       MenuUserConfigSid: r.MenuUserConfigSid,
       BranchMasterSid: this.selectedBranchSid!,
       stage: r.stage,
@@ -188,7 +211,7 @@ export class MenuUserConfigComponent implements OnInit, OnDestroy {
       userName: r.userName,
     }));
 
-    this.activityService
+    this.settingsService
       .saveMenuUserConfig(configs)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -205,6 +228,6 @@ export class MenuUserConfigComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    this.router.navigate(['/crm/activity-allocation']);
+    this.router.navigate(['/settings/activity-allocation']);
   }
 }

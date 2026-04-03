@@ -7,6 +7,9 @@ import {
   HostListener,
   AfterViewInit,
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { ActivatedRoute, Router } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
 import {
@@ -17,6 +20,7 @@ import {
   AllocateUser,
 } from '../activity-allocation.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { MasterService } from 'src/app/modules/master/master.service';
 import Swal from 'sweetalert2';
 import * as bootstrap from 'bootstrap';
 import { Subject } from 'rxjs';
@@ -24,6 +28,8 @@ import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-activity-allocation-entry',
+  standalone: true,
+  imports: [CommonModule, FormsModule, NgSelectModule],
   templateUrl: './activity-allocation-entry.component.html',
   styleUrls: ['./activity-allocation-entry.component.scss'],
   animations: [
@@ -110,6 +116,7 @@ export class ActivityAllocationEntryComponent
     private router: Router,
     private activityService: ActivityAllocationService,
     private appSettingService: AppSettingsService,
+    private masterService: MasterService,
   ) {}
 
   ngOnInit(): void {
@@ -230,12 +237,22 @@ export class ActivityAllocationEntryComponent
   }
 
   private loadCSUsers(): void {
-    this.activityService
-      .getCSUsers()
+    const companyInfo = this.appSettingService.getCurrentCompanyInfo();
+    const companyMasterSid = companyInfo?.CompanyMasterSid;
+    if (!companyMasterSid) return;
+
+    this.masterService
+      .getAllCS(companyMasterSid)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (users) => {
-          this.csUsers = users;
+        next: (resp: any) => {
+          const users = resp?.data || resp || [];
+          this.csUsers = Array.isArray(users)
+            ? users.map((u: any) => ({
+                userSid: u.UserMasterSid,
+                userName: u.userName,
+              }))
+            : [];
         },
         error: () => {
           console.error('Failed to load CS users');
@@ -477,7 +494,7 @@ export class ActivityAllocationEntryComponent
       }).then(res => {
         if (res.isConfirmed) {
           this.selectedActivityIds.clear();
-          this.router.navigate(['/crm/activity-allocation'], {
+          this.router.navigate(['/settings/activity-allocation'], {
             queryParams: { mode: this.mode },
             state: { returnFromDetail: true },
           });
@@ -486,7 +503,7 @@ export class ActivityAllocationEntryComponent
       return;
     }
 
-    this.router.navigate(['/crm/activity-allocation'], {
+    this.router.navigate(['/settings/activity-allocation'], {
       queryParams: { mode: this.mode },
       state: { returnFromDetail: true },
     });
