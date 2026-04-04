@@ -283,6 +283,7 @@ auditLogs: any[] = []; // Stores audit logs
   vesselVoyageConfig = DROPDOWN_CONFIGS.VESSEL_VOYAGE;
   incoLookupConfig = DROPDOWN_CONFIGS.INCO;
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
+  userLookupConfig = DROPDOWN_CONFIGS.USER;
   CurrencyLookupConfig = {
     displayFields: ['currencyCode', 'currencyName', 'countryName'],
     displayLabels: ['Code', 'Name', 'Country'],

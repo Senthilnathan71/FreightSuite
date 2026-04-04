@@ -93,6 +93,11 @@ export const DROPDOWN_CONFIGS = {
     displayFields: ['MasterJobNumber', 'MBLNo'],
     displayLabels: ['Job No', 'MBL No'],
     labelFields: ['MasterJobNumber'],
+  },
+  USER:{
+    displayFields: ['userName', 'userEmail'],
+    displayLabels: ['Name', 'Email'],
+    labelFields: ['userName']
   }
 } satisfies Record<string, {
   displayFields: string[];

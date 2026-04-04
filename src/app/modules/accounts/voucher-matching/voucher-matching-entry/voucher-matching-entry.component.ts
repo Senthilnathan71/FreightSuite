@@ -33,6 +33,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { CommonService } from 'src/app/common/common.service';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 @Component({
   selector: 'app-voucher-matching-entry',
@@ -1417,6 +1418,19 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
     this.modalService.open(TermsAndConditionsComponent, { size: 'lg', centered: true, backdrop: 'static' });
   }
 
+   openAuditLogs() {
+    if (!this.voucherMatchingData?.VoucherMatchingHeaderSid) return;
+    const modalRef = this.modalService.open(AuditLogComponent, {
+      centered: true,
+      scrollable: true,
+      size: 'xl',
+      windowClass: 'audit-log-modal'
+    });
+    modalRef.componentInstance.title = 'Voucher Matching Logs';
+    modalRef.componentInstance.tableName = 'VoucherMatchingHeader';
+    modalRef.componentInstance.recordId = this.voucherMatchingData?.VoucherMatchingHeaderSid.toString();
+    modalRef.componentInstance.screenName = 'VoucherMatching';
+  }
   openAuthority() {
     if (!this.currentMenuId) return;
     const modalRef = this.modalService.open(AuthorityLogComponent, { size: 'lg', centered: true, backdrop: 'static' });

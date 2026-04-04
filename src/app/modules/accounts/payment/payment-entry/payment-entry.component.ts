@@ -1277,6 +1277,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       PartyAmount: vm.matchPartyAmt,
       MatchingTDSAmount: vm.tdsAmt,
       tdsAmt: vm.tdsAmt,
+      updatedBy: currentUserEmail
     }));
 
     const payload = {

@@ -11,6 +11,8 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { DateTimeModel } from 'src/app/component/datetimepicker/datetime.model';
 import { DateTimePickerComponent } from 'src/app/component/datetimepicker/datetimepicker.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 
 @Component({
   selector: 'app-meeting',
@@ -22,7 +24,8 @@ import { DateTimePickerComponent } from 'src/app/component/datetimepicker/dateti
     NgbDatepickerModule,
     NgSelectModule,
     NgbDropdownModule,
-    DateTimePickerComponent
+    DateTimePickerComponent,
+    SearchableDropdown
   ],
   templateUrl: './meeting.component.html',
   styleUrl: './meeting.component.scss'
@@ -44,6 +47,7 @@ export class MeetingComponent {
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
   selectedTime = '10 min';
+  userLookupConfig = DROPDOWN_CONFIGS.USER;
   meetingDurations = [
   { label: '10 min', value: '10 min' },
   { label: '20 min', value: '20 min' },

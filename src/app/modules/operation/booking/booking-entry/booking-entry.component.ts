@@ -455,6 +455,7 @@ get visibleTabs() {
   uomLookupConfig = DROPDOWN_CONFIGS.UOM;
   imcoLookupConfig = DROPDOWN_CONFIGS.IMCO;
   vesselVoyageConfig = DROPDOWN_CONFIGS.VESSEL_VOYAGE;
+  userLookupConfig = DROPDOWN_CONFIGS.USER;
 
 
   /**

@@ -37,6 +37,8 @@ import {
   DateTypeConfig,
   PartyFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 
 @Component({
   selector: 'app-meeting-update-list',
@@ -54,7 +56,8 @@ import {
     NgSelectModule,
     DateTimePickerComponent,
     ReusableTableComponent,
-    PageHeaderComponent
+    PageHeaderComponent,
+    SearchableDropdown
   ],
   providers: [CustomDatePipe,DatePipe],
   templateUrl: './meeting-update-list.component.html',
@@ -87,6 +90,7 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
     ],
     defaultValue: 'meetingDate'
   };
+  userLookupConfig = DROPDOWN_CONFIGS.USER;
   partyFilterConfig: PartyFilterConfig = {
   enabled: true,
   partyTypes: [

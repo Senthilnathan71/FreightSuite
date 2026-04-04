@@ -159,6 +159,7 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
   countryLookupConfig = DROPDOWN_CONFIGS.COUNTRY;
     stateLookupConfig = DROPDOWN_CONFIGS.STATE;
     cityLookupConfig = DROPDOWN_CONFIGS.CITY;
+    userLookupConfig = DROPDOWN_CONFIGS.USER;
 isLoadingCities = false;
   selectedTab = 'Party';
   MenuMasterSid: any;
