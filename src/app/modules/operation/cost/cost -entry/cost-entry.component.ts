@@ -323,7 +323,7 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   countryOfCompany : string;
   isEditMode: boolean;
   availableBillingParties: any[] = [];
-  selectedVoucherType: 'Invoice' | 'Vendor Invoice' | null = null;
+  selectedVoucherType: 'Invoice' | 'Vendor Invoice' | 'Payment Request' | null = null;
   isProcessingVoucherType = false;
   currentVoucherTypeFilter: 'revenue' | 'cost' = 'revenue';
   @ViewChild('voucherTypeModal') voucherTypeModal!: TemplateRef<any>;
@@ -605,6 +605,7 @@ export class CostEntryComponent implements OnInit, OnDestroy {
       CostLocalAmount: [''],
       CostChargeUomSid:['',[Validators.required]],
       CostVoucherHeaderSid: [''],
+      PaymentRequestSid: [''],
       CostVoucherTypeSid: [null],
       CostNumberOfUnit:[null],
       
@@ -806,6 +807,7 @@ createRateFormGroup(data?: any): FormGroup {
     CostAgentBranchSid: [data?.CostAgentBranchSid ?? null],
     CostPrepaidCollect: [data?.CostPrepaidCollect ?? "Prepaid"],
     CostVoucherHeaderSid: [data?.CostVoucherHeaderSid ?? null],
+    PaymentRequestSid: [data?.PaymentRequestSid ?? null],
     CostVoucherTypeSid: [data?.CostVoucherTypeMasterSid ?? null],
     CostVoucherHeader: [data?.costVoucherHeader || data?.CostVoucherHeader || null],  // Store voucher header object for display
     CostVoucherType: [data?.costVoucherTypeMaster || data?.CostVoucherType || null],  // Store voucher type object for display
@@ -881,8 +883,9 @@ createRateFormGroup(data?: any): FormGroup {
     'CostAgentBranchSid',
     'CostPrepaidCollect',
     'CostVoucherHeaderSid',
+    'PaymentRequestSid',
     'CostVoucherTypeSid',
-    'CostVoucherHeader',  
+    'CostVoucherHeader',
     'CostVoucherType',
   ];
   if(data?.RevenueVoucherHeaderSid){
@@ -2427,7 +2430,22 @@ createRateFormGroup(data?: any): FormGroup {
     });
   }
 
-  async selectVoucherType(voucherType: 'Invoice' | 'Vendor Invoice') {
+  async openPaymentRequest() {
+    if (!this.isVoucherGenerationAllowed()) {
+      const status = this.parentFormValue?.status;
+      this.appSettingService.showWarning(`Cannot create payment request. Booking status is '${status || 'Invalid'}'`);
+      return;
+    }
+    if (!this.isEditMode || !this.rateFormArray?.length) {
+      this.appSettingService.showWarning('No rates available for payment request');
+      return;
+    }
+
+    this.selectedVoucherType = 'Payment Request';
+    await this.processPendingCharges('cost');
+  }
+
+  async selectVoucherType(voucherType: 'Invoice' | 'Vendor Invoice' | 'Payment Request') {
     if (this.isProcessingVoucherType) return;
     this.isProcessingVoucherType = true;
 
@@ -2561,11 +2579,52 @@ createRateFormGroup(data?: any): FormGroup {
         const isPending = type === 'revenue'
           ? !rate.RevenueVoucherHeaderSid
           : !rate.CostVoucherHeaderSid;
-        return isCorrectType && isPending;
+        if (!(isCorrectType && isPending)) {
+          return false;
+        }
+
+        if (type === 'cost' && this.selectedVoucherType === 'Vendor Invoice') {
+          return !rate.PaymentRequestSid;
+        }
+
+        return true;
       });
 
       if (!filteredRates.length) {
         this.appSettingService.showWarning(`No pending ${type} charges found for voucher generation`);
+        this.spinner.hide();
+        return;
+      }
+
+      if (type === 'cost' && this.selectedVoucherType === 'Payment Request') {
+        const prepaidCostRows = filteredRates.filter(
+          (rate: any) =>
+            String(rate.CostPrepaidCollect || '').toLowerCase() === 'prepaid' &&
+            Number(rate.CostAmount || 0) > 0 &&
+            !rate.PaymentRequestSid &&
+            !rate.CostVoucherHeaderSid
+        );
+
+        if (!prepaidCostRows.length) {
+          this.appSettingService.showWarning('No pending prepaid cost charges found for payment request');
+          this.spinner.hide();
+          return;
+        }
+
+        const partyIds: number[] = Array.from(
+          new Set(
+            prepaidCostRows
+              .map((row: any) => Number(row.CostAgentMasterSid))
+              .filter((value: number) => Number.isFinite(value) && value > 0)
+          )
+        );
+        if (partyIds.length > 1) {
+          this.showBillingPartySelection(prepaidCostRows, partyIds);
+          this.spinner.hide();
+          return;
+        }
+
+        this.proceedToPaymentRequest(prepaidCostRows);
         this.spinner.hide();
         return;
       }
@@ -2645,14 +2704,68 @@ createRateFormGroup(data?: any): FormGroup {
 
   proceedWithBillingParty() {
     if (this.selectedBillingPartyIndex === -1) {
-      this.appSettingService.showWarning('Please select a billing party');
+      this.appSettingService.showWarning(
+        this.selectedVoucherType === 'Payment Request'
+          ? 'Please select a payable party'
+          : 'Please select a billing party'
+      );
       return;
     }
 
     const selectedParty = this.availableBillingParties[this.selectedBillingPartyIndex];
     this.billingPartyModalRef?.close();
 
+    if (this.selectedVoucherType === 'Payment Request') {
+      this.proceedToPaymentRequest(selectedParty.pendingCharges);
+      return;
+    }
+
     this.proceedToInvoiceGeneration(selectedParty.billingPartySid, selectedParty.pendingCharges);
+  }
+
+  private proceedToPaymentRequest(pendingCharges: any[]) {
+    if (!pendingCharges?.length) {
+      this.appSettingService.showWarning('No pending prepaid cost charges found for payment request');
+      return;
+    }
+
+    const firstRow = pendingCharges[0];
+    this.router.navigate(['/operation/payment-request/entry'], {
+      state: {
+        paymentRequestPreview: {
+          DepartmentMasterSid: this.parentFormValue?.DepartmentMasterSid || null,
+          Party: firstRow?.CostAgentMasterSid || null,
+          PayableTo: firstRow?.AgentMaster?.CustomerName || '',
+          CurrencyMasterSid: firstRow?.CostCurrencyMasterSid || null,
+          BookingSid: this.isBooking ? this.ParentSid : null,
+          BookingNo: this.parentFormValue?.BookingNo || '',
+          MasterJobSid:
+            this.parentFormValue?.MasterJobSid || (this.screenName === 'Master Job' ? this.ParentSid : null),
+          MasterJobNo: this.parentFormValue?.JobNo || this.parentFormValue?.MBLNo || '',
+          HouseJobSid:
+            this.parentFormValue?.HouseJobSid || (this.screenName === 'House Job' ? this.ParentSid : null),
+          HouseNo: this.parentFormValue?.HBLNo || this.parentFormValue?.HouseNo || '',
+          detailItems: pendingCharges.map((rate: any) => ({
+            Selected: true,
+            SourceCostRevenueChargeSid: rate.CostRevenueChargesSid || rate.RateSid || null,
+            ChargeMasterSid: rate.ChargeMasterSid,
+            ChargeDescription: rate.ChargeDescription || rate.chargeMaster?.chargeName || '',
+            CostChargeUomSid: rate.CostChargeUomSid,
+            CostCurrencyMasterSid: rate.CostCurrencyMasterSid,
+            CostExchangeRate: rate.CostExchangeRate,
+            CostRate: rate.CostRate,
+            CostNumberOfUnit: rate.CostNumberOfUnit,
+            CostAmount: rate.CostAmount,
+            CostLocalAmount: rate.CostLocalAmount,
+            CostDrCr: rate.CostDrCr || 'D',
+            CostAgentMasterSid: rate.CostAgentMasterSid,
+            CostAgentBranchSid: rate.CostAgentBranchSid,
+            CostAgentName: rate.AgentMaster?.CustomerName || '',
+            PaymentRequestSid: rate.PaymentRequestSid || null,
+          })),
+        },
+      },
+    });
   }
 
   private proceedToInvoiceGeneration(billingPartySid: number, pendingCharges: BookingRateDetails[]) {
@@ -3578,6 +3691,26 @@ createRateFormGroup(data?: any): FormGroup {
 
   get selectedDetailCount(): number {
     return this.details.controls.filter(control => control.get('isSelected')?.value).length;
+  }
+
+  get billingPartyModalTitle(): string {
+    return this.selectedVoucherType === 'Payment Request' ? 'Select Payable Party' : 'Select Billing Party';
+  }
+
+  get billingPartyModalDescription(): string {
+    return this.selectedVoucherType === 'Payment Request'
+      ? 'Multiple payable parties found. Please select one to proceed with payment request generation.'
+      : 'Multiple billing parties found. Please select one to proceed with invoice generation.';
+  }
+
+  get billingPartyModalActionLabel(): string {
+    return this.selectedVoucherType === 'Payment Request' ? 'Proceed with Payment Request' : 'Proceed with Invoice';
+  }
+
+  get billingPartyEmptyMessage(): string {
+    return this.selectedVoucherType === 'Payment Request'
+      ? 'No payable parties found with pending charges for payment request.'
+      : 'No billing parties found with pending charges for invoice generation.';
   }
 
 

@@ -1,0 +1,465 @@
+<ngx-spinner
+  bdColor="rgba(0,0,0,0.8)"
+  size="medium"
+  color="#fff"
+  type="ball-scale-ripple"
+  [fullScreen]="true"
+>
+  <p style="color: white" class="m-0">Loading...</p>
+</ngx-spinner>
+
+<div class="row compact-form" [formGroup]="form">
+  <div class="col-12 px-0">
+    <div class="row bg-white mb-1 align-items-center pt-0 rounded shadow-sm mx-0">
+      <div class="col-md-4 pb-0">
+        <div class="d-flex align-items-center gap-2">
+          <h5 class="page-title my-0 text-info">
+            {{ pageTitle }}
+          </h5>
+        </div>
+      </div>
+
+      <div class="col-md-3"></div>
+
+      <div class="col-md-5 pb-0">
+        <div class="d-flex align-items-center justify-content-start justify-content-md-end gap-1 gap-md-1 mx-0">
+          <button
+            type="button"
+            class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="goBack()"
+          >
+            <i class="fas fa-chevron-left me-1"></i>
+            Back
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            (click)="resetForm()"
+            [disabled]="saving"
+          >
+            <i class="fas fa-sync-alt me-1"></i>
+            Reset
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
+            [ngClass]="{ 'btn-info': !saving, 'btn-warning': saving }"
+            (click)="save()"
+            [disabled]="saving || isReadOnly"
+          >
+            <i class="fas fa-save me-1"></i>
+            <span>{{ saving ? 'Saving...' : 'Save' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-12 px-0">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card h-100 mb-0">
+          <div class="card-body pb-1">
+            <div class="row">
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input
+                    type="text"
+                    class="custom-input-field sm"
+                    formControlName="PaymentRequestNumber"
+                    readonly
+                  />
+                  <label class="input-label" style="font-size: 14px">
+                    <span>Request No.</span>
+                  </label>
+                </div>
+              </aside>
+
+              <aside class="col-md-3">
+                <div class="custom-form-group mb-0 custom-form-group-select filled">
+                  <div class="input-group">
+                    <input
+                      class="form-control"
+                      placeholder="dd-mm-yyyy"
+                      name="requestDate"
+                      ngbDatepicker
+                      #requestDatePicker="ngbDatepicker"
+                      formControlName="PaymentRequestDate"
+                      (click)="requestDatePicker.toggle()"
+                      (keydown.arrowDown)="requestDatePicker.open()"
+                      readonly
+                    />
+                    <button
+                      class="btn bi bi-calendar3"
+                      (click)="requestDatePicker.toggle()"
+                      type="button"
+                    >
+                      <i-feather name="calendar" class="feather-sm"></i-feather>
+                    </button>
+                  </div>
+                  <label class="input-label" style="font-size: 14px">Request Date</label>
+                </div>
+              </aside>
+
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input
+                    type="text"
+                    class="custom-input-field sm"
+                    formControlName="Remarks"
+                  />
+                  <label class="input-label" style="font-size: 14px">Remarks</label>
+                </div>
+              </aside>
+
+              <aside class="col-md-3">
+                <div
+                  class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!r['CashBank']?.value"
+                >
+                  <ng-select
+                    class="ng-select"
+                    [items]="cashBankOptions"
+                    bindLabel="label"
+                    bindValue="value"
+                    formControlName="CashBank"
+                    [clearable]="false"
+                  >
+                  </ng-select>
+                  <label class="input-label" style="font-size: 14px">
+                    Cash / Bank <span class="text-danger">*</span>
+                  </label>
+                </div>
+              </aside>
+
+              <aside class="col-md-3">
+                <div
+                  class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!r['Party']?.value"
+                >
+                  <dofi-searchable-dropdown
+                    [items]="supplierList"
+                    formControlName="Party"
+                    placeholder=""
+                    [displayFields]="CustomerLookupConfig.displayFields"
+                    [displayLabels]="CustomerLookupConfig.displayLabels"
+                    [labelFields]="CustomerLookupConfig.labelFields"
+                    bindLabel="CustomerName"
+                    bindValue="CustomerMasterSid"
+                    (itemSelected)="onPartyChange($event)"
+                  >
+                  </dofi-searchable-dropdown>
+                  <label class="input-label" style="font-size: 14px">
+                    Party <span class="text-danger">*</span>
+                  </label>
+                </div>
+              </aside>
+
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input
+                    type="text"
+                    class="custom-input-field sm"
+                    formControlName="PayableTo"
+                  />
+                  <label class="input-label" style="font-size: 14px">
+                    Payable To <span class="text-danger">*</span>
+                  </label>
+                </div>
+              </aside>
+
+              <aside class="col-md-3">
+                <div
+                  class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!r['CurrencyMasterSid']?.value"
+                >
+                  <dofi-searchable-dropdown
+                    [items]="currencyList"
+                    formControlName="CurrencyMasterSid"
+                    [placeholder]="''"
+                    [displayFields]="CurrencyLookupConfig.displayFields"
+                    [displayLabels]="CurrencyLookupConfig.displayLabels"
+                    [labelFields]="CurrencyLookupConfig.labelFields"
+                    [bindValue]="'CurrencyMasterSid'"
+                  >
+                  </dofi-searchable-dropdown>
+                  <label class="input-label" style="font-size: 14px">
+                    Currency <span class="text-danger">*</span>
+                  </label>
+                </div>
+              </aside>
+
+              <aside class="col-md-3">
+                <div
+                  class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!r['PaymentRequestStatus']?.value"
+                >
+                  <ng-select
+                    class="ng-select"
+                    [items]="requestStatusOptions"
+                    bindLabel="label"
+                    bindValue="value"
+                    formControlName="PaymentRequestStatus"
+                    [clearable]="false"
+                    [readonly]="!isEditMode"
+                  >
+                  </ng-select>
+                  <label class="input-label" style="font-size: 14px">
+                    Request Status <span class="text-danger">*</span>
+                  </label>
+                </div>
+              </aside>
+
+              <aside class="col-md-3">
+                <div
+                  class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!r['DepartmentMasterSid']?.value"
+                >
+                  <ng-select
+                    class="ng-select"
+                    [items]="departmentList"
+                    bindLabel="departmentName"
+                    bindValue="DepartmentMasterSid"
+                    formControlName="DepartmentMasterSid"
+                    [clearable]="false"
+                  >
+                    <ng-template ng-option-tmp let-item="item">
+                      {{ item.departmentName || item.DepartmentName }}
+                    </ng-template>
+                  </ng-select>
+                  <label class="input-label" style="font-size: 14px">
+                    Dept. <span class="text-danger">*</span>
+                  </label>
+                </div>
+              </aside>
+
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input
+                    type="text"
+                    class="custom-input-field sm"
+                    formControlName="BookingNo"
+                  />
+                  <label class="input-label" style="font-size: 14px">Booking No.</label>
+                </div>
+              </aside>
+
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input
+                    type="text"
+                    class="custom-input-field sm"
+                    formControlName="MasterJobNo"
+                  />
+                  <label class="input-label" style="font-size: 14px">Job No.</label>
+                </div>
+              </aside>
+
+              <aside class="col-md-3">
+                <div
+                  class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!r['Status']?.value"
+                >
+                  <ng-select
+                    class="ng-select"
+                    [items]="statusOptions"
+                    bindLabel="label"
+                    bindValue="value"
+                    formControlName="Status"
+                    [clearable]="false"
+                    [readonly]="!isEditMode"
+                  >
+                  </ng-select>
+                  <label class="input-label" style="font-size: 14px">
+                    Status <span class="text-danger">*</span>
+                  </label>
+                </div>
+              </aside>
+
+              <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input
+                    type="text"
+                    class="custom-input-field sm"
+                    formControlName="HouseNo"
+                  />
+                  <label class="input-label" style="font-size: 14px">House No.</label>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 px-0 mt-1">
+    <div class="workspace-content px-0" [formGroup]="form">
+      <div class="d-flex justify-content-end mb-2 pe-2">
+        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="addDetailRow()">
+          <i class="fas fa-plus me-1"></i>Add Charge
+        </button>
+      </div>
+      <div class="table-responsive table-borderless">
+        <table class="table table-hover align-middle no-wrap table-sm mb-1">
+          <thead>
+            <tr class="bg-info text-center">
+              <th class="bg-transparent text-light" style="font-size: 14px; width: 50px;"></th>
+              <th class="bg-transparent text-light" style="font-size: 14px; width: 50px;">Sel</th>
+              <th class="bg-transparent text-light" style="font-size: 14px; min-width: 220px;">Charge</th>
+              <th class="bg-transparent text-light" style="font-size: 14px; min-width: 90px;">Unit</th>
+              <th class="bg-transparent text-light" style="font-size: 14px; min-width: 120px;">No. of Unit</th>
+              <th class="bg-transparent text-light" style="font-size: 14px; min-width: 120px;">Curr.</th>
+              <th class="bg-transparent text-light" style="font-size: 14px; min-width: 130px;">Ex. Rate</th>
+              <th class="bg-transparent text-light" style="font-size: 14px; min-width: 130px;">Per Unit</th>
+              <th class="bg-transparent text-light" style="font-size: 14px; min-width: 130px;">Amt</th>
+              <th class="bg-transparent text-light" style="font-size: 14px; min-width: 140px;">Local Amt</th>
+              <th class="bg-transparent text-light" style="font-size: 14px; min-width: 220px;">Party</th>
+            </tr>
+          </thead>
+          <tbody formArrayName="detailItems">
+            <tr *ngFor="let row of detailItems.controls; let i = index" [formGroupName]="i">
+              <td class="text-center">
+                <button type="button" class="btn btn-link text-danger p-0" (click)="removeDetailRow(i)">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+              <td class="text-center">
+                <input type="checkbox" formControlName="Selected" />
+              </td>
+              <td style="min-width: 220px;">
+                <dofi-searchable-dropdown
+                  [items]="chargeList"
+                  formControlName="ChargeMasterSid"
+                  [placeholder]="''"
+                  [clearable]="false"
+                  [style]="'min-width: 220px; width: 220px;'"
+                  [displayFields]="ChargeLookupConfig.displayFields"
+                  [displayLabels]="ChargeLookupConfig.displayLabels"
+                  [labelFields]="ChargeLookupConfig.labelFields"
+                  [bindValue]="'ChargeMasterSid'"
+                  (itemSelected)="onDetailChargeChange(i, $event)"
+                >
+                </dofi-searchable-dropdown>
+              </td>
+              <td style="min-width: 90px;">
+                <ng-select
+                  class="ng-select"
+                  [items]="uomList"
+                  bindLabel="UOMCode"
+                  bindValue="UOMMasterSid"
+                  formControlName="CostChargeUomSid"
+                  appendTo="body"
+                  placeholder=""
+                  [clearable]="false"
+                >
+                </ng-select>
+              </td>
+              <td style="min-width: 120px;">
+                <input
+                  type="text"
+                  class="custom-input-field sm text-end"
+                  formControlName="CostNumberOfUnit"
+                  DecimalPrecision
+                  [DecimalPrecisionBefore]="9"
+                  [DecimalPrecisionAfter]="3"
+                  (input)="recalculateDetailRow(i)"
+                />
+              </td>
+              <td style="min-width: 120px;">
+                <dofi-searchable-dropdown
+                  [items]="currencyList"
+                  formControlName="CostCurrencyMasterSid" 
+                  [placeholder]="''"
+                  [clearable]="false"
+                  [style]="'min-width: 120px; width: 120px;'"
+                  [displayFields]="CurrencyLookupConfig.displayFields"
+                  [displayLabels]="CurrencyLookupConfig.displayLabels"
+                  [labelFields]="CurrencyLookupConfig.labelFields"
+                  [bindValue]="'CurrencyMasterSid'"
+                  (itemSelected)="onDetailCurrencyChange(i, $event)"
+                >
+                </dofi-searchable-dropdown>
+              </td>
+              <td style="min-width: 130px;">
+                <input
+                  type="text"
+                  class="custom-input-field sm text-end"
+                  formControlName="CostExchangeRate"
+                  DecimalPrecision
+                  [DecimalPrecisionBefore]="9"
+                  [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)"
+                  (input)="recalculateDetailRow(i)"
+                />
+              </td>
+              <td style="min-width: 130px;">
+                <input
+                  type="text"
+                  class="custom-input-field sm text-end"
+                  formControlName="CostRate"
+                  DecimalPrecision
+                  [DecimalPrecisionBefore]="9"
+                  [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)"
+                  (input)="recalculateDetailRow(i)"
+                />
+              </td>
+              <td style="min-width: 130px;">
+                <input
+                  type="text"
+                  class="custom-input-field sm text-end"
+                  formControlName="CostAmount"
+                  DecimalPrecision
+                  [DecimalPrecisionBefore]="9"
+                  [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)"
+                  readonly
+                />
+              </td>
+              <td style="min-width: 140px;">
+                <input
+                  type="text"
+                  class="custom-input-field sm text-end fw-bold"
+                  formControlName="CostLocalAmount"
+                  DecimalPrecision
+                  [DecimalPrecisionBefore]="9"
+                  [DecimalPrecisionAfter]="getAmountDecimalPlaces(form.get('CurrencyMasterSid')?.value)"
+                  readonly
+                />
+              </td>
+              <td style="min-width: 220px;">
+                <dofi-searchable-dropdown
+                  [items]="supplierList"
+                  formControlName="CostAgentMasterSid"
+                  placeholder=""
+                  [clearable]="false"
+                  [style]="'min-width: 220px; width: 220px;'"
+                  [displayFields]="CustomerLookupConfig.displayFields"
+                  [displayLabels]="CustomerLookupConfig.displayLabels"
+                  [labelFields]="CustomerLookupConfig.labelFields"
+                  bindLabel="CustomerName"
+                  bindValue="CustomerMasterSid"
+                  (itemSelected)="onDetailPartyChange(i, $event)"
+                >
+                </dofi-searchable-dropdown>
+              </td>
+            </tr>
+
+            <tr *ngIf="detailItems.length === 0">
+              <td colspan="11">
+                <div class="text-center">No payable prepaid cost rows available</div>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot class="sticky-bottom" style="position: sticky; bottom: 0; z-index: 1;">
+            <tr class="table-info fw-bold text-end">
+              <td colspan="9" class="text-end">Total</td>
+              <td>{{ totalLocalAmount | number:'1.2-2' }}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

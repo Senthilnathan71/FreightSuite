@@ -561,6 +561,74 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
     content.push({ stack: summaryStack, unbreakable: true });
   }
 
+  if (exportConfig.additionalTables?.length) {
+    for (const table of exportConfig.additionalTables) {
+      const tableColCount = table.headers.length;
+
+      let extraWidths: any[];
+      if (table.columnWidths?.length === tableColCount) {
+        const extraTotalWeight = table.columnWidths.reduce((a, b) => a + b, 0);
+        const extraBorderOverhead = (tableColCount + 1) * 0.5;
+        const extraPaddingOverhead = tableColCount * (2 + 2);
+        const extraAvailable = availableWidth - extraBorderOverhead - extraPaddingOverhead;
+        extraWidths = table.columnWidths.map(w => (w / extraTotalWeight) * extraAvailable);
+      } else {
+        extraWidths = Array(tableColCount).fill('*');
+      }
+
+      const extraHeaderRow = table.headers.map(label => ({
+        text: label,
+        bold: true,
+        fontSize: 7,
+        color: '#ffffff',
+        fillColor: '#116897',
+        alignment: 'left' as const
+      }));
+
+      const extraBodyRows = table.rows.map(row => {
+        const cells: any[] = [];
+        for (const cell of row.cells) {
+          const cellText = cell.value != null ? String(cell.value) : '';
+          const isNumeric = cellText !== '' && !isNaN(Number(cellText.replace(/,/g, '')));
+          cells.push({
+            text: cellText,
+            fontSize: 7,
+            alignment: cell.alignment?.horizontal || (isNumeric ? 'right' as const : 'left' as const)
+          });
+        }
+        while (cells.length < tableColCount) {
+          cells.push({ text: '' });
+        }
+        return cells;
+      });
+
+      const extraStack: any[] = [];
+      if (table.title) {
+        extraStack.push({
+          text: table.title,
+          bold: true,
+          fontSize: 9,
+          margin: [0, 10, 0, 4]
+        });
+      } else {
+        extraStack.push({ text: '', margin: [0, 6, 0, 0] });
+      }
+
+      extraStack.push({
+        table: {
+          headerRows: 1,
+          widths: extraWidths,
+          body: [extraHeaderRow, ...extraBodyRows]
+        },
+        layout: COMPACT_TABLE_LAYOUT,
+        fontSize: 7,
+        margin: [0, 0, 0, 10]
+      });
+
+      content.push({ stack: extraStack, unbreakable: true });
+    }
+  }
+
   // Keep a visible gap between header parameter info and table content.
   const paramCount = exportConfig.reportHeader.additionalInfo?.length || 0;
   const paramRows = Math.ceil(paramCount / 2);

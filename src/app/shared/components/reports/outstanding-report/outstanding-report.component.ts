@@ -31,6 +31,7 @@ export class OutstandingReportComponent {
   orientation: 'portrait' | 'landscape' = 'portrait';
   bankDetails: any[] = [];
   showBankDetails = false;
+  isBankDetailsLoading = false;
 
   constructor(
     @Inject(REPORT_DATA) public data: any,
@@ -65,8 +66,13 @@ export class OutstandingReportComponent {
           return;
         }
 
+        this.isBankDetailsLoading = true;
         this.getBankDetails().subscribe((bankResp: any) => {
           this.bankDetails = bankResp?.data || [];
+          this.isBankDetailsLoading = false;
+        }, () => {
+          this.bankDetails = [];
+          this.isBankDetailsLoading = false;
         });
       });
   }
@@ -324,7 +330,62 @@ export class OutstandingReportComponent {
         })),
 
         columnWidths: [12, 18, 14, 14, 14, 14, 14]
-      }
+      },
+      additionalTables: this.showBankDetails && this.bankDetails && this.bankDetails.length > 0
+        ? [
+            {
+              title: 'Bank Details',
+              headers: [
+                'Details',
+                ...this.bankDetails.map(() => `Bank (${this.currentCurrencyCode})`)
+              ],
+              rows: [
+                {
+                  cells: [
+                    { value: 'Beneficiary Name' },
+                    ...this.bankDetails.map((bankDetail: any) => ({ value: bankDetail?.BeneficiaryName || '' }))
+                  ],
+                  style: 'data'
+                },
+                {
+                  cells: [
+                    { value: 'Account No.' },
+                    ...this.bankDetails.map((bankDetail: any) => ({ value: bankDetail?.BankAccountNo || '' , alignment:{horizontal:'left'}}))
+                  ],
+                  style: 'data'
+                },
+                {
+                  cells: [
+                    { value: 'IFSC' },
+                    ...this.bankDetails.map((bankDetail: any) => ({ value: bankDetail?.IFSCCode || '' }))
+                  ],
+                  style: 'data'
+                },
+                {
+                  cells: [
+                    { value: 'Swift Code' },
+                    ...this.bankDetails.map((bankDetail: any) => ({ value: bankDetail?.BankCode || '' }))
+                  ],
+                  style: 'data'
+                },
+                {
+                  cells: [
+                    { value: 'Bank Name' },
+                    ...this.bankDetails.map((bankDetail: any) => ({ value: bankDetail?.BankName || '' }))
+                  ],
+                  style: 'data'
+                },
+                {
+                  cells: [
+                    { value: 'Branch' },
+                    ...this.bankDetails.map((bankDetail: any) => ({ value: bankDetail?.BankAddress || '' }))
+                  ],
+                  style: 'data'
+                }
+              ]
+            }
+          ]
+        : undefined
     };
   }
 
