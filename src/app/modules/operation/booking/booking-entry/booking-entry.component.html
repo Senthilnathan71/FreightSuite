@@ -37,15 +37,16 @@
         <!-- <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"  [disabled]="!bookingData || isFormDirty()" (click)="reportAndEmailModel(reportModel)">
           <i class="fas fa-print"></i> Print
         </button> -->
-        <div class="d-inline-block" ngbDropdown #myDrop="ngbDropdown">
+        <div class="d-inline-block" ngbDropdown #myDrop="ngbDropdown"
+          *ngIf="pps.canPrint('Booking Confirmation', 'Print') || pps.canPrint('BarCode', 'Print') || pps.canPrint('BarCode 2', 'Print')">
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
             [disabled]="!bookingData || isFormDirty()" id="dropdownManual" ngbDropdownAnchor (focus)="myDrop.open()">
             <i class="fas fa-print"></i> Print
           </button>
           <div ngbDropdownMenu aria-labelledby="dropdownManual">
-            <button ngbDropdownItem (click)="reportAndEmailModel(reportModel)" class="fw-bold">Booking Confirmation</button>
-            <button ngbDropdownItem (click)="barCode(BarModal)" class="fw-bold">BarCode</button>
-             <button ngbDropdownItem (click)="barCode(BarModalWithoutCompany)" class="fw-bold">BarCode 2</button>
+            <button *ngIf="pps.canPrint('Booking Confirmation', 'Print')" ngbDropdownItem (click)="reportAndEmailModel(reportModel)" class="fw-bold">Booking Confirmation</button>
+            <button *ngIf="pps.canPrint('BarCode', 'Print')" ngbDropdownItem (click)="barCode(BarModal)" class="fw-bold">BarCode</button>
+            <button *ngIf="pps.canPrint('BarCode 2', 'Print')" ngbDropdownItem (click)="barCode(BarModalWithoutCompany)" class="fw-bold">BarCode 2</button>
           </div>
         </div>
       </div>
@@ -88,7 +89,7 @@
     <span>Copy</span>
   </button>
 </div>
-<div class="action-group primary" *ngIf="isEditMode">
+<div class="action-group primary" *ngIf="isEditMode && pps.canPrint('Booking Confirmation', 'Send Mail')">
   <button class="btn btn-sm btn-info text-nowrap" (click)="sendManualMail()" [disabled]="isSendingMail">
     <i class="fas me-1" [ngClass]="isSendingMail ? 'fa-spinner fa-spin' : 'fa-envelope'"></i>
     <span>{{ isSendingMail ? 'Preparing...' : 'Send Mail' }}</span>
@@ -2806,10 +2807,10 @@
            <!-- <button type="button" class="btn btn-sm btn-warning rounded-5 py-0"  *ngIf="b['JobType']?.value !== 'Transhipment'" (click)="printDiv('printContent')" >
             <i class="fas fa-download me-1"></i> Print
         </button> -->
-        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF('booking')">
+        <button *ngIf="pps.canPrint('Booking Confirmation', 'Download')" type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF('booking')">
                 <i class="fas fa-download me-1"></i> Download PDF
             </button>
-        <button type="button" class="btn btn-sm btn-success rounded-5 py-0" *ngIf="b['JobType']?.value !== 'Transhipment'" (click)="sendEmail('booking')">
+        <button *ngIf="pps.canPrint('Booking Confirmation', 'Send Mail') && b['JobType']?.value !== 'Transhipment'" type="button" class="btn btn-sm btn-success rounded-5 py-0" (click)="sendEmail('booking')">
           <i class="fas fa-envelope me-1"></i>Send Email
         </button>
      

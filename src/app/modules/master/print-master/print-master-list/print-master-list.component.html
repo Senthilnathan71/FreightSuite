@@ -1,0 +1,141 @@
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+  <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
+
+<div class="row compact-form">
+  <div class="col-12">
+    <app-page-header
+      [title]="'Print Master'"
+      [showFavorite]="false"
+      [showSearch]="true"
+      [searchPlaceholder]="'Search by name, action or menu'"
+      [searchButtonText]="'Search'"
+      [(searchValue)]="filterValue"
+      [actions]="headerActions"
+      (searchTriggered)="onSearchTriggered($event)"
+      (searchCleared)="onSearchCleared()"
+      (actionTriggered)="onActionTriggered($event)">
+    </app-page-header>
+  </div>
+
+  <div class="col-12">
+    <app-reusable-table
+      #printMasterTable
+      [config]="tableConfig"
+      [data]="allItems"
+      [loading]="tableLoading"
+      [totalRecords]="totalLengthOfCollection"
+      [paginationConfig]="paginationConfig"
+      (actionClick)="onTableActionClick($event)"
+      (rowClick)="onTableRowClick($event)"
+      (sortChange)="onTableSortChange($event)"
+      (filterChange)="onTableFilterChange($event)"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)">
+    </app-reusable-table>
+  </div>
+</div>
+
+<!-- Add / Edit Modal -->
+<ng-template #content let-modal>
+  <div class="modal-header p-2 bg-info text-white">
+    <h5 class="modal-title mb-0">{{ isEditMode ? 'Edit' : 'Add' }} Print Master</h5>
+    <a *ngIf="isEditMode" class="text-white ps-2 cursor-pointer" (click)="showInfo()" title="Info">
+      <i class="fas fa-info-circle fs-6"></i>
+    </a>
+    <button type="button" class="btn-close btn-close-white ms-auto" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body">
+    <form [formGroup]="form">
+      <div class="row compact-form">
+
+        <!-- Menu -->
+        <aside class="col-md-6">
+          <div class="custom-form-group custom-form-group-select"
+            [class.filled]="!!form.get('MenuMasterSid')?.value">
+            <ng-select
+              class="ng-select"
+              [items]="menuList"
+              bindLabel="MenuName"
+              bindValue="MenuMasterSid"
+              placeholder=""
+              formControlName="MenuMasterSid"
+              appendTo="body">
+            </ng-select>
+            <label class="input-label">Menu <span class="text-danger">*</span></label>
+            <div class="error-message"
+              *ngIf="form.get('MenuMasterSid')?.touched && form.get('MenuMasterSid')?.hasError('required')">
+              Required
+            </div>
+          </div>
+        </aside>
+
+        <!-- Print Name -->
+        <aside class="col-md-6">
+          <div class="custom-form-group"
+            [class.filled]="!!form.get('Name')?.value">
+            <input
+              type="text"
+              class="custom-input-field sm"
+              formControlName="Name"
+              placeholder=""
+              maxlength="50">
+            <label class="input-label">Print Name <span class="text-danger">*</span></label>
+            <div class="error-message"
+              *ngIf="form.get('Name')?.touched && form.get('Name')?.invalid">
+              <span *ngIf="form.get('Name')?.hasError('required')">Required</span>
+              <span *ngIf="form.get('Name')?.hasError('maxlength')">Max 50 characters</span>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Action (PrintMail) -->
+        <aside class="col-md-6">
+          <div class="custom-form-group custom-form-group-select"
+            [class.filled]="!!form.get('PrintMail')?.value">
+            <ng-select
+              class="ng-select"
+              [items]="printMailOptions"
+              bindLabel="label"
+              bindValue="value"
+              placeholder=""
+              formControlName="PrintMail"
+              appendTo="body">
+            </ng-select>
+            <label class="input-label">Action <span class="text-danger">*</span></label>
+            <div class="error-message"
+              *ngIf="form.get('PrintMail')?.touched && form.get('PrintMail')?.hasError('required')">
+              Required
+            </div>
+          </div>
+        </aside>
+
+        <!-- Status -->
+        <aside class="col-md-6">
+          <div class="custom-form-group custom-form-group-select"
+            [class.filled]="!!form.get('Status')?.value">
+            <ng-select
+              class="ng-select"
+              [items]="statusOptions"
+              bindLabel="label"
+              bindValue="value"
+              placeholder=""
+              formControlName="Status"
+              appendTo="body">
+            </ng-select>
+            <label class="input-label">Status</label>
+          </div>
+        </aside>
+
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer py-2">
+    <button type="button" class="btn btn-light-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
+    <button type="button" class="btn btn-info btn-sm" (click)="onSave(modal)" [disabled]="isSaving">
+      <i class="fas fa-save me-1"></i> {{ isSaving ? 'Saving...' : 'Save' }}
+    </button>
+  </div>
+</ng-template>

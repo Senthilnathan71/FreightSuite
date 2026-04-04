@@ -1,0 +1,61 @@
+<ngx-spinner bdColor="rgba(0,0,0,0.6)" size="small" color="#fff" type="ball-scale-ripple" [fullScreen]="false">
+</ngx-spinner>
+
+<div class="modal-header p-2 bg-info text-white">
+  <h5 class="modal-title mb-0">
+    <i class="fas fa-print me-2"></i>Print Permissions — {{ menuItem?.MenuName }}
+  </h5>
+  <button type="button" class="btn-close btn-close-white" (click)="onCancel()"></button>
+</div>
+
+<div class="modal-body p-0">
+  <div *ngIf="isLoading" class="text-center py-4">
+    <div class="spinner-border spinner-border-sm text-info" role="status"></div>
+    <span class="ms-2 text-muted">Loading...</span>
+  </div>
+
+  <div *ngIf="hasNoPrints" class="text-center py-4 text-muted">
+    <i class="fas fa-print fa-2x mb-2 d-block"></i>
+    No print options configured for this menu.
+  </div>
+
+  <div *ngIf="!isLoading && rows.length > 0" class="table-responsive">
+    <table class="table table-hover align-middle table-sm table-borderless mb-0">
+      <thead class="bg-info">
+        <tr>
+          <th class="bg-transparent text-light ps-3" style="border-top-left-radius:5px;">Print Name</th>
+          <th class="bg-transparent text-light">Action</th>
+          <th class="bg-transparent text-light text-center" style="width:80px;border-top-right-radius:5px;">Access</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows; let i = index">
+          <td class="ps-3 fw-semibold">{{ row.Name }}</td>
+          <td>
+            <span class="badge"
+              [class.bg-primary]="row.PrintMail === 'Print'"
+              [class.bg-success]="row.PrintMail === 'Download'"
+              [class.bg-warning]="row.PrintMail === 'Send Mail'"
+              [class.text-dark]="row.PrintMail === 'Send Mail'">
+              {{ row.PrintMail }}
+            </span>
+          </td>
+          <td class="text-center">
+            <input
+              type="checkbox"
+              class="form-check-input cursor-pointer"
+              [(ngModel)]="row.grantAccess"
+              [id]="'print-access-' + i">
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal-footer py-2">
+  <button type="button" class="btn btn-secondary btn-sm" (click)="onCancel()">Cancel</button>
+  <button type="button" class="btn btn-info btn-sm" (click)="onSave()" [disabled]="isLoading">
+    <i class="fas fa-save me-1"></i> Save
+  </button>
+</div>

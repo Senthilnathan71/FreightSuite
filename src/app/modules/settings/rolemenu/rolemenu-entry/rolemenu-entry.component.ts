@@ -12,6 +12,9 @@ import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/mul
 import { CommonEntryHeaderComponent } from 'src/app/shared/components/common-entry-header/common-entry-header.component';
 import { CommonPaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
 import { PaginationConfig } from 'src/app/shared/interfaces/pagination.interface';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { PrintPermissionModalComponent } from '../print-permission-modal/print-permission-modal.component';
+// PrintPermissionModalComponent is opened via NgbModal — not used directly in template
 
 @Component({
   selector: 'app-rolemenu-entry',
@@ -63,7 +66,8 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
     private settingService: SettingsService,
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private modalService: NgbModal
   ) { }
 
   ngOnInit(): void {
@@ -609,6 +613,25 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
       page: this.dynamicMenuPage,
       pageSize: this.dynamicMenuPageSize,
       totalRecords: this.dynamicMenuList.length,
+    };
+  }
+
+  openPrintModal(menu: any): void {
+    if (!menu.RoleMenuDetailSid) {
+      this.appSettingService.showWarning('Please save the Role Menu before managing print permissions.');
+      return;
+    }
+    const modalRef = this.modalService.open(PrintPermissionModalComponent, {
+      size: 'md',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.menuItem = {
+      RoleMenuDetailSid: menu.RoleMenuDetailSid,
+      RoleMenuHeaderSid: this.roleMenuHeaderSid,
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      MenuMasterSid: menu.MenuMasterSid,
+      MenuName: menu.MenuName
     };
   }
 

@@ -52,6 +52,7 @@ import { CommonService } from 'src/app/common/common.service';
 import { Menu } from 'angular-feather/icons';
 import { VolumetricAndCbmCalculationService } from 'src/app/core/services/volumetric-and-cbm-calculation.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { PrintPermissionService } from 'src/app/core/services/print-permission.service';
 import { SafeInsertShipmentMilestone } from '../../services/shipment-milestone.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { BarcodeConfig, BarcodeService } from 'src/app/core/services/bar-code.service';
@@ -480,6 +481,7 @@ get visibleTabs() {
     private pdfMakeService: PdfMakeService,
     private commonService: CommonService,
     public mps: MenuPermissionService,
+    public pps: PrintPermissionService,
     public logoService : LogoService,
     private barcodeService: BarcodeService,
     private volumetricAndCbmCalculationService: VolumetricAndCbmCalculationService,
@@ -565,6 +567,7 @@ get visibleTabs() {
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.MenuMasterSid = Number(sessionStorage.getItem('currentMenuId'));
     this.mps.init().subscribe();
+    this.pps.init().subscribe();
     const currentCompanyId = this.currentCompany?.CompanyMasterSid;
     this.currentCompany = (
       (this.userData.userCompanyMaster || [])

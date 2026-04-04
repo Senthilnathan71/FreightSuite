@@ -293,6 +293,18 @@ import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.meta
     )
   }
 
+  getRoleMenuPrintPermissions(companyId: number, roleMenuDetailSid: number) {
+    return this.http.get<{ data: any[] }>(`role-menu/print-permissions/${companyId}/${roleMenuDetailSid}`).pipe(
+      map((resp) => resp)
+    );
+  }
+
+  saveRoleMenuPrintPermissions(payload: any) {
+    return this.http.post<{ data: any }>('role-menu/save-print-permissions', payload).pipe(
+      map((resp) => resp)
+    );
+  }
+
 
   goSpecialSearch(payload){
     return this.http.post<{data:any[]}>('role-menu/special-search',payload).pipe(

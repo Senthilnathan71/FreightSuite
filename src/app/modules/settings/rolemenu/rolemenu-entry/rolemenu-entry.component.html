@@ -206,12 +206,12 @@
                           </div>
                         </div>
                       </th>
-                      <th class="bg-transparent text-light text-center" style="width: 80px;border-top-right-radius: 5px;">
+                      <th class="bg-transparent text-light text-center" style="width: 80px;">
                         <div class="d-flex flex-column align-items-center">
                           <span>Delete</span>
                           <div class="mt-1">
-                            <input 
-                              type="checkbox" 
+                            <input
+                              type="checkbox"
                               class="form-check-input cursor-pointer"
                               [checked]="isAllDeleteSelected()"
                               (change)="toggleAllDelete($event)"
@@ -219,6 +219,9 @@
                             />
                           </div>
                         </div>
+                      </th>
+                      <th class="bg-transparent text-light text-center" style="width: 60px; border-top-right-radius: 5px;">
+                        Prints
                       </th>
                     </tr>
                   </thead>
@@ -279,14 +282,26 @@
 
                       <!-- Delete Permission -->
                       <td class="text-center">
-                        <input 
-                          type="checkbox" 
+                        <input
+                          type="checkbox"
                           class="form-check-input cursor-pointer"
                           [(ngModel)]="menu.DeleteRole"
                           [ngModelOptions]="{ standalone: true }"
                           [disabled]="menu.disableDelete || isLoading"
                           (change)="onPermissionChange()"
                         />
+                      </td>
+
+                      <!-- Print Permissions -->
+                      <td class="text-center">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-info py-0 px-2"
+                          [disabled]="!menu.RoleMenuDetailSid || isLoading"
+                          (click)="openPrintModal(menu)"
+                          title="Manage Print Permissions">
+                          <i class="fas fa-print"></i>
+                        </button>
                       </td>
                     </tr>
                   </tbody>

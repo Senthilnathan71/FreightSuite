@@ -85,6 +85,7 @@ import { CompanyConfigComponent } from './company/company-config/company-config.
 import { VoucherPeriodEntryComponent } from './voucher-period/voucher-period-entry/voucher-period-entry.component';
 import { StandardChargeListComponent } from './standard-charge/standard-charge-list/standard-charge-list.component';
 import { StandardChargeEntryComponent } from './standard-charge/standard-charge-entry/standard-charge-entry.component';
+import { PrintMasterListComponent } from './print-master/print-master-list/print-master-list.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -1301,6 +1302,14 @@ export const MasterRoutes: Routes = [
         { title: 'Master', url: '/master' },
         { title: 'Standard Charge' },
       ]
+    }
+  },
+  {
+    path: 'print-master',
+    component: PrintMasterListComponent,
+    data: {
+      title: 'Print Master',
+      urls: [{ title: 'Master', url: '/master' }, { title: 'Print Master' }]
     }
   },
 ];
