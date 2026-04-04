@@ -785,6 +785,38 @@ export class ReportRegistryService {
             error,
           );
         }
+
+      // Cash Flow
+        try {
+          const { CashFlowComponent } =
+            await import('../components/reports/cash-flow/cash-flow.component');
+
+          this.registerReport({
+            id: 'cash-flow',
+            title: 'Cash Flow Report',
+            component: CashFlowComponent,
+            filenameTemplate: 'Cash_Flow_Report',
+            module: 'management-report',
+            apiEndpoint: 'management-report/send-email',
+            request: 'POST',
+            fetchDataEndpoint: 'accounts/reports/{id}/generate',
+            emailSubjectTemplate: 'Cash Flow Report',
+            emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong> Cash Flow Report</strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+            modalSize: 'xl',
+            pdfOrientation: 'landscape',
+          });
+        } catch (error) {
+          console.warn(
+            ' Cash Flow Report component not yet created:',
+            error,
+          );
+        }
 // ======================================================
     // operation report
 

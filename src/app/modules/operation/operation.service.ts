@@ -1491,6 +1491,46 @@ processProductUpload(payload: any): Observable<any> {
     );
   }
 
+  createPaymentRequest(payload: any) {
+    return this.http.post<{ status: boolean; message: string; data: any }>(
+      'payment-request/create',
+      payload
+    ).pipe(map((resp) => resp));
+  }
+
+  updatePaymentRequest(paymentRequestSid: number, payload: any) {
+    return this.http.patch<{ status: boolean; message: string; data: any }>(
+      `payment-request/update/${paymentRequestSid}`,
+      payload
+    ).pipe(map((resp) => resp));
+  }
+
+  getPaymentRequestById(paymentRequestSid: number) {
+    return this.http.get<{ status: boolean; message: string; data: any }>(
+      `payment-request/fetch/${paymentRequestSid}`
+    ).pipe(map((resp) => resp));
+  }
+
+  searchPaymentRequest(payload: any) {
+    return this.http.post<{ status: boolean; message: string; data: any }>(
+      'payment-request/search-list',
+      payload
+    ).pipe(map((resp) => resp));
+  }
+
+  getPendingPaymentRequests(companyMasterSid: number, branchMasterSid: number) {
+    return this.http.get<{ status: boolean; message: string; data: any[] }>(
+      `payment-request/pending-payment?CompanyMasterSid=${companyMasterSid}&BranchMasterSid=${branchMasterSid}`
+    ).pipe(map((resp) => resp));
+  }
+
+  linkPaymentRequestVoucher(paymentRequestSid: number, payload: any) {
+    return this.http.patch<{ status: boolean; message: string; data: any }>(
+      `payment-request/link-voucher/${paymentRequestSid}`,
+      payload
+    ).pipe(map((resp) => resp));
+  }
+
   // Service Job related Operations
   getServiceJobById(HouseJobSid: number) {
     return this.http.get<{ data: any }>(`service-job/fetch/${HouseJobSid}`).pipe(

@@ -180,11 +180,16 @@
             </table>
         </div>
 
-    <div *ngIf="showBankDetails && bankDetails && bankDetails.length > 0" class="px-3" style="font-size:16px">
-        <h5 class="fw-bold my-1"><strong>Bank Details</strong></h5>
-    
-        <div class="table-responsive">
-            <table class="table align-middle mb-0"
+    <div *ngIf="showBankDetails" class="px-3" style="font-size:14px">
+        <h5 class="fw-bold"><strong>Bank Details</strong></h5>
+
+        <div *ngIf="isBankDetailsLoading" class="d-flex align-items-center gap-2 py-2">
+            <div class="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true"></div>
+            <span style="font-size: 13px; color: #000;">Loading bank details...</span>
+        </div>
+
+        <div *ngIf="!isBankDetailsLoading && bankDetails && bankDetails.length > 0" class="table-responsive">
+            <table class="table align-middle my-0"
                 style="border-collapse: collapse; color: #000; font-size: 13px; border: 0.5px solid #000;" [ngStyle]="{
                     width: bankDetails.length === 1 ? 'auto' : '100%',
                     'table-layout': bankDetails.length === 1 ? 'auto' : 'fixed'
@@ -193,11 +198,11 @@
                 <thead>
                     <tr>
                         <th
-                            style="width:180px;padding:0px;color:#000;border-color:#000;text-align:center;border:0.5px solid #000;">
+                            style="width:180px;padding:0px;color:#000;border-color:#000;text-align:center;border:0.5px solid #000; background-color: #05608d; color: #FFFFFF;">
                             <strong>Details</strong>
                         </th>
                         <th *ngFor="let bankDetail of bankDetails"
-                            style="padding:0px 6px;color:#000;border-color:#000;text-align:start;border:0.5px solid #000;">
+                            style="padding:0px 6px;color:#000;border-color:#000;text-align:start;border:0.5px solid #000;background-color: #05608d; color: #FFFFFF;">
                             <strong>Bank ({{ currentCurrencyCode }})</strong>
                         </th>
                     </tr>

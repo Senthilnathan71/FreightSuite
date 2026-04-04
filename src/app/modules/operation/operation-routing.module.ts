@@ -45,12 +45,40 @@ import { AgentMasterAirWaybillEntryComponent } from './agent-master-air-waybill/
 import { VoucherCorrectionEntryComponent } from './voucher-correction/voucher-correction-entry/voucher-correction-entry.component';
 import { AgentMasterAirWaybillListComponent } from './agent-master-air-waybill/agent-master-air-waybill-list/agent-master-air-waybill-list.component';
 import { ProRateComponent } from './master-job/pro-rate/pro-rate.component';
+import { PaymentRequestEntryComponent } from './payment-request/payment-request-entry/payment-request-entry.component';
+import { PaymentRequestListComponent } from './payment-request/payment-request-list/payment-request-list.component';
 
 
 export const OperationRoutes: Routes = [
   {
     path: '',
     children: [
+      {
+        path: 'payment-request/list',
+        component: PaymentRequestListComponent,
+        data: {
+          title: 'Payment Request',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Payment Request' }],
+        },
+      },
+      {
+        path: 'payment-request/entry',
+        component: PaymentRequestEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
+        data: {
+          title: 'Payment Request',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Payment Request' }],
+        },
+      },
+      {
+        path: 'payment-request/entry/:id',
+        component: PaymentRequestEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
+        data: {
+          title: 'Payment Request',
+          urls: [{ title: 'Operation', url: '/operation' }, { title: 'Payment Request' }],
+        },
+      },
       {
         path: 'booking/list',
         component: BookingListComponent,
