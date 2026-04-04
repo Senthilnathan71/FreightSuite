@@ -235,7 +235,10 @@
                         </div>
                       </th>
                       <th class="bg-transparent text-light text-center" style="width: 60px; border-top-right-radius: 5px;">
-                        Prints
+                        <div class="d-flex flex-column align-items-center">
+                          <span>Prints</span>
+                          <div class="mt-2" style="height: 16px;"></div>
+                        </div>
                       </th>
                     </tr>
                   </thead>
@@ -326,7 +329,7 @@
                           [disabled]="!menu.RoleMenuDetailSid || isLoading"
                           (click)="openPrintModal(menu)"
                           title="Manage Print Permissions">
-                          <i class="fas fa-print"></i>
+                          <i class="fas fa-file-pdf"></i>
                         </button>
                       </td>
                     </tr>
