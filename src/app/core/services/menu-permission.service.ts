@@ -4,9 +4,16 @@ import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, finalize, map, shareReplay, tap } from 'rxjs/operators';
 import { AppSettingsService } from './app-settings.service';
 
+export interface PrintPermission {
+  PrintMasterSid: number;
+  Name: string;
+  PrintMail: string;
+}
+
 export interface PermissionApiResponse {
   data: {
     MenuPermissions: Record<string, string | boolean | undefined>;
+    PrintPermissions?: PrintPermission[];
   };
 }
 
@@ -15,6 +22,7 @@ export interface MainPermissions {
   update: boolean;
   delete: boolean;
   view: boolean;
+  post: boolean;
 }
 
 export type OtherPermissions = Record<string, boolean>;
@@ -32,6 +40,7 @@ export class MenuPermissionService {
 
   // Cache keyed by company_menu_role
   private cache = new Map<string, PermissionSet>();
+  private printCache = new Map<string, PrintPermission[]>();
 
   // track inflight requests (dedupe)
   private inFlight = new Map<string, Observable<PermissionSet>>();
@@ -44,6 +53,10 @@ export class MenuPermissionService {
   private loadedSubject = new BehaviorSubject<boolean>(false);
   loaded$ = this.loadedSubject.asObservable();
 
+  // print permissions stream
+  private printSubject = new BehaviorSubject<PrintPermission[]>([]);
+  printPermissions$ = this.printSubject.asObservable();
+
   // keep current key so getPerms() & can() work w/out passing ids
   private currentKey: string | null = null;
 
@@ -51,7 +64,8 @@ export class MenuPermissionService {
     INSERT: 'InsertRole',
     UPDATE: 'UpdateRole',
     DELETE: 'DeleteRole',
-    VIEW: 'ViewRole'
+    VIEW: 'ViewRole',
+    POST: 'PostRole'
   };
 
   constructor(
@@ -95,6 +109,7 @@ export class MenuPermissionService {
       const cached = this.cache.get(key)!;
       this.permissionSubject.next(cached);
       this.loadedSubject.next(true);
+      this.printSubject.next(this.printCache.get(key) ?? []);
       return of(cached);
     }
 
@@ -115,6 +130,14 @@ export class MenuPermissionService {
       map(res => {
         console.log('%c[MPS] 🌐 API responded', 'color: cyan');
         console.log('%c[MPS] Raw API Response:', 'color: #9C27B0', res);
+
+        // Extract and cache print permissions from the same response
+        const printPerms: PrintPermission[] = res?.data?.PrintPermissions ?? [];
+        this.printCache.set(key, printPerms);
+        if (this.currentKey === key) {
+          this.printSubject.next(printPerms);
+        }
+
         return this.transform(res);
       }),
 
@@ -136,12 +159,14 @@ export class MenuPermissionService {
         console.error('Status:', err.status, 'Response:', err.error);
 
         const fallback: PermissionSet = {
-          mainPermissions: { insert: false, update: false, delete: false, view: false },
+          mainPermissions: { insert: false, update: false, delete: false, view: false, post: false },
           otherPermissions: {}
         };
 
+        this.printCache.set(key, []);
         this.cache.set(key, fallback);
         if (this.currentKey === key) {
+          this.printSubject.next([]);
           this.permissionSubject.next(fallback);
           this.loadedSubject.next(true);
         }
@@ -180,10 +205,26 @@ export class MenuPermissionService {
    */
   clear(): void {
     this.cache.clear();
+    this.printCache.clear();
     this.inFlight.clear();
     this.currentKey = null;
     this.permissionSubject.next(null);
+    this.printSubject.next([]);
     this.loadedSubject.next(false);
+  }
+
+  /** Synchronous check for print permissions. */
+  canPrint(name: string, action: string): boolean {
+    const perms = this.printSubject.getValue();
+    return perms.some(
+      p => p.Name.toLowerCase() === name.toLowerCase() &&
+           p.PrintMail.toLowerCase() === action.toLowerCase()
+    );
+  }
+
+  /** Synchronous getter for current print permissions array. */
+  getPrintPermissions(): PrintPermission[] {
+    return this.printSubject.getValue();
   }
 
   /**
@@ -226,7 +267,8 @@ export class MenuPermissionService {
       insert: this.toBool(raw[this.MAIN_KEYS.INSERT]),
       update: this.toBool(raw[this.MAIN_KEYS.UPDATE]),
       delete: this.toBool(raw[this.MAIN_KEYS.DELETE]),
-      view: this.toBool(raw[this.MAIN_KEYS.VIEW])
+      view: this.toBool(raw[this.MAIN_KEYS.VIEW]),
+      post: this.toBool(raw[this.MAIN_KEYS.POST])
     };
 
     const otherPermissions: OtherPermissions = {};

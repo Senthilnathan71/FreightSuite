@@ -105,7 +105,7 @@
               (click)="onFinalSave()"
               [disabled]="
                 form.invalid ||
-                (!mps.can('update') && editMode) ||
+                !mps.can('post') ||
                 isDirty ||
                 isSaving || isReadOnly ||
                 voucherConstraints.isClosed

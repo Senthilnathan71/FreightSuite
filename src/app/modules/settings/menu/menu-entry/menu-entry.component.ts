@@ -195,8 +195,7 @@ export class MenuEntryComponent implements OnInit {
       next: (response: any) => {
         this.moduleList = response.data.map((module: any) => ({
           ModuleMasterSid: module.ModuleMasterSid,
-          ModuleName: module.ModuleName,
-          ModuleCode: module.ModuleCode
+          ModuleName: module.ModuleName
         }));
       },
       error: (error) => {
@@ -251,16 +250,7 @@ export class MenuEntryComponent implements OnInit {
     return this.menuForm.get('otherPermissions') as FormGroup;
   }
 
-  get showPostPermission(): boolean {
-    const moduleId = this.menuForm.get('ModuleMasterSid')?.value;
-    const selected = this.moduleList.find(m => m.ModuleMasterSid === moduleId);
-    if (!selected) return false;
-    const name = (selected.ModuleName || '').toLowerCase();
-    const code = (selected.ModuleCode || '').toUpperCase();
-    return name === 'account' || name === 'accounts' || code === 'ACC';
-  }
-
-  get isSubMenuChecked(): boolean {
+get isSubMenuChecked(): boolean {
     return !!this.menuForm.get('parentId')?.value;
   }
 

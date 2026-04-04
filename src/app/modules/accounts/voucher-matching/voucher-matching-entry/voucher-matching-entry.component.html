@@ -206,7 +206,7 @@
           <button type="button" appPreventMultiClick class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="postVoucher()" [disabled]="
               voucherMatchingForm.invalid ||
-              (!mps.can('update') && isEditMode) ||
+              !mps.can('post') ||
               isDirty ||
               isSaving ||
               isPosting ||

@@ -231,7 +231,7 @@
             [disabled]="
               receiptForm.invalid ||
               isReadOnly ||
-              (!mps.can('update') && isEditMode) ||
+              !mps.can('post') ||
               isDirty ||
               isSaving ||
               voucherConstraints.isClosed

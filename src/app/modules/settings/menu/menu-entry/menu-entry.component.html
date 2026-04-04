@@ -216,7 +216,7 @@
                                 <td>Modify</td>
                                 <td>View</td>
                                 <td>Delete</td>
-                                <td *ngIf="showPostPermission">Post</td>
+                                <td>Post</td>
                             </tr>
                         </thead>
                         <tbody [formGroup]="menuPermissionsGroup">
@@ -241,7 +241,7 @@
                                         <input type="checkbox" formControlName="delete" class="form-check-input permission-inline-check__input">
                                     </div>
                                 </td>
-                                <td class="text-center" *ngIf="showPostPermission">
+                                <td class="text-center">
                                     <div class="form-check form-check-inline permission-inline-check">
                                         <input type="checkbox" formControlName="post" class="form-check-input permission-inline-check__input">
                                     </div>
