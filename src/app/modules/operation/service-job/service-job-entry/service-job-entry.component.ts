@@ -153,8 +153,10 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
   filteredConsigneeList: any[] = [];
   portList: any[] = [];
   filteredPorts: any[] = [];
+  filteredPOO: any[] = [];
   filteredPOL: any[] = [];
   filteredPOD: any[] = [];
+  filteredFPOD: any[] = [];
   TandCList: any[] = [];
   currencyList : any[] = [];
   houseData: any;
@@ -398,8 +400,10 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       HouseJobSid : [null],
       MasterJobSid : [null],
 
+      POO: [null],
       POL: [""],
-      POD: [""]
+      POD: [""],
+      FPD: [null]
     })
     this.serviceJobForm.valueChanges.subscribe(() => {
       this.syncFormValueWithRateComponent();
@@ -540,8 +544,10 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       MBLDate: response.MBLDate ? new Date(response.MBLDate) : '',
       status: response.status === "A" ? "Active" : "Suspended",
 
+      POO: response.POO,
       POL: response.POL,
       POD: response.POD,
+      FPD: response.FPD,
       BookingStatus: response.BookingStatus,
       ShipmentNo: response.ShipmentNo
     })
@@ -572,7 +578,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       ExternalNote: othersData?.ExternalNote || '',
       InternalNote: othersData?.InternalNote || ''
     })
-    this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? this.selectedDepartment.FCLLCL.toUpperCase() : "AIR";
+    this.selectedFCLLCL = this.resolveSelectedSegment(this.selectedDepartment);
     
     this.serviceJobRateArr = (response.costRevenueCharges || []).map(br => ({
       ...br,
@@ -645,8 +651,10 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       DepartmentMasterSid: serviceFormValue.DepartmentMasterSid,
+      POO: serviceFormValue.POO || "",
       POL: serviceFormValue.POL || "",
       POD: serviceFormValue.POD || "",
+      FPD: serviceFormValue.FPD || "",
       HBLNo: serviceFormValue.HBLNo,
       JobType: serviceFormValue.JobType,
       MBLNo: serviceFormValue.MBLNo,
@@ -814,15 +822,19 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       this.selectedDepartmentType = '';
       this.selectedFCLLCL = 'LCL';
       this.filteredPorts = [];
+      this.filteredPOO = [];
       this.filteredPOL = [];
       this.filteredPOD = [];
+      this.filteredFPOD = [];
+      this.b['POO'].setValue(null);
       this.b['POL'].setValue(null);
       this.b['POD'].setValue(null);
+      this.b['FPD'].setValue(null);
       this.b['JobType'].setValue(null);
       return;
     }
-    this.selectedDepartmentType = department.departmentType.toUpperCase();
-    this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? department.FCLLCL.toUpperCase() : this.selectedDepartmentType;
+    this.selectedDepartmentType = this.normalizePortText(department?.departmentType);
+    this.selectedFCLLCL = this.resolveSelectedSegment(department);
     // this.b['JobType'].setValue(department.ExportImport);
     
     this.onRouteChange()
@@ -875,15 +887,24 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
   }
 
   getFilteredPortsBySegment(segment: string): any[] {
-    if (segment === 'AIR') {
+    const normalizedSegment = this.normalizePortText(segment);
+
+    if (normalizedSegment === 'AIR') {
       return this.portList.filter(port => this.normalizePortText(port?.PortType) === 'AIR');
-    } else if (segment === 'FCL' || segment === 'LCL' || segment === 'SEA') {
+    } else if (normalizedSegment === 'FCL' || normalizedSegment === 'LCL' || normalizedSegment === 'SEA') {
       return this.portList.filter(port => this.normalizePortText(port?.PortType) === 'SEA');
-    } else if (segment === 'ROAD') {
+    } else if (normalizedSegment === 'ROAD') {
       return this.portList.filter(port => {
         const portType = this.normalizePortText(port?.PortType);
         return portType === 'ROAD' || portType.includes('ROAD') || portType.includes('LAND') || portType.includes('LOCATION');
       });
+    } else if (normalizedSegment === 'TRANSPORT') {
+      return this.portList.filter(port => {
+        const portType = this.normalizePortText(port?.PortType);
+        return portType === 'SEA' || portType === 'AIR';
+      });
+    } else if (normalizedSegment === 'OTHER' || normalizedSegment === 'OTHERS') {
+      return [...this.portList];
     }
     return [];
   }
@@ -891,14 +912,18 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
   private refreshPortFilters(): void {
     const filteredLists = this.buildPortFilterLists();
     this.filteredPorts = filteredLists.filteredPorts;
+    this.filteredPOO = filteredLists.filteredPOO;
     this.filteredPOL = filteredLists.filteredPOL;
     this.filteredPOD = filteredLists.filteredPOD;
+    this.filteredFPOD = filteredLists.filteredFPOD;
 
     if (this.clearInvalidPortSelections(filteredLists)) {
       const updatedLists = this.buildPortFilterLists();
       this.filteredPorts = updatedLists.filteredPorts;
+      this.filteredPOO = updatedLists.filteredPOO;
       this.filteredPOL = updatedLists.filteredPOL;
       this.filteredPOD = updatedLists.filteredPOD;
+      this.filteredFPOD = updatedLists.filteredFPOD;
     }
   }
 
@@ -906,8 +931,10 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
     if (!this.selectedDepartmentType) {
       return {
         filteredPorts: [],
+        filteredPOO: [],
         filteredPOL: [],
-        filteredPOD: []
+        filteredPOD: [],
+        filteredFPOD: []
       };
     }
 
@@ -917,37 +944,54 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
     const foreignPorts = basePorts.filter(port => this.isForeignCountryPort(port));
     const companyCountryPorts = basePorts.filter(port => this.isCompanyCountryPort(port));
 
+    let pooPorts = [...basePorts];
     let polPorts = [...basePorts];
     let podPorts = [...basePorts];
+    let fpodPorts = [...basePorts];
 
-    if (shipmentDirection === 'EXPORT') {
+    if (this.shouldUseAllPortOptions()) {
+      pooPorts = [...basePorts];
+      polPorts = [...basePorts];
+      podPorts = [...basePorts];
+      fpodPorts = [...basePorts];
+    } else if (shipmentDirection === 'EXPORT') {
+      pooPorts = [...companyCountryPorts];
       polPorts = [...companyCountryPorts];
       podPorts = [...foreignPorts];
+      fpodPorts = [...foreignPorts];
     } else if (shipmentDirection === 'IMPORT') {
+      pooPorts = [...foreignPorts];
       polPorts = [...foreignPorts];
       podPorts = [...companyCountryPorts];
+      fpodPorts = [...companyCountryPorts];
     }
 
+    const selectedPOO = this.b['POO']?.value;
     const selectedPOL = this.b['POL']?.value;
     const selectedPOD = this.b['POD']?.value;
+    const selectedFPD = this.b['FPD']?.value;
 
     return {
       filteredPorts: basePorts,
+      filteredPOO: pooPorts.filter(port => port.PortCode !== selectedPOD),
       filteredPOL: polPorts.filter(port => port.PortCode !== selectedPOD),
-      filteredPOD: podPorts.filter(port => port.PortCode !== selectedPOL)
+      filteredPOD: podPorts.filter(port => port.PortCode !== selectedPOL),
+      filteredFPOD: fpodPorts.filter(port => port.PortCode !== selectedPOO)
     };
   }
 
   private clearInvalidPortSelections(filteredLists: any): boolean {
     let hasChanges = false;
 
+    hasChanges = this.clearPortControlIfInvalid('POO', filteredLists.filteredPOO) || hasChanges;
     hasChanges = this.clearPortControlIfInvalid('POL', filteredLists.filteredPOL) || hasChanges;
     hasChanges = this.clearPortControlIfInvalid('POD', filteredLists.filteredPOD) || hasChanges;
+    hasChanges = this.clearPortControlIfInvalid('FPD', filteredLists.filteredFPOD) || hasChanges;
 
     return hasChanges;
   }
 
-  private clearPortControlIfInvalid(controlName: 'POL' | 'POD', allowedPorts: any[]): boolean {
+  private clearPortControlIfInvalid(controlName: 'POO' | 'POL' | 'POD' | 'FPD', allowedPorts: any[]): boolean {
     const control = this.b[controlName];
     const selectedValue = control?.value;
 
@@ -1010,6 +1054,22 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
     return String(value ?? '').trim().toUpperCase();
   }
 
+  private resolveSelectedSegment(department: any): string {
+    const departmentType = this.normalizePortText(department?.departmentType);
+    if (departmentType === 'SEA') {
+      return this.normalizePortText(department?.FCLLCL) || 'LCL';
+    }
+
+    return departmentType || 'LCL';
+  }
+
+  private shouldUseAllPortOptions(): boolean {
+    const departmentType = this.normalizePortText(this.selectedDepartmentType || this.selectedDepartment?.departmentType);
+    const segment = this.normalizePortText(this.selectedFCLLCL);
+
+    return ['OTHER', 'OTHERS', 'TRANSPORT', 'SERVICE'].includes(departmentType) || ['OTHER', 'OTHERS', 'TRANSPORT', 'SERVICE'].includes(segment);
+  }
+
   private toNumericValue(value: any): number | null {
     const parsedValue = Number(value);
     return Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : null;
@@ -1066,13 +1126,24 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       this.refreshPortFilters();
       return;
     }
+    this.onRouteChange();
   }
 
   handlePODChange(selectedPort: any) {
     if (!selectedPort) {
+      this.b['FPD']?.setValue(null);
       this.refreshPortFilters();
       return;
     }
+    this.b['FPD']?.setValue(selectedPort?.PortCode ?? selectedPort);
+    this.onRouteChange();
+  }
+
+  handleFPODChange(selectedPort: any) {
+    if (!selectedPort) {
+      return;
+    }
+    this.refreshPortFilters();
   }
 
   getCustomerBranchByCustomer(CustomerMasterSid: number) {

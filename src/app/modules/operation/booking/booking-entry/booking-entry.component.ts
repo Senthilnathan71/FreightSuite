@@ -1447,7 +1447,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       if (!this.isEditMode) {
         this.spinner.hide();
       }
-      this.departmentList = departments.data;
+      this.departmentList = (departments.data || []).filter((department: any) => !this.isServiceJobDepartment(department));
       this.customerList = customers;
       this.countryOfCompany = String((userCountry?.data?.countryName)).trim().toLowerCase();
       this.portList = (ports.data || []).map(p => ({ ...p, Country: p.countryMaster?.countryName }));
@@ -1719,7 +1719,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       StuffingAt: cargoData?.StuffingAt
     }, { emitEvent: false });
 
-    this.selectedFCLLCL = this.selectedDepartmentType === "SEA" ? this.selectedDepartment.FCLLCL.toUpperCase() : "AIR";
+    this.selectedFCLLCL = this.resolveSelectedSegment(this.selectedDepartment);
 
     if (this.selectedFCLLCL === "LCL" && this.selectedDepartment.ExportImport === "Export") {
       this.cargoForm.get('StuffingAt')?.setValue('Dock', { emitEvent: false });
@@ -2718,10 +2718,8 @@ onCarrierChangeForAir(carrier: any): void {
     if (this.selectedDepartmentType === 'AIR' && this.selectedTab === 'CRO') {
     this.selectedTab = 'Shipment';
   }
-    this.selectedDepartmentType = department.departmentType.toUpperCase();
-    this.selectedFCLLCL = this.selectedDepartmentType === 'SEA'
-      ? department.FCLLCL.toUpperCase()
-      : this.selectedDepartmentType;
+    this.selectedDepartmentType = this.normalizePortText(department?.departmentType);
+    this.selectedFCLLCL = this.resolveSelectedSegment(department);
      if (this.bookingProducts.length > 0) {
     this.bookingProducts.controls.forEach((productGroup: FormGroup, index) => {
       const isAirOrLCL = this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL';
@@ -2809,15 +2807,24 @@ onCarrierChangeForAir(carrier: any): void {
   }
 
   getFilteredPortsBySegment(segment: string): any[] {
-    if (segment === 'AIR') {
+    const normalizedSegment = this.normalizePortText(segment);
+
+    if (normalizedSegment === 'AIR') {
       return this.portList.filter(port => this.normalizePortText(port?.PortType) === 'AIR');
-    } else if (segment === 'FCL' || segment === 'LCL' || segment === 'SEA') {
+    } else if (normalizedSegment === 'FCL' || normalizedSegment === 'LCL' || normalizedSegment === 'SEA') {
       return this.portList.filter(port => this.normalizePortText(port?.PortType) === 'SEA');
-    } else if (segment === 'ROAD') {
+    } else if (normalizedSegment === 'ROAD') {
       return this.portList.filter(port => {
         const portType = this.normalizePortText(port?.PortType);
         return portType === 'ROAD' || portType.includes('ROAD') || portType.includes('LAND') || portType.includes('LOCATION');
       });
+    } else if (normalizedSegment === 'TRANSPORT') {
+      return this.portList.filter(port => {
+        const portType = this.normalizePortText(port?.PortType);
+        return portType === 'SEA' || portType === 'AIR';
+      });
+    } else if (normalizedSegment === 'OTHER' || normalizedSegment === 'OTHERS') {
+      return [...this.portList];
     }
     return [];
   }
@@ -2855,7 +2862,12 @@ onCarrierChangeForAir(carrier: any): void {
     let podPorts = [...basePorts];
     let fpodPorts = [...basePorts];
 
-    if (shipmentDirection === 'EXPORT') {
+    if (this.shouldUseAllPortOptions()) {
+      pooPorts = [...basePorts];
+      polPorts = [...basePorts];
+      podPorts = [...basePorts];
+      fpodPorts = [...basePorts];
+    } else if (shipmentDirection === 'EXPORT') {
       pooPorts = [...companyCountryPorts];
       polPorts = [...companyCountryPorts];
       podPorts = [...foreignPorts];
@@ -2965,6 +2977,29 @@ onCarrierChangeForAir(carrier: any): void {
 
   private normalizePortText(value: any): string {
     return String(value ?? '').trim().toUpperCase();
+  }
+
+  private resolveSelectedSegment(department: any): string {
+    const departmentType = this.normalizePortText(department?.departmentType);
+    if (departmentType === 'SEA') {
+      return this.normalizePortText(department?.FCLLCL) || 'LCL';
+    }
+
+    return departmentType || 'LCL';
+  }
+
+  private shouldUseAllPortOptions(): boolean {
+    const departmentType = this.normalizePortText(this.selectedDepartmentType || this.selectedDepartment?.departmentType);
+    const segment = this.normalizePortText(this.selectedFCLLCL);
+
+    return ['OTHER', 'OTHERS', 'TRANSPORT'].includes(departmentType) || ['OTHER', 'OTHERS', 'TRANSPORT'].includes(segment);
+  }
+
+  private isServiceJobDepartment(department: any): boolean {
+    const departmentName = this.normalizePortText(department?.departmentName);
+    const departmentCode = this.normalizePortText(department?.DepartmentCode ?? department?.departmentCode);
+
+    return departmentName === 'SERVICE JOB' || departmentCode === 'SJ';
   }
 
   private toNumber(value: any): number | null {
