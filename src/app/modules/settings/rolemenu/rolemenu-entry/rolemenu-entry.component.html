@@ -220,6 +220,20 @@
                           </div>
                         </div>
                       </th>
+                      <th class="bg-transparent text-light text-center" style="width: 80px;">
+                        <div class="d-flex flex-column align-items-center">
+                          <span>Post</span>
+                          <div class="mt-1">
+                            <input
+                              type="checkbox"
+                              class="form-check-input cursor-pointer"
+                              [checked]="isAllPostSelected()"
+                              (change)="toggleAllPost($event)"
+                              [disabled]="isAllPostDisabled()"
+                            />
+                          </div>
+                        </div>
+                      </th>
                       <th class="bg-transparent text-light text-center" style="width: 60px; border-top-right-radius: 5px;">
                         Prints
                       </th>
@@ -288,6 +302,18 @@
                           [(ngModel)]="menu.DeleteRole"
                           [ngModelOptions]="{ standalone: true }"
                           [disabled]="menu.disableDelete || isLoading"
+                          (change)="onPermissionChange()"
+                        />
+                      </td>
+
+                      <!-- Post Permission -->
+                      <td class="text-center">
+                        <input
+                          type="checkbox"
+                          class="form-check-input cursor-pointer"
+                          [(ngModel)]="menu.PostRole"
+                          [ngModelOptions]="{ standalone: true }"
+                          [disabled]="menu.disablePost || isLoading"
                           (change)="onPermissionChange()"
                         />
                       </td>

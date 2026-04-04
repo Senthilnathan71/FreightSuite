@@ -195,7 +195,8 @@ export class MenuEntryComponent implements OnInit {
       next: (response: any) => {
         this.moduleList = response.data.map((module: any) => ({
           ModuleMasterSid: module.ModuleMasterSid,
-          ModuleName: module.ModuleName
+          ModuleName: module.ModuleName,
+          ModuleCode: module.ModuleCode
         }));
       },
       error: (error) => {
@@ -218,7 +219,8 @@ export class MenuEntryComponent implements OnInit {
         add: [false],
         edit: [false],
         view : [false],
-        delete: [false]
+        delete: [false],
+        post: [false]
       }),
       otherPermissions: this.fb.group({
         edoc: [false],
@@ -247,6 +249,15 @@ export class MenuEntryComponent implements OnInit {
   }
   get otherPermissionsGroup(): FormGroup {
     return this.menuForm.get('otherPermissions') as FormGroup;
+  }
+
+  get showPostPermission(): boolean {
+    const moduleId = this.menuForm.get('ModuleMasterSid')?.value;
+    const selected = this.moduleList.find(m => m.ModuleMasterSid === moduleId);
+    if (!selected) return false;
+    const name = (selected.ModuleName || '').toLowerCase();
+    const code = (selected.ModuleCode || '').toUpperCase();
+    return name === 'account' || name === 'accounts' || code === 'ACC';
   }
 
   get isSubMenuChecked(): boolean {
@@ -318,6 +329,7 @@ export class MenuEntryComponent implements OnInit {
         'edit': 'edit',
         'view': 'view',
         'delete': 'delete',
+        'post': 'post',
         'edoc': 'edoc',
         'terms_and_condition': 'terms_and_condition',
         'authority': 'authority',
@@ -336,7 +348,7 @@ export class MenuEntryComponent implements OnInit {
 
         const isActive = item.status === 'A';
 
-        if (['add', 'edit', 'view', 'delete'].includes(formControlName)) {
+        if (['add', 'edit', 'view', 'delete', 'post'].includes(formControlName)) {
           menuPerms[formControlName] = isActive;
         } else {
           otherPerms[formControlName] = isActive;
@@ -458,6 +470,7 @@ export class MenuEntryComponent implements OnInit {
   edit: 'Edit',
   view : 'View',
   delete: 'Delete',
+  post: 'Post',
   edoc: 'Edoc',
   terms_and_condition: 'Terms and Condition',
   authority: 'Authority',

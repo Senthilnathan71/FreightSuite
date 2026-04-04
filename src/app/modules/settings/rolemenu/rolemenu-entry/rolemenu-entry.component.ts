@@ -237,6 +237,7 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
         processed.UpdateRole = saved.UpdateRole === "Y";
         processed.ViewRole = saved.ViewRole === "Y";
         processed.DeleteRole = saved.DeleteRole === "Y";
+        processed.PostRole = saved.PostRole === "Y";
       }
 
       finalList.push(processed);
@@ -268,10 +269,12 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
       UpdateRole: false,
       ViewRole: false,
       DeleteRole: false,
+      PostRole: false,
       disableInsert: true,
       disableUpdate: true,
       disableView: true,
       disableDelete: true,
+      disablePost: true,
     };
 
     // Check menuPermission array for existing permissions
@@ -307,6 +310,14 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
           processedMenu.DeleteRole = menu.DeleteRole === "Y";
         }
         processedMenu.disableDelete = false;
+      }
+      if (hasPermission('post')) {
+        if (!this.isEditMode) {
+          processedMenu.PostRole = true;
+        } else {
+          processedMenu.PostRole = menu.PostRole === "Y";
+        }
+        processedMenu.disablePost = false;
       }
     }
 
@@ -412,7 +423,7 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
 
     // Validate at least one permission is selected
     const hasPermission = this.dynamicMenuList.some(menu =>
-      menu.InsertRole || menu.UpdateRole || menu.ViewRole || menu.DeleteRole
+      menu.InsertRole || menu.UpdateRole || menu.ViewRole || menu.DeleteRole || menu.PostRole
     );
 
     if (!hasPermission) {
@@ -480,6 +491,7 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
         UpdateRole: m.UpdateRole ? 'Y' : 'N',
         ViewRole: m.ViewRole ? 'Y' : 'N',
         DeleteRole: m.DeleteRole ? 'Y' : 'N',
+        PostRole: m.PostRole ? 'Y' : 'N',
         isDeleted: false
       })),
       ...deletedMenus
@@ -544,7 +556,8 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
         toBool(oldItem.InsertRole) !== toBool(newItem.InsertRole) ||
         toBool(oldItem.UpdateRole) !== toBool(newItem.UpdateRole) ||
         toBool(oldItem.ViewRole) !== toBool(newItem.ViewRole) ||
-        toBool(oldItem.DeleteRole) !== toBool(newItem.DeleteRole);
+        toBool(oldItem.DeleteRole) !== toBool(newItem.DeleteRole) ||
+        toBool(oldItem.PostRole) !== toBool(newItem.PostRole);
 
 
       if (changed) {
@@ -755,6 +768,21 @@ isAllDeleteDisabled(): boolean {
   
   const enabledMenus = this.dynamicMenuList.filter(menu => !menu.disableDelete);
   return enabledMenus.length === 0;
+}
+
+isAllPostSelected(): boolean {
+  const enabled = this.dynamicMenuList.filter(m => !m.disablePost);
+  return enabled.length > 0 && enabled.every(m => m.PostRole);
+}
+
+toggleAllPost(event: any): void {
+  const isChecked = event.target.checked;
+  this.dynamicMenuList.forEach(m => { if (!m.disablePost) m.PostRole = isChecked; });
+}
+
+isAllPostDisabled(): boolean {
+  return this.dynamicMenuList.length === 0 ||
+    this.dynamicMenuList.every(m => m.disablePost);
 }
 
 // Call this method when any individual permission checkbox changes
