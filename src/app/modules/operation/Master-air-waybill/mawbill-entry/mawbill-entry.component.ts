@@ -1700,10 +1700,8 @@ loadMawbStock(data: any): void {
     return;
   }
 
-  this.selectedDepartmentType = department.departmentType?.toUpperCase() || '';
-  this.selectedFCLLCL = this.selectedDepartmentType === 'SEA'
-    ? (department.FCLLCL?.toUpperCase() || 'LCL')
-    : this.selectedDepartmentType;
+  this.selectedDepartmentType = this.normalizePortText(department?.departmentType);
+  this.selectedFCLLCL = this.resolveSelectedSegment(department);
 
   this.isAirDepartment = this.selectedDepartmentType === 'AIR';
   const mblNoControl = this.masterJobForm.get('MBLNo');
@@ -1778,6 +1776,10 @@ loadMawbStock(data: any): void {
     this.masterJobForm.get('MovementType')?.setValue('Sea');
   } else if (this.selectedDepartmentType === 'AIR') {
     this.masterJobForm.get('MovementType')?.setValue('Flight');
+  } else if (this.selectedDepartmentType === 'ROAD' || this.selectedDepartmentType === 'TRANSPORT') {
+    this.masterJobForm.get('MovementType')?.setValue('Road');
+  } else {
+    this.masterJobForm.get('MovementType')?.setValue(this.selectedDepartmentType || null);
   }
 }
   onRouteChange(): void {
@@ -1798,15 +1800,19 @@ loadMawbStock(data: any): void {
   }
 
   getFilteredPortsBySegment(segment: string): any[] {
-    if (segment === 'AIR') {
+    const normalizedSegment = this.normalizePortText(segment);
+
+    if (normalizedSegment === 'AIR') {
       return this.portList.filter(port => this.normalizePortText(port?.PortType) === 'AIR');
-    } else if (segment === 'FCL' || segment === 'LCL' || segment === 'SEA') {
+    } else if (normalizedSegment === 'FCL' || normalizedSegment === 'LCL' || normalizedSegment === 'SEA') {
       return this.portList.filter(port => this.normalizePortText(port?.PortType) === 'SEA');
-    } else if (segment === 'ROAD') {
+    } else if (normalizedSegment === 'ROAD') {
       return this.portList.filter(port => {
         const portType = this.normalizePortText(port?.PortType);
         return portType === 'ROAD' || portType.includes('ROAD') || portType.includes('LAND') || portType.includes('LOCATION');
       });
+    } else if (normalizedSegment === 'OTHER' || normalizedSegment === 'OTHERS') {
+      return [...this.portList];
     }
     return [];
   }
@@ -1842,7 +1848,12 @@ loadMawbStock(data: any): void {
     let podPorts = [...basePorts];
     let fpodPorts = [...basePorts];
 
-    if (shipmentDirection === 'EXPORT') {
+    if (this.shouldUseAllPortOptions()) {
+      pooPorts = [...basePorts];
+      polPorts = [...basePorts];
+      podPorts = [...basePorts];
+      fpodPorts = [...basePorts];
+    } else if (shipmentDirection === 'EXPORT') {
       pooPorts = [...companyCountryPorts];
       polPorts = [...companyCountryPorts];
       podPorts = [...foreignPorts];
@@ -1953,6 +1964,22 @@ loadMawbStock(data: any): void {
 
   private normalizePortText(value: any): string {
     return String(value ?? '').trim().toUpperCase();
+  }
+
+  private resolveSelectedSegment(department: any): string {
+    const departmentType = this.normalizePortText(department?.departmentType);
+    if (departmentType === 'SEA') {
+      return this.normalizePortText(department?.FCLLCL) || 'LCL';
+    }
+
+    return departmentType || 'LCL';
+  }
+
+  private shouldUseAllPortOptions(): boolean {
+    const departmentType = this.normalizePortText(this.selectedDepartmentType || this.selectedDepartment?.departmentType);
+    const segment = this.normalizePortText(this.selectedFCLLCL);
+
+    return ['OTHER', 'OTHERS'].includes(departmentType) || ['OTHER', 'OTHERS'].includes(segment);
   }
 
   private toNumericValue(value: any): number | null {
