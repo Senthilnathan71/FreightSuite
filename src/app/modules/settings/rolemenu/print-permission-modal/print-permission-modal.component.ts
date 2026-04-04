@@ -65,15 +65,17 @@ export class PrintPermissionModalComponent implements OnInit {
             )
         }).subscribe({
             next: ({ printMasters, existing }) => {
-                const grantedSids = new Set<number>(
+                // Returned list contains only explicitly DENIED prints (GiveAccess='N')
+                // No record = allowed by default → all checked except denied ones
+                const deniedSids = new Set<number>(
                     ((existing as any)?.data || []).map((r: any) => r.PrintMasterSid)
                 );
                 this.rows = ((printMasters as any)?.data || []).map((pm: any) => ({
                     PrintMasterSid: pm.PrintMasterSid,
                     Name: pm.Name,
                     PrintMail: pm.PrintMail,
-                    grantAccess: grantedSids.has(pm.PrintMasterSid),
-                    originalAccess: grantedSids.has(pm.PrintMasterSid)
+                    grantAccess: !deniedSids.has(pm.PrintMasterSid),
+                    originalAccess: !deniedSids.has(pm.PrintMasterSid)
                 }));
                 this.isLoading = false;
                 this.spinner.hide();
