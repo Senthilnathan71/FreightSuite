@@ -568,10 +568,19 @@
                                         <aside class="col-md-6">
                                             <div class="custom-form-group custom-form-group-select"
                                                 [class.filled]="!!!!rateRequestForm.get('UserMasterSid')?.value">
-                                                <ng-select #SalesmanNg formControlName="UserMasterSid"
+                                                <!-- <ng-select #SalesmanNg formControlName="UserMasterSid"
                                                     [items]="salesmanList" bindLabel="userName"
                                                     bindValue="UserMasterSid" appendTo="body">
-                                                </ng-select>
+                                                </ng-select> -->
+                                                <dofi-searchable-dropdown
+                                                [items]="salesmanList"
+                                                formControlName="UserMasterSid"
+                                                [placeholder]="''"
+                                                [displayFields]="userLookupConfig.displayFields"
+                                                [displayLabels]="userLookupConfig.displayLabels"
+                                                [labelFields]="userLookupConfig.labelFields"
+                                                [bindValue]="'UserMasterSid'"
+                                                ></dofi-searchable-dropdown>
                                                 <label for="text-input" class="input-label">Salesman<span
                                                         class="text-danger"></span></label>
                                             </div>

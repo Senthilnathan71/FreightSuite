@@ -7,6 +7,8 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { SettingsService } from '../../settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 interface PreviewResult {
   preview: string;
@@ -33,6 +35,7 @@ export class NumberSeriesEntryComponent implements OnInit {
   currentBranch: any;
   currentYear: any;
   menuInfo: any;
+  config: any;
   menuMasterSid!: number;
   isEditMode = false;
   loading = false;
@@ -70,6 +73,7 @@ export class NumberSeriesEntryComponent implements OnInit {
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
+    private modalService: NgbModal,
     private settingsService: SettingsService,
     private masterService: MasterService,
     private appSettingService: AppSettingsService,
@@ -176,6 +180,7 @@ export class NumberSeriesEntryComponent implements OnInit {
           if (resp.status && resp.data) {
             this.isEditMode = true;
             const config = resp.data;
+            this.config = config;
             this.configForm.patchValue({
               CompanyFlagRequired: config.CompanyFlagRequired || 'N',
               CompanyPrefix: config.CompanyPrefix || '',
@@ -371,5 +376,19 @@ export class NumberSeriesEntryComponent implements OnInit {
 
   return 'YY';
 }
+
+openAuditLogs() {
+      if (!this.config.NumberSeriesConfigSid) return;
+      const modalRef = this.modalService.open(AuditLogComponent, {
+      centered: true,
+      scrollable: true,
+      size: 'xl',
+      windowClass: 'audit-log-modal'
+    });
+    modalRef.componentInstance.title = 'Operation Doc Number Logs';
+    modalRef.componentInstance.tableName = 'NumberSeriesConfig';
+    modalRef.componentInstance.recordId = this.config.NumberSeriesConfigSid.toString();
+    modalRef.componentInstance.screenName = 'NumberSeriesConfig';
+    }
 
 }

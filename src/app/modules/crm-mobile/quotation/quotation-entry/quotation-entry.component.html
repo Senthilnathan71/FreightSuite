@@ -350,10 +350,21 @@
             <aside class="col-md-4">
               <div class="custom-form-group custom-form-group-select"
                 [class.filled]="!!quotationForm.get('SalesmanSid')?.value">
-                <ng-select formControlName="SalesmanSid" [items]="salesmanList" bindLabel="userName"
+               <!--- <ng-select formControlName="SalesmanSid" [items]="salesmanList" bindLabel="userName"
                   bindValue="UserMasterSid" appendTo="body">
 
-                </ng-select>
+                </ng-select> -->
+
+                <dofi-searchable-dropdown
+                  [items]="salesmanList"
+                  formControlName="SalesmanSid"
+                  [placeholder]="''"
+                  [displayFields]="userLookupConfig.displayFields"
+                  [displayLabels]="userLookupConfig.displayLabels"
+                  [labelFields]="userLookupConfig.labelFields"
+                  [bindValue]="'UserMasterSid'"
+                ></dofi-searchable-dropdown>
+
                 <label for="" class="input-label">Salesman <span class="text-danger"></span></label>
               </div>
             </aside>

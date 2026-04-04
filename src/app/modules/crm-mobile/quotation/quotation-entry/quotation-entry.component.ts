@@ -311,6 +311,7 @@ dataFromEnqPage:any;
   portLookupConfig = DROPDOWN_CONFIGS.PORT;
   chargeLookupConfig = DROPDOWN_CONFIGS.CHARGE;
   unitLookupConfig = DROPDOWN_CONFIGS.UOM;
+  userLookupConfig = DROPDOWN_CONFIGS.USER;
 
   currencyLookupConfig = {
     displayFields : ['currencyCode', 'currencyName','countryName'],

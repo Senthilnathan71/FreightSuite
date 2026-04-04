@@ -170,6 +170,7 @@ export class EnquiryEntryComponent implements OnInit {
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   portLookupConfig = DROPDOWN_CONFIGS.PORT;
   incoLookupConfig = DROPDOWN_CONFIGS.INCO;
+  userLookupConfig = DROPDOWN_CONFIGS.USER;
   currentDate = new Date();
   branchDetails: any;
   currentBranchCityName: string | null;

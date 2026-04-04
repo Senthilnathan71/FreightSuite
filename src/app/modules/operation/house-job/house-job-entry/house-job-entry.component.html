@@ -692,9 +692,18 @@
                   <aside class="col-md-6">
                     <div class="custom-form-group custom-form-group-select mt-md-1"
                       [class.filled]="!!houseJobForm.get('SalesmanSid')?.value">
-                      <ng-select [items]="salesmanList" bindLabel="userName" bindValue="UserMasterSid" class="ng-select"
+                      <!-- <ng-select [items]="salesmanList" bindLabel="userName" bindValue="UserMasterSid" class="ng-select"
                         formControlName="SalesmanSid" placeholder="" appendTo="body">
-                      </ng-select>
+                      </ng-select> -->
+                      <dofi-searchable-dropdown
+                        [items]="salesmanList"
+                        formControlName="SalesmanSid"
+                        [placeholder]="''"
+                        [displayFields]="userLookupConfig.displayFields"
+                        [displayLabels]="userLookupConfig.displayLabels"
+                        [labelFields]="userLookupConfig.labelFields"                        
+                        [bindValue]="'UserMasterSid'"
+                      ></dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">Sales Person<span class="text-danger"></span></label>
                     </div>
                   </aside>
