@@ -26,7 +26,7 @@ interface ConfigRow {
   assignedRole: 'CS' | 'Doc' | null;
   UserMasterSid: number | null;
   userName: string;
-  MenuUserConfigSid?: number;
+  ResourceConfigurationSid?: number;
   dirty: boolean;
 }
 
@@ -49,15 +49,11 @@ export class MenuUserConfigComponent implements OnInit, OnDestroy {
   isSaving = false;
 
   readonly stages: { key: Stage; label: string }[] = [
-    { key: 'RateRequest', label: 'Rate Request' },
+    { key: 'RateRequest', label: 'Enquiry' },
     { key: 'Quotation', label: 'Quotation' },
     { key: 'Booking', label: 'Booking' },
     { key: 'LoadPlan', label: 'Load Plan' },
     { key: 'MasterJob', label: 'Master Job' },
-    { key: 'Job', label: 'Job' },
-    { key: 'BL', label: 'BL' },
-    { key: 'SI', label: 'SI' },
-    { key: 'Invoice', label: 'Invoice' },
   ];
 
   private destroy$ = new Subject<void>();
@@ -142,9 +138,12 @@ export class MenuUserConfigComponent implements OnInit, OnDestroy {
   loadConfig(): void {
     if (!this.selectedBranchSid) return;
 
+    const companyInfo = this.appSettingService.getCurrentCompanyInfo();
+    const companyMasterSid = companyInfo?.CompanyMasterSid;
+
     this.isLoading = true;
     this.settingsService
-      .getMenuUserConfig(this.selectedBranchSid)
+      .getMenuUserConfig(this.selectedBranchSid, companyMasterSid)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (configs: any[]) => {
@@ -170,7 +169,7 @@ export class MenuUserConfigComponent implements OnInit, OnDestroy {
         assignedRole: existing?.assignedRole || null,
         UserMasterSid: existing?.UserMasterSid || null,
         userName: existing?.userName || '',
-        MenuUserConfigSid: existing?.MenuUserConfigSid,
+        ResourceConfigurationSid: existing?.ResourceConfigurationSid,
         dirty: false,
       };
     });
@@ -203,7 +202,7 @@ export class MenuUserConfigComponent implements OnInit, OnDestroy {
 
     this.isSaving = true;
     const configs = this.configRows.map((r) => ({
-      MenuUserConfigSid: r.MenuUserConfigSid,
+      ResourceConfigurationSid: r.ResourceConfigurationSid,
       BranchMasterSid: this.selectedBranchSid!,
       stage: r.stage,
       assignedRole: r.assignedRole,
@@ -211,18 +210,25 @@ export class MenuUserConfigComponent implements OnInit, OnDestroy {
       userName: r.userName,
     }));
 
+    const companyInfo = this.appSettingService.getCurrentCompanyInfo();
+    const companyMasterSid = companyInfo?.CompanyMasterSid;
+
     this.settingsService
-      .saveMenuUserConfig(configs)
+      .saveMenuUserConfig(configs, companyMasterSid)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => {
+        next: (resp: any) => {
           this.isSaving = false;
+          if (resp?.status === false) {
+            this.appSettingService.showError(resp.message || 'Failed to save configuration.');
+            return;
+          }
           this.configRows.forEach((r) => (r.dirty = false));
           this.appSettingService.showSuccess('Configuration saved successfully.');
         },
-        error: () => {
+        error: (err: any) => {
           this.isSaving = false;
-          this.appSettingService.showError('Failed to save configuration.');
+          this.appSettingService.showError(err?.error?.message || 'Failed to save configuration.');
         },
       });
   }

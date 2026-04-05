@@ -437,20 +437,19 @@ import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.meta
 
   // ─── Menu User Config ────────────────────────────────────────
 
-  getMenuUserConfig(branchSid?: number) {
-    let url = 'menu-user-config';
-    if (branchSid) {
-      url += `?branchId=${branchSid}`;
-    }
-    return this.http.get<{ status: boolean; data: any[] }>(url).pipe(
+  getMenuUserConfig(branchId?: number, companyId?: number) {
+    return this.http.post<{ status: boolean; data: any[] }>(
+      'menu-user-config/get',
+      { companyId, branchId }
+    ).pipe(
       map((resp) => resp.data || [])
     );
   }
 
-  saveMenuUserConfig(configs: any[]) {
+  saveMenuUserConfig(configs: any[], CompanyMasterSid?: number) {
     return this.http.post<{ status: boolean; data: any; message: string }>(
       'menu-user-config',
-      { configs }
+      { configs, CompanyMasterSid }
     ).pipe(
       map((resp) => resp)
     );

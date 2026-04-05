@@ -86,26 +86,18 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
 
     this.checkNavigationReturn();
 
-    this.route.queryParams
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(params => {
-        const qpMode = (params['mode'] as SummaryMode) || 'Pending';
+    // Read mode from navigation state if returning from entry
+    const navigation = this.router.getCurrentNavigation();
+    const stateMode = navigation?.extras?.state?.['mode'] as SummaryMode;
+    if (stateMode) {
+      this.mode = stateMode;
+    }
 
-        
-        if (this.mode === qpMode && this.rows.length > 0 && !this.isLoading) {
-          return;
-        }
+    this.loadSummaryForMode(this.mode);
 
-        this.mode = qpMode;
-        console.log('📍 [QueryParams] Switching to Mode:', qpMode);
-
-        this.loadSummaryForMode(this.mode);
-
-       
-        if (this.mode === 'All') {
-          this.triggerGlobalLoad();
-        }
-      });
+    if (this.mode === 'All') {
+      this.triggerGlobalLoad();
+    }
   }
 
   ngOnDestroy(): void {
@@ -252,11 +244,7 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
         (r.quotationCount || 0) +
         (r.bookingCount || 0) +
         (r.loadPlanCount || 0) +
-        (r.masterJobCount || 0) +
-        (r.jobCount || 0) +
-        (r.blCount || 0) +
-        (r.siCount || 0) +
-        (r.invoiceCount || 0),
+        (r.masterJobCount || 0),
       0,
     );
   }
@@ -271,17 +259,15 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
 
   onModeChange(newMode: SummaryMode): void {
     if (this.mode === newMode) {
-      console.log('⚠️ [ModeChange] Ignoring - already in mode:', newMode);
       return;
     }
 
-    console.log('🔄 [ModeChange] Changing from', this.mode, 'to', newMode);
+    this.mode = newMode;
+    this.loadSummaryForMode(this.mode);
 
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { mode: newMode },
-      queryParamsHandling: 'merge',
-    });
+    if (this.mode === 'All') {
+      this.triggerGlobalLoad();
+    }
   }
 
   
@@ -402,11 +388,7 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
       (row.quotationCount || 0) +
       (row.bookingCount || 0) +
       (row.loadPlanCount || 0) +
-      (row.masterJobCount || 0) +
-      (row.jobCount || 0) +
-      (row.blCount || 0) +
-      (row.siCount || 0) +
-      (row.invoiceCount || 0)
+      (row.masterJobCount || 0)
     );
   }
 
@@ -443,10 +425,6 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
         r.bookingCount,
         r.loadPlanCount,
         r.masterJobCount,
-        r.jobCount,
-        r.blCount,
-        r.siCount,
-        r.invoiceCount,
       ];
       return values.map(v => String(v ?? '').toLowerCase()).some(v => v.includes(search));
     });
@@ -535,7 +513,7 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
       return;
     }
     this.router.navigate(['/settings/activity-allocation/entry'], {
-      queryParams: {
+      state: {
         userSid: row.userSid,
         userName: row.userName,
         stage: stage,
@@ -546,16 +524,12 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
 
   openUserWorkload(row: ResourceSummaryRow): void {
     
-    let stage = 'Quotation';
-    if (row.quotationCount > 0) stage = 'Quotation';
+    let stage = 'RateRequest';
+    if (row.rateRequestCount > 0) stage = 'RateRequest';
+    else if (row.quotationCount > 0) stage = 'Quotation';
     else if (row.bookingCount > 0) stage = 'Booking';
     else if (row.loadPlanCount > 0) stage = 'LoadPlan';
     else if (row.masterJobCount > 0) stage = 'MasterJob';
-    else if (row.jobCount > 0) stage = 'Job';
-    else if (row.blCount > 0) stage = 'BL';
-    else if (row.siCount > 0) stage = 'SI';
-    else if (row.invoiceCount > 0) stage = 'Invoice';
-    else if (row.rateRequestCount > 0) stage = 'RateRequest';
 
     this.openWorkload(stage, row);
   }

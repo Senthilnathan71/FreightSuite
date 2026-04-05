@@ -122,18 +122,15 @@ export class ActivityAllocationEntryComponent
   ngOnInit(): void {
     this.loadColumnPreferences();
 
-    this.route.queryParams
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(params => {
-        this.userSid = Number(params['userSid'] || 0);
-        this.userName = params['userName'] || '';
-        this.stage = (params['stage'] as Stage) || ('RateRequest' as Stage);
-        this.mode = (params['mode'] as SummaryMode) || ('Pending' as SummaryMode);
-        this.page = 1;
-        this.pageSize = 100;
+    const navState = history.state;
+    this.userSid = Number(navState?.userSid || 0);
+    this.userName = navState?.userName || '';
+    this.stage = (navState?.stage as Stage) || ('RateRequest' as Stage);
+    this.mode = (navState?.mode as SummaryMode) || ('Pending' as SummaryMode);
+    this.page = 1;
+    this.pageSize = 100;
 
-        this.loadData();
-      });
+    this.loadData();
 
     this.loadCSUsers();
 
@@ -264,7 +261,7 @@ export class ActivityAllocationEntryComponent
     if (!user?.userSid) return;
 
     this.activityService
-      .updateCSPerson(row.activityId, user.userSid)
+      .updateCSPerson(row.activityId, user.userSid, this.stage)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res) => {
@@ -495,8 +492,7 @@ export class ActivityAllocationEntryComponent
         if (res.isConfirmed) {
           this.selectedActivityIds.clear();
           this.router.navigate(['/settings/activity-allocation'], {
-            queryParams: { mode: this.mode },
-            state: { returnFromDetail: true },
+            state: { returnFromDetail: true, mode: this.mode },
           });
         }
       });
@@ -504,8 +500,7 @@ export class ActivityAllocationEntryComponent
     }
 
     this.router.navigate(['/settings/activity-allocation'], {
-      queryParams: { mode: this.mode },
-      state: { returnFromDetail: true },
+      state: { returnFromDetail: true, mode: this.mode },
     });
   }
 
