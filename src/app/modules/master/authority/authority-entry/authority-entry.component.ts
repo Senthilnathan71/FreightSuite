@@ -20,6 +20,9 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { Search } from 'angular-feather/icons';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 
 @Component({
   selector: 'app-authority-entry',
@@ -35,7 +38,8 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
     PreventMultiClickDirective,
     NgbModalModule,
     MultiSelectComponent,
-    NgbDropdownModule
+    NgbDropdownModule,
+    SearchableDropdown
   ],
   templateUrl: './authority-entry.component.html',
   styleUrls: ['./authority-entry.component.scss']
@@ -79,6 +83,7 @@ export class AuthorityEntryComponent implements OnInit {
 auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
 
+  userLookupConfig = DROPDOWN_CONFIGS.USER;
 
 
   constructor(

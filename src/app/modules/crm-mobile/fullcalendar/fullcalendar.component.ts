@@ -23,6 +23,8 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { NgSelectModule } from '@ng-select/ng-select';
 import { DateTimePickerComponent } from 'src/app/component/datetimepicker/datetimepicker.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 
 
 const colors: any = {
@@ -43,7 +45,7 @@ const colors: any = {
 @Component({
   selector: 'app-fullcalendar',
   standalone: true,
-  imports: [CalendarModule, FormsModule, ReactiveFormsModule, CommonModule, FlatpickrModule, FeatherModule, PreventMultiClickDirective, NgSelectModule, NgbDatepickerModule, DateTimePickerComponent],
+  imports: [CalendarModule, FormsModule, ReactiveFormsModule, CommonModule, FlatpickrModule, FeatherModule, PreventMultiClickDirective, NgSelectModule, NgbDatepickerModule, DateTimePickerComponent,SearchableDropdown],
 
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './fullcalendar.component.html',
@@ -79,6 +81,7 @@ export class FullcalendarComponent implements OnInit {
   meetingForm: FormGroup;
   errorMessage: string = '';  // To store any error messages
   btnDisable: boolean = false;
+  userLookupConfig = DROPDOWN_CONFIGS.USER;
   /*/////////////////////////////////////
   Event action buttons
   ////////////////////////////////////*/

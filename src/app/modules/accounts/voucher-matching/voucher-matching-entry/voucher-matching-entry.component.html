@@ -158,6 +158,10 @@
             (click)="navigateToBack()">
             <i class="fas fa-chevron-left me-1"></i> Back
           </button>
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+            (click)="openAuditLogs()">
+            <i class="fas fa-history me-1"></i>Logs
+          </button>
           <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="onReset()" [disabled]="isSaving || isPosting || isPosted">
             <i class="fas fa-undo me-1"></i> Reset

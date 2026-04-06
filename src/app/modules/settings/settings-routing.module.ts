@@ -12,6 +12,9 @@ import { NumberSeriesListComponent } from "./number-series/number-series-list/nu
 import { NumberSeriesEntryComponent } from "./number-series/number-series-entry/number-series-entry.component";
 import { ReportScheduleListComponent } from "./report-schedule/report-schedule-list/report-schedule-list.component";
 import { ReportScheduleEntryComponent } from "./report-schedule/report-schedule-entry/report-schedule-entry.component";
+import { MenuUserConfigComponent } from "../crm-mobile/activity-allocation/menu-user-config/menu-user-config.component";
+import { ActivityAllocationComponent } from "../crm-mobile/activity-allocation/activity-allocation.component";
+import { ActivityAllocationEntryComponent } from "../crm-mobile/activity-allocation/activity-allocation-entry/activity-allocation-entry.component";
 
 
 export const SettingsRoutes: Routes = [
@@ -154,6 +157,30 @@ export const SettingsRoutes: Routes = [
                 data: {
                     title: 'Edit Report Schedule',
                     urls: [{ title: 'Settings', url: '/settings' }, { title: 'Report Schedule', url: '/settings/report-schedule/list' }, { title: 'Edit' }],
+                },
+            },
+            {
+                path: 'activity-allocation',
+                component: ActivityAllocationComponent,
+                data: {
+                    title: 'Activity Allocation',
+                    urls: [{ title: 'Settings', url: '/settings' }, { title: 'Activity Allocation' }],
+                },
+            },
+            {
+                path: 'activity-allocation/entry',
+                component: ActivityAllocationEntryComponent,
+                data: {
+                    title: 'Work Load Detail',
+                    urls: [{ title: 'Settings', url: '/settings' }, { title: 'Activity Allocation', url: '/settings/activity-allocation' }, { title: 'Work Load Detail' }],
+                },
+            },
+            {
+                path: 'activity-allocation/config',
+                component: MenuUserConfigComponent,
+                data: {
+                    title: 'Menu wise User Configuration',
+                    urls: [{ title: 'Settings', url: '/settings' }, { title: 'Activity Allocation Config' }],
                 },
             },
         ]

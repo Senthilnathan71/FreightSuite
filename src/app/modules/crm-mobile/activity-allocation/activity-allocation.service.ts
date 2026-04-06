@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 
 export type SummaryMode = 'Pending' | 'Processed' | 'All';
 export type Stage =
@@ -10,11 +11,7 @@ export type Stage =
   | 'Quotation'
   | 'Booking'
   | 'LoadPlan'
-  | 'MasterJob'
-  | 'Job'
-  | 'BL'
-  | 'SI'
-  | 'Invoice';
+  | 'MasterJob';
 export type WorkStatus = 'Pending' | 'Processed';
 
 export interface ResourceSummaryRow {
@@ -25,10 +22,6 @@ export interface ResourceSummaryRow {
   bookingCount: number;
   loadPlanCount: number;
   masterJobCount: number;
-  jobCount: number;
-  blCount: number;
-  siCount: number;
-  invoiceCount: number;
 }
 
 export interface WorkloadRow {
@@ -49,16 +42,6 @@ export interface WorkloadRow {
   etd: string;
   createdOn: string;
   updatedOn: string;
-}
-
-export interface MenuUserConfig {
-  MenuUserConfigSid?: number;
-  BranchMasterSid: number;
-  branchName?: string;
-  stage: Stage;
-  assignedRole: 'CS' | 'Doc' | null;
-  UserMasterSid?: number;
-  userName?: string;
 }
 
 export interface AllocateUser {
@@ -90,16 +73,20 @@ export interface ResponseData<T> {
   providedIn: 'root',
 })
 export class ActivityAllocationService {
-  private readonly baseUrl = `${environment.apiUrl}crm/activity-allocation`;
+  private readonly baseUrl = `${environment.apiUrl}activity-allocation`;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private appSettingService: AppSettingsService,
+  ) {}
+
+  private getCompanyId(): number | undefined {
+    return this.appSettingService.getCurrentCompanyInfo()?.CompanyMasterSid;
+  }
 
   getResourceSummary(mode: SummaryMode): Observable<ResourceSummaryRow[]> {
-    const params = new HttpParams().set('mode', mode);
     return this.http
-      .get<ResponseData<ResourceSummaryRow[]>>(`${this.baseUrl}/summary`, {
-        params,
-      })
+      .post<ResponseData<ResourceSummaryRow[]>>(`${this.baseUrl}/summary`, { mode, companyId: this.getCompanyId() })
       .pipe(
         map(res => {
           if (!res.data || !Array.isArray(res.data)) {
@@ -122,29 +109,13 @@ export class ActivityAllocationService {
     page: number = 1,
     limit: number = 100,
   ): Observable<WorkloadDetailResponse> {
-    const params = new HttpParams()
-      .set('userSid', String(userSid))
-      .set('stage', stage)
-      .set('mode', mode)
-      .set('page', String(page))
-      .set('limit', String(limit));
-
-    console.log('🔍 [FE Service] getWorkloadDetails params:', {
-      userSid,
-      stage,
-      mode,
-      page,
-      limit,
-    });
-
     return this.http
-      .get<ResponseData<WorkloadDetailResponse>>(
+      .post<ResponseData<WorkloadDetailResponse>>(
         `${this.baseUrl}/workload-details`,
-        { params },
+        { userSid, stage, mode, page, limit, companyId: this.getCompanyId() },
       )
       .pipe(
         map(res => {
-          console.log('✅ [FE Service] workload-details raw response:', res);
           const d: any = res.data || {};
           return {
             data: d.data || [],
@@ -156,7 +127,7 @@ export class ActivityAllocationService {
           };
         }),
         catchError(err => {
-          console.error('❌ [FE Service] Error fetching workload details:', err);
+          console.error('Error fetching workload details:', err);
           return throwError(() => err);
         }),
       );
@@ -189,9 +160,8 @@ export class ActivityAllocationService {
   }
 
   generateReport(mode: SummaryMode): Observable<any> {
-    const params = new HttpParams().set('mode', mode);
     return this.http
-      .get<ResponseData<any>>(`${this.baseUrl}/report`, { params })
+      .post<ResponseData<any>>(`${this.baseUrl}/report`, { mode, companyId: this.getCompanyId() })
       .pipe(
         map(res => res.data),
         catchError(err => {
@@ -201,49 +171,9 @@ export class ActivityAllocationService {
       );
   }
 
-  getMenuUserConfig(branchSid?: number): Observable<MenuUserConfig[]> {
-    let params = new HttpParams();
-    if (branchSid) {
-      params = params.set('branchId', String(branchSid));
-    }
+  updateCSPerson(activityId: number, csUserSid: number, stage: Stage): Observable<AllocateApiResponse> {
     return this.http
-      .get<ResponseData<MenuUserConfig[]>>(`${this.baseUrl}/menu-user-config`, { params })
-      .pipe(
-        map(res => res.data || []),
-        catchError(err => {
-          console.error('Error fetching menu user config:', err);
-          return throwError(() => err);
-        }),
-      );
-  }
-
-  saveMenuUserConfig(configs: MenuUserConfig[]): Observable<any> {
-    return this.http
-      .post<ResponseData<any>>(`${this.baseUrl}/menu-user-config`, { configs })
-      .pipe(
-        map(res => res.data),
-        catchError(err => {
-          console.error('Error saving menu user config:', err);
-          return throwError(() => err);
-        }),
-      );
-  }
-
-  getCSUsers(): Observable<AllocateUser[]> {
-    return this.http
-      .get<ResponseData<AllocateUser[]>>(`${this.baseUrl}/cs-users`)
-      .pipe(
-        map(res => res.data || []),
-        catchError(err => {
-          console.error('Error fetching CS users:', err);
-          return throwError(() => err);
-        }),
-      );
-  }
-
-  updateCSPerson(activityId: number, csUserSid: number): Observable<AllocateApiResponse> {
-    return this.http
-      .patch<ResponseData<any>>(`${this.baseUrl}/cs-person/${activityId}`, { csUserSid })
+      .patch<ResponseData<any>>(`${this.baseUrl}/cs-person/${activityId}`, { csUserSid, stage })
       .pipe(
         map(res => ({
           success: res.status,

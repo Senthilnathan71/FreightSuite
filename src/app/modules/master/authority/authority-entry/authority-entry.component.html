@@ -235,10 +235,21 @@
                                         </td>
                                         <td>
                                             <!-- <div class="custom-form-group custom-form-group-select"> -->
-                                                <ng-select formControlName="UserMasterSid" [items]="filteredAuthorisers[detailIndex]" bindLabel="userName"
+                                                <!-- <ng-select formControlName="UserMasterSid" [items]="filteredAuthorisers[detailIndex]" bindLabel="userName"
                                                     bindValue="UserMasterSid" placeholder="" appendTo="body" [clearable]="true" [searchable]="true"
                                                     (change)="onAuthorizerChange($event, detailIndex)">
-                                                </ng-select>
+                                                </ng-select> -->
+                                                <dofi-searchable-dropdown
+                                                [items]="filteredAuthorisers[detailIndex]"
+                                                formControlName="UserMasterSid"
+                                                [placeholder]="''"
+                                                [displayFields]="userLookupConfig.displayFields"
+                                                [displayLabels]="userLookupConfig.displayLabels"
+                                                [labelFields]="userLookupConfig.labelFields"
+                                                [bindValue]="'UserMasterSid'"
+                                                appendTo="body"
+                                                (itemSelected)="onAuthorizerChange($event, detailIndex)"
+                                                ></dofi-searchable-dropdown>
                                             <!-- </div> -->
                                         </td>
                                         <td>

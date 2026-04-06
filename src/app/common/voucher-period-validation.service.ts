@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MasterService } from '../modules/master/master.service';
-import { VoucherPeriodInfo, VoucherModule, getVoucherDateConstraints } from './helper';
+import { VoucherPeriodInfo, VoucherModule, getVoucherDateConstraints, ngbDateStructToDate } from './helper';
 
 export interface VoucherDateConstraints {
   isClosed: boolean;
@@ -36,7 +36,19 @@ export class VoucherPeriodValidationService {
       isClosed: false, errorMessage: null
     };
     if (!voucherDate || this.periods.length === 0) return result;
-    const dateObj = new Date(voucherDate);
+
+    // Handle NgbDateStruct {year, month, day}, Date, or string
+    let dateObj: Date;
+    if (voucherDate instanceof Date) {
+      dateObj = voucherDate;
+    } else if (typeof voucherDate === 'object' && 'year' in voucherDate && 'month' in voucherDate && 'day' in voucherDate) {
+      dateObj = ngbDateStructToDate(voucherDate)!;
+    } else {
+      dateObj = new Date(voucherDate);
+    }
+
+    if (isNaN(dateObj.getTime())) return result;
+
     return getVoucherDateConstraints(dateObj, this.periods, module);
   }
 }

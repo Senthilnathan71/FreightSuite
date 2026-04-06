@@ -58,9 +58,9 @@
           (change)="onModeDropdownChange($event)"
           aria-label="Filter by status"
         >
-          <option [ngValue]="'Pending'">Pending</option>
-          <option [ngValue]="'Processed'">Processed</option>
-          <option [ngValue]="'All'">All</option>
+          <option value="Pending">Pending</option>
+          <option value="Processed">Processed</option>
+          <option value="All">All</option>
         </select>
       </div>
 
@@ -330,7 +330,7 @@
 
             <th class="col-count" (click)="changeSort('rateRequestCount')">
               <div class="th-content">
-                <span><i class="fas fa-comments me-1 text-primary"></i>Rate Request</span>
+                <span><i class="fas fa-comments me-1 text-primary"></i>Enquiry</span>
                 <i class="fas" [ngClass]="getSortIcon('rateRequestCount')"></i>
               </div>
             </th>
@@ -360,34 +360,6 @@
               <div class="th-content">
                 <span><i class="fas fa-layer-group me-1 text-purple"></i>Master Job</span>
                 <i class="fas" [ngClass]="getSortIcon('masterJobCount')"></i>
-              </div>
-            </th>
-
-            <th class="col-count" (click)="changeSort('jobCount')">
-              <div class="th-content">
-                <span><i class="fas fa-briefcase me-1 text-teal"></i>Job</span>
-                <i class="fas" [ngClass]="getSortIcon('jobCount')"></i>
-              </div>
-            </th>
-
-            <th class="col-count" (click)="changeSort('blCount')">
-              <div class="th-content">
-                <span><i class="fas fa-file-contract me-1 text-orange"></i>BL</span>
-                <i class="fas" [ngClass]="getSortIcon('blCount')"></i>
-              </div>
-            </th>
-
-            <th class="col-count" (click)="changeSort('siCount')">
-              <div class="th-content">
-                <span><i class="fas fa-file-signature me-1 text-pink"></i>SI</span>
-                <i class="fas" [ngClass]="getSortIcon('siCount')"></i>
-              </div>
-            </th>
-
-            <th class="col-count" (click)="changeSort('invoiceCount')">
-              <div class="th-content">
-                <span><i class="fas fa-file-invoice-dollar me-1 text-danger"></i>Invoice</span>
-                <i class="fas" [ngClass]="getSortIcon('invoiceCount')"></i>
               </div>
             </th>
 
@@ -458,50 +430,6 @@
                 {{ row.masterJobCount }}
               </span>
               <span *ngIf="!row.masterJobCount" class="count-badge badge-empty">0</span>
-            </td>
-
-            <td class="col-count">
-              <span
-                *ngIf="row.jobCount > 0"
-                class="count-badge badge-teal"
-                (click)="$event.stopPropagation(); openWorkload('Job', row)"
-              >
-                {{ row.jobCount }}
-              </span>
-              <span *ngIf="!row.jobCount" class="count-badge badge-empty">0</span>
-            </td>
-
-            <td class="col-count">
-              <span
-                *ngIf="row.blCount > 0"
-                class="count-badge badge-orange"
-                (click)="$event.stopPropagation(); openWorkload('BL', row)"
-              >
-                {{ row.blCount }}
-              </span>
-              <span *ngIf="!row.blCount" class="count-badge badge-empty">0</span>
-            </td>
-
-            <td class="col-count">
-              <span
-                *ngIf="row.siCount > 0"
-                class="count-badge badge-pink"
-                (click)="$event.stopPropagation(); openWorkload('SI', row)"
-              >
-                {{ row.siCount }}
-              </span>
-              <span *ngIf="!row.siCount" class="count-badge badge-empty">0</span>
-            </td>
-
-            <td class="col-count">
-              <span
-                *ngIf="row.invoiceCount > 0"
-                class="count-badge badge-danger"
-                (click)="$event.stopPropagation(); openWorkload('Invoice', row)"
-              >
-                {{ row.invoiceCount }}
-              </span>
-              <span *ngIf="!row.invoiceCount" class="count-badge badge-empty">0</span>
             </td>
 
             <td class="col-total">

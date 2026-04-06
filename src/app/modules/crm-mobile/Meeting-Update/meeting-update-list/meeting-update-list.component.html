@@ -198,14 +198,23 @@
 <aside class="col-md-4">
     <div class="custom-form-group custom-form-group-select"
         [class.filled]="!!meetingForm.get('leadAssignTo')?.value">
-        <ng-select 
+        <!-- <ng-select 
             formControlName="leadAssignTo" 
             bindLabel="userName" 
             bindValue="UserMasterSid"
             [items]="salesPersons"
             appendTo="body"
             placeholder="">
-        </ng-select>
+        </ng-select> -->
+        <dofi-searchable-dropdown
+        [items]="salesPersons"
+        formControlName="leadAssignTo"
+        [placeholder]="''"
+        [displayFields]="userLookupConfig.displayFields"
+        [displayLabels]="userLookupConfig.displayLabels"
+        [labelFields]="userLookupConfig.labelFields"
+        [bindValue]="'UserMasterSid'"
+        ></dofi-searchable-dropdown>
         <label class="input-label">Salesperson <span class="text-danger">*</span></label>
     </div>
 </aside>

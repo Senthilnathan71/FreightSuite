@@ -1759,10 +1759,19 @@
 
                 <!-- Salesperson -->
                 <td class="px-1">
-                  <ng-select [items]="salesPersonList" bindLabel="userName" bindValue="UserMasterSid" appendTo="body"
-                    formControlName="Salesman" placeholder=""></ng-select>
+                  <!-- <ng-select [items]="salesPersonList" bindLabel="userName" bindValue="UserMasterSid" appendTo="body"
+                    formControlName="Salesman" placeholder=""></ng-select> -->
                   <!-- <span *ngIf="item.get('Salesman')?.invalid && item.get('Salesman')?.touched"
                   class="error-message">Required</span> -->
+                  <dofi-searchable-dropdown
+                  [items]="salesPersonList"
+                  formControlName="Salesman"
+                  [placeholder]="''"
+                  [displayFields]="userLookupConfig.displayFields"
+                  [displayLabels]="userLookupConfig.displayLabels"
+                  [labelFields]="userLookupConfig.labelFields"
+                  [bindValue]="'UserMasterSid'"
+                  ></dofi-searchable-dropdown>
                 </td>
 
                 <!-- CS Person -->

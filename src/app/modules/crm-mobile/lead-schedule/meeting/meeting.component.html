@@ -247,9 +247,18 @@
               <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!meetingForm.get('leadAssignTo')?.value">
-                  <ng-select [items]="salesPersons" bindLabel="userName" bindValue="UserMasterSid"
+                  <!-- <ng-select [items]="salesPersons" bindLabel="userName" bindValue="UserMasterSid"
                     formControlName="leadAssignTo">
-                  </ng-select>
+                  </ng-select> -->
+                  <dofi-searchable-dropdown
+                  [items]="salesPersons"
+                  formControlName="leadAssignTo"
+                  [placeholder]="''"
+                  [displayFields]="userLookupConfig.displayFields"
+                  [displayLabels]="userLookupConfig.displayLabels"
+                  [labelFields]="userLookupConfig.labelFields"
+                  [bindValue]="'UserMasterSid'"
+                  ></dofi-searchable-dropdown>
                   <label class="input-label">Salesperson <span class="text-danger">*</span></label>
                   <small *ngIf="f['leadAssignTo'].touched && f['leadAssignTo'].invalid" class="error-message">
                     Required.

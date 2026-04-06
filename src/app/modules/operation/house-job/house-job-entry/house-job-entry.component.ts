@@ -279,6 +279,7 @@ auditLogs: any[] = []; // Stores audit logs
   vesselVoyageConfig = DROPDOWN_CONFIGS.VESSEL_VOYAGE;
   incoLookupConfig = DROPDOWN_CONFIGS.INCO;
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
+  userLookupConfig = DROPDOWN_CONFIGS.USER;
   CurrencyLookupConfig = {
     displayFields: ['currencyCode', 'currencyName', 'countryName'],
     displayLabels: ['Code', 'Name', 'Country'],
@@ -2644,12 +2645,10 @@ private getAgentNameById(agentId: number): string {
   
   // Set department properties
   this.selectedDepartment = department;
-  this.selectedDepartmentType = department.departmentType ? department.departmentType.toUpperCase() : '';
+  this.selectedDepartmentType = this.normalizePortText(department?.departmentType);
   this.handleHBLNoField(department.ExportImport);
   this.filterTabs();
-  this.selectedFCLLCL = this.selectedDepartmentType === "SEA" 
-    ? (department.FCLLCL ? department.FCLLCL.toUpperCase() : "LCL") 
-    : this.selectedDepartmentType;
+  this.selectedFCLLCL = this.resolveSelectedSegment(department);
 
     if (this.bookingProducts.length > 0) {
         this.bookingProducts.controls.forEach((productGroup: FormGroup, index) => {
@@ -2803,15 +2802,24 @@ validateHBLNo(): boolean {
   }
 
   getFilteredPortsBySegment(segment: string): any[] {
-    if (segment === 'AIR') {
+    const normalizedSegment = this.normalizePortText(segment);
+
+    if (normalizedSegment === 'AIR') {
       return this.portList.filter(port => this.normalizePortText(port?.PortType) === 'AIR');
-    } else if (segment === 'FCL' || segment === 'LCL' || segment === 'SEA') {
+    } else if (normalizedSegment === 'FCL' || normalizedSegment === 'LCL' || normalizedSegment === 'SEA') {
       return this.portList.filter(port => this.normalizePortText(port?.PortType) === 'SEA');
-    } else if (segment === 'ROAD') {
+    } else if (normalizedSegment === 'ROAD') {
       return this.portList.filter(port => {
         const portType = this.normalizePortText(port?.PortType);
         return portType === 'ROAD' || portType.includes('ROAD') || portType.includes('LAND') || portType.includes('LOCATION');
       });
+    } else if (normalizedSegment === 'TRANSPORT') {
+      return this.portList.filter(port => {
+        const portType = this.normalizePortText(port?.PortType);
+        return portType === 'SEA' || portType === 'AIR';
+      });
+    } else if (normalizedSegment === 'OTHER' || normalizedSegment === 'OTHERS') {
+      return [...this.portList];
     }
     return [];
   }
@@ -2849,7 +2857,12 @@ validateHBLNo(): boolean {
     let podPorts = [...basePorts];
     let fpodPorts = [...basePorts];
 
-    if (shipmentDirection === 'EXPORT') {
+    if (this.shouldUseAllPortOptions()) {
+      pooPorts = [...basePorts];
+      polPorts = [...basePorts];
+      podPorts = [...basePorts];
+      fpodPorts = [...basePorts];
+    } else if (shipmentDirection === 'EXPORT') {
       pooPorts = [...companyCountryPorts];
       polPorts = [...companyCountryPorts];
       podPorts = [...foreignPorts];
@@ -2961,6 +2974,22 @@ validateHBLNo(): boolean {
 
   private normalizePortText(value: any): string {
     return String(value ?? '').trim().toUpperCase();
+  }
+
+  private resolveSelectedSegment(department: any): string {
+    const departmentType = this.normalizePortText(department?.departmentType);
+    if (departmentType === 'SEA') {
+      return this.normalizePortText(department?.FCLLCL) || 'LCL';
+    }
+
+    return departmentType || 'LCL';
+  }
+
+  private shouldUseAllPortOptions(): boolean {
+    const departmentType = this.normalizePortText(this.selectedDepartmentType || this.selectedDepartment?.departmentType);
+    const segment = this.normalizePortText(this.selectedFCLLCL);
+
+    return ['OTHER', 'OTHERS', 'TRANSPORT'].includes(departmentType) || ['OTHER', 'OTHERS', 'TRANSPORT'].includes(segment);
   }
 
   private toNumericValue(value: any): number | null {
@@ -3303,6 +3332,10 @@ validateHBLNo(): boolean {
   }
   
   const voyageType = this.getVoyageTypeBasedOnDept(this.selectedDepartment?.DepartmentMasterSid);
+  if (!voyageType) {
+    this.headerVesselList = [];
+    return;
+  }
   
   // Find port objects from port list
   const polPort = this.portList.find(p => p.PortCode === POL);
@@ -3345,16 +3378,20 @@ validateHBLNo(): boolean {
 
 getVoyageTypeBasedOnDept(deptId: number) {
   const dept = this.departmentList.find(dept => dept.DepartmentMasterSid === deptId);
-  const deptType = dept?.departmentType;
+  const deptType = this.normalizePortText(dept?.departmentType);
   switch (deptType) {
-    case 'Sea':
+    case 'SEA':
       return 'Sea';
-    case 'Air':
+    case 'AIR':
       return 'Air';
-    case 'Transport':
+    case 'ROAD':
+    case 'TRANSPORT':
       return 'Road';
+    case 'OTHER':
+    case 'OTHERS':
+      return 'Others';
     default:
-      return 'Sea';
+      return '';
   }
 }
 

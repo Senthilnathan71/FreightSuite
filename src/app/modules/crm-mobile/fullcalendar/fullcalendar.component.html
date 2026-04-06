@@ -456,11 +456,20 @@
                 <div class="custom-form-group custom-form-group-select"
                   [class.filled]="!!meetingForm.get('leadAssignTo')?.value">
                   <label class="input-label">Salesperson <span class="text-danger">*</span></label>
-                  <ng-select class="ng-select" formControlName="leadAssignTo" placeholder="">
+                  <!-- <ng-select class="ng-select" formControlName="leadAssignTo" placeholder="">
                     <ng-option *ngFor="let person of salesPersons" [value]="person.UserMasterSid">
                       {{ person.userName }}
                     </ng-option>
-                  </ng-select>
+                  </ng-select> -->
+                  <dofi-searchable-dropdown
+                  [items]="salesPersons"
+                  formControlName="leadAssignTo"
+                  [placeholder]="''"
+                  [displayFields]="userLookupConfig.displayFields"
+                  [displayLabels]="userLookupConfig.displayLabels"
+                  [labelFields]="userLookupConfig.labelFields"
+                  [bindValue]="'UserMasterSid'"
+                  ></dofi-searchable-dropdown>
                   <div *ngIf="f['leadAssignTo'].touched && f['leadAssignTo'].invalid" class="error-message">
                     Required
                   </div>

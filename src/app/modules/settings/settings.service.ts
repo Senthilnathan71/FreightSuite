@@ -447,4 +447,24 @@ import { RouteInfo } from "src/app/shared/vertical-sidebar/vertical-sidebar.meta
     );
   }
 
+  // ─── Menu User Config ────────────────────────────────────────
+
+  getMenuUserConfig(branchId?: number, companyId?: number) {
+    return this.http.post<{ status: boolean; data: any[] }>(
+      'menu-user-config/get',
+      { companyId, branchId }
+    ).pipe(
+      map((resp) => resp.data || [])
+    );
+  }
+
+  saveMenuUserConfig(configs: any[], CompanyMasterSid?: number) {
+    return this.http.post<{ status: boolean; data: any; message: string }>(
+      'menu-user-config',
+      { configs, CompanyMasterSid }
+    ).pipe(
+      map((resp) => resp)
+    );
+  }
+
 }
