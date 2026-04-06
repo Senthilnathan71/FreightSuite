@@ -175,7 +175,7 @@
   <div class="row pb-1 pt-1 px-3" [class.expanded]="isQuickFormExpanded">
 
     <!-- Department -->
-    <div class="col-md-2">
+    <div class="col-md-3">
       <div class="custom-form-group custom-form-group-select"
         [class.filled]="!!houseJobForm.get('DepartmentMasterSid')?.value">
         <ng-select [items]="departmentList" bindLabel="departmentName" bindValue="DepartmentMasterSid"
@@ -194,7 +194,7 @@
     </div>
 
     <!-- HBL No -->
-<div class="col-md-2 ">
+<div class="col-md-3 ">
   <div class="custom-form-group">
     <input 
       type="text" 
@@ -227,7 +227,7 @@
 </div>
 
     <!-- HBL Date -->
-    <div class="col-md-2">
+    <div class="col-md-3">
       <div class="custom-form-group custom-form-group-select-date"
         [class.filled]="!!houseJobForm.get('HBLDate')?.value">
         <div class="input-group">
@@ -243,7 +243,7 @@
       </div>
     </div>
       <!-- Booking No -->
-      <div class="col-md-2">
+      <div class="col-md-3">
         <div class="custom-form-group" style="position: relative;">
           @if (isEditMode && b['BookingHeaderSid']?.value) {
           <a [routerLink]="['/operation/booking/entry', b['BookingHeaderSid']?.value]"
@@ -261,10 +261,13 @@
           </label>
         </div>
       </div>
+  </div>
+
+  <div class="row pb-1 px-3" [class.expanded]="isQuickFormExpanded">
 
 
     <!-- Shipment No -->
-    <div class="col-md-2">
+    <div class="col-md-3">
       <div class="custom-form-group">
         <input type="text" id="shipment-input" placeholder="" class="form-control custom-input-field sm"
           formControlName="ShipmentNo">
@@ -273,7 +276,7 @@
     </div>
 
     <!-- Job Type -->
-    <div class="col-md-2">
+    <div class="col-md-3">
       <div class="custom-form-group custom-form-group-select"
         [class.filled]="!!houseJobForm.get('JobType')?.value">
         <ng-select [items]="jobType" bindLabel="name" bindValue="name" class="ng-select" placeholder=""
@@ -284,7 +287,7 @@
     </div>
 
     <!-- Status -->
-    <div class="col-md-2">
+    <div class="col-md-3">
       <div class="custom-form-group custom-form-group-select" 
         [class.filled]="!!houseJobForm.get('status')?.value">
         @if(isEditMode){
@@ -303,7 +306,7 @@
           }">Status</label>
       </div>
     </div>
-    <div class="col-md-2">
+    <div class="col-md-3">
       <div class="custom-form-group custom-form-group-select" [class.filled]="!!houseJobForm.get('HouseStatus')?.value">
         <!-- <input type="text" id="house-status-input" placeholder="" class="form-control custom-input-field sm"
               formControlName="HouseStatus"> -->
@@ -468,7 +471,7 @@
       </div>
 
       <!-- Swap icon -->
-      <button class="btn bi bi-calendar3 ps-0" type="button"
+      <button class="btn bi bi-calendar3 ps-0 swap-btn" type="button"
         (click)="toggleInputType('ShipperName','isShipperFreeText',$event)"  style="flex-shrink:0;">
         <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
       </button>
@@ -477,7 +480,7 @@
     <!-- Manual text input mode -->
     <div class="d-flex" *ngIf="this.b['isShipperFreeText']?.value">
       <input type="text" formControlName="ShipperName" placeholder="" class="custom-input-field sm" style="width: 85%"/>
-      <button class="btn bi bi-calendar3" type="button"
+      <button class="btn bi bi-calendar3 swap-btn" type="button"
         (click)="toggleInputType('ShipperName','isShipperFreeText',$event)">
         <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
       </button>
@@ -528,7 +531,7 @@
       </dofi-searchable-dropdown>
       </div>
       <!-- Swap icon -->
-      <button class="btn bi bi-calendar3 ps-0" type="button"
+      <button class="btn bi bi-calendar3 ps-0 swap-btn" type="button"
         (click)="toggleInputType('ConsigneeName','isConsigneeFreeText',$event)" style="flex-shrink:0;"
         [disabled]="isExportToImportLinked">
         <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
@@ -538,7 +541,7 @@
     <!-- Manual text input mode -->
     <div class="d-flex" *ngIf="this.b['isConsigneeFreeText']?.value">
       <input type="text" formControlName="ConsigneeName" placeholder="" class="custom-input-field sm" style="width: 85%" [readonly]="isExportToImportLinked" />
-      <button class="btn bi bi-calendar3" type="button"
+      <button class="btn bi bi-calendar3 swap-btn" type="button"
         (click)="toggleInputType('ConsigneeName','isConsigneeFreeText',$event)"
         [disabled]="isExportToImportLinked">
         <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
@@ -591,7 +594,7 @@
       </dofi-searchable-dropdown>
       </div>
       <!-- Swap icon -->
-      <button class="btn bi bi-calendar3 ps-0" type="button"
+      <button class="btn bi bi-calendar3 ps-0 swap-btn" type="button"
          (click)="toggleInputType('Notify','isNotifyFreeText',$event); notifyManuallyChanged = true" style="flex-shrink:0;"
          [disabled]="isExportToImportLinked">
         <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
@@ -601,7 +604,7 @@
     <!-- Manual text input mode -->
     <div class="d-flex" *ngIf="this.b['isNotifyFreeText']?.value">
       <input type="text" formControlName="Notify" placeholder="" class="custom-input-field sm" style="width: 85%" [readonly]="isExportToImportLinked" />
-      <button class="btn bi bi-calendar3" type="button"
+      <button class="btn bi bi-calendar3 swap-btn" type="button"
         (click)="toggleInputType('Notify','isNotifyFreeText',$event); notifyManuallyChanged = true"
         [disabled]="isExportToImportLinked">
         <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
@@ -670,7 +673,7 @@
       </dofi-searchable-dropdown>
 
       <!-- Swap icon -->
-      <button class="btn bi bi-calendar3 px-0" type="button"
+      <button class="btn bi bi-calendar3 px-0 swap-btn" type="button"
         (click)="toggleInputType('CarrierName','isCarrierFreeText',$event)">
         <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
       </button>
@@ -679,7 +682,7 @@
     <!-- Manual text input mode -->
     <div class="d-flex" *ngIf="this.b['isCarrierFreeText']?.value">
       <input type="text" formControlName="CarrierName" placeholder="" class="custom-input-field sm" style="width: 85%" />
-      <button class="btn bi bi-calendar3 pe-0" type="button"
+      <button class="btn bi bi-calendar3 pe-0 swap-btn" type="button"
         (click)="toggleInputType('CarrierName','isCarrierFreeText',$event)">
         <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
       </button>
@@ -1770,7 +1773,7 @@
                         </dofi-searchable-dropdown>
               
                         <!-- Swap icon -->
-                        <button class="btn bi bi-calendar3 p-0" type="button"
+                        <button class="btn bi bi-calendar3 p-0 swap-btn" type="button"
                           [disabled]="isExportToImportLinked"
                           (click)="toggleProductInputType(getProductFormGroup(productIndex), 'ProductName', 'isProductFreeText', $event)">
                           <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
@@ -1780,7 +1783,7 @@
                       <!-- Manual text input mode -->
                       <div class="input-group" *ngIf="product.get('isProductFreeText')?.value">
                         <input type="text" formControlName="ProductName" placeholder="" class="form-control" />
-                        <button class="btn bi bi-calendar3 p-0" type="button"
+                        <button class="btn bi bi-calendar3 p-0 swap-btn" type="button"
                           [disabled]="isExportToImportLinked"
                           (click)="toggleProductInputType(getProductFormGroup(productIndex), 'ProductName', 'isProductFreeText', $event)">
                           <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
