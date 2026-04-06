@@ -246,7 +246,7 @@ getAvgGpPerShipment(row: any): number {
 
       { value: mom(dept.grossProfit, prevDept.grossProfit).toFixed(2) },
 
-      { value: mom(gpCurr, gpPrev).toFixed(2) + ' %' , alignment:{horizontal:'right'} },
+      { value: mom(gpCurr, gpPrev).toFixed(2) , alignment:{horizontal:'right'} },
 
       { value: mom(dept.totalGrossWt, prevDept.totalGrossWt).toFixed(2) },
 
@@ -285,7 +285,7 @@ getAvgGpPerShipment(row: any): number {
         { value: this.formatNumber(dept.totalRevenue) },
         { value: this.formatNumber(dept.totalCost) },
         { value: this.formatNumber(dept.grossProfit) },
-        { value: gpPercent.toFixed(2) + ' %'  , alignment:{horizontal:'right'}},
+        { value: gpPercent.toFixed(2)  , alignment:{horizontal:'right'}},
         { value: this.formatNumber(dept.totalGrossWt) },
         { value: this.formatNumber(dept.totalVolume) },
         { value: dept.totalNoOfTEU , alignment:{horizontal:'center'}},

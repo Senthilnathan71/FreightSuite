@@ -8,11 +8,11 @@
         >
           <i class="fas fa-print me-1"></i> Print
         </button> -->
-    <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
+    <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()" *ngIf="mps.canPrint('Vendor Invoice', 'Download')">
       <i class="fas fa-download me-1"></i> Download PDF
     </button>
     <button type="button" class="btn btn-sm btn-success rounded-5 py-0"
-      (click)="openEmailModal(); activeModal.dismiss()">
+      (click)="openEmailModal(); activeModal.dismiss()" *ngIf="mps.canPrint('Vendor Invoice', 'Send Mail')">
       <i class="fas fa-envelope me-1"></i> Send Email
     </button>
     <button type="button" class="btn-close btn-close-white" (click)="activeModal.dismiss()"></button>

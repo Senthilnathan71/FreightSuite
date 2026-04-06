@@ -50,6 +50,8 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
   @Input() loading: boolean = false;
   @Input() module: 'accounts' | 'operation' = 'accounts';
   @Input() companyId!: number;
+  @Input() reportKey: string = '';
+  @Input() reportDisplayName: string = '';
   @Output() onGenerate = new EventEmitter<any>();
   @Output() onReset = new EventEmitter<void>();
   fyMinDate: NgbDateStruct | null = null;
@@ -551,6 +553,33 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
   }
 
   private validateFromToDatePairs(): boolean {
+    if (this.isFreightMomGrowthReport()) {
+      const fromControl = this.parameterForm.get('FromDate');
+      const toControl = this.parameterForm.get('ToDate');
+      const fromDate = this.toComparableDate(fromControl?.value);
+      const toDate = this.toComparableDate(toControl?.value);
+
+      if (fromDate && toDate) {
+        if (fromDate.getTime() > toDate.getTime()) {
+          fromControl?.markAsTouched();
+          toControl?.markAsTouched();
+          this.appSettingsService.showWarning('From Date cannot be after To Date');
+          return false;
+        }
+
+        const isSameMonth =
+          fromDate.getFullYear() === toDate.getFullYear() &&
+          fromDate.getMonth() === toDate.getMonth();
+
+        if (!isSameMonth) {
+          fromControl?.markAsTouched();
+          toControl?.markAsTouched();
+          this.appSettingsService.showWarning('From Date and To Date must be within the same month.');
+          return false;
+        }
+      }
+    }
+
     const dateParamNames = new Set(
       this.parameters
         .filter(p => p.ParameterFieldType === this.FIELD_TYPES.DATE)
@@ -584,6 +613,46 @@ export class ReportParameterFormComponent implements OnInit, OnChanges, OnDestro
     }
 
     return true;
+  }
+
+  private isFreightMomGrowthReport(): boolean {
+    const reportKey = this.reportKey?.trim().toLowerCase();
+    const reportDisplayName = this.reportDisplayName?.trim().toLowerCase();
+
+    return reportKey === 'freight-mom-growth'
+      || reportDisplayName === 'freight mom growth report';
+  }
+
+  onDateSelected(paramName: string, selectedDate: NgbDateStruct): void {
+    if (
+      !this.isFreightMomGrowthReport()
+      || paramName !== 'FromDate'
+      || !selectedDate
+      || selectedDate.day !== 1
+    ) {
+      return;
+    }
+
+    const toControl = this.parameterForm.get('ToDate');
+    if (!toControl) {
+      return;
+    }
+
+    const monthEndDate = new Date(selectedDate.year, selectedDate.month, 0);
+    const maxToDate = this.getMaxDate('ToDate');
+    const maxAllowedDate = maxToDate
+      ? new Date(maxToDate.year, maxToDate.month - 1, maxToDate.day)
+      : null;
+    const finalToDate = maxAllowedDate && monthEndDate > maxAllowedDate
+      ? maxAllowedDate
+      : monthEndDate;
+
+    toControl.setValue(new Date(Date.UTC(
+      finalToDate.getFullYear(),
+      finalToDate.getMonth(),
+      finalToDate.getDate(),
+      0, 0, 0, 0
+    )));
   }
 
   private findMatchingToDateName(fromName: string, dateParamNames: Set<string>): string | null {

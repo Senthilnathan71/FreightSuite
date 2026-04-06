@@ -58,8 +58,8 @@ export class CostRevenueNotBookedComponent {
   }
 
 getExcelData(): ComplexReportExportConfig {
-  const isNotBookedCost = this.fullData?.CalculationType === 'Not Cost';
-  const isNotRevenue = this.fullData?.CalculationType === 'Not Revenue';
+  const isNotBookedCost = this.fullData?.CalculationType === 'Cost';
+  const isNotRevenue = this.fullData?.CalculationType === 'Revenue';
 
   // Excel headers
   const tableHeaders: ExcelHeader[] = [

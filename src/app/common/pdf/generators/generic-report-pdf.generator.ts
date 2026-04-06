@@ -269,14 +269,18 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
       });
     }
 
-    const slots = buildHeaderSlots(
-      logo ? { image: logo, height: logoHeight, alignment: printSettings.logoPosition } : null,
-      { stack: companyStack, alignment: printSettings.companyAlignment },
-      printSettings
-    );
+    if (logo) {
+      stack.push({
+        image: logo,
+        height: logoHeight,
+        alignment: printSettings.logoPosition,
+        margin: [0, 0, 0, 4]
+      });
+    }
 
     stack.push({
-      columns: slots,
+      stack: companyStack,
+      alignment: printSettings.companyAlignment,
       margin: [0, 0, 0, 4]
     });
 
@@ -650,7 +654,9 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
       }]
     }),
     header: (_currentPage: number, _pageCount: number, _pageSize: any) =>
-      headerFunction(_currentPage, _pageCount, _pageSize),
+      isLandscape
+        ? headerFunction(_currentPage, _pageCount, _pageSize)
+        : portraitHeader(data),
     content,
     footer: createFooterFunction(userData, {showPageNumbers: true}),
     styles: getPdfStyles(),

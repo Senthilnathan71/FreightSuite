@@ -33,6 +33,7 @@ import { LogoService } from 'src/app/core/services/logo.service';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-loading-plan-entry',
   standalone: true,
@@ -145,7 +146,7 @@ export class LoadingPlanEntryComponent {
   userData: any;
   agentList: any;
   loadingPlanData: any[] = [];
-
+  currentMenuId: number;
 
   branchDetails: any;
   currentBranchCityName: string | null;
@@ -163,8 +164,8 @@ export class LoadingPlanEntryComponent {
     private spinner: NgxSpinnerService,
     private appSettingsService: AppSettingsService,
     private masterService: MasterService,
-    public logoService : LogoService
-
+    public logoService : LogoService,
+    public mps: MenuPermissionService
 
 
   ) {
@@ -221,7 +222,8 @@ export class LoadingPlanEntryComponent {
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
-
+    this.currentMenuId = this.mps.getMenuId();
+    this.mps.init().subscribe();
   }
   onInitForm() {
     this.loadingPlanForm = this.fb.group({

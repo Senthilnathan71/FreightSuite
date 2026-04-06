@@ -2,7 +2,7 @@
     <app-print-header></app-print-header>
 
     <h4 class="text-center fw-bold py-2" style="margin: 0;">
-        {{ fullData?.CalculationType === 'Not Cost'
+        {{ fullData?.CalculationType === 'Cost'
         ? 'Cost Not Booked Report'
         : 'Revenue Not Booked Report' }}
     </h4>
@@ -40,13 +40,13 @@
                         <th class="bg-transparent text-light text-center" rowspan="2">HBL Date</th>
                         <th class="bg-transparent text-light text-center" rowspan="2">Dept</th>
                         <th class="bg-transparent text-light text-center" rowspan="2">Charge Desc</th>
-                        <th class="bg-transparent text-light text-center">{{ fullData?.CalculationType === 'Not Cost'
+                        <th class="bg-transparent text-light text-center">{{ fullData?.CalculationType === 'Cost'
                             ? 'Revenue'
                             : 'Cost' }} Amt</th>
-                        <th class="bg-transparent text-light text-center"> {{ fullData?.CalculationType === 'Not Cost'
+                        <th class="bg-transparent text-light text-center"> {{ fullData?.CalculationType === 'Cost'
                             ? 'Revenue'
                             : 'Cost' }} Local Amt</th>
-                        <th class="bg-transparent text-light text-center">{{ fullData?.CalculationType === 'Not Cost'
+                        <th class="bg-transparent text-light text-center">{{ fullData?.CalculationType === 'Cost'
                             ? 'Revenue'
                             : 'Cost' }} Party</th>
                 </thead>
@@ -61,23 +61,23 @@
                             <td class="text-center">{{ job.dept }}</td>
                             <td>{{ cr.Charge }}</td>
                             <td class="text-end">
-                                {{ fullData?.CalculationType === 'Not Cost'
+                                {{ fullData?.CalculationType === 'Cost'
                                 ? (cr.RevenueAmt | number:'1.2-2')
                                 : (cr.CostAmt | number:'1.2-2') }}
                             </td>
                             <td class="text-end">
-                                {{ fullData?.CalculationType === 'Not Cost'
+                                {{ fullData?.CalculationType === 'Cost'
                                 ? (cr.RevenueLocalAmount | number:'1.2-2')
                                 : (cr.CostLocalAmount | number:'1.2-2') }}
                             </td>
                             <td>
-                                {{ fullData?.CalculationType === 'Not Cost'
+                                {{ fullData?.CalculationType === 'Cost'
                                 ? cr.revenueCustomer
                                 : cr.costCustomer }}
                             </td>
                         </tr>
 
-                        <tr *ngIf="job.costRevenues.length === 0 && fullData?.CalculationType === 'Not Revenue'"
+                        <tr *ngIf="job.costRevenues.length === 0 && fullData?.CalculationType === 'Revenue'"
                             style="white-space: nowrap;">
                             <td>{{ job.BookingNo || '' }}</td>
                             <td>{{ job.MasterJobNo || '' }}</td>
@@ -103,14 +103,14 @@
         <div class="pt-2">
             Note :
             <ul>
-                <li *ngIf="fullData?.CalculationType === 'Not Cost'">
-                    This report includes only Revenue entries for jobs that have not been booked as Cost.
+                <li *ngIf="fullData?.CalculationType === 'Cost'">
+                    This report includes only Revenue entries for House jobs that have not been booked as Cost.
                 </li>
-                <li *ngIf="fullData?.CalculationType !== 'Not Cost'">
-                    This report includes only Cost entries for jobs that have not been booked as Revenue.
+                <li *ngIf="fullData?.CalculationType !== 'Cost'">
+                    This report includes only Cost entries for House jobs that have not been booked as Revenue.
                 </li>
-                <li *ngIf="fullData?.CalculationType !== 'Not Cost'">
-                    Jobs with no entries in the Rate tab are included in this report.
+                <li *ngIf="fullData?.CalculationType !== 'Cost'">
+                    House Jobs with no entries in the Rate tab are included in this report.
                 </li>
             </ul>
         </div>

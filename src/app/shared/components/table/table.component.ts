@@ -399,7 +399,7 @@ export class ReusableTableComponent implements OnInit, OnChanges, OnDestroy {
 
   isStatusActive(value: any): boolean {
     const normalized = String(value ?? '').trim().toLowerCase();
-    return normalized === 'active' || normalized === 'posted';
+    return normalized === 'active' || normalized === 'posted' || normalized === 'approved';
   }
 
   // Action handling

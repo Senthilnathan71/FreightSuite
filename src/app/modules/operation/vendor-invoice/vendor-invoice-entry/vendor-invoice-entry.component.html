@@ -50,7 +50,7 @@
           <button
             type="button"
             class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-            *ngIf="isEditMode"
+            *ngIf="isEditMode && mps.canPrint('Vendor Invoice', 'Print')"
             (click)="openPrintModal()"
             [disabled]="!vendorInvoiceData"
           >

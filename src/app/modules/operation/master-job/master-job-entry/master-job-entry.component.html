@@ -1701,7 +1701,7 @@
                     <div class="col-md-12 mt-2" *ngIf="canPullToImportBranch">
                         <div class="pull-import-panel">
                             <div class="row g-2 align-items-end">
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="custom-form-group custom-form-group-select"
                                         [class.filled]="!!selectedTransferCompanySid">
                                         <dofi-searchable-dropdown
@@ -1720,7 +1720,7 @@
                                         <label class="input-label">Destination Company</label>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="custom-form-group custom-form-group-select"
                                         [class.filled]="!!selectedTransferBranchSid">
                                         <dofi-searchable-dropdown
@@ -1738,20 +1738,21 @@
                                         <label class="input-label">Destination Branch</label>
                                     </div>
                                 </div>
-                                <div class="col-md-2 d-flex align-items-end">
+                                <div class="col-md-4 d-flex align-items-end mb-2 gap-1">
                                     <button
-                                        class="btn btn-outline-info btn-sm w-100"
+                                        class="btn btn-info btn-sm"
                                         (click)="pullMasterJobToImportBranch()"
                                         [disabled]="masterJobForm.dirty || isPullingToImportBranch || !selectedTransferCompanySid || !selectedTransferBranchSid || isExportToImportCompleted">
                                         <i class="fas fa-download me-1"></i>
                                         <span>{{ isPullingToImportBranch ? 'Pulling...' : (isExportToImportCompleted ? 'Pull To Import Successful' : 'Create Import') }}</span>
                                     </button>
-                                </div>
-                                <div class="col-md-2 d-flex align-items-center">
+                                    <div class="">
                                     <small class="text-muted">
                                         Select company and branch for the import-side job.
                                     </small>
                                 </div>
+                                </div>
+                                
                             </div>
                         </div>
                     </div>

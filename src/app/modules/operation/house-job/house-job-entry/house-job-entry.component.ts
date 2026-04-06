@@ -68,6 +68,7 @@ import { JobCardComponent } from '../report/job-card/job-card.component';
 import { ProofOfDeliveryComponent } from '../report/proof-of-delivery/proof-of-delivery.component';
 import { SafeInsertShipmentMilestone } from '../../services/shipment-milestone.service';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -537,6 +538,7 @@ hblModalRef?: NgbModalRef;
     private volumetricAndCbmCalculationService: VolumetricAndCbmCalculationService,
     private creditValidationApiService: CreditValidationApiService,
     private emailTriggerService: EmailTriggerService,
+    public mps: MenuPermissionService
   ) {
     this.today = this.calendar.getToday();
    }
@@ -567,6 +569,8 @@ hblModalRef?: NgbModalRef;
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentCompany?.BranchMasterSid,
   };
+  this.currentMenuId = this.mps.getMenuId();
+  this.mps.init().subscribe();
   this.loadTermsAndConditionsConfig();
   this.initBookingForm();
   this.initCargoForm();

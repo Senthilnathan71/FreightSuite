@@ -4,6 +4,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-vendor-credit-note-print',
@@ -29,7 +30,8 @@ export class VendorCreditNotePrintComponent {
   constructor(
     public activeModal: NgbActiveModal,
     public logoService: LogoService,
-    private pdfMakeService: PdfMakeService
+    private pdfMakeService: PdfMakeService,
+    public mps: MenuPermissionService
   ) {}
 
   get creditNoteData(): any {

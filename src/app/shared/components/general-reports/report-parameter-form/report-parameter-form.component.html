@@ -74,12 +74,13 @@
               [id]="param.ParameterName"
               [formControlName]="param.ParameterName"
               [minDate]="getMinDate(param.ParameterName)"
-              [maxDate]="getMaxDate(param.ParameterName)"
-              [class.is-invalid]="hasError(param.ParameterName)"
-              #dp="ngbDatepicker"
-              (click)="dp.toggle()"
-              placeholder="dd-mm-yyyy"
-            />
+            [maxDate]="getMaxDate(param.ParameterName)"
+            [class.is-invalid]="hasError(param.ParameterName)"
+            #dp="ngbDatepicker"
+            (dateSelect)="onDateSelected(param.ParameterName, $event)"
+            (click)="dp.toggle()"
+            placeholder="dd-mm-yyyy"
+          />
 
             <!-- Calendar icon -->
                <i-feather name="calendar" class="feather-sm"  (click)="dp.toggle()"></i-feather>

@@ -10,8 +10,8 @@
 
 <div class="row compact-form" [formGroup]="form">
   <div class="col-12 px-0">
-    <div class="row bg-white mb-1 align-items-center pt-0 rounded shadow-sm mx-0">
-      <div class="col-md-4 pb-0">
+    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+      <div class="col-md-4 pb-1">
         <div class="d-flex align-items-center gap-2">
           <h5 class="page-title my-0 text-info">
             {{ pageTitle }}
@@ -21,7 +21,7 @@
 
       <div class="col-md-3"></div>
 
-      <div class="col-md-5 pb-0">
+      <div class="col-md-5 pb-1">
         <div class="d-flex align-items-center justify-content-start justify-content-md-end gap-1 gap-md-1 mx-0">
           <button
             type="button"
@@ -70,8 +70,9 @@
                     class="custom-input-field sm"
                     formControlName="PaymentRequestNumber"
                     readonly
+                    placeholder=""
                   />
-                  <label class="input-label" style="font-size: 14px">
+                  <label class="input-label">
                     <span>Request No.</span>
                   </label>
                 </div>
@@ -99,7 +100,7 @@
                       <i-feather name="calendar" class="feather-sm"></i-feather>
                     </button>
                   </div>
-                  <label class="input-label" style="font-size: 14px">Request Date</label>
+                  <label class="input-label">Request Date</label>
                 </div>
               </aside>
 
@@ -109,8 +110,9 @@
                     type="text"
                     class="custom-input-field sm"
                     formControlName="Remarks"
+                    placeholder=""
                   />
-                  <label class="input-label" style="font-size: 14px">Remarks</label>
+                  <label class="input-label">Remarks</label>
                 </div>
               </aside>
 
@@ -128,7 +130,7 @@
                     [clearable]="false"
                   >
                   </ng-select>
-                  <label class="input-label" style="font-size: 14px">
+                  <label class="input-label">
                     Cash / Bank <span class="text-danger">*</span>
                   </label>
                 </div>
@@ -151,7 +153,7 @@
                     (itemSelected)="onPartyChange($event)"
                   >
                   </dofi-searchable-dropdown>
-                  <label class="input-label" style="font-size: 14px">
+                  <label class="input-label">
                     Party <span class="text-danger">*</span>
                   </label>
                 </div>
@@ -163,8 +165,9 @@
                     type="text"
                     class="custom-input-field sm"
                     formControlName="PayableTo"
+                    placeholder=""
                   />
-                  <label class="input-label" style="font-size: 14px">
+                  <label class="input-label">
                     Payable To <span class="text-danger">*</span>
                   </label>
                 </div>
@@ -185,7 +188,7 @@
                     [bindValue]="'CurrencyMasterSid'"
                   >
                   </dofi-searchable-dropdown>
-                  <label class="input-label" style="font-size: 14px">
+                  <label class="input-label">
                     Currency <span class="text-danger">*</span>
                   </label>
                 </div>
@@ -206,7 +209,7 @@
                     [readonly]="!isEditMode"
                   >
                   </ng-select>
-                  <label class="input-label" style="font-size: 14px">
+                  <label class="input-label">
                     Request Status <span class="text-danger">*</span>
                   </label>
                 </div>
@@ -229,7 +232,7 @@
                       {{ item.departmentName || item.DepartmentName }}
                     </ng-template>
                   </ng-select>
-                  <label class="input-label" style="font-size: 14px">
+                  <label class="input-label">
                     Dept. <span class="text-danger">*</span>
                   </label>
                 </div>
@@ -241,8 +244,9 @@
                     type="text"
                     class="custom-input-field sm"
                     formControlName="BookingNo"
+                    placeholder=""
                   />
-                  <label class="input-label" style="font-size: 14px">Booking No.</label>
+                  <label class="input-label">Booking No.</label>
                 </div>
               </aside>
 
@@ -253,11 +257,25 @@
                     class="custom-input-field sm"
                     formControlName="MasterJobNo"
                   />
-                  <label class="input-label" style="font-size: 14px">Job No.</label>
+                  <label class="input-label">Job No.</label>
                 </div>
               </aside>
 
+        
+
               <aside class="col-md-3">
+                <div class="custom-form-group">
+                  <input
+                    type="text"
+                    class="custom-input-field sm"
+                    formControlName="HouseNo"
+                    placeholder=""
+                  />
+                  <label class="input-label">House No.</label>
+                </div>
+              </aside>
+
+                    <aside class="col-md-3">
                 <div
                   class="custom-form-group custom-form-group-select"
                   [class.filled]="!!r['Status']?.value"
@@ -272,20 +290,9 @@
                     [readonly]="!isEditMode"
                   >
                   </ng-select>
-                  <label class="input-label" style="font-size: 14px">
+                  <label class="input-label">
                     Status <span class="text-danger">*</span>
                   </label>
-                </div>
-              </aside>
-
-              <aside class="col-md-3">
-                <div class="custom-form-group">
-                  <input
-                    type="text"
-                    class="custom-input-field sm"
-                    formControlName="HouseNo"
-                  />
-                  <label class="input-label" style="font-size: 14px">House No.</label>
                 </div>
               </aside>
             </div>
@@ -303,11 +310,11 @@
         </button>
       </div>
       <div class="table-responsive table-borderless">
-        <table class="table table-hover align-middle no-wrap table-sm mb-1">
+        <table class="table table-hover align-middle no-wrap table-sm mb-0">
           <thead>
             <tr class="bg-info text-center">
               <th class="bg-transparent text-light" style="font-size: 14px; width: 50px;"></th>
-              <th class="bg-transparent text-light" style="font-size: 14px; width: 50px;">Sel</th>
+              <th class="bg-transparent text-light" style="font-size: 14px; width: 50px;"></th>
               <th class="bg-transparent text-light" style="font-size: 14px; min-width: 220px;">Charge</th>
               <th class="bg-transparent text-light" style="font-size: 14px; min-width: 90px;">Unit</th>
               <th class="bg-transparent text-light" style="font-size: 14px; min-width: 120px;">No. of Unit</th>
@@ -323,10 +330,10 @@
             <tr *ngFor="let row of detailItems.controls; let i = index" [formGroupName]="i">
               <td class="text-center">
                 <button type="button" class="btn btn-link text-danger p-0" (click)="removeDetailRow(i)">
-                  <i class="fas fa-trash"></i>
+                  <i class="fas fa-trash fs-2"></i>
                 </button>
               </td>
-              <td class="text-center">
+              <td class="text-center pt-1">
                 <input type="checkbox" formControlName="Selected" />
               </td>
               <td style="min-width: 220px;">

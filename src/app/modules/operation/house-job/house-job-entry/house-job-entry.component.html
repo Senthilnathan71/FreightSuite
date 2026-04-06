@@ -71,7 +71,7 @@
           <span>{{ isSendingSIMail ? 'Sending...' : 'Send SI Mail' }}</span>
         </button>
       </div>
-      <div class="action-group" *ngIf="isEditMode">
+      <div class="action-group" *ngIf="isEditMode && (mps.canPrint('House Air Way Bill', 'Print') || mps.canPrint('House Job', 'Print'))">
         <div ngbDropdown container="body" class="d-inline-block">
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" id="dropdownUpload"
             ngbDropdownToggle [disabled]="!housejobData || houseJobForm?.dirty || cargoForm?.dirty || otherForm?.dirty || detailForm?.dirty">

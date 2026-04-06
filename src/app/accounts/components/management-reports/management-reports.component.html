@@ -53,6 +53,8 @@
           [loading]="generatingReport"
           [module]="'accounts'"
           [companyId]="companyId"
+          [reportKey]="selectedReport.ReportName"
+          [reportDisplayName]="selectedReport.ReportDisplayName"
           (onGenerate)="onGenerateReport($event)"
         ></app-report-parameter-form>
       </div>

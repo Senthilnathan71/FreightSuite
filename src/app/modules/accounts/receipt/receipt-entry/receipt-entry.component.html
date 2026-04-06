@@ -126,7 +126,7 @@
           <button
             type="button"
             class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-            *ngIf="isEditMode && receiptForm.get('CashOrBank')?.value === 'B'"
+            *ngIf="isEditMode && receiptForm.get('CashOrBank')?.value === 'B' && mps.canPrint('Receipt', 'Print')"
             (click)="reportBank()"
             [disabled]="!receiptPrintData || !isPosted"
           >
@@ -136,7 +136,7 @@
           <button
             type="button"
             class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-            *ngIf="isEditMode && receiptForm.get('CashOrBank')?.value === 'C'"
+            *ngIf="isEditMode && receiptForm.get('CashOrBank')?.value === 'C' && mps.canPrint('Receipt', 'Print')"
             (click)="reportCash()"
             [disabled]="!receiptPrintData || !isPosted"
           >
