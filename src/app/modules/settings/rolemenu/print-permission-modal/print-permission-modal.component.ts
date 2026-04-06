@@ -132,4 +132,8 @@ export class PrintPermissionModalComponent implements OnInit {
     get hasNoPrints(): boolean {
         return !this.isLoading && this.rows.length === 0;
     }
+
+    get grantedCount(): number {
+        return this.rows.filter(r => r.grantAccess).length;
+    }
 }

@@ -8,49 +8,64 @@
   <button type="button" class="btn-close btn-close-white" (click)="onCancel()"></button>
 </div>
 
-<div class="modal-body p-0">
+<div class="modal-body p-3">
+
+  <!-- Loading -->
   <div *ngIf="isLoading" class="text-center py-4">
     <div class="spinner-border spinner-border-sm text-info" role="status"></div>
     <span class="ms-2 text-muted">Loading...</span>
   </div>
 
-  <div *ngIf="hasNoPrints" class="text-center py-4 text-muted">
-    <i class="fas fa-print fa-2x mb-2 d-block"></i>
-    No print options configured for this menu.
+  <!-- Empty -->
+  <div *ngIf="hasNoPrints" class="text-center py-5 text-muted">
+    <i class="fas fa-print fa-2x mb-3 d-block"></i>
+    <p class="mb-0">No print options configured for this menu.</p>
   </div>
 
-  <div *ngIf="!isLoading && rows.length > 0" class="table-responsive">
-    <table class="table table-hover align-middle table-sm table-borderless mb-0">
-      <thead class="bg-info">
-        <tr>
-          <th class="bg-transparent text-light ps-3" style="border-top-left-radius:5px;">Print Name</th>
-          <th class="bg-transparent text-light">Action</th>
-          <th class="bg-transparent text-light text-center" style="width:80px;border-top-right-radius:5px;">Access</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let row of rows; let i = index">
-          <td class="ps-3 fw-semibold">{{ row.Name }}</td>
-          <td>
-            <span class="badge"
-              [class.bg-primary]="row.PrintMail === 'Print'"
-              [class.bg-success]="row.PrintMail === 'Download'"
-              [class.bg-warning]="row.PrintMail === 'Send Mail'"
-              [class.text-dark]="row.PrintMail === 'Send Mail'">
-              {{ row.PrintMail }}
-            </span>
-          </td>
-          <td class="text-center">
-            <input
-              type="checkbox"
-              class="form-check-input cursor-pointer"
-              [(ngModel)]="row.grantAccess"
-              [id]="'print-access-' + i">
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <!-- Table -->
+  <div *ngIf="!isLoading && rows.length > 0">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <small class="text-muted">{{ rows.length }} option{{ rows.length !== 1 ? 's' : '' }}</small>
+      <small class="text-muted">{{ grantedCount }} granted</small>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle table-borderless mb-0">
+        <thead class="bg-info">
+          <tr>
+            <th class="bg-transparent text-light ps-3" style="border-top-left-radius:5px;">Print Name</th>
+            <th class="bg-transparent text-light">Action</th>
+            <th class="bg-transparent text-light text-center" style="width:90px;border-top-right-radius:5px;">Access</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows; let i = index" style="border-bottom:1px solid #f0f0f0;">
+            <td class="ps-3 fw-semibold">{{ row.Name }}</td>
+            <td>
+              <span class="badge"
+                [class.bg-primary]="row.PrintMail === 'Print'"
+                [class.bg-success]="row.PrintMail === 'Download'"
+                [class.bg-warning]="row.PrintMail === 'Send Mail'"
+                [class.text-dark]="row.PrintMail === 'Send Mail'">
+                {{ row.PrintMail }}
+              </span>
+            </td>
+            <td class="text-center">
+              <div class="form-check form-switch d-flex justify-content-center mb-0">
+                <input
+                  type="checkbox"
+                  class="form-check-input cursor-pointer"
+                  style="width:2.2em;height:1.1em;"
+                  [(ngModel)]="row.grantAccess"
+                  [id]="'print-access-' + i">
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
+
 </div>
 
 <div class="modal-footer py-2">
