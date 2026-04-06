@@ -205,7 +205,6 @@ export class PrintMasterListComponent extends BaseListComponent implements OnIni
                 Name: formValue.Name,
                 PrintMail: formValue.PrintMail,
                 MenuMasterSid: formValue.MenuMasterSid,
-                CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
                 CreatedBy: this.userData?.userEmail || ''
             };
             this.printMasterService.create(payload).subscribe({
@@ -238,8 +237,6 @@ export class PrintMasterListComponent extends BaseListComponent implements OnIni
             search: this.filterValue.trim(),
             page: Number(this.page),
             pageSize: Number(this.pageSize),
-            activeCompanyId: this.currentCompany?.CompanyMasterSid,
-            activeBranchId: this.currentBranch?.BranchMasterSid,
             sortColumn: this.sortColumn,
             sortDirection: this.sortDirection
         };

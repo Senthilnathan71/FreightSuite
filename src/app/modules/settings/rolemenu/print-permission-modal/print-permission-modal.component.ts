@@ -56,7 +56,6 @@ export class PrintPermissionModalComponent implements OnInit {
 
         forkJoin({
             printMasters: this.printMasterService.getByMenu(
-                this.menuItem.CompanyMasterSid,
                 this.menuItem.MenuMasterSid
             ),
             existing: this.settingsService.getRoleMenuPrintPermissions(

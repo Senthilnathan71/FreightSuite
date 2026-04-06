@@ -155,7 +155,6 @@ export class PrintMasterEntryComponent implements OnInit, OnDestroy {
                 Name: formValue.Name,
                 PrintMail: formValue.PrintMail,
                 MenuMasterSid: formValue.MenuMasterSid,
-                CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
                 CreatedBy: this.userData?.userEmail || ''
             };
             this.printMasterService.create(payload).subscribe({

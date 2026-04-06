@@ -30,8 +30,8 @@ export class PrintMasterService {
         );
     }
 
-    getByMenu(companyId: number, menuId: number) {
-        return this.http.get<{ data: any[] }>(`print-master/by-menu/${companyId}/${menuId}`).pipe(
+    getByMenu(menuId: number) {
+        return this.http.get<{ data: any[] }>(`print-master/by-menu/${menuId}`).pipe(
             map((resp: any) => resp)
         );
     }
