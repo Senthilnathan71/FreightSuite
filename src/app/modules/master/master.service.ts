@@ -2214,6 +2214,51 @@ getFieldConfiguration() {
     )
   }
 
+  createDocReference(payload) {
+    return this.http.post<{ data: any[] }>('doc-reference/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  updateDocReferenceById(RefDocumentSid, payload) {
+    return this.http.patch<{ data: any }>(`doc-reference/update/${RefDocumentSid}`, payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  deleteDocReference(RefDocumentSid) {
+    return this.http.delete<{ data: any }>(`doc-reference/delete/${RefDocumentSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getDoocReferenceById(RefDocumentSid) {
+    return this.http.get<{ data: any }>(`doc-reference/fetch/${RefDocumentSid}`).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
+  getDocReference(payload: any) {
+    return this.http.post<{ data: any[] }>('doc-reference', payload).pipe(
+      map((resp : any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
   // Sailing Schedule Header
 
   getAllSailingSchedule() {

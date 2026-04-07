@@ -1,285 +1,273 @@
-<div class="row compact-form">
-  <div class="col-12 px-0">
-    <div
-      class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0"
-    >
-      <div class="col-md-4 d-flex pb-1">
-        <div class="d-flex align-items-center gap-2">
-          <div class="brand-icon">
-            <i class="fas fa-file-alt"></i>
+<div class="container-fluid px-0">
+  <form [formGroup]="addForm">
+    <div class="row compact-form">
+      <div class="col-12 px-0">
+        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+          <div class="col-md-4 d-flex pb-1 align-items-center">
+            <div class="d-flex align-items-center gap-2">
+              <div class="brand-icon">
+                <i class="fas fa-file-alt"></i>
+              </div>
+              <h5 class="page-title mb-0 text-info">Document Reference</h5>
+            </div>
           </div>
-          <h5 class="page-title mb-0 text-info">
-            {{ isEditMode ? 'Edit' : 'Add' }} Document Reference
-          </h5>
-        </div>
-      </div>
-      <div class="col-md-8 pb-1">
-        <div class="d-flex justify-content-end gap-2">
-          <button
-            type="button"
-            class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="goBack()"
-          >
-            <i class="fas fa-chevron-left me-1"></i> Back
-          </button>
-          <button
-            type="button"
-            class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="resetForm()"
-          >
-            <i class="fas fa-sync-alt me-1"></i> Reset
-          </button>
 
-          <button
-            type="button"
-            class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="onSubmit()"
-            [disabled]="
-              btnDisable || docRefForm.invalid || documentReferences.length === 0
-            "
-          >
-            <i
-              class="fas me-1"
-              [ngClass]="btnDisable ? 'fa-spinner fa-spin' : 'fa-save'"
-            ></i>
-            {{ btnDisable ? 'Saving...' : (isEditMode ? 'Update' : 'Save') }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+          <div class="col-md-8 pb-1">
+            <div class="d-flex justify-content-end align-items-center gap-2 flex-wrap">
+              <button
+                type="button"
+                class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                (click)="closeModal()"
+              >
+                <i class="fas fa-chevron-left me-1"></i> Back
+              </button>
 
-  <div class="col-12 px-0">
-    <form [formGroup]="docRefForm">
-      <div class="row">
-        <div class="col-md-12">
-          <div class="card h-100 mb-0">
-            <div class="card-body p-3">
-              <!-- Header with Title and Add Button -->
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                  <h6 class="mb-0 text-info fw-semibold">
-                    Document Reference
-                  </h6>
-                  <small class="text-muted">* Required fields</small>
-                </div>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-info"
-                  (click)="addDocumentRow()"
-                >
+              <button
+                class="btn btn-info btn-sm"
+                type="button"
+                (click)="toggleAddRow()"
+              >
+                @if(showAddRow){
+                  <i-feather class="feather-sm me-1" name="x-circle"></i-feather> Cancel
+                } @else {
                   <i class="fas fa-plus me-1"></i> Add
-                </button>
-              </div>
+                }
+              </button>
 
-              <!-- Empty State Message -->
-              @if(documentReferences.length === 0) {
-              <div class="alert alert-warning text-center py-3 mb-0">
-                <i class="fas fa-exclamation-circle me-1"></i>
-                At least one document reference is required
-              </div>
-              }
+              <button
+                appPreventMultiClick
+                class="btn btn-info btn-sm"
+                type="submit"
+                *ngIf="showAddRow"
+                (click)="addNewDocRef()"
+              >
+                <i-feather class="feather-sm me-1" name="upload-cloud"></i-feather> Save
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-              <!-- Document Reference Table -->
-              @if(documentReferences.length > 0) {
+      <div class="col-12 px-0">
+        <div class="card h-100 mb-0">
+          <div class="card-body p-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="mb-0 text-info fw-semibold">Document Reference</h6>
+            </div>
+
+            @if(docRef.length > 0 || showAddRow || showEmptyTemplate) {
               <div class="table-responsive">
                 <table class="table table-bordered align-middle mb-0 doc-ref-table">
                   <thead class="table-light">
                     <tr>
-                      <th class="text-center" style="width: 60px;">Serial No</th>
+                      <th class="text-center" style="width: 70px;">Action</th>
                       <th style="width: 160px;">Ref Document No <span class="text-danger">*</span></th>
                       <th style="width: 140px;">Document Date <span class="text-danger">*</span></th>
                       <th>Remarks</th>
                       <th class="text-center" style="width: 70px;">Public</th>
                       <th style="width: 120px;">Status <span class="text-danger">*</span></th>
-                      <th class="text-center" style="width: 50px;">Action</th>
                     </tr>
                   </thead>
-                  <tbody formArrayName="documentReferences">
-                    @for (doc of documentReferences.controls; track doc; let i = $index) {
-                    <tr [formGroupName]="i">
-                      <!-- Row Number -->
-                      <td class="text-center text-muted">{{ i + 1 }}</td>
 
-                      <!-- Ref Document No -->
-                      <td>
-                        <input
-                          type="text"
-                          formControlName="refDocumentNo"
-                          class="form-control form-control-sm"
-                          placeholder="Enter Doc No"
-                          [textWithNumbers]="20"
-                          maxlength="20"
-                          [class.is-invalid]="doc.get('refDocumentNo')?.invalid && doc.get('refDocumentNo')?.touched"
-                        />
-                        <div class="invalid-feedback" *ngIf="doc.get('refDocumentNo')?.touched && doc.get('refDocumentNo')?.hasError('required')">
-                          Required
-                        </div>
-                        <div class="invalid-feedback" *ngIf="doc.get('refDocumentNo')?.hasError('maxLengthExceeded')">
-                          Max 20 chars
-                        </div>
-                      </td>
+                  <tbody>
+                    @for (item of docRef; track $index) {
+                      <tr>
+                        <td class="text-center">
+                          <div class="d-flex align-items-center justify-content-center gap-2">
+                            <a (click)="editDocRef(item, $index)" *ngIf="editIndex !== $index">
+                              <i-feather name="eye" class="feather-sm"></i-feather>
+                            </a>
 
-                      <!-- Document Date -->
-                      <td>
-                        <div class="input-group input-group-sm" style="width: 140px;">
+                            <a class="text-success" (click)="updateDocRef(item, $index)" *ngIf="editIndex === $index">
+                              <i-feather name="check" class="feather-sm"></i-feather>
+                            </a>
+
+                            <a class="text-secondary" (click)="cancelEdit()" *ngIf="editIndex === $index">
+                              <i-feather name="x" class="feather-sm"></i-feather>
+                            </a>
+
+                            <a class="text-danger border-start ps-2" (click)="deleteDocRef(item, $index)">
+                              <i-feather name="trash-2" class="feather-sm"></i-feather>
+                            </a>
+                          </div>
+                        </td>
+
+                        <td>
+                          <div *ngIf="editIndex !== $index" class="text-truncate">
+                            {{ item.RefDocumentNo }}
+                          </div>
+
+                          <form *ngIf="editIndex === $index" [formGroup]="editForm">
+                            <input
+                              type="text"
+                              formControlName="RefDocumentNo"
+                              class="form-control form-control-sm"
+                            />
+                          </form>
+                        </td>
+
+                        <td>
+                          <div *ngIf="editIndex !== $index" class="text-truncate">
+                            {{ item.RefDocumentDate | date:'dd-MM-yyyy' }}
+                          </div>
+
+                          <form *ngIf="editIndex === $index" [formGroup]="editForm">
+                            <div class="input-group input-group-sm">
+                              <input
+                                class="form-control"
+                                placeholder="dd-mm-yyyy"
+                                ngbDatepicker
+                                #editDp="ngbDatepicker"
+                                formControlName="DocumentDate"
+                                (click)="editDp.toggle()"
+                                readonly
+                                container="body"
+                              />
+                              <button
+                                class="btn btn-outline-secondary"
+                                type="button"
+                                (click)="editDp.toggle()"
+                              >
+                                <i class="fas fa-calendar-alt"></i>
+                              </button>
+                            </div>
+                          </form>
+                        </td>
+
+                        <td>
+                          <div *ngIf="editIndex !== $index" class="text-truncate">
+                            {{ item.Remarks }}
+                          </div>
+
+                          <form *ngIf="editIndex === $index" [formGroup]="editForm">
+                            <input
+                              type="text"
+                              formControlName="Remarks"
+                              class="form-control form-control-sm"
+                            />
+                          </form>
+                        </td>
+
+                        <td class="text-center">
+                          <div *ngIf="editIndex !== $index">
+                            <dofi-toggler
+                              [toggleValue]="item.Public === 'Y'"
+                              [disabled]="true">
+                            </dofi-toggler>
+                          </div>
+
+                          <form *ngIf="editIndex === $index" [formGroup]="editForm" class="d-flex justify-content-center">
+                            <dofi-toggler formControlName="Public"></dofi-toggler>
+                          </form>
+                        </td>
+
+                        <td>
+                          <div *ngIf="editIndex !== $index" class="text-truncate">
+                            {{ item.Status === 'A' ? 'Active' : 'Suspended' }}
+                          </div>
+
+                          <form *ngIf="editIndex === $index" [formGroup]="editForm">
+                            <ng-select
+                              formControlName="Status"
+                              [items]="statusList"
+                              bindLabel="name"
+                              bindValue="id"
+                              placeholder="Select"
+                              appendTo="body"
+                              class="ng-select-sm"
+                            >
+                            </ng-select>
+                          </form>
+                        </td>
+                      </tr>
+                    }
+
+                    @if(showEmptyTemplate && docRef.length === 0) {
+                      <tr>
+                        <td colspan="6" class="text-center">No records found</td>
+                      </tr>
+                    }
+
+                    @if(showAddRow) {
+                      <tr>
+                        <td></td>
+
+                        <td>
                           <input
-                            class="form-control"
-                            placeholder="dd-mm-yyyy"
-                            ngbDatepicker
-                            #dp="ngbDatepicker"
-                            formControlName="documentDate"
-                            (click)="dp.toggle()"
-                            readonly
-                            container="body"
-                            [minDate]="minDate"
-                            [class.is-invalid]="doc.get('documentDate')?.invalid && doc.get('documentDate')?.touched"
+                            type="text"
+                            formControlName="RefDocumentNo"
+                            class="form-control form-control-sm"
                           />
-                          <button
-                            class="btn btn-outline-secondary"
-                            type="button"
-                            (click)="dp.toggle()"
+                          <div
+                            class="invalid-feedback"
+                            *ngIf="addForm.get('RefDocumentNo')?.touched && addForm.get('RefDocumentNo')?.hasError('required')"
                           >
-                            <i class="fas fa-calendar-alt"></i>
-                          </button>
-                        </div>
-                        <div class="text-danger small" *ngIf="doc.get('documentDate')?.touched && doc.get('documentDate')?.hasError('required')">
-                          Required
-                        </div>
-                      </td>
+                            Required
+                          </div>
+                        </td>
 
-                      <!-- Remarks -->
-                      <td>
-                        <input
-                          type="text"
-                          formControlName="remarks"
-                          class="form-control form-control-sm"
-                          placeholder="Enter remarks (optional)"
-                        />
-                      </td>
+                        <td>
+                          <div class="input-group input-group-sm">
+                            <input
+                              class="form-control"
+                              placeholder="dd-mm-yyyy"
+                              ngbDatepicker
+                              #dp="ngbDatepicker"
+                              formControlName="DocumentDate"
+                              (click)="dp.toggle()"
+                              readonly
+                              container="body"
+                              [class.is-invalid]="addForm.get('DocumentDate')?.invalid && addForm.get('DocumentDate')?.touched"
+                            />
+                            <button
+                              class="btn btn-outline-secondary"
+                              type="button"
+                              (click)="dp.toggle()"
+                            >
+                              <i class="fas fa-calendar-alt"></i>
+                            </button>
+                          </div>
+                          <div
+                            class="text-danger small"
+                            *ngIf="addForm.get('DocumentDate')?.touched && addForm.get('DocumentDate')?.hasError('required')"
+                          >
+                            Required
+                          </div>
+                        </td>
 
-                      <!-- Public Toggle -->
-                      <td class="text-center">
-                        <div class="form-check form-switch d-inline-block mb-0">
+                        <td>
                           <input
-                            type="checkbox"
-                            formControlName="isPublic"
-                            class="form-check-input"
-                            role="switch"
+                            type="text"
+                            formControlName="Remarks"
+                            class="form-control form-control-sm"
                           />
-                        </div>
-                      </td>
+                        </td>
 
-                      <!-- Status -->
-                      <td>
-                        <ng-select
-                          formControlName="status"
-                          [items]="statusOptions"
-                          bindLabel="name"
-                          bindValue="id"
-                          placeholder="Select"
-                          appendTo="body"
-                          [clearable]="false"
-                          [searchable]="false"
-                          class="ng-select-sm"
-                        >
-                        </ng-select>
-                      </td>
+                        <td class="text-center">
+                          <dofi-toggler formControlName="Public"></dofi-toggler>
+                        </td>
 
-                      <!-- Delete Action -->
-                      <td class="text-center">
-                        <button
-                          type="button"
-                          class="btn btn-sm btn-outline-danger border-0"
-                          (click)="removeDocumentRow(i)"
-                          [disabled]="documentReferences.length <= 1"
-                          title="Delete row"
-                        >
-                          <i class="fas fa-trash-alt"></i>
-                        </button>
-                      </td>
-                    </tr>
+                        <td>
+                          <ng-select
+                            formControlName="Status"
+                            [items]="statusList"
+                            bindLabel="name"
+                            bindValue="id"
+                            placeholder="Select"
+                            appendTo="body"
+                            class="ng-select-sm"
+                          >
+                          </ng-select>
+                        </td>
+                      </tr>
                     }
                   </tbody>
                 </table>
               </div>
-              }
-
-              <!-- Note -->
-              <div class="text-muted small mt-3 p-2 bg-light rounded">
-                <i class="fas fa-info-circle me-1 text-info"></i>
-                <strong>Note:</strong> These document references will be
-                available in all related screens like Attachment/eDoc sections.
-              </div>
-            </div>
+            }
           </div>
         </div>
       </div>
-    </form>
-  </div>
-</div>
-
-<!-- Audit Log Modal -->
-<ng-template #auditLogModal let-modal>
-  <div class="modal-header bg-info text-white p-2">
-    <h5 class="modal-title mb-0">
-      <i class="fas fa-history me-2"></i>Audit Logs
-    </h5>
-    <button
-      type="button"
-      class="btn-close btn-close-white"
-      aria-label="Close"
-      (click)="modal.dismiss()"
-    ></button>
-  </div>
-  <div class="modal-body p-3">
-    <div class="table-responsive">
-      <table class="table align-middle table-bordered table-sm mb-0">
-        <thead class="table-light">
-          <tr>
-            <th>Changed At</th>
-            <th>Changed By</th>
-            <th>Operation</th>
-            <th class="text-center">Old Value</th>
-            <th class="text-center">New Value</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let log of auditLogs">
-            <td>{{ log.changedAt | date : 'medium' }}</td>
-            <td>{{ log.changedBy || '-' }}</td>
-            <td>{{ log.operation }}</td>
-            <td class="bg-light-danger">
-              <ul class="mb-0 ps-3">
-                <li *ngFor="let field of log.oldValDisplay">
-                  {{ field }}
-                </li>
-              </ul>
-            </td>
-            <td class="bg-light-success">
-              <ul class="mb-0 ps-3">
-                <li *ngFor="let field of log.newValDisplay">
-                  {{ field }}
-                </li>
-              </ul>
-            </td>
-          </tr>
-          <tr *ngIf="auditLogs.length === 0">
-            <td colspan="5" class="text-center text-muted py-3">
-              <i class="fas fa-info-circle me-1"></i>No audit logs found.
-            </td>
-          </tr>
-        </tbody>
-      </table>
     </div>
-  </div>
-  <div class="modal-footer bg-light">
-    <button
-      type="button"
-      class="btn btn-secondary"
-      (click)="modal.close()"
-    >
-      <i class="fas fa-times me-1"></i>Close
-    </button>
-  </div>
-</ng-template>
+  </form>
+</div>

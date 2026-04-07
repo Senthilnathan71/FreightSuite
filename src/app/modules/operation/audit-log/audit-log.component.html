@@ -36,29 +36,43 @@
         </div>
 
         <div *ngFor="let section of log.sections" class="audit-section">
-          <div class="audit-section-title">{{ section.title }}</div>
-
-          <div class="row g-3">
-            <div class="col-md-6">
-              <div class="audit-panel audit-old">
-                <div class="audit-panel-heading">Old Value</div>
-
-                <ul class="audit-list" *ngIf="section.oldValDisplay?.length; else emptyOld">
-                  <li *ngFor="let field of section.oldValDisplay">{{ field }}</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="col-md-6">
-              <div class="audit-panel audit-new">
-                <div class="audit-panel-heading">New Value</div>
-
-                <ul class="audit-list" *ngIf="section.newValDisplay?.length; else emptyNew">
-                  <li *ngFor="let field of section.newValDisplay">{{ field }}</li>
-                </ul>
-              </div>
-            </div>
+          <div class="audit-section-title" *ngIf="!log.isActionOnly">
+            {{ section.title }}
           </div>
+
+          <ng-container *ngIf="log.isActionOnly; else normalAuditView">
+            <div class="audit-panel audit-new">
+              <div class="audit-panel-heading">Changes</div>
+
+              <ul class="audit-list" *ngIf="section.actionDisplay?.length; else emptyAction">
+                <li *ngFor="let field of section.actionDisplay">{{ field }}</li>
+              </ul>
+            </div>
+          </ng-container>
+
+          <ng-template #normalAuditView>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="audit-panel audit-old">
+                  <div class="audit-panel-heading">Old Value</div>
+
+                  <ul class="audit-list" *ngIf="section.oldValDisplay?.length; else emptyOld">
+                    <li *ngFor="let field of section.oldValDisplay">{{ field }}</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="audit-panel audit-new">
+                  <div class="audit-panel-heading">New Value</div>
+
+                  <ul class="audit-list" *ngIf="section.newValDisplay?.length; else emptyNew">
+                    <li *ngFor="let field of section.newValDisplay">{{ field }}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </ng-template>
         </div>
       </div>
     </div>
@@ -78,6 +92,10 @@
     </ng-template>
 
     <ng-template #emptyNew>
+      <div class="audit-empty-value">-</div>
+    </ng-template>
+
+    <ng-template #emptyAction>
       <div class="audit-empty-value">-</div>
     </ng-template>
   </ng-container>

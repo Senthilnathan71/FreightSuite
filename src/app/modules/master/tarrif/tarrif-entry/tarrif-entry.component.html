@@ -38,26 +38,17 @@
                         (click)="resetForm()">
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
-                    </button>
-
-                    <button  appPreventMultiClick *ngIf="!isEditMode" type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="onSave()" [disabled]="btnDisable">
-      <i class="fas fa-save me-1"></i> Save
-    </button>
-
-                    <div *ngIf="isEditMode" class="d-inline-block">
-                      
-                        <button appPreventMultiClick *ngIf="!isStatusEditable" type="button" class="btn btn-info btn-sm dofi-min-w-80"
-                                (click)="onEditStatusClick()">
-                            <i class="fas fa-save me-1"></i> Save
                         </button>
-
                         
-                        <button appPreventMultiClick *ngIf="isStatusEditable" type="button" class="btn btn-info btn-sm dofi-min-w-80"
-                                (click)="onSave()"  [disabled]="(!mps.can('update') && isEditMode) || btnDisable  ">
-                            <i class="fas fa-save me-1"></i> Save
+                        <button class="btn btn-sm btn-info dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode" (click)="copyTariff()">
+                            <i class="fas fa-copy me-1"></i>
+                            <span>Copy</span>
                         </button>
-                    </div>
+
+                    <button appPreventMultiClick type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="onSave()"
+                        [disabled]="(!mps.can('update') && isEditMode) || btnDisable">
+                        <i class="fas fa-save me-1"></i> Save
+                    </button>
                    
 
                  <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
@@ -536,132 +527,151 @@
 
 
 <ng-template #tariffDetailListTemplate>
-                       
-    <div class="table-responsive mt-1 table-borderless">
-        <table class="table table-hover  no-wrap  table-sm mb-1">
-            <thead>
-               <tr class="bg-info text-center align-middle">
-                    <th class="bg-transparent text-light" rowspan="2" width="1%" style="border-top-left-radius: 10px;"></th>
-                    <th class="bg-transparent text-light" rowspan="2">Slab?</th>
-                    <th class="bg-transparent text-light" rowspan="2">Effective From</th>
-                    <th class="bg-transparent text-light" rowspan="2">Expired On</th>
-                    <th class="bg-transparent text-light" rowspan="2">Charge</th>
-                    <th class="bg-transparent text-light" rowspan="2">Description</th>
-                    <th class="bg-transparent text-light" rowspan="2">Cargo Type</th>
-                    <th class="bg-transparent text-light" rowspan="2">UOM</th>
-                    <!-- Revenue group -->
-                    <th class="bg-transparent text-light text-center" colspan="2" style="border-bottom: none; border-left: 1px solid #eef5f9; border-right: 1px solid #eef5f9;">Revenue</th>
-                    <!-- Cost group -->
-                    <th class="bg-transparent text-light text-center" colspan="2" style="border-bottom: none; border-right: 1px solid #eef5f9;">Cost</th>
-                    <th class="bg-transparent text-light" rowspan="2">Min Sale</th>
-                    <th class="bg-transparent text-light" rowspan="2">Remarks</th>
-                    <th class="bg-transparent text-light" rowspan="2" style="border-top-right-radius: 10px;">Status</th>
-                </tr>
-                <tr class="bg-info text-center">
-                    <th class="bg-transparent text-light" style="border-left: 1px solid #eef5f9;"> Curr</th>
-                    <th class="bg-transparent text-light" style="border-right: 1px solid #eef5f9;"> Unit Price</th>
-                    <th class="bg-transparent text-light" > Curr</th>
-                    <th class="bg-transparent text-light" style="border-right: 1px solid #eef5f9;"> Unit Price</th>
-                </tr>
-              
-            </thead>
-            <tbody>
-                @for (tariffDetail of filteredTariffDetail; track $index) {
-                <ng-template #descriptionTemplate>{{tariffDetail.Description}}</ng-template>
-                <ng-template #remarksTemplate>{{tariffDetail.Remarks}}</ng-template>
-                <ng-template #slabTemplate>{{tariffDetail.SlabFrom}} {{tariffDetail.UOMMaster.UOMName}} - {{tariffDetail.SlabTo}} {{tariffDetail.UOMMaster.UOMName}}</ng-template>
-                <tr>
-                    <td>
-                        <div class="d-flex align-items-center ">
-                            <a class="text-info " (click)="openTariffDetailEntryModal(tariffDetailEntryTemplate,tariffDetail)">
-                                <i class="fas fa-eye text-info cursor-pointer fs-2"></i>
-                            </a>
-                            <a class="link  ps-2  text-danger" (click)="deleteTariffDetail(tariffDetail.TariffDetailSid)">
-                               <i class="fas fa-trash text-danger cursor-pointer fs-2"></i>
-                            </a>
-                        </div>
-                    </td>
-                    <td class="text-center px-2">
-                        @if(tariffDetail.IsSlabApplicable==='Y'){
-                            <div class="text-truncate text-primary cursor-pointer" [ngbPopover]=slabTemplate popoverTitle="Slab Applicable" popoverClass="bg-light-info">
-                                <i-feather name="info" class="feather-sm"></i-feather>
-                            </div>
-                        } @else {
-                            <div class="">
-                                <i-feather name="slash" class="feather-sm"></i-feather>
-                            </div>
-                        }
-                    </td>
-                    <td class="text-center">
-                        {{tariffDetail.EffectiveDate | formatDate}}
-                    </td>
-                    <td class="text-center">
-                        {{tariffDetail.ExpiredOn | formatDate}}
-                    </td>
-                    <td class="text-center">
-                        {{tariffDetail.ChargeCode}}
-                    </td>
-                    <td>
-                        <div class="dofi-max-w-200 text-truncate" [ngbTooltip]=descriptionTemplate>
-                            {{tariffDetail.Description}}
-                        </div>
-                    </td>
-                    <td>
-                        {{tariffDetail.CargoType}}
-                    </td>
-                    <td>
-                        {{tariffDetail.UOMMaster.UOMName}}
-                    </td>
-                    <td class="text-center">
-                        {{tariffDetail.currencyMasterSale.currencyCode}}
-                    </td>
-                    <td class="text-center">
-                        {{tariffDetail.SalePerUnitPrice}}
-                    </td>
-                    <td class="text-center">
-                        {{tariffDetail.currencyMasterBuy.currencyCode}}
-                    </td>
-                    <td class="text-center">
-                        {{tariffDetail.BuyPerUnitPrice}}
-                    </td>
-                    <td class="text-center">
-                        {{tariffDetail.MinSale}}
-                    </td>
-                     <td>
-                        <div class="dofi-max-w-200 text-truncate" [ngbTooltip]=remarksTemplate>
-                            {{tariffDetail.Remarks}}
-                        </div>
-                    </td>
-                    <td>
-                        @if(tariffDetail.status === "A"){
-                        <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                            <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
-                            Active
-                        </div>
-                        } @else {
-                        <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
-                            <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
-                            Suspended
-                        </div>
-                        }
-                    </td>
-                   
-                </tr>
-                }
+  <div class="table-responsive mt-1 table-borderless">
+    <table class="table table-hover no-wrap table-sm mb-1">
+      <thead>
+        <tr class="bg-info text-center align-middle">
+          <th class="bg-transparent text-light" rowspan="2" width="1%" style="border-top-left-radius: 10px;"></th>
+          <th class="bg-transparent text-light" rowspan="2">Slab?</th>
+          <th class="bg-transparent text-light" rowspan="2">Effective From</th>
+          <th class="bg-transparent text-light" rowspan="2">Expired On</th>
+          <th class="bg-transparent text-light" rowspan="2">Charge</th>
+          <th class="bg-transparent text-light" rowspan="2">Description</th>
+          <th class="bg-transparent text-light" rowspan="2">Cargo Type</th>
+          <th class="bg-transparent text-light" rowspan="2">UOM</th>
+          <th class="bg-transparent text-light text-center" colspan="2"
+              style="border-bottom: none; border-left: 1px solid #eef5f9; border-right: 1px solid #eef5f9;">
+            Revenue
+          </th>
+          <th class="bg-transparent text-light text-center" colspan="2"
+              style="border-bottom: none; border-right: 1px solid #eef5f9;">
+            Cost
+          </th>
+          <th class="bg-transparent text-light" rowspan="2">Min Sale</th>
+          <th class="bg-transparent text-light" rowspan="2">Remarks</th>
+          <th class="bg-transparent text-light" rowspan="2" style="border-top-right-radius: 10px;">Status</th>
+        </tr>
+        <tr class="bg-info text-center">
+          <th class="bg-transparent text-light" style="border-left: 1px solid #eef5f9;">Curr</th>
+          <th class="bg-transparent text-light" style="border-right: 1px solid #eef5f9;">Unit Price</th>
+          <th class="bg-transparent text-light">Curr</th>
+          <th class="bg-transparent text-light" style="border-right: 1px solid #eef5f9;">Unit Price</th>
+        </tr>
+      </thead>
 
-            <tr *ngIf="filteredTariffDetail.length === 0">
-                <td colspan="15" class="py-1 text-center">No Record Found</td>
-            </tr>
+      <tbody>
+        @for (detailCtrl of tariffDetails.controls; track $index) {
+          <ng-template #descriptionTemplate>{{ detailCtrl.get('Description')?.value }}</ng-template>
+          <ng-template #remarksTemplate>{{ detailCtrl.get('Remarks')?.value }}</ng-template>
+          <ng-template #slabTemplate>
+            {{ detailCtrl.get('SlabFrom')?.value }} - {{ detailCtrl.get('SlabTo')?.value }}
+          </ng-template>
 
-            </tbody>
-        </table>
-        
-    </div>
-    <div>
-            <ngb-pagination class="d-flex justify-content-end" [collectionSize]="totalNumberOfCollection" [pageSize]="pageSize"
-                [(page)]="page" (pageChange)="updatePaginationData()" [rotate]="true" [ellipses]="false" [maxSize]="5" size="sm">
-            </ngb-pagination>
-        </div>
+          <tr>
+            <td>
+              <div class="d-flex align-items-center">
+                <a class="text-info"
+                   (click)="openTariffDetailEntryModal(tariffDetailEntryTemplate, detailCtrl.getRawValue(), $index)">
+                  <i class="fas fa-eye text-info cursor-pointer fs-2"></i>
+                </a>
+
+                <a class="link ps-2 text-danger"
+                   (click)="deleteTariffDetail($index)">
+                  <i class="fas fa-trash text-danger cursor-pointer fs-2"></i>
+                </a>
+              </div>
+            </td>
+
+            <td class="text-center px-2">
+              @if(detailCtrl.get('IsSlabApplicable')?.value === 'Y'){
+                <div class="text-truncate text-primary cursor-pointer"
+                     [ngbPopover]="slabTemplate"
+                     popoverTitle="Slab Applicable"
+                     popoverClass="bg-light-info">
+                  <i-feather name="info" class="feather-sm"></i-feather>
+                </div>
+              } @else {
+                <div>
+                  <i-feather name="slash" class="feather-sm"></i-feather>
+                </div>
+              }
+            </td>
+
+            <td class="text-center">
+              {{ detailCtrl.get('EffectiveDate')?.value | formatDate }}
+            </td>
+
+            <td class="text-center">
+              {{ detailCtrl.get('ExpiredOn')?.value | formatDate }}
+            </td>
+
+            <td class="text-center">
+              {{ detailCtrl.get('ChargeCode')?.value }}
+            </td>
+
+            <td>
+              <div class="dofi-max-w-200 text-truncate" [ngbTooltip]="descriptionTemplate">
+                {{ detailCtrl.get('Description')?.value }}
+              </div>
+            </td>
+
+            <td>
+              {{ detailCtrl.get('CargoType')?.value }}
+            </td>
+
+            <td>
+  {{ getUOMName(detailCtrl.get('UOMSid')?.value) }}
+</td>
+
+            <td class="text-center">
+  {{ getCurrencyCode(detailCtrl.get('SaleCurrency')?.value) }}
+</td>
+
+
+            <td class="text-center">
+              {{ detailCtrl.get('SalePerUnitPrice')?.value }}
+            </td>
+
+            <td class="text-center">
+  {{ getCurrencyCode(detailCtrl.get('BuyCurrency')?.value) }}
+</td>
+
+            <td class="text-center">
+              {{ detailCtrl.get('BuyPerUnitPrice')?.value }}
+            </td>
+
+            <td class="text-center">
+              {{ detailCtrl.get('MinSale')?.value }}
+            </td>
+
+            <td>
+              <div class="dofi-max-w-200 text-truncate" [ngbTooltip]="remarksTemplate">
+                {{ detailCtrl.get('Remarks')?.value }}
+              </div>
+            </td>
+
+            <td>
+              @if(detailCtrl.get('status')?.value === 'A'){
+                <div class="bg-light-success px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                  <span class="dofi-w-4 dofi-h-4 bg-success d-inline-block rounded"></span>
+                  Active
+                </div>
+              } @else {
+                <div class="bg-light-danger px-2 rounded-pill d-inline-flex align-items-center gap-1">
+                  <span class="dofi-w-4 dofi-h-4 bg-danger d-inline-block rounded"></span>
+                  Suspended
+                </div>
+              }
+            </td>
+          </tr>
+        }
+
+        <tr *ngIf="tariffDetails.controls.length === 0">
+          <td colspan="15" class="py-1 text-center">No Record Found</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </ng-template>
 
 <ng-template #tariffDetailEntryTemplate let-modal>
@@ -1134,25 +1144,11 @@
             </div>
 
             <div class="modal-footer p-1">
-  <!-- Creation mode: Save (existing behaviour) -->
-  <button appPreventMultiClick *ngIf="!isModalEditMode" type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-          (click)="onModalSave()">
-    <i class="fas fa-save me-1"></i> Save
-  </button>
-
-  <!-- Edit-mode: show Edit (to enable only detailstatus) and Save when status-editing -->
-  <div *ngIf="isModalEditMode" class="d-inline-block">
-    <button *ngIf="!isModalStatusEditable" type="button" class="btn btn-info btn-sm dofi-min-w-80"
-            (click)="onEditDetailStatusClick()">
-      <i class="fas fa-edit me-1"></i> Save
-    </button>
-
-    <button appPreventMultiClick *ngIf="isModalStatusEditable" type="button" class="btn btn-info btn-sm dofi-min-w-80"
-            (click)="onModalSave()">
-      <i class="fas fa-save me-1"></i> Save
-    </button>
-  </div>
-</div>
+                <button appPreventMultiClick type="button"
+                    class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onModalSave()">
+                    <i class="fas fa-save me-1"></i> Save
+                </button>
+            </div>
 
         
     </div>

@@ -1,27 +1,18 @@
-
-import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit, Optional, TemplateRef } from '@angular/core';
+﻿import { CommonModule, DatePipe } from '@angular/common';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import {
-  FormBuilder,
-  FormGroup,
-  FormArray,
-  Validators,
-  ReactiveFormsModule,
-  AbstractControl,
-  ValidationErrors,
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
 } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { NgSelectModule } from '@ng-select/ng-select';
 import {
-  NgbDatepickerModule,
-  NgbDropdownModule,
-  NgbModal,
+  NgbDatepickerModule,
+  NgbDropdownModule,
   NgbActiveModal,
-  NgbModalRef,
-  NgbCalendar,
-  NgbDateAdapter,
-  NgbDateParserFormatter, NgbDateStruct,
+  NgbDateAdapter,
+  NgbDateParserFormatter,
 } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -29,547 +20,271 @@ import { MasterService } from '../../master/master.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
-import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
-import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
-import { EdocComponent } from '../../settings/edoc/edoc/edoc.component';
-import { EmailEntryComponent } from '../../settings/email/email-entry/email-entry.component';
-
+import { TogglerComponent } from 'src/app/component/simple-toggler/toggle.component';
 
 @Component({
-  selector: 'app-doc-reference',
-  standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    NgSelectModule,
-    NgbDatepickerModule,
-    NgbDropdownModule,
-    FeatherModule,
-    TextWithNumbersDirective,
-  ],
-  templateUrl: './doc-reference.component.html',
-  styleUrls: ['./doc-reference.component.scss'],
-  providers: [
-    { provide: NgbDateAdapter, useClass: CustomDateAdapter },
-    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
-    DatePipe,
-  ],
+  selector: 'app-doc-reference',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    NgSelectModule,
+    NgbDatepickerModule,
+    NgbDropdownModule,
+    FeatherModule,
+    TextWithNumbersDirective,
+    TogglerComponent
+  ],
+  templateUrl: './doc-reference.component.html',
+  styleUrls: ['./doc-reference.component.scss'],
+  providers: [
+    { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+    DatePipe,
+  ],
 })
 export class DocReferenceComponent implements OnInit {
-  docRefForm!: FormGroup;
-  isEditMode = false;
-  btnDisable = false;
-  loading = false;
-  docRefId!: number;
-  docRefData: any;
-  userData: any;
-  componentData: any;
-  permissions: string[] = [
-    'View',
-    'Edit',
-    'Add',
-    'Delete',
-    'Edoc',
-    'Terms and Condition',
-    'Authority',
-    'Email',
-  ];
-  currentMenuPermissions: any = {};
-  currentMenuId: any;
-  MenuMasterSid!: number;
-  TandCList: any;
-
-
-  auditLogs: any[] = [];
-  auditLogModalRef!: NgbModalRef;
-
-
-  currentCompany: any;
-  currentBranch: any;
-  today = this.calendar.getToday();
-  minDate: NgbDateStruct;
-
-
-  private isSubmitting = false;
-
-
-  statusOptions = [
-    { id: 'Active', name: 'Active', value: 'A' },
-    { id: 'Inactive', name: 'Inactive', value: 'I' },
-  ];
-
-
-  constructor(
-    private fb: FormBuilder,
-    private masterService: MasterService,
-    private http: HttpClient,
-    private route: ActivatedRoute,
-    private router: Router,
-    private appSettingService: AppSettingsService,
-    private calendar: NgbCalendar,
-    private modalService: NgbModal,
-    @Optional() private activeModal: NgbActiveModal,
-    private datePipe: DatePipe,
-  ) {
-    this.initForm();
-    const today = new Date();
-    this.minDate = { year: today.getFullYear(), month: today.getMonth() + 1, day: today.getDate() };
-  }
-
-
-  ngOnInit(): void {
-    this.currentCompany = this.appSettingService.decrypt(
-      localStorage.getItem('selected-company'),
-    );
-    this.currentBranch = this.appSettingService.decrypt(
-      localStorage.getItem('selected-branch'),
-    );
-
-
-    const menuIdRaw = sessionStorage.getItem('currentMenuId');
-    this.MenuMasterSid = menuIdRaw ? Number(menuIdRaw) : 0;
-
-
-    if (!this.MenuMasterSid || isNaN(this.MenuMasterSid)) {
-      this.appSettingService.showError(
-        'MenuMasterSid is missing or invalid. Please set currentMenuId in localStorage.',
-      );
-    }
-
-
-    this.route.params.subscribe((params) => {
-      if (params['id']) {
-        this.docRefId = +params['id'];
-        this.isEditMode = true;
-        this.loadDocumentData();
-      } else {
-        this.addDocumentRow();
-      }
-    });
-
-
-    const userProfile =
-      this.appSettingService.getDecryptedUserProfile();
-    if (userProfile) {
-      this.userData = userProfile;
-     
-    }
-  }
-
-
-  initForm() {
-    this.docRefForm = this.fb.group({
-      documentReferences: this.fb.array([]),
-    });
-  }
-
-
-  get documentReferences(): FormArray {
-    return this.docRefForm.get('documentReferences') as FormArray;
-  }
-
-
-  private maxLengthValidator(max: number) {
-    return (control: AbstractControl): ValidationErrors | null => {
-      if (control.value && control.value.length > max) {
-        return { maxLengthExceeded: { value: control.value.length, max } };
-      }
-      return null;
-    };
-  }
-
-
- 
-  createDocumentFormGroup(data?: any): FormGroup {
-    return this.fb.group({
-      refDocumentNo: [
-        data?.refDocumentNo || '',
-        [Validators.required, this.maxLengthValidator(20)],
-      ],
-      documentDate: [data?.documentDate || '', Validators.required],
-      remarks: [data?.remarks || ''],
-      isPublic: [data?.isPublic ?? true],
-      status: [data?.status || 'Active', Validators.required],
-      documentReferenceSid: [data?.documentReferenceSid || null],
-    });
-  }
-
-
-  addDocumentRow(data?: any) {
-    this.documentReferences.push(this.createDocumentFormGroup(data));
-  }
-
-
-  removeDocumentRow(index: number) {
-    if (this.documentReferences.length > 1) {
-      this.documentReferences.removeAt(index);
-    } else {
-      this.appSettingService.showWarning(
-        'At least one document reference is required',
-      );
-    }
-  }
-
-
-  loadDocumentData() {
-    if (!this.docRefId) return;
-
-
-    this.loading = true;
-    this.http
-      .get<any>(`doc-reference/fetch/${this.docRefId}`)
-      .subscribe({
-        next: (response) => {
-          if (
-            (response.status === true || response.Status === true) &&
-            response.data
-          ) {
-            this.docRefData = response.data;
-            this.populateForm(response.data);
-            this.docRefForm.markAsPristine();
-            this.docRefForm.markAsUntouched();
-          } else {
-            this.appSettingService.showError(
-              response.message || 'Failed to load document data',
-            );
-          }
-          this.loading = false;
-        },
-        error: () => {
-          this.appSettingService.showError('Error loading document data');
-          this.loading = false;
-        },
-      });
-  }
-
-
-  populateForm(data: any) {
-    this.clearFormArray();
-
-
-    let docDate = null;
-    if (data.RefDocumentDate) {
-      const d = new Date(data.RefDocumentDate);
-      docDate = {
-        year: d.getFullYear(),
-        month: d.getMonth() + 1,
-        day: d.getDate(),
-      };
-    }
-
-
-    const statusChar = (data.Status || 'A').toUpperCase();
-    const statusValue = statusChar === 'I' ? 'Inactive' : 'Active';
-
-
-    const formData = {
-      refDocumentNo: data.RefDocumentNo,
-      documentDate: docDate,
-      remarks: data.Remarks || '',
-      isPublic: data.Public === 'Y',
-      status: statusValue,
-      documentReferenceSid: data.RefDocumentSid,
-    };
-
-
-    this.addDocumentRow(formData);
-  }
-
-
- 
-
-  hasAnyDropdownPermission(): boolean {
-    const dropdownButtons = [
-      'Edoc',
-      'Terms and Condition',
-      'Authority',
-      'Email',
-    ];
-    return dropdownButtons.some((btn) =>
-      this.permissions.includes(btn),
-    );
-  }
-
-
-  private preventDuplicateSubmit(): boolean {
-    if (this.isSubmitting) {
-      this.appSettingService.showWarning(
-        'Please wait, previous save is still processing',
-      );
-      return false;
-    }
-    this.isSubmitting = true;
-    setTimeout(() => {
-      this.isSubmitting = false;
-    }, 3000);
-    return true;
-  }
-
-
-  private toStatusChar(status: string): 'A' | 'I' {
-    if (!status) return 'A';
-    if (status === 'Inactive' || status === 'I') return 'I';
-    return 'A';
-  }
-
-
-  onSubmit() {
-    if (!this.preventDuplicateSubmit()) return;
-
-
-    if (this.docRefForm.invalid) {
-      this.markFormGroupTouched(this.docRefForm);
-      this.appSettingService.showWarning(
-        'Please fill all required fields correctly',
-      );
-      this.isSubmitting = false;
-      return;
-    }
-
-
-    if (this.documentReferences.length === 0) {
-      this.appSettingService.showError(
-        'Please add at least one document reference',
-      );
-      this.isSubmitting = false;
-      return;
-    }
-
-
-    const validationErrors: string[] = [];
-    this.documentReferences.controls.forEach((control, index) => {
-      const value = control.value;
-      if (!value.refDocumentNo || value.refDocumentNo.trim() === '') {
-        validationErrors.push(
-          `Reference ${index + 1}: Document No is required`,
-        );
-      }
-      if (
-        value.refDocumentNo &&
-        value.refDocumentNo.trim().length > 20
-      ) {
-        validationErrors.push(
-          `Reference ${index + 1}: Document No cannot exceed 20 characters (${value.refDocumentNo.trim().length} provided)`,
-        );
-      }
-      if (!value.documentDate) {
-        validationErrors.push(
-          `Reference ${index + 1}: Document Date is required`,
-        );
-      }
-      if (!value.status) {
-        validationErrors.push(
-          `Reference ${index + 1}: Status is required`,
-        );
-      }
-    });
-
-
-    if (validationErrors.length) {
-      this.appSettingService.showError(
-        `Validation errors:\n${validationErrors.join('\n')}`,
-      );
-      this.isSubmitting = false;
-      return;
-    }
-
-
-    const currentUserEmail =
-      this.appSettingService.userSettingSource.value['userEmail'];
-
-
-    try {
-      const documentReferencesData = this.documentReferences
-        .getRawValue()
-        .map((doc: any) => {
-          const refDocNo = (doc.refDocumentNo || '').trim();
-          const dateFormatted = this.formatDate(doc.documentDate);
-          const remarksVal = (doc.remarks || '').trim();
-
-
-          let publicVal: boolean;
-          if (typeof doc.isPublic === 'boolean') {
-            publicVal = doc.isPublic;
-          } else if (typeof doc.isPublic === 'string') {
-            const v = doc.isPublic.toLowerCase();
-            publicVal = ['true', '1', 'y', 'yes'].includes(v);
-          } else {
-            publicVal = !!doc.isPublic;
-          }
-
-
-          const statusChar = this.toStatusChar(doc.status);
-
-
-          if (!refDocNo) {
-            throw new Error(
-              'Document No cannot be empty after trimming',
-            );
-          }
-          if (refDocNo.length > 20) {
-            throw new Error(
-              `Document No cannot exceed 20 characters (${refDocNo.length} provided)`,
-            );
-          }
-          if (!dateFormatted) {
-            throw new Error('Document Date is required');
-          }
-
-
-          return {
-            refDocumentNo: refDocNo,
-            documentDate: dateFormatted,
-            remarks: remarksVal,
-            isPublic: publicVal,
-            status: statusChar,
-            ...(doc.documentReferenceSid
-              ? { documentReferenceSid: doc.documentReferenceSid }
-              : {}),
-          };
-        });
-
-
-      const payload = {
-        CompanyMasterSid:
-          this.currentCompany?.CompanyMasterSid,
-        BranchMasterSid:
-          this.currentBranch?.BranchMasterSid,
-        MenuMasterSid: this.MenuMasterSid, 
-        DocumentSid: this.isEditMode ? this.docRefId : 0,
-        documentReferences: documentReferencesData,
-        ...(this.isEditMode
-          ? { updatedBy: currentUserEmail }
-          : { createdBy: currentUserEmail }),
-      };
-
-
-      if (
-        !payload.CompanyMasterSid ||
-        !payload.BranchMasterSid ||
-        !payload.MenuMasterSid
-      ) {
-        this.appSettingService.showError(
-          'Missing company, branch or menu information',
-        );
-        this.isSubmitting = false;
-        return;
-      }
-
-
-      this.btnDisable = true;
-
-
-      this.http
-        .post<any>('doc-reference/create', payload)
-        .subscribe({
-          next: (response) => {
-            const successStatus =
-              response?.Status === true || response?.status === true;
-            const hasData =
-              response?.data &&
-              (!Array.isArray(response.data) ||
-                response.data.length > 0);
-
-
-            if (successStatus && hasData) {
-              this.appSettingService.showSuccess(
-                this.isEditMode
-                  ? 'Document Reference updated successfully!'
-                  : 'Document Reference created successfully!',
-              );
-            } else {
-              const errorMsg =
-                response?.message ||
-                'Save operation failed. Please check all fields and try again.';
-              this.appSettingService.showError(errorMsg);
-              this.btnDisable = false;
-              this.isSubmitting = false;
-            }
-          },
-          error: (error) => {
-            let errorMessage = 'Error saving Document Reference';
-            if (error.error?.message) {
-              errorMessage = error.error.message;
-            } else if (error.message) {
-              errorMessage = error.message;
-            }
-            this.appSettingService.showError(errorMessage);
-            this.btnDisable = false;
-            this.isSubmitting = false;
-            if (this.componentData && this.activeModal) {
-              this.activeModal.dismiss('error');
-            }
-          },
-        });
-    } catch (err: any) {
-      this.appSettingService.showError(
-        'Error preparing data: ' + err.message,
-      );
-      this.btnDisable = false;
-      this.isSubmitting = false;
-      if (this.componentData && this.activeModal) {
-        this.activeModal.dismiss('error');
-      }
+  @Input() docRef: any[] = [];
+  @Input() MenuMasterSid: number;
+  @Input() DocumentSid: number;
+  @Input() CompanyMasterSid: number;
+  @Input() BranchMasterSid: number;
+  @Output() docRefUpdated = new EventEmitter<void>();
+
+  showAddRow = false;
+  showEmptyTemplate: boolean;
+  userData: any;
+  currentCompany: any;
+  currentBranch: any;
+  editIndex: number | null = null;
+
+  addForm: FormGroup;
+  editForm: FormGroup;
+
+  statusList = [
+    { id: 'A', name: 'Active' },
+    { id: 'S', name: 'Suspended' }
+  ];
+
+  constructor(
+    private fb: FormBuilder,
+    private appSettingService: AppSettingsService,
+    private masterService: MasterService,
+    private activeModal: NgbActiveModal,
+  ) {
+    this.addForm = this.fb.group({
+      RefDocumentNo: ['', Validators.required],
+      DocumentDate: [null, Validators.required],
+      Remarks: [''],
+      Public: [false],
+      Status: ['A', Validators.required]
+    });
+
+    this.editForm = this.fb.group({
+      RefDocumentNo: ['', Validators.required],
+      DocumentDate: [null, Validators.required],
+      Remarks: [''],
+      Public: [false],
+      Status: ['A', Validators.required]
+    });
+  }
+
+  ngOnInit(): void {
+    const userProfile = this.appSettingService.getDecryptedUserProfile();
+    if (userProfile) {
+      this.userData = userProfile;
     }
-  }
 
+    const storedCompany = localStorage.getItem('selected-company');
+    this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
 
-  resetForm() {
-    if (this.isEditMode && this.docRefId) {
-      this.loadDocumentData();
-    } else {
-      this.clearFormArray();
-      this.addDocumentRow();
-    }
-  }
+    const storedBranch = localStorage.getItem('selected-branch');
+    this.currentBranch = storedBranch ? this.appSettingService.decrypt(storedBranch) : null;
 
+    this.getDocReference();
+    this.showEmptyTemplate = this.docRef.length === 0 && !this.showAddRow;
+  }
 
-  clearFormArray() {
-    while (this.documentReferences.length !== 0) {
-      this.documentReferences.removeAt(0);
-    }
-  }
+  toggleAddRow() {
+    this.showAddRow = !this.showAddRow;
 
+    if (!this.showAddRow) {
+      this.addForm.reset({
+        RefDocumentNo: '',
+        DocumentDate: null,
+        Remarks: '',
+        Public: false,
+        Status: 'A'
+      });
+    }
 
-  goBack() {
-    if (this.componentData && this.activeModal) {
-      this.activeModal.dismiss('cancel');
-    } else {
-      history.back();
+    this.editIndex = null;
+    this.showEmptyTemplate = this.docRef.length === 0 && !this.showAddRow;
+  }
+
+  async addNewDocRef() {
+    if (this.addForm.invalid) {
+      this.addForm.markAllAsTouched();
+      this.addForm.updateValueAndValidity();
+      this.appSettingService.showWarning('Please fill all the required fields');
+      return;
+    }
+
+    const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
+    const formValue = this.addForm.value;
+
+    const payload = {
+      CompanyMasterSid: this.CompanyMasterSid,
+      BranchMasterSid: this.BranchMasterSid,
+      MenuMasterSid: this.MenuMasterSid,
+      DocumentSid: this.DocumentSid,
+      RefDocumentNo: formValue.RefDocumentNo,
+      RefDocumentDate: formValue.DocumentDate ? new Date(formValue.DocumentDate) : null,
+      Remarks: formValue.Remarks,
+      Public: formValue.Public ? 'Y' : 'N',
+      Status: formValue.Status,
+      CreatedBy: currentUserEmail,
+    };
+
+    try {
+      const resp: any = await this.masterService.createDocReference(payload).toPromise();
+
+      if (resp.status) {
+        this.appSettingService.showSuccess('New Doc Reference is successfully created');
+        this.getDocReference();
+        this.showAddRow = false;
+        this.addForm.reset({
+          RefDocumentNo: '',
+          DocumentDate: null,
+          Remarks: '',
+          Public: false,
+          Status: 'A'
+        });
+      } else {
+        this.appSettingService.showError('Error Creating New Doc Reference');
+      }
+    } catch (error) {
+      console.error('Error Creating New Doc Reference', error);
+      this.appSettingService.showError('Error Creating New Doc Reference');
     }
   }
 
+  closeModal() {
+    this.activeModal.close(false);
+  }
 
-  private markFormGroupTouched(formGroup: FormGroup) {
-    Object.values(formGroup.controls).forEach((control) => {
-      control.markAsTouched();
-      if (control instanceof FormGroup) {
-        this.markFormGroupTouched(control);
-      } else if (control instanceof FormArray) {
-        control.controls.forEach((c) =>
-          this.markFormGroupTouched(c as FormGroup),
-        );
-      }
-    });
-  }
+  getDocReference() {
+    const payload = {
+      MenuMasterSid: this.MenuMasterSid,
+      DocumentSid: this.DocumentSid,
+      CompanyMasterSid: this.CompanyMasterSid,
+      BranchMasterSid: this.BranchMasterSid,
+      Status: 'A'
+    };
 
+    this.masterService.getDocReference(payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.docRef = resp.data || [];
+          this.showEmptyTemplate = this.docRef.length === 0 && !this.showAddRow;
+        } else {
+          this.appSettingService.showError('Error loading Doc Reference');
+        }
+      },
+      (error) => {
+        console.error('Error loading Doc Reference', error);
+        this.appSettingService.showError('Error loading Doc Reference');
+      }
+    );
+  }
 
-  private formatDate(dateValue: any): string | null {
-    if (!dateValue) return null;
+  deleteDocRef(item: any, index: number) {
+    if (!item?.RefDocumentSid) {
+      this.docRef.splice(index, 1);
+      this.showEmptyTemplate = this.docRef.length === 0 && !this.showAddRow;
+      return;
+    }
 
+    this.masterService.deleteDocReference(item.RefDocumentSid).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.appSettingService.showSuccess('Doc Reference deleted successfully');
+          this.docRef.splice(index, 1);
+          this.showEmptyTemplate = this.docRef.length === 0 && !this.showAddRow;
+        } else {
+          this.appSettingService.showError('Error deleting Doc Reference');
+        }
+      },
+      (error) => {
+        console.error('Error deleting Doc Reference', error);
+        this.appSettingService.showError('Error deleting Doc Reference');
+      }
+    );
+  }
 
-    if (dateValue.year && dateValue.month && dateValue.day) {
-      const date = new Date(
-        dateValue.year,
-        dateValue.month - 1,
-        dateValue.day,
-      );
-      return this.datePipe.transform(date, 'yyyy-MM-dd');
-    }
+  editDocRef(item: any, index: number) {
+    this.editIndex = index;
+    this.showAddRow = false;
 
+    this.editForm.patchValue({
+      RefDocumentNo: item.RefDocumentNo || '',
+      DocumentDate: item.RefDocumentDate ? new Date(item.RefDocumentDate) : null,
+      Remarks: item.Remarks || '',
+      Public: item.Public === 'Y',
+      Status: item.Status || 'A'
+    });
+  }
 
-    return this.datePipe.transform(dateValue, 'yyyy-MM-dd');
-  }
+  cancelEdit() {
+    this.editIndex = null;
+    this.editForm.reset({
+      RefDocumentNo: '',
+      DocumentDate: null,
+      Remarks: '',
+      Public: false,
+      Status: 'A'
+    });
+  }
 
+  updateDocRef(item: any, index: number) {
+    if (this.editForm.invalid) {
+      this.editForm.markAllAsTouched();
+      return;
+    }
+
+    const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
+    const formValue = this.editForm.value;
+
+    const payload = {
+      RefDocumentSid: item.RefDocumentSid,
+      RefDocumentNo: formValue.RefDocumentNo,
+      RefDocumentDate: formValue.DocumentDate ? new Date(formValue.DocumentDate) : null,
+      Remarks: formValue.Remarks,
+      Public: formValue.Public ? 'Y' : 'N',
+      Status: formValue.Status,
+      UpdatedBy: currentUserEmail,
+    };
+
+    this.masterService.updateDocReferenceById(item.RefDocumentSid, payload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.appSettingService.showSuccess('Doc Reference updated successfully');
+
+          this.docRef[index].RefDocumentNo = formValue.RefDocumentNo;
+          this.docRef[index].RefDocumentDate = formValue.DocumentDate ? new Date(formValue.DocumentDate) : null;
+          this.docRef[index].Remarks = formValue.Remarks;
+          this.docRef[index].Public = formValue.Public ? 'Y' : 'N';
+          this.docRef[index].Status = formValue.Status;
+
+          this.cancelEdit();
+        } else {
+          this.appSettingService.showError('Error updating Doc Reference');
+        }
+      },
+      (error) => {
+        console.error('Error updating Doc Reference', error);
+        this.appSettingService.showError('Error updating Doc Reference');
+      }
+    );
+  }
 }
-
