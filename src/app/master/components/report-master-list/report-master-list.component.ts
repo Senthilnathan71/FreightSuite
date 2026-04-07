@@ -19,6 +19,7 @@ import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
 import { TableConfig, TableAction } from 'src/app/shared/interfaces/table.interface';
 import { Observable } from 'rxjs';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-report-master-list',
@@ -60,7 +61,8 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
         label: 'View',
         action: 'view',
         tooltip: 'View',
-        condition: (row: any) => true
+        condition: (row: any) => true,
+        state: !this.mps.can('view')
       },
       {
         icon: 'fas fa-trash',
@@ -68,7 +70,8 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
         action: 'delete',
         tooltip: 'Delete',
         class: 'text-danger',
-        condition: (row: any) => true
+        condition: (row: any) => true,
+        state: !this.mps.can('delete')
       }
     ],
     trackByKey: 'ReportMasterSid',
@@ -91,7 +94,8 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
       label: 'Create',
       icon: 'fas fa-plus',
       action: 'create',
-      condition: true
+      condition: true,
+      disabled: !this.mps.can('insert')
     },
     {
       label: 'Report',
@@ -113,7 +117,8 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
     private dialog: MatDialog,
     private appSettingService: AppSettingsService,
     private excelReportService: ExcelExportService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+    public mps : MenuPermissionService,
   ) {
     super(paginationService);
   }
@@ -125,11 +130,16 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
       this.userData = userProfile;
       
     }
+    this.mps.init().subscribe();
 
     this.paginationService.clearState(this.config.storageKey);
 
     // Call parent ngOnInit which will handle state restoration and initial load
     super.ngOnInit();
+  }
+
+  private getErrorMessage(error: any, fallback: string): string {
+    return error?.error?.message || error?.message || fallback;
   }
 
 
@@ -169,7 +179,7 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
   protected override handleSearchError(error: any): void {
     this.tableLoading = false;
     this.spinner.hide();
-    this.appSettingService.showError('Error searching reports.');
+    this.appSettingService.showError(this.getErrorMessage(error, 'Error searching reports.'));
     console.error('Error searching reports', error);
     super.handleSearchError(error);
   }
@@ -267,8 +277,8 @@ export class ReportMasterListComponent extends BaseListComponent implements OnIn
               this.appSettingService.showError(res.message);
             }
           },
-          error: () => {
-            this.appSettingService.showError('Error deleting report.');
+          error: (error) => {
+            this.appSettingService.showError(this.getErrorMessage(error, 'Error deleting report.'));
           }
         });
       }

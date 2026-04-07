@@ -39,7 +39,7 @@
       <div class="action-group" *ngIf="isEditMode">
         <div ngbDropdown container="body" class="d-inline-block">
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" id="dropdownUpload"
-            ngbDropdownToggle [disabled]="!housejobData || houseJobForm?.dirty || cargoForm?.dirty || otherForm?.dirty || detailForm?.dirty">
+            ngbDropdownToggle [disabled]="!housejobData || hasUnsavedChanges()">
             <i class="fas fa-print me-1"></i> Print
           </button>
           <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
@@ -118,12 +118,18 @@
         </button>
       </div>
       <div class="action-group primary">
-        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+        <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
+                [ngClass]="{'btn-info': !hasUnsavedChanges(), 'btn-warning': hasUnsavedChanges()}"
                 appPreventMultiClick
                 (click)="onSubmit()"
-                [disabled]="isSaving || isLoading">
-          <i class="fas fa-save  me-1"></i>
+                [disabled]="isSaving || isLoading || isSubmitting">
+          <i class="fas me-1" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
           <span>{{ isSaving ? 'Saving...' : 'Save' }}</span>
+          <span *ngIf="hasUnsavedChanges()"
+                class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+                title="You have unsaved changes">
+            <span class="visually-hidden">unsaved changes</span>
+          </span>
         </button>
       </div>
       <!-- *ngIf="mps.hasAtLeastOne() && isEditMode" -->
@@ -246,6 +252,9 @@
       <span *ngIf="houseJobForm.get('MBLNo')?.hasError('required')">
         MAWB is required
       </span>
+      <span *ngIf="houseJobForm.get('MBLNo')?.hasError('duplicate')">
+        This MAWBL No already exists
+      </span>
     </div>
   </div>
 </div>
@@ -263,6 +272,16 @@
               </button>
             </div>
             <label for="" class="input-label">MAWBL Date <span class="text-danger">*</span></label>
+            @if(houseJobForm.get('MBLDate')?.touched && houseJobForm.get('MBLDate')?.invalid){
+            <div class="error-message">
+              @if(houseJobForm.get('MBLDate')?.hasError('required')){
+              <span>Required</span>
+              }
+              @if(houseJobForm.get('MBLDate')?.hasError('invalidDate')){
+              <span>MAWBL date must be within the financial year</span>
+              }
+            </div>
+            }
           </div>
         </div>
         <!-- Booking No -->
@@ -1109,6 +1128,11 @@
 
                           <label for="shipmentDateExpected" class="input-label">ETA <span
                               class="text-danger"></span></label>
+                          @if(houseJobForm.get('ETA')?.touched && houseJobForm.get('ETA')?.hasError('etaLessThanOrEqualEtd')){
+                          <div class="error-message">
+                            <span>ETA date should be greater than ETD date</span>
+                          </div>
+                          }
                         </div>
                       </div>
 
@@ -2909,7 +2933,7 @@
 
       <!-- Floating Action Button -->
       <div class="floating-actions">
-        <button class="fab-btn primary" title="Quick Save" (click)="onSubmit()" [disabled]="isSaving || isLoading">
+        <button class="fab-btn primary" title="Quick Save" (click)="onSubmit()" [disabled]="isSaving || isLoading || isSubmitting">
           <i class="fas fa-save"></i>
         </button>
       </div>

@@ -519,9 +519,15 @@
                                         <aside class="col-md-6">
                                             <div class="custom-form-group">
                                                 <input type="text" id="emial" placeholder=""
-                                                    class="custom-input-field sm" formControlName="Email">
+                                                    class="custom-input-field sm" formControlName="Email"
+                                                    (keydown)="preventEmailSpaces($event)"
+                                                    (paste)="preventEmailSpacePaste($event)">
                                                 <label for="text-input" class="input-label">Email <span
                                                         class="text-danger"></span></label>
+                                                <div *ngIf="f['Email'].touched && f['Email'].hasError('invalidEmail')"
+                                                    class="error-message">
+                                                    {{ f['Email']?.errors?.['invalidEmail']?.message || 'Enter a valid email address' }}
+                                                </div>
                                             </div>
                                         </aside>
                                         <aside class="col-md-6">
