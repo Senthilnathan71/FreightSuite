@@ -2054,5 +2054,14 @@ getDefaultBLClausesByDepartment(DepartmentMasterSid: number) {
     );
   }
 
+  createAuditLog(payload:any) {
+    return this.http.post<{ data: any }>('audit-log/create', payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
 
 }

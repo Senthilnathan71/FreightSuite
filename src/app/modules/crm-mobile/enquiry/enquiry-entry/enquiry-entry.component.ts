@@ -2617,21 +2617,18 @@ private parseFloatSafe(value: any): number {
   }
 
 
-  openDocRef(){
-    const modalRef = this.ngbModal.open(DocReferenceComponent, {
-      size: 'lg',
-      centered: true,
-      backdrop: 'static'
-    });
-    const data: any = {
-      CompanyMasterSid: this.currentCompany.CompanyMasterSid,
-      BranchMasterSid: this.currentBranch.BranchMasterSid,
-      MenuMasterSid: this.MenuMasterSid,
-      DocumentSid: this.EnquiryHeaderSid
-    }
+ openDocRef() {
+  const modalRef = this.ngbModal.open(DocReferenceComponent, {
+    size: 'lg',
+    centered: true,
+    backdrop: 'static'
+  });
 
-    this.commonService.documentData.set(data)
-  }
+  modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+  modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+  modalRef.componentInstance.MenuMasterSid = this.MenuMasterSid;
+  modalRef.componentInstance.DocumentSid = this.EnquiryHeaderSid;
+}
 
   // private handleVoiceEnquiryData(): void {
   //   const voiceData = this.leadService.getVoiceEnquiryData();

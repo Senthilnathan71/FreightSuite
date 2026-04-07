@@ -49,7 +49,7 @@ import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
 import { PdfMakeService } from 'src/app/common/pdf';
 import { CommonService } from 'src/app/common/common.service';
-import { Menu } from 'angular-feather/icons';
+import { Download, Menu } from 'angular-feather/icons';
 import { VolumetricAndCbmCalculationService } from 'src/app/core/services/volumetric-and-cbm-calculation.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { SafeInsertShipmentMilestone } from '../../services/shipment-milestone.service';
@@ -3860,6 +3860,23 @@ getVesselVoyBasedOnPorts() {
           menuEmail: this.selectedCustomerBranch?.Email || ''
         }
       });
+      const payload = {
+        tableName: 'BookingHeader',
+        recordId: String(this.bookingData?.BookingHeaderSid),
+        operation: 'EMAIL',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'Send Mail'
+        },
+        newVal: {
+          Email: 'Booking Confirmation Mail Send'
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     } finally {
       this.isSendingMail = false;
       this.spinner.hide();
@@ -4940,6 +4957,23 @@ downloadPDF(type: 'booking' | 'cro'  = 'booking'): void {
     );
 
     this.appSettingService.showSuccess(`${this.getPdfTypeName(type)} downloaded successfully!`);
+    const payload = {
+    tableName: 'BookingHeader',
+    recordId: String(this.bookingData?.BookingHeaderSid),
+    operation: 'PDF',
+    changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+    changes: {
+      action: 'Download Pdf'
+    },
+    newVal: {
+     PDF :`${this.getPdfTypeName(type)} PDF Downloaded`
+    }
+  };
+
+  this.operationService.createAuditLog(payload).subscribe({
+    next: () => {},
+    error: (err) => console.error(err)
+  });
   } catch (error) {
     console.error(`PDF generation error for ${type}:`, error);
     this.appSettingService.showError(`Error generating ${this.getPdfTypeName(type)}. Please try again.`);
@@ -5005,6 +5039,27 @@ async downloadPDFBarCode(qty: number = 1, withCompany: boolean = this.isWithComp
         if (i > 0) pdf.addPage();
         pdf.addImage(imgData, 'JPEG', x, y, labelWidth, labelHeight, undefined, 'FAST');
       }
+      pdf.save(fileName);
+      const payload = {
+        tableName: 'BookingHeader',
+        recordId: String(this.bookingData?.BookingHeaderSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Download'
+        },
+        newVal: {
+          Print: 'BarCode PDF Downloaded',
+          Qty: safeQty
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
+    this.appSettingService.showSuccess('Barcode PDF downloaded successfully!');
+    
     } else {
       // Match without-company print structure:
       // One 4x6 label per page, print content in top 4.5in area,
@@ -5024,10 +5079,28 @@ async downloadPDFBarCode(qty: number = 1, withCompany: boolean = this.isWithComp
         if (i > 0) pdf.addPage();
         pdf.addImage(imgData, 'JPEG', x, y, renderWidth, renderHeight, undefined, 'FAST');
       }
+      pdf.save(fileName);
+      const payload = {
+        tableName: 'BookingHeader',
+        recordId: String(this.bookingData?.BookingHeaderSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Download'
+        },
+        newVal: {
+          Print: 'BarCode 2 PDF Downloaded',
+          Qty: safeQty
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
+    this.appSettingService.showSuccess('Barcode 2 PDF downloaded successfully!');
     }
 
-    pdf.save(fileName);
-    this.appSettingService.showSuccess('Barcode PDF downloaded successfully!');
   } catch (error) {
     console.error('PDF generation error:', error);
     this.appSettingService.showError('Error generating Barcode PDF. Please try again.');
@@ -5379,6 +5452,23 @@ async sendEmail(type: 'booking' | 'cro'  = 'booking'): Promise<void> {
         this.spinner.hide();
         if (resp?.data) {
           this.appSettingService.showSuccess(`${this.getPdfTypeName(type)} sent successfully!`);
+          const payload = {
+            tableName: 'BookingHeader',
+            recordId: String(this.bookingData?.BookingHeaderSid),
+            operation: 'EMAIL',
+            changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+            changes: {
+              action: 'Send Mail'
+            },
+            newVal: {
+              Email: 'Booking Confirmation Mail Send'
+            }
+          };
+
+          this.operationService.createAuditLog(payload).subscribe({
+            next: () => { },
+            error: (err) => console.error(err)
+          });
         } else {
           this.appSettingService.showError('Failed to send email.');
         }
@@ -5847,8 +5937,44 @@ printDiv(divId: string): void {
     modal.close();
     if (withCompany) {
       this.printDivBarcode('printContentBarcode', safeQty);
+      const payload = {
+        tableName: 'BookingHeader',
+        recordId: String(this.bookingData?.BookingHeaderSid),
+        operation: 'PRINT',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'Print'
+        },
+        newVal: {
+          Print: 'BarCode Printed Successfully',
+          Qty: safeQty
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     } else {
       this.printDivBarcodeWithCompany('printContentBarcodeNoCompany', safeQty);
+      const payload = {
+        tableName: 'BookingHeader',
+        recordId: String(this.bookingData?.BookingHeaderSid),
+        operation: 'PRINT',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'Print'
+        },
+        newVal: {
+          Print: 'BarCode 2 Printed Successfully',
+          Qty: safeQty
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     }
   }
 

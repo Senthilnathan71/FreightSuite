@@ -28,6 +28,15 @@ export class AuditLogComponent implements OnInit {
     this.getAuditLog();
   }
 
+  private normalize(val: any): string {
+    return val === null || val === undefined || val === '' ? '-' : String(val).trim();
+  }
+
+  private isActionOnlyOperation(operation: string): boolean {
+    const op = (operation || '').toUpperCase();
+    return ['PRINT', 'PDF', 'EMAIL'].includes(op);
+  }
+
   getAuditLog() {
     if (!this.tableName || !this.recordId || !this.screenName) return;
 
@@ -35,24 +44,21 @@ export class AuditLogComponent implements OnInit {
 
     this.operationService.getAuditLogs(this.tableName, this.recordId, this.screenName).subscribe({
       next: (logs: any[]) => {
-        const normalize = (val: any) =>
-          val === null || val === undefined || val === '' ? '-' : String(val).trim();
-
         const groupedLogs: any = {};
 
         logs.forEach((log: any) => {
           const changedDate = new Date(log.changedAt);
 
-        // group by minute
-        const roundedTime = new Date(
-          changedDate.getFullYear(),
-          changedDate.getMonth(),
-          changedDate.getDate(),
-          changedDate.getHours(),
-          changedDate.getMinutes(),
-          0,
-          0
-        ).toISOString();
+          const roundedTime = new Date(
+            changedDate.getFullYear(),
+            changedDate.getMonth(),
+            changedDate.getDate(),
+            changedDate.getHours(),
+            changedDate.getMinutes(),
+            0,
+            0
+          ).toISOString();
+
           const groupKey = `${roundedTime}-${log.changedBy}-${log.operation}`;
 
           if (!groupedLogs[groupKey]) {
@@ -60,6 +66,7 @@ export class AuditLogComponent implements OnInit {
               changedAt: log.changedAt,
               changedBy: log.changedBy,
               operation: log.operation,
+              isActionOnly: this.isActionOnlyOperation(log.operation),
               sections: {}
             };
           }
@@ -72,7 +79,8 @@ export class AuditLogComponent implements OnInit {
             groupedLogs[groupKey].sections[sectionTitle] = {
               title: sectionTitle,
               oldValDisplay: [],
-              newValDisplay: []
+              newValDisplay: [],
+              actionDisplay: []
             };
           }
 
@@ -84,12 +92,16 @@ export class AuditLogComponent implements OnInit {
           ]);
 
           allKeys.forEach((field) => {
-            const oldVal = normalize(oldObj[field]);
-            const newVal = normalize(newObj[field]);
+            const oldVal = this.normalize(oldObj[field]);
+            const newVal = this.normalize(newObj[field]);
 
             if (oldVal !== newVal) {
-              groupedLogs[groupKey].sections[sectionTitle].oldValDisplay.push(`${field} : ${oldVal}`);
-              groupedLogs[groupKey].sections[sectionTitle].newValDisplay.push(`${field} : ${newVal}`);
+              if (groupedLogs[groupKey].isActionOnly) {
+                groupedLogs[groupKey].sections[sectionTitle].actionDisplay.push(`${field} : ${newVal}`);
+              } else {
+                groupedLogs[groupKey].sections[sectionTitle].oldValDisplay.push(`${field} : ${oldVal}`);
+                groupedLogs[groupKey].sections[sectionTitle].newValDisplay.push(`${field} : ${newVal}`);
+              }
             }
           });
         });
@@ -97,10 +109,12 @@ export class AuditLogComponent implements OnInit {
         this.auditLogs = Object.values(groupedLogs)
           .map((group: any) => ({
             ...group,
-            sections: Object.values(group.sections).filter(
-              (section: any) =>
-                section.oldValDisplay.length > 0 || section.newValDisplay.length > 0
-            )
+            sections: Object.values(group.sections).filter((section: any) => {
+              if (group.isActionOnly) {
+                return section.actionDisplay.length > 0;
+              }
+              return section.oldValDisplay.length > 0 || section.newValDisplay.length > 0;
+            })
           }))
           .filter((group: any) => group.sections.length > 0);
 
