@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { ActivatedRoute, Router } from '@angular/router';
 import { ReportService, ReportCard, ReportParameter } from '../../../shared/services/report.service';
 import { finalize } from 'rxjs/operators';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 
 @Component({
   selector: 'app-report-parameter-config',
@@ -36,7 +37,8 @@ export class ReportParameterConfigComponent implements OnInit {
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private reportService: ReportService
+    private reportService: ReportService,
+    private appSettingsService: AppSettingsService
   ) {}
 
   ngOnInit(): void {
@@ -185,6 +187,8 @@ export class ReportParameterConfigComponent implements OnInit {
       ParameterQuery: formValue.ParameterQuery || null,
       IsMandatory: formValue.IsMandatory,
       Status: formValue.Status,
+      CreatedBy: this.appSettingsService.userSettingSource.value?.userEmail,
+      UpdatedBy: this.appSettingsService.userSettingSource.value?.userEmail,
       ReportMasterSid: this.reportId
     };
 

@@ -190,6 +190,8 @@
                 placeholder=""
                 class="custom-input-field sm"
                 formControlName="userEmail"
+                (input)="sanitizeEmailInput()"
+                (paste)="sanitizeEmailPaste($event)"
               />
               <label for="text-input" class="input-label"
                 >Email Id <span class="text-danger"></span
@@ -201,7 +203,7 @@
                 @if(userForm.get('userEmail')?.hasError('required')){
                 <div>Required</div>
                 } @else if(userForm.get('userEmail')?.hasError('invalidEmail')){
-                <div>Invalid email format</div>
+                <div>{{ userForm.get('userEmail')?.errors?.['invalidEmail']?.message }}</div>
                 } @else if(userForm.get('userEmail')?.hasError('maxlength')){
                 <div>Max 50 Chars</div>
                 }

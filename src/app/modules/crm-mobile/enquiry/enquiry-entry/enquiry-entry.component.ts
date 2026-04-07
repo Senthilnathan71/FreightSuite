@@ -1689,6 +1689,19 @@ private parseFloatSafe(value: any): number {
     }
   }
 
+  preventEmailSpaces(event: KeyboardEvent): void {
+    if (event.key === ' ') {
+      event.preventDefault();
+    }
+  }
+
+  preventEmailSpacePaste(event: ClipboardEvent): void {
+    const pastedText = event.clipboardData?.getData('text') ?? '';
+    if (/\s/.test(pastedText)) {
+      event.preventDefault();
+    }
+  }
+
   hasInvalidCargoFields(): boolean {
   let hasInvalid = false;
 
@@ -2991,7 +3004,7 @@ private parseFloatSafe(value: any): number {
 
   getValidationErrorMessage(): string {
   const form = this.rateRequestForm;
-  const missingFields: string[] = [];
+  const validationIssues: string[] = [];
 
   // Define field labels for better readability
   const fieldLabels: { [key: string]: string } = {
@@ -3019,35 +3032,36 @@ private parseFloatSafe(value: any): number {
 
   // Check main form fields
   if (form.get('shipmentDate')?.invalid) {
-    missingFields.push(fieldLabels['shipmentDate']);
+    validationIssues.push(`${fieldLabels['shipmentDate']} is required`);
   }
 
   if (form.get('Segment')?.invalid) {
-    missingFields.push(fieldLabels['Segment']);
+    validationIssues.push(`${fieldLabels['Segment']} is required`);
   }
 
   // Check Customer/Lead based on toggle
   const isCustomer = form.get('LeadOrCustomer')?.value;
   if (isCustomer && form.get('CustomerMasterSid')?.invalid) {
-    missingFields.push(fieldLabels['CustomerMasterSid']);
+    validationIssues.push(`${fieldLabels['CustomerMasterSid']} is required`);
   } else if (!isCustomer && form.get('PreCustomerMasterSid')?.invalid) {
-    missingFields.push(fieldLabels['PreCustomerMasterSid']);
+    validationIssues.push(`${fieldLabels['PreCustomerMasterSid']} is required`);
   }
 
-  // Check email format if filled
-  if (form.get('Email')?.hasError('singleEmail')) {
-    missingFields.push('Valid Email Address');
+  const emailControl = form.get('Email');
+  const emailErrorMessage = emailControl?.errors?.['invalidEmail']?.message;
+  if (emailErrorMessage) {
+    validationIssues.push(`Email: ${emailErrorMessage}`);
   }
 
   // Check contact number format if filled
   if (form.get('ContactNumber')?.hasError('invalidPhoneNumber')) {
-    missingFields.push('Valid Contact Number');
+    validationIssues.push('Contact Number: Enter a valid contact number');
   }
 
   // Check authorizer status if applicable
   if (this.isAuthorizedUser && !this.isApproved) {
     if (form.get('authorizerStatus')?.invalid) {
-      missingFields.push(fieldLabels['authorizerStatus']);
+      validationIssues.push(`${fieldLabels['authorizerStatus']} is required`);
     }
   }
 
@@ -3057,11 +3071,11 @@ private parseFloatSafe(value: any): number {
     const routeLabel = `Route ${routeIndex + 1}`;
 
     if (route.get('POL')?.invalid) {
-      missingFields.push(`${routeLabel} - ${fieldLabels['POL']}`);
+      validationIssues.push(`${routeLabel} - ${fieldLabels['POL']} is required`);
     }
 
     if (route.get('POD')?.invalid) {
-      missingFields.push(`${routeLabel} - ${fieldLabels['POD']}`);
+      validationIssues.push(`${routeLabel} - ${fieldLabels['POD']} is required`);
     }
 
     // Check cargo within route
@@ -3076,27 +3090,27 @@ private parseFloatSafe(value: any): number {
         const control = cargo.get(fieldName);
         if (control?.invalid) {
           const label = fieldLabels[fieldName] || fieldName;
-          missingFields.push(`${cargoLabel} - ${label}`);
+          validationIssues.push(`${cargoLabel} - ${label} is required`);
         }
       });
 
       // Special check for Gross Weight > Net Weight
       if (cargo.get('GrossWeight')?.hasError('grossNotGreater')) {
-        missingFields.push(`${cargoLabel} - Gross Weight must be greater than Net Weight`);
+        validationIssues.push(`${cargoLabel} - Gross Weight must be greater than Net Weight`);
       }
     });
   });
 
   // Build error message
-  if (missingFields.length === 0) {
+  if (validationIssues.length === 0) {
     return 'Please fill all required fields correctly.';
   }
 
-  if (missingFields.length === 1) {
-    return `Please fill the required field: ${missingFields[0]}`;
+  if (validationIssues.length === 1) {
+    return `Please correct this field: ${validationIssues[0]}`;
   }
 
-  return `Please fill the following required fields:\n• ${missingFields.join('\n• ')}`;
+  return `Please correct the following fields:\n- ${validationIssues.join('\n- ')}`;
 }
 private getRequiredCargoFields(): string[] {
   if (this.selectedFCLLCL === 'FCL') {

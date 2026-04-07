@@ -98,13 +98,33 @@ export class EmailValidators {
     return (control: AbstractControl): ValidationErrors | null => {
       if (!control.value) return null;
 
-      const email = control.value.trim();
+      const email = String(control.value);
+      if (email !== email.trim()) {
+        return {
+          invalidEmail: {
+            message: 'Email should not contain leading or trailing spaces',
+            value: email,
+            examples: 'Expected format: user@example.com or NA'
+          }
+        };
+      }
+
       if (email.length === 0) return { required: true };
 
       // Allow NA variations without validation
       const naVariations = ['NA', 'Na', 'nA', 'na'];
       if (naVariations.includes(email)) {
         return null;
+      }
+
+      if (email.includes(',') || email.includes(';')) {
+        return {
+          invalidEmail: {
+            message: 'Only one email address is allowed',
+            value: email,
+            examples: 'Expected format: user@example.com or NA'
+          }
+        };
       }
 
       // RFC 5322 compliant regex (official email standard)

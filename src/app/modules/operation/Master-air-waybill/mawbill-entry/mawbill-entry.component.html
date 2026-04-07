@@ -20,7 +20,7 @@
             <div class="action-group" *ngIf="isEditMode">
                 <div ngbDropdown container="body" class="d-inline-block">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" id="dropdownUpload"
-                        ngbDropdownToggle [disabled]="!masterAirWayData || masterJobForm?.dirty || containerFormGroup?.dirty">
+                        ngbDropdownToggle [disabled]="!masterAirWayData || hasUnsavedChanges()">
                         <i class="fas fa-print me-1"></i> Print
                     </button>
                     <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
@@ -78,12 +78,18 @@
 
 
             <div class="action-group">
-                <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
+                [ngClass]="{'btn-info': !hasUnsavedChanges(), 'btn-warning': hasUnsavedChanges()}"
                 appPreventMultiClick
                  (click)="onSubmit()"
-                    [disabled]="isSaving || (!mps.can('update') && isEditMode)">
+                    [disabled]="isSaving || isLoading || (!mps.can('update') && isEditMode)">
                     <i class="fas fa-save me-1"></i>
-                    <span>Save</span>
+                    <span>{{ isSaving ? 'Saving...' : 'Save' }}</span>
+                    <span *ngIf="hasUnsavedChanges()"
+                          class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+                          title="You have unsaved changes">
+                        <span class="visually-hidden">unsaved changes</span>
+                    </span>
                 </button>
             </div>
             <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
@@ -219,6 +225,9 @@
                                                 <div class="error-message">
                                                     @if(masterJobForm.get('MasterJobDate')?.hasError('required')){
                                                     <span>Required</span>
+                                                    }
+                                                    @if(masterJobForm.get('MasterJobDate')?.hasError('invalidDate')){
+                                                    <span>Master Job Date must be within the financial year</span>
                                                     }
                                                 </div>
                                                 }
@@ -716,6 +725,10 @@
                                                     </button>
                                                 </div>
                                                 <label class="input-label">ETA <span class="text-danger"></span></label>
+                                                <div class="error-message"
+                                                    *ngIf="masterJobForm.get('ETA')?.touched && masterJobForm.get('ETA')?.hasError('etaLessThanOrEqualEtd')">
+                                                    <span>ETA date should be greater than ETD date</span>
+                                                </div>
                                             </div>
                                         </div>
 

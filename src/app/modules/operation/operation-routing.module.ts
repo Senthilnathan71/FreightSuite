@@ -150,6 +150,7 @@ export const OperationRoutes: Routes = [
       {
         path: 'mawbill/entry',
         component: MawbillEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Master Air Waybill',
           urls: [{ title: 'operation', url: '/operation' }, { title: 'Master Air Waybill' }],
@@ -158,6 +159,7 @@ export const OperationRoutes: Routes = [
       {
         path: 'mawbill/entry/:id',
         component: MawbillEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Master Air Waybill',
           urls: [{ title: 'operation', url: '/operation' }, { title: 'Master Air Waybill' }],
@@ -370,6 +372,7 @@ export const OperationRoutes: Routes = [
       {
         path: 'house-job/entry',
         component: HouseJobEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'House Job',
           urls: [{ title: 'Master', url: '/master' }, { title: 'House Job' }],
@@ -378,6 +381,7 @@ export const OperationRoutes: Routes = [
       {
         path: 'house-job/entry/:id',
         component: HouseJobEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'House Job',
           urls: [{ title: 'Master', url: '/master' }, { title: 'House Job' }],
@@ -555,6 +559,7 @@ export const OperationRoutes: Routes = [
       {
         path: 'agent-master-air-waybill/entry',
         component: AgentMasterAirWaybillEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Agent Master Air Waybill',
           urls: [{ title: 'operation', url: '/operation' }, { title: 'Agent Master Air Waybill' }],
@@ -563,6 +568,7 @@ export const OperationRoutes: Routes = [
       {
          path: 'agent-master-air-waybill/entry/:id',
          component: AgentMasterAirWaybillEntryComponent,
+         canDeactivate: [UnsavedChangesGuard],
          data: {
            title: 'Agent Master Air Waybill',
            urls: [{ title: 'operation', url: '/operation' }, { title: 'Agent Master Air Waybill' }],

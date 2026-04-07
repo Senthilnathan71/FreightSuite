@@ -1,4 +1,4 @@
-import { Component, ViewChild, TemplateRef, OnInit, OnDestroy, ChangeDetectorRef, ViewEncapsulation } from '@angular/core';
+import { Component, ViewChild, TemplateRef, OnInit, OnDestroy, ChangeDetectorRef, ViewEncapsulation, HostListener } from '@angular/core';
 import {
   NgbAccordionModule,
   NgbDatepickerModule,
@@ -59,6 +59,8 @@ import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical
 import { getDefaultTodayDate,toNgbDateStruct } from 'src/app/common/helper';
 import { MawbPreprintComponent } from '../report/mawb-preprint/mawb-preprint.component';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { extractBackendErrorMessage } from 'src/app/common/error-handling/payload-validation-handler';
 @Component({
   selector: 'app-mawbill-entry',
   standalone: true,
@@ -102,7 +104,7 @@ import { AuditLogComponent } from '../../audit-log/audit-log.component';
     DatePipe
   ],
 })
-export class MawbillEntryComponent implements OnInit, OnDestroy {
+export class MawbillEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
 
   private destroy$ = new Subject<void>();
   private vesselSearchSubject = new Subject<{POL: string | number, POD: string | number, MovementType: string}>();
@@ -249,6 +251,10 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
   selectedTransferCompanySid: number | null = null;
   selectedTransferBranchSid: number | null = null;
   isPullingToImportBranch = false;
+  isDirty = false;
+  private initialConnectionsCount = 0;
+  private initialContainersCount = 0;
+  private formSaved = false;
   tabs = [
     { name: 'Master', icon: 'fas fa-database' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
@@ -451,6 +457,64 @@ export class MawbillEntryComponent implements OnInit, OnDestroy {
     if (['Y', 'YES', 'TRUE', '1'].includes(normalized)) return true;
     if (['N', 'NO', 'FALSE', '0'].includes(normalized)) return false;
     return defaultValue;
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    if (this.formSaved) {
+      return false;
+    }
+
+    if (this.masterJobForm?.dirty) {
+      return true;
+    }
+
+    if (this.masterJobContainers?.length !== this.initialContainersCount) {
+      return true;
+    }
+
+    if (this.connectionResult?.length !== this.initialConnectionsCount) {
+      return true;
+    }
+
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (this.isSaving || this.isLoading) {
+        resolve(false);
+        return;
+      }
+
+      if (!this.validateBeforeSave()) {
+        resolve(false);
+        return;
+      }
+
+      this.submitForm(resolve);
+    });
+  }
+
+  private resetDirtyState(): void {
+    this.isDirty = false;
+    this.formSaved = false;
+    this.masterJobForm?.markAsPristine();
+    this.containerFormGroup?.markAsPristine();
+    this.initialContainersCount = this.masterJobContainers?.length || 0;
+    this.initialConnectionsCount = this.connectionResult?.length || 0;
+  }
+
+  private markAsDirty(): void {
+    this.isDirty = true;
+    this.formSaved = false;
   }
 onCarrierChangeForAir(carrier: any): void {
   if (this.isExportToImportCompleted && !this.isLoading) {
@@ -790,6 +854,9 @@ private showNoMawbStockWarningOnce(warningKey: string): void {
     });
     this.masterJobForm.valueChanges.subscribe(() => {
       this.syncFormValueWithRateComponent();
+      if (this.masterJobForm.dirty) {
+        this.formSaved = false;
+      }
     });
   }
 
@@ -1010,7 +1077,11 @@ private enableManualMawbEntryForBlankEditRecord(): void {
 }
 
 private handleMawbSaveError(error: any, action: 'create' | 'update'): void {
-  const backendMessage = error?.error?.message || error?.message || '';
+  const fallbackMessage =
+    action === 'create'
+      ? 'Failed to create Master Air Waybill'
+      : 'Failed to update Master Air Waybill';
+  const backendMessage = extractBackendErrorMessage(error, fallbackMessage);
 
   if (backendMessage.includes('No MAWB stock available for auto allocation')) {
     this.enableManualMawbEntryFallback(backendMessage);
@@ -1030,11 +1101,7 @@ private handleMawbSaveError(error: any, action: 'create' | 'update'): void {
     return;
   }
 
-  this.toastr.error(
-    action === 'create'
-      ? 'Failed to create Master Air Waybill'
-      : 'Failed to update Master Air Waybill'
-  );
+  this.toastr.error(fallbackMessage);
 }
 
 
@@ -1201,6 +1268,7 @@ loadMawbStock(data: any): void {
         } else {
           this.arapData = [];
         }
+        this.resetDirtyState();
         this.isSaving = false;
         this.isLoading = false;
         this.spinner.hide();
@@ -2005,6 +2073,199 @@ loadMawbStock(data: any): void {
     control.setErrors(Object.keys(updatedErrors).length ? updatedErrors : null);
   }
 
+  private getControlLabel(controlName: string): string {
+    const controlLabelMap: { [key: string]: string } = {
+      DepartmentMasterSid: 'Department',
+      MasterJobNumber: 'Master Job Number',
+      MasterJobDate: 'Master Job Date',
+      FreightPPCC: 'Freight PP/CC',
+      MBLNo: 'MAWB',
+      MBLDate: 'MAWB Date',
+      NoofOriginal: 'No Of Original',
+      POL: 'POL',
+      POD: 'POD',
+      Status: 'Status',
+      ETA: 'ETA',
+      ETD: 'ETD',
+      CarrierName: 'Carrier'
+    };
+
+    return controlLabelMap[controlName] || controlName;
+  }
+
+  private getControlTab(controlName: string): string {
+    const controlTabMap: { [key: string]: string } = {
+      Status: 'Others'
+    };
+
+    return controlTabMap[controlName] || 'Master';
+  }
+
+  private showControlValidationError(controlName: string): void {
+    const invalidControl = this.masterJobForm.get(controlName);
+    if (!invalidControl) {
+      this.toastr.error('Please correct the highlighted fields');
+      return;
+    }
+
+    this.selectedTab = this.getControlTab(controlName);
+    const label = this.getControlLabel(controlName);
+
+    if (invalidControl.hasError('required')) {
+      this.toastr.error(`${label} is required`);
+      return;
+    }
+
+    if (invalidControl.hasError('maxlength')) {
+      const maxlength = invalidControl.getError('maxlength')?.requiredLength;
+      this.toastr.error(maxlength ? `${label} allows maximum ${maxlength} characters` : `${label} exceeds allowed length`);
+      return;
+    }
+
+    if (invalidControl.hasError('samePort')) {
+      this.toastr.error('POL and POD cannot be the same port');
+      return;
+    }
+
+    if (invalidControl.hasError('invalidDate')) {
+      this.toastr.error('Master Job Date must be within the financial year');
+      return;
+    }
+
+    if (invalidControl.hasError('etaLessThanOrEqualEtd')) {
+      this.toastr.error('ETA date should be greater than ETD date');
+      return;
+    }
+
+    if (invalidControl.hasError('duplicate')) {
+      this.toastr.error(`${label} already exists`);
+      return;
+    }
+
+    this.toastr.error(`${label} is invalid. Please correct it.`);
+  }
+
+  private showFirstFormError(): void {
+    const firstInvalidControlName = Object.keys(this.masterJobForm.controls)
+      .find((controlName) => this.masterJobForm.get(controlName)?.invalid);
+
+    if (!firstInvalidControlName) {
+      this.toastr.error('Please fill all required fields');
+      return;
+    }
+
+    this.showControlValidationError(firstInvalidControlName);
+  }
+
+  private validateBeforeSave(): boolean {
+    this.clearControlError(this.masterJobForm.get('ETA'), 'etaLessThanOrEqualEtd');
+    this.clearControlError(this.masterJobForm.get('MasterJobDate'), 'invalidDate');
+    this.clearControlError(this.masterJobForm.get('POL'), 'samePort');
+    this.clearControlError(this.masterJobForm.get('POD'), 'samePort');
+
+    const fy = this.appSettingsService.getCurrentFinancialYear();
+    if (fy) {
+      const masterJobDateValue = this.masterJobForm.getRawValue().MasterJobDate;
+      const masterJobDate = new Date(masterJobDateValue);
+      const fyStartDate = new Date(fy.StartDate);
+      const fyEndDate = new Date(fy.EndDate);
+
+      if (masterJobDateValue && (masterJobDate < fyStartDate || masterJobDate > fyEndDate)) {
+        this.setControlError(this.masterJobForm.get('MasterJobDate'), 'invalidDate', true);
+        this.masterJobForm.get('MasterJobDate')?.markAsTouched();
+        this.showControlValidationError('MasterJobDate');
+        return false;
+      }
+    }
+
+    const etdValue = this.masterJobForm.get('ETD')?.value;
+    const etaValue = this.masterJobForm.get('ETA')?.value;
+    if (etdValue && etaValue) {
+      const etdDate = new Date(etdValue);
+      const etaDate = new Date(etaValue);
+      if (!isNaN(etdDate.getTime()) && !isNaN(etaDate.getTime()) && etaDate <= etdDate) {
+        this.setControlError(this.masterJobForm.get('ETA'), 'etaLessThanOrEqualEtd', true);
+        this.masterJobForm.get('ETA')?.markAsTouched();
+        this.showControlValidationError('ETA');
+        return false;
+      }
+    }
+
+    this.formSubmitted = true;
+    this.masterJobForm.markAllAsTouched();
+
+    const isAirImport = (
+      this.selectedDepartment?.departmentType?.toUpperCase() === 'AIR' &&
+      this.selectedDepartment?.ExportImport?.toUpperCase() === 'IMPORT'
+    );
+    const isAirExport = (
+      this.selectedDepartment?.departmentType?.toUpperCase() === 'AIR' &&
+      this.selectedDepartment?.ExportImport?.toUpperCase() === 'EXPORT'
+    );
+
+    const carrierControl = this.masterJobForm.get('CarrierName');
+    if (isAirExport && this.isMawbStockAllocationEnabled && carrierControl?.invalid) {
+      carrierControl.markAsTouched();
+      this.showControlValidationError('CarrierName');
+      return false;
+    }
+
+    const mblNoValue = this.masterJobForm.get('MBLNo')?.value?.trim();
+    const requiresAirExportMawb = this.allowManualMawbEntryOnAutoAllocationError || this.isEditMode;
+
+    if (isAirExport && !mblNoValue && requiresAirExportMawb) {
+      this.setControlError(this.masterJobForm.get('MBLNo'), 'required', true);
+      this.masterJobForm.get('MBLNo')?.markAsTouched();
+      this.showControlValidationError('MBLNo');
+      return false;
+    }
+
+    if (isAirImport && !mblNoValue) {
+      this.setControlError(this.masterJobForm.get('MBLNo'), 'required', true);
+      this.masterJobForm.get('MBLNo')?.markAsTouched();
+      this.showControlValidationError('MBLNo');
+      return false;
+    }
+
+    const polSid = this.masterJobForm.get('POL')?.value;
+    const podSid = this.masterJobForm.get('POD')?.value;
+
+    if (polSid && podSid && polSid === podSid) {
+      this.setControlError(this.masterJobForm.get('POL'), 'samePort', true);
+      this.setControlError(this.masterJobForm.get('POD'), 'samePort', true);
+      this.masterJobForm.get('POL')?.markAsTouched();
+      this.masterJobForm.get('POD')?.markAsTouched();
+      this.showControlValidationError('POL');
+      return false;
+    }
+
+    if (polSid && !podSid) {
+      this.setControlError(this.masterJobForm.get('POD'), 'required', true);
+      this.masterJobForm.get('POD')?.markAsTouched();
+      this.showControlValidationError('POD');
+      return false;
+    }
+
+    if (podSid && !polSid) {
+      this.setControlError(this.masterJobForm.get('POL'), 'required', true);
+      this.masterJobForm.get('POL')?.markAsTouched();
+      this.showControlValidationError('POL');
+      return false;
+    }
+
+    if (this.masterJobForm.invalid) {
+      this.showFirstFormError();
+      return false;
+    }
+
+    if (!this.costEntryComponent.validateRateArray()) {
+      this.selectedTab = 'Rate';
+      return false;
+    }
+
+    return true;
+  }
+
   // Handle POL change
   handlePOLChange(selectedPort: any) {
     if (!selectedPort) {
@@ -2033,111 +2294,27 @@ loadMawbStock(data: any): void {
 
 
   onSubmit(): void {
-     const fy = this.appSettingsService.getCurrentFinancialYear();
-    if(fy){
-      const MasterJobDate =new Date (this. masterJobForm.getRawValue().MasterJobDate);
-      const fyStartDate = new Date(fy.StartDate);
-      const fyEndDate = new Date(fy.EndDate);
-      if(MasterJobDate < fyStartDate || MasterJobDate > fyEndDate){
-        this.toastr.error('The date of the master job must be between the financial year start date and end date');
-        this.masterJobForm.get('MasterJobDate')?.setErrors({ invalidDate: true });
-        return;
-      }
-    }
-
-    const etdValue = this.masterJobForm.get('ETD')?.value;
-    const etaValue = this.masterJobForm.get('ETA')?.value;
-    if (etdValue && etaValue) {
-      const etdDate = new Date(etdValue);
-      const etaDate = new Date(etaValue);
-      if (!isNaN(etdDate.getTime()) && !isNaN(etaDate.getTime()) && etaDate <= etdDate) {
-        this.toastr.error('ETA date should be greater than ETD date');
-        this.masterJobForm.get('ETA')?.setErrors({ etaLessThanOrEqualEtd: true });
-        this.masterJobForm.get('ETA')?.markAsTouched();
-        this.selectedTab = 'Master';
-        return;
-      }
-    }
-
-     this.formSubmitted = true;
-     // First check form validity
-    this.masterJobForm.markAllAsTouched();
-    
-    // Check specific validation for Air Import
-    const isAirImport = (
-        this.selectedDepartment?.departmentType?.toUpperCase() === 'AIR' &&
-        this.selectedDepartment?.ExportImport?.toUpperCase() === 'IMPORT'
-    );
-     const isAirExport = (
-    this.selectedDepartment?.departmentType?.toUpperCase() === 'AIR' &&
-    this.selectedDepartment?.ExportImport?.toUpperCase() === 'EXPORT'
-  );
-    const carrierControl = this.masterJobForm.get('CarrierName');
-    if (isAirExport && this.isMawbStockAllocationEnabled && carrierControl?.invalid) {
-        carrierControl.markAsTouched();
-        this.toastr.warning('Please select Carrier for Air Export', 'Carrier Required');
-        return;
-    }
-    const mblNoValue = this.masterJobForm.get('MBLNo')?.value;
-    const requiresAirExportMawb =
-        this.allowManualMawbEntryOnAutoAllocationError ||
-        this.isEditMode;
-
-    if (
-        isAirExport &&
-        (!mblNoValue || mblNoValue.trim() === '') &&
-        requiresAirExportMawb
-    ) {
-        this.toastr.warning('Please select or enter MAWB number for Air Export', 'MAWB Required');
-        this.masterJobForm.get('MBLNo')?.markAsTouched();
-        this.masterJobForm.get('MBLNo')?.setErrors({ required: true });
-        return;
-    }
-    else if (isAirImport && (!mblNoValue || mblNoValue.trim() === '')) {
-        this.toastr.warning('Please enter MAWB number for Air Import', 'MAWB Required');
-        // Highlight the MBLNo field
-        this.masterJobForm.get('MBLNo')?.markAsTouched();
-        this.masterJobForm.get('MBLNo')?.setErrors({ required: true });
-        return;
-    }
-
-      const polSid = this.masterJobForm.get('POL')?.value;
-  const podSid = this.masterJobForm.get('POD')?.value;
-  
-  if (polSid && podSid && polSid === podSid) {
-    this.toastr.error('POL and POD cannot be the same port');
-    this.masterJobForm.get('POL')?.setErrors({ samePort: true });
-    this.masterJobForm.get('POD')?.setErrors({ samePort: true });
-    return;
-  }
-if (polSid && !podSid) {
-    this.toastr.error('POD is required when POL is selected');
-    this.masterJobForm.get('POD')?.setErrors({ required: true });
-    this.masterJobForm.get('POD')?.markAsTouched();
-    return;
-  }
-  if(podSid && !polSid){
-    this.toastr.error('POL is required when POD is selected');
-    this.masterJobForm.get('POL')?.setErrors({ required: true });
-    this.masterJobForm.get('POL')?.markAsTouched();
-    return;
-  }
-    
-    // Check general form validity
-    if (this.masterJobForm.invalid) {
-        this.toastr.error('Please fill all required fields');
-        return;
-    }
-
-    if (!this.costEntryComponent.validateRateArray()) {
-      this.selectedTab = 'Rate';
+    if (this.isSaving || this.isLoading) {
       return;
     }
 
+    if (this.isEditMode && !this.hasUnsavedChanges()) {
+      this.toastr.warning('No changes to save');
+      return;
+    }
+
+    if (!this.validateBeforeSave()) {
+      return;
+    }
+
+    this.submitForm();
+  }
+
+  private submitForm(resolve?: (value: boolean) => void): void {
     this.isSaving = true;
     this.isLoading = true;
     this.spinner.show();
-    
+
     const getPortCode = (portSid: any): string => {
         if (!portSid && portSid !== 0) return '';
         const port = this.portList.find(p => p.PortMasterSid === portSid);
@@ -2257,9 +2434,9 @@ if (polSid && !podSid) {
                 this.isLoading = false;
                 this.spinner.hide();
                 if (response.status) {
-                    this.masterJobForm.markAsPristine();
+                    this.resetDirtyState();
+                    this.formSaved = true;
                     this.masterJobForm.markAsUntouched();
-                    this.containerFormGroup.markAsPristine();
                     this.containerFormGroup.markAsUntouched();
                     const masterJobSid =
                         response.data?.newMasterJob?.MasterJobSid ||
@@ -2275,8 +2452,10 @@ if (polSid && !podSid) {
                     if (masterJobSid) {
                         this.router.navigate(['/operation/mawbill/entry', masterJobSid]);
                     }
+                    resolve?.(true);
                 } else {
                     this.handleMawbSaveError({ error: response }, 'update');
+                    resolve?.(false);
                 }
             },
             error: (error) => {
@@ -2285,6 +2464,7 @@ if (polSid && !podSid) {
                 this.spinner.hide();
                 this.handleMawbSaveError(error, 'update');
                 console.error('Error updating master Air Waybill:', error);
+                resolve?.(false);
             }
         });
     } else {
@@ -2295,9 +2475,10 @@ if (polSid && !podSid) {
     this.spinner.hide();
 
     if (response.status) {
-      this.masterJobForm.markAsPristine();
+      resolve?.(true);
+      this.resetDirtyState();
+      this.formSaved = true;
       this.masterJobForm.markAsUntouched();
-      this.containerFormGroup.markAsPristine();
       this.containerFormGroup.markAsUntouched();
 
       const masterJobSid =
@@ -2324,6 +2505,7 @@ if (polSid && !podSid) {
 
     } else {
       this.handleMawbSaveError({ error: response }, 'create');
+      resolve?.(false);
     }
   },
 
@@ -2333,10 +2515,11 @@ if (polSid && !podSid) {
                 this.spinner.hide();
                 this.handleMawbSaveError(error, 'create');
                 console.error('Error creating master Air Waybill:', error);
+                resolve?.(false);
             }
         });
     }
-}
+  }
 
 
   onContainerSubmit(): void {
@@ -2361,6 +2544,7 @@ if (polSid && !podSid) {
         // Add new container - MasterJobContainerSid will be null for new containers
         this.addContainer(containerData);
       }
+      this.markAsDirty();
       
       this.currentContainerModal.close();
       
@@ -2426,6 +2610,7 @@ if (polSid && !podSid) {
     // Reset vessel search state
     this.voyageList = [];
     this.lastVesselSearchParams = null;
+    this.resetDirtyState();
   }
 
   onHazChange(): void {
@@ -2489,6 +2674,7 @@ if (polSid && !podSid) {
       return;
     }
     this.masterJobContainers.removeAt(index);
+    this.markAsDirty();
   }
 
   syncFormValueWithConnectionComponent() {
@@ -2551,6 +2737,7 @@ if (polSid && !podSid) {
     // console.log('Connections changed:', allConnections);
     if (allConnections && allConnections.length >= 0) {
       this.connectionResult = [...allConnections];
+      this.markAsDirty();
     }
   }
 
@@ -2600,8 +2787,9 @@ if (polSid && !podSid) {
   }
   
  handleRateChange(allRates: any[]) {
-  if (allRates && allRates.length > 0) {
+  if (allRates) {
     this.rateResult = [...allRates];
+    this.markAsDirty();
   }
 }
   

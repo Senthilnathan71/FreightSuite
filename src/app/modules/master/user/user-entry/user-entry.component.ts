@@ -140,7 +140,10 @@ export class UserEntryComponent implements OnInit {
   initUserForm() {
     this.userForm = this.fb.group({
       userName: ['', [Validators.required]],
-      userEmail: ['', [Validators.required, EmailValidators.singleEmail()]],
+      userEmail: [
+        '',
+        [Validators.required, Validators.maxLength(50), EmailValidators.singleEmail()],
+      ],
       designation: ['', [Validators.required]],
       department: [[], [Validators.required]],
       DefaultDept: [''],
@@ -187,6 +190,31 @@ export class UserEntryComponent implements OnInit {
     this.userCompanyMaster.updateValueAndValidity();
   });
 }
+
+  sanitizeEmailInput() {
+    const emailControl = this.userForm.get('userEmail');
+    const currentValue = emailControl?.value;
+
+    if (typeof currentValue !== 'string') {
+      return;
+    }
+
+    const sanitizedValue = currentValue.replace(/\s+/g, '');
+    if (sanitizedValue !== currentValue) {
+      emailControl?.setValue(sanitizedValue);
+    }
+  }
+
+  sanitizeEmailPaste(event: ClipboardEvent) {
+    event.preventDefault();
+
+    const pastedText = event.clipboardData?.getData('text') ?? '';
+    const sanitizedValue = pastedText.replace(/\s+/g, '');
+
+    this.userForm.get('userEmail')?.setValue(sanitizedValue);
+    this.userForm.get('userEmail')?.markAsDirty();
+    this.userForm.get('userEmail')?.markAsTouched();
+  }
 
 
   get userCompanyMaster(): FormArray {

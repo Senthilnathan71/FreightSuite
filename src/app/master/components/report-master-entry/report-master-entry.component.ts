@@ -12,6 +12,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-report-master-entry',
@@ -23,6 +24,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 export class ReportMasterEntryComponent implements OnInit {
   reportForm!: FormGroup;
   isEditMode: boolean = false;
+  isSaving: boolean = false;
   ReportMasterSid!: number;
   currentCompany: any;
   reportData: any;
@@ -140,6 +142,10 @@ export class ReportMasterEntryComponent implements OnInit {
     return '';
   }
 
+  private getErrorMessage(error: any, fallback: string): string {
+    return error?.error?.message || error?.message || fallback;
+  }
+
   loadReportData() {
     this.masterService.getReportMasterById(this.ReportMasterSid).subscribe({
       next: (resp: any) => {
@@ -167,24 +173,37 @@ export class ReportMasterEntryComponent implements OnInit {
               });
             }
           },
-          error: () => {
-            this.appSettingsService.showError('Failed to load parameters');
+          error: (error) => {
+            this.appSettingsService.showError(this.getErrorMessage(error, 'Failed to load parameters'));
           }
         });
       },
-      error: () => {
-        this.appSettingsService.showError('Failed to load report data');
+      error: (error) => {
+        this.appSettingsService.showError(this.getErrorMessage(error, 'Failed to load report data'));
       }
     });
   }
 
   onSubmit() {
+    if (this.isSaving) {
+      return;
+    }
+
     if (this.reportForm.invalid) {
       this.reportForm.markAllAsTouched();
       this.appSettingsService.showWarning('Please fill all required fields.');
       return;
     }
     const formValue = this.reportForm.value;
+    const currentUser = this.appSettingsService.userSettingSource.value?.userEmail;
+    const reportDetails = (formValue.parameters || []).map((detail: any) => ({
+      ReportMasterDetailSid: detail.ReportMasterDetailSid || null,
+      ParameterName: (detail.ParameterName || '').trim(),
+      ParameterFieldType: detail.ParameterFieldType || null,
+      DropDownValue: detail.DropDownValue || null,
+      ParameterQuery: detail.ParameterQuery || null,
+      Status: detail.Status || 'A'
+    }));
 
     const payload = {
       ReportName: formValue.reportName,
@@ -195,14 +214,19 @@ export class ReportMasterEntryComponent implements OnInit {
       ReportExcludedCompany: formValue.excludedCompanyIds
         ? formValue.excludedCompanyIds.split(',').map((id: string) => parseInt(id.trim()))
         : null,
-      CreatedBy: this.appSettingsService.userSettingSource.value?.userEmail,
+      CreatedBy: currentUser,
+      UpdatedBy: currentUser,
       CompanySid: this.currentCompany?.CompanyMasterSid,
       Status: "A",
-      reportDetails: formValue.parameters || []
+      reportDetails: reportDetails
     };
 
+    this.isSaving = true;
+
     if (this.isEditMode) {
-      this.masterService.updateReportById(this.ReportMasterSid, payload).subscribe({
+      this.masterService.updateReportById(this.ReportMasterSid, payload)
+        .pipe(finalize(() => this.isSaving = false))
+        .subscribe({
         next: (resp: any) => {
           if (resp.status) {
             this.appSettingsService.showSuccess(resp.message);
@@ -211,12 +235,14 @@ export class ReportMasterEntryComponent implements OnInit {
             this.appSettingsService.showError(resp.message);
           }
         },
-        error: () => {
-          this.appSettingsService.showError('Update failed');
+        error: (error) => {
+          this.appSettingsService.showError(this.getErrorMessage(error, 'Update failed'));
         }
       });
     } else {
-      this.masterService.createReportMaster(payload).subscribe({
+      this.masterService.createReportMaster(payload)
+        .pipe(finalize(() => this.isSaving = false))
+        .subscribe({
         next: (resp: any) => {
           if (resp.status) {
             this.appSettingsService.showSuccess(resp.message);
@@ -225,8 +251,8 @@ export class ReportMasterEntryComponent implements OnInit {
             this.appSettingsService.showError(resp.message);
           }
         },
-        error: () => {
-          this.appSettingsService.showError('Creation failed');
+        error: (error) => {
+          this.appSettingsService.showError(this.getErrorMessage(error, 'Creation failed'));
         }
       });
     }

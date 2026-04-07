@@ -1,4 +1,4 @@
-import { Component, ViewChild, TemplateRef, OnInit, Input } from '@angular/core';
+import { Component, ViewChild, TemplateRef, OnInit, Input, HostListener } from '@angular/core';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -65,6 +65,7 @@ import { AwbDraftComponent } from '../report/awb-draft/awb-draft.component';
 import { AwbPreprintComponent } from '../report/awb-preprint/awb-preprint.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -129,7 +130,7 @@ type Html2PdfOptions = {
     CustomDatePipe
   ],
 })
-export class AgentMasterAirWaybillEntryComponent  implements OnInit {
+export class AgentMasterAirWaybillEntryComponent  implements OnInit, HasUnsavedChanges {
 
 
 
@@ -237,6 +238,11 @@ customsValidationErrors: { recordType: string; fieldRef: string; fieldName: stri
   selectedFCLLCL: string = "LCL";
   isEditMode: boolean;
   bookingData: any;
+  isDirty = false;
+  private formSaved = false;
+  private initialProductsCount = 0;
+  private initialConnectionsCount = 0;
+  private initialRatesCount = 0;
   quotationNumber : any ='';
   departmentList: any[] = [];
   customerList: any[] = [];
@@ -522,6 +528,61 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
     }
   }
 
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    if (this.formSaved) {
+      return false;
+    }
+
+    if (this.houseJobForm?.dirty || this.cargoForm?.dirty || this.otherForm?.dirty || this.detailForm?.dirty) {
+      return true;
+    }
+
+    if (this.bookingProducts?.length !== this.initialProductsCount) {
+      return true;
+    }
+
+    if (this.connectionResult?.length !== this.initialConnectionsCount) {
+      return true;
+    }
+
+    if (this.rateResult?.length !== this.initialRatesCount) {
+      return true;
+    }
+
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.submitAgentMasterAirWaybill(resolve);
+    });
+  }
+
+  private resetDirtyState(): void {
+    this.isDirty = false;
+    this.formSaved = false;
+    this.houseJobForm?.markAsPristine();
+    this.cargoForm?.markAsPristine();
+    this.otherForm?.markAsPristine();
+    this.detailForm?.markAsPristine();
+    this.initialProductsCount = this.bookingProducts?.length || 0;
+    this.initialConnectionsCount = this.connectionResult?.length || 0;
+    this.initialRatesCount = this.rateResult?.length || 0;
+  }
+
+  private markAsDirty(): void {
+    this.isDirty = true;
+    this.formSaved = false;
+  }
+
   // Mail content
 
 
@@ -803,6 +864,9 @@ private setupMBLDateListener(): void {
     })
     this.houseJobForm.valueChanges.subscribe(()=>{
       this.syncFormValueWithRateComponent();
+      if (this.houseJobForm.dirty) {
+        this.formSaved = false;
+      }
     })
   }
 
@@ -842,6 +906,9 @@ private setupMBLDateListener(): void {
   
   this.cargoForm.valueChanges.subscribe(() => {
     this.syncFormValueWithRateComponent();
+    if (this.cargoForm.dirty) {
+      this.formSaved = false;
+    }
   });
 }
 
@@ -870,6 +937,9 @@ private setupCargoCalculationSubscriptions(): void {
   });
     this.cargoForm.valueChanges.subscribe(() => {
       this.syncFormValueWithRateComponent();
+      if (this.cargoForm.dirty) {
+        this.formSaved = false;
+      }
     })
   }
 
@@ -1220,12 +1290,22 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       SIConfirmationDate : [''],
       DGConfirmationDate : [''],
     })
+    this.otherForm.valueChanges.subscribe(() => {
+      if (this.otherForm.dirty) {
+        this.formSaved = false;
+      }
+    });
   }
 
   initDetailsForm() {
     this.detailForm = this.fb.group({
       bookingProducts: this.fb.array([]),
     })
+    this.detailForm.valueChanges.subscribe(() => {
+      if (this.detailForm.dirty) {
+        this.formSaved = false;
+      }
+    });
   }
 
   /**
@@ -1778,6 +1858,7 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
 
         // Trigger reload for child components like BOE
         this.resetTriggerBOE = true;
+        this.resetDirtyState();
       }
     },
     (error) => {
@@ -2054,6 +2135,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
           BlClause: allClausesText
         });
       }
+      this.resetDirtyState();
     }, 500);
 
   } catch (error) {
@@ -2184,7 +2266,43 @@ private loadMasterJobDetails(masterJobSid: number): void {
     this.productDataLength = this.bookingProducts.length;
     this.handleProductRelatedCalculation();
     this.updateProductPagination();
+    this.markAsDirty();
     this.modalService.dismissAll();
+  }
+  private getHouseJobInvalidFields(): string[] {
+    const fieldLabels: { [key: string]: string } = {
+      DepartmentMasterSid: 'Department',
+      CustomerMasterSid: 'Customer',
+      HBLDate: 'HAWBL Date',
+      MBLNo: 'MAWBL No',
+      MBLDate: 'MAWBL Date',
+      POL: 'POL',
+      POD: 'POD',
+      status: 'Status',
+      HouseStatus: 'House Status',
+      IncoTerms: 'Inco Terms',
+      CarrierName: 'Carrier'
+    };
+
+    return Object.keys(this.houseJobForm.controls)
+      .filter((key) => this.houseJobForm.get(key)?.invalid)
+      .map((key) => fieldLabels[key] || key);
+  }
+
+  private getProductValidationMessage(): string {
+    const firstInvalidProduct = this.bookingProducts.controls.find((control) => control.invalid) as FormGroup | undefined;
+
+    if (!firstInvalidProduct) {
+      return 'Please fill all required product fields correctly.';
+    }
+
+    const invalidFields = Object.keys(firstInvalidProduct.controls)
+      .filter((key) => firstInvalidProduct.get(key)?.invalid)
+      .map((key) => this.getFieldLabel(key));
+
+    return invalidFields.length
+      ? `Please fill required product fields: ${invalidFields.join(', ')}`
+      : 'Please fill all required product fields correctly.';
   }
   private getFieldLabel(fieldName: string): string {
   const fieldLabels: { [key: string]: string } = {
@@ -2200,24 +2318,18 @@ private loadMasterJobDetails(masterJobSid: number): void {
 }
 
   handleConnectionChange(allConnections:any[]){
-  
-    if(allConnections.length > 0){
-      this.connectionResult = [...allConnections];
-    }
+    this.connectionResult = [...allConnections];
+    this.markAsDirty();
   }
 
   handleRateChange(allRates:any[]){
-    
-    if(allRates.length > 0){
-      this.rateResult = [...allRates];
-    }
+    this.rateResult = [...allRates];
+    this.markAsDirty();
   }
 
   handleMilestoneChange(allmilestones:any[]){
-   
-    if(allmilestones.length !== 0){
-      this.milestoneResult = [...allmilestones];
-    }
+    this.milestoneResult = [...allmilestones];
+    this.markAsDirty();
   }
 
 onCurrencyChange(event: any) {
@@ -2226,11 +2338,23 @@ onCurrencyChange(event: any) {
 
 
   onSubmit() {
+    this.submitAgentMasterAirWaybill();
+  }
+
+  private submitAgentMasterAirWaybill(resolve?: (value: boolean) => void) {
   if (this.isSubmitting || this.isSaving || this.isLoading) {
+    resolve?.(false);
+    return;
+  }
+
+  if (this.isEditMode && !this.hasUnsavedChanges()) {
+    this.appSettingService.showWarning('No changes to save');
+    resolve?.(false);
     return;
   }
   
   if (!this.validateImportMAWBLNo()) {
+    resolve?.(false);
     return;
   }
   
@@ -2242,6 +2366,9 @@ onCurrencyChange(event: any) {
     if (HBLDate < fyStartDate || HBLDate > fyEndDate) {
       this.appSettingService.showWarning('HBL date must be within the financial year');
       this.houseJobForm.get('HBLDate')?.setErrors({ invalidDate: true });
+      this.houseJobForm.get('HBLDate')?.markAsTouched();
+      this.selectedTab = 'Shipment';
+      resolve?.(false);
       return;
     }
   }
@@ -2256,6 +2383,7 @@ onCurrencyChange(event: any) {
       this.houseJobForm.get('ETA')?.setErrors({ etaLessThanOrEqualEtd: true });
       this.houseJobForm.get('ETA')?.markAsTouched();
       this.selectedTab = 'Shipment';
+      resolve?.(false);
       return;
     }
   }
@@ -2263,11 +2391,17 @@ onCurrencyChange(event: any) {
   if (this.houseJobForm.invalid) {
     this.houseJobForm.markAllAsTouched();
     this.houseJobForm.updateValueAndValidity();
-    this.appSettingService.showWarning('Please fill all required fields correctly.');
+    const invalidFields = this.getHouseJobInvalidFields();
+    this.appSettingService.showWarning(
+      invalidFields.length
+        ? `Please fill required fields: ${invalidFields.join(', ')}`
+        : 'Please fill all required fields correctly.'
+    );
+    this.selectedTab = 'Shipment';
+    resolve?.(false);
     return;
   }
   
-  // Check products
   if (this.bookingProducts.length > 0) {
     this.bookingProducts.controls.forEach(control => {
       this.setOrResetWeightError(control as FormGroup);
@@ -2276,14 +2410,16 @@ onCurrencyChange(event: any) {
     
     if (hasInvalidProduct) {
       this.bookingProducts.markAllAsTouched();
-      this.appSettingService.showWarning('Please fill all required product fields correctly.');
+      this.appSettingService.showWarning(this.getProductValidationMessage());
       this.selectedTab = 'Cargo';
+      resolve?.(false);
       return;
     }
   }
 
   if (!this.costEntryComponent.validateRateArray()) {
     this.selectedTab = 'Rate';
+    resolve?.(false);
     return;
   }
   
@@ -2326,9 +2462,8 @@ onCurrencyChange(event: any) {
     if (customsErrors.length > 0) {
       this.customsValidationErrors = customsErrors;
       this.showCustomsValidationModal = true;
-      this.isSubmitting = false;
-      this.isSaving = false;
-      this.isLoading = false;
+      this.resetSaveState();
+      resolve?.(false);
       return;
     }
   }
@@ -2520,10 +2655,10 @@ onCurrencyChange(event: any) {
     // CREATE using new API
     this.createAgentMasterAirWaybill(payload).subscribe({
       next: (resp: any) => {
-        this.isSubmitting = false;
-        this.isSaving = false;
-        this.isLoading = false;
+        this.resetSaveState();
         if (resp.status && resp.data) {
+          this.resetDirtyState();
+          this.formSaved = true;
           this.appSettingService.showSuccess('Agent Master Air Waybill created successfully!');
           this.HouseJobSid = resp.data?.houseJob?.HouseJobSid || resp.data?.masterJob?.MasterJobSid;
           this.isEditMode = true;
@@ -2533,63 +2668,72 @@ onCurrencyChange(event: any) {
           } else {
             this.router.navigate(['/operation/agent-master-air-waybill/list']);
           }
+          resolve?.(true);
         } else {
-          if (resp.message?.includes('No MAWB stock available for auto allocation')) {
-            this.enableManualMawbEntryFallback(resp.message);
-          } else {
-            this.appSettingService.showError(resp.message || 'Error creating Agent Master Air Waybill.');
-          }
+          this.showAgentMasterAirWaybillBackendError(resp, 'Error creating Agent Master Air Waybill.');
           console.error('Create error:', resp.message);
+          resolve?.(false);
         }
       },
       error: (err) => {
-        this.isSubmitting = false;
-        this.isSaving = false;
-        this.isLoading = false;
-        if (err.error?.message?.includes('No MAWB stock available for auto allocation')) {
-          this.enableManualMawbEntryFallback(err.error?.message);
-        } else {
-          this.appSettingService.showError('Failed to create Agent Master Air Waybill. Please try again.');
-        }
+        this.resetSaveState();
+        this.showAgentMasterAirWaybillBackendError(err, 'Failed to create Agent Master Air Waybill. Please try again.');
         console.error('Create API error:', err);
+        resolve?.(false);
       }
     });
+    return;
   } 
   
   if (this.isEditMode && this.HouseJobSid) {
     // UPDATE using new API
     this.updateAgentMasterAirWaybillById(this.HouseJobSid, payload).subscribe({
       next: (resp: any) => {
-        this.isSubmitting = false;
-        this.isSaving = false;
-        this.isLoading = false;
+        this.resetSaveState();
         if (resp.status) {
+          this.resetDirtyState();
+          this.formSaved = true;
           this.appSettingService.showSuccess('Agent Master Air Waybill successfully updated.');
           this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
             this.router.navigate(['/operation/agent-master-air-waybill/entry', this.HouseJobSid]);
           });
+          resolve?.(true);
         } else {
-          if (resp.message?.includes('No MAWB stock available for auto allocation')) {
-            this.enableManualMawbEntryFallback(resp.message);
-          } else {
-            this.appSettingService.showError(resp.message || 'Error updating Agent Master Air Waybill.');
-          }
+          this.showAgentMasterAirWaybillBackendError(resp, 'Error updating Agent Master Air Waybill.');
           console.error(resp.message);
+          resolve?.(false);
         }
       },
       error: (err) => {
-        this.isSubmitting = false;
-        this.isSaving = false;
-        this.isLoading = false;
-        if (err.error?.message?.includes('No MAWB stock available for auto allocation')) {
-          this.enableManualMawbEntryFallback(err.error?.message);
-        } else {
-          this.appSettingService.showError('Failed to update Agent Master Air Waybill.');
-        }
+        this.resetSaveState();
+        this.showAgentMasterAirWaybillBackendError(err, 'Failed to update Agent Master Air Waybill.');
         console.error(err);
+        resolve?.(false);
       }
     });
   }
+}
+
+private resetSaveState(): void {
+  this.isSubmitting = false;
+  this.isSaving = false;
+  this.isLoading = false;
+}
+
+private showAgentMasterAirWaybillBackendError(errorResponse: any, fallbackMessage: string): void {
+  const backendMessage = errorResponse?.message || errorResponse?.error?.message || fallbackMessage;
+
+  if (backendMessage?.includes('No MAWB stock available for auto allocation')) {
+    this.enableManualMawbEntryFallback(backendMessage);
+    return;
+  }
+
+  if (backendMessage?.toLowerCase().includes('duplicate') || backendMessage?.toLowerCase().includes('already exists')) {
+    this.houseJobForm.get('MBLNo')?.setErrors({ duplicate: true });
+    this.houseJobForm.get('MBLNo')?.markAsTouched();
+  }
+
+  this.appSettingService.showError(backendMessage || fallbackMessage);
 }
 /**
  * Create new Agent Master Air Waybill
@@ -3625,6 +3769,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
             this.productDataLength = this.bookingProducts.length;
             this.appSettingService.showSuccess('Product Deleted Successfully');
             this.handleProductRelatedCalculation();
+            this.markAsDirty();
           } else {
             this.appSettingService.showError("Error deleting product.");
           }
@@ -3634,6 +3779,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
       this.productDataLength = this.bookingProducts.length;
       this.appSettingService.showSuccess('Product Deleted Successfully');
       this.handleProductRelatedCalculation();
+      this.markAsDirty();
     }
     this.bookingProducts.updateValueAndValidity();
   }
@@ -3844,6 +3990,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
 resetForm() {
   if (this.isEditMode) {
     this.patchValues(this.bookingData);
+    this.resetDirtyState();
     return;
   }
 
@@ -3877,6 +4024,7 @@ resetForm() {
 
   this.cargoForm.reset();
   this.otherForm.reset();
+  this.resetDirtyState();
 }
 
   toNgbDateStruct(date: Date | null): NgbDateStruct | null {
@@ -5093,15 +5241,18 @@ calculateTotals(): any {
 handleBOEChange(event: any) {
 
   // You can process and save event data here
+  this.markAsDirty();
 }
 
 handleVehicleChange(event: any) {
 
   // You can process and save event data here
+  this.markAsDirty();
 }
 handleCustomsChange(event: any) {
   
   // You can process and save event data here
+  this.markAsDirty();
 }
 
  getTotalLocalRevenuAmount(): number {
