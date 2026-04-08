@@ -29,13 +29,15 @@ export function findPeriodForDate(
 ): VoucherPeriodInfo | null {
   if (!date || !periods || periods.length === 0) return null;
 
-  const ts = date.getTime();
+  // Normalize voucher date to UTC date-only (strip time) to avoid timezone shifts
+  const dateTs = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+
   for (const p of periods) {
-    const start = new Date(p.StartDate);
-    const end = new Date(p.EndDate);
-    start.setHours(0, 0, 0, 0);
-    end.setHours(23, 59, 59, 999);
-    if (ts >= start.getTime() && ts <= end.getTime()) {
+    const s = new Date(p.StartDate);
+    const e = new Date(p.EndDate);
+    const startTs = Date.UTC(s.getUTCFullYear(), s.getUTCMonth(), s.getUTCDate());
+    const endTs   = Date.UTC(e.getUTCFullYear(), e.getUTCMonth(), e.getUTCDate());
+    if (dateTs >= startTs && dateTs <= endTs) {
       return p;
     }
   }
@@ -85,20 +87,23 @@ export function getVoucherDateConstraints(
   }
 
   // Grace days check: compare today vs period end + grace days
+  // Use UTC arithmetic to handle Feb 28/29 and all month boundaries correctly
   const graceDaysKey = `${module}GraceDays` as keyof VoucherPeriodInfo;
   const graceDays = Number(period[graceDaysKey]) || 0;
 
-  const periodEnd = new Date(period.EndDate);
-  periodEnd.setHours(0, 0, 0, 0);
+  const endDate = new Date(period.EndDate);
+  // Date.UTC handles month/leap-year overflow automatically
+  // e.g. Date.UTC(2026, 1, 28 + 31) → March 31 (non-leap Feb 28 days)
+  //      Date.UTC(2024, 1, 29 + 31) → March 31 (leap Feb 29 days)
+  const graceDeadlineTs = Date.UTC(
+    endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate() + graceDays
+  );
 
-  const graceDeadline = new Date(periodEnd.getTime());
-  graceDeadline.setDate(graceDeadline.getDate() + graceDays);
-  graceDeadline.setHours(23, 59, 59, 999);
+  // Today's local date as a UTC-midnight timestamp for clean comparison
+  const now = new Date();
+  const todayTs = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  if (today > graceDeadline) {
+  if (todayTs > graceDeadlineTs) {
     result.isClosed = true;
     result.errorMessage = `Grace days of ${period.PeriodName} voucher booking exceeded`;
     return result;
