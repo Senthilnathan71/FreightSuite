@@ -92,16 +92,16 @@ export class PaymentRequestEntryComponent implements OnInit {
       PaymentRequestNumber: [''],
       PaymentRequestDate: [this.getToday(), Validators.required],
       CashBank: ['Bank', Validators.required],
-      DepartmentMasterSid: [null, Validators.required],
+      DepartmentMasterSid: [{ value: null, disabled: true }, Validators.required],
       Party: [null, Validators.required],
       PayableTo: ['', Validators.required],
       CurrencyMasterSid: [null, Validators.required],
       BookingSid: [null],
-      BookingNo: [''],
+      BookingNo: [{ value: '', disabled: true }],
       MasterJobSid: [null],
-      MasterJobNo: [''],
+      MasterJobNo: [{ value: '', disabled: true }],
       HouseJobSid: [null],
-      HouseNo: [''],
+      HouseNo: [{ value: '', disabled: true }],
       Remarks: [''],
       PaymentRequestStatus: ['Pending', Validators.required],
       Status: ['A', Validators.required],
@@ -187,6 +187,25 @@ export class PaymentRequestEntryComponent implements OnInit {
     }
   }
 
+  private isApprovedStatus(status: any): boolean {
+    return String(status ?? '').trim() === 'Approved';
+  }
+
+  private applyApprovalReadOnlyState(status: any) {
+    const isApproved = this.isApprovedStatus(status);
+    this.isReadOnly = isApproved;
+
+    if (isApproved) {
+      this.form.disable({ emitEvent: false });
+    } else {
+      this.form.enable({ emitEvent: false });
+      this.form.get('DepartmentMasterSid')?.disable({ emitEvent: false });
+      this.form.get('BookingNo')?.disable({ emitEvent: false });
+      this.form.get('MasterJobNo')?.disable({ emitEvent: false });
+      this.form.get('HouseNo')?.disable({ emitEvent: false });
+    }
+  }
+
   onPartyChange(value: any) {
     const selectedParty = value?.CustomerMasterSid
       ? value
@@ -197,6 +216,11 @@ export class PaymentRequestEntryComponent implements OnInit {
   }
 
   save() {
+    if (this.isReadOnly) {
+      this.appSettingsService.showWarning('Approved payment request cannot be modified');
+      return;
+    }
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.appSettingsService.showWarning('Please fill mandatory fields');
@@ -297,6 +321,10 @@ export class PaymentRequestEntryComponent implements OnInit {
   }
 
   addDetailRow() {
+    if (this.isReadOnly) {
+      return;
+    }
+
     const currencyMasterSid =
       this.form.get('CurrencyMasterSid')?.value || this.currentCompany?.CurrencyMasterSid || null;
     this.detailItems.push(
@@ -318,6 +346,10 @@ export class PaymentRequestEntryComponent implements OnInit {
   }
 
   removeDetailRow(index: number) {
+    if (this.isReadOnly) {
+      return;
+    }
+
     if (this.detailItems.length <= index) {
       return;
     }
@@ -370,6 +402,8 @@ export class PaymentRequestEntryComponent implements OnInit {
             Selected: true,
           }));
         });
+
+        this.applyApprovalReadOnlyState(request.PaymentRequestStatus);
       },
       error: () => {
         this.loading = false;
@@ -401,7 +435,7 @@ export class PaymentRequestEntryComponent implements OnInit {
       Status: 'A',
     });
 
-    detailRows.forEach((item: any) => {
+      detailRows.forEach((item: any) => {
       this.detailItems.push(
         this.createDetailRow({
           ...item,
@@ -409,6 +443,8 @@ export class PaymentRequestEntryComponent implements OnInit {
         }),
       );
     });
+
+    this.applyApprovalReadOnlyState('Pending');
   }
 
   private createDetailRow(data: any) {

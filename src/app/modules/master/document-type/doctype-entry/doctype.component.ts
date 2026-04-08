@@ -84,11 +84,12 @@ currentBranch: any;
 		{ id : 2 , code : 'VIN'},
 		{ id : 4 , code : 'RPT'},
 		{ id : 5 , code : 'PMT'},
+		{ id : 6 , code : 'PRQ'},
 		{ id : 3 , code : 'CRN'},
-		{ id : 6 , code : 'VRN'},
-		{ id : 7 , code : 'JV'},
-		{ id : 8 , code : 'RJV'},
-		{ id : 8 , code : 'VM'},
+		{ id : 7 , code : 'VRN'},
+		{ id : 8 , code : 'JV'},
+		{ id : 9 , code : 'RJV'},
+		{ id : 10 , code : 'VM'},
 	]
 
 	typeOptions = ['Cash', 'Bank', 'Others'];

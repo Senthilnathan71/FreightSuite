@@ -305,7 +305,12 @@
   <div class="col-12 px-0 mt-1">
     <div class="workspace-content px-0" [formGroup]="form">
       <div class="d-flex justify-content-end mb-2 pe-2">
-        <button type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="addDetailRow()">
+        <button
+          type="button"
+          class="btn btn-info btn-sm dofi-min-w-80"
+          (click)="addDetailRow()"
+          [disabled]="isReadOnly"
+        >
           <i class="fas fa-plus me-1"></i>Add Charge
         </button>
       </div>
@@ -329,7 +334,12 @@
           <tbody formArrayName="detailItems">
             <tr *ngFor="let row of detailItems.controls; let i = index" [formGroupName]="i">
               <td class="text-center">
-                <button type="button" class="btn btn-link text-danger p-0" (click)="removeDetailRow(i)">
+                <button
+                  type="button"
+                  class="btn btn-link text-danger p-0"
+                  (click)="removeDetailRow(i)"
+                  [disabled]="isReadOnly"
+                >
                   <i class="fas fa-trash fs-2"></i>
                 </button>
               </td>
