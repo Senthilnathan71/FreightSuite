@@ -48,7 +48,7 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { VendorInvoicePrintComponent } from '../report/vendor-invoice-print/vendor-invoice-print.component';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { offset } from '@popperjs/core';
-import { TaxCalculationService } from '../../services/tax-calculation.service';
+import { AppliedTaxMode, TaxCalculationService } from '../../services/tax-calculation.service';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
@@ -223,6 +223,13 @@ export class VendorInvoiceEntryComponent implements OnInit {
   currentDate = new Date();
   isAutoPosting : boolean = false;
   vendorInvoicePrintData: any;
+  printTaxDisplayConfig = {
+    showCGST: false,
+    showSGST: false,
+    showUGST: false,
+    showIGST: false,
+    showVAT: false
+  };
 
   // Voucher period constraints
   voucherConstraints: VoucherDateConstraints = {
@@ -2815,14 +2822,14 @@ export class VendorInvoiceEntryComponent implements OnInit {
     return this.taxCalculationService.getTaxDisplayConfig();
   }
 
-  getTaxPercentageForDisplay(detail: any): {
+  getTaxPercentageForDisplay(detail: any, appliedMode?: AppliedTaxMode): {
     cgstRate: number;
     sgstRate: number;
     ugstRate: number;
     igstRate: number;
     vatRate: number;
   } {
-    const mode = this.taxCalculationService.context?.appliedTaxMode;
+    const mode = appliedMode ?? this.taxCalculationService.context?.appliedTaxMode;
 
     if (mode === 'CGST_SGST') {
       return {
@@ -2867,14 +2874,14 @@ export class VendorInvoiceEntryComponent implements OnInit {
     };
   }
 
-  getTaxAmountForDisplay(detail: any): {
+  getTaxAmountForDisplay(detail: any, appliedMode?: AppliedTaxMode): {
     cgstAmt: number;
     sgstAmt: number;
     ugstAmt: number;
     igstAmt: number;
     vatAmt: number;
   } {
-    const mode = this.taxCalculationService.context?.appliedTaxMode;
+    const mode = appliedMode ?? this.taxCalculationService.context?.appliedTaxMode;
 
     if (mode === 'CGST_SGST') {
       return {
@@ -3001,7 +3008,89 @@ export class VendorInvoiceEntryComponent implements OnInit {
     return this.currentCompanyCountryCode === 'in';
   }
 
-  calculateTotalColspan(): number {
+  private resolvePrintTaxMode(invoice: any): AppliedTaxMode {
+    if (!invoice) return 'NONE';
+
+    const invoiceType = invoice.InvoiceType;
+    if (invoiceType === 'EXE' || invoiceType === 'BOS' || invoiceType === 'REIMB' || invoiceType === 'RCM') {
+      return 'NONE';
+    }
+
+    const companyCountryCode = (this.currentCompanyCountryCode || '').toLowerCase();
+    const branchStateSid = this.currentBranchState?.StateMasterSid;
+    const partyStateSid = invoice.customerBranch?.stateMaster?.StateMasterSid;
+    const placeOfSupply = invoice.PlaceOfSupply || '';
+    const isUnionTerritory = invoice.customerBranch?.stateMaster?.IsUnionTerritory === 'Y';
+    const gstType = invoice.GSTType || '';
+    const customerGstType = invoice.customerBranch?.CustomerGstType || '';
+    const partyCountryCode = (
+      invoice.customerBranch?.customerMaster?.countryMaster?.countryCode ||
+      invoice.customerMaster?.countryMaster?.countryCode ||
+      invoice.subledgerMaster?.countryMaster?.countryCode ||
+      companyCountryCode
+    ).toLowerCase();
+    const isSameCountry = !partyCountryCode || partyCountryCode === companyCountryCode || partyCountryCode === 'india';
+
+    if (companyCountryCode !== 'in') {
+      if (invoiceType === 'NONGST') {
+        return isSameCountry ? 'VAT' : 'NONE';
+      }
+      return isSameCountry ? 'VAT' : 'NONE';
+    }
+
+    if (gstType === 'EXPWP' || gstType === 'EXPWOP') {
+      return 'IGST';
+    }
+
+    if (customerGstType === 'Exempt' || customerGstType === 'Composite') {
+      return 'NONE';
+    }
+
+    const taxCategory = this.taxCalculationService.determineTaxCategory(
+      this.currentBranchStateName,
+      placeOfSupply,
+      partyCountryCode,
+      branchStateSid,
+      partyStateSid
+    );
+
+    if (!isSameCountry) {
+      return 'IGST';
+    }
+
+    if (isUnionTerritory) {
+      return 'CGST_UGST';
+    }
+
+    return taxCategory === 'Inter' ? 'IGST' : 'CGST_SGST';
+  }
+
+  private getPrintTaxDisplayConfig(mode: AppliedTaxMode): {
+    showCGST: boolean;
+    showSGST: boolean;
+    showUGST: boolean;
+    showIGST: boolean;
+    showVAT: boolean;
+  } {
+    if (mode === 'NONE') {
+      return { showCGST: false, showSGST: false, showUGST: false, showIGST: false, showVAT: false };
+    }
+    if (mode === 'VAT') {
+      return { showCGST: false, showSGST: false, showUGST: false, showIGST: false, showVAT: true };
+    }
+    if (mode === 'CGST_SGST') {
+      return { showCGST: true, showSGST: true, showUGST: false, showIGST: false, showVAT: false };
+    }
+    if (mode === 'CGST_UGST') {
+      return { showCGST: true, showSGST: false, showUGST: true, showIGST: false, showVAT: false };
+    }
+    if (mode === 'IGST') {
+      return { showCGST: false, showSGST: false, showUGST: false, showIGST: true, showVAT: false };
+    }
+    return { showCGST: false, showSGST: false, showUGST: false, showIGST: false, showVAT: false };
+  }
+
+    calculateTotalColspan(): number {
     const config = this.getTaxDisplayConfig();
     let baseColumns = 13; // Adjust based on your column count
 
@@ -3761,6 +3850,8 @@ Please configure the missing mappings and try again.`
       const isBookingInvoice = this.vendorInvoiceData?.BookingHeaderSid;
       const isHouseJobInvoice = this.vendorInvoiceData?.HouseJobSid && this.vendorInvoiceData?.MasterJobSid;
       const isMasterJobInvoice = this.vendorInvoiceData?.MasterJobSid && !this.vendorInvoiceData?.HouseJobSid;
+      const printTaxMode = this.resolvePrintTaxMode(this.vendorInvoiceData);
+      this.printTaxDisplayConfig = this.getPrintTaxDisplayConfig(printTaxMode);
       const bookingHeader = this.vendorInvoiceData?.BookingHeader || this.vendorInvoiceData?.bookingHeader || {};
       const houseJob = this.vendorInvoiceData?.houseJob || {};
       const masterJob = this.vendorInvoiceData?.masterJob || {};
@@ -3768,8 +3859,8 @@ Please configure the missing mappings and try again.`
       const voucherDetails = allDetails
         .filter((d) => d.IsAutoGenerated !== 'Y')
         .map((detail, index) => {
-          const taxPercentages = this.getTaxPercentageForDisplay(detail);
-          const taxAmounts = this.getTaxAmountForDisplay(detail);
+          const taxPercentages = this.getTaxPercentageForDisplay(detail, printTaxMode);
+          const taxAmounts = this.getTaxAmountForDisplay(detail, printTaxMode);
           const hssacCode = detail?.HSSACCode || detail?.hssacMaster?.HSSACCode || detail?.hssacMaster?.hsnCode || '-';
 
           const totalTaxAmount = toNumber(taxAmounts.cgstAmt) + toNumber(taxAmounts.sgstAmt) + toNumber(taxAmounts.igstAmt) + toNumber(taxAmounts.vatAmt);
@@ -3796,6 +3887,8 @@ Please configure the missing mappings and try again.`
             cgstAmt: this.getFormattedAmount(taxAmounts.cgstAmt, this.currentCompany.CurrencyMasterSid),
             sgstRate: Number(taxPercentages.sgstRate || 0).toFixed(3),
             sgstAmt: this.getFormattedAmount(taxAmounts.sgstAmt, this.currentCompany.CurrencyMasterSid),
+            ugstRate: Number(taxPercentages.ugstRate || 0).toFixed(3),
+            ugstAmt: this.getFormattedAmount(taxAmounts.ugstAmt, this.currentCompany.CurrencyMasterSid),
             igstRate: Number(taxPercentages.igstRate || 0).toFixed(3),
             igstAmt: this.getFormattedAmount(taxAmounts.igstAmt, this.currentCompany.CurrencyMasterSid),
             vatRate: Number(taxPercentages.vatRate || 0).toFixed(3),
@@ -3950,7 +4043,8 @@ Please configure the missing mappings and try again.`
         modalRef.componentInstance.bankDetails = this.vendorInvoicePrintData?.BankDetails || [];
         modalRef.componentInstance.TandCList = this.vendorInvoicePrintData?.TermsAndConditions || [];
         modalRef.componentInstance.userData = this.userData;
-        modalRef.componentInstance.isVATMode = this.isVATMode;
+        modalRef.componentInstance.isVATMode = this.printTaxDisplayConfig.showVAT;
+        modalRef.componentInstance.printTaxDisplayConfig = this.printTaxDisplayConfig;
         modalRef.componentInstance.currentDate = this.currentDate;
       } finally {
         this.spinner.hide();

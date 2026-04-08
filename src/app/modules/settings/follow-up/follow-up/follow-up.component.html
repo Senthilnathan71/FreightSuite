@@ -1,25 +1,25 @@
 <form [formGroup]="followupForm">
     <div class="row compact-form">
         <div class="col-12">
-            <div class="row  mb-2 align-items-center pt-1 mx-0">
-                <div class="col-md-4 pb-2">
-                    <h5 class="page-title mb-0">Follow Up</h5>                  
+            <div class="row  align-items-center py-1 mx-0 bg-info">
+                <div class="col-md-4 pb-1">
+                    <h5 class="page-title mb-0 text-white">Follow Up</h5>                  
                 </div>
-                <div class="col-md-8 pb-2">
+                <div class="col-md-8 pb-1">
 
                     <div
                         class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        <button type="button" class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="closeModal()">
                             <i class="fas fa-chevron-left me-1"></i>
                             Close
                         </button>
-                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        <button type="button" class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="resetform()">
                             <i class="fas fa-sync-alt me-1"></i>
                             Reset
                         </button>
-                        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+                        <button type="button" class="btn btn-outline-light btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="onSave()">
                             <i class="fas fa-save me-1"></i>
                             Save
@@ -112,6 +112,14 @@
                                     class="custom-input-field sm">
                                 <label for="text-input" class="input-label">Subject <span
                                         class="text-danger fw-bold">*</span></label>
+                                @if(followupForm.get('Subject')?.touched &&
+                                followupForm.get('Subject')?.invalid){
+                                <div class="error-message">
+                                    @if(followupForm.get('Subject')?.hasError('required')){
+                                    <span>Required</span>
+                                    }
+                                </div>
+                                }
                             </div>
                         </aside>
                         <aside class="col-md-4">
@@ -120,6 +128,14 @@
                                     class="custom-input-field sm">
                                 <label for="text-input" class="input-label">Remarks <span
                                         class="text-danger fw-bold"></span></label>
+                            </div>
+                        </aside>
+                        <aside class="col-md-4">
+                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!followupForm.get('Status')?.value">
+                                <ng-select formControlName="Status" [items]="modeOfStatus" bindLabel="name" bindValue="name" appendTo="body">
+
+                                </ng-select>
+                                <label for="" class="input-label">Status <span class="text-danger"></span></label>
                             </div>
                         </aside>
                         <aside class="col-md-2 d-flex align-items-center">
@@ -138,14 +154,6 @@
                                     <label for="sentEmail" class="form-check-label sm">Send Email  <span
                                             class="text-danger"></span></label>
                                 </div>
-                            </div>
-                        </aside>
-                        <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!followupForm.get('Status')?.value">
-                                <ng-select formControlName="Status" [items]="modeOfStatus" bindLabel="name" bindValue="name" appendTo="body">
-
-                                </ng-select>
-                                <label for="" class="input-label">Status <span class="text-danger"></span></label>
                             </div>
                         </aside>
                     </div>

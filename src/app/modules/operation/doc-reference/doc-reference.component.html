@@ -2,18 +2,13 @@
   <form [formGroup]="addForm">
     <div class="row compact-form">
       <div class="col-12 px-0">
-        <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
-          <div class="col-md-4 d-flex pb-1 align-items-center">
-            <div class="d-flex align-items-center gap-2">
-              <div class="brand-icon">
-                <i class="fas fa-file-alt"></i>
-              </div>
-              <h5 class="page-title mb-0 text-info">Document Reference</h5>
-            </div>
+        <div class="card h-100 mb-0">
+          <div class="modal-header modalHeaderpart">
+            <h6 class="mb-0 text-white">Document Reference</h6>
+            <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeModal()"></button>
           </div>
-
-          <div class="col-md-8 pb-1">
-            <div class="d-flex justify-content-end align-items-center gap-2 flex-wrap">
+          <div class="modal-body pt-1 pb-1 px-2">
+            <div class="d-flex justify-content-end align-items-center gap-2 flex-wrap mb-1">
               <button
                 type="button"
                 class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
@@ -44,28 +39,30 @@
                 <i-feather class="feather-sm me-1" name="upload-cloud"></i-feather> Save
               </button>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 px-0">
-        <div class="card h-100 mb-0">
-          <div class="card-body p-3">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h6 class="mb-0 text-info fw-semibold">Document Reference</h6>
-            </div>
 
             @if(docRef.length > 0 || showAddRow || showEmptyTemplate) {
-              <div class="table-responsive">
-                <table class="table table-bordered align-middle mb-0 doc-ref-table">
-                  <thead class="table-light">
-                    <tr>
-                      <th class="text-center" style="width: 70px;">Action</th>
-                      <th style="width: 160px;">Ref Document No <span class="text-danger">*</span></th>
-                      <th style="width: 140px;">Document Date <span class="text-danger">*</span></th>
-                      <th>Remarks</th>
-                      <th class="text-center" style="width: 70px;">Public</th>
-                      <th style="width: 120px;">Status <span class="text-danger">*</span></th>
+              <div class="table-responsive table-borderless">
+                <table class="table table-hover align-middle no-wrap table-sm my-0 doc-ref-table" style="min-width: 900px; width: 100%;">
+                  <thead>
+                    <tr class="bg-info text-center">
+                      <td class="bg-transparent text-light" style="width: 90px;">
+                        <label class="form-label mb-0">Action</label>
+                      </td>
+                      <td class="bg-transparent text-light" style="width: 180px;">
+                        <label class="form-label mb-0">Ref Document No <span class="text-danger">*</span></label>
+                      </td>
+                      <td class="bg-transparent text-light" style="width: 160px;">
+                        <label class="form-label mb-0">Document Date <span class="text-danger">*</span></label>
+                      </td>
+                      <td class="bg-transparent text-light">
+                        <label class="form-label mb-0">Remarks</label>
+                      </td>
+                      <td class="bg-transparent text-light" style="width: 90px;">
+                        <label class="form-label mb-0">Public</label>
+                      </td>
+                      <td class="bg-transparent text-light" style="width: 140px;">
+                        <label class="form-label mb-0">Status <span class="text-danger">*</span></label>
+                      </td>
                     </tr>
                   </thead>
 
@@ -73,23 +70,23 @@
                     @for (item of docRef; track $index) {
                       <tr>
                         <td class="text-center">
-                          <div class="d-flex align-items-center justify-content-center gap-2">
-                            <a (click)="editDocRef(item, $index)" *ngIf="editIndex !== $index">
+                          <section class="action-items d-flex align-items-center justify-content-center">
+                            <button class="btn btn-sm btn-link text-info" (click)="editDocRef(item, $index)" *ngIf="editIndex !== $index">
                               <i-feather name="eye" class="feather-sm"></i-feather>
-                            </a>
+                            </button>
 
-                            <a class="text-success" (click)="updateDocRef(item, $index)" *ngIf="editIndex === $index">
-                              <i-feather name="check" class="feather-sm"></i-feather>
-                            </a>
+                            <button class="btn btn-sm btn-link text-success" (click)="updateDocRef(item, $index)" *ngIf="editIndex === $index">
+                              <i class="fas fa-check-circle"></i>
+                            </button>
 
-                            <a class="text-secondary" (click)="cancelEdit()" *ngIf="editIndex === $index">
-                              <i-feather name="x" class="feather-sm"></i-feather>
-                            </a>
+                            <button class="btn btn-sm btn-link text-secondary" (click)="cancelEdit()" *ngIf="editIndex === $index">
+                              <i class="fas fa-times-circle"></i>
+                            </button>
 
-                            <a class="text-danger border-start ps-2" (click)="deleteDocRef(item, $index)">
-                              <i-feather name="trash-2" class="feather-sm"></i-feather>
-                            </a>
-                          </div>
+                            <button class="btn btn-sm btn-link text-danger" (click)="deleteDocRef(item, $index)">
+                              <i class="fas fa-trash text-danger"></i>
+                            </button>
+                          </section>
                         </td>
 
                         <td>
@@ -101,7 +98,7 @@
                             <input
                               type="text"
                               formControlName="RefDocumentNo"
-                              class="form-control form-control-sm"
+                              class="custom-input-field sm w-100"
                             />
                           </form>
                         </td>
@@ -112,7 +109,7 @@
                           </div>
 
                           <form *ngIf="editIndex === $index" [formGroup]="editForm">
-                            <div class="input-group input-group-sm">
+                            <div class="input-group">
                               <input
                                 class="form-control"
                                 placeholder="dd-mm-yyyy"
@@ -123,13 +120,11 @@
                                 readonly
                                 container="body"
                               />
-                              <button
-                                class="btn btn-outline-secondary"
-                                type="button"
-                                (click)="editDp.toggle()"
-                              >
-                                <i class="fas fa-calendar-alt"></i>
-                              </button>
+                              <div>
+                                <button class="btn bi bi-calendar3" (click)="editDp.toggle()" type="button">
+                                  <i-feather name="calendar" class="feather-sm"></i-feather>
+                                </button>
+                              </div>
                             </div>
                           </form>
                         </td>
@@ -143,7 +138,7 @@
                             <input
                               type="text"
                               formControlName="Remarks"
-                              class="form-control form-control-sm"
+                              class="custom-input-field sm w-100"
                             />
                           </form>
                         </td>
@@ -174,7 +169,7 @@
                               bindValue="id"
                               placeholder="Select"
                               appendTo="body"
-                              class="ng-select-sm"
+                              class="ng-select"
                             >
                             </ng-select>
                           </form>
@@ -196,7 +191,7 @@
                           <input
                             type="text"
                             formControlName="RefDocumentNo"
-                            class="form-control form-control-sm"
+                            class="custom-input-field sm w-100"
                           />
                           <div
                             class="invalid-feedback"
@@ -207,7 +202,7 @@
                         </td>
 
                         <td>
-                          <div class="input-group input-group-sm">
+                          <div class="input-group">
                             <input
                               class="form-control"
                               placeholder="dd-mm-yyyy"
@@ -219,13 +214,11 @@
                               container="body"
                               [class.is-invalid]="addForm.get('DocumentDate')?.invalid && addForm.get('DocumentDate')?.touched"
                             />
-                            <button
-                              class="btn btn-outline-secondary"
-                              type="button"
-                              (click)="dp.toggle()"
-                            >
-                              <i class="fas fa-calendar-alt"></i>
-                            </button>
+                            <div>
+                              <button class="btn bi bi-calendar3" (click)="dp.toggle()" type="button">
+                                <i-feather name="calendar" class="feather-sm"></i-feather>
+                              </button>
+                            </div>
                           </div>
                           <div
                             class="text-danger small"
@@ -239,7 +232,7 @@
                           <input
                             type="text"
                             formControlName="Remarks"
-                            class="form-control form-control-sm"
+                            class="custom-input-field sm w-100"
                           />
                         </td>
 
@@ -255,7 +248,7 @@
                             bindValue="id"
                             placeholder="Select"
                             appendTo="body"
-                            class="ng-select-sm"
+                            class="ng-select"
                           >
                           </ng-select>
                         </td>

@@ -17,7 +17,7 @@
 
   tbody {
     td {
-      padding: 0.5rem;
+      padding: 0.3rem 0.4rem;
       vertical-align: middle;
     }
 
@@ -29,6 +29,11 @@
 
 // Form controls inside table
 .doc-ref-table {
+  .action-items i {
+    font-size: 16px;
+    line-height: 1;
+  }
+
   .form-control {
     font-size: 0.8125rem;
     padding: 0.25rem 0.5rem;
@@ -113,9 +118,11 @@
 .card {
   border: 1px solid #e9ecef;
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  border-radius: 0;
 
   .card-body {
     background-color: #fff;
+    border-radius: 0;
   }
 }
 
