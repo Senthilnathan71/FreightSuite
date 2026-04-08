@@ -58,15 +58,17 @@
             <!-- Party -->
             @if(searchOutstandingForm.get('SearchType')?.value === 'Party') {
             <div class="col-md-5">
-              <ng-select
-                [items]="onlyCustomerList"
+              <dofi-searchable-dropdown
+                [items]="partyList"
+                placeholder="Select Party"
+                [displayFields]="CustomerLookupConfig.displayFields"
+                [displayLabels]="CustomerLookupConfig.displayLabels"
+                [labelFields]="CustomerLookupConfig.labelFields"
                 bindLabel="CustomerName"
                 bindValue="SubledgerMasterSid"
-                formControlName="LedgerMasterSid"
-                placeholder="Select Party"
-                [readonly]="hasMatchingDetails && isEditMode"
+                (itemSelected)="onPartySearchSelect($event)"
               >
-              </ng-select>
+              </dofi-searchable-dropdown>
             </div>
             } @else {
             <div class="col-md-5">

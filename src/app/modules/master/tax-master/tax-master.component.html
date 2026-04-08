@@ -219,6 +219,23 @@
             </div>
           </div>
         </aside>
+
+        <!-- Invoice Type -->
+        <aside class="col-md-6">
+          <div class="custom-form-group custom-form-group-select"
+               [class.filled]="!!taxGroupForm.get('InvoiceType')?.value">
+            <ng-select
+              formControlName="InvoiceType"
+              [items]="invoiceTypeOptions"
+              bindValue="id"
+              bindLabel="name"
+              [clearable]="true"
+              appendTo="body"
+              placeholder="">
+            </ng-select>
+            <label class="input-label">Invoice Type</label>
+          </div>
+        </aside>
         </div>
           </form>
 </div>

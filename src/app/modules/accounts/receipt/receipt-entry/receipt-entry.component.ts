@@ -162,6 +162,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   receiptForm!: FormGroup;
   partyList: any[] = [];
   onlyCustomerList: any[] = [];
+  selectedPartyItemForSearch: any = null;
   currencyList: any[] = [];
   coaList: any[] = [];
   filteredCoaList: any[][] = [];
@@ -816,6 +817,11 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
    * Search outstanding invoices for customer
    */
 
+  onPartySearchSelect(item: any): void {
+    this.selectedPartyItemForSearch = item ?? null;
+    this.searchOutstandingForm.get('LedgerMasterSid')?.setValue(item?.SubledgerMasterSid ?? null);
+  }
+
   async searchOutstanding() {
     const form = this.searchOutstandingForm.getRawValue();
 
@@ -1052,12 +1058,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       this.searchOutstandingForm.get('SearchType')?.value === 'Party' &&
       this.searchOutstandingForm.get('LedgerMasterSid')?.value
     ) {
-      const partyIdInSearch =
-      this.searchOutstandingForm.get('LedgerMasterSid')?.value;
-      const party = this.partyList.find(
-        (p) => p.SubledgerMasterSid === partyIdInSearch
-      );
-      this.onPartyChange(party, true);
+      this.onPartyChange(this.selectedPartyItemForSearch, true);
       this.receiptForm.get('PartyMasterSid')?.disable();
     }
   }

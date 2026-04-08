@@ -400,7 +400,15 @@ export class TaxMasterComponent extends BaseListComponent implements OnInit {
         visible: true,
         dataType: 'string'
       },
-     
+      {
+        key: 'InvoiceType',
+        label: 'Invoice Type',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string'
+      },
+
     ],
     actions: [
       {
@@ -449,6 +457,7 @@ viewTax(content: any, row: any) {
       TaxRate: row.TaxRate,
       TaxExempt: row.TaxExempt === 'Y',
       CountryMasterSid: row.CountryMasterSid,
+      InvoiceType: row.InvoiceType || null,
   });
 }
 
@@ -495,6 +504,8 @@ viewTax(content: any, row: any) {
     this.isFavorite = !this.isFavorite;
   }
 
+  invoiceTypeOptions = [{ id: 'RCM', name: 'RCM' }];
+
   initForm(): void {
     this.taxGroupForm = this.fb.group({
        TaxGroupSid: ['', Validators.required],
@@ -506,6 +517,7 @@ viewTax(content: any, row: any) {
       TaxRate: [null, [Validators.required, Validators.min(0)]],
       TaxExempt: [false],
       CountryMasterSid: ['', Validators.required],
+      InvoiceType: [null],
     });
   }
 
@@ -545,7 +557,8 @@ viewTax(content: any, row: any) {
       EffectiveFrom: '',
       TaxRate: null,
       TaxExempt: false,
-      Remarks: ''
+      Remarks: '',
+      InvoiceType: null,
     });
 
     // Reset date to today for new entries
