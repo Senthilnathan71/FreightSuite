@@ -12,6 +12,7 @@ import {
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { SafeInsertShipmentMilestone, ShipmentMilestoneService } from 'src/app/modules/operation/services/shipment-milestone.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
@@ -55,7 +56,8 @@ export class ReleaseLetterComponent {
     private masterService: MasterService,
     private spinner: NgxSpinnerService,
     public logoService : LogoService,
-    private milestoneService: ShipmentMilestoneService
+    private milestoneService: ShipmentMilestoneService,
+    public mps: MenuPermissionService
   ) { }
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;

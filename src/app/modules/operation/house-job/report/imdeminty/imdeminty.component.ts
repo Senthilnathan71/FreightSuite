@@ -13,6 +13,7 @@ import { LogoService } from 'src/app/core/services/logo.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-imdeminty',
@@ -98,7 +99,8 @@ export class ImdemintyComponent {
     private masterService: MasterService,
     private pdfMakeService: PdfMakeService,
     private spinner: NgxSpinnerService,
-    public logoService : LogoService
+    public logoService : LogoService,
+    public mps: MenuPermissionService
   ) { }
 
 

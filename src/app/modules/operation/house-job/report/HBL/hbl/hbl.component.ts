@@ -11,6 +11,7 @@ import {
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { OperationService } from 'src/app/modules/operation/operation.service';
 import { SafeInsertShipmentMilestone, ShipmentMilestoneService } from 'src/app/modules/operation/services/shipment-milestone.service';
@@ -59,7 +60,8 @@ export class HblComponent {
     private spinner: NgxSpinnerService,
     public logoService: LogoService,
     private operationService: OperationService,
-    private milestoneService : ShipmentMilestoneService
+    private milestoneService : ShipmentMilestoneService,
+    public mps: MenuPermissionService
   ) {}
 
   ngOnInit() {

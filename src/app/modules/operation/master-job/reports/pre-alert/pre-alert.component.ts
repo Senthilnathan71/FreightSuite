@@ -8,6 +8,7 @@ import { generateCargoManifestDocument } from 'src/app/common/pdf/generators/car
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { InsertMilestoneByMasterJobPayload, ShipmentMilestoneService } from 'src/app/modules/operation/services/shipment-milestone.service';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
@@ -53,9 +54,10 @@ export class PreAlertComponent {
      private appSettingService: AppSettingsService,
      private spinner: NgxSpinnerService,
      private pdfService: PdfDownloadService,
-    public logoService : LogoService,
-    private milestoneService: ShipmentMilestoneService,
-    private modalService: NgbModal
+     public logoService : LogoService,
+     private milestoneService: ShipmentMilestoneService,
+     private modalService: NgbModal,
+     public mps: MenuPermissionService
    ) { }
  
     showPrintLogo: boolean = false;

@@ -47,7 +47,7 @@
           <i class="fas fa-history me-1"></i>Logs
         </button>
 
-        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode" [disabled]="!quotationData"
+        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode && mps.canPrint('Quotation' , 'Print')" [disabled]="!quotationData"
           (click)="reportAndEmailModel(reportModel)">
           <i class="fas fa-print me-1"></i> Print
         </button>
@@ -2789,13 +2789,14 @@
         <!-- <button type="button" class="btn btn-sm btn-warning rounded-5 py-0"   (click)="printDiv('printContent')" >
             <i class="fas fa-print me-1"></i> Print
          </button> -->
-      <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" appPreventMultiClick (click)="downloadPDF()">
+      <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" appPreventMultiClick (click)="downloadPDF()" *ngIf="mps.canPrint('Quotation', 'Download')">
         <i class="fas fa-download me-1"></i> Download PDF
       </button>
       <button type="button" class="btn btn-sm btn-success rounded-5 py-0"
               appPreventMultiClick
               [disabled]="isLoading"
-              (click)="sendEmail()">
+              (click)="sendEmail()"
+              *ngIf="mps.canPrint('Quotation' , 'Send Mail')">
         <i class="fas fa-envelope me-1"></i>{{ isLoading ? 'Sending...' : 'Send Email' }}
       </button>
 

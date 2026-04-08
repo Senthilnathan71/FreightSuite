@@ -61,16 +61,18 @@
                     <span>Logs</span>
                 </button>
             </div>
-            <div class="action-group" *ngIf="isEditMode">
+            <div class="action-group" *ngIf="isEditMode && ((mps.canPrint('Pre Alert','Print')) || (mps.canPrint('Cargo Manifest', 'Print')) || 
+            (mps.canPrint('MBL', 'Print')) || (mps.canPrint('MBL Draft', 'Print')) || (mps.canPrint('CFS Outturn', 'Print')) || (mps.canPrint('All HBL Draft', 'Print'))
+            || (mps.canPrint('All HBL', 'Print')) || (mps.canPrint('Loading Plan', 'Print')))">
                 <div ngbDropdown container="body" class="d-inline-block">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" id="dropdownUpload" ngbDropdownToggle
                         [disabled]="!masterJobData ||  masterJobForm.dirty" title="{{ masterJobData ? 'Print Master Job' : 'Load Job data to enable print' }}">
                         <i class="fas fa-print me-1"></i> Print
                     </button>
                     <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
-                        <button class="text-dark" ngbDropdownItem (click)="reportPreAlertModel()"
+                        <button *ngIf="mps.canPrint('Pre Alert','Print')" class="text-dark" ngbDropdownItem (click)="reportPreAlertModel()"
                             [disabled]="isLoading">Pre Alert</button>
-                        <button class="text-dark" ngbDropdownItem (click)="reportcargomanifest()"
+                        <button *ngIf="mps.canPrint('Cargo Manifest', 'Print')" class="text-dark" ngbDropdownItem (click)="reportcargomanifest()"
                             [disabled]="isLoading">Cargo Manifest</button>
                         <!-- <button class="text-dark" ngbDropdownItem (click)="reportreleaseLetter()"
                             [disabled]="isLoading">Release Letter</button> -->
@@ -82,12 +84,12 @@
                             </button> -->
                              <!-- <button class="text-dark" ngbDropdownItem (click)="reportSailingConfirmation()">Sailing Confirmation
                             </button> -->
-                            <button class="text-dark" ngbDropdownItem (click)="reportMBLBill('MBL')">MBL</button>
-                            <button class="text-dark" ngbDropdownItem (click)="reportMBLBill('MBLDraft')">MBL Draft</button>
-                            <button class="text-dark" ngbDropdownItem (click)="reportCFSoutturn()">CFS Outturn</button>
-                            <button class="text-dark" ngbDropdownItem (click)="reportHBLBill()">All HBL Draft</button>
-                            <button class="text-dark" ngbDropdownItem (click)="reportHBL()">All HBL</button>
-                            <button class="text-dark" ngbDropdownItem (click)="reportLoadingPlan()">Loading Plan</button>
+                            <button *ngIf="mps.canPrint('MBL', 'Print')" class="text-dark" ngbDropdownItem (click)="reportMBLBill('MBL')">MBL</button>
+                            <button *ngIf="mps.canPrint('MBL Draft' , 'Print')" class="text-dark" ngbDropdownItem (click)="reportMBLBill('MBLDraft')">MBL Draft</button>
+                            <button *ngIf="mps.canPrint('CFS Outturn', 'Print')" class="text-dark" ngbDropdownItem (click)="reportCFSoutturn()">CFS Outturn</button>
+                            <button *ngIf="mps.canPrint('All HBL Draft','Print')"  class="text-dark" ngbDropdownItem (click)="reportHBLBill()">All HBL Draft</button>
+                            <button *ngIf="mps.canPrint('All HBL','Print')" class="text-dark" ngbDropdownItem (click)="reportHBL()">All HBL</button>
+                            <button *ngIf="mps.canPrint('Loading Plan','Print')" class="text-dark" ngbDropdownItem (click)="reportLoadingPlan()">Loading Plan</button>
                     </div>
                 </div>
             </div>

@@ -8,7 +8,7 @@ import { GlobalDateFormatService } from 'src/app/core/services/global-date-forma
 import { MasterService } from 'src/app/modules/master/master.service';
 import { OperationService } from '../../../operation.service';
 import { LogoService } from 'src/app/core/services/logo.service';
-
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 @Component({
   selector: 'app-awb-preprint',
   standalone: true,
@@ -159,7 +159,8 @@ export class AwbPreprintComponent {
         private masterService: MasterService,
         private operationService: OperationService,
         public logoService: LogoService,
-        private globalDateService: GlobalDateFormatService
+        private globalDateService: GlobalDateFormatService,
+        public mps: MenuPermissionService
       ) { }
       ngOnChanges(changes: SimpleChanges): void {
         if (changes['housejobData']) {

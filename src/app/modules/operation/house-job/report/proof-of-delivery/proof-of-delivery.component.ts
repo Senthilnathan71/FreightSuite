@@ -14,6 +14,7 @@ import {
   generateProofOfDeliveryDocument,
   transformProofOfDeliveryApiData,
 } from 'src/app/common/pdf/generators/proof-of-delivery-pdf.generator';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-proof-of-delivery',
@@ -39,7 +40,7 @@ export class ProofOfDeliveryComponent {
   @Input()  selectedFCLLCL:any;
   @Input() containerTypeList: any;
   @Input() portList: any[] = []; // Add this input
-   @Input() selectedDepartmentType : any;
+  @Input() selectedDepartmentType : any;
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
   private pdfDepsPromise?: Promise<{ pdfMake: any }>;
@@ -51,7 +52,8 @@ export class ProofOfDeliveryComponent {
     private masterService: MasterService,
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
-    public logoService : LogoService
+    public logoService : LogoService,
+    public mps: MenuPermissionService
   ) { }
 
     ngOnInit() {

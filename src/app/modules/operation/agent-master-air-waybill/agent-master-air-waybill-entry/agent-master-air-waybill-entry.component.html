@@ -36,7 +36,8 @@
           <span>Logs</span>
         </button>
       </div>
-      <div class="action-group" *ngIf="isEditMode">
+      <div class="action-group" *ngIf="isEditMode && ((mps.canPrint('AMAWB Draft','Print')) || (mps.canPrint('AMAWB Preprint','Print'))
+    || (mps.canPrint('Exit Form','Print')) || (mps.canPrint('Job Card','Print')) || (mps.canPrint('Proof of Delivery','Print')))">
         <div ngbDropdown container="body" class="d-inline-block">
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" id="dropdownUpload"
             ngbDropdownToggle [disabled]="!housejobData || hasUnsavedChanges()">
@@ -45,11 +46,10 @@
           <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
             @if(selectedDepartmentType === "AIR"){
             <!-- <button class="text-dark" ngbDropdownItem (click)="reportHAWB('HAWB')">AMAWB</button> -->
-            <button class="text-dark" ngbDropdownItem (click)="reportAWAB()">AMAWB Draft</button>
-            <button class="text-dark" ngbDropdownItem (click)="reportAWABPreprint()">AMAWB Preprint</button>
-            <button class="text-dark" ngbDropdownItem (click)="reportExitForm()">Exit Form
-            </button>
-            <button class="text-dark" ngbDropdownItem (click)="reportjobCard()">Job Card</button>
+            <button *ngIf="mps.canPrint('AMAWB Draft','Print')" class="text-dark" ngbDropdownItem (click)="reportAWAB()">AMAWB Draft</button>
+            <button *ngIf="mps.canPrint('AMAWB Preprint','Print')" class="text-dark" ngbDropdownItem (click)="reportAWABPreprint()">AMAWB Preprint</button>
+            <button *ngIf="mps.canPrint('Exit Form','Print')" class="text-dark" ngbDropdownItem (click)="reportExitForm()">Exit Form </button>
+            <button *ngIf="mps.canPrint('Job Card','Print')" class="text-dark" ngbDropdownItem (click)="reportjobCard()">Job Card</button>
             }@else{
             @if(houseJobForm.get('JobType')?.value !== 'Transhipment'){
             <button class="text-dark" ngbDropdownItem (click)="reportDeliveryOrder()">Delivery
@@ -89,7 +89,7 @@
             <!-- <button class="text-dark" ngbDropdownItem (click)="reportDeliveryNote()">Delivery Note
             </button> -->
             }
-            <button class="text-dark" ngbDropdownItem (click)="reportProofofDelivery()">Proof of Delivery</button>
+            <button *ngIf="mps.canPrint('Proof of Delivery','Print')" class="text-dark" ngbDropdownItem (click)="reportProofofDelivery()">Proof of Delivery</button>
           </div>
         </div>
       </div>

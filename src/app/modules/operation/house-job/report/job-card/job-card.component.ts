@@ -9,6 +9,7 @@ import { MasterService } from 'src/app/modules/master/master.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 interface summaryDTO {
   revenue : any[];
@@ -56,7 +57,8 @@ export class JobCardComponent implements OnChanges {
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
     private pdfMakeService: PdfMakeService,
-    public logoService : LogoService
+    public logoService : LogoService,
+    public mps: MenuPermissionService
   ) { }
 
   ngOnInit() {

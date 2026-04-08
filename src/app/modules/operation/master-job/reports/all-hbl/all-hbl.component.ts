@@ -12,6 +12,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { OperationService } from '../../../operation.service';
 import { LogoService } from 'src/app/core/services/logo.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-all-hbl',
@@ -51,6 +52,7 @@ export class AllHBLComponent {
     private spinner: NgxSpinnerService,
     private operationService: OperationService,
     public logoService: LogoService,
+    public mps: MenuPermissionService
   ) {}
 
   ngOnInit() {

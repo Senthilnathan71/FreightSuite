@@ -354,7 +354,7 @@ export class HawbBillListComponent extends BaseListComponent implements OnInit {
     }
     else if (event.action === 'view') {
       this.router.navigate([
-        'operation/house-job/entry',
+        'operation/hawb-bill/entry',
         event.row.HouseJobSid
       ]);
     }

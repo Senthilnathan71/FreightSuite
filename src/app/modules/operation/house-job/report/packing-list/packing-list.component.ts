@@ -10,6 +10,7 @@ import { LogoService } from 'src/app/core/services/logo.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-packing-list',
@@ -45,7 +46,8 @@ export class PackingListComponent {
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
     private pdfMakeService: PdfMakeService,
-    public logoService : LogoService
+    public logoService : LogoService,
+    public mps: MenuPermissionService
   ) { }
 
 

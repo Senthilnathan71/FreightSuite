@@ -6,6 +6,7 @@ import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
@@ -81,7 +82,8 @@ export class ShipmentComponent {
     private masterService: MasterService,
     private pdfMakeService: PdfMakeService,
     private spinner: NgxSpinnerService,
-    public logoService : LogoService
+    public logoService : LogoService,
+    public mps: MenuPermissionService
   ) { }
 
 

@@ -17,7 +17,8 @@
             }
         </div>
         <div class="header-actions">
-            <div class="action-group" *ngIf="isEditMode">
+            <div class="action-group" *ngIf="isEditMode && ((mps.canPrint('MAWB Draft','Print')) || (mps.canPrint('MAWB Preprint','Print')) 
+            || (mps.canPrint('Cargo Manifest','Print')) || (mps.canPrint('Pre Alert','Print')))">
                 <div ngbDropdown container="body" class="d-inline-block">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" id="dropdownUpload"
                         ngbDropdownToggle [disabled]="!masterAirWayData || hasUnsavedChanges()">
@@ -25,13 +26,13 @@
                     </button>
                     <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
                         <!-- <button class="text-dark" ngbDropdownItem (click)="reportMAWBModel('MAWB')">MAWB</button> -->
-                        <button class="text-dark" ngbDropdownItem (click)="reportMAWBModel('MAWBDraft')">MAWB
+                        <button *ngIf="mps.canPrint('MAWB Draft','Print')" class="text-dark" ngbDropdownItem (click)="reportMAWBModel('MAWBDraft')">MAWB
                             Draft</button>
-                        <button class="text-dark" ngbDropdownItem (click)="reportMAWBpreprintedModel()">MAWB
+                        <button *ngIf="mps.canPrint('MAWB Preprint','Print')" class="text-dark" ngbDropdownItem (click)="reportMAWBpreprintedModel()">MAWB
                             preprint</button>
-                        <button class="text-dark" ngbDropdownItem (click)="reportcargomanifest()">Cargo
+                        <button *ngIf="mps.canPrint('Cargo Manifest','Print')" class="text-dark" ngbDropdownItem (click)="reportcargomanifest()">Cargo
                             Manifest</button>
-                        <button class="text-dark" ngbDropdownItem (click)="reportPreAlertModel()">Pre Alert</button>
+                        <button *ngIf="mps.canPrint('Pre Alert','Print')" class="text-dark" ngbDropdownItem (click)="reportPreAlertModel()">Pre Alert</button>
                     </div>
                 </div>
             </div>

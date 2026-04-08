@@ -12,6 +12,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 
 @Component({
@@ -55,7 +56,8 @@ export class MblComponent {
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
     private modalService: NgbModal,
-    public logoService: LogoService
+    public logoService: LogoService,
+    public mps: MenuPermissionService
   ) {}
 
   ngOnInit() {

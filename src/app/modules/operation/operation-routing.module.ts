@@ -361,7 +361,23 @@ export const OperationRoutes: Routes = [
           urls: [{ title: 'Master', url: '/master' }, { title: 'House Job' }],
         },
       },
-      {
+        {
+          path: 'house-job/entry',
+          component: HouseJobEntryComponent,
+          data: {
+            title: 'House Job',
+            urls: [{ title: 'Master', url: '/master' }, { title: 'House Job' }],
+          },
+        },
+        {
+          path: 'house-job/entry/:id',
+          component: HouseJobEntryComponent,
+          data: {
+            title: 'House Job',
+            urls: [{ title: 'Master', url: '/master' }, { title: 'House Job' }],
+          }
+        },
+        {
         path:'hawb-bill/list',
         component: HawbBillListComponent,
         data: {
@@ -369,8 +385,8 @@ export const OperationRoutes: Routes = [
           urls: [{ title: 'Master', url: '/operation' }, { title: 'House AirwayBill' }],
         },
       },
-      {
-        path: 'house-job/entry',
+        {
+        path: 'hawb-bill/entry',
         component: HouseJobEntryComponent,
         canDeactivate: [UnsavedChangesGuard],
         data: {
@@ -379,7 +395,7 @@ export const OperationRoutes: Routes = [
         },
       },
       {
-        path: 'house-job/entry/:id',
+        path: 'hawb-bill/entry/:id',
         component: HouseJobEntryComponent,
         canDeactivate: [UnsavedChangesGuard],
         data: {
