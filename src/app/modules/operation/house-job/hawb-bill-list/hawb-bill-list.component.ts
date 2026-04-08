@@ -423,7 +423,7 @@ export class HawbBillListComponent extends BaseListComponent implements OnInit {
   onActionTriggered(action: string): void {
     switch (action) {
       case 'create':
-        this.router.navigate(['operation/house-job/entry']);
+        this.router.navigate(['operation/hawb-bill/entry']);
         break;
       case 'report':
         this.exportReport();

@@ -3235,7 +3235,7 @@ handleEdocChange(event: any) {
   };
 
   // Navigate to house job entry with master job data as query parameters
-    this.router.navigate(['/operation/house-job/entry'], {
+    this.router.navigate(['/operation/hawb-bill/entry'], {
       queryParams: {
         fromMasterAirWaybill: 'true',
         MasterJobSid: masterJobData.MasterJobSid
@@ -3342,7 +3342,7 @@ onYardChange(selectedYard: any): void {
 
   navigateToHouse(shipment) {
     console.log(shipment ,'shipment');
-    this.router.navigate(['/operation/house-job/entry',shipment.HouseJobSid]);
+    this.router.navigate(['/operation/hawb-bill/entry',shipment.HouseJobSid]);
   }
 
   showInfo() {
