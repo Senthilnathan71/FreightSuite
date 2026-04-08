@@ -70,6 +70,7 @@ import {
   consistentExchangeRatesValidator,
   getExchangeRateErrorMessage,
 } from 'src/app/core/ValidationFn/exRateConsistency.validators';
+import { greaterThanZero } from 'src/app/core/ValidationFn/greaterThanZero.validators';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { VendorCreditNotePrintComponent } from '../report/vendor-credit-note-print/vendor-credit-note-print.component';
@@ -1646,7 +1647,10 @@ export class VendorCreditNoteEntryComponent {
       TaxPercentage2: [{ value: data?.TaxPercentage2 || 0, disabled: true }],
       TaxAmount2: [{ value: data?.TaxAmount2 || 0, disabled: true }],
       LocalAmount: [data?.LocalAmount || 0],
-      PartyAmount: [data?.PartyAmount || 0],
+      PartyAmount: [
+        data?.PartyAmount || 0,
+        [Validators.required, greaterThanZero()],
+      ],
       MasterJobSid: [{ value: data?.MasterJobSid || null, disabled: true }],
       HouseJobSid: [{ value: data?.HouseJobSid || null, disabled: true }],
       DepartmentMasterSid: [
@@ -2060,6 +2064,14 @@ export class VendorCreditNoteEntryComponent {
     }
 
     const raw = this.vendorCreditNoteForm.getRawValue();
+
+    const partyAmountErrors = this.getPartyAmountValidationErrors();
+    if (partyAmountErrors.length > 0) {
+      this.appSettingService.showWarning(partyAmountErrors.join('\n'));
+      this.details.markAllAsTouched();
+      if (resolve) resolve(false);
+      return;
+    }
 
     const autoPostingButNoPosted = this.isAutoPosting && !this.isPosted;
     if (this.isEditMode && autoPostingButNoPosted) {
@@ -3605,6 +3617,24 @@ export class VendorCreditNoteEntryComponent {
       }
     }
     return '';
+  }
+
+  private getPartyAmountValidationErrors(): string[] {
+    const errors: string[] = [];
+
+    this.details.controls.forEach((row, index) => {
+      const partyAmountControl = row.get('PartyAmount');
+      partyAmountControl?.updateValueAndValidity({ onlySelf: true });
+
+      if (
+        partyAmountControl?.hasError('required') ||
+        partyAmountControl?.hasError('greaterThanZero')
+      ) {
+        errors.push(`Row ${index + 1}: Party Amount must be greater than zero.`);
+      }
+    });
+
+    return errors;
   }
 
   showInfo() {

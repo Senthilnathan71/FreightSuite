@@ -85,6 +85,7 @@ import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 import { OperationService } from 'src/app/modules/operation/operation.service';
+import { TaxCalculationService } from 'src/app/modules/operation/services/tax-calculation.service';
 
 /**
  * Payment Entry Component
@@ -121,6 +122,7 @@ import { OperationService } from 'src/app/modules/operation/operation.service';
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
     CustomDatePipe,
+    TaxCalculationService,
   ],
 })
 export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedChanges {
@@ -163,6 +165,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   paymentForm!: FormGroup;
   partyList: any[] = [];
   onlyCustomerList: any[] = [];
+  selectedPartyItemForSearch: any = null;
   currencyList: any[] = [];
   coaList: any[] = [];
   filteredCoaList: any[][] = [];
@@ -176,6 +179,22 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   filteredChargeList: any[][] = [];
   masterJobList: any[][] = [];
   houseJobList: any[][] = [];
+  hssacList: any[] = [];
+  hssacListForRow: any[][] = [];
+  taxLabelCache: string[] = [];
+  private _previousPaymentInvoiceType: string = 'REG';
+  private _originalHSSACValues: any[] = [];
+  invoiceTypeOptions = [
+    { id: 'REG',   name: 'Regular' },
+    { id: 'RCM',   name: 'RCM - Reverse Charge' },
+    { id: 'REIMB', name: 'Reimbursement (Pure Agent)' },
+  ];
+  vatInvoiceTypeOptions = [
+    { id: 'REG', name: 'Regular' },
+    { id: 'ZR',  name: 'Zero Rated' },
+    { id: 'EXE', name: 'Exempt' },
+    { id: 'BOS', name: 'Out of Scope' },
+  ];
 
     // Infinite scroll + typeahead state for Master/House Job dropdowns
   private readonly JOB_BATCH_SIZE = 50;
@@ -196,6 +215,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   CustomerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   CurrencyLookupConfig = DROPDOWN_CONFIGS.CURRENCY;
   COALookupConfig = DROPDOWN_CONFIGS.COA_LEDGER;
+  HSSACLookupConfig = DROPDOWN_CONFIGS.HSSAC_TAX;
 
   outstandingInvoices: OutstandingInvoice[] = [];
   selectedInvoices: OutstandingInvoice[] = [];
@@ -370,7 +390,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     private datePipe: CustomDatePipe,
     private cdr: ChangeDetectorRef,
     private masterService: MasterService,
-    private operationService: OperationService
+    private operationService: OperationService,
+    private taxCalculationService: TaxCalculationService
   ) {}
 
   ngOnInit(): void {
@@ -404,6 +425,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     this.loadPaymentModes();
     this.loadDetailLookups();
     this.loadVoucherPeriods();
+    this.initPaymentTaxService();
 
     this.paymentRequestSid = Number(this.route.snapshot.queryParamMap.get('paymentRequestSid')) || null;
 
@@ -628,6 +650,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       InstrumentDate: [null, [Validators.required]],
       ClearanceDate: [null],
 
+      InvoiceType: ['REG'],
+
       // Form arrays
       detailItems: this.fb.array([]), // charge detail formArray
       voucherMatchings: this.fb.array([]), // voucherMatching formArray
@@ -794,6 +818,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       charges: this.accountService
         .getAllCharges(this.currentCompany?.CompanyMasterSid)
         .pipe(catchError((err) => of([]))),
+      hssacList: this.operationService.getAllHssac().pipe(catchError(() => of([]))),
     }).subscribe(
       ({
         coaWithLedgerCategoryAsLedger,
@@ -801,7 +826,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         profitCenters,
         depts,
         charges,
+        hssacList,
       }) => {
+        this.hssacList = hssacList || [];
         this.coaList = coaWithLedgerCategoryAsLedger.data;
         this.rebuildFilteredCoaListForAllRows();
         this.costCenterList = costCenters.data;
@@ -809,6 +836,10 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         this.deptList = depts;
         this.chargeList = charges;
         this.filterChargeByDeptForAllRow();
+        // Re-evaluate HSSAC enabled state for all rows now that coaList is loaded
+        for (let i = 0; i < this.detailItems.length; i++) {
+          this.updateHSSACEnabledState(i);
+        }
       }
     );
   }
@@ -823,6 +854,11 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   /**
    * Search outstanding invoices for customer
    */
+
+  onPartySearchSelect(item: any): void {
+    this.selectedPartyItemForSearch = item ?? null;
+    this.searchOutstandingForm.get('LedgerMasterSid')?.setValue(item?.SubledgerMasterSid ?? null);
+  }
 
   async searchOutstanding() {
     const form = this.searchOutstandingForm.getRawValue();
@@ -1060,12 +1096,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       this.searchOutstandingForm.get('SearchType')?.value === 'Party' &&
       this.searchOutstandingForm.get('LedgerMasterSid')?.value
     ) {
-      const partyIdInSearch =
-        this.searchOutstandingForm.get('LedgerMasterSid')?.value;
-      const party = this.partyList.find(
-        (p) => p.SubledgerMasterSid === partyIdInSearch
-      );
-      this.onPartyChange(party, true);
+      this.onPartyChange(this.selectedPartyItemForSearch, true);
       this.paymentForm.get('PartyMasterSid')?.disable();
     }
   }
@@ -1253,9 +1284,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     let interOrIntra = 'Inter';
     if (this.currentCompanyCountryCode === 'in') {
       if (currentCompanyState === customerState) {
-        interOrIntra = 'Inter';
-      } else {
         interOrIntra = 'Intra';
+      } else {
+        interOrIntra = 'Inter';
       }
     }
 
@@ -1300,6 +1331,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       GST_VAT: formValue.GST_VAT,
       ReversalVoucher: formValue.ReversalVoucher,
       TaxNumber: formValue.TaxNumber,
+      InvoiceType : formValue.InvoiceType,
       GSTType: this.currentCompanyCountryCode !== 'in' ? 'VAT' : (formValue.GSTType || ''),
       Remarks: formValue.Remarks,
       CurrencyMasterSid: formValue.CurrencyMasterSid,
@@ -1339,6 +1371,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
               TaxCategory: interOrIntra,
               EffectiveFrom: new Date().toISOString(),
               TaxType: 'Output',
+              IsUnionTerritory: this.taxCalculationService.context?.appliedTaxMode === 'CGST_UGST',
             },
           }),
     };
@@ -1432,9 +1465,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       // india
       if (this.currentCompanyCountryCode === 'in') {
         if (currentCompanyState === customerState) {
-          interOrIntra = 'Inter';
-        } else {
           interOrIntra = 'Intra';
+        } else {
+          interOrIntra = 'Inter';
         }
       } else if (['ae', 'us'].includes(this.currentCompanyCountryCode)) {
         interOrIntra = 'Inter';
@@ -1468,6 +1501,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           TaxCategory: interOrIntra,
           EffectiveFrom: new Date().toISOString(),
           TaxType: 'Output',
+          IsUnionTerritory: this.taxCalculationService.context?.appliedTaxMode === 'CGST_UGST',
+          CustomerGstType: this.taxCalculationService.context?.party?.customerGstType || '',
         },
       };
 
@@ -1629,9 +1664,29 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         InstrumentNumber: headerInfo.InstrumentNumber,
         InstrumentDate: headerInfo.InstrumentDate,
         ClearanceDate: headerInfo.ClearanceDate,
+        InvoiceType: headerInfo.InvoiceType || 'REG',
       },
       { emitEvent: false }
     );
+
+    // Update tax service with party context from edit load
+    const loadedParty = this.partyList?.find(
+      (p: any) => p.CustomerBranchSid === headerInfo.CustomerBranchSid
+    );
+    if (loadedParty) {
+      this.taxCalculationService.updateParty({
+        countryCode: loadedParty.countryMaster?.countryCode || this.currentCompanyCountryCode,
+        stateName: loadedParty.stateMaster?.stateName || '',
+        stateMasterSid: loadedParty.stateMaster?.StateMasterSid,
+        gstNumber: loadedParty.GSTNo || loadedParty.PanType || '',
+        customerGstType: loadedParty.CustomerGstType || 'Regular',
+        isUnionTerritory: loadedParty.stateMaster?.IsUnionTerritory === 'Y',
+      });
+    }
+    if (headerInfo.InvoiceType) {
+      this.taxCalculationService.updateInvoiceType(headerInfo.InvoiceType as any);
+    }
+
     // If currencyList is already loaded, resolve the code from the list.
     // If not yet loaded, loadAllLookups will call setCurrencyCode once currencies arrive.
     this.setCurrencyCode(headerInfo.CurrencyMasterSid);
@@ -1705,6 +1760,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         InvoiceType: d.InvoiceType,
         Remarks: d.Remarks,
         PartyAmount: d.PartyAmount,
+        IsAutoGenerated: d.IsAutoGenerated || 'N',
       };
 
       this.addDetailRow(detailRecord, false);
@@ -1747,12 +1803,15 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       this.destroy$.next();
       this.destroy$.complete();
       this.paymentForm.disable();
+      setTimeout(() => this.refreshTaxLabelCache(), 1000);
       return;
     }
     
     // unsaved changes related — allow all recalculations to settle before snapshotting
     this.isLoading = true;
     setTimeout(() => {
+      this.refreshTaxLabelCache();
+      this.applyZeroRatedDisableOnLoad();
       this.initialFormValue = this.paymentForm.getRawValue();
       this.isPatching = false;
       this.isDirty = false;
@@ -1819,13 +1878,14 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       DepartmentMasterSid: [data?.DepartmentMasterSid || null],
       ChargeMasterSid: [data?.ChargeMasterSid || null],
       ChargeDescription: [data?.ChargeDescription || ''],
-      HSSACMasterSid: [data?.HSSACMasterSid || null],
+      HSSACMasterSid: [{ value: data?.HSSACMasterSid || null, disabled: true }],
       ChargeUOMSid: [data?.ChargeUOMSid || null],
       HouseJobSid: [data?.HouseJobSid || null],
       MasterJobSid: [data?.MasterJobSid || null],
 
       YearMasterSid: [data?.YearMasterSid || null],
       VoucherTransactionSid: [data?.VoucherTransactionSid || null],
+      IsAutoGenerated: [data?.IsAutoGenerated || 'N'],
 
       // Transaction details
       CostRevenue: [data?.CostRevenue || ''],
@@ -2270,7 +2330,11 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       }
       return;
     }
+    if (!isPatching) {
+      this.hssacListForRow[detailIndex] = [];
+    }
     this.fetchLedgerForCOA(coa, detailIndex, isPatching);
+    this.updateHSSACEnabledState(detailIndex);
 
     // Resolve full COA object to get JobNoRequire (during patching, coa may be minimal)
     const fullCoa = this.coaList.find(c => c.COAMasterSid === coa.COAMasterSid) || coa;
@@ -2411,6 +2475,14 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
             if (isLockedRow) {
               ledgerCtrl.disable({ emitEvent: false });
             }
+            // Auto-load HSSAC for Charge subledger
+            const subledgerSid = ledgerCtrl.getRawValue();
+            if (subledgerSid) {
+              const subledger = (this.ledgerList[detailIndex] || []).find(
+                (l: any) => l.SubledgerMasterSid === subledgerSid
+              );
+              this.loadHSSACForSubledger(detailIndex, subledger, isPatching);
+            }
           } else {
             this.appSettingService.showError('Error fetching ledger for COA');
           }
@@ -2470,13 +2542,18 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   filterDetailsWithDept(dept: any, detailIndex: number) {
     if (!dept) {
       const row = this.detailItems.at(detailIndex) as FormGroup;
-      row.patchValue({
+      const patch: any = {
         ChargeDescription: '',
-        HSSACMasterSid: null,
         ChargeUOMSid: null,
         MasterJobSid: null,
         HouseJobSid: null,
-      });
+      };
+      // During patching deptList may not be loaded yet — a missing dept means
+      // "not found in list", not "user cleared it". Preserve HSSAC in that case.
+      if (!this.isPatching) {
+        patch.HSSACMasterSid = null;
+      }
+      row.patchValue(patch);
       this.filteredChargeList[detailIndex] = [];
       this.masterJobList[detailIndex] = [];
       this.houseJobList[detailIndex] = [];
@@ -3318,6 +3395,16 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         this.currentCompanyCountryCode !== 'in' ? party.PanType : party.GSTNo,
     });
 
+    this.taxCalculationService.updateParty({
+      countryCode: party.countryMaster?.countryCode || this.currentCompanyCountryCode,
+      stateName: party.stateMaster?.stateName || '',
+      stateMasterSid: party.stateMaster?.StateMasterSid,
+      gstNumber: party.GSTNo || party.PanType || '',
+      customerGstType: party.CustomerGstType || 'Regular',
+      isUnionTerritory: party.stateMaster?.IsUnionTerritory === 'Y',
+    });
+    this.recalcAllPaymentTaxRows();
+
     // Default header currency from the party's configured currency
     const partyCurrency = party.currencyMaster;
     if (partyCurrency?.CurrencyMasterSid) {
@@ -3517,7 +3604,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       );
 
     if (recalcPartyAmount) {
-      this.recalcPartyAmtForDetail(index);
+      this.recalcPaymentTaxForRow(index);
     }
   }
 
@@ -3706,14 +3793,268 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     );
   }
 
+  // ── Tax Service Integration ────────────────────────────────────────────────
+
+  private initPaymentTaxService(): void {
+    const company = this.currentCompany;
+    if (!company) return;
+    this.taxCalculationService.init({
+      documentSide: 'PURCHASE',
+      companyCountryCode: this.currentCompanyCountryCode,
+      companyCountryMasterSid: Number(company.CountryMasterSid),
+      branchStateName: this.currentBranch?.stateMaster?.StateName || this.currentBranch?.StateName || '',
+      branchStateMasterSid: this.currentBranch?.StateMasterSid,
+    }).then(() => this.taxCalculationService.fetchTaxMasters('PURCHASE'));
+  }
+
+  onPaymentInvoiceTypeChange(invoiceType: string): void {
+    if (this.currentCompanyCountryCode === 'ae') {
+      const ok = this.handleZeroRatedSwitch(invoiceType);
+      if (!ok) {
+        this.paymentForm.get('InvoiceType')?.setValue(this._previousPaymentInvoiceType, { emitEvent: false });
+        return;
+      }
+      this._previousPaymentInvoiceType = invoiceType;
+    }
+    this.taxCalculationService.updateInvoiceType((invoiceType || 'REG') as any);
+    this.recalcAllPaymentTaxRows();
+  }
+
+  private getHSSACListForDetailRow(i: number): any[] {
+    return this.hssacListForRow[i]?.length > 0 ? this.hssacListForRow[i] : this.hssacList;
+  }
+
+  private applyZeroRatedDisableOnLoad(): void {
+    if (this.currentCompanyCountryCode !== 'ae') return;
+    const invoiceType = this.paymentForm.get('InvoiceType')?.value;
+    if (invoiceType !== 'ZR') return;
+    this._originalHSSACValues = [];
+    for (let i = 0; i < this.detailItems.length; i++) {
+      if (!this.isHSSACEnabledForRow(i)) continue;
+      const row = this.detailItems.at(i) as FormGroup;
+      this._originalHSSACValues[i] = row.get('HSSACMasterSid')?.value;
+      row.get('HSSACMasterSid')?.disable({ emitEvent: false });
+    }
+    this._previousPaymentInvoiceType = 'ZR';
+  }
+
+  private handleZeroRatedSwitch(invoiceType: string): boolean {
+    if (invoiceType === 'ZR') {
+      const failedRows: number[] = [];
+      for (let i = 0; i < this.detailItems.length; i++) {
+        if (!this.isHSSACEnabledForRow(i)) continue;
+        const zeroRated = this.taxCalculationService.findZeroRatedHSSAC(this.getHSSACListForDetailRow(i));
+        if (!zeroRated) failedRows.push(i + 1);
+      }
+      if (failedRows.length > 0) {
+        this.appSettingService.showError(
+          `Row(s) ${failedRows.join(', ')} are not mapped to a Zero Rated HSSAC. Please update the Charge Master.`
+        );
+        return false;
+      }
+      for (let i = 0; i < this.detailItems.length; i++) {
+        if (!this.isHSSACEnabledForRow(i)) continue;
+        const row = this.detailItems.at(i) as FormGroup;
+        const zeroRated = this.taxCalculationService.findZeroRatedHSSAC(this.getHSSACListForDetailRow(i))!;
+        this._originalHSSACValues[i] = row.get('HSSACMasterSid')?.value;
+        row.get('HSSACMasterSid')?.setValue(zeroRated.HSSACMasterSid, { emitEvent: false });
+        row.get('HSSACMasterSid')?.disable({ emitEvent: false });
+      }
+      return true;
+    } else {
+      if (this._originalHSSACValues.length > 0) {
+        for (let i = 0; i < this.detailItems.length; i++) {
+          const row = this.detailItems.at(i) as FormGroup;
+          row.get('HSSACMasterSid')?.enable({ emitEvent: false });
+          row.get('HSSACMasterSid')?.setValue(this._originalHSSACValues[i] ?? null, { emitEvent: false });
+        }
+        this._originalHSSACValues = [];
+      }
+      return true;
+    }
+  }
+
+  isHSSACEnabledForRow(index: number): boolean {
+    const row = this.detailItems.at(index) as FormGroup;
+    const coaSid = row.get('COAMasterSid')?.value;
+    const coa = this.coaList.find((c: any) => c.COAMasterSid === coaSid);
+    return coa?.Category === 'Expense' && coa?.HSNRequire === 'Y';
+  }
+
+  updateHSSACEnabledState(index: number): void {
+    if (this.isPosted) return;
+    const row = this.detailItems.at(index) as FormGroup;
+    const hssacCtrl = row.get('HSSACMasterSid');
+    if (!hssacCtrl) return;
+    if (this.isHSSACEnabledForRow(index)) {
+      hssacCtrl.enable({ emitEvent: false });
+    } else {
+      hssacCtrl.disable({ emitEvent: false });
+      // During patching, coaList may not be loaded yet — preserve the saved value
+      // so it can display correctly once coaList arrives and the control is re-enabled.
+      if (!this.isPatching) {
+        hssacCtrl.setValue(null, { emitEvent: false });
+        row.patchValue({
+          TaxableAmount: 0,
+          TaxPercentage1: 0,
+          TaxAmount1: 0,
+          TaxPercentage2: 0,
+          TaxAmount2: 0,
+        }, { emitEvent: false });
+      }
+    }
+  }
+
+  onPaymentHSSACChange(index: number): void {
+    const row = this.detailItems.at(index) as FormGroup;
+    const hssacSid = row.get('HSSACMasterSid')?.value;
+    if (!hssacSid) {
+      const currSid = row.get('CurrencyMasterSid')?.getRawValue();
+      row.patchValue({
+        TaxableAmount: this.getFormattedAmount(0, currSid),
+        TaxPercentage1: 0,
+        TaxAmount1: this.getFormattedAmount(0, currSid),
+        TaxPercentage2: 0,
+        TaxAmount2: this.getFormattedAmount(0, currSid),
+      }, { emitEvent: false });
+      this.recalcPartyAmtForDetail(index);
+      return;
+    }
+    this.recalcPaymentTaxForRow(index);
+  }
+
+  recalcPaymentTaxForRow(index: number): void {
+    const row = this.detailItems.at(index) as FormGroup;
+    if (this.isPosted) {
+      return;
+    }
+
+    if (!this.isHSSACEnabledForRow(index)) {
+      this.taxLabelCache[index] = '';
+      this.recalcPartyAmtForDetail(index);
+      return;
+    }
+
+    const hssacSid = row.get('HSSACMasterSid')?.value;
+    if (!hssacSid) {
+      this.taxLabelCache[index] = '';
+      this.recalcPartyAmtForDetail(index);
+      return;
+    }
+
+    const hssacSource = (this.hssacListForRow[index]?.length > 0)
+      ? this.hssacListForRow[index]
+      : this.hssacList;
+    const hssacItem = hssacSource.find((h: any) => h.HSSACMasterSid === hssacSid);
+    const localAmount = toNumber(row.get('LocalAmount')?.value);
+    const currSid = row.get('CurrencyMasterSid')?.getRawValue();
+
+    const taxResult = this.taxCalculationService.calculateRowTax({
+      taxableAmount: localAmount,
+      taxGroupSid: hssacItem?.TaxGroupSid,
+    });
+
+    this.taxLabelCache[index] = taxResult.TaxLabel || '-';
+
+    row.patchValue({
+      TaxableAmount: this.getFormattedAmount(localAmount, currSid),
+      TaxPercentage1: taxResult.TaxPercentage1,
+      TaxAmount1: this.getFormattedAmount(taxResult.TaxAmount1, currSid),
+      TaxPercentage2: taxResult.TaxPercentage2,
+      TaxAmount2: this.getFormattedAmount(taxResult.TaxAmount2, currSid),
+    }, { emitEvent: false });
+
+    this.recalcPartyAmtForDetail(index);
+  }
+
+  recalcAllPaymentTaxRows(): void {
+    this.detailItems.controls.forEach((_, i) => {
+      this.recalcPaymentTaxForRow(i);
+    });
+  }
+
+  refreshTaxLabelCache(): void {
+    this.detailItems.controls.forEach((_, i) => {
+      const row = this.detailItems.at(i);
+      const hssacSid = row.get('HSSACMasterSid')?.getRawValue();
+      if (!hssacSid) { this.taxLabelCache[i] = ''; return; }
+      const source = this.hssacListForRow[i]?.length > 0 ? this.hssacListForRow[i] : this.hssacList;
+      const hssacItem = source.find((h: any) => h.HSSACMasterSid === hssacSid);
+      if (!hssacItem?.TaxGroupSid) { this.taxLabelCache[i] = ''; return; }
+      this.taxLabelCache[i] = this.taxCalculationService.calculateRowTax({
+        taxGroupSid: hssacItem.TaxGroupSid,
+        taxableAmount: 0,
+      }).TaxLabel || '-';
+    });
+  }
+
+  getPaymentTaxLabel(index: number): string {
+    return this.taxLabelCache[index] || '';
+  }
+
+  getDynamicTextWidthCh(value: string, minWidth: number = 10, maxWidth: number = 32): number {
+    const textLength = (value || '').trim().length;
+    return Math.min(Math.max(textLength + 2, minWidth), maxWidth);
+  }
+
+  getPaymentTaxColumnWidthCh(minWidth: number = 10, maxWidth: number = 32): number {
+    const longestLabel = this.detailItems?.controls?.reduce((longest, row, index) => {
+      const label = row.get('IsAutoGenerated')?.value === 'Y' ? '-' : this.getPaymentTaxLabel(index);
+      return label.length > longest.length ? label : longest;
+    }, '') || '';
+
+    return this.getDynamicTextWidthCh(longestLabel, minWidth, maxWidth);
+  }
+
+  getPaymentTaxAmount(index: number): string {
+    const row = this.detailItems.at(index);
+    const total = toNumber(row.get('TaxAmount1')?.value) + toNumber(row.get('TaxAmount2')?.value);
+    const currSid = row.get('CurrencyMasterSid')?.getRawValue();
+    return this.getFormattedAmount(total, currSid);
+  }
+
+  onSubledgerChange(subledger: any, index: number): void {
+    this.checkAndUpdateForPartyDetail(index);
+    this.loadHSSACForSubledger(index, subledger, false);
+  }
+
+  loadHSSACForSubledger(index: number, subledger: any, isPatching: boolean = false): void {
+    if (!subledger || subledger.SubledgerType !== 'Charge' || !subledger.SubledgerMappingSid) {
+      this.hssacListForRow[index] = [];
+      return;
+    }
+    this.operationService.getChargeTaxForChargeId(subledger.SubledgerMappingSid).subscribe({
+      next: (res: any) => {
+        if (res.status) {
+          const hssacItems = (res.data || []).filter((h: any) => h.HSSACMasterSid);
+          this.hssacListForRow[index] = hssacItems;
+          if (hssacItems.length > 0 && !isPatching) {
+            (this.detailItems.at(index) as FormGroup).patchValue(
+              { HSSACMasterSid: hssacItems[0].HSSACMasterSid },
+              { emitEvent: false }
+            );
+            this.recalcPaymentTaxForRow(index);
+          }
+        } else {
+          this.hssacListForRow[index] = [];
+        }
+      },
+      error: () => {
+        this.hssacListForRow[index] = [];
+      }
+    });
+  }
+
   validateAmount() {
     let totalCredits = 0;
     let totalDebits = 0;
+    const headerExRate = toNumber(this.paymentForm.get('ExchangeRate')?.getRawValue());
     (this.detailItems.getRawValue() || []).forEach((vd) => {
+      if (vd.IsAutoGenerated === 'Y') return;
       if (vd.DrCr === 'D') {
-        totalCredits += Number(vd.PartyAmount) || 0;
+        totalCredits += (Number(vd.PartyAmount) + (toNumber(vd.TaxAmount1) + toNumber(vd.TaxAmount2) / headerExRate))  || 0;
       } else {
-        totalDebits += Number(vd.PartyAmount) || 0;
+        totalDebits += (Number(vd.PartyAmount) + (toNumber(vd.TaxAmount1) + toNumber(vd.TaxAmount2) / headerExRate))  || 0;
       }
     });
     this.totalCredits = toNumber(this.getFormattedAndPaddedAmount(totalCredits,this.paymentForm.get('CurrencyMasterSid')?.getRawValue()));

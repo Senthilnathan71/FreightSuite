@@ -306,10 +306,15 @@ export class TaxCalculationService {
       return zero;
     }
 
-    const matches = this.workingTaxMasters.filter(
+    const allMatches = this.workingTaxMasters.filter(
       (t: any) =>
         Number(t.TaxGroupSid) === Number(input.taxGroupSid) &&
         t.TaxCategory === taxCategoryForMaster
+    );
+    const matches = allMatches.filter((t: any) =>
+      this._context.isRCM
+        ? t.InvoiceType === 'RCM'
+        : (!t.InvoiceType || t.InvoiceType !== 'RCM')
     );
 
     if (!matches.length) return zero;
@@ -510,9 +515,9 @@ export class TaxCalculationService {
         appliedTaxMode = 'NONE';
         formGSTType = '';
       } else if (ctx.invoiceType === 'RCM') {
-        // Reverse Charge — no tax columns (user creates separate JV for liability)
+        // Reverse Charge — show tax columns using the applicable state tax mode
         documentClass = 'RCM';
-        appliedTaxMode = 'NONE';
+        appliedTaxMode = stateTaxMode;
         formGSTType = 'RCM';
         isRCM = true;
       } else if (ctx.invoiceType === 'BOS') {
