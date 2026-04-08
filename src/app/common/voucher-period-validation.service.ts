@@ -20,9 +20,19 @@ export class VoucherPeriodValidationService {
     callback?: () => void
   ): void {
     if (!companyId || !branchId || !yearId) return;
-    this.masterService.getAllVoucherPeriods(companyId, branchId, yearId).subscribe({
-      next: (periods: VoucherPeriodInfo[]) => {
-        this.periods = periods || [];
+    const payload = {
+      search: '',
+      page: 1,
+      pageSize: 50,
+      activeCompanyId: companyId,
+      activeBranchId: branchId,
+      yearMasterSid: yearId,
+      sortColumn: 'PeriodName',
+      sortDirection: 'asc'
+    };
+    this.masterService.searchVoucherPeriodList(payload).subscribe({
+      next: (resp: any) => {
+        this.periods = resp?.data?.items || resp?.data || [];
         if (callback) callback();
       },
       error: (err: any) => {

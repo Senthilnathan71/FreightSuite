@@ -86,17 +86,14 @@ export function getVoucherDateConstraints(
     return result;
   }
 
-  // Grace days check: compare today vs period end + grace days
-  // Use UTC arithmetic to handle Feb 28/29 and all month boundaries correctly
+  // Grace days check: compare today vs voucher date + grace days
+  // Grace period counts from the voucher/invoice date
   const graceDaysKey = `${module}GraceDays` as keyof VoucherPeriodInfo;
   const graceDays = Number(period[graceDaysKey]) || 0;
 
-  const endDate = new Date(period.EndDate);
-  // Date.UTC handles month/leap-year overflow automatically
-  // e.g. Date.UTC(2026, 1, 28 + 31) → March 31 (non-leap Feb 28 days)
-  //      Date.UTC(2024, 1, 29 + 31) → March 31 (leap Feb 29 days)
+  // Date.UTC handles month/leap-year overflow automatically (Feb 28/29, etc.)
   const graceDeadlineTs = Date.UTC(
-    endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate() + graceDays
+    voucherDate.getUTCFullYear(), voucherDate.getUTCMonth(), voucherDate.getUTCDate() + graceDays
   );
 
   // Today's local date as a UTC-midnight timestamp for clean comparison
