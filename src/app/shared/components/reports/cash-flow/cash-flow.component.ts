@@ -43,7 +43,7 @@ export class CashFlowComponent {
   }
 
   get reportTitle(): string {
-    return this.fullData?.reportTitle || 'Consolidated Statement of Cash flows';
+    return this.fullData?.reportTitle || 'Cash Flow Statement';
   }
 
   get reportSubTitle(): string {
@@ -51,7 +51,7 @@ export class CashFlowComponent {
   }
 
   get currencyLabel(): string {
-    return this.fullData?.currencyLabel || this.params?.CurrencyLabel || 'In Local Currency';
+    return this.fullData?.currencyLabel || this.params?.CurrencyLabel;
   }
 
   get yearColumns(): string[] {
@@ -69,20 +69,34 @@ export class CashFlowComponent {
     if (apiData) {
       return [
         {
-          title: 'Cash flows from operating activities',
-          rows: this.buildActivityRows(apiData?.operatingActivities, 'Net cash'),
-        },
-        {
-          title: 'Cash flow from investing activities',
-          rows: this.buildActivityRows(apiData?.investingActivities, 'Net cash'),
-        },
-        {
-          title: 'Cash flows from financing activities',
-          rows: this.buildActivityRows(apiData?.financingActivities, 'Net cash'),
+          title: '',
+          rows: this.buildActivityRows(apiData?.operatingActivities, 'NET CASH'),
         },
         {
           title: '',
-          rows: this.buildSummaryRows(),
+          rows: this.buildActivityRows(apiData?.investingActivities, 'NET CASH'),
+        },
+        {
+          title: '',
+          rows: this.buildActivityRows(apiData?.financingActivities, 'NET CASH'),
+        },
+        {
+          title: '',
+          rows: this.buildActivityRows(
+            apiData?.netChangeInCashAndCashEquivalents,
+            'NET ',
+          ),
+        },
+        {
+          title: '',
+          rows: this.buildActivityRows(apiData?.cashReconciliation, 'Closing Cash'),
+        },
+        {
+          title: '',
+          rows: this.buildActivityRows(
+            apiData?.supplementalIncomeExpenseSummary,
+            'TOTAL',
+          ),
         },
       ].filter((section) => Array.isArray(section.rows) && section.rows.length > 0);
     }
@@ -91,50 +105,22 @@ export class CashFlowComponent {
   }
 
   get noteRows(): any[] {
-    const breakup = this.fullData?.data?.cashAndCashEquivalents;
-    const summary = this.fullData?.summary;
-
-    if (Array.isArray(breakup) && breakup.length) {
-      return [
-        {
-          title: 'Cash & Cash equivalents includes:',
-          rows: [
-            ...breakup.map((item: any) => ({
-              label: item?.label || item?.LedgerName || item?.SubGroupName || item?.GroupName || 'Cash / Bank',
-              amount: item?.ClosingBalance ?? 0,
-              values: item?.values,
-              rowType: 'detail',
-            })),
-            {
-              label: 'Total',
-              amount: summary?.closingCashAndCashEquivalents ?? 0,
-              values: summary?.closingCashAndCashEquivalents,
-              rowType: 'summary',
-            },
-          ],
-        },
-      ];
+    const notes = this.fullData?.notes;
+    if (!Array.isArray(notes) || !notes.length) {
+      return [];
     }
 
-    return [
-      {
-        title: 'Cash & Cash equivalents includes:',
-        rows: [
-          {
-            label: 'Bank balance',
-            amount: this.fullData?.summary?.closingCashAndCashEquivalents ?? 0,
-            values: this.fullData?.summary?.closingCashAndCashEquivalents,
-            rowType: 'detail',
-          },
-          {
-            label: 'Total',
-            amount: this.fullData?.summary?.closingCashAndCashEquivalents ?? 0,
-            values: this.fullData?.summary?.closingCashAndCashEquivalents,
-            rowType: 'summary',
-          },
-        ],
-      },
-    ];
+    return notes.map((note: any) => ({
+      title: note?.title || '',
+      rows: Array.isArray(note?.rows)
+        ? note.rows
+        : [
+            {
+              label: note?.label || note?.text || '',
+              rowType: 'detail',
+            },
+          ],
+    }));
   }
 
   getRowValue(row: any, year: string): any {
@@ -143,7 +129,7 @@ export class CashFlowComponent {
 
   formatAmount(value: any): string {
     if (value === null || value === undefined || value === '') {
-      return '-';
+      return '';
     }
 
     const num = Number(String(value).replace(/,/g, ''));
@@ -161,6 +147,10 @@ export class CashFlowComponent {
 
   isSpacerRow(row: any): boolean {
     return row?.rowType === 'spacer' || !!row?.isSpacer;
+  }
+
+  isSectionRow(row: any): boolean {
+    return row?.rowType === 'section';
   }
 
   getExcelData(): ComplexReportExportConfig {
@@ -198,74 +188,37 @@ export class CashFlowComponent {
       });
     };
 
-    pushSectionHeader('Cash flows from operating activities');
-    pushDataRow(
-      'Total Comprehensive Income',
-      this.getLabelValues(this.fullData?.data?.operatingActivities, 'Total Comprehensive Income'),
-    );
-    pushDataRow('Adjustments for:', {});
-    pushDataRow(
-      'Depreciation',
-      this.getLabelValues(this.fullData?.data?.operatingActivities, 'Depreciation / Non-cash adjustments'),
-    );
-    pushDataRow(
-      '(Increase)/Decrease in Trade & Other Receivables',
-      this.getLabelValues(this.fullData?.data?.operatingActivities, '(Increase) / Decrease in Trade & Other Receivables'),
-    );
-    pushDataRow(
-      '(Increase)/Decrease in Other Current Assets',
-      this.getLabelValues(this.fullData?.data?.operatingActivities, '(Increase) / Decrease in Other Current Assets'),
-    );
-    pushDataRow(
-      'Increase / (Decrease) in Other Current Liabilities',
-      this.getLabelValues(this.fullData?.data?.operatingActivities, 'Increase / (Decrease) in Other Current Liabilities'),
-    );
-    pushDataRow(
-      'Net cash (used in) / generated from operating activities (A)',
-      this.getLabelValues(this.fullData?.data?.operatingActivities, 'Net cash generated from operating activities (A)'),
-      'summary',
-    );
+    this.cashFlowSections.forEach((section) => {
+      if (section?.title) {
+        pushSectionHeader(section.title);
+      }
 
-    pushSectionHeader('Cash flow from investing activities');
-    pushDataRow(
-      'Fixed Assets purchased',
-      this.getLabelValues(this.fullData?.data?.investingActivities, 'Fixed Assets purchased'),
-    );
-    pushDataRow(
-      'Net cash (used in) / generated from investing activities (B)',
-      this.getLabelValues(this.fullData?.data?.investingActivities, 'Net cash generated from investing activities (B)'),
-      'summary',
-    );
+      (section?.rows || []).forEach((row: any) => {
+        if (this.isSpacerRow(row)) {
+          rows.push({
+            cells: [{ value: '', colspan: totalColumns }],
+            style: 'data',
+          });
+          return;
+        }
 
-    pushSectionHeader('Cash flows from financing activities');
-    pushDataRow(
-      'Net cash (used in) / generated from financing activities (C)',
-      this.getLabelValues(this.fullData?.data?.financingActivities, 'Net cash generated from financing activities (C)'),
-      'summary',
-    );
+        pushDataRow(
+          row?.label || row?.description || row?.title || '',
+          row?.values || this.mapAmountToYears(row?.amount),
+          this.isEmphasizedRow(row) ? 'summary' : 'detail',
+        );
+      });
+    });
 
-    pushDataRow(
-      'Net increase/(decrease) in cash and cash equivalents (A+B+C)',
-      this.fullData?.summary?.netIncreaseInCashAndCashEquivalents || {},
-      'summary',
-    );
-    pushDataRow(
-      'Cash and cash equivalents at the beginning of the Year',
-      this.fullData?.summary?.openingCashAndCashEquivalents || {},
-    );
-    pushDataRow(
-      'Cash and cash equivalents at the end of the Year',
-      this.fullData?.summary?.closingCashAndCashEquivalents || {},
-      'summary',
-    );
-
-    pushSectionHeader('Note: Cash & Cash equivalents includes:');
-    (this.noteRows?.[0]?.rows || []).forEach((row: any) => {
-      pushDataRow(
-        row?.label || '',
-        row?.values || this.mapAmountToYears(row?.amount),
-        row?.rowType === 'summary' ? 'summary' : 'detail',
-      );
+    this.noteRows.forEach((note: any) => {
+      pushSectionHeader(note?.title ? `Note: ${note.title}` : 'Note:');
+      (note?.rows || []).forEach((row: any) => {
+        pushDataRow(
+          row?.label || row?.description || row?.title || '',
+          row?.values || this.mapAmountToYears(row?.amount),
+          this.isEmphasizedRow(row) ? 'summary' : 'detail',
+        );
+      });
     });
 
     return {
@@ -309,11 +262,7 @@ export class CashFlowComponent {
           })
         : '';
 
-      if (from && to) {
         return `For the period ${from} to ${to}`;
-      }
-
-      return `For the year ended ${to}`;
     } catch {
       return 'For the selected period';
     }
@@ -358,7 +307,7 @@ export class CashFlowComponent {
 
     const mappedRows: any[] = rows.map((row: any, index: number) => ({
       label: row?.label || '',
-      amount: row?.amount ?? 0,
+      amount: row?.amount ?? '',
       values: row?.values,
       rowType:
         row?.rowType ||
@@ -372,38 +321,10 @@ export class CashFlowComponent {
     return mappedRows;
   }
 
-  private buildSummaryRows(): any[] {
-    const summary = this.fullData?.summary;
-    if (!summary) {
-      return [];
-    }
-
-    return [
-      {
-        label: 'Net increase/(decrease) in cash and cash equivalents (A+B+C)',
-        amount: summary?.netIncreaseInCashAndCashEquivalents ?? 0,
-        values: summary?.netIncreaseInCashAndCashEquivalents,
-        rowType: 'summary',
-      },
-      {
-        label: 'Cash and cash equivalents at the beginning of the Year',
-        amount: summary?.openingCashAndCashEquivalents ?? 0,
-        values: summary?.openingCashAndCashEquivalents,
-        rowType: 'detail',
-      },
-      {
-        label: 'Cash and cash equivalents at the end of the Year',
-        amount: summary?.closingCashAndCashEquivalents ?? 0,
-        values: summary?.closingCashAndCashEquivalents,
-        rowType: 'summary',
-      },
-    ];
-  }
-
   private getDefaultSections(): any[] {
     return [
       {
-        title: 'Cash flows from operating activities',
+        title: '',
         rows: [
           { label: 'Total Comprehensive Income', values: {}, rowType: 'detail' },
           { label: 'Adjustments for:', values: {}, rowType: 'detail' },
@@ -418,7 +339,7 @@ export class CashFlowComponent {
         ],
       },
       {
-        title: 'Cash flow from investing activities',
+        title: '',
         rows: [
           { label: 'Fixed Assets purchased', values: {}, rowType: 'detail' },
           {
@@ -430,7 +351,7 @@ export class CashFlowComponent {
         ],
       },
       {
-        title: 'Cash flows from financing activities',
+        title: '',
         rows: [
           {
             label: 'Net cash (used in) / generated from financing activities (C)',
@@ -445,6 +366,14 @@ export class CashFlowComponent {
           },
           { label: 'Cash and cash equivalents at the beginning of the Year', values: {}, rowType: 'detail' },
           { label: 'Cash and cash equivalents at the end of the Year', values: {}, rowType: 'summary' },
+        ],
+      },
+      {
+        title: '',
+        rows: [
+          { label: 'Total Income', values: {}, rowType: 'summary' },
+          { label: 'Total Expenses', values: {}, rowType: 'summary' },
+          { label: 'Net Profit / (Loss)', values: {}, rowType: 'summary' },
         ],
       },
     ];
