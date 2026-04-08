@@ -402,12 +402,26 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
     }
   }
 
-  navigateToHouse(row: any): void {
-  if (row?.HouseJobSid) {
-    this.router.navigate(['/operation/house-job/entry', row.HouseJobSid]);
-  } else {
+    navigateToHouse(row: any): void {
+  const houseJobSid = row?.HouseJobSid;
+  if (!houseJobSid) {
     this.appSettingService.showWarning('House Job not available');
+    return;
   }
+
+  const departmentType = String(
+    row?.departmentType ??
+    row?.departmentMaster?.departmentType ??
+    row?.DepartmentType ??
+    ''
+  ).toUpperCase();
+
+  if (departmentType === 'AIR') {
+    this.router.navigate(['/operation/hawb-bill/entry', houseJobSid]);
+    return;
+  }
+
+  this.router.navigate(['/operation/house-job/entry', houseJobSid]);
 }
 
     navigateToCreate() {

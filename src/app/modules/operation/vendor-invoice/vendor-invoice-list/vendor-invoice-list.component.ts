@@ -579,11 +579,25 @@ private formatAmount(amount: number | string): string {
     }
   }
   navigateToHouse(row: any): void {
-    if (row?.HouseJobSid) {
-      this.router.navigate(['/operation/house-job/entry', row.HouseJobSid]);
-    } else {
+    const houseJobSid = row?.HouseJobSid;
+    if (!houseJobSid) {
       this.appSettingService.showWarning('House Job not available');
+      return;
     }
+
+    const departmentType = String(
+      row?.departmentMaster?.departmentType ??
+      row?.DepartmentType ??
+      row?.departmentType ??
+      ''
+    ).toUpperCase();
+
+    if (departmentType === 'AIR') {
+      this.router.navigate(['/operation/hawb-bill/entry', houseJobSid]);
+      return;
+    }
+
+    this.router.navigate(['/operation/house-job/entry', houseJobSid]);
   }
 
   navigateToBooking(row: any): void {

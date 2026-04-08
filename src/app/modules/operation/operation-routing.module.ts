@@ -364,6 +364,7 @@ export const OperationRoutes: Routes = [
         {
           path: 'house-job/entry',
           component: HouseJobEntryComponent,
+          canDeactivate: [UnsavedChangesGuard],
           data: {
             title: 'House Job',
             urls: [{ title: 'Master', url: '/master' }, { title: 'House Job' }],
@@ -372,6 +373,7 @@ export const OperationRoutes: Routes = [
         {
           path: 'house-job/entry/:id',
           component: HouseJobEntryComponent,
+          canDeactivate: [UnsavedChangesGuard],
           data: {
             title: 'House Job',
             urls: [{ title: 'Master', url: '/master' }, { title: 'House Job' }],

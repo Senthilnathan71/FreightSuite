@@ -1483,7 +1483,7 @@ isSeaDepartment(): boolean {
 }
 
   gatherHyperLinkInfo(data){
-    const airDept = String(data.departmentMaster?.departmentType)?.toUpperCase() === 'AIR';
+    const airDept = this.isAirDepartment(data);
     const isHouseJobInvoice = data.HouseJobSid;
     const isMasterJobInvoice = data.MasterJobSid && !data.HouseJobSid;
     const isBookingInvoice = !!data.BookingHeaderSid;
@@ -1504,7 +1504,7 @@ isSeaDepartment(): boolean {
           ? `/operation/agent-master-air-waybill/entry/${data.HouseJobSid}`
           : (isServiceJobInvoice
             ? `/operation/service-job/entry/${data.HouseJobSid}`
-            : `/operation/house-job/entry/${data.HouseJobSid}`),
+            : `/${this.getHouseJobRouteSegment(data)}/entry/${data.HouseJobSid}`),
         label : isAgentHouseJob ? 'AMWBL No.' : (airDept ? 'HAWBL No.' : 'HBL No.')
       }
     } else if (isMasterJobInvoice) {
@@ -2350,7 +2350,10 @@ isSeaDepartment(): boolean {
             }
             if (resolve) resolve(true);
             if (this.headerId) {
-              this.router.navigate(['operation/invoice/entry', this.headerId]);
+              this.loadInvoiceById(this.headerId);
+              this.router.navigate(['operation/invoice/entry', this.headerId], {
+                replaceUrl: true
+              });
             }
           } else {
             this.appSettingService.showError(resp.message);
@@ -3018,6 +3021,22 @@ isSeaDepartment(): boolean {
         this.toastr.warning('Selected currency differs from the customer\'s default currency.', 'Currency Mismatch', { timeOut: 2000 });
       }
     }
+  }
+
+  private isAirDepartment(data: any): boolean {
+    const departmentType = String(
+      data?.departmentMaster?.departmentType ??
+      data?.houseJob?.departmentMaster?.departmentType ??
+      data?.masterJob?.departmentMaster?.departmentType ??
+      data?.DepartmentType ??
+      ''
+    ).trim().toUpperCase();
+
+    return departmentType === 'AIR';
+  }
+
+  private getHouseJobRouteSegment(data: any): string {
+    return this.isAirDepartment(data) ? 'operation/hawb-bill' : 'operation/house-job';
   }
 
   getPartyAmount(detailIndex: number) {

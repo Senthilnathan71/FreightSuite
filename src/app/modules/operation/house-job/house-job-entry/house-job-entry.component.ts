@@ -1,4 +1,4 @@
-import { Component, ViewChild, TemplateRef, OnInit, Input } from '@angular/core';
+import { Component, ViewChild, TemplateRef, OnInit, Input, HostListener } from '@angular/core';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -69,6 +69,7 @@ import { ProofOfDeliveryComponent } from '../report/proof-of-delivery/proof-of-d
 import { SafeInsertShipmentMilestone } from '../../services/shipment-milestone.service';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -133,7 +134,7 @@ type Html2PdfOptions = {
     CustomDatePipe
   ],
 })
-export class HouseJobEntryComponent  implements OnInit {
+export class HouseJobEntryComponent  implements OnInit, HasUnsavedChanges {
 
 
 
@@ -174,6 +175,13 @@ customsValidationErrors: { recordType: string; fieldRef: string; fieldName: stri
   creditValidationActionLabel = '';
   creditValidationSummary: any = null;
   private weightMismatchToastState = new WeakMap<FormGroup, boolean>();
+  isDirty = false;
+  private formSaved = false;
+  private externalDirty = false;
+  private initialStateSnapshot: any = null;
+  private initialProductsCount = 0;
+  private initialConnectionsCount = 0;
+  private initialRatesCount = 0;
 
   //Variable Declaration - Common
   detailForm !: FormGroup;
@@ -515,6 +523,123 @@ hblModalRef?: NgbModalRef;
     }
   }
 
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    if (this.formSaved) {
+      return false;
+    }
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.submitHouseJob(resolve);
+    });
+  }
+
+  private resetDirtyState(): void {
+    this.isDirty = false;
+    this.formSaved = false;
+    this.externalDirty = false;
+    this.houseJobForm?.markAsPristine();
+    this.cargoForm?.markAsPristine();
+    this.otherForm?.markAsPristine();
+    this.detailForm?.markAsPristine();
+    this.initialProductsCount = this.bookingProducts?.length || 0;
+    this.initialConnectionsCount = this.connectionResult?.length || 0;
+    this.initialRatesCount = this.rateResult?.length || 0;
+    this.initialStateSnapshot = this.buildCurrentStateSnapshot();
+  }
+
+  private markAsDirty(): void {
+    this.formSaved = false;
+    this.recomputeDirtyState();
+  }
+
+  private markExternalDirty(): void {
+    this.formSaved = false;
+    this.externalDirty = true;
+    this.recomputeDirtyState();
+  }
+
+  private recomputeDirtyState(): void {
+    if (this.formSaved) {
+      this.isDirty = false;
+      return;
+    }
+
+    if (!this.initialStateSnapshot) {
+      this.isDirty = this.externalDirty;
+      return;
+    }
+
+    this.isDirty = this.externalDirty || !this.deepEqual(
+      this.initialStateSnapshot,
+      this.buildCurrentStateSnapshot()
+    );
+  }
+
+  private buildCurrentStateSnapshot(): any {
+    return {
+      houseJobForm: this.houseJobForm?.getRawValue() ?? null,
+      cargoForm: this.cargoForm?.getRawValue() ?? null,
+      otherForm: this.otherForm?.getRawValue() ?? null,
+      detailForm: this.detailForm?.getRawValue() ?? null,
+      bookingProducts: this.bookingProducts?.getRawValue?.() ?? [],
+      connectionResult: this.connectionResult ?? [],
+      rateResult: this.rateResult ?? [],
+      milestoneResult: this.milestoneResult ?? [],
+      selectedDepartmentType: this.selectedDepartmentType ?? '',
+      selectedFCLLCL: this.selectedFCLLCL ?? '',
+    };
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) {
+      return null;
+    }
+
+    if (value instanceof Date) {
+      return value.toISOString().split('T')[0];
+    }
+
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+      return Number(value);
+    }
+
+    if (typeof value === 'number') {
+      return Number(value.toFixed(6));
+    }
+
+    if (Array.isArray(value)) {
+      return value.map(v => this.normalizeValue(v));
+    }
+
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
+  }
+
   // Mail content
 
 
@@ -754,6 +879,12 @@ private setupMBLDateListener(): void {
     })
     this.houseJobForm.valueChanges.subscribe(()=>{
       this.syncFormValueWithRateComponent();
+      if (this.houseJobForm.dirty) {
+        this.formSaved = false;
+      }
+      if (!this.isPatching) {
+        this.recomputeDirtyState();
+      }
     })
   }
 
@@ -786,6 +917,12 @@ private setupMBLDateListener(): void {
   
   this.cargoForm.valueChanges.subscribe(() => {
     this.syncFormValueWithRateComponent();
+    if (this.cargoForm.dirty) {
+      this.formSaved = false;
+    }
+    if (!this.isPatching) {
+      this.recomputeDirtyState();
+    }
   });
 }
 
@@ -1164,12 +1301,24 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       SIConfirmationDate : [''],
       DGConfirmationDate : [''],
     })
+    this.otherForm.valueChanges.subscribe(() => {
+      if (!this.isPatching) {
+        this.formSaved = false;
+        this.recomputeDirtyState();
+      }
+    });
   }
 
   initDetailsForm() {
     this.detailForm = this.fb.group({
       bookingProducts: this.fb.array([]),
     })
+    this.detailForm.valueChanges.subscribe(() => {
+      if (!this.isPatching) {
+        this.formSaved = false;
+        this.recomputeDirtyState();
+      }
+    });
   }
 
   /**
@@ -1550,7 +1699,7 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
           // Set the value in the form
           this.otherForm.patchValue({
             BlClause: allClausesText
-          });
+          }, { emitEvent: false });
           
           
         } else if (this.blClauseOptions.length === 0) {
@@ -1558,7 +1707,7 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
           // Clear the field if no clauses found
           this.otherForm.patchValue({
             BlClause: ''
-          });
+          }, { emitEvent: false });
         }
       } else {
         this.blClauseOptions = [];
@@ -1566,7 +1715,7 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
         // Clear the field
         this.otherForm.patchValue({
           BlClause: ''
-        });
+        }, { emitEvent: false });
       }
     },
     error: (error) => {
@@ -1574,7 +1723,7 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
       this.blClauseOptions = [];
       this.otherForm.patchValue({
         BlClause: ''
-      });
+      }, { emitEvent: false });
       
       // Show appropriate error message
       if (error.status === 404) {
@@ -1650,6 +1799,7 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
 
           // ✅ Trigger reload for child components like BOE
           this.resetTriggerBOE = true;
+          this.resetDirtyState();
         }
       }
     )
@@ -1685,7 +1835,6 @@ private loadMasterJobDetails(masterJobSid: number): void {
     this.selectedDepartment = selectedDepartment;
     this.selectedDepartmentType = selectedDepartment?.departmentType?.toUpperCase() || '';
     this.filterTabs();
-    this.onDeptChange(selectedDepartment);
 
     const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
     
@@ -1913,7 +2062,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
       if (otherData?.BlClause) {
         this.otherForm.patchValue({
           BlClause: otherData?.BlClause || null,
-        });
+        }, { emitEvent: false });
       } else if (!this.isEditMode && this.blClauseOptions.length > 0) {
         const allClausesText = this.blClauseOptions
           .map(clause => clause.ClauseDescription)
@@ -1921,7 +2070,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
         
         this.otherForm.patchValue({
           BlClause: allClausesText
-        });
+        }, { emitEvent: false });
       }
     }, 500);
 
@@ -2107,6 +2256,7 @@ private applyProductTabLocks(): void {
       })
       this.currentProductIndex = -1;
     }
+    this.markAsDirty();
     this.appSettingService.showSuccess("Product saved successfully");
     this.bookingProducts.updateValueAndValidity();
     this.productDataLength = this.bookingProducts.length;
@@ -2226,6 +2376,9 @@ private applyProductTabLocks(): void {
   handleConnectionChange(allConnections:any[]){
     this.connectionResult = [...allConnections];
     this.bookingConnectionsArr = [...allConnections];
+    if (!this.isPatching) {
+      this.markAsDirty();
+    }
 
     if (this.housejobData) {
       this.housejobData = {
@@ -2237,8 +2390,11 @@ private applyProductTabLocks(): void {
 
   handleRateChange(allRates:any[]){
     
-    if(allRates.length > 0){
+    if(allRates){
       this.rateResult = [...allRates];
+      if (!this.isPatching) {
+        this.markAsDirty();
+      }
     }
   }
 
@@ -2246,6 +2402,9 @@ private applyProductTabLocks(): void {
    
     if(allmilestones.length !== 0){
       this.milestoneResult = [...allmilestones];
+      if (!this.isPatching) {
+        this.markAsDirty();
+      }
     }
     if(this.hblModalRef){
       this.initializeMilestoneContentForHBLPrint();
@@ -2264,21 +2423,35 @@ onCurrencyChange(event: any) {
 
 
   onSubmit() {
+    this.submitHouseJob();
+  }
+
+  private submitHouseJob(resolve?: (value: boolean) => void) {
     if (this.isSubmitting || this.isSaving) {
-    
-    return;
-  }
+      resolve?.(false);
+      return;
+    }
+
+    if (this.isEditMode && !this.hasUnsavedChanges()) {
+      this.appSettingService.showWarning('No changes to save');
+      resolve?.(false);
+      return;
+    }
+
     if (!this.validateHBLNo()) {
-    return;
-  }
+      resolve?.(false);
+      return;
+    }
   const fy = this.appSettingService.getCurrentFinancialYear();
     if (fy) {
       const HBLDate = new Date(this.houseJobForm.getRawValue().HBLDate);
       const fyStartDate = new Date(fy.StartDate);
       const fyEndDate = new Date(fy.EndDate);
       if (HBLDate < fyStartDate || HBLDate > fyEndDate) {
-         this.appSettingService.showWarning('HBL date must be within the financial year');
+          this.appSettingService.showWarning('HBL date must be within the financial year');
         this.houseJobForm.get('HBLDate')?.setErrors({ invalidDate: true });
+        this.houseJobForm.get('HBLDate')?.markAsTouched();
+        resolve?.(false);
         return;
       }
     }
@@ -2292,6 +2465,7 @@ onCurrencyChange(event: any) {
         ? `Please fill required fields: ${invalidFields.join(', ')}`
         : 'Please fill all required fields correctly.'
     );
+    resolve?.(false);
     return;
   }
   // In onSubmit() - Added this check:
@@ -2305,12 +2479,14 @@ if (this.bookingProducts.length > 0) {
     this.bookingProducts.markAllAsTouched();
     this.appSettingService.showWarning(this.getProductValidationMessage());
     this.selectedTab = 'Cargo';
+    resolve?.(false);
     return;
   }
 }
 
     if (!this.costEntryComponent.validateRateArray()) {
       this.selectedTab = 'Rate';
+      resolve?.(false);
       return;
     }
   
@@ -2336,6 +2512,7 @@ if (this.bookingProducts.length > 0) {
       (hblNoElement as HTMLElement).focus();
     }
     
+    resolve?.(false);
     return;
   }
   this.isSubmitting = true;
@@ -2351,12 +2528,13 @@ if (this.bookingProducts.length > 0) {
   const customsData = this.customsComponent ? this.customsComponent.getCustomsData() : [];
 
   // Validate customs required fields before saving
-  if (customsData.length > 0 && this.customsComponent) {
+    if (customsData.length > 0 && this.customsComponent) {
     const customsErrors = this.customsComponent.getValidationErrorsForSave();
     if (customsErrors.length > 0) {
       this.customsValidationErrors = customsErrors;
       this.showCustomsValidationModal = true;
       this.resetSaveState();
+      resolve?.(false);
       return;
     }
   }
@@ -2545,33 +2723,38 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
   };
 
  
- if (!this.isEditMode) {
-    this.operationService.createHouseJob(payload).subscribe({
-      next: (resp: any) => {
-        this.resetSaveState();
-        if (resp.status) {
+  if (!this.isEditMode) {
+     this.operationService.createHouseJob(payload).subscribe({
+       next: (resp: any) => {
+         this.resetSaveState();
+         if (resp.status) {
+          this.resetDirtyState();
+          this.formSaved = true;
           this.appSettingService.showSuccess('House Job created successfully!');
           this.HouseJobSid = resp.data.HouseJobSid;
-          this.isEditMode = true;
-          const HouseJobSid = resp.data?.houseJob?.HouseJobSid;
-          // Navigate to the edit page or reload the form
-          if (HouseJobSid) {
-            this.router.navigate(['/operation/house-job/entry', HouseJobSid]);
-          } else {
-            this.router.navigate(['/operation/house-job/list']);
-          }
+           this.isEditMode = true;
+           const HouseJobSid = resp.data?.houseJob?.HouseJobSid;
+           // Navigate to the edit page or reload the form
+           if (HouseJobSid) {
+            this.router.navigate([this.getHouseJobEntryRoute(), HouseJobSid]);
+           } else {
+            this.router.navigate([this.getHouseJobListRoute()]);
+           }
+           resolve?.(true);
           
           // Optionally reload the data to get the generated IDs
           // this.loadHouseById(this.HouseJobSid);
         } else {
           this.showHouseJobBackendError(resp, 'Error creating house job.');
           console.error('Create error:', resp.message);
+          resolve?.(false);
         }
       },
       error: (err) => {
         this.resetSaveState();
         this.showHouseJobBackendError(err, 'Failed to create house job. Please try again.');
         console.error('Create API error:', err);
+        resolve?.(false);
       }
     });
     return;
@@ -2582,19 +2765,24 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
       next: (resp: any) => {
         this.resetSaveState();
         if (resp.status) {
+          this.resetDirtyState();
+          this.formSaved = true;
           this.appSettingService.showSuccess('House Job successfully updated.');
             this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
-            this.router.navigate(['/operation/house-job/entry', this.HouseJobSid]);
+            this.router.navigate([this.getHouseJobEntryRoute(), this.HouseJobSid]);
           });
+          resolve?.(true);
         } else {
           this.showHouseJobBackendError(resp, 'Error updating house job.');
           console.error(resp.message);
+          resolve?.(false);
         }
       },
       error: (err) => {
         this.resetSaveState();
         this.showHouseJobBackendError(err, 'Failed to update house job.');
         console.error(err);
+        resolve?.(false);
       }
     });
     return;
@@ -2602,6 +2790,7 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
 
   this.resetSaveState();
   this.appSettingService.showError('Unable to save House Job. Missing record reference.');
+  resolve?.(false);
 }
 
   /**
@@ -2616,7 +2805,8 @@ private getAgentNameById(agentId: number): string {
   const agent = this.agentList.find(a => a.CustomerMasterSid === agentId);
   return agent ? agent.CustomerName : '';
 }
- onDeptChange(department) {
+  onDeptChange(department) {
+  const controlOptions = { emitEvent: !this.isPatching };
   
   this.selectedDepartment = department;
   if (!department) {
@@ -2629,20 +2819,20 @@ private getAgentNameById(agentId: number): string {
     this.filteredPOL = [];
     this.filteredPOD = [];
     this.filteredFPOD = [];
-    this.b['POO'].setValue(null);
-    this.b['POL'].setValue(null);
-    this.b['POD'].setValue(null);
-    this.b['FPD'].setValue(null);
-    this.b['ETA'].setValue('');
-    this.b['ETD'].setValue('');
-    this.b['MovementType'].setValue(null);
-    this.b['JobType'].setValue('');
+    this.b['POO'].setValue(null, controlOptions);
+    this.b['POL'].setValue(null, controlOptions);
+    this.b['POD'].setValue(null, controlOptions);
+    this.b['FPD'].setValue(null, controlOptions);
+    this.b['ETA'].setValue('', controlOptions);
+    this.b['ETD'].setValue('', controlOptions);
+    this.b['MovementType'].setValue(null, controlOptions);
+    this.b['JobType'].setValue('', controlOptions);
     this.handleImportExport();
     this.handleCFSOrYard();
     this.b['HBLNo']?.enable();
-    this.b['HBLNo']?.setValue('');
+    this.b['HBLNo']?.setValue('', controlOptions);
     this.blClauseOptions = [];
-    this.o['BlClause']?.setValue('');
+    this.o['BlClause']?.setValue('', controlOptions);
     this.handleHBLNoField('');
     return;
   }
@@ -2673,7 +2863,7 @@ private getAgentNameById(agentId: number): string {
       }
   
   // Set the form control value
-  this.b['DepartmentMasterSid'].setValue(department.DepartmentMasterSid);
+  this.b['DepartmentMasterSid'].setValue(department.DepartmentMasterSid, controlOptions);
   
   
   this.loadDefaultBLClauses(department.DepartmentMasterSid);
@@ -2683,27 +2873,27 @@ private getAgentNameById(agentId: number): string {
   
   if (this.selectedDepartmentType === "AIR") {
     // Set IncoTerms to CIF
-    this.b['IncoTerms']?.setValue('CIF');
+    this.b['IncoTerms']?.setValue('CIF', controlOptions);
     
     // Set FreightTerms to Prepaid
-    this.b['FreightTerms']?.setValue('Prepaid');
+    this.b['FreightTerms']?.setValue('Prepaid', controlOptions);
     
     // Set Mode of Transport to Flight
-    this.c['ModeOfTransport']?.setValue('Flight');
+    this.c['ModeOfTransport']?.setValue('Flight', controlOptions);
   } else {
-    this.selectedDepartmentType === "SEA" ? this.c['ModeOfTransport']?.setValue('Vessel') : null;
+    this.selectedDepartmentType === "SEA" ? this.c['ModeOfTransport']?.setValue('Vessel', controlOptions) : null;
   }
   
   if (this.selectedFCLLCL === "LCL" && department.ExportImport === "Export") {
-    this.cargoForm.get('StuffingAt')?.setValue('Dock');
+    this.cargoForm.get('StuffingAt')?.setValue('Dock', controlOptions);
     this.cargoForm.get('StuffingAt')?.disable();
   } else if (!this.isExportToImportLinked) {
     this.cargoForm.get('StuffingAt')?.enable();
   }
   
-  this.selectedDepartmentType === "SEA" ? this.c['ModeOfTransport']?.setValue('Vessel') : null;
-  this.selectedDepartmentType === "AIR" ? this.c['ModeOfTransport']?.setValue('Flight') : null;
-  this.selectedDepartmentType === "ROAD" ? this.c['ModeOfTransport']?.setValue('Road') : null;
+  this.selectedDepartmentType === "SEA" ? this.c['ModeOfTransport']?.setValue('Vessel', controlOptions) : null;
+  this.selectedDepartmentType === "AIR" ? this.c['ModeOfTransport']?.setValue('Flight', controlOptions) : null;
+  this.selectedDepartmentType === "ROAD" ? this.c['ModeOfTransport']?.setValue('Road', controlOptions) : null;
   this.handleCFSOrYard();
   this.onRouteChange();
   this.handleImportExport();
@@ -2726,7 +2916,7 @@ private handleHBLNoField(exportImport: string): void {
   if (exportImport === 'Export') {
     // For Export departments: disable HBLNo field (will be auto-generated)
     hblNoControl.enable();
-    hblNoControl.setValue('');
+    hblNoControl.setValue('', { emitEvent: !this.isPatching });
     hblNoControl.clearValidators();
   } else if (exportImport === 'Import') {
     // For Import departments: enable HBLNo field for manual entry AND make it required
@@ -2771,7 +2961,7 @@ validateHBLNo(): boolean {
 }
   private autoSetJobType(department: any): void {
   if (!department) {
-    this.b['JobType']?.setValue('');
+    this.b['JobType']?.setValue('', { emitEvent: !this.isPatching });
     return;
   }
 
@@ -2789,7 +2979,7 @@ validateHBLNo(): boolean {
     } 
   
   // Set the JobType value
-  this.b['JobType']?.setValue(jobType);
+  this.b['JobType']?.setValue(jobType, { emitEvent: !this.isPatching });
 }
 
   onRouteChange(): void {
@@ -2978,6 +3168,18 @@ validateHBLNo(): boolean {
 
   private normalizePortText(value: any): string {
     return String(value ?? '').trim().toUpperCase();
+  }
+
+  private getHouseJobEntryRoute(): string {
+    return this.normalizePortText(this.selectedDepartmentType) === 'AIR'
+      ? '/operation/hawb-bill/entry'
+      : '/operation/house-job/entry';
+  }
+
+  private getHouseJobListRoute(): string {
+    return this.normalizePortText(this.selectedDepartmentType) === 'AIR'
+      ? '/operation/hawb-bill/list'
+      : '/operation/house-job/list';
   }
 
   private resolveSelectedSegment(department: any): string {
@@ -3553,6 +3755,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
             this.productDataLength = this.bookingProducts.length;
             this.appSettingService.showSuccess('Product Deleted Successfully');
             this.handleProductRelatedCalculation();
+            this.markAsDirty();
           } else {
             this.appSettingService.showError("Error deleting product.");
           }
@@ -3562,6 +3765,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
       this.productDataLength = this.bookingProducts.length;
       this.appSettingService.showSuccess('Product Deleted Successfully');
       this.handleProductRelatedCalculation();
+      this.markAsDirty();
     }
     this.bookingProducts.updateValueAndValidity();
   }
@@ -3796,6 +4000,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
 resetForm() {
   if(this.isEditMode){
     this.patchValues(this.housejobData);
+    this.resetDirtyState();
   }
   else{
     this.isExportToImportLinked = false;
@@ -3827,6 +4032,7 @@ resetForm() {
   this.cargoForm.reset();
   this.otherForm.reset();
   this.applyExportToImportFieldLocks();
+  this.resetDirtyState();
   }
 
 }
@@ -5316,15 +5522,24 @@ calculateTotals(): any {
 handleBOEChange(event: any) {
 
   // You can process and save event data here
+  if (!this.isPatching) {
+    this.markExternalDirty();
+  }
 }
 
 handleVehicleChange(event: any) {
 
   // You can process and save event data here
+  if (!this.isPatching) {
+    this.markExternalDirty();
+  }
 }
 handleCustomsChange(event: any) {
   
   // You can process and save event data here
+  if (!this.isPatching) {
+    this.markExternalDirty();
+  }
 }
 
  getTotalLocalRevenuAmount(): number {

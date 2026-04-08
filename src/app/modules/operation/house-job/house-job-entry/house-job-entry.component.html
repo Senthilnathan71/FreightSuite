@@ -79,7 +79,7 @@
         mps.canPrint('Commercial Invoice', 'Print') || mps.canPrint('Packing List', 'Print') || mps.canPrint('Release Letter', 'Print') || mps.canPrint('Sailing Confirmation' , 'Print') || mps.canPrint('Proof of Delivery', 'Print') )">
         <div ngbDropdown container="body" class="d-inline-block">
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" id="dropdownUpload"
-            ngbDropdownToggle [disabled]="!housejobData || houseJobForm?.dirty || cargoForm?.dirty || otherForm?.dirty || detailForm?.dirty">
+            ngbDropdownToggle [disabled]="!housejobData || hasUnsavedChanges()">
             <i class="fas fa-print me-1"></i> Print
           </button>
           <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
@@ -149,12 +149,18 @@
         </button>
       </div>
       <div class="action-group primary">
-        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+        <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
+        [ngClass]="{'btn-info': !hasUnsavedChanges(), 'btn-warning': hasUnsavedChanges()}"
         appPreventMultiClick
         (click)="onSubmit()"
-        [disabled]="isSaving">
+        [disabled]="isSaving || isSubmitting">
           <i class="fas me-1" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
           <span>{{ isSaving ? 'Saving...' : 'Save' }}</span>
+          <span *ngIf="hasUnsavedChanges()"
+                class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+                title="You have unsaved changes">
+            <span class="visually-hidden">unsaved changes</span>
+          </span>
         </button>
       </div>
        <!-- *ngIf="mps.hasAtLeastOne() && isEditMode" -->
@@ -243,6 +249,16 @@
           </button>
         </div>
         <label for="" class="input-label">{{selectedFCLLCL === 'AIR' ? 'HAWBL Date' : 'HBL Date'}} <span class="text-danger">*</span></label>
+        @if(houseJobForm.get('HBLDate')?.touched && houseJobForm.get('HBLDate')?.invalid){
+        <div class="error-message">
+          @if(houseJobForm.get('HBLDate')?.hasError('required')){
+          <span>Required</span>
+          }
+          @if(houseJobForm.get('HBLDate')?.hasError('invalidDate')){
+          <span>HBL date must be within the financial year</span>
+          }
+        </div>
+        }
       </div>
     </div>
       <!-- Booking No -->
