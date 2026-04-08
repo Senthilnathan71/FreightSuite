@@ -2002,7 +2002,7 @@
                   </th>
 
                   <!-- Dynamic Tax Columns based on Country and GST Type -->
-                  <ng-container *ngIf="getTaxDisplayConfig().showCGST">
+                  <ng-container *ngIf="printTaxDisplayConfig.showCGST">
                     <th
                       style="
                         border: 1px solid black;
@@ -2025,7 +2025,7 @@
                     </th>
                   </ng-container>
 
-                  <ng-container *ngIf="getTaxDisplayConfig().showSGST">
+                  <ng-container *ngIf="printTaxDisplayConfig.showSGST">
                     <th
                       style="
                         border: 1px solid black;
@@ -2048,7 +2048,7 @@
                     </th>
                   </ng-container>
 
-                  <ng-container *ngIf="getTaxDisplayConfig().showUGST">
+                  <ng-container *ngIf="printTaxDisplayConfig.showUGST">
                     <th
                       style="
                         border: 1px solid black;
@@ -2071,7 +2071,7 @@
                     </th>
                   </ng-container>
 
-                  <ng-container *ngIf="getTaxDisplayConfig().showIGST">
+                  <ng-container *ngIf="printTaxDisplayConfig.showIGST">
                     <th
                       style="
                         border: 1px solid black;
@@ -2094,7 +2094,7 @@
                     </th>
                   </ng-container>
 
-                  <ng-container *ngIf="getTaxDisplayConfig().showVAT">
+                  <ng-container *ngIf="printTaxDisplayConfig.showVAT">
                     <th
                       style="
                         border: 1px solid black;
@@ -2195,7 +2195,7 @@
                   </td>
 
                   <!-- Dynamic Tax Values -->
-                  <ng-container *ngIf="getTaxDisplayConfig().showCGST">
+                  <ng-container *ngIf="printTaxDisplayConfig.showCGST">
                     <td
                       style="
                         border: 1px solid black;
@@ -2216,7 +2216,7 @@
                     </td>
                   </ng-container>
 
-                  <ng-container *ngIf="getTaxDisplayConfig().showSGST">
+                  <ng-container *ngIf="printTaxDisplayConfig.showSGST">
                     <td
                       style="
                         border: 1px solid black;
@@ -2237,7 +2237,7 @@
                     </td>
                   </ng-container>
 
-                  <ng-container *ngIf="getTaxDisplayConfig().showUGST">
+                  <ng-container *ngIf="printTaxDisplayConfig.showUGST">
                     <td
                       style="
                         border: 1px solid black;
@@ -2258,7 +2258,7 @@
                     </td>
                   </ng-container>
 
-                  <ng-container *ngIf="getTaxDisplayConfig().showIGST">
+                  <ng-container *ngIf="printTaxDisplayConfig.showIGST">
                     <td
                       style="
                         border: 1px solid black;
@@ -2279,7 +2279,7 @@
                     </td>
                   </ng-container>
 
-                  <ng-container *ngIf="getTaxDisplayConfig().showVAT">
+                  <ng-container *ngIf="printTaxDisplayConfig.showVAT">
                     <td
                       style="
                         border: 1px solid black;
@@ -2326,7 +2326,7 @@
                 <!-- Total Row with dynamic colspan -->
                 <tr style="font-weight: bolder">
                   <td
-                    [attr.colspan]="calculateTotalColspan() + (shouldShowForeignCurrencyColumn() ? 1 : 0)"
+                    [attr.colspan]="calculateTotalColspan(printTaxDisplayConfig) + (shouldShowForeignCurrencyColumn() ? 1 : 0)"
                     style="
                       border: 1px solid black;
                       padding: 2px 8px;
