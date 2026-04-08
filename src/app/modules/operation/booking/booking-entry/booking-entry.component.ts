@@ -1493,6 +1493,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       if (this.bookingData) {
         this.evaluateDropdownOrFreeText();
       }
+      this.syncFormValueWithRateComponent();
     }))
   }
 
@@ -3773,6 +3774,10 @@ getVesselVoyBasedOnPorts() {
     const selectedPOL = this.b['POL']?.value;
     const selectedPOD = this.b['POD']?.value;
     const selectedFPD = this.b['FPD']?.value;
+    const carrierName = this.b['CarrierName']?.value;
+    const selectedCarrier = this.carrierList.find(carrier => carrier.CustomerName === carrierName);
+    const Carrier = selectedCarrier?.CustomerMasterSid || this.bookingData?.CarrierSid || null;
+    const IncoTerms = this.b['IncoTerms']?.value || null;
     const EffectiveDate = this.b['BookingDateTime']?.value;
     const ExpiredDate = this.b['BookingDateTime']?.value;
     const PORSid = (this.portList.find(p => p.PortCode === selectedPOO)?.PortMasterSid)
@@ -3815,6 +3820,9 @@ getVesselVoyBasedOnPorts() {
       EffectiveDate,
       ExpiredDate,
       CargoType,
+      Carrier,
+      CarrierName: carrierName || null,
+      IncoTerms,
       GrossWeight,
       NetWeight,
       Volume,

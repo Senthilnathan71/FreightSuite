@@ -326,6 +326,8 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   selectedVoucherType: 'Invoice' | 'Vendor Invoice' | 'Payment Request' | null = null;
   isProcessingVoucherType = false;
   currentVoucherTypeFilter: 'revenue' | 'cost' = 'revenue';
+  private paymentRequestNumberCache = new Map<number, string>();
+  private resolvingPaymentRequestNumbers = new Set<number>();
   @ViewChild('voucherTypeModal') voucherTypeModal!: TemplateRef<any>;
   @ViewChild('billingPartyModal') billingPartyModal!: TemplateRef<any>;
   @ViewChild('chargeSelectionModal') chargeSelectionModal!: TemplateRef<any>;
@@ -606,6 +608,7 @@ export class CostEntryComponent implements OnInit, OnDestroy {
       CostChargeUomSid:['',[Validators.required]],
       CostVoucherHeaderSid: [''],
       PaymentRequestSid: [''],
+      PaymentRequestNumber: [''],
       CostVoucherTypeSid: [null],
       CostNumberOfUnit:[null],
       
@@ -713,6 +716,7 @@ get r() {
     } else {
       this.addRateRow(); // <-- Add one empty row when no data
     }
+    this.resolvePaymentRequestNumbers();
     this.calculateProfit();
   }
 createRateFormGroup(data?: any): FormGroup {
@@ -808,6 +812,7 @@ createRateFormGroup(data?: any): FormGroup {
     CostPrepaidCollect: [data?.CostPrepaidCollect ?? "Prepaid"],
     CostVoucherHeaderSid: [data?.CostVoucherHeaderSid ?? null],
     PaymentRequestSid: [data?.PaymentRequestSid ?? null],
+    PaymentRequestNumber: [data?.PaymentRequestNumber ?? ''],
     CostVoucherTypeSid: [data?.CostVoucherTypeMasterSid ?? null],
     CostVoucherHeader: [data?.costVoucherHeader || data?.CostVoucherHeader || null],  // Store voucher header object for display
     CostVoucherType: [data?.costVoucherTypeMaster || data?.CostVoucherType || null],  // Store voucher type object for display
@@ -949,6 +954,9 @@ createRateFormGroup(data?: any): FormGroup {
 
     const formGroup = this.createRateFormGroup(data);
     this.rateFormArray.push(formGroup);
+    if (data?.PaymentRequestSid) {
+      this.resolvePaymentRequestNumbers();
+    }
   }
 
 
@@ -2409,7 +2417,52 @@ createRateFormGroup(data?: any): FormGroup {
 
     return group;
   }
-  
+
+  private resolvePaymentRequestNumbers() {
+    const paymentRequestSids = Array.from(
+      new Set(
+        this.rateFormArray.controls
+          .map((control) => Number(control.get('PaymentRequestSid')?.value))
+          .filter((sid) => Number.isFinite(sid) && sid > 0)
+      )
+    );
+
+    paymentRequestSids.forEach((paymentRequestSid) => {
+      if (
+        this.paymentRequestNumberCache.has(paymentRequestSid) ||
+        this.resolvingPaymentRequestNumbers.has(paymentRequestSid)
+      ) {
+        return;
+      }
+
+      this.resolvingPaymentRequestNumbers.add(paymentRequestSid);
+      this.operationService.getPaymentRequestById(paymentRequestSid).pipe(takeUntil(this.destroy$)).subscribe({
+        next: (resp: any) => {
+          if (resp?.status && resp?.data) {
+            const paymentRequestNumber = resp.data.PaymentRequestNumber || '';
+            this.paymentRequestNumberCache.set(paymentRequestSid, paymentRequestNumber);
+            this.rateFormArray.controls.forEach((control) => {
+              if (Number(control.get('PaymentRequestSid')?.value) === paymentRequestSid) {
+                control.get('PaymentRequestNumber')?.setValue(paymentRequestNumber, { emitEvent: false });
+              }
+            });
+          }
+        },
+        error: () => {
+          this.paymentRequestNumberCache.set(paymentRequestSid, '');
+          this.resolvingPaymentRequestNumbers.delete(paymentRequestSid);
+        },
+        complete: () => {
+          this.resolvingPaymentRequestNumbers.delete(paymentRequestSid);
+        }
+      });
+    });
+  }
+
+  getPaymentRequestDisplayNumber(row: AbstractControl): string {
+    return String(row.get('PaymentRequestNumber')?.value || row.get('PaymentRequestSid')?.value || '');
+  }
+
   openVoucherTypeModal() {
      if (!this.isVoucherGenerationAllowed()) {
         const status = this.parentFormValue?.status;

@@ -424,12 +424,25 @@
                 </td>
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-200">
-                    <input *ngIf="!row.get('CostVoucherHeader')?.value?.VoucherHeaderSid" type="text"
-                      [value]="row.get('CostVoucherHeader')?.value?.VoucherNumber || ''" class="custom-input-field sm" readonly>
+                    <input
+                      *ngIf="!row.get('CostVoucherHeader')?.value?.VoucherHeaderSid && !row.get('PaymentRequestSid')?.value"
+                      type="text"
+                      [value]="row.get('CostVoucherHeader')?.value?.VoucherNumber || ''"
+                      class="custom-input-field sm"
+                      readonly
+                    >
                     <a *ngIf="row.get('CostVoucherHeader')?.value?.VoucherHeaderSid"
                       [routerLink]="['/operation/vendor-invoice/entry', row.get('CostVoucherHeader')?.value?.VoucherHeaderSid]"
                       class="voucher-number-link" title="View Vendor Invoice">
                       {{ row.get('CostVoucherHeader')?.value?.VoucherNumber }}
+                    </a>
+                    <a
+                      *ngIf="!row.get('CostVoucherHeader')?.value?.VoucherHeaderSid && row.get('PaymentRequestSid')?.value"
+                      [routerLink]="['/operation/payment-request/entry', row.get('PaymentRequestSid')?.value]"
+                      class="voucher-number-link"
+                      title="View Payment Request"
+                    >
+                      {{ getPaymentRequestDisplayNumber(row) }}
                     </a>
                   </div>
                 </td>
