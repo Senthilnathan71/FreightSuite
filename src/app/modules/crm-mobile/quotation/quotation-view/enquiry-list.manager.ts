@@ -44,16 +44,8 @@ export class EnquiryListManager {
             tap(response => {
                 if (response.status) {
                     const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
-                    const filteredItems = this.applyAdvancedFilters(rawItems);
-                    this.items = filteredItems.map(item => ({
-                        ...item,
-                        EnquiryDate: this.datePipe.transform(item.EnquiryDate),
-                        CustomerName : item.CustomerName,
-                        departmentName : item.department?.departmentName ?? '',
-                        formattedPOL : item.POL ? getConcatenatedPorts(item.POL?.PortName, item.POL?.PortCode) : '',
-                        formattedPOD : item.POD ? getConcatenatedPorts(item.POD?.PortName, item.POD?.PortCode) : ''
-                    }));
-                    this.totalRecords = response?.data?.totalCount || filteredItems.length || 0;
+                    this.items = rawItems.map(item => this.normalizeRow(item));
+                    this.totalRecords = response?.data?.totalCount || rawItems.length || 0;
                     this.updateSearchParams();
                 } else {
                     this.appSettings.showError('Error fetching enquiries.');
@@ -92,19 +84,25 @@ export class EnquiryListManager {
             params['dateTo'] = this.advancedFilters.dateRange.toDate;
             params['DateTo'] = this.advancedFilters.dateRange.toDate;
         }
-        params['dateField'] = 'EnquiryDate';
-        params['DateField'] = 'EnquiryDate';
+        params['dateField'] = this.advancedFilters.dateType || 'EnquiryDate';
+        params['DateField'] = this.advancedFilters.dateType || 'EnquiryDate';
         if (this.advancedFilters.party?.partyId) {
             params['CustomerMasterSid'] = this.advancedFilters.party.partyId;
+            params['customerMasterSid'] = this.advancedFilters.party.partyId;
         }
         if (this.advancedFilters.departmentSid) {
             params['DepartmentMasterSid'] = Number(this.advancedFilters.departmentSid);
+            params['departmentMasterSid'] = Number(this.advancedFilters.departmentSid);
         }
         if (this.advancedFilters.pol) {
-            params['POL'] = this.advancedFilters.pol;
+            const polCode = String(this.advancedFilters.pol);
+            params['POL'] = polCode;
+            params['pol'] = polCode;
         }
         if (this.advancedFilters.pod) {
-            params['POD'] = this.advancedFilters.pod;
+            const podCode = String(this.advancedFilters.pod);
+            params['POD'] = podCode;
+            params['pod'] = podCode;
         }
         return this.leadService.searchPendingEnquiry(params);
     }
@@ -143,63 +141,15 @@ export class EnquiryListManager {
         this.search();
     }
 
-    private applyAdvancedFilters(items: any[]): any[] {
-        const from = this.advancedFilters.dateRange?.fromDate ? new Date(this.advancedFilters.dateRange.fromDate) : null;
-        const to = this.advancedFilters.dateRange?.toDate ? new Date(this.advancedFilters.dateRange.toDate) : null;
-        const selectedCustomerSid = this.advancedFilters.party?.partyId ? Number(this.advancedFilters.party.partyId) : null;
-        const selectedCustomerName = this.advancedFilters.party?.partyName
-            ? String(this.advancedFilters.party.partyName).trim().toUpperCase()
-            : null;
-        const selectedDeptSid = this.advancedFilters.departmentSid ? Number(this.advancedFilters.departmentSid) : null;
-        const selectedPol = this.advancedFilters.pol ? String(this.advancedFilters.pol).trim().toUpperCase() : null;
-        const selectedPod = this.advancedFilters.pod ? String(this.advancedFilters.pod).trim().toUpperCase() : null;
-
-        if (!from && !to && !selectedCustomerSid && !selectedCustomerName && !selectedDeptSid && !selectedPol && !selectedPod) {
-            return items;
-        }
-
-        return items.filter((item: any) => {
-            if (selectedCustomerSid || selectedCustomerName) {
-                const itemSid = Number(item?.CustomerMasterSid ?? item?.customerMaster?.CustomerMasterSid ?? 0);
-                const itemName = String(item?.CustomerName ?? '').trim().toUpperCase();
-                const sidMatch = selectedCustomerSid ? itemSid === selectedCustomerSid : false;
-                const nameMatch = selectedCustomerName ? itemName === selectedCustomerName : false;
-                if (!(sidMatch || nameMatch)) {
-                    return false;
-                }
-            }
-
-            if (selectedDeptSid && Number(item?.DepartmentMasterSid) !== selectedDeptSid) {
-                return false;
-            }
-
-            const itemPol = String(item?.POL?.PortCode ?? '').trim().toUpperCase();
-            const itemPod = String(item?.POD?.PortCode ?? '').trim().toUpperCase();
-            if (selectedPol && itemPol !== selectedPol) {
-                return false;
-            }
-            if (selectedPod && itemPod !== selectedPod) {
-                return false;
-            }
-
-            if (from || to) {
-                const rawDate = item?.EnquiryDate;
-                if (!rawDate) {
-                    return false;
-                }
-                const itemDate = new Date(rawDate);
-                if (Number.isNaN(itemDate.getTime())) {
-                    return false;
-                }
-                if (from && itemDate < from) {
-                    return false;
-                }
-                if (to && itemDate > to) {
-                    return false;
-                }
-            }
-            return true;
-        });
+    private normalizeRow(item: any): any {
+        return {
+            ...item,
+            EnquiryDate: this.datePipe.transform(item.EnquiryDate),
+            CustomerName: item.CustomerName,
+            departmentName: item.department?.departmentName ?? '',
+            formattedPOL: item.POL ? getConcatenatedPorts(item.POL?.PortName, item.POL?.PortCode) : '',
+            formattedPOD: item.POD ? getConcatenatedPorts(item.POD?.PortName, item.POD?.PortCode) : ''
+        };
     }
 
     public destroy() {
