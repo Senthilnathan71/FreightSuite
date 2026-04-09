@@ -1934,6 +1934,23 @@ onETDDateSelect(): void {
     return this.masterJobForm.get('ExportToImport')?.value === 'Y';
   }
 
+  private isFclOrLclImportDepartment(): boolean {
+    const departmentName = (
+      this.selectedDepartment?.departmentName ||
+      this.getDepartmentName(this.masterJobForm.get('DepartmentMasterSid')?.value)
+    )?.toString().trim().toLowerCase();
+
+    return departmentName === 'fcl import' || departmentName === 'lcl import';
+  }
+
+  shouldShowMasterPrintOption(reportName: 'MBL' | 'MBL Draft' | 'Loading Plan'): boolean {
+    if (!this.mps.canPrint(reportName, 'Print')) {
+      return false;
+    }
+
+    return !this.isFclOrLclImportDepartment();
+  }
+
   private applyVoyageLock(): void {
     const voyageControl = this.masterJobForm.get('VoyageNo');
     if (!voyageControl) {

@@ -17,7 +17,7 @@
             }
         </div>
         <div class="header-actions">
-            <div class="action-group" *ngIf="isEditMode && ((mps.canPrint('MAWB Draft','Print')) || (mps.canPrint('MAWB Preprint','Print')) 
+            <div class="action-group" *ngIf="isEditMode && (shouldShowMawbPrintOption('MAWB Draft') || shouldShowMawbPrintOption('MAWB Preprint') 
             || (mps.canPrint('Cargo Manifest','Print')) || (mps.canPrint('Pre Alert','Print')))">
                 <div ngbDropdown container="body" class="d-inline-block">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" id="dropdownUpload"
@@ -26,9 +26,9 @@
                     </button>
                     <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
                         <!-- <button class="text-dark" ngbDropdownItem (click)="reportMAWBModel('MAWB')">MAWB</button> -->
-                        <button *ngIf="mps.canPrint('MAWB Draft','Print')" class="text-dark" ngbDropdownItem (click)="reportMAWBModel('MAWBDraft')">MAWB
+                        <button *ngIf="shouldShowMawbPrintOption('MAWB Draft')" class="text-dark" ngbDropdownItem (click)="reportMAWBModel('MAWBDraft')">MAWB
                             Draft</button>
-                        <button *ngIf="mps.canPrint('MAWB Preprint','Print')" class="text-dark" ngbDropdownItem (click)="reportMAWBpreprintedModel()">MAWB
+                        <button *ngIf="shouldShowMawbPrintOption('MAWB Preprint')" class="text-dark" ngbDropdownItem (click)="reportMAWBpreprintedModel()">MAWB
                             preprint</button>
                         <button *ngIf="mps.canPrint('Cargo Manifest','Print')" class="text-dark" ngbDropdownItem (click)="reportcargomanifest()">Cargo
                             Manifest</button>

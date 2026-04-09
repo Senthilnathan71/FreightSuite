@@ -2805,6 +2805,45 @@ private getAgentNameById(agentId: number): string {
   const agent = this.agentList.find(a => a.CustomerMasterSid === agentId);
   return agent ? agent.CustomerName : '';
 }
+
+private isFclOrLclImportDepartment(): boolean {
+  const departmentName = (
+    this.selectedDepartment?.departmentName ||
+    this.getDepartmentName(this.houseJobForm.get('DepartmentMasterSid')?.value)
+  )?.toString().trim().toLowerCase();
+
+  return departmentName === 'fcl import' || departmentName === 'lcl import';
+}
+
+shouldShowHousePrintOption(reportName: 'HBL' | 'HBLDraft' | 'Sailing Confirmation'): boolean {
+  if (!this.mps.canPrint(reportName, 'Print')) {
+    return false;
+  }
+
+  return !this.isFclOrLclImportDepartment();
+}
+
+private isAirImportDepartment(): boolean {
+  const departmentType = (this.selectedDepartmentType || this.selectedDepartment?.departmentType || '')
+    .toString()
+    .trim()
+    .toUpperCase();
+  const exportImport = (this.selectedDepartment?.ExportImport || '')
+    .toString()
+    .trim()
+    .toUpperCase();
+
+  return departmentType === 'AIR' && exportImport === 'IMPORT';
+}
+
+shouldShowAirHousePrintOption(reportName: 'HAWB' | 'HAWB Draft'): boolean {
+  if (!this.mps.canPrint(reportName, 'Print')) {
+    return false;
+  }
+
+  return !this.isAirImportDepartment();
+}
+
   onDeptChange(department) {
   const controlOptions = { emitEvent: !this.isPatching };
   
