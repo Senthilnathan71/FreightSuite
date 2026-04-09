@@ -417,7 +417,29 @@
                     appendTo="body"
                     (change)="onPaymentInvoiceTypeChange($event?.id)">
                   </ng-select>
-                  <label class="input-label" style="font-size: 14px">Invoice Type</label>
+                  <label class="input-label fw-bold">Invoice Type
+                     @if (r['InvoiceType']?.value === 'RCM') {
+                      <i class="fas fa-info-circle text-danger ms-1 ivt-pulse-icon"
+                         [ngbTooltip]="'Reverse Charge - tax liability is on the recipient'"
+                         placement="top" container="body"></i>
+                    } @else if (r['InvoiceType']?.value === 'REIMB') {
+                      <i class="fas fa-info-circle text-danger ms-1 ivt-pulse-icon"
+                         [ngbTooltip]="'Reimbursement (Pure Agent) - no tax rows will be created'"
+                         placement="top" container="body"></i>
+                    } @else if (r['InvoiceType']?.value === 'ZR') {
+                      <i class="fas fa-info-circle text-danger ms-1 ivt-pulse-icon"
+                         [ngbTooltip]="'Zero Rated - tax rows will be created at 0%'"
+                         placement="top" container="body"></i>
+                    } @else if (r['InvoiceType']?.value === 'EXE' || r['InvoiceType']?.value === 'BOS') {
+                      <i class="fas fa-info-circle text-danger ms-1 ivt-pulse-icon"
+                         [ngbTooltip]="'No tax rows will be created for this invoice type'"
+                         placement="top" container="body"></i>
+                    } @else if (isInvoiceTypeRequired && !r['InvoiceType']?.value) {
+                      <i class="fas fa-info-circle text-danger ms-1 ivt-pulse-icon"
+                         [ngbTooltip]="'Required - at least one charge line has a tax-contributing HSSAC code'"
+                         placement="top" container="body"></i>
+                    }
+                  </label>
                 </div>
               </aside>
 

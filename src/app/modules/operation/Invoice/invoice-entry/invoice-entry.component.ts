@@ -472,7 +472,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       PlaceOfSupply: [''],
       PostStatus: [''],
       GSTType: [''],
-      InvoiceType: ['REG'],
+      InvoiceType: [null],
       VoucherType: [null],
       TaxType : [companyCurrencyCode === 'in' ? 'GST' : 'VAT'],
       Narration: [''],
@@ -1815,6 +1815,7 @@ isSeaDepartment(): boolean {
 
     this.updateBillAmount();
     this.invoiceForm.updateValueAndValidity();
+    this.updateInvoiceTypeRequired();
   }
 
 
@@ -1840,6 +1841,27 @@ isSeaDepartment(): boolean {
       }
       this.recalcRow(i);
     }
+    this.updateInvoiceTypeRequired();
+  }
+
+  get isInvoiceTypeRequired(): boolean {
+    return this.invoiceForm?.get('InvoiceType')?.hasValidator(Validators.required) ?? false;
+  }
+
+  updateInvoiceTypeRequired(): void {
+    const hasActiveTax = this.details.controls.some((ctrl, i) => {
+      const hssacSid = (ctrl as FormGroup).get('HSSACMasterSid')?.value;
+      if (!hssacSid) return false;
+      const hssacItem = (this.hssacList[i] || []).find((h: any) => h.HSSACMasterSid === hssacSid);
+      return !!hssacItem?.TaxGroupSid;
+    });
+    const ctrl = this.invoiceForm.get('InvoiceType');
+    if (hasActiveTax) {
+      ctrl?.setValidators([Validators.required]);
+    } else {
+      ctrl?.clearValidators();
+    }
+    ctrl?.updateValueAndValidity({ emitEvent: false });
   }
 
   // Calculate total currency amount (sum of all amounts)
