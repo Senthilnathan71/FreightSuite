@@ -2386,6 +2386,23 @@
             </p>
           </div>
 
+            <div *ngIf="invoicePrintData?.ContainerNumber || invoicePrintData?.ContainerType"
+              style="display: flex; margin-top: 8px; font-size: 14px; padding: 0 20px;">
+              <p style="font-weight: bolder; width: 165px; margin: 0">
+                <strong>Container No / Type</strong>
+              </p>
+            
+              <p style="margin: 0">
+                :
+                {{ invoicePrintData?.ContainerNumber }}
+                {{
+                invoicePrintData?.ContainerNumber && invoicePrintData?.ContainerType
+                ? ' / ' + invoicePrintData?.ContainerType
+                : invoicePrintData?.ContainerType || ''
+                }}
+              </p>
+            </div>
+
           <!-- Bank Details -->
         <div *ngIf="bankDetails && bankDetails.length > 0" class="px-3" style="font-size:16px">
           <h5 class="fw-bold my-1"><strong>Bank Details</strong></h5>
@@ -2466,6 +2483,7 @@
         </table>
           </div>
         </div>
+    
 
           <div style="margin-top: 1rem; font-size: 12px; padding: 0 20px">
   <h5 style="margin-bottom: 0.5rem; font-weight: bolder">

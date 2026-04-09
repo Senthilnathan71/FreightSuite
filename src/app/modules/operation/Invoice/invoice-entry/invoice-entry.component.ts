@@ -166,6 +166,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   customerBranchList: any[] = [];
   currencyList: any[] = [];
   chargeList: any[] = [];
+  containerTypeList: any[] = [];
   filteredChargeList : any[] = [];
   hssacList: any[][] = [];
   subledgerList: any[] = [];
@@ -691,15 +692,18 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         this.chargeList = charges.data || [];
 
         // 2. Non-critical lookups start in the background
-        forkJoin({
-          currencies: this.operationService
-            .getAllCurrencies()
-            .pipe(catchError((err) => of([]))),
-          uoms: this.operationService.getAllUom().pipe(catchError((err) => of([]))),
-          departments: this.operationService
-            .getAllDepartments(CompanyMasterSid)
-            .pipe(catchError((err) => of([]))),
-          masterJobs: this.operationService
+          forkJoin({
+            currencies: this.operationService
+              .getAllCurrencies()
+              .pipe(catchError((err) => of([]))),
+            uoms: this.operationService.getAllUom().pipe(catchError((err) => of([]))),
+            containerTypes: this.operationService
+              .getAllContainerTypes()
+              .pipe(catchError((err) => of([]))),
+            departments: this.operationService
+              .getAllDepartments(CompanyMasterSid)
+              .pipe(catchError((err) => of([]))),
+            masterJobs: this.operationService
             .getAllMasterJobs({
               CompanyMasterSid,
               BranchMasterSid,
@@ -707,17 +711,20 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
               offset: 0,
             })
             .pipe(catchError((err) => of([]))),
-        }).subscribe(({ currencies, uoms, departments, masterJobs }) => {
-          this.currencyList = currencies.data || [];
-          this.currencyConfigService.initializeConfigurations(this.currencyList);
-          this.numberToWords.initializeCurrencies(this.currencyList);
+          }).subscribe(({ currencies, uoms, containerTypes, departments, masterJobs }) => {
+            this.currencyList = currencies.data || [];
+            this.currencyConfigService.initializeConfigurations(this.currencyList);
+            this.numberToWords.initializeCurrencies(this.currencyList);
 
-          this.uomList = uoms.data || [];
-          this.departmentList = departments.data || [];
-          this.masterJobList = masterJobs.data || [];
-          if(!this.isEditMode){
-            this.spinner.hide();
-          }
+            this.uomList = uoms.data || [];
+            this.containerTypeList = Array.isArray(containerTypes)
+              ? containerTypes
+              : (containerTypes?.data || []);
+            this.departmentList = departments.data || [];
+            this.masterJobList = masterJobs.data || [];
+            if(!this.isEditMode){
+              this.spinner.hide();
+            }
         });
       })
     );
@@ -1384,8 +1391,8 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       MasterJobNumber: this.invoiceData?.masterJob?.MasterJobNumber || '',
       MasterJobDate: this.invoiceData?.masterJob?.MasterJobDate || '',
       DocumentNumber: this.invoiceData?.DocumentNumber || '',
-      ContainerType: this.invoiceData?.masterJob?.containers?.[0]?.ContainerType || '',
-      ContainerNumber: this.invoiceData?.masterJob?.containers?.[0]?.ContainerNumber || '',
+        ContainerType: '',
+        ContainerNumber: this.getContainerDisplay(this.invoiceData?.masterJob?.containers) || '',
       DepartmentMasterSid : this.invoiceData?.masterJob?.DepartmentMasterSid || '',
       isPosted : this.isPosted,
       FreightTerms:
@@ -3857,6 +3864,35 @@ isSeaDepartment(): boolean {
     }
 
     return null;
+  }
+
+  getContainerTypeName(containerTypeSid: number | string | null | undefined): string {
+    if (!containerTypeSid || !this.containerTypeList?.length) return '';
+
+    const normalizedSid = Number(containerTypeSid);
+    const containerType = this.containerTypeList.find((item: any) =>
+      Number(item?.ContainerTypeMasterSid ?? item?.ContainerTypeSid) === normalizedSid
+    );
+
+    return containerType?.ContainerName || containerType?.ContainerType || '';
+  }
+
+  getContainerDisplay(containers: any[] | null | undefined): string {
+    if (!Array.isArray(containers) || containers.length === 0) return '';
+
+    return containers
+      .map((container: any) => {
+        const number = container?.ContainerNumber || '';
+        const type = this.getContainerTypeName(container?.ContainerType);
+
+        if (number && type) {
+          return `${number} / ${type}`;
+        }
+
+        return number || type || '';
+      })
+      .filter((value: string) => !!value)
+      .join(', ');
   }
 
   calculateTotalColspan(configOverride?: {

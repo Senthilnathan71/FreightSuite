@@ -22,6 +22,35 @@
   // HTML print logo uses 110px. pdfMake works in pt, so convert px -> pt (72/96).
   const INVOICE_LOGO_HEIGHT_PX = 110;
   const INVOICE_LOGO_HEIGHT_PT = INVOICE_LOGO_HEIGHT_PX * 0.75;
+
+  function getContainerTypeNameFromList(containerTypeSid: number | string | null | undefined, containerTypes: any[] = []): string {
+    if (!containerTypeSid || !Array.isArray(containerTypes) || !containerTypes.length) return '';
+
+    const normalizedSid = Number(containerTypeSid);
+    const match = containerTypes.find((item: any) =>
+      Number(item?.ContainerTypeMasterSid ?? item?.ContainerTypeSid) === normalizedSid
+    );
+
+    return match?.ContainerName || match?.ContainerType || '';
+  }
+
+  function buildContainerDisplay(containers: any[] | null | undefined, containerTypes: any[] = []): string {
+    if (!Array.isArray(containers) || !containers.length) return '';
+
+    return containers
+      .map((container: any) => {
+        const containerNumber = container?.ContainerNumber || '';
+        const containerType = getContainerTypeNameFromList(container?.ContainerType, containerTypes);
+
+        if (containerNumber && containerType) {
+          return `${containerNumber} / ${containerType}`;
+        }
+
+        return containerNumber || containerType || '';
+      })
+      .filter((value: string) => !!value)
+      .join(', ');
+  }
   /**
    * Generate invoice PDF document definition
    */
@@ -84,6 +113,7 @@
         buildTotalsSection(data),
         buildAmountInWords(data),
         ...(data.invoice?.remarks ? [buildRemarks(data.invoice.remarks)] : []),
+        ...(buildContainerDetails(data) ? [buildContainerDetails(data)] : []),
         ...buildBankDetailsSection(data),
         ...(data.terms && data.terms.length > 0
   ? [
@@ -425,13 +455,13 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
       label: isSeaMode ? 'MBL' : 'MAWB',
       value: printData?.MBLNo || invoice?.mblNo || ''
     }]
-  : []),
-    { label: 'Job No.', value: printData?.MasterJobNumber || invoice?.jobNo || '' },
-    { label: 'Freight Terms', value: printData?.FreightTerms || invoice?.freightTerms || '' },
-    { label: 'Booking No.', value: printData?.BookingNumber || invoice?.bookingNo || '' },
-    { label: 'Invoice Due Date', value: dueDate ? formatDate(dueDate) : '' },
-    { label: 'Currency / Ex-Rate', value: currExRate }
-  ];
+    : []),
+      { label: 'Job No.', value: printData?.MasterJobNumber || invoice?.jobNo || '' },
+      { label: 'Freight Terms', value: printData?.FreightTerms || invoice?.freightTerms || '' },
+      { label: 'Booking No.', value: printData?.BookingNumber || invoice?.bookingNo || '' },
+      { label: 'Invoice Due Date', value: dueDate ? formatDate(dueDate) : '' },
+      { label: 'Currency / Ex-Rate', value: currExRate }
+    ];
 
   // -----------------------------
   // Build Left Stack
@@ -779,6 +809,35 @@ function buildRemarks(remarks: string): any {
   };
 }
 
+function buildContainerDetails(data: InvoicePdfData): any {
+  const printData = (data as any).invoicePrintData;
+  const containerValue = printData?.ContainerNumber || data.invoice?.containerNumber || '';
+
+  if (!containerValue) {
+    return null;
+  }
+
+  return {
+    margin: [0, 2, 0, 2],
+    columns: [
+      {
+        width: 90,
+        text: 'Container No / Type',
+        style: 'labelBold'
+      },
+      {
+        width: 10,
+        text: ':',
+        alignment: 'center'
+      },
+      {
+        width: '*',
+        text: containerValue
+      }
+    ]
+  };
+}
+
 
   /**
    * Build bank details section
@@ -1067,12 +1126,14 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
       shipmentDetails?: any;
       cargoDetails?: any;
       invoicePrintData?: any; // CRITICAL: The formatted print data
+      containerTypeList?: any[];
     }
   ): InvoicePdfData {
     const invoice = apiData;
     const masterJob = invoice.masterJob;
     const houseJob = invoice.houseJob;
     const bookingHeader = invoice.BookingHeader;
+    const containerTypeList = (options as any)?.containerTypeList || [];
 
     const isHouseJobInvoice = !!(houseJob && masterJob);
     const isBookingInvoice = !!invoice.BookingHeaderSid;
@@ -1231,8 +1292,8 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
         etd: options?.shipmentDetails?.etd || '',
         eta: options?.shipmentDetails?.eta || '',
         invoiceDueDate: options?.shipmentDetails?.invoiceDueDate || invoice.DueDate || '',
-        containerType: masterJob?.ContainerType || houseJob?.ContainerType || '',
-        containerNumber: masterJob?.ContainerNumber || houseJob?.ContainerNumber || ''
+        containerType: '',
+        containerNumber: buildContainerDisplay(masterJob?.containers, containerTypeList) || masterJob?.ContainerNumber || houseJob?.ContainerNumber || ''
       },
       charges: voucherDetails,
       totals: {
