@@ -118,7 +118,7 @@
                     <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('POOSid')?.value">
                             <dofi-searchable-dropdown 
-  [items]="filteredPorts" 
+  [items]="pooList" 
   formControlName="POOSid"
   [placeholder]="''"
   [displayFields]="portLookupConfig.displayFields" 
@@ -141,7 +141,7 @@
                     <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('POLSid')?.value">
                             <dofi-searchable-dropdown 
-  [items]="filteredPOL" 
+  [items]="polList" 
   formControlName="POLSid"
   [placeholder]="''"
   [displayFields]="portLookupConfig.displayFields" 
@@ -173,7 +173,7 @@
                     <aside class="col-md-6">
                         <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffHeaderForm.get('PODSid')?.value">
                             <dofi-searchable-dropdown 
-  [items]="filteredPOD" 
+  [items]="podList" 
   formControlName="PODSid"
   [placeholder]="''"
   [displayFields]="portLookupConfig.displayFields" 
@@ -215,7 +215,7 @@
      
     </ng-select> -->
     <dofi-searchable-dropdown 
-  [items]="portList" 
+  [items]="fdcList" 
   formControlName="FDCSid"
   [placeholder]="''" 
   [displayFields]="portLookupConfig.displayFields" 
@@ -791,7 +791,6 @@
         (click)="d.toggle()" 
         readonly
         formControlName="detailEffectiveDate" 
-        [footerTemplate]="footerTemplate" 
         [minDate]="minEffectiveFrom" 
         [maxDate]="toNgbDateStruct(tariffDetailsForm.get('detailExpiredOn').value)"/>
       <label class="input-label" for="dp">Effective From <span class="text-danger">*</span></label>
@@ -811,21 +810,13 @@
     </button>
   </div>
 </aside>
-                            <ng-template #footerTemplate>
-                                <hr class="my-0" />
-                                <button class="btn btn-info btn-sm m-2 float-start" (click)="tariffDetailsForm.get('detailEffectiveDate').setValue(todayDate); d.close()">
-                                    Today
-                                </button>
-                                <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d.close()">
-                                    Close
-                                </button>
-                            </ng-template>
+                           
                             <aside class="col-md-6 col-lg-4">
                                 <div class="d-flex mb-2 my-lg-0">
                                     <div class="custom-form-group custom-form-group-select-date w-100 mb-0">
                                         <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp"
                                             ngbDatepicker #d1="ngbDatepicker" (click)="d1.toggle()" readonly
-                                            formControlName="detailExpiredOn" [minDate]="toNgbDateStruct(tariffDetailsForm.get('detailEffectiveDate').value)" [footerTemplate]="footerTemplate1"/>
+                                            formControlName="detailExpiredOn" [minDate]="toNgbDateStruct(tariffDetailsForm.get('detailEffectiveDate').value)" />
                                         <label class="input-label" for="dp">Expired On <span
                                                 class="text-danger">*</span></label>
                                         @if(tariffDetailsForm.get('detailExpiredOn')?.touched &&
@@ -844,15 +835,7 @@
                                     </button>
                                 </div>
                             </aside>
-                            <ng-template #footerTemplate1>
-                                <hr class="my-0" />
-                                <button class="btn btn-info btn-sm m-2 float-start" (click)="tariffDetailsForm.get('detailExpiredOn').setValue(todayDate); d1.close()">
-                                    Today
-                                </button>
-                                <button class="btn btn-secondary btn-sm m-2 float-end" (click)="d1.close()">
-                                    Close
-                                </button>
-                            </ng-template>
+                            
                             
                             <aside class="col-md-6 col-lg-4">
   <div class="custom-form-group">
