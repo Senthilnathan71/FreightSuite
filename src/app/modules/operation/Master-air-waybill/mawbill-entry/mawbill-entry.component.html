@@ -21,7 +21,7 @@
             || (mps.canPrint('Cargo Manifest','Print')) || (mps.canPrint('Pre Alert','Print')))">
                 <div ngbDropdown container="body" class="d-inline-block">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" id="dropdownUpload"
-                        ngbDropdownToggle [disabled]="!masterAirWayData || hasUnsavedChanges()">
+                        ngbDropdownToggle [disabled]="!masterAirWayData || unsavedChanges">
                         <i class="fas fa-print me-1"></i> Print
                     </button>
                     <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
@@ -80,13 +80,13 @@
 
             <div class="action-group">
                 <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
-                [ngClass]="{'btn-info': !hasUnsavedChanges(), 'btn-warning': hasUnsavedChanges()}"
+                [ngClass]="{'btn-info': !unsavedChanges, 'btn-warning': unsavedChanges}"
                 appPreventMultiClick
                  (click)="onSubmit()"
                     [disabled]="isSaving || isLoading || (!mps.can('update') && isEditMode)">
                     <i class="fas fa-save me-1"></i>
                     <span>{{ isSaving ? 'Saving...' : 'Save' }}</span>
-                    <span *ngIf="hasUnsavedChanges()"
+                    <span *ngIf="unsavedChanges"
                           class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
                           title="You have unsaved changes">
                         <span class="visually-hidden">unsaved changes</span>

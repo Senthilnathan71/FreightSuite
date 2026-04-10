@@ -23,8 +23,10 @@ export class QuotationListManager {
     public filterValue = '';
     public advancedFilters: AdvancedFilterValues = {};
     quotationPaginationConfig : PaginationConfig;
+    public onResultsChanged?: () => void;
 
     private destroy$ = new Subject<void>();
+    private lastSearchParams: Partial<SearchParams> & Record<string, any> = {};
 
     constructor(
         private leadService: LeadService,
@@ -45,25 +47,17 @@ export class QuotationListManager {
             tap(response => {
                 if (response.status) {
                     const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
-                    const filteredItems = this.applyAdvancedFilters(rawItems);
-                    this.items = filteredItems.map(item => ({
-                        ...item,
-                        departmentName: item.quoteRoute?.[0]?.departmentMaster?.departmentName ?? '',
-                        formattedPOD: item.quoteRoute?.[0]?.PortPOD ? getConcatenatedPorts(item.quoteRoute?.[0]?.PortPOD?.PortName, item.quoteRoute?.[0]?.PortPOD?.PortCode) : '',
-                        formattedPOL: item.quoteRoute?.[0]?.PortPOL ? getConcatenatedPorts(item.quoteRoute?.[0]?.PortPOL?.PortName, item.quoteRoute?.[0]?.PortPOL?.PortCode) : '',
-                        QuoteDate: this.datePipe.transform(item?.QuoteDate),
-                        bookingNo : item.bookingHeader?.BookingNo || '',
-                        status: item.status === 'A' ? 'Active' : 'Suspended',
-                          approvalStatus: this.getApprovalStatus(item),
-                        approvalStatusLabel: this.getApprovalStatusLabel(item)
-                    }));
-                    this.totalRecords = response?.data?.totalCount || filteredItems.length || 0;
+                    const totalCount = response?.data?.totalCount || rawItems.length || 0;
+                    this.items = rawItems.map(item => this.normalizeRow(item));
+                    this.totalRecords = totalCount;
                     this.updateSearchParams();
+                    this.onResultsChanged?.();
                 } else {
                     this.appSettings.showError('Error fetching quotations.');
                     this.items = [];
                     this.totalRecords = 0;
                     this.updateSearchParams();
+                    this.onResultsChanged?.();
                 }
                 this.loading = false;
                 this.spinner.hide();
@@ -73,6 +67,7 @@ export class QuotationListManager {
                 this.loading = false;
                 this.spinner.hide();
                 console.error(err);
+                this.onResultsChanged?.();
                 return of(null);
             })
         ).subscribe();
@@ -131,24 +126,38 @@ export class QuotationListManager {
             params['DateTo'] = this.advancedFilters.dateRange.toDate;
         }
         if (this.advancedFilters.dateType) {
-            params['dateField'] = 'QuoteDate';
-            params['DateField'] = 'QuoteDate';
+            params['dateField'] = this.advancedFilters.dateType;
+            params['DateField'] = this.advancedFilters.dateType;
+            if (params['dateFrom']) {
+                params[`${this.advancedFilters.dateType}From`] = params['dateFrom'];
+            }
+            if (params['dateTo']) {
+                params[`${this.advancedFilters.dateType}To`] = params['dateTo'];
+            }
         }
         if (this.advancedFilters.party?.partyId) {
             params['CustomerMasterSid'] = this.advancedFilters.party.partyId;
+            params['customerMasterSid'] = this.advancedFilters.party.partyId;
+            params['customerName'] = this.advancedFilters.party.partyName;
         }
         if (this.advancedFilters.departmentSid) {
             params['DepartmentMasterSid'] = Number(this.advancedFilters.departmentSid);
+            params['departmentMasterSid'] = Number(this.advancedFilters.departmentSid);
         }
         if (this.advancedFilters.pol) {
-            params['POL'] = this.advancedFilters.pol;
+            const polCode = String(this.advancedFilters.pol);
+            params['POL'] = polCode;
+            params['pol'] = polCode;
         }
         if (this.advancedFilters.pod) {
-            params['POD'] = this.advancedFilters.pod;
+            const podCode = String(this.advancedFilters.pod);
+            params['POD'] = podCode;
+            params['pod'] = podCode;
         }
         if (this.advancedFilters.extra) {
             params['ApprovalStatus'] = this.advancedFilters.extra;
         }
+        this.lastSearchParams = { ...params };
         return this.leadService.searchQuotation(params);
     }
 
@@ -181,89 +190,23 @@ export class QuotationListManager {
 
     public clearFilter() {
         this.filterValue = '';
-        this.advancedFilters = {};
         this.page = 1;
         this.search();
     }
 
-    private applyAdvancedFilters(items: any[]): any[] {
-        const from = this.advancedFilters.dateRange?.fromDate ? new Date(this.advancedFilters.dateRange.fromDate) : null;
-        const to = this.advancedFilters.dateRange?.toDate ? new Date(this.advancedFilters.dateRange.toDate) : null;
-        const selectedCustomerSid = this.advancedFilters.party?.partyId ? Number(this.advancedFilters.party.partyId) : null;
-        const selectedCustomerName = this.advancedFilters.party?.partyName
-            ? String(this.advancedFilters.party.partyName).trim().toUpperCase()
-            : null;
-        const selectedDeptSid = this.advancedFilters.departmentSid ? Number(this.advancedFilters.departmentSid) : null;
-        const selectedPol = this.advancedFilters.pol ? String(this.advancedFilters.pol).trim().toUpperCase() : null;
-        const selectedPod = this.advancedFilters.pod ? String(this.advancedFilters.pod).trim().toUpperCase() : null;
-        const selectedApproval = this.advancedFilters.extra ? String(this.advancedFilters.extra).trim().toUpperCase() : null;
-
-        if (!from && !to && !selectedCustomerSid && !selectedCustomerName && !selectedDeptSid && !selectedPol && !selectedPod && !selectedApproval) {
-            return items;
-        }
-
-        return items.filter((item: any) => {
-            if (selectedCustomerSid || selectedCustomerName) {
-                const itemSid = Number(item?.CustomerMasterSid ?? item?.customerMaster?.CustomerMasterSid ?? 0);
-                const itemName = String(item?.CustomerName ?? '').trim().toUpperCase();
-                const sidMatch = selectedCustomerSid ? itemSid === selectedCustomerSid : false;
-                const nameMatch = selectedCustomerName ? itemName === selectedCustomerName : false;
-                if (!(sidMatch || nameMatch)) {
-                    return false;
-                }
-            }
-
-            if (selectedDeptSid) {
-                const itemDeptSid = Number(
-                    item?.DepartmentMasterSid
-                    ?? item?.quoteRoute?.[0]?.DepartmentMasterSid
-                    ?? item?.quoteRoute?.[0]?.departmentMaster?.DepartmentMasterSid
-                    ?? item?.quoteRoute?.[0]?.departmentMaster?.departmentMasterSid
-                    ?? 0
-                );
-                if (itemDeptSid !== selectedDeptSid) {
-                    return false;
-                }
-            }
-
-            const route = item?.quoteRoute?.[0];
-            const itemPol = String(route?.PortPOL?.PortCode ?? '').trim().toUpperCase();
-            const itemPod = String(route?.PortPOD?.PortCode ?? '').trim().toUpperCase();
-            if (selectedPol && itemPol !== selectedPol) {
-                return false;
-            }
-            if (selectedPod && itemPod !== selectedPod) {
-                return false;
-            }
-
-            if (selectedApproval) {
-                const appr = String(this.getApprovalStatus(item) || '').replace(/\s+/g, '').toUpperCase();
-                const selected = selectedApproval.replace(/\s+/g, '').toUpperCase();
-                if (appr !== selected) {
-                    return false;
-                }
-            }
-
-            if (from || to) {
-                const rawDate = item?.QuoteDate;
-                if (!rawDate) {
-                    return false;
-                }
-                const itemDate = new Date(rawDate);
-                if (Number.isNaN(itemDate.getTime())) {
-                    return false;
-                }
-                if (from && itemDate < from) {
-                    return false;
-                }
-                if (to && itemDate > to) {
-                    return false;
-                }
-            }
-            return true;
-        });
+    private normalizeRow(item: any): any {
+        return {
+            ...item,
+            departmentName: item.quoteRoute?.[0]?.departmentMaster?.departmentName ?? '',
+            formattedPOD: item.quoteRoute?.[0]?.PortPOD ? getConcatenatedPorts(item.quoteRoute?.[0]?.PortPOD?.PortName, item.quoteRoute?.[0]?.PortPOD?.PortCode) : '',
+            formattedPOL: item.quoteRoute?.[0]?.PortPOL ? getConcatenatedPorts(item.quoteRoute?.[0]?.PortPOL?.PortName, item.quoteRoute?.[0]?.PortPOL?.PortCode) : '',
+            QuoteDate: this.datePipe.transform(item?.QuoteDate),
+            bookingNo: item.bookingHeader?.BookingNo || '',
+            status: item.status === 'A' ? 'Active' : 'Suspended',
+            approvalStatus: this.getApprovalStatus(item),
+            approvalStatusLabel: this.getApprovalStatusLabel(item)
+        };
     }
-
 
     public destroy() {
         this.destroy$.next();

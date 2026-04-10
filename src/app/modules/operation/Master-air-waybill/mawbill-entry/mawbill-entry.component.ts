@@ -252,9 +252,10 @@ export class MawbillEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   selectedTransferBranchSid: number | null = null;
   isPullingToImportBranch = false;
   isDirty = false;
-  private initialConnectionsCount = 0;
-  private initialContainersCount = 0;
-  private formSaved = false;
+  unsavedChanges = false;
+  private initialFormValue: any = null;
+  private suppressDirtyTracking = false;
+  private readonly mawbDebugEnabled = true;
   tabs = [
     { name: 'Master', icon: 'fas fa-database' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
@@ -382,7 +383,16 @@ export class MawbillEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
     this.loadInitialData().subscribe(() => {
       const loadingPlanData = this.operationService.getLoadingPlanData();
       if(loadingPlanData){
-        this.patchLoadingPlanData(loadingPlanData);
+        this.suppressDirtyTracking = true;
+        try {
+          this.patchLoadingPlanData(loadingPlanData);
+        } finally {
+          this.suppressDirtyTracking = false;
+        }
+        this.resetDirtyState();
+      }
+      if (!loadingPlanData) {
+        this.resetDirtyState();
       }
       this.route.paramMap.subscribe((param) => {
         const idParam = param.get('id');
@@ -404,6 +414,9 @@ export class MawbillEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
         takeUntil(this.destroy$)
       )
       .subscribe(() => {
+        if (this.suppressDirtyTracking) {
+          return;
+        }
         this.syncFormValueWithConnectionComponent();
         this.syncFormValueWithRateComponent();
         this.syncFormValueWithEdocComponent();
@@ -411,6 +424,9 @@ export class MawbillEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
         // this.syncFormValueWithContainerActivityComponent();
       });
   this.masterJobForm.get('CarrierName')?.valueChanges.subscribe((carrierName) => {
+    if (this.suppressDirtyTracking) {
+      return;
+    }
     if (this.selectedDepartmentType !== 'AIR') {
       return;
     }
@@ -468,22 +484,6 @@ export class MawbillEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   }
 
   hasUnsavedChanges(): boolean {
-    if (this.formSaved) {
-      return false;
-    }
-
-    if (this.masterJobForm?.dirty) {
-      return true;
-    }
-
-    if (this.masterJobContainers?.length !== this.initialContainersCount) {
-      return true;
-    }
-
-    if (this.connectionResult?.length !== this.initialConnectionsCount) {
-      return true;
-    }
-
     return this.isDirty;
   }
 
@@ -504,17 +504,98 @@ export class MawbillEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   }
 
   private resetDirtyState(): void {
+    this.initialFormValue = this.buildUnsavedSnapshot();
     this.isDirty = false;
-    this.formSaved = false;
     this.masterJobForm?.markAsPristine();
     this.containerFormGroup?.markAsPristine();
-    this.initialContainersCount = this.masterJobContainers?.length || 0;
-    this.initialConnectionsCount = this.connectionResult?.length || 0;
+    this.unsavedChanges = false;
+    this.logMawbDebug('resetDirtyState', {
+      isEditMode: this.isEditMode,
+      masterJobSid: this.masterJobSid,
+      attachedBookings: this.attachedBookings?.length || 0,
+      connections: this.connectionResult?.length || 0,
+      rates: this.rateResult?.length || 0,
+    });
   }
 
   private markAsDirty(): void {
-    this.isDirty = true;
-    this.formSaved = false;
+    this.refreshUnsavedChanges('markAsDirty');
+  }
+
+  private refreshUnsavedChanges(trigger: string): void {
+    if (this.suppressDirtyTracking) {
+      return;
+    }
+
+    const currentSnapshot = this.buildUnsavedSnapshot();
+    const nextValue = !this.deepEqual(this.initialFormValue, currentSnapshot);
+    this.isDirty = nextValue;
+    this.unsavedChanges = nextValue;
+
+    this.logMawbDebug('refreshUnsavedChanges', {
+      trigger,
+      nextValue,
+      initialReady: this.initialFormValue !== null,
+      masterDirty: this.masterJobForm?.dirty,
+      containerDirty: this.containerFormGroup?.dirty,
+      attachedBookings: this.attachedBookings?.length || 0,
+      connections: this.connectionResult?.length || 0,
+      rates: this.rateResult?.length || 0,
+    });
+  }
+
+  private buildUnsavedSnapshot(): any {
+    return {
+      form: this.masterJobForm?.getRawValue() ?? null,
+      attachedBookings: this.attachedBookings?.getRawValue?.() ?? [],
+      connections: this.connectionResult ?? [],
+      rates: this.rateResult ?? [],
+    };
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) {
+      return null;
+    }
+
+    if (value instanceof Date) {
+      return value.toISOString().split('T')[0];
+    }
+
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+      return Number(value);
+    }
+
+    if (typeof value === 'number') {
+      return Number(value.toFixed(6));
+    }
+
+    if (Array.isArray(value)) {
+      return value.map(v => this.normalizeValue(v));
+    }
+
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
+  }
+
+  private logMawbDebug(stage: string, payload: any = {}): void {
+    if (!this.mawbDebugEnabled) {
+      return;
+    }
   }
 
   private isAirImportDepartment(): boolean {
@@ -648,6 +729,8 @@ private showNoMawbStockWarningOnce(warningKey: string): void {
     });
   }
   patchLoadingPlanData(data : any){
+    this.suppressDirtyTracking = true;
+    try {
     // console.log(data);
     const selectedDepartment = this.departments.find(dep => dep.DepartmentMasterSid === data.DepartmentMasterSid);
     selectedDepartment ? this.onDeptChange(selectedDepartment) : null;
@@ -675,7 +758,7 @@ private showNoMawbStockWarningOnce(warningKey: string): void {
       NetWeight : data.NetWeight,
       Volume : data.Volume,
 
-    });
+    }, { emitEvent: false });
 
     this.handlePOLChange(selectedPOL);
     this.handlePODChange(selectedPOD);
@@ -693,6 +776,9 @@ private showNoMawbStockWarningOnce(warningKey: string): void {
     });
     this.totalLengthOfAttachedBookings = this.attachedBookings.length;
     this.updateAttachedBookingsPagination();
+    } finally {
+      this.suppressDirtyTracking = false;
+    }
   }
   uploadPDF() {
     this.modalService.open(MasterDocumentUploadComponent,{
@@ -758,7 +844,7 @@ private showNoMawbStockWarningOnce(warningKey: string): void {
       NoOfPkg: masterJob.totalContainers || 0,
       GrossWeight: this.parseWeight(masterJob.totalWeight),
       Volume: this.parseVolume(masterJob.totalVolume),
-    });
+    }, { emitEvent: false });
 
     // Update port filters if ports were found
     if (polPort) {
@@ -874,10 +960,11 @@ private showNoMawbStockWarningOnce(warningKey: string): void {
       containerActivities: this.fb.array([])
     });
     this.masterJobForm.valueChanges.subscribe(() => {
-      this.syncFormValueWithRateComponent();
-      if (this.masterJobForm.dirty) {
-        this.formSaved = false;
+      if (this.suppressDirtyTracking) {
+        return;
       }
+      this.syncFormValueWithRateComponent();
+      this.refreshUnsavedChanges('masterJobForm valueChanges');
     });
   }
 
@@ -1139,7 +1226,7 @@ loadMawbStock(data: any): void {
     this.mawbStockList = [];
     this.mawbStockSource = 'NONE';
     this.isMawbDropdownDisabled = true;
-    this.f['isMawbFreeText']?.setValue(false);
+    this.f['isMawbFreeText']?.setValue(false, { emitEvent: false });
     return;
   }
 
@@ -1173,7 +1260,7 @@ loadMawbStock(data: any): void {
     this.mawbStockList        = [];
     this.mawbStockSource      = 'NONE';
     this.isMawbDropdownDisabled = true;
-    this.f['isMawbFreeText']?.setValue(true);
+    this.f['isMawbFreeText']?.setValue(true, { emitEvent: false });
     return;
   }
 
@@ -1204,12 +1291,12 @@ loadMawbStock(data: any): void {
 
       if (this.mawbStockSource === 'NONE' || this.mawbStockList.length === 0) {
         this.isMawbDropdownDisabled = true;
-        this.f['isMawbFreeText']?.setValue(true);
+        this.f['isMawbFreeText']?.setValue(true, { emitEvent: false });
         this.showNoMawbStockWarningOnce(warningKey);
       } else {
         this.lastNoMawbStockWarningKey = null;
         this.isMawbDropdownDisabled = false;
-        this.f['isMawbFreeText']?.setValue(false);
+        this.f['isMawbFreeText']?.setValue(false, { emitEvent: false });
       }
     },
     error: (err) => {
@@ -1217,7 +1304,7 @@ loadMawbStock(data: any): void {
       this.mawbStockList        = [];
       this.mawbStockSource      = 'NONE';
       this.isMawbDropdownDisabled = true;
-      this.f['isMawbFreeText']?.setValue(true);
+      this.f['isMawbFreeText']?.setValue(true, { emitEvent: false });
     }
   });
 }
@@ -1235,19 +1322,33 @@ loadMawbStock(data: any): void {
       next: (response: any) => {
         if (response.masterJob.status && response.masterJob.data) {
           const data = response.masterJob.data;
+          this.logMawbDebug('loadMasterJobData:start', {
+            masterJobSid,
+            isEditMode: this.isEditMode,
+            hasData: !!data,
+            containers: data?.containers?.length || 0,
+            bookings: data?.bookingList?.length || 0,
+            connections: data?.masterJobConnection?.length || 0,
+            rates: data?.costRevenueCharges?.length || 0,
+          });
           this.masterAirWayData= data;
           this.masterJobData=data;
           const aggregatedTotals = data.aggregatedTotals; 
           this.isEditMode = true;
-          this.patchFormValues({
-            ...data,
-            NoOfPkg: aggregatedTotals?.NoOfPkg || data.NoOfPkg,
-            GrossWeight: aggregatedTotals?.GrossWeight || data.GrossWeight,
-            NetWeight: aggregatedTotals?.NetWeight || data.NetWeight,
-            ChargeableWeight: aggregatedTotals?.ChargeableWeight || data.ChargeableWeight,
-            Volume: aggregatedTotals?.Volume || data.Volume,
-            WeightIn: aggregatedTotals?.WeightIn || data.WeightIn
-          });
+          this.suppressDirtyTracking = true;
+          try {
+            this.patchFormValues({
+              ...data,
+              NoOfPkg: aggregatedTotals?.NoOfPkg || data.NoOfPkg,
+              GrossWeight: aggregatedTotals?.GrossWeight || data.GrossWeight,
+              NetWeight: aggregatedTotals?.NetWeight || data.NetWeight,
+              ChargeableWeight: aggregatedTotals?.ChargeableWeight || data.ChargeableWeight,
+              Volume: aggregatedTotals?.Volume || data.Volume,
+              WeightIn: aggregatedTotals?.WeightIn || data.WeightIn
+            });
+          } finally {
+            this.suppressDirtyTracking = false;
+          }
           this.loadLinkedMasterJobNumber(data?.others?.[0]?.ImportMasterJobSid || null);
          setTimeout(() => {
           this.loadMawbStock(data);
@@ -1289,10 +1390,15 @@ loadMawbStock(data: any): void {
         } else {
           this.arapData = [];
         }
-        this.resetDirtyState();
-        this.isSaving = false;
-        this.isLoading = false;
-        this.spinner.hide();
+          this.resetDirtyState();
+          this.logMawbDebug('loadMasterJobData:afterReset', {
+            isDirty: this.isDirty,
+            unsavedChanges: this.unsavedChanges,
+            initialCaptured: this.initialFormValue !== null,
+          });
+          this.isSaving = false;
+          this.isLoading = false;
+          this.spinner.hide();
       },
       error: (error) => {
         this.toastr.error('Failed to load master Air Waybill data');
@@ -1325,6 +1431,16 @@ loadMawbStock(data: any): void {
   }
 
   patchFormValues(data: any) {
+  this.suppressDirtyTracking = true;
+  try {
+  this.logMawbDebug('patchFormValues:start', {
+    masterJobSid: data?.MasterJobSid,
+    department: data?.DepartmentMasterSid,
+    hasOthers: !!data?.others?.length,
+    hasVoyages: !!data?.voyages?.length,
+    containers: data?.containers?.length || 0,
+    bookings: data?.bookingList?.length || 0,
+  });
   // Helper to find port SID by port code (if stored as code in data)
   const findPortSidByCode = (portCodeOrSid: any): number | null => {
     if (!portCodeOrSid && portCodeOrSid !== 0) return null;
@@ -1443,7 +1559,7 @@ loadMawbStock(data: any): void {
       ExportToImport: othersData.ExportToImport || 'N',
       ExportDoDate: othersData.ExportDoDate ? new Date(othersData.ExportDoDate) : null,
       SOBDate: othersData.SOBDate ? new Date(othersData.SOBDate) : null,
-    });
+    }, { emitEvent: false });
     this.selectedTransferCompanySid = othersData.DestinationCompanyMasterSid || data.DestinationCompanyMasterSid || null;
     this.selectedTransferBranchSid = othersData.DestinationBranchMasterSid || data.DestinationBranchMasterSid || null;
     if (this.selectedTransferCompanySid) {
@@ -1498,7 +1614,7 @@ loadMawbStock(data: any): void {
         PortCutoffDate: voyage.PortCutoff ? new Date(voyage.PortCutoff) :
           voyage.PortCutoffDate ? new Date(voyage.PortCutoffDate) :
             data.PortCutoffDate ? new Date(data.PortCutoffDate) : null,
-      });
+      }, { emitEvent: false });
     }
 
 
@@ -1586,6 +1702,16 @@ loadMawbStock(data: any): void {
   }
 
   this.isSaving = false;
+  this.logMawbDebug('patchFormValues:end', {
+    isDirty: this.isDirty,
+    unsavedChanges: this.unsavedChanges,
+    attachedBookings: this.attachedBookings?.length || 0,
+    connections: this.connectionResult?.length || 0,
+    rates: this.rateResult?.length || 0,
+  });
+  } finally {
+    this.suppressDirtyTracking = false;
+  }
 }
 
   onDestinationAgentChange(selectedAgent: any) {
@@ -2456,7 +2582,6 @@ loadMawbStock(data: any): void {
                 this.spinner.hide();
                 if (response.status) {
                     this.resetDirtyState();
-                    this.formSaved = true;
                     this.masterJobForm.markAsUntouched();
                     this.containerFormGroup.markAsUntouched();
                     const masterJobSid =
@@ -2498,7 +2623,6 @@ loadMawbStock(data: any): void {
     if (response.status) {
       resolve?.(true);
       this.resetDirtyState();
-      this.formSaved = true;
       this.masterJobForm.markAsUntouched();
       this.containerFormGroup.markAsUntouched();
 
@@ -2560,7 +2684,7 @@ loadMawbStock(data: any): void {
           ...containerData,
           MasterJobContainerSid: existingContainerSid, // Preserve the existing SID
           IsSoc: containerData.IsSoc
-        });
+        }, { emitEvent: false });
       } else {
         // Add new container - MasterJobContainerSid will be null for new containers
         this.addContainer(containerData);
@@ -2627,6 +2751,21 @@ loadMawbStock(data: any): void {
     this.masterJobContainers.clear();
     this.costRevenueCharges.clear();
     this.containerActivities.clear();
+    this.attachedBookings.clear();
+    this.slicedAttachedBookings = [];
+    this.totalLengthOfAttachedBookings = 0;
+    this.page = 1;
+    this.connectionResult = [];
+    this.rateResult = [];
+    this.masterjobConnectionArr = [];
+    this.masterJobRateArr = [];
+    this.edocData = [];
+    this.emailData = [];
+    this.containerActivityData = [];
+    this.currentFormValue = null;
+    this.currentRateFormValue = null;
+    this.currentEdocFormValue = null;
+    this.currentEmailFormValue = null;
     
     // Reset vessel search state
     this.voyageList = [];
@@ -2663,7 +2802,7 @@ loadMawbStock(data: any): void {
       this.containerFormGroup.patchValue({
         ...container,
         IsSoc: container.IsSoc === 'Y' || container.IsSoc === true
-      });
+      }, { emitEvent: false });
     } else {
       // Reset the form for new container
       this.containerFormGroup.reset({
@@ -2758,7 +2897,7 @@ loadMawbStock(data: any): void {
     // console.log('Connections changed:', allConnections);
     if (allConnections && allConnections.length >= 0) {
       this.connectionResult = [...allConnections];
-      this.markAsDirty();
+      this.refreshUnsavedChanges('handleConnectionChange');
     }
   }
 
@@ -2810,7 +2949,7 @@ loadMawbStock(data: any): void {
  handleRateChange(allRates: any[]) {
   if (allRates) {
     this.rateResult = [...allRates];
-    this.markAsDirty();
+    this.refreshUnsavedChanges('handleRateChange');
   }
 }
   
@@ -3190,6 +3329,7 @@ handleEdocChange(event: any) {
     });
     this.totalLengthOfAttachedBookings = this.attachedBookings.length;
     this.updateAttachedBookingsPagination();
+    this.refreshUnsavedChanges('patchShipments');
   }
 
   detachBooking(shipmentIndex: number, booking: any) {
@@ -3210,6 +3350,7 @@ handleEdocChange(event: any) {
             this.attachedBookings.removeAt(realIndex);
             this.totalLengthOfAttachedBookings = this.attachedBookings.length;
             this.updateAttachedBookingsPagination();
+            this.refreshUnsavedChanges('detachBooking');
           } else {
             this.appSettingsService.showError('Failed to detach booking');
           }
@@ -3224,6 +3365,7 @@ handleEdocChange(event: any) {
       this.attachedBookings.removeAt(realIndex);
       this.totalLengthOfAttachedBookings = this.attachedBookings.length;
       this.updateAttachedBookingsPagination();
+      this.refreshUnsavedChanges('detachBooking');
     }
   }
 
@@ -3307,6 +3449,7 @@ handleEdocChange(event: any) {
       });
       this.totalLengthOfAttachedBookings = this.attachedBookings.length;
       this.updateAttachedBookingsPagination();
+      this.refreshUnsavedChanges('openAttachModal');
       this.modalService.dismissAll();
       this.onSubmit();
     });

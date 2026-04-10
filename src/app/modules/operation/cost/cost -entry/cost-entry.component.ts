@@ -180,6 +180,7 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   private _customerList: any[] = [];
   private _agentList: any[] = [];
   private _dataItems: any[] = [];
+  private isHydratingRateData = false;
 
   @Input()
   set currencyList(value: any[]) {
@@ -241,11 +242,16 @@ export class CostEntryComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.isHydratingRateData = true;
     this.rateFormArray?.clear(); // clear existing rows first
     if (value && value.length > 0) {
       this._dataItems = value;
       console.log("Charges Changed",value);
-      this.patchValues(this._dataItems);
+      try {
+        this.patchValues(this._dataItems);
+      } finally {
+        this.isHydratingRateData = false;
+      }
     } else {
       this._dataItems = [];
       this.profitSummary = [];
@@ -261,6 +267,7 @@ export class CostEntryComponent implements OnInit, OnDestroy {
       this.pendingProrateStatusCallbacks = [];
       this.slicedCostFormArray = [];
       this.slicedRevenueFormArray = [];
+      this.isHydratingRateData = false;
     }
   }
   get dataItems(): any[] {
@@ -478,6 +485,9 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   this.loadRateLookups();
 
   this.rateFormArray.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
+    if (this.isHydratingRateData) {
+      return;
+    }
     this.validateExchangeRates();
     this.dataEmitter.emit(this.rateFormArray.getRawValue());
     this.calculateProfit();
@@ -709,15 +719,20 @@ get r() {
 
   patchValues(items: any[]) {
     console.log(items, 'patchValues')
-    if (items && items.length > 0) {
-      for (const item of items) {
-        this.addRateRow(item);
+    this.isHydratingRateData = true;
+    try {
+      if (items && items.length > 0) {
+        for (const item of items) {
+          this.addRateRow(item);
+        }
+      } else {
+        this.addRateRow(); // <-- Add one empty row when no data
       }
-    } else {
-      this.addRateRow(); // <-- Add one empty row when no data
+      this.resolvePaymentRequestNumbers();
+      this.calculateProfit();
+    } finally {
+      this.isHydratingRateData = false;
     }
-    this.resolvePaymentRequestNumbers();
-    this.calculateProfit();
   }
 createRateFormGroup(data?: any): FormGroup {
   console.log(data,'createRateFormGroup')
