@@ -60,7 +60,13 @@ interface FunnelRow {
 @Component({
   selector: 'app-sales-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgApexchartsModule, NgbDatepickerModule, CustomDatePipe],
+  imports: [
+    CommonModule,
+    FormsModule,
+    NgApexchartsModule,
+    NgbDatepickerModule,
+    CustomDatePipe,
+  ],
   templateUrl: './sales-dashboard.component.html',
   styleUrls: ['./sales-dashboard.component.scss'],
   providers: [
@@ -74,7 +80,9 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
   private readonly scrollThreshold = 96;
   private readonly searchDebounceMs = 300;
   private readonly listSections: ListSection[] = [1, 3, 4, 5, 6, 7, 8];
-  private readonly sectionSearchTimers: Partial<Record<ListSection, ReturnType<typeof setTimeout>>> = {};
+  private readonly sectionSearchTimers: Partial<
+    Record<ListSection, ReturnType<typeof setTimeout>>
+  > = {};
 
   readonly maxDateTo: NgbDateStruct = toNgbDateStruct(new Date())!;
 
@@ -193,18 +201,28 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
       const fy = this.appSettings.getCurrentFinancialYear();
       if (fy) {
         return {
-          start: noon(new Date(fy.StartDate).getFullYear(), new Date(fy.StartDate).getMonth(), new Date(fy.StartDate).getDate()),
-          end: noon(new Date(fy.EndDate).getFullYear(), new Date(fy.EndDate).getMonth(), new Date(fy.EndDate).getDate()),
+          start: noon(
+            new Date(fy.StartDate).getFullYear(),
+            new Date(fy.StartDate).getMonth(),
+            new Date(fy.StartDate).getDate(),
+          ),
+          end: noon(
+            new Date(fy.EndDate).getFullYear(),
+            new Date(fy.EndDate).getMonth(),
+            new Date(fy.EndDate).getDate(),
+          ),
         };
       }
 
       return {
-        start: now.getMonth() >= 3
-          ? noon(now.getFullYear(), 3, 1)
-          : noon(now.getFullYear() - 1, 3, 1),
-        end: now.getMonth() >= 2
-          ? noon(now.getFullYear() + 1, 2, 31)
-          : noon(now.getFullYear(), 2, 31),
+        start:
+          now.getMonth() >= 3
+            ? noon(now.getFullYear(), 3, 1)
+            : noon(now.getFullYear() - 1, 3, 1),
+        end:
+          now.getMonth() >= 2
+            ? noon(now.getFullYear() + 1, 2, 31)
+            : noon(now.getFullYear(), 2, 31),
       };
     };
 
@@ -216,7 +234,11 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
       case 'week': {
         const monday = new Date(now);
         monday.setDate(now.getDate() - now.getDay() + 1);
-        this.dateFromInput = noon(monday.getFullYear(), monday.getMonth(), monday.getDate());
+        this.dateFromInput = noon(
+          monday.getFullYear(),
+          monday.getMonth(),
+          monday.getDate(),
+        );
         this.dateToInput = todayNoon;
         break;
       }
@@ -226,11 +248,17 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
         break;
       case 'lastMonth': {
         const { start: fyStart, end: fyEnd } = getFinancialYearBounds();
-        const previousMonthStart = noon(now.getFullYear(), now.getMonth() - 1, 1);
+        const previousMonthStart = noon(
+          now.getFullYear(),
+          now.getMonth() - 1,
+          1,
+        );
         const previousMonthEnd = noon(now.getFullYear(), now.getMonth(), 0);
-        const clampedStart = previousMonthStart < fyStart ? fyStart : previousMonthStart;
+        const clampedStart =
+          previousMonthStart < fyStart ? fyStart : previousMonthStart;
         const cappedToday = fyEnd < todayNoon ? fyEnd : todayNoon;
-        const clampedEnd = previousMonthEnd > cappedToday ? cappedToday : previousMonthEnd;
+        const clampedEnd =
+          previousMonthEnd > cappedToday ? cappedToday : previousMonthEnd;
 
         if (clampedStart > clampedEnd) {
           this.dateFromInput = fyStart;
@@ -267,11 +295,15 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
   }
 
   getMinDateTo(): NgbDateStruct | undefined {
-    return this.dateFromInput ? toNgbDateStruct(this.dateFromInput) ?? undefined : undefined;
+    return this.dateFromInput
+      ? (toNgbDateStruct(this.dateFromInput) ?? undefined)
+      : undefined;
   }
 
   getMaxDateFrom(): NgbDateStruct {
-    return this.dateToInput ? toNgbDateStruct(this.dateToInput) ?? this.maxDateTo : this.maxDateTo;
+    return this.dateToInput
+      ? (toNgbDateStruct(this.dateToInput) ?? this.maxDateTo)
+      : this.maxDateTo;
   }
 
   toggleSection(section: number): void {
@@ -288,7 +320,10 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.isListSection(section) && !this.sectionStates[section].initialized) {
+    if (
+      this.isListSection(section) &&
+      !this.sectionStates[section].initialized
+    ) {
       this.loadListSection(section, true);
     }
   }
@@ -493,15 +528,22 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
   getConversionRate(): number {
     if (!this.dashboardCounts) return 0;
     const totalQuotes = this.dashboardCounts.summaryKpis.quotes.totalQuotes;
-    const totalBookings = this.dashboardCounts.summaryKpis.bookings.totalBookings;
-    return totalQuotes ? Math.round((totalBookings / totalQuotes) * 1000) / 10 : 0;
+    const totalBookings =
+      this.dashboardCounts.summaryKpis.bookings.totalBookings;
+    return totalQuotes
+      ? Math.round((totalBookings / totalQuotes) * 1000) / 10
+      : 0;
   }
 
   getQuoteToBookingRate(): number {
     if (!this.dashboardCounts) return 0;
-    const approvedQuotes = this.dashboardCounts.summaryKpis.quotes.approvedQuotes;
-    const bookingsFromQuote = this.dashboardCounts.summaryKpis.bookings.bookingsFromQuote;
-    return approvedQuotes ? Math.round((bookingsFromQuote / approvedQuotes) * 1000) / 10 : 0;
+    const approvedQuotes =
+      this.dashboardCounts.summaryKpis.quotes.approvedQuotes;
+    const bookingsFromQuote =
+      this.dashboardCounts.summaryKpis.bookings.bookingsFromQuote;
+    return approvedQuotes
+      ? Math.round((bookingsFromQuote / approvedQuotes) * 1000) / 10
+      : 0;
   }
 
   getLeadAgeCohorts(): LeadAgeCohorts | null {
@@ -530,7 +572,11 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     return this.getPipelinePct(part, total);
   }
 
-  getShipmentMix(): Array<{ label: string; value: number; colorClass: string }> {
+  getShipmentMix(): Array<{
+    label: string;
+    value: number;
+    colorClass: string;
+  }> {
     if (!this.dashboardCounts) {
       return [];
     }
@@ -550,7 +596,8 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
 
     const conversionRate = this.getConversionRate();
     const approvedToBookingRate = this.getQuoteToBookingRate();
-    const bookingCount = this.dashboardCounts.summaryKpis.bookings.totalBookings;
+    const bookingCount =
+      this.dashboardCounts.summaryKpis.bookings.totalBookings;
     const quoteCount = this.dashboardCounts.summaryKpis.quotes.totalQuotes;
 
     if (quoteCount === 0 && bookingCount === 0) {
@@ -580,7 +627,11 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     this.router.navigate(['/master/organization/entry', sid]);
   }
 
-  navigateToLeadOrCustomer(item: { LeadOrCustomer?: string; PreCustomerMasterSid?: number; CustomerMasterSid?: number }): void {
+  navigateToLeadOrCustomer(item: {
+    LeadOrCustomer?: string;
+    PreCustomerMasterSid?: number;
+    CustomerMasterSid?: number;
+  }): void {
     if (item.LeadOrCustomer === 'C' && item.CustomerMasterSid) {
       this.navigateToOrganization(item.CustomerMasterSid);
       return;
@@ -670,7 +721,11 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (response) => {
-            this.applyMeetingBucketResponse(bucket, response.data as PagedResult<ScheduledMeeting>, reset);
+            this.applyMeetingBucketResponse(
+              bucket,
+              response.data as PagedResult<ScheduledMeeting>,
+              reset,
+            );
           },
           error: () => {
             state.loading = false;
@@ -679,12 +734,15 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    (Object.keys(this.meetingsState) as MeetingBucket[]).forEach((meetingBucket) => {
-      if (reset) {
-        this.meetingsState[meetingBucket] = this.createSectionState<ScheduledMeeting>();
-      }
-      this.meetingsState[meetingBucket].loading = true;
-    });
+    (Object.keys(this.meetingsState) as MeetingBucket[]).forEach(
+      (meetingBucket) => {
+        if (reset) {
+          this.meetingsState[meetingBucket] =
+            this.createSectionState<ScheduledMeeting>();
+        }
+        this.meetingsState[meetingBucket].loading = true;
+      },
+    );
 
     this.salesDashboardService
       .getSectionData(2, {
@@ -695,23 +753,32 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          const payload = response.data as BucketedPagedResult<ScheduledMeeting>;
+          const payload =
+            response.data as BucketedPagedResult<ScheduledMeeting>;
           this.applyMeetingBucketResponse('overdue', payload.overdue, true);
           this.applyMeetingBucketResponse('today', payload.today, true);
           this.applyMeetingBucketResponse('future', payload.future, true);
         },
         error: () => {
-          (Object.keys(this.meetingsState) as MeetingBucket[]).forEach((meetingBucket) => {
-            this.meetingsState[meetingBucket].loading = false;
-          });
+          (Object.keys(this.meetingsState) as MeetingBucket[]).forEach(
+            (meetingBucket) => {
+              this.meetingsState[meetingBucket].loading = false;
+            },
+          );
         },
       });
   }
 
-  private applyListSectionResponse(section: ListSection, response: PagedResult<any>, reset: boolean): void {
+  private applyListSectionResponse(
+    section: ListSection,
+    response: PagedResult<any>,
+    reset: boolean,
+  ): void {
     const normalizedItems = this.decorateSectionItems(section, response.items);
     const state = this.sectionStates[section];
-    state.items = reset ? normalizedItems : [...state.items, ...normalizedItems];
+    state.items = reset
+      ? normalizedItems
+      : [...state.items, ...normalizedItems];
     state.page = response.page;
     state.pageSize = response.pageSize;
     state.totalCount = response.totalCount;
@@ -787,7 +854,9 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
           : { display: '\u2014', hours: 0 };
         return {
           ...item,
-          daysSinceApproval: item.approvedOn ? Math.floor(approvalMetrics.hours / 24) : 0,
+          daysSinceApproval: item.approvedOn
+            ? Math.floor(approvalMetrics.hours / 24)
+            : 0,
           elapsedDisplay: approvalMetrics.display,
         };
       }
@@ -814,64 +883,97 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
         value: counts.totalLeads,
         icon: 'fas fa-search',
         color: 'linear-gradient(90deg, #044a6c, #05608D)',
-        tooltip: this.getFunnelTooltip('Lead Created', counts.totalLeads, counts.totalLeads),
+        tooltip: this.getFunnelTooltip(
+          'Lead Created',
+          counts.totalLeads,
+          counts.totalLeads,
+        ),
       },
       {
         label: 'Meeting Scheduled',
         value: counts.leadsWithMeeting,
         icon: 'fas fa-handshake',
         color: 'linear-gradient(90deg, #f59e0b, #fbbf24)',
-        tooltip: this.getFunnelTooltip('Meeting Scheduled', counts.leadsWithMeeting, counts.totalLeads),
+        tooltip: this.getFunnelTooltip(
+          'Meeting Scheduled',
+          counts.leadsWithMeeting,
+          counts.totalLeads,
+        ),
       },
       {
         label: 'Customer Converted',
         value: counts.leadsTurnedCustomer,
         icon: 'fas fa-user-check',
         color: 'linear-gradient(90deg, #0f766e, #14b8a6)',
-        tooltip: this.getFunnelTooltip('Customer Converted', counts.leadsTurnedCustomer, counts.totalLeads, [
-          `${pathMix.customer.viaMeeting} via confirmed meeting`,
-          `${pathMix.customer.viaApprovedQuote} via approved quotation`,
-        ]),
+        tooltip: this.getFunnelTooltip(
+          'Customer Converted',
+          counts.leadsTurnedCustomer,
+          counts.totalLeads,
+          [
+            `${pathMix.customer.viaMeeting} via confirmed meeting`,
+            `${pathMix.customer.viaApprovedQuote} via approved quotation`,
+          ],
+        ),
       },
       {
         label: 'Enquiry Created',
         value: counts.leadsWithEnquiry,
         icon: 'fas fa-comment-dots',
         color: 'linear-gradient(90deg, #06b6d4, #22d3ee)',
-        tooltip: this.getFunnelTooltip('Enquiry Created', counts.leadsWithEnquiry, counts.totalLeads, [
-          `${pathMix.enquiry.viaLead} via lead-linked enquiry`,
-          `${pathMix.enquiry.viaCustomer} via customer-linked enquiry`,
-        ]),
+        tooltip: this.getFunnelTooltip(
+          'Enquiry Created',
+          counts.leadsWithEnquiry,
+          counts.totalLeads,
+          [
+            `${pathMix.enquiry.viaLead} via lead-linked enquiry`,
+            `${pathMix.enquiry.viaCustomer} via customer-linked enquiry`,
+          ],
+        ),
       },
       {
         label: 'Quotation Created',
         value: counts.leadsWithQuote,
         icon: 'fas fa-file-invoice-dollar',
         color: 'linear-gradient(90deg, #f97316, #fb923c)',
-        tooltip: this.getFunnelTooltip('Quotation Created', counts.leadsWithQuote, counts.totalLeads, [
-          `${pathMix.quote.viaLead} via lead-linked quote`,
-          `${pathMix.quote.viaCustomer} via customer-linked quote`,
-        ]),
+        tooltip: this.getFunnelTooltip(
+          'Quotation Created',
+          counts.leadsWithQuote,
+          counts.totalLeads,
+          [
+            `${pathMix.quote.viaLead} via lead-linked quote`,
+            `${pathMix.quote.viaCustomer} via customer-linked quote`,
+          ],
+        ),
       },
       {
         label: 'Quotation Approved',
         value: counts.leadsWithApprovedQuote,
         icon: 'fas fa-stamp',
         color: 'linear-gradient(90deg, #7c3aed, #a78bfa)',
-        tooltip: this.getFunnelTooltip('Quotation Approved', counts.leadsWithApprovedQuote, counts.totalLeads, [
-          `${pathMix.approvedQuote.viaLead} via lead-linked quote`,
-          `${pathMix.approvedQuote.viaCustomer} via customer-linked quote`,
-        ]),
+        tooltip: this.getFunnelTooltip(
+          'Quotation Approved',
+          counts.leadsWithApprovedQuote,
+          counts.totalLeads,
+          [
+            `${pathMix.approvedQuote.viaLead} via lead-linked quote`,
+            `${pathMix.approvedQuote.viaCustomer} via customer-linked quote`,
+          ],
+        ),
       },
       {
         label: 'Booking Created',
         value: counts.leadsWithBooking,
         icon: 'fas fa-calendar-check',
         color: 'linear-gradient(90deg, #16a34a, #4ade80)',
-        tooltip: this.getFunnelTooltip('Booking Created', counts.leadsWithBooking, counts.totalLeads, [
-          `${pathMix.booking.viaLead} via lead-linked chain`,
-          `${pathMix.booking.viaCustomer} via customer-linked chain`,
-        ]),
+        tooltip: this.getFunnelTooltip(
+          'Booking Created',
+          counts.leadsWithBooking,
+          counts.totalLeads,
+          [
+            `${pathMix.booking.viaLead} via lead-linked chain`,
+            `${pathMix.booking.viaCustomer} via customer-linked chain`,
+          ],
+        ),
       },
     ];
     const maxVal = Math.max(...items.map((item) => item.value), 1);
@@ -880,7 +982,8 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     this.funnelRows = items.map((item) => ({
       ...item,
       widthPct: item.value > 0 ? Math.max((item.value / maxVal) * 100, 16) : 16,
-      pctOfTotal: totalValue > 0 ? Math.round((item.value / totalValue) * 1000) / 10 : 0,
+      pctOfTotal:
+        totalValue > 0 ? Math.round((item.value / totalValue) * 1000) / 10 : 0,
     }));
   }
 
@@ -890,7 +993,8 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     totalLeads: number,
     extraLines: string[] = [],
   ): string {
-    const pctOfTotal = totalLeads > 0 ? Math.round((value / totalLeads) * 1000) / 10 : 0;
+    const pctOfTotal =
+      totalLeads > 0 ? Math.round((value / totalLeads) * 1000) / 10 : 0;
     return [
       `${label}: ${value} leads`,
       `${pctOfTotal}% of total leads`,
@@ -906,8 +1010,13 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
       }))
       .sort((left, right) => right.count - left.count);
     const hasData = normalizedDistribution.length > 0;
-    const chartData = hasData ? normalizedDistribution : [{ source: 'NoData', count: 1 }];
-    const totalLeads = normalizedDistribution.reduce((total, item) => total + item.count, 0);
+    const chartData = hasData
+      ? normalizedDistribution
+      : [{ source: 'NoData', count: 1 }];
+    const totalLeads = normalizedDistribution.reduce(
+      (total, item) => total + item.count,
+      0,
+    );
 
     const palette = [
       '#05608D',
@@ -923,12 +1032,16 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
       '#84cc16',
       '#14b8a6',
     ];
-    const segmentColors = chartData.map((item, index) => item.source === 'NoData' ? '#cbd5e1' : palette[index % palette.length]);
+    const segmentColors = chartData.map((item, index) =>
+      item.source === 'NoData' ? '#cbd5e1' : palette[index % palette.length],
+    );
 
     this.leadSourceDonutOptions = {
       series: chartData.map((item) => item.count),
       chart: { type: 'donut', height: 300 },
-      labels: chartData.map((item) => item.source === 'NoData' ? 'No data' : item.source),
+      labels: chartData.map((item) =>
+        item.source === 'NoData' ? 'No data' : item.source,
+      ),
       colors: segmentColors,
       legend: {
         position: 'right',
@@ -942,7 +1055,9 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
         style: {
           fontSize: '11px',
           fontWeight: 700,
-          colors: segmentColors.map((color) => this.getReadableTextColor(color)),
+          colors: segmentColors.map((color) =>
+            this.getReadableTextColor(color),
+          ),
         },
         dropShadow: { enabled: false },
       },
@@ -978,9 +1093,13 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
 
   private getReadableTextColor(backgroundHex: string): string {
     const hex = backgroundHex.replace('#', '');
-    const normalizedHex = hex.length === 3
-      ? hex.split('').map((char) => char + char).join('')
-      : hex;
+    const normalizedHex =
+      hex.length === 3
+        ? hex
+            .split('')
+            .map((char) => char + char)
+            .join('')
+        : hex;
 
     const r = parseInt(normalizedHex.substring(0, 2), 16);
     const g = parseInt(normalizedHex.substring(2, 4), 16);
@@ -1039,7 +1158,10 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
 
   private shouldLoadMore(event: Event): boolean {
     const target = event.target as HTMLElement;
-    return target.scrollHeight - target.scrollTop - target.clientHeight <= this.scrollThreshold;
+    return (
+      target.scrollHeight - target.scrollTop - target.clientHeight <=
+      this.scrollThreshold
+    );
   }
 
   private isMeetingsInitialized(): boolean {
@@ -1053,10 +1175,18 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
   }
 
   private daysBetween(startDate: Date, endDate: Date): number {
-    return Math.max(0, Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
+    return Math.max(
+      0,
+      Math.floor(
+        (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
+      ),
+    );
   }
 
-  private getElapsedMetrics(dateValue: string): { display: string; hours: number } {
+  private getElapsedMetrics(dateValue: string): {
+    display: string;
+    hours: number;
+  } {
     const now = new Date();
     const createdOn = new Date(dateValue);
     const diffMs = Math.max(0, now.getTime() - createdOn.getTime());
@@ -1077,17 +1207,29 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
   }
 
   private getApiFilters() {
-    const company = this.appSettings.decrypt(localStorage.getItem('selected-company'));
-    const branch = this.appSettings.decrypt(localStorage.getItem('selected-branch'));
+    const company = this.appSettings.decrypt(
+      localStorage.getItem('selected-company'),
+    );
+    const branch = this.appSettings.decrypt(
+      localStorage.getItem('selected-branch'),
+    );
     const userProfile = this.appSettings.getDecryptedUserProfile();
 
     return {
       companyMasterSid: company.CompanyMasterSid,
       branchMasterSid: branch?.BranchMasterSid ?? company.BranchMasterSid,
-      dateFrom: this.dateFromInput ? this.toDateTimeStr(this.dateFromInput, 'start') : undefined,
-      dateTo: this.dateToInput ? this.toDateTimeStr(this.dateToInput, 'end') : undefined,
-      naiveDateFrom: this.dateFromInput ? this.toNaiveDateTimeStr(this.dateFromInput, 'start') : undefined,
-      naiveDateTo: this.dateToInput ? this.toNaiveDateTimeStr(this.dateToInput, 'end') : undefined,
+      dateFrom: this.dateFromInput
+        ? this.toDateTimeStr(this.dateFromInput, 'start')
+        : undefined,
+      dateTo: this.dateToInput
+        ? this.toDateTimeStr(this.dateToInput, 'end')
+        : undefined,
+      naiveDateFrom: this.dateFromInput
+        ? this.toNaiveDateTimeStr(this.dateFromInput, 'start')
+        : undefined,
+      naiveDateTo: this.dateToInput
+        ? this.toNaiveDateTimeStr(this.dateToInput, 'end')
+        : undefined,
       salespersonId: userProfile?.UserMasterSid,
       salespersonEmail: userProfile?.userEmail,
     };
@@ -1110,7 +1252,10 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
    * Uses Date.UTC to match how the DateTimePicker stores these values — the user's
    * selected date/time is stored as-is, without any local→UTC timezone conversion.
    */
-  private toNaiveDateTimeStr(dateValue: Date, boundary: 'start' | 'end'): string {
+  private toNaiveDateTimeStr(
+    dateValue: Date,
+    boundary: 'start' | 'end',
+  ): string {
     const d = new Date(dateValue);
     const y = d.getFullYear();
     const m = d.getMonth();
