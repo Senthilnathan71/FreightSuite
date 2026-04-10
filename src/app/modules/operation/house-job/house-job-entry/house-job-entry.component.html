@@ -71,12 +71,12 @@
           <span>{{ isSendingSIMail ? 'Sending...' : 'Send SI Mail' }}</span>
         </button>
       </div>
-      <div class="action-group" *ngIf="isEditMode && ( mps.canPrint('HAWB', 'Print')
-       || mps.canPrint('HAWB Draft', 'Print') || mps.canPrint('Exit Form', 'Print') || 
+      <div class="action-group" *ngIf="isEditMode && ( shouldShowAirHousePrintOption('HAWB')
+       || shouldShowAirHousePrintOption('HAWB Draft') || mps.canPrint('Exit Form', 'Print') || 
        mps.canPrint('Job Card', 'Print') || mps.canPrint('Delivery Order', 'Print') ||
         mps.canPrint('Cargo Arrival Notice with charges', 'Print') || mps.canPrint('Cargo Arrival Notice without charges', 'Print') 
-        || mps.canPrint('HBL', 'Print') || mps.canPrint('HBLDraft', 'Print') || mps.canPrint('House Profit and Loss', 'Print') || mps.canPrint('Indeminty', 'Print')|| 
-        mps.canPrint('Commercial Invoice', 'Print') || mps.canPrint('Packing List', 'Print') || mps.canPrint('Release Letter', 'Print') || mps.canPrint('Sailing Confirmation' , 'Print') || mps.canPrint('Proof of Delivery', 'Print') )">
+        || shouldShowHousePrintOption('HBL') || shouldShowHousePrintOption('HBLDraft') || mps.canPrint('House Profit and Loss', 'Print') || mps.canPrint('Indeminty', 'Print')|| 
+        mps.canPrint('Commercial Invoice', 'Print') || mps.canPrint('Packing List', 'Print') || mps.canPrint('Release Letter', 'Print') || shouldShowHousePrintOption('Sailing Confirmation') || mps.canPrint('Proof of Delivery', 'Print') )">
         <div ngbDropdown container="body" class="d-inline-block">
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" id="dropdownUpload"
             ngbDropdownToggle [disabled]="!housejobData || hasUnsavedChanges()">
@@ -84,8 +84,8 @@
           </button>
           <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
              @if(selectedDepartmentType === "AIR"){
-               <button *ngIf="mps.canPrint('HAWB', 'Print')" class="text-dark" ngbDropdownItem (click)="reportHAWB('HAWB')">HAWB</button>
-                <button *ngIf="mps.canPrint('HAWB Draft', 'Print')" class="text-dark" ngbDropdownItem (click)="reportHAWB('HAWBDraft')">HAWB Draft</button>
+               <button *ngIf="shouldShowAirHousePrintOption('HAWB')" class="text-dark" ngbDropdownItem (click)="reportHAWB('HAWB')">HAWB</button>
+                <button *ngIf="shouldShowAirHousePrintOption('HAWB Draft')" class="text-dark" ngbDropdownItem (click)="reportHAWB('HAWBDraft')">HAWB Draft</button>
                 <button *ngIf="mps.canPrint('Exit Form', 'Print')"  class="text-dark" ngbDropdownItem (click)="reportExitForm()">Exit Form</button>
                 <button *ngIf="mps.canPrint('Job Card', 'Print') " class="text-dark" ngbDropdownItem (click)="reportjobCard()">Job Card</button>
              }@else{ 
@@ -97,8 +97,8 @@
                <button *ngIf="mps.canPrint('Cargo Arrival Notice without charges', 'Print')" class="text-dark" ngbDropdownItem (click)="reportCargoArrival(false)">Cargo Arrival
               Notice without charges</button>
                }
-           <button *ngIf="mps.canPrint('HBL', 'Print')" class="text-dark" ngbDropdownItem (click)="reportBill('HBL')">HBL</button>
-           <button *ngIf="mps.canPrint('HBLDraft', 'Print')" class="text-dark" ngbDropdownItem (click)="reportBill('HBLDraft')">HBL Draft</button>
+           <button *ngIf="shouldShowHousePrintOption('HBL')" class="text-dark" ngbDropdownItem (click)="reportBill('HBL')">HBL</button>
+           <button *ngIf="shouldShowHousePrintOption('HBLDraft')" class="text-dark" ngbDropdownItem (click)="reportBill('HBLDraft')">HBL Draft</button>
             <button  *ngIf="mps.canPrint('House Profit and Loss', 'Print')" class="text-dark" ngbDropdownItem (click)="reportShipmentProfit()">House Profit and
               Loss</button>
             <button *ngIf="mps.canPrint('Indeminty', 'Print')" class="text-dark" ngbDropdownItem (click)="reportIndeminty()">Indeminty</button>
@@ -112,7 +112,7 @@
                             </button>
               <button *ngIf="mps.canPrint('Release Letter', 'Print')" class="text-dark" ngbDropdownItem (click)="reportReleaseLetter()">Release Letter
             </button>
-             <button *ngIf="mps.canPrint('Sailing Confirmation' , 'Print')" class="text-dark" ngbDropdownItem (click)="reportSailingConfirmation()">Sailing Confirmation
+             <button *ngIf="shouldShowHousePrintOption('Sailing Confirmation')" class="text-dark" ngbDropdownItem (click)="reportSailingConfirmation()">Sailing Confirmation
             </button>
              <button *ngIf="mps.canPrint('Exit Form', 'Print')" class="text-dark" ngbDropdownItem (click)="reportExitForm()">Exit Form
             </button>

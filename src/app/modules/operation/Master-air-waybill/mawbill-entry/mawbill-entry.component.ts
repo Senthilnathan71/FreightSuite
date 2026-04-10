@@ -516,6 +516,27 @@ export class MawbillEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
     this.isDirty = true;
     this.formSaved = false;
   }
+
+  private isAirImportDepartment(): boolean {
+    const departmentType = (this.selectedDepartmentType || this.selectedDepartment?.departmentType || '')
+      .toString()
+      .trim()
+      .toUpperCase();
+    const exportImport = (this.selectedDepartment?.ExportImport || '')
+      .toString()
+      .trim()
+      .toUpperCase();
+
+    return departmentType === 'AIR' && exportImport === 'IMPORT';
+  }
+
+  shouldShowMawbPrintOption(reportName: 'MAWB Draft' | 'MAWB Preprint'): boolean {
+    if (!this.mps.canPrint(reportName, 'Print')) {
+      return false;
+    }
+
+    return !this.isAirImportDepartment();
+  }
 onCarrierChangeForAir(carrier: any): void {
   if (this.isExportToImportCompleted && !this.isLoading) {
     return;
