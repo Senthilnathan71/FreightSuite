@@ -168,6 +168,7 @@ notifyManuallyChanged = false;
 fyMinDate: NgbDateStruct | null = null;
 fyMaxDate: NgbDateStruct | null = null;
 isTermsAndConditionsEnabled: boolean = true;
+isCreditRequestCheckingEnabled: boolean = false;
 // Customs pre-save validation modal
 showCustomsValidationModal = false;
 customsValidationErrors: { recordType: string; fieldRef: string; fieldName: string; tabName?: string }[] = [];
@@ -697,6 +698,7 @@ hblModalRef?: NgbModalRef;
   this.currentMenuId = this.mps.getMenuId();
   this.mps.init().subscribe();
   this.loadTermsAndConditionsConfig();
+  this.loadCreditRequestCheckingConfig();
   this.initBookingForm();
   this.initCargoForm();
   this.initOtherForm();
@@ -759,6 +761,24 @@ private loadTermsAndConditionsConfig(): void {
       error: () => {
         // Default to enabled if config fetch fails
         this.isTermsAndConditionsEnabled = true;
+      }
+    });
+  }
+
+  private loadCreditRequestCheckingConfig(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+      this.isCreditRequestCheckingEnabled = false;
+      return;
+    }
+
+    this.masterService.getConfigurationValue(companyId, 'CreditRequestChecking').subscribe({
+      next: (resp: any) => {
+        const rawValue = resp?.ConfigurationValue ?? resp?.value ?? resp;
+        this.isCreditRequestCheckingEnabled = this.parseConfigBoolean(rawValue, false);
+      },
+      error: () => {
+        this.isCreditRequestCheckingEnabled = false;
       }
     });
   }
@@ -4896,6 +4916,10 @@ ${this.userData['userName']}`;
     }
 
   private async validateCreditForRelease(actionLabel: string): Promise<boolean> {
+        if (!this.isCreditRequestCheckingEnabled) {
+          return true;
+        }
+
         const companyMasterSid = this.currentCompany?.CompanyMasterSid;
         const branchMasterSid = this.currentBranch?.BranchMasterSid;
         const raw = this.houseJobForm.getRawValue();
