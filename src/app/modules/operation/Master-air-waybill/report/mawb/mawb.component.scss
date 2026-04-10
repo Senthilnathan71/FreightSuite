@@ -324,8 +324,8 @@
 }
 
 .routing-to2 {
-    top: 125mm;
-    left: 230mm;
+    top: 147mm;
+    left: 87mm;
     width: 15mm;
     height: 5mm;
     text-align: center;
@@ -334,8 +334,8 @@
 }
 
 .routing-by2 {
-    top: 125mm;
-    left: 248mm;
+    top: 147mm;
+    left: 100mm;
     width: 15mm;
     height: 5mm;
     text-align: center;
@@ -344,8 +344,8 @@
 }
 
 .routing-to3 {
-    top: 125mm;
-    left: 265mm;
+    top: 147mm;
+    left: 113mm;
     width: 15mm;
     height: 5mm;
     text-align: center;
@@ -354,8 +354,8 @@
 }
 
 .routing-by3 {
-    top: 125mm;
-    left: 283mm;
+    top: 147mm;
+    left: 128mm;
     width: 15mm;
     height: 5mm;
     text-align: center;
@@ -451,8 +451,8 @@
 /* Airport Destination */
 .airport-destination {
     top: 159mm;
-    left: 14mm;
-    width: 40mm;
+    left: 15mm;
+    width: auto;
     height: 5mm;
     text-align: center;
     font-size: 12px;
@@ -625,6 +625,12 @@
     box-sizing: border-box;
 }
 
+.external-note {
+    top: 220mm;
+    left: 10mm;
+    width: 90mm;
+    height: 70mm;
+}
 /* Totals Row */
 .total-no-pieces {
     top: 275mm;
