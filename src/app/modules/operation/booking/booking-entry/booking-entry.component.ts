@@ -172,6 +172,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   currentBranch: any;
   isMawbStockAllocationEnabled = false;
   isTermsAndConditionsEnabled: boolean = true;
+  isCreditRequestCheckingEnabled: boolean = false;
   MenuMasterSid: any;
   filterOption: any;
   isFormDisabled: boolean = false;
@@ -587,6 +588,7 @@ get visibleTabs() {
      this.website = this.userData?.userCompanyMaster?.[0]?.companyMaster?.webSite || null;
 
     this.loadTermsAndConditionsConfig();
+    this.loadCreditRequestCheckingConfig();
     this.initBookingForm();
     this.initCargoForm();
     this.initOtherForm();
@@ -714,6 +716,24 @@ get visibleTabs() {
       error: () => {
         // Default to enabled if config fetch fails
         this.isTermsAndConditionsEnabled = true;
+      }
+    });
+  }
+
+  private loadCreditRequestCheckingConfig(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+      this.isCreditRequestCheckingEnabled = false;
+      return;
+    }
+
+    this.masterService.getConfigurationValue(companyId, 'CreditRequestChecking').subscribe({
+      next: (resp: any) => {
+        const rawValue = resp?.ConfigurationValue ?? resp?.value ?? resp;
+        this.isCreditRequestCheckingEnabled = this.parseConfigBoolean(rawValue, false);
+      },
+      error: () => {
+        this.isCreditRequestCheckingEnabled = false;
       }
     });
   }
@@ -5617,6 +5637,10 @@ async generatePDFBlob(type: 'booking' | 'cro' | 'mail-attachment' = 'booking'): 
 
   private async validateCreditBeforeSave(): Promise<boolean> {
     this.lastCreditValidationMessage = '';
+    if (!this.isCreditRequestCheckingEnabled) {
+      return true;
+    }
+
     const companyMasterSid = this.currentCompany?.CompanyMasterSid;
     const branchMasterSid = this.currentBranch?.BranchMasterSid;
     const raw = this.bookingForm.getRawValue();

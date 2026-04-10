@@ -89,6 +89,12 @@ export class CompanyConfigComponent implements OnInit {
       defaultValue: false
     },
     {
+      name: 'CreditRequestChecking',
+      displayName: 'Credit Request Checking',
+      type: 'boolean' as const,
+      defaultValue: false
+    },
+    {
       name: 'ExportToImportCompanyMasterSid',
       displayName: 'Export To Import Companies',
       type: 'string' as const,
