@@ -304,16 +304,29 @@
                                 </ng-select>
                             </td>
                             <td>
-                                <input type="number" step="0.0001" formControlName="exchangeRate" DecimalPrecision
-                                    [DecimalPrecisionBefore]="3"
-                                    [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(row.get('currencyMasterSid')?.value)"
-                                    class="form-control" />
+                                <input
+  type="number"
+  step="0.0001"
+  formControlName="exchangeRate"
+  DecimalPrecision
+  [DecimalPrecisionBefore]="3"
+  [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(row.get('currencyMasterSid')?.value)"
+  class="form-control"
+  (input)="calculateLocalAmount(i)"
+(blur)="calculateLocalAmount(i, true)"
+/>
                             </td>
                             <td>
-                                <input type="text" formControlName="currencyAmount" DecimalPrecision
-                                    [DecimalPrecisionBefore]="9"
-                                    [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('currencyMasterSid')?.value)"
-                                    class="custom-input-field sm text-end" />
+                                <input
+  type="text"
+  formControlName="currencyAmount"
+  class="custom-input-field sm text-end"
+  DecimalPrecision
+  [DecimalPrecisionBefore]="9"
+  [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('currencyMasterSid')?.value)"
+  (input)="calculateLocalAmount(i)"
+(blur)="calculateLocalAmount(i, true)"
+/>
                             </td>
                             <td>
                                 <input type="text" formControlName="localAmount" class="custom-input-field sm text-end"
