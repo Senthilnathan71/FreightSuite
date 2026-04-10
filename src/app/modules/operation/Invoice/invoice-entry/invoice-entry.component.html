@@ -2749,9 +2749,9 @@
               <input 
                 type="checkbox" 
                 class="form-check-input"
-                [checked]="isChargeSelected(charge.CostRevenueChargesSid)"
+                [checked]="isChargeSelected(charge)"
                 [disabled]="hasVoucherGenerated(charge)"
-                (change)="toggleChargeSelection(charge.CostRevenueChargesSid)">
+                (change)="toggleChargeSelection(charge)">
             </td>
             <td>
               {{ charge.chargeMaster?.chargeCode }}
