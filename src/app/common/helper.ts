@@ -102,7 +102,6 @@ export function getVoucherDateConstraints(
 
   if (todayTs > graceDeadlineTs) {
     result.isClosed = true;
-    result.errorMessage = `Grace days of ${period.PeriodName} voucher booking exceeded`;
     return result;
   }
 

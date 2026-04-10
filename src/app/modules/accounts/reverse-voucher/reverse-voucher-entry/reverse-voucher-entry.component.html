@@ -225,7 +225,7 @@
                   <label class="input-label" for="VoucherDate">
                     Voucher Date <span class="text-danger">*</span>
                   </label>
-                  <small *ngIf="voucherConstraints.isClosed" class="text-danger d-block">{{ voucherConstraints.errorMessage }}</small>
+                  <small *ngIf="voucherConstraints.errorMessage" class="text-danger d-block">{{ voucherConstraints.errorMessage }}</small>
                 </div>
                 <button class="btn bi bi-calendar3 mt-2" (click)="d1.toggle()" type="button">
                   <i-feather name="calendar" class="feather-sm"></i-feather>

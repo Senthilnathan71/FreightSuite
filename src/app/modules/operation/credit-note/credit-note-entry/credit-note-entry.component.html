@@ -349,7 +349,7 @@
                       Credit Date <span class="text-danger">*</span>
                     </label>
                     <small
-                      *ngIf="voucherConstraints.isClosed"
+                      *ngIf="voucherConstraints.errorMessage"
                       class="text-danger d-block"
                       >{{ voucherConstraints.errorMessage }}</small
                     >

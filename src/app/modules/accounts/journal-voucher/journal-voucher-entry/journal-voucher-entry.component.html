@@ -165,7 +165,7 @@
                                 </button>
                             </div>
                             <label class="input-label" for="dp">Voucher Date <span class="text-danger">*</span></label>
-                            <small *ngIf="voucherConstraints.isClosed" class="text-danger d-block">{{ voucherConstraints.errorMessage }}</small>
+                            <small *ngIf="voucherConstraints.errorMessage" class="text-danger d-block">{{ voucherConstraints.errorMessage }}</small>
                         </div>
                     </aside>
 
