@@ -395,6 +395,7 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
   const printData = (data as any).vendorInvoiceData || (data as any).invoicePrintData;
   const cargo = data.cargoDetails;
   const isSeaMode = data.isSeaMode !== false;
+  const isNonJob = (printData?.CashOrBank || (data as any)?.invoiceData?.CashOrBank || '') === 'Y';
   const PAGE_LEFT = -10;
   const PAGE_RIGHT = 565;
 
@@ -405,15 +406,19 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
   // Left Column Data
   // -----------------------------
   const leftItems: { label: string; value: string }[] = [
-    { label: 'Shipper', value: printData?.ShipperName || invoice?.shipperName || '' },
-    { label: 'Consignee / Notify', value: printData?.ConsigneeName || invoice?.consigneeName || '' },
-    { label: isSeaMode ? 'Vessel Name' : 'Flight Name', value: printData?.Vessel || invoice?.vesselName || '' },
-    { label: isSeaMode ? 'Voyage No.' : 'Flight No.', value: printData?.VoyageNo || invoice?.voyageNo || '' },
+    ...(isNonJob ? [] : [
+      { label: 'Shipper', value: printData?.ShipperName || invoice?.shipperName || '' },
+      { label: 'Consignee / Notify', value: printData?.ConsigneeName || invoice?.consigneeName || '' },
+      { label: isSeaMode ? 'Vessel Name' : 'Flight Name', value: printData?.Vessel || invoice?.vesselName || '' },
+      { label: isSeaMode ? 'Voyage No.' : 'Flight No.', value: printData?.VoyageNo || invoice?.voyageNo || '' }
+    ]),
     { label: 'Bill No.', value: printData?.DocumentNumber || invoice?.shipperRefNo || '' },
-    { label: 'Loading Port', value: printData?.POL || invoice?.loadingPort || invoice?.pol || '' },
-    { label: 'Final Destination', value: printData?.FPD || invoice?.finalDestination || invoice?.fpd || '' },
-    { label: 'ETD', value: printData?.ETD ? formatDate(printData.ETD) : formatDate(invoice?.etd || '') },
-    { label: 'ETA', value: printData?.ETA ? formatDate(printData.ETA) : formatDate(invoice?.eta || '') }
+    ...(isNonJob ? [] : [
+      { label: 'Loading Port', value: printData?.POL || invoice?.loadingPort || invoice?.pol || '' },
+      { label: 'Final Destination', value: printData?.FPD || invoice?.finalDestination || invoice?.fpd || '' },
+      { label: 'ETD', value: printData?.ETD ? formatDate(printData.ETD) : formatDate(invoice?.etd || '') },
+      { label: 'ETA', value: printData?.ETA ? formatDate(printData.ETA) : formatDate(invoice?.eta || '') }
+    ])
   ];
 
   // -----------------------------
@@ -428,22 +433,22 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
       : invoice?.currencyCode || '');
 
   const rightItems: { label: string; value: string }[] = [
-    ...(printData?.IsServiceJob !== 'Y' && printData?.JobType !== 'Agent'
+    ...(!isNonJob && printData?.IsServiceJob !== 'Y' && printData?.JobType !== 'Agent'
   ? [{
       label: isSeaMode ? 'HBL' : 'HAWB',
       value: printData?.HBLNo || invoice?.hblNo || ''
     }]
   : []),
-    ...(printData?.IsServiceJob !== 'Y'
+    ...(!isNonJob && printData?.IsServiceJob !== 'Y'
   ? [{
       label: isSeaMode ? 'MBL' : 'MAWB',
       value: printData?.MBLNo || invoice?.mblNo || ''
     }]
   : []),
-    { label: 'Job No.', value: printData?.MasterJobNumber || invoice?.jobNo || '' },
-    { label: 'Booking No.', value: printData?.BookingNumber || invoice?.bookingNo || '' },
+    ...(!isNonJob ? [{ label: 'Job No.', value: printData?.MasterJobNumber || invoice?.jobNo || '' }] : []),
+    ...(!isNonJob ? [{ label: 'Booking No.', value: printData?.BookingNumber || invoice?.bookingNo || '' }] : []),
     { label: 'Bill Date', value: formatDate(printData?.DocumentDate)},
-    { label: 'Freight Terms', value: printData?.FreightTerms || invoice?.freightTerms || '' },
+    ...(!isNonJob ? [{ label: 'Freight Terms', value: printData?.FreightTerms || invoice?.freightTerms || '' }] : []),
     // { label: 'Invoice Due Date', value: dueDate ? formatDate(dueDate) : '' },
     { label: 'Currency / Ex-Rate', value: currExRate }
   ];
@@ -475,7 +480,7 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
   // -----------------------------
   // Cargo Table (Optional)
   // -----------------------------
-  if (printData || cargo) {
+  if (!isNonJob && (printData || cargo)) {
     const cargoData = {
       packages: printData?.pkg || cargo?.packages || '0',
       desc: printData?.desc || cargo?.commodityDesc || '',
