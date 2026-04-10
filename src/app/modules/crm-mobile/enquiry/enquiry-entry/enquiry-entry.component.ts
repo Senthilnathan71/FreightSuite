@@ -62,6 +62,7 @@ import { PrintFooterComponent } from 'src/app/shared/components/print-footer/pri
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/dial-code-dropdown.component';
+import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 import { type } from 'os';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 @Component({
@@ -85,7 +86,8 @@ import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log
     CustomDatePipe,
     PrintFooterComponent,
     PrintHeaderComponent,
-    DialCodeDropdownComponent
+    DialCodeDropdownComponent,
+    MultiSelectComponent
   ],
   templateUrl: './enquiry-entry.component.html',
   styleUrl: './enquiry-entry.component.scss',
@@ -760,6 +762,17 @@ export class EnquiryEntryComponent implements OnInit {
     });
   }
 
+  private subscribeToRouteAutoFill(routeGroup: FormGroup): void {
+    routeGroup.get('POD')?.valueChanges.subscribe((podValue: number | null) => {
+      const fdcControl = routeGroup.get('FDC');
+      const currentFDC = fdcControl?.value;
+
+      if (!currentFDC) {
+        fdcControl?.setValue(podValue, { emitEvent: false });
+      }
+    });
+  }
+
   // toggleCustomerType(isCustomer: boolean) {
 
   //   this.rateRequestForm.patchValue({
@@ -880,6 +893,7 @@ export class EnquiryEntryComponent implements OnInit {
   addRoute() {
     const routeForm = this.fb.group(
       {
+        EnquiryRouteSid: [null],
         POO: [null,],
         POL: [null, Validators.required],
         POD: [null, Validators.required],
@@ -891,31 +905,15 @@ export class EnquiryEntryComponent implements OnInit {
 
     this.routes.push(routeForm);
     this.subscribeToRouteChanges(routeForm, this.routes.length - 1);
+    this.subscribeToRouteAutoFill(routeForm);
     this.addCargo(this.routes.length - 1);
     const initialPorts = this.getFilteredPortsBySegment();
     this.filteredPOOPorts[this.routes.length - 1] = initialPorts;
     this.filteredPOLPorts[this.routes.length - 1] = initialPorts;
     this.filteredPODPorts[this.routes.length - 1] = initialPorts;
     this.filteredFDCPorts[this.routes.length - 1] = initialPorts;
+    this.refreshRoutePortFilters(this.routes.length - 1);
 
-    //POD Selected Automatically changed the FDC Value 
-
-    // routeForm.get('POD')?.valueChanges.subscribe((podValue: string | null) => {
-    //   routeForm.get('FDC')?.setValue(podValue, { emitEvent: false });
-    // });
-
-
-    //Only FDC Value empty
-
-    routeForm.get('POD')?.valueChanges.subscribe((podValue: string | null) => {
-      const fdcControl = routeForm.get('FDC');
-      const currentFDC = fdcControl?.value;
-
-      // ✅ Only assign when FDC is empty or null
-      if (!currentFDC) {
-        fdcControl?.setValue(podValue, { emitEvent: false });
-      }
-    });
   }
 
 
@@ -1539,8 +1537,8 @@ private parseFloatSafe(value: any): number {
       }
     }
     console.log(this.rateRequestForm.value)
-    this.selectedDepartment = response.ShipmentType;
     const selectedDept = this.departments.find(dept => dept.DepartmentMasterSid === response.DepartmentMasterSid);
+    this.selectedDepartment = selectedDept?.departmentName || response.ShipmentType || '';
     if (selectedDept?.departmentType === "Sea") {
       this.selectedFCLLCL = selectedDept?.FCLLCL;
     } else {
@@ -1558,6 +1556,7 @@ private parseFloatSafe(value: any): number {
     const parsedContact = this.parsePhone(response.ContactNumber);
     this.authStateCache = response.authorizerStatus,
       this.rateRequestForm.patchValue({
+        DepartmentMasterSid: response.DepartmentMasterSid,
         CustomerMasterSid: response.CustomerMasterSid,
         CustomerBranchSid: response.CustomerBranchSid,
         customerName: response.CustomerName,
@@ -1583,11 +1582,15 @@ private parseFloatSafe(value: any): number {
         ContactNumberCode: parsedContact.phoneCode,
         ContactNumber: parsedContact.phoneNumber
       });
-    const disableFields = ['enquiryNo', 'LeadOrCustomer'];
+    const disableFields = ['enquiryNo', 'LeadOrCustomer', 'Segment'];
     disableFields.forEach(f => disableFormControl(this.rateRequestForm, f));
 
     const routesArray = this.rateRequestForm.get('routes') as FormArray;
     routesArray.clear();
+    this.filteredPOOPorts = [];
+    this.filteredPOLPorts = [];
+    this.filteredPODPorts = [];
+    this.filteredFDCPorts = [];
 
     if (response?.enquiryOther && response.enquiryOther.length > 0) {
       const other = response.enquiryOther[0];
@@ -1656,12 +1659,15 @@ private parseFloatSafe(value: any): number {
       this.updateCargoValidators(routeFormGroup, this.selectedFCLLCL);
       routesArray.push(routeFormGroup);
       const addedRouteIndex = routesArray.length - 1;
+      this.lockSavedRouteControls(routeFormGroup);
+      this.subscribeToRouteChanges(routeFormGroup, addedRouteIndex);
+      this.subscribeToRouteAutoFill(routeFormGroup);
       const addedCargoArray = this.routeCargo(addedRouteIndex);
       addedCargoArray.controls.forEach((_, cargoIndex: number) => {
         this.setupCargoCalculations(cargoIndex, addedRouteIndex);
       });
       routeFormGroup.updateValueAndValidity();
-      this.onRouteChange(index);
+      this.onRouteChange(addedRouteIndex);
     });
 
 
@@ -1786,7 +1792,8 @@ private parseFloatSafe(value: any): number {
   }
 
     this.btnDisable = true;
-    const otherFormValue = this.enquiryOtherForm.value;
+    const formRawValue = this.rateRequestForm.getRawValue();
+    const otherFormValue = this.enquiryOtherForm.getRawValue();
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const BranchMasterSid = this.currentBranch?.BranchMasterSid;
 
@@ -1796,27 +1803,27 @@ private parseFloatSafe(value: any): number {
     const userEmail = this.userData['userEmail'];
     if (this.EnquiryHeaderSid) {
       const updatePayload = {
-        ...this.rateRequestForm.value,
-        LeadOrCustomer: this.rateRequestForm.value.LeadOrCustomer ? 'C' : 'L',
+        ...formRawValue,
+        LeadOrCustomer: formRawValue.LeadOrCustomer ? 'C' : 'L',
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
         BranchMasterSid: this.currentBranch?.BranchMasterSid,
         enquiryOther: otherFormValue,
-        ClearanceBy: this.rateRequestForm.value.ClearanceBy,
-        TransportBy: this.rateRequestForm.value.TransportBy,
+        ClearanceBy: formRawValue.ClearanceBy,
+        TransportBy: formRawValue.TransportBy,
         updatedBy: userEmail,
-        ContactPerson: this.rateRequestForm.value.ContactPerson,
+        ContactPerson: formRawValue.ContactPerson,
         ContactNumber: this.withDialCode(
-          this.rateRequestForm.value.ContactNumber,
-          this.rateRequestForm.value.ContactNumberCode
+          formRawValue.ContactNumber,
+          formRawValue.ContactNumberCode
         ),
         MenuMasterSid: menuId,
-        approvalStatusChange: this.authStateCache !== this.rateRequestForm.value?.authorizerStatus,
+        approvalStatusChange: this.authStateCache !== formRawValue?.authorizerStatus,
         CustomerMasterSid: this.rateRequestForm.get('CustomerMasterSid')?.value,
         Segment: this.selectedDepartment,
         EnquiryHeaderSid: this.EnquiryHeaderSid,
         status:
           this.rateRequestForm.get('status')?.value === 'Active' ? 'A' : 'S',
-        routes: this.rateRequestForm.value.routes.map((route) => ({
+        routes: formRawValue.routes.map((route) => ({
           ...route,
           EnquiryRouteSid: route.EnquiryRouteSid,
           cargo: route.cargo.map((cargo) => ({
@@ -1864,24 +1871,24 @@ private parseFloatSafe(value: any): number {
         });
     } else {
       const createPayload = {
-        ...this.rateRequestForm.value,
+        ...formRawValue,
         enquiryOther: otherFormValue,
-        LeadOrCustomer: this.rateRequestForm.value.LeadOrCustomer ? 'C' : 'L',
+        LeadOrCustomer: formRawValue.LeadOrCustomer ? 'C' : 'L',
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
         BranchMasterSid: this.currentBranch?.BranchMasterSid,
         createdBy: userEmail,
-        ClearanceBy: this.rateRequestForm.value.ClearanceBy,
-        TransportBy: this.rateRequestForm.value.TransportBy,
+        ClearanceBy: formRawValue.ClearanceBy,
+        TransportBy: formRawValue.TransportBy,
         DepartmentMasterSid: this.rateRequestForm.get('DepartmentMasterSid')
           ?.value,
         MenuMasterSid: this.MenuMasterSid,
         CustomerMasterSid: this.rateRequestForm.get('CustomerMasterSid')?.value,
         CustomerName: this.selectedCustomerName,
         Segment: this.selectedDepartment,
-        ContactPerson: this.rateRequestForm.value.ContactPerson,
+        ContactPerson: formRawValue.ContactPerson,
         ContactNumber: this.withDialCode(
-          this.rateRequestForm.value.ContactNumber,
-          this.rateRequestForm.value.ContactNumberCode
+          formRawValue.ContactNumber,
+          formRawValue.ContactNumberCode
         ),
       };
       if (this.authRelatedDetails.totalNumberOfAuthorizers === 0) {
@@ -2214,34 +2221,36 @@ private parseFloatSafe(value: any): number {
     const shipmentDirection = this.getShipmentDirection(department);
     const foreignPorts = basePorts.filter(port => this.isForeignCountryPort(port));
     const companyCountryPorts = basePorts.filter(port => this.isCompanyCountryPort(port));
-
-    let pooPorts = [...basePorts];
-    let polPorts = [...basePorts];
-    let podPorts = [...basePorts];
-    let fdcPorts = [...basePorts];
-
-    if (shipmentDirection === 'EXPORT') {
-      pooPorts = [...companyCountryPorts];
-      polPorts = [...companyCountryPorts];
-      podPorts = [...foreignPorts];
-      fdcPorts = this.getPortsByReferenceCountry(routeForm.get('POD')?.value, foreignPorts);
-    } else if (shipmentDirection === 'IMPORT') {
-      pooPorts = this.getPortsByReferenceCountry(routeForm.get('POL')?.value, foreignPorts);
-      polPorts = [...foreignPorts];
-      podPorts = [...companyCountryPorts];
-      fdcPorts = this.getPortsByReferenceCountry(routeForm.get('POD')?.value, companyCountryPorts);
-    }
-
     const selectedPOL = routeForm.get('POL')?.value;
     const selectedPOD = routeForm.get('POD')?.value;
 
+    const filteredLists = this.getDepartmentBasedRoutePortLists(
+      shipmentDirection,
+      selectedPOL,
+      selectedPOD,
+      companyCountryPorts,
+      foreignPorts,
+      basePorts,
+      department
+    );
+
     return {
       filteredPorts: basePorts,
-      filteredPOOPorts: pooPorts,
-      filteredPOLPorts: polPorts.filter(port => port.PortMasterSid !== selectedPOD),
-      filteredPODPorts: podPorts.filter(port => port.PortMasterSid !== selectedPOL),
-      filteredFDCPorts: fdcPorts
+      filteredPOOPorts: filteredLists.filteredPOOPorts,
+      filteredPOLPorts: filteredLists.filteredPOLPorts,
+      filteredPODPorts: filteredLists.filteredPODPorts,
+      filteredFDCPorts: filteredLists.filteredFDCPorts
     };
+  }
+
+  private lockSavedRouteControls(routeFormGroup: FormGroup): void {
+    const enquiryRouteSid = Number(routeFormGroup.get('EnquiryRouteSid')?.value) || 0;
+    if (!enquiryRouteSid) {
+      return;
+    }
+
+    routeFormGroup.get('POL')?.disable({ emitEvent: false });
+    routeFormGroup.get('POD')?.disable({ emitEvent: false });
   }
 
   private applyRoutePortFilterLists(routeIndex: number, filteredLists: any): void {
@@ -2275,7 +2284,7 @@ private parseFloatSafe(value: any): number {
       return false;
     }
 
-    const isValid = allowedPorts.some(port => port.PortMasterSid === selectedValue);
+    const isValid = allowedPorts.some(port => this.isSameSid(port.PortMasterSid, selectedValue));
     if (!isValid) {
       control?.setValue(null, { emitEvent: false });
       return true;
@@ -2288,7 +2297,7 @@ private parseFloatSafe(value: any): number {
     const selectedPOL = routeForm.get('POL')?.value;
     const selectedPOD = routeForm.get('POD')?.value;
 
-    if (selectedPOL && selectedPOD && selectedPOL === selectedPOD) {
+    if (selectedPOL && selectedPOD && this.isSameSid(selectedPOL, selectedPOD)) {
       this.setControlError(routeForm.get('POL'), 'samePort', true);
       this.setControlError(routeForm.get('POD'), 'samePort', true);
     } else {
@@ -2306,9 +2315,72 @@ private parseFloatSafe(value: any): number {
     return '';
   }
 
-  private getPortsByReferenceCountry(referencePortSid: number | null | undefined, fallbackPorts: any[]): any[] {
+  private getDepartmentBasedRoutePortLists(
+    shipmentDirection: 'EXPORT' | 'IMPORT' | '',
+    selectedPOL: any,
+    selectedPOD: any,
+    companyCountryPorts: any[],
+    foreignPorts: any[],
+    basePorts: any[],
+    department?: any
+  ) {
+    if (this.shouldUseAllPortOptions(department)) {
+      return {
+        filteredPOOPorts: [...basePorts],
+        filteredPOLPorts: this.excludePortSelection(basePorts, selectedPOD),
+        filteredPODPorts: this.excludePortSelection(basePorts, selectedPOL),
+        filteredFDCPorts: [...basePorts]
+      };
+    }
+
+    if (shipmentDirection === 'EXPORT') {
+      return {
+        filteredPOOPorts: [...companyCountryPorts],
+        filteredPOLPorts: this.excludePortSelection(companyCountryPorts, selectedPOD),
+        filteredPODPorts: this.excludePortSelection(foreignPorts, selectedPOL),
+        filteredFDCPorts: this.getPortsByReferenceCountry(selectedPOD, foreignPorts, true)
+      };
+    }
+
+    if (shipmentDirection === 'IMPORT') {
+      return {
+        filteredPOOPorts: this.getPortsByReferenceCountry(selectedPOL, foreignPorts, true),
+        filteredPOLPorts: this.excludePortSelection(foreignPorts, selectedPOD),
+        filteredPODPorts: this.excludePortSelection(companyCountryPorts, selectedPOL),
+        filteredFDCPorts: this.getPortsByReferenceCountry(selectedPOD, companyCountryPorts, true)
+      };
+    }
+
+    return {
+      filteredPOOPorts: [...basePorts],
+      filteredPOLPorts: this.excludePortSelection(basePorts, selectedPOD),
+      filteredPODPorts: this.excludePortSelection(basePorts, selectedPOL),
+      filteredFDCPorts: [...basePorts]
+    };
+  }
+
+  private shouldUseAllPortOptions(department?: any): boolean {
+    const departmentType = this.normalizePortText(department?.departmentType);
+    const segment = this.normalizePortText(this.selectedFCLLCL);
+
+    return ['OTHER', 'OTHERS', 'TRANSPORT'].includes(departmentType)
+      || ['OTHER', 'OTHERS', 'TRANSPORT'].includes(segment);
+  }
+
+  private excludePortSelection(ports: any[], selectedPortSid: any): any[] {
+    return ports.filter(port => !this.isSameSid(port?.PortMasterSid, selectedPortSid));
+  }
+
+  private getPortsByReferenceCountry(
+    referencePortSid: number | string | null | undefined,
+    fallbackPorts: any[],
+    requireReference: boolean = false
+  ): any[] {
     const referencePort = this.getPortBySid(referencePortSid);
     if (!referencePort) {
+      if (requireReference) {
+        return [];
+      }
       return [...fallbackPorts];
     }
 
@@ -2356,12 +2428,12 @@ private parseFloatSafe(value: any): number {
     return !!companyCountryName && !!portCountryName && companyCountryName !== portCountryName;
   }
 
-  private getPortBySid(portSid: number | null | undefined): any | null {
+  private getPortBySid(portSid: number | string | null | undefined): any | null {
     if (!portSid) {
       return null;
     }
 
-    return this.ports.find(port => port.PortMasterSid === portSid) || null;
+    return this.ports.find(port => this.isSameSid(port.PortMasterSid, portSid)) || null;
   }
 
   private normalizePortText(value: any): string {
@@ -2371,6 +2443,17 @@ private parseFloatSafe(value: any): number {
   private toNumericValue(value: any): number | null {
     const parsedValue = Number(value);
     return Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : null;
+  }
+
+  private isSameSid(left: any, right: any): boolean {
+    const leftNumeric = this.toNumericValue(left);
+    const rightNumeric = this.toNumericValue(right);
+
+    if (leftNumeric && rightNumeric) {
+      return leftNumeric === rightNumeric;
+    }
+
+    return String(left ?? '').trim() !== '' && String(left ?? '').trim() === String(right ?? '').trim();
   }
 
   private setControlError(control: AbstractControl | null, errorKey: string, value: any): void {
@@ -4647,4 +4730,5 @@ private getRequiredCargoFields(): string[] {
   }
 
 }
+
 
