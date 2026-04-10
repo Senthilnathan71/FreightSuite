@@ -740,6 +740,11 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   }
 
   applyVoucherDateConstraints(): void {
+    // Only validate on create; skip for existing voucher (edit/view)
+    if (this.headerId || this.isViewMode) {
+      this.voucherConstraints = { isClosed: false, errorMessage: null };
+      return;
+    }
     const voucherDate = this.invoiceForm?.get('VoucherDate')?.value;
     this.voucherConstraints = this.voucherPeriodService.applyConstraints(voucherDate, 'AR');
   }

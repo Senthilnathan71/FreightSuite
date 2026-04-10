@@ -86,10 +86,23 @@ export function getVoucherDateConstraints(
     return result;
   }
 
-  // Grace days check: compare today vs voucher date + grace days
-  // Grace period counts from the voucher/invoice date
+  // Grace days check: use the PREVIOUS period's grace days as the allowance,
+  // counted from the voucher date. Fall back to the current period if this is
+  // the first period of the financial year (no prior period).
   const graceDaysKey = `${module}GraceDays` as keyof VoucherPeriodInfo;
-  const graceDays = Number(period[graceDaysKey]) || 0;
+
+  const currentStartTs = new Date(period.StartDate).getTime();
+  let previousPeriod: VoucherPeriodInfo | null = null;
+  let maxPrevStartTs = -Infinity;
+  for (const p of periods) {
+    const pStartTs = new Date(p.StartDate).getTime();
+    if (pStartTs < currentStartTs && pStartTs > maxPrevStartTs) {
+      maxPrevStartTs = pStartTs;
+      previousPeriod = p;
+    }
+  }
+  const gracePeriod = previousPeriod || period;
+  const graceDays = Number(gracePeriod[graceDaysKey]) || 0;
 
   // Date.UTC handles month/leap-year overflow automatically (Feb 28/29, etc.)
   const graceDeadlineTs = Date.UTC(

@@ -1279,6 +1279,11 @@ export class ReverseVoucherEntryComponent {
 
 
   applyVoucherDateConstraints(): void {
+    // Only validate on create; skip for existing voucher (edit/view)
+    if (this.headerId || this.isViewMode) {
+      this.voucherConstraints = { isClosed: false, errorMessage: null };
+      return;
+    }
     const voucherDate = this.reverseVoucherForm?.get('VoucherDate')?.value;
     this.voucherConstraints = this.voucherPeriodService.applyConstraints(voucherDate, 'GL');
   }

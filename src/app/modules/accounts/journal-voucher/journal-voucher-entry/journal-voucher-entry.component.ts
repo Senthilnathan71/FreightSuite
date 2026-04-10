@@ -705,6 +705,11 @@ private deepEqual(obj1: any, obj2: any): boolean {
   }
 
   applyVoucherDateConstraints(): void {
+    // Only validate on create; skip for existing voucher (edit/view)
+    if (this.voucherHeaderSid || this.editMode) {
+      this.voucherConstraints = { isClosed: false, errorMessage: null };
+      return;
+    }
     const voucherDate = this.form?.get('voucherDate')?.value;
     this.voucherConstraints = this.voucherPeriodService.applyConstraints(voucherDate, 'GL');
   }
