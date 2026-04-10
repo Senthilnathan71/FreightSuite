@@ -11,6 +11,7 @@ import { MasterService } from 'src/app/modules/master/master.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { OperationService } from '../../../operation.service';
 @Component({
   selector: 'app-commerical-invoice',
   standalone: true,
@@ -84,7 +85,8 @@ export class CommericalInvoiceComponent {
       private pdfMakeService: PdfMakeService,
       private spinner: NgxSpinnerService,
       public logoService : LogoService,
-      public mps: MenuPermissionService
+      public mps: MenuPermissionService,
+      private operationService: OperationService,
     ) { }
  
 
@@ -112,6 +114,23 @@ export class CommericalInvoiceComponent {
       const docDefinition = generateCommercialInvoiceDocument(pdfData);
       this.pdfMakeService.download(docDefinition, 'Commercial_Invoice');
       this.appSettingService.showSuccess('PDF downloaded successfully!');
+      const payload = {
+        tableName: 'HouseJob',
+        recordId: String(this.housejobData?.HouseJobSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Downloaded'
+        },
+        newVal: {
+          PDF: 'Commercial Invoice PDF Downloaded'
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     } catch (error) {
       console.error('Commercial Invoice PDF generation error:', error);
       this.appSettingService.showError('Error generating PDF. Please try again.');

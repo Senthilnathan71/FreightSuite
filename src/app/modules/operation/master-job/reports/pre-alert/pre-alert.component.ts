@@ -14,6 +14,7 @@ import { InsertMilestoneByMasterJobPayload, ShipmentMilestoneService } from 'src
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
+import { OperationService } from '../../../operation.service';
 
 @Component({
   selector: 'app-pre-alert',
@@ -57,7 +58,8 @@ export class PreAlertComponent {
      public logoService : LogoService,
      private milestoneService: ShipmentMilestoneService,
      private modalService: NgbModal,
-     public mps: MenuPermissionService
+     public mps: MenuPermissionService,
+     private operationService: OperationService
    ) { }
  
     showPrintLogo: boolean = false;
@@ -249,6 +251,23 @@ export class PreAlertComponent {
       const fileName = `Pre_Alert_${this.masterJobData?.MasterJobNumber || ''}.pdf`;
       pdfMake.createPdf(docDefinition).download(fileName);
       this.appSettingService.showSuccess('PDF downloaded successfully!');
+      const payload = {
+        tableName: 'MasterJob',
+        recordId: String(this.masterJobData?.MasterJobSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Downloaded'
+        },
+        newVal: {
+          PDF: 'Pre Alert PDF Downloaded'
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     } catch (error) {
       console.error('Pre alert PDF generation failed:', error);
       this.appSettingService.showError('Error generating PDF. Please try again.');

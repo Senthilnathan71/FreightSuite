@@ -11,6 +11,7 @@ import { CompanySettingsManagerService } from 'src/app/core/services/company-set
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { OperationService } from 'src/app/modules/operation/operation.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 
@@ -108,7 +109,8 @@ export class BankReceiptComponent implements OnChanges {
     private numberToWords: NumberToWordsService,
     private companySettings: CompanySettingsManagerService,
     public logoService : LogoService,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private operationService: OperationService
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -210,6 +212,23 @@ getAmountInWords(): string {
       } else {
         await this.downloadPDFInBrowser();
       }
+      const payload = {
+        tableName: 'VoucherHeader',
+        recordId: String(this.receiptPrintData?.VoucherHeaderSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Download'
+        },
+        newVal: {
+          PDF: 'Bank Receipt PDF Downloaded',
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
       this.appSettingService.showSuccess('PDF downloaded successfully!');
     } catch (error) {
       if ((error as any)?.name === 'AbortError') {

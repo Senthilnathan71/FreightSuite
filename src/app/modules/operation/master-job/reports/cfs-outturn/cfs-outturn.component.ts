@@ -15,6 +15,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { MasterService } from 'src/app/modules/master/master.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
+import { OperationService } from '../../../operation.service';
 
 @Component({
   selector: 'app-cfs-outturn',
@@ -206,7 +207,8 @@ groupProductsByContainer(): void {
     private masterService: MasterService,
     private spinner: NgxSpinnerService,
     public logoService : LogoService,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private operationService: OperationService
   ) { }
 
 
@@ -385,6 +387,23 @@ getTotalDamage(containerNo: string): number {
         .createPdf(docDefinition)
         .download(`CFS_Outturn_Report_${this.housejobData?.ShipmentNo || 'Report'}.pdf`);
       this.appSettingService.showSuccess('PDF downloaded successfully!');
+      const payload = {
+        tableName: 'MasterJob',
+        recordId: String(this.masterJobData?.MasterJobSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Downloaded'
+        },
+        newVal: {
+          PDF: 'CFS Outturn PDF Downloaded'
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     } catch (error) {
       console.error('CFS Outturn PDF generation error:', error);
       this.appSettingService.showError('Error generating PDF. Please try again.');

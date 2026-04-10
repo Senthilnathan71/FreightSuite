@@ -3386,6 +3386,23 @@ ${this.userData.userName}`;
         approvalLink: window.location.origin + '/crm/quotation/entry/' + this.QuoteHeaderSid
       }
     });
+    const payload = {
+        tableName: 'QuoteHeader',
+        recordId: String(this.quotationData?.QuoteHeaderSid),
+        operation: 'EMAIL',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'Email Send'
+        },
+        newVal: {
+          Email: 'Mail Send'
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
   }
 
   private getQuotationDepartmentName(): string {
@@ -4075,6 +4092,23 @@ ${this.userData['userEmail']}`;
         }).subscribe();
       }
       this.appSettingService.showSuccess('PDF downloaded successfully!');
+      const payload = {
+        tableName: 'QuoteHeader',
+        recordId: String(this.quotationData?.QuoteHeaderSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Downloaded'
+        },
+        newVal: {
+          Pdf: 'PDF Downloaded'
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     } catch (error) {
       console.error('Quotation PDF download error:', error);
       this.appSettingService.showError('Error generating PDF. Please try again.');

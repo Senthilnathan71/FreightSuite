@@ -13,6 +13,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { OperationService } from '../../../operation.service';
 
 (pdfMake as any).vfs = (pdfFonts as any).pdfMake?.vfs || pdfFonts;
 
@@ -78,7 +79,8 @@ export class ExitFormComponent {
     private masterService: MasterService,
     private spinner: NgxSpinnerService,
     public logoService: LogoService,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private operationService: OperationService
   ) { }
 
   modalClose() {
@@ -103,6 +105,23 @@ export class ExitFormComponent {
         const docDefinition = generateExitFormDocument(pdfData);
         pdfMake.createPdf(docDefinition).download(`Exit_Form_${this.housejobData?.HBLNo || 'Report'}.pdf`);
         this.appSettingService.showSuccess('PDF downloaded successfully!');
+        const payload = {
+        tableName: 'HouseJob',
+        recordId: String(this.housejobData?.HouseJobSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Downloaded'
+        },
+        newVal: {
+          PDF: 'Exit Form PDF Downloaded'
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
       } catch (error) {
         console.error('Exit form PDF generation failed:', error);
         this.appSettingService.showError('Error generating PDF. Please try again.');

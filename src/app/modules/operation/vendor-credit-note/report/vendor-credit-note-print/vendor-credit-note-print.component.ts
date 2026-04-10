@@ -5,6 +5,8 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { OperationService } from '../../../operation.service';
 
 @Component({
   selector: 'app-vendor-credit-note-print',
@@ -31,7 +33,9 @@ export class VendorCreditNotePrintComponent {
     public activeModal: NgbActiveModal,
     public logoService: LogoService,
     private pdfMakeService: PdfMakeService,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private operationService: OperationService,
+    private appSettingService: AppSettingsService
   ) {}
 
   get creditNoteData(): any {
@@ -173,6 +177,23 @@ export class VendorCreditNotePrintComponent {
         },
         options
       );
+      const payload = {
+        tableName: 'VoucherHeader',
+        recordId: String(rawVendorData.VoucherHeaderSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Download'
+        },
+        newVal: {
+          Print: 'Vendor Credit Note PDF Downloaded',
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     } catch (error) {
       console.error('Error generating vendor credit note PDF:', error);
     }

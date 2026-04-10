@@ -3665,6 +3665,23 @@ onETDDateSelect(): void {
         menuEmail: ''
       }
     });
+    const payload = {
+        tableName: 'MasterJob',
+        recordId: String(this.masterJobData?.MasterJobSid),
+        operation: 'EMAIL',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'Email Send'
+        },
+        newVal: {
+          Email: 'Email Send'
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
   }
 
   navigateBack(): void {

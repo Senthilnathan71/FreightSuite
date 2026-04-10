@@ -17,6 +17,7 @@ import { MasterService } from 'src/app/modules/master/master.service';
 import { SafeInsertShipmentMilestone, ShipmentMilestoneService } from 'src/app/modules/operation/services/shipment-milestone.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
+import { OperationService } from '../../../operation.service';
 
 (pdfMake as any).vfs = (pdfFonts as any).pdfMake?.vfs || pdfFonts;
 
@@ -57,7 +58,8 @@ export class ReleaseLetterComponent {
     private spinner: NgxSpinnerService,
     public logoService : LogoService,
     private milestoneService: ShipmentMilestoneService,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private operationService: OperationService
   ) { }
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
@@ -173,16 +175,28 @@ get totalVolume(): number {
       const filename = `Release_Letter_${pdfData.releaseInfo?.bookingRef || 'Draft'}.pdf`;
       pdfMake.createPdf(docDefinition).download(filename);
       this.appSettingsService.showSuccess('PDF downloaded successfully!');
+      const payload = {
+        tableName: 'HouseJob',
+        recordId: String(this.housejobData?.HouseJobSid),
+        operation: 'PDF',
+        changedBy: this.appSettingsService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Downloaded'
+        },
+        newVal: {
+          PDF: 'Release Letter PDF Downloaded'
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     } finally {
       this.spinner.hide();
     }
   }, 50);
 }
-
-    
-
-
-
 
     async generatePDFBlob(): Promise<Blob | null> {
           await this.insertMilestoneSafelyForPrint();

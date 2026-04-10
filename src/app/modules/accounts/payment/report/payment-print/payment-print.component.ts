@@ -11,6 +11,7 @@ import { CompanySettingsManagerService } from 'src/app/core/services/company-set
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { OperationService } from 'src/app/modules/operation/operation.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 
@@ -54,7 +55,8 @@ export class PaymentPrintComponent {
     private numberToWords: NumberToWordsService,
     private companySettings: CompanySettingsManagerService,
     public logoService : LogoService,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private operationService: OperationService
   ) { }
   ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
@@ -250,6 +252,23 @@ printDiv(divId: string): void {
         await this.downloadPDFInBrowser();
       }
       this.appSettingService.showSuccess('PDF downloaded successfully!');
+      const payload = {
+        tableName: 'VoucherHeader',
+        recordId: String(this.paymentDataPrint?.VoucherHeaderSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Download'
+        },
+        newVal: {
+          PDF: 'Cash Payment PDF Downloaded',
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     } catch (error) {
       if ((error as any)?.name === 'AbortError') {
         return;

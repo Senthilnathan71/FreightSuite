@@ -263,7 +263,27 @@ export class HAWBComponent {
       await this.pdfService.downloadBalancedPDF(
         'printContent',
         `HAWB_${BankPaymentNo}`,
-        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
+        () => {
+          this.appSettingService.showSuccess('PDF downloaded successfully!');
+          const payload = {
+        tableName: 'HouseJob',
+        recordId: String(this.masterJobData?.MasterJobSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Downloaded'
+        },
+        newVal: {
+          PDF: `${this.selectedReportAir} PDF Downloaded`
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
+
+        },
         (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
       );
     } catch (error) {

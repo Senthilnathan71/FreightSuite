@@ -4047,6 +4047,23 @@ getVoyageTypeBasedOnDept(deptId: number) {
         customerBranchSid: this.bookingData?.CustomerBranchSid || null
       }
     });
+    const payload = {
+        tableName: 'HouseJob',
+        recordId: String(this.housejobData?.HouseJobSid),
+        operation: 'EMAIL',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'Email Send'
+        },
+        newVal: {
+          Email: 'Mail Send'
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
   }
 
   navigateBack() {
@@ -4325,6 +4342,23 @@ ${this.userData['userName']}`;
             };
           } else {
             this.appSettingService.showSuccess('SI Mail sent successfully');
+            const payload = {
+        tableName: 'HouseJob',
+        recordId: String(this.housejobData?.HouseJobSid),
+        operation: 'EMAIL',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'Email Send'
+        },
+        newVal: {
+          Email: 'SI Mail Send'
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
           }
         } else {
           this.appSettingService.showError(resp.message || 'Failed to send SI Mail');

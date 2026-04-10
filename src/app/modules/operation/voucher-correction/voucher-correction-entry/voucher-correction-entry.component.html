@@ -444,6 +444,9 @@
                                                 style="min-width: 150px;">Description
                                             </th>
                                             <th rowspan="2" class="text-center bg-transparent text-light"
+                                                style="min-width: 120px;">Narration
+                                                </th> 
+                                            <th rowspan="2" class="text-center bg-transparent text-light"
                                                 style="min-width: 150px;">HSSAC Code
                                             </th>
                                             <th rowspan="2" class="text-center bg-transparent text-light"
@@ -494,6 +497,9 @@
                                                 style="min-width: 200px;">Subledger
                                             </th>
                                             <th rowspan="2" class="text-center bg-transparent text-light"
+                                                style="min-width: 120px;">Narration
+                                                </th> 
+                                            <th rowspan="2" class="text-center bg-transparent text-light"
                                                 style="min-width: 80px;">Dr/Cr</th>
                                                 
                                             <th rowspan="2" class="text-center bg-transparent text-light"
@@ -507,9 +513,6 @@
                                             <th rowspan="2" class="text-center bg-transparent text-light"
                                                 style="min-width: 120px;">Local
                                                 Amount</th>
-                                                <th rowspan="2" class="text-center bg-transparent text-light"
-                                                style="min-width: 120px;">Narration
-                                                </th> 
                                                 <th rowspan="2" class="text-center bg-transparent text-light"
                                                 style="min-width: 100px;">Cost
                                                 Center</th>
@@ -549,6 +552,10 @@
                                                     <input class="text-start custom-input-field sm highlight-field"
                                                         formControlName="ChargeDescription" />
                                                 </td>
+                                                <td class="dofi-min-w-180">
+                                                <input type="text" formControlName="Narration"
+                                                    class="custom-input-field sm highlight-field" style="width: 300px" />
+                                            </td>
                                                 <td>
                                                     <ng-select [items]="hssacList" bindLabel="HSSACCode"
                                                         bindValue="HSSACMasterSid" placeholder=""
@@ -651,6 +658,10 @@
                                                         appendTo="body" placeholder=" ">
                                                     </ng-select>
                                                 </td>
+                                                <td class="dofi-min-w-180">
+                                                <input type="text" formControlName="Narration"
+                                                    class="custom-input-field sm highlight-field" style="width: 300px" />
+                                            </td>
                                                 <td style="color:black;font-weight: 600;">
                                                     <span>{{ row.get('DrCr')?.value || '-' }}</span>
                                                 </td>
@@ -674,10 +685,6 @@
                                                 <td style="color:black;font-weight: 600;">
                                                     <span>{{ row.get('LocalAmount')?.value | numberFormat }}</span>
                                                 </td>
-                                                <td class="dofi-min-w-180">
-                                                <input type="text" formControlName="Narration"
-                                                    class="custom-input-field sm highlight-field" style="width: 300px" />
-                                            </td>
                                             <td>
                                                     <ng-select formControlName="CostCenter" [items]="costCenterList"
                                                         bindLabel="CostCenterName" bindValue="CostCenterMasterSid"
