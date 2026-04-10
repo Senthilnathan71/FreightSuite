@@ -72,14 +72,14 @@
                         {{ masterAirWayData?.DestinationAgentAddress }}
                     </div>
                     <div class="data-field agent-iata-code">
-                        {{ currentUserCode }}
+                        <!-- {{ currentUserCode }} -->
                     </div>
                     <div class="data-field agent-account">
                         <!-- Agent Account Number -->
                     </div>
 
                     <!-- Airport Departure -->
-                    <div class="data-field airport-departure">{{ masterAirWayData?.POL }}</div>
+                    <div class="data-field airport-departure">{{ getPortDisplay(masterAirWayData?.POL) }}</div>
 
                     <!-- RIGHT COLUMN DATA -->
 
@@ -109,19 +109,19 @@
                     <div class="data-field routing-carrier1">
                         {{ masterAirWayData?.voyages?.[0]?.CarrierName }}
                     </div>
-                    <div class="data-field routing-to2">
-                        <!-- Second To field -->
+                   <div class="data-field routing-to2">
+                    {{ getPortCodeByName(masterAirWayData?.masterJobConnection?.[0]?.POD) }}
                     </div>
                     <div class="data-field routing-by2">
-                        <!-- Second By field -->
+                    {{ masterAirWayData?.masterJobConnection?.[0]?.VesselName }}
                     </div>
                     <div class="data-field routing-to3">
-                        <!-- Third To field -->
+                    {{ getPortCodeByName(masterAirWayData?.masterJobConnection?.[1]?.POD) }}
                     </div>
                     <div class="data-field routing-by3">
-                        <!-- Third By field -->
+                    {{ masterAirWayData?.masterJobConnection?.[1]?.VesselName }}
                     </div>
-
+                    
                     <!-- Currency and Charges -->
                     <div class="data-field currency">
                         {{ getCurrencyCodeById(currentCurrency) }}
@@ -155,7 +155,7 @@
                     </div>
 
                     <!-- Airport Destination -->
-                    <div class="data-field airport-destination">{{ masterAirWayData?.FPD }}</div>
+                    <div class="data-field airport-destination">{{ getPortDisplay(masterAirWayData?.FPD) }}</div>
 
                     <!-- Flight Name -->
                     <div class="data-field flight-name">
@@ -218,6 +218,10 @@
                         {{ masterAirWayData?.MarksandNumber }}
                     </div>
 
+                    <div class="data-field external-note">
+                        {{masterAirWayData?.houseJob?.[0]?.GeneralNote}}
+                    </div>
+
                     <!-- Totals Row -->
                     <div class="data-field total-no-pieces">
                         {{ masterAirWayData?.aggregatedTotals?.NoOfPkg }}
@@ -269,7 +273,7 @@
                     </div>
                     <!-- Shipper Certificate -->
                     <div class="data-field agent-name-cert">
-                        {{ getAgentName(masterAirWayData?.DestinationAgent) }}
+                        {{ masterAirWayData?.houseJob?.[0]?.ShipperName }}
                     </div>
 
                     <!-- Totals -->

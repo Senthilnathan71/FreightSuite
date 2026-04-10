@@ -182,7 +182,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   hssacList: any[] = [];
   hssacListForRow: any[][] = [];
   taxLabelCache: string[] = [];
-  private _previousPaymentInvoiceType: string = 'REG';
+  private _previousPaymentInvoiceType: string = '';
   private _originalHSSACValues: any[] = [];
   invoiceTypeOptions = [
     { id: 'REG',   name: 'Regular' },
@@ -650,7 +650,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       InstrumentDate: [null, [Validators.required]],
       ClearanceDate: [null],
 
-      InvoiceType: ['REG'],
+      InvoiceType: [''],
 
       // Form arrays
       detailItems: this.fb.array([]), // charge detail formArray
@@ -804,6 +804,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           LedgerCategory: 'Ledger',
           CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
           filterNonJob: true,
+          VoucherType: 'PMT',
         })
         .pipe(catchError((err) => of([]))),
       costCenters: this.accountService
@@ -1331,7 +1332,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       GST_VAT: formValue.GST_VAT,
       ReversalVoucher: formValue.ReversalVoucher,
       TaxNumber: formValue.TaxNumber,
-      InvoiceType : formValue.InvoiceType,
+      InvoiceType : formValue.InvoiceType || 'REG',
       GSTType: this.currentCompanyCountryCode !== 'in' ? 'VAT' : (formValue.GSTType || ''),
       Remarks: formValue.Remarks,
       CurrencyMasterSid: formValue.CurrencyMasterSid,
@@ -1370,7 +1371,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
               countryCode: this.currentCompanyCountryCode,
               TaxCategory: interOrIntra,
               EffectiveFrom: new Date().toISOString(),
-              TaxType: 'Output',
+              TaxType: 'Input',
               IsUnionTerritory: this.taxCalculationService.context?.appliedTaxMode === 'CGST_UGST',
             },
           }),
@@ -1500,7 +1501,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           countryCode: this.currentCompanyCountryCode,
           TaxCategory: interOrIntra,
           EffectiveFrom: new Date().toISOString(),
-          TaxType: 'Output',
+          TaxType: 'Input',
           IsUnionTerritory: this.taxCalculationService.context?.appliedTaxMode === 'CGST_UGST',
           CustomerGstType: this.taxCalculationService.context?.party?.customerGstType || '',
         },
@@ -1664,7 +1665,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         InstrumentNumber: headerInfo.InstrumentNumber,
         InstrumentDate: headerInfo.InstrumentDate,
         ClearanceDate: headerInfo.ClearanceDate,
-        InvoiceType: headerInfo.InvoiceType || 'REG',
+        InvoiceType: headerInfo.InvoiceType || '',
       },
       { emitEvent: false }
     );
@@ -2455,7 +2456,6 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         .getLedgerByCOAMasterSid({
           COAMasterSid: coa.COAMappedId || coa.COAMasterSid,
           CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-          DrCr: 'C',
         })
         .subscribe((resp: any) => {
           if (resp.status) {
@@ -3901,6 +3901,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           TaxPercentage2: 0,
           TaxAmount2: 0,
         }, { emitEvent: false });
+        this.updateInvoiceTypeRequired();
       }
     }
   }
@@ -3918,6 +3919,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         TaxAmount2: this.getFormattedAmount(0, currSid),
       }, { emitEvent: false });
       this.recalcPartyAmtForDetail(index);
+      this.updateInvoiceTypeRequired();
       return;
     }
     this.recalcPaymentTaxForRow(index);
@@ -3932,6 +3934,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     if (!this.isHSSACEnabledForRow(index)) {
       this.taxLabelCache[index] = '';
       this.recalcPartyAmtForDetail(index);
+      this.updateInvoiceTypeRequired();
       return;
     }
 
@@ -3939,6 +3942,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     if (!hssacSid) {
       this.taxLabelCache[index] = '';
       this.recalcPartyAmtForDetail(index);
+      this.updateInvoiceTypeRequired();
       return;
     }
 
@@ -3965,12 +3969,37 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     }, { emitEvent: false });
 
     this.recalcPartyAmtForDetail(index);
+    this.updateInvoiceTypeRequired();
   }
 
   recalcAllPaymentTaxRows(): void {
     this.detailItems.controls.forEach((_, i) => {
       this.recalcPaymentTaxForRow(i);
     });
+    this.updateInvoiceTypeRequired();
+  }
+
+  get isInvoiceTypeRequired(): boolean {
+    return this.paymentForm?.get('InvoiceType')?.hasValidator(Validators.required) ?? false;
+  }
+
+  updateInvoiceTypeRequired(): void {
+    const hasActiveTax = this.detailItems.controls.some((_, i) => {
+      if (!this.isHSSACEnabledForRow(i)) return false;
+      const hssacSid = (this.detailItems.at(i) as FormGroup).get('HSSACMasterSid')?.getRawValue();
+      if (!hssacSid) return false;
+      const source = this.hssacListForRow[i]?.length > 0 ? this.hssacListForRow[i] : this.hssacList;
+      const hssacItem = source.find((h: any) => h.HSSACMasterSid === hssacSid);
+      return !!hssacItem?.TaxGroupSid;
+    });
+
+    const ctrl = this.paymentForm.get('InvoiceType');
+    if (hasActiveTax) {
+      ctrl?.setValidators([Validators.required]);
+    } else {
+      ctrl?.clearValidators();
+    }
+    ctrl?.updateValueAndValidity({ emitEvent: false });
   }
 
   refreshTaxLabelCache(): void {
@@ -4052,9 +4081,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     (this.detailItems.getRawValue() || []).forEach((vd) => {
       if (vd.IsAutoGenerated === 'Y') return;
       if (vd.DrCr === 'D') {
-        totalCredits += (Number(vd.PartyAmount) + (toNumber(vd.TaxAmount1) + toNumber(vd.TaxAmount2) / headerExRate))  || 0;
+        totalCredits += ((toNumber(vd.LocalAmount) + toNumber(vd.TaxAmount1) + toNumber(vd.TaxAmount2)) / headerExRate)  || 0;
       } else {
-        totalDebits += (Number(vd.PartyAmount) + (toNumber(vd.TaxAmount1) + toNumber(vd.TaxAmount2) / headerExRate))  || 0;
+        totalDebits += ((toNumber(vd.LocalAmount) + toNumber(vd.TaxAmount1) + toNumber(vd.TaxAmount2)) / headerExRate)  || 0;
       }
     });
     this.totalCredits = toNumber(this.getFormattedAndPaddedAmount(totalCredits,this.paymentForm.get('CurrencyMasterSid')?.getRawValue()));

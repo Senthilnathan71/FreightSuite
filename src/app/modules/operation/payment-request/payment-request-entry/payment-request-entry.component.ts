@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NgxSpinnerModule } from 'ngx-spinner';
@@ -7,6 +7,7 @@ import {
   NgbDateAdapter,
   NgbDateParserFormatter,
   NgbDatepickerModule,
+  NgbModal,
 } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { NgSelectComponent } from '@ng-select/ng-select';
@@ -16,10 +17,14 @@ import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adap
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
+import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
+import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { OperationService } from '../../operation.service';
+import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
+import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 
 @Component({
   selector: 'app-payment-request-entry',
@@ -34,7 +39,10 @@ import { OperationService } from '../../operation.service';
     FeatherModule,
     NgSelectComponent,
     SearchableDropdown,
-    DecimalPrecisionDirective
+    DecimalPrecisionDirective,
+    PrintHeaderComponent,
+    PrintFooterComponent,
+    CustomDatePipe
   ],
   templateUrl: './payment-request-entry.component.html',
   providers: [
@@ -43,6 +51,8 @@ import { OperationService } from '../../operation.service';
   ],
 })
 export class PaymentRequestEntryComponent implements OnInit {
+  @ViewChild('paymentRequestPrintModal') paymentRequestPrintModal!: TemplateRef<any>;
+
   form!: FormGroup;
   currentCompany: any;
   currentBranch: any;
@@ -52,12 +62,14 @@ export class PaymentRequestEntryComponent implements OnInit {
   isReadOnly = false;
   loading = false;
   saving = false;
+  lookupsLoaded = false;
 
   currencyList: any[] = [];
   departmentList: any[] = [];
   supplierList: any[] = [];
   chargeList: any[] = [];
   uomList: any[] = [];
+  paymentRequestPrintData: any = null;
 
   CurrencyLookupConfig = DROPDOWN_CONFIGS.CURRENCY;
   CustomerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
@@ -86,6 +98,8 @@ export class PaymentRequestEntryComponent implements OnInit {
     private readonly appSettingsService: AppSettingsService,
     private readonly currencyConfigService: CurrencyConfigurationService,
     private readonly currencyFormatService: CurrencyFormatService,
+    private readonly numberToWords: NumberToWordsService,
+    private readonly modalService: NgbModal,
   ) {
     this.form = this.fb.group({
       PaymentRequestSid: [null],
@@ -300,6 +314,7 @@ export class PaymentRequestEntryComponent implements OnInit {
     }).subscribe({
       next: ({ currencies, departments, suppliers, charges, uoms }: any) => {
         this.currencyList = currencies?.data || [];
+        this.numberToWords.initializeCurrencies(this.currencyList);
         this.departmentList = departments?.data || [];
         this.supplierList = suppliers?.data || [];
         const chargeItems = Array.isArray(charges) ? charges : charges?.data || [];
@@ -316,8 +331,131 @@ export class PaymentRequestEntryComponent implements OnInit {
           UOMName: item?.UOMName || item?.uomName || '',
         }));
         this.refreshDetailLookupBindings();
+        this.lookupsLoaded = true;
       },
     });
+  }
+
+  private getSelectedDetailRows(): any[] {
+    return (this.detailItems.getRawValue() || []).filter((item: any) => item?.Selected !== false);
+  }
+
+  private getCashBankLabel(value: string): string {
+    return this.cashBankOptions.find((item) => item.value === value)?.label || value || '';
+  }
+
+  private getRequestStatusLabel(value: string): string {
+    return this.requestStatusOptions.find((item) => item.value === value)?.label || value || '';
+  }
+
+  getPartyName(partyMasterSid: number): string {
+    const party = this.supplierList.find((item: any) => item.CustomerMasterSid === partyMasterSid);
+    return party?.CustomerName || '';
+  }
+
+  getUnitName(uomMasterSid: number): string {
+    const unit = this.uomList.find((item: any) => item.UOMMasterSid === uomMasterSid);
+    return unit?.UOMCode || unit?.UOMName || '';
+  }
+
+  private getDetailCurrencyCode(row: any): string {
+    return row?.CostCurrencyCode || this.getCurrencyCode(row?.CostCurrencyMasterSid) || '';
+  }
+
+  getPrintTotalAmount(): number {
+    return this.getSelectedDetailRows().reduce((sum: number, item: any) => {
+      return sum + Number(item?.CostAmount || 0);
+    }, 0);
+  }
+
+  getPrintTotalLocalAmount(): number {
+    return this.getSelectedDetailRows().reduce((sum: number, item: any) => {
+      return sum + Number(item?.CostLocalAmount || 0);
+    }, 0);
+  }
+
+  getPrintAmountInWords(): string {
+    const total = this.getPrintTotalLocalAmount();
+    if (!total) {
+      return '';
+    }
+
+    const currencySid = Number(this.form.get('CurrencyMasterSid')?.value) || null;
+    return this.numberToWords.convert(total, currencySid);
+  }
+
+  preparePrintData(): void {
+    const raw = this.form.getRawValue();
+    const detailItems = this.getSelectedDetailRows().map((item: any) => ({
+      ...item,
+      ChargeName: this.getChargeName(item?.ChargeMasterSid),
+      UnitName: this.getUnitName(item?.CostChargeUomSid),
+      CurrencyCode: this.getDetailCurrencyCode(item),
+      PartyName: this.getPartyName(item?.CostAgentMasterSid),
+    }));
+
+    this.paymentRequestPrintData = {
+      ...raw,
+      PaymentRequestStatusLabel: this.getRequestStatusLabel(raw?.PaymentRequestStatus),
+      CashBankLabel: this.getCashBankLabel(raw?.CashBank),
+      DepartmentName: this.getDepartmentName(raw?.DepartmentMasterSid),
+      PartyName: this.getPartyName(raw?.Party),
+      CurrencyCode: this.getCurrencyCode(raw?.CurrencyMasterSid),
+      detailItems,
+      totalAmount: this.getPrintTotalAmount(),
+      totalLocalAmount: this.getPrintTotalLocalAmount(),
+      amountInWords: this.getPrintAmountInWords(),
+    };
+  }
+
+  openPrintModal(): void {
+    if (!this.lookupsLoaded) {
+      this.appSettingsService.showWarning('Please wait until the lookups finish loading');
+      return;
+    }
+
+    if (!this.isEditMode && !this.form.get('PaymentRequestSid')?.value) {
+      this.appSettingsService.showWarning('Save the payment request before printing');
+      return;
+    }
+
+    this.preparePrintData();
+    this.modalService.open(this.paymentRequestPrintModal, {
+      size: 'xl',
+      centered: true,
+      scrollable: true,
+      backdrop: 'static',
+    });
+  }
+
+  printDiv(divId: string): void {
+    setTimeout(() => {
+      const printContents = document.getElementById(divId)?.innerHTML;
+      if (!printContents) {
+        return;
+      }
+
+      const popupWin = window.open('', '_blank', 'width=900,height=600');
+      if (!popupWin) {
+        return;
+      }
+
+      popupWin.document.open();
+      popupWin.document.write(`
+        <html>
+          <head>
+            <title>Print</title>
+            ${Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+              .map((node) => node.outerHTML)
+              .join('')}
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
+      popupWin.document.close();
+    }, 50);
   }
 
   addDetailRow() {

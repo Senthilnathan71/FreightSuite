@@ -41,6 +41,7 @@ export class MAWBComponent implements OnChanges {
   @Input() containerTypeList: any;
   @Input() chargeList: any;
   @Input() packageTypeList: any[] = [];
+  @Input() portList: any[] = [];
   @Input() selectedReport: 'MAWB' | 'MAWBDraft' = 'MAWB'; 
   costRevenueCharges: any[] = [];
   freightCharges: any[] = [];
@@ -268,6 +269,49 @@ export class MAWBComponent implements OnChanges {
 
     const currency = this.currencyList.find((c: any) => c.CurrencyMasterSid === id);
     return currency ? currency.currencyCode : '';
+  }
+
+  getPortDisplay(code: string): string {
+    if (!code) return '';
+    const port = this.portList?.find((p: any) => p.PortCode === code);
+    return port?.PortName || code;
+  }
+
+  getPortCodeByName(value: string): string {
+  if (!value) return '';
+
+  const normalizedValue = String(value).trim().toLowerCase();
+
+  const port = this.portList?.find((p: any) =>
+    String(p.PortName || '').trim().toLowerCase() === normalizedValue
+  );
+
+  return port?.PortCode || value;
+}
+
+
+  private getActiveConnections(): any[] {
+    return (this.masterAirWayData?.masterJobConnection || []).filter(
+      (connection: any) => !connection?.Status || connection.Status === 'A'
+    );
+  }
+
+  getRoutingTo(index: number): string {
+    const connection = this.getActiveConnections()[index];
+    return connection?.POD || '';
+  }
+
+  getRoutingBy(index: number): string {
+    const connection = this.getActiveConnections()[index];
+    if (connection?.VesselName) {
+      return connection.VesselName;
+    }
+
+    if (index === 0) {
+      return this.masterAirWayData?.voyages?.[0]?.CarrierName || '';
+    }
+
+    return '';
   }
 
   getFreightTotal() {
@@ -1363,10 +1407,10 @@ getOtherPrepaidTotal(): number {
       // Agent
       field(100, 12, this.getAgentName(data?.DestinationAgent)),
       field(105, 12, data?.DestinationAgentAddress),
-      field(119, 12, this.currentUserCode || ''),
+      // field(119, 12, this.currentUserCode || ''),
 
       // Airport departure
-      field(131, -140, data?.POL || '', { width: 80, alignment: 'center' }),
+      field(131, -140, this.getPortDisplay(data?.POL) || '', { width: 80, alignment: 'center' }),
 
       // Right column — account & reference
       field(100, 148, `FREIGHT ${data?.FreightPPCC || ''}`),
@@ -1375,6 +1419,10 @@ getOtherPrepaidTotal(): number {
       // Routing
       field(147, -256, data?.POD || '', { width: 15, alignment: 'center' }),
       field(147, -190, voyage?.CarrierName || '', { width: 60, alignment: 'center' }),
+      field(147, -90, this.getPortCodeByName(data?.masterJobConnection?.[0]?.POD) || '', { width: 15, alignment: 'center' }),
+      field(147, -68, data?.masterJobConnection?.[0]?.VesselName || '', { width: 15, alignment: 'center' }),
+      field(147, -40, this.getPortCodeByName(data?.masterJobConnection?.[1]?.POD) || '', { width: 15, alignment: 'center' }),
+      field(147, -10, data?.masterJobConnection?.[1]?.VesselName || '', { width: 15, alignment: 'center' }),
 
       // Currency & charges
       field(147, 20, this.getCurrencyCodeById(this.currentCurrency)?.toString() || '', { width: 15, alignment: 'center' }),
@@ -1398,7 +1446,7 @@ getOtherPrepaidTotal(): number {
       field(147, 240, others?.DeclaredValueOfCustoms?.toString() || '', { width: 30, alignment: 'center' }),
 
       // Flight row
-      field(159, -210, data?.FPD || '', { width: 40, alignment: 'center' }),
+      field(159, -210, this.getPortDisplay(data?.FPD) || '', { width: 40, alignment: 'center' }),
       field(159, -110, voyage?.VesselName || '', { fontSize: 8, width: 40, alignment: 'center' }),
       field(159, -30, fmtDate(voyage?.ETA), { fontSize: 8, width: 40, alignment: 'center' }),
       field(159, 40, fmtNum(others?.ValueForInsurance), { width: 40, alignment: 'center' }),
@@ -1415,7 +1463,8 @@ getOtherPrepaidTotal(): number {
       field(206, -72, fmtNum(agg?.ChargeableWeight, 3), { width: 30, alignment: 'center' }),
       field(206, -15, fmtNum(freightTotals.totalExchangeRate), { width: 25, alignment: 'center' }),
       field(206, 50, fmtNum(freightTotals.totalRevenueAmount), { width: 25, alignment: 'center' }),
-      field(206, 185, goodsDesc, { width: 60 , fontSize: 8}),
+      wrapField(206, 185, goodsDesc,  95 , {fontSize: 8}),
+      wrapField(220, 10, hj?.GeneralNote || '', 70, { fontSize: 8 }),
 
       // Totals row
       field(275,-250, agg?.NoOfPkg?.toString() || '', { width: 20, alignment: 'center' }),
@@ -1435,7 +1484,7 @@ getOtherPrepaidTotal(): number {
       field(338, -120, fmtNum(this.getOtherDueCarrierCollectTotal()), { width: 35, alignment: 'center' }),
 
       // Agent certification
-      field(345, 120, this.getAgentName(data?.DestinationAgent), { width: 80, alignment: 'center' }),
+      field(345, 110, data?.houseJob?.[0]?.ShipperName, { width: 80, alignment: 'center' }),
 
       // Totals
       // field(363, 9, fmtNum(this.getGrandTotal()), { width: 35, alignment: 'center' }),

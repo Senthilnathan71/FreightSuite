@@ -20,7 +20,7 @@
     <div class="workspace-content" [hidden]="selectedTab !== 'Pending Enquiry'">
         <div class="row compact-form">
             <div class="col-12 table-scroll-wrapper">
-                <app-page-header [title]="'Pending Enquiry'" [showFavorite]="false" [showSearch]="true" [searchPlaceholder]="'Search'"
+                <app-page-header #enquiryHeader [title]="'Pending Enquiry'" [showFavorite]="false" [showSearch]="true" [searchPlaceholder]="'Search'"
                     [searchButtonText]="'Search'" [(searchValue)]="enquiryManager.filterValue" [actions]="enquiryHeaderActions"
                     [autoSearchOnFilterChange]="true"
                     [dateRangeConfig]="enquiryDateRangeConfig"
@@ -54,7 +54,7 @@
         <div class="row compact-form">
             <!-- #region Search Panel -->
             <div class="col-12">
-                <app-page-header [title]="'Quotation'" [showFavorite]="true" [showSearch]="true" [searchPlaceholder]="'Search'"
+                <app-page-header #quotationHeader [title]="'Quotation'" [showFavorite]="true" [showSearch]="true" [searchPlaceholder]="'Search'"
                     [searchButtonText]="'Search'" [(searchValue)]="quotationManager.filterValue" [actions]="quotationHeaderActions"
                     [autoSearchOnFilterChange]="true"
                     [dateRangeConfig]="quotationDateRangeConfig"

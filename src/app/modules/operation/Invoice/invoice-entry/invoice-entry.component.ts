@@ -166,6 +166,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   customerBranchList: any[] = [];
   currencyList: any[] = [];
   chargeList: any[] = [];
+  containerTypeList: any[] = [];
   filteredChargeList : any[] = [];
   hssacList: any[][] = [];
   subledgerList: any[] = [];
@@ -186,7 +187,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   masterJobLookupConfig = DROPDOWN_CONFIGS.MASTER_JOB;
   @ViewChild('uninvoicedChargesModal') uninvoicedChargesModalRef: any;
   uninvoicedChargesList: any[] = [];
-  selectedUninvoicedCharges: Set<number> = new Set();
+  selectedUninvoicedCharges: Set<string> = new Set();
   jobMenuMasterSid: number | null = null;
   transactionSid: number | null = null;
   
@@ -472,7 +473,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       PlaceOfSupply: [''],
       PostStatus: [''],
       GSTType: [''],
-      InvoiceType: ['REG'],
+      InvoiceType: [null],
       VoucherType: [null],
       TaxType : [companyCurrencyCode === 'in' ? 'GST' : 'VAT'],
       Narration: [''],
@@ -691,15 +692,18 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         this.chargeList = charges.data || [];
 
         // 2. Non-critical lookups start in the background
-        forkJoin({
-          currencies: this.operationService
-            .getAllCurrencies()
-            .pipe(catchError((err) => of([]))),
-          uoms: this.operationService.getAllUom().pipe(catchError((err) => of([]))),
-          departments: this.operationService
-            .getAllDepartments(CompanyMasterSid)
-            .pipe(catchError((err) => of([]))),
-          masterJobs: this.operationService
+          forkJoin({
+            currencies: this.operationService
+              .getAllCurrencies()
+              .pipe(catchError((err) => of([]))),
+            uoms: this.operationService.getAllUom().pipe(catchError((err) => of([]))),
+            containerTypes: this.operationService
+              .getAllContainerTypes()
+              .pipe(catchError((err) => of([]))),
+            departments: this.operationService
+              .getAllDepartments(CompanyMasterSid)
+              .pipe(catchError((err) => of([]))),
+            masterJobs: this.operationService
             .getAllMasterJobs({
               CompanyMasterSid,
               BranchMasterSid,
@@ -707,17 +711,20 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
               offset: 0,
             })
             .pipe(catchError((err) => of([]))),
-        }).subscribe(({ currencies, uoms, departments, masterJobs }) => {
-          this.currencyList = currencies.data || [];
-          this.currencyConfigService.initializeConfigurations(this.currencyList);
-          this.numberToWords.initializeCurrencies(this.currencyList);
+          }).subscribe(({ currencies, uoms, containerTypes, departments, masterJobs }) => {
+            this.currencyList = currencies.data || [];
+            this.currencyConfigService.initializeConfigurations(this.currencyList);
+            this.numberToWords.initializeCurrencies(this.currencyList);
 
-          this.uomList = uoms.data || [];
-          this.departmentList = departments.data || [];
-          this.masterJobList = masterJobs.data || [];
-          if(!this.isEditMode){
-            this.spinner.hide();
-          }
+            this.uomList = uoms.data || [];
+            this.containerTypeList = Array.isArray(containerTypes)
+              ? containerTypes
+              : (containerTypes?.data || []);
+            this.departmentList = departments.data || [];
+            this.masterJobList = masterJobs.data || [];
+            if(!this.isEditMode){
+              this.spinner.hide();
+            }
         });
       })
     );
@@ -1384,8 +1391,8 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       MasterJobNumber: this.invoiceData?.masterJob?.MasterJobNumber || '',
       MasterJobDate: this.invoiceData?.masterJob?.MasterJobDate || '',
       DocumentNumber: this.invoiceData?.DocumentNumber || '',
-      ContainerType: this.invoiceData?.masterJob?.containers?.[0]?.ContainerType || '',
-      ContainerNumber: this.invoiceData?.masterJob?.containers?.[0]?.ContainerNumber || '',
+        ContainerType: '',
+        ContainerNumber: this.getContainerDisplay(this.invoiceData?.masterJob?.containers) || '',
       DepartmentMasterSid : this.invoiceData?.masterJob?.DepartmentMasterSid || '',
       isPosted : this.isPosted,
       FreightTerms:
@@ -1815,6 +1822,7 @@ isSeaDepartment(): boolean {
 
     this.updateBillAmount();
     this.invoiceForm.updateValueAndValidity();
+    this.updateInvoiceTypeRequired();
   }
 
 
@@ -1840,6 +1848,27 @@ isSeaDepartment(): boolean {
       }
       this.recalcRow(i);
     }
+    this.updateInvoiceTypeRequired();
+  }
+
+  get isInvoiceTypeRequired(): boolean {
+    return this.invoiceForm?.get('InvoiceType')?.hasValidator(Validators.required) ?? false;
+  }
+
+  updateInvoiceTypeRequired(): void {
+    const hasActiveTax = this.details.controls.some((ctrl, i) => {
+      const hssacSid = (ctrl as FormGroup).get('HSSACMasterSid')?.value;
+      if (!hssacSid) return false;
+      const hssacItem = (this.hssacList[i] || []).find((h: any) => h.HSSACMasterSid === hssacSid);
+      return !!hssacItem?.TaxGroupSid;
+    });
+    const ctrl = this.invoiceForm.get('InvoiceType');
+    if (hasActiveTax) {
+      ctrl?.setValidators([Validators.required]);
+    } else {
+      ctrl?.clearValidators();
+    }
+    ctrl?.updateValueAndValidity({ emitEvent: false });
   }
 
   // Calculate total currency amount (sum of all amounts)
@@ -3859,6 +3888,35 @@ isSeaDepartment(): boolean {
     return null;
   }
 
+  getContainerTypeName(containerTypeSid: number | string | null | undefined): string {
+    if (!containerTypeSid || !this.containerTypeList?.length) return '';
+
+    const normalizedSid = Number(containerTypeSid);
+    const containerType = this.containerTypeList.find((item: any) =>
+      Number(item?.ContainerTypeMasterSid ?? item?.ContainerTypeSid) === normalizedSid
+    );
+
+    return containerType?.ContainerName || containerType?.ContainerType || '';
+  }
+
+  getContainerDisplay(containers: any[] | null | undefined): string {
+    if (!Array.isArray(containers) || containers.length === 0) return '';
+
+    return containers
+      .map((container: any) => {
+        const number = container?.ContainerNumber || '';
+        const type = this.getContainerTypeName(container?.ContainerType);
+
+        if (number && type) {
+          return `${number} / ${type}`;
+        }
+
+        return number || type || '';
+      })
+      .filter((value: string) => !!value)
+      .join(', ');
+  }
+
   calculateTotalColspan(configOverride?: {
     showCGST: boolean;
     showSGST: boolean;
@@ -3904,6 +3962,9 @@ isSeaDepartment(): boolean {
 
 
 openUninvoicedChargesModal() {
+  const isBooking = !!(this.invoiceData?.BookingHeaderSid && this.invoiceData?.BookingHeader)
+    && !this.invoiceData?.HouseJobSid
+    && !this.invoiceData?.MasterJobSid;
 
   // HOUSE JOB INVOICE
   if (this.invoiceData?.HouseJobSid && this.invoiceData?.houseJob) {
@@ -3959,26 +4020,38 @@ if (!customerMasterSid) {
   const payload = {
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentBranch?.BranchMasterSid,
-    transactionSid: this.transactionSid,
-    MenuMasterSid: this.jobMenuMasterSid,
+    IsBooking: isBooking,
     RevenueCustomerBranchSid: customerBranchSid,
     RevenueCustomerMasterSid: customerMasterSid
   };
+
+  if (isBooking) {
+    (payload as any).BookingHeaderSid = this.invoiceData?.BookingHeaderSid;
+  } else {
+    (payload as any).transactionSid = this.transactionSid;
+    (payload as any).MenuMasterSid = this.jobMenuMasterSid;
+  }
 
   this.spinner.show();
   this.operationService.getUninvoicedRevenueCharges(payload).subscribe({
     next: (resp: any) => {
       this.spinner.hide();
       if (resp?.status && resp.data) {
-        const addedChargeSids = new Set(
+        const addedChargeKeys = new Set(
           this.details.getRawValue()
-            .map((detail: any) => detail.CostRevenueChargesSid)
-            .filter((sid: number) => sid != null)
+            .map((detail: any) =>
+              detail?.BookingRateSid != null
+                ? `booking-${detail.BookingRateSid}`
+                : detail?.CostRevenueChargesSid != null
+                ? `revenue-${detail.CostRevenueChargesSid}`
+                : null
+            )
+            .filter((key: string | null) => !!key)
         );
         
         // Filter out charges that are already added to the invoice
         this.uninvoicedChargesList = (resp.data || []).filter(
-          (charge: any) => !addedChargeSids.has(charge.CostRevenueChargesSid)
+          (charge: any) => !addedChargeKeys.has(this.getUninvoicedChargeKey(charge))
         );
         
         this.selectedUninvoicedCharges.clear();
@@ -4007,20 +4080,31 @@ if (!customerMasterSid) {
   });
 }
 
-toggleChargeSelection(chargeSid: number) {
-  if (this.selectedUninvoicedCharges.has(chargeSid)) {
-    this.selectedUninvoicedCharges.delete(chargeSid);
+private getUninvoicedChargeKey(charge: any): string | null {
+  if (charge?.BookingRatesSid != null) return `booking-${charge.BookingRatesSid}`;
+  if (charge?.CostRevenueChargesSid != null) return `revenue-${charge.CostRevenueChargesSid}`;
+  return null;
+}
+
+toggleChargeSelection(charge: any) {
+  const key = this.getUninvoicedChargeKey(charge);
+  if (!key) return;
+
+  if (this.selectedUninvoicedCharges.has(key)) {
+    this.selectedUninvoicedCharges.delete(key);
   } else {
-    this.selectedUninvoicedCharges.add(chargeSid);
+    this.selectedUninvoicedCharges.add(key);
   }
 }
 
-isChargeSelected(chargeSid: number): boolean {
-  return this.selectedUninvoicedCharges.has(chargeSid);
+isChargeSelected(charge: any): boolean {
+  const key = this.getUninvoicedChargeKey(charge);
+  return !!key && this.selectedUninvoicedCharges.has(key);
 }
 selectAllUninvoicedCharges() {
   this.uninvoicedChargesList.forEach(charge => {
-    this.selectedUninvoicedCharges.add(charge.CostRevenueChargesSid);
+    const key = this.getUninvoicedChargeKey(charge);
+    if (key) this.selectedUninvoicedCharges.add(key);
   });
 }
 deselectAllUninvoicedCharges() {
@@ -4034,7 +4118,10 @@ addSelectedUninvoicedCharges() {
   }
 
   const selectedCharges = this.uninvoicedChargesList.filter(
-    charge => this.selectedUninvoicedCharges.has(charge.CostRevenueChargesSid)
+    charge => {
+      const key = this.getUninvoicedChargeKey(charge);
+      return !!key && this.selectedUninvoicedCharges.has(key);
+    }
   );
 
   selectedCharges.forEach(charge => {
@@ -4083,7 +4170,7 @@ patchUninvoicedChargeToDetails(charge: any) {
     IsAutoGenerated: false,
     CostRevenue: 'Revenue',
     CostRevenueChargesSid: charge.CostRevenueChargesSid,
-    BookingRateSid: charge.BookingRateSid
+    BookingRateSid: charge.BookingRateSid ?? charge.BookingRatesSid ?? null
   });
 
    // Add to form array first

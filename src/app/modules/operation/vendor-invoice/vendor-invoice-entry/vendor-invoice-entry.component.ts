@@ -1500,6 +1500,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
     this.updateBillAmount();
     this.vendorInvoiceForm.updateValueAndValidity();
+    this.updateInvoiceTypeRequired();
   }
 
   updateBillAmount() {
@@ -1530,6 +1531,28 @@ export class VendorInvoiceEntryComponent implements OnInit {
       }
       this.recalcRow(i);
     }
+    this.updateInvoiceTypeRequired();
+  }
+
+  get isInvoiceTypeRequired(): boolean {
+    return this.vendorInvoiceForm?.get('InvoiceType')?.hasValidator(Validators.required) ?? false;
+  }
+
+  updateInvoiceTypeRequired(): void {
+    const hasActiveTax = this.details.controls.some((ctrl, i) => {
+      const hssacSid = (ctrl as FormGroup).get('HSSACMasterSid')?.value;
+      if (!hssacSid) return false;
+      const hssacListItems = this.isNonJob ? (this.hssacListForNonJob || []) : (this.hssacList[i] || []);
+      const hssacItem = hssacListItems.find((h: any) => h.HSSACMasterSid === hssacSid);
+      return !!hssacItem?.TaxGroupSid;
+    });
+    const ctrl = this.vendorInvoiceForm.get('InvoiceType');
+    if (hasActiveTax) {
+      ctrl?.setValidators([Validators.required]);
+    } else {
+      ctrl?.clearValidators();
+    }
+    ctrl?.updateValueAndValidity({ emitEvent: false });
   }
 
   getTotalCurrencyAmount(): number {

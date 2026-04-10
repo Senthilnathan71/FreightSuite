@@ -48,6 +48,8 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
   @ViewChild('quotationTable') quotationTable!: ReusableTableComponent;
   @ViewChild('enquiryTable') enquiryTable!: ReusableTableComponent;
   @ViewChild('reportModel') content: TemplateRef<any>;
+  @ViewChild('enquiryHeader') enquiryHeader!: PageHeaderComponent;
+  @ViewChild('quotationHeader') quotationHeader!: PageHeaderComponent;
 
   filterQuotationValue : string= "";
   departments : any[] = [];
@@ -171,7 +173,7 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
         label: 'Report',
         icon: 'fas fa-file-alt',
         action: 'report',
-        disabled: this.quotationManager.totalRecords !== 0
+        disabled: this.quotationManager.totalRecords === 0
       },
       { label: 'Reset', icon: 'fas fa-sync-alt', action: 'reset' }
     ]
@@ -197,6 +199,7 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
     // Initialize Managers
     this.enquiryManager = new EnquiryListManager(this.leadService, this.appSettings, this.spinner, this.datePipe, this.currentCompany, this.currentBranch);
     this.quotationManager = new QuotationListManager(this.leadService, this.appSettings, this.spinner, this.datePipe, this.currentCompany, this.currentBranch);
+    this.quotationManager.onResultsChanged = () => this.initializeQuotationHeaderActions();
     this.initializeQuotationHeaderActions();
     
     this.isMobile = this.appService.getDevice();
@@ -279,8 +282,8 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
       showColumnToggle: true,
       showFilters: true,
       showPagination: true,
-      trackByKey: 'QuotationHeaderSid',
-      emptyMessage: 'No quotation found',
+      trackByKey: 'EnquiryHeaderSid',
+      emptyMessage: 'No enquiries found',
       dragAndDrop: true
     };
 
@@ -555,6 +558,7 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
 
   onEnquirySearchTriggered(searchValue: any): void {
     this.enquiryManager.filterValue = searchValue;
+    this.enquiryManager.page = 1;
     this.enquiryManager.search();
     this.enquiryManager.updateSearchParams();
     console.log('After Search', this.enquiryManager.totalRecords);
@@ -572,15 +576,9 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
   }
 
   enquiryResetPage() {
-    this.enquiryManager.clearFilter();
-    this.enquiryManager.advancedFilters = {
-      dateRange: {
-        preset: 'last30',
-        fromDate: this.getLast30FromDate(),
-        toDate: new Date().toISOString()
-      },
-      dateType: 'EnquiryDate'
-    };
+    this.enquiryManager.filterValue = '';
+    this.enquiryManager.page = 1;
+    this.enquiryHeader?.clearAdvancedFilters();
   }
 
   // List Level
@@ -619,6 +617,7 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
 
   onQuotationSearchTriggered(searchValue: any): void {
     this.quotationManager.filterValue = searchValue;
+    this.quotationManager.page = 1;
     this.quotationManager.search();
     this.quotationManager.updateSearchParams();
     console.log('After Search', this.quotationManager.totalRecords);
@@ -651,15 +650,9 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
   }
 
   quoteResetPage() {
-    this.quotationManager.clearFilter();
-    this.quotationManager.advancedFilters = {
-      dateRange: {
-        preset: 'last30',
-        fromDate: this.getLast30FromDate(),
-        toDate: new Date().toISOString()
-      },
-      dateType: 'QuoteDate'
-    };
+    this.quotationManager.filterValue = '';
+    this.quotationManager.page = 1;
+    this.quotationHeader?.clearAdvancedFilters();
   }
 
   partySearchFn = (_searchTerm: string, partyType: string): Observable<any[]> => {
@@ -671,7 +664,15 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
   };
 
   private initializeDefaultFilters(): void {
-    this.enquiryManager.advancedFilters = {
+    const enquiryDefaults = this.getDefaultEnquiryFilters();
+    const quotationDefaults = this.getDefaultQuotationFilters();
+
+    this.enquiryManager.advancedFilters = enquiryDefaults;
+    this.quotationManager.advancedFilters = quotationDefaults;
+  }
+
+  private getDefaultEnquiryFilters(): AdvancedFilterValues {
+    return {
       dateRange: {
         preset: 'last30',
         fromDate: this.getLast30FromDate(),
@@ -679,8 +680,10 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
       },
       dateType: 'EnquiryDate'
     };
+  }
 
-    this.quotationManager.advancedFilters = {
+  private getDefaultQuotationFilters(): AdvancedFilterValues {
+    return {
       dateRange: {
         preset: 'last30',
         fromDate: this.getLast30FromDate(),

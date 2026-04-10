@@ -76,8 +76,10 @@ export class TarrifEntryComponent implements OnInit {
   selectedDepartmentType: string = '';
   selectedFCLLCL: string = '';
   filteredPorts: any[] = [];
-  filteredPOL: any[] = [];
-  filteredPOD: any[] = [];
+filteredPOO: any[] = [];
+filteredPOL: any[] = [];
+filteredPOD: any[] = [];
+filteredFDC: any[] = [];
   departments: any[] = [];
  
   active = 1;
@@ -85,6 +87,7 @@ export class TarrifEntryComponent implements OnInit {
   tariffHeaderForm!: FormGroup;
   tariffDetailsForm!: FormGroup;
   isEditMode: boolean = false;
+  isPatchingDetailForm = false;
   isModalEditMode: boolean = false;
   setErrorMessage: boolean = false;
   TariffHeaderSid: number | null = null;
@@ -92,6 +95,8 @@ export class TarrifEntryComponent implements OnInit {
   portList: Port[] = [];
   polList: Port[] = [];
   podList: Port[] = [];
+  pooList: Port[] = [];
+  fdcList: Port[] = [];
   chargeList: any[] = [];
   UOMList: any[] = [];
   departmentList: any[] = [];
@@ -297,20 +302,20 @@ getCurrencyCode(currencySid: any): string {
 
     // Charge code change: only apply "next-day" rule in CREATE mode
     this.tariffDetailsForm.get('detailChargeCode')?.valueChanges.subscribe(chargeCode => {
-      if (!chargeCode) {
-        if (!this.isModalEditMode) {
-          this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(null);
-          this.minEffectiveFrom = this.toNgbDateStruct(this.todayDate);
-        }
-        return;
-      }
-      if (!this.isModalEditMode) {
-        this.onChargeCodeChange(chargeCode);
-      } else {
-        // Edit: keep date as-is, just update description/UOM if needed
-        this.setChargeDetails(this.chargeList.find(c => c.chargeCode === chargeCode));
-      }
-    });
+  if (!chargeCode) {
+    if (this.editingDetailIndex === null) {
+      this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(null);
+      this.minEffectiveFrom = this.toNgbDateStruct(this.todayDate);
+    }
+    return;
+  }
+
+  if (this.editingDetailIndex === null) {
+    this.onChargeCodeChange(chargeCode);
+  } else {
+    this.setChargeDetails(this.chargeList.find(c => c.chargeCode === chargeCode));
+  }
+});
   }
 
   get tariffDetails(): FormArray {
@@ -385,6 +390,7 @@ getCurrencyCode(currencySid: any): string {
 
     if (data) {
       this.tariffDetailData = data;
+      this.isPatchingDetailForm = true;
 
       this.tariffDetailsForm.patchValue({
         detailisSlabApplicable: data.IsSlabApplicable === 'Y',
@@ -403,7 +409,19 @@ getCurrencyCode(currencySid: any): string {
         detailMinSale: data.MinSale || '',
         detailstatus: data.status === 'A' ? 'Active' : 'Suspended',
         detailRemarks: data.Remarks || ''
-      });
+      },{ emitEvent: false });
+
+      this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(
+        data.EffectiveDate ? new Date(data.EffectiveDate) : null,
+        { emitEvent: false }
+      );
+
+      this.tariffDetailsForm.get('detailExpiredOn')?.setValue(
+        data.ExpiredOn ? new Date(data.ExpiredOn) : null,
+        { emitEvent: false }
+      );
+
+      this.isPatchingDetailForm = false;
 
       if (this.isModalEditMode) {
         this.TariffDetailSid = data.TariffDetailSid;
@@ -418,16 +436,9 @@ getCurrencyCode(currencySid: any): string {
         this.isModalStatusEditable = false;
         this.setDetailControlsReadOnly(false);
 
-        const today = new Date();
-        this.minEffectiveFrom = this.toNgbDateStruct(today);
-
-        if (!data.EffectiveDate) {
-          this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(today);
-        }
-
-        if (!data.ExpiredOn) {
-          this.tariffDetailsForm.get('detailExpiredOn')?.setValue(null);
-        }
+        this.minEffectiveFrom = data.EffectiveDate
+          ? this.toNgbDateStruct(new Date(data.EffectiveDate))
+          : this.toNgbDateStruct(new Date());
 
         this.tariffDetailsForm.get('detailstatus')?.setValue('Active', { emitEvent: false });
         this.tariffDetailsForm.get('detailstatus')?.enable({ emitEvent: false });
@@ -444,11 +455,6 @@ getCurrencyCode(currencySid: any): string {
       this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(today);
       this.tariffDetailsForm.get('detailstatus')?.setValue('Active', { emitEvent: false });
       this.tariffDetailsForm.get('detailstatus')?.enable({ emitEvent: false });
-
-      const initialChargeCode = this.tariffDetailsForm.get('detailChargeCode')?.value;
-      if (initialChargeCode) {
-        this.setEffectiveDateBasedOnChargeCode(initialChargeCode);
-      }
     }
 
     this.modalRef = this.modalService.open(content, {
@@ -512,36 +518,50 @@ getCurrencyCode(currencySid: any): string {
   }).subscribe(({ ports, agents, carriers, departments, companies, currencies, incos, chargeTax }) => {
     this.departments = departments || [];
     
-    // FIX: Properly handle port data structure
     const rawPorts = ports.data || ports || [];
-    this.portList = rawPorts.map((p: any) => {
-      // Try different possible paths for country name
-      const countryName = 
-        p.countryName || 
-        p.countryMaster?.countryName ||
-        p.country?.countryName ||
-        p.CountryName || 
-        '';
+this.portList = rawPorts.map((p: any) => {
+  const countryName =
+    p.countryName ||
+    p.countryMaster?.countryName ||
+    p.country?.countryName ||
+    p.CountryName ||
+    '';
 
-      return {
-        ...p,
-        PortCode: p.PortCode || p.portCode,
-        PortName: p.PortName || p.portName,
-        PortMasterSid: p.PortMasterSid || p.portMasterSid,
-        PortType: p.PortType || p.portType,
-        countryName: countryName
-      };
-    });
+  const countryMasterSid =
+    p.CountryMasterSid ||
+    p.countryMaster?.CountryMasterSid ||
+    p.country?.CountryMasterSid ||
+    null;
 
-    this.filteredPorts = [...this.portList];
-    this.filteredPOL = [...this.filteredPorts];
-    this.filteredPOD = [...this.filteredPorts];
+  return {
+    ...p,
+    PortCode: p.PortCode || p.portCode,
+    PortName: p.PortName || p.portName,
+    PortMasterSid: p.PortMasterSid || p.portMasterSid,
+    PortType: p.PortType || p.portType,
+    CountryMasterSid: countryMasterSid,
+    Country: countryName,
+    countryName: countryName
+  };
+});
 
-    this.polList = [...this.filteredPOL];
-    this.podList = [...this.filteredPOD];
+this.filteredPorts = [...this.portList];
+this.filteredPOO = [...this.portList];
+this.filteredPOL = [...this.portList];
+this.filteredPOD = [...this.portList];
+this.filteredFDC = [...this.portList];
+
+this.pooList = [...this.filteredPOO];
+this.polList = [...this.filteredPOL];
+this.podList = [...this.filteredPOD];
+this.fdcList = [...this.filteredFDC];
     this.agentList = agents.data;
     this.carrierList = carriers.data;
-    this.departmentList = departments;
+    this.departments = (departments || []).filter(
+  (department: any) => !this.isServiceJobDepartment(department)
+);
+
+this.departmentList = [...this.departments];
     this.filterChargeBasedOnDept();
     this.companyList = companies;
     
@@ -563,6 +583,112 @@ getCurrencyCode(currencySid: any): string {
     }
   }, err => console.error('loadAllFields error', err));
 }
+
+private normalizePortText(value: any): string {
+  return String(value ?? '').trim().toUpperCase();
+}
+
+private toNumericValue(value: any): number | null {
+  const parsedValue = Number(value);
+  return Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : null;
+}
+
+private getShipmentDirection(): 'EXPORT' | 'IMPORT' | '' {
+  const departmentDirection = this.normalizePortText(this.selectedDepartment?.ExportImport);
+  if (departmentDirection === 'EXPORT' || departmentDirection === 'IMPORT') {
+    return departmentDirection as 'EXPORT' | 'IMPORT';
+  }
+  return '';
+}
+
+private isCompanyCountryPort(port: any): boolean {
+  const companyCountryId = this.toNumericValue(this.currentCompany?.CountryMasterSid);
+  const portCountryId = this.toNumericValue(port?.CountryMasterSid);
+
+  if (companyCountryId && portCountryId) {
+    return companyCountryId === portCountryId;
+  }
+
+  const companyCountryName = this.normalizePortText(this.currentCompany?.CountryName);
+  const portCountryName = this.normalizePortText(
+    port?.Country || port?.countryName || port?.CountryName || port?.countryMaster?.countryName
+  );
+
+  return !!companyCountryName && !!portCountryName && companyCountryName === portCountryName;
+}
+
+private isForeignCountryPort(port: any): boolean {
+  const companyCountryId = this.toNumericValue(this.currentCompany?.CountryMasterSid);
+  const portCountryId = this.toNumericValue(port?.CountryMasterSid);
+
+  if (companyCountryId && portCountryId) {
+    return companyCountryId !== portCountryId;
+  }
+
+  const companyCountryName = this.normalizePortText(this.currentCompany?.CountryName);
+  const portCountryName = this.normalizePortText(
+    port?.Country || port?.countryName || port?.CountryName || port?.countryMaster?.countryName
+  );
+
+  return !!companyCountryName && !!portCountryName && companyCountryName !== portCountryName;
+}
+
+private getPortBySid(portSid: number | string | null | undefined): any | null {
+  if (!portSid) {
+    return null;
+  }
+
+  return this.portList.find(
+    port => Number(port.PortMasterSid) === Number(portSid)
+  ) || null;
+}
+
+private getPortsByReferenceCountry(
+  controlName: 'POLSid' | 'PODSid',
+  fallbackPorts: any[]
+): any[] {
+  const referencePort = this.getPortBySid(this.tariffHeaderForm.get(controlName)?.value);
+
+  if (!referencePort) {
+    return [...fallbackPorts];
+  }
+
+  const referenceCountryId = this.toNumericValue(referencePort?.CountryMasterSid);
+  if (referenceCountryId) {
+    return fallbackPorts.filter(
+      port => this.toNumericValue(port?.CountryMasterSid) === referenceCountryId
+    );
+  }
+
+  const referenceCountryName = this.normalizePortText(
+    referencePort?.Country || referencePort?.countryName || referencePort?.countryMaster?.countryName
+  );
+
+  if (!referenceCountryName) {
+    return [...fallbackPorts];
+  }
+
+  return fallbackPorts.filter(port => {
+    const portCountryName = this.normalizePortText(
+      port?.Country || port?.countryName || port?.countryMaster?.countryName
+    );
+    return portCountryName === referenceCountryName;
+  });
+}
+
+private shouldUseAllPortOptions(): boolean {
+    const departmentType = this.normalizePortText(this.selectedDepartmentType || this.selectedDepartment?.departmentType);
+    const segment = this.normalizePortText(this.selectedFCLLCL);
+
+    return ['OTHER', 'OTHERS', 'TRANSPORT'].includes(departmentType) || ['OTHER', 'OTHERS', 'TRANSPORT'].includes(segment);
+  }
+
+  private isServiceJobDepartment(department: any): boolean {
+    const departmentName = this.normalizePortText(department?.departmentName);
+    const departmentCode = this.normalizePortText(department?.DepartmentCode ?? department?.departmentCode);
+
+    return departmentName === 'SERVICE JOB' || departmentCode === 'SJ';
+  }
 
    openAuditLogs(modal: TemplateRef<any>) {
   if (!this.TariffHeaderSid) return;
@@ -909,16 +1035,23 @@ getCurrencyCode(currencySid: any): string {
   });
 }
 
-  onDeptChange(department: any): void {
+ onDeptChange(department: any): void {
   if (!department) {
     this.selectedDepartment = null;
     this.selectedDepartmentType = '';
     this.selectedFCLLCL = 'LCL';
-    this.filteredPorts = [...(this.portList || [])];
-    this.filteredPOL = [...this.filteredPorts];
-    this.filteredPOD = [...this.filteredPorts];
-    this.polList = [...this.filteredPOL];
-    this.podList = [...this.filteredPOD];
+
+    this.filteredPorts = [];
+    this.filteredPOO = [];
+    this.filteredPOL = [];
+    this.filteredPOD = [];
+    this.filteredFDC = [];
+
+    this.pooList = [];
+    this.polList = [];
+    this.podList = [];
+    this.fdcList = [];
+
     this.tariffHeaderForm.patchValue({
       POOSid: null,
       POLSid: null,
@@ -927,45 +1060,84 @@ getCurrencyCode(currencySid: any): string {
       POLTerminal: '',
       PODTerminal: '',
       ViaPortSid: null,
-      MovementType: null, 
+      MovementType: null,
     });
-    
-    // Clear filtered charges when no department selected
+
     this.filteredCharges = [];
     return;
   }
 
-  let deptObj = department;
+   let deptObj = department;
   if (typeof department === 'number' || typeof department === 'string') {
-    deptObj = this.departments?.find(d => Number(d.DepartmentMasterSid) === Number(department)) || { departmentType: '', FCLLCL: 'LCL' };
+    deptObj =
+      this.departments?.find(
+        d => Number(d.DepartmentMasterSid) === Number(department)
+      ) || { departmentType: '', FCLLCL: 'LCL' };
   }
-    const isDeptChanged = !this.selectedDepartment || 
+
+  const isDeptChanged =
+    !this.selectedDepartment ||
     this.selectedDepartment.DepartmentMasterSid !== deptObj.DepartmentMasterSid;
+
   this.selectedDepartment = deptObj;
-  this.selectedDepartmentType = (deptObj.departmentType || '').toUpperCase();
-  this.selectedFCLLCL = this.selectedDepartmentType === 'SEA'
-    ? (deptObj.FCLLCL?.toUpperCase() || 'LCL')
-    : 'AIR';
+  this.selectedDepartmentType = this.normalizePortText(deptObj.departmentType);
+  this.selectedFCLLCL = this.resolveSelectedSegment(deptObj);
+
   if (isDeptChanged && !this.isEditMode) {
-    this.clearPortSelections();
+    this.tariffHeaderForm.patchValue({
+      POOSid: null,
+      POLSid: null,
+      PODSid: null,
+      FDCSid: null,
+      ViaPortSid: null,
+      POLTerminal: '',
+      PODTerminal: ''
+    }, { emitEvent: false });
   }
-  this.filteredPorts = this.getFilteredPortsBySegment(this.selectedFCLLCL);
-  this.filteredPOL = [...this.filteredPorts];
-  this.filteredPOD = [...this.filteredPorts];
-  this.polList = [...this.filteredPOL];
-  this.podList = [...this.filteredPOD];
+
+  this.refreshPortFilters();
 
   if (this.selectedDepartmentType === 'SEA') {
     this.tariffHeaderForm.get('MovementType')?.setValue('Sea');
   } else if (this.selectedDepartmentType === 'AIR') {
     this.tariffHeaderForm.get('MovementType')?.setValue('Air');
+  } else if (this.selectedDepartmentType === 'ROAD') {
+    this.tariffHeaderForm.get('MovementType')?.setValue('Road');
+  } else {
+    this.tariffHeaderForm.get('MovementType')?.setValue(null);
   }
 
-  // Filter charges based on selected department
-  // this.filterChargesByDepartment(deptObj);
-  // this.filterChargesByDepartment(this.selectedDepartment);
   this.filterChargeBasedOnDept();
 }
+
+private resolveSelectedSegment(department: any): string {
+  const departmentType = this.normalizePortText(department?.departmentType);
+  const fclLcl = this.normalizePortText(department?.FCLLCL);
+
+  if (departmentType === 'SEA') {
+    return fclLcl || 'LCL';
+  }
+
+  if (departmentType === 'AIR') {
+    return 'AIR';
+  }
+
+  if (departmentType === 'ROAD') {
+    return 'ROAD';
+  }
+
+  if (departmentType === 'TRANSPORT') {
+    return 'TRANSPORT';
+  }
+
+  if (departmentType === 'OTHER' || departmentType === 'OTHERS') {
+    return 'OTHER';
+  }
+
+  return fclLcl || departmentType || 'LCL';
+}
+
+
 clearPortSelections(): void {
   // Clear form values
   this.tariffHeaderForm.patchValue({
@@ -979,10 +1151,14 @@ clearPortSelections(): void {
   });
 
   // Reset filtered lists
+   this.filteredPOO = [...this.filteredPorts];
   this.filteredPOL = [...this.filteredPorts];
   this.filteredPOD = [...this.filteredPorts];
+  this.filteredFDC = [...this.filteredPorts];
+  this.pooList = [...this.filteredPOO];
   this.polList = [...this.filteredPOL];
   this.podList = [...this.filteredPOD];
+  this.fdcList = [...this.filteredFDC];
 }
 filterChargesByDepartment(department: any): void {
   if (!department || !this.chargeList || this.chargeList.length === 0) {
@@ -1034,44 +1210,189 @@ filterChargesByDepartment(department: any): void {
   }
 
   getFilteredPortsBySegment(segment: string): any[] {
-    if (segment === 'AIR') {
-      return this.portList.filter(port => port.PortType === 'Air');
-    } else if (segment === 'FCL' || segment === 'LCL') {
-      return this.portList.filter(port => port.PortType === 'Sea');
-    }
-    return this.portList;
+  const normalizedSegment = this.normalizePortText(segment);
+
+  if (normalizedSegment === 'AIR') {
+    return this.portList.filter(
+      port => this.normalizePortText(port?.PortType) === 'AIR'
+    );
+  } else if (
+    normalizedSegment === 'FCL' ||
+    normalizedSegment === 'LCL' ||
+    normalizedSegment === 'SEA'
+  ) {
+    return this.portList.filter(
+      port => this.normalizePortText(port?.PortType) === 'SEA'
+    );
+  } else if (normalizedSegment === 'ROAD') {
+    return this.portList.filter(port => {
+      const portType = this.normalizePortText(port?.PortType);
+      return (
+        portType === 'ROAD' ||
+        portType.includes('ROAD') ||
+        portType.includes('LAND') ||
+        portType.includes('LOCATION')
+      );
+    });
+  } else if (normalizedSegment === 'TRANSPORT') {
+    return this.portList.filter(port => {
+      const portType = this.normalizePortText(port?.PortType);
+      return portType === 'SEA' || portType === 'AIR';
+    });
+  } else if (
+    normalizedSegment === 'OTHER' ||
+    normalizedSegment === 'OTHERS'
+  ) {
+    return [...this.portList];
   }
+
+  return [];
+}
+
+private buildPortFilterLists() {
+  if (!this.selectedDepartmentType) {
+    return {
+      filteredPorts: [],
+      filteredPOO: [],
+      filteredPOL: [],
+      filteredPOD: [],
+      filteredFDC: []
+    };
+  }
+
+  const segment = this.selectedFCLLCL || this.selectedDepartmentType;
+  const basePorts = this.getFilteredPortsBySegment(segment);
+
+  if (this.shouldUseAllPortOptions()) {
+    const selectedPOL = this.tariffHeaderForm.get('POLSid')?.value;
+    const selectedPOD = this.tariffHeaderForm.get('PODSid')?.value;
+
+    return {
+      filteredPorts: basePorts,
+      filteredPOO: [...basePorts],
+      filteredPOL: basePorts.filter(port => Number(port.PortMasterSid) !== Number(selectedPOD)),
+      filteredPOD: basePorts.filter(port => Number(port.PortMasterSid) !== Number(selectedPOL)),
+      filteredFDC: [...basePorts]
+    };
+  }
+
+  const shipmentDirection = this.getShipmentDirection();
+  const foreignPorts = basePorts.filter(port => this.isForeignCountryPort(port));
+  const companyCountryPorts = basePorts.filter(port => this.isCompanyCountryPort(port));
+
+  let pooPorts = [...basePorts];
+  let polPorts = [...basePorts];
+  let podPorts = [...basePorts];
+  let fdcPorts = [...basePorts];
+
+  if (shipmentDirection === 'EXPORT') {
+    pooPorts = [...companyCountryPorts];
+    polPorts = [...companyCountryPorts];
+    podPorts = [...foreignPorts];
+    fdcPorts = this.getPortsByReferenceCountry('PODSid', foreignPorts);
+  } else if (shipmentDirection === 'IMPORT') {
+    pooPorts = this.getPortsByReferenceCountry('POLSid', foreignPorts);
+    polPorts = [...foreignPorts];
+    podPorts = [...companyCountryPorts];
+    fdcPorts = this.getPortsByReferenceCountry('PODSid', companyCountryPorts);
+  }
+
+  const selectedPOL = this.tariffHeaderForm.get('POLSid')?.value;
+  const selectedPOD = this.tariffHeaderForm.get('PODSid')?.value;
+
+  return {
+    filteredPorts: basePorts,
+    filteredPOO: pooPorts,
+    filteredPOL: polPorts.filter(port => Number(port.PortMasterSid) !== Number(selectedPOD)),
+    filteredPOD: podPorts.filter(port => Number(port.PortMasterSid) !== Number(selectedPOL)),
+    filteredFDC: fdcPorts
+  };
+}
+
+private applyPortFilterLists(filteredLists: any): void {
+  this.filteredPorts = filteredLists.filteredPorts;
+  this.filteredPOO = filteredLists.filteredPOO;
+  this.filteredPOL = filteredLists.filteredPOL;
+  this.filteredPOD = filteredLists.filteredPOD;
+  this.filteredFDC = filteredLists.filteredFDC;
+
+  this.pooList = [...this.filteredPOO];
+  this.polList = [...this.filteredPOL];
+  this.podList = [...this.filteredPOD];
+  this.fdcList = [...this.filteredFDC];
+}
+
+private clearPortControlIfInvalid(
+  controlName: 'POOSid' | 'POLSid' | 'PODSid' | 'FDCSid',
+  allowedPorts: any[]
+): boolean {
+  const control = this.tariffHeaderForm.get(controlName);
+  const selectedValue = control?.value;
+
+  if (!selectedValue) {
+    return false;
+  }
+
+  const isValid = allowedPorts.some(
+    port => Number(port.PortMasterSid) === Number(selectedValue)
+  );
+
+  if (!isValid) {
+    control?.setValue(null, { emitEvent: false });
+    return true;
+  }
+
+  return false;
+}
+
+private clearInvalidPortSelections(filteredLists: any): boolean {
+  let hasChanges = false;
+
+  hasChanges = this.clearPortControlIfInvalid('POOSid', filteredLists.filteredPOO) || hasChanges;
+  hasChanges = this.clearPortControlIfInvalid('POLSid', filteredLists.filteredPOL) || hasChanges;
+  hasChanges = this.clearPortControlIfInvalid('PODSid', filteredLists.filteredPOD) || hasChanges;
+  hasChanges = this.clearPortControlIfInvalid('FDCSid', filteredLists.filteredFDC) || hasChanges;
+
+  return hasChanges;
+}
+
+private refreshPortFilters(): void {
+  const filteredLists = this.buildPortFilterLists();
+  this.applyPortFilterLists(filteredLists);
+
+  if (this.clearInvalidPortSelections(filteredLists)) {
+    this.applyPortFilterLists(this.buildPortFilterLists());
+  }
+}
 
   handlePOLChange(selectedPort: any): void {
-    if (!selectedPort) {
-      this.filteredPOD = [...this.filteredPorts];
-      return;
-    }
-    const selectedPortSid = selectedPort.PortMasterSid ?? selectedPort;
-    this.filteredPOD = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPortSid);
-    this.tariffHeaderForm.get('POLSid')?.setValue(selectedPortSid, { emitEvent: false });
-  }
+  const selectedPortSid = selectedPort?.PortMasterSid ?? selectedPort ?? null;
+  this.tariffHeaderForm.get('POLSid')?.setValue(selectedPortSid, { emitEvent: false });
+  this.refreshPortFilters();
+}
 
-  handlePODChange(selectedPort: any): void {
-  if (!selectedPort) {
-    this.filteredPOL = [...this.filteredPorts];
-    this.tariffHeaderForm.get('FDCSid')?.setValue(null); // Clear FDC when POD is cleared
-    return;
-  }
-  
-  const selectedPortSid = selectedPort.PortMasterSid ?? selectedPort;
-  this.filteredPOL = this.filteredPorts.filter(port => port.PortMasterSid !== selectedPortSid);
+handlePODChange(selectedPort: any): void {
+  const selectedPortSid = selectedPort?.PortMasterSid ?? selectedPort ?? null;
   this.tariffHeaderForm.get('PODSid')?.setValue(selectedPortSid, { emitEvent: false });
-  
-  // ✅ Set FDC to the same value as POD
-  this.tariffHeaderForm.get('FDCSid')?.setValue(selectedPortSid);
+
+  // Same as your current behavior: FDC defaults to POD
+  this.tariffHeaderForm.get('FDCSid')?.setValue(selectedPortSid, { emitEvent: false });
+
+  this.refreshPortFilters();
 }
 
 
   resetForm() {
   this.filteredPorts = [...this.portList];
-  this.filteredPOL = [...this.filteredPorts];
-  this.filteredPOD = [...this.filteredPorts];
+  this.filteredPOO = [...this.portList];
+  this.filteredPOL = [...this.portList];
+  this.filteredPOD = [...this.portList];
+  this.filteredFDC = [...this.portList];
+
+  this.pooList = [...this.filteredPOO];
+  this.polList = [...this.filteredPOL];
+  this.podList = [...this.filteredPOD];
+  this.fdcList = [...this.filteredFDC];
 
   if (this.isEditMode && this.TariffHeaderSid) {
     this.loadTariff(this.TariffHeaderSid);
@@ -1107,9 +1428,6 @@ filterChargesByDepartment(department: any): void {
   this.editingDetailIndex = null;
   this.isModalEditMode = false;
   this.btnDisable = true;
-
-  this.polList = [...this.portList];
-  this.podList = [...this.portList];
 
   this.minEffectiveDate = this.toNgbDateStruct(this.todayDate);
   this.minEffectiveFrom = null;
@@ -1357,7 +1675,6 @@ filterChargesByDepartment(department: any): void {
 }
   effectiveDateValidator(): ValidatorFn {
   return (control: AbstractControl): { [key: string]: any } | null => {
-    if (this.isModalEditMode) return null;
     if (!control.value) return null;
 
     const chargeCode = control.parent?.get('detailChargeCode')?.value;
@@ -1370,29 +1687,35 @@ filterChargesByDepartment(department: any): void {
     today.setHours(0, 0, 0, 0);
 
     const sameChargeDetails = this.tariffDetails.getRawValue().filter(
-      (detail: any) => detail.ChargeCode === chargeCode && detail.status === 'A'
+      (detail: any, index: number) =>
+        detail.ChargeCode === chargeCode &&
+        detail.status === 'A' &&
+        index !== this.editingDetailIndex
     );
 
     if (sameChargeDetails.length === 0) {
       if (effectiveDate < today) {
-        return { invalidEffectiveDate: 'Effective date cannot be in the past for new charge codes' };
-      }
-      return null;
-    } else {
-      const expiredDates = sameChargeDetails.map((detail: any) => new Date(detail.ExpiredOn));
-      const maxExpiredDate = new Date(Math.max(...expiredDates.map((date: Date) => date.getTime())));
-      maxExpiredDate.setHours(0, 0, 0, 0);
-
-      const requiredEffectiveDate = new Date(maxExpiredDate);
-      requiredEffectiveDate.setDate(requiredEffectiveDate.getDate() + 1);
-
-      if (effectiveDate < requiredEffectiveDate) {
         return {
-          invalidEffectiveDate: `Effective date must be ${requiredEffectiveDate.toLocaleDateString()} or later for this charge code`
+          invalidEffectiveDate: 'Effective date cannot be in the past for new charge codes'
         };
       }
       return null;
     }
+
+    const expiredDates = sameChargeDetails.map((detail: any) => new Date(detail.ExpiredOn));
+    const maxExpiredDate = new Date(Math.max(...expiredDates.map((date: Date) => date.getTime())));
+    maxExpiredDate.setHours(0, 0, 0, 0);
+
+    const requiredEffectiveDate = new Date(maxExpiredDate);
+    requiredEffectiveDate.setDate(requiredEffectiveDate.getDate() + 1);
+
+    if (effectiveDate < requiredEffectiveDate) {
+      return {
+        invalidEffectiveDate: `Effective date must be ${requiredEffectiveDate.toLocaleDateString()} or later for this charge code`
+      };
+    }
+
+    return null;
   };
 }
 

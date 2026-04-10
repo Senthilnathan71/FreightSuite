@@ -1112,6 +1112,10 @@
                       <i class="fas fa-info-circle text-danger ms-1 ivt-pulse-icon"
                          [ngbTooltip]="'No tax rows will be created for this invoice type'"
                          placement="top" container="body"></i>
+                    } @else if (isInvoiceTypeRequired && !voucherForm.get('InvoiceType')?.value) {
+                      <i class="fas fa-info-circle text-danger ms-1 ivt-pulse-icon"
+                         [ngbTooltip]="'Required — at least one charge line has a tax-contributing HSSAC code'"
+                         placement="top" container="body"></i>
                     }
                   </label>
                 </div>

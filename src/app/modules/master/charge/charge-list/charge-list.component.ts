@@ -360,7 +360,6 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
         sortable: true,
         filterable: true,
         visible: true,
-        width:"140px",
         dataType: 'string'
       },
       {
@@ -377,7 +376,6 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
         sortable: true,
         filterable: true,
         visible: true,
-        width: '80px',
         dataType: 'string'
       },
       {
@@ -386,7 +384,6 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
         sortable: true,
         filterable: true,
         visible: true,
-        width: '100px',
         dataType: 'string'
       },
       {

@@ -378,11 +378,19 @@ private saveDraftWithCallback(resolve?: (value: boolean) => void) {
           const message = isFinal ? 'Journal voucher saved and posted successfully!' : 'Journal voucher saved as draft successfully!';
           this.appSettingService.showSuccess(message);
 
-          if (!this.voucherHeaderSid && voucherHeaderSid) {
-            this.voucherHeaderSid = voucherHeaderSid;
-            this.initialFormValue = this.form.getRawValue();
-            this.router.navigate(['/accounts/journal-voucher/entry', voucherHeaderSid]);
-          }
+          if (voucherHeaderSid) {
+
+  if (!this.voucherHeaderSid) {
+    // NEW RECORD
+    this.voucherHeaderSid = voucherHeaderSid;
+    this.router.navigate(['/accounts/journal-voucher/entry', voucherHeaderSid]);
+  } else {
+    // UPDATE RECORD → Reload latest data
+    this.loadVoucherForEdit(voucherHeaderSid);
+  }
+
+  this.initialFormValue = this.form.getRawValue();
+}
           
           if (resolve) resolve(true);
         }
@@ -1536,7 +1544,7 @@ private deepEqual(obj1: any, obj2: any): boolean {
     });
     detailGroup.get('currencyAmount')?.valueChanges.subscribe(() => {
       if (this.isPatchingEditData) return;
-      this.calculateLocalAmount(detailGroup);
+      this.calculateLocalAmountByGroup(detailGroup);
     });
 
     detailGroup.get('coaMasterSid')?.valueChanges.subscribe((coaMasterSid) => {
@@ -1909,7 +1917,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
 
     if (!currencyMasterSid) {
       if (changedControl !== 'taxAmount') {
-        this.calculateLocalAmount(detailGroup);
+        this.calculateLocalAmountByGroup(detailGroup);
       }
       return;
     }
@@ -1920,7 +1928,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
         { exchangeRate: this.getFormattedAndPaddedExchangeRate(exchangeRate, currencyMasterSid) },
         { emitEvent: false }
       );
-      this.calculateLocalAmount(detailGroup);
+      this.calculateLocalAmountByGroup(detailGroup);
       return;
     }
 
@@ -1930,7 +1938,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
         { currencyAmount: this.getFormattedAndPaddedAmount(currencyAmount, currencyMasterSid) },
         { emitEvent: false }
       );
-      this.calculateLocalAmount(detailGroup);
+      this.calculateLocalAmountByGroup(detailGroup);
       return;
     }
 
@@ -1941,32 +1949,58 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
     );
   }
 
-  calculateLocalAmount(detailGroup: FormGroup): void {
-    if (this.isPatchingEditData) return;
-    const currencyAmount = toNumber(detailGroup.get('currencyAmount')?.value || 0);
-    const exchangeRate = toNumber(detailGroup.get('exchangeRate')?.value || 0);
-    const currencyMasterSid =
-      detailGroup.get('currencyMasterSid')?.value || this.currentCompany?.CurrencyMasterSid;
-
-    const formattedExchangeRate = this.getFormattedExchangeRate(exchangeRate, currencyMasterSid);
-    const formattedCurrencyAmount = this.getFormattedAmount(currencyAmount, currencyMasterSid);
-
-    let localAmount: number;
-    if (this.formatCurrencyAmountBeforeConcludingLocal) {
-      localAmount = Number(formattedCurrencyAmount) * Number(formattedExchangeRate);
-    } else {
-      localAmount = Number(currencyAmount) * Number(formattedExchangeRate);
-    }
-
-    const formattedLocalAmount = this.getFormattedAndPaddedAmount(localAmount, currencyMasterSid);
-
-    detailGroup.patchValue({
-      localAmount: formattedLocalAmount
-    }, { emitEvent: false });
-
-    // Recalculate tax when local amount changes
-    this.calculateTaxAmount(detailGroup);
+  calculateLocalAmountByGroup(detailGroup: FormGroup, formatOnBlur: boolean = false): void {
+  const rowIndex = this.details.controls.indexOf(detailGroup);
+  if (rowIndex !== -1) {
+    this.calculateLocalAmount(rowIndex, formatOnBlur);
   }
+}
+
+  calculateLocalAmount(index: number, formatOnBlur: boolean = false): void {
+  const detailGroup = this.details.at(index) as FormGroup;
+  if (!detailGroup) return;
+
+  const currencyMasterSid =
+    detailGroup.get('currencyMasterSid')?.value || this.currentCompany?.CurrencyMasterSid;
+
+  const rawAmount = toNumber(detailGroup.get('currencyAmount')?.value);
+  const rawExchangeRate = toNumber(detailGroup.get('exchangeRate')?.value);
+
+  const formattedExchangeRate = this.getFormattedExchangeRate(
+    rawExchangeRate,
+    currencyMasterSid
+  );
+
+  const formattedAmount = this.getFormattedAmount(
+    rawAmount,
+    currencyMasterSid
+  );
+
+  let finalAmount = 0;
+
+  if (this.formatCurrencyAmountBeforeConcludingLocal) {
+    finalAmount = Number(formattedAmount) * Number(formattedExchangeRate);
+  } else {
+    finalAmount = Number(rawAmount) * Number(formattedExchangeRate);
+  }
+
+  detailGroup.get('localAmount')?.setValue(
+    this.getFormattedAmount(finalAmount, currencyMasterSid),
+    { emitEvent: false }
+  );
+
+  if (formatOnBlur) {
+    detailGroup.get('currencyAmount')?.setValue(
+      this.getFormattedAndPaddedAmount(rawAmount, currencyMasterSid),
+      { emitEvent: false }
+    );
+
+    detailGroup.get('localAmount')?.setValue(
+      this.getFormattedAndPaddedAmount(finalAmount, currencyMasterSid),
+      { emitEvent: false }
+    );
+  }
+}
 
   fetchExchangeRate(detailGroup: FormGroup, currencyId: number): void {
     if (this.isPatchingEditData) return;
@@ -1990,7 +2024,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
       }, { emitEvent: false });
 
       detailGroup.get('exchangeRate')?.disable({ emitEvent: false });
-      this.calculateLocalAmount(detailGroup);
+      this.calculateLocalAmountByGroup(detailGroup);
       return;
     }
 
@@ -2019,7 +2053,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
               currencyCode: fromCurrencyCode,
               exchangeRate: formattedRate
             }, { emitEvent: false });
-            this.calculateLocalAmount(detailGroup);
+            this.calculateLocalAmountByGroup(detailGroup);
           } else {
             // Exchange rate not found - DON'T default to 1
             detailGroup.patchValue({

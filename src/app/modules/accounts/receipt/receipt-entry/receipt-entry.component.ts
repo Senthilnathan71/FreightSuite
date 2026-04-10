@@ -772,7 +772,8 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         .getAllCoaWithLedgerCategory({
           LedgerCategory: 'Ledger',
           CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-          filterNonJob : true
+          filterNonJob: true,
+          VoucherType: 'RPT'
         })
         .pipe(catchError((err) => of([]))),
       costCenters: this.accountService
@@ -2297,7 +2298,6 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         .getLedgerByCOAMasterSid({
           COAMasterSid: coa.COAMappedId || coa.COAMasterSid,
           CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-          DrCr: 'D',
         })
         .subscribe((resp: any) => {
           if (resp.status) {
