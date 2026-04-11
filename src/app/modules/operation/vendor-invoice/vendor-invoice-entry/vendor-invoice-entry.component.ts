@@ -804,8 +804,10 @@ export class VendorInvoiceEntryComponent implements OnInit {
   }
 
   applyVoucherDateConstraints(): void {
-    // Only validate on create; skip for existing voucher (edit/view)
-    if (this.headerId || this.isViewMode) {
+    // Vendor Invoice is always entered via entry/:id (Rate tab auto-creates a draft),
+    // so "create time" = draft (not yet posted). Skip validation once posted
+    // or in view mode; run it for drafts so Post-time checks apply.
+    if (this.isPosted || this.isViewMode) {
       this.voucherConstraints = { isClosed: false, errorMessage: null };
       return;
     }
