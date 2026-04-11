@@ -160,6 +160,23 @@ export class AllHBLDraftComponent {
       const fileRef = this.masterJobData?.MasterJobNumber || this.masterJobSid || 'ALL_HBL_DRAFT';
       pdfMake.createPdf(docDefinition).download(`ALL_HBL_DRAFT_${fileRef}.pdf`);
       this.appSettingService.showSuccess('PDF downloaded successfully!');
+      const payload = {
+        tableName: 'MasterJob',
+        recordId: String(this.masterJobData?.MasterJobSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Downloaded'
+        },
+        newVal: {
+          PDF: 'ALL HBL Draft PDF Downloaded'
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     } catch (error) {
       console.error('All HBL Draft PDF generation error:', error);
       this.appSettingService.showError('Error generating PDF. Please try again.');

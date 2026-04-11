@@ -1176,23 +1176,47 @@ getPortName(portCode: string | number): string {
 
 
   async downloadPDF() {
-    this.showPrintLogo = false;
-    this.showPdfLogo = true;
+  this.showPrintLogo = false;
+  this.showPdfLogo = true;
 
-    setTimeout(async () => {
-      this.spinner.show();
-      try {
-        const BankPaymentNo = this.masterAirWayData?.MBLNo || '';
-        await this.pdfService.downloadBalancedPDF(
-          'printContent',
-          `MAWB_${BankPaymentNo}`,
-          () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-          (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
-        );
-      } finally {
-        this.spinner.hide();
-      }
-    }, 50);
-  }
+  setTimeout(async () => {
+    this.spinner.show();
+    try {
+      const mawbNo = this.masterAirWayData?.MBLNo || 'Draft';
+
+      await this.pdfService.downloadBalancedPDF(
+        'printContent',
+        `MAWB_${mawbNo}`,
+        () => {
+          this.appSettingService.showSuccess('PDF downloaded successfully!');
+
+          const payload = {
+            tableName: 'MasterJob',
+            recordId: String(this.masterAirWayData?.MasterJobSid),
+            operation: 'PDF',
+            changedBy: this.appSettingService.userSettingSource.value?.['userEmail'],
+            changes: {
+              action: 'PDF Downloaded'
+            },
+            newVal: {
+              PDF: 'MAWB Preprint PDF Downloaded'
+            }
+          };
+
+          this.operationService.createAuditLog(payload).subscribe({
+            next: () => {},
+            error: (err) => console.error('Audit log error:', err)
+          });
+        },
+        (error) => {
+          console.error('PDF generation error:', error);
+          this.appSettingService.showError('Error generating PDF. Please try again.');
+        }
+      );
+    } finally {
+      this.spinner.hide();
+    }
+  }, 50);
+}
 
 }

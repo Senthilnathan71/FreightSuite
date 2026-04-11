@@ -1200,6 +1200,23 @@ export class AwbDraftComponent {
         const BankPaymentNo = this.housejobData?.MBLNo || '';
         await this.downloadPdfWithPdfMake(`AMAWB_${BankPaymentNo}`);
         this.appSettingService.showSuccess('PDF downloaded successfully!');
+        const payload = {
+        tableName: 'HouseJob',
+        recordId: String(this.housejobData?.HouseJobSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF downloaded'
+        },
+        newVal: {
+          Email: 'AMAWB pdf downloaded'
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
       } catch (error) {
         console.error('MAWB pdfmake export failed:', error);
         this.appSettingService.showError('Error generating PDF. Please try again.');

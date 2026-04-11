@@ -2537,6 +2537,23 @@ isSeaDepartment(): boolean {
         menuEmail: ''
       }
     });
+    const payload = {
+        tableName: 'VoucherHeader',
+        recordId: String(this.invoiceData?.VoucherHeaderSid),
+        operation: 'EMAIL',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'Email Send'
+        },
+        newVal: {
+          Email: 'Invoice Email Send',
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
   }
 
   goBack() {
@@ -3464,6 +3481,23 @@ isSeaDepartment(): boolean {
         await this.downloadPDFInBrowser();
       }
       this.appSettingService.showSuccess('PDF downloaded successfully!');
+      const payload = {
+        tableName: 'VoucherHeader',
+        recordId: String(this.invoiceData?.VoucherHeaderSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Downloaded'
+        },
+        newVal: {
+          Email: 'Invoice Pdf Downloaded',
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     } catch (error) {
       if ((error as any)?.name === 'AbortError') {
         return;

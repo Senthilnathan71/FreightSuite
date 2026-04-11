@@ -15,6 +15,7 @@ import { CompanySettingsManagerService } from 'src/app/core/services/company-set
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { OperationService } from 'src/app/modules/operation/operation.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 
@@ -116,7 +117,8 @@ export class JournalVoucherPrintComponent {
     private numberToWords: NumberToWordsService,
     private companySettings: CompanySettingsManagerService,
     public logoService : LogoService,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private operationService: OperationService
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -257,6 +259,23 @@ getSubledgerName(SubledgerMasterSid : number){
         const filename = `Journal_Voucher_${pdfData.journalVoucher?.voucherNumber || 'Draft'}.pdf`;
         pdfMake.createPdf(docDefinition).download(filename);
         this.appSettingService.showSuccess('PDF downloaded successfully!');
+        const payload = {
+        tableName: 'VoucherHeader',
+        recordId: String(this.voucherData?.VoucherHeaderSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Download'
+        },
+        newVal: {
+          PDF: 'Journal Voucher PDF Downloaded',
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
       } catch (error) {
         console.error('Journal voucher PDF generation failed:', error);
         this.appSettingService.showError('Error generating PDF. Please try again.');

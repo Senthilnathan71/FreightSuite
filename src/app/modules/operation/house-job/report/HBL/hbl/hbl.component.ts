@@ -190,6 +190,23 @@ export class HblComponent {
       const houseJob = this.housejobData?.HBLNo || 'Draft';
       pdfMake.createPdf(docDefinition).download(`HBL_${houseJob}.pdf`);
       this.appSettingService.showSuccess('PDF downloaded successfully!');
+      const payload = {
+        tableName: 'HouseJob',
+        recordId: String(this.housejobData?.MasterJobSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Downloaded'
+        },
+        newVal: {
+          PDF: `${this.selectedReport} PDF Downloaded`
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     } catch (error) {
       console.error('HBL PDF generation error:', error);
       this.appSettingService.showError('Error generating PDF. Please try again.');

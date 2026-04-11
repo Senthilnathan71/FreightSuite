@@ -10,6 +10,7 @@ import { LogoService } from 'src/app/core/services/logo.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { OperationService } from '../../../operation.service';
 
 interface summaryDTO {
   revenue : any[];
@@ -58,7 +59,8 @@ export class JobCardComponent implements OnChanges {
     private spinner: NgxSpinnerService,
     private pdfMakeService: PdfMakeService,
     public logoService : LogoService,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private operationService: OperationService
   ) { }
 
   ngOnInit() {
@@ -385,6 +387,23 @@ getGroupedExpenseByParty() {
         this.getJobCardPdfOptions()
       );
       this.appSettingService.showSuccess('PDF downloaded successfully!');
+      const payload = {
+        tableName: 'HouseJob',
+        recordId: String(this.housejobData?.HouseJobSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Downloaded'
+        },
+        newVal: {
+          PDF: 'Job Card PDF Downloaded'
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     } catch (error) {
       console.error('Job card PDF generation failed:', error);
       this.appSettingService.showError('Error generating PDF. Please try again.');

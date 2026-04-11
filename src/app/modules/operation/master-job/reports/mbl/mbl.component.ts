@@ -14,6 +14,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { OperationService } from '../../../operation.service';
 
 @Component({
   selector: 'app-mbl',
@@ -57,7 +58,8 @@ export class MblComponent {
     private spinner: NgxSpinnerService,
     private modalService: NgbModal,
     public logoService: LogoService,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private operationService: OperationService
   ) {}
 
   ngOnInit() {
@@ -178,8 +180,26 @@ export class MblComponent {
 
       const docDefinition = generateMblDocument(pdfData);
       const mblNo = this.masterJobData?.MBLNo || 'Draft';
+      const reportname = this.selectedReport === 'MBL' ? 'MBL' :  'MBLDraft';
       pdfMake.createPdf(docDefinition).download(`MBL_${mblNo}.pdf`);
       this.appSettingService.showSuccess('PDF downloaded successfully!');
+      const payload = {
+        tableName: 'MasterJob',
+        recordId: String(this.masterJobData?.MasterJobSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Downloaded'
+        },
+        newVal: {
+          PDF: `${reportname} PDF Downloaded`,
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     } catch (error) {
       console.error('MBL PDF generation error:', error);
       this.appSettingService.showError('Error generating PDF. Please try again.');

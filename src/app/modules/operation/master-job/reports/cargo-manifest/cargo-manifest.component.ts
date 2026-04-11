@@ -11,6 +11,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { MasterService } from 'src/app/modules/master/master.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
+import { OperationService } from '../../../operation.service';
 
 @Component({
   selector: 'app-cargo-manifest',
@@ -45,7 +46,8 @@ export class CargoManifestComponent {
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
     public logoService : LogoService,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private operationService: OperationService
   ) { }
 
    showPrintLogo: boolean = false;
@@ -233,6 +235,23 @@ export class CargoManifestComponent {
       const fileName = `Cargo_manifest_${this.masterJobData?.MasterJobNumber || ''}.pdf`;
       pdfMake.createPdf(docDefinition).download(fileName);
       this.appSettingService.showSuccess('PDF downloaded successfully!');
+      const payload = {
+        tableName: 'MasterJob',
+        recordId: String(this.masterJobData?.MasterJobSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Downloaded'
+        },
+        newVal: {
+          PDF: 'Cargo Manifest PDF Downloaded'
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     } catch (error) {
       console.error('Cargo manifest PDF generation failed:', error);
       this.appSettingService.showError('Error generating PDF. Please try again.');

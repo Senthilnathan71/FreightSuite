@@ -1359,6 +1359,23 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
         menuEmail: ''
       }
     });
+    const payload = {
+        tableName: 'HouseJob',
+        recordId: String(this.serviceJobData?.HouseJobSid),
+        operation: 'EMAIL',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'Email Send'
+        },
+        newVal: {
+          Email: 'Service Job Email Send',
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
   }
 
   navigateBack() {

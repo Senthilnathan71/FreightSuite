@@ -1209,6 +1209,23 @@ getOtherPrepaidTotal(): number {
       const BankPaymentNo = this.masterAirWayData?.MBLNo || '';
       await this.downloadPdfWithPdfMake(`MAWB_${BankPaymentNo}`);
       this.appSettingService.showSuccess('PDF downloaded successfully!');
+      const payload = {
+        tableName: 'MasterJob',
+        recordId: String(this.masterAirWayData?.MasterJobSid),
+        operation: 'EMAIL',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Downloaded'
+        },
+        newVal: {
+          PDF: 'MAWB Draft PDF Downloaded'
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     } catch (error) {
       console.error('MAWB pdfmake export failed:', error);
       this.appSettingService.showError('Error generating PDF. Please try again.');

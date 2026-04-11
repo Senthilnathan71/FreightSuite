@@ -11,6 +11,7 @@ import { LogoService } from 'src/app/core/services/logo.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { OperationService } from '../../../operation.service';
 @Component({
   selector: 'app-cargo-arrival',
   standalone: true,
@@ -89,7 +90,8 @@ export class CargoArrivalComponent {
     private spinner: NgxSpinnerService,
     private numberToWords: NumberToWordsService,
     public logoService : LogoService,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private operationService: OperationService
   ) { }
 
 
@@ -249,6 +251,7 @@ printDiv(divId: string): void {
     this.spinner.show();
    try {
       const logo = this.pdfMakeService.getReportLogo();
+      const charge = this.withOrWithoutCharge ? 'With' : 'Without'
       this.pdfMakeService.generateCargoArrivalFromApi(
         this.housejobData,
         this.currentCompany,
@@ -258,6 +261,23 @@ printDiv(divId: string): void {
         this.getCargoArrivalPdfOptions()
       );
       this.appSettingService.showSuccess('PDF downloaded successfully!');
+      const payload = {
+        tableName: 'HouseJob',
+        recordId: String(this.housejobData?.HouseJobSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Downloaded'
+        },
+        newVal: {
+          PDF: `Cargo Arrival Notice ${charge} Charges PDF Downloaded`
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     } catch (error) {
       console.error('Cargo arrival PDF generation failed:', error);
       this.appSettingService.showError('Error generating PDF. Please try again.');

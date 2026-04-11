@@ -15,6 +15,7 @@ import {
   transformProofOfDeliveryApiData,
 } from 'src/app/common/pdf/generators/proof-of-delivery-pdf.generator';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { OperationService } from '../../../operation.service';
 
 @Component({
   selector: 'app-proof-of-delivery',
@@ -53,7 +54,8 @@ export class ProofOfDeliveryComponent {
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
     public logoService : LogoService,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private operationService: OperationService
   ) { }
 
     ngOnInit() {
@@ -173,6 +175,23 @@ export class ProofOfDeliveryComponent {
         .createPdf(docDefinition)
         .download(`Proof-of-Delivery-${this.housejobData?.HBLNo || 'Report'}.pdf`);
       this.appSettingsService.showSuccess('PDF downloaded successfully!');
+      const payload = {
+        tableName: 'HouseJob',
+        recordId: String(this.housejobData?.HouseJobSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Downloaded'
+        },
+        newVal: {
+          PDF: 'Proof-of-Delivery PDF Downloaded',
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     } finally {
       this.spinner.hide();
     }

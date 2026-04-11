@@ -13,6 +13,7 @@ import { LogoService } from 'src/app/core/services/logo.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { OperationService } from 'src/app/modules/operation/operation.service';
 
 @Component({
   selector: 'app-cash-receipt',
@@ -72,7 +73,8 @@ export class CashReceiptComponent {
     private numberToWords: NumberToWordsService,
     private companySettings: CompanySettingsManagerService,
     public logoService : LogoService,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private operationService: OperationService
   ) { }
 
   getBankName(COAMasterSid: number) {
@@ -242,6 +244,23 @@ getDrDetails() {
         await this.downloadPDFInBrowser();
       }
       this.appSettingService.showSuccess('PDF downloaded successfully!');
+      const payload = {
+        tableName: 'VoucherHeader',
+        recordId: String(this.receiptPrintData?.VoucherHeaderSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Download'
+        },
+        newVal: {
+          PDF: 'Cash Receipt PDF Downloaded',
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     } catch (error) {
       if ((error as any)?.name === 'AbortError') {
         return;

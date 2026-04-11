@@ -107,6 +107,7 @@ filteredFDC: any[] = [];
   incoList: any[] = [];
   isDataLoading: boolean = false;
   isCopiedTariffMode: boolean = false;
+  pendingCopiedTariffData: any = null;
   tariffData: any;
   tariffDetailData: any;
 
@@ -187,25 +188,17 @@ get currencyList(): any[] {
   ) { }
 
   ngOnInit(): void {
-    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-    this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
-    this.initHeaderForm();
-    this.loadAllFields();
+  this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+  this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+  this.MenuMasterSid = sessionStorage.getItem('currentMenuId');
 
-    const historyState = history?.state;
-    const copiedTariffData = historyState?.copiedTariffData;
-    const isCopiedTariff = historyState?.isCopiedTariff;
+  this.initHeaderForm();
 
-    this.tariffHeaderForm.statusChanges.subscribe(status => {
-      this.btnDisable = status !== 'VALID';
-    });
+  const historyState = history?.state;
+  const copiedTariffData = historyState?.copiedTariffData;
+  const isCopiedTariff = historyState?.isCopiedTariff;
 
-    this.tariffHeaderForm.get('DepartmentMasterSid')?.valueChanges.subscribe((deptValue) => {
-      this.onDeptChange(deptValue);
-    });
-    this.mps.init().subscribe();
-    if (isCopiedTariff && copiedTariffData) {
+  if (isCopiedTariff && copiedTariffData) {
     history.replaceState({}, '', location.pathname);
 
     this.isEditMode = false;
@@ -213,29 +206,38 @@ get currencyList(): any[] {
     this.TariffHeaderSid = null;
     this.minEffectiveDate = this.toNgbDateStruct(this.todayDate);
 
-    setTimeout(() => {
-      this.patchCopiedTariff(copiedTariffData);
-      this.appSettingServ.showSuccess('Tariff copied successfully. Please review and save.');
-    }, 300);
-
-    return;
+    // keep data and patch only after master data is loaded
+    this.pendingCopiedTariffData = copiedTariffData;
   }
-    this.currRoute.paramMap.subscribe(param => {
-      this.TariffHeaderSid = Number(param.get('id'));
-      if (this.TariffHeaderSid) {
-        this.isEditMode = true;
-        this.minEffectiveDate = undefined as any;
-        this.loadTariff(this.TariffHeaderSid);
-      } else {
-        this.minEffectiveDate = this.toNgbDateStruct(this.todayDate);
-      }
-    });
 
-    const userProfile = this.appSettingServ.getDecryptedUserProfile();
-    if (userProfile) {
-      this.userData = userProfile;
+  this.loadAllFields();
+
+  this.tariffHeaderForm.statusChanges.subscribe(status => {
+    this.btnDisable = status !== 'VALID';
+  });
+
+  this.tariffHeaderForm.get('DepartmentMasterSid')?.valueChanges.subscribe((deptValue) => {
+    this.onDeptChange(deptValue);
+  });
+
+  this.mps.init().subscribe();
+
+  this.currRoute.paramMap.subscribe(param => {
+    this.TariffHeaderSid = Number(param.get('id'));
+    if (this.TariffHeaderSid) {
+      this.isEditMode = true;
+      this.minEffectiveDate = undefined as any;
+      this.loadTariff(this.TariffHeaderSid);
+    } else {
+      this.minEffectiveDate = this.toNgbDateStruct(this.todayDate);
     }
+  });
+
+  const userProfile = this.appSettingServ.getDecryptedUserProfile();
+  if (userProfile) {
+    this.userData = userProfile;
   }
+}
 
   getUOMName(uomSid: any): string {
   if (!uomSid || !this.UOMList?.length) return '';
@@ -467,39 +469,57 @@ getCurrencyCode(currencySid: any): string {
     this.appSettingServ.showError('Failed to load tariff detail fields');
   });
 }
-  // --- LOAD TARIFF AND SET READONLY VIEW ---
   loadTariff(TariffHeaderSid: number) {
   this.masterServ.getTariffById(TariffHeaderSid).subscribe(
-    (tariffData) => {
-      if (tariffData.data) {
-        this.tariffData = tariffData.data;
+    (resp) => {
+      if (!resp?.data) return;
 
-        this.tariffHeaderForm.patchValue({
-          ...tariffData.data,
-          DepartmentMasterSid: Number(tariffData.data.DepartmentMasterSid),
-          status: tariffData.data.status === 'A' ? 'Active' : 'Suspended'
-        });
+      const data = resp.data;
+      this.tariffData = data;
 
-        this.tariffDetails.clear();
-        (tariffData.data.tariffDetail || []).forEach((detail: any) => {
-          this.tariffDetails.push(this.createTariffDetailFormGroup(detail));
-        });
+      const deptSid = Number(data.DepartmentMasterSid);
+      const deptObj =
+        this.departments?.find(d => Number(d.DepartmentMasterSid) === deptSid) || null;
 
-        const deptSid = Number(tariffData.data.DepartmentMasterSid);
-        const deptObj =
-          this.departments?.find(d => Number(d.DepartmentMasterSid) === deptSid) || null;
-        this.onDeptChange(deptObj ?? deptSid);
+      // 1. patch department first without firing valueChanges
+      this.tariffHeaderForm.patchValue({
+        DepartmentMasterSid: deptSid
+      }, { emitEvent: false });
 
-        // allow status edit immediately on fetch
-        this.isStatusEditable = true;
-        this.setHeaderControlsReadOnly(true);
-        this.tariffHeaderForm.get('status')?.enable({ emitEvent: false });
+      // 2. build port lists based on department
+      this.onDeptChange(deptObj ?? deptSid);
 
-        this.btnDisable = false;
-      }
+      // 3. patch remaining values after lists are ready
+      this.tariffHeaderForm.patchValue({
+        POOSid: data.POOSid ?? null,
+        POLSid: data.POLSid ?? null,
+        PODSid: data.PODSid ?? null,
+        FDCSid: data.FDCSid ?? null,
+        ViaPortSid: data.ViaPortSid ?? null,
+        POLTerminal: data.POLTerminal ?? '',
+        PODTerminal: data.PODTerminal ?? '',
+        Carrier: data.Carrier ?? null,
+        AgentSid: data.AgentSid ?? null,
+        IncoTerms: data.IncoTerms ?? null,
+        status: data.status === 'A' ? 'Active' : 'Suspended',
+        Remarks: data.Remarks ?? ''
+      }, { emitEvent: false });
+
+      // 4. keep current selected ports inside filtered lists
+      this.applyPatchedPortSelections();
+
+      this.tariffDetails.clear();
+      (data.tariffDetail || []).forEach((detail: any) => {
+        this.tariffDetails.push(this.createTariffDetailFormGroup(detail));
+      });
+
+      this.isStatusEditable = true;
+      this.setHeaderControlsReadOnly(true);
+      this.tariffHeaderForm.get('status')?.enable({ emitEvent: false });
+      this.btnDisable = false;
     },
     (error) => {
-      this.appSettingServ.showError('Error Loading Tariff ', error);
+      this.appSettingServ.showError('Error Loading Tariff', error);
     }
   );
 }
@@ -517,55 +537,55 @@ getCurrencyCode(currencySid: any): string {
     chargeTax: this.masterServ.getAllChargeTax(CompanyMasterSid)
   }).subscribe(({ ports, agents, carriers, departments, companies, currencies, incos, chargeTax }) => {
     this.departments = departments || [];
-    
+
     const rawPorts = ports.data || ports || [];
-this.portList = rawPorts.map((p: any) => {
-  const countryName =
-    p.countryName ||
-    p.countryMaster?.countryName ||
-    p.country?.countryName ||
-    p.CountryName ||
-    '';
+    this.portList = rawPorts.map((p: any) => {
+      const countryName =
+        p.countryName ||
+        p.countryMaster?.countryName ||
+        p.country?.countryName ||
+        p.CountryName ||
+        '';
 
-  const countryMasterSid =
-    p.CountryMasterSid ||
-    p.countryMaster?.CountryMasterSid ||
-    p.country?.CountryMasterSid ||
-    null;
+      const countryMasterSid =
+        p.CountryMasterSid ||
+        p.countryMaster?.CountryMasterSid ||
+        p.country?.CountryMasterSid ||
+        null;
 
-  return {
-    ...p,
-    PortCode: p.PortCode || p.portCode,
-    PortName: p.PortName || p.portName,
-    PortMasterSid: p.PortMasterSid || p.portMasterSid,
-    PortType: p.PortType || p.portType,
-    CountryMasterSid: countryMasterSid,
-    Country: countryName,
-    countryName: countryName
-  };
-});
+      return {
+        ...p,
+        PortCode: p.PortCode || p.portCode,
+        PortName: p.PortName || p.portName,
+        PortMasterSid: p.PortMasterSid || p.portMasterSid,
+        PortType: p.PortType || p.portType,
+        CountryMasterSid: countryMasterSid,
+        Country: countryName,
+        countryName: countryName
+      };
+    });
 
-this.filteredPorts = [...this.portList];
-this.filteredPOO = [...this.portList];
-this.filteredPOL = [...this.portList];
-this.filteredPOD = [...this.portList];
-this.filteredFDC = [...this.portList];
+    this.filteredPorts = [...this.portList];
+    this.filteredPOO = [...this.portList];
+    this.filteredPOL = [...this.portList];
+    this.filteredPOD = [...this.portList];
+    this.filteredFDC = [...this.portList];
 
-this.pooList = [...this.filteredPOO];
-this.polList = [...this.filteredPOL];
-this.podList = [...this.filteredPOD];
-this.fdcList = [...this.filteredFDC];
+    this.pooList = [...this.filteredPOO];
+    this.polList = [...this.filteredPOL];
+    this.podList = [...this.filteredPOD];
+    this.fdcList = [...this.filteredFDC];
+
     this.agentList = agents.data;
     this.carrierList = carriers.data;
     this.departments = (departments || []).filter(
-  (department: any) => !this.isServiceJobDepartment(department)
-);
+      (department: any) => !this.isServiceJobDepartment(department)
+    );
 
-this.departmentList = [...this.departments];
+    this.departmentList = [...this.departments];
     this.filterChargeBasedOnDept();
     this.companyList = companies;
-    
-    // FIX: Also update currency mapping for consistency
+
     const rawCurrencies = currencies.data || currencies || [];
     this.currencyList = rawCurrencies.map((c: any) => ({
       ...c,
@@ -575,6 +595,14 @@ this.departmentList = [...this.departments];
     this.incoList = incos;
     this.chargeTaxes = chargeTax.data;
     this.isDataLoading = false;
+
+    // important: patch copied tariff only after all master data is ready
+    if (this.pendingCopiedTariffData && !this.TariffHeaderSid) {
+      this.patchCopiedTariff(this.pendingCopiedTariffData);
+      this.pendingCopiedTariffData = null;
+      this.appSettingServ.showSuccess('Tariff copied successfully. Please review and save.');
+      return;
+    }
 
     if (this.isEditMode && this.tariffData?.DepartmentMasterSid) {
       const deptSid = Number(this.tariffData.DepartmentMasterSid);
@@ -599,6 +627,56 @@ private getShipmentDirection(): 'EXPORT' | 'IMPORT' | '' {
     return departmentDirection as 'EXPORT' | 'IMPORT';
   }
   return '';
+}
+
+private applyPatchedPortSelections(): void {
+  const pooSid = this.tariffHeaderForm.get('POOSid')?.value;
+  const polSid = this.tariffHeaderForm.get('POLSid')?.value;
+  const podSid = this.tariffHeaderForm.get('PODSid')?.value;
+  const fdcSid = this.tariffHeaderForm.get('FDCSid')?.value;
+
+  const selectedPOL = this.getPortBySid(polSid);
+  const selectedPOD = this.getPortBySid(podSid);
+  const selectedFDC = this.getPortBySid(fdcSid);
+
+  this.pooList = [...(this.filteredPOO || [])];
+
+  // POL list should contain current POL
+  this.polList = [...(this.filteredPOL || [])];
+  if (selectedPOL && !this.polList.some(p => Number(p.PortMasterSid) === Number(selectedPOL.PortMasterSid))) {
+    this.polList = [selectedPOL, ...this.polList];
+  }
+
+  // POD list should contain current POD
+  this.podList = [...(this.filteredPOD || [])];
+  if (selectedPOL) {
+    this.podList = this.podList.filter(p => Number(p.PortMasterSid) !== Number(selectedPOL.PortMasterSid));
+  }
+  if (selectedPOD && !this.podList.some(p => Number(p.PortMasterSid) === Number(selectedPOD.PortMasterSid))) {
+    this.podList = [selectedPOD, ...this.podList];
+  }
+
+  // FDC list should contain current FDC
+  this.fdcList = [...(this.filteredFDC || [])];
+  if (selectedFDC && !this.fdcList.some(p => Number(p.PortMasterSid) === Number(selectedFDC.PortMasterSid))) {
+    this.fdcList = [selectedFDC, ...this.fdcList];
+  }
+
+  // terminals
+  if (selectedPOL) {
+    this.tariffHeaderForm.get('POLTerminal')?.setValue(selectedPOL.PortCode ?? '', { emitEvent: false });
+  }
+  if (selectedPOD) {
+    this.tariffHeaderForm.get('PODTerminal')?.setValue(selectedPOD.PortCode ?? '', { emitEvent: false });
+  }
+
+  // re-apply values once lists are ready
+  this.tariffHeaderForm.patchValue({
+    POOSid: pooSid ?? null,
+    POLSid: polSid ?? null,
+    PODSid: podSid ?? null,
+    FDCSid: fdcSid ?? null
+  }, { emitEvent: false });
 }
 
 private isCompanyCountryPort(port: any): boolean {
@@ -1798,24 +1876,43 @@ private prepareCopiedTariffData(): any {
 private patchCopiedTariff(data: any): void {
   this.tariffData = data;
 
+  const deptSid = Number(data.DepartmentMasterSid);
+  const deptObj =
+    this.departments?.find(d => Number(d.DepartmentMasterSid) === deptSid) || null;
+
+  // patch department first
   this.tariffHeaderForm.patchValue({
-    DepartmentMasterSid: Number(data.DepartmentMasterSid),
+    DepartmentMasterSid: deptSid
+  }, { emitEvent: false });
+
+  this.selectedDepartment = deptObj ?? null;
+  this.selectedDepartmentType = this.normalizePortText((deptObj as any)?.departmentType);
+  this.selectedFCLLCL = this.resolveSelectedSegment(deptObj ?? {});
+
+  // build fresh filtered lists for copied department
+  this.onDeptChange(deptObj ?? deptSid);
+
+  // patch copied selected ports
+  this.tariffHeaderForm.patchValue({
     POOSid: data.POOSid ?? null,
     POLSid: data.POLSid ?? null,
     PODSid: data.PODSid ?? null,
     FDCSid: data.FDCSid ?? null,
     ViaPortSid: data.ViaPortSid ?? null,
-    POLTerminal: data.POLTerminal ?? null,
-    PODTerminal: data.PODTerminal ?? null,
+    POLTerminal: data.POLTerminal ?? '',
+    PODTerminal: data.PODTerminal ?? '',
     Carrier: data.Carrier ?? null,
     AgentSid: data.AgentSid ?? null,
     IncoTerms: data.IncoTerms ?? null,
-    status: data.status === 'A' ? 'Active' : 'Suspended',
+    status: 'Active',
     Remarks: data.Remarks ?? ''
-  });
+  }, { emitEvent: false });
+
+  // now re-filter based on copied POL/POD
+  this.refreshPortFilters();
+  this.applyPatchedPortSelections();
 
   this.tariffDetails.clear();
-
   (data.tariffDetail || []).forEach((detail: any) => {
     this.tariffDetails.push(this.createTariffDetailFormGroup({
       ...detail,
@@ -1826,17 +1923,11 @@ private patchCopiedTariff(data: any): void {
     }));
   });
 
-  const deptSid = Number(data.DepartmentMasterSid);
-  const deptObj = this.departments?.find(
-    d => Number(d.DepartmentMasterSid) === deptSid
-  ) || null;
-
-  this.onDeptChange(deptObj ?? deptSid);
   this.setHeaderControlsReadOnly(false);
-this.tariffHeaderForm.get('POLTerminal')?.disable({ emitEvent: false });
-this.tariffHeaderForm.get('PODTerminal')?.disable({ emitEvent: false });
-this.tariffHeaderForm.get('status')?.enable({ emitEvent: false });
-this.btnDisable = false;
+  this.tariffHeaderForm.get('POLTerminal')?.disable({ emitEvent: false });
+  this.tariffHeaderForm.get('PODTerminal')?.disable({ emitEvent: false });
+  this.tariffHeaderForm.get('status')?.enable({ emitEvent: false });
+  this.btnDisable = false;
 }
 
   

@@ -10,6 +10,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { MasterService } from 'src/app/modules/master/master.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
+import { OperationService } from '../../../operation.service';
 
 @Component({
   selector: 'app-shipment',
@@ -83,7 +84,8 @@ export class ShipmentComponent {
     private pdfMakeService: PdfMakeService,
     private spinner: NgxSpinnerService,
     public logoService : LogoService,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private operationService: OperationService
   ) { }
 
 
@@ -434,6 +436,23 @@ getPortName(portCode: string): string {
         this.getShipmentPdfOptions()
       );
       this.appSettingService.showSuccess('PDF downloaded successfully!');
+      const payload = {
+        tableName: 'HouseJob',
+        recordId: String(this.housejobData?.HouseJobSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Downloaded'
+        },
+        newVal: {
+          PDF: 'House Profit and Loss PDF Downloaded'
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     } catch (error) {
       console.error('Shipment PDF generation failed:', error);
       this.appSettingService.showError('Error generating PDF. Please try again.');

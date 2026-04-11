@@ -65,6 +65,7 @@ import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 import { type } from 'os';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { OperationService } from 'src/app/modules/operation/operation.service';
 @Component({
   selector: 'app-enquiry-entry',
   standalone: true,
@@ -386,6 +387,7 @@ export class EnquiryEntryComponent implements OnInit {
     private sidebarService : VerticalSidebarService,
     private emailTriggerService: EmailTriggerService,
     private modelService: NgbModal,
+    private operationService: OperationService
   ) {
     effect(() => {
       const customerTypeOutput = this.dropdownStore.customerTypeData()
@@ -2047,6 +2049,23 @@ private parseFloatSafe(value: any): number {
         customerBranchSid: this.enquiryData?.CustomerBranchSid || null
       }
     });
+    const payload = {
+        tableName: 'EnquiryHeader',
+        recordId: String(this.rateRequestData?.EnquiryHeaderSid),
+        operation: 'EMAIL',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'Email Send'
+        },
+        newVal: {
+          Email: 'Mail Send'
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
   }
 
   goBack() {
@@ -2898,6 +2917,23 @@ private parseFloatSafe(value: any): number {
       );
 
       this.appSettingService.showSuccess('PDF downloaded successfully!');
+      const payload = {
+        tableName: 'EnquiryHeader',
+        recordId: String(this.rateRequestData?.EnquiryHeaderSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Downloaded'
+        },
+        newVal: {
+          PDF: 'PDF Downloaded'
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     } catch (error) {
       console.error('PDF generation error:', error);
       this.appSettingService.showError('Error generating PDF. Please try again.');

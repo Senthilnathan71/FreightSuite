@@ -15,6 +15,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { MasterService } from 'src/app/modules/master/master.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
+import { OperationService } from '../../../operation.service';
 
 @Component({
   selector: 'app-loading-plan-master',
@@ -50,7 +51,8 @@ export class LoadingPlanMasterComponent {
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
     public logoService : LogoService,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private operationService: OperationService
   ) { }
 
    ngOnInit() {
@@ -112,6 +114,23 @@ export class LoadingPlanMasterComponent {
         .createPdf(docDefinition)
         .download(`Loading_Plan_${this.masterJobData?.MasterJobNumber || 'Report'}.pdf`);
       this.appSettingService.showSuccess('PDF downloaded successfully!');
+      const payload = {
+        tableName: 'MasterJob',
+        recordId: String(this.masterJobData?.MasterJobSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'PDF Downloaded'
+        },
+        newVal: {
+          PDF: 'Loading Plan PDF Downloaded',
+        }
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
     } catch (error) {
       console.error('Loading Plan PDF generation error:', error);
       this.appSettingService.showError('Error generating PDF. Please try again.');
