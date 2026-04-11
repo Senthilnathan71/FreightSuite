@@ -154,7 +154,7 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
   const { exportConfig, company, branch, userData, logo, orientation } = data;
   const printSettings = getGenericHeaderPrintSettings();
   const isLandscape = orientation === 'landscape';
-  const logoHeight = 80;
+  const logoHeight = 60;
   const colCount = exportConfig.tableHeaders.length;
   const includeTableHeaders = exportConfig.includeTableHeaders !== false;
   const suppressSectionBorders = exportConfig.suppressSectionBorders === true;
@@ -219,13 +219,15 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
         bold: true,
         fontSize: 12,
         alignment: printSettings.companyAlignment,
+        noWrap: true
       });
     if (branch?.branchName)
       companyStack.push({
         text: branch.branchName,
-        fontSize: 9,
+        fontSize: 10,
         alignment: printSettings.companyAlignment,
         color: '#000000',
+        noWrap: true
       });
     const addressLine = branch?.addressLine1 || company?.addressLine1 || '';
     if (addressLine)
@@ -234,6 +236,7 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
         fontSize: 8,
         alignment: printSettings.companyAlignment,
         color: '#000000',
+        noWrap: true
       });
 
     const portraitAddressLine2 = branch?.addressLine2 || '';
@@ -263,26 +266,56 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
     if (portraitLineParts.length) {
       companyStack.push({
         text: portraitLineParts,
-        fontSize: 8,
+        fontSize: 10,
         alignment: printSettings.companyAlignment,
         color: '#000000',
-      });
-    }
-
-    if (logo) {
-      stack.push({
-        image: logo,
-        height: logoHeight,
-        alignment: printSettings.logoPosition,
-        margin: [0, 0, 0, 4]
+        noWrap: true
       });
     }
 
     stack.push({
-      stack: companyStack,
-      alignment: printSettings.companyAlignment,
-      margin: [0, 0, 0, 4]
+      columns: [
+        {
+          width: 90,
+          stack: printSettings.logoPosition === 'left' && logo
+            ? [{ image: logo, height: 60, alignment: 'left' }]
+            : [],
+          alignment: 'left'
+        },
+        {
+          width: '*',
+          stack: printSettings.companyPosition === 'center'
+            ? companyStack
+            : [],
+          alignment: printSettings.companyAlignment,
+          margin: [0, 4, 0, 0]
+        },
+        {
+          width: 90,
+          stack: printSettings.logoPosition === 'right' && logo
+            ? [{ image: logo, height: 60, alignment: 'right' }]
+            : [],
+          alignment: 'right'
+        }
+      ],
+      columnGap: 16,
+      margin: [0, 0, 0, 8]
     });
+
+    if (printSettings.companyPosition !== 'center') {
+      stack.unshift({
+        columns: buildHeaderSlots(
+          null,
+          {
+            stack: companyStack,
+            alignment: printSettings.companyAlignment,
+            margin: [0, 4, 0, 0]
+          },
+          printSettings
+        ),
+        margin: [0, 0, 0, 8]
+      });
+    }
 
     // Report title
     if (exportConfig.reportHeader.reportTitle) {
@@ -291,25 +324,34 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
         bold: true,
         fontSize: 11,
         alignment: 'center',
-        margin: [0, 6, 0, 4],
+        margin: [0, 8, 0, 12],
       });
     }
 
     // Additional info (parameters)
     if (exportConfig.reportHeader.additionalInfo?.length) {
       const items = exportConfig.reportHeader.additionalInfo;
+      const numCols = 2;
+      const numRows = Math.ceil(items.length / numCols);
       const tableBody: any[][] = [];
-      items.forEach((item) =>
+      for (let r = 0; r < numRows; r++) {
+        const leftIdx = r;
+        const rightIdx = r + numRows;
+        const leftItem = leftIdx < items.length ? items[leftIdx] : null;
+        const rightItem = rightIdx < items.length ? items[rightIdx] : null;
+
         tableBody.push([
-          { text: item.label, bold: true, fontSize: 8 },
-          { text: `: ${item.value || ''}`, fontSize: 8 },
-        ]),
-      );
+          { text: leftItem?.label || '', bold: true, fontSize: 9 },
+          { text: leftItem ? `: ${leftItem.value || ''}` : '', fontSize: 9 },
+          { text: rightItem?.label || '', bold: true, fontSize: 9, alignment: 'right' },
+          { text: rightItem ? `: ${rightItem.value || ''}` : '', fontSize: 9 }
+        ]);
+      }
 
       stack.push({
-        table: { widths: ['auto', '*'], body: tableBody },
+        table: { widths: [110, '*', 110, '*'], body: tableBody },
         layout: 'noBorders',
-        margin: [0, 4, 0, 4],
+        margin: [0, 6, 0, 6],
       });
     }
 
@@ -636,7 +678,8 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
   // Keep a visible gap between header parameter info and table content.
   const paramCount = exportConfig.reportHeader.additionalInfo?.length || 0;
   const paramRows = Math.ceil(paramCount / 2);
-  const topMargin = 142 + (paramRows * 11) + 6;
+  const headerBaseHeight = isLandscape ? 140 : 150;
+  const topMargin = headerBaseHeight + (paramRows * (isLandscape ? 11 : 18)) + 12;
 
   return {
     pageSize: 'A4',

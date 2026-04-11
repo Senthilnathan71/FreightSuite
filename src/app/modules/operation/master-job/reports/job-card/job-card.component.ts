@@ -7,6 +7,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { LogoService } from 'src/app/core/services/logo.service';
+import { OperationService } from '../../../operation.service';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 interface summaryDTO {
@@ -39,7 +40,7 @@ export class JobCardComponent {
   @Input() profitSummary: any[] = [];
   @Input() customerWiseSummary : summaryDTO;
   @Input() chargeWiseSummary : any[] = [];
-  @Input() chargeList: any[] =[];
+  chargeList: any[] =[];
   @Input() uomList: any[] = [];
   salemanList:any[] = [];
   @Input() portList: any[] = []; // Add this input
@@ -53,7 +54,8 @@ export class JobCardComponent {
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
     private pdfService: PdfDownloadService,
-    public logoService : LogoService
+    public logoService : LogoService,
+    private operationService: OperationService
   ) { }
 
   ngOnInit() {
@@ -66,11 +68,33 @@ export class JobCardComponent {
       localStorage.getItem('selected-branch')
     );
      this.branchDetails = this.appSettingService.getCurrentBranchInfo();
-    console.log(this.branchDetails, "BRANCH DETAILS");
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
+    this.loadCharges();
+  }
+
+  loadCharges(): void {
+    if (Array.isArray(this.chargeList) && this.chargeList.length > 0) {
+      return;
+    }
+
+    const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    if (!companyMasterSid) {
+      this.chargeList = [];
+      return;
+    }
+
+    this.operationService.getAllCharges(companyMasterSid).subscribe({
+      next: (charges: any) => {
+        this.chargeList = Array.isArray(charges) ? charges : (charges?.data || []);
+      },
+      error: (error) => {
+        console.error('Failed to load charges for job card:', error);
+        this.chargeList = [];
+      }
+    });
   }
 
   loadCityName(): void {
@@ -127,7 +151,7 @@ export class JobCardComponent {
     return containerType ? containerType.ContainerName : 'Unknown';
   }
 
-  getChargeName(ChargeMasterSid: number): string {
+ getChargeName(ChargeMasterSid: number): string {
     if (!ChargeMasterSid || !this.chargeList || this.chargeList.length === 0) {
       return ' ';
     }
@@ -138,10 +162,6 @@ export class JobCardComponent {
   }
 
   getUnitCode(ChargeUomSid: number):string {
-    console.log("GETUNITCODE", {
-      currentUOMId: ChargeUomSid,
-      uomList: this.uomList
-    })
     if (!ChargeUomSid || !this.uomList || this.uomList.length === 0) {
       return '';
     }
@@ -151,9 +171,6 @@ export class JobCardComponent {
   }
 
   getCurrencyName(CurrencyMasterSid: number): string {
-    console.log('🔍 getCurrencyName called with:', CurrencyMasterSid);
-    console.log('📋 currencyList:', this.currencyList);
-
     if (
       !CurrencyMasterSid ||
       !this.currencyList ||
@@ -241,12 +258,12 @@ export class JobCardComponent {
     return port ? `${port.PortCode} - ${port.PortName}` : portCode;
   }
 
- getGroupedRevenueByParty() {
-  if (!this.masterJobData?.costRevenueCharges) return [];
+ getGroupedRevenueByParty(charges: any[] = []) {
+  if (!Array.isArray(charges) || charges.length === 0) return [];
 
   const map = new Map<string, number>();
 
-  this.masterJobData.costRevenueCharges.forEach(item => {
+  charges.forEach(item => {
     const party = item?.revenueCustomerMaster?.CustomerName;
     const amount = Number(item?.RevenueLocalAmount) || 0;
 
@@ -261,12 +278,12 @@ export class JobCardComponent {
   }));
 }
 
-getGroupedExpenseByParty() {
-  if (!this.masterJobData?.costRevenueCharges) return [];
+getGroupedExpenseByParty(charges: any[] = []) {
+  if (!Array.isArray(charges) || charges.length === 0) return [];
 
   const map = new Map<string, number>();
 
-  this.masterJobData.costRevenueCharges.forEach(item => {
+  charges.forEach(item => {
     const party = item?.costCustomerMaster?.CustomerName;
     const amount = Number(item?.CostLocalAmount) || 0;
 
@@ -279,6 +296,25 @@ getGroupedExpenseByParty() {
     party,
     amount
   }));
+}
+
+getChargeColumnTotal(charges: any[] = [], field: 'RevenueRate' | 'RevenueLocalAmount' | 'CostRate' | 'CostLocalAmount') {
+  if (!Array.isArray(charges) || charges.length === 0) return 0;
+
+  return charges.reduce((total, item) => total + (Number(item?.[field]) || 0), 0);
+}
+
+getGrandChargeColumnTotal(field: 'RevenueRate' | 'RevenueLocalAmount' | 'CostRate' | 'CostLocalAmount') {
+  const masterCharges = Array.isArray(this.masterJobData?.costRevenueCharges)
+    ? this.masterJobData.costRevenueCharges
+    : [];
+  const houseCharges = Array.isArray(this.masterJobData?.houseJob)
+    ? this.masterJobData.houseJob.flatMap((house: any) =>
+        Array.isArray(house?.costRevenueCharges) ? house.costRevenueCharges : []
+      )
+    : [];
+
+  return this.getChargeColumnTotal([...masterCharges, ...houseCharges], field);
 }
 
 

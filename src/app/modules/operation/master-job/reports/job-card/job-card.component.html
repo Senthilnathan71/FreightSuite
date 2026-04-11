@@ -5,9 +5,6 @@
         <div class="spinner-overlay">
             <div class="spinner"></div>
         </div>
-        <button type="button" class="btn btn-sm btn-warning rounded-5 py-0" (click)="printDiv('printContent')">
-            <i class="fas fa-print me-1"></i> Print
-        </button>
         <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()">
             <i class="fas fa-download me-1"></i> Download PDF
         </button>
@@ -24,25 +21,22 @@
 <div class="modal-body">
     <div id="printContent" class="p-1">
         <div
-            style="width:280mm; min-height:400mm; margin:10px; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000;  font-size:16px; page-break-after:always;">
+            style="width:280mm; max-height:400mm; height:auto; margin:10px; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000;  page-break-after:always;">
 
             <!-- Company Info -->
-           <app-print-header></app-print-header>
+            <app-print-header></app-print-header>
 
 
-<h4
-  style="
+            <h4 style="
     text-align:center;
     font-weight:bolder;
     margin:0;
     padding:6px 0 4px 0;
     border-top:1px solid black;
-    font-size:20px;
     line-height:1.2;
-  "
->
-  <strong>Job Card / Job No - {{ masterJobData?.MasterJobNumber }}</strong>
-</h4>
+  ">
+                <strong>Job Card / Job No - {{ masterJobData?.MasterJobNumber }}</strong>
+            </h4>
 
 
             <!-- Client/Shipper/Consignee/Forwarder Sections -->
@@ -191,24 +185,28 @@
             <!-- Containers Table -->
             <div style="overflow-x:auto; margin-top:5px;">
                 <table
-                    style="width:100%; border-collapse:collapse; font-size:16px; border-bottom:1px solid black;border-left: 1px solid black; border-right: 1px solid black;">
+                    style="width:100%; border-collapse:collapse;  border-bottom:1px solid black;border-left: 1px solid black; border-right: 1px solid black;">
                     <thead style="background-color:#f8f9fa;">
                         <tr>
                             <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
-                                <strong>Container No.</strong></th>
+                                <strong>Container No.</strong>
+                            </th>
                             <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
-                                <strong>Type</strong></th>
+                                <strong>Type</strong>
+                            </th>
                             <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
                                 <strong>Commodity Description</strong>
                             </th>
                             <th
                                 style="border:1px solid black; padding:2px 8px; text-align:right;font-weight: bolder;text-align: center;">
                                 <strong>No. of
-                                    Pkg</strong></th>
+                                    Pkg</strong>
+                            </th>
                             <th
                                 style="border:1px solid black; padding:2px 8px; text-align:right;font-weight: bolder;text-align: center;">
                                 <strong>Gross
-                                    Weight</strong></th>
+                                    Weight</strong>
+                            </th>
                             <th
                                 style="border:1px solid black; padding:2px 8px; text-align:right;font-weight: bolder;text-align: center;">
                                 <strong>Volume</strong>
@@ -216,12 +214,14 @@
                             <th
                                 style="border:1px solid black; padding:2px 8px; text-align:right;font-weight: bolder;text-align: center;">
                                 <strong>Net
-                                    Weight</strong></th>
+                                    Weight</strong>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr *ngFor="let container of masterJobData?.containers">
-                            <td style="border:1px solid black; padding:2px 8px;text-align: start;">{{ container?.ContainerNumber }}</td>
+                            <td style="border:1px solid black; padding:2px 8px;text-align: start;">{{
+                                container?.ContainerNumber }}</td>
                             <td style="border:1px solid black; padding:2px 8px;text-align: start;">{{
                                 getContainerTypeName(container?.ContainerType) }}</td>
                             <td style="border:1px solid black; padding:2px 8px;">{{container?.CommodityDescription }}
@@ -257,11 +257,12 @@
 
             <!-- Profit Summary Table -->
             <div style="overflow-x:auto; margin-top:5px;">
-                <table style="width:100%; border-collapse:collapse; font-size:16px; border:1px solid black;">
+                <table style="width:100%; border-collapse:collapse;  border:1px solid black;">
                     <thead style="background-color:#f8f9fa;">
                         <tr>
                             <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
-                                <strong>Charge</strong></th>
+                                <strong>Charge</strong>
+                            </th>
                             <th
                                 style="border:1px solid black; padding:2px 8px; text-align:right;font-weight: bolder;text-align: center;">
                                 <strong>Sales</strong>
@@ -296,19 +297,28 @@
                                 number:'1.2-2'}}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{totalCost |
                                 number:'1.2-2'}}</td>
-                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{profit | number:'1.2-2'}}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{profit |
+                                number:'1.2-2'}}</td>
                         </tr>
                     </tfoot>
                 </table>
             </div>
 
+            <div style="margin-top:6px;  font-weight:bolder; text-decoration:underline;">
+                Cost / Revenue
+            </div>
+
             <!-- Cost/Revenue Charges Table -->
             <div style="overflow-x:auto; margin-top:5px;">
-                <table style="width:100%; border-collapse:collapse; font-size:16px; border:1px solid black;">
+                <table style="width:100%; border-collapse:collapse;  border:1px solid black;font-size: 14px;">
                     <thead style="background-color:#f8f9fa;">
                         <tr>
                             <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
-                                <strong>Charge</strong></th>
+                                <strong>Screen</strong>
+                            </th>
+                            <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
+                                <strong>Charge</strong>
+                            </th>
                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
                                 <strong>Unit</strong>
                             </th>
@@ -322,63 +332,122 @@
                                 <strong>Sale/Unit</strong>
                             </th>
                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
-                                <strong>Local
-                                    Amt.</strong></th>
+                                <strong>Local Amt.</strong>
+                            </th>
                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
-                                <strong>Cost
-                                    Curr</strong></th>
+                                <strong>Cost Curr</strong>
+                            </th>
                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
-                                <strong>Cost Ex
-                                    Rate</strong></th>
+                                <strong>Cost Ex Rate</strong>
+                            </th>
                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
                                 <strong>Cost/Unit</strong>
                             </th>
                             <th
                                 style="border:1px solid black; padding:2px 8px; text-align:center; font-weight: bolder;">
-                                <strong>Cost Local
-                                    Amt.</strong></th>
+                                <strong>Cost Local Amt.</strong>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let item of masterJobData?.costRevenueCharges">
+
+                        <tr *ngFor="let item of masterJobData?.costRevenueCharges" style="white-space: nowrap;">
+                            <td style="border:1px solid black; padding:4px 8px; font-weight:bolder;">
+                                Master Job
+                            </td>
                             <td style="border:1px solid black; padding:2px 8px;">{{ getChargeName(item.ChargeMasterSid)
                                 }}</td>
-                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">
-                                {{
-                              getUnitCode(item.ChargeUomSid) }}</td>
-                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
+                            <td style="border:1px solid black; padding:2px 8px; text-align:center;">{{
+                                getUnitCode(item.ChargeUomSid) }}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:center;">{{
                                 getCurrencyName(item.CostCurrencyMasterSid) }}</td>
-                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{   
-                                item.CostExchangeRate | number:'1.3-3'}}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
-                                item.RevenueRate | number:'1.2-2'}}</td>
+                                item.CostExchangeRate | number:'1.3-3'}}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ item.RevenueRate |
+                                number:'1.2-2'}}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
                                 item.RevenueLocalAmount | number:'1.2-2' }}</td>
-                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
+                            <td style="border:1px solid black; padding:2px 8px; text-align:center;">{{
                                 getCurrencyName(item.CostCurrencyMasterSid) }}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
                                 item.CostExchangeRate | number:'1.3-3' }}</td>
-                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
-                                item.CostRate | number:'1.2-2'}}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ item.CostRate |
+                                number:'1.2-2'}}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
                                 item.CostLocalAmount | number:'1.2-2' }}</td>
+                        </tr>
+
+                        <ng-container *ngFor="let house of masterJobData?.houseJob; let i = index">
+
+
+
+                            <tr *ngFor="let item of house?.costRevenueCharges">
+                                <td
+                                    style="border:1px solid black; padding:4px 8px; font-weight:bolder;white-space: nowrap;">
+                                    House Job - {{ house?.HBLNo || house?.ShipmentNo || 'House Job' }}
+                                </td>
+                                <td style="border:1px solid black; padding:2px 8px;">{{
+                                    getChargeName(item.ChargeMasterSid) }}</td>
+                                <td style="border:1px solid black; padding:2px 8px; text-align:center;">{{
+                                    getUnitCode(item.ChargeUomSid) }}</td>
+                                <td style="border:1px solid black; padding:2px 8px; text-align:center;">{{
+                                    getCurrencyName(item.CostCurrencyMasterSid) }}</td>
+                                <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
+                                    item.CostExchangeRate | number:'1.3-3'}}</td>
+                                <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
+                                    item.RevenueRate | number:'1.2-2'}}</td>
+                                <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
+                                    item.RevenueLocalAmount | number:'1.2-2' }}</td>
+                                <td style="border:1px solid black; padding:2px 8px; text-align:center;">{{
+                                    getCurrencyName(item.CostCurrencyMasterSid) }}</td>
+                                <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
+                                    item.CostExchangeRate | number:'1.3-3' }}</td>
+                                <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ item.CostRate
+                                    | number:'1.2-2'}}</td>
+                                <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
+                                    item.CostLocalAmount | number:'1.2-2' }}</td>
+                            </tr>
+
+                        </ng-container>
+                        <tr>
+                            <td colspan="5"
+                                style="border:1px solid black; padding:4px 8px; text-align:right; font-weight:bolder; background-color:#dfeffb;">
+                                Grand Total
+                            </td>
+                            <td
+                                style="border:1px solid black; padding:4px 8px; text-align:right; font-weight:bolder; background-color:#dfeffb;">
+                                {{ getGrandChargeColumnTotal('RevenueRate') | number:'1.2-2' }}
+                            </td>
+                            <td
+                                style="border:1px solid black; padding:4px 8px; text-align:right; font-weight:bolder; background-color:#dfeffb;">
+                                {{ getGrandChargeColumnTotal('RevenueLocalAmount') | number:'1.2-2' }}
+                            </td>
+                            <td style="border:1px solid black; padding:4px 8px; background-color:#dfeffb;"></td>
+                            <td style="border:1px solid black; padding:4px 8px; background-color:#dfeffb;"></td>
+                            <td
+                                style="border:1px solid black; padding:4px 8px; text-align:right; font-weight:bolder; background-color:#dfeffb;">
+                                {{ getGrandChargeColumnTotal('CostRate') | number:'1.2-2' }}
+                            </td>
+                            <td
+                                style="border:1px solid black; padding:4px 8px; text-align:right; font-weight:bolder; background-color:#dfeffb;">
+                                {{ getGrandChargeColumnTotal('CostLocalAmount') | number:'1.2-2' }}
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
             <div style="display:flex; margin-top:6px;">
-
-                <!-- Revenue -->
                 <div style="width:49.5%; box-sizing:border-box;">
-                    <h4 style="text-align:center; margin:0 0 4px 0; font-weight:bolder;font-size: 16px;">
-                       <strong> Revenue</strong>
-                    </h4>
-
-                    <table
-                        style="width:100%; border-collapse:collapse; border:1px solid #000; box-sizing:border-box; font-size:16px;">
+                    <div style="text-align:center; margin:0 0 4px 0; font-weight:bolder;">
+                        <strong> Revenue</strong>
+                    </div>
+                    <table style="width:100%; border-collapse:collapse; border:1px solid #000; box-sizing:border-box;">
                         <thead>
                             <tr>
+                                <th
+                                    style="border:1px solid #000; padding:4px 8px; text-align:center; box-sizing:border-box;font-weight: bolder;">
+                                    <strong>Screen</strong>
                                 <th
                                     style="border:1px solid #000; padding:4px 8px; text-align:center; box-sizing:border-box;font-weight: bolder; width: 300px;">
                                     <strong>Sales Party</strong>
@@ -390,29 +459,51 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr *ngFor="let row of getGroupedRevenueByParty()">
-                                <td style="border:1px solid #000; padding:4px 8px; text-align:left; box-sizing:border-box;font-weight: bolder;">
-                                           {{ row.party }}
+
+                            <tr *ngFor="let row of getGroupedRevenueByParty(masterJobData?.costRevenueCharges)">
+                                <td style="border:1px solid #000; padding:4px 8px; font-weight:bolder; ">
+                                    Master Job
                                 </td>
-                                <td style="border:1px solid #000; padding:4px 8px; text-align:right; box-sizing:border-box;font-weight: bolder;">
-                                      {{ row.amount | number:'1.2-2' }}
+                                <td
+                                    style="border:1px solid #000; padding:4px 8px; text-align:left; box-sizing:border-box;font-weight: bolder;">
+                                    {{ row.party }}
+                                </td>
+                                <td
+                                    style="border:1px solid #000; padding:4px 8px; text-align:right; box-sizing:border-box;font-weight: bolder;">
+                                    {{ row.amount | number:'1.2-2' }}
                                 </td>
                             </tr>
+                            <ng-container *ngFor="let house of masterJobData?.houseJob; let i = index">
+                                <tr *ngFor="let row of getGroupedRevenueByParty(house?.costRevenueCharges)">
+                                    <td
+                                        style="border:1px solid #000; padding:4px 8px; font-weight:bolder; white-space: nowrap;">
+                                        House Job - {{ house?.HBLNo || house?.ShipmentNo || 'House Job' }}
+                                    </td>
+                                    <td
+                                        style="border:1px solid #000; padding:4px 8px; text-align:left; box-sizing:border-box;font-weight: bolder;">
+                                        {{ row.party }}
+                                    </td>
+                                    <td
+                                        style="border:1px solid #000; padding:4px 8px; text-align:right; box-sizing:border-box;font-weight: bolder;">
+                                        {{ row.amount | number:'1.2-2' }}
+                                    </td>
+                                </tr>
+                            </ng-container>
                         </tbody>
                     </table>
-                    
                 </div>
 
-                <!-- Expense -->
                 <div style="width:49.5%; box-sizing:border-box; margin-left:1%;">
                     <h4 style="text-align:center; margin:0 0 4px 0; font-weight:bolder;font-size: 16px;">
                         <strong>Expense</strong>
                     </h4>
-
-                    <table
-                        style="width:100%; border-collapse:collapse; border:1px solid #000; box-sizing:border-box; font-size:16px;">
+                    <table style="width:100%; border-collapse:collapse; border:1px solid #000; box-sizing:border-box;">
                         <thead>
                             <tr>
+                                <th
+                                    style="border:1px solid #000; padding:4px 8px; text-align:center; box-sizing:border-box;font-weight: bolder;">
+                                    <strong>Screen</strong>
+                                </th>
                                 <th
                                     style="border:1px solid #000; padding:4px 8px; text-align:center; box-sizing:border-box;font-weight: bolder;width: 300px;">
                                     <strong>Cost Party</strong>
@@ -424,26 +515,44 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr *ngFor="let row of getGroupedExpenseByParty()">
-                                <td  style="border:1px solid #000; padding:4px 8px; text-align:left; box-sizing:border-box;font-weight: bolder;">
-                                       {{ row.party }}
+                            <tr *ngFor="let row of getGroupedExpenseByParty(masterJobData?.costRevenueCharges)">
+                                <td style="border:1px solid #000; padding:4px 8px; font-weight:bolder; ">
+                                    Master Job
                                 </td>
-
-                                <th  style="border:1px solid #000; padding:4px 8px; text-align:right; box-sizing:border-box;font-weight: bolder;">
-                                              {{ row.amount | number:'1.2-2' }}
+                                <td
+                                    style="border:1px solid #000; padding:4px 8px; text-align:left; box-sizing:border-box;font-weight: bolder;">
+                                    {{ row.party }}
+                                </td>
+                                <th
+                                    style="border:1px solid #000; padding:4px 8px; text-align:right; box-sizing:border-box;font-weight: bolder;">
+                                    {{ row.amount | number:'1.2-2' }}
                                 </th>
                             </tr>
+                            <ng-container *ngFor="let house of masterJobData?.houseJob; let i = index">
+                                <tr *ngFor="let row of getGroupedExpenseByParty(house?.costRevenueCharges)">
+                                    <td
+                                        style="border:1px solid #000; padding:4px 8px; font-weight:bolder;white-space: nowrap;">
+                                        House Job - {{ house?.HBLNo || house?.ShipmentNo || 'House Job' }}
+                                    </td>
+                                    <td
+                                        style="border:1px solid #000; padding:4px 8px; text-align:left; box-sizing:border-box;font-weight: bolder;">
+                                        {{ row.party }}
+                                    </td>
+                                    <th
+                                        style="border:1px solid #000; padding:4px 8px; text-align:right; box-sizing:border-box;font-weight: bolder;">
+                                        {{ row.amount | number:'1.2-2' }}
+                                    </th>
+                                </tr>
+                            </ng-container>
                         </tbody>
                     </table>
-
                 </div>
-
             </div>
 
-              <div style="display:flex; margin-bottom:1px;padding-top: 10px; padding-left: 15px;">
-                        <div style="width:135px;"><strong>Internal Remarks</strong></div>
-                        <div>: {{ masterJobData?.others?.[0]?.InternalNote }}</div>
-                </div>
+            <div style="display:flex; margin-bottom:1px;padding-top: 10px; padding-left: 15px;">
+                <div style="width:135px;"><strong>Internal Remarks</strong></div>
+                <div>: {{ masterJobData?.others?.[0]?.InternalNote }}</div>
+            </div>
 
 
             <!-- Footer -->

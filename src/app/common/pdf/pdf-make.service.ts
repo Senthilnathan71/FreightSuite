@@ -1290,7 +1290,11 @@ export class PdfMakeService {
    * Get current report logo from localStorage
    */
   getReportLogo(): string | undefined {
-    return localStorage.getItem('current_report_logo') || undefined;
+    const storedLogo = localStorage.getItem('current_report_logo');
+    if (!storedLogo || storedLogo === undefined || storedLogo === 'none') {
+      return null;
+    }
+    return storedLogo;
   }
 
   /**

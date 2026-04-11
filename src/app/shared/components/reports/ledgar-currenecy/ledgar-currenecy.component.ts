@@ -227,6 +227,10 @@ export class LedgarCurrenecyComponent {
             label: 'Voucher Type',
             value: this.fullData?.voucherTypeName || '',
           },
+          {
+            label: 'Currenecy',
+            value: this.fullData?.currencyCode || '',
+          }
         ],
       },
       tableHeaders,
