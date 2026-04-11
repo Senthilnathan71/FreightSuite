@@ -1399,7 +1399,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       MasterJobDate: this.invoiceData?.masterJob?.MasterJobDate || '',
       DocumentNumber: this.invoiceData?.DocumentNumber || '',
         ContainerType: '',
-        ContainerNumber: this.getContainerDisplay(this.invoiceData?.masterJob?.containers) || '',
+        ContainerNumber: this.getInvoiceContainerDisplay() || '',
       DepartmentMasterSid : this.invoiceData?.masterJob?.DepartmentMasterSid || '',
       isPosted : this.isPosted,
       FreightTerms:
@@ -3909,8 +3909,23 @@ isSeaDepartment(): boolean {
   getContainerDisplay(containers: any[] | null | undefined): string {
     if (!Array.isArray(containers) || containers.length === 0) return '';
 
+    const masterContainers = Array.isArray(this.invoiceData?.masterJob?.containers)
+      ? this.invoiceData.masterJob.containers
+      : [];
+
     return containers
-      .map((container: any) => {
+      .map((item: any) => {
+        const masterJobContainerSid = Number(
+          item?.MasterJobContainerSid ?? item?.masterJobContainer?.MasterJobContainerSid
+        );
+
+        const container = masterJobContainerSid
+          ? masterContainers.find(
+              (masterContainer: any) =>
+                Number(masterContainer?.MasterJobContainerSid) === masterJobContainerSid
+            ) ?? null
+          : item;
+
         const number = container?.ContainerNumber || '';
         const type = this.getContainerTypeName(container?.ContainerType);
 
@@ -3922,6 +3937,30 @@ isSeaDepartment(): boolean {
       })
       .filter((value: string) => !!value)
       .join(', ');
+  }
+
+  getInvoiceContainerDisplay(): string {
+    const masterContainers = Array.isArray(this.invoiceData?.masterJob?.containers)
+      ? this.invoiceData.masterJob.containers
+      : [];
+    const houseProducts = Array.isArray(this.invoiceData?.houseJob?.Products)
+      ? this.invoiceData.houseJob.Products
+      : [];
+
+    const linkedMasterContainerSids = new Set(
+      houseProducts
+        .map((item: any) =>
+          Number(item?.MasterJobContainerSid ?? item?.masterJobContainer?.MasterJobContainerSid)
+        )
+        .filter((sid: number) => !!sid)
+    );
+
+    const linkedMasterContainers = masterContainers.filter((container: any) =>
+      linkedMasterContainerSids.has(Number(container?.MasterJobContainerSid))
+    );
+
+    const sourceContainers = linkedMasterContainers.length ? linkedMasterContainers : masterContainers;
+    return this.getContainerDisplay(sourceContainers);
   }
 
   calculateTotalColspan(configOverride?: {
