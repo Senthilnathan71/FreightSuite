@@ -241,6 +241,7 @@ customsValidationErrors: { recordType: string; fieldRef: string; fieldName: stri
   selectedDepartment: any;
   selectedDepartmentType: string;
   selectedFCLLCL: string = "LCL";
+  selectedCargoMode: 'FCL' | 'LCL' | 'AIR' | 'ROAD' = 'LCL';
   isEditMode: boolean;
   bookingData: any;
   quotationNumber : any ='';
@@ -986,10 +987,14 @@ private setupCargoCalculationSubscriptions(): void {
 
   let chargeableWeight = 0;
 
+  if (this.selectedCargoMode === 'ROAD') {
+    return;
+  }
+
   // Match booking logic:
   // AIR/LCL => compare Volumetric vs Gross Weight
   // Others => compare Volume vs Gross Weight
-  if (this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL') {
+  if (this.selectedCargoMode === 'AIR' || this.selectedCargoMode === 'LCL') {
     chargeableWeight = Math.max(volumetric, grossWeight);
   } else {
     chargeableWeight = Math.max(volume, grossWeight);
@@ -1113,12 +1118,12 @@ validateGrossNetWeight(): ValidatorFn {
 }
 
 shouldCalculateVolume(): boolean {
-    return this.selectedFCLLCL === 'LCL' || this.selectedFCLLCL === 'AIR';
+    return this.usesDimensionalCargoFields();
 }
 
   // Product Form Initialization
   initProductForm() {
-    const isAirOrLCL = this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL';
+    const isAirOrLCL = this.usesDimensionalCargoFields();
     this.productForm = this.fb.group({
       HouseJobProductSid: [null],
       ProductName: [null,[Validators.required]],
@@ -1129,7 +1134,7 @@ shouldCalculateVolume(): boolean {
       ExternlQty: ['', [Validators.required]],
       GrossWeight: ['', [Validators.required]],
       NetWeight: ['', [Validators.min(0)]],
-      Volume: ['',[Validators.required,Validators.min(0.001)]],
+      Volume: ['', this.isSurfaceCargoMode() ? [] : [Validators.required,Validators.min(0.001)]],
       Volumetric: ['',isAirOrLCL ? [Validators.required] : []],
       IsHaz: [false],
       ImcoClass: [null],
@@ -1202,6 +1207,10 @@ private calculateCBM() {
   const height = this.parseFloatSafe(this.productForm.get('Height')?.value);
   const uomMasterSid = this.productForm.get('UomMasterSid')?.value;
   
+  if (!this.usesDimensionalCargoFields()) {
+    return;
+  }
+  
   
   // Calculate immediately if we have at least some values
   if (externlQty >= 0 && length >= 0 && width >= 0 && height >= 0 && uomMasterSid) {
@@ -1238,6 +1247,10 @@ loadHSSACLookups() {
 }
 private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
   const calculateVolumetric = () => {
+    if (!this.usesDimensionalCargoFields()) {
+      productForm.get('Volumetric')?.setValue('', { emitEvent: false });
+      return;
+    }
     const externlQty = Number(productForm.get('ExternlQty')?.value) || 0;
     const length = Number(productForm.get('Length')?.value) || 0;
     const width = Number(productForm.get('Width')?.value) || 0;
@@ -1374,7 +1387,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
    */
 
   createBookingProductGroup(data?: any, isPatching: boolean = false): FormGroup {
-    const isAirOrLCL = this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL';
+    const isAirOrLCL = this.usesDimensionalCargoFields();
     const productForm = this.fb.group({
       HouseJobProductSid: [data?.HouseJobProductSid || null],
       ProductName: [data?.ProductName || null,[Validators.required]],
@@ -1385,7 +1398,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       ExternlQty: [data?.ExternlQty || '', [Validators.required]],
       GrossWeight: [Number(data?.GrossWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required,Validators.min(0.001)]],
       NetWeight: [Number(data?.NetWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.min(0)]],
-      Volume: [Number(data?.Volume || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required,Validators.min(0.001)]],
+      Volume: [Number(data?.Volume || '').toFixed(this.digitsAfterDecimal) || '', this.isSurfaceCargoMode() ? [] : [Validators.required,Validators.min(0.001)]],
       Volumetric: [data?.Volumetric|| '',isAirOrLCL ? [Validators.required, Validators.min(0.001)] : []],
       IsHaz : [data?.IsHaz ? (data.IsHaz === "Y" ? true : false) : false],
       ImcoClass : [data?.ImcoClass || null],
@@ -1418,7 +1431,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
   });
     this.setupProductCalculationSubscriptions(productForm);
   
-  const isLCLorAIR = this.selectedFCLLCL === 'LCL' || this.selectedFCLLCL === 'AIR';
+  const isLCLorAIR = this.usesDimensionalCargoFields();
     if (isLCLorAIR) {
     // Always setup calculations for LCL/AIR
     this.setupProductFormImmediateCalculation(productForm);
@@ -1465,7 +1478,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
   });
   
   // Setup volumetric calculation for LCL/AIR
-  const isLCLorAIR = this.selectedFCLLCL === 'LCL' || this.selectedFCLLCL === 'AIR';
+  const isLCLorAIR = this.usesDimensionalCargoFields();
   if (isLCLorAIR) {
     this.setupImmediateVolumetricCalculationForFormArray(productForm);
   }
@@ -1502,6 +1515,12 @@ private calculateProductFormCBMAndVolumetric(productForm: FormGroup) {
     if (this.isPatching) {
     return;
   }
+  if (!this.usesDimensionalCargoFields()) {
+    productForm.get('Volume')?.setValue('', { emitEvent: false });
+    productForm.get('Volumetric')?.setValue('', { emitEvent: false });
+    return;
+  }
+
   const externlQty = this.parseFloatSafe(productForm.get('ExternlQty')?.value);
   const length = this.parseFloatSafe(productForm.get('Length')?.value);
   const width = this.parseFloatSafe(productForm.get('Width')?.value);
@@ -2873,6 +2892,7 @@ shouldShowAirHousePrintOption(reportName: 'HAWB' | 'HAWB Draft'): boolean {
     this.selectedDepartmentType = '';
     this.filterTabs();
     this.selectedFCLLCL = 'LCL';
+    this.selectedCargoMode = 'LCL';
     this.filteredPorts = [];
     this.filteredPOO = [];
     this.filteredPOL = [];
@@ -2902,21 +2922,26 @@ shouldShowAirHousePrintOption(reportName: 'HAWB' | 'HAWB Draft'): boolean {
   this.handleHBLNoField(department.ExportImport);
   this.filterTabs();
   this.selectedFCLLCL = this.resolveSelectedSegment(department);
+  this.selectedCargoMode = this.resolveCargoMode(department);
 
     if (this.bookingProducts.length > 0) {
         this.bookingProducts.controls.forEach((productGroup: FormGroup, index) => {
-          const isAirOrLCL = this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL';
+          const isAirOrLCL = this.usesDimensionalCargoFields();
           
           // Update validators based on department
-          const dimensionFields = ['UomMasterSid', 'Volumetric'];
-          dimensionFields.forEach(field => {
+          const validatorMap: Record<string, any[]> = {
+            UomMasterSid: isAirOrLCL ? [Validators.required] : [],
+            Volumetric: isAirOrLCL ? [Validators.required] : [],
+            Volume: this.isSurfaceCargoMode() ? [] : [Validators.required, Validators.min(0.001)]
+          };
+
+          Object.entries(validatorMap).forEach(([field, validators]) => {
             const control = productGroup.get(field);
-            if (isAirOrLCL) {
-              control?.setValidators([Validators.required]);
-            } else {
-              control?.clearValidators();
+            if (!control) {
+              return;
             }
-            control?.updateValueAndValidity({ emitEvent: false });
+            control.setValidators(validators);
+            control.updateValueAndValidity({ emitEvent: false });
           });
         });
       }
@@ -3248,6 +3273,25 @@ validateHBLNo(): boolean {
     }
 
     return departmentType || 'LCL';
+  }
+
+  private resolveCargoMode(department: any): 'FCL' | 'LCL' | 'AIR' | 'ROAD' {
+    const segment = this.resolveSelectedSegment(department);
+    if (segment === 'FCL' || segment === 'AIR') {
+      return segment;
+    }
+    if (segment === 'ROAD' || segment === 'TRANSPORT') {
+      return 'ROAD';
+    }
+    return 'LCL';
+  }
+
+  isSurfaceCargoMode(): boolean {
+    return this.selectedCargoMode === 'ROAD';
+  }
+
+  usesDimensionalCargoFields(): boolean {
+    return this.selectedCargoMode === 'LCL' || this.selectedCargoMode === 'AIR';
   }
 
   private shouldUseAllPortOptions(): boolean {

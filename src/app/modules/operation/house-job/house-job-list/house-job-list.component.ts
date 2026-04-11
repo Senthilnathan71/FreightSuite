@@ -217,7 +217,9 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
       const allDepartments = Array.isArray(departments?.data) ? departments.data : [];
       this.departmentFilterConfig = {
         ...this.departmentFilterConfig,
-        options: allDepartments.filter((d: any) => (d?.departmentType || '').toUpperCase() === 'SEA')
+        options: allDepartments.filter((d: any) => 
+          ['SEA', 'ROAD', 'TRANSPORT', 'OTHER', 'OTHERS']
+        .includes((d?.departmentType || '').toUpperCase()))
       };
 
       const allPorts = Array.isArray(ports?.data) ? ports.data : [];
@@ -241,7 +243,13 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
       ? [...this.allPorts]
       : this.allPorts.filter((port: any) => {
           const portType = (port?.PortType || '').toUpperCase();
-          return departmentType === 'AIR' ? portType === 'AIR' : portType === 'SEA';
+          if (departmentType === 'AIR') {
+            return portType === 'AIR';
+          }
+          if (['ROAD', 'TRANSPORT', 'OTHER', 'OTHERS'].includes(departmentType)) {
+            return true;
+          }
+          return portType === 'SEA';
         });
 
     this.polFilterConfig = { ...this.polFilterConfig, options: filteredPorts };
@@ -354,7 +362,7 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
       activeBranchId: this.currentBranch?.BranchMasterSid,
       sortColumn: this.sortColumn,
       sortDirection: this.sortDirection,
-      departmentType: 'Sea'
+      departmentType: ['Sea', 'Road', 'Transport', 'Other', 'Others']
     };
 
     // Merge advanced filter values

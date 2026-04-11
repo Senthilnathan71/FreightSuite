@@ -125,6 +125,7 @@ export class EnquiryEntryComponent implements OnInit {
   btnDisable: boolean = false;
   enquiry: any;
   selectedFCLLCL: string = ''; // Store selected segment's FCL/LCL type
+  selectedCargoMode: 'FCL' | 'LCL' | 'AIR' | 'ROAD' = 'LCL';
   selectedCustomerName: any;
   statusList = ['Active', 'Suspended'];
   minDate: string = '';
@@ -168,6 +169,7 @@ export class EnquiryEntryComponent implements OnInit {
   minExpDate: any;
   permissions: any[] = [];
   currentMenuPermissions = {}
+  isPatching = false;
   actionMenuItems: DropdownMenuItem[] = [];
   departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
@@ -1092,6 +1094,11 @@ ${this.userData.userName}`;
   calculateCBM(routeIndex: number, cargoIndex: number): void {
     const cargoForm = this.routeCargo(routeIndex).at(cargoIndex) as FormGroup;
 
+    if (this.selectedCargoMode === 'ROAD') {
+      cargoForm.get('cbm')?.setValue('', { emitEvent: false });
+      return;
+    }
+
     const qty = Number(cargoForm.get('PackageQty')?.value) || 0;
     const length = Number(cargoForm.get('length')?.value) || 0;
     const width = Number(cargoForm.get('width')?.value) || 0;
@@ -1127,7 +1134,7 @@ ${this.userData.userName}`;
       width: [''],
       height: ['']
     });
-    this.updateCargoValidators(cargoForm, this.selectedFCLLCL);
+    this.updateCargoValidators(cargoForm, this.selectedCargoMode);
     this.routeCargo(routeIndex).push(cargoForm);
     const cargoArray = this.routeCargo(routeIndex);
     const cargoIndex = cargoArray.length - 1;
@@ -1156,7 +1163,9 @@ ${this.userData.userName}`;
 
   manualWeightFields.forEach(field => {
     cargoForm.get(field)?.valueChanges.subscribe(() => {
-      this.setChargeableWeightByGreatest(cargoForm);
+      if (this.selectedCargoMode !== 'ROAD') {
+        this.setChargeableWeightByGreatest(cargoForm);
+      }
     });
   });
 }
@@ -1176,6 +1185,13 @@ ${this.userData.userName}`;
   }
 
 private calculateCargoValues(cargoForm: FormGroup): void {
+  
+  if (this.isPatching || this.selectedCargoMode === 'ROAD') {
+    cargoForm.get('cbm')?.setValue('', { emitEvent: false });
+    cargoForm.get('volumetric')?.setValue('', { emitEvent: false });
+    return;
+  }
+
   const packageQty = this.parseFloatSafe(cargoForm.get('PackageQty')?.value);
   const length = this.parseFloatSafe(cargoForm.get('length')?.value);
   const width = this.parseFloatSafe(cargoForm.get('width')?.value);
@@ -1184,10 +1200,10 @@ private calculateCargoValues(cargoForm: FormGroup): void {
   
   if (packageQty > 0 && length > 0 && width > 0 && height > 0 && uomMasterSid) {
     // For LCL and AIR: Calculate both CBM and Volumetric
-    if (this.selectedFCLLCL === 'LCL' || this.selectedFCLLCL === 'AIR') {
+    if (this.selectedCargoMode === 'LCL' || this.selectedCargoMode === 'AIR') {
       const { cbm, volumetric } = this.volumetricAndCbmCalculationService.calculateCBMAndVolumetric(
         packageQty, length, width, height, uomMasterSid,
-        this.selectedFCLLCL as 'LCL' | 'AIR',
+        this.selectedCargoMode as 'LCL' | 'AIR',
         this.digitsAfterDecimal
       );
       
@@ -1210,6 +1226,10 @@ private calculateCargoValues(cargoForm: FormGroup): void {
 }
 
 private setChargeableWeightByGreatest(cargoForm: FormGroup): void {
+  if (this.selectedCargoMode === 'ROAD') {
+    return;
+  }
+
   const cbm = this.parseFloatSafe(cargoForm.get('cbm')?.value);
   const volumetric = this.parseFloatSafe(cargoForm.get('volumetric')?.value);
   const grossWeight = this.parseFloatSafe(cargoForm.get('GrossWeight')?.value);
@@ -1249,6 +1269,7 @@ private parseFloatSafe(value: any): number {
   onSegmentChange(event: any) {
     if (!event) {
       this.selectedFCLLCL = "LCL";
+      this.selectedCargoMode = 'LCL';
       this.selectedDepartment = "";
       this.routes.controls.forEach((routeGroup: FormGroup) => {
         ['POO', 'POL', 'POD', 'FDC'].forEach(field => {
@@ -1278,11 +1299,8 @@ private parseFloatSafe(value: any): number {
     // Set selectedDepartment correctly
     this.selectedDepartment = selectedDept?.departmentName || '';
 
-    if (selectedDept?.departmentType === "Sea") {
-      this.selectedFCLLCL = selectedDept?.FCLLCL || "LCL";
-    } else {
-      this.selectedFCLLCL = selectedDept?.departmentType?.toUpperCase() || "LCL";
-    }
+    this.selectedFCLLCL = this.resolveSelectedSegment(selectedDept);
+    this.selectedCargoMode = this.resolveCargoMode(selectedDept);
 
     // Refresh action menu items based on new segment selection
     this.initializeActionMenu();
@@ -1302,7 +1320,7 @@ private parseFloatSafe(value: any): number {
       // Update cargo validators
       const cargoArray = routeGroup.get('cargo') as FormArray;
       cargoArray.controls.forEach((cargoForm: FormGroup) => {
-        this.updateCargoValidators(cargoForm, this.selectedFCLLCL);
+        this.updateCargoValidators(cargoForm, this.selectedCargoMode);
       });
     });
 
@@ -1320,12 +1338,31 @@ private parseFloatSafe(value: any): number {
     });
   }
   updateCargoValidators(cargoForm: FormGroup, type: string) {
+    Object.keys(cargoForm.controls).forEach(fieldName => {
+      const ctrl = cargoForm.get(fieldName);
+      if (!ctrl) {
+        return;
+      }
+
+      if (fieldName === 'GrossWeight') {
+        ctrl.clearValidators();
+      } else {
+        ctrl.clearValidators();
+      }
+      ctrl.setErrors(null);
+      ctrl.updateValueAndValidity({ emitEvent: false });
+    });
+
     const resetFields = (fields: string[]) => {
+      if (this.isPatching) {
+        return;
+      }
+
       fields.forEach(f => {
         const ctrl = cargoForm.get(f);
         if (ctrl) {
           ctrl.setValue(null);
-          ctrl.updateValueAndValidity();
+          ctrl.updateValueAndValidity({ emitEvent: false });
         }
       });
     };
@@ -1341,7 +1378,7 @@ private parseFloatSafe(value: any): number {
           if (f === 'WeightUnitSid' && !ctrl.value) {
             ctrl.setValue(2);
           }
-          ctrl.updateValueAndValidity();
+          ctrl.updateValueAndValidity({ emitEvent: false });
         }
       });
     };
@@ -1355,15 +1392,16 @@ private parseFloatSafe(value: any): number {
     this.weightValidator()
   ]);
 
-  ctrl.updateValueAndValidity();
+  ctrl.updateValueAndValidity({ emitEvent: false });
 };
 
 
     const FCLFields = ['CargoType','ContainerType', 'PackageType', 'PackageQty', 'ShipmentTerms', 'GrossWeight', 'cbm', 'ProductName'];
     const LCLFields = ['CargoType','PackageType', 'PackageQty', 'WeightUnitSid', 'cbm', 'volumetric' ,'GrossWeight', 'ChargeableWeight', 'ShipmentTerms', 'ProductName'];
     const AIRFields = ['CargoType', 'PackageType','ChargeableWeight','WeightUnitSid','PackageQty','cbm', 'volumetric','GrossWeight', 'ChargeableWeight', 'ProductName'];
+    const ROADFields = ['CargoType', 'Qty', 'GrossWeight', 'NetWeight'];
 
-    resetFields(['PackageType', 'Qty', 'WeightUnitSid', 'PackageQty', 'ShipmentTerms', 'cbm', 'ContainerType', 'ChargeableWeight']);
+    resetFields(['PackageType', 'Qty', 'WeightUnitSid', 'PackageQty', 'ShipmentTerms', 'cbm', 'ContainerType', 'volumetric', 'length', 'width', 'height']);
 
     if (type === 'FCL') {
       setRequired(FCLFields);
@@ -1371,6 +1409,8 @@ private parseFloatSafe(value: any): number {
       setRequired(LCLFields);
     } else if (type === 'AIR') {
       setRequired(AIRFields);
+    } else if (type === 'ROAD') {
+      setRequired(ROADFields);
     }
     applyGrossWeightValidation();
   }
@@ -1508,6 +1548,7 @@ private parseFloatSafe(value: any): number {
 
 
   patchValues(response: any) {
+    this.isPatching = true;
     /** Disables the form control. */
     const disableFormControl = (formGroup: FormGroup, controlName: string) => {
       formGroup.get(controlName)?.disable();
@@ -1541,11 +1582,8 @@ private parseFloatSafe(value: any): number {
     console.log(this.rateRequestForm.value)
     const selectedDept = this.departments.find(dept => dept.DepartmentMasterSid === response.DepartmentMasterSid);
     this.selectedDepartment = selectedDept?.departmentName || response.ShipmentType || '';
-    if (selectedDept?.departmentType === "Sea") {
-      this.selectedFCLLCL = selectedDept?.FCLLCL;
-    } else {
-      this.selectedFCLLCL = selectedDept?.departmentType?.toUpperCase();
-    }
+    this.selectedFCLLCL = this.resolveSelectedSegment(selectedDept);
+    this.selectedCargoMode = this.resolveLoadedCargoMode(selectedDept, response);
 
     // Refresh action menu items based on loaded segment
     this.initializeActionMenu();
@@ -1657,8 +1695,10 @@ private parseFloatSafe(value: any): number {
         );
       });
 
-      // Push the route to the FormArray
-      this.updateCargoValidators(routeFormGroup, this.selectedFCLLCL);
+      // Apply validators to each cargo row based on the resolved cargo mode.
+      cargoArray.controls.forEach((cargoForm) => {
+        this.updateCargoValidators(cargoForm as FormGroup, this.selectedCargoMode);
+      });
       routesArray.push(routeFormGroup);
       const addedRouteIndex = routesArray.length - 1;
       this.lockSavedRouteControls(routeFormGroup);
@@ -1689,6 +1729,7 @@ private parseFloatSafe(value: any): number {
       disableFormControl(this.rateRequestForm, 'enquiryNo');
       disableFormControl(this.rateRequestForm, 'LeadOrCustomer');
     }
+    this.isPatching = false;
   }
 
   restrictDecimal(event: KeyboardEvent) {
@@ -1998,6 +2039,7 @@ private parseFloatSafe(value: any): number {
     // Reset UI / state flags
     this.selectedDepartment = '';
     this.selectedFCLLCL = '';
+    this.selectedCargoMode = 'LCL';
     this.disableAddButtons = false;
     this.rateRequestData = null;
     this.quotationEnquiryNumber = null;
@@ -2212,6 +2254,10 @@ private parseFloatSafe(value: any): number {
         const portType = this.normalizePortText(port?.PortType);
         return portType === 'ROAD' || portType.includes('ROAD') || portType.includes('LAND') || portType.includes('LOCATION');
       });
+    } else if (this.selectedFCLLCL === 'TRANSPORT') {
+      return [...this.ports];
+    } else if (this.selectedFCLLCL === 'OTHER' || this.selectedFCLLCL === 'OTHERS') {
+      return [...this.ports];
     }
     return [];
   }
@@ -2457,6 +2503,55 @@ private parseFloatSafe(value: any): number {
 
   private normalizePortText(value: any): string {
     return String(value ?? '').trim().toUpperCase();
+  }
+
+  private resolveSelectedSegment(department: any): string {
+    const departmentType = this.normalizePortText(department?.departmentType);
+    if (departmentType === 'SEA') {
+      return this.normalizePortText(department?.FCLLCL) || 'LCL';
+    }
+
+    return departmentType || 'LCL';
+  }
+
+  private resolveCargoMode(department: any): 'FCL' | 'LCL' | 'AIR' | 'ROAD' {
+    const selectedSegment = this.resolveSelectedSegment(department);
+
+    if (selectedSegment === 'FCL') {
+      return 'FCL';
+    }
+
+    if (selectedSegment === 'AIR') {
+      return 'AIR';
+    }
+
+    if (selectedSegment === 'ROAD' || selectedSegment === 'TRANSPORT') {
+      return 'ROAD';
+    }
+
+    return 'LCL';
+  }
+
+  private resolveLoadedCargoMode(department: any, response: any): 'FCL' | 'LCL' | 'AIR' | 'ROAD' {
+    const shipmentType = this.normalizePortText(response?.ShipmentType);
+
+    if (shipmentType.includes('FCL')) {
+      return 'FCL';
+    }
+
+    if (shipmentType.includes('LCL')) {
+      return 'LCL';
+    }
+
+    if (shipmentType.includes('AIR')) {
+      return 'AIR';
+    }
+
+    if (shipmentType.includes('ROAD') || shipmentType.includes('TRANSPORT')) {
+      return 'ROAD';
+    }
+
+    return this.resolveCargoMode(department);
   }
 
   private toNumericValue(value: any): number | null {
@@ -3229,12 +3324,14 @@ private parseFloatSafe(value: any): number {
   return `Please correct the following fields:\n- ${validationIssues.join('\n- ')}`;
 }
 private getRequiredCargoFields(): string[] {
-  if (this.selectedFCLLCL === 'FCL') {
+  if (this.selectedCargoMode === 'FCL') {
     return ['CargoType', 'ContainerType', 'PackageType', 'PackageQty', 'ShipmentTerms', 'GrossWeight', 'cbm', 'ProductName'];
-  } else if (this.selectedFCLLCL === 'LCL') {
+  } else if (this.selectedCargoMode === 'LCL') {
     return ['CargoType', 'PackageType', 'PackageQty', 'WeightUnitSid', 'cbm', 'volumetric', 'GrossWeight', 'ChargeableWeight', 'ShipmentTerms', 'ProductName'];
-  } else if (this.selectedFCLLCL === 'AIR') {
+  } else if (this.selectedCargoMode === 'AIR') {
     return ['CargoType', 'PackageType', 'ChargeableWeight', 'WeightUnitSid', 'PackageQty', 'cbm', 'volumetric', 'GrossWeight', 'ProductName'];
+  } else if (this.selectedCargoMode === 'ROAD') {
+    return ['CargoType', 'Qty', 'GrossWeight', 'NetWeight'];
   }
   return [];
 }
@@ -4456,7 +4553,7 @@ private getRequiredCargoFields(): string[] {
   }
 
   private getCargoVoiceFieldOrder(): string[] {
-    if (this.selectedFCLLCL === 'FCL') {
+    if (this.selectedCargoMode === 'FCL') {
       return [
         'CargoType',
         'CargoDescription',
@@ -4471,7 +4568,7 @@ private getRequiredCargoFields(): string[] {
       ];
     }
 
-    if (this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL') {
+    if (this.selectedCargoMode === 'AIR' || this.selectedCargoMode === 'LCL') {
       return [
         'CargoType',
         'CargoDescription',
@@ -4485,6 +4582,17 @@ private getRequiredCargoFields(): string[] {
         'GrossWeight',
         'NetWeight',
         'ShipmentTerms'
+      ];
+    }
+
+    if (this.selectedCargoMode === 'ROAD') {
+      return [
+        'CargoType',
+        'CargoDescription',
+        'Qty',
+        'GrossWeight',
+        'NetWeight',
+        'ChargeableWeight'
       ];
     }
 

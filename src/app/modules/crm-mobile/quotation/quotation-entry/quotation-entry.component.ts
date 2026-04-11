@@ -514,7 +514,7 @@ dataFromEnqPage:any;
   }
 
   // --- Determine segment type -----------------------------
-  const segment = enqData?.ShipmentType;
+  const segment = this.getSegmentTypeFromShipmentType(enqData?.ShipmentType);
 
   // --- Process each route ---------------------------------
   for (const [routeIndex, route] of routes.entries()) {
@@ -646,14 +646,28 @@ dataFromEnqPage:any;
     });
   }
 private getSegmentTypeFromShipmentType(shipmentType: string): string {
-  if (shipmentType?.includes('Air')) {
+  const normalizedShipmentType = this.normalizePortText(shipmentType);
+
+  if (normalizedShipmentType.includes('AIR')) {
     return 'AIR';
-  } else if (shipmentType?.includes('FCL')) {
+  }
+  if (normalizedShipmentType.includes('FCL')) {
     return 'FCL';
-  } else if (shipmentType?.includes('LCL')) {
+  }
+  if (normalizedShipmentType.includes('LCL')) {
     return 'LCL';
   }
-  return 'LCL'; // Default
+  if (normalizedShipmentType.includes('ROAD')) {
+    return 'ROAD';
+  }
+  if (normalizedShipmentType.includes('TRANSPORT')) {
+    return 'TRANSPORT';
+  }
+  if (normalizedShipmentType.includes('OTHER')) {
+    return 'OTHERS';
+  }
+
+  return 'LCL';
 }
 
 // Helper method to extract cargo data
@@ -1433,9 +1447,11 @@ private extractCargoData(enquiryCargo: any[]): any {
 
     const segmentType = routeForm.get('segmentType')?.value;
     if(!segmentType) return;
-    const isLCL = segmentType === 'LCL';
-    const isFCL = segmentType === "FCL";
-    const isAir = segmentType === 'AIR';
+    const cargoMode = this.getQuotationCargoMode(segmentType);
+    const isLCL = cargoMode === 'LCL';
+    const isFCL = cargoMode === "FCL";
+    const isAir = cargoMode === 'AIR';
+    const isRoad = cargoMode === 'ROAD';
 
     const routeControlsToValidate = {
         ContainerType: isFCL,
@@ -1450,8 +1466,8 @@ private extractCargoData(enquiryCargo: any[]): any {
     }
 
     const productControlsToValidate = {
-        GrossWeight: isLCL || isFCL,
-        NetWeight: isLCL || isFCL,
+        GrossWeight: isLCL || isFCL || isRoad,
+        NetWeight: isLCL || isFCL || isRoad,
         Volume: isLCL || isFCL,
         ExternalQty: isLCL || isFCL,
         ExternalPkg: isLCL || isFCL,
@@ -1472,8 +1488,7 @@ private extractCargoData(enquiryCargo: any[]): any {
     this.quoteProducts(routeIndex).updateValueAndValidity();
   }
   private setOrClearRequired(control: AbstractControl, isRequired: boolean) {
-    const validators = control.validator ? [control.validator] : [];
-    const hasRequired = validators.includes(Validators.required);
+    const hasRequired = control.hasValidator(Validators.required);
 
     if (isRequired && !hasRequired) {
       control.addValidators(Validators.required);
@@ -1932,7 +1947,7 @@ isRateLockDisabled(): boolean {
     this.isSaving = false;
     return;
   }
-    if (this.quoteRoutes.invalid) {
+    if (this.hasInvalidRouteDetails()) {
       this.appSettingService.showWarning("Please fill all the Route details correctly");
       this.quoteRoutes.markAllAsTouched();
       this.quoteRoutes.updateValueAndValidity();
@@ -1950,6 +1965,7 @@ isRateLockDisabled(): boolean {
     })
 
     if (this.quotationForm.invalid) {
+      this.logInvalidControls(this.quotationForm, 'quotationForm');
       this.appSettingService.showWarning("Please fill all the required fields correctly");
       this.quotationForm.markAllAsTouched();
       this.quotationForm.updateValueAndValidity();
@@ -2199,17 +2215,63 @@ isRateLockDisabled(): boolean {
     })
   }
 
-  handleValidationOnDept(index: number, type: 'FCL' | 'LCL' | 'AIR' | null) {
+  private hasInvalidRouteDetails(): boolean {
+    return this.quoteRoutes.controls.some((routeControl) => {
+      const routeForm = routeControl as FormGroup;
+      const routeFields = [
+        'DepartmentMasterSid',
+        'POLSid',
+        'PODSid',
+        'effDate',
+        'expDate',
+        'CargoType'
+      ];
+
+      return routeFields.some(fieldName => routeForm.get(fieldName)?.invalid);
+    });
+  }
+
+  private logInvalidControls(control: AbstractControl | null, path: string): void {
+    if (!control) {
+      return;
+    }
+
+    if (control instanceof FormGroup) {
+      Object.keys(control.controls).forEach(key => {
+        this.logInvalidControls(control.get(key), `${path}.${key}`);
+      });
+      return;
+    }
+
+    if (control instanceof FormArray) {
+      control.controls.forEach((childControl, index) => {
+        this.logInvalidControls(childControl, `${path}[${index}]`);
+      });
+      return;
+    }
+
+    if (control.invalid) {
+      console.log('[Quotation Invalid Control]', {
+        path,
+        errors: control.errors,
+        value: control.value
+      });
+    }
+  }
+
+  handleValidationOnDept(index: number, type: string | null) {
     const routeForm = this.quoteRoutes.at(index) as FormGroup;
+    const cargoMode = this.getQuotationCargoMode(type);
 
     const validationConfig = {
       FCL: ['ContainerType', 'Qty'],
       LCL: ['GrossWeight', 'Volume'],
       AIR: ['GrossWeight', 'ChargeableWeight'],
+      ROAD: ['GrossWeight', 'NetWeight'],
     };
 
     let allDynamicFields;
-    switch (type) {
+    switch (cargoMode) {
       case 'FCL':
         allDynamicFields = ['GrossWeight','ChargeableWeight'];
         break;
@@ -2218,6 +2280,9 @@ isRateLockDisabled(): boolean {
         break;
       case 'AIR':
         allDynamicFields = ['ContainerType', 'Qty'];
+        break;
+      case 'ROAD':
+        allDynamicFields = ['ContainerType', 'Volume', 'ChargeableWeight'];
         break;
       default:
         allDynamicFields = [];
@@ -2232,8 +2297,8 @@ isRateLockDisabled(): boolean {
       }
     });
 
-    if (type && validationConfig[type]) {
-      const requiredFields = validationConfig[type];
+    if (cargoMode && validationConfig[cargoMode]) {
+      const requiredFields = validationConfig[cargoMode];
 
       requiredFields.forEach(fieldName => {
         const control = routeForm.get(fieldName);
@@ -2272,7 +2337,7 @@ isRateLockDisabled(): boolean {
     }
     const deptType = dept?.departmentType;
    
-    const selectedFCLLCL = deptType === "Sea" ? dept?.FCLLCL : deptType.toUpperCase()
+    const selectedFCLLCL = deptType === "Sea" ? dept?.FCLLCL : deptType?.toUpperCase()
     routeForm.get('segmentType').setValue(selectedFCLLCL);
     this.handleValidationOnDept(routeIndex, selectedFCLLCL);
     this.refreshRoutePortFilters(routeIndex);
@@ -2280,7 +2345,7 @@ isRateLockDisabled(): boolean {
       this.handleSegmentChangeOnAllProducts(routeIndex);
     })
 
-    this.filterChargesBySegment(routeIndex,selectedFCLLCL);
+    this.filterChargesBySegment(routeIndex, selectedFCLLCL);
   }
 
   onCustomerChange(event: any): void {
@@ -2425,7 +2490,12 @@ isRateLockDisabled(): boolean {
     let podPorts = [...basePorts];
     let fpodPorts = [...basePorts];
 
-    if (shipmentDirection === 'EXPORT') {
+    if (this.shouldUseAllRoutePortOptions(segment, department)) {
+      porPorts = [...basePorts];
+      polPorts = [...basePorts];
+      podPorts = [...basePorts];
+      fpodPorts = [...basePorts];
+    } else if (shipmentDirection === 'EXPORT') {
       porPorts = [...companyCountryPorts];
       polPorts = [...companyCountryPorts];
       podPorts = [...foreignPorts];
@@ -2450,17 +2520,52 @@ isRateLockDisabled(): boolean {
   }
 
   getFilteredPortsBySegment(segment: string): any[] {
-    if (segment === 'AIR') {
+    const normalizedSegment = this.normalizePortText(segment);
+    if (normalizedSegment === 'AIR') {
       return this.ports.filter(port => this.normalizePortText(port?.PortType) === 'AIR');
-    } else if (segment === 'FCL' || segment === 'LCL' || segment === 'SEA') {
+    } else if (normalizedSegment === 'FCL' || normalizedSegment === 'LCL' || normalizedSegment === 'SEA') {
       return this.ports.filter(port => this.normalizePortText(port?.PortType) === 'SEA');
-    } else if (segment === 'ROAD') {
+    } else if (normalizedSegment === 'ROAD') {
       return this.ports.filter(port => {
         const portType = this.normalizePortText(port?.PortType);
         return portType === 'ROAD' || portType.includes('ROAD') || portType.includes('LAND') || portType.includes('LOCATION');
       });
+    } else if (normalizedSegment === 'TRANSPORT') {
+      return [...this.ports];
+    } else if (normalizedSegment === 'OTHER' || normalizedSegment === 'OTHERS') {
+      return [...this.ports];
     }
     return [];
+  }
+
+  private shouldUseAllRoutePortOptions(segment: string, department?: any): boolean {
+    const normalizedSegment = this.normalizePortText(segment);
+    const departmentType = this.normalizePortText(department?.departmentType);
+
+    return ['OTHER', 'OTHERS', 'TRANSPORT'].includes(normalizedSegment)
+      || ['OTHER', 'OTHERS', 'TRANSPORT'].includes(departmentType);
+  }
+
+  private getQuotationCargoMode(segment: string | null | undefined): 'FCL' | 'LCL' | 'AIR' | 'ROAD' {
+    const normalizedSegment = this.normalizePortText(segment);
+    if (normalizedSegment === 'FCL') {
+      return 'FCL';
+    }
+    if (normalizedSegment === 'AIR') {
+      return 'AIR';
+    }
+    if (normalizedSegment === 'ROAD' || normalizedSegment === 'TRANSPORT') {
+      return 'ROAD';
+    }
+    return 'LCL';
+  }
+
+  isLclStyleQuotationSegment(segment: string | null | undefined): boolean {
+    return this.getQuotationCargoMode(segment) === 'LCL';
+  }
+
+  isSurfaceQuotationSegment(segment: string | null | undefined): boolean {
+    return this.getQuotationCargoMode(segment) === 'ROAD';
   }
 
   private applyRoutePortFilterLists(routeIndex: number, filteredLists: any): void {
@@ -4368,7 +4473,7 @@ ${this.userData['userEmail']}`;
   //   });
   // }
 
-  filterChargesBySegment(routeIndex: number, segment: 'LCL' | 'FCL' | 'AIR'): void {
+  filterChargesBySegment(routeIndex: number, segment: string): void {
     const routeDeptId = this.quoteRoutes.at(routeIndex)?.get('DepartmentMasterSid')?.value;
 
     this.filteredCharges = (this.chargeMaster || []).filter(charge => {

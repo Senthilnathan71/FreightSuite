@@ -26,7 +26,10 @@
 @if(houseJobForm.get('MasterJobNumber')?.value){
 <div class="master-job-link ms-2">
   <span class="fw-bold me-1 text-black">
-    @if(selectedDepartmentType === "SEA"){
+    @if(selectedDepartmentType === "SEA"||
+        selectedDepartmentType === 'ROAD' ||
+        selectedDepartmentType === 'TRANSPORT' ||
+        selectedDepartmentType === 'OTHERS' ){
       Job No :
     }@else if(selectedDepartmentType === "AIR"){
       MAWB No :
@@ -35,7 +38,10 @@
   
   @if(housejobData?.masterJob?.MasterJobSid){
     <a class="text-info fw-bold cursor-pointer"
-      [routerLink]="selectedDepartmentType === 'SEA' 
+      [routerLink]="selectedDepartmentType === 'SEA' ||
+        selectedDepartmentType === 'ROAD' ||
+        selectedDepartmentType === 'TRANSPORT' ||
+        selectedDepartmentType === 'OTHERS' 
         ? ['/operation/master-job/entry', housejobData?.masterJob?.MasterJobSid]
         : ['/operation/mawbill/entry', housejobData?.masterJob?.MasterJobSid]">
       {{houseJobForm.get('MasterJobNumber')?.value || ''}}
@@ -221,7 +227,7 @@
         'input-label': true,
         'bg-transparent': !b['HBLNo']?.getRawValue()
       }">
-      {{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}
+      {{selectedCargoMode === 'AIR' ? 'HAWBL No' : 'HBL No'}}
       @if(!selectedDepartment?.departmentName?.toLowerCase().includes('export')) {
                 <span class="text-danger">*</span>
             }
@@ -248,7 +254,7 @@
             <i-feather name="calendar" class="feather-sm"></i-feather>
           </button>
         </div>
-        <label for="" class="input-label">{{selectedFCLLCL === 'AIR' ? 'HAWBL Date' : 'HBL Date'}} <span class="text-danger">*</span></label>
+        <label for="" class="input-label">{{selectedCargoMode === 'AIR' ? 'HAWBL Date' : 'HBL Date'}} <span class="text-danger">*</span></label>
         @if(houseJobForm.get('HBLDate')?.touched && houseJobForm.get('HBLDate')?.invalid){
         <div class="error-message">
           @if(houseJobForm.get('HBLDate')?.hasError('required')){
@@ -835,7 +841,7 @@
                       <label for="text-input" [ngClass]="{
                         'input-label': true,
                         'bg-transparent': !b['MBLNo']?.getRawValue()
-                      }">{{ selectedFCLLCL === 'AIR' ? 'MAWBL No' : 'MBL No' }}<span
+                      }">{{ selectedCargoMode === 'AIR' ? 'MAWBL No' : 'MBL No' }}<span
                           class="text-danger"></span></label>
                     </div>
                   </aside>
@@ -848,7 +854,7 @@
                         <button class="btn  bi bi-calendar3 " (click)="d2.toggle()" type="button">
                           <i-feather name="calendar" class="feather-sm"></i-feather></button>
                       </div>
-                      <label for="shipmentDateExpected" class="input-label">{{selectedFCLLCL === 'AIR' ? 'MAWBL Date' :
+                      <label for="shipmentDateExpected" class="input-label">{{selectedCargoMode === 'AIR' ? 'MAWBL Date' :
                         'MBL Date' }} <span class="text-danger"></span>
                       </label>
 
@@ -1217,7 +1223,7 @@
             <div class="widget-header">
               <h5 class="widget-title">House Summary</h5>
             </div>
-            @if(selectedFCLLCL === "FCL"){
+            @if(selectedCargoMode === "FCL"){
             <div class="widget-body">
               <div class="stat-item">
                 <div class="stat-label">Containers</div>
@@ -1240,7 +1246,7 @@
                 </div>
               </div>
             </div>
-            } @else if(selectedFCLLCL === "LCL"){
+            } @else if(selectedCargoMode === "LCL"){
             <div class="widget-body">
               <div class="stat-item">
                 <div class="stat-label">Gross Weight</div>
@@ -1265,7 +1271,7 @@
                 </div>
               </div>
             </div>
-            } @else if(selectedFCLLCL === "AIR" || selectedFCLLCL === "LCL"){
+            } @else if(selectedCargoMode === "AIR"){
             <div class="widget-body">
               <div class="stat-item">
                 <div class="stat-label">Chargeable Weight</div>
@@ -1288,6 +1294,25 @@
                 <div class="stat-value">
                   <span class="status-badge status-active">{{b['status']?.value}}</span>
                 </div>
+              </div>
+            </div>
+            } @else if(selectedCargoMode === "ROAD"){
+            <div class="widget-body">
+              <div class="stat-item">
+                <div class="stat-label">Qty</div>
+                <div class="stat-value">{{c['NoOfPackage']?.value ? c['NoOfPackage']?.value : '-' }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Gross Weight</div>
+                <div class="stat-value">{{c['GrossWeight']?.value ? c['GrossWeight']?.value : '-' }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Net Weight</div>
+                <div class="stat-value">{{c['NetWeight']?.value ? c['NetWeight']?.value : '-' }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Chargeable Weight</div>
+                <div class="stat-value">{{c['ChargeableWeight']?.value ? c['ChargeableWeight']?.value : '-' }}</div>
               </div>
             </div>
             }
@@ -1403,7 +1428,7 @@
               }
             </div>
           </aside>
-          @if(selectedFCLLCL === "FCL"){
+          @if(selectedCargoMode === "FCL"){
           <aside class="col-md-2">
             <div class="custom-form-group custom-form-group-select"
               [class.filled]="!!cargoForm.get('ContainerType')?.value">
@@ -1414,7 +1439,7 @@
               <label for="text-input" class="input-label">Container Type<span class="text-danger"></span></label>
             </div>
           </aside>
-          <aside class="col-md-2">
+          <aside class="col-md-2" *ngIf="!isSurfaceCargoMode()">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="custom-input-field sm" [onlyNumbers]
                 formControlName="NoofContainers">
@@ -1492,7 +1517,7 @@
               }
             </div>
           </aside>
-          @if(selectedFCLLCL === "AIR" || selectedFCLLCL === "LCL") {
+          @if(selectedCargoMode === "AIR" || selectedCargoMode === "LCL") {
           <aside class="col-md-2">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
@@ -1529,6 +1554,16 @@
                 }
               </div>
               }
+            </div>
+          </aside>
+          }
+          @if(selectedCargoMode === "ROAD") {
+          <aside class="col-md-2">
+            <div class="custom-form-group">
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                formControlName="ChargeableWeight" DecimalPrecision [DecimalPrecisionBefore]="7"
+                [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
+              <label for="text-input" class="input-label">Chargeable Weight<span class="text-danger"></span></label>
             </div>
           </aside>
           }
@@ -1655,7 +1690,7 @@
                 <th>Date</th>
                 <th>External Pkg</th>
                 <th>No of Pkg</th>
-                @if(selectedFCLLCL === "AIR" || selectedFCLLCL === "LCL"){
+                @if(selectedCargoMode === "AIR" || selectedCargoMode === "LCL"){
                 <th>UOM</th>
                 <th>Length</th>
                 <th>Width</th>
@@ -1695,7 +1730,7 @@
                 <td>{{product.value.ShippingBillDate | formatDate}}</td>
                 <td>{{product.value.ExternaPkg}}</td>
                 <td>{{product.value.ExternlQty}}</td>
-                @if(selectedFCLLCL === "AIR" || selectedFCLLCL === "LCL"){
+                @if(selectedCargoMode === "AIR" || selectedCargoMode === "LCL"){
                 <td>{{getUomName(product.value.UomMasterSid)}}</td>
                 <td>{{product.value.Length}}</td>
                 <td>{{product.value.Width}}</td>
@@ -1738,7 +1773,7 @@
                   <th class="bg-transparent text-light dofi-min-w-130" scope="col">Shipping Bill Date<span class="text-danger"></span></th>
                   <th class="bg-transparent text-light dofi-min-w-40" scope="col">Extl Pkg <span class="text-danger">*</span></th>
                   <th class="bg-transparent text-light dofi-min-w-40" scope="col">No.of Pkg <span class="text-danger fw-bold fs-2">*</span></th>
-                  @if(selectedFCLLCL === 'LCL' || selectedFCLLCL === 'AIR'){
+                  @if(usesDimensionalCargoFields()){
                   <th class="bg-transparent text-light dofi-min-w-80" scope="col">UOM <span class="text-danger fw-bold fs-3">*</span></th>
                   <th class="bg-transparent text-light dofi-min-w-80" scope="col">Length<span class="text-danger"></span></th>
                   <th class="bg-transparent text-light dofi-min-w-80" scope="col">Width<span class="text-danger"></span></th>
@@ -1748,10 +1783,10 @@
                   <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wgt <span class="text-danger fw-bold fs-3">*</span></th>
                   <th class="bg-transparent text-light dofi-min-w-70" scope="col">Net Wgt<span class="text-danger"></span></th>
                 }
-                  @if(selectedFCLLCL === 'FCL'){
+                  @if(selectedFCLLCL === 'FCL' || isSurfaceCargoMode()){
                   <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wgt <span class="text-danger">*</span></th>
                   <th class="bg-transparent text-light dofi-min-w-70" scope="col">Net Wgt<span class="text-danger"></span></th>
-                  <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM <span class="text-danger fw-bold fs-3">*</span></th>
+                  <th class="bg-transparent text-light dofi-min-w-70" scope="col" *ngIf="!isSurfaceCargoMode()">CBM <span class="text-danger fw-bold fs-3">*</span></th>
                 }
                   <th class="bg-transparent text-light dofi-min-w-130" scope="col">Cargo Recd. Date<span class="text-danger"></span></th>
                   <th class="bg-transparent text-light dofi-min-w-70" scope="col">Recd. Qty<span class="text-danger"></span></th>
@@ -1865,7 +1900,7 @@
                     </div>
                     }
                   </td>
-                  @if(selectedFCLLCL === 'LCL' || selectedFCLLCL === 'AIR'){
+                  @if(usesDimensionalCargoFields()){
                   <td>
                     <ng-select class="ng-select" formControlName="UomMasterSid" [items]="measurementUnitList" bindLabel="name"
                       bindValue="id" appendTo="body"></ng-select>
@@ -1949,7 +1984,7 @@
                       class="custom-input-field sm text-end">
                   </td>
                   }
-                  @if(selectedFCLLCL === 'FCL'){
+                  @if(selectedFCLLCL === 'FCL' || isSurfaceCargoMode()){
                   <td>
               
                     <input type="text" id="text-input" formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="8"
@@ -1962,7 +1997,7 @@
                       [DecimalPrecisionAfter]="digitsAfterDecimal" (input)="handleProductRelatedCalculation()" placeholder=""
                       class="custom-input-field sm text-end">
                   </td>
-                  <td>
+                  <td *ngIf="!isSurfaceCargoMode()">
                     <input type="text" id="text-input" formControlName="Volume" placeholder="" DecimalPrecision
                       [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
                       (input)="handleProductRelatedCalculation()" class="custom-input-field sm text-end"
@@ -2163,7 +2198,7 @@
               <label for="text-input" [ngClass]="{
                         'input-label': true,
                         'bg-transparent': !o['HBLNo']?.getRawValue()
-                         }">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}<span
+                         }">{{selectedCargoMode === 'AIR' ? 'HAWBL No' : 'HBL No'}}<span
                   class="text-danger"></span></label>
             </div>
           </aside>
@@ -2479,7 +2514,7 @@
             </div>
           </aside>
           }
-          @if(selectedFCLLCL === "FCL"){
+          @if(selectedCargoMode === "FCL"){
           <aside class="col-md-3">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Depo"
@@ -2962,7 +2997,7 @@
           }
         </div>
       </aside>
-      @if(selectedFCLLCL === "AIR" || selectedFCLLCL === "LCL"){
+      @if(selectedCargoMode === "AIR" || selectedCargoMode === "LCL"){
       <aside class="col-md-4">
         <div class="custom-form-group custom-form-group-select"
           [class.filled]="!!productForm.get('UomMasterSid')?.value">
@@ -3002,7 +3037,7 @@
         </div>
       </aside>
       }
-      <aside class="col-md-4">
+      <aside class="col-md-4" *ngIf="!isSurfaceCargoMode()">
         <div class="custom-form-group">
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Volume"
             DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
@@ -3498,7 +3533,7 @@
             </tbody>
           </table>
         </div> -->
-               @if(selectedFCLLCL === "FCL"){
+               @if(selectedCargoMode === "FCL"){
             <table class="table tablebordered mb-2" style="table-layout: fixed; width: 100%;">
               <thead>
                 <tr>
@@ -3543,7 +3578,7 @@
               </tbody>
             </table>
             }
-            @if(selectedFCLLCL === "LCL"){
+            @if(selectedCargoMode === "LCL"){
           <div class="table-responsive mb-2">
             <table class="table tablebordered mb-0">
               <thead>
@@ -3849,7 +3884,7 @@
         </div>
  
         <div>
-            @if(selectedFCLLCL === "FCL"){
+            @if(selectedCargoMode === "FCL"){
             <table class="table tablebordered mb-2" style="table-layout: fixed; width: 100%;">
               <thead>
                 <tr>
@@ -3894,7 +3929,7 @@
               </tbody>
             </table>
             }
-            @if(selectedFCLLCL === "LCL"){
+            @if(selectedCargoMode === "LCL"){
           <div class="table-responsive mb-2">
             <table class="table tablebordered mb-0">
               <thead>
@@ -5558,7 +5593,7 @@
 
     <div class="col-12 col-lg-6">
       <div class="d-flex mb-1 flex-wrap">
-        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}</div>
+        <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">{{selectedCargoMode === 'AIR' ? 'HAWBL No' : 'HBL No'}}</div>
         <div class="text-break">: {{bookingHeader?.HBLNo || 'N/A'}}</div>
       </div>
       <div class="d-flex mb-1 flex-wrap">
@@ -5569,12 +5604,12 @@
         <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">FPD ETA</div>
         <div class="text-break">: {{getFPDETA() | formatDate}}</div>
       </div>
-      @if(selectedFCLLCL === "LCL"){
+      @if(selectedCargoMode === "LCL"){
       <div class="d-flex mb-1 flex-wrap">
         <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No of Pkg</div>
         <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.NoOfPackage || 'N/A'}}</div>
       </div>
-      } @else if(selectedFCLLCL === "FCL"){
+      } @else if(selectedCargoMode === "FCL"){
       <div class="d-flex mb-1 flex-wrap">
         <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Container Type</div>
         <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.ContainerType || 'N/A'}}</div>
@@ -5583,7 +5618,7 @@
         <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No of Containers</div>
         <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.NoofContainers || 'N/A'}}</div>
       </div>
-      } @else if(selectedFCLLCL === "AIR" || selectedFCLLCL === "LCL"){
+      } @else if(selectedCargoMode === "AIR" || selectedCargoMode === "LCL"){
       <div class="d-flex mb-1 flex-wrap">
         <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Chargeable Weight</div>
         <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.ChargeableWeight || 'N/A'}}</div>
@@ -5743,7 +5778,7 @@
 
         <div class="col-12 col-lg-6">
           <div class="d-flex mb-1 flex-wrap">
-            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}</div>
+            <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">{{selectedCargoMode === 'AIR' ? 'HAWBL No' : 'HBL No'}}</div>
             <div class="text-break">: {{bookingHeader?.HBLNo || 'N/A'}}</div>
           </div>
           <div class="d-flex mb-1 flex-wrap">
@@ -5754,12 +5789,12 @@
             <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">FPD ETA</div>
             <div class="text-break">: {{getFPDETA() | formatDate}}</div>
           </div>
-          @if(selectedFCLLCL === "LCL"){
+          @if(selectedCargoMode === "LCL"){
           <div class="d-flex mb-1 flex-wrap">
             <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No of Pkg</div>
             <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.NoOfPackage || 'N/A'}}</div>
           </div>
-          } @else if(selectedFCLLCL === "FCL"){
+          } @else if(selectedCargoMode === "FCL"){
           <div class="d-flex mb-1 flex-wrap">
             <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Container Type</div>
             <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.ContainerType || 'N/A'}}</div>
@@ -5768,7 +5803,7 @@
             <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">No of Containers</div>
             <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.NoofContainers || 'N/A'}}</div>
           </div>
-          } @else if(selectedFCLLCL === "AIR"){
+          } @else if(selectedCargoMode === "AIR"){
           <div class="d-flex mb-1 flex-wrap">
             <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Chargeable Weight</div>
             <div class="text-break">: {{bookingHeader?.bookingCargo[0]?.ChargeableWeight || 'N/A'}}</div>

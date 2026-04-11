@@ -208,6 +208,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   selectedDepartment: any;
   selectedDepartmentType: string;
   selectedFCLLCL: string = "LCL";
+  selectedCargoMode: 'FCL' | 'LCL' | 'AIR' | 'ROAD' = 'LCL';
   isEditMode: boolean;
   isJobGenerated: boolean = false;
   isGeneratingJob: boolean = false;
@@ -689,10 +690,18 @@ get visibleTabs() {
   
 
   private updateGenerateJobButtonVisibility(): void {
-  const isFCLDepartment = this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "AIR";
+   const deptType = this.selectedDepartmentType?.toUpperCase();
+  const segment = this.selectedFCLLCL?.toUpperCase(); // FCL / LCL / AIR
+
+  // ✅ Allowed Departments
+  const isSeaFCL = deptType === 'SEA' && segment === 'FCL';
+  const isAir = deptType === 'AIR';
+  const isRoadOrTransport = deptType === 'ROAD' || deptType === 'TRANSPORT';
+
+  const isAllowed = isSeaFCL || isAir || isRoadOrTransport;
   const isStuffedStatus = this.b['BookingStatus']?.value === 'Stuffed';
   
-  this.showGenerateJobButton = isFCLDepartment && !isStuffedStatus;
+  this.showGenerateJobButton = isAllowed  && !isStuffedStatus;
 }
 
   ngAfterViewInit(): void {
@@ -1003,7 +1012,7 @@ subscribeToFormChanges() {
   // Product Form Initialization
   initProductForm() {
     const isIndianCompany = this.countryOfCompany === 'india';
-    const isAirOrLCL = this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL';
+    const isDimensionalCargo = this.usesDimensionalCargoFields();
     this.productForm = this.fb.group({
       BookingProductSid: [null],
       ProductName: [null,[Validators.required]],
@@ -1014,8 +1023,10 @@ subscribeToFormChanges() {
       ExternlQty: ['', [Validators.required]],
       GrossWeight: ['', [Validators.required,Validators.min(0.001)]],
       NetWeight: ['', [Validators.min(0)]],
-      Volumetric: ['',isAirOrLCL ? [Validators.required] : []],
-      Volume: ['',[Validators.required,Validators.min(0.001)]],
+      Volumetric: ['',isDimensionalCargo ? [Validators.required] : []],
+      Volume: ['',
+        this.isSurfaceCargoMode() ? [] : [Validators.required,Validators.min(0.001)]
+      ],
       IsHaz: [false],
       ImcoClass: [null],
       UnNo: [''],
@@ -1023,7 +1034,7 @@ subscribeToFormChanges() {
       Length: [''],
       Width: [''],
       Height: [''],
-      UomMasterSid: [2,isAirOrLCL ? [Validators.required] : []],
+      UomMasterSid: [2,isDimensionalCargo ? [Validators.required] : []],
       CargoRecDate: [null]
     });
     this.productForm.get('GrossWeight')?.valueChanges.subscribe(() => {
@@ -1044,6 +1055,10 @@ subscribeToFormChanges() {
   }
   
   if (this.chargeableWeightManualOverride) {
+    return;
+  }
+
+  if (this.isSurfaceCargoMode()) {
     return;
   }
   
@@ -1244,7 +1259,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
    */
 
   createBookingProductGroup(data?: any, isPatching: boolean = false): FormGroup {
-    const isAirOrLCL = this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL';
+    const isDimensionalCargo = this.usesDimensionalCargoFields();
     const productForm = this.fb.group({
       BookingProductSid: [data?.BookingProductSid || null],
       ProductName: [data?.ProductName || null,[Validators.required]],
@@ -1255,7 +1270,10 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       ExternlQty: [data?.ExternlQty || '', [Validators.required]],
       GrossWeight: [Number(data?.GrossWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required,Validators.min(0.001)]],
       NetWeight: [Number(data?.NetWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.min(0)]],
-      Volume: [Number(data?.Volume || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required,Validators.min(0.001)]],
+      Volume: [
+        Number(data?.Volume || '').toFixed(this.digitsAfterDecimal) || '',
+        this.isSurfaceCargoMode() ? [] : [Validators.required,Validators.min(0.001)]
+      ],
       IsHaz: [data?.IsHaz ? (data.IsHaz === "Y" ? true : false) : false],
       ImcoClass: [{ value: data?.ImcoClass || null, disabled: true }],
       UnNo: [{ value: data?.UnNo || '', disabled: true }],
@@ -1263,8 +1281,8 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       Length: [data?.Length || ''],
       Width: [data?.Width || ''],
       Height: [data?.Height || ''],
-      Volumetric: [data?.Volumetric|| '',isAirOrLCL ? [Validators.required] : []],
-      UomMasterSid: [data?.UomMasterSid || 2,isAirOrLCL ? [Validators.required] : []],
+      Volumetric: [data?.Volumetric|| '',isDimensionalCargo ? [Validators.required] : []],
+      UomMasterSid: [data?.UomMasterSid || 2,isDimensionalCargo ? [Validators.required] : []],
       CargoRecDate: [data?.CargoRecDate ? new Date(data?.CargoRecDate) : null]
     });
     productForm.get('GrossWeight')?.valueChanges.subscribe(() => {
@@ -1277,7 +1295,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
     // The subscription itself already skips while `isPatching` is true.
     this.setupProductCalculationSubscriptions(productForm);
       // Check if department is LCL or AIR
-  const isLCLorAIR = this.selectedFCLLCL === 'LCL' || this.selectedFCLLCL === 'AIR';
+  const isLCLorAIR = this.usesDimensionalCargoFields();
   
   if (isLCLorAIR) {
     // Always setup calculations for LCL/AIR
@@ -1349,6 +1367,11 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
 
 private calculateProductFormCBMAndVolumetric(productForm: FormGroup) {
   if(this.isPatching){
+    return;
+  }
+  if (!this.usesDimensionalCargoFields()) {
+    productForm.get('Volume')?.setValue('', { emitEvent: false });
+    productForm.get('Volumetric')?.setValue('', { emitEvent: false });
     return;
   }
   const externlQty = this.parseFloatSafe(productForm.get('ExternlQty')?.value);
@@ -1742,6 +1765,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     }, { emitEvent: false });
 
     this.selectedFCLLCL = this.resolveSelectedSegment(this.selectedDepartment);
+    this.selectedCargoMode = this.resolveCargoMode(this.selectedDepartment);
 
     if (this.selectedFCLLCL === "LCL" && this.selectedDepartment.ExportImport === "Export") {
       this.cargoForm.get('StuffingAt')?.setValue('Dock', { emitEvent: false });
@@ -1752,6 +1776,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
     this.selectedDepartmentType === "SEA" ? this.c['ModeOfTransport']?.setValue('Vessel', { emitEvent: false }) : null;
     this.selectedDepartmentType === "AIR" ? this.c['ModeOfTransport']?.setValue('Flight', { emitEvent: false }) : null;
+    this.selectedCargoMode === "ROAD" ? this.c['ModeOfTransport']?.setValue('Road', { emitEvent: false }) : null;
     this.handleCFSOrYard();
 
     // Patch other form
@@ -1807,7 +1832,27 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
     // Clear and repopulate products
     this.bookingProducts.clear();
-    const productsFromResponse = response.bookingProduct || [];
+    const productsFromResponse =
+      response.bookingProduct?.length ? response.bookingProduct :
+      response.quoteRoute?.[0]?.quoteProducts?.map((product: any) => ({
+        ProductName: product.ProductName,
+        ExternaPkg: product.PackageType ?? product.ExternalPkg ?? null,
+        ExternlQty: product.ExternalQty ?? product.ExternlQty ?? '',
+        GrossWeight: product.GrossWeight,
+        NetWeight: product.NetWeight,
+        Volume: product.Volume,
+        Volumetric: product.Volumetric,
+        Length: product.Length,
+        Width: product.Width,
+        Height: product.Height,
+        UomMasterSid: product.UomMasterSid ?? product.ProductUnit ?? 2,
+        IsHaz: product.IsHaz,
+        ImcoClass: product.ImcoClass,
+        UnNo: product.UnNo,
+        PkgGroup: product.PkgGroup,
+        CargoRecDate: product.CargoRecDate
+      })) ||
+      [];
     this.productDataLength = productsFromResponse.length;
     
     if (this.productDataLength) {
@@ -2718,6 +2763,7 @@ onCarrierChangeForAir(carrier: any): void {
     if (!department) {
       this.selectedDepartmentType = '';
       this.selectedFCLLCL = 'LCL';
+      this.selectedCargoMode = 'LCL';
       this.filteredPorts = [];
       this.filteredPOO = [];
       this.filteredPOL = [];
@@ -2742,9 +2788,10 @@ onCarrierChangeForAir(carrier: any): void {
   }
     this.selectedDepartmentType = this.normalizePortText(department?.departmentType);
     this.selectedFCLLCL = this.resolveSelectedSegment(department);
+    this.selectedCargoMode = this.resolveCargoMode(department);
      if (this.bookingProducts.length > 0) {
     this.bookingProducts.controls.forEach((productGroup: FormGroup, index) => {
-      const isAirOrLCL = this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL';
+      const isAirOrLCL = this.usesDimensionalCargoFields();
       
       // Update validators based on department
       const dimensionFields = ['UomMasterSid', 'Volumetric'];
@@ -2774,7 +2821,7 @@ onCarrierChangeForAir(carrier: any): void {
 
     this.selectedDepartmentType === "SEA" ? this.c['ModeOfTransport']?.setValue('Vessel') : null;
     this.selectedDepartmentType === "AIR" ? this.c['ModeOfTransport']?.setValue('Flight') : null;
-    this.selectedDepartmentType === "ROAD" ? this.c['ModeOfTransport']?.setValue('Road') : null;
+    this.selectedCargoMode === "ROAD" ? this.c['ModeOfTransport']?.setValue('Road') : null;
     this.handleCFSOrYard()
     this.onRouteChange()
     this.handleImportExport();
@@ -2841,10 +2888,7 @@ onCarrierChangeForAir(carrier: any): void {
         return portType === 'ROAD' || portType.includes('ROAD') || portType.includes('LAND') || portType.includes('LOCATION');
       });
     } else if (normalizedSegment === 'TRANSPORT') {
-      return this.portList.filter(port => {
-        const portType = this.normalizePortText(port?.PortType);
-        return portType === 'SEA' || portType === 'AIR';
-      });
+      return [...this.portList];
     } else if (normalizedSegment === 'OTHER' || normalizedSegment === 'OTHERS') {
       return [...this.portList];
     }
@@ -3008,6 +3052,32 @@ onCarrierChangeForAir(carrier: any): void {
     }
 
     return departmentType || 'LCL';
+  }
+
+  private resolveCargoMode(department: any): 'FCL' | 'LCL' | 'AIR' | 'ROAD' {
+    const selectedSegment = this.resolveSelectedSegment(department);
+
+    if (selectedSegment === 'FCL') {
+      return 'FCL';
+    }
+
+    if (selectedSegment === 'AIR') {
+      return 'AIR';
+    }
+
+    if (selectedSegment === 'ROAD' || selectedSegment === 'TRANSPORT') {
+      return 'ROAD';
+    }
+
+    return 'LCL';
+  }
+
+  isSurfaceCargoMode(): boolean {
+    return this.selectedCargoMode === 'ROAD';
+  }
+
+  usesDimensionalCargoFields(): boolean {
+    return this.selectedCargoMode === 'LCL' || this.selectedCargoMode === 'AIR';
   }
 
   private shouldUseAllPortOptions(): boolean {

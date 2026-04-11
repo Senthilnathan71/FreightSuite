@@ -1320,7 +1320,7 @@
               }
             </div>
           </aside>
-          <aside class="col-md-2">
+          <aside class="col-md-2" *ngIf="!isSurfaceCargoMode()">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
                 formControlName="Volume" DecimalPrecision [DecimalPrecisionBefore]="7"
@@ -1339,7 +1339,8 @@
               }
             </div>
           </aside>
-          @if(selectedFCLLCL === "AIR" || selectedFCLLCL === "LCL" ) {
+          @if(usesDimensionalCargoFields() || isSurfaceCargoMode()) {
+            @if(usesDimensionalCargoFields()) {
             <aside class="col-md-2">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
@@ -1359,6 +1360,7 @@
               }
             </div>
           </aside>
+          }
           <aside class="col-md-2">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
@@ -1534,26 +1536,26 @@
                   <th class="bg-transparent text-light dofi-min-w-40" scope="col">No.of Pkg
                     <span class="text-danger">*</span>
                   </th>
-                  @if(selectedFCLLCL === 'LCL' || selectedFCLLCL === 'AIR'){
-                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">UOM <span class="text-danger">*</span></th>
-                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">Length<span class="text-danger"></span></th>
-                    <th class="bg-transparent text-light dofi-min-w-80" scope="col">Width<span class="text-danger"></span></th>
+                   @if(usesDimensionalCargoFields()){
+                     <th class="bg-transparent text-light dofi-min-w-80" scope="col">UOM <span class="text-danger">*</span></th>
+                     <th class="bg-transparent text-light dofi-min-w-80" scope="col">Length<span class="text-danger"></span></th>
+                     <th class="bg-transparent text-light dofi-min-w-80" scope="col">Width<span class="text-danger"></span></th>
                     <th class="bg-transparent text-light dofi-min-w-80" scope="col">Height<span class="text-danger"></span></th>
                     <th class="bg-transparent text-light dofi-min-w-80" scope="col">Volumetric<span class="text-danger">*</span></th>
                     <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM <span class="text-danger">*</span></th>
                     <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wgt<span class="text-danger">*</span></th>
                     <th class="bg-transparent text-light dofi-min-w-70" scope="col">Net Wgt<span class="text-danger"></span></th>
                   }
-                  @if(selectedFCLLCL === 'FCL'){
-                  <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wgt
-                    <span class="text-danger">*</span> 
-                  </th>
+                   @if(selectedFCLLCL === 'FCL' || isSurfaceCargoMode()){
+                   <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wgt
+                     <span class="text-danger">*</span> 
+                   </th>
                   <th class="bg-transparent text-light dofi-min-w-70" scope="col">Net Wgt
                     <span class="text-danger"></span>
                   </th>
-                  <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM <span class="text-danger">*</span>
-                  </th>
-                  }
+                   <th class="bg-transparent text-light dofi-min-w-70" scope="col" *ngIf="!isSurfaceCargoMode()">CBM <span class="text-danger">*</span>
+                   </th>
+                   }
                   <th class="bg-transparent text-light dofi-min-w-130" scope="col">Cargo Recd. Date <span
                       class="text-danger"></span></th>
                   <th class="bg-transparent text-light" scope="col">Is Haz</th>
@@ -1641,7 +1643,7 @@
                     <input type="text" id="text-input" formControlName="ExternlQty" [onlyNumbers]=5 placeholder=""
                       (input)="handleProductRelatedCalculation()" class="custom-input-field sm text-end">
                   </td>
-                  @if(selectedFCLLCL === 'LCL' || selectedFCLLCL === 'AIR'){
+                  @if(usesDimensionalCargoFields()){
                     <td >
                     <ng-select class="ng-select" formControlName="UomMasterSid" [items]="measurementUnitList" bindLabel="name"
                       bindValue="id" appendTo="body"></ng-select>
@@ -1685,7 +1687,7 @@
                       (input)="handleProductRelatedCalculation()" placeholder="" class="custom-input-field sm text-end">
                   </td>
                   }
-                  @if(selectedFCLLCL === 'FCL'){
+                  @if(selectedFCLLCL === 'FCL' || isSurfaceCargoMode()){
                   <td>
 
                     <input type="text" id="text-input" formControlName="GrossWeight" DecimalPrecision
@@ -1698,7 +1700,7 @@
                       [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
                       (input)="handleProductRelatedCalculation()" placeholder="" class="custom-input-field sm text-end">
                   </td>
-                  <td>
+                  <td *ngIf="!isSurfaceCargoMode()">
                     <input type="text" id="text-input" formControlName="Volume" placeholder="" DecimalPrecision
                       [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
                       (input)="handleProductRelatedCalculation()" class="custom-input-field sm text-end">
