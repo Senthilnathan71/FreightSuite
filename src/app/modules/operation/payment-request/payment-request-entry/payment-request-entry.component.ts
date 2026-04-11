@@ -227,6 +227,7 @@ export class PaymentRequestEntryComponent implements OnInit {
     this.form.patchValue({
       PayableTo: selectedParty?.CustomerName || ''
     });
+    this.syncDetailPartyWithHeader(selectedParty);
   }
 
   save() {
@@ -536,11 +537,13 @@ export class PaymentRequestEntryComponent implements OnInit {
             SourceCostRevenueChargeSid:
               item?.SourceCostRevenueChargeSid ||
               item?.sourceCostRevenueCharge?.CostRevenueChargesSid ||
+              item?.sourceCostRevenueCharge?.BookingRatesSid ||
               null,
             Selected: true,
           }));
         });
 
+        this.syncDetailPartyWithHeader();
         this.applyApprovalReadOnlyState(request.PaymentRequestStatus);
       },
       error: () => {
@@ -582,6 +585,7 @@ export class PaymentRequestEntryComponent implements OnInit {
       );
     });
 
+    this.syncDetailPartyWithHeader();
     this.applyApprovalReadOnlyState('Pending');
   }
 
@@ -602,7 +606,32 @@ export class PaymentRequestEntryComponent implements OnInit {
       CostAgentMasterSid: [data?.CostAgentMasterSid || null],
       CostAgentBranchSid: [data?.CostAgentBranchSid || null],
       CostAgentName: [data?.CostAgentName || data?.agent?.CustomerName || ''],
-      SourceCostRevenueChargeSid: [data?.SourceCostRevenueChargeSid || data?.CostRevenueChargeSid || null],
+      SourceCostRevenueChargeSid: [
+        data?.SourceCostRevenueChargeSid ||
+        data?.sourceCostRevenueCharge?.CostRevenueChargesSid ||
+        data?.sourceCostRevenueCharge?.BookingRatesSid ||
+        data?.CostRevenueChargeSid ||
+        null,
+      ],
+    });
+  }
+
+  private syncDetailPartyWithHeader(selectedParty?: any) {
+    const headerPartySid = this.form.get('Party')?.value || null;
+    const resolvedParty =
+      selectedParty ||
+      this.supplierList.find((item: any) => item.CustomerMasterSid === headerPartySid);
+    const partyName = resolvedParty?.CustomerName || this.form.get('PayableTo')?.value || '';
+
+    this.detailItems.controls.forEach((control) => {
+      const row = control as FormGroup;
+      row.patchValue(
+        {
+          CostAgentMasterSid: headerPartySid,
+          CostAgentName: partyName,
+        },
+        { emitEvent: false },
+      );
     });
   }
 
@@ -698,22 +727,6 @@ export class PaymentRequestEntryComponent implements OnInit {
     });
   }
 
-  onDetailPartyChange(index: number, value: any) {
-    const row = this.detailItems.at(index) as FormGroup;
-    const partyMasterSid = value?.CustomerMasterSid || value || null;
-    const selectedParty = this.supplierList.find(
-      (item: any) => item.CustomerMasterSid === partyMasterSid,
-    );
-
-    row.patchValue(
-      {
-        CostAgentMasterSid: partyMasterSid,
-        CostAgentName: selectedParty?.CustomerName || '',
-      },
-      { emitEvent: false },
-    );
-  }
-
   recalculateDetailRow(index: number) {
     const row = this.detailItems.at(index) as FormGroup;
     if (!row) {
@@ -729,6 +742,29 @@ export class PaymentRequestEntryComponent implements OnInit {
 
     row.patchValue(
       {
+        CostAmount: this.getFormattedAmount(amount, currencyMasterSid),
+        CostLocalAmount: this.getFormattedAmount(localAmount, this.currentCompany?.CurrencyMasterSid),
+      },
+        { emitEvent: false },
+    );
+  }
+
+  onCostAmountChange(index: number) {
+    const row = this.detailItems.at(index) as FormGroup;
+    if (!row) {
+      return;
+    }
+
+    const currencyMasterSid = row.get('CostCurrencyMasterSid')?.value;
+    const unit = Number(row.get('CostNumberOfUnit')?.value || 0);
+    const exchangeRate = Number(row.get('CostExchangeRate')?.value || 0);
+    const amount = Number(row.get('CostAmount')?.value || 0);
+    const rate = unit > 0 ? amount / unit : 0;
+    const localAmount = amount * exchangeRate;
+
+    row.patchValue(
+      {
+        CostRate: this.getFormattedAmount(rate, currencyMasterSid),
         CostAmount: this.getFormattedAmount(amount, currencyMasterSid),
         CostLocalAmount: this.getFormattedAmount(localAmount, this.currentCompany?.CurrencyMasterSid),
       },

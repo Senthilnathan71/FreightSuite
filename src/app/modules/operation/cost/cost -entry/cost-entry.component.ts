@@ -2478,6 +2478,14 @@ createRateFormGroup(data?: any): FormGroup {
     return String(row.get('PaymentRequestNumber')?.value || row.get('PaymentRequestSid')?.value || '');
   }
 
+  getCostDocumentTypeDisplay(row: AbstractControl): string {
+    if (row.get('PaymentRequestSid')?.value) {
+      return 'PRQ';
+    }
+
+    return String(row.get('CostVoucherType')?.value?.DocumentTypeCode || '');
+  }
+
   openVoucherTypeModal() {
      if (!this.isVoucherGenerationAllowed()) {
         const status = this.parentFormValue?.status;
@@ -2806,7 +2814,7 @@ createRateFormGroup(data?: any): FormGroup {
           PayableTo: firstRow?.AgentMaster?.CustomerName || '',
           CurrencyMasterSid: firstRow?.CostCurrencyMasterSid || null,
           BookingSid: this.isBooking ? this.ParentSid : null,
-          BookingNo: this.parentFormValue?.BookingNo || '',
+          BookingNo: this.parentFormValue?.BookingNo || this.parentFormValue?.BookingNumber || '',
           MasterJobSid:
             this.parentFormValue?.MasterJobSid || (this.screenName === 'Master Job' ? this.ParentSid : null),
           MasterJobNo: this.parentFormValue?.JobNo || this.parentFormValue?.MBLNo || '',

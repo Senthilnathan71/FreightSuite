@@ -317,12 +317,12 @@ export class BankReconciliationComponent implements OnInit {
 
   private createBankRowGroup(row?: Partial<BankTransactionRow>): FormGroup {
     return this.fb.group({
-      TransactionDate: [row?.TransactionDate ?? this.getToday(), Validators.required],
+      TransactionDate: [row?.TransactionDate ?? this.getToday()],
       ValueDate: [row?.ValueDate ?? ''],
       ReferenceNumber: [row?.ReferenceNumber ?? ''],
       Narration: [row?.Narration ?? ''],
       Amount: [row?.Amount ?? null, Validators.required],
-      DrCr: [row?.DrCr ?? 'D', Validators.required],
+      DrCr: [row?.DrCr ?? 'D'],
       Status: [{ value: row?.Status ?? 'Unreconciled', disabled: true }],
       LinkedVoucherHeaderSid: [row?.LinkedVoucherHeaderSid ?? null],
       LinkedVoucherTransactionSid: [row?.LinkedVoucherTransactionSid ?? null],
@@ -377,7 +377,7 @@ export class BankReconciliationComponent implements OnInit {
 
   private isBankRowReady(row: BankTransactionRow | null | undefined): row is BankTransactionRow {
     return !!row
-      && !!row.TransactionDate
+      && String(row.ReferenceNumber ?? '').trim() !== ''
       && row.Amount !== null
       && row.Amount !== undefined
       && String(row.Amount).trim() !== ''
@@ -391,7 +391,7 @@ export class BankReconciliationComponent implements OnInit {
 
   private serializeBankRow(row: BankTransactionRow): BankTransactionRow {
     return {
-      TransactionDate: this.toDateValue(row.TransactionDate),
+      TransactionDate: this.toDateValue(row.TransactionDate || this.getToday()),
       ValueDate: row.ValueDate ? this.toDateValue(row.ValueDate) : null,
       ReferenceNumber: String(row.ReferenceNumber ?? '').trim(),
       Narration: String(row.Narration ?? '').trim(),
@@ -592,14 +592,28 @@ export class BankReconciliationComponent implements OnInit {
   }
 
   saveBookRowClearanceDate(row: BankBookRow): void {
-    if (!row?.VoucherHeaderSid || !row.ClearanceDate) {
+    if (!row?.VoucherHeaderSid) {
       return;
     }
 
+    const nextClearanceDate = row.ClearanceDate ? this.toIsoDateString(row.ClearanceDate) : null;
+    this.persistBookRowClearance(row, nextClearanceDate);
+  }
+
+  removeBookRowClearanceDate(row: BankBookRow, event?: Event): void {
+    event?.stopPropagation();
+    if (!row?.VoucherHeaderSid) {
+      return;
+    }
+
+    this.persistBookRowClearance(row, null);
+  }
+
+  private persistBookRowClearance(row: BankBookRow, clearanceDate: string | null): void {
     const payload = {
       ...this.buildPayload(),
       VoucherHeaderSids: [row.VoucherHeaderSid],
-      ClearanceDate: this.toIsoDateString(row.ClearanceDate),
+      ClearanceDate: clearanceDate,
       CreatedBy: this.userData?.userEmail || 'System',
     };
 
@@ -611,8 +625,11 @@ export class BankReconciliationComponent implements OnInit {
             return;
           }
 
-          row.status = 'Reconciled';
-          this.appSettings.showSuccess(resp?.message || 'Clearance date updated successfully');
+          row.ClearanceDate = clearanceDate;
+          row.status = clearanceDate ? 'Reconciled' : 'Unreconciled';
+          this.appSettings.showSuccess(
+            resp?.message || (clearanceDate ? 'Clearance date updated successfully' : 'Clearance date removed successfully')
+          );
         },
         error: (error: any) => {
           console.error('Update clearance error', error);
@@ -776,6 +793,8 @@ export class BankReconciliationComponent implements OnInit {
     const ledgerName = this.getSelectedBankLedgerName();
     const ledgerCurrency = this.getSelectedBankLedgerCurrencyCode();
     const bankCurrencyHeader = ledgerCurrency ? `Amount(${ledgerCurrency})` : 'Amount';
+    const fromDate = this.formatDisplayDate(this.filterForm.get('FromDate')?.value);
+    const toDate = this.formatDisplayDate(this.filterForm.get('ToDate')?.value);
     const asOnDate = this.formatDisplayDate(this.filterForm.get('ToDate')?.value);
     const generatedBy = this.userData?.userName || this.userData?.UserName || this.userData?.userEmail || 'System';
     const generatedOn = this.formatDisplayDateTime(new Date());
@@ -786,6 +805,9 @@ export class BankReconciliationComponent implements OnInit {
 
     const bookEntries = Array.isArray(this.reportData?.bookEntriesNotCleared) ? this.reportData.bookEntriesNotCleared : [];
     const bankEntries = Array.isArray(this.reportData?.bankEntriesNotInBooks) ? this.reportData.bankEntriesNotInBooks : [];
+    const periodBookRows = Array.isArray(this.bookRows) ? this.bookRows : [];
+    const reconciledBookRows = periodBookRows.filter((item: any) => !!this.getRowClearanceDate(item));
+    const unreconciledBookRows = periodBookRows.filter((item: any) => !this.getRowClearanceDate(item));
 
     const creditBookEntries = bookEntries.filter((item: any) => this.normalizeDrCr(item?.DrCr) === 'C');
     const debitBookEntries = bookEntries.filter((item: any) => this.normalizeDrCr(item?.DrCr) === 'D');
@@ -798,14 +820,11 @@ export class BankReconciliationComponent implements OnInit {
     const bankDebits = -this.sumAmount(debitBankEntries);
 
     const sections: string[] = [];
-    sections.push(this.buildExcelSection('Cheques issued but not presented', creditBookEntries, 'C'));
-    sections.push(this.buildExcelSection('Cheques deposited in bank but not cleared', debitBookEntries, 'D'));
-
-    if (creditBankEntries.length) {
-      sections.push(this.buildExcelSection('Add: Credits by bank', creditBankEntries, 'C'));
+    if (reconciledBookRows.length) {
+      sections.push(this.buildExcelBookStatusSection('Reconciled Transactions', reconciledBookRows));
     }
-    if (debitBankEntries.length) {
-      sections.push(this.buildExcelSection('Less: Debits by Bank', debitBankEntries, 'D'));
+    if (unreconciledBookRows.length) {
+      sections.push(this.buildExcelBookStatusSection('Unreconciled Transactions', unreconciledBookRows));
     }
 
     return `
@@ -838,6 +857,12 @@ export class BankReconciliationComponent implements OnInit {
             </tr>
             <tr>
               <td colspan="3" class="left">${this.escapeHtml(`Location : ${locationName}`)}</td>
+            </tr>
+            <tr>
+              <td colspan="3" class="left">${this.escapeHtml(`From Date : ${fromDate}`)}</td>
+            </tr>
+            <tr>
+              <td colspan="3" class="left">${this.escapeHtml(`To Date : ${toDate}`)}</td>
             </tr>
             <tr>
               <td colspan="3" class="left">${this.escapeHtml(`As On Date : ${asOnDate}`)}</td>
@@ -894,7 +919,7 @@ export class BankReconciliationComponent implements OnInit {
                 <th style="width: 10%">${this.escapeHtml(bankCurrencyHeader)}</th>
                 <th style="width: 6%">Type</th>
                 <th style="width: 10%">Local (${this.getCurrentCompanyCurrencyCode()})</th>
-                <th style="width: 10%">Paid To/Received From</th>
+                <th style="width: 10%">Status</th>
                 <th style="width: 20%">Narration</th>
               </tr>
               ${sections.join('')}
@@ -911,20 +936,21 @@ export class BankReconciliationComponent implements OnInit {
     `;
   }
 
-  private buildExcelSection(title: string, rows: any[], type: 'C' | 'D'): string {
+  private buildExcelBookStatusSection(title: string, rows: any[]): string {
     const sectionRows = Array.isArray(rows) ? rows : [];
 
     const dataRows = sectionRows.map((row: any) => {
       const amount = this.getAbsoluteAmount(row?.Amount ?? row?.LocalAmount);
-      const transactionDate = this.formatDisplayDate(row?.TransactionDate ?? row?.VoucherDate);
-      const chequeDate = this.formatDisplayDate(row?.ValueDate ?? row?.VoucherDate);
+      const transactionDate = this.formatDisplayDate(row?.VoucherDate ?? row?.TransactionDate);
+      const chequeDate = this.formatDisplayDate(row?.VoucherDate ?? row?.ValueDate);
       const clearingDate = this.formatDisplayDate(this.getRowClearanceDate(row));
       const PartyName = this.escapeHtml(row?.PartyName || row?.Organization || row?.LedgerName || '');
-      const transactionNo = this.escapeHtml(row?.TransactionNo || row?.VoucherNumber || '');
+      const transactionNo = this.escapeHtml(row?.VoucherNumber || row?.TransactionNo || '');
       const chequeNo = this.escapeHtml(row?.ReferenceNumber || row?.ChequeDDNo || '');
-      const payeeName = this.escapeHtml(row?.PayeeName || row?.PartyName || row?.Organization || '');
+      const status = this.escapeHtml(row?.status || (this.getRowClearanceDate(row) ? 'Reconciled' : 'Unreconciled'));
       const narration = this.escapeHtml(row?.Narration || '');
       const localAmount = this.toNumber(row?.LocalAmount ?? row?.Amount);
+      const drCr = this.normalizeDrCr(row?.DrCr);
       return `
         <tr>
           <td class="left">${this.escapeHtml(transactionDate)}</td>
@@ -934,16 +960,19 @@ export class BankReconciliationComponent implements OnInit {
           <td class="left">${this.escapeHtml(chequeDate)}</td>
           <td class="left">${this.escapeHtml(clearingDate)}</td>
           <td class="right">${this.formatAmount(amount)}</td>
-          <td class="center">${type === 'C' ? 'CR' : 'DR'}</td>
+          <td class="center">${drCr === 'C' ? 'CR' : 'DR'}</td>
           <td class="right">${this.formatAmount(localAmount)}</td>
-          <td class="left">${payeeName}</td>
+          <td class="left">${status}</td>
           <td class="left">${narration}</td>
         </tr>
       `;
     }).join('');
 
     const totalAmount = this.sumAmount(sectionRows);
-    const totalLocalAmount = sectionRows.reduce((sum, row) => sum + this.toNumber(row?.LocalAmount ?? row?.Amount), 0);
+    const totalLocalAmount = sectionRows.reduce((sum, row) => {
+      const amount = this.toNumber(row?.LocalAmount ?? row?.Amount);
+      return sum + (this.normalizeDrCr(row?.DrCr) === 'C' ? -amount : amount);
+    }, 0);
 
     return `
       <tr>
@@ -958,9 +987,9 @@ export class BankReconciliationComponent implements OnInit {
         <td></td>
         <td></td>
         <td class="right">${this.formatAmount(totalAmount)}</td>
-        <td class="center">${type === 'C' ? 'CR' : 'DR'}</td>
+        <td></td>
         <td class="right">${sectionRows.length ? this.formatAmount(totalLocalAmount) : ''}</td>
-        <td class="center">${sectionRows.length ? this.getDrCrLabel(totalLocalAmount) : ''}</td>
+        <td class="left">${sectionRows.length ? this.escapeHtml(title.includes('Reconciled') ? 'Reconciled' : 'Unreconciled') : ''}</td>
         <td></td>
       </tr>
     `;

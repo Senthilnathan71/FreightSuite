@@ -272,7 +272,10 @@
                             id="segmentDropdown" placeholder="" [displayFields]="departmentLookupConfig.displayFields"
                             [displayLabels]="departmentLookupConfig.displayLabels"
                             [labelFields]="departmentLookupConfig.labelFields" bindValue="DepartmentMasterSid"
-                            (itemSelected)="onSegmentChange($event)">
+                            [readonly]="isEditMode"
+                            (itemSelected)="onSegmentChange($event)"
+                            
+                            >
                         </dofi-searchable-dropdown>
                         <label for="dept" class="input-label">Dept <span class="text-danger">*</span></label>
                         <div *ngIf="f['Segment'].touched && f['Segment'].invalid" class="error-message">

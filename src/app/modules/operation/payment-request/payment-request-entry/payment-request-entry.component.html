@@ -443,6 +443,7 @@
                   [DecimalPrecisionBefore]="9"
                   [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)"
                   readonly
+                  (input)="onCostAmountChange(i)"
                 />
               </td>
               <td style="min-width: 140px;">
@@ -457,20 +458,12 @@
                 />
               </td>
               <td style="min-width: 220px;">
-                <dofi-searchable-dropdown
-                  [items]="supplierList"
-                  formControlName="CostAgentMasterSid"
-                  placeholder=""
-                  [clearable]="false"
-                  [style]="'min-width: 220px; width: 220px;'"
-                  [displayFields]="CustomerLookupConfig.displayFields"
-                  [displayLabels]="CustomerLookupConfig.displayLabels"
-                  [labelFields]="CustomerLookupConfig.labelFields"
-                  bindLabel="CustomerName"
-                  bindValue="CustomerMasterSid"
-                  (itemSelected)="onDetailPartyChange(i, $event)"
-                >
-                </dofi-searchable-dropdown>
+                <input
+                  type="text"
+                  class="custom-input-field sm"
+                  formControlName="CostAgentName"
+                  readonly
+                />
               </td>
             </tr>
 

@@ -200,8 +200,8 @@
                 <button type="button" class="btn btn-sm btn-warning" (click)="updateClearanceSelected()">
                 <i class="fas fa-calendar-check me-1"></i>Update Clearance
               </button>
-              <button type="button" class="btn btn-sm btn-info" (click)="manualMatchSelected()">
-                <i class="fas fa-link me-1"></i>Manual Match
+              <button type="button" class="btn btn-sm btn-info" (click)="autoMatch()">
+                <i class="fas fa-link me-1"></i>Auto Match
               </button>
             </div>
 
@@ -277,6 +277,15 @@
                       (click)="rowClearanceDatePicker.toggle(); $event.stopPropagation()"
                     >
                       <i-feather name="calendar" class="feather-sm"></i-feather>
+                    </button>
+                    <button
+                      *ngIf="row.ClearanceDate"
+                      class="btn btn-outline-danger px-2"
+                      type="button"
+                      title="Remove clearance date"
+                      (click)="removeBookRowClearanceDate(row, $event)"
+                    >
+                      <i class="fas fa-times"></i>
                     </button>
                   </div>
                 </td>
