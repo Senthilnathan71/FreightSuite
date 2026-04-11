@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit, TemplateRef, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, TemplateRef, ViewChild, ElementRef } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { NgbDropdownModule, NgbModal, NgbModalRef, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
@@ -63,7 +63,7 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
   templateUrl: './meeting-update-list.component.html',
   styleUrls: ['./meeting-update-list.component.scss']
 })
-export class MeetingUpdateListComponent extends BaseListComponent implements OnInit {
+export class MeetingUpdateListComponent extends BaseListComponent implements OnInit, AfterViewInit {
   @ViewChild('meetingTable') meetingTable!: ReusableTableComponent;
   @ViewChild('modalContentAdd', { read: TemplateRef }) modalContentAdd!: TemplateRef<any>;
   
@@ -104,6 +104,7 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
   currentMenuPermissions: any = {};
   userData: any;
   originalMeetingDate: string;
+  private pendingViewMeetingSid: number | null = null;
 
   // For mobile view data
   filteredMeetings: any[] = [];
@@ -220,6 +221,14 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
   }
 
   override ngOnInit(): void {
+    
+    // Check if navigated from sales dashboard with a meeting to view
+    const navState = history.state;
+    if (navState?.viewMeetingSid) {
+      this.pendingViewMeetingSid = navState.viewMeetingSid;
+      history.replaceState({ ...navState, viewMeetingSid: undefined }, '');
+    }
+    
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
@@ -248,6 +257,17 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
     
     super.ngOnInit();
     this.sort('asc')
+  }
+
+  ngAfterViewInit(): void {
+    if (this.pendingViewMeetingSid) {
+      const meetingSid = this.pendingViewMeetingSid;
+      this.pendingViewMeetingSid = null;
+
+      setTimeout(() => {
+        this.openModal(this.modalContentAdd, { PreCustomerMeetingSid: meetingSid });
+      });
+    }
   }
 
   // Implement abstract methods from BaseListComponent

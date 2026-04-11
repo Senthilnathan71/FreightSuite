@@ -399,12 +399,21 @@ dataFromEnqPage:any;
      this.canUserLockRates = false;
   });
   
+    const dashboardQuoteData = (window.history.state as any)?.dashboardQuoteData;
+    if (dashboardQuoteData) {
+      window.history.replaceState({}, '', window.location.href);
+    }
+
     this.loadAllLookUps().subscribe(() => {
       this.dataFromEnqPage = this.leadService.getQuotationData();
       this.leadService.clearQuotationData();
       if (this.dataFromEnqPage?.rateRequest) {
         
         this.patchEnqPageValues(this.dataFromEnqPage);
+        this.minEffDate = this.todayDate;
+        this.f['status']?.disable();
+      } else if (dashboardQuoteData) {
+        this.patchDashboardValues(dashboardQuoteData);
         this.minEffDate = this.todayDate;
         this.f['status']?.disable();
       } else {
@@ -624,6 +633,61 @@ dataFromEnqPage:any;
     });
   }
 }
+
+  patchDashboardValues(data: any): void {
+    this.quotationForm.patchValue({
+      LeadOrCustomer: true,
+      SalesmanSid: data.SalesmanSid,
+    }, { emitEvent: false });
+    if (data.CustomerMasterSid) {
+      this.customerlist = this.customerlist.filter(c => c.CustomerMasterSid === data.CustomerMasterSid);
+      if(this.customerlist.length > 0){
+        const firstItem = this.customerlist[0];
+        const parsedContact = this.parsePhone(firstItem.ContactNumber);
+        this.quotationForm.patchValue({
+          CustomerMasterSid : firstItem.CustomerMasterSid ,
+          CustomerName: firstItem.CustomerName,
+          CustomerAddress: firstItem.Address,
+          Email : firstItem.Email,
+          CustomerBranchSid : firstItem.CustomerBranchSid,
+          ContactPerson : firstItem.ContactPerson,
+          ContactNumberCode: parsedContact.phoneCode,
+          ContactNumber: parsedContact.phoneNumber
+        });
+        ["CustomerMasterSid",'CustomerName','CustomerAddress','Email','CustomerBranchSid','ContactPerson','ContactNumber','LeadOrCustomer','SalesmanSid'].forEach(key => {
+          if(this.quotationForm.get(key)?.value){
+            this.quotationForm.get(key)?.disable({emitEvent : false});
+          }
+        })
+      } else {
+        console.info(`Customer with Branch not found for CustomerMasterSid ${data.CustomerMasterSid}`);
+        ['LeadOrCustomer','SalesmanSid'].forEach(key => {
+          if(this.quotationForm.get(key)?.value){
+            this.quotationForm.get(key)?.disable({emitEvent : false});
+          }
+        })
+      }
+    } else {
+      const parsedContact = this.parsePhone(data.ContactNumber);
+      this.quotationForm.patchValue({
+        CustomerMasterSid : data.CustomerMasterSid ,
+        CustomerName: data.CustomerName,
+        CustomerAddress: data.Address,
+        Email : data.Email,
+        SalesmanSid : data.SalesmanSid,
+        ContactPerson : data.ContactPerson,
+        ContactNumber : parsedContact.phoneNumber
+      });
+      [
+        "CustomerMasterSid", 'CustomerName', 'CustomerAddress', 'Email',
+        'ContactPerson', 'ContactNumber', 'LeadOrCustomer', 'SalesmanSid'
+      ].forEach(key => {
+        if (this.quotationForm.get(key)?.value) {
+          this.quotationForm.get(key)?.disable({emitEvent : false});
+        }
+      })
+    }
+  }
 
     loadCityName(): void {
     if (!this.currentBranchCityId) return;

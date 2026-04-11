@@ -1,8 +1,9 @@
 import { AppSettingsService } from './../../../core/services/app-settings.service';
-import { Component, ChangeDetectionStrategy, ViewChild, TemplateRef, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ViewChild, TemplateRef, OnInit, AfterViewInit } from '@angular/core';
 import { startOfDay, subDays, addDays, endOfMonth, isSameDay, isSameMonth, addHours, } from 'date-fns';
 import { Subject } from 'rxjs';
 import { NgbActiveModal, NgbDatepickerModule, NgbModal, NgbModalRef, } from '@ng-bootstrap/ng-bootstrap';
+import { Router } from '@angular/router';
 import { CalendarEvent, CalendarEventAction, CalendarEventTimesChangedEvent, CalendarView, } from 'angular-calendar';
 import { CalendarModule } from 'angular-calendar';
 
@@ -45,13 +46,13 @@ const colors: any = {
 @Component({
   selector: 'app-fullcalendar',
   standalone: true,
-  imports: [CalendarModule, FormsModule, ReactiveFormsModule, CommonModule, FlatpickrModule, FeatherModule, PreventMultiClickDirective, NgSelectModule, NgbDatepickerModule, DateTimePickerComponent,SearchableDropdown],
+  imports: [CalendarModule, FormsModule, ReactiveFormsModule, CommonModule, FlatpickrModule, FeatherModule, PreventMultiClickDirective, NgSelectModule, NgbDatepickerModule, DateTimePickerComponent, SearchableDropdown],
 
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './fullcalendar.component.html',
   styleUrls: ['./fullcalendar.component.scss'],
 })
-export class FullcalendarComponent implements OnInit {
+export class FullcalendarComponent implements OnInit, AfterViewInit {
   @ViewChild('modalContent', { static: true }) modalContent!: TemplateRef<any>;
   @ViewChild('modalContentAdd', { static: true })
   modalContentAdd!: TemplateRef<any>;
@@ -75,6 +76,7 @@ export class FullcalendarComponent implements OnInit {
     { label: '1 hr', value: '1 hr' }
   ];
 
+  userData: any;
   viewDate: Date = new Date();
   customers: any
   isMobile: boolean = false;
@@ -164,9 +166,12 @@ export class FullcalendarComponent implements OnInit {
   currentBranch: any;
   leadList: any[] = [];
 
-  constructor(private modalService: ModalService, private cdr: ChangeDetectorRef, private appSettingService: AppSettingsService, private fb: FormBuilder, private leadService: LeadService, private modal: NgbModal, private appService: AppService, private ngbModal: NgbModal,public mps : MenuPermissionService) { }
+  private pendingScheduleLead: any = null;
+
+  constructor(private modalService: ModalService, private cdr: ChangeDetectorRef, private appSettingService: AppSettingsService, private fb: FormBuilder, private leadService: LeadService, private modal: NgbModal, private appService: AppService, private ngbModal: NgbModal, public mps: MenuPermissionService, private router: Router) { }
 
   ngOnInit(): void {
+    this.userData = this.appSettingService.getDecryptedUserProfile();
     const storedCompany = localStorage.getItem('selected-company');
     this.currentCompany = storedCompany ? this.appSettingService.decrypt(storedCompany) : null;
     const storedBranch = localStorage.getItem('selected-branch');
@@ -180,6 +185,37 @@ export class FullcalendarComponent implements OnInit {
     console.log('Default meetingStatus:', this.meetingForm.get('meetingStatus')?.value);
     this.getMeetingDates()
     this.minDate = this.getCurrentDateTime();
+
+    // Check if navigated from sales dashboard with a lead to schedule
+    const navState = history.state;
+    if (navState?.scheduleLead) {
+      this.pendingScheduleLead = navState.scheduleLead;
+      // Clear the state so a refresh won't re-trigger the modal
+      history.replaceState({ ...navState, scheduleLead: undefined }, '');
+    }
+  }
+
+  ngAfterViewInit(): void {
+    if (this.pendingScheduleLead) {
+      const lead = this.pendingScheduleLead;
+      this.pendingScheduleLead = null;
+
+      // Use setTimeout to allow the view to fully initialize
+      setTimeout(() => {
+        this.addEvent();
+
+        // Pre-fill the form with lead data
+        this.meetingForm.patchValue({
+          LeadOrCustomer: 'L',
+          PreCustomerMasterSid: lead.PreCustomerMasterSid,
+          leadAssignTo: this.userData?.UserMasterSid || null,
+        });
+        ['LeadOrCustomer', 'PreCustomerMasterSid'].forEach(key => {
+          this.meetingForm.get(key)?.disable();
+        });
+        this.cdr.detectChanges();
+      });
+    }
   }
 
 
@@ -585,9 +621,9 @@ this.refresh.next();
     // Convert followUpDate in same format as meetingDate
 
     const payload = {
-      ...this.meetingForm.value,
+      ...this.meetingForm.getRawValue(),
       meetingDate: meetingDateStr,
-      followUpDate: this.meetingForm.value.followUpDate,
+      followUpDate: this.meetingForm.getRawValue().followUpDate,
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
       userEmail: userEmail,

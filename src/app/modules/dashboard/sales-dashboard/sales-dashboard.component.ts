@@ -9,7 +9,7 @@ import {
   NgbDatepickerModule,
 } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { firstValueFrom, Subject, takeUntil } from 'rxjs';
 import { toNgbDateStruct } from 'src/app/common/helper';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
@@ -34,6 +34,8 @@ import {
   ScheduledMeeting,
 } from '../interfaces/sales-dashboard.interfaces';
 import { SalesDashboardService } from '../services/sales-dashboard.service';
+import { LeadService } from '../../crm-mobile/Services/lead.service';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 type ListSection = 1 | 3 | 4 | 5 | 6 | 7 | 8;
 
@@ -66,6 +68,7 @@ interface FunnelRow {
     NgApexchartsModule,
     NgbDatepickerModule,
     CustomDatePipe,
+    NgxSpinnerModule,
   ],
   templateUrl: './sales-dashboard.component.html',
   styleUrls: ['./sales-dashboard.component.scss'],
@@ -75,6 +78,10 @@ interface FunnelRow {
   ],
 })
 export class SalesDashboardComponent implements OnInit, OnDestroy {
+
+  currentCompany : any;
+  currentBranch : any;
+
   private readonly destroy$ = new Subject<void>();
   private readonly pageSize = 10;
   private readonly scrollThreshold = 96;
@@ -129,9 +136,13 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     private salesDashboardService: SalesDashboardService,
     private appSettings: AppSettingsService,
     private router: Router,
+    private leadService : LeadService,
+    private spinner : NgxSpinnerService
   ) {}
 
   ngOnInit(): void {
+    this.currentCompany = this.appSettings.getCurrentCompanyInfo();
+    this.currentBranch = this.appSettings.getCurrentBranchInfo();
     this.setDefaultDateRange();
     this.loadDashboardData();
   }
@@ -649,13 +660,61 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
   navigateToEnquiry(sid: number): void {
     this.router.navigate(['/crm/enquiry/entry', sid]);
   }
+  
+  async convertEnquiryToQuote(sid: number): Promise<void> {
+    this.spinner.show();
+    try {
+      const enquiryFetch = await firstValueFrom(this.salesDashboardService.getEnquiryDataForQuotationConversion({
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
+        EnquiryHeaderSid: sid
+      }))
 
-  navigateToCalendar(): void {
-    this.router.navigate(['/crm/calendar']);
+      if (!enquiryFetch.status) {
+        this.spinner.hide();
+        this.appSettings.showError(enquiryFetch.message);
+        return;
+      }
+
+      const enqData = enquiryFetch.data;
+      this.leadService.clearQuotationData();
+      this.leadService.setQuotationData(enqData);
+      this.spinner.hide();
+      this.router.navigate(['crm/quotation/entry']);
+    } catch (error) {
+      console.error(error);
+      this.spinner.hide();
+    }
   }
 
-  navigateToMeetingUpdate(): void {
-    this.router.navigate(['/crm/meeting-update']);
+  navigateToCalendar(lead: LeadNoMeeting): void {
+    this.router.navigate(['/crm/calendar'], {
+      state: { scheduleLead: lead },
+    });
+  }
+
+  navigateToMeetingUpdate(meetingSid: number): void {
+    this.router.navigate(['/crm/meeting-update'], {
+      state: { viewMeetingSid: meetingSid },
+    });
+  }
+
+  navigateToCreateQuote(customer: CustomerNoQuote): void {
+    const userData = this.appSettings.getDecryptedUserProfile();
+    this.router.navigate(['/crm/quotation/entry'], {
+      state: {
+        dashboardQuoteData: {
+          CustomerMasterSid: customer.CustomerMasterSid,
+          CustomerName: customer.CustomerName,
+          CustomerAddress: customer.CustomerAddress1,
+          PreCustomerMasterSid: customer.PreCustomerMasterSid || null,
+          ContactPerson: customer.contactPerson,
+          ContactNumber: customer.phone,
+          Email: customer.email,
+          SalesmanSid: userData?.UserMasterSid,
+        },
+      },
+    });
   }
 
   private loadInitialSections(): void {

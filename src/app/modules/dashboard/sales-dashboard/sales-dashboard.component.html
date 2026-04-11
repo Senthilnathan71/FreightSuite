@@ -1,3 +1,6 @@
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+    <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
 <div class="sales-dashboard-container">
   <div class="hero">
     <svg class="hero-svg" viewBox="0 0 1420 130" aria-hidden="true">
@@ -565,7 +568,7 @@
                   <td>
                     <button
                       class="action-btn schedule"
-                      (click)="navigateToCalendar()"
+                      (click)="navigateToCalendar(lead)"
                     >
                       Schedule
                     </button>
@@ -635,7 +638,7 @@
                   <tr
                     *ngFor="let meeting of getMeetingsScheduledGroup().overdue"
                     class="clickable-row"
-                    (click)="navigateToMeetingUpdate()"
+                    (click)="navigateToMeetingUpdate(meeting.PreCustomerMeetingSid)"
                   >
                     <td>
                       <a class="link">{{ meeting.name }}</a>
@@ -697,7 +700,7 @@
                   <tr
                     *ngFor="let meeting of getMeetingsScheduledGroup().today"
                     class="clickable-row"
-                    (click)="navigateToMeetingUpdate()"
+                    (click)="navigateToMeetingUpdate(meeting.PreCustomerMeetingSid)"
                   >
                     <td>
                       <a class="link">{{ meeting.name }}</a>
@@ -759,7 +762,7 @@
                   <tr
                     *ngFor="let meeting of getMeetingsScheduledGroup().future"
                     class="clickable-row"
-                    (click)="navigateToMeetingUpdate()"
+                    (click)="navigateToMeetingUpdate(meeting.PreCustomerMeetingSid)"
                   >
                     <td>
                       <a class="link">{{ meeting.name }}</a>
@@ -886,7 +889,7 @@
                   <td>
                     <button
                       class="action-btn complete"
-                      (click)="navigateToMeetingUpdate()"
+                      (click)="navigateToMeetingUpdate(followUp.PreCustomerMeetingSid)"
                     >
                       Complete
                     </button>
@@ -1114,7 +1117,12 @@
                     >
                   </td>
                   <td>
-                    <button class="action-btn create">Create Quote</button>
+                    <button
+                      class="action-btn create"
+                      (click)="navigateToCreateQuote(customer)"
+                    >
+                      Create Quote
+                    </button>
                   </td>
                 </tr>
                 <tr *ngIf="isSectionEmpty(5)">
@@ -1207,9 +1215,9 @@
                   <td>
                     <button
                       class="action-btn followup"
-                      (click)="navigateToEnquiry(enquiry.EnquiryHeaderSid)"
+                      (click)="convertEnquiryToQuote(enquiry.EnquiryHeaderSid)"
                     >
-                      Open
+                      Convert
                     </button>
                   </td>
                 </tr>

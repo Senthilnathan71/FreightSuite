@@ -68,4 +68,15 @@ export class SalesDashboardService {
 
     return params;
   }
+
+  getEnquiryDataForQuotationConversion(payload : {
+    CompanyMasterSid: number,
+    BranchMasterSid: number,
+    EnquiryHeaderSid : number,
+   }) : Observable<{ data: any; status: boolean; message: string }> {
+    return this.http.post<{ data: any; status: boolean; message: string }>(
+      `ff-quotation/get-enquiry-for-quote`,
+      payload,
+    );
+  }
 }
