@@ -1037,6 +1037,48 @@ export interface PaymentMatchingData {
 }
 
 // =====================
+// PAYMENT REQUEST PDF DATA
+// =====================
+export interface PaymentRequestPdfData extends PdfDocumentBase {
+  printSettings?: {
+    logoPosition: 'left' | 'center' | 'right';
+    companyPosition: 'left' | 'center' | 'right';
+    companyAlignment: 'left' | 'center' | 'right';
+  };
+  paymentRequest: {
+    requestNumber?: string;
+    requestDate?: Date | string;
+    cashBank?: string;
+    currencyCode?: string;
+    partyName?: string;
+    status?: string;
+    payableTo?: string;
+    bookingNo?: string;
+    departmentName?: string;
+    jobOrHouseNo?: string;
+    remarks?: string;
+  };
+  details: PaymentRequestLineData[];
+  totals: {
+    totalAmount: number;
+    totalLocalAmount: number;
+  };
+  amountInWords?: string;
+}
+
+export interface PaymentRequestLineData {
+  chargeName?: string;
+  unitName?: string;
+  noOfUnit?: number;
+  currencyCode?: string;
+  exchangeRate?: number;
+  perUnit?: number;
+  amount?: number;
+  localAmount?: number;
+  partyName?: string;
+}
+
+// =====================
 // JOURNAL VOUCHER PDF DATA
 // =====================
 export interface JournalVoucherPdfData extends PdfDocumentBase {

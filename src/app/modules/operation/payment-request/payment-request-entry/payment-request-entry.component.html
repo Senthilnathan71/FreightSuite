@@ -486,6 +486,9 @@
   </div>
 </div>
 
+
+<!-- Payment Request Print Modal -->
+
 <ng-template #paymentRequestPrintModal let-modal>
   <div class="modal-header modalHeaderpart d-flex justify-content-between align-items-center" style="height: 40px;">
     <h5 class="modal-title text-white mb-0">Payment Request</h5>
@@ -497,6 +500,14 @@
       >
         <i class="fas fa-print me-1"></i> Print
       </button>
+       <button
+        type="button"
+        class="btn btn-sm btn-danger rounded-5 py-0"
+        (click)="downloadPDF()"
+        
+      >
+            <i class="fas fa-download me-1"></i> Download PDF
+        </button>
       <button
         type="button"
         class="btn-close btn-close-white"
@@ -523,69 +534,69 @@
           <div style="display:flex; flex-wrap:wrap; margin-bottom:8px; padding-left:120px; font-size:15px;">
             <div style="flex:0 0 50%; max-width:50%;">
               <div style="display:flex; padding-top:10px;">
-                <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Request No.</strong></div>
+                <div style="width:110px; white-space:nowrap; font-weight:bolder;"><strong>Request No.</strong></div>
                 <div>: {{ paymentRequestPrintData?.PaymentRequestNumber }}</div>
               </div>
               <div style="display:flex;">
-                <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Cash / Bank</strong></div>
+                <div style="width:110px; white-space:nowrap; font-weight:bolder;"><strong>Cash / Bank</strong></div>
                 <div>: {{ paymentRequestPrintData?.CashBankLabel }}</div>
               </div>
               <div style="display:flex;">
-                <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Party</strong></div>
+                <div style="width:110px; white-space:nowrap; font-weight:bolder;"><strong>Party</strong></div>
                 <div>: {{ paymentRequestPrintData?.PartyName }}</div>
               </div>
               <div style="display:flex;">
-                <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Payable To</strong></div>
+                <div style="width:110px; white-space:nowrap; font-weight:bolder;"><strong>Payable To</strong></div>
                 <div>: {{ paymentRequestPrintData?.PayableTo }}</div>
               </div>
               <div style="display:flex;">
-                <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Department</strong></div>
+                <div style="width:110px; white-space:nowrap; font-weight:bolder;"><strong>Department</strong></div>
                 <div>: {{ paymentRequestPrintData?.DepartmentName }}</div>
               </div>
             </div>
 
             <div style="flex:0 0 50%; max-width:50%;">
               <div style="display:flex; padding-top:10px;">
-                <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Request Date</strong></div>
+                <div style="width:120px; white-space:nowrap; font-weight:bolder;"><strong>Request Date</strong></div>
                 <div>: {{ paymentRequestPrintData?.PaymentRequestDate | formatDate }}</div>
               </div>
               <div style="display:flex;">
-                <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Currency</strong></div>
+                <div style="width:120px; white-space:nowrap; font-weight:bolder;"><strong>Currency</strong></div>
                 <div>: {{ paymentRequestPrintData?.CurrencyCode }}</div>
               </div>
               <div style="display:flex;">
-                <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Status</strong></div>
+                <div style="width:120px; white-space:nowrap; font-weight:bolder;"><strong>Status</strong></div>
                 <div>: {{ paymentRequestPrintData?.PaymentRequestStatusLabel }}</div>
               </div>
               <div style="display:flex;">
-                <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Booking No.</strong></div>
+                <div style="width:120px; white-space:nowrap; font-weight:bolder;"><strong>Booking No.</strong></div>
                 <div>: {{ paymentRequestPrintData?.BookingNo || '-' }}</div>
               </div>
               <div style="display:flex;">
-                <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Job / House No.</strong></div>
+                <div style="width:120px; white-space:nowrap; font-weight:bolder;"><strong>Job / House No.</strong></div>
                 <div>: {{ paymentRequestPrintData?.MasterJobNo || '-' }}<span *ngIf="paymentRequestPrintData?.HouseNo"> / {{ paymentRequestPrintData?.HouseNo }}</span></div>
               </div>
             </div>
           </div>
 
-          <div style="padding:0 20px 8px 20px;">
+          <!-- <div style="padding:0 20px 8px 20px;">
             <div style="display:flex;">
               <div style="width:140px; white-space:nowrap; font-weight:bolder;"><strong>Remarks</strong></div>
               <div>: {{ paymentRequestPrintData?.Remarks || '-' }}</div>
             </div>
-          </div>
+          </div> -->
 
           <table style="width:100%; border-collapse:collapse; margin:10px 0;">
             <tbody>
               <tr>
                 <th style="width:24%; border:1px solid black; padding:4px; text-align:center; border-left:none; font-weight:bolder;"><strong>Charge</strong></th>
-                <th style="width:12%; border:1px solid black; padding:4px; text-align:center; font-weight:bolder;"><strong>Unit</strong></th>
+                <th style="width:5%; border:1px solid black; padding:4px; text-align:center; font-weight:bolder;"><strong>Unit</strong></th>
                 <th style="width:10%; border:1px solid black; padding:4px; text-align:center; font-weight:bolder;"><strong>No. of Unit</strong></th>
-                <th style="width:8%; border:1px solid black; padding:4px; text-align:center; font-weight:bolder;"><strong>Curr.</strong></th>
+                <th style="width:5%; border:1px solid black; padding:4px; text-align:center; font-weight:bolder;"><strong>Curr.</strong></th>
                 <th style="width:10%; border:1px solid black; padding:4px; text-align:center; font-weight:bolder;"><strong>Ex.Rate</strong></th>
                 <th style="width:12%; border:1px solid black; padding:4px; text-align:center; font-weight:bolder;"><strong>Per Unit</strong></th>
                 <th style="width:12%; border:1px solid black; padding:4px; text-align:center; font-weight:bolder;"><strong>Amount</strong></th>
-                <th style="width:14%; border:1px solid black; padding:4px; text-align:center; border-right:none; font-weight:bolder;"><strong>Local Amt</strong></th>
+                <th style="width:10%; border:1px solid black; padding:4px; text-align:center; border-right:none; font-weight:bolder;"><strong>Local Amt</strong></th>
                 <th style="width:18%; border:1px solid black; padding:4px; text-align:center; border-right:none; font-weight:bolder;"><strong>Party</strong></th>
               </tr>
 
@@ -640,10 +651,9 @@
             </tbody>
           </table>
 
-          <div style="display:flex; align-items:center; margin-top:10px; padding-left:20px; white-space:nowrap;">
-            <div style="font-weight:bolder;">Amount in Words</div>
-            <div style="width:10px; text-align:center;">:</div>
-            <div>{{ paymentRequestPrintData?.amountInWords }}</div>
+          <div style="display:flex; padding-left:20px;">
+            <div style="width:205px; white-space:nowrap; font-weight:bolder;"><strong>Amount in Words</strong></div>
+            <div>: {{ paymentRequestPrintData?.amountInWords }}</div>
           </div>
 
           <div style="width:100%; margin-top:auto; padding-top:24px; page-break-inside:avoid; break-inside:avoid-page;">

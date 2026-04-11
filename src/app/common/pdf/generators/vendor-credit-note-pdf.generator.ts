@@ -23,6 +23,23 @@
   // HTML print logo uses 110px. pdfMake works in pt, so convert px -> pt (72/96).
   const INVOICE_LOGO_HEIGHT_PX = 110;
   const INVOICE_LOGO_HEIGHT_PT = INVOICE_LOGO_HEIGHT_PX * 0.75;
+
+  function isIndianCompany(data: VendorCreditNotePdfData): boolean {
+    const branchCountryCode = String(data.branch?.countryCode || '').trim().toLowerCase();
+    const companyCountryCode = String(data.company?.countryCode || '').trim().toLowerCase();
+    const gstCode = String(data.companyGstCode || '').trim();
+    const usesIndiaGst =
+      !!data.taxDisplayConfig?.showCGST ||
+      !!data.taxDisplayConfig?.showSGST ||
+      !!data.taxDisplayConfig?.showIGST;
+
+    return (
+      branchCountryCode === 'in' ||
+      companyCountryCode === 'in' ||
+      usesIndiaGst ||
+      gstCode.length >= 15
+    );
+  }
   /**
    * Generate invoice PDF document definition
    */
@@ -135,6 +152,7 @@
     const logo = data.logo;
     const PAGE_LEFT = -10;
     const PAGE_RIGHT = 565;
+    const isIndiaCompany = isIndianCompany(data);
 
     const LOGO_HEIGHT = INVOICE_LOGO_HEIGHT_PT; // 110px in HTML ~= 82.5pt in pdfMake
 
@@ -163,16 +181,17 @@
       });
     }
 
-    const cityName = branch?.cityMaster?.cityName || branch?.cityName || company?.city;
     const addressLine2 = branch?.addressLine2 || company?.addressLine2;
-    const countryCode = branch?.countryCode || company?.countryCode;
-    const cityWithCountry = cityName && countryCode
-      ? `${cityName} - ${countryCode}`
-      : (cityName || countryCode || '');
-    const cityCountry = joinNonEmpty([addressLine2, cityWithCountry], ', ');
-    if (cityCountry) {
+    const branchName = branch?.branchName || '';
+    const branchCode = (branch as any)?.branchCode || (branch as any)?.BranchCode || '';
+    const branchLine = joinNonEmpty([
+      addressLine2,
+      joinNonEmpty([branchName, branchCode], ' - ')
+    ], ', ');
+
+    if (branchLine) {
       companyInfoStack.push({
-        text: cityCountry,
+        text: branchLine,
         style: 'addressText',
         alignment: 'right',
         margin: [0, 0, 0, 6]
@@ -199,10 +218,10 @@
       });
     }
 
-    const vatNo = data.companyPan;
-    if (vatNo) {
+    const companyTaxNo = data.companyPan;
+    if (companyTaxNo) {
       companyInfoStack.push({
-        text: `VAT No : ${vatNo}`,
+        text: `${isIndiaCompany ? 'GST No' : 'VAT No'} : ${companyTaxNo}`,
         style: 'addressText',
         alignment: 'right'
       });
@@ -239,14 +258,30 @@
   function buildInvoiceTitle(data: VendorCreditNotePdfData): any {
     const title = data.invoiceTitle ||
       (data.invoice?.postStatus === 'P' ? 'TAX INVOICE' : 'TAX INVOICE DRAFT');
+    const isIndiaCompany = isIndianCompany(data);
+    const gstCode = data.companyGstCode || '';
 
     return {
-      text: title,
-      style: 'Tax Invoice',
-      alignment: 'center',
-      bold: true,
-      fontSize: 12,
-      margin: [0, 2, 0, 7]
+      stack: [
+        {
+          text: title,
+          style: 'Tax Invoice',
+          alignment: 'center',
+          bold: true,
+          fontSize: 12,
+          margin: [0, 2, 0, isIndiaCompany && gstCode ? 2 : 7]
+        },
+        ...(isIndiaCompany && gstCode
+          ? [{
+              text: [
+                { text: 'GST Code :', bold: true },
+                { text: ` ${gstCode}` }
+              ],
+              alignment: 'center',
+              margin: [0, 0, 0, 7]
+            }]
+          : [])
+      ]
     };
   }
 
@@ -256,6 +291,14 @@
 function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
   const invoice = data.invoice;
   const printData = (data as any).vendorCreditNoteData || (data as any).invoicePrintData;
+  const isIndiaCompany = isIndianCompany(data);
+  const irnNumber =
+    printData?.IRNNumber ||
+    printData?.IRNNo ||
+    invoice?.irnNumber ||
+    (invoice as any)?.IRNNumber ||
+    (invoice as any)?.IRNNo ||
+    '';
 
   const PAGE_LEFT = -10;
   const PAGE_RIGHT = 565;
@@ -319,23 +362,23 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
     margin: [0, 0, 0, 5]
   });
 
-  // VAT No
+  // GST / VAT No
   rightStack.push({
     columns: [
-      { text: 'VAT No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
+      { text: isIndiaCompany ? 'GST No.' : 'VAT No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
       { text: ':', width: COLON_WIDTH },
       { text: printData?.GST_VAT || invoice?.customerGstVat || '', width: '*' }
     ],
     margin: [0, 0, 0, 7]
   });
 
-  // IRN Number (Optional)
-  if (printData?.IRNNumber || invoice?.irnNumber) {
+  // IRN No. only for Indian company
+  if (isIndiaCompany) {
     rightStack.push({
       columns: [
-        { text: 'IRN Number', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
+        { text: 'IRN No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
         { text: ':', width: COLON_WIDTH },
-        { text: printData?.IRNNumber || invoice?.irnNumber || '', width: '*' }
+        { text: irnNumber, width: '*' }
       ],
       margin: [0, 0, 0, 7]
     });
@@ -559,6 +602,7 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
     const charges = data.charges || [];
     const printData = (data as any).vendorCreditNoteData || (data as any).invoicePrintData;
     const voucherDetails = printData?.voucherDetails || [];
+    const isIndiaCompany = isIndianCompany(data);
 
     const taxConfig = data.taxDisplayConfig || {
       showCGST: false,
@@ -577,6 +621,7 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
     /* ---------------- COLUMN COUNT ---------------- */
     const totalColumns =
       7 +
+      (isIndiaCompany ? 1 : 0) +
       (taxConfig.showCGST ? 2 : 0) +
       (taxConfig.showSGST ? 2 : 0) +
       (taxConfig.showIGST ? 2 : 0) +
@@ -590,6 +635,7 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
     const headerRow: any[] = [
       { text: 'S.No', style: 'tableHeaderSmall', alignment: 'center' },
       { text: 'Particulars', style: 'tableHeaderSmall',alignment:'center'},
+      ...(isIndiaCompany ? [{ text: 'HSN/SAC', style: 'tableHeaderSmall', alignment: 'center' }] : []),
       { text: 'Curr.', style: 'tableHeaderSmall', alignment: 'center' },
       { text: 'No. of Unit', style: 'tableHeaderSmall', alignment: 'center' },
       { text: 'Rate', style: 'tableHeaderSmall', alignment: 'center' },
@@ -644,6 +690,13 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
       const row: any[] = [
         { text: detail.Sno || index + 1, style: 'tableCellSmall', alignment: 'center' },
         { text: detail.ChargeDescription || detail.chargeName || '', style: 'tableCellSmall' , noWrap : false},
+        ...(isIndiaCompany
+          ? [{
+              text: detail.HSNCode || detail.HSNSAC || detail.hsnSacCode || '-',
+              style: 'tableCellSmall',
+              alignment: 'center'
+            }]
+          : []),
         { text: detail.CurrencyCode || detail.currencyCode || '', style: 'tableCellSmall', alignment: 'center' },
         { text: detail.NumberOfUnit || formatNumberWithCommas(detail.qty, 3), style: 'tableCellSmall', alignment: 'right' },
         { text: detail.Rate || formatNumberWithCommas(detail.rate, 3), style: 'tableCellSmall', alignment: 'right' },
@@ -711,6 +764,7 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
     const widths: (number | string)[] = [
       18,    // S.No
       '*',   // Particulars
+      ...(isIndiaCompany ? [42] : []), // HSN/SAC
       22,    // Curr
       40,    // Qty
       36,    // Rate

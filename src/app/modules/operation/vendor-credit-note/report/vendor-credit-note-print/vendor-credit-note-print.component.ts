@@ -27,6 +27,13 @@ export class VendorCreditNotePrintComponent {
   @Input() TandCList: any[] = [];
   @Input() userData: any;
   @Input() isVATMode = false;
+  @Input() printTaxDisplayConfig: {
+    showCGST: boolean;
+    showSGST: boolean;
+    showUGST: boolean;
+    showIGST: boolean;
+    showVAT: boolean;
+  } | null = null;
   @Input() currentDate: Date = new Date();
 
   constructor(
@@ -56,9 +63,14 @@ export class VendorCreditNotePrintComponent {
   }
 
   getTaxDisplayConfig() {
+    if (this.printTaxDisplayConfig) {
+      return this.printTaxDisplayConfig;
+    }
+
     const details = this.vendorCreditNoteData?.voucherDetails || [];
     const hasCGST = details.some((x: any) => Number(x?.cgstAmt || 0) > 0 || Number(x?.cgstRate || 0) > 0);
     const hasSGST = details.some((x: any) => Number(x?.sgstAmt || 0) > 0 || Number(x?.sgstRate || 0) > 0);
+    const hasUGST = details.some((x: any) => Number(x?.ugstAmt || 0) > 0 || Number(x?.ugstRate || 0) > 0);
     const hasIGST = details.some((x: any) => Number(x?.igstAmt || 0) > 0 || Number(x?.igstRate || 0) > 0);
     const hasVAT = details.some((x: any) => Number(x?.vatAmt || 0) > 0 || Number(x?.vatRate || 0) > 0);
 
@@ -66,6 +78,7 @@ export class VendorCreditNotePrintComponent {
       return {
         showCGST: hasCGST,
         showSGST: hasSGST,
+        showUGST: hasUGST,
         showIGST: hasIGST,
         showVAT: false
       };
@@ -74,6 +87,7 @@ export class VendorCreditNotePrintComponent {
     return {
       showCGST: false,
       showSGST: false,
+      showUGST: false,
       showIGST: false,
       showVAT: hasVAT || true
     };
@@ -120,6 +134,7 @@ export class VendorCreditNotePrintComponent {
 
     if (cfg.showCGST) baseColumns += 2;
     if (cfg.showSGST) baseColumns += 2;
+    if (cfg.showUGST) baseColumns += 2;
     if (cfg.showIGST) baseColumns += 2;
     if (cfg.showVAT) baseColumns += 2;
 
@@ -139,7 +154,7 @@ export class VendorCreditNotePrintComponent {
         localCurrency: this.currentCompanyCurrency?.code || '',
         invoiceTitle: this.vendorCreditNoteData?.invoiceTitle || 'Vendor Credit Note',
         isSeaMode: this.isSeaDepartment(),
-        isVATMode: this.isVATMode,
+        isVATMode: this.getTaxDisplayConfig().showVAT,
         companyVatNo:
           this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
         shipmentDetails: {

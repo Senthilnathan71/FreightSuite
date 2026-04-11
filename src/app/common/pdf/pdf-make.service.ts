@@ -30,6 +30,7 @@ import {
   CreditNotePdfData,
   ReceiptPdfData,
   PaymentPdfData,
+  PaymentRequestPdfData,
   JournalVoucherPdfData,
   ReleaseLetterPdfData
 } from './interfaces/pdf-document.interfaces';
@@ -69,6 +70,10 @@ import {
 import { generateCreditNoteDocument, transformCreditNoteApiData } from './generators/credit-note-pdf.generator';
 import { generateReceiptDocument, transformReceiptApiData } from './generators/receipt-pdf.generator';
 import { generatePaymentDocument, transformPaymentApiData } from './generators/payment-pdf.generator';
+import {
+  generatePaymentRequestDocument,
+  transformPaymentRequestApiData
+} from './generators/payment-request-pdf.generator';
 import {
   generateJournalVoucherDocument,
   transformJournalVoucherApiData
@@ -1193,6 +1198,55 @@ export class PdfMakeService {
     return this.generatePaymentBlob(pdfData);
   }
 
+  // ==================== Payment Request ====================
+
+  generatePaymentRequest(data: PaymentRequestPdfData): void {
+    const docDefinition = generatePaymentRequestDocument(data);
+    const filename = `Payment_Request_${data.paymentRequest?.requestNumber || 'Draft'}.pdf`;
+    this.download(docDefinition, filename);
+  }
+
+  async generatePaymentRequestBlob(data: PaymentRequestPdfData): Promise<Blob> {
+    const docDefinition = generatePaymentRequestDocument(data);
+    return this.getBlob(docDefinition);
+  }
+
+  generatePaymentRequestFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    options?: {
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
+    }
+  ): void {
+    const pdfData = transformPaymentRequestApiData(apiData, company, branch, userData, logo, options);
+    this.generatePaymentRequest(pdfData);
+  }
+
+  async generatePaymentRequestBlobFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    options?: {
+      printSettings?: {
+        logoPosition: 'left' | 'center' | 'right';
+        companyPosition: 'left' | 'center' | 'right';
+        companyAlignment: 'left' | 'center' | 'right';
+      };
+    }
+  ): Promise<Blob> {
+    const pdfData = transformPaymentRequestApiData(apiData, company, branch, userData, logo, options);
+    return this.generatePaymentRequestBlob(pdfData);
+  }
+
   // ==================== Journal Voucher ====================
 
   generateJournalVoucher(data: JournalVoucherPdfData): void {
@@ -1290,7 +1344,20 @@ export class PdfMakeService {
    * Get current report logo from localStorage
    */
   getReportLogo(): string | undefined {
-    return localStorage.getItem('current_report_logo') || undefined;
+    const logo = localStorage.getItem('current_report_logo');
+    if (!logo) return undefined;
+
+    const normalizedLogo = logo.trim().toLowerCase();
+    if (
+      normalizedLogo === 'none' ||
+      normalizedLogo === 'null' ||
+      normalizedLogo === 'undefined' ||
+      normalizedLogo === ''
+    ) {
+      return undefined;
+    }
+
+    return logo;
   }
 
   /**

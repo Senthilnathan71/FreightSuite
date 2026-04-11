@@ -22,7 +22,9 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
 import { CurrencyFormatService } from 'src/app/core/services/currency-format.service';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
+import { PdfMakeService } from 'src/app/common/pdf';
 import { OperationService } from '../../operation.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 
@@ -100,6 +102,8 @@ export class PaymentRequestEntryComponent implements OnInit {
     private readonly currencyFormatService: CurrencyFormatService,
     private readonly numberToWords: NumberToWordsService,
     private readonly modalService: NgbModal,
+    private readonly pdfMakeService: PdfMakeService,
+    public readonly mps: MenuPermissionService,
   ) {
     this.form = this.fb.group({
       PaymentRequestSid: [null],
@@ -457,6 +461,38 @@ export class PaymentRequestEntryComponent implements OnInit {
       `);
       popupWin.document.close();
     }, 50);
+  }
+
+  downloadPDF(): void {
+    try {
+      if (!this.lookupsLoaded) {
+        this.appSettingsService.showWarning('Please wait until the lookups finish loading');
+        return;
+      }
+
+      if (!this.isEditMode && !this.form.get('PaymentRequestSid')?.value) {
+        this.appSettingsService.showWarning('Save the payment request before downloading');
+        return;
+      }
+
+      this.preparePrintData();
+      const logo = this.pdfMakeService.getReportLogo();
+      const pdfCompany = this.appSettingsService.getCurrentCompanyInfo() || this.currentCompany;
+      const pdfBranch = this.appSettingsService.getCurrentBranchInfo() || this.currentBranch;
+
+      this.pdfMakeService.generatePaymentRequestFromApi(
+        this.paymentRequestPrintData,
+        pdfCompany,
+        pdfBranch,
+        this.userData,
+        logo
+      );
+
+      this.appSettingsService.showSuccess('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('Error generating payment request PDF:', error);
+      this.appSettingsService.showError('Error generating PDF. Please try again.');
+    }
   }
 
   addDetailRow() {
@@ -858,4 +894,7 @@ export class PaymentRequestEntryComponent implements OnInit {
     }
     return new Date(value).toISOString().slice(0, 10);
   }
+
+
+
 }
