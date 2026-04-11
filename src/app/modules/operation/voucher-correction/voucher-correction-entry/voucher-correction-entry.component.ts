@@ -810,55 +810,59 @@ export class VoucherCorrectionEntryComponent implements OnInit {
     return this.selectedDocumentType === 'JV'
   }
 
-  fetchLedgerForCOA(
-    coa: any,
-    detailIndex: number,
-    isPatching: boolean = false
-  ) {
-    const ledgerCtrl = (this.details.at(detailIndex) as FormGroup).get(
-      'LedgerMasterSid'
-    );
-    const isLockedRow = this.isAutoPartyRow(detailIndex) || this.isAutoBankRow(detailIndex);
+  fetchLedgerForCOA(coa: any, detailIndex: number, isPatching: boolean = false) {
+  const detailGroup = this.details.at(detailIndex) as FormGroup;
+  if (!detailGroup) return;
 
-    if (coa.SubledgerName === 'Y') {
-      // Only enable the ledger dropdown if this is NOT an auto-inserted row
-      if (!isLockedRow) {
-        ledgerCtrl.enable();
-      }
-      this.accountService
-        .getLedgerByCOAMasterSid({
-          COAMasterSid: coa.COAMappedId || coa.COAMasterSid,
-          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-          DrCr: 'D',
-        })
-        .subscribe((resp: any) => {
-          if (resp.status) {
-            this.ledgerList[detailIndex] = resp.data || [];
-            const currentValue = ledgerCtrl.getRawValue();
-            const exist = this.ledgerList[detailIndex].find(
-              (l) => l.SubledgerMasterSid === currentValue
+  const ledgerCtrl = detailGroup.get('LedgerMasterSid');
+  if (!ledgerCtrl) return;
+
+  const selectedLedgerSid = ledgerCtrl.getRawValue();
+
+  if (coa) {
+    this.accountService
+      .getLedgerByCOAMasterSid({
+        COAMasterSid: coa.COAMappedId || coa.COAMasterSid,
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      })
+      .subscribe((resp: any) => {
+        if (resp?.status) {
+          this.ledgerList[detailIndex] = resp.data || [];
+
+          const matchedLedger = this.ledgerList[detailIndex].find(
+            (l: any) =>
+              l.SubledgerMasterSid === selectedLedgerSid ||
+              l.LedgerMasterSid === selectedLedgerSid
+          );
+
+          if (matchedLedger) {
+            ledgerCtrl.setValue(
+              matchedLedger.SubledgerMasterSid ?? matchedLedger.LedgerMasterSid,
+              { emitEvent: false }
             );
-            if (!isPatching) {
-              if (exist) {
-                ledgerCtrl.setValue(exist.SubledgerMasterSid);
-              } else {
-                ledgerCtrl.setValue(null);
-              }
-            }
-            // Re-disable after async data load for auto-inserted rows
-            if (isLockedRow) {
-              ledgerCtrl.disable();
-            }
-          } else {
-            this.appSettingService.showError('Error fetching ledger for COA');
+          } else if (!isPatching) {
+            ledgerCtrl.setValue(null, { emitEvent: false });
           }
-        });
-    } else {
-      ledgerCtrl.disable();
-      ledgerCtrl.clearValidators();
-      ledgerCtrl.updateValueAndValidity();
-    }
+
+          // Always keep subledger disabled
+          ledgerCtrl.disable({ emitEvent: false });
+          ledgerCtrl.clearValidators();
+          ledgerCtrl.updateValueAndValidity({ emitEvent: false });
+        } else {
+          this.ledgerList[detailIndex] = [];
+          ledgerCtrl.setValue(null, { emitEvent: false });
+          ledgerCtrl.disable({ emitEvent: false });
+          this.appSettingService.showError('Error fetching ledger for COA');
+        }
+      });
+  } else {
+    this.ledgerList[detailIndex] = [];
+    ledgerCtrl.setValue(null, { emitEvent: false });
+    ledgerCtrl.disable({ emitEvent: false });
+    ledgerCtrl.clearValidators();
+    ledgerCtrl.updateValueAndValidity({ emitEvent: false });
   }
+}
 
   isAutoPartyRow(index: number): boolean {
     const row = this.details.at(index);
@@ -924,4 +928,14 @@ private updateReceiptBankValidators(): void {
   instNo?.updateValueAndValidity();
   instMode?.updateValueAndValidity();
 }
+
+get isJobBasedVendorInvoice(): boolean {
+  if (!(this.isVendorInvoice || this.isVendorCreditNote)) return false;
+
+  const masterJobSid = this.voucherForm.get('MasterJobSid')?.value;
+  const houseJobSid = this.voucherForm.get('HouseJobSid')?.value;
+
+  return !!masterJobSid || !!houseJobSid;
+}
+
 }

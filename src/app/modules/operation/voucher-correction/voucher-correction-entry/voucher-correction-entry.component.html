@@ -437,12 +437,13 @@
                                             @if(isInvoice || isVendorInvoice || isCreditNote || isVendorCreditNote){
                                                 <th rowspan="2" class="text-center bg-transparent text-light"
                                                 style="min-width: 50px;">Sno.</th>
-                                                <th rowspan="2" class="text-center bg-transparent text-light"
-                                                style="min-width: 100px;">Charge
-                                            </th>
-                                            <th rowspan="2" class="text-center bg-transparent text-light"
-                                                style="min-width: 150px;">Description
-                                            </th>
+                                                @if ((isVendorInvoice || isVendorCreditNote) && !isJobBasedVendorInvoice) {
+                                                <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 120px;">Ledger</th>
+                                                <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 200px;">Subledger</th>
+                                                } @else {
+                                                <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 100px;">Charge</th>
+                                                <th rowspan="2" class="text-center bg-transparent text-light" style="min-width: 150px;">Description</th>
+                                                }
                                             <th rowspan="2" class="text-center bg-transparent text-light"
                                                 style="min-width: 120px;">Narration
                                                 </th> 
@@ -539,19 +540,30 @@
                                             <tr [formGroupName]="i">
                                                 @if(isInvoice || isVendorInvoice || isCreditNote || isVendorCreditNote){
                                                     <td>{{ i + 1 }}</td>
+                                                    @if ((isVendorInvoice || isVendorCreditNote) && !isJobBasedVendorInvoice) {
                                                     <td>
-                                                    <dofi-searchable-dropdown [items]="chargeList"
-                                                        formControlName="ChargeMasterSid" [placeholder]="''"
-                                                        [displayFields]="chargeLookupConfig.displayFields"
-                                                        [displayLabels]="chargeLookupConfig.displayLabels"
-                                                        [labelFields]="chargeLookupConfig.labelFields"
-                                                        [bindValue]="'ChargeMasterSid'">
-                                                    </dofi-searchable-dropdown>
-                                                </td>
-                                                <td>
-                                                    <input class="text-start custom-input-field sm highlight-field"
-                                                        formControlName="ChargeDescription" />
-                                                </td>
+                                                        <ng-select formControlName="COAMasterSid" [items]="coaList" bindLabel="LedgerName" bindValue="COAMasterSid"
+                                                            appendTo="body" placeholder=" ">
+                                                        </ng-select>
+                                                    </td>
+                                                    
+                                                    <td>
+                                                        <ng-select formControlName="LedgerMasterSid" [items]="ledgerList[i]" bindLabel="SubledgerName"
+                                                            bindValue="SubledgerMasterSid" appendTo="body" placeholder=" " [readonly]="true">
+                                                        </ng-select>
+                                                    </td>
+                                                    } @else {
+                                                    <td>
+                                                        <dofi-searchable-dropdown [items]="chargeList" formControlName="ChargeMasterSid" [placeholder]="''"
+                                                            [displayFields]="chargeLookupConfig.displayFields" [displayLabels]="chargeLookupConfig.displayLabels"
+                                                            [labelFields]="chargeLookupConfig.labelFields" [bindValue]="'ChargeMasterSid'">
+                                                        </dofi-searchable-dropdown>
+                                                    </td>
+                                                    
+                                                    <td>
+                                                        <input class="text-start custom-input-field sm highlight-field" formControlName="ChargeDescription" />
+                                                    </td>
+                                                    }
                                                 <td class="dofi-min-w-180">
                                                 <input type="text" formControlName="Narration"
                                                     class="custom-input-field sm highlight-field" style="width: 300px" />
