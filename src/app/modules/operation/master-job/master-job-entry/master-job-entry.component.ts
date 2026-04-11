@@ -1943,7 +1943,7 @@ onETDDateSelect(): void {
     return departmentName === 'fcl import' || departmentName === 'lcl import';
   }
 
-  shouldShowMasterPrintOption(reportName: 'MBL' | 'MBL Draft' | 'Loading Plan'): boolean {
+  shouldShowMasterPrintOption(reportName: 'MBL' | 'MBL Draft' | 'Loading Plan' | 'All HBL Draft'): boolean {
     if (!this.mps.canPrint(reportName, 'Print')) {
       return false;
     }

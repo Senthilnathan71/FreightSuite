@@ -3881,6 +3881,24 @@ Please configure the missing mappings and try again.`
       });
     }
 
+    private getNonJobPrintParticular(detail: any, index: number): string {
+      const subledgerName =
+        detail?.subledgerMaster?.SubledgerName ||
+        this.subledgerListDetail?.[index]?.find(
+          (item: any) => item?.SubledgerMasterSid === detail?.LedgerMasterSid
+        )?.SubledgerName ||
+        '';
+
+      const ledgerName =
+        detail?.CoaMaster?.LedgerName ||
+        detail?.coaMaster?.LedgerName ||
+        this.coaList.find(
+          (item: any) => item?.COAMasterSid === detail?.COAMasterSid
+        )?.LedgerName ||
+        '';
+
+      return subledgerName || ledgerName || detail?.ChargeDescription || '';
+    }
 
     async prepareVendorPrintData() {
       if (!this.currencyList || this.currencyList.length === 0) {
@@ -3920,9 +3938,13 @@ Please configure the missing mappings and try again.`
               : (totalTaxAmount / exchangeRate);
           const actualPartyAmount = toNumber(detail.PartyAmount) + correctedTaxAmount;
 
+          const particularDescription = this.isNonJob
+            ? this.getNonJobPrintParticular(detail, index)
+            : (detail.ChargeDescription || '');
+
           return {
             Sno: index + 1,
-            ChargeDescription: detail.ChargeDescription || '',
+            ChargeDescription: particularDescription,
             HSSACCode: hssacCode,
             DrCr: detail.DrCr || '',
             CurrencyMasterSid: detail.CurrencyMasterSid,
@@ -3975,6 +3997,7 @@ Please configure the missing mappings and try again.`
 
       this.vendorInvoicePrintData = {
         invoiceTitle: 'Vendor Invoice',
+        CashOrBank: this.vendorInvoiceData?.CashOrBank || '',
         GSTCode: this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
         CurrencyMasterSid: this.vendorInvoiceData?.CurrencyMasterSid || 0,
         CurrencyCode: this.vendorInvoiceData?.CurrencyCode || '',

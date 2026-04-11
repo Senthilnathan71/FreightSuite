@@ -32,7 +32,7 @@
             color: #000;
             page-break-after: always;
             font-size: 16px;
-            position: relative;
+            padding-bottom: 42px;
           ">
       <!-- Company Info -->
       <div style="
@@ -201,7 +201,7 @@
         <div style="flex: 0 0 50%; max-width: 50%">
 
           <!-- Shipper -->
-          <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+          <div *ngIf="invoiceData?.CashOrBank !== 'Y'" style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
             <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
               <strong>Shipper</strong>
             </div>
@@ -212,7 +212,7 @@
           </div>
 
           <!-- Consignee / Notify -->
-          <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+          <div *ngIf="invoiceData?.CashOrBank !== 'Y'" style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
             <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
               <strong>Consignee / Notify</strong>
             </div>
@@ -223,7 +223,7 @@
           </div>
 
           <!-- Vessel -->
-          <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+          <div *ngIf="invoiceData?.CashOrBank !== 'Y'" style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
             <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
               <strong>{{isSeaDepartment() ? 'Vessel Name ' : 'Flight Name'}}</strong>
             </div>
@@ -234,7 +234,7 @@
           </div>
 
           <!-- Vessel / Flight No -->
-          <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+          <div *ngIf="invoiceData?.CashOrBank !== 'Y'" style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
             <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
               <strong>{{isSeaDepartment() ? 'Voyage No.' : 'Flight No.'}}</strong>
             </div>
@@ -255,7 +255,7 @@
           </div>
 
           <!-- POL -->
-          <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+          <div *ngIf="invoiceData?.CashOrBank !== 'Y'" style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
             <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
               <strong>Loading Port</strong>
             </div>
@@ -277,7 +277,7 @@
                </div> -->
 
           <!-- Final Destionation -->
-          <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+          <div *ngIf="invoiceData?.CashOrBank !== 'Y'" style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
             <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
               <strong>Final Destination</strong>
             </div>
@@ -288,14 +288,14 @@
           </div>
 
 
-          <div style="display: flex">
+          <div *ngIf="invoiceData?.CashOrBank !== 'Y'" style="display: flex">
             <div style="width: 165px; font-weight: bolder">
               <strong>ETD</strong>
             </div>
             <div>: {{ vendorInvoiceData?.ETD | formatDate }}</div>
           </div>
 
-          <div style="display: flex">
+          <div *ngIf="invoiceData?.CashOrBank !== 'Y'" style="display: flex">
             <div style="width: 165px; font-weight: bolder">
               <strong>ETA</strong>
             </div>
@@ -305,7 +305,7 @@
         </div>
 
         <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
-          @if(vendorInvoiceData?.IsServiceJob !== 'Y'){
+          @if(vendorInvoiceData?.IsServiceJob !== 'Y' && invoiceData?.CashOrBank !== 'Y'){
           @if(vendorInvoiceData?.JobType !== 'Agent'){
           <div style="display: flex">
             <div style="width: 180px; font-weight: bolder">
@@ -322,7 +322,7 @@
             <div>: {{ vendorInvoiceData?.MBLNo }}</div>
           </div>
           }
-          <div style="display: flex">
+          <div *ngIf="invoiceData?.CashOrBank !== 'Y'" style="display: flex">
             <div style="width: 180px; font-weight: bolder">
               <strong>Job No.</strong>
             </div>
@@ -347,7 +347,7 @@
 
           
 
-          <div style="display: flex">
+          <div *ngIf="invoiceData?.CashOrBank !== 'Y'" style="display: flex">
             <div style="width: 180px; font-weight: bolder">
               <strong>Booking No.</strong>
             </div>
@@ -367,7 +367,7 @@
             </div>
           </div>
 
-          <div style="display: flex">
+          <div *ngIf="invoiceData?.CashOrBank !== 'Y'" style="display: flex">
             <div style="width: 180px; font-weight: bolder">
               <strong>Freight Terms</strong>
             </div>
@@ -395,7 +395,7 @@
                 </div>
               </div> -->
 
-          <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
+          <table *ngIf="invoiceData?.CashOrBank !== 'Y'" style="width: 100%; border-collapse: collapse; margin-top: 5px;">
             <thead>
               <tr style="font-size: 12px">
                 <!-- PKG -->
@@ -1037,33 +1037,21 @@
         <p>Authorised Signatory</p>
       </div>
 
-      <!-- Footer -->
-      <!-- Page wrapper -->
-      <div style="
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-">
-        <!-- Your main content goes here -->
-        <main style="flex: 1;">
-          <!-- invoice content -->
-        </main>
-
-        <!-- Footer pushed to bottom -->
-        <footer style="
-    width: 100%;
-    font-size: 10pt;
-    padding: 10px;
-    box-sizing: border-box;
-    margin-top: auto;
-  ">
-          <div style="display: flex; justify-content: space-between; font-size: 12px;">
-            <div>Printed By : {{ userData.userName }}</div>
-            <span>This document is computer-generated and does not require a signature.</span>
-            <div>Printed On : {{ currentDate | formatDate }}</div>
-          </div>
-        </footer>
-      </div>
+      <footer style="
+              width: 100%;
+              font-size: 10pt;
+              padding: 10px 20px;
+              box-sizing: border-box;
+              position: absolute;
+              left: 0;
+              bottom: 0;
+            ">
+        <div style="display: flex; justify-content: space-between; font-size: 12px;">
+          <div>Printed By : {{ userData.userName }}</div>
+          <span>This document is computer-generated and does not require a signature.</span>
+          <div>Printed On : {{ currentDate | formatDate }}</div>
+        </div>
+      </footer>
 
     </div>
   </div>

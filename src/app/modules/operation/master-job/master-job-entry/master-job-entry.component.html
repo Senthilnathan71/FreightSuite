@@ -62,7 +62,7 @@
                 </button>
             </div>
             <div class="action-group" *ngIf="isEditMode && ((mps.canPrint('Pre Alert','Print')) || (mps.canPrint('Cargo Manifest', 'Print')) || 
-            shouldShowMasterPrintOption('MBL') || shouldShowMasterPrintOption('MBL Draft') || (mps.canPrint('CFS Outturn', 'Print')) || (mps.canPrint('All HBL Draft', 'Print'))
+            shouldShowMasterPrintOption('MBL') || shouldShowMasterPrintOption('MBL Draft') || (mps.canPrint('CFS Outturn', 'Print')) || shouldShowMasterPrintOption('All HBL Draft')
             || (mps.canPrint('All HBL', 'Print')) || shouldShowMasterPrintOption('Loading Plan'))">
                 <div ngbDropdown container="body" class="d-inline-block">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" id="dropdownUpload" ngbDropdownToggle
@@ -87,7 +87,7 @@
                             <button *ngIf="shouldShowMasterPrintOption('MBL')" class="text-dark" ngbDropdownItem (click)="reportMBLBill('MBL')">MBL</button>
                             <button *ngIf="shouldShowMasterPrintOption('MBL Draft')" class="text-dark" ngbDropdownItem (click)="reportMBLBill('MBLDraft')">MBL Draft</button>
                             <button *ngIf="mps.canPrint('CFS Outturn', 'Print')" class="text-dark" ngbDropdownItem (click)="reportCFSoutturn()">CFS Outturn</button>
-                            <button *ngIf="mps.canPrint('All HBL Draft','Print')"  class="text-dark" ngbDropdownItem (click)="reportHBLBill()">All HBL Draft</button>
+                            <button *ngIf="shouldShowMasterPrintOption('All HBL Draft')"  class="text-dark" ngbDropdownItem (click)="reportHBLBill()">All HBL Draft</button>
                             <button *ngIf="mps.canPrint('All HBL','Print')" class="text-dark" ngbDropdownItem (click)="reportHBL()">All HBL</button>
                             <button *ngIf="shouldShowMasterPrintOption('Loading Plan')" class="text-dark" ngbDropdownItem (click)="reportLoadingPlan()">Loading Plan</button>
                     </div>
