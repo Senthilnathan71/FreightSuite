@@ -33,6 +33,7 @@
                         <button *ngIf="mps.canPrint('Cargo Manifest','Print')" class="text-dark" ngbDropdownItem (click)="reportcargomanifest()">Cargo
                             Manifest</button>
                         <button *ngIf="mps.canPrint('Pre Alert','Print')" class="text-dark" ngbDropdownItem (click)="reportPreAlertModel()">Pre Alert</button>
+                        <button *ngIf="mps.canPrint('Job Card', 'Print')" class="text-dark" ngbDropdownItem (click)="reportjobCard()">Job Card</button>
                     </div>
                 </div>
             </div>

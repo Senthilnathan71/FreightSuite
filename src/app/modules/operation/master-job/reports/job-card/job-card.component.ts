@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { PdfDownloadService } from 'src/app/common/pdf-download.service';
+import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
@@ -22,7 +22,10 @@ interface summaryDTO {
   templateUrl: './job-card.component.html',
   styles: ``,
 })
-export class JobCardComponent {
+export class JobCardComponent implements AfterViewInit{
+  @ViewChild('jobCardContainer') jobCardContainer!: ElementRef;
+  @ViewChild('contentArea') contentArea!: ElementRef;
+  isLargeData = false;
   userData: any;
   currentCompany: any;
   currentBranch: any;
@@ -44,16 +47,15 @@ export class JobCardComponent {
   @Input() uomList: any[] = [];
   salemanList:any[] = [];
   @Input() portList: any[] = []; // Add this input
-   showPrintLogo: boolean = false;
-    showPdfLogo: boolean = true;
 
+  @Input() selectedFCLLCL: string = '';
   constructor(
     private appSettingsService: AppSettingsService,
     private activeModal: NgbActiveModal,
     private masterService: MasterService,
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
-    private pdfService: PdfDownloadService,
+    private pdfMakeService: PdfMakeService,
     public logoService : LogoService,
     private operationService: OperationService
   ) { }
@@ -74,6 +76,25 @@ export class JobCardComponent {
     this.loadCityName();
     this.loadCharges();
   }
+
+ ngAfterViewInit(): void {
+  setTimeout(() => {
+    this.checkContentHeight();
+  }, 300);
+}
+
+checkContentHeight(): void {
+  const container = this.jobCardContainer?.nativeElement;
+  const content = this.contentArea?.nativeElement;
+
+  if (!container || !content) return;
+
+  const containerHeight = container.offsetHeight;
+  const contentHeight = content.offsetHeight;
+
+  // footer normal flow when content reaches near bottom
+  this.isLargeData = contentHeight > (containerHeight - 120);
+}
 
   loadCharges(): void {
     if (Array.isArray(this.chargeList) && this.chargeList.length > 0) {
@@ -325,29 +346,41 @@ getGrandChargeColumnTotal(field: 'RevenueRate' | 'RevenueLocalAmount' | 'CostRat
 
 
    async downloadPDF() {
-  this.showPrintLogo = false;
-  this.showPdfLogo = true;
-
   setTimeout(async () => {
     this.spinner.show();
    try {
-      const quotationNumber = this.masterJobData?.MasterJobNumber;
-      await this.pdfService.downloadBalancedPDF(
-        'printContent',
-         `Job_Card_${quotationNumber}`,
-        () => this.appSettingService.showSuccess('PDF downloaded successfully!'),
-        (error) => this.appSettingService.showError('Error generating PDF. Please try again.')
+      const logo = this.pdfMakeService.getReportLogo();
+      this.pdfMakeService.generateMasterJobCardFromApi(
+        this.masterJobData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        this.getMasterJobCardPdfOptions()
       );
+      this.appSettingService.showSuccess('PDF downloaded successfully!');
     } finally {
       this.spinner.hide();
     }
   }, 50);
 }
 
+  private getMasterJobCardPdfOptions() {
+    return {
+      containerTypeList: this.containerTypeList || [],
+      currencyList: this.currencyList || [],
+      chargeList: this.chargeList || [],
+      profitSummary: this.profitSummary || [],
+      salesmenList: this.salemanList || [],
+      uomList: this.uomList || [],
+      portList: this.portList || [],
+      selectedFCLLCL: this.selectedFCLLCL || ''
+    };
+  }
+
   
 printDiv(divId: string): void {
-  this.showPrintLogo = true;
-  this.showPdfLogo = false;
+
 
   setTimeout(() => {
     const printContents = document.getElementById(divId)?.innerHTML;

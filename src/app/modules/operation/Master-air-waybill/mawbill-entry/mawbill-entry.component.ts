@@ -61,6 +61,7 @@ import { MawbPreprintComponent } from '../report/mawb-preprint/mawb-preprint.com
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { extractBackendErrorMessage } from 'src/app/common/error-handling/payload-validation-handler';
+import { JobCardComponent } from '../../master-job/reports/job-card/job-card.component';
 @Component({
   selector: 'app-mawbill-entry',
   standalone: true,
@@ -147,6 +148,9 @@ export class MawbillEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   parentMailbody = '';
   userData: any;
   currentContainerModal: any;
+  profitSummary: any;
+  customerWiseSummary: any;
+  chargeWiseSummary: any[] = []
   CurrencyLookupConfig = {
     displayFields : ['currencyCode', 'currencyName','countryName'],
     displayLabels : ['Code', 'Name','Country'],
@@ -1653,6 +1657,8 @@ loadMawbStock(data: any): void {
       status : rate.status  === "A" ? "Active" : "Suspended"
     }));
     this.rateResult = [...this.masterJobRateArr];
+    this.calculateChargeWiseProfit();
+    this.calculateCustomerWiseAmount();
 
 
   // Patch container activities
@@ -3791,6 +3797,165 @@ onYardChange(selectedYard: any): void {
           modalRef.componentInstance.chargeList = this.chargeList;
         }
 
+          reportjobCard() {
+            const modalRef = this.modalService.open(JobCardComponent, {
+              size: 'xl',
+              scrollable: true,
+            });
+            modalRef.componentInstance.masterJobData = this.masterJobData;
+            modalRef.componentInstance.containerTypeList = this.containerTypeList;
+            modalRef.componentInstance.masterJobContainers = this.masterJobData.containers || [];
+            modalRef.componentInstance.packageTypeList = this.packageTypeList;
+            modalRef.componentInstance.agentList = this.agentList;
+            modalRef.componentInstance.currencyList = this.currencyList;
+            modalRef.componentInstance.chargeList = this.chargeList;
+            modalRef.componentInstance.profitSummary = this.profitSummary || [];
+            modalRef.componentInstance.customerWiseSummary = this.customerWiseSummary || [];
+            modalRef.componentInstance.chargeWiseSummary = this.chargeWiseSummary || [];
+            modalRef.componentInstance.uomList = this.costEntryComponent.uomList;
+            modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL;
+          }
+
+
+            get totalSales() {
+    if (!this.profitSummary || !Array.isArray(this.profitSummary)) {
+      return 0;
+    }
+
+    return this.profitSummary.reduce((sum, c) => {
+      const value = Number(c.totalSales) || 0;
+      return sum + value;
+    }, 0);
+  }
+
+  get totalCost() {
+    if (!this.profitSummary || !Array.isArray(this.profitSummary)) {
+      return 0;
+    }
+
+    return this.profitSummary.reduce((sum, c) => {
+      const value = Number(c.totalCost) || 0;
+      return sum + value;
+    }, 0);
+  }
+
+  get profit() {
+    if (!this.profitSummary || !Array.isArray(this.profitSummary)) {
+      return 0;
+    }
+
+    return this.profitSummary.reduce((sum, c) => {
+      const value = Number(c.profit) || 0;
+      return sum + value;
+    }, 0);
+  }
+
+
+    calculateCustomerWiseAmount() {
+    this.customerWiseSummary = {};
+    const data = this.rateResult || [];
+
+    const costHmap = new Map<number, CustomerProfit>();
+    const revenueHmap = new Map<number, CustomerProfit>();
+
+    // --- COST SUMMARY ---
+    data.forEach(item => {
+      const costAmt = parseFloat(item.CostLocalAmount) || 0;
+      const customerName = item.costCustomerMaster?.CustomerName || "";
+      const customerId = item.costCustomerMaster?.CustomerMasterSid || 0;
+
+      const prevData = costHmap.get(customerId);
+      const amtChange = item.CostDrCr === "D" ? costAmt : -costAmt;
+
+      if (prevData) {
+        prevData.Amount += amtChange;
+      } else {
+        costHmap.set(customerId, {
+          CustomerName: customerName,
+          Amount: amtChange
+        });
+      }
+    });
+
+    // --- REVENUE SUMMARY ---
+    data.forEach(item => {
+      const revenueAmt = parseFloat(item.RevenueLocalAmount) || 0;
+      const customerName = item.revenueCustomerMaster?.CustomerName || "";
+      const customerId = item.revenueCustomerMaster?.CustomerMasterSid || 0;
+
+      const prevData = revenueHmap.get(customerId);
+      const amtChange = item.RevenueDrCr === "C" ? revenueAmt : -revenueAmt;
+
+      if (prevData) {
+        prevData.Amount += amtChange;
+      } else {
+        revenueHmap.set(customerId, {
+          CustomerName: customerName,
+          Amount: amtChange
+        });
+      }
+    });
+
+
+    this.customerWiseSummary = {
+      cost: Array.from(costHmap.values()),
+      revenue: Array.from(revenueHmap.values())
+    };
+  }
+
+    calculateChargeWiseProfit() {
+    this.profitSummary = [];
+    const rateFormValue = this.rateResult || [];
+    const data = [...rateFormValue];
+
+    data.forEach(item => {
+
+      const costAmt = parseFloat(item.CostLocalAmount);
+      const revenueAmt = parseFloat(item.RevenueLocalAmount);
+      const chargeName = item.chargeMaster?.chargeName || '';
+
+      let existing = this.profitSummary.find(p => p.chargeName === chargeName);
+
+      if (!existing) {
+        existing = {
+          chargeName,
+          totalSales: 0,
+          totalCost: 0,
+          profit: 0,
+          profitPercent: "0%"
+        };
+        this.profitSummary.push(existing);
+      }
+
+      // if (item.CostRevenue === "Cost") {
+      existing.totalCost += item.CostDrCr === "D" ? costAmt : -costAmt;
+      // }
+
+      // if (item.CostRevenue === "Revenue") {
+      existing.totalSales += item.RevenueDrCr === "C" ? revenueAmt : -revenueAmt;
+      // }
+    });
+
+    this.profitSummary.forEach(p => {
+      let profit: number;
+      let profitPercent: number;
+
+      if (p.totalSales > p.totalCost) {
+        profit = p.totalSales - p.totalCost;
+        profitPercent = p.totalSales !== 0 ? (profit / p.totalSales) * 100 : 0;
+      } else {
+        profit = -(p.totalCost - p.totalSales);
+        profitPercent = p.totalCost !== 0 ? (profit / p.totalCost) * 100 : 0;
+      }
+
+      p.profit = profit.toFixed(2);
+      p.profitPercent = profitPercent.toFixed(2) + "%";
+      p.totalSales = p.totalSales.toFixed(2);
+      p.totalCost = p.totalCost.toFixed(2);
+    });
+
+
+  }
       
 }
 
@@ -3798,3 +3963,7 @@ onYardChange(selectedYard: any): void {
 
 
 
+interface CustomerProfit {
+  CustomerName: string,
+  Amount: number
+}

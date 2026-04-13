@@ -212,11 +212,11 @@ export class LedgarCurrenecyComponent {
     }
 
     return {
-      fileName: 'Ledger-Currenecy-Report',
-      sheetName: 'LedgerCurrenecyReport',
+      fileName: 'Ledger-Currency-Report',
+      sheetName: 'LedgerCurrencyReport',
       reportHeader: {
         companyName: this.currentCompany?.companyName || 'Company',
-        reportTitle: `Ledger Currenecy Report`,
+        reportTitle: `Ledger Currency Report`,
         additionalInfo: [
           { label: 'From Date', value: this.formatDate(this.params?.FromDate) },
           { label: 'To Date', value: this.formatDate(this.params?.ToDate) },

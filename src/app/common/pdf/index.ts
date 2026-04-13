@@ -21,6 +21,7 @@ export { generatePaymentDocument, transformPaymentApiData } from './generators/p
 export { generatePaymentRequestDocument, transformPaymentRequestApiData } from './generators/payment-request-pdf.generator';
 export { generateJournalVoucherDocument, transformJournalVoucherApiData } from './generators/journal-voucher-pdf.generator';
 export { generateReleaseLetterDocument, transformReleaseLetterApiData } from './generators/release-letter-pdf.generator';
+export { generateMasterJobCardDocument, transformMasterJobCardApiData } from './generators/master-job-card-pdf.generator';
 
 // Builders (for custom PDF creation)
 export * from './builders/pdf-header.builder';

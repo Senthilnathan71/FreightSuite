@@ -81,7 +81,7 @@
        || shouldShowAirHousePrintOption('HAWB Draft') || mps.canPrint('Exit Form', 'Print') || 
        mps.canPrint('Job Card', 'Print') || mps.canPrint('Delivery Order', 'Print') ||
         mps.canPrint('Cargo Arrival Notice with charges', 'Print') || mps.canPrint('Cargo Arrival Notice without charges', 'Print') 
-        || shouldShowHousePrintOption('HBL') || shouldShowHousePrintOption('HBLDraft') || mps.canPrint('House Profit and Loss', 'Print') || mps.canPrint('Indeminty', 'Print')|| 
+        || shouldShowHousePrintOption('HBL') || shouldShowHousePrintOption('HBLDraft') || mps.canPrint('House Profit and Loss', 'Print') || mps.canPrint('Indemnity', 'Print')|| 
         mps.canPrint('Commercial Invoice', 'Print') || mps.canPrint('Packing List', 'Print') || mps.canPrint('Release Letter', 'Print') || shouldShowHousePrintOption('Sailing Confirmation') || mps.canPrint('Proof of Delivery', 'Print') )">
         <div ngbDropdown container="body" class="d-inline-block">
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" id="dropdownUpload"
@@ -107,7 +107,7 @@
            <button *ngIf="shouldShowHousePrintOption('HBLDraft')" class="text-dark" ngbDropdownItem (click)="reportBill('HBLDraft')">HBL Draft</button>
             <button  *ngIf="mps.canPrint('House Profit and Loss', 'Print')" class="text-dark" ngbDropdownItem (click)="reportShipmentProfit()">House Profit and
               Loss</button>
-            <button *ngIf="mps.canPrint('Indeminty', 'Print')" class="text-dark" ngbDropdownItem (click)="reportIndeminty()">Indeminty</button>
+            <button *ngIf="mps.canPrint('Indemnity', 'Print')" class="text-dark" ngbDropdownItem (click)="reportIndeminty()">Indeminty</button>
             <button *ngIf="mps.canPrint('Commerical Invoice' , 'Print')" class="text-dark" ngbDropdownItem (click)="reportCommericalInvoice()">Commerical
               Invoice</button>
             <!-- <button class="text-dark" ngbDropdownItem (click)="reportCertificateofOrgin()">Certificate of

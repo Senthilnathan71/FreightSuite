@@ -1480,8 +1480,8 @@
                 </div>
             
                 <div style="display: flex;justify-content: right;align-items: center;gap: 6px;width: 100%;font-size: 16px;">
-                  <span *ngIf="currentCompanyCountryCode === 'IN'">GST No</span>
-                  <span *ngIf="currentCompanyCountryCode !== 'IN'">VAT No</span>
+                  <span *ngIf="currentCompanyCountryCode === 'in'">GST No</span>
+                  <span *ngIf="currentCompanyCountryCode !== 'in'">VAT No</span>
                   <span>: {{ currentCompany?.Pan || '' }}</span>
                 </div>
             
@@ -1529,14 +1529,14 @@
               <div style="padding-left: 30px">
                 <span>{{ invoicePrintData?.BilledTo }}</span><br />
                 {{ invoicePrintData?.BillingAddress }}<br />
-                <div
+              </div>
+               <div
                   style="display: flex"
                   *ngIf="currentCompanyCountryCode === 'in'"
                 >
-                  <span style="font-weight: 600">PAN:</span>
+                  <strong style="font-weight: 600">PAN :</strong>
                   {{ invoicePrintData?.PAN }}
                 </div>
-              </div>
             </div>
             <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
               <div>

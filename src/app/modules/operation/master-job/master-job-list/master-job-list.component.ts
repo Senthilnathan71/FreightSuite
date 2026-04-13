@@ -436,7 +436,6 @@ this.initializeTableConfig();
         filterable: true,
         visible: true,
         dataType: 'string',
-        width:'90px'
       },
       {
         key: 'MasterJobNumber',

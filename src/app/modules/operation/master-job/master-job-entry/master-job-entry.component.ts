@@ -1943,7 +1943,7 @@ onETDDateSelect(): void {
     return departmentName === 'fcl import' || departmentName === 'lcl import';
   }
 
-  shouldShowMasterPrintOption(reportName: 'MBL' | 'MBL Draft' | 'Loading Plan' | 'All HBL Draft'): boolean {
+  shouldShowMasterPrintOption(reportName: 'MBL' | 'MBL Draft' | 'Loading Plan' | 'All HBL Draft' | 'All HBL'): boolean {
     if (!this.mps.canPrint(reportName, 'Print')) {
       return false;
     }
@@ -4416,6 +4416,7 @@ onETDDateSelect(): void {
     modalRef.componentInstance.customerWiseSummary = this.customerWiseSummary || [];
     modalRef.componentInstance.chargeWiseSummary = this.chargeWiseSummary || [];
     modalRef.componentInstance.uomList = this.costEntryComponent.uomList;
+    modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL;
   }
 
   reportPackingList() {
@@ -4616,8 +4617,7 @@ onETDDateSelect(): void {
 
       const costAmt = parseFloat(item.CostLocalAmount);
       const revenueAmt = parseFloat(item.RevenueLocalAmount);
-      const charge = this.chargeList.find(c => c.ChargeMasterSid === item.ChargeMasterSid);
-      const chargeName = charge ? charge.chargeName : "";
+      const chargeName = item.chargeMaster?.chargeName || '';
 
       let existing = this.profitSummary.find(p => p.chargeName === chargeName);
 
