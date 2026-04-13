@@ -1328,11 +1328,12 @@
     class="modal-header modalHeaderpart d-flex justify-content-between align-items-center"
   >
     <h5 class="modal-title">Credit Note</h5>
-    <div class="d-flex gap-1 align-items-center">
+      <div class="d-flex gap-1 align-items-center">
       <!-- <button
           type="button"
           class="btn btn-sm btn-warning rounded-5 py-0"
           (click)="printDiv('printContent')"
+          *ngIf="mps.canPrint('Credit Note', 'Print')"
         >
           <i class="fas fa-print me-1"></i> Print
         </button> -->
@@ -1488,8 +1489,8 @@
                   font-size: 16px;
                 "
               >
-                <span *ngIf="currentCompanyCountryCode === 'IN'">GST No</span>
-                <span *ngIf="currentCompanyCountryCode !== 'IN'">VAT No</span>
+                <span *ngIf="currentCompanyCountryCode === 'in'">GST No</span>
+                <span *ngIf="currentCompanyCountryCode !== 'in'">VAT No</span>
                 <span>: {{ currentCompany?.Pan || "" }}</span>
               </div>
             </div>

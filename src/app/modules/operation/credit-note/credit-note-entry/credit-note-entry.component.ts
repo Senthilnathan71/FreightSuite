@@ -3646,7 +3646,8 @@ export class CreditNoteEntryComponent {
 
   calculateTotalColspan(): number {
     const config = this.getTaxDisplayConfig();
-    let baseColumns = 7; // S.No, Particulars, Curr, No of Unit, Rate, ROE, Taxable Value
+    let baseColumns =
+      this.currentCompanyCountryCode?.toLowerCase() === 'ae' ? 7 : 8; // S.No, Particulars, HSN/SAC(if shown), Curr, No of Unit, Rate, ROE, Taxable Value
 
     // Add tax columns based on what's visible
     if (config.showCGST) baseColumns += 2; // CGST % + CGST Amt
@@ -5190,6 +5191,35 @@ export class CreditNoteEntryComponent {
     }
   }
 
+  printDiv(divId: string): void {
+    setTimeout(() => {
+      const printContents = document.getElementById(divId)?.innerHTML;
+      if (!printContents) {
+        this.appSettingService.showError('Print content not found.');
+        return;
+      }
+
+      const popupWin = window.open('', '_blank', 'width=900,height=600');
+      if (!popupWin) {
+        this.appSettingService.showError('Unable to open print window.');
+        return;
+      }
+
+      popupWin.document.open();
+      popupWin.document.write(`
+        <html>
+          <head>
+            <title>Credit Note Print</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContents}
+          </body>
+        </html>
+      `);
+      popupWin.document.close();
+    }, 50);
+  }
+
   //   getUOMCode(uomSid: number): string {
   //     const uom = this.uomList.find(u => u.UOMMasterSid === uomSid);
   //     return uom?.UOMCode || uom?.UOMName || '-';
@@ -5414,10 +5444,11 @@ export class CreditNoteEntryComponent {
           grossWeight: this.creditNotePrintData?.grosswt,
           chargeableWeight: this.creditNotePrintData?.ChargeableWeight,
           cbm: this.creditNotePrintData?.cbm
-        }
+        },
+        creditNotePrintData: this.creditNotePrintData
       };
 
-      const blob = await this.pdfMakeService.generateInvoiceBlobFromApi(
+      const blob = await this.pdfMakeService.generateCreditNoteBlobFromApi(
         this.creditNoteData,
         this.currentCompany,
         this.currentBranch,

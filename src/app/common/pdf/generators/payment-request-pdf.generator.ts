@@ -127,10 +127,10 @@ function buildInfoSection(data: PaymentRequestPdfData): any {
       {
         width: '*',
         stack: [
-          infoRow('Request Date', request.requestDate ? formatDate(request.requestDate) : '', 62),
-          infoRow('Currency', request.currencyCode || '', 62),
-          infoRow('Status', request.status || '', 62),
-          infoRow('Booking No.', request.bookingNo || '-', 62),
+          infoRow('Request Date', request.requestDate ? formatDate(request.requestDate) : '', 73),
+          infoRow('Currency', request.currencyCode || '', 73),
+          infoRow('Status', request.status || '', 73),
+          infoRow('Booking No.', request.bookingNo || '-', 73),
           infoRow('Job / House No.', request.jobOrHouseNo || '-', 73)
         ]
       }
