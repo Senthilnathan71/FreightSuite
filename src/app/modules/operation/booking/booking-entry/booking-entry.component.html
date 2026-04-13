@@ -23,7 +23,7 @@
   <button class="btn btn-sm btn-info" 
            (click)="onGenerateJob()" 
           appPreventMultiClick
-          [disabled]="!b['DepartmentMasterSid']?.value || !b['POL']?.value || !b['POD']?.value || b['BookingStatus']?.value === 'Stuffed' || bookingForm.get('status')?.getRawValue() === 'Suspended'">
+          [disabled]="!b['DepartmentMasterSid']?.value || !b['POL']?.value || !b['POD']?.value || b['BookingStatus']?.value === 'Stuffed' || isSuspended">
     <i class="fas fa-save me-1"></i>
     <span>Generate Job</span>
   </button>
@@ -40,7 +40,7 @@
         <div class="d-inline-block" ngbDropdown #myDrop="ngbDropdown"
           *ngIf="isEditMode && (mps.canPrint('Booking Confirmation', 'Print') || mps.canPrint('BarCode', 'Print') || mps.canPrint('BarCode 2', 'Print'))">
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-            [disabled]="!bookingData || isFormDirty()" id="dropdownManual" ngbDropdownAnchor (focus)="myDrop.open()">
+            [disabled]="!bookingData || isFormDirty() || isSuspended" id="dropdownManual" ngbDropdownAnchor (focus)="myDrop.open()">
             <i class="fas fa-print"></i> Print
           </button>
           <div ngbDropdownMenu aria-labelledby="dropdownManual">
@@ -90,7 +90,7 @@
   </button>
 </div>
 <div class="action-group primary" *ngIf="isEditMode && mps.canPrint('Booking Confirmation', 'Send Mail')">
-  <button class="btn btn-sm btn-info text-nowrap" (click)="sendManualMail()" [disabled]="isSendingMail">
+  <button class="btn btn-sm btn-info text-nowrap" (click)="sendManualMail()" [disabled]="isSendingMail || (isEditMode && isSuspended)">
     <i class="fas me-1" [ngClass]="isSendingMail ? 'fa-spinner fa-spin' : 'fa-envelope'"></i>
     <span>{{ isSendingMail ? 'Preparing...' : 'Send Mail' }}</span>
   </button>
@@ -99,7 +99,7 @@
   <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
           [ngClass]="{ 'btn-info': !isFormDirty(), 'btn-warning': isFormDirty() }"
           (click)="onSubmit()"  
-          [disabled]="(!mps.can('update') && isEditMode) || isSaving || !isHBLNoValid() " >
+          [disabled]="(!mps.can('update') && isEditMode) || isSaving || !isHBLNoValid()|| (isEditMode && isSuspended)" >
     <i class="fas fa-save me-1"></i>
     <span>{{ isSaving ? "Saving..." : "Save" }}</span> 
     <span *ngIf="isFormDirty()"
@@ -203,7 +203,7 @@
         <aside>
           <div class="custom-form-group custom-form-group-select" [class.filled]="!!bookingForm.get('status')?.value">
             @if(isEditMode){
-            <ng-select name="status" class="ng-select" formControlName="status" id="text-input" appendTo="body" [clearable]="false" (change)="onStatusChange()">
+            <ng-select name="status" class="ng-select" formControlName="status" id="text-input" appendTo="body" [clearable]="false" (change)="onStatusChange()" >
               <ng-option value="Active">Active</ng-option>
               <ng-option value="Suspended">Suspended</ng-option>
             </ng-select>
@@ -1223,7 +1223,7 @@
 
       <app-cost-entry #costEntryComponent screenName="Booking" [currencyList]="currencyList"
         [customerList]="customerList" [agentList]="agentList" [dataItems]="bookingRateArr"
-        [resetTrigger]="resetTriggerRate" [formData]="currentFormValue"
+        [resetTrigger]="resetTriggerRate" [formData]="currentFormValue" [isFormDisabled]="isFormDisabled"
         (dataEmitter)="handleRateChange($event)" (reloadParent)="loadBookingById($event)"></app-cost-entry>
     </div>
 
@@ -1320,7 +1320,7 @@
               }
             </div>
           </aside>
-          <aside class="col-md-2" *ngIf="!isSurfaceCargoMode()">
+          <aside class="col-md-2" >
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
                 formControlName="Volume" DecimalPrecision [DecimalPrecisionBefore]="7"
@@ -1446,7 +1446,7 @@
           <div class="toolbar-left"></div>
 
           <div class="toolbar-right">
-            <button class="table-action-btn primary" (click)="addProduct()" [disabled]="!isHBLNoValid()">
+            <button class="table-action-btn primary" (click)="addProduct()" [disabled]="!isHBLNoValid() || (isEditMode && isSuspended)">
               <i class="fas fa-plus"></i> Add Product
             </button>
             <button class="table-action-btn export" (click)="reportProducts()">
@@ -1553,7 +1553,7 @@
                   <th class="bg-transparent text-light dofi-min-w-70" scope="col">Net Wgt
                     <span class="text-danger"></span>
                   </th>
-                   <th class="bg-transparent text-light dofi-min-w-70" scope="col" *ngIf="!isSurfaceCargoMode()">CBM <span class="text-danger">*</span>
+                   <th class="bg-transparent text-light dofi-min-w-70" scope="col" >CBM <span class="text-danger">*</span>
                    </th>
                    }
                   <th class="bg-transparent text-light dofi-min-w-130" scope="col">Cargo Recd. Date <span
@@ -1700,7 +1700,7 @@
                       [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
                       (input)="handleProductRelatedCalculation()" placeholder="" class="custom-input-field sm text-end">
                   </td>
-                  <td *ngIf="!isSurfaceCargoMode()">
+                  <td >
                     <input type="text" id="text-input" formControlName="Volume" placeholder="" DecimalPrecision
                       [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
                       (input)="handleProductRelatedCalculation()" class="custom-input-field sm text-end">
@@ -1851,7 +1851,7 @@
     <!-- Export Release Order Button -->
     <div class="row text-end">
       <div class="col-12">
-        <button class="btn btn-info btn-sm" (click)="openCroPrintModal(croPrintModal)">
+        <button class="btn btn-info btn-sm" (click)="openCroPrintModal(croPrintModal)" [disabled]="(isEditMode && isSuspended)">
           <i class="fas fa-print me-1"></i> Export Release Order
         </button>
       </div>
@@ -2260,7 +2260,7 @@
     <div class="workspace-content" [hidden]="selectedTab !== 'Connection'">
       <app-connection screenName="Booking" [connectionIdField]="'BookingConnectionSid'" [dataItems]="bookingConnectionsArr" [resetTrigger]="resetTriggerConnection"
         [minDate]="minStartDate" [portList]="portList"  [vesselList]="vesselList"
-        [hblNo]="b['HBLNo']?.value" 
+        [hblNo]="b['HBLNo']?.value" [isFormDisabled]="isFormDisabled"
         (dataEmitter)="handleConnectionChange($event)">
       </app-connection>
       <!-- <ng-container *ngComponentOutlet="connectionComponent"></ng-container> -->
@@ -2274,6 +2274,7 @@
         [resetTrigger]="resetTriggerMilestone"
         [shipmentNo]="bookingHeader?.ShipmentNo" 
         [hblNo]="b['HBLNo']?.value"
+        [isFormDisabled]="isFormDisabled"
         (dataEmitter)="handleMilestoneChange($event)"
         
       ></app-milestone>

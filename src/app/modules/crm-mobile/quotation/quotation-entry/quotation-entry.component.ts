@@ -446,6 +446,20 @@ dataFromEnqPage:any;
     
   }
 
+  private applyQuotationDisableRules(data: any): void {
+  if (!this.isEditMode || !data) return;
+
+  const isSuspended = data.status === 'S';
+  const hasBooking = !!data.BookingHeaderSid;
+  const isApproved = data.quoteRoute?.some((route: any) =>
+    route.quoteCarrier?.some((carrier: any) => carrier.ApprovalStatus === 'Approved')
+  );
+
+  if (isSuspended || hasBooking || isApproved) {
+    this.quotationForm.disable({ emitEvent: false });
+  }
+}
+
   private loadTermsAndConditionsConfig(): void {
     const companyId = this.currentCompany?.CompanyMasterSid;
     if (!companyId) {
@@ -571,7 +585,8 @@ dataFromEnqPage:any;
       PODFreeDays: route?.PODFreeDays || 0,
       FreightPPCC: enqData?.FreightPPCC || 'Prepaid',
       authorizerStatus: route?.authorizerStatus || 'Pending',
-      segmentType: segment
+      segmentType: segment,
+      ShipmentTerms: route?.ShipmentTerms || null
     };
 
     // Add the route to the form
@@ -1753,6 +1768,7 @@ isRateLockDisabled(): boolean {
           this.spinner.hide();
           this.patchValues(resp.data)
           this.quotationData = resp.data;
+          this.applyQuotationDisableRules(resp.data);
           this.selectedItem = resp.data;
           this.clearPdfCache(); // Clear cached PDF when new quotation is loaded
         } else {
@@ -5014,6 +5030,7 @@ private async createBookingFromQuotation() {
         ContainerType: containerTypeId,
         NoofContainers: cargo.Qty || 0,
         NoOfPackage: cargo.PackageQty || 0,
+        ShipmentTerms: cargo.ShipmentTerms || null,
       }] : [],
 
       // Other details (Booking tab "Cargo Value" patches from bookingOthers)
@@ -5079,7 +5096,6 @@ private async createBookingFromQuotation() {
     };
 
     this.spinner.hide();
-    
     // Navigate to booking page
     this.router.navigate(['operation/booking/entry'], {
       state: {
@@ -5387,7 +5403,11 @@ navigateToEnquiry(): void {
   }
 }
 
+get isSuspended() : boolean {
+    return this.quotationData?.status !== 'A';
+  }
 
+  
 printDiv(divId: string): void {
   this.showPrintLogo = true;
   this.showPdfLogo = false;
@@ -5600,6 +5620,7 @@ private async createBookingFromRoute(routeIndex: number, carrierIndex: number) {
         ContainerType: containerTypeId,
         NoofContainers: cargo.Qty || 0,
         NoOfPackage: cargo.PackageQty || 0,
+        ShipmentTerms: cargo.ShipmentTerms || null,
       }] : [],
 
       // Other details (Booking tab "Cargo Value" patches from bookingOthers)

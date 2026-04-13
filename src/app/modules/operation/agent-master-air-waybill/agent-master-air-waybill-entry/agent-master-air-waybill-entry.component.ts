@@ -4059,7 +4059,7 @@ resetForm() {
       if(!this.bookingData) return;
       const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
       modalRef.componentInstance.item = this.bookingData;
-      modalRef.componentInstance.idLabel = 'Booking Id';
+      modalRef.componentInstance.idLabel = 'Agent Master Air Waybill Id';
       modalRef.componentInstance.idValue = this.bookingData?.HouseJobSid;
     }
 

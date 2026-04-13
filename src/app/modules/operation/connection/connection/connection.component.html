@@ -5,7 +5,7 @@
               
             </div>
             <div class="toolbar-right">
-                  <button class="table-action-btn primary" (click)="openConnectionModal(connectionModal)" [disabled]="disableAddBtn || !isHBLNoValid()">
+                  <button class="table-action-btn primary" (click)="openConnectionModal(connectionModal)" [disabled]="isFormDisabled || disableAddBtn || !isHBLNoValid()">
                     <i class="fas fa-plus"></i> Add
                 </button>
                 <button class="table-action-btn export" (click)="reportConnections()">
@@ -40,12 +40,14 @@
                         <td class="actions-cell">
                             <div class="d-flex align-items-center">
                             <a class="text-info mx-2" class="link"
-                                (click)="openConnectionModal(connectionModal,connection,connectionIndex)">
+                                [class.disabled]="isFormDisabled" [attr.aria-disabled]="isFormDisabled"
+                                (click)="isFormDisabled ? null : openConnectionModal(connectionModal,connection,connectionIndex)">
                                <i class="fas fa-eye text-center fs-2"></i>
                             </a>
 
                             <a class="text-danger mx-2 ps-2"
-                                (click)="deleteBookingConnection(connectionIndex, connection[connectionIdField])">
+                                [class.disabled]="isFormDisabled" [attr.aria-disabled]="isFormDisabled"
+                                (click)="isFormDisabled ? null : deleteBookingConnection(connectionIndex, connection[connectionIdField])">
                                <span *ngIf="deletingConnectionIndex === ((page1 - 1) * pageSize1) + connectionIndex; else deleteIcon"
                                  class="spinner-border spinner-border-sm text-danger" role="status" aria-hidden="true"></span>
                                <ng-template #deleteIcon>
@@ -240,6 +242,6 @@
 
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss('Cancel')">Cancel</button>
-        <button type="button" class=" btn btn-sm btn-info" (click)="onConnectionSubmit()">Save</button>
+        <button type="button" class=" btn btn-sm btn-info" (click)="onConnectionSubmit()" [disabled]="isFormDisabled">Save</button>
     </div>
 </ng-template>

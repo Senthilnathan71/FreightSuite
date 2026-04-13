@@ -360,6 +360,30 @@ export class FullcalendarComponent implements OnInit, AfterViewInit {
     this.activeDayIsOpen = false;
   }
 
+  private updateFollowUpValidators(): void {
+  const isFollowUp = this.meetingForm.get('followUp')?.value === true;
+
+  const followUpDateCtrl = this.meetingForm.get('followUpDate');
+  const followUpNoteCtrl = this.meetingForm.get('followUpNote');
+
+  if (isFollowUp) {
+    followUpDateCtrl?.setValidators([Validators.required]);
+    followUpNoteCtrl?.setValidators([Validators.required]);
+  } else {
+    followUpDateCtrl?.clearValidators();
+    followUpNoteCtrl?.clearValidators();
+
+    followUpDateCtrl?.setErrors(null);
+    followUpNoteCtrl?.setErrors(null);
+
+    followUpDateCtrl?.reset(null, { emitEvent: false });
+    followUpNoteCtrl?.reset('', { emitEvent: false });
+  }
+
+  followUpDateCtrl?.updateValueAndValidity({ emitEvent: false });
+  followUpNoteCtrl?.updateValueAndValidity({ emitEvent: false });
+}
+
 
   initForm() {
   this.meetingForm = this.fb.group({
@@ -401,22 +425,9 @@ export class FullcalendarComponent implements OnInit, AfterViewInit {
   });
 
   // FollowUpDate validation
-  this.meetingForm.get('followUp')?.valueChanges.subscribe((checked) => {
-    const followUpDateControl = this.meetingForm.get('followUpDate');
-    const followUpNoteControl = this.meetingForm.get('followUpNote');
-
-    if (checked) {
-      followUpDateControl?.setValidators([Validators.required]);
-      followUpNoteControl?.setValidators([Validators.required]);
-    } else {
-      followUpDateControl?.clearValidators();
-      followUpDateControl?.setValue(null);
-      followUpNoteControl?.clearValidators();
-      followUpNoteControl?.setValue('');
-    }
-
-    followUpDateControl?.updateValueAndValidity();
-  });
+  this.meetingForm.get('followUp')?.valueChanges.subscribe(() => {
+  this.updateFollowUpValidators();
+});
   this.meetingForm.get('LeadOrCustomer')?.setValue(
     this.meetingForm.get('LeadOrCustomer')?.value
   );
@@ -435,14 +446,9 @@ export class FullcalendarComponent implements OnInit, AfterViewInit {
 
 
   toggleFollowUp(event: Event): void {
-    const isChecked = (event.target as HTMLInputElement).checked;
-    this.meetingForm.patchValue({ followUp: isChecked });
-
-    // If unchecked, reset followUpDate and followUpNote
-    if (!isChecked) {
-      this.meetingForm.patchValue({ followUpDate: null, followUpNote: '' });
-    }
-  }
+  const isChecked = (event.target as HTMLInputElement).checked;
+  this.meetingForm.get('followUp')?.setValue(isChecked);
+}
 
 
   get f(): { [key: string]: AbstractControl<any, any> } {
@@ -655,69 +661,71 @@ this.refresh.next();
   }
   // Handle Form Submission
   onEditMeeting() {
-    // Check if meeting status is "on hold" and note is empty
-    if (this.meetingForm.get('meetingStatus')?.value === 'on hold' &&
-      !this.meetingForm.get('meetingNote')?.value) {
-      this.meetingForm.get('meetingNote')?.markAsTouched();
-      this.appSettingService.showError("Meeting Note is mandatory when status is 'On Hold'");
-      return;
-    }
-
-    if (!this.meetingForm.get('meetingStatus')?.value) {
-      this.meetingForm.get('meetingStatus')?.markAsTouched();
-      this.appSettingService.showError("Meeting status is required.");
-      return;
-    }
-
-
-
-    const meetingDateStr = this.meetingForm.value.meetingDate ;
-    // Rest of your existing code...
-    this.btnDisable = true;
-    if (this.preCustomerMeetingData.meetingStatus === 'confirmed') {
-      this.appSettingService.showError("Meeting status is already confirmed and cannot be edited.");
-      return;
-    }
-    const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
-    
-    const payload = {
-      PreCustomerMeetingSid: this.preCustomerMeetingData.PreCustomerMeetingSid,
-      PreCustomerMasterSid: this.preCustomerMeetingData.PreCustomerMasterSid,
-      ...this.meetingForm.getRawValue(),
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      userEmail: userEmail,
-      followUpDate: this.meetingForm.value.followUp ? this.meetingForm.value.followUpDate : null,
-      meetingDate: meetingDateStr
-    };
-
-    // If followUp is false, remove followUpNote and followUpDate from the payload
-    if (!this.meetingForm.get('followUp')?.value) {
-      delete payload.followUpNote;
-      delete payload.followUpDate;
-    }
-
-
-    this.leadService.createPreCustomerMeeting(payload).subscribe(
-      resp => {
-        if (resp.data && resp.status) {
-          this.modalService.openSuccessModal(resp.message);
-          this.btnDisable = false;
-          this.meetingForm.patchValue(resp.data);
-          this.modalRef.close();
-          this.refreshComponent();
-        } else {
-          this.btnDisable = false;
-          this.modalService.openErrorModal(resp.message);
-        }
-      },
-      error => {
-        this.btnDisable = false;
-        this.modalService.openErrorModal('Error updating meeting: ' + error.message);
-      }
-    );
-    this.btnDisable = false;
+  this.updateFollowUpValidators();
+  
+  if (this.meetingForm.invalid) {
+    this.meetingForm.markAllAsTouched();
+    this.appSettingService.showError('Please fill all required fields');
+    return;
   }
+
+  if (this.meetingForm.get('meetingStatus')?.value === 'on hold' &&
+      !this.meetingForm.get('meetingNote')?.value) {
+    this.meetingForm.get('meetingNote')?.markAsTouched();
+    this.appSettingService.showError("Meeting Note is mandatory when status is 'On Hold'");
+    return;
+  }
+
+  if (!this.meetingForm.get('meetingStatus')?.value) {
+    this.meetingForm.get('meetingStatus')?.markAsTouched();
+    this.appSettingService.showError("Meeting status is required.");
+    return;
+  }
+
+  const meetingDateStr = this.meetingForm.value.meetingDate;
+  this.btnDisable = true;
+
+  if (this.preCustomerMeetingData.meetingStatus === 'confirmed') {
+    this.appSettingService.showError("Meeting status is already confirmed and cannot be edited.");
+    this.btnDisable = false;
+    return;
+  }
+
+  const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
+  const isFollowUp = this.meetingForm.get('followUp')?.value === true;
+  const payload = {
+    PreCustomerMeetingSid: this.preCustomerMeetingData.PreCustomerMeetingSid,
+    PreCustomerMasterSid: this.preCustomerMeetingData.PreCustomerMasterSid,
+    ...this.meetingForm.getRawValue(),
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+    BranchMasterSid: this.currentBranch?.BranchMasterSid,
+    userEmail: userEmail,
+    followUp: isFollowUp,
+    followUpDate: this.meetingForm.value.followUp ? this.meetingForm.value.followUpDate : null,
+    followUpNote: this.meetingForm.value.followUp ? this.meetingForm.value.followUpNote : null,
+    meetingDate: meetingDateStr
+  };
+
+
+  this.leadService.createPreCustomerMeeting(payload).subscribe(
+    resp => {
+      if (resp.data && resp.status) {
+        this.modalService.openSuccessModal(resp.message);
+        this.btnDisable = false;
+        this.meetingForm.patchValue(resp.data);
+        this.modalRef.close();
+        this.refreshComponent();
+      } else {
+        this.btnDisable = false;
+        this.modalService.openErrorModal(resp.message);
+      }
+    },
+    error => {
+      this.btnDisable = false;
+      this.modalService.openErrorModal('Error updating meeting: ' + error.message);
+    }
+  );
+}
   refreshComponent() {
     this.getMeetingDates()
   }
@@ -756,7 +764,7 @@ this.refresh.next();
           : '';
 
         // Determine if followUp should be true based on followUpDate or followUpNote
-        const followUp = !!(this.preCustomerMeetingData.followUpDate || this.preCustomerMeetingData.followUpNote);
+        const followUp = !!this.preCustomerMeetingData.followUpDate;
 
 
         this.calendarEventData = this.preCustomerMeetingData;
@@ -764,6 +772,9 @@ this.refresh.next();
         const preCustomerMeeting = this.preCustomerMeetingData;
         const name = isLead ? preCustomerMeeting.preCustomerMaster?.preCustomerName : preCustomerMeeting.customerMaster?.CustomerName || 'Unknown';
         this.meetingForm.patchValue({
+          LeadOrCustomer: this.preCustomerMeetingData.LeadOrCustomer || 'L',
+          PreCustomerMasterSid: this.preCustomerMeetingData.PreCustomerMasterSid || null,
+          CustomerMasterSid: this.preCustomerMeetingData.CustomerMasterSid || null,
           customerName: name,
           contactPerson: this.preCustomerMeetingData.preCustomerMaster?.contactPerson || '',
           phone: this.preCustomerMeetingData.preCustomerMaster?.phone || '',
@@ -777,6 +788,10 @@ this.refresh.next();
           followUpNote: followUp ? this.preCustomerMeetingData.followUpNote || '' : '',
           meetingDuration: this.preCustomerMeetingData.meetingDuration || '10 min',
         });
+        this.meetingForm.get('LeadOrCustomer')?.updateValueAndValidity();
+this.meetingForm.get('PreCustomerMasterSid')?.updateValueAndValidity();
+this.meetingForm.get('CustomerMasterSid')?.updateValueAndValidity();
+        this.updateFollowUpValidators();
 
         const followUpControl = this.meetingForm.get('followUp');
         followUpControl?.updateValueAndValidity();

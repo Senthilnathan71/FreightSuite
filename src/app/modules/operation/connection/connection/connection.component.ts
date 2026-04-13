@@ -76,6 +76,7 @@ export class ConnectionComponent implements OnInit {
 
   @Input() screenName: string;
   @Input() connectionIdField: string;
+  @Input() isFormDisabled: boolean = false;
   private _dataItems: any[] = [];
   public _portList: any[] = [];
   @Input()
@@ -229,6 +230,9 @@ export class ConnectionComponent implements OnInit {
   }
 
   openConnectionModal(content: TemplateRef<any>, data?: any, connectionIndex?: number) {
+    if (this.isFormDisabled) {
+      return;
+    }
     this.initConnectionForm();
     this.selectedMode = '';
     this.filteredPorts = [];
@@ -282,6 +286,9 @@ export class ConnectionComponent implements OnInit {
   }
 
   onConnectionSubmit() {
+    if (this.isFormDisabled) {
+      return;
+    }
     // this.validateDisabledFields();
     // const hasETDError = this.c['ETD'].errors !== null;
 
@@ -535,6 +542,9 @@ export class ConnectionComponent implements OnInit {
 
 
   deleteBookingConnection(connectionIndex: number, connectionSid?: number) {
+  if (this.isFormDisabled) {
+    return;
+  }
   const realIndex = ((this.page1 - 1) * this.pageSize1) + connectionIndex;
 
   if (connectionSid) {

@@ -176,6 +176,21 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   }
 
   @Input() screenName: 'Booking' | 'Master Job' | 'House Job' | 'House Air Waybill' | 'Master Air Waybill' | 'Service Job'| 'Agent Master Air Waybill';
+  private _isFormDisabled: boolean = false;
+  @Input()
+  set isFormDisabled(value: boolean) {
+    this._isFormDisabled = value;
+    if (this.rateForm) {
+      if (this._isFormDisabled) {
+        this.rateForm.disable({ emitEvent: false });
+      } else {
+        this.rateForm.enable({ emitEvent: false });
+      }
+    }
+  }
+  get isFormDisabled(): boolean {
+    return this._isFormDisabled;
+  }
   private _currencyList: any[] = [];
   private _customerList: any[] = [];
   private _agentList: any[] = [];
@@ -638,6 +653,9 @@ export class CostEntryComponent implements OnInit, OnDestroy {
       CustomerBranchSid: [null],
       rateFormArray: this.fb.array([])
     });
+    if (this._isFormDisabled) {
+      this.rateForm.disable({ emitEvent: false });
+    }
 
   }
 
@@ -955,6 +973,9 @@ createRateFormGroup(data?: any): FormGroup {
   }
 
   addRateRow(data?:any){
+    if (this.isFormDisabled) {
+      return;
+    }
     // When adding a new row without data, populate it with parent form values immediately
     if (!data && this.parentFormValue) {
       const ParentSid = this.getParentSid();
@@ -977,6 +998,9 @@ createRateFormGroup(data?: any): FormGroup {
 
 
   deleteRate(index: number, RatesSid?: number) {
+    if (this.isFormDisabled) {
+      return;
+    }
     const formGroup = this.rateFormArray.at(index) as FormGroup;
     const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
     // Check if voucher exists
@@ -1015,6 +1039,9 @@ createRateFormGroup(data?: any): FormGroup {
   canEditRate(index: number): boolean {
     const formGroup = this.rateFormArray.at(index) as FormGroup;
     // Check the hidden ID fields instead of display fields
+    if (this.isFormDisabled) {
+      return false;
+    }
     return !formGroup.get('_costVoucherHeaderSid')?.value && !formGroup.get('_revenueVoucherHeaderSid')?.value;
   }
 

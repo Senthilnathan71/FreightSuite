@@ -22,7 +22,7 @@
                         <i class="fas fa-history me-1"></i>Logs
                     </button>
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode && mps.canPrint('Enquiry', 'Print')"
-                        [disabled]="!rateRequestData || rateRequestForm?.dirty || enquiryOtherForm?.dirty" (click)="openPrint()">
+                        [disabled]="!rateRequestData || rateRequestForm?.dirty || enquiryOtherForm?.dirty || isSuspended" (click)="openPrint()">
                         <i class="fas fa-print me-1"></i> Print
                     </button>
 
@@ -67,12 +67,12 @@
                         Reset
                     </button>
                     <button type="button" class="btn btn-info btn-sm text-nowrap" *ngIf="isEditMode"
-                        (click)="sendManualMail()">
+                        (click)="sendManualMail()" [disabled]="isSuspended">
                         <i class="fas fa-envelope me-1"></i>
                         Send Mail
                     </button>
                     <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" type="submit" (click)="onSubmit()"
-                        [disabled]="(disableAddButtons || quotationCreatedAgainstThisEnquiry) || (!mps.can('update') && isEditMode)"
+                        [disabled]="(disableAddButtons || quotationCreatedAgainstThisEnquiry) || (!mps.can('update') && isEditMode) || (isEditMode && isSuspended)"
                         appPreventMultiClick>
                         <i class="fas fa-save me-1"></i> Save
                     </button>
@@ -149,7 +149,7 @@
                     Details
                 </button> -->
                         <button class="btn btn-info btn-sm" (click)="addRoute()" type="button"
-                            [disabled]="!(selectedDepartment) || quotationCreatedAgainstThisEnquiry">
+                            [disabled]="!(selectedDepartment) || quotationCreatedAgainstThisEnquiry || (isEditMode && isSuspended)">
                             <i class="fas fa-plus me-1"></i> New
                             Route</button>
                         <!-- TODO : add  *ngIf="EnquiryHeaderSid && authStateCache === 'Approved'" -->
@@ -157,7 +157,7 @@
                         }
                         @if (!isMobile) {
                         <button class="btn btn-info btn-sm" type="button" (click)="addRoute()"
-                            [disabled]="!(selectedDepartment) || quotationCreatedAgainstThisEnquiry">
+                            [disabled]="!(selectedDepartment) || quotationCreatedAgainstThisEnquiry || (isEditMode && isSuspended)">
                             <i class="fas fa-plus me-1"></i>Add
                             Route</button>
                         <!-- TODO : add  *ngIf="EnquiryHeaderSid && authStateCache === 'Approved'" -->

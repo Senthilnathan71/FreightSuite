@@ -1646,6 +1646,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     )
   }
 
+  get isSuspended() : boolean {
+    return this.bookingData?.status !== 'A';
+  }
   
   patchValues(response: any) {
   this.isPatching = true;
@@ -1660,9 +1663,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     const hasHBLNo = response.HBLNo && response.HBLNo.trim() !== '' && 
                      response.HBLNo !== null && response.HBLNo !== undefined;
     const hasHouseJobSid = response.HouseJobSid || null;
-    if (hasHBLNo || hasHouseJobSid) {
-      this.disableAllForms();
-    }
+    const shouldDisableForms = (hasHBLNo || hasHouseJobSid) || (this.isEditMode && response.status !== 'A');
 
     const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
     const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
@@ -1880,6 +1881,13 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       }
       this.updateProductPagination();
     }
+    
+    if (shouldDisableForms) {
+      this.disableAllForms();
+      if (this.isEditMode && response.status !== 'A') {
+        this.bookingForm.get('status')?.disable();
+      }
+    }
 
     // Handle connections, rates, etc.
     this.bookingConnectionsArr = (response.bookingConnection || []).map(connection => {
@@ -1900,6 +1908,14 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       status: br.status === "A" ? "Active" : "Suspended"
     }));
     this.rateResult = [...this.bookingRateArr];
+    if (
+      this.isEditMode &&
+      this.bookingRateArr?.some(rate =>
+        rate.CostVoucherHeaderSid !== null || rate.RevenueVoucherHeaderSid !== null
+      )
+    ) {
+      this.bookingForm.get('status')?.disable();
+    }
 
     const shipmentTypeValue = response.ShipmentType === "Y" ? true : false;
     if (shipmentTypeValue) {
@@ -3880,6 +3896,7 @@ getVesselVoyBasedOnPorts() {
     const NoofContainers = this.c['NoofContainers']?.value;
     const Volume = this.c['Volume']?.value;
     const Volumetric = this.c['Volumetric']?.value;
+    const ShipmentTerms = this.c['ShipmentTerms']?.value;
     const ChargeableWeight = this.c['ChargeableWeight']?.value;
 
     const CustomerMasterSid = this.b['CustomerMasterSid']?.getRawValue();
@@ -3917,6 +3934,7 @@ getVesselVoyBasedOnPorts() {
       NetWeight,
       Volume,
       Volumetric,
+      ShipmentTerms,
       NoofContainers,
       ChargeableWeight,
       countryOfCompany : this.countryOfCompany,
@@ -4943,10 +4961,12 @@ deepEqual(obj1: any, obj2: any): boolean {
         // }
         
         this.appSettingService.showSuccess('Master Job generated successfully from booking');
-        if (masterJobSid && this.selectedFCLLCL === "FCL") {
-          this.router.navigate(['/operation/master-job/entry', masterJobSid]);
-        } else {
-          this.router.navigate(['/operation/mawbill/entry', masterJobSid])
+        if (masterJobSid) {
+          if (this.selectedDepartmentType === "AIR") {
+            this.router.navigate(['/operation/mawbill/entry', masterJobSid]);
+          } else {
+            this.router.navigate(['/operation/master-job/entry', masterJobSid]);
+          }
         }
       } else {
         this.appSettingService.showError('Error generating master job: ' + (resp.message || 'Unknown error'));
@@ -6414,6 +6434,7 @@ private disableAllForms(): void {
   Object.keys(this.cargoForm.controls).forEach(key => {
     this.cargoForm.get(key)?.disable();
   });
+  
 
   // Disable other form controls
   Object.keys(this.otherForm.controls).forEach(key => {

@@ -343,7 +343,7 @@
                             </div>
                         </aside>
 
-                        <aside class="col-md-3" *ngIf="(voucherForm.get('CashOrBank')?.value === 'B') && isReceipt || isPayment">
+                        <aside class="col-md-3" *ngIf="(voucherForm.get('CashOrBank')?.value === 'B') && (isReceipt || isPayment)">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" placeholder="" class="custom-input-field sm highlight-field"
                                     formControlName="InstrumentNumber" />
@@ -354,7 +354,7 @@
 
                         <!-- Inst Mode -->
 
-                        <aside class="col-md-3" *ngIf="(voucherForm.get('CashOrBank')?.value === 'B') && isReceipt || isPayment">
+                        <aside class="col-md-3" *ngIf="(voucherForm.get('CashOrBank')?.value === 'B') && (isReceipt || isPayment)">
                             <div class="custom-form-group custom-form-group-select highlight-field"
                                 [class.filled]="!!voucherForm.get('InstrumentMode')?.value">
                                 <ng-select class="ng-select" [items]="paymentModes" bindLabel="label" bindValue="value"
@@ -367,7 +367,7 @@
 
                         <!-- Instrument Date -->
 
-                        <aside class="col-md-3" *ngIf="(voucherForm.get('CashOrBank')?.value === 'B') && isReceipt || isPayment">
+                        <aside class="col-md-3" *ngIf="(voucherForm.get('CashOrBank')?.value === 'B') && (isReceipt || isPayment)">
                             <div class="custom-form-group custom-form-group-select filled">
                                 <div class="input-group">
                                     <input class="form-control highlight-field" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker

@@ -93,22 +93,22 @@
 
           <div class="buttons">
             <button type="button" class="btn btn-warning btn-sm" (click)="openPaymentRequest()"
-              [disabled]="!isEditMode || !rateFormArray?.length || !isVoucherGenerationAllowed() || !isHBLNoValid()" title="Create payment request from prepaid cost rows">
+              [disabled]="isFormDisabled || !isEditMode || !rateFormArray?.length || !isVoucherGenerationAllowed() || !isHBLNoValid()" title="Create payment request from prepaid cost rows">
               <i class="fas fa-file-import me-1"></i>
               Payment Request
             </button>
             <button type="button" class="btn btn-success btn-sm" (click)="openVoucherTypeModal()"
-              [disabled]="!isEditMode || !rateFormArray?.length || !isVoucherGenerationAllowed() || !isHBLNoValid()" title="Generate Invoice/Voucher from rates">
+              [disabled]="isFormDisabled || !isEditMode || !rateFormArray?.length || !isVoucherGenerationAllowed() || !isHBLNoValid()" title="Generate Invoice/Voucher from rates">
               <i class="fas fa-file-invoice me-1"></i>
               Generate Voucher
             </button>
-            <button class="btn btn-sm btn-info" (click)="addRateRow()" [disabled]="!isHBLNoValid()">
+            <button class="btn btn-sm btn-info" (click)="addRateRow()" [disabled]="isFormDisabled || !isHBLNoValid()">
               <i class="fas fa-plus"></i> Add Charge
             </button>
-            <button class="table-action-btn primary" (click)="getTariffDetails(tariffDetailsModal)" *ngIf="parentFormValue.ParentSid" [disabled]="!isHBLNoValid()">
+            <button class="table-action-btn primary" (click)="getTariffDetails(tariffDetailsModal)" *ngIf="parentFormValue.ParentSid" [disabled]="isFormDisabled || !isHBLNoValid()">
               <i class="fas fa-plus"></i> Get Tariff
             </button>
-             <button class="table-action-btn primary" (click)="getStdChargeModal()" [disabled]="!isHBLNoValid()" *ngIf="isEditMode">
+             <button class="table-action-btn primary" (click)="getStdChargeModal()" [disabled]="isFormDisabled || !isHBLNoValid()" *ngIf="isEditMode">
               <i class="fas fa-plus"></i> Get Standard Charges
             </button>
             <!-- <button class="table-action-btn export">

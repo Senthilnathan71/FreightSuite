@@ -1084,6 +1084,9 @@ ${this.userData.userName}`;
     const ourPort = this.ports.find(p => p.PortMasterSid === PortMasterSid);
     return ourPort ? `${ourPort.PortName} (${ourPort.PortCode})` : '';
   }
+  get isSuspended() : boolean {
+    return this.rateRequestData?.status !== 'A';
+  }
 
   calculateCBM(routeIndex: number, cargoIndex: number): void {
     const cargoForm = this.routeCargo(routeIndex).at(cargoIndex) as FormGroup;
@@ -1522,6 +1525,10 @@ private parseFloatSafe(value: any): number {
         this.enquiryData = resp.data;
         this.patchValues(resp.data);
         this.rateRequestData = resp.data;
+        if (this.isEditMode && resp.data.status === 'S') {
+        this.rateRequestForm.disable();
+        this.enquiryOtherForm.disable();
+      }
       }
     });
   }
@@ -2181,7 +2188,7 @@ private parseFloatSafe(value: any): number {
           NetWeight: cargo.NetWeight,
           Volume: cargo.Volume,
           ContainerType: containerTypeCode,
-          ContainerQty: cargo.Qty,
+          Qty: cargo.PackageQty,
           ChargeableWeight: cargo.ChargeableWeight,
           PackageQty: cargo.PackageQty,
           PackageType: cargo.PackageType,
@@ -2191,7 +2198,8 @@ private parseFloatSafe(value: any): number {
           length: cargo.length,
           width: cargo.width,
           height: cargo.height,
-          Volumetric: cargo.Volumetric
+          Volumetric: cargo.Volumetric,
+          ShipmentTerms: cargo.ShipmentTerms,
         };
       });
     });

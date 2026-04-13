@@ -5,7 +5,7 @@
                
             </div>
             <div class="toolbar-right">
-                 <button class="table-action-btn primary" (click)="openMilestoneModal(milestoneModal)" [disabled]="!isHBLNoValid()">
+                 <button class="table-action-btn primary" (click)="openMilestoneModal(milestoneModal)" [disabled]="isFormDisabled || !isHBLNoValid()">
                     <i class="fas fa-plus"></i> Add Milestone
                 </button>
                 <button class="table-action-btn export" (click)="reportMilestones()">
@@ -30,7 +30,7 @@
                     <tr class="table-row" *ngFor="let milestone of slicedMilestoneFormArr; let i = index">
                         <td >
                             <div > 
-                                <button class="action-icon edit" (click)="openMilestoneModal(milestoneModal,milestone,i)">
+                                <button class="action-icon edit" (click)="openMilestoneModal(milestoneModal,milestone,i)" [disabled]="isFormDisabled">
                                    <i-feather class="feather-sm text-info" name="eye"></i-feather>
                                 </button>
                                 <!-- <button class="action-icon copy"><i class="fas fa-copy"></i></button> <button
@@ -122,6 +122,6 @@
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
-        <button type="button" class="btn btn-info btn-sm" (click)="onMilestoneSubmit()">Save</button>
+        <button type="button" class="btn btn-info btn-sm" (click)="onMilestoneSubmit()" [disabled]="isFormDisabled">Save</button>
     </div>
 </ng-template>

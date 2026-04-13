@@ -4948,7 +4948,7 @@ onETDDateSelect(): void {
     if (!this.masterJobData) return;
     const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.item = this.masterJobData;
-    modalRef.componentInstance.idLabel = 'Booking Id';
+    modalRef.componentInstance.idLabel = 'MasterJob Id';
     modalRef.componentInstance.idValue = this.masterJobData?.MasterJobSid;
   }
  // Get list of unmapped containers

@@ -48,6 +48,7 @@ export class MilestoneComponent implements OnInit {
 
   @Input() screenName: string;
   @Input() hblNo: string;
+  @Input() isFormDisabled: boolean = false;
    private _shipmentNo: string;
    @Input()
   get shipmentNo(): string {
@@ -181,6 +182,9 @@ export class MilestoneComponent implements OnInit {
   }
 
   openMilestoneModal(content: TemplateRef<any>, data?:any, milestoneIndex?: number) {
+    if (this.isFormDisabled) {
+      return;
+    }
     this.initMilestoneForm();
     this.selectedMode = '';
     if(data) {
@@ -227,6 +231,9 @@ export class MilestoneComponent implements OnInit {
   }
 
   onMilestoneSubmit() {
+    if (this.isFormDisabled) {
+      return;
+    }
     if(this.milestoneForm.invalid){
       this.milestoneForm.markAllAsTouched();
       this.milestoneForm.updateValueAndValidity();
