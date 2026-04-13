@@ -74,18 +74,22 @@ export class QuotationListManager {
     }
 
      private getApprovalStatus(item: any): string {
-        if (!item.quoteRoute || item.quoteRoute.length === 0) {
+        const statuses = (item?.quoteRoute || [])
+            .flatMap((route: any) => route?.quoteCarrier || [])
+            .map((carrier: any) => carrier?.ApprovalStatus || 'Pending')
+            .map((status: string) => String(status).trim())
+            .filter((status: string) => !!status);
+
+        if (statuses.length === 0) {
             return 'Pending';
         }
-        
-        const route = item.quoteRoute[0];
-        if (!route.quoteCarrier || route.quoteCarrier.length === 0) {
-            return 'Pending';
+
+        if (statuses.includes('Approved')) {
+            return 'Approved';
         }
-        
-        // Get the approval status from the first carrier
-        const carrier = route.quoteCarrier[0];
-        return carrier.ApprovalStatus || 'Pending';
+
+        const uniqueStatuses: string[] = [...new Set<string>(statuses)];
+        return uniqueStatuses.length === 1 ? uniqueStatuses[0] : 'Mixed';
     }
 
     // Helper method to get formatted approval status label
@@ -98,6 +102,7 @@ export class QuotationListManager {
             'Pending': 'Pending',
             'Approved': 'Approved',
             'Rejected': 'Rejected',
+            'Mixed': 'Mixed',
             'Counter': 'Counter Offer',
             'WaitingForFinalApproval': 'Waiting for Final Approval',
             'WaitingForCustomerApproval': 'Waiting for Customer Approval',
@@ -203,8 +208,8 @@ export class QuotationListManager {
             QuoteDate: this.datePipe.transform(item?.QuoteDate),
             bookingNo: item.bookingHeader?.BookingNo || '',
             status: item.status === 'A' ? 'Active' : 'Suspended',
-            approvalStatus: this.getApprovalStatus(item),
-            approvalStatusLabel: this.getApprovalStatusLabel(item)
+            approvalStatus: this.getApprovalStatusLabel(item),
+            approvalStatusValue: this.getApprovalStatus(item)
         };
     }
 

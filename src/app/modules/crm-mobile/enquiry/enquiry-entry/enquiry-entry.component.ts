@@ -397,9 +397,6 @@ export class EnquiryEntryComponent implements OnInit {
       this.consigneeList = customerTypeOutput.filter(c => c.CustomerType?.consignee === 'isTrue');
       this.finalShipperList = [...this.shipperList]
       this.finalConsigneeList = [...this.consigneeList]
-      console.log('✅ Customer data loaded');
-      this.testConsigneeList();
-      this.testShipperList();
     })
   }
 
@@ -426,7 +423,6 @@ export class EnquiryEntryComponent implements OnInit {
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
-    console.log(this.currentBranchCityId, "CITY")
     this.loadCityName();
     this.MenuMasterSid = Number(sessionStorage.getItem('currentMenuId'));
     this.loadTermsAndConditionsConfig();
@@ -562,13 +558,11 @@ export class EnquiryEntryComponent implements OnInit {
 
     this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
       next: (response: any) => {
-        console.log("City API response:", response);
 
         if (response) {
           const ourCity = response;
 
           this.currentBranchCityName = ourCity ? ourCity.cityName : '';
-          console.log("Final City Name:", this.currentBranchCityName);
         }
 
         this.spinner.hide();
@@ -1186,7 +1180,11 @@ ${this.userData.userName}`;
 
 private calculateCargoValues(cargoForm: FormGroup): void {
   
-  if (this.isPatching || this.selectedCargoMode === 'ROAD') {
+  if (this.isPatching) {
+    return;
+  }
+
+  if (this.selectedCargoMode === 'ROAD') {
     cargoForm.get('cbm')?.setValue('', { emitEvent: false });
     cargoForm.get('volumetric')?.setValue('', { emitEvent: false });
     return;
@@ -1372,7 +1370,7 @@ private parseFloatSafe(value: any): number {
         const ctrl = cargoForm.get(f);
         if (ctrl) {
           ctrl.setValidators([Validators.required]);
-          if (f === 'Qty' || f === 'cbm') {
+          if (!this.isPatching && (f === 'Qty' || f === 'cbm') && !ctrl.value) {
             ctrl.setValue('1');
           }
           if (f === 'WeightUnitSid' && !ctrl.value) {
@@ -1399,7 +1397,7 @@ private parseFloatSafe(value: any): number {
     const FCLFields = ['CargoType','ContainerType', 'PackageType', 'PackageQty', 'ShipmentTerms', 'GrossWeight', 'cbm', 'ProductName'];
     const LCLFields = ['CargoType','PackageType', 'PackageQty', 'WeightUnitSid', 'cbm', 'volumetric' ,'GrossWeight', 'ChargeableWeight', 'ShipmentTerms', 'ProductName'];
     const AIRFields = ['CargoType', 'PackageType','ChargeableWeight','WeightUnitSid','PackageQty','cbm', 'volumetric','GrossWeight', 'ChargeableWeight', 'ProductName'];
-    const ROADFields = ['CargoType', 'Qty', 'GrossWeight', 'NetWeight'];
+    const ROADFields = ['CargoType', 'Qty','cbm', 'GrossWeight', 'NetWeight'];
 
     resetFields(['PackageType', 'Qty', 'WeightUnitSid', 'PackageQty', 'ShipmentTerms', 'cbm', 'ContainerType', 'volumetric', 'length', 'width', 'height']);
 
@@ -1428,7 +1426,6 @@ private parseFloatSafe(value: any): number {
     }
 
     const isCustomer = this.rateRequestForm.get('LeadOrCustomer')?.value;
-    console.log(selectedItem, "Selcted Values");
     if (isCustomer) {
       const parsedContact = this.parsePhone(selectedItem.ContactNumber);
       this.rateRequestForm.patchValue({
@@ -1684,7 +1681,7 @@ private parseFloatSafe(value: any): number {
             GrossWeight: [cargo.GrossWeight || ''],
             NetWeight: [cargo.NetWeight || ''],
             ShipmentTerms: [cargo.ShipmentTerms || null],
-            cbm: [cargo.Volume || '1'],
+            cbm: [cargo.Volume ?? ''],
             ContainerType: [cargo.ContainerType || null],
             ChargeableWeight: [cargo.ChargeableWeight || null],
             length: [cargo.length || null],
@@ -3138,6 +3135,18 @@ private parseFloatSafe(value: any): number {
     return total;
   }
 
+  calculateTotalChargeableWeight(): number {
+    let total = 0;
+
+    this.enquiryData?.enquiryRoute?.forEach((route: any) => {
+      route?.enquiryCargo?.forEach((cargo: any) => {
+        total += Number(cargo.ChargeableWeight) || 0;
+      });
+    });
+
+    return total;
+  }
+
 
   calculateTotalPackageQty(): number {
     let total = 0;
@@ -3168,7 +3177,6 @@ private parseFloatSafe(value: any): number {
   `;
 
     modalRef.componentInstance.followupSaved.subscribe((result) => {
-      console.log('Follow-up saved successfully:', result);
       this.appSettingService.showSuccess('Follow-up created successfully');
     });
 
@@ -3331,7 +3339,7 @@ private getRequiredCargoFields(): string[] {
   } else if (this.selectedCargoMode === 'AIR') {
     return ['CargoType', 'PackageType', 'ChargeableWeight', 'WeightUnitSid', 'PackageQty', 'cbm', 'volumetric', 'GrossWeight', 'ProductName'];
   } else if (this.selectedCargoMode === 'ROAD') {
-    return ['CargoType', 'Qty', 'GrossWeight', 'NetWeight'];
+    return ['CargoType', 'Qty','cbm', 'GrossWeight', 'NetWeight'];
   }
   return [];
 }
@@ -3463,16 +3471,13 @@ private getRequiredCargoFields(): string[] {
       autoSkipFields.includes(this.currentFieldName) &&
       control?.value
     ) {
-      console.log(
-        `⏭️ Skipping ${this.currentFieldName} (auto-filled)`
-      );
+      
       this.currentFieldIndex++;
       this.focusCurrentField();
       return;
     }
 
     // Existing logic continues
-    console.log('Focusing field:', this.currentFieldName);
 
     if (this.currentFieldName === 'LeadOrCustomer') {
       this.announceCurrentField();
@@ -3653,7 +3658,6 @@ private getRequiredCargoFields(): string[] {
     // 🚢 CARGO MODE — FULL OVERRIDE
     // ===============================
     if (this.isCargoVoiceMode) {
-      console.log('🧠 Cargo navigation:', direction);
 
       if (direction === 'NEXT' || direction === 'SKIP') {
         this.currentCargoFieldIndex++;
@@ -3921,8 +3925,6 @@ private getRequiredCargoFields(): string[] {
       const clean = this.normalizeCustomerSpeech(spoken);
 
       // Log for debugging
-      console.log('Searching customer for:', clean);
-      console.log('Available customers:', this.customers);
 
       const match = this.customers.find(customer =>
         customer.CustomerName.toLowerCase().includes(clean) ||
@@ -3934,7 +3936,6 @@ private getRequiredCargoFields(): string[] {
         return;
       }
 
-      console.log('Found customer match:', match);
 
       // 🔴 IMPORTANT: Patch ALL required fields
       const parsedContact = this.parsePhone(match.ContactNumber || '');
@@ -3969,8 +3970,6 @@ private getRequiredCargoFields(): string[] {
     if (this.currentFieldName === 'PreCustomerMasterSid') {
       const clean = this.normalizeCustomerSpeech(spoken);
 
-      console.log('Searching lead for:', clean);
-      console.log('Available leads:', this.leadList);
 
       const match = this.leadList.find(lead =>
         lead.preCustomerName.toLowerCase().includes(clean) ||
@@ -3982,7 +3981,6 @@ private getRequiredCargoFields(): string[] {
         return;
       }
 
-      console.log('Found lead match:', match);
 
       // 🔴 IMPORTANT: Patch ALL required fields for lead
       const parsedContact = this.parsePhone(match.phone || '');
@@ -4319,22 +4317,7 @@ private getRequiredCargoFields(): string[] {
     setTimeout(() => this.moveToNextField(), 300);
   }
 
-  testConsigneeList() {
-    console.log('=== TEST CONSIGNEE LIST ===');
-    console.log('Type:', typeof this.finalConsigneeList);
-    console.log('Is Array:', Array.isArray(this.finalConsigneeList));
-    console.log('Length:', this.finalConsigneeList?.length);
-    console.log('First item:', this.finalConsigneeList?.[0]);
-    console.log('======================');
-  }
-  testShipperList() {
-    console.log('=== TEST SHIPPER LIST ===');
-    console.log('Type:', typeof this.finalShipperList);
-    console.log('Is Array:', Array.isArray(this.finalShipperList));
-    console.log('Length:', this.finalShipperList?.length);
-    console.log('First item:', this.finalShipperList?.[0]);
-    console.log('======================');
-  }
+
 
 
   private handleTextVoiceInput(transcript: string): void {
@@ -4426,7 +4409,6 @@ private getRequiredCargoFields(): string[] {
 
     if (!routeGroup) return;
 
-    console.log('🎯 Route voice focus:', fieldName);
 
     // OPEN DROPDOWN
     setTimeout(() => {
@@ -4589,6 +4571,7 @@ private getRequiredCargoFields(): string[] {
       return [
         'CargoType',
         'CargoDescription',
+        'cbm',
         'Qty',
         'GrossWeight',
         'NetWeight',
@@ -4612,7 +4595,6 @@ private getRequiredCargoFields(): string[] {
       return;
     }
 
-    console.log('🎯 Cargo voice focus:', fieldName, 'Index:', this.currentCargoFieldIndex);
 
     // 🔔 INFORM USER WITH CLEAR MESSAGE
     const fieldLabels: Record<string, string> = {
@@ -4736,7 +4718,6 @@ private getRequiredCargoFields(): string[] {
 
     const spoken = transcript.toLowerCase().trim();
 
-    console.log('🎤 Cargo voice input:', fieldName, '->', spoken);
 
     // 🔽 DROPDOWNS
     if (this.isCargoDropdownField(fieldName)) {
@@ -4821,7 +4802,6 @@ private getRequiredCargoFields(): string[] {
       isCargoMode: this.isCargoVoiceMode
     };
 
-    console.log('💾 Voice state saved:', this.voiceResumeState);
   }
   stopVoiceGuide(): void {
     if (this.voiceRecognitionService.isContinuous) {
@@ -4829,7 +4809,6 @@ private getRequiredCargoFields(): string[] {
       this.isListening = false;
       this.spokenText = '';
       this.currentFieldName = '';
-      console.log('🎤 Voice guide stopped');
     }
   }
 

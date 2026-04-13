@@ -2119,7 +2119,6 @@ private loadMasterJobDetails(masterJobSid: number): void {
     // CRITICAL FIX: Reset isPatching flag AFTER a longer delay to ensure all patching completes
     setTimeout(() => {
       this.isPatching = false;
-      console.log('✅ isPatching reset to false - calculations now enabled');
     }, 1000); // Increased from 100ms to 1000ms
   }
 }
@@ -4879,17 +4878,7 @@ ${this.userData['userName']}`;
     const allMilestones = this.milestoneComponent.allMilestones || [];
     const draftMilestoneId = allMilestones.find(m => m.MilestoneCode === "Draft")?.MilestoneMasterSid;
     const existingMilestone = this.milestoneResult.find(m => m.MilestoneMasterSid === draftMilestoneId);
-    console.log("AutoInsert Or Not", {
-      ImportOrExport: this.selectedDepartment?.ExportImport,
-      validDepartment,
-      currentJobType,
-      validJobType,
-      allMilestones,
-      tabValue: this.milestoneResult,
-      existingMilestone,
-      validMilestone: existingMilestone ? false : true,
-      finalDecision: validDepartment && validJobType && !existingMilestone
-    })
+    
 
     this.hblModalRef.componentInstance.autoInsertMilestone = validDepartment && validJobType && !existingMilestone;
 
@@ -4904,11 +4893,9 @@ ${this.userData['userName']}`;
       createdBy: this.userData?.userEmail,
       Remarks: `Draft BL has been sent on ${(new Date().toISOString()).split('T')[0]}`
     };
-    console.log("Milestone Payload", milestonePayload);
     this.hblModalRef.componentInstance.milestonePayload = milestonePayload;
 
     this.hblModalRef.componentInstance.reloadMilestone.subscribe(() => {
-      console.log("Reloading milestone...");
       this.milestoneComponent.loadShipmentMilestones(this.housejobData?.ShipmentNo);
     });
 
