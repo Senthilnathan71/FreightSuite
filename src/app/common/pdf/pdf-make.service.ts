@@ -24,6 +24,7 @@ import {
   VendorInvoicePdfData,
   VendorCreditNotePdfData,
   JobCardPdfData,
+  MasterJobCardPdfData,
   ShipmentReportPdfData,
   CargoArrivalPdfData,
   DeliveryOrderPdfData,
@@ -59,6 +60,10 @@ import {
   generateJobCardDocument,
   transformJobCardApiData
 } from './generators/job-card-pdf.generator';
+import {
+  generateMasterJobCardDocument,
+  transformMasterJobCardApiData
+} from './generators/master-job-card-pdf.generator';
 import {
   generateCargoArrivalDocument,
   transformCargoArrivalApiData
@@ -862,6 +867,61 @@ export class PdfMakeService {
   ): Promise<Blob> {
     const pdfData = transformJobCardApiData(apiData, company, branch, userData, logo, options);
     return this.generateJobCardBlob(pdfData);
+  }
+
+  // ==================== Master Job Card ====================
+
+  generateMasterJobCard(data: MasterJobCardPdfData): void {
+    const docDefinition = generateMasterJobCardDocument(data);
+    const filename = `Master_Job_Card_${data.jobInfo?.jobNo || 'Report'}.pdf`;
+    this.download(docDefinition, filename);
+  }
+
+  async generateMasterJobCardBlob(data: MasterJobCardPdfData): Promise<Blob> {
+    const docDefinition = generateMasterJobCardDocument(data);
+    return this.getBlob(docDefinition);
+  }
+
+  generateMasterJobCardFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    options?: {
+      containerTypeList?: any[];
+      currencyList?: any[];
+      chargeList?: any[];
+      profitSummary?: any[];
+      salesmenList?: any[];
+      uomList?: any[];
+      portList?: any[];
+      selectedFCLLCL?: string;
+    }
+  ): void {
+    const pdfData = transformMasterJobCardApiData(apiData, company, branch, userData, logo, options);
+    this.generateMasterJobCard(pdfData);
+  }
+
+  async generateMasterJobCardBlobFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    options?: {
+      containerTypeList?: any[];
+      currencyList?: any[];
+      chargeList?: any[];
+      profitSummary?: any[];
+      salesmenList?: any[];
+      uomList?: any[];
+      portList?: any[];
+      selectedFCLLCL?: string;
+    }
+  ): Promise<Blob> {
+    const pdfData = transformMasterJobCardApiData(apiData, company, branch, userData, logo, options);
+    return this.generateMasterJobCardBlob(pdfData);
   }
 
   // ==================== Cargo Arrival ====================

@@ -576,7 +576,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'ledger-report-currenecy',
-        title: 'Ledger Currenecy Report',
+        title: 'Ledger Currency Report',
         component: LedgarCurrenecyComponent,
         filenameTemplate: 'Ledger_Currenecy_Report_{date}',
         module: 'accounts-report',
@@ -587,7 +587,7 @@ export class ReportRegistryService {
         emailBodyTemplate: `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
             <p>Dear Sir/Madam,</p>
-            <p>Please find attached the <strong> Ledger Currenecy Report</strong></strong></p>
+            <p>Please find attached the <strong> Ledger Currency Report</strong></strong></p>
             <p>Best regards,</p>
           </div>
         `,
@@ -596,7 +596,7 @@ export class ReportRegistryService {
       });
 
     } catch (error) {
-      console.warn(' Ledger Currenecy Report component not yet created:', error);
+      console.warn(' Ledger Currency Report component not yet created:', error);
     }
 
     // Balance Sheet Report

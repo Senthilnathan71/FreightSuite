@@ -58,10 +58,19 @@
     console.log(data, 'generateInvoiceDocument');
     const chargesCount = data.charges?.length || 0;
     const shouldBreakPageForTerms = chargesCount > 20;
+    const printData = (data as any).invoicePrintData;
+    const taxConfig = (data.taxDisplayConfig as any) || {};
+    const isIndiaInvoice = !taxConfig.showVAT;
     const logoHeaderHeight = INVOICE_LOGO_HEIGHT_PT;
     const baseTopMargin = 150;
     const extraTopMarginForLogo = Math.max(0, logoHeaderHeight - 55);
-    const dynamicTopMargin = baseTopMargin + extraTopMarginForLogo;
+    const extraTopMarginForIndiaFields =
+      isIndiaInvoice
+        ? (printData?.GSTCode ? 12 : 0) +
+          ((printData?.PAN || (data as any)?.companyPan) ? 12 : 0) +
+          ((printData?.IRNNumber || data.invoice?.irnNumber) ? 14 : 0)
+        : 0;
+    const dynamicTopMargin = baseTopMargin + extraTopMarginForLogo + extraTopMarginForIndiaFields;
     const configuredMargins = data.config?.pageMargins as number[] | undefined;
     const resolvedPageMargins = configuredMargins
       ? [
@@ -161,6 +170,8 @@
     const company = data.company;
     const branch = data.branch;
     const logo = data.logo;
+    const taxConfig = (data.taxDisplayConfig as any) || {};
+    const isIndiaInvoice = !taxConfig.showVAT;
     const PAGE_LEFT = -10;
     const PAGE_RIGHT = 565;
 
@@ -213,10 +224,10 @@
       });
     }
 
-    const vatNo = data.companyPan;
-    if (vatNo) {
+    const registrationNo = data.companyPan;
+    if (registrationNo) {
       companyInfoStack.push({
-        text: `VAT No : ${vatNo}`,
+        text: `${isIndiaInvoice ? 'GST No' : 'VAT No'} : ${registrationNo}`,
         style: 'addressText',
         alignment: 'right'
       });
@@ -253,14 +264,32 @@
   function buildInvoiceTitle(data: InvoicePdfData): any {
     const title = data.invoiceTitle ||
       (data.invoice?.postStatus === 'P' ? 'TAX INVOICE' : 'TAX INVOICE DRAFT');
+    const printData = (data as any).invoicePrintData;
+    const isIndiaInvoice = !(data.taxDisplayConfig as any)?.showVAT;
+    const gstCode = printData?.GSTCode || data.companyGstCode || '';
 
     return {
-      text: title,
-      style: 'Tax Invoice',
-      alignment: 'center',
-      bold: true,
-      fontSize: 12,
-      margin: [0, 2, 0, 7]
+      stack: [
+        {
+          text: title,
+          style: 'Tax Invoice',
+          alignment: 'center',
+          bold: true,
+          fontSize: 12,
+          margin: [0, 2, 0, 2]
+        },
+        ...(isIndiaInvoice && gstCode
+          ? [{
+              text: [
+                { text: 'GST Code : ', bold: true },
+                { text: gstCode }
+              ],
+              alignment: 'center',
+              fontSize: 9,
+              margin: [0, 0, 0, 5]
+            }]
+          : [])
+      ]
     };
   }
 
@@ -270,6 +299,8 @@
 function buildInvoiceInfo(data: InvoicePdfData): any {
   const invoice = data.invoice;
   const printData = (data as any).invoicePrintData;
+  const taxConfig = (data.taxDisplayConfig as any) || {};
+  const isIndiaInvoice = !taxConfig.showVAT;
 
   const PAGE_LEFT = -10;
   const PAGE_RIGHT = 565;
@@ -303,6 +334,17 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
     });
   }
 
+  if (isIndiaInvoice && (printData?.PAN || (data as any)?.companyPan)) {
+    leftStack.push({
+      columns: [
+        { text: 'PAN', width: 28, style: 'labelBold' },
+        { text: ':', width: COLON_WIDTH },
+        { text: printData?.PAN || (data as any)?.companyPan || '', width: '*' }
+      ],
+      margin: [0, 0, 0, 0]
+    });
+  }
+
   // -----------------------------
   // Right side - Invoice Details
   // -----------------------------
@@ -333,21 +375,21 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
     margin: [0, 0, 0, 5]
   });
 
-  // VAT No
+  // GST/VAT No
   rightStack.push({
     columns: [
-      { text: 'VAT No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
+      { text: isIndiaInvoice ? 'GST No.' : 'VAT No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
       { text: ':', width: COLON_WIDTH },
       { text: printData?.GST_VAT || invoice?.customerGstVat || '', width: '*' }
     ],
     margin: [0, 0, 0, 7]
   });
 
-  // IRN Number (Optional)
-  if (printData?.IRNNumber || invoice?.irnNumber) {
+  // IRN Number (India only) - show the label even when the value is empty
+  if (isIndiaInvoice) {
     rightStack.push({
       columns: [
-        { text: 'IRN Number', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
+        { text: 'IRN No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
         { text: ':', width: COLON_WIDTH },
         { text: printData?.IRNNumber || invoice?.irnNumber || '', width: '*' }
       ],
@@ -553,12 +595,15 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
     const printData = (data as any).invoicePrintData;
     const voucherDetails = printData?.voucherDetails || [];
 
-    const taxConfig = data.taxDisplayConfig || {
+    const taxConfig = (data.taxDisplayConfig as any) || {
       showCGST: false,
       showSGST: false,
+      showUGST: false,
       showIGST: false,
       showVAT: false
     };
+    const isIndiaInvoice = !taxConfig.showVAT;
+    const showHsnSac = isIndiaInvoice;
 
     const localCurrency = data.localCurrency || 'AED';
     const invoiceCurr = data.invoice?.currencyCode;
@@ -566,23 +611,35 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
 
     const displayDetails = voucherDetails.length > 0 ? voucherDetails : charges;
     if (!displayDetails.length) return { text: '' };
+    const compactBorderedLayout = {
+      hLineWidth: () => 1,
+      vLineWidth: () => 1,
+      hLineColor: () => '#000',
+      vLineColor: () => '#000',
+      paddingLeft: () => 1,
+      paddingRight: () => 1,
+      paddingTop: () => 1,
+      paddingBottom: () => 1
+    };
 
     /* ---------------- COLUMN COUNT ---------------- */
     const totalColumns =
       7 +
+      (showHsnSac ? 1 : 0) +
       (taxConfig.showCGST ? 2 : 0) +
       (taxConfig.showSGST ? 2 : 0) +
+      (taxConfig.showUGST ? 2 : 0) +
       (taxConfig.showIGST ? 2 : 0) +
       (taxConfig.showVAT ? 2 : 0) +
       (invoiceCurr && invoiceCurr !== localCurrency ? 1 : 0);
 
-    const baseFontSize = totalColumns > 8 ? 9 : 12;
-    const headerFontSize = baseFontSize;
+    const compactMode = totalColumns >= 12;
 
     /* ---------------- HEADER ---------------- */
     const headerRow: any[] = [
       { text: 'S.No.', style: 'tableHeaderSmall', alignment: 'center' },
       { text: 'Particulars', style: 'tableHeaderSmall',alignment:'center'},
+      ...(showHsnSac ? [{ text: 'HSN/SAC', style: 'tableHeaderSmall', alignment: 'center' }] : []),
       { text: 'Curr.', style: 'tableHeaderSmall', alignment: 'center' },
       { text: 'No. of Unit', style: 'tableHeaderSmall', alignment: 'center' },
       { text: 'Rate', style: 'tableHeaderSmall', alignment: 'center' },
@@ -601,6 +658,13 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
       headerRow.push(
         { text: 'SGST %', style: 'tableHeaderSmall', alignment: 'right' },
         { text: 'SGST Amt', style: 'tableHeaderSmall', alignment: 'right' }
+      );
+    }
+
+    if (taxConfig.showUGST) {
+      headerRow.push(
+        { text: 'UGST %', style: 'tableHeaderSmall', alignment: 'right' },
+        { text: 'UGST Amt', style: 'tableHeaderSmall', alignment: 'right' }
       );
     }
 
@@ -637,6 +701,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
       const row: any[] = [
         { text: detail.Sno || index + 1, style: 'tableCellSmall', alignment: 'center' },
         { text: detail.ChargeDescription || detail.chargeName || '', style: 'tableCellSmall' , noWrap : false},
+        ...(showHsnSac ? [{ text: detail.HSSACCode || detail.hsnSacCode || '', style: 'tableCellSmall', alignment: 'center' }] : []),
         { text: detail.CurrencyCode || detail.currencyCode || '', style: 'tableCellSmall', alignment: 'center' },
         { text: detail.NumberOfUnit || formatNumberWithCommas(detail.qty, 3), style: 'tableCellSmall', alignment: 'right' },
         { text: detail.Rate || formatNumberWithCommas(detail.rate, 3), style: 'tableCellSmall', alignment: 'right' },
@@ -655,6 +720,13 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
         row.push(
           { text: detail.sgstRate || formatNumberWithCommas(detail.sgstPercent, 2), style: 'tableCellSmall', alignment: 'right' },
           { text: detail.sgstAmt || formatNumberWithCommas(detail.sgstAmount, 2), style: 'tableCellSmall', alignment: 'right' }
+        );
+      }
+
+      if (taxConfig.showUGST) {
+        row.push(
+          { text: detail.ugstRate || formatNumberWithCommas(detail.ugstPercent, 2), style: 'tableCellSmall', alignment: 'right' },
+          { text: detail.ugstAmt || formatNumberWithCommas(detail.ugstAmount, 2), style: 'tableCellSmall', alignment: 'right' }
         );
       }
 
@@ -701,38 +773,50 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
     totalRow.push({ text: Number(grandTotal).toFixed(2), style: 'tableCellBoldSmall', alignment: 'right' });
 
     /* ---------------- WIDTHS (FIXED + SAFE) ---------------- */
-    const widths: (number | string)[] = [
-      18,    // S.No
-      '*',   // Particulars
-      22,    // Curr
-      40,    // Qty
-      36,    // Rate
-      36,    // ROE
-      46     // Taxable
-    ];
+    const widths: (number | string)[] = compactMode
+      ? [
+          16,    // S.No
+          '*',   // Particulars
+          ...(showHsnSac ? [32] : []),
+          20,    // Curr
+          34,    // Qty
+          32,    // Rate
+          34,    // ROE
+          42     // Taxable
+        ]
+      : [
+          18,    // S.No
+          '*',   // Particulars
+          ...(showHsnSac ? [36] : []),
+          22,    // Curr
+          40,    // Qty
+          36,    // Rate
+          36,    // ROE
+          46     // Taxable
+        ];
 
-    if (taxConfig.showCGST) widths.push(24, 38);
-    if (taxConfig.showSGST) widths.push(24, 38);
-    if (taxConfig.showIGST) widths.push(24, 38);
-    if (taxConfig.showVAT)  widths.push(24, 38);
+    if (taxConfig.showCGST) widths.push(...(compactMode ? [20, 30] : [24, 38]));
+    if (taxConfig.showSGST) widths.push(...(compactMode ? [20, 30] : [24, 38]));
+    if (taxConfig.showUGST) widths.push(...(compactMode ? [20, 30] : [24, 38]));
+    if (taxConfig.showIGST) widths.push(...(compactMode ? [20, 30] : [24, 38]));
+    if (taxConfig.showVAT)  widths.push(...(compactMode ? [20, 30] : [24, 38]));
 
-    widths.push(48); // Amt in Local Currency
+    widths.push(compactMode ? 38 : 48); // Amt in Local Currency
 
     if (invoiceCurr && invoiceCurr !== localCurrency) {
-      widths.push(48); // Amt in Party Currency
+      widths.push(compactMode ? 38 : 48); // Amt in Party Currency
     }
 
     /* ---------------- RETURN ---------------- */
     return {
-      width: 535,
       table: {
         headerRows: 1,
         widths,
         body: [headerRow, ...dataRows, totalRow]
       },
-      layout: PDF_TABLE_LAYOUTS.bordered,
-      margin: [0, 0, 0, 2],
-      style: { noWrap: false }
+      layout: compactMode ? compactBorderedLayout : PDF_TABLE_LAYOUTS.bordered,
+      margin: [-10, 0, -10, 2],
+      fontSize: compactMode ? 6.5 : undefined
     };
   }
 
@@ -1309,6 +1393,7 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
       taxDisplayConfig: options?.taxDisplayConfig || {
         showCGST: false,
         showSGST: false,
+        showUGST: false,
         showIGST: false,
         showVAT: true
       },

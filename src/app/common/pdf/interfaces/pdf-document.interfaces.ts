@@ -535,6 +535,101 @@ export interface JobCardPartyAmountRow {
 }
 
 // =====================
+// MASTER JOB CARD PDF DATA
+// =====================
+export interface MasterJobCardPdfData extends PdfDocumentBase {
+  reportTitle: string;
+  selectedFclLcl?: string;
+  parties: {
+    clientName?: string;
+    clientAddress?: string;
+    shipperName?: string;
+    shipperAddress?: string;
+    consigneeName?: string;
+    consigneeAddress?: string;
+    forwarderName?: string;
+    forwarderAddress?: string;
+  };
+  jobInfo: {
+    jobNo?: string;
+    houseNo?: string;
+    masterNo?: string;
+    pol?: string;
+    pod?: string;
+    fpd?: string;
+    serviceType?: string;
+    salesPerson?: string;
+    placeOfReceipt?: string;
+    placeOfDelivery?: string;
+    eta?: Date | string;
+    etd?: Date | string;
+    vesselOrVoyage?: string;
+    carrier?: string;
+    freightTerms?: string;
+  };
+  containers: MasterJobCardContainerRow[];
+  containerTotals: {
+    totalPackages: number;
+    totalGrossWeight: number;
+    totalVolume: number;
+    totalNetWeight: number;
+  };
+  profitSummary: MasterJobCardProfitRow[];
+  profitTotals: {
+    totalSales: number;
+    totalCost: number;
+    profit: number;
+  };
+  chargeRows: MasterJobCardChargeRow[];
+  chargeTotals: {
+    totalRevenueRate: number;
+    totalRevenueLocalAmount: number;
+    totalCostRate: number;
+    totalCostLocalAmount: number;
+  };
+  revenueByParty: MasterJobCardPartyAmountRow[];
+  expenseByParty: MasterJobCardPartyAmountRow[];
+  internalRemarks?: string;
+}
+
+export interface MasterJobCardContainerRow {
+  containerNo?: string;
+  containerType?: string;
+  commodityDescription?: string;
+  noOfPackage?: number;
+  grossWeight?: number;
+  volume?: number;
+  netWeight?: number;
+}
+
+export interface MasterJobCardProfitRow {
+  chargeName?: string;
+  totalSales?: number;
+  totalCost?: number;
+  profit?: number;
+}
+
+export interface MasterJobCardChargeRow {
+  screen?: string;
+  chargeName?: string;
+  unit?: string;
+  revenueCurrency?: string;
+  revenueExchangeRate?: number;
+  revenueRate?: number;
+  revenueLocalAmount?: number;
+  costCurrency?: string;
+  costExchangeRate?: number;
+  costRate?: number;
+  costLocalAmount?: number;
+}
+
+export interface MasterJobCardPartyAmountRow {
+  screen?: string;
+  party?: string;
+  amount?: number;
+}
+
+// =====================
 // CARGO ARRIVAL PDF DATA
 // =====================
 export interface CargoArrivalPdfData extends PdfDocumentBase {

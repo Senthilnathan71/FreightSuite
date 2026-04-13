@@ -78,7 +78,7 @@
                             [disabled]="isLoading">Release Letter</button> -->
                         <!-- <button class="text-dark" ngbDropdownItem (click)="reportreleaseOrder()"
                             [disabled]="isLoading">Release Order</button> -->
-                            <button class="text-dark" ngbDropdownItem (click)="reportjobCard()"
+                            <button *ngIf="mps.canPrint('Job Card', 'Print')"  class="text-dark" ngbDropdownItem (click)="reportjobCard()"
                             [disabled]="isLoading">Job Card</button>
                             <!-- <button class="text-dark" ngbDropdownItem (click)="reportPackingList()">Packing List
                             </button> -->
@@ -88,7 +88,7 @@
                             <button *ngIf="shouldShowMasterPrintOption('MBL Draft')" class="text-dark" ngbDropdownItem (click)="reportMBLBill('MBLDraft')">MBL Draft</button>
                             <button *ngIf="mps.canPrint('CFS Outturn', 'Print')" class="text-dark" ngbDropdownItem (click)="reportCFSoutturn()">CFS Outturn</button>
                             <button *ngIf="shouldShowMasterPrintOption('All HBL Draft')"  class="text-dark" ngbDropdownItem (click)="reportHBLBill()">All HBL Draft</button>
-                            <button *ngIf="mps.canPrint('All HBL','Print')" class="text-dark" ngbDropdownItem (click)="reportHBL()">All HBL</button>
+                            <button *ngIf="shouldShowMasterPrintOption('All HBL')" class="text-dark" ngbDropdownItem (click)="reportHBL()">All HBL</button>
                             <button *ngIf="shouldShowMasterPrintOption('Loading Plan')" class="text-dark" ngbDropdownItem (click)="reportLoadingPlan()">Loading Plan</button>
                     </div>
                 </div>

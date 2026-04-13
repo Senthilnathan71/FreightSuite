@@ -19,12 +19,13 @@
 
 
 <div class="modal-body">
-    <div id="printContent" class="p-1">
-        <div
-            style="width:280mm; max-height:400mm; height:auto; margin:10px; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000;  page-break-after:always;">
+    <div #jobCardContainer
+        style="width:280mm; min-height:400mm; height:auto; margin:10px; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000;  page-break-after:always;">
 
-            <!-- Company Info -->
-            <app-print-header></app-print-header>
+        <!-- Company Info -->
+        <app-print-header></app-print-header>
+
+        <div #contentArea>
 
 
             <h4 style="
@@ -183,6 +184,7 @@
             </div>
 
             <!-- Containers Table -->
+            @if(selectedFCLLCL !== "AIR"){
             <div style="overflow-x:auto; margin-top:5px;">
                 <table
                     style="width:100%; border-collapse:collapse;  border-bottom:1px solid black;border-left: 1px solid black; border-right: 1px solid black;">
@@ -254,6 +256,8 @@
                     </tfoot>
                 </table>
             </div>
+            }
+
 
             <!-- Profit Summary Table -->
             <div style="overflow-x:auto; margin-top:5px;">
@@ -353,7 +357,7 @@
 
                         <tr *ngFor="let item of masterJobData?.costRevenueCharges" style="white-space: nowrap;">
                             <td style="border:1px solid black; padding:4px 8px; font-weight:bolder;">
-                                Master Job
+                                Master
                             </td>
                             <td style="border:1px solid black; padding:2px 8px;">{{ getChargeName(item.ChargeMasterSid)
                                 }}</td>
@@ -384,7 +388,7 @@
                             <tr *ngFor="let item of house?.costRevenueCharges">
                                 <td
                                     style="border:1px solid black; padding:4px 8px; font-weight:bolder;white-space: nowrap;">
-                                    House Job - {{ house?.HBLNo || house?.ShipmentNo || 'House Job' }}
+                                    House - {{ house?.HBLNo || house?.ShipmentNo || 'House Job' }}
                                 </td>
                                 <td style="border:1px solid black; padding:2px 8px;">{{
                                     getChargeName(item.ChargeMasterSid) }}</td>
@@ -462,7 +466,7 @@
 
                             <tr *ngFor="let row of getGroupedRevenueByParty(masterJobData?.costRevenueCharges)">
                                 <td style="border:1px solid #000; padding:4px 8px; font-weight:bolder; ">
-                                    Master Job
+                                    Master
                                 </td>
                                 <td
                                     style="border:1px solid #000; padding:4px 8px; text-align:left; box-sizing:border-box;font-weight: bolder;">
@@ -477,7 +481,7 @@
                                 <tr *ngFor="let row of getGroupedRevenueByParty(house?.costRevenueCharges)">
                                     <td
                                         style="border:1px solid #000; padding:4px 8px; font-weight:bolder; white-space: nowrap;">
-                                        House Job - {{ house?.HBLNo || house?.ShipmentNo || 'House Job' }}
+                                        House - {{ house?.HBLNo || house?.ShipmentNo || 'House Job' }}
                                     </td>
                                     <td
                                         style="border:1px solid #000; padding:4px 8px; text-align:left; box-sizing:border-box;font-weight: bolder;">
@@ -517,7 +521,7 @@
                         <tbody>
                             <tr *ngFor="let row of getGroupedExpenseByParty(masterJobData?.costRevenueCharges)">
                                 <td style="border:1px solid #000; padding:4px 8px; font-weight:bolder; ">
-                                    Master Job
+                                    Master
                                 </td>
                                 <td
                                     style="border:1px solid #000; padding:4px 8px; text-align:left; box-sizing:border-box;font-weight: bolder;">
@@ -532,7 +536,7 @@
                                 <tr *ngFor="let row of getGroupedExpenseByParty(house?.costRevenueCharges)">
                                     <td
                                         style="border:1px solid #000; padding:4px 8px; font-weight:bolder;white-space: nowrap;">
-                                        House Job - {{ house?.HBLNo || house?.ShipmentNo || 'House Job' }}
+                                        House - {{ house?.HBLNo || house?.ShipmentNo || 'House Job' }}
                                     </td>
                                     <td
                                         style="border:1px solid #000; padding:4px 8px; text-align:left; box-sizing:border-box;font-weight: bolder;">
@@ -553,11 +557,18 @@
                 <div style="width:135px;"><strong>Internal Remarks</strong></div>
                 <div>: {{ masterJobData?.others?.[0]?.InternalNote }}</div>
             </div>
-
-
-            <!-- Footer -->
-            <app-print-footer></app-print-footer>
         </div>
 
+        <!-- Footer -->
+        <footer [style.position]="isLargeData ? 'static' : 'absolute'" [style.bottom]="isLargeData ? null : '2mm'"
+            [style.left]="isLargeData ? null : '0'" [style.right]="isLargeData ? null : '0'"
+            [style.marginTop]="isLargeData ? '12px' : null"
+            style="text-align:center; font-size:10pt; padding:0.5rem; padding-top:10px;">
+            <div style="display:flex; justify-content:space-between; font-size:14px;">
+                <div><span style="font-weight:700;">Printed By :</span> {{ userData.userName }}</div>
+                <span>This document is computer-generated and does not require a signature.</span>
+                <div><span style="font-weight:700">Printed On : </span>{{ currentDate | formatDate }}</div>
+            </div>
+        </footer>
     </div>
 </div>
