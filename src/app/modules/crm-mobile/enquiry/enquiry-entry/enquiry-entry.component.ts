@@ -1458,7 +1458,6 @@ private parseFloatSafe(value: any): number {
   }
 
   onCustomerChange(event: any): void {
-    console.log("Event triggered");
     if (!event || event === null || event === undefined) {
       this.selectedCustomerName = '';
       this.cusBranchList = [];
@@ -1472,10 +1471,8 @@ private parseFloatSafe(value: any): number {
     this.rateRequestForm.get('Email').setValue('');
 
     const isCustomer = Boolean(this.rateRequestForm.get('LeadOrCustomer')?.value);
-    console.log(isCustomer);
     if (isCustomer) {
       const selectedCustomer = event;
-      console.log(selectedCustomer)
       this.selectedCustomerName = selectedCustomer?.CustomerName;
       this.rateRequestForm.get('customerName').setValue(this.selectedCustomerName)
       this.rateRequestForm.get('CustomerAddress').setValue(selectedCustomer?.Address);
@@ -1523,7 +1520,6 @@ private parseFloatSafe(value: any): number {
     this.leadService.getEnquiryById(id).subscribe((resp: any) => {
       if (resp.status) {
         this.enquiryData = resp.data;
-        console.log(this.enquiryData, "Enquiry Data")
         this.patchValues(resp.data);
         this.rateRequestData = resp.data;
       }
@@ -1576,7 +1572,6 @@ private parseFloatSafe(value: any): number {
         });
       }
     }
-    console.log(this.rateRequestForm.value)
     const selectedDept = this.departments.find(dept => dept.DepartmentMasterSid === response.DepartmentMasterSid);
     this.selectedDepartment = selectedDept?.departmentName || response.ShipmentType || '';
     this.selectedFCLLCL = this.resolveSelectedSegment(selectedDept);
@@ -2659,7 +2654,6 @@ private parseFloatSafe(value: any): number {
 
 
 
-      console.log(`IncoTerm "${selectedIncoTerm.IncoName}" selected, FreightPPCC set to: ${freightValue}`);
 
     }
 

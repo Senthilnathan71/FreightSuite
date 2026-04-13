@@ -3920,6 +3920,7 @@ onETDDateSelect(): void {
       });
       this.totalLengthOfAttachedBookings = this.attachedBookings.length;
       this.updateAttachedBookingsPagination();
+      this.markAsDirty();
       this.modalService.dismissAll();
       this.onSubmit();
     });
