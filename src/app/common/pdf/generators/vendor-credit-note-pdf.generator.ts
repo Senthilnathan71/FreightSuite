@@ -292,18 +292,40 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
   const invoice = data.invoice;
   const printData = (data as any).vendorCreditNoteData || (data as any).invoicePrintData;
   const isIndiaCompany = isIndianCompany(data);
+  const gstVatNo =
+    printData?.GSTVAT ||
+    printData?.GST_VAT ||
+    printData?.GSTNo ||
+    invoice?.customerGstVat ||
+    (data as any)?.companyVatNo ||
+    '';
   const irnNumber =
     printData?.IRNNumber ||
     printData?.IRNNo ||
+    printData?.IRN ||
     invoice?.irnNumber ||
     (invoice as any)?.IRNNumber ||
     (invoice as any)?.IRNNo ||
+    '';
+  const invoiceDate =
+    printData?.InvoiceDate ||
+    printData?.CreditDate ||
+    printData?.VoucherDate ||
+    invoice?.invoiceDate ||
     '';
 
   const PAGE_LEFT = -10;
   const PAGE_RIGHT = 565;
   const RIGHT_LABEL_WIDTH = 110;
   const COLON_WIDTH = 6;
+  const buildInfoRow = (label: string, value: string, marginBottom = 5) => ({
+    columns: [
+      { text: label, width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
+      { text: ':', width: COLON_WIDTH },
+      { text: value ?? '', width: '*' }
+    ],
+    margin: [0, 0, 0, marginBottom]
+  });
 
   // -----------------------------
   // Left side - Billed To
@@ -337,51 +359,25 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
   // -----------------------------
   const rightStack: any[] = [];
 
-  // Invoice No
-  rightStack.push({
-    columns: [
-      { text: 'Vendor Credit Note No', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-     { text: ':', width: COLON_WIDTH },
-      { text: printData?.InvoiceNo || invoice?.invoiceNo || '', width: '*' }
-    ],
-    margin: [0, 0, 0, 5]
-  });
+  rightStack.push(
+    buildInfoRow(
+      'Vendor Credit Note No',
+      printData?.InvoiceNo || printData?.CreditNo || invoice?.invoiceNo || ''
+    )
+  );
 
-  // Invoice Date
-  rightStack.push({
-    columns: [
-      { text: 'Vendor Credit Note Date', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-      { text: ':', width: COLON_WIDTH  },
-      {
-        text: printData?.InvoiceDate
-          ? formatDate(printData.InvoiceDate)
-          : formatDate(invoice?.invoiceDate),
-        width: '*'
-      }
-    ],
-    margin: [0, 0, 0, 5]
-  });
+  rightStack.push(
+    buildInfoRow(
+      'Vendor Credit Note Date',
+      invoiceDate ? formatDate(invoiceDate) : ''
+    )
+  );
 
-  // GST / VAT No
-  rightStack.push({
-    columns: [
-      { text: isIndiaCompany ? 'GST No.' : 'VAT No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-      { text: ':', width: COLON_WIDTH },
-      { text: printData?.GST_VAT || invoice?.customerGstVat || '', width: '*' }
-    ],
-    margin: [0, 0, 0, 7]
-  });
-
-  // IRN No. only for Indian company
   if (isIndiaCompany) {
-    rightStack.push({
-      columns: [
-        { text: 'IRN No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-        { text: ':', width: COLON_WIDTH },
-        { text: irnNumber, width: '*' }
-      ],
-      margin: [0, 0, 0, 7]
-    });
+    rightStack.push(buildInfoRow('GST No.', gstVatNo, 7));
+    rightStack.push(buildInfoRow('IRN No.', irnNumber, 7));
+  } else {
+    rightStack.push(buildInfoRow('VAT No.', gstVatNo, 7));
   }
 
   // 🔥 Remove bottom margin from the LAST row automatically
@@ -421,7 +417,7 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
         lineWidth: 0.8
       }
     ],
-    margin: [0, 5, 0, 5]
+    margin: [0, 2, 0, 0]
   };
 
   return {
@@ -504,7 +500,7 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
       { text: ':', width: COLON_WIDTH },
       { text: item.value, width: '*' }
     ],
-    margin: [5, 2, 0, 3]
+    margin: [5, 0, 0, 2]
   }));
 
   // -----------------------------
@@ -516,7 +512,7 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
       { text: ':', width: COLON_WIDTH },
       { text: item.value, width: '*' }
     ],
-    margin: [0, 2, 0, 2]
+    margin: [0, 0, 0, 2]
   }));
 
   // -----------------------------
@@ -557,7 +553,7 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
         ]
       },
       layout: PDF_TABLE_LAYOUTS.bordered,
-      margin: [0, 4, 0, 0]
+      margin: [0, 2, 0, 0]
     });
   }
 
@@ -583,15 +579,15 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
         table: {
           widths: ['50%', '50%'],
           body: [[
-            { stack: leftStack, margin: [5, 2, 5, 2] },
-            { stack: rightStack, margin: [5, 2, 5, 2] }
+            { stack: leftStack, margin: [5, 0, 5, 2] },
+            { stack: rightStack, margin: [5, 0, 5, 2] }
           ]]
         },
         layout: 'noBorders',
         margin: [0, 0, 0, 0]
       }
     ],
-    margin: [0, 0, 0, 0]
+    margin: [0, -4, 0, 0]
   };
 }
 

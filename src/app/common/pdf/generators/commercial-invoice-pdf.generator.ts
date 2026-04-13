@@ -6,10 +6,8 @@
 import { CommercialInvoicePdfData } from '../interfaces/pdf-document.interfaces';
 import { buildHeader } from '../builders/pdf-header.builder';
 import { buildDivider } from '../builders/pdf-section.builder';
-import { createFooterFunction } from '../builders/pdf-footer.builder';
 import { getPdfStyles, PDF_DEFAULT_CONFIG } from '../styles/pdf-styles';
 import { formatDate, formatNumber } from '../helpers/pdf-formatters';
-import { fontWeight } from 'html2canvas/dist/types/css/property-descriptors/font-weight';
 
 export function generateCommercialInvoiceDocument(data: CommercialInvoicePdfData): any {
   const baseStyles = getPdfStyles();
@@ -62,8 +60,7 @@ export function generateCommercialInvoiceDocument(data: CommercialInvoicePdfData
       },
       buildHeaderBlocks(data, lightBorderedLayout),
       buildPartyBlocks(data, lightBorderedLayout),
-      buildCargoSummary(data, lightBorderedLayout),
-      buildCargoTotals(data, lightBorderedLayout),
+      buildCargoSummaryBlock(data, lightBorderedLayout),
       buildCargoTable(data, lightBorderedLayout)
     ],
     footer: (currentPage: number, pageCount: number) => ({
@@ -161,43 +158,40 @@ function buildKeyRow(label: string, value: string): any {
   };
 }
 
-function buildCargoSummary(data: CommercialInvoicePdfData, layout: any): any {
+function buildCargoSummaryBlock(data: CommercialInvoicePdfData, layout: any): any {
   return {
     table: {
       widths: ['25%', '25%', '25%', '25%'],
-      body: [[
-        buildSummaryCell('Commodity Description', data.invoice?.commodityDescription || ''),
-        buildSummaryCell('Currency', data.invoice?.currency || ''),
-        buildSummaryCell('No. of Package', formatNumber(data.invoice?.noOfPackage, 0)),
-        buildSummaryCell('Gross Weight', formatNumber(data.invoice?.grossWeight, 3))
-      ]]
-    },
-    layout,
-    margin: [0, 0, 0, 0]
-  };
-}
-
-function buildCargoTotals(data: CommercialInvoicePdfData, layout: any): any {
-  return {
-    table: {
-      widths: ['25%', '25%', '25%', '25%'],
-      body: [[
-        buildSummaryCell('Net Weight', formatNumber(data.invoice?.netWeight, 3)),
-        buildSummaryCell('Volume', formatNumber(data.invoice?.volume, 3)),
-        buildSummaryCell('Good Value', formatNumber(data.invoice?.goodsValue, 2)),
-        buildSummaryCell('Total Value', data.invoice?.totalValue || '')
-      ]]
+      heights: [44, 44],
+      body: [
+        [
+          buildSummaryCell('Commodity Description', data.invoice?.commodityDescription || '', 'left'),
+          buildSummaryCell('Currency', data.invoice?.currency || '', 'center'),
+          buildSummaryCell('No. of Package', formatNumber(data.invoice?.noOfPackage, 0), 'right'),
+          buildSummaryCell('Gross Weight', formatNumber(data.invoice?.grossWeight, 3), 'right')
+        ],
+        [
+          buildSummaryCell('Net Weight', formatNumber(data.invoice?.netWeight, 3), 'right'),
+          buildSummaryCell('Volume', formatNumber(data.invoice?.volume, 3), 'right'),
+          buildSummaryCell('Goods Value', formatNumber(data.invoice?.goodsValue, 2), 'right'),
+          buildSummaryCell('Total Value', data.invoice?.totalValue || '', 'right')
+        ]
+      ]
     },
     layout,
     margin: [0, 0, 0, 6]
   };
 }
 
-function buildSummaryCell(label: string, value: string): any {
+function buildSummaryCell(
+  label: string,
+  value: string,
+  valueAlignment: 'left' | 'center' | 'right' = 'right'
+): any {
   return {
     stack: [
-      { text: label, style: 'labelBold', alignment: 'center', margin: [0, 0, 0, 3] },
-      { text: value || '', alignment: 'right' }
+      { text: label, style: 'labelBold', alignment: 'center', margin: [0, 4, 0, 10] },
+      { text: value || '', alignment: valueAlignment, margin: [0, 0, 2, 0] }
     ],
     margin: [4, 4, 4, 4]
   };
@@ -230,10 +224,10 @@ function buildCargoTable(data: CommercialInvoicePdfData, layout: any): any {
   const totalRow = [
     { text: 'Total', colSpan: 3, style: 'tableCell', alignment: 'right' },
     {}, {},
-    { text: formatNumber(totals.totalPkg, 0), style: 'tableCell', alignment: 'right' , fontWeight: 'bold' },
-    { text: formatNumber(totals.totalGrossWeight, 3), style: 'tableCell', alignment: 'right', fontWeight: 'bold'},
-    { text: formatNumber(totals.totalNetWeight, 3), style: 'tableCell', alignment: 'right', fontWeight: 'bold' },
-    { text: formatNumber(totals.totalVolume, 3), style: 'tableCell', alignment: 'right', fontWeight: 'bold' }
+    { text: formatNumber(totals.totalPkg, 0), style: 'tableCellBold', alignment: 'right' },
+    { text: formatNumber(totals.totalGrossWeight, 3), style: 'tableCellBold', alignment: 'right' },
+    { text: formatNumber(totals.totalNetWeight, 3), style: 'tableCellBold', alignment: 'right' },
+    { text: formatNumber(totals.totalVolume, 3), style: 'tableCellBold', alignment: 'right' }
   ];
 
   return {

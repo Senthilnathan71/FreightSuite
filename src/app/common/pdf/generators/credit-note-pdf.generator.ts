@@ -11,14 +11,35 @@ import { Bold } from 'angular-feather/icons';
 const INVOICE_LOGO_HEIGHT_PX = 110;
 const INVOICE_LOGO_HEIGHT_PT = INVOICE_LOGO_HEIGHT_PX * 0.75;
 
+function isIndianCompany(data: CreditNotePdfData): boolean {
+  const branchCountryCode = String(data.branch?.countryCode || '').trim().toLowerCase();
+  const companyCountryCode = String(data.company?.countryCode || '').trim().toLowerCase();
+  const gstCode = String(data.companyGstCode || '').trim();
+  const usesIndiaGst =
+    !!data.taxDisplayConfig?.showCGST ||
+    !!data.taxDisplayConfig?.showSGST ||
+    !!data.taxDisplayConfig?.showIGST;
+
+  return (
+    branchCountryCode === 'in' ||
+    companyCountryCode === 'in' ||
+    usesIndiaGst ||
+    gstCode.length >= 15
+  );
+}
+
 export function generateCreditNoteDocument(data: CreditNotePdfData): any {
   // console.log(data, 'generateInvoiceDocument');
   const chargesCount = data.charges?.length || 0;
   const shouldBreakPageForTerms = chargesCount > 20;
+  const isIndiaCompany = isIndianCompany(data);
+  const printData = (data as any).creditNotePrintData;
   const logoHeaderHeight = INVOICE_LOGO_HEIGHT_PT;
   const baseTopMargin = 150;
   const extraTopMarginForLogo = Math.max(0, logoHeaderHeight - 55);
-  const dynamicTopMargin = baseTopMargin + extraTopMarginForLogo;
+  const extraTopMarginForIndiaInfo = isIndiaCompany ? 24 : 0;
+  const extraTopMarginForGstCode = isIndiaCompany && (printData?.GSTCode || data.companyGstCode) ? 12 : 0;
+  const dynamicTopMargin = baseTopMargin + extraTopMarginForLogo + extraTopMarginForIndiaInfo + extraTopMarginForGstCode;
   const configuredMargins = data.config?.pageMargins as number[] | undefined;
   const resolvedPageMargins = configuredMargins
     ? [
@@ -118,6 +139,7 @@ function buildCreditNoteHeader(data: CreditNotePdfData): any {
   const logo = data.logo;
   const PAGE_LEFT = -10;
   const PAGE_RIGHT = 565;
+  const isIndiaCompany = isIndianCompany(data);
 
   const LOGO_HEIGHT = INVOICE_LOGO_HEIGHT_PT; // 110px in HTML ~= 82.5pt in pdfMake
 
@@ -168,10 +190,10 @@ function buildCreditNoteHeader(data: CreditNotePdfData): any {
     });
   }
 
-  const vatNo = data.companyPan;
-  if (vatNo) {
+  const companyTaxNo = data.companyPan;
+  if (companyTaxNo) {
     companyInfoStack.push({
-      text: `VAT No : ${vatNo}`,
+      text: `${isIndiaCompany ? 'GST No' : 'VAT No'} : ${companyTaxNo}`,
       style: 'addressText',
       alignment: 'right'
     });
@@ -206,14 +228,31 @@ function buildCreditNoteHeader(data: CreditNotePdfData): any {
   */
 function buildCreditNoteTitle(data: CreditNotePdfData): any {
   const title = data.creditnoteTitle || 'CREDIT NOTE';
+  const printData = (data as any).creditNotePrintData;
+  const isIndiaCompany = isIndianCompany(data);
+  const gstCode = printData?.GSTCode || data.companyGstCode || '';
 
   return {
-    text: title,
-    style: 'Credit Note',
-    alignment: 'center',
-    bold: true,
-    fontSize: 12,
-    margin: [0, 2, 0, 7]
+    stack: [
+      {
+        text: title,
+        style: 'Credit Note',
+        alignment: 'center',
+        bold: true,
+        fontSize: 12,
+        margin: [0, 2, 0, isIndiaCompany && gstCode ? 2 : 7]
+      },
+      ...(isIndiaCompany && gstCode
+        ? [{
+            text: [
+              { text: 'GST Code :', bold: true },
+              { text: ` ${gstCode}` }
+            ],
+            alignment: 'center',
+            margin: [0, 0, 0, 7]
+          }]
+        : [])
+    ]
   };
 }
 
@@ -222,129 +261,120 @@ function buildCreditNoteTitle(data: CreditNotePdfData): any {
  */
 function buildCreditNoteInfo(data: CreditNotePdfData): any {
   const credit = data.credit;
-  const printData = (data as any).creditNotePrintData; //need to change//
+  const printData = (data as any).creditNotePrintData;
+  const isIndiaCompany = isIndianCompany(data);
+
+  // ✅ FIX: Correct field name — printData uses 'GSTVAT' or 'GST_VAT'
+  const gstVatNo =
+    printData?.GSTVAT ||
+    printData?.GST_VAT ||
+    printData?.GSTNo ||
+    credit?.customerGstVat ||
+    (data as any)?.companyVatNo ||
+    '';
+
+  // ✅ FIX: All possible IRN field names
+  const irnNumber =
+    printData?.IRNNumber ||
+    printData?.IRNNo ||
+    printData?.IRN ||
+    credit?.irnNumber ||
+    (credit as any)?.IRNNumber ||
+    (credit as any)?.IRNNo ||
+    '';
+
+  // ✅ FIX: Correct date field — was using wrong printData field
+  const creditDate =
+    printData?.InvoiceDate ||
+    printData?.CreditDate ||
+    printData?.VoucherDate ||
+    credit?.invoiceDate ||
+    '';
+
   const PAGE_LEFT = -10;
   const PAGE_RIGHT = 565;
-  const RIGHT_LABEL_WIDTH = 89;
+  const RIGHT_LABEL_WIDTH = 110;
   const COLON_WIDTH = 6;
 
-  // Left side - Billed To
+  const buildInfoRow = (label: string, value: string, marginBottom = 5): any => ({
+    columns: [
+      { text: label, width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
+      { text: ':', width: COLON_WIDTH },
+      { text: value ?? '', width: '*' }   // ✅ FIX: null-safe value
+    ],
+    margin: [0, 0, 0, marginBottom]
+  });
+
+  // Left side
   const billedTo = printData?.BilledTo || credit?.customerName || '';
   const billingAddress = printData?.BillingAddress || credit?.customerAddress || '';
 
   const leftStack: any[] = [
-    {
-      text: 'Billed To',
-      style: 'labelBold',
-      margin: [0, 0, 0, 3]
-
-    },
-    {
-      text: billedTo,
-      margin: [0, 0, 0, 3],
-    }
+    { text: 'Billed To', style: 'labelBold', margin: [0, 0, 0, 3] },
+    { text: billedTo, margin: [0, 0, 0, 3] }
   ];
 
   if (billingAddress) {
-    leftStack.push({
-      text: billingAddress,
-      margin: [0, 0, 0, 3]
-    });
+    leftStack.push({ text: billingAddress, margin: [0, 0, 0, 3] });
   }
 
-  // Right side - Invoice details with spacing
+  // ✅ Right side — build rows one by one clearly
   const rightStack: any[] = [];
 
+  // Row 1: Credit No
+  rightStack.push(
+    buildInfoRow(
+      'Credit No',
+      printData?.InvoiceNo || printData?.CreditNo || credit?.invoiceNo || ''
+    )
+  );
 
-  // CreditNote No
-  rightStack.push({
-    columns: [
-      { text: 'Credit No', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-      { text: ':', width: COLON_WIDTH },
-      { text: printData?.InvoiceNo || credit?.invoiceNo || '', width: '*' }
-    ],
-    margin: [0, 0, 0, 5]
-  });
+  // Row 2: Credit Date  ✅ FIX: use creditDate variable (not inline)
+  rightStack.push(
+    buildInfoRow(
+      'Credit Date',
+      creditDate ? formatDate(creditDate) : ''
+    )
+  );
 
-  // CreditNote Date
-  rightStack.push({
-    columns: [
-      { text: 'Credit Date', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-      { text: ':', width: COLON_WIDTH },
-      {
-        text: printData?.InvoiceDate ? formatDate(printData.InvoiceDate) : formatDate(credit?.invoiceDate),
-        width: '*'
-      }
-    ],
-    margin: [0, 0, 0, 5]
-  });
-
-  // VAT No.
-  rightStack.push({
-    columns: [
-      { text: 'VAT No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-      { text: ':', width: COLON_WIDTH },
-      { text: printData?.GST_VAT || credit.customerGstVat || '', width: '*' }
-    ],
-    margin: [0, 0, 0, 7]
-  });
-
-  // IRN Number (Optional)
-  if (printData?.IRNNumber || credit?.irnNumber) {
-    rightStack.push({
-      columns: [
-        { text: 'IRN Number', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-        { text: ':', width: COLON_WIDTH },
-        { text: printData?.IRNNumber || credit?.irnNumber || '', width: '*' }
-      ],
-      margin: [0, 0, 0, 7]
-    });
+  // Row 3 & 4: GST/IRN — ONLY for Indian companies
+  if (isIndiaCompany) {
+    rightStack.push(buildInfoRow('GST No.', gstVatNo, 7));
+    rightStack.push(buildInfoRow('IRN No.', irnNumber, 7));
+  } else {
+    // Non-India: VAT No only
+    rightStack.push(buildInfoRow('VAT No.', gstVatNo, 7));
   }
 
-  // 🔥 Remove bottom margin from the LAST row automatically
+  // Remove bottom margin from last row
   if (rightStack.length > 0) {
     rightStack[rightStack.length - 1].margin = [0, 0, 0, 0];
   }
 
-  // Build two-column layout
   const twoColumnLayout = {
     columns: [
-      {
-        width: '50%',
-        stack: leftStack
-      },
-      {
-        width: '50%',
-        stack: rightStack
-      }
+      { width: '50%', stack: leftStack },
+      { width: '50%', stack: rightStack }
     ],
     columnGap: 0,
-    margin: [15, 0, 0, 0]
+    margin: [15, 4, 0, 0]
   };
 
-  // Bottom Line (No Extra Space)
   const bottomLine = {
     canvas: [{
       type: 'line',
-      x1: PAGE_LEFT,
-      y1: 0,
-      x2: PAGE_RIGHT,
-      y2: 0,
+      x1: PAGE_LEFT, y1: 0,
+      x2: PAGE_RIGHT, y2: 0,
       lineWidth: 1.5
     }],
-    margin: [0, 5, 0, 5]
+    margin: [0, 2, 0, 0]
   };
 
   return {
-    stack: [
-      twoColumnLayout,
-      bottomLine
-    ],
+    stack: [twoColumnLayout, bottomLine],
     margin: [0, 0, 0, 0]
   };
-
 }
-
 /**
   * Build shipment details - using creditPrintData
   */
@@ -354,7 +384,8 @@ function buildShipmentDetails(data: CreditNotePdfData): any {
   const cargo = data.cargoDetails;
   const isSeaMode = data.isSeaMode !== false;
 
-  const RIGHT_LABEL_WIDTH = 88;
+  const LEFT_LABEL_WIDTH = 88;
+  const RIGHT_LABEL_WIDTH = 110;
   const COLON_WIDTH = 5;
   // Left Column
   const leftItems: { label: string; value: string }[] = [];
@@ -448,11 +479,11 @@ function buildShipmentDetails(data: CreditNotePdfData): any {
   // Build stacks
   const leftStack = leftItems.map(item => ({
     columns: [
-      { text: item.label, width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
+      { text: item.label, width: LEFT_LABEL_WIDTH, style: 'labelBold' },
       { text: ':', width: COLON_WIDTH },
-      { text: item.value, width: '*' }
+      { text: item.value, width: '*', margin: [4, 0, 0, 0] }
     ],
-    margin: [10, 2, 0, 3]
+    margin: [10, 0, 0, 2]
   }));
 
 
@@ -460,9 +491,9 @@ function buildShipmentDetails(data: CreditNotePdfData): any {
     columns: [
       { text: item.label, width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
       { text: ':', width: COLON_WIDTH },
-      { text: item.value, width: '*' }
+      { text: item.value, width: '*', margin: [4, 0, 0, 0] }
     ],
-    margin: [0, 2, 0, 2]
+    margin: [0, 0, 0, 2]
   }));
 
   // Cargo table
@@ -501,7 +532,7 @@ function buildShipmentDetails(data: CreditNotePdfData): any {
         ]
       },
       layout: PDF_TABLE_LAYOUTS.bordered,
-      margin: [0, 4, 0, 0]
+      margin: [0, 2, 0, 0]
     });
   }
 
@@ -509,12 +540,12 @@ function buildShipmentDetails(data: CreditNotePdfData): any {
     table: {
       widths: ['50%', '50%'],
       body: [[
-        { stack: leftStack, margin: [5, 2, 5, 2] },
-        { stack: rightStack, margin: [5, 2, 5, 2] }
+        { stack: leftStack, margin: [5, 0, 5, 2] },
+        { stack: rightStack, margin: [5, 0, 5, 2] }
       ]]
     },
     layout: 'noBorders',
-    margin: [0, 0, 0, 0]
+    margin: [0, -4, 0, 0]
   };
 }
 
@@ -525,6 +556,7 @@ function buildChargesTable(data: CreditNotePdfData): any {
   const charges = data.charges || [];
   const printData = (data as any).creditNotePrintData; // need to change //
   const voucherDetails = printData?.voucherDetails || [];
+  const isIndiaCompany = isIndianCompany(data);
 
   const taxConfig = data.taxDisplayConfig || {
     showCGST: false,
@@ -543,6 +575,7 @@ function buildChargesTable(data: CreditNotePdfData): any {
   /* ---------------- COLUMN COUNT ---------------- */
   const totalColumns =
     7 +
+    (isIndiaCompany ? 1 : 0) +
     (taxConfig.showCGST ? 2 : 0) +
     (taxConfig.showSGST ? 2 : 0) +
     (taxConfig.showIGST ? 2 : 0) +
@@ -556,6 +589,7 @@ function buildChargesTable(data: CreditNotePdfData): any {
   const headerRow: any[] = [
     { text: 'S.No.', style: 'tableHeaderSmall', alignment: 'center' },
     { text: 'Particulars', style: 'tableHeaderSmall', alignment: 'center' },
+    ...(isIndiaCompany ? [{ text: 'HSN/SAC', style: 'tableHeaderSmall', alignment: 'center' }] : []),
     { text: 'Curr.', style: 'tableHeaderSmall', alignment: 'center' },
     { text: 'No. of Unit', style: 'tableHeaderSmall', alignment: 'center' },
     { text: 'Rate', style: 'tableHeaderSmall', alignment: 'center' },
@@ -610,6 +644,13 @@ function buildChargesTable(data: CreditNotePdfData): any {
     const row: any[] = [
       { text: detail.Sno || index + 1, style: 'tableCellSmall', alignment: 'center' },
       { text: detail.ChargeDescription || detail.chargeName || '', style: 'tableCellSmall', noWrap: false },
+      ...(isIndiaCompany
+        ? [{
+            text: detail.HSNCode || detail.HSNSAC || detail.hsnSacCode || '-',
+            style: 'tableCellSmall',
+            alignment: 'center'
+          }]
+        : []),
       { text: detail.CurrencyCode || detail.currencyCode || '', style: 'tableCellSmall', alignment: 'center' },
       { text: detail.NumberOfUnit || formatNumberWithCommas(detail.qty, 3), style: 'tableCellSmall', alignment: 'right' },
       { text: detail.Rate || formatNumberWithCommas(detail.rate, 3), style: 'tableCellSmall', alignment: 'right' },
@@ -677,6 +718,7 @@ function buildChargesTable(data: CreditNotePdfData): any {
   const widths: (number | string)[] = [
     18,    // S.No
     '*',   // Particulars
+    ...(isIndiaCompany ? [42] : []), // HSN/SAC
     22,    // Curr
     40,    // Qty
     36,    // Rate
@@ -697,14 +739,27 @@ function buildChargesTable(data: CreditNotePdfData): any {
 
   /* ---------------- RETURN ---------------- */
   return {
-    width: 535,
     table: {
       headerRows: 1,
       widths,
       body: [headerRow, ...dataRows, totalRow]
     },
-    layout: PDF_TABLE_LAYOUTS.bordered,
-    margin: [0, 0, 0, 2],
+    layout: {
+      hLineWidth: () => 1,
+      vLineWidth: (i: number, node: any) => {
+        const last = node.table.widths.length;
+        // Use the page border as the table's outer left/right edge.
+        if (i === 0 || i === last) return 0;
+        return 1;
+      },
+      hLineColor: () => '#000',
+      vLineColor: () => '#000',
+      paddingLeft: () => 4,
+      paddingRight: () => 4,
+      paddingTop: () => 3,
+      paddingBottom: () => 3
+    },
+    margin: [-10, 0, -10, 2],
     style: { noWrap: false }
   };
 }
@@ -1165,6 +1220,7 @@ export function transformCreditNoteApiData(
       addressLine1: company?.addressLine1 || company?.Address || '',
       addressLine2: company?.addressLine2 || '',
       city: company?.City || '',
+      countryCode: company?.countryMaster?.countryCode || company?.CountryCode || company?.countryCode || company?.country?.countryCode || '',
       postalCode: company?.postal_code || company?.ZipCode || '',
       phoneNumber: company?.phoneNumber || company?.Phone || ''
     },
@@ -1173,6 +1229,7 @@ export function transformCreditNoteApiData(
       addressLine1: branch?.addressLine1 || '',
       addressLine2: branch?.addressLine2 || '',
       cityName: branch?.cityMaster?.cityName || '',
+      countryCode: branch?.countryMaster?.countryCode || branch?.CountryCode || branch?.countryCode || branch?.country?.countryCode || '',
       postalCode: branch?.postalCode || '',
       phoneNumber: branch?.phoneNumber || '',
       cityMaster: branch?.cityMaster
