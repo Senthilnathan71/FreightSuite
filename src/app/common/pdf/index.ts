@@ -18,6 +18,7 @@ export { generateMasterJobDocument, transformMasterJobApiData } from './generato
 export { generateGenericReportDocument, GenericReportPdfData } from './generators/generic-report-pdf.generator';
 export { generateReceiptDocument, transformReceiptApiData } from './generators/receipt-pdf.generator';
 export { generatePaymentDocument, transformPaymentApiData } from './generators/payment-pdf.generator';
+export { generatePaymentRequestDocument, transformPaymentRequestApiData } from './generators/payment-request-pdf.generator';
 export { generateJournalVoucherDocument, transformJournalVoucherApiData } from './generators/journal-voucher-pdf.generator';
 export { generateReleaseLetterDocument, transformReleaseLetterApiData } from './generators/release-letter-pdf.generator';
 
