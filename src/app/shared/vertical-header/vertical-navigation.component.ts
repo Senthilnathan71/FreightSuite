@@ -807,7 +807,17 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
 
   navigateToDocument(result: DocumentSearchResult): void {
     this.clearDocSearch();
-    this.router.navigate([result.path]);
+    const [path, queryString] = result.path.split('?');
+    if (queryString) {
+      const queryParams: Record<string, string> = {};
+      queryString.split('&').forEach(param => {
+        const [key, value] = param.split('=');
+        queryParams[key] = value ?? 'true';
+      });
+      this.router.navigate([path], { queryParams });
+    } else {
+      this.router.navigate([path]);
+    }
   }
 
   clearDocSearch(): void {

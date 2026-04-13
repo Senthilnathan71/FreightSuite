@@ -1714,7 +1714,7 @@
           [class.selected]="routeSelectionModal.selectedRouteSid === route.QuoteRouteSid"
           (click)="routeSelectionModal.selectedRouteSid = route.QuoteRouteSid"
         >
-          <td><input type="radio" [checked]="routeSelectionModal.selectedRouteSid === route.QuoteRouteSid" (click)="$event.stopPropagation()"></td>
+          <td><input type="radio" name="routeSelection" [checked]="routeSelectionModal.selectedRouteSid === route.QuoteRouteSid" (click)="routeSelectionModal.selectedRouteSid = route.QuoteRouteSid"></td>
           <td>{{ route.POL || '—' }}</td>
           <td>{{ route.POD || '—' }}</td>
           <td>{{ route.departmentName || '—' }}</td>

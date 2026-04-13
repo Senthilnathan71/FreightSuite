@@ -221,7 +221,7 @@
                 <div class="custom-form-group custom-form-group-select-date w-100">
                   <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="voucherDate" ngbDatepicker
                     id="VoucherDate" #d1="ngbDatepicker" (click)="d1.toggle()" readonly formControlName="VoucherDate"
-                   [minDate]="fyMinDate" [maxDate]="fyMaxDate" [class.is-invalid]="isFieldInvalid('VoucherDate')" (dateSelect)="onVoucherDateChange()" />
+                   [minDate]="effectiveMinDate" [maxDate]="fyMaxDate" [class.is-invalid]="isFieldInvalid('VoucherDate')" (dateSelect)="onVoucherDateChange()" />
                   <label class="input-label" for="VoucherDate">
                     Voucher Date <span class="text-danger">*</span>
                   </label>
