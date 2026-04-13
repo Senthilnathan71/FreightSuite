@@ -1391,12 +1391,18 @@
                   <td>{{ quote.polCode || "—" }}</td>
                   <td>{{ quote.podCode || "—" }}</td>
                   <td>{{ quote.approvedBy || "—" }}</td>
-                  <td>
-                    <button
+                  <td class="action-cell">
+                    <!-- <button
                       class="action-btn followup"
                       (click)="navigateToQuote(quote.QuoteHeaderSid)"
                     >
                       Open
+                    </button> -->
+                    <button
+                      class="action-btn booking"
+                      (click)="convertQuoteToBooking(quote)"
+                    >
+                      Create Booking
                     </button>
                   </td>
                 </tr>
@@ -1680,5 +1686,45 @@
         </ng-container>
       </div>
     </ng-container>
+  </div>
+</div>
+
+<!-- Route Selection Modal -->
+<div class="route-modal-backdrop" *ngIf="routeSelectionModal.open" (click)="routeSelectionModal.open = false"></div>
+<div class="route-modal" *ngIf="routeSelectionModal.open">
+  <div class="route-modal-header">
+    <span>Select Route</span>
+    <button class="route-modal-close" (click)="routeSelectionModal.open = false">&times;</button>
+  </div>
+  <div class="route-modal-body">
+    <p class="route-modal-sub">Quote <strong>{{ routeSelectionModal.quote?.QuoteNumber }}</strong> has multiple routes. Select one to create the booking.</p>
+    <table class="route-modal-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>POL</th>
+          <th>POD</th>
+          <th>Department</th>
+          <th>Approved Carrier</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let route of routeSelectionModal.routes"
+          [class.selected]="routeSelectionModal.selectedRouteSid === route.QuoteRouteSid"
+          (click)="routeSelectionModal.selectedRouteSid = route.QuoteRouteSid"
+        >
+          <td><input type="radio" [checked]="routeSelectionModal.selectedRouteSid === route.QuoteRouteSid" (click)="$event.stopPropagation()"></td>
+          <td>{{ route.POL || '—' }}</td>
+          <td>{{ route.POD || '—' }}</td>
+          <td>{{ route.departmentName || '—' }}</td>
+          <td>{{ route.carrier || '—' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="route-modal-footer">
+    <button class="action-btn" (click)="routeSelectionModal.open = false">Cancel</button>
+    <button class="action-btn booking" (click)="confirmRouteSelection()" [disabled]="!routeSelectionModal.selectedRouteSid">Confirm</button>
   </div>
 </div>

@@ -249,6 +249,7 @@ export class PrintMasterListComponent extends BaseListComponent implements OnIni
             const { items, totalCount } = response.data;
             this.allItems = (items || []).map((item: any) => ({
                 ...item,
+                MenuName : item.MenuMaster?.MenuName || '',
                 StatusLabel: item.Status === 'A' ? 'Active' : 'Suspended'
             }));
             this.totalLengthOfCollection = totalCount || 0;

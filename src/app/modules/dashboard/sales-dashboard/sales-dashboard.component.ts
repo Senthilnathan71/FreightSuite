@@ -113,6 +113,19 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     9: true,
   };
 
+  routeSelectionModal: {
+    open: boolean;
+    quote: QuoteNoBooking | null;
+    routes: Array<{
+      QuoteRouteSid: number;
+      POL: string | null;
+      POD: string | null;
+      departmentName: string | null;
+      carrier: string | null;
+    }>;
+    selectedRouteSid: number | null;
+  } = { open: false, quote: null, routes: [], selectedRouteSid: null };
+
   searchTerms: Partial<Record<ListSection, string>> = {};
   sectionStates: Record<ListSection, SectionState<any>> = {
     1: this.createSectionState<LeadNoMeeting>(),
@@ -677,10 +690,77 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
       }
 
       const enqData = enquiryFetch.data;
-      this.leadService.clearQuotationData();
-      this.leadService.setQuotationData(enqData);
       this.spinner.hide();
-      this.router.navigate(['crm/quotation/entry']);
+      this.router.navigate(['crm/quotation/entry'], { state: { enquiryConversionData: enqData } });
+    } catch (error) {
+      console.error(error);
+      this.spinner.hide();
+    }
+  }
+
+  async convertQuoteToBooking(quote: QuoteNoBooking): Promise<void> {
+    this.spinner.show();
+    try {
+      const result = await firstValueFrom(
+        this.salesDashboardService.getQuoteDataForBookingConversion({
+          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+          BranchMasterSid: this.currentBranch?.BranchMasterSid,
+          QuoteHeaderSid: quote.QuoteHeaderSid,
+        })
+      );
+      this.spinner.hide();
+
+      if (!result.status) {
+        this.appSettings.showError(result.message);
+        return;
+      }
+
+      if (result.data?.requiresSelection) {
+        this.routeSelectionModal = {
+          open: true,
+          quote,
+          routes: result.data.routes,
+          selectedRouteSid: null,
+        };
+        return;
+      }
+
+      this.router.navigate(['operation/booking/entry'], {
+        state: { dataFromQuotation: result.data, isNewBooking: true },
+      });
+    } catch (error) {
+      console.error(error);
+      this.spinner.hide();
+    }
+  }
+
+  async confirmRouteSelection(): Promise<void> {
+    if (!this.routeSelectionModal.selectedRouteSid) {
+      this.appSettings.showError('Please select a route');
+      return;
+    }
+    const { quote, selectedRouteSid } = this.routeSelectionModal;
+    this.routeSelectionModal.open = false;
+    this.spinner.show();
+    try {
+      const result = await firstValueFrom(
+        this.salesDashboardService.getQuoteDataForBookingConversion({
+          CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+          BranchMasterSid: this.currentBranch?.BranchMasterSid,
+          QuoteHeaderSid: quote.QuoteHeaderSid,
+          QuoteRouteSid: selectedRouteSid,
+        })
+      );
+      this.spinner.hide();
+
+      if (!result.status) {
+        this.appSettings.showError(result.message);
+        return;
+      }
+
+      this.router.navigate(['operation/booking/entry'], {
+        state: { dataFromQuotation: result.data, isNewBooking: true },
+      });
     } catch (error) {
       console.error(error);
       this.spinner.hide();

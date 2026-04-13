@@ -399,19 +399,32 @@ dataFromEnqPage:any;
      this.canUserLockRates = false;
   });
   
-    const dashboardQuoteData = (window.history.state as any)?.dashboardQuoteData;
-    if (dashboardQuoteData) {
+    const historyState = window.history.state as any;
+    const dashboardQuoteData = historyState?.dashboardQuoteData;
+    const enquiryConversionData = historyState?.enquiryConversionData;
+    if (dashboardQuoteData || enquiryConversionData) {
       window.history.replaceState({}, '', window.location.href);
     }
 
     this.loadAllLookUps().subscribe(() => {
       this.dataFromEnqPage = this.leadService.getQuotationData();
       this.leadService.clearQuotationData();
-      if (this.dataFromEnqPage?.rateRequest) {
-        
-        this.patchEnqPageValues(this.dataFromEnqPage);
-        this.minEffDate = this.todayDate;
-        this.f['status']?.disable();
+      if (enquiryConversionData?.rateRequest) {
+        this.spinner.show();
+        setTimeout(() => {
+          this.patchEnqPageValues(enquiryConversionData);
+          this.minEffDate = this.todayDate;
+          this.f['status']?.disable();
+          this.spinner.hide();
+        });
+      } else if (this.dataFromEnqPage?.rateRequest) {
+        this.spinner.show();
+        setTimeout(() => {
+          this.patchEnqPageValues(this.dataFromEnqPage);
+          this.minEffDate = this.todayDate;
+          this.f['status']?.disable();
+          this.spinner.hide();
+        });
       } else if (dashboardQuoteData) {
         this.patchDashboardValues(dashboardQuoteData);
         this.minEffDate = this.todayDate;

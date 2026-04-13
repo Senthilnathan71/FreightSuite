@@ -69,6 +69,18 @@ export class SalesDashboardService {
     return params;
   }
 
+  getQuoteDataForBookingConversion(payload: {
+    CompanyMasterSid: number,
+    BranchMasterSid: number,
+    QuoteHeaderSid: number,
+    QuoteRouteSid?: number
+  }): Observable<{ data: any; status: boolean; message: string }> {
+    return this.http.post<{ data: any; status: boolean; message: string }>(
+      `ff-quotation/get-quote-for-booking`,
+      payload,
+    );
+  }
+
   getEnquiryDataForQuotationConversion(payload : {
     CompanyMasterSid: number,
     BranchMasterSid: number,

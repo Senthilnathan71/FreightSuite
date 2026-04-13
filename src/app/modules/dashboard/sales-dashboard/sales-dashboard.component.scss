@@ -1565,6 +1565,112 @@ tr:hover td { background: rgba($brand, 0.03); }
   padding: 14px 0;
 }
 
+// ── Action cell ──
+.action-cell {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+// ── Route Selection Modal ──
+.route-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1040;
+}
+
+.route-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1050;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  width: min(680px, 94vw);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  &-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: $brand;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  &-close {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 4px;
+    opacity: 0.8;
+    &:hover { opacity: 1; }
+  }
+
+  &-body {
+    padding: 20px;
+    overflow-y: auto;
+    max-height: 60vh;
+  }
+
+  &-sub {
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 14px;
+  }
+
+  &-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+
+    th {
+      background: #f0f4f8;
+      padding: 8px 10px;
+      text-align: left;
+      font-weight: 700;
+      color: #334155;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    td {
+      padding: 10px 10px;
+      border-bottom: 1px solid #e2e8f0;
+      color: #1e293b;
+      cursor: pointer;
+    }
+
+    tr:hover td { background: rgba($brand, 0.05); }
+    tr.selected td { background: rgba($brand, 0.1); font-weight: 600; }
+  }
+
+  &-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 14px 20px;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+
+    .action-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+  }
+}
+
 // ── Clickable Rows ──
 .clickable-row {
   cursor: pointer;
