@@ -15,6 +15,7 @@ import { CommonService } from 'src/app/common/common.service';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 
@@ -71,7 +72,18 @@ export class MergeBookingComponent implements OnInit {
     private commonService: CommonService,
     private masterService: MasterService,
      private modalService: NgbModal,
+    private emailTriggerService: EmailTriggerService,
   ) { }
+
+  sendManualMail(): void {
+    this.emailTriggerService.triggerManualEmails({
+      companyId: this.currentCompany?.CompanyMasterSid,
+      branchId: this.currentBranch?.BranchMasterSid,
+      menuMasterSid: Number(sessionStorage.getItem('currentMenuId')),
+      action: 'UPDATE',
+      context: {}
+    });
+  }
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));

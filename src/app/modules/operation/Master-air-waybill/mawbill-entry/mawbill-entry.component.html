@@ -77,7 +77,12 @@
                 </button>
             </div>
 
-
+            <div class="action-group" *ngIf="isEditMode">
+                <button class="btn btn-info btn-sm text-nowrap" (click)="sendManualMail()">
+                    <i class="fas fa-envelope me-1"></i>
+                    <span>Send Mail</span>
+                </button>
+            </div>
 
             <div class="action-group">
                 <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"

@@ -5,6 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { OperationService } from '../../operation.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 
 @Component({
   selector: 'app-shipment-instruction',
@@ -23,8 +24,19 @@ export class ShipmentInstructionComponent {
     private operationService: OperationService,
     private masterService: MasterService,
     private appSettingService: AppSettingsService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private emailTriggerService: EmailTriggerService,
   ) { }
+
+  sendManualMail(): void {
+    this.emailTriggerService.triggerManualEmails({
+      companyId: this.currentCompany?.CompanyMasterSid,
+      branchId: this.currentBranch?.BranchMasterSid,
+      menuMasterSid: Number(sessionStorage.getItem('currentMenuId')),
+      action: 'UPDATE',
+      context: {}
+    });
+  }
   bookingNumber: string
   bookingResponse: any
   isEditMode = false;

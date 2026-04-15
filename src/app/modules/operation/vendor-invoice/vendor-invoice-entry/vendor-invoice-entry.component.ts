@@ -28,6 +28,7 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { DocumentVendorInvoiceEntryComponent } from '../document-vendorinvoice/document-vendorinvoice.component';
 import { ExtractedInvoice } from '../../ocr.service';
 import { CommonService } from 'src/app/common/common.service';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
@@ -334,8 +335,19 @@ export class VendorInvoiceEntryComponent implements OnInit {
     private voucherPeriodService: VoucherPeriodValidationService,
     private toastr: ToastrService,
     private numberToWords: NumberToWordsService,
-    public taxCalculationService: TaxCalculationService
+    public taxCalculationService: TaxCalculationService,
+    private emailTriggerService: EmailTriggerService,
   ) { }
+
+  sendManualMail(): void {
+    this.emailTriggerService.triggerManualEmails({
+      companyId: this.currentCompany?.CompanyMasterSid,
+      branchId: this.currentBranch?.BranchMasterSid,
+      menuMasterSid: Number(sessionStorage.getItem('currentMenuId')),
+      action: 'UPDATE',
+      context: {}
+    });
+  }
 
   ngOnInit(): void {
     

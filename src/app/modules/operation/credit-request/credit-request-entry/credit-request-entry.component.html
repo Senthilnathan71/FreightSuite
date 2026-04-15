@@ -28,6 +28,9 @@
             (click)="resetForm()">
             <i class="fas fa-sync-alt me-1"></i> Reset
           </button>
+          <button type="button" class="btn btn-info btn-sm text-nowrap" *ngIf="isEditMode" (click)="sendManualMail()">
+            <i class="fas fa-envelope me-1"></i> Send Mail
+          </button>
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" appPreventMultiClick
             (click)="onSubmit()" [disabled]="isSaveDisabled()">
             <i class="fas fa-save me-1"></i>

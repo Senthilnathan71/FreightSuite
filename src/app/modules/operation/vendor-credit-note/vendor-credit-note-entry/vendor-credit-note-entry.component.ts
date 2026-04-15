@@ -52,6 +52,7 @@ import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { CommonService } from 'src/app/common/common.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
@@ -373,7 +374,18 @@ export class VendorCreditNoteEntryComponent {
     private voucherPeriodService: VoucherPeriodValidationService,
     private numberToWords: NumberToWordsService,
     public taxCalculationService: TaxCalculationService,
+    private emailTriggerService: EmailTriggerService,
   ) {}
+
+  sendManualMail(): void {
+    this.emailTriggerService.triggerManualEmails({
+      companyId: this.currentCompany?.CompanyMasterSid,
+      branchId: this.currentBranch?.BranchMasterSid,
+      menuMasterSid: Number(sessionStorage.getItem('currentMenuId')),
+      action: 'UPDATE',
+      context: {}
+    });
+  }
 
   ngOnInit(): void {
     try {

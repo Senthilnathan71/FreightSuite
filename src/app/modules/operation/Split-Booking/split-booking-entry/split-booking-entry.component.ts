@@ -21,6 +21,7 @@ import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { CommonService } from 'src/app/common/common.service';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 
 @Component({
   selector: 'app-split-booking-entry',
@@ -81,7 +82,18 @@ export class SplitBookingEntryComponent implements OnInit {
     private masterService: MasterService,
     private modalService: NgbModal,
     private commonService: CommonService,
+    private emailTriggerService: EmailTriggerService,
   ) { }
+
+  sendManualMail(): void {
+    this.emailTriggerService.triggerManualEmails({
+      companyId: this.currentCompany?.CompanyMasterSid,
+      branchId: this.currentBranch?.BranchMasterSid,
+      menuMasterSid: Number(sessionStorage.getItem('currentMenuId')),
+      action: 'UPDATE',
+      context: {}
+    });
+  }
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));

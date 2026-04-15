@@ -56,6 +56,7 @@ import { PreAlertComponent } from '../../master-job/reports/pre-alert/pre-alert.
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { VerticalSidebarService } from 'src/app/shared/vertical-sidebar/vertical-sidebar.service';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { getDefaultTodayDate,toNgbDateStruct } from 'src/app/common/helper';
 import { MawbPreprintComponent } from '../report/mawb-preprint/mawb-preprint.component';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
@@ -347,11 +348,22 @@ export class MawbillEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
     private datePipe: DatePipe,
     private exportExcelService: ExcelExportService,
     private masterService: MasterService,
-    private sidebarService : VerticalSidebarService
+    private sidebarService : VerticalSidebarService,
+    private emailTriggerService: EmailTriggerService,
   ) {
     this.initForm();
     this.initContainerForm();
     this.attachedBookings = this.fb.array([]);
+  }
+
+  sendManualMail(): void {
+    this.emailTriggerService.triggerManualEmails({
+      companyId: this.currentCompany?.CompanyMasterSid,
+      branchId: this.currentBranch?.BranchMasterSid,
+      menuMasterSid: Number(sessionStorage.getItem('currentMenuId')),
+      action: 'UPDATE',
+      context: {}
+    });
   }
 
   ngOnInit(): void {

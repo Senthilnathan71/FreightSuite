@@ -21,6 +21,7 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { PreventMultiClickDirective } from "src/app/core/Directives/prevent-multi-click.directive";
@@ -140,9 +141,20 @@ export class CreditRequestEntryComponent {
     private datePipe: DatePipe,
     private commonService: CommonService,
     private masterService: MasterService,
-    public mps : MenuPermissionService
+    public mps : MenuPermissionService,
+    private emailTriggerService: EmailTriggerService,
   ) {
     this.initForm();
+  }
+
+  sendManualMail(): void {
+    this.emailTriggerService.triggerManualEmails({
+      companyId: this.currentCompany?.CompanyMasterSid,
+      branchId: this.currentBranch?.BranchMasterSid,
+      menuMasterSid: Number(sessionStorage.getItem('currentMenuId')),
+      action: 'UPDATE',
+      context: {}
+    });
   }
 
   ngOnInit(): void {

@@ -30,6 +30,7 @@ import {
 } from 'src/app/common/pdf/generators/loading-plan-entry-pdf.generator';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { LogoService } from 'src/app/core/services/logo.service';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
@@ -165,49 +166,22 @@ export class LoadingPlanEntryComponent {
     private appSettingsService: AppSettingsService,
     private masterService: MasterService,
     public logoService : LogoService,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private emailTriggerService: EmailTriggerService,
 
 
   ) {
     this.masterJobContainers = this.fb.array([]);
-    // effect(()=>{
-    //   const departments = this.dropdownStore.department();
-    //   const ports = this.dropdownStore.ports();
-    //   const carriers = this.dropdownStore.customerTypeData();
-    //   const containerType = this.dropdownStore.containerTypes();
-    //   const packageType = this.dropdownStore.uomsByType()
+  }
 
-
-    //   this.departmentList = departments;
-    //   this.portList = ports;
-    //   this.carrierList = carriers;
-    //   this.containerTypeList = containerType
-    //   this.packageTypeList = packageType
-
-
-    //   // Run setup only when all lists are loaded and not empty
-    //   if (departments?.length && ports?.length) {
-    //     this.setInitialConfig();
-    //     if (this.masterJobFormValue.hasValue) {
-    //       const dept = this.masterJobFormValue.DepartmentMasterSid;
-    //       let selectedDept = this.departmentList.find(d => d.DepartmentMasterSid === dept);
-    //       this.selectedPOL = this.portList.find(p => p.PortCode === this.masterJobFormValue.POL);
-    //       this.selectedPOD = this.portList.find(p => p.PortCode === this.masterJobFormValue.POD);
-    //       console.log(this.selectedPOL,this.selectedPOD);
-    //       this.onDeptChange(selectedDept);
-    //       this.loadingPlanForm.patchValue({
-    //         dept: this.masterJobFormValue.DepartmentMasterSid,
-    //         pol: this.masterJobFormValue.POL,
-    //         pod: this.masterJobFormValue.POD
-    //       })
-    //       this.loadingPlanForm.get('dept')?.disable();
-    //       this.loadingPlanForm.get('pol')?.disable();
-    //       this.loadingPlanForm.get('pod')?.disable();
-    //       this.fetchVesselForCondition();
-    //       console.log(this.selectedPOL,this.selectedPOD);
-    //     }
-    //   }
-    // })
+  sendManualMail(): void {
+    this.emailTriggerService.triggerManualEmails({
+      companyId: this.currentCompany?.CompanyMasterSid,
+      branchId: this.currentBranch?.BranchMasterSid,
+      menuMasterSid: Number(sessionStorage.getItem('currentMenuId')),
+      action: 'UPDATE',
+      context: {}
+    });
   }
 
   ngOnInit() {

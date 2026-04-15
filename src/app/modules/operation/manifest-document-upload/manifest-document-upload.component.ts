@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subscription } from 'rxjs';
 import { ManifestService, ManifestData, UploadProgress } from '../manifest.service';
+import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 
 export interface ContainerInfo {
   containerNumber: string;
@@ -79,9 +81,23 @@ export class ManifestDocumentUploadComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private manifestService: ManifestService,
-    public activeModal: NgbActiveModal
+    public activeModal: NgbActiveModal,
+    private appSettingService: AppSettingsService,
+    private emailTriggerService: EmailTriggerService,
   ) {
     this.manifestForm = this.createForm();
+  }
+
+  sendManualMail(): void {
+    const currentCompany = this.appSettingService.getCurrentCompanyInfo();
+    const currentBranch = this.appSettingService.getCurrentBranchInfo();
+    this.emailTriggerService.triggerManualEmails({
+      companyId: currentCompany?.CompanyMasterSid,
+      branchId: currentBranch?.BranchMasterSid,
+      menuMasterSid: Number(sessionStorage.getItem('currentMenuId')),
+      action: 'UPDATE',
+      context: {}
+    });
   }
 
   ngOnInit(): void {

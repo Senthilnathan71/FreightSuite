@@ -2529,7 +2529,7 @@ isSeaDepartment(): boolean {
     this.emailTriggerService.triggerManualEmails({
       companyId: this.currentCompany?.CompanyMasterSid,
       branchId: this.currentBranch?.BranchMasterSid,
-      menuMasterSid: this.jobMenuMasterSid,
+      menuMasterSid: this.currentMenuId,
       action: 'UPDATE',
       attachmentFile,
       context: {

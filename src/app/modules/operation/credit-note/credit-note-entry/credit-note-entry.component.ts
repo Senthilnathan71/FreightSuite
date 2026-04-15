@@ -3148,7 +3148,7 @@ export class CreditNoteEntryComponent {
     this.emailTriggerService.triggerManualEmails({
       companyId: this.currentCompany?.CompanyMasterSid,
       branchId: this.currentBranch?.BranchMasterSid,
-      menuMasterSid: this.MenuMasterSid,
+      menuMasterSid: Number(sessionStorage.getItem('currentMenuId')),
       action: 'UPDATE',
       attachmentFile,
       context: {

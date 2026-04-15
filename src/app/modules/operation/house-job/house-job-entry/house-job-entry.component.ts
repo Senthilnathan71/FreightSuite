@@ -4069,7 +4069,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
     this.emailTriggerService.triggerManualEmails({
       companyId: this.currentCompany?.CompanyMasterSid,
       branchId: this.currentBranch?.BranchMasterSid,
-      menuMasterSid: this.bookingData?.MenuMasterSid,
+      menuMasterSid: this.currentMenuId,
       action: 'UPDATE',
       attachmentFile,
       context: {

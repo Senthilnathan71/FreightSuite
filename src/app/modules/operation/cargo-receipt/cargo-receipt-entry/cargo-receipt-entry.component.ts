@@ -22,6 +22,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { AuthorityEntryComponent } from 'src/app/modules/master/authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 
 @Component({
   selector: 'app-cargo-receipt-entry',
@@ -85,6 +86,7 @@ export class CargoReceiptEntryComponent implements OnInit {
     private commonService: CommonService,
     private masterService: MasterService,
     private modalService: NgbModal,
+    private emailTriggerService: EmailTriggerService,
   ) {
     effect(() => {
       const cfsData = this.dropdownStore.customerTypeData();
@@ -406,8 +408,17 @@ export class CargoReceiptEntryComponent implements OnInit {
     }
   
     openFollowup() {
-  
+
     }
 
-  
+  sendManualMail(): void {
+    this.emailTriggerService.triggerManualEmails({
+      companyId: this.currentCompany?.CompanyMasterSid,
+      branchId: this.currentBranch?.BranchMasterSid,
+      menuMasterSid: Number(sessionStorage.getItem('currentMenuId')),
+      action: 'UPDATE',
+      context: {}
+    });
+  }
+
 }
