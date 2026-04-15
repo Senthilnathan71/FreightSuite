@@ -1114,6 +1114,30 @@ createRateFormGroup(data?: any): FormGroup {
     });
 
   }
+
+  private canRecalculateRowSide(
+    rateGroup: FormGroup,
+    side: 'Revenue' | 'Cost'
+  ): boolean {
+    const currency = rateGroup.get(`${side}CurrencyMasterSid`)?.value;
+    const rate = rateGroup.get(`${side}Rate`)?.value;
+    const noOfUnit = rateGroup.get('NoOfUnit')?.value;
+
+    return currency != null && rate !== null && rate !== '' && noOfUnit !== null && noOfUnit !== '';
+  }
+
+  private recalculateRowAmounts(rateIndex: number): void {
+    const rateGroup = this.rateFormArray.at(rateIndex) as FormGroup;
+    if (!rateGroup) return;
+
+    if (this.canRecalculateRowSide(rateGroup, 'Revenue')) {
+      this.calculateRevenueAmount(rateIndex);
+    }
+
+    if (this.canRecalculateRowSide(rateGroup, 'Cost')) {
+      this.calculateCostAmount(rateIndex);
+    }
+  }
   
   updateSingleChargeQty(rateIndex:number): void {
       const rateGroup = this.rateFormArray.at(rateIndex) as FormGroup;
@@ -1135,8 +1159,7 @@ createRateFormGroup(data?: any): FormGroup {
       console.log(newQty);
   
       rateGroup.get('NoOfUnit')?.setValue(newQty);
-      this.calculateRevenueLocalAmount(rateIndex);
-      this.calculateCostLocalAmount(rateIndex);
+      this.recalculateRowAmounts(rateIndex);
     }
 
   /**
