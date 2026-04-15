@@ -70,13 +70,57 @@ export class LoadingPlanMasterComponent {
     // this.loadCityName();
   }
 
-     getPortName(portCode: string): string {
+  getPortName(portCode: string): string {
     if (!portCode || !this.portList || this.portList.length === 0) {
       return portCode || '';
     }
     
     const port = this.portList.find(p => p.PortCode === portCode);
     return port ? `${port.PortCode} - ${port.PortName}` : portCode;
+  }
+
+  getHouseShipment(item: any): any {
+    if (!item?.HouseJobSid) {
+      return {};
+    }
+
+    return (this.masterJobData?.allShipments || []).find(
+      (shipment: any) => String(shipment?.HouseJobSid) === String(item?.HouseJobSid)
+    ) || {};
+  }
+
+  getHouseBlNo(item: any): string {
+    const shipment = this.getHouseShipment(item);
+    return item?.HBLNo || shipment?.HBLNo || '';
+  }
+
+  getHouseOrigin(item: any): string {
+    const shipment = this.getHouseShipment(item);
+    return shipment?.POO || item?.POO || '';
+  }
+
+  getHouseDestination(item: any): string {
+    const shipment = this.getHouseShipment(item);
+    return shipment?.FPD || item?.FPD || '';
+  }
+
+  get totalGrossWeight(): number {
+    return this.getCargoTotal('GrossWeight');
+  }
+
+  get totalNetWeight(): number {
+    return this.getCargoTotal('NetWeight');
+  }
+
+  get totalVolume(): number {
+    return this.getCargoTotal('Volume');
+  }
+
+  private getCargoTotal(field: 'GrossWeight' | 'NetWeight' | 'Volume'): number {
+    return (this.masterJobData?.houseJob || []).reduce((total: number, item: any) => {
+      const value = Number(item?.Cargo?.[0]?.[field]);
+      return total + (Number.isFinite(value) ? value : 0);
+    }, 0);
   }
 
 //     getParseInteger(value: any): string {
