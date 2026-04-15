@@ -235,7 +235,7 @@ function buildKeyValueRow(label: string, value?: string, labelWidth = 78): any {
 
 function buildLoadingPlanTable(rows: LoadingPlanMasterRow[]): any {
   const body = rows.map((row) => ([
-    buildTextCell(row.blNo, 'left', [false, false, true, true]),
+    buildTextCell(row.blNo, 'left', [false, false, true, true], true),
     buildTextCell(row.origin),
     buildTextCell(row.destination),
     buildTextCell(row.shipper),
@@ -248,6 +248,15 @@ function buildLoadingPlanTable(rows: LoadingPlanMasterRow[]): any {
     buildNumberCell(row.volume, 3, [true, false, false, true])
   ]));
 
+  const totals = rows.reduce(
+    (acc, row) => ({
+      grossWeight: acc.grossWeight + toNumber(row.grossWeight),
+      netWeight: acc.netWeight + toNumber(row.netWeight),
+      volume: acc.volume + toNumber(row.volume)
+    }),
+    { grossWeight: 0, netWeight: 0, volume: 0 }
+  );
+
   if (!body.length) {
     body.push([
       {
@@ -258,6 +267,27 @@ function buildLoadingPlanTable(rows: LoadingPlanMasterRow[]): any {
       },
       {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
     ]);
+  } else {
+    body.push([
+      {
+        text: 'TOTAL',
+        colSpan: 8,
+        style: 'tableCell',
+        bold: true,
+        alignment: 'right',
+        border: [false, true, true, true]
+      },
+      { text: '', border: [true, true, true, true] },
+      { text: '', border: [true, true, true, true] },
+      { text: '', border: [true, true, true, true] },
+      { text: '', border: [true, true, true, true] },
+      { text: '', border: [true, true, true, true] },
+      { text: '', border: [true, true, true, true] },
+      { text: '', border: [true, true, true, true] },
+      buildNumberCell(totals.grossWeight, 3, [true, true, true, true], true),
+      buildNumberCell(totals.netWeight, 3, [true, true, true, true], true),
+      buildNumberCell(totals.volume, 3, [true, true, false, true], true)
+    ]);
   }
 
   return {
@@ -266,7 +296,7 @@ function buildLoadingPlanTable(rows: LoadingPlanMasterRow[]): any {
       widths: [65, 45, 45, '*', '*', 85, 65, 48, 52, 52, 52],
       body: [
         [
-          buildHeaderCell('BL No.', [false, true, true, true]),
+          buildHeaderCell('HBL No.', [false, true, true, true]),
           buildHeaderCell('Origin'),
           buildHeaderCell('Dest.'),
           buildHeaderCell('Shipper & Address'),
@@ -307,26 +337,30 @@ function buildHeaderCell(text: string, border: [boolean, boolean, boolean, boole
 function buildTextCell(
   value?: string,
   alignment: 'left' | 'center' | 'right' = 'left',
-  border: [boolean, boolean, boolean, boolean] = [true, true, true, true]
+  border: [boolean, boolean, boolean, boolean] = [true, true, true, true],
+  bold = false
 ): any {
   return {
     text: value || '',
     style: 'tableCell',
     alignment,
-    border
+    border,
+    bold
   };
 }
 
 function buildNumberCell(
   value?: number,
   decimals = 3,
-  border: [boolean, boolean, boolean, boolean] = [true, true, true, true]
+  border: [boolean, boolean, boolean, boolean] = [true, true, true, true],
+  bold = false
 ): any {
   return {
     text: formatNumberWithCommas(value || 0, decimals),
     style: 'tableCell',
     alignment: 'right',
-    border
+    border,
+    bold
   };
 }
 
@@ -345,7 +379,7 @@ function buildFooter(data: LoadingPlanMasterPdfData, currentPage: number, pageCo
     margin: [24, 0, 24, 12],
     columns: [
       { text: `Printed By : ${data.userData?.userName || ''}`, alignment: 'left', width: '30%', fontSize: 9, noWrap: true },
-      { text: 'This document is computer-generated and does not require a signature.', alignment: 'center', width: '*', fontSize: 9, noWrap: true },
+      { text: '', alignment: 'center', width: '*', fontSize: 9, noWrap: true },
       { text: `Printed On : ${formatDate(new Date())}  Page ${currentPage} of ${pageCount}`, alignment: 'right', width: '30%', fontSize: 9, noWrap: true }
     ]
   };
@@ -363,6 +397,7 @@ export function transformLoadingPlanMasterApiData(
 ): LoadingPlanMasterPdfData {
   const voyages = masterJobData?.voyages?.[0] || {};
   const firstHouseJob = masterJobData?.houseJob?.[0] || {};
+  const allShipments = masterJobData?.allShipments || [];
   const portList = options?.portList || [];
 
   const getPortName = (portCode: string): string => {
@@ -375,13 +410,15 @@ export function transformLoadingPlanMasterApiData(
   };
 
   const rows: LoadingPlanMasterRow[] = (masterJobData?.houseJob || []).map((item: any) => {
-    const shipment = item?.allShipments?.[0] || {};
+    const shipment = allShipments.find(
+      (row: any) => String(row?.HouseJobSid) === String(item?.HouseJobSid)
+    ) || {};
     const cargo = item?.Cargo?.[0] || {};
 
     return {
-      blNo: shipment?.BookingNo || '',
-      origin: shipment?.DestinationAgent || '',
-      destination: shipment?.AgentName || '',
+      blNo: item?.HBLNo || shipment?.HBLNo || '',
+      origin: shipment?.POO || item?.POO || '',
+      destination: shipment?.FPD || item?.FPD || '',
       shipper: joinNonEmpty([item?.ShipperName, item?.ShipperAddress], ' & '),
       consignee: joinNonEmpty([item?.ConsigneeName, item?.ConsigneeAddress], ' & '),
       commodityDescription: cargo?.CommodityDescription || '',
