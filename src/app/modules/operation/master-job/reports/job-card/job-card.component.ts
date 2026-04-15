@@ -61,7 +61,6 @@ export class JobCardComponent implements AfterViewInit{
   ) { }
 
   ngOnInit() {
-    this.getSalespersons()
     this.userData = this.appSettingsService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingsService.decrypt(
       localStorage.getItem('selected-company')
@@ -72,6 +71,7 @@ export class JobCardComponent implements AfterViewInit{
      this.branchDetails = this.appSettingService.getCurrentBranchInfo();
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
+    this.getSalespersons();
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
     this.loadCharges();
@@ -145,6 +145,11 @@ checkContentHeight(): void {
 
   getSalespersons(){
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
+    if (!CompanyMasterSid) {
+      this.salemanList = [];
+      return;
+    }
+
     this.masterService.getAllSalesmans(CompanyMasterSid).subscribe(
       (resp)=>{
         this.salemanList=resp;
@@ -152,16 +157,10 @@ checkContentHeight(): void {
     )
   }
 
-  getSalespersonName(UserMasterSid:number){
-    console.log("GetUserName",{
-      id : UserMasterSid,
-      list : this.salemanList
-    })
-    if(!UserMasterSid||this.salemanList.length===0){
-      return "";
-    }
-    return this.salemanList.find(user =>user.UserMasterSid === UserMasterSid)?.userName || ""
-  }
+getSalesmanName(salesmanSid: number): string {
+  const salesman = this.salemanList.find(s => s.UserMasterSid === salesmanSid);
+  return salesman ? salesman.userName : '';
+}
 
   // Helper methods
 

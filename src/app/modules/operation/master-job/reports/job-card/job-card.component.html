@@ -19,13 +19,13 @@
 
 
 <div class="modal-body">
-    <div #jobCardContainer
-        style="width:280mm; min-height:400mm; height:auto; margin:10px; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000;  page-break-after:always;">
+    <div 
+        style="width:280mm; min-height:400mm; height:auto; margin:10px; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000; page-break-after:always; display:flex; flex-direction:column;">
 
         <!-- Company Info -->
         <app-print-header></app-print-header>
 
-        <div #contentArea>
+        <div #contentArea style="flex:1 0 auto;">
 
 
             <h4 style="
@@ -39,72 +39,10 @@
                 <strong>Job Card / Job No - {{ masterJobData?.MasterJobNumber }}</strong>
             </h4>
 
-
-            <!-- Client/Shipper/Consignee/Forwarder Sections -->
-            <div style="display:flex; padding:0;">
-
-                <!-- Client -->
-                <div style="width:50%; border:1px solid #000; padding:10px; box-sizing:border-box;font-size: 16px;">
-                    <div style="display:flex; flex-direction: column;">
-                        <div style="width:125px;font-weight: bolder;"><strong>Client</strong></div>
-
-                        <div style="min-height:100px;padding-left: 30px;">
-                            {{masterJobData?.houseJob?.[0]?.CustomerName}}<br>
-                            {{masterJobData?.houseJob?.[0]?.CustomerAddress}}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Shipper -->
-                <div
-                    style="width:50%; border-top:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000; padding:10px; box-sizing:border-box;font-size: 16px;">
-                    <div style="display:flex; flex-direction: column;">
-                        <div style="width:120px;font-weight: bolder;"><strong>Shipper</strong></div>
-
-                        <div style="min-height:100px;padding-left: 30px;">
-                            {{masterJobData?.houseJob?.[0]?.ShipperName}}<br>
-                            {{masterJobData?.houseJob?.[0]?.ShipperAddress}}
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <div style="display:flex; padding:0;">
-
-                <!-- Consignee -->
-                <div
-                    style="width:50%; border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000; padding:10px; box-sizing:border-box;font-size: 16px;">
-                    <div style="display:flex;flex-direction: column;">
-                        <div style="width:123px;font-weight: bolder;"><strong>Consignee</strong></div>
-
-                        <div style="min-height:100px;padding-left: 30px;">
-                            {{masterJobData?.houseJob?.[0]?.ConsigneeName}}<br>
-                            {{masterJobData?.houseJob?.[0]?.ConsigneeAddress}}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Forwarder -->
-                <div
-                    style="width:50%; border-right:1px solid #000; border-bottom:1px solid #000; padding:10px; box-sizing:border-box;font-size: 16px;">
-                    <div style="display:flex;flex-direction: column;">
-                        <div style="width:120px;font-weight: bolder;"><strong>Forwarder</strong></div>
-
-                        <div style="min-height:100px;padding-left: 30px;">
-                            {{masterJobData?.houseJob?.[0]?.Others?.[0]?.Forwarder}}<br>
-                            {{masterJobData?.houseJob?.[0]?.Others?.[0]?.ForwarderAddress}}
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-
             <!-- Job Details -->
             <div
-                style="display:flex; border-bottom:1px solid black;border-left: 1px solid black; border-right: 1px solid black; margin:0;padding-left: 10px;">
-                <div style="flex:0 0 50%; max-width:50%; padding:5px;font-size: 16px;">
+                style="display:flex; border:1px solid black; margin:0;padding-left: 10px;">
+                <div style="flex:0 0 50%; max-width:50%; padding:5px;">
                     <div style="display:flex; margin-bottom:1px;">
                         <div style="width:120px;font-weight: bolder;"><strong>Job No.</strong></div>
                         <div>: {{ masterJobData?.MasterJobNumber }}</div>
@@ -131,10 +69,10 @@
                     </div>
                     <div style="display:flex; margin-bottom:1px;">
                         <div style="width:120px;font-weight: bolder;"><strong>Sales Person</strong></div>
-                        <div>: {{getSalespersonName(masterJobData?.houseJob[0]?.SalesmanSid)}}</div>
+                        <div>: {{getSalesmanName(masterJobData?.houseJob[0]?.SalesmanSid)}}</div>
                     </div>
                 </div>
-                <div style="flex:0 0 50%; max-width:50%; padding:5px;padding-left: 10px;font-size: 16px;">
+                <div style="flex:0 0 50%; max-width:50%; padding:5px;padding-left: 10px;">
                     <div style="display:flex; margin-bottom:1px;">
                         <div style="width:135px;font-weight: bolder;"><strong>MBL No.</strong></div>
                         <div>: {{masterJobData?.MBLNo}}</div>
@@ -293,7 +231,7 @@
                         </tr>
                     </tbody>
                     <tfoot>
-                        <tr style="font-weight:bolder;font-size: 16px;">
+                        <tr style="font-weight:bolder;">
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">
                                 <strong>TOTAL</strong>
                             </td>
@@ -314,7 +252,7 @@
 
             <!-- Cost/Revenue Charges Table -->
             <div style="overflow-x:auto; margin-top:5px;">
-                <table style="width:100%; border-collapse:collapse;  border:1px solid black;font-size: 14px;">
+                <table style="width:100%; border-collapse:collapse;  border:1px solid black;">
                     <thead style="background-color:#f8f9fa;">
                         <tr>
                             <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
@@ -498,9 +436,9 @@
                 </div>
 
                 <div style="width:49.5%; box-sizing:border-box; margin-left:1%;">
-                    <h4 style="text-align:center; margin:0 0 4px 0; font-weight:bolder;font-size: 16px;">
+                    <div style="text-align:center; margin:0 0 4px 0; font-weight:bolder;">
                         <strong>Expense</strong>
-                    </h4>
+                    </div>
                     <table style="width:100%; border-collapse:collapse; border:1px solid #000; box-sizing:border-box;">
                         <thead>
                             <tr>
@@ -560,13 +498,10 @@
         </div>
 
         <!-- Footer -->
-        <footer [style.position]="isLargeData ? 'static' : 'absolute'" [style.bottom]="isLargeData ? null : '2mm'"
-            [style.left]="isLargeData ? null : '0'" [style.right]="isLargeData ? null : '0'"
-            [style.marginTop]="isLargeData ? '12px' : null"
-            style="text-align:center; font-size:10pt; padding:0.5rem; padding-top:10px;">
+        <footer style="text-align:center; font-size:10pt; padding:0.5rem; padding-top:10px; margin-top:auto;">
             <div style="display:flex; justify-content:space-between; font-size:14px;">
                 <div><span style="font-weight:700;">Printed By :</span> {{ userData.userName }}</div>
-                <span>This document is computer-generated and does not require a signature.</span>
+                <!-- <span>This document is computer-generated and does not require a signature.</span> -->
                 <div><span style="font-weight:700">Printed On : </span>{{ currentDate | formatDate }}</div>
             </div>
         </footer>

@@ -349,7 +349,7 @@ export class OutstandingLocalComponent {
     return {
       fileName: 'Outstanding-Report',
       sheetName: 'OutstandingReport',
-
+      showFooterNote: true,
       // ✅ Header Like HTML
       reportHeader: {
         companyName: this.currentCompany?.companyName || 'Company',

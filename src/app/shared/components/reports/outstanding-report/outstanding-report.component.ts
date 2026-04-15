@@ -289,7 +289,7 @@ export class OutstandingReportComponent {
     return {
       fileName: 'Outstanding-Report',
       sheetName: 'OutstandingReport',
-
+      showFooterNote: true,
       reportHeader: {
         companyName: this.currentCompany?.companyName || 'Company',
         reportTitle: `Outstanding Report`,

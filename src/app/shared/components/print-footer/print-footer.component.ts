@@ -1,15 +1,17 @@
-import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, Input } from '@angular/core';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 
 @Component({
   selector: 'app-print-footer',
   standalone: true,
-  imports: [CustomDatePipe],
+  imports: [CustomDatePipe,CommonModule],
   templateUrl: './print-footer.component.html',
   styles: ``
 })
 export class PrintFooterComponent {
+    @Input() showFooterNote: boolean = false;
     userData: any;
     currentCompany: any;
     currentBranch: any;

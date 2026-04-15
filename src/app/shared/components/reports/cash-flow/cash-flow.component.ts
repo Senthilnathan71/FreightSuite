@@ -229,7 +229,7 @@ export class CashFlowComponent {
         reportTitle: this.reportTitle,
         additionalInfo: [
           { label: 'Period', value: this.reportSubTitle },
-          { label: 'Currency', value: this.currencyLabel },
+          // { label: 'Currency', value: this.currencyLabel },
         ],
       },
       tableHeaders,

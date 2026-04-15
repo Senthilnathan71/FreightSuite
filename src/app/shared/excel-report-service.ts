@@ -57,6 +57,7 @@ export interface ComplexReportExportConfig {
   fileName: string;
   sheetName?: string;
   reportHeader: ReportHeaderConfig;
+  showFooterNote?: boolean;
   tableHeaders: ExcelHeader[];
   includeTableHeaders?: boolean;
   suppressSectionBorders?: boolean;

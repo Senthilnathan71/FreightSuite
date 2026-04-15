@@ -249,6 +249,46 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
         this.reportData
       );
 
+      if (this.reportId === 'comprehensive-management') {
+        const company = this.appSettingsService.getCurrentCompanyInfo();
+        const branch = this.appSettingsService.getCurrentBranchInfo();
+        const userData = this.appSettingsService.getDecryptedUserProfile();
+        const logo = this.pdfMakeService.getReportLogo();
+
+        this.pdfMakeService.generateComprehensiveManagementReport(
+          this.buildInjectedReportData(),
+          company,
+          branch,
+          userData,
+          logo,
+          this.reportConfig?.pdfOrientation || 'landscape',
+          filename
+        );
+        this.appSettingsService.showSuccess('PDF downloaded successfully!');
+        this.spinner.hide();
+        return;
+      }
+
+      if (this.reportId === 'balance-sheet') {
+        const company = this.appSettingsService.getCurrentCompanyInfo();
+        const branch = this.appSettingsService.getCurrentBranchInfo();
+        const userData = this.appSettingsService.getDecryptedUserProfile();
+        const logo = this.pdfMakeService.getReportLogo();
+
+        this.pdfMakeService.generateBalanceSheetReport(
+          this.buildInjectedReportData(),
+          company,
+          branch,
+          userData,
+          logo,
+          this.reportConfig?.pdfOrientation || 'landscape',
+          filename
+        );
+        this.appSettingsService.showSuccess('PDF downloaded successfully!');
+        this.spinner.hide();
+        return;
+      }
+
       // Use pdfmake if component provides structured data
       if (this.componentRef?.instance?.getExcelData) {
         const exportConfig = this.componentRef.instance.getExcelData();
@@ -307,7 +347,35 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
         );
       } else {
         let pdfBlob: Blob;
-        if (exportConfig?.reportHeader && exportConfig?.rows) {
+        if (this.reportId === 'comprehensive-management') {
+          const company = this.appSettingsService.getCurrentCompanyInfo();
+          const branch = this.appSettingsService.getCurrentBranchInfo();
+          const userData = this.appSettingsService.getDecryptedUserProfile();
+          const logo = this.pdfMakeService.getReportLogo();
+
+          pdfBlob = await this.pdfMakeService.generateComprehensiveManagementReportBlob(
+            this.buildInjectedReportData(),
+            company,
+            branch,
+            userData,
+            logo,
+            this.reportConfig?.pdfOrientation || 'landscape'
+          );
+        } else if (this.reportId === 'balance-sheet') {
+          const company = this.appSettingsService.getCurrentCompanyInfo();
+          const branch = this.appSettingsService.getCurrentBranchInfo();
+          const userData = this.appSettingsService.getDecryptedUserProfile();
+          const logo = this.pdfMakeService.getReportLogo();
+
+          pdfBlob = await this.pdfMakeService.generateBalanceSheetReportBlob(
+            this.buildInjectedReportData(),
+            company,
+            branch,
+            userData,
+            logo,
+            this.reportConfig?.pdfOrientation || 'landscape'
+          );
+        } else if (exportConfig?.reportHeader && exportConfig?.rows) {
           const company = this.appSettingsService.getCurrentCompanyInfo();
           const branch = this.appSettingsService.getCurrentBranchInfo();
           const userData = this.appSettingsService.getDecryptedUserProfile();
@@ -385,6 +453,18 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
    */
   private delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  private buildInjectedReportData(): any {
+    if (this.payload) {
+      if (this.reportData && typeof this.reportData === 'object' && !Array.isArray(this.reportData)) {
+        return { ...this.reportData, params: this.payload };
+      }
+
+      return { data: this.reportData, params: this.payload };
+    }
+
+    return this.reportData;
   }
 
 

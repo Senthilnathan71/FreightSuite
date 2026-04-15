@@ -263,6 +263,7 @@ export class StatementReportComponent {
     return {
       fileName: 'Statement-Report',
       sheetName: 'StatementReport',
+      showFooterNote: true,
       reportHeader: {
         companyName: this.currentCompany?.companyName || 'Company',
         reportTitle: `Statement of Acconuts`,

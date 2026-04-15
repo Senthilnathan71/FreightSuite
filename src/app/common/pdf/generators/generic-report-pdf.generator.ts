@@ -701,7 +701,10 @@ export function generateGenericReportDocument(data: GenericReportPdfData): any {
         ? headerFunction(_currentPage, _pageCount, _pageSize)
         : portraitHeader(data),
     content,
-    footer: createFooterFunction(userData, {showPageNumbers: true}),
+    footer: createFooterFunction(userData, {
+      showPageNumbers: true,
+      showDisclaimer: exportConfig.showFooterNote === true
+    }),
     styles: getPdfStyles(),
     defaultStyle: { fontSize: 8, lineHeight: 1.2, color: '#333333' }
   };

@@ -276,7 +276,7 @@ this.initializeTableConfig();
         label: 'XL Upload',
         icon: 'fas fa-file-excel',
         action: 'excel-dropdown',
-        cssClass: 'dofi-min-w-100 dofi-max-w-100',
+        cssClass: 'dofi-min-w-130',
         tooltip: 'Import master jobs and house jobs from Excel template. Download the template, fill in your data, and upload to create multiple jobs at once.',
         children: [
           {

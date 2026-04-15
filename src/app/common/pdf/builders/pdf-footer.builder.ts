@@ -37,44 +37,40 @@ export function buildFooter(
 ): any {
   const opts = { ...DEFAULT_FOOTER_OPTIONS, ...options };
   const columns: any[] = [];
+  const rightParts: string[] = [];
 
-  // Left column - Printed By
+  if (opts.showPrintedOn) {
+    rightParts.push(`Printed On : ${formatDate(new Date())}`);
+  }
+
+  if (opts.showPageNumbers && currentPage !== undefined && pageCount !== undefined) {
+    rightParts.push(`Page ${currentPage} of ${pageCount}`);
+  }
+
   if (opts.showPrintedBy) {
     columns.push({
       text: `Printed By : ${userData?.userName || ''}`,
       fontSize: 7,
       alignment: 'left',
-      width: '15%'
+      width: opts.showDisclaimer ? '25%' : '50%'
     });
   }
 
-  // Center column - Disclaimer or Page Numbers
   if (opts.showDisclaimer) {
     columns.push({
       text: opts.disclaimerText,
       fontSize: 7,
       alignment: 'center',
-      width:'*'
+      width: '*'
     });
   }
 
-  // Right column - Printed On
-  if (opts.showPrintedOn) {
+  if (rightParts.length) {
     columns.push({
-      text: `Printed On : ${formatDate(new Date())}`,
+      text: rightParts.join('  '),
       fontSize: 7,
       alignment: 'right',
-      width: '25%'
-    });
-  }
-
-  // Page numbers (optional) - keep as last column
-  if (opts.showPageNumbers && currentPage !== undefined && pageCount !== undefined) {
-    columns.push({
-      text: `Page ${currentPage} of ${pageCount}`,
-      fontSize: 7,
-      alignment: 'right',
-      width: '10%'
+      width: opts.showDisclaimer ? '25%' : '50%'
     });
   }
 

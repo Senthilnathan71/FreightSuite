@@ -87,6 +87,14 @@ import {
   generateReleaseLetterDocument,
   transformReleaseLetterApiData
 } from './generators/release-letter-pdf.generator';
+import {
+  generateComprehensiveManagementReportDocument,
+  transformComprehensiveManagementReportData
+} from './generators/comprehensive-management-report-pdf.generator';
+import {
+  generateBalanceSheetReportDocument,
+  transformBalanceSheetReportData
+} from './generators/balance-sheet-report-pdf.generator';
 
 @Injectable({ providedIn: 'root' })
 export class PdfMakeService {
@@ -440,6 +448,91 @@ export class PdfMakeService {
       },
       logo,
       orientation
+    };
+  }
+
+  generateComprehensiveManagementReport(
+    rawData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    orientation: 'portrait' | 'landscape' = 'landscape',
+    filename = 'Comprehensive-Management-Report'
+  ): void {
+    const pdfData = transformComprehensiveManagementReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation);
+    const docDefinition = generateComprehensiveManagementReportDocument(pdfData);
+    this.download(docDefinition, filename);
+  }
+
+  async generateComprehensiveManagementReportBlob(
+    rawData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    orientation: 'portrait' | 'landscape' = 'landscape'
+  ): Promise<Blob> {
+    const pdfData = transformComprehensiveManagementReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation);
+    const docDefinition = generateComprehensiveManagementReportDocument(pdfData);
+    return this.getBlob(docDefinition);
+  }
+
+  generateBalanceSheetReport(
+    rawData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    orientation: 'portrait' | 'landscape' = 'landscape',
+    filename = 'Balance-Sheet-Report'
+  ): void {
+    const pdfData = transformBalanceSheetReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation);
+    const docDefinition = generateBalanceSheetReportDocument(pdfData);
+    this.download(docDefinition, filename);
+  }
+
+  async generateBalanceSheetReportBlob(
+    rawData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    orientation: 'portrait' | 'landscape' = 'landscape'
+  ): Promise<Blob> {
+    const pdfData = transformBalanceSheetReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation);
+    const docDefinition = generateBalanceSheetReportDocument(pdfData);
+    return this.getBlob(docDefinition);
+  }
+
+  private mapCompany(company: any) {
+    return {
+      companyName: company?.CompanyName || company?.companyName || '',
+      addressLine1: company?.Address || company?.addressLine1 || '',
+      addressLine2: company?.addressLine2 || '',
+      city: company?.cityMaster?.cityName || company?.city || '',
+      postalCode: company?.postalCode || company?.ZipCode || '',
+      phoneNumber: company?.Phone || company?.phoneNumber || '',
+      email: company?.Email || company?.email || ''
+    };
+  }
+
+  private mapBranch(branch: any) {
+    return {
+      branchName: branch?.BranchName || branch?.branchName || '',
+      addressLine1: branch?.Address || branch?.addressLine1 || '',
+      addressLine2: branch?.addressLine2 || '',
+      cityName: branch?.cityMaster?.cityName || branch?.cityName || '',
+      postalCode: branch?.postalCode || branch?.ZipCode || '',
+      phoneNumber: branch?.phoneNumber || branch?.Phone || '',
+      cityMaster: branch?.cityMaster
+    };
+  }
+
+  private mapUser(userData: any) {
+    return {
+      userName: userData?.UserName || userData?.userName || '',
+      email: userData?.Email || userData?.email || ''
     };
   }
 

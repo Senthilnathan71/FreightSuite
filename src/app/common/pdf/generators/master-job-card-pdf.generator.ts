@@ -11,7 +11,6 @@ import { getPdfStyles } from '../styles/pdf-styles';
 export function generateMasterJobCardDocument(data: MasterJobCardPdfData): any {
   const content: any[] = [
     buildTitle(data),
-    buildPartySection(data),
     buildJobInfoSection(data)
   ];
 
@@ -29,7 +28,7 @@ export function generateMasterJobCardDocument(data: MasterJobCardPdfData): any {
 
   return {
     pageSize: data.config?.pageSize || 'A4',
-    pageOrientation: 'portrait',
+    pageOrientation: 'landscape',
     pageMargins: [15, 82, 15, 34],
     background: (_: number, pageSize: any) => ({
       canvas: [{
@@ -82,17 +81,19 @@ function buildHeader(data: MasterJobCardPdfData): any {
         ]
       },
       {
-        canvas: [
-          {
-            type: 'line',
-            x1: 0,
-            y1: 0,
-            x2: 565,
-            y2: 0,
-            lineWidth: 1,
-            lineColor: '#000'
-          }
-        ],
+        table: {
+          widths: ['*'],
+          body: [[{ text: '', border: [false, false, false, true] }]]
+        },
+        layout: {
+          hLineWidth: () => 1,
+          vLineWidth: () => 0,
+          hLineColor: () => '#000',
+          paddingLeft: () => 0,
+          paddingRight: () => 0,
+          paddingTop: () => 0,
+          paddingBottom: () => 0
+        },
         margin: [0, 6, 0, 0]
       }
     ],
@@ -102,38 +103,13 @@ function buildHeader(data: MasterJobCardPdfData): any {
 
 function buildTitle(data: MasterJobCardPdfData): any {
   return {
-    table: {
-      widths: ['*'],
-      body: [[{ text: data.reportTitle, style: 'titleCell' }]]
-    },
-    layout: {
-      hLineWidth: (i: number) => (i === 0 || i === 1 ? 1 : 0),
-      vLineWidth: () => 0,
-      hLineColor: () => '#000'
-    },
-    margin: [0, 0, 0, 4]
+    text: data.reportTitle,
+    style: 'titleCell',
+    margin: [0, 2, 0, 4]
   };
 }
 
-function buildPartySection(data: MasterJobCardPdfData): any {
-  return {
-    table: {
-      widths: ['50%', '50%'],
-      body: [
-        [
-          buildPartyCell('Client', data.parties.clientName, data.parties.clientAddress),
-          buildPartyCell('Shipper', data.parties.shipperName, data.parties.shipperAddress)
-        ],
-        [
-          buildPartyCell('Consignee', data.parties.consigneeName, data.parties.consigneeAddress),
-          buildPartyCell('Forwarder', data.parties.forwarderName, data.parties.forwarderAddress)
-        ]
-      ]
-    },
-    layout: boxedLayout(6, 8),
-    margin: [0, 0, 0, 4]
-  };
-}
+
 
 function buildPartyCell(label: string, name?: string, address?: string): any {
   return {
@@ -196,7 +172,7 @@ function buildContainerTable(data: MasterJobCardPdfData): any {
   return {
     table: {
       headerRows: 1,
-      widths: [90, 50, '*', 52, 58, 52, 58],
+      widths: [90, 60, '*', 58, 58, 58, 58],
       body: [
         [
           { text: 'Container No.', style: 'tableHeader' },
@@ -238,7 +214,7 @@ function buildProfitSummaryTable(data: MasterJobCardPdfData): any {
   return {
     table: {
       headerRows: 1,
-      widths: ['*', 70, 70, 70],
+      widths: ['*', 90, 90, 90],
       body: [
         [
           { text: 'Charge', style: 'tableHeader' },
@@ -282,7 +258,7 @@ function buildCostRevenueTable(data: MasterJobCardPdfData): any {
   return {
     table: {
       headerRows: 1,
-      widths: [60, '*', 28, 30, 34, 42, 48, 34, 42, 42, 52],
+      widths: [120, '*', 28, 30, 34, 42, 48, 34, 42, 42, 52],
       body: [
         [
           { text: 'Screen', style: 'tableHeader' },
@@ -316,14 +292,14 @@ function buildCostRevenueTable(data: MasterJobCardPdfData): any {
 
 function buildChargeRow(item: MasterJobCardChargeRow): any[] {
   return [
-    buildTextCell(item.screen, true),
+    buildTextCell(item.screen, true, true),
     buildTextCell(item.chargeName),
-    buildTextCell(item.unit),
-    buildTextCell(item.revenueCurrency),
+    buildTextCell(item.unit, false, false, 'center'),
+    buildTextCell(item.revenueCurrency, false, false, 'center'),
     buildNumberCell(item.revenueExchangeRate, 3),
     buildNumberCell(item.revenueRate, 2),
     buildNumberCell(item.revenueLocalAmount, 2),
-    buildTextCell(item.costCurrency),
+    buildTextCell(item.costCurrency, false, false, 'center'),
     buildNumberCell(item.costExchangeRate, 3),
     buildNumberCell(item.costRate, 2),
     buildNumberCell(item.costLocalAmount, 2)
@@ -349,7 +325,7 @@ function buildPartyAmountTable(title: string, label: string, items: MasterJobCar
       {
         table: {
           headerRows: 1,
-          widths: [72, '*', 64],
+          widths: [120, '*', 64],
           body: [
             [
               { text: 'Screen', style: 'tableHeader' },
@@ -384,28 +360,35 @@ function buildFooter(data: MasterJobCardPdfData, currentPage: number, pageCount:
   return {
     margin: [18, 0, 18, 6],
     columns: [
-      { text: `Printed By : ${data.userData?.userName || ''}`, fontSize: 7, width: '25%', noWrap: true },
-      {
-        text: 'This document is computer-generated and does not require a signature.',
-        alignment: 'center',
-        fontSize: 7,
-        width: '50%'
-      },
+      { text: `Printed By : ${data.userData?.userName || ''}`, fontSize: 7, width: '50%', noWrap: true },
+      // {
+      //   text: 'This document is computer-generated and does not require a signature.',
+      //   alignment: 'center',
+      //   fontSize: 7,
+      //   width: '50%'
+      // },
       {
         text: `Printed On : ${formatDate(new Date())}  Page: ${currentPage} of ${pageCount}`,
         alignment: 'right',
         fontSize: 7,
-        width: '25%',
+        width: '50%',
         noWrap: true
       }
     ]
   };
 }
 
-function buildTextCell(value?: string, bold = false): any {
+function buildTextCell(
+  value?: string,
+  bold = false,
+  noWrap = false,
+  alignment: 'left' | 'center' | 'right' = 'left'
+): any {
   return {
     text: value || '',
-    style: bold ? 'tableCellBold' : 'tableCell'
+    style: bold ? 'tableCellBold' : 'tableCell',
+    noWrap,
+    alignment
   };
 }
 
@@ -438,8 +421,8 @@ function borderedLayout(): any {
     vLineColor: () => '#000',
     paddingTop: () => 3,
     paddingBottom: () => 3,
-    paddingLeft: () => 4,
-    paddingRight: () => 4
+    paddingLeft: () => 8,
+    paddingRight: () => 8
   };
 }
 
