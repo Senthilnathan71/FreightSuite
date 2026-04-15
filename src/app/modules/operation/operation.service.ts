@@ -1829,7 +1829,7 @@ createReverseVoucher(payload: any) {
   }
 
   updateReverseVoucherById(VoucherHeaderSid: number, payload: any) {
-    return this.http.patch<{ status: boolean; data: any }>(`reverse-voucher/update/${VoucherHeaderSid}`, payload).pipe(
+    return this.http.patch<{ status: boolean; message : string; data: any }>(`reverse-voucher/update/${VoucherHeaderSid}`, payload).pipe(
       map((resp) => {
         return resp;
       })
