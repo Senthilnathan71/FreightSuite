@@ -23,7 +23,8 @@ import { BookingRateDetails, TaxCalculationService } from '../../services/tax-ca
 import { CompanySettingsManagerService, CurrencySettings } from 'src/app/core/services/company-settings-manager.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { ToastrService } from 'ngx-toastr';
-import { getDefaultTodayDate, toNgbDateStruct, toNumber } from 'src/app/common/helper';
+import { getDefaultTodayDate, toNgbDateStruct, toNumber, VoucherModule } from 'src/app/common/helper';
+import { VoucherPeriodValidationService } from 'src/app/common/voucher-period-validation.service';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { greaterThanZero } from 'src/app/core/ValidationFn/greaterThanZero.validators';
 import { GetStandardChargesComponent } from '../get-standard-charges/get-standard-charges.component';
@@ -452,7 +453,8 @@ export class CostEntryComponent implements OnInit, OnDestroy {
     private router : Router,
     private toaster: ToastrService,
     private commonModalService : ModalService,
-    private datePipe : CustomDatePipe
+    private datePipe : CustomDatePipe,
+    private voucherPeriodService: VoucherPeriodValidationService
   ) { this.initRateForm();}
 
   ngOnInit(): void {
@@ -498,6 +500,14 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   }
   
   this.loadRateLookups();
+
+  // Preload voucher periods so grace-days / month-closed validation can run
+  // at Generate Voucher time (proceedWithSelectedCharges).
+  this.voucherPeriodService.loadPeriods(
+    this.currentCompany?.CompanyMasterSid,
+    this.currentBranch?.BranchMasterSid,
+    fy?.YearMasterSid,
+  );
 
   this.rateFormArray.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
     if (this.isHydratingRateData) {
@@ -3433,6 +3443,19 @@ createRateFormGroup(data?: any): FormGroup {
     if(!voucherDate) {
       console.error("Voucher date is not available");
       return;
+    }
+
+    // Grace-days / month-closed validation (Invoice = AR, Vendor Invoice = AP).
+    // Block draft creation before calling backend createVoucher.
+    if (this.selectedVoucherType === 'Invoice' || this.selectedVoucherType === 'Vendor Invoice') {
+      const module: VoucherModule = this.selectedVoucherType === 'Vendor Invoice' ? 'AP' : 'AR';
+      const constraints = this.voucherPeriodService.applyConstraints(voucherDate, module);
+      if (constraints.isClosed) {
+        this.appSettingService.showWarning(
+          constraints.errorMessage || 'Grace days for this voucher date have been exceeded'
+        );
+        return;
+      }
     }
 
     if(voucherDate < operationDate){

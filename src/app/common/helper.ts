@@ -86,22 +86,49 @@ export function getVoucherDateConstraints(
     return result;
   }
 
-  // Grace days check: use the voucher's own period grace days, counted from
-  // the voucher date. E.g. voucher dated March 14 with March grace = 11 →
-  // deadline March 25; blocked if today > March 25.
-  const graceDaysKey = `${module}GraceDays` as keyof VoucherPeriodInfo;
-  const graceDays = Number(period[graceDaysKey]) || 0;
-
-  // Date.UTC handles month/leap-year overflow automatically (Feb 28/29, etc.)
-  const graceDeadlineTs = Date.UTC(
-    voucherDate.getUTCFullYear(), voucherDate.getUTCMonth(), voucherDate.getUTCDate() + graceDays
-  );
-
-  // Today's local date as a UTC-midnight timestamp for clean comparison
+  // --- Grace-days block (manager's rules) ---
   const now = new Date();
-  const todayTs = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayYear = now.getFullYear();
+  const todayMonth = now.getMonth();            // 0-indexed local month
 
-  if (todayTs > graceDeadlineTs) {
+  // Rule 1: voucher dated in today's calendar month → no grace check
+  if (
+    voucherDate.getUTCFullYear() === todayYear &&
+    voucherDate.getUTCMonth() === todayMonth
+  ) {
+    return result;
+  }
+
+  // Rule 3: always look up today's PREVIOUS calendar month period for grace days
+  let prevMonth = todayMonth - 1;
+  let prevYear = todayYear;
+  if (prevMonth < 0) { prevMonth = 11; prevYear -= 1; }
+
+  let previousPeriod: VoucherPeriodInfo | null = null;
+  for (const p of periods) {
+    const s = new Date(p.StartDate);
+    if (s.getUTCMonth() === prevMonth && s.getUTCFullYear() === prevYear) {
+      previousPeriod = p;
+      break;
+    }
+  }
+
+  // If we can't find the previous month's period (e.g., start of FY), no restriction
+  if (!previousPeriod) return result;
+
+  const graceDaysKey = `${module}GraceDays` as keyof VoucherPeriodInfo;
+  const graceDays = Number(previousPeriod[graceDaysKey]) || 0;
+
+  // Rule 2: null / zero grace days → no restriction
+  if (graceDays <= 0) return result;
+
+  // Grace deadline = voucherDate + graceDays (inclusive boundary uses >=)
+  const graceDeadlineTs = Date.UTC(
+    voucherDate.getUTCFullYear(), voucherDate.getUTCMonth(), voucherDate.getUTCDate() + graceDays,
+  );
+  const todayTs = Date.UTC(todayYear, todayMonth, now.getDate());
+
+  if (todayTs >= graceDeadlineTs) {
     result.isClosed = true;
     return result;
   }

@@ -740,10 +740,9 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   }
 
   applyVoucherDateConstraints(): void {
-    // Invoice is always entered via entry/:id (Rate tab auto-creates a draft),
-    // so "create time" = draft (not yet posted). Skip validation once posted
-    // or in view mode; run it for drafts so Post-time checks apply.
-    if (this.isPosted || this.isViewMode) {
+    // Any existing voucher (draft or posted) skips validation per manager's
+    // rules 4 & 5 — create-time validation lives in the Rate-Tab (cost-entry).
+    if (this.headerId || this.isViewMode) {
       this.voucherConstraints = { isClosed: false, errorMessage: null };
       return;
     }
@@ -2169,7 +2168,7 @@ isSeaDepartment(): boolean {
     this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed
     if (this.voucherConstraints.isClosed) {
-      this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+      if (this.voucherConstraints.errorMessage) this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
       if (resolve) resolve(false);
       return;
     }
@@ -2420,7 +2419,7 @@ isSeaDepartment(): boolean {
     if (this.isSaving) return;
     this.applyVoucherDateConstraints();
     if (this.voucherConstraints.isClosed) {
-      this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+      if (this.voucherConstraints.errorMessage) this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
       return;
     }
     try {

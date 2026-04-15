@@ -299,7 +299,7 @@ private saveDraftWithCallback(resolve?: (value: boolean) => void) {
 
   this.applyVoucherDateConstraints();
   if (this.voucherConstraints.isClosed) {
-    this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+    if (this.voucherConstraints.errorMessage) this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
     if (resolve) resolve(false);
     return;
   }
@@ -2401,7 +2401,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
     this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed
     if (this.voucherConstraints.isClosed) {
-      this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+      if (this.voucherConstraints.errorMessage) this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
       return;
     }
 
@@ -2554,7 +2554,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
   this.applyVoucherDateConstraints();
   // Block save if voucher period grace days exceeded or module closed
   if (this.voucherConstraints.isClosed) {
-    this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+    if (this.voucherConstraints.errorMessage) this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
     return;
   }
 

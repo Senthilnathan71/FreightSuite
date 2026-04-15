@@ -717,7 +717,7 @@ export class ReverseVoucherEntryComponent {
   onFinalSave() {
     this.applyVoucherDateConstraints();
     if (this.voucherConstraints.isClosed) {
-      this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+      if (this.voucherConstraints.errorMessage) this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
       return;
     }
     if (this.reverseVoucherForm.invalid) {
@@ -1633,7 +1633,7 @@ export class ReverseVoucherEntryComponent {
     this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed
     if (this.voucherConstraints.isClosed) {
-      this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+      if (this.voucherConstraints.errorMessage) this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
       if (resolve) resolve(false);
       return;
     }

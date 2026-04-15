@@ -2060,7 +2060,7 @@ export class VendorCreditNoteEntryComponent {
     this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed
     if (this.voucherConstraints.isClosed) {
-      this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+      if (this.voucherConstraints.errorMessage) this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
       if (resolve) resolve(false);
       return;
     }
@@ -2282,7 +2282,7 @@ export class VendorCreditNoteEntryComponent {
     if (this.isSaving) return;
     this.applyVoucherDateConstraints();
     if (this.voucherConstraints.isClosed) {
-      this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
+      if (this.voucherConstraints.errorMessage) this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
       return;
     }
     try {
