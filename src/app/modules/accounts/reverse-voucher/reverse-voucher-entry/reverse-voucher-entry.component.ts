@@ -1678,7 +1678,7 @@ export class ReverseVoucherEntryComponent {
             const id = response.data?.newVoucher?.VoucherHeaderSid || response.data?.VoucherHeaderSid || response.data?.voucherHeaderSid || null;
             this.router.navigate(['/accounts/reverse-voucher/entry', id]);
           } else {
-            this.appSettingService.showError('Failed to update Reverse Voucher');
+            this.appSettingService.showError(response.message);
           }
         },
         error: (error) => {
@@ -1700,13 +1700,13 @@ export class ReverseVoucherEntryComponent {
             if (id) this.router.navigate(['/accounts/reverse-voucher/entry', id]);
             else this.router.navigate(['/accounts/reverse-voucher/list']);
           } else {
-            this.appSettingService.showError('Failed to create Reverse Voucher');
+            this.appSettingService.showError(response.message);
           }
         },
         error: (error) => {
           this.spinner.hide();
           this.isSaving = false;
-          this.appSettingService.showError('Error creating Reverse Voucher');
+          this.appSettingService.showError(error.error?.message || error.message || error);
           console.error('Error:', error);
         }
       });
