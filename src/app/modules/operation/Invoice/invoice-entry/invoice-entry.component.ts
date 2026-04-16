@@ -1282,10 +1282,11 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         })
 
         const totalTaxAmount = this.getFormattedAmount(
-          (taxAmounts.cgstAmt +
-          taxAmounts.sgstAmt +
-          taxAmounts.igstAmt +
-          taxAmounts.vatAmt),
+          (
+            toNumber(taxAmounts.cgstAmt) +
+            toNumber(taxAmounts.sgstAmt) +
+            toNumber(taxAmounts.igstAmt) +
+            toNumber(taxAmounts.vatAmt)),
           this.currentCompany.CurrencyMasterSid
         )
         

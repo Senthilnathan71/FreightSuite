@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { finalize } from 'rxjs/operators';
+import { combineLatest, Subject } from 'rxjs';
+import { filter, finalize, take, takeUntil } from 'rxjs/operators';
 
 // Services
 import { ReportService, ReportCard, ReportGenerateResponse, ExportReportParams } from '../../../shared/services/report.service';
@@ -15,6 +16,7 @@ import { ReportExportActionsComponent } from '../../../shared/components/general
 import { ReportEmailDialogComponent, EmailReportData } from '../../../shared/components/general-reports/report-email-dialog/report-email-dialog.component';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { AgeingReportComponent } from 'src/app/shared/components/reports/ageing-report/ageing-report.component';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-accounts-reports',
@@ -29,7 +31,7 @@ import { AgeingReportComponent } from 'src/app/shared/components/reports/ageing-
   templateUrl: './accounts-reports.component.html',
   styleUrls: ['./accounts-reports.component.scss']
 })
-export class AccountsReportsComponent implements OnInit {
+export class AccountsReportsComponent implements OnInit, OnDestroy {
   // State management
   reports: ReportCard[] = [];
   selectedReport: ReportCard | null = null;
@@ -41,23 +43,39 @@ export class AccountsReportsComponent implements OnInit {
   generatingReport = false;
   exportingReport = false;
 
-  // Company ID (should come from auth service or session)
+  // null = permissions not yet loaded (all cards disabled)
+  allowedReportSids: Set<number> | null = null;
+
   currentCompany : any;
-  companyId = 1; // TODO: Get from auth service
+  companyId = 1;
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private reportService: ReportService,
     private exportService: ReportExportService,
     private modalService: NgbModal,
-    private appSettingService: AppSettingsService
+    private appSettingService: AppSettingsService,
+    private mps: MenuPermissionService
   ) {}
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
-    if(this.currentCompany){
+    if (this.currentCompany) {
       this.companyId = this.currentCompany?.CompanyMasterSid;
     }
+    this.mps.init().subscribe();
+    combineLatest([this.mps.loaded$, this.mps.reportPermissions$])
+      .pipe(filter(([loaded]) => loaded), take(1), takeUntil(this.destroy$))
+      .subscribe(([, perms]) => {
+        this.allowedReportSids = new Set(perms.map(p => p.ReportMasterSid));
+      });
     this.loadAvailableReports();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**

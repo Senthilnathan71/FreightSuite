@@ -835,10 +835,10 @@ createRateFormGroup(data?: any): FormGroup {
       { value: data?.RevenueDrCr ?? 'C', disabled: isRevenueFromQuotation }
     ],
     RevenueCustomerMasterSid: [
-      { value: data?.RevenueCustomerMasterSid ?? null, disabled: isRevenueFromQuotation }
+      { value: data?.RevenueCustomerMasterSid ?? null, disabled: isRevenueFromQuotation && data.RevenueCustomerMasterSid != null }
     ],
     RevenueCustomerBranchSid: [
-      { value: data?.RevenueCustomerBranchSid ?? null, disabled: isRevenueFromQuotation }
+      { value: data?.RevenueCustomerBranchSid ?? null, disabled: isRevenueFromQuotation && data.RevenueCustomerBranchSid != null }
     ],
     RevenuePrepaidCollect: [
       { value: data?.RevenuePrepaidCollect ?? "Prepaid", disabled: isRevenueFromQuotation }
@@ -856,8 +856,8 @@ createRateFormGroup(data?: any): FormGroup {
     CostAmount: [{ value: data?.CostAmount != null ? Number(data.CostAmount) : '', disabled: isCostFromQuotation }],
     CostLocalAmount: [{ value: data?.CostLocalAmount != null ? Number(data.CostLocalAmount).toFixed(this.digitsAfterDecimal) : '', disabled: isCostFromQuotation }],
     CostDrCr: [{ value: data?.CostDrCr ?? 'D', disabled: isCostFromQuotation }],
-    CostAgentMasterSid: [{ value: data?.CostAgentMasterSid ?? null, disabled: isCostFromQuotation }],
-    CostAgentBranchSid: [{ value: data?.CostAgentBranchSid ?? null, disabled: isCostFromQuotation }],
+    CostAgentMasterSid: [{ value: data?.CostAgentMasterSid ?? null, disabled: isCostFromQuotation && data.CostAgentMasterSid != null }],
+    CostAgentBranchSid: [{ value: data?.CostAgentBranchSid ?? null, disabled: isCostFromQuotation && data.CostAgentBranchSid != null }],
     CostPrepaidCollect: [{ value: data?.CostPrepaidCollect ?? "Prepaid", disabled: isCostFromQuotation }],
     CostVoucherHeaderSid: [data?.CostVoucherHeaderSid ?? null],
     PaymentRequestSid: [data?.PaymentRequestSid ?? null],

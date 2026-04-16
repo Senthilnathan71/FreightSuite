@@ -1,0 +1,80 @@
+<ngx-spinner bdColor="rgba(0,0,0,0.6)" size="small" color="#fff" type="ball-scale-ripple" [fullScreen]="false">
+</ngx-spinner>
+
+<div class="modal-header p-2 bg-info text-white">
+  <h5 class="modal-title mb-0">
+    <i class="fas fa-chart-bar me-2"></i>Report Permissions — {{ menuItem?.MenuName }}
+  </h5>
+  <button type="button" class="btn-close btn-close-white" (click)="onCancel()"></button>
+</div>
+
+<div class="modal-body p-3">
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="text-center py-4">
+    <div class="spinner-border spinner-border-sm text-info" role="status"></div>
+    <span class="ms-2 text-muted">Loading...</span>
+  </div>
+
+  <!-- Empty -->
+  <div *ngIf="hasNoReports" class="text-center py-5 text-muted">
+    <i class="fas fa-chart-bar fa-2x mb-3 d-block"></i>
+    <p class="mb-0">No reports configured for this menu.</p>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!isLoading && rows.length > 0">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <small class="text-muted">{{ rows.length }} report{{ rows.length !== 1 ? 's' : '' }}</small>
+      <small class="text-muted">{{ grantedCount }} granted</small>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle table-borderless mb-0">
+        <thead class="bg-info">
+          <tr>
+            <th class="bg-transparent text-light ps-3" style="border-top-left-radius:5px;">Report Name</th>
+            <th class="bg-transparent text-light">Type</th>
+            <th class="bg-transparent text-light">Format</th>
+            <th class="bg-transparent text-light text-center" style="width:90px;border-top-right-radius:5px;">Access</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows; let i = index" style="border-bottom:1px solid #f0f0f0;">
+            <td class="ps-3 fw-semibold">{{ row.ReportDisplayName }}</td>
+            <td>
+              <span class="badge bg-secondary" *ngIf="row.ReportType">{{ row.ReportType }}</span>
+            </td>
+            <td>
+              <span class="badge"
+                [class.bg-danger]="row.ReportFormat === 'PDF'"
+                [class.bg-success]="row.ReportFormat === 'XL' || row.ReportFormat === 'EXCEL'"
+                [class.bg-primary]="row.ReportFormat === 'BOTH'"
+                [class.bg-secondary]="!['PDF','XL','EXCEL','BOTH'].includes(row.ReportFormat)">
+                {{ row.ReportFormat }}
+              </span>
+            </td>
+            <td class="text-center">
+              <div class="form-check form-switch d-flex justify-content-center mb-0">
+                <input
+                  type="checkbox"
+                  class="form-check-input cursor-pointer"
+                  style="width:2.2em;height:1.1em;"
+                  [(ngModel)]="row.grantAccess"
+                  [id]="'report-access-' + i">
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal-footer py-2">
+  <button type="button" class="btn btn-secondary btn-sm" (click)="onCancel()">Cancel</button>
+  <button type="button" class="btn btn-info btn-sm" (click)="onSave()" [disabled]="isLoading">
+    <i class="fas fa-save me-1"></i> Save
+  </button>
+</div>

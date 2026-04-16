@@ -10,10 +10,17 @@ export interface PrintPermission {
   PrintMail: string;
 }
 
+export interface ReportPermission {
+  ReportMasterSid: number;
+  ReportName: string;
+  ReportDisplayName: string;
+}
+
 export interface PermissionApiResponse {
   data: {
     MenuPermissions: Record<string, string | boolean | undefined>;
     PrintPermissions?: PrintPermission[];
+    ReportPermissions?: ReportPermission[];
   };
 }
 
@@ -41,6 +48,7 @@ export class MenuPermissionService {
   // Cache keyed by company_menu_role
   private cache = new Map<string, PermissionSet>();
   private printCache = new Map<string, PrintPermission[]>();
+  private reportCache = new Map<string, ReportPermission[]>();
 
   // track inflight requests (dedupe)
   private inFlight = new Map<string, Observable<PermissionSet>>();
@@ -56,6 +64,10 @@ export class MenuPermissionService {
   // print permissions stream
   private printSubject = new BehaviorSubject<PrintPermission[]>([]);
   printPermissions$ = this.printSubject.asObservable();
+
+  // report permissions stream
+  private reportSubject = new BehaviorSubject<ReportPermission[]>([]);
+  reportPermissions$ = this.reportSubject.asObservable();
 
   // keep current key so getPerms() & can() work w/out passing ids
   private currentKey: string | null = null;
@@ -100,6 +112,15 @@ export class MenuPermissionService {
     }
 
     const key = this.buildKey(companyId, menuId, roleIds);
+
+    // Reset loaded/report/print state when switching to a different menu context
+    // so combineLatest subscribers don't fire prematurely with stale data
+    if (this.currentKey !== key) {
+      this.loadedSubject.next(false);
+      this.reportSubject.next([]);
+      this.printSubject.next([]);
+    }
+
     this.currentKey = key;
 
     console.log('%c[MPS] Built key: ' + key, 'color: #03A9F4');
@@ -110,6 +131,7 @@ export class MenuPermissionService {
       this.permissionSubject.next(cached);
       this.loadedSubject.next(true);
       this.printSubject.next(this.printCache.get(key) ?? []);
+      this.reportSubject.next(this.reportCache.get(key) ?? []);
       return of(cached);
     }
 
@@ -138,6 +160,13 @@ export class MenuPermissionService {
           this.printSubject.next(printPerms);
         }
 
+        // Extract and cache report permissions from the same response
+        const reportPerms: ReportPermission[] = res?.data?.ReportPermissions ?? [];
+        this.reportCache.set(key, reportPerms);
+        if (this.currentKey === key) {
+          this.reportSubject.next(reportPerms);
+        }
+
         return this.transform(res);
       }),
 
@@ -164,9 +193,11 @@ export class MenuPermissionService {
         };
 
         this.printCache.set(key, []);
+        this.reportCache.set(key, []);
         this.cache.set(key, fallback);
         if (this.currentKey === key) {
           this.printSubject.next([]);
+          this.reportSubject.next([]);
           this.permissionSubject.next(fallback);
           this.loadedSubject.next(true);
         }
@@ -206,10 +237,12 @@ export class MenuPermissionService {
   clear(): void {
     this.cache.clear();
     this.printCache.clear();
+    this.reportCache.clear();
     this.inFlight.clear();
     this.currentKey = null;
     this.permissionSubject.next(null);
     this.printSubject.next([]);
+    this.reportSubject.next([]);
     this.loadedSubject.next(false);
   }
 
@@ -225,6 +258,16 @@ export class MenuPermissionService {
   /** Synchronous getter for current print permissions array. */
   getPrintPermissions(): PrintPermission[] {
     return this.printSubject.getValue();
+  }
+
+  /** Synchronous check: returns true if report with given ReportMasterSid is allowed. */
+  canReport(reportMasterSid: number): boolean {
+    return this.reportSubject.getValue().some(r => r.ReportMasterSid === reportMasterSid);
+  }
+
+  /** Synchronous getter for current report permissions array. */
+  getReportPermissions(): ReportPermission[] {
+    return this.reportSubject.getValue();
   }
 
   /**
