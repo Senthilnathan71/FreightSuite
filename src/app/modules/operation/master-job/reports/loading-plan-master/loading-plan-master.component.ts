@@ -33,9 +33,10 @@ export class LoadingPlanMasterComponent {
   currentBranchCityId: number;
   currentDate = new Date();
 
-   @Input() housejobData: any;
+  @Input() housejobData: any;
   @Input() masterJobData: any;
   @Input() masterJobContainers: any[] = [];
+  @Input() containerTypeList: any[] = [];
   @Input() packageTypeList: any[] = [];
   @Input() TandCList: any;
   @Input() selectedFCLLCL: string = 'LCL';
@@ -104,6 +105,22 @@ export class LoadingPlanMasterComponent {
     return shipment?.FPD || item?.FPD || '';
   }
 
+  get containersForPrint(): any[] {
+    return this.masterJobData?.containers || this.masterJobContainers || [];
+  }
+
+  getContainerTypeName(containerTypeMasterSid: number): string {
+    if (!containerTypeMasterSid || !this.containerTypeList?.length) {
+      return '';
+    }
+
+    const containerType = this.containerTypeList.find(
+      (ct) => String(ct?.ContainerTypeMasterSid) === String(containerTypeMasterSid)
+    );
+
+    return containerType?.ContainerName || '';
+  }
+
   get totalGrossWeight(): number {
     return this.getCargoTotal('GrossWeight');
   }
@@ -150,6 +167,7 @@ export class LoadingPlanMasterComponent {
         logo,
         {
           portList: this.portList,
+          containerTypeList: this.containerTypeList,
         },
       );
       const docDefinition = generateLoadingPlanMasterDocument(pdfData);

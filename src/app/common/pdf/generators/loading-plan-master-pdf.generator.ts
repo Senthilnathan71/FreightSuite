@@ -15,6 +15,15 @@ interface LoadingPlanMasterRow {
   volume: number;
 }
 
+interface LoadingPlanMasterContainerRow {
+  containerType: string;
+  containerNo: string;
+  noOfPackage: number;
+  grossWeight: number;
+  netWeight: number;
+  volume: number;
+}
+
 interface LoadingPlanMasterInfo {
   mblNo: string;
   vesselVoyageNo: string;
@@ -37,6 +46,7 @@ export interface LoadingPlanMasterPdfData {
   userData: any;
   logo?: string;
   info: LoadingPlanMasterInfo;
+  containerRows: LoadingPlanMasterContainerRow[];
   rows: LoadingPlanMasterRow[];
   config?: {
     pageSize?: 'A4' | 'LETTER';
@@ -73,6 +83,7 @@ export function generateLoadingPlanMasterDocument(data: LoadingPlanMasterPdfData
     content: [
       buildTitle(data),
       buildInfoSection(data.info),
+      buildContainerDetailsTable(data.containerRows),
       buildLoadingPlanTable(data.rows)
     ],
     footer: (currentPage: number, pageCount: number) => buildFooter(data, currentPage, pageCount),
@@ -172,7 +183,7 @@ function buildTitle(data: LoadingPlanMasterPdfData): any {
     bold: true,
     alignment: 'center',
     fontSize: 12,
-    margin: [0, 4, 0, 10]
+    margin: [0, 0, 0, 8]
   };
 }
 
@@ -325,11 +336,91 @@ function buildLoadingPlanTable(rows: LoadingPlanMasterRow[]): any {
   };
 }
 
+function buildContainerDetailsTable(rows: LoadingPlanMasterContainerRow[]): any {
+  if (!rows.length) {
+    return { text: '' };
+  }
+
+  return {
+    table: {
+      headerRows: 1,
+      widths: ['*', '*', 70, 85, 85, 85],
+      body: [
+        [
+          buildContainerHeaderCell('Container Type', [false, true, true, true]),
+          buildContainerHeaderCell('Container No.'),
+          buildContainerHeaderCell('No.of Pkg'),
+          buildContainerHeaderCell('Gross Weight'),
+          buildContainerHeaderCell('Net Weight'),
+          buildContainerHeaderCell('Volume', [true, true, false, true])
+        ],
+        ...rows.map((row) => ([
+          buildContainerTextCell(row.containerType, [false, true, true, true]),
+          buildContainerTextCell(row.containerNo),
+          buildContainerNumberCell(row.noOfPackage, 0),
+          buildContainerNumberCell(row.grossWeight, 3),
+          buildContainerNumberCell(row.netWeight, 3),
+          buildContainerNumberCell(row.volume, 3, [true, true, false, true])
+        ]))
+      ]
+    },
+    layout: {
+      hLineWidth: () => 0.8,
+      vLineWidth: () => 0.8,
+      hLineColor: () => '#000',
+      vLineColor: () => '#000',
+      paddingTop: () => 3,
+      paddingBottom: () => 3,
+      paddingLeft: () => 4,
+      paddingRight: () => 4
+    },
+    margin: [0, 0, 0, 8]
+  };
+}
+
 function buildHeaderCell(text: string, border: [boolean, boolean, boolean, boolean] = [true, true, true, true]): any {
   return {
     text,
     style: 'tableHeader',
     alignment: 'center',
+    border
+  };
+}
+
+function buildContainerHeaderCell(
+  text: string,
+  border: [boolean, boolean, boolean, boolean] = [true, true, true, true]
+): any {
+  return {
+    text,
+    style: 'tableHeader',
+    alignment: 'center',
+    border,
+    fillColor: undefined
+  };
+}
+
+function buildContainerTextCell(
+  value?: string,
+  border: [boolean, boolean, boolean, boolean] = [true, true, true, true]
+): any {
+  return {
+    text: value || '',
+    style: 'tableCell',
+    alignment: 'left',
+    border
+  };
+}
+
+function buildContainerNumberCell(
+  value?: number,
+  decimals = 3,
+  border: [boolean, boolean, boolean, boolean] = [true, true, true, true]
+): any {
+  return {
+    text: formatNumberWithCommas(value || 0, decimals),
+    style: 'tableCell',
+    alignment: 'right',
     border
   };
 }
@@ -393,12 +484,14 @@ export function transformLoadingPlanMasterApiData(
   logo?: string,
   options?: {
     portList?: any[];
+    containerTypeList?: any[];
   }
 ): LoadingPlanMasterPdfData {
   const voyages = masterJobData?.voyages?.[0] || {};
   const firstHouseJob = masterJobData?.houseJob?.[0] || {};
   const allShipments = masterJobData?.allShipments || [];
   const portList = options?.portList || [];
+  const containerTypeList = options?.containerTypeList || [];
 
   const getPortName = (portCode: string): string => {
     if (!portCode) {
@@ -429,6 +522,27 @@ export function transformLoadingPlanMasterApiData(
       volume: toNumber(cargo?.Volume)
     };
   });
+
+  const getContainerTypeName = (containerTypeSid: any): string => {
+    if (!containerTypeSid) {
+      return '';
+    }
+
+    const containerType = containerTypeList.find(
+      (item: any) => String(item?.ContainerTypeMasterSid) === String(containerTypeSid)
+    );
+
+    return containerType?.ContainerName || String(containerTypeSid);
+  };
+
+  const containerRows: LoadingPlanMasterContainerRow[] = (masterJobData?.containers || []).map((container: any) => ({
+    containerType: getContainerTypeName(container?.ContainerType),
+    containerNo: container?.ContainerNumber || '',
+    noOfPackage: toNumber(container?.NoOfPkg),
+    grossWeight: toNumber(container?.GrossWeight),
+    netWeight: toNumber(container?.NetWeight),
+    volume: toNumber(container?.Volume)
+  }));
 
   return {
     reportTitle: 'Container Load Plan',
@@ -469,6 +583,7 @@ export function transformLoadingPlanMasterApiData(
       pod: getPortName(masterJobData?.POD),
       fdc: getPortName(masterJobData?.FPD)
     },
+    containerRows,
     rows,
     config: {
       pageOrientation: 'landscape'

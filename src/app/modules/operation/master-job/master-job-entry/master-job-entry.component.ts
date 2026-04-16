@@ -4356,6 +4356,7 @@ onETDDateSelect(): void {
     modalRef.componentInstance.masterJobData = this.masterJobData;
     modalRef.componentInstance.cfsList = this.cfsList || [];
     modalRef.componentInstance.masterJobContainers = this.masterJobData?.containers || [];
+    modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
     modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
     modalRef.componentInstance.portList = this.portList || [];
   }
