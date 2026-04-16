@@ -23,6 +23,7 @@
         <app-report-card-list
           [reports]="reports"
           [loading]="loadingReports"
+          [allowedReportSids]="allowedReportSids"
           (reportSelected)="onReportSelected($event)"
         ></app-report-card-list>
       </div>

@@ -219,6 +219,18 @@ export class ReportService {
   }
 
   /**
+   * Get active reports for a specific menu, optionally filtered by company exclusions
+   */
+  getReportsByMenu(menuId: number, companyId?: number): Observable<ReportCard[]> {
+    let params = new HttpParams();
+    if (companyId) params = params.set('companyId', companyId.toString());
+    return this.http.get<ApiResponse<ReportCard[]>>(
+      `${this.baseUrl}report-master/by-menu/${menuId}`,
+      { params }
+    ).pipe(map(response => response.data));
+  }
+
+  /**
    * Get all reports for admin management
    */
   getAllReports(): Observable<ReportCard[]> {

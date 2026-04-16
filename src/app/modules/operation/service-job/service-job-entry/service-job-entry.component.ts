@@ -1306,6 +1306,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
     const CustomerBranchSid = this.b['CustomerBranchSid']?.value;
     const HouseJobSid = this.HouseJobSid || this.serviceJobData?.HouseJobSid || this.b['HouseJobSid']?.value;
     const MasterJobSid = this.serviceJobData?.MasterJobSid || this.b['MasterJobSid']?.value;
+    const MasterJobNumber = this.serviceJobData?.masterJob?.MasterJobNumber || this.b['MasterJobNumber']?.value;
 
     this.currentFormValue = {
       CompanyMasterSid,
@@ -1337,7 +1338,8 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       NoofContainers,
       ChargeableWeight,
       countryOfCompany : this.countryOfCompany,
-      MasterJobSid
+      MasterJobSid,
+      MasterJobNumber
     }
   }
 

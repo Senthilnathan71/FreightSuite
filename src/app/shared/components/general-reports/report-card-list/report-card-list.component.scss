@@ -5,12 +5,12 @@
 .report-card {
   cursor: pointer;
   transition: all 0.25s ease;
-  border: none;
+  border: 1px solid #d9e8f5;
   border-radius: 10px;
   position: relative;
   overflow: hidden;
-  background: #ffffff;
-  box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px;
+  background: linear-gradient(180deg, #ffffff 0%, #f6fbff 100%);
+  box-shadow: rgba(5, 96, 141, 0.08) 0px 4px 12px 0px, rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
   animation: cardSlideUp 0.5s ease-out both;
 
   &[data-report-type="ACCOUNTS"] {
@@ -27,10 +27,51 @@
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: rgba(0, 0, 0, 0.12) 0px 8px 18px 0px;
+    border-color: #9ecae4;
+    box-shadow: rgba(5, 96, 141, 0.16) 0px 10px 22px 0px;
 
     .report-icon-circle {
       transform: scale(1.04);
+    }
+  }
+
+  &.report-card-disabled {
+    cursor: not-allowed;
+    border-color: #e7edf3;
+    background: linear-gradient(180deg, #f6f8fb 0%, #eef2f6 100%);
+    box-shadow: none;
+    opacity: 0.88;
+
+    &:hover {
+      transform: none;
+      border-color: #e7edf3;
+      box-shadow: none;
+
+      .report-icon-circle {
+        transform: none;
+      }
+    }
+
+    .report-icon-circle {
+      background: linear-gradient(135deg, #c7d2de 0%, #aeb9c6 100%) !important;
+
+      i {
+        color: #f8fbff;
+      }
+    }
+
+    h6 {
+      color: #8391a2;
+    }
+
+    .report-details,
+    .report-details small,
+    [data-format] {
+      color: #94a3b8 !important;
+    }
+
+    [data-format] {
+      background: #e4eaf0;
     }
   }
 

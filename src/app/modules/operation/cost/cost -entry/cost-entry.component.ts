@@ -835,10 +835,10 @@ createRateFormGroup(data?: any): FormGroup {
       { value: data?.RevenueDrCr ?? 'C', disabled: isRevenueFromQuotation }
     ],
     RevenueCustomerMasterSid: [
-      { value: data?.RevenueCustomerMasterSid ?? null, disabled: isRevenueFromQuotation }
+      { value: data?.RevenueCustomerMasterSid ?? null, disabled: isRevenueFromQuotation && data.RevenueCustomerMasterSid != null }
     ],
     RevenueCustomerBranchSid: [
-      { value: data?.RevenueCustomerBranchSid ?? null, disabled: isRevenueFromQuotation }
+      { value: data?.RevenueCustomerBranchSid ?? null, disabled: isRevenueFromQuotation && data.RevenueCustomerBranchSid != null }
     ],
     RevenuePrepaidCollect: [
       { value: data?.RevenuePrepaidCollect ?? "Prepaid", disabled: isRevenueFromQuotation }
@@ -856,8 +856,8 @@ createRateFormGroup(data?: any): FormGroup {
     CostAmount: [{ value: data?.CostAmount != null ? Number(data.CostAmount) : '', disabled: isCostFromQuotation }],
     CostLocalAmount: [{ value: data?.CostLocalAmount != null ? Number(data.CostLocalAmount).toFixed(this.digitsAfterDecimal) : '', disabled: isCostFromQuotation }],
     CostDrCr: [{ value: data?.CostDrCr ?? 'D', disabled: isCostFromQuotation }],
-    CostAgentMasterSid: [{ value: data?.CostAgentMasterSid ?? null, disabled: isCostFromQuotation }],
-    CostAgentBranchSid: [{ value: data?.CostAgentBranchSid ?? null, disabled: isCostFromQuotation }],
+    CostAgentMasterSid: [{ value: data?.CostAgentMasterSid ?? null, disabled: isCostFromQuotation && data.CostAgentMasterSid != null }],
+    CostAgentBranchSid: [{ value: data?.CostAgentBranchSid ?? null, disabled: isCostFromQuotation && data.CostAgentBranchSid != null }],
     CostPrepaidCollect: [{ value: data?.CostPrepaidCollect ?? "Prepaid", disabled: isCostFromQuotation }],
     CostVoucherHeaderSid: [data?.CostVoucherHeaderSid ?? null],
     PaymentRequestSid: [data?.PaymentRequestSid ?? null],
@@ -3540,6 +3540,44 @@ createRateFormGroup(data?: any): FormGroup {
         );
         return;
       }
+    }
+
+    // --- Zero local amount guard ---
+    const zeroAmountRows: string[] = [];
+    for (let i = 0; i < this.details.length; i++) {
+      if (!this.details.at(i).get('isSelected')?.value) continue;
+      const row = this.details.at(i).getRawValue();
+      if (Math.abs(parseFloat(row.LocalAmount) || 0) < 0.001) {
+        const chargeSid = row.ChargeMasterSid;
+        zeroAmountRows.push(this.chargeList.find((c: any) => c.ChargeMasterSid === chargeSid)?.chargeName || row.ChargeDescription || `Row ${i + 1}`);
+      }
+    }
+    if (zeroAmountRows.length > 0) {
+      this.appSettingService.showError(
+        `The following charge rows have a zero local amount:<br>${zeroAmountRows.map(r => `&bull; ${r}`).join('<br>')}<br><br>All charges must have a non-zero local amount.`,
+        'Zero Amount — Validation Failed',
+        { closeButton: true, enableHtml: true }
+      );
+      return;
+    }
+
+    // --- Zero net amount guard ---
+    let totalCredit = 0;
+    let totalDebit = 0;
+    for (let i = 0; i < this.details.length; i++) {
+      if (!this.details.at(i).get('isSelected')?.value) continue;
+      const row = this.details.at(i).getRawValue();
+      const amt = parseFloat(row.LocalAmount) || 0;
+      if (row.DrCr === 'C') totalCredit += amt;
+      else totalDebit += amt;
+    }
+    if (Math.abs(totalCredit - totalDebit) < 0.001) {
+      this.appSettingService.showError(
+        'The net amount of this invoice is zero (total credits equal total debits). Please review the charge amounts before saving.',
+        'Zero Net Amount — Validation Failed',
+        { closeButton: true, enableHtml: true }
+      );
+      return;
     }
 
     this.spinner.show();

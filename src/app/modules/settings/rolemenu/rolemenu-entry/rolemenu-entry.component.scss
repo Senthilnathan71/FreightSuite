@@ -45,3 +45,35 @@ input[type="checkbox"]:disabled:checked {
   border-color: #f39c12;
 }
 
+.role-report-btn {
+  min-width: 32px;
+  border-width: 1px;
+  transition: all 0.2s ease;
+
+  &:disabled {
+    opacity: 1;
+  }
+}
+
+.role-report-btn-enabled {
+  color: #ffffff;
+  border-color: #034a6b;
+  background: linear-gradient(180deg, #05608d 0%, #034a6b 100%);
+  box-shadow: rgba(3, 74, 107, 0.35) 0px 3px 8px 0px;
+
+  &:hover:not(:disabled) {
+    border-color: #023756;
+    background: linear-gradient(180deg, #034a6b 0%, #023756 100%);
+    box-shadow: rgba(3, 74, 107, 0.5) 0px 6px 14px 0px;
+    transform: translateY(-1px);
+  }
+}
+
+.role-report-btn-disabled {
+  color: #97a6b5;
+  border-color: #dbe4ec;
+  background: linear-gradient(180deg, #f5f7fa 0%, #edf1f5 100%);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+

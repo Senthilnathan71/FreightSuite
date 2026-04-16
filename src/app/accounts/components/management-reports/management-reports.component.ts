@@ -1,11 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { finalize } from 'rxjs/operators';
+import { combineLatest, Subject } from 'rxjs';
+import { filter, finalize, take, takeUntil } from 'rxjs/operators';
 
 import { ReportService, ReportCard } from '../../../shared/services/report.service';
 import { ReportCardListComponent } from '../../../shared/components/general-reports/report-card-list/report-card-list.component';
 import { ReportParameterFormComponent } from '../../../shared/components/general-reports/report-parameter-form/report-parameter-form.component';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-management-reports',
@@ -14,7 +16,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
   templateUrl: './management-reports.component.html',
   styleUrls: ['./management-reports.component.scss']
 })
-export class ManagementReportsComponent implements OnInit {
+export class ManagementReportsComponent implements OnInit, OnDestroy {
   reports: ReportCard[] = [];
   selectedReport: ReportCard | null = null;
   reportParameters: any = {};
@@ -22,12 +24,18 @@ export class ManagementReportsComponent implements OnInit {
   loadingReports = false;
   generatingReport = false;
 
+  // null = permissions not yet loaded (all cards disabled)
+  allowedReportSids: Set<number> | null = null;
+
   currentCompany: any;
   companyId = 1;
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private reportService: ReportService,
-    private appSettingService: AppSettingsService
+    private appSettingService: AppSettingsService,
+    private mps: MenuPermissionService
   ) {}
 
   ngOnInit(): void {
@@ -35,7 +43,18 @@ export class ManagementReportsComponent implements OnInit {
     if (this.currentCompany) {
       this.companyId = this.currentCompany?.CompanyMasterSid;
     }
+    this.mps.init().subscribe();
+    combineLatest([this.mps.loaded$, this.mps.reportPermissions$])
+      .pipe(filter(([loaded]) => loaded), take(1), takeUntil(this.destroy$))
+      .subscribe(([, perms]) => {
+        this.allowedReportSids = new Set(perms.map(p => p.ReportMasterSid));
+      });
     this.loadAvailableReports();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadAvailableReports(): void {

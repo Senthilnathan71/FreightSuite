@@ -14,7 +14,8 @@ import { CommonPaginationComponent } from 'src/app/shared/components/pagination/
 import { PaginationConfig } from 'src/app/shared/interfaces/pagination.interface';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { PrintPermissionModalComponent } from '../print-permission-modal/print-permission-modal.component';
-// PrintPermissionModalComponent is opened via NgbModal — not used directly in template
+import { ReportPermissionModalComponent } from '../report-permission-modal/report-permission-modal.component';
+// Both modal components are opened via NgbModal — not used directly in template
 
 @Component({
   selector: 'app-rolemenu-entry',
@@ -626,6 +627,25 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
       page: this.dynamicMenuPage,
       pageSize: this.dynamicMenuPageSize,
       totalRecords: this.dynamicMenuList.length,
+    };
+  }
+
+  openReportModal(menu: any): void {
+    if (!menu.RoleMenuDetailSid) {
+      this.appSettingService.showWarning('Please save the Role Menu before managing report permissions.');
+      return;
+    }
+    const modalRef = this.modalService.open(ReportPermissionModalComponent, {
+      size: 'md',
+      centered: true,
+      backdrop: 'static'
+    });
+    modalRef.componentInstance.menuItem = {
+      RoleMenuDetailSid: menu.RoleMenuDetailSid,
+      RoleMenuHeaderSid: this.roleMenuHeaderSid,
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      MenuMasterSid: menu.MenuMasterSid,
+      MenuName: menu.MenuName
     };
   }
 
