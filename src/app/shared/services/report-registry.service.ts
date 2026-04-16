@@ -849,6 +849,39 @@ export class ReportRegistryService {
             error,
           );
         }
+
+      //  GST Inward Register
+        try {
+          const { GSTInwardRegisterComponent } = await import(
+            '../components/reports/gst-inward-register/gst-inward-register.component'
+          );
+
+          this.registerReport({
+            id: 'GST-inward',
+            title: 'GST Inward Register',
+            component: GSTInwardRegisterComponent,
+            filenameTemplate: 'GST_Inward_Register_{date}',
+            module: 'accounts-report',
+            apiEndpoint: 'accounts-report/send-email',
+            request: 'POST',
+            fetchDataEndpoint: 'accounts/reports/{id}/generate',
+            emailSubjectTemplate: 'GST_Inward_Register',
+            emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>GST Inward Register</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+            modalSize: 'xl',
+            pdfOrientation: 'landscape',
+          });
+        } catch (error) {
+          console.warn(
+            ' GST Inward Register component not yet created:',
+            error,
+          );
+        }
 // ======================================================
     // operation report
 
