@@ -130,12 +130,61 @@ export class EmailTriggerService {
         }
 
         for (const config of configs) {
+          const isSIConfig = (config.Action || '').toUpperCase().includes('SENDSIMAIL');
+          if (isSIConfig && context?.['HouseJobSid']) {
+            this.delegateSIMail(context);
+            continue;
+          }
           if (config.AutoPopup === 'A') {
             this.sendAutoEmail(config, companyId, branchId, context, attachmentFile);
           } else {
             this.openEmailPopup(config, context, attachmentFile);
           }
         }
+      }
+    });
+  }
+
+  private delegateSIMail(context: any): void {
+    const userData = this.appSettingService.getDecryptedUserProfile();
+    const companyInfo = this.appSettingService.getCurrentCompanyInfo();
+    const branchInfo = this.appSettingService.getCurrentBranchInfo();
+
+    const payload = {
+      CompanyMasterSid: companyInfo?.CompanyMasterSid,
+      BranchMasterSid: branchInfo?.BranchMasterSid,
+      HouseJobSid: context['HouseJobSid'],
+      appBaseUrl: window.location.origin,
+      userEmail: userData?.userEmail || '',
+      userName: userData?.userName || ''
+    };
+
+    this.operationService.sendSIMail(payload).subscribe({
+      next: (resp: any) => {
+        if (!resp?.status) {
+          this.appSettingService.showError(resp?.message || 'Failed to send SI Mail');
+          return;
+        }
+        const data = resp.data;
+        if (data?.showPopup && data?.emailData) {
+          const modalRef = this.ngbModal.open(EmailEntryComponent, {
+            size: 'lg',
+            centered: true,
+            backdrop: 'static'
+          });
+          modalRef.componentInstance.setContent = {
+            EmailTo: data.emailData.toEmail,
+            EmailCC: data.emailData.ccEmail,
+            EmailBCC: '',
+            Subject: data.emailData.subject,
+            Mailbody: data.emailData.body
+          };
+        } else {
+          this.appSettingService.showSuccess('SI Mail sent successfully');
+        }
+      },
+      error: (err) => {
+        this.appSettingService.showError(err?.error?.message || 'Failed to send SI Mail');
       }
     });
   }
@@ -279,7 +328,8 @@ export class EmailTriggerService {
 
     let result = text;
     for (const key in context) {
-      result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), context[key] ?? '');
+      // Lenient match: allows {{key}}, {{ key }}, case-insensitive
+      result = result.replace(new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'gi'), context[key] ?? '');
     }
     return result;
   }

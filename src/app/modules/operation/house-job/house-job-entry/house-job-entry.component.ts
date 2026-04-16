@@ -4078,6 +4078,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
       action: 'UPDATE',
       attachmentFile,
       context: {
+        HouseJobSid: this.housejobData?.HouseJobSid || this.HouseJobSid,
         ShipmentNo: this.bookingData?.ShipmentNo,
         BookingNo: this.bookingData?.BookingNo || this.bookingHeader?.BookingNo,
         JobNo: this.bookingData?.JobNo,
