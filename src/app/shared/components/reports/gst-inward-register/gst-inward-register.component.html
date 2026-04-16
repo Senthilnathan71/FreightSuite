@@ -1,0 +1,109 @@
+<div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
+  <app-print-header></app-print-header>
+
+    <h4 class="text-center fw-bold py-2" style="margin: 0;">
+        GST Inward Register
+    </h4>
+    <div style="margin-top: 1rem;">
+
+        <div style="display: flex; justify-content:space-between;">
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="width: 130px;">From Date </strong>
+                    <p class="ms-1 my-0">: {{ params?.FromDate | formatDate }}</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <strong style="width: 130px;">To Date </strong>
+                    <p class="ms-1 my-0">: {{ params?.ToDate | formatDate }}</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <strong style="width: 130px;">Voucher Type </strong>
+                    <p class="ms-1 my-0">: {{ fullData?.voucherTypeName}}</p>
+                </div>
+            </div>
+              <div>
+                <div class="d-flex align-items-center">
+                    <strong style="width: 130px;">State</strong>
+                    <p class="ms-1 my-0">: {{ fullData?.state}}</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <strong style="width: 130px;">City</strong>
+                    <p class="ms-1 my-0">: </p>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                <thead>
+                    <tr class="bg-info" style="white-space: nowrap;">
+                        <th class="bg-transparent text-light text-center">Location</th>
+                        <th class="bg-transparent text-light text-center">Transaction Date</th>
+                        <th class="bg-transparent text-light text-center">Transaction No</th>
+                        <th class="bg-transparent text-light text-center">Party Ref. No.</th>
+                        <th class="bg-transparent text-light text-center">Party Ref. Date</th>
+                        <th class="bg-transparent text-light text-center">Transaction Type</th>
+                        <th class="bg-transparent text-light text-center">Organization</th>
+                        <th class="bg-transparent text-light text-center">GSTIN</th>
+                        <th class="bg-transparent text-light text-center">Txn Value</th>
+                        <th class="bg-transparent text-light text-center">Taxable Value</th>
+                        <th class="bg-transparent text-light text-center">Tax Calculated On</th>
+                        <th class="bg-transparent text-light text-center">IGST</th>
+                        <th class="bg-transparent text-light text-center">CGST</th> 
+                        <th class="bg-transparent text-light text-center">SGST</th>
+                        <th class="bg-transparent text-light text-center">IGST Amount (RCM)</th>
+                        <th class="bg-transparent text-light text-center">CGST Amount (RCM)</th>
+                        <th class="bg-transparent text-light text-center">SGST Amount (RCM)</th>
+                        <th class="bg-transparent text-light text-center">Total GST</th>
+                        <th class="bg-transparent text-light text-center">Place of Supply</th>
+                        <th class="bg-transparent text-light text-center">IRN no.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of tableData;" style="white-space: nowrap;">
+                        <td>{{ item.Location || '' }}</td>
+                        <td>{{ item.TransactionDate | formatDate }}</td>
+                        <td>{{ item.TransactionNo || '' }}</td>
+                        <td>{{ item.PartyRefNo || '' }}</td>
+                        <td>{{ item.PartyRefDate | formatDate }}</td>
+                        <td>{{ item.TransactionType || '' }}</td>
+                        <td>{{ item.Organization || '' }}</td>
+                        <td>{{ item.GSTIN || '' }}</td>
+                        <td class="text-end">{{ item.TxnValue | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.TaxableValue | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.TaxCalculatedOn | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.IGST | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.CGST | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.SGST | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.IGSTAmountRCM | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.CGSTAmountRCM | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.SGSTAmountRCM | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.TotalGST | number:'1.2-2' }}</td>
+                        <td>{{ item.PlaceOfSupply || '' }}</td>
+                        <td>{{ item.IRNNo || '' }}</td>
+                    </tr>
+                    <tr *ngIf="tableData.length > 0" class="fw-bold table-light" style="white-space: nowrap;">
+                        <td colspan="8" class="text-end">Total</td>
+                        <td class="text-end">{{ totalTxnValue | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ totalTaxableValue | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ totalTaxCalculatedOn | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ totalIGST | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ totalCGST | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ totalSGST | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ totalIGSTAmountRCM | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ totalCGSTAmountRCM | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ totalSGSTAmountRCM | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ totalGST | number:'1.2-2' }}</td>
+                        <td colspan="2"></td>
+                    </tr>
+                     <tr *ngIf="tableData.length === 0">
+                        <td colspan="20" class="text-center fw-bold py-1">
+                            No Record Found
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <app-print-footer></app-print-footer>
+</div>
