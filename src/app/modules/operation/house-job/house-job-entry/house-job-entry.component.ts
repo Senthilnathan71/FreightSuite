@@ -4061,7 +4061,12 @@ getVoyageTypeBasedOnDept(deptId: number) {
 
 
   async sendManualMail(): Promise<void> {
-    const pdfBlob = await this.generatePDFBlob();
+    let pdfBlob: Blob | undefined;
+    try {
+      pdfBlob = await this.generatePDFBlob();
+    } catch (e) {
+      console.warn('PDF generation skipped:', e);
+    }
     let attachmentFile: File | undefined;
     if (pdfBlob) {
       attachmentFile = new File([pdfBlob], (this.bookingData?.ShipmentNo || 'HouseJob') + '.pdf', { type: 'application/pdf' });
@@ -4404,12 +4409,14 @@ ${this.userData['userName']}`;
       });
           }
         } else {
-          this.appSettingService.showError(resp.message || 'Failed to send SI Mail');
+          console.error('Send SI Mail failed:', resp);
+          this.appSettingService.showError(resp.message || resp.error?.message || 'Failed to send SI Mail');
         }
       },
       error: (err) => {
         this.isSendingSIMail = false;
-        this.appSettingService.showError(err?.error?.message || 'Failed to send SI Mail');
+        console.error('Send SI Mail error:', err);
+        this.appSettingService.showError(err?.error?.message || err?.message || 'Failed to send SI Mail');
       }
     });
   }
