@@ -3535,6 +3535,44 @@ createRateFormGroup(data?: any): FormGroup {
       }
     }
 
+    // --- Zero local amount guard ---
+    const zeroAmountRows: string[] = [];
+    for (let i = 0; i < this.details.length; i++) {
+      if (!this.details.at(i).get('isSelected')?.value) continue;
+      const row = this.details.at(i).getRawValue();
+      if (Math.abs(parseFloat(row.LocalAmount) || 0) < 0.001) {
+        const chargeSid = row.ChargeMasterSid;
+        zeroAmountRows.push(this.chargeList.find((c: any) => c.ChargeMasterSid === chargeSid)?.chargeName || row.ChargeDescription || `Row ${i + 1}`);
+      }
+    }
+    if (zeroAmountRows.length > 0) {
+      this.appSettingService.showError(
+        `The following charge rows have a zero local amount:<br>${zeroAmountRows.map(r => `&bull; ${r}`).join('<br>')}<br><br>All charges must have a non-zero local amount.`,
+        'Zero Amount — Validation Failed',
+        { closeButton: true, enableHtml: true }
+      );
+      return;
+    }
+
+    // --- Zero net amount guard ---
+    let totalCredit = 0;
+    let totalDebit = 0;
+    for (let i = 0; i < this.details.length; i++) {
+      if (!this.details.at(i).get('isSelected')?.value) continue;
+      const row = this.details.at(i).getRawValue();
+      const amt = parseFloat(row.LocalAmount) || 0;
+      if (row.DrCr === 'C') totalCredit += amt;
+      else totalDebit += amt;
+    }
+    if (Math.abs(totalCredit - totalDebit) < 0.001) {
+      this.appSettingService.showError(
+        'The net amount of this invoice is zero (total credits equal total debits). Please review the charge amounts before saving.',
+        'Zero Net Amount — Validation Failed',
+        { closeButton: true, enableHtml: true }
+      );
+      return;
+    }
+
     this.spinner.show();
 
     let stopGenerating = false;
