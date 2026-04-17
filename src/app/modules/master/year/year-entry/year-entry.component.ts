@@ -110,6 +110,7 @@ export class YearEntryComponent {
         this.isEditMode = true;
         this.loadYearData(this.YearMasterSid);
       }else {
+        this.yearForm.get('CompanyMasterSid')?.enable();
         this.yearForm.get('status')?.disable();
       }
     });
@@ -148,7 +149,7 @@ hasAnyDropdownPermission(): boolean {
       YearEndCompleted: [false],
       Remarks: [''],
       status: [{value: 'Active', disabled: false}, Validators.required],
-      CompanyMasterSid: [null],
+      CompanyMasterSid: [this.currentCompany?.CompanyMasterSid ?? null, Validators.required],
     });
     this.yearForm.get('StartDate')?.valueChanges.subscribe((startDate) => {
     if (startDate) {
@@ -190,8 +191,10 @@ calculateEndDate(startDate: any): any {
   }
 
   resetForm(): void {
+    this.yearForm.get('CompanyMasterSid')?.enable();
     this.yearForm.get('status')?.disable();
     this.yearForm.reset({
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid ?? null,
       status: 'Active'
     });
   }
@@ -209,11 +212,12 @@ calculateEndDate(startDate: any): any {
       let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail']};
       let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail']};
       const formValue = this.yearForm.getRawValue();
+      const selectedCompanySid = formValue.CompanyMasterSid || this.currentCompany?.CompanyMasterSid;
 
       const payload = (this.isEditMode) ? {
         ...formValue,
         YearCode: Number(formValue.YearCode),
-        CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+        CompanyMasterSid : selectedCompanySid,
         ...updatedBy,
         CurrentYear: formValue.CurrentYear ? 'Y' : 'N', 
   YearEndCompleted: formValue.YearEndCompleted ? 'Y' : 'N',
@@ -221,7 +225,7 @@ calculateEndDate(startDate: any): any {
       } : {
         ...formValue,
         YearCode: Number(formValue.YearCode),
-        CompanyMasterSid : this.currentCompany?.CompanyMasterSid,
+        CompanyMasterSid : selectedCompanySid,
         ...createdBy,
         CurrentYear: formValue.CurrentYear ? 'Y' : 'N', 
   YearEndCompleted: formValue.YearEndCompleted ? 'Y' : 'N',
@@ -347,11 +351,13 @@ calculateEndDate(startDate: any): any {
 
           StartDate:startDate,
           EndDate: endDate,
+          CompanyMasterSid: data.CompanyMasterSid ?? this.currentCompany?.CompanyMasterSid ?? null,
            CurrentYear: data.CurrentYear === 'Y',
         YearEndCompleted: data.YearEndCompleted === 'Y',
           status: this.statusMap[data.status] || 'Active'
         },
       );
+      this.yearForm.get('CompanyMasterSid')?.disable();
       this.yearData = data;
       },
       (error) => {
@@ -399,7 +405,10 @@ calculateEndDate(startDate: any): any {
           YearMasterSid: this.YearMasterSid,
           CompanyMasterSid,
           BranchMasterSid,
-          CreatedBy: this.userData?.email || ''
+          CreatedBy: this.userData?.email || '',
+          ARGraceDays: 90,
+          APGraceDays: 90,
+          GLGraceDays: 90
         }).subscribe(
           (result: any) => {
             this.isCreatingPeriods = false;
@@ -536,6 +545,7 @@ calculateEndDate(startDate: any): any {
   this.yearForm.reset({
     YearName: '',
     YearCode: '',
+    CompanyMasterSid: this.currentCompany?.CompanyMasterSid ?? null,
     StartDate: startDate,
     EndDate: endDate,
     CurrentYear: false,
@@ -545,6 +555,7 @@ calculateEndDate(startDate: any): any {
   });
 
   // Ensure status control is disabled (same behaviour as init)
+  this.yearForm.get('CompanyMasterSid')?.enable();
   this.yearForm.get('status')?.disable();
 
   // Reset local state

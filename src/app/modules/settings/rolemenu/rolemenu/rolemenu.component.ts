@@ -154,6 +154,12 @@ export class RolemenuComponent extends BaseListComponent implements OnInit {
 	}
 
 	override ngOnInit(): void {
+		this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+		this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+		const userProfile = this.appSettingService.getDecryptedUserProfile();
+		if (userProfile) {
+			this.userData = userProfile;
+		}
 		this.fetchAllData();
 		this.initSearchForm();
 		this.setupValueChanges();
@@ -163,12 +169,6 @@ export class RolemenuComponent extends BaseListComponent implements OnInit {
 		// 		this.userData = user;
 		// 	}
 		// )
-		this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-		this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
-		const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if (userProfile) {
-			this.userData = userProfile;
-		}
 		// Initialize table configuration
 		this.initializeTableConfig();
 		this.initializeHeaderActions();

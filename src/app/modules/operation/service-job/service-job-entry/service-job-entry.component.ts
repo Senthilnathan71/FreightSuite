@@ -49,6 +49,8 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { ToastrService } from 'ngx-toastr';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
+import { JobCardComponent } from '../../house-job/report/job-card/job-card.component';
+import { ProofOfDeliveryComponent } from '../../house-job/report/proof-of-delivery/proof-of-delivery.component';
 
 
 
@@ -1588,6 +1590,42 @@ openEDoc() {
       size: 'xl',
       scrollable: true,
     });
+  }
+
+  reportjobCard() {
+    const modalRef = this.modalService.open(JobCardComponent, {
+      size: 'xl',
+      scrollable: true,
+    });
+    modalRef.componentInstance.housejobData = this.serviceJobData || [];
+    modalRef.componentInstance.masterJobData = this.serviceJobData?.masterJob || null;
+    modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+    modalRef.componentInstance.packageTypeList = [];
+    modalRef.componentInstance.agentList = [];
+    modalRef.componentInstance.currencyList = this.currencyList || [];
+    modalRef.componentInstance.chargeList = [];
+    modalRef.componentInstance.profitSummary = [];
+    modalRef.componentInstance.customerWiseSummary = { revenue: [], cost: [] };
+    modalRef.componentInstance.chargeWiseSummary = [];
+    modalRef.componentInstance.uomList = this.costEntryComponent?.uomList || [];
+    modalRef.componentInstance.portList = this.portList || [];
+    modalRef.componentInstance.selectedDepartmentType = this.selectedDepartmentType || [];
+  }
+
+  reportProofofDelivery() {
+    const modalRef = this.modalService.open(ProofOfDeliveryComponent, {
+      size: 'xl',
+      scrollable: true,
+    });
+    modalRef.componentInstance.housejobData = this.serviceJobData || [];
+    modalRef.componentInstance.masterJobData = this.serviceJobData?.masterJob || null;
+    modalRef.componentInstance.masterJobContainers = this.serviceJobData?.containers || [];
+    modalRef.componentInstance.packageTypeList = [];
+    modalRef.componentInstance.TandCList = this.TandCList || [];
+    modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || 'LCL';
+    modalRef.componentInstance.portList = this.portList || [];
+    modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+    modalRef.componentInstance.selectedDepartmentType = this.selectedDepartmentType || [];
   }
 
 

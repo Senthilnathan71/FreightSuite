@@ -15,6 +15,7 @@ import { PaginationConfig } from 'src/app/shared/interfaces/pagination.interface
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { PrintPermissionModalComponent } from '../print-permission-modal/print-permission-modal.component';
 import { ReportPermissionModalComponent } from '../report-permission-modal/report-permission-modal.component';
+import { MasterService } from 'src/app/modules/master/master.service';
 // Both modal components are opened via NgbModal — not used directly in template
 
 @Component({
@@ -36,6 +37,7 @@ import { ReportPermissionModalComponent } from '../report-permission-modal/repor
 })
 export class RolemenuEntryComponent implements OnInit, OnDestroy {
   roleMenuForm!: FormGroup;
+  companyList: any[] = [];
   moduleList: any[] = [];
   roleList: any[] = [];
   dynamicMenuList: any[] = [];
@@ -68,7 +70,8 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
     private appSettingService: AppSettingsService,
     private spinner: NgxSpinnerService,
     private route: ActivatedRoute,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private masterService: MasterService
   ) { }
 
   ngOnInit(): void {
@@ -81,8 +84,19 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) this.userData = userProfile;
 
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.isEditMode = true;
+      this.roleMenuHeaderSid = Number(id);
+    }
+
     // Initialize form
     this.initForm();
+    if (this.isEditMode) {
+      this.roleMenuForm.get('CompanyMasterSid')?.disable({ emitEvent: false });
+    } else {
+      this.roleMenuForm.get('CompanyMasterSid')?.enable({ emitEvent: false });
+    }
 
     // Load dropdown data first
     this.loadDropdownData();
@@ -93,12 +107,15 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
       if (id) {
         this.isEditMode = true;
         this.roleMenuHeaderSid = Number(id);
+        this.roleMenuForm.get('CompanyMasterSid')?.disable({ emitEvent: false });
       }
     });
   }
 
   initForm(): void {
+    const companySid = this.currentCompany?.CompanyMasterSid ?? null;
     this.roleMenuForm = this.fb.group({
+      CompanyMasterSid: [{ value: companySid, disabled: true }, Validators.required],
       RoleMasterSid: [null, Validators.required],
       Modules: [[], Validators.required],
       Remarks: [''],
@@ -112,16 +129,19 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
       this.appSettingService.showError('Company information not found');
       return;
     }
+    this.roleMenuForm.patchValue({ CompanyMasterSid: companySid }, { emitEvent: false });
 
     this.spinner.show();
     this.isLoading = true;
 
     forkJoin({
+      companies: this.masterService.getAllCompanies(),
       modules: this.settingService.getAllModule(),
       roles: this.settingService.getAllRole(Number(companySid)),
       moduleWithMenus: this.settingService.getAllModulesWithMenus(),
     }).subscribe({
-      next: ({ modules, roles, moduleWithMenus }) => {
+      next: ({ companies, modules, roles, moduleWithMenus }) => {
+        this.companyList = companies || [];
         this.moduleList = (modules.data || []).sort((a, b) => {
           return a.ModuleName.localeCompare(b.ModuleName);
         });
@@ -154,6 +174,31 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
         this.spinner.hide();
         this.isLoading = false;
       },
+    });
+  }
+
+  onCompanyChange(companyChangeEvent: any): void {
+    if (this.isEditMode) {
+      return;
+    }
+    const companyMasterSid = Number(companyChangeEvent?.CompanyMasterSid ?? companyChangeEvent);
+    if (!Number.isFinite(companyMasterSid) || companyMasterSid <= 0) {
+      this.roleMenuForm.patchValue({ RoleMasterSid: null }, { emitEvent: false });
+      this.roleList = [];
+      return;
+    }
+    const selectedCompany = this.companyList.find((company: any) => company.CompanyMasterSid === companyMasterSid);
+    if (selectedCompany) {
+      this.currentCompany = selectedCompany;
+    }
+    this.roleMenuForm.patchValue({ RoleMasterSid: null }, { emitEvent: false });
+    this.settingService.getAllRole(Number(companyMasterSid)).subscribe({
+      next: (roles: any) => {
+        this.roleList = roles.data || [];
+      },
+      error: () => {
+        this.roleList = [];
+      }
     });
   }
 
@@ -353,6 +398,7 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
 
         // Patch form values
         this.roleMenuForm.patchValue({
+          CompanyMasterSid: data.CompanyMasterSid ?? this.currentCompany?.CompanyMasterSid ?? null,
           RoleMasterSid: data.RoleMasterSid,
           Modules: selectedModules,
           Remarks: data.Remarks || '',
@@ -477,7 +523,8 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
   }
 
   private preparePayload(): any {
-    const formValue = this.roleMenuForm.value;
+    const formValue = this.roleMenuForm.getRawValue();
+    const selectedCompanySid = formValue.CompanyMasterSid || this.currentCompany?.CompanyMasterSid;
 
     const modifiedMenus = this.getModifiedMenus();
     const deletedMenus = this.getDeletedMenus();
@@ -487,7 +534,7 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
         ...(m.RoleMenuDetailSid && { RoleMenuDetailSid: m.RoleMenuDetailSid }),
         MenuMasterSid: m.MenuMasterSid,
         DisplayName: m.DisplayName || m.MenuName,
-        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        CompanyMasterSid: selectedCompanySid,
         InsertRole: m.InsertRole ? 'Y' : 'N',
         UpdateRole: m.UpdateRole ? 'Y' : 'N',
         ViewRole: m.ViewRole ? 'Y' : 'N',
@@ -500,7 +547,7 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
 
     return {
       RoleMasterSid: formValue.RoleMasterSid,
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      CompanyMasterSid: selectedCompanySid,
       Remarks: formValue.Remarks || '',
       status: formValue.status === 'Active' ? 'A' : 'S',
       RoleMenuDetail: finalMenus,
@@ -522,6 +569,7 @@ export class RolemenuEntryComponent implements OnInit, OnDestroy {
     } else {
       // In create mode, clear everything
       this.roleMenuForm.reset({
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid ?? null,
         RoleMasterSid: null,
         Modules: [],
         Remarks: '',

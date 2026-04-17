@@ -260,7 +260,8 @@
 
                             <th class="bg-transparent text-light" style="min-width:160px">Ledger <span
                                     class="text-danger">*</span></th>
-                            <th class="bg-transparent text-light" style="min-width:160px">Subledger</th>
+                            <th class="bg-transparent text-light" style="min-width:160px">Subledger <span
+                                    class="text-danger" *ngIf="isAnySubledgerRequired()">*</span></th>
                             <th class="bg-transparent text-light" style="min-width:88px">Curr. <span
                                     class="text-danger">*</span></th>
                             <th class="bg-transparent text-light" style="min-width:90px">Ex.Rate <span
@@ -296,6 +297,10 @@
                                     [items]="(row.get('filteredSubledgers')?.value || [])" bindLabel="SubledgerName"
                                     bindValue="SubledgerMasterSid" appendTo="body" placeholder="">
                                 </ng-select>
+                                <small class="text-danger d-block"
+                                    *ngIf="isSubledgerRequiredForSelectedCoa(row) && row.get('ledgerMasterSid')?.hasError('required') && (row.get('ledgerMasterSid')?.touched || row.get('ledgerMasterSid')?.dirty)">
+                                    Subledger is required
+                                </small>
                             </td>
                             <td>
                                 <ng-select formControlName="currencyMasterSid" [items]="currencyList"
