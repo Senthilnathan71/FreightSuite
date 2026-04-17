@@ -1,7 +1,7 @@
 <div class="row ">
   <!-- Header Section -->
   <div class="col-12 compact-form">
-    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
+    <div class="row bg-white mb-1 align-items-center py-1 rounded shadow-sm mx-0">
       <div class="col-md-4">
         <div class="d-flex align-items-center gap-2">
           <div class="brand-icon">
@@ -361,7 +361,7 @@
           <div class="border-top">
             <h6 class="text-center fw-bold py-2 mb-0 bg-light">Particulars Furnished By Shipper</h6>
             <div class="table-responsive">
-              <table class="table table-bordered mb-0">
+              <table class="table table-borderless mb-0">
                 <thead class="table-light">
                   <tr>
                     <th class="small">S.No</th>
@@ -378,23 +378,23 @@
                     <td>{{i+1}}</td>
                     <td>
                       <input type="text" class="form-control border-0 bg-transparent small editable-field"
-                        [(ngModel)]="container.containerNo" [readonly]="!isEditMode" placeholder="Container No">
+                        [(ngModel)]="container.containerNo" [readonly]="!isEditMode" placeholder="">
                     </td>
                     <td>
-                      <input class="form-control border-0 bg-transparent small editable-field"
+                      <textarea class="form-control border-0 bg-transparent small editable-field"
                         [(ngModel)]="container.marksAndNos" [readonly]="!isEditMode" rows="2" style="resize: none;"
-                        placeholder="Marks and Nos" />
+                        placeholder=""></textarea>
                     </td>
                     <td>
-                      <input class="form-control border-0 bg-transparent small editable-field"
+                      <textarea class="form-control border-0 bg-transparent small editable-field"
                         [(ngModel)]="container.descriptionOfGoods" [readonly]="!isEditMode" rows="2"
-                        style="resize: none;" placeholder="Description" />
+                        style="resize: none;" placeholder=""></textarea>
                     </td>
                     <td>
                       <div class="d-flex gap-1">
                         <input type="number" class="form-control border-0 bg-transparent small editable-field"
                           [(ngModel)]="container.packCount" [readonly]="!isEditMode" style="width: 50px;"
-                          placeholder="1">
+                          placeholder="">
                         <select class="form-control border-0 bg-transparent small editable-field"
                           [(ngModel)]="container.packType" [disabled]="!isEditMode">
                           <option value="Carton">Carton</option>
@@ -405,11 +405,11 @@
                     </td>
                     <td>
                       <input type="number" class="form-control border-0 bg-transparent small text-end editable-field"
-                        [(ngModel)]="container.grossWeight" [readonly]="!isEditMode" step="0.001" placeholder="0.000">
+                        [(ngModel)]="container.grossWeight" [readonly]="!isEditMode" step="0.001" placeholder="">
                     </td>
                     <td>
                       <input type="number" class="form-control border-0 bg-transparent small text-end editable-field"
-                        [(ngModel)]="container.volume" [readonly]="!isEditMode" step="0.001" placeholder="0.000">
+                        [(ngModel)]="container.volume" [readonly]="!isEditMode" step="0.001" placeholder="">
                     </td>
                   </tr>
                 </tbody>
