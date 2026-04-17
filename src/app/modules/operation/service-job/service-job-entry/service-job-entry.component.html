@@ -32,6 +32,21 @@
                     <span>Create </span>    
                     </button>
             </div>
+      <div class="action-group"
+        *ngIf="isEditMode && (mps.canPrint('Job Card', 'Print') || mps.canPrint('Proof of Delivery', 'Print'))">
+        <div ngbDropdown container="body" class="d-inline-block">
+          <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" ngbDropdownToggle
+            [disabled]="!serviceJobData">
+            <i class="fas fa-print me-1"></i> Print
+          </button>
+          <div ngbDropdownMenu class="shadow">
+            <button *ngIf="mps.canPrint('Job Card', 'Print')" class="text-dark" ngbDropdownItem
+              (click)="reportjobCard()">Job Card</button>
+            <button *ngIf="mps.canPrint('Proof of Delivery', 'Print')" class="text-dark" ngbDropdownItem
+              (click)="reportProofofDelivery()">Proof of Delivery</button>
+          </div>
+        </div>
+      </div>
       <!-- <div class="action-group" *ngIf="isEditMode"> </div> -->
       <div class="action-group">
         <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateBack()">

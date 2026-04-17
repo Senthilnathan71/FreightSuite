@@ -47,6 +47,28 @@
         <div class="card mb-1">
           <div class="card-body">
             <div class="row">
+              <!-- Company -->
+              <aside class="col-md-3">
+                <div class="custom-form-group custom-form-group-select"
+                  [class.filled]="!!roleMenuForm.get('CompanyMasterSid')?.value">
+                  <ng-select
+                    class="ng-select"
+                    [items]="companyList"
+                    bindLabel="companyName"
+                    bindValue="CompanyMasterSid"
+                    placeholder=""
+                    formControlName="CompanyMasterSid"
+                    [searchable]="false"
+                    [clearable]="false"
+                    [disabled]="isEditMode || isLoading"
+                    (change)="onCompanyChange($event)">
+                  </ng-select>
+                  <label class="input-label">
+                    Company <span class="text-danger">*</span>
+                  </label>
+                </div>
+              </aside>
+
               <!-- Role Name -->
               <aside class="col-md-3">
                 <div class="custom-form-group custom-form-group-select" 
