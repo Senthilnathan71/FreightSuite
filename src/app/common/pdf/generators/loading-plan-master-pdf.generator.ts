@@ -506,7 +506,10 @@ export function transformLoadingPlanMasterApiData(
     const shipment = allShipments.find(
       (row: any) => String(row?.HouseJobSid) === String(item?.HouseJobSid)
     ) || {};
-    const cargo = item?.Cargo?.[0] || {};
+    const cargoList = item?.Cargo || [];
+    const cargo = cargoList[0] || {};
+    const cargoTotal = (field: 'NoOfPackage' | 'GrossWeight' | 'NetWeight' | 'Volume'): number =>
+      cargoList.reduce((sum: number, row: any) => sum + toNumber(row?.[field]), 0);
 
     return {
       blNo: item?.HBLNo || shipment?.HBLNo || '',
@@ -516,10 +519,10 @@ export function transformLoadingPlanMasterApiData(
       consignee: joinNonEmpty([item?.ConsigneeName, item?.ConsigneeAddress], ' & '),
       commodityDescription: cargo?.CommodityDescription || '',
       marksAndNumber: cargo?.MarksAndNumber || '',
-      noOfPackage: toNumber(cargo?.NoOfPackage),
-      grossWeight: toNumber(cargo?.GrossWeight),
-      netWeight: toNumber(cargo?.NetWeight),
-      volume: toNumber(cargo?.Volume)
+      noOfPackage: cargoTotal('NoOfPackage'),
+      grossWeight: cargoTotal('GrossWeight'),
+      netWeight: cargoTotal('NetWeight'),
+      volume: cargoTotal('Volume')
     };
   });
 

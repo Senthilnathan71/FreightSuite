@@ -29,10 +29,10 @@
 
                 <!-- <div style="height:1px; background-color:black; width:100%; margin:0.3rem 0;"></div> -->
 
-                <h3
-                    style="text-align:center;  padding:8px 0; border-top: 1px solid black; font-size: 20px;font-weight: bolder; margin-top: 10px;">
+                <h4
+                    style="text-align:center;  padding:8px 0; border-top: 1px solid black; font-weight: bolder; margin-top: 10px;">
                     <strong>Pre Alert</strong>
-                </h3>
+                </h4>
                 <!-- Job Info -->
                 <div style="
     display:flex;
@@ -47,7 +47,6 @@
                     <div style="
         width:50%;
         box-sizing:border-box;
-        font-size:17px;
         padding-top:0;
         padding-bottom:10px;
     ">
@@ -76,7 +75,7 @@
         box-sizing:border-box;
         display:flex;
         flex-direction:column;
-        font-size:16px;
+        font-size:14px;
         padding-top:0;
         padding-left:30px;
         padding-bottom:10px;
@@ -124,7 +123,7 @@
     border-right:1px solid black;
     border-bottom:1px solid black;
     padding:5px 2rem 5px;  
-    font-size:16px;
+    font-size:14px;
     line-height:1.2;    
 ">
 
@@ -183,7 +182,7 @@
 
                 <!-- Vessel & Carrier Info -->
                 <div
-                    style="display:flex; flex-wrap:wrap; border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black; padding:0 2rem;font-size: 16px;">
+                    style="display:flex; flex-wrap:wrap; border-left:1px solid black; border-right:1px solid black; border-bottom:1px solid black; padding:0 2rem;font-size: 14px;">
                     <div style="width:50%; box-sizing:border-box;padding-top:5px;">
                         @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
                         <div style="display:flex; margin-bottom:0.25rem;">
@@ -237,7 +236,7 @@
                         <div style="display:flex; margin:0.25rem 0;">
                             <div style="width:120px; white-space:nowrap;font-weight:bolder; "><strong>Package</strong>
                             </div>
-                            <p style="margin:0;">: {{masterJobData?.containers?.[0]?.NoOfPkg}}</p>
+                            <p style="margin:0;">: {{masterJobData?.NoOfPkg}}</p>
                         </div>
                         }@else{
                         <div style="display:flex; margin:0.25rem 0;">
@@ -262,7 +261,7 @@
 
                 @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
                 <div style="overflow-x:auto;">
-                    <table style="width:100%; border-collapse:collapse; margin:10px 0; font-size:16px;">
+                    <table style="width:100%; border-collapse:collapse; margin:10px 0; font-size:14px">
                         <thead>
                             <tr>
                                 <th
@@ -355,16 +354,16 @@
                     <!-- Company Info -->
                     <app-print-header></app-print-header>
 
-                    <h3
-                        style="text-align:center;  padding:8px 0; margin-top: 10px; border-top: 1px solid black; font-size: 20px;font-weight: bolder;">
+                    <h4
+                        style="text-align:center;  padding:8px 0; margin-top: 10px; border-top: 1px solid black;font-weight: bolder;">
                         <strong>Pre Alert</strong>
-                    </h3>
+                    </h4>
                     <!-- Manifest Details -->
                     <div
                         style="display:flex; flex-wrap:wrap; border:1px solid black; padding:0.2rem 2rem; margin-top:0.3rem;">
 
                         <!-- Column 1 -->
-                        <div style="width:100%; max-width:33.33%; box-sizing:border-box; font-size:16px;">
+                        <div style="width:100%; max-width:33.33%; box-sizing:border-box; font-size:14px">
                             <div style="display:flex; margin-bottom:0.25rem;">
                                 <div style="width:130px;font-weight:bolder;"><strong>Manifest No.</strong></div>
                                 <p style="margin:0;">: {{masterJobData.MasterJobNumber}}</p>
@@ -405,7 +404,7 @@
                         </div>
 
                         <!-- Column 2 -->
-                        <div style="width:100%; max-width:33.33%; box-sizing:border-box; font-size:16px;">
+                        <div style="width:100%; max-width:33.33%; box-sizing:border-box; font-size:14px">
                             <div style="display:flex; margin-bottom:0.25rem;">
                                 <div style="width:130px;font-weight:bolder;"><strong>Booking No.</strong></div>
                                 <p style="margin:0;">: {{masterJobData?.allShipments?.[0]?.BookingNo}}</p>
@@ -447,7 +446,7 @@
                         </div>
 
                         <!-- Column 3 -->
-                        <div style="width:100%; max-width:33.33%; box-sizing:border-box; font-size:16px;">
+                        <div style="width:100%; max-width:33.33%; box-sizing:border-box; font-size:14px">
                             <div style="display:flex; margin-bottom:0.25rem;">
                                 <div style="width:130px;font-weight:bolder;"><strong>Load Port</strong></div>
                                 <p style="margin:0;">: {{getPortName(masterJobData.POL)}}</p>
@@ -475,7 +474,7 @@
                     @if(selectedFCLLCL === "FCL" || selectedFCLLCL==="LCL"){
                     <!-- Container Table -->
                     <table
-                        style="width:100%; border-collapse:collapse; font-size:16px; margin-top:10px; border:1px solid black;">
+                        style="width:100%; border-collapse:collapse; font-size:14px; margin-top:10px; border:1px solid black;">
                         <thead>
                             <tr>
                                 <th style="border:1px solid black; padding:0.25rem;text-align: center; font-weight: bolder;">
@@ -509,7 +508,7 @@
 
                     <!-- MasterAir way Bill print -->
                     <table
-                        style="width:100%; border-collapse:collapse; font-size:16px; margin-top:10px; border:1px solid black;">
+                        style="width:100%; border-collapse:collapse; font-size:14px; margin-top:10px; border:1px solid black;">
                         <thead>
                             <tr style="white-space: nowrap;">
                                 <th style="border:1px solid black; padding:0.25rem;text-align: center;font-weight: bolder;">
@@ -541,14 +540,11 @@
                         </thead>
                         <tbody>
                             <ng-container *ngFor="let h of masterJobData?.houseJob; let i = index">
-                                <ng-container *ngFor="let c of h.Cargo; let j = index">
                                     <tr>
-                                        <td style="border:1px solid black; padding:0.25rem;text-align: center;">{{ j ===
-                                            0 ? (i + 1) : '' }}</td>
-                                        <td style="border:1px solid black; padding:0.25rem; white-space: nowrap;">{{ j
-                                            === 0 ? (h.HBLNo || '') : '' }}</td>
+                                        <td style="border:1px solid black; padding:0.25rem;text-align: center;">{{ i + 1 }}</td>
+                                        <td style="border:1px solid black; padding:0.25rem; white-space: nowrap;">{{ h.HBLNo || '' }}</td>
                                         <td style="border:1px solid black; padding:0.25rem;">
-                                            <ng-container *ngIf="j === 0" style="white-space: nowrap;">
+                                            <ng-container style="white-space: nowrap;">
 
                                                 <strong style="font-weight: bolder;">Shipper:</strong>
                                                 {{ h.ShipperName || '' }}
@@ -573,20 +569,20 @@
                                             </ng-container>
                                         </td>
 
-                                        <td style="border:1px solid black; padding:0.25rem;">{{ c.MarksAndNumber }}</td>
-                                        <td style="border:1px solid black; padding:0.25rem;">{{ c.NoOfPackage || '' }}
-                                            Pkg <br>{{ c.CommodityDescription || '' }}</td>
+                                        <td style="border:1px solid black; padding:0.25rem;">{{ h.Cargo?.[0]?.MarksAndNumber || '' }}</td>
+                                        <td style="border:1px solid black; padding:0.25rem;">
+                                            {{ getHousePackages(h) || '' }} Pkg <br>{{ h.Cargo?.[0]?.CommodityDescription || '' }}
+                                        </td>
                                         <td style="border:1px solid black; padding:0.25rem; text-align:right;">{{
-                                            c.GrossWeight | number: '1.3-3' }}</td>
+                                            getHouseGrossWeight(h) | number: '1.3-3' }}</td>
                                         <td style="border:1px solid black; padding:0.25rem; text-align:right;">{{
-                                            c.Volume | number: '1.3-3' }}</td>
+                                            getHouseVolume(h) | number: '1.3-3' }}</td>
                                         <td style="border:1px solid black; padding:0.25rem;">{{ h.FreightTerms || '' }}
                                         </td>
                                         <td style="border:1px solid black; padding:0.25rem;"></td>
-                                        <td style="border:1px solid black; padding:0.25rem;">{{ c.ShipmentTerms || '' }}
+                                        <td style="border:1px solid black; padding:0.25rem;">{{ h.Cargo?.[0]?.ShipmentTerms || '' }}
                                         </td>
                                     </tr>
-                                </ng-container>
                             </ng-container>
                             <tr style="font-weight: bolder;">
                                 <td colspan="4" style="border:1px solid black; padding:0.25rem; text-align:right;">

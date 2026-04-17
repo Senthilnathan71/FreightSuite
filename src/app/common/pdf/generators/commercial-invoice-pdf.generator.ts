@@ -13,11 +13,11 @@ export function generateCommercialInvoiceDocument(data: CommercialInvoicePdfData
   const baseStyles = getPdfStyles();
   const styles = {
     ...baseStyles,
-    documentTitle: { ...baseStyles.documentTitle, fontSize: 14 },
-    labelBold: { ...baseStyles.labelBold, fontSize: 12 },
-    tableHeader: { ...baseStyles.tableHeader, fontSize: 12 },
-    tableCell: { ...baseStyles.tableCell, fontSize: 12 },
-    tableCellBold: { ...baseStyles.tableCellBold, fontSize: 12, bold: true }
+    documentTitle: { ...baseStyles.documentTitle, fontSize: 8 },
+    labelBold: { ...baseStyles.labelBold, fontSize: 8 },
+    tableHeader: { ...baseStyles.tableHeader, fontSize: 8 },
+    tableCell: { ...baseStyles.tableCell, fontSize: 8 },
+    tableCellBold: { ...baseStyles.tableCellBold, fontSize: 8, bold: true }
   };
   const lightBorderedLayout = {
     hLineWidth: () => 0.5,
@@ -55,7 +55,7 @@ export function generateCommercialInvoiceDocument(data: CommercialInvoicePdfData
         text: 'Commercial Invoice',
         alignment: 'center',
         bold: true,
-        fontSize: 14,
+        fontSize: 8,
         margin: [0, 0, 0, 8]
       },
       buildHeaderBlocks(data, lightBorderedLayout),
@@ -93,7 +93,7 @@ export function generateCommercialInvoiceDocument(data: CommercialInvoicePdfData
       margin: [25, -6, 25, 0]
     }),
     styles,
-    defaultStyle: { ...PDF_DEFAULT_CONFIG.defaultStyle, fontSize: 12 }
+    defaultStyle: { ...PDF_DEFAULT_CONFIG.defaultStyle, fontSize: 8 }
   };
 }
 
@@ -101,7 +101,7 @@ function buildHeaderBlocks(data: CommercialInvoicePdfData, layout: any): any {
   return {
     table: {
       widths: ['50%', '50%'],
-      heights: [24],
+      heights: [15],
       body: [[
         buildKeyRow('HBL No.', data.invoice?.hblNo || ''),
         buildKeyRow('Job No.', data.invoice?.jobNo || '')
@@ -162,7 +162,7 @@ function buildCargoSummaryBlock(data: CommercialInvoicePdfData, layout: any): an
   return {
     table: {
       widths: ['25%', '25%', '25%', '25%'],
-      heights: [44, 44],
+      heights: [30, 30],
       body: [
         [
           buildSummaryCell('Commodity Description', data.invoice?.commodityDescription || '', 'left'),
@@ -271,6 +271,9 @@ export function transformCommercialInvoiceApiData(
   const totalGrossWeight = products.reduce((sum, p) => sum + (Number(p.grossWeight) || 0), 0);
   const totalNetWeight = products.reduce((sum, p) => sum + (Number(p.netWeight) || 0), 0);
   const totalVolume = products.reduce((sum, p) => sum + (Number(p.volume) || 0), 0);
+  const cargo = housejobData?.Cargo || [];
+  const cargoTotal = (field: 'NoOfPackage' | 'GrossWeight' | 'NetWeight' | 'Volume'): number =>
+    cargo.reduce((sum: number, item: any) => sum + (Number(item?.[field]) || 0), 0);
 
   return {
     company: {
@@ -308,10 +311,10 @@ export function transformCommercialInvoiceApiData(
       notifyAddress: housejobData?.NotifyAddress || '',
       commodityDescription: housejobData?.Cargo?.[0]?.CommodityDescription || '',
       currency: housejobData?.Others?.[0]?.CargoCurrency || '',
-      noOfPackage: housejobData?.Cargo?.[0]?.NoOfPackage || 0,
-      grossWeight: housejobData?.Cargo?.[0]?.GrossWeight || 0,
-      netWeight: housejobData?.Cargo?.[0]?.NetWeight || 0,
-      volume: housejobData?.Cargo?.[0]?.Volume || 0,
+      noOfPackage: cargoTotal('NoOfPackage'),
+      grossWeight: cargoTotal('GrossWeight'),
+      netWeight: cargoTotal('NetWeight'),
+      volume: cargoTotal('Volume'),
       goodsValue: housejobData?.Others?.[0]?.CargoValue || 0,
       totalValue: ''
     },

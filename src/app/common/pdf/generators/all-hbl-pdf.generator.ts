@@ -41,6 +41,8 @@ export function transformAllHblItemApiData(
   logo?: string,
 ): HblPdfData {
   const products = houseJobData?.Products || [];
+  const containers = houseJobData?.masterJob?.containers || [];
+  const cargoList = houseJobData?.Cargo || [];
 
   const agentName = (agentSid: number): string => {
     const found = (options?.agentList || []).find(
@@ -49,19 +51,51 @@ export function transformAllHblItemApiData(
     return found?.CustomerName || '';
   };
 
+  const lineSeal = (containerNo: string): string => {
+    if (!containerNo || !Array.isArray(containers)) return '';
+    const found = containers.find((item: any) => item?.ContainerNumber === containerNo);
+    return found?.LineSeal || '';
+  };
+
+  const cargoField = (product: any, field: 'MarksAndNumber' | 'CommodityDescription'): string => {
+    if (!Array.isArray(cargoList) || cargoList.length === 0) return '';
+
+    const productCargoSid = Number(
+      product?.HouseJobCargoSid ||
+      product?.houseJobCargoSid ||
+      product?.BookingCargoSid ||
+      product?.bookingCargoSid ||
+      0,
+    );
+
+    const matchedCargo = productCargoSid
+      ? cargoList.find((cargo: any) => Number(
+          cargo?.HouseJobCargoSid ||
+          cargo?.houseJobCargoSid ||
+          cargo?.BookingCargoSid ||
+          cargo?.bookingCargoSid ||
+          0,
+        ) === productCargoSid)
+      : cargoList.length === 1
+        ? cargoList[0]
+        : null;
+
+    return matchedCargo?.[field] || '';
+  };
+
   const rows = products.map((rate: any) => ({
     containerInfo: cleanJoin(
       [
         rate?.ContainerNo,
-        houseJobData?.masterJob?.containers?.[0]?.LineSeal,
-        houseJobData?.Cargo?.[0]?.MarksAndNumber,
+        lineSeal(rate?.ContainerNo),
+        cargoField(rate, 'MarksAndNumber'),
       ],
       ' / ',
     ),
     packageInfo: cleanJoin(
       [
         rate?.ExternlQty,
-        houseJobData?.Cargo?.[0]?.CommodityDescription,
+        cargoField(rate, 'CommodityDescription'),
         rate?.ExternaPkg,
       ],
       ' / ',

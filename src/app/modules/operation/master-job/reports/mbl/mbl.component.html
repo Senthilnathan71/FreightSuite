@@ -317,14 +317,15 @@
       'box-sizing': 'border-box',
       'position': 'relative',
       'color': '#000',
-      'page-break-after': 'always'
+      'page-break-after': 'always',
+      'font-size': '14px'
     }">
       <h4 style="margin: 0;  padding-bottom: 2px;padding-left: 3px;"><strong>
         {{ selectedReport === 'MBLDraft' ? 'Master Bill of Lading' :  'Master Bill of Lading - ' + masterJobData?.BLReleaseType}}
        </strong></h4>
 
       <!-- ROW 1 -->
-      <div style="display:flex; font-size:16px; align-items:stretch;">
+      <div style="display:flex;  align-items:stretch;">
 
         <!-- LEFT -->
         <div style="
@@ -375,7 +376,7 @@
       </div>
 
       <!-- ROW 2 -->
-      <div style="display:flex; font-size:16px; align-items:stretch;">
+      <div style="display:flex;  align-items:stretch;">
 
         <!-- LEFT -->
         <div style="flex:0 0 50%; max-width:50%; display:flex; flex-direction:column; box-sizing:border-box;">
@@ -431,7 +432,7 @@
       </div>
 
       <!-- ROW 3 -->
-      <div style="display:flex; font-size:16px;">
+      <div style="display:flex; ">
         <div style="width:25%; border-bottom:1px solid black; text-align:center; padding:5px;">
           <strong style="font-weight: bolder;">Place of Receipt</strong><br>{{ masterJobData?.POO }}
         </div>
@@ -450,7 +451,7 @@
       </div>
 
       <!-- ROW 4 -->
-      <div style="display:flex; font-size:16px;">
+      <div style="display:flex; ">
         <div style="width:25%; border-bottom:1px solid black; text-align:center; padding:5px;">
           <strong style="font-weight: bolder;">Vessel / Voyage No.</strong><br>
           {{ masterJobData?.voyages?.[0]?.VesselName }} /
@@ -472,8 +473,8 @@
 
 
       <!-- TABLE -->
-      <div style="overflow-x:auto; font-size: 16px;">
-        <table style="width:100%; border-collapse:collapse;  margin:10px 0; font-size:16px;">
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse;  margin:10px 0; ">
           <thead style="font-weight: bolder;">
             <tr>
               <th style="border:1px solid black; padding:2px 8px;border-left: none;text-align: center;"><strong>Container No. / Seal No. / Marks&No.</strong></th>

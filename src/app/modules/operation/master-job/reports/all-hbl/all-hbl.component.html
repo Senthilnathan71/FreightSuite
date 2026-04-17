@@ -9,10 +9,12 @@
             appPreventMultiClick>
             <i class="fas fa-print me-1"></i> Print
         </button> -->
-        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()" appPreventMultiClick *ngIf="mps.canPrint('All HBL','Download')">
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()" appPreventMultiClick
+            *ngIf="mps.canPrint('All HBL','Download')">
             <i class="fas fa-download me-1"></i> Download PDF
         </button>
-        <button type="button" class="btn btn-sm btn-success rounded-5 py-0" appPreventMultiClick *ngIf="mps.canPrint('All HBL','Send Mail')">
+        <button type="button" class="btn btn-sm btn-success rounded-5 py-0" appPreventMultiClick
+            *ngIf="mps.canPrint('All HBL','Send Mail')">
             <i class="fas fa-envelope me-1"></i>Send Email
         </button>
 
@@ -39,13 +41,13 @@
   box-sizing: border-box;
   position: relative;
   color: #000;
-  page-break-after: always;">
+  page-break-after: always;font-size: 14px;">
                     <h4 style="margin: 0;  padding-bottom: 2px ;padding-left: 5px;"><strong>House Bill of Lading -
                             {{housejobData?.Others?.[0]?.ReleaseType}}</strong>
                     </h4>
 
                     <!-- Shipper & Bill of Lading -->
-                    <div style="display: table; width: 100%; border-collapse: collapse; font-size: 16px;">
+                    <div style="display: table; width: 100%; border-collapse: collapse; ">
 
                         <!-- Row 1: Shipper / HBL & Delivery Agent -->
                         <div style="display: table-row;">
@@ -101,12 +103,8 @@
                             <!-- Right Column: Logo + Company Info -->
                             <div
                                 style="display: table-cell; width: 50%; border:1px solid black; padding:10px; vertical-align: top; text-align:center;border-right: none;">
-                                                  <img 
-                [src]="(logoService.reportLogo$ | async)" 
-                alt="Company Logo"
-                class="company-logo img-fluid" 
-                style="width: auto;height:80px;" 
-              />
+                                <img [src]="(logoService.reportLogo$ | async)" alt="Company Logo"
+                                    class="company-logo img-fluid" style="width: auto;height:80px;" />
 
                                 <div>
                                     <h3 style="margin:0; font-weight:800;">{{ currentCompany?.companyName || 'Company
@@ -117,8 +115,8 @@
                                         Branch'
                                         }}
                                     </h5>
-                                    <p style="margin:2px 0; font-size:16px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                                    <p style="margin:2px 0; font-size:16px;">
+                                    <p style="margin:2px 0; ">{{ currentBranch?.addressLine1 || '' }}</p>
+                                    <p style="margin:2px 0; ">
                                         {{ currentBranch?.addressLine2 || '' }},
                                         {{ currentBranch?.cityMaster?.cityName || currentCompany?.City || '' }}
                                         {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }},
@@ -134,7 +132,7 @@
                     <!-- Ports & Job Details - Row 1 -->
                     <div style="
   display:flex;
-  font-size:16px;
+
   border-bottom:1px solid black;
 ">
                         <div style="width:25%; text-align:center; padding:5px; border-right:1px solid black;">
@@ -163,10 +161,9 @@
                     <!-- Ports & Job Details - Row 2 -->
                     <div style="
   display:flex;
-  font-size:16px;
   border-bottom:1px solid black;
 ">
-                          <div style="width:25%; text-align:center; padding:5px; border-right:1px solid black;">
+                        <div style="width:25%; text-align:center; padding:5px; border-right:1px solid black;">
                             <strong>Vessel / Voyage No.</strong><br />
 
                             {{ housejobData?.VesselName }}
@@ -197,7 +194,7 @@
 
                     <!-- Product Table -->
                     <div style="overflow-x:auto; margin-top: 5px;">
-                        <table style="width: 100%; border-collapse: collapse; font-size: 16px; color: #000;">
+                        <table style="width: 100%; border-collapse: collapse;  color: #000;">
                             <thead>
                                 <tr>
                                     <th style="border: 1px solid black; padding: 2px 8px;border-left: none;">
@@ -226,12 +223,12 @@
                                     <td style="border: 1px solid black; padding: 2px 8px; border-left: none;">
                                         {{ rate?.ContainerNo }}
 
-                                        <ng-container *ngIf="housejobData?.masterJob?.containers?.[0]?.LineSeal">
-                                            / {{ housejobData?.masterJob?.containers?.[0]?.LineSeal }}
+                                        <ng-container *ngIf="getContainerLineSeal(housejobData, rate?.ContainerNo)">
+                                            / {{ getContainerLineSeal(housejobData, rate?.ContainerNo) }}
                                         </ng-container>
 
-                                        <ng-container *ngIf="housejobData?.Cargo?.[0]?.MarksAndNumber">
-                                            / {{ housejobData?.Cargo?.[0]?.MarksAndNumber }}
+                                        <ng-container *ngIf="getProductCargoField(housejobData, rate, 'MarksAndNumber')">
+                                            / {{ getProductCargoField(housejobData, rate, 'MarksAndNumber') }}
                                         </ng-container>
                                     </td>
 
@@ -239,8 +236,8 @@
                                     <td style="border: 1px solid black; padding: 2px 8px;">
                                         {{ rate?.ExternlQty }}
 
-                                        <ng-container *ngIf="housejobData?.Cargo?.[0]?.CommodityDescription">
-                                            / {{ housejobData?.Cargo?.[0]?.CommodityDescription }}
+                                        <ng-container *ngIf="getProductCargoField(housejobData, rate, 'CommodityDescription')">
+                                            / {{ getProductCargoField(housejobData, rate, 'CommodityDescription') }}
                                         </ng-container>
 
                                         <ng-container *ngIf="rate?.ExternaPkg">
@@ -281,8 +278,7 @@
                     </div>
 
                     <!-- Footer -->
-                    <footer
-                        style="position: absolute; bottom: 2mm; left: 0; right: 0; font-size: 10pt;font-size: 16px;">
+                    <footer style="position: absolute; bottom: 2mm; left: 0; right: 0; ">
                         <div style="display:flex;">
                             <div
                                 style="width:66.66%; border-top:1px solid black; border-bottom:1px solid black; border-right:1px solid black;  padding:5px;">
