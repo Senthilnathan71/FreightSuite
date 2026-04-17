@@ -2595,13 +2595,6 @@ createRateFormGroup(data?: any): FormGroup {
 
     try {
       this.selectedVoucherType = voucherType;
-      // Restrict datepicker to the grace-allowed window (Rules 1-3).
-      // Invoice uses AR grace, Vendor Invoice uses AP grace; Payment Request unrestricted.
-      if (voucherType === 'Invoice' || voucherType === 'Vendor Invoice') {
-        const graceModule: VoucherModule = voucherType === 'Vendor Invoice' ? 'AP' : 'AR';
-        const earliest = this.voucherPeriodService.getEarliestAllowedDate(graceModule);
-        if (earliest) this.fyMinDate = toNgbDateStruct(earliest);
-      }
       const documentSide = this.selectedVoucherType === 'Invoice' ? 'SALES' : 'PURCHASE';
       await this.taxCalculationService.init({
         documentSide,

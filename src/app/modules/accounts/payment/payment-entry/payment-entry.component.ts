@@ -358,6 +358,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   voucherConstraints: VoucherDateConstraints = {
     isClosed: false, errorMessage: null
   };
+  // Gates the inline error label and button-disable: create=after save-click, edit=after date-change
+  showVoucherDateError = false;
 
   private isLoading = false;
   isDirty = false;
@@ -559,18 +561,14 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       this.currentCompany?.CompanyMasterSid,
       this.currentBranch?.BranchMasterSid,
       this.currentYearId,
-      () => {
-        this.applyVoucherDateConstraints();
-        // Restrict datepicker to the grace-allowed window (Rules 1-3)
-        const earliest = this.voucherPeriodService.getEarliestAllowedDate('AP');
-        if (earliest) this.fyMinDate = toNgbDateStruct(earliest);
-      }
+      () => this.applyVoucherDateConstraints()
     );
   }
 
   applyVoucherDateConstraints(): void {
-    // Only validate on create; skip for existing voucher (edit/view)
-    if (this.headerId || this.isViewMode) {
+    // Validation runs in create AND edit mode (message shows when invalid).
+    // Only view mode skips.
+    if (this.isViewMode) {
       this.voucherConstraints = { isClosed: false, errorMessage: null };
       return;
     }
@@ -580,6 +578,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
   onVoucherDateChange(): void {
     this.applyVoucherDateConstraints();
+    // Edit mode: reveal error label + gate button-disable now that user has changed the date
+    if (this.headerId) this.showVoucherDateError = true;
 
     const currencySid = this.paymentForm.get('CurrencyMasterSid')?.getRawValue();
     if (!currencySid) return;
@@ -1128,6 +1128,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       }
     }
 
+    // Reveal error label now that user has clicked save
+    this.showVoucherDateError = true;
     // Re-validate voucher date constraints at save time (edit mode may have stale state)
     this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed
@@ -1445,6 +1447,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
   async postVoucher(notFromSubmit: boolean = false) {
     if (this.isSaving) return;
+    this.showVoucherDateError = true;
     this.applyVoucherDateConstraints();
     if (this.voucherConstraints.isClosed) {
       if (this.voucherConstraints.errorMessage) this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
@@ -1702,16 +1705,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     // If not yet loaded, loadAllLookups will call setCurrencyCode once currencies arrive.
     this.setCurrencyCode(headerInfo.CurrencyMasterSid);
 
-    // In edit mode, restrict the date picker to the original document's month
-    const _paymentOrigDate = new Date(headerInfo.VoucherDate);
-    if (!isNaN(_paymentOrigDate.getTime())) {
-      const _y = _paymentOrigDate.getFullYear(), _m = _paymentOrigDate.getMonth() + 1;
-      const _monthEnd = new Date(_y, _m, 0);
-      const _today = new Date(); _today.setHours(0, 0, 0, 0);
-      const _effectiveEnd = _monthEnd < _today ? _monthEnd : _today;
-      this.fyMinDate = { year: _y, month: _m, day: 1 };
-      this.fyMaxDate = { year: _effectiveEnd.getFullYear(), month: _effectiveEnd.getMonth() + 1, day: _effectiveEnd.getDate() };
-    }
+    // Edit mode: datepicker keeps the full FY range so user can re-date into any past month.
 
     this.previousPartyBranchSid = headerInfo.CustomerBranchSid;
     this.searchOutstandingForm.get('LedgerMasterSid')?.setValue(headerInfo.PartyMasterSid);

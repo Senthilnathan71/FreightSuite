@@ -236,6 +236,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
   voucherConstraints: VoucherDateConstraints = {
     isClosed: false, errorMessage: null
   };
+  // Gates the inline error label and button-disable: create=after save-click, edit=after date-change
+  showVoucherDateError = false;
 
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
@@ -811,19 +813,14 @@ export class VendorInvoiceEntryComponent implements OnInit {
       this.currentCompany?.CompanyMasterSid,
       this.currentBranch?.BranchMasterSid,
       this.currentFinancialYear,
-      () => {
-        this.applyVoucherDateConstraints();
-        // Restrict datepicker to the grace-allowed window (Rules 1-3)
-        const earliest = this.voucherPeriodService.getEarliestAllowedDate('AP');
-        if (earliest) this.fyMinDate = toNgbDateStruct(earliest);
-      }
+      () => this.applyVoucherDateConstraints()
     );
   }
 
   applyVoucherDateConstraints(): void {
-    // Any existing voucher (draft or posted) skips validation per manager's
-    // rules 4 & 5 — create-time validation lives in the Rate-Tab (cost-entry).
-    if (this.headerId || this.isViewMode) {
+    // Validation runs in create AND edit mode (message shows when invalid).
+    // Only view mode skips.
+    if (this.isViewMode) {
       this.voucherConstraints = { isClosed: false, errorMessage: null };
       return;
     }
@@ -833,6 +830,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   onVoucherDateChange() {
     this.applyVoucherDateConstraints();
+    // Edit mode: reveal error label + gate button-disable now that user has changed the date
+    if (this.headerId) this.showVoucherDateError = true;
     const voucherDate = this.vendorInvoiceForm.get('VoucherDate')?.value;
     if (!voucherDate) return;
 
@@ -1123,16 +1122,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
       HouseJobSid: data.HouseJobSid,
     }, { emitEvent: false });
 
-    // In edit mode, restrict the date picker to the original document's month
-    const _vinOrigDate = new Date(data.VoucherDate);
-    if (!isNaN(_vinOrigDate.getTime())) {
-      const _y = _vinOrigDate.getFullYear(), _m = _vinOrigDate.getMonth() + 1;
-      const _monthEnd = new Date(_y, _m, 0);
-      const _today = new Date(); _today.setHours(0, 0, 0, 0);
-      const _effectiveEnd = _monthEnd < _today ? _monthEnd : _today;
-      this.fyMinDate = { year: _y, month: _m, day: 1 };
-      this.fyMaxDate = { year: _effectiveEnd.getFullYear(), month: _effectiveEnd.getMonth() + 1, day: _effectiveEnd.getDate() };
-    }
+    // Edit mode: datepicker keeps the full FY range so user can re-date into any past month.
 
     if (data?.CurrencyMasterSid === this.currentCompany?.CurrencyMasterSid || this.isPosted) {
       this.vendorInvoiceForm.get('ExchangeRate')?.disable();
@@ -1722,6 +1712,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
       }
     }
 
+    // Reveal error label now that user has clicked save
+    this.showVoucherDateError = true;
     // Re-validate voucher date constraints at save time (edit mode may have stale state)
     this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed
@@ -1913,6 +1905,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   async postVoucher(notFromSubmit: boolean = false) : Promise<void> {
     if (this.isPosting) return;
+    this.showVoucherDateError = true;
     this.applyVoucherDateConstraints();
     if (this.voucherConstraints.isClosed) {
       if (this.voucherConstraints.errorMessage) this.appSettingService.showWarning(this.voucherConstraints.errorMessage);

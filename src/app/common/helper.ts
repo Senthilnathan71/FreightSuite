@@ -86,7 +86,7 @@ export function getVoucherDateConstraints(
     return result;
   }
 
-  // --- Grace-days block (manager's rules) ---
+  // --- Grace-days block ---
   const now = new Date();
   const todayYear = now.getFullYear();
   const todayMonth = now.getMonth();            // 0-indexed local month
@@ -99,25 +99,9 @@ export function getVoucherDateConstraints(
     return result;
   }
 
-  // Rule 3: always look up today's PREVIOUS calendar month period for grace days
-  let prevMonth = todayMonth - 1;
-  let prevYear = todayYear;
-  if (prevMonth < 0) { prevMonth = 11; prevYear -= 1; }
-
-  let previousPeriod: VoucherPeriodInfo | null = null;
-  for (const p of periods) {
-    const s = new Date(p.StartDate);
-    if (s.getUTCMonth() === prevMonth && s.getUTCFullYear() === prevYear) {
-      previousPeriod = p;
-      break;
-    }
-  }
-
-  // If we can't find the previous month's period (e.g., start of FY), no restriction
-  if (!previousPeriod) return result;
-
+  // Use the voucher's own period grace days (e.g. March voucher → March grace).
   const graceDaysKey = `${module}GraceDays` as keyof VoucherPeriodInfo;
-  const graceDays = Number(previousPeriod[graceDaysKey]) || 0;
+  const graceDays = Number(period[graceDaysKey]) || 0;
 
   // Rule 2: null / zero grace days → no restriction
   if (graceDays <= 0) return result;
@@ -130,6 +114,7 @@ export function getVoucherDateConstraints(
 
   if (todayTs >= graceDeadlineTs) {
     result.isClosed = true;
+    result.errorMessage = `Grace days of ${period.PeriodName} voucher booking exceeded`;
     return result;
   }
 
