@@ -118,7 +118,9 @@ filteredFDC: any[] = [];
   currentBranch: any;
   MenuMasterSid: any;
   filteredCharges: any[] = [];
+  containerTypeList: any[] = [];
 
+  isDetailModalOpen: boolean = false;
   auditLogs: any[] = [];
   auditLogModalRef!: NgbModalRef;
   departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
@@ -245,6 +247,12 @@ get currencyList(): any[] {
   return uom?.UOMName || uom?.UOMCode || '';
 }
 
+getContainerTypeName(sid: any): string {
+  if (!sid || !this.containerTypeList?.length) return '';
+  const ct = this.containerTypeList.find((c: any) => c.ContainerTypeMasterSid === sid);
+  return ct ? `${ct.ContainerCode} - ${ct.ContainerSize}` : '';
+}
+
 getCurrencyCode(currencySid: any): string {
   if (!currencySid || !this.currencyList?.length) return '';
   const currency = this.currencyList.find((item: any) => item.CurrencyMasterSid === currencySid);
@@ -286,6 +294,7 @@ getCurrencyCode(currencySid: any): string {
       detailChargeCode: [null, [Validators.required]],
       detailDescription: [''],
       detailCargoType: [null, [Validators.required]],
+      detailContainerType: [null, this.selectedFCLLCL === 'FCL' ? [Validators.required] : []],
       detailUOMSid: [null, [Validators.required]],
       detailSaleCurrency: [null, Validators.required],
       detailSalePerUnitPrice: ['', [Validators.required]],
@@ -330,6 +339,7 @@ getCurrencyCode(currencySid: any): string {
     ChargeCode: [detail?.ChargeCode ?? null, [Validators.required]],
     Description: [detail?.Description ?? ''],
     CargoType: [detail?.CargoType ?? null, [Validators.required]],
+    ContainerType: [detail?.ContainerType ?? null],
     UOMSid: [detail?.UOMSid ?? null, [Validators.required]],
     SaleCurrency: [detail?.SaleCurrency ?? null, [Validators.required]],
     SalePerUnitPrice: [detail?.SalePerUnitPrice ?? '', [Validators.required]],
@@ -381,93 +391,93 @@ getCurrencyCode(currencySid: any): string {
     return;
   }
 
+  if (this.isDetailModalOpen) return;
+
   const isExistingSavedDetail = !!data?.TariffDetailSid && !this.isCopiedTariffMode;
   this.isModalEditMode = isExistingSavedDetail;
   this.editingDetailIndex = index ?? null;
   this.TariffDetailSid = null;
   this.initDetailsForm();
 
-  this.loadModalFields().then(() => {
-    this.filterChargeBasedOnDept();
+  this.filterChargeBasedOnDept();
 
-    if (data) {
-      this.tariffDetailData = data;
-      this.isPatchingDetailForm = true;
+  if (data) {
+    this.tariffDetailData = data;
+    this.isPatchingDetailForm = true;
 
-      this.tariffDetailsForm.patchValue({
-        detailisSlabApplicable: data.IsSlabApplicable === 'Y',
-        detailSlabFrom: data.SlabFrom || '',
-        detailSlabTo: data.SlabTo || '',
-        detailEffectiveDate: data.EffectiveDate ? new Date(data.EffectiveDate) : null,
-        detailExpiredOn: data.ExpiredOn ? new Date(data.ExpiredOn) : null,
-        detailChargeCode: data.ChargeCode ?? null,
-        detailDescription: data.Description || '',
-        detailCargoType: data.CargoType ?? null,
-        detailUOMSid: data.UOMSid ?? null,
-        detailSaleCurrency: data.SaleCurrency ?? null,
-        detailSalePerUnitPrice: data.SalePerUnitPrice ?? '',
-        detailBuyCurrency: data.BuyCurrency ?? null,
-        detailBuyPerUnitPrice: data.BuyPerUnitPrice ?? '',
-        detailMinSale: data.MinSale || '',
-        detailstatus: data.status === 'A' ? 'Active' : 'Suspended',
-        detailRemarks: data.Remarks || ''
-      },{ emitEvent: false });
+    this.tariffDetailsForm.patchValue({
+      detailisSlabApplicable: data.IsSlabApplicable === 'Y',
+      detailSlabFrom: data.SlabFrom || '',
+      detailSlabTo: data.SlabTo || '',
+      detailEffectiveDate: data.EffectiveDate ? new Date(data.EffectiveDate) : null,
+      detailExpiredOn: data.ExpiredOn ? new Date(data.ExpiredOn) : null,
+      detailChargeCode: data.ChargeCode ?? null,
+      detailDescription: data.Description || '',
+      detailCargoType: data.CargoType ?? null,
+      detailContainerType: data.ContainerType ?? null,
+      detailUOMSid: data.UOMSid ?? null,
+      detailSaleCurrency: data.SaleCurrency ?? null,
+      detailSalePerUnitPrice: data.SalePerUnitPrice ?? '',
+      detailBuyCurrency: data.BuyCurrency ?? null,
+      detailBuyPerUnitPrice: data.BuyPerUnitPrice ?? '',
+      detailMinSale: data.MinSale || '',
+      detailstatus: data.status === 'A' ? 'Active' : 'Suspended',
+      detailRemarks: data.Remarks || ''
+    },{ emitEvent: false });
 
-      this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(
-        data.EffectiveDate ? new Date(data.EffectiveDate) : null,
-        { emitEvent: false }
-      );
+    this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(
+      data.EffectiveDate ? new Date(data.EffectiveDate) : null,
+      { emitEvent: false }
+    );
 
-      this.tariffDetailsForm.get('detailExpiredOn')?.setValue(
-        data.ExpiredOn ? new Date(data.ExpiredOn) : null,
-        { emitEvent: false }
-      );
+    this.tariffDetailsForm.get('detailExpiredOn')?.setValue(
+      data.ExpiredOn ? new Date(data.ExpiredOn) : null,
+      { emitEvent: false }
+    );
 
-      this.isPatchingDetailForm = false;
+    this.isPatchingDetailForm = false;
 
-      if (this.isModalEditMode) {
-        this.TariffDetailSid = data.TariffDetailSid;
-        this.minEffectiveFrom = null;
+    if (this.isModalEditMode) {
+      this.TariffDetailSid = data.TariffDetailSid;
+      this.minEffectiveFrom = null;
 
-        this.isModalStatusEditable = true;
-        this.setDetailControlsReadOnly(true);
-        this.tariffDetailsForm.get('detailstatus')?.enable({ emitEvent: false });
-      } else {
-        // copied row / unsaved row -> treat like create mode
-        this.TariffDetailSid = null;
-        this.isModalStatusEditable = false;
-        this.setDetailControlsReadOnly(false);
-
-        this.minEffectiveFrom = data.EffectiveDate
-          ? this.toNgbDateStruct(new Date(data.EffectiveDate))
-          : this.toNgbDateStruct(new Date());
-
-        this.tariffDetailsForm.get('detailstatus')?.setValue('Active', { emitEvent: false });
-        this.tariffDetailsForm.get('detailstatus')?.enable({ emitEvent: false });
-      }
+      this.isModalStatusEditable = true;
+      this.setDetailControlsReadOnly(true);
+      this.tariffDetailsForm.get('detailstatus')?.enable({ emitEvent: false });
     } else {
-      // brand new detail
-      const today = new Date();
-      this.isModalEditMode = false;
-      this.isModalStatusEditable = false;
+      // copied row / unsaved row -> treat like create mode
       this.TariffDetailSid = null;
-
+      this.isModalStatusEditable = false;
       this.setDetailControlsReadOnly(false);
-      this.minEffectiveFrom = this.toNgbDateStruct(today);
-      this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(today);
+
+      this.minEffectiveFrom = data.EffectiveDate
+        ? this.toNgbDateStruct(new Date(data.EffectiveDate))
+        : this.toNgbDateStruct(new Date());
+
       this.tariffDetailsForm.get('detailstatus')?.setValue('Active', { emitEvent: false });
       this.tariffDetailsForm.get('detailstatus')?.enable({ emitEvent: false });
     }
+  } else {
+    // brand new detail
+    const today = new Date();
+    this.isModalEditMode = false;
+    this.isModalStatusEditable = false;
+    this.TariffDetailSid = null;
 
-    this.modalRef = this.modalService.open(content, {
-      size: 'lg',
-      centered: true,
-      backdrop: 'static'
-    });
-  }).catch((err) => {
-    console.error('Error loading modal fields:', err);
-    this.appSettingServ.showError('Failed to load tariff detail fields');
+    this.setDetailControlsReadOnly(false);
+    this.minEffectiveFrom = this.toNgbDateStruct(today);
+    this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(today);
+    this.tariffDetailsForm.get('detailstatus')?.setValue('Active', { emitEvent: false });
+    this.tariffDetailsForm.get('detailstatus')?.enable({ emitEvent: false });
+  }
+
+  this.isDetailModalOpen = true;
+  this.modalRef = this.modalService.open(content, {
+    size: 'lg',
+    centered: true,
+    backdrop: 'static'
   });
+  this.modalRef.hidden.subscribe(() => { this.isDetailModalOpen = false; });
 }
   loadTariff(TariffHeaderSid: number) {
   this.masterServ.getTariffById(TariffHeaderSid).subscribe(
@@ -595,6 +605,8 @@ getCurrencyCode(currencySid: any): string {
     this.incoList = incos;
     this.chargeTaxes = chargeTax.data;
     this.isDataLoading = false;
+
+    this.loadModalFields().catch(err => console.error('loadModalFields error', err));
 
     // important: patch copied tariff only after all master data is ready
     if (this.pendingCopiedTariffData && !this.TariffHeaderSid) {
@@ -813,11 +825,13 @@ private shouldUseAllPortOptions(): boolean {
     forkJoin({
       charges: this.masterServ.getAllCharges(CompanyMasterSid),
       UOMs: this.masterServ.getUOMsByType('C'),
+      containerTypes: this.masterServ.getAllContainerTypes(),
     }).subscribe({
-      next: ({ charges, UOMs }) => {
+      next: ({ charges, UOMs, containerTypes }) => {
         this.chargeList = charges;
         this.UOMList = UOMs.data;
-        resolve(); 
+        this.containerTypeList = containerTypes || [];
+        resolve();
       },
       error: (err) => {
         console.error('Error loading modal fields:', err);
@@ -1010,6 +1024,7 @@ private shouldUseAllPortOptions(): boolean {
     ChargeCode: formValue.detailChargeCode,
     Description: formValue.detailDescription,
     CargoType: formValue.detailCargoType,
+    ContainerType: formValue.detailContainerType,
     UOMSid: formValue.detailUOMSid,
     SaleCurrency: formValue.detailSaleCurrency,
     SalePerUnitPrice: formValue.detailSalePerUnitPrice,
@@ -1050,6 +1065,7 @@ private shouldUseAllPortOptions(): boolean {
     BuyCurrency: detail.BuyCurrency,
     BuyPerUnitPrice: detail.BuyPerUnitPrice,
     CargoType: detail.CargoType,
+    ContainerType: detail.ContainerType ?? null,
     EffectiveDate: detail.EffectiveDate,
     IsSlabApplicable: detail.IsSlabApplicable === 'Y' ? 'Y' : 'N',
     ExpiredOn: detail.ExpiredOn,

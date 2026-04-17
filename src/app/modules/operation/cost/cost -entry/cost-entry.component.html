@@ -759,68 +759,67 @@
             <div class="mt-2">Loading tariff...</div>
           </div>
 
-          <!-- Tariff Table -->
-          <div *ngIf="!tariffLoading && tariffDetails?.length" class="table-responsive w-100">
-            <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1 text-center">
-              <thead>
-                <tr class="bg-info text-white">
-                  <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
-                  <!-- <th class="bg-transparent text-light" scope="col">Sno</th> -->
-                  <th class="bg-transparent text-light" scope="col">Charge</th>
-                  <th class="bg-transparent text-light" scope="col">Charge Desc</th>
-                  <!-- <th class="bg-transparent text-light" scope="col">PP/CC</th> -->
-                  <th class="bg-transparent text-light" scope="col">Unit</th>
-                  <th class="bg-transparent text-light" scope="col">No. of Unit</th>
-                  <th class="bg-transparent text-light" scope="col">Cost/Revenue</th>
-                  <th class="bg-transparent text-light" scope="col">Dr/Cr</th>
-                  <th class="bg-transparent text-light" scope="col">Curr</th>
-                  <th class="bg-transparent text-light" scope="col">Ex Rate</th>
-                  <th class="bg-transparent text-light" scope="col">Rate</th>
-                  <th class="bg-transparent text-light" scope="col">Amt</th>
-                  <th class="bg-transparent text-light" scope="col">Local Amt</th>
-                </tr>
-              </thead>
+          <!-- Tariff Groups -->
+          <div *ngIf="!tariffLoading && tariffCargoGroups?.length" class="w-100">
+            <div *ngFor="let group of tariffCargoGroups" class="mb-3">
+              <div class="bg-info text-white px-3 py-1 fw-bold small rounded-top">
+                {{ group.cargoLabel }}
+              </div>
 
-              <tbody>
-                <ng-container *ngFor="let sc of tariffDetails; let i = index">
-
-                  <!-- Cost Row -->
-                  <tr>
-                    <td rowspan="2">
-                      <button class="btn btn-info btn-sm" (click)="applyTariff(sc)">Apply Charge</button>
-                    </td>
-                    <!-- <td rowspan="2">{{ i + 1 }}</td> -->
-                    <td rowspan="2">{{ getChargeCode(sc.ChargeMasterSid) }}</td>
-                    <td rowspan="2">{{ sc.ChargeDescription }}</td>
-                    <!-- <td rowspan="2">{{ sc.PrepaidCollect }}</td> -->
-                    <td rowspan="2">{{ getUnitCode(sc.ChargeUomSid) }}</td>
-                    <td rowspan="2">{{ sc.NoOfUnit }}</td>
-                    <td class="text-info fw-bold">Cost</td>
-                    <td>{{ sc.CostDrCr === 'D' ? 'Debit' : 'Credit' }}</td>
-                    <td>{{ getCurrencyCode(sc.CostCurrencyMasterSid) }}</td>
-                    <td>{{ sc.CostExchangeRate }}</td>
-                    <td>{{ sc.CostRate }}</td>
-                    <td>{{ sc.CostAmount }}</td>
-                    <td>{{ sc.CostLocalAmount }}</td>
-                  </tr>
-
-                  <!-- Revenue Row -->
-                  <tr>
-                    <td class="text-info fw-bold">Revenue</td>
-                    <td>{{ sc.RevenueDrCr === 'D' ? 'Debit' : 'Credit' }}</td>
-                    <td>{{ getCurrencyCode(sc.RevenueCurrencyMasterSid) }}</td>
-                    <td>{{ sc.RevenueExchangeRate }}</td>
-                    <td>{{ sc.RevenueRate }}</td>
-                    <td>{{ sc.RevenueAmount }}</td>
-                    <td>{{ sc.RevenueLocalAmount }}</td>
-                  </tr>
-                </ng-container>
-              </tbody>
-            </table>
+              <div class="table-responsive">
+                <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1 text-center">
+                  <thead>
+                    <tr class="bg-info text-white">
+                      <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+                      <th class="bg-transparent text-light" scope="col">Charge</th>
+                      <th class="bg-transparent text-light" scope="col">Charge Desc</th>
+                      <th class="bg-transparent text-light" scope="col">Unit</th>
+                      <th class="bg-transparent text-light" scope="col">No. of Unit</th>
+                      <th class="bg-transparent text-light" scope="col">Cost/Revenue</th>
+                      <th class="bg-transparent text-light" scope="col">Dr/Cr</th>
+                      <th class="bg-transparent text-light" scope="col">Curr</th>
+                      <th class="bg-transparent text-light" scope="col">Ex Rate</th>
+                      <th class="bg-transparent text-light" scope="col">Rate</th>
+                      <th class="bg-transparent text-light" scope="col">Amt</th>
+                      <th class="bg-transparent text-light" scope="col">Local Amt</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <ng-container *ngFor="let sc of group.items">
+                      <tr>
+                        <td rowspan="2">
+                          <button class="btn btn-info btn-sm" (click)="applyTariff(sc)">Apply Charge</button>
+                        </td>
+                        <td rowspan="2">{{ getChargeCode(sc.ChargeMasterSid) }}</td>
+                        <td rowspan="2">{{ sc.ChargeDescription }}</td>
+                        <td rowspan="2">{{ getUnitCode(sc.ChargeUomSid) }}</td>
+                        <td rowspan="2">{{ sc.NoOfUnit }}</td>
+                        <td class="text-info fw-bold">Cost</td>
+                        <td>{{ sc.CostDrCr === 'D' ? 'Debit' : 'Credit' }}</td>
+                        <td>{{ getCurrencyCode(sc.CostCurrencyMasterSid) }}</td>
+                        <td>{{ sc.CostExchangeRate }}</td>
+                        <td>{{ sc.CostRate }}</td>
+                        <td>{{ sc.CostAmount }}</td>
+                        <td>{{ sc.CostLocalAmount }}</td>
+                      </tr>
+                      <tr>
+                        <td class="text-info fw-bold">Revenue</td>
+                        <td>{{ sc.RevenueDrCr === 'D' ? 'Debit' : 'Credit' }}</td>
+                        <td>{{ getCurrencyCode(sc.RevenueCurrencyMasterSid) }}</td>
+                        <td>{{ sc.RevenueExchangeRate }}</td>
+                        <td>{{ sc.RevenueRate }}</td>
+                        <td>{{ sc.RevenueAmount }}</td>
+                        <td>{{ sc.RevenueLocalAmount }}</td>
+                      </tr>
+                    </ng-container>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
 
           <!-- Empty State -->
-          <div *ngIf="!tariffLoading && !tariffDetails?.length" class="text-center text-muted py-3">
+          <div *ngIf="!tariffLoading && !tariffCargoGroups?.length" class="text-center text-muted py-3">
             No tariff details found.
           </div>
         </div>

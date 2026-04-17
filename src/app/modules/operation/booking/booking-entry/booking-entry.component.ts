@@ -4074,6 +4074,23 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
     const HouseJobSid = this.b['HouseJobSid']?.getRawValue()||'';
     const salesmanSid = this.b['SalesmanSid']?.value || '';
     const salesmanName = this.salesmanList.find(s => s.UserMasterSid === salesmanSid)?.userName || '';
+    const cargoItems = this.bookingCargo.controls.map((cargoCtrl: any) => {
+      const containerTypeSid = cargoCtrl.get('ContainerType')?.value;
+      const containerTypeName = this.containerTypeList.find(
+        ct => ct.ContainerTypeMasterSid === containerTypeSid
+      )?.ContainerTypeName || null;
+
+      return {
+        CargoType: cargoCtrl.get('CargoType')?.value,
+        ContainerType: containerTypeSid,
+        ContainerTypeName: containerTypeName,
+        GrossWeight: cargoCtrl.get('GrossWeight')?.value,
+        Volume: cargoCtrl.get('Volume')?.value,
+        NoofContainers: cargoCtrl.get('NoofContainers')?.value,
+        ChargeableWeight: cargoCtrl.get('ChargeableWeight')?.value,
+        ShipmentTerms: cargoCtrl.get('ShipmentTerms')?.value,
+      };
+    });
 
     this.currentFormValue = {
       CompanyMasterSid,
@@ -4104,6 +4121,7 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
       ShipmentTerms,
       NoofContainers,
       ChargeableWeight,
+      cargoItems,
       countryOfCompany : this.countryOfCompany,
       SalesmanName : salesmanName
     }

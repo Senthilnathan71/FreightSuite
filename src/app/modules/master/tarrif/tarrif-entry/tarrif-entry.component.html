@@ -507,7 +507,7 @@
         <h5 class="mb-0 ">Tarrif Details</h5>
     </div>
     <div>
-        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openTariffDetailEntryModal(tariffDetailEntryTemplate)"> <i class="fas fa-plus me-1"></i> Add</button>
+        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="openTariffDetailEntryModal(tariffDetailEntryTemplate)" [disabled]="isDetailModalOpen"> <i class="fas fa-plus me-1"></i> Add</button>
     </div>
   </div>
 
@@ -538,6 +538,7 @@
           <th class="bg-transparent text-light" rowspan="2">Charge</th>
           <th class="bg-transparent text-light" rowspan="2">Description</th>
           <th class="bg-transparent text-light" rowspan="2">Cargo Type</th>
+          @if(selectedFCLLCL === 'FCL'){ <th class="bg-transparent text-light" rowspan="2">Container Type</th> }
           <th class="bg-transparent text-light" rowspan="2">UOM</th>
           <th class="bg-transparent text-light text-center" colspan="2"
               style="border-bottom: none; border-left: 1px solid #eef5f9; border-right: 1px solid #eef5f9;">
@@ -570,7 +571,7 @@
           <tr>
             <td>
               <div class="d-flex align-items-center">
-                <a class="text-info"
+                <a class="text-info" [class.pe-none]="isDetailModalOpen" [class.opacity-50]="isDetailModalOpen"
                    (click)="openTariffDetailEntryModal(tariffDetailEntryTemplate, detailCtrl.getRawValue(), $index)">
                   <i class="fas fa-eye text-info cursor-pointer fs-2"></i>
                 </a>
@@ -618,6 +619,12 @@
             <td>
               {{ detailCtrl.get('CargoType')?.value }}
             </td>
+
+            @if(selectedFCLLCL === 'FCL'){
+            <td>
+              {{ getContainerTypeName(detailCtrl.get('ContainerType')?.value) }}
+            </td>
+            }
 
             <td>
   {{ getUOMName(detailCtrl.get('UOMSid')?.value) }}
@@ -738,324 +745,215 @@
                                 </div>
                             </aside>
                             }
-                          <aside class="col-md-6 col-lg-4">
-  <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailChargeCode')?.value">
-    <!-- Replace the existing ng-select with this filtered version -->
-    <!-- <ng-select 
-      class="ng-select" 
-      formControlName="detailChargeCode"
-      [items]="filteredCharges" 
-      bindLabel="chargeCode" 
-      bindValue="chargeCode" 
-      placeholder=""
-      >
-      <ng-template ng-option-tmp let-item="item">
-        {{ item.chargeCode }} - {{ item.chargeName }}
-      </ng-template>
-      <ng-template ng-notfound-tmp>
-        <div class="text-muted p-2">
-          No charges available for selected department
-        </div>
-      </ng-template>
-    </ng-select> -->
-    <dofi-searchable-dropdown
- [items]="filteredCharges" 
-  formControlName="detailChargeCode"
-  [placeholder]="''"
-[displayFields]="chargeLookupConfig.displayFields"
-  [displayLabels]="chargeLookupConfig.displayLabels"
-  [labelFields]="chargeLookupConfig.labelFields"
-  [bindValue]="'chargeCode'"
-  >
-</dofi-searchable-dropdown>
-    <label for="charge" class="input-label">Charge Code <span class="text-danger">*</span></label>
-    @if(tariffDetailsForm.get('detailChargeCode')?.touched && tariffDetailsForm.get('detailChargeCode')?.errors){
-    <div class="error-message">
-      @if(tariffDetailsForm.get('detailChargeCode')?.hasError('required')){
-      <span>Required</span>
-      }
-    </div>
-    }
-  </div>
-</aside>
-
-<aside class="col-md-6 col-lg-4">
-  <div class="d-flex mb-2 my-lg-0">
-    <div class="custom-form-group custom-form-group-select-date w-100 mb-0">
-      <input 
-        class="form-control mb-0" 
-        placeholder="dd-mm-yyyy" 
-        name="dp"
-        ngbDatepicker 
-        #d="ngbDatepicker" 
-        (click)="d.toggle()" 
-        readonly
-        formControlName="detailEffectiveDate" 
-        [minDate]="minEffectiveFrom" 
-        [maxDate]="toNgbDateStruct(tariffDetailsForm.get('detailExpiredOn').value)"/>
-      <label class="input-label" for="dp">Effective From <span class="text-danger">*</span></label>
-      @if(tariffDetailsForm.get('detailEffectiveDate')?.touched && tariffDetailsForm.get('detailEffectiveDate')?.invalid){
-      <div class="error-message pb-2">
-        @if(tariffDetailsForm.get('detailEffectiveDate')?.hasError('required')){
-        <span>Required</span>
-        } 
-        @else if(tariffDetailsForm.get('detailEffectiveDate')?.hasError('invalidEffectiveDate')){
-        <span>{{ tariffDetailsForm.get('detailEffectiveDate')?.getError('invalidEffectiveDate') }}</span>
-        }
-      </div>
-      }
-    </div>
-    <button class="btn bi bi-calendar3 mx-1 mt-2" (click)="d.toggle()" type="button">
-      <i-feather name="calendar" class="feather-sm"></i-feather>
-    </button>
-  </div>
-</aside>
-                           
-                            <aside class="col-md-6 col-lg-4">
-                                <div class="d-flex mb-2 my-lg-0">
+                            <!-- Row 1: Charge Code | Effective From | Expired On -->
+                            <aside class="col-12 col-md-4">
+                                <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailChargeCode')?.value">
+                                    <dofi-searchable-dropdown [items]="filteredCharges" formControlName="detailChargeCode" [placeholder]="''"
+                                        [displayFields]="chargeLookupConfig.displayFields" [displayLabels]="chargeLookupConfig.displayLabels"
+                                        [labelFields]="chargeLookupConfig.labelFields" [bindValue]="'chargeCode'">
+                                    </dofi-searchable-dropdown>
+                                    <label class="input-label">Charge Code <span class="text-danger">*</span></label>
+                                    @if(tariffDetailsForm.get('detailChargeCode')?.touched && tariffDetailsForm.get('detailChargeCode')?.errors){
+                                    <div class="error-message">
+                                        @if(tariffDetailsForm.get('detailChargeCode')?.hasError('required')){ <span>Required</span> }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-12 col-md-4">
+                                <div class="d-flex mb-2 my-md-0">
                                     <div class="custom-form-group custom-form-group-select-date w-100 mb-0">
                                         <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp"
-                                            ngbDatepicker #d1="ngbDatepicker" (click)="d1.toggle()" readonly
-                                            formControlName="detailExpiredOn" [minDate]="toNgbDateStruct(tariffDetailsForm.get('detailEffectiveDate').value)" />
-                                        <label class="input-label" for="dp">Expired On <span
-                                                class="text-danger">*</span></label>
-                                        @if(tariffDetailsForm.get('detailExpiredOn')?.touched &&
-                                        tariffDetailsForm.get('detailExpiredOn')?.invalid){
+                                            ngbDatepicker #d="ngbDatepicker" (click)="d.toggle()" readonly
+                                            formControlName="detailEffectiveDate" [minDate]="minEffectiveFrom"
+                                            [maxDate]="toNgbDateStruct(tariffDetailsForm.get('detailExpiredOn').value)" />
+                                        <label class="input-label">Effective From <span class="text-danger">*</span></label>
+                                        @if(tariffDetailsForm.get('detailEffectiveDate')?.touched && tariffDetailsForm.get('detailEffectiveDate')?.invalid){
                                         <div class="error-message pb-2">
-                                            @if(tariffDetailsForm.get('detailExpiredOn')?.hasError('required')){
-                                            <span>Required</span>
+                                            @if(tariffDetailsForm.get('detailEffectiveDate')?.hasError('required')){ <span>Required</span> }
+                                            @else if(tariffDetailsForm.get('detailEffectiveDate')?.hasError('invalidEffectiveDate')){
+                                            <span>{{ tariffDetailsForm.get('detailEffectiveDate')?.getError('invalidEffectiveDate') }}</span>
                                             }
                                         </div>
                                         }
                                     </div>
-                                    <button
-                                        class="btn  bi bi-calendar3 mx-1 mt-2"
-                                        (click)="d1.toggle()" type="button">
+                                    <button class="btn bi bi-calendar3 mx-1 mt-2" (click)="d.toggle()" type="button">
                                         <i-feather name="calendar" class="feather-sm"></i-feather>
                                     </button>
                                 </div>
                             </aside>
-                            
-                            
-                            <aside class="col-md-6 col-lg-4">
-  <div class="custom-form-group">
-    <input type="text" id="text-input" formControlName="detailDescription"
-           placeholder="" class="form-control custom-input-field sm"  
-           [textWithNumbers]="100"  
-           style="background-color:white;cursor:not-allowed" readonly>
-    <label for="text-input" [ngClass]="{
-        'input-label': true,
-        'bg-transparent': !tariffDetailsForm.get('detailDescription')?.value
-    }">Charge Description </label>
-                                    @if(tariffDetailsForm.get('detailDescription')?.touched &&
-                                    tariffDetailsForm.get('detailDescription')?.errors){
-                                    <div class="error-message">
-                                        @if(tariffDetailsForm.get('detailDescription')?.hasError('required')){
-                                        <span>Required</span>
-                                        } @else if(tariffDetailsForm.get('detailDescription')?.hasError('maxlength')) {
-                                        <span>Max 100 chars</span>
+                            <aside class="col-12 col-md-4">
+                                <div class="d-flex mb-2 my-md-0">
+                                    <div class="custom-form-group custom-form-group-select-date w-100 mb-0">
+                                        <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp"
+                                            ngbDatepicker #d1="ngbDatepicker" (click)="d1.toggle()" readonly
+                                            formControlName="detailExpiredOn" [minDate]="toNgbDateStruct(tariffDetailsForm.get('detailEffectiveDate').value)" />
+                                        <label class="input-label">Expired On <span class="text-danger">*</span></label>
+                                        @if(tariffDetailsForm.get('detailExpiredOn')?.touched && tariffDetailsForm.get('detailExpiredOn')?.invalid){
+                                        <div class="error-message pb-2">
+                                            @if(tariffDetailsForm.get('detailExpiredOn')?.hasError('required')){ <span>Required</span> }
+                                        </div>
                                         }
                                     </div>
-                                    }
+                                    <button class="btn bi bi-calendar3 mx-1 mt-2" (click)="d1.toggle()" type="button">
+                                        <i-feather name="calendar" class="feather-sm"></i-feather>
+                                    </button>
                                 </div>
                             </aside>
-                            <!-- <aside class="col-md-6 col-lg-4">
-  <div class="custom-form-group">
-    <input type="text" id="text-input" formControlName="detailDescription"
-           placeholder="" class="form-control custom-input-field sm"  
-           [textWithNumbers]="100"  
-           style="background-color:white;cursor:not-allowed" readonly>
-    <label for="text-input" [ngClass]="{
-        'input-label': true,
-        'bg-transparent': !tariffDetailsForm.get('detailDescription')?.value
-    }">Charge Description (Auto-filled from Charge Master)</label>
-  </div>
-</aside> -->
-                            <aside class="col-md-6 col-lg-4">
+
+                            <!-- Row 2: Description | Cargo Type | Container Type (FCL) — non-FCL: UOM fills 3rd slot -->
+                            <aside class="col-12 col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" formControlName="detailDescription" placeholder=""
+                                        class="form-control custom-input-field sm" [textWithNumbers]="100"
+                                        style="background-color:white;cursor:not-allowed" readonly>
+                                    <label class="input-label" [ngClass]="{'bg-transparent': !tariffDetailsForm.get('detailDescription')?.value}">Charge Description</label>
+                                </div>
+                            </aside>
+                            <aside class="col-12 col-md-4">
                                 <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailCargoType')?.value">
                                     <ng-select class="ng-select" formControlName="detailCargoType" placeholder="">
-                                        <!-- <ng-option value="">Select Cargo Type</ng-option> -->
                                         @for (cargo of cargoTypes; track cargo) {
                                         <ng-option [value]="cargo">{{ cargo }}</ng-option>
                                         }
                                     </ng-select>
-                                    <label for="text-input" class="input-label">Cargo Type <span
-                                            class="text-danger">*</span></label>
-                                    @if(tariffDetailsForm.get('detailCargoType')?.touched &&
-                                    tariffDetailsForm.get('detailCargoType')?.errors){
+                                    <label class="input-label">Cargo Type <span class="text-danger">*</span></label>
+                                    @if(tariffDetailsForm.get('detailCargoType')?.touched && tariffDetailsForm.get('detailCargoType')?.errors){
                                     <div class="error-message">
-                                        @if(tariffDetailsForm.get('detailCargoType')?.hasError('required')){
-                                        <span>Required</span>
-                                        }
-                                        @else if(tariffDetailsForm.get('detailCargoType')?.hasError('maxlength')) {
-                                        <span>Max 10 chars</span>
-                                        }
+                                        @if(tariffDetailsForm.get('detailCargoType')?.hasError('required')){ <span>Required</span> }
                                     </div>
                                     }
                                 </div>
                             </aside>
-                            <aside class="col-md-6 col-lg-4">
+                            @if(selectedFCLLCL === 'FCL') {
+                            <aside class="col-12 col-md-4">
+                                <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailContainerType')?.value">
+                                    <ng-select class="ng-select" formControlName="detailContainerType" placeholder="" bindValue="ContainerTypeMasterSid" bindLabel="ContainerCode" appendTo="body">
+                                        @for(ct of containerTypeList; track ct.ContainerTypeMasterSid){
+                                        <ng-option [value]="ct.ContainerTypeMasterSid">{{ct.ContainerCode}} - {{ct.ContainerSize}}</ng-option>
+                                        }
+                                    </ng-select>
+                                    <label class="input-label">Container Type <span class="text-danger">*</span></label>
+                                    @if(tariffDetailsForm.get('detailContainerType')?.touched && tariffDetailsForm.get('detailContainerType')?.invalid){
+                                    <div class="error-message">
+                                        @if(tariffDetailsForm.get('detailContainerType')?.hasError('required')){ <span>Required</span> }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            }
+
+                            <!-- Row 3: UOM | Revenue Currency | Revenue Per Unit Price -->
+                            <aside class="col-12 col-md-4">
                                 <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailUOMSid')?.value">
                                     <ng-select class="ng-select" formControlName="detailUOMSid" placeholder="" bindValue="UOMMasterSid" bindLabel="UOMCode">
-                                        <!-- <ng-option value="">Select UOM</ng-option> -->
                                         @for(uom of UOMList; track uom){
                                         <ng-option [value]="uom.UOMMasterSid">{{uom.UOMCode}}</ng-option>
                                         }
                                     </ng-select>
-                                    <label for="uom" class="input-label">UOM <span
-                                                class="text-danger">*</span></label>
-                                    @if(tariffDetailsForm.get('detailUOMSid')?.touched &&
-                                    tariffDetailsForm.get('detailUOMSid')?.invalid){
+                                    <label class="input-label">UOM <span class="text-danger">*</span></label>
+                                    @if(tariffDetailsForm.get('detailUOMSid')?.touched && tariffDetailsForm.get('detailUOMSid')?.invalid){
                                     <div class="error-message">
-                                        @if(tariffDetailsForm.get('detailUOMSid')?.hasError('required')){
-                                        <span>Required</span>
-                                        }
+                                        @if(tariffDetailsForm.get('detailUOMSid')?.hasError('required')){ <span>Required</span> }
                                     </div>
                                     }
                                 </div>
                             </aside>
-                               <aside class="col-md-6">
+                            <aside class="col-12 col-md-4">
+                                <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailSaleCurrency')?.value">
+                                    <dofi-searchable-dropdown [items]="currencyList" formControlName="detailSaleCurrency" [placeholder]="''"
+                                        [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
+                                        [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'">
+                                    </dofi-searchable-dropdown>
+                                    <label class="input-label">Revenue Currency <span class="text-danger">*</span></label>
+                                    @if(tariffDetailsForm.get('detailSaleCurrency')?.touched && tariffDetailsForm.get('detailSaleCurrency')?.errors){
+                                    <div class="error-message">
+                                        @if(tariffDetailsForm.get('detailSaleCurrency')?.hasError('required')){ <span>Required</span> }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-12 col-md-4">
                                 <div class="custom-form-group">
-                                    <textarea type="text" formControlName="detailRemarks" id="text-input" placeholder="" class="custom-input-field sm"
-                                        [textWithNumbers]="100" rows="1"></textarea>
-                                    <label for="text-input" class="input-label">Remarks <span class="text-danger"></span></label>
-                                    @if(tariffDetailsForm.get('detailRemarks')?.touched && tariffDetailsForm.get('detailRemarks')?.errors){
+                                    <input type="text" formControlName="detailSalePerUnitPrice" placeholder=""
+                                        class="custom-input-field sm text-end" DecimalPrecision
+                                        [DecimalPrecisionBefore]="10"
+                                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(tariffDetailsForm.get('detailSaleCurrency')?.value)">
+                                    <label class="input-label">Revenue Per Unit Price <span class="text-danger">*</span></label>
+                                    @if(tariffDetailsForm.get('detailSalePerUnitPrice')?.touched && tariffDetailsForm.get('detailSalePerUnitPrice')?.errors){
                                     <div class="error-message">
-                                        @if(tariffDetailsForm.get('detailRemarks')?.hasError('required')){
-                                        <span>Required</span>
-                                        } @else if(tariffDetailsForm.get('detailRemarks')?.hasError('maxlength')) {
-                                        <span>Max 100 chars</span>
+                                        @if(tariffDetailsForm.get('detailSalePerUnitPrice')?.hasError('required')){ <span>Required</span> }
+                                        @else if(tariffDetailsForm.get('detailSalePerUnitPrice')?.hasError('decimalPrecision')){
+                                        <span>{{ tariffDetailsForm.get('detailSalePerUnitPrice')?.getError('decimalPrecision')?.message }}</span>
                                         }
                                     </div>
                                     }
                                 </div>
                             </aside>
-                              <aside class="col-md-6">
-                                <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailstatus')?.value">
 
+                            <!-- Row 4: Cost Currency | Cost Per Unit Price | Min Sale -->
+                            <aside class="col-12 col-md-4">
+                                <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailBuyCurrency')?.value">
+                                    <dofi-searchable-dropdown [items]="currencyList" formControlName="detailBuyCurrency" [placeholder]="''"
+                                        [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
+                                        [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'">
+                                    </dofi-searchable-dropdown>
+                                    <label class="input-label">Cost Currency <span class="text-danger">*</span></label>
+                                    @if(tariffDetailsForm.get('detailBuyCurrency')?.touched && tariffDetailsForm.get('detailBuyCurrency')?.errors){
+                                    <div class="error-message">
+                                        @if(tariffDetailsForm.get('detailBuyCurrency')?.hasError('required')){ <span>Required</span> }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-12 col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" formControlName="detailBuyPerUnitPrice" placeholder=""
+                                        class="custom-input-field sm text-end" DecimalPrecision
+                                        [DecimalPrecisionBefore]="10"
+                                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(tariffDetailsForm.get('detailBuyCurrency')?.value)">
+                                    <label class="input-label">Cost Per Unit Price <span class="text-danger">*</span></label>
+                                    @if(tariffDetailsForm.get('detailBuyPerUnitPrice')?.touched && tariffDetailsForm.get('detailBuyPerUnitPrice')?.errors){
+                                    <div class="error-message">
+                                        @if(tariffDetailsForm.get('detailBuyPerUnitPrice')?.hasError('required')){ <span>Required</span> }
+                                        @else if(tariffDetailsForm.get('detailBuyPerUnitPrice')?.hasError('decimalPrecision')){
+                                        <span>{{ tariffDetailsForm.get('detailBuyPerUnitPrice')?.getError('decimalPrecision')?.message }}</span>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </aside>
+                            <aside class="col-12 col-md-4">
+                                <div class="custom-form-group">
+                                    <input type="text" formControlName="detailMinSale" placeholder=""
+                                        class="custom-input-field sm text-end" [onlyNumbers]="100" min="0">
+                                    <label class="input-label">Min Sale</label>
+                                </div>
+                            </aside>
+
+                            <!-- Last row always: Status | Remarks — w-100 forces a row break on md so they stay together -->
+                            <div class="w-100 d-none d-md-block"></div>
+                            <aside class="col-12 col-md-4">
+                                <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailstatus')?.value">
                                     @if(isModalEditMode){
-                                    <ng-select name="status" class="ng-select" formControlName="detailstatus" id="text-input">
+                                    <ng-select name="status" class="ng-select" formControlName="detailstatus">
                                         <ng-option value="Active" [disabled]="tariffDetailData?.status === 'S'">Active</ng-option>
                                         <ng-option value="Suspended">Suspended</ng-option>
                                     </ng-select>
                                     } @else {
-                                    <input type="text" name="status" class="custom-input-field sm"
-                                        formControlName="detailstatus" id="text-input" readonly>
+                                    <input type="text" name="status" class="custom-input-field sm" formControlName="detailstatus" readonly>
                                     }
-                                    <label for="text-input" class="input-label">Status <span
-                                            class="text-danger"></span></label>
-
+                                    <label class="input-label">Status</label>
                                 </div>
                             </aside>
-                         
-                            <aside class="col-md-6">
-                                <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailSaleCurrency')?.value">
-                                    <!-- <ng-select class="ng-select" formControlName="detailSaleCurrency"placeholder="">
-                                        
-                                        @for (currency of currencyList; track currency) {
-                                        <ng-option [value]="currency.CurrencyMasterSid">{{ currency.currencyName
-                                            }}</ng-option>
-                                        }
-                                    </ng-select> -->
-                                    <dofi-searchable-dropdown [items]="currencyList"   formControlName="detailSaleCurrency" [placeholder]="''"
-                                            [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
-                                            [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'" >
-                                        </dofi-searchable-dropdown>
-                                    <label for="text-input" class="input-label">Revenue Currency <span
-                                            class="text-danger">*</span></label>
-                                    @if(tariffDetailsForm.get('detailSaleCurrency')?.touched &&
-                                    tariffDetailsForm.get('detailSaleCurrency')?.errors){
-                                    <div class="error-message">
-                                        @if(tariffDetailsForm.get('detailSaleCurrency')?.hasError('required')){
-                                        <span>Required</span>
-                                        }
-                                    </div>
-                                    }
-                                </div>
-                            </aside>
-                            <!-- Revenue Per Unit Price Field -->
-<aside class="col-md-6">
-  <div class="custom-form-group">
-    <input type="text" id="text-input" formControlName="detailSalePerUnitPrice"
-           placeholder="" class="custom-input-field sm text-end" 
-           DecimalPrecision 
-           [DecimalPrecisionBefore]="10" 
-           [DecimalPrecisionAfter]="getAmountDecimalPlaces(tariffDetailsForm.get('detailSaleCurrency')?.value)">
-    <label for="text-input" class="input-label">Revenue Per Unit Price <span
-            class="text-danger">*</span></label>
-    @if(tariffDetailsForm.get('detailSalePerUnitPrice')?.touched &&
-    tariffDetailsForm.get('detailSalePerUnitPrice')?.errors){
-    <div class="error-message">
-      @if(tariffDetailsForm.get('detailSalePerUnitPrice')?.hasError('required')){
-      <span>Required</span>
-      } @else if(tariffDetailsForm.get('detailSalePerUnitPrice')?.hasError('decimalPrecision')) {
-      <span>{{ tariffDetailsForm.get('detailSalePerUnitPrice')?.getError('decimalPrecision')?.message }}</span>
-      }
-    </div>
-    }
-  </div>
-</aside>
-                            <aside class="col-md-6">
-                                <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailBuyCurrency')?.value">
-                                    <!-- <ng-select class="ng-select" formControlName="detailBuyCurrency"
-                                    placeholder=""> -->
-                                    <dofi-searchable-dropdown [items]="currencyList"   formControlName="detailBuyCurrency" [placeholder]="''"
-                                            [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
-                                            [labelFields]="CurrencyLookupConfig.labelFields" [bindValue]="'CurrencyMasterSid'" >
-                                        </dofi-searchable-dropdown>
-                                        <!-- <ng-option value="">Select Buy Currency</ng-option>
-                                        @for (currency of currencyList; track currency) {
-                                        <ng-option [value]="currency.CurrencyMasterSid">{{ currency.currencyName
-                                            }}</ng-option>
-                                        }
-                                    </ng-select> -->
-                                    <label for="text-input" class="input-label">Cost Currency <span
-                                            class="text-danger">*</span></label>
-                                    @if(tariffDetailsForm.get('detailBuyCurrency')?.touched &&
-                                    tariffDetailsForm.get('detailBuyCurrency')?.errors){
-                                    <div class="error-message">
-                                        @if(tariffDetailsForm.get('detailBuyCurrency')?.hasError('required')){
-                                        <span>Required</span>
-                                        }
-                                    </div>
-                                    }
-                                </div>
-                            </aside>
-                            <!-- Cost Per Unit Price Field -->
-<aside class="col-md-3">
-  <div class="custom-form-group">
-    <input type="text" id="text-input" formControlName="detailBuyPerUnitPrice"
-           placeholder="" class="custom-input-field sm text-end" 
-           DecimalPrecision 
-           [DecimalPrecisionBefore]="10" 
-           [DecimalPrecisionAfter]="getAmountDecimalPlaces(tariffDetailsForm.get('detailBuyCurrency')?.value)">
-    <label for="text-input" class="input-label">Cost Per Unit Price <span
-            class="text-danger">*</span></label>
-    @if(tariffDetailsForm.get('detailBuyPerUnitPrice')?.touched &&
-    tariffDetailsForm.get('detailBuyPerUnitPrice')?.errors){
-    <div class="error-message">
-      @if(tariffDetailsForm.get('detailBuyPerUnitPrice')?.hasError('required')){
-      <span>Required</span>
-      } @else if(tariffDetailsForm.get('detailBuyPerUnitPrice')?.hasError('decimalPrecision')) {
-      <span>{{ tariffDetailsForm.get('detailBuyPerUnitPrice')?.getError('decimalPrecision')?.message }}</span>
-      }
-    </div>
-    }
-  </div>
-</aside>
-                            <aside class="col-md-3">
+                            <aside class="col-12 col-md-8">
                                 <div class="custom-form-group">
-                                    <input type="text" id="text-input" formControlName="detailMinSale"
-                                        placeholder="" class="custom-input-field sm text-end" [onlyNumbers]="100" min="0">
-                                    <label for="text-input" class="input-label">Min Sale</label>
-                                    @if(tariffDetailsForm.get('detailMinSale')?.touched &&
-                                    tariffDetailsForm.get('detailMinSale')?.errors){
+                                    <textarea formControlName="detailRemarks" placeholder="" class="custom-input-field sm"
+                                        [textWithNumbers]="100" rows="1"></textarea>
+                                    <label class="input-label">Remarks</label>
+                                    @if(tariffDetailsForm.get('detailRemarks')?.touched && tariffDetailsForm.get('detailRemarks')?.errors){
                                     <div class="error-message">
-                                        @if(tariffDetailsForm.get('detailMinSale')?.hasError('required')){
-                                        <span>Required</span>
-                                        } @else if(tariffDetailsForm.get('detailMinSale')?.hasError('maxlength')) {
-                                        <span>Max 100 chars</span>
-                                        }
+                                        @if(tariffDetailsForm.get('detailRemarks')?.hasError('maxlength')){ <span>Max 100 chars</span> }
                                     </div>
                                     }
                                 </div>
