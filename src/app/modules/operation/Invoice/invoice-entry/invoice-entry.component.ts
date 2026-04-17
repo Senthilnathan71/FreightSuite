@@ -735,12 +735,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       this.currentCompany?.CompanyMasterSid,
       this.currentBranch?.BranchMasterSid,
       this.currentFinancialYear,
-      () => {
-        this.applyVoucherDateConstraints();
-        // Restrict datepicker to the grace-allowed window (Rules 1-3)
-        const earliest = this.voucherPeriodService.getEarliestAllowedDate('AR');
-        if (earliest) this.fyMinDate = toNgbDateStruct(earliest);
-      }
+      () => this.applyVoucherDateConstraints()
     );
   }
 
