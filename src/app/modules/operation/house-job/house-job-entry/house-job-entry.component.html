@@ -1588,6 +1588,7 @@
                       <tr class="bg-info text-center">
                         <th class="bg-transparent text-light" scope="col" *ngIf="houseJobCargoProducts(cargoIndex).length > 0" width="2%"></th>
                         <th class="bg-transparent text-light dofi-min-w-160" scope="col">Commodity<span class="text-danger">*</span></th>
+                        <th class="bg-transparent text-light dofi-min-w-110" scope="col">HS Code</th>
                         <th class="bg-transparent text-light dofi-min-w-40" scope="col">Shipping Bill No</th>
                         <th class="bg-transparent text-light dofi-min-w-130" scope="col">Shipping Bill Date</th>
                         <th class="bg-transparent text-light dofi-min-w-40" scope="col">Extl Pkg<span class="text-danger">*</span></th>
@@ -1608,6 +1609,14 @@
                           <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM <span class="text-danger">*</span></th>
                         }
                         <th class="bg-transparent text-light dofi-min-w-130" scope="col">Cargo Recd. Date</th>
+                        <th class="bg-transparent text-light dofi-min-w-70" scope="col">Recd. Qty</th>
+                        <th class="bg-transparent text-light dofi-min-w-70" scope="col">Damaged Qty</th>
+                        <th class="bg-transparent text-light dofi-min-w-160" scope="col">Damage Remarks</th>
+                        @if(selectedDepartmentType !== 'AIR'){
+                          <th class="bg-transparent text-light dofi-min-w-160" scope="col">Container No.</th>
+                        }
+                        <th class="bg-transparent text-light dofi-min-w-130" scope="col">Delivery Date</th>
+                        <th class="bg-transparent text-light dofi-min-w-70" scope="col">Delivered Qty</th>
                         <th class="bg-transparent text-light" scope="col">Is Haz</th>
                         <th class="bg-transparent text-light dofi-min-w-90" scope="col">Imco Class</th>
                         <th class="bg-transparent text-light dofi-min-w-60" scope="col">UN No</th>
@@ -1649,6 +1658,11 @@
                                 </button>
                               </div>
                             </div>
+                          </td>
+                          <td>
+                            <ng-select class="ng-select" formControlName="HSCode" [items]="hssacList" bindLabel="HSSACCode"
+                              bindValue="HSSACCode" appendTo="body">
+                            </ng-select>
                           </td>
                           <td>
                             <input type="text" formControlName="ShippingBillNo" class="custom-input-field sm" [textWithNumbers]="20">
@@ -1702,6 +1716,39 @@
                             </div>
                           </td>
                           <td>
+                            <input type="text" formControlName="ReceivedQty" placeholder="" [onlyNumbers]
+                              class="custom-input-field sm text-end">
+                          </td>
+                          <td>
+                            <input type="text" formControlName="DamageQty" placeholder="" [onlyNumbers]
+                              class="custom-input-field sm text-end">
+                          </td>
+                          <td>
+                            <input type="text" formControlName="DamageRemarks" placeholder="" [onlyText]
+                              class="custom-input-field sm text-end">
+                          </td>
+                          @if(selectedDepartmentType !== 'AIR'){
+                            <td>
+                              <ng-select class="ng-select" formControlName="MasterJobContainerSid" [items]="masterJobContainers"
+                                bindLabel="ContainerNumber" bindValue="MasterJobContainerSid" appendTo="body">
+                              </ng-select>
+                            </td>
+                          }
+                          <td>
+                            <div class="d-flex align-items-center" style="margin-top: 4px;">
+                              <input class="form-control" placeholder="" name="dp" ngbDatepicker #dpDelivery="ngbDatepicker"
+                                (click)="dpDelivery.toggle()" formControlName="DeliveryDate" (keydown.arrowDown)="dpDelivery.open()"
+                                [minDate]="!isEditMode ? today : null" container="body" readonly />
+                              <button class="btn p-0" (click)="dpDelivery.toggle()" type="button">
+                                <i-feather name="calendar" class="feather-sm"></i-feather>
+                              </button>
+                            </div>
+                          </td>
+                          <td>
+                            <input type="text" formControlName="DeliveredQty" placeholder="" [onlyNumbers]
+                              class="custom-input-field sm text-end">
+                          </td>
+                          <td>
                             <input type="checkbox" formControlName="IsHaz" (change)="toggleHazProduct(productIndex,cargoIndex)" />
                           </td>
                           <td>
@@ -1714,7 +1761,7 @@
                         </tr>
                       } @else {
                         <tr>
-                          <td colspan="16" class="text-center">No Products added</td>
+                          <td colspan="24" class="text-center">No Products added</td>
                         </tr>
                       }
                     </tbody>
