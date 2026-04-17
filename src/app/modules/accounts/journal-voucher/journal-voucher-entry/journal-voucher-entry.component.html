@@ -83,7 +83,7 @@
               [ngClass]="{ 'btn-warning': isDirty, 'btn-info': !isDirty }"
               (click)="saveDraft()"
               [disabled]="
-                isReadOnly || (!mps.can('update') && editMode) || isSaving || voucherConstraints.isClosed
+                isReadOnly || (!mps.can('update') && editMode) || isSaving || (voucherConstraints.isClosed && showVoucherDateError)
               "
             >
               <i class="fas fa-save me-1"></i>
@@ -108,7 +108,7 @@
                 !mps.can('post') ||
                 isDirty ||
                 isSaving || isReadOnly ||
-                voucherConstraints.isClosed
+                (voucherConstraints.isClosed && showVoucherDateError)
               "
               [title]="
                 isDirty ? 'Please save the draft first before posting' : ''
@@ -165,7 +165,7 @@
                                 </button>
                             </div>
                             <label class="input-label" for="dp">Voucher Date <span class="text-danger">*</span></label>
-                            <small *ngIf="voucherConstraints.errorMessage" class="text-danger d-block">{{ voucherConstraints.errorMessage }}</small>
+                            <small *ngIf="voucherConstraints.errorMessage && showVoucherDateError" class="text-danger d-block">{{ voucherConstraints.errorMessage }}</small>
                         </div>
                     </aside>
 

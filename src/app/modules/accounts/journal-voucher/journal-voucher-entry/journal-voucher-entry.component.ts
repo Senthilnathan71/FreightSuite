@@ -153,6 +153,8 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
   voucherConstraints: VoucherDateConstraints = {
     isClosed: false, errorMessage: null
   };
+  // Gates the inline error label and button-disable: create=after save-click, edit=after date-change
+  showVoucherDateError = false;
 
   get isReadOnly(): boolean {
     if (!this.editMode) return false;
@@ -705,17 +707,16 @@ private deepEqual(obj1: any, obj2: any): boolean {
   }
 
   applyVoucherDateConstraints(): void {
-    // Only validate on create; skip for existing voucher (edit/view)
-    if (this.voucherHeaderSid || this.editMode) {
-      this.voucherConstraints = { isClosed: false, errorMessage: null };
-      return;
-    }
+    // Validation runs in create AND edit mode (message shows when invalid).
+    // Posted vouchers have form.disable() so user can't interact; no skip needed here.
     const voucherDate = this.form?.get('voucherDate')?.value;
     this.voucherConstraints = this.voucherPeriodService.applyConstraints(voucherDate, 'GL');
   }
 
   onVoucherDateChange(): void {
     this.applyVoucherDateConstraints();
+    // Edit mode: reveal error label + gate button-disable now that user has changed the date
+    if (this.voucherHeaderSid) this.showVoucherDateError = true;
   }
 
   loadMasterData(): void {
@@ -921,15 +922,7 @@ private deepEqual(obj1: any, obj2: any): boolean {
 
         this.form.patchValue(formPatchData);
         this.applyVoucherDateConstraints();
-        const _paymentOrigDate = new Date(voucher.VoucherDate);
-    if (!isNaN(_paymentOrigDate.getTime())) {
-      const _y = _paymentOrigDate.getFullYear(), _m = _paymentOrigDate.getMonth() + 1;
-      const _monthEnd = new Date(_y, _m, 0);
-      const _today = new Date(); _today.setHours(0, 0, 0, 0);
-      const _effectiveEnd = _monthEnd < _today ? _monthEnd : _today;
-      this.fyMinDate = { year: _y, month: _m, day: 1 };
-      this.fyMaxDate = { year: _effectiveEnd.getFullYear(), month: _effectiveEnd.getMonth() + 1, day: _effectiveEnd.getDate() };
-    }
+        // Edit mode: datepicker keeps the full FY range so user can re-date into any past month.
            // Clear the manually edited tracking set
       this.manuallyEditedNarrationRows.clear();
       
@@ -2397,6 +2390,8 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
 
   // NEW: Final Save with Posting functionality
   onFinalSave(): void {
+    // Reveal error label now that user has clicked save
+    this.showVoucherDateError = true;
     // Re-validate voucher date constraints at save time (edit mode may have stale state)
     this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed
@@ -2550,6 +2545,8 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
   // Existing saveDraft method (for draft saving)
   saveDraft(resolve?: (value: boolean) => void, isPostingTrue?: boolean) {
     console.log("saveDraft")
+  // Reveal error label now that user has clicked save
+  this.showVoucherDateError = true;
   // Re-validate voucher date constraints at save time (edit mode may have stale state)
   this.applyVoucherDateConstraints();
   // Block save if voucher period grace days exceeded or module closed

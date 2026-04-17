@@ -288,6 +288,8 @@ export class VendorCreditNoteEntryComponent {
   voucherConstraints: VoucherDateConstraints = {
     isClosed: false, errorMessage: null
   };
+  // Gates the inline error label and button-disable: create=after save-click, edit=after date-change
+  showVoucherDateError = false;
 
   // Country/Tax mode
   bookingModeCountry: string = 'india';
@@ -1138,8 +1140,9 @@ export class VendorCreditNoteEntryComponent {
   }
 
   applyVoucherDateConstraints(): void {
-    // Only validate on create; skip for existing voucher (edit/view)
-    if (this.headerId || this.isViewMode) {
+    // Validation runs in create AND edit mode (message shows when invalid).
+    // Only view mode skips.
+    if (this.isViewMode) {
       this.voucherConstraints = { isClosed: false, errorMessage: null };
       return;
     }
@@ -1149,6 +1152,8 @@ export class VendorCreditNoteEntryComponent {
 
   onVoucherDateChange() {
     this.applyVoucherDateConstraints();
+    // Edit mode: reveal error label + gate button-disable now that user has changed the date
+    if (this.headerId) this.showVoucherDateError = true;
     const voucherDate = this.vendorCreditNoteForm
       .get('VoucherDate')
       ?.getRawValue();
@@ -1374,6 +1379,8 @@ export class VendorCreditNoteEntryComponent {
             next: () => {
               this.patchValues(data);
               this.applyVoucherDateConstraints();
+
+              // Edit mode: datepicker keeps the full FY range so user can re-date into any past month.
               // this.invoiceOutstandingAmount = data.netOutstandingForParty || 0;
 
               this.vendorCreditNoteForm.get('PartyName')?.disable();
@@ -2056,6 +2063,8 @@ export class VendorCreditNoteEntryComponent {
       }
     }
 
+    // Reveal error label now that user has clicked save
+    this.showVoucherDateError = true;
     // Re-validate voucher date constraints at save time (edit mode may have stale state)
     this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed
@@ -2280,6 +2289,7 @@ export class VendorCreditNoteEntryComponent {
 
   async postVoucher(notFromSubmit: boolean = false): Promise<void> {
     if (this.isSaving) return;
+    this.showVoucherDateError = true;
     this.applyVoucherDateConstraints();
     if (this.voucherConstraints.isClosed) {
       if (this.voucherConstraints.errorMessage) this.appSettingService.showWarning(this.voucherConstraints.errorMessage);

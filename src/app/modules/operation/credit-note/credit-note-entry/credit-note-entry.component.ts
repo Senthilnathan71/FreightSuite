@@ -281,6 +281,8 @@ export class CreditNoteEntryComponent {
     isClosed: false,
     errorMessage: null,
   };
+  // Gates the inline error label and button-disable: create=after save-click, edit=after date-change
+  showVoucherDateError = false;
 
   // Unsaved changes related variable declarations
   isDirty: boolean = false;
@@ -1119,8 +1121,9 @@ export class CreditNoteEntryComponent {
   }
 
   applyVoucherDateConstraints(): void {
-    // Only validate on create; skip for existing voucher (edit/view)
-    if (this.headerId || this.isViewMode) {
+    // Validation runs in create AND edit mode (message shows when invalid).
+    // Only view mode skips.
+    if (this.isViewMode) {
       this.voucherConstraints = { isClosed: false, errorMessage: null };
       return;
     }
@@ -1133,6 +1136,8 @@ export class CreditNoteEntryComponent {
 
   onVoucherDateChange(): void {
     this.applyVoucherDateConstraints();
+    // Edit mode: reveal error label + gate button-disable now that user has changed the date
+    if (this.headerId) this.showVoucherDateError = true;
     const voucherDate = this.creditNoteForm.get('VoucherDate')?.getRawValue();
     if (!voucherDate) return;
 
@@ -1411,6 +1416,9 @@ export class CreditNoteEntryComponent {
           this.creditNoteForm.markAllAsTouched();
           this.patchValues(this.creditNoteData);
           this.applyVoucherDateConstraints();
+
+          // Edit mode: datepicker keeps the full FY range so user can re-date into any past month.
+
           this.creditNoteForm.get('PartyName')?.disable();
           this.creditNoteForm.get('CustomerBranchSid')?.disable();
           this.creditNoteForm.get('CurrencyMasterSid')?.disable();
@@ -2298,6 +2306,8 @@ export class CreditNoteEntryComponent {
       }
     }
 
+    // Reveal error label now that user has clicked save
+    this.showVoucherDateError = true;
     // Re-validate voucher date constraints at save time (edit mode may have stale state)
     this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed
@@ -2520,6 +2530,7 @@ export class CreditNoteEntryComponent {
 
   async postVoucher(notFromSubmit: boolean = false): Promise<void> {
     if (this.isSaving) return;
+    this.showVoucherDateError = true;
     this.applyVoucherDateConstraints();
     if (this.voucherConstraints.isClosed) {
       if (this.voucherConstraints.errorMessage) this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
