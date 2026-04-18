@@ -828,11 +828,10 @@
                             @if(selectedFCLLCL === 'FCL') {
                             <aside class="col-12 col-md-4">
                                 <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailContainerType')?.value">
-                                    <ng-select class="ng-select" formControlName="detailContainerType" placeholder="" bindValue="ContainerTypeMasterSid" bindLabel="ContainerCode" appendTo="body">
-                                        @for(ct of containerTypeList; track ct.ContainerTypeMasterSid){
-                                        <ng-option [value]="ct.ContainerTypeMasterSid">{{ct.ContainerCode}} - {{ct.ContainerSize}}</ng-option>
-                                        }
-                                    </ng-select>
+                                    <dofi-searchable-dropdown [items]="containerTypeList" formControlName="detailContainerType" [placeholder]="''"
+                                        [displayFields]="containerTypeLookupConfig.displayFields" [displayLabels]="containerTypeLookupConfig.displayLabels"
+                                        [labelFields]="containerTypeLookupConfig.labelFields" [bindValue]="'ContainerTypeMasterSid'">
+                                    </dofi-searchable-dropdown>
                                     <label class="input-label">Container Type @if(isContainerTypeRequiredForSelectedUom()){<span class="text-danger">*</span>}</label>
                                     @if(tariffDetailsForm.get('detailContainerType')?.touched && tariffDetailsForm.get('detailContainerType')?.invalid){
                                     <div class="error-message">
@@ -846,11 +845,10 @@
                             <!-- Row 3: UOM | Revenue Currency | Revenue Per Unit Price -->
                             <aside class="col-12 col-md-4">
                                 <div class="custom-form-group custom-form-group-select" [class.filled]="!!tariffDetailsForm.get('detailUOMSid')?.value">
-                                    <ng-select class="ng-select" formControlName="detailUOMSid" placeholder="" bindValue="UOMMasterSid" bindLabel="UOMCode">
-                                        @for(uom of UOMList; track uom){
-                                        <ng-option [value]="uom.UOMMasterSid">{{uom.UOMCode}}</ng-option>
-                                        }
-                                    </ng-select>
+                                    <dofi-searchable-dropdown [items]="UOMList" formControlName="detailUOMSid" [placeholder]="''"
+                                        [displayFields]="uomLookupConfig.displayFields" [displayLabels]="uomLookupConfig.displayLabels"
+                                        [labelFields]="uomLookupConfig.labelFields" [bindValue]="'UOMMasterSid'">
+                                    </dofi-searchable-dropdown>
                                     <label class="input-label">UOM <span class="text-danger">*</span></label>
                                     @if(tariffDetailsForm.get('detailUOMSid')?.touched && tariffDetailsForm.get('detailUOMSid')?.invalid){
                                     <div class="error-message">

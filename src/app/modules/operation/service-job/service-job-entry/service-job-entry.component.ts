@@ -1346,6 +1346,8 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       Segment: this.selectedFCLLCL,
       POLSid,
       PODSid,
+      POLCode: selectedPOL || null,
+      PODCode: selectedPOD || null,
       EffectiveDate,
       ExpiredDate,
       ContainerType: containerTypeSid,

@@ -79,6 +79,8 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   tariffLoading: boolean;
   tariffDetails: any[] = [];
   tariffCargoGroups: { cargoLabel: string; items: any[] }[] = [];
+  isStandardRate: boolean = false;
+  tariffSearchedCombination: string = '';
   profitSummary: any[] = [];
   profitProratedCharges: any[] = [];
   isProfitProrateLoading = false;
@@ -1809,33 +1811,6 @@ createRateFormGroup(data?: any): FormGroup {
       return;
     }
     this.tariffLoading = true;
-    const requiredPayload = {
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid : this.currentBranch?.BranchMasterSid,
-      DepartmentMasterSid: this.parentFormValue?.DepartmentMasterSid || null,
-      PORSid: this.parentFormValue?.PORSid || null,
-      POLSid: this.parentFormValue?.POLSid || null,
-      PODSid:this.parentFormValue?.PODSid || null,
-      FPODSid: this.parentFormValue?.FPODSid || null,
-      CargoType: this.parentFormValue?.CargoType || 'General',
-      EffectiveDate: this.isEditMode ? this.parentFormValue?.EffectiveDate : new Date(),
-      ExpiredDate: this.isEditMode ? this.parentFormValue?.ExpiredDate : new Date(),
-      Carrier: this.parentFormValue?.Carrier || null,
-      IncoTerms: this.parentFormValue?.IncoTerms || null,
-    };
-
-    let stopFlag = false;
-    ['CompanyMasterSid','POLSid','PODSid','DepartmentMasterSid','EffectiveDate','ExpiredDate'].forEach(field => {
-      if(!requiredPayload[field]){
-        stopFlag = true;
-      }
-    })
-
-    if(stopFlag){
-      this.appSettingService.showWarning("Please fill all required fields to get tariff.");
-      this.tariffLoading = false;
-      return;
-    }
 
     const cargoItems: any[] = this.parentFormValue?.cargoItems?.length
       ? this.parentFormValue.cargoItems
@@ -1854,9 +1829,11 @@ createRateFormGroup(data?: any): FormGroup {
 
     if (isFclSegment && !hasSelectedContainerType) {
       this.appSettingService.showWarning('Please choose Container Type to fetch tariff.');
+      this.tariffLoading = false;
       return;
     }
 
+    this.tariffSearchedCombination = this.buildSearchedCombinationLabel(cargoItems);
     this.modalService.open(content, { size: 'lg', centered: true, backdrop: 'static' });
 
     const basePayload = {
@@ -1901,6 +1878,7 @@ createRateFormGroup(data?: any): FormGroup {
 
         this.tariffDetails = [];
         this.tariffCargoGroups = [];
+        this.isStandardRate = false;
 
         results.forEach((resp, idx) => {
           const cargo = cargoItems[idx] || {};
@@ -1950,6 +1928,7 @@ createRateFormGroup(data?: any): FormGroup {
                 RevenueDrCr : 'C',
                 RevenuePrepaidCollect: "Prepaid",
                 isCommonCharge,
+                selected: true,
               };
             })
             .filter((item: any) => !this.isTariffAlreadyApplied(item, existingTariffDetailSids, existingCommonChargeKeys));
@@ -1978,6 +1957,8 @@ createRateFormGroup(data?: any): FormGroup {
             standardRateLabels.push(label);
           }
         });
+
+        this.isStandardRate = standardRateLabels.length > 0;
 
         if (commonItems.length > 0) {
           this.tariffCargoGroups.unshift({ cargoLabel: 'Common Charges', items: commonItems });
@@ -2067,25 +2048,83 @@ createRateFormGroup(data?: any): FormGroup {
 
   hasRequiredFieldsFilled() {
     const data = this.parentFormValue;
-    return (data.DepartmentMasterSid || data.POLSid || data.PODSid || data.EffectiveDate || data.ExpiredDate)
+    return !!(data.DepartmentMasterSid && data.POLSid && data.PODSid && data.EffectiveDate && data.ExpiredDate)
   }
 
-  applyTariff(detail) {
-    console.log(detail);
- 
-    if (this.rateFormArray.length === 0) {
-      this.addRateRow(detail);
-    } else {
-      if (this.checkIfLastChargeEmpty()) {
-        const rateGroup = this.rateFormArray.at(this.rateFormArray.length - 1);
-        rateGroup.patchValue(detail);
-      } else {
-        this.addRateRow(detail);
-      }
+  applySelectedTariffs(): void {
+    const selectedTariffs = this.tariffDetails.filter(t => t.selected);
+    if (selectedTariffs.length === 0) {
+      this.appSettingService.showWarning('Please select at least one tariff to apply.');
+      return;
     }
- 
+    selectedTariffs.forEach(tariff => {
+      if (this.rateFormArray.length === 0) {
+        this.addRateRow(tariff);
+      } else if (this.checkIfLastChargeEmpty()) {
+        const rateGroup = this.rateFormArray.at(this.rateFormArray.length - 1);
+        rateGroup.patchValue(tariff);
+      } else {
+        this.addRateRow(tariff);
+      }
+    });
     this.calculateProfit();
-    this.modalService.dismissAll();
+    this.closeTariffModal();
+  }
+
+  areAllTariffsSelected(): boolean {
+    return !!this.tariffDetails?.length && this.tariffDetails.every(t => t.selected);
+  }
+
+  toggleSelectAllTariffs(event: any): void {
+    const checked = event.target.checked;
+    this.tariffDetails?.forEach(t => t.selected = checked);
+  }
+
+  buildSearchedCombinationLabel(cargoItems: any[]): string {
+    const parts: string[] = [];
+
+    const dept = this.parentFormValue?.departmentName;
+    if (dept) parts.push(`Department: ${dept}`);
+
+    const por = this.parentFormValue?.PORCode;
+    if (por) parts.push(`POO: ${por}`);
+
+    const pol = this.parentFormValue?.POLCode;
+    if (pol) parts.push(`POL: ${pol}`);
+
+    const pod = this.parentFormValue?.PODCode;
+    if (pod) parts.push(`POD: ${pod}`);
+
+    const fpod = this.parentFormValue?.FPODCode;
+    if (fpod) parts.push(`FPOD: ${fpod}`);
+
+    const carrier = this.parentFormValue?.CarrierName;
+    if (carrier) parts.push(`Carrier: ${carrier}`);
+
+    const incoTerms = this.parentFormValue?.IncoTerms;
+    if (incoTerms) parts.push(`IncoTerms: ${incoTerms}`);
+
+    if (cargoItems?.length) {
+      const cargoDesc = cargoItems
+        .map(c => [c.CargoType, c.ContainerTypeName].filter(Boolean).join(' '))
+        .filter(Boolean)
+        .join(', ');
+      if (cargoDesc) parts.push(`Cargo: ${cargoDesc}`);
+    }
+
+    const effDate = this.parentFormValue?.EffectiveDate;
+    const expDate = this.parentFormValue?.ExpiredDate;
+    if (effDate) parts.push(`Period: ${this.formatDateForDisplay(effDate)}${expDate ? ' – ' + this.formatDateForDisplay(expDate) : ''}`);
+
+    return parts.length
+      ? `Specific tariff not found for: ${parts.join(' · ')}. Showing standard rates.`
+      : 'No specific tariff found for the searched combination. Showing standard rates.';
+  }
+
+  private formatDateForDisplay(dateVal: any): string {
+    if (!dateVal) return '';
+    const d = new Date(dateVal);
+    return isNaN(d.getTime()) ? String(dateVal) : d.toLocaleDateString();
   }
   checkIfLastChargeEmpty(){
     if(this.rateFormArray.length === 0){
@@ -2101,6 +2140,8 @@ createRateFormGroup(data?: any): FormGroup {
   closeTariffModal() {
     this.tariffDetails = [];
     this.tariffCargoGroups = [];
+    this.isStandardRate = false;
+    this.tariffSearchedCombination = '';
     this.modalService.dismissAll();
   }
 
@@ -4323,20 +4364,17 @@ isCostFromQuotation(index: number): boolean {
 
     // Handle single charge selection (original functionality)
     modalRef.componentInstance.chargeSelected.subscribe((selectedCharge: any) => {
-      console.log('Standard charge selected from modal:', selectedCharge);
       this.patchStandardChargeToRateForm(selectedCharge);
     });
 
     // Handle multiple charge selection (new functionality)
     modalRef.componentInstance.chargesSelected.subscribe((selectedCharges: any[]) => {
-      console.log('Multiple standard charges selected:', selectedCharges);
       this.patchMultipleStandardCharges(selectedCharges);
     });
   }
 
   // Add this new method to handle multiple charges
   patchMultipleStandardCharges(charges: any[]) {
-    console.log('Patching multiple standard charges:', charges.length);
 
     charges.forEach((charge, index) => {
       // Add new row for each selected charge
@@ -4361,7 +4399,7 @@ isCostFromQuotation(index: number): boolean {
         // Revenue side
         RevenueCurrencyMasterSid: charge.RevenueCurrencyMasterSid,
         RevenueAmount: charge.RevenueAmount,
-        RevenueRate: charge.RevenueAmount,
+        RevenueRate: charge.RevenueRate,
         RevenueLocalAmount: null,
         RevenueExchangeRate: null,
         RevenueDrCr: 'C',
@@ -4370,7 +4408,7 @@ isCostFromQuotation(index: number): boolean {
         // Cost side
         CostCurrencyMasterSid: charge.CostCurrencyMasterSid,
         CostAmount: charge.CostAmount,
-        CostRate: charge.CostAmount,
+        CostRate: charge.CostRate,
         CostLocalAmount: null,
         CostExchangeRate: null,
         CostDrCr: 'D',

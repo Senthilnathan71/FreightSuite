@@ -2889,9 +2889,10 @@
 
           <div *ngIf="!tariffLoading && tariffCargoGroups?.length" class="table-responsive w-100">
             @if(isStandardRate){
-            <div class="col-12 d-flex justify-content-center">
-              <div class="alert alert-warning py-1 text-center " style="width: fit-content;" role="alert">
-                <strong>Warning!</strong> <br>These are standard rates.
+            <div class="col-12 d-flex justify-content-center mb-2">
+              <div class="alert alert-warning py-1 text-center" style="width: fit-content;" role="alert">
+                <strong>Warning!</strong> These are standard rates.<br>
+                <small class="text-muted">{{ tariffSearchedCombination }}</small>
               </div>
             </div>
             }

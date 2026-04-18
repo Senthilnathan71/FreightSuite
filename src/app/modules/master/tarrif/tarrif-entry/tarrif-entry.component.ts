@@ -157,6 +157,16 @@ filteredFDC: any[] = [];
     displayLabels : ['Code', 'Name','Country'],
     labelFields :['currencyCode'],
   };
+  uomLookupConfig = {
+    displayFields: ['UOMCode', 'UOMName'],
+    displayLabels: ['Code', 'Name'],
+    labelFields: ['UOMCode', 'UOMName'],
+  };
+  containerTypeLookupConfig = {
+    displayFields: ['ContainerCode', 'ContainerName', 'ContainerSize'],
+    displayLabels: ['Code', 'Name', 'Size'],
+    labelFields: ['ContainerCode', 'ContainerName', 'ContainerSize'],
+  };
    private _currencyList: any[] = [];
   @Input()
 set currencyList(value: any[]) {
@@ -251,7 +261,7 @@ get currencyList(): any[] {
 getContainerTypeName(sid: any): string {
   if (!sid || !this.containerTypeList?.length) return '';
   const ct = this.containerTypeList.find((c: any) => c.ContainerTypeMasterSid === sid);
-  return ct ? `${ct.ContainerCode} - ${ct.ContainerSize}` : '';
+  return ct?.ContainerName || '';
 }
 
 getCurrencyCode(currencySid: any): string {

@@ -761,6 +761,23 @@
 
           <!-- Tariff Groups -->
           <div *ngIf="!tariffLoading && tariffCargoGroups?.length" class="w-100">
+
+            @if(isStandardRate){
+              <div class="col-12 d-flex justify-content-center mb-2">
+                <div class="alert alert-warning py-1 text-center" style="width: fit-content;" role="alert">
+                  <strong>Warning!</strong> These are standard rates.<br>
+                  <small class="text-muted">{{ tariffSearchedCombination }}</small>
+                </div>
+              </div>
+            }
+
+            <div class="d-flex justify-content-end mb-2">
+              <input class="form-check-input me-2" type="checkbox"
+                [checked]="areAllTariffsSelected()"
+                (change)="toggleSelectAllTariffs($event)">
+              <label class="small fw-semibold">Select All</label>
+            </div>
+
             <div *ngFor="let group of tariffCargoGroups" class="mb-3">
               <div class="bg-info text-white px-3 py-1 fw-bold small rounded-top">
                 {{ group.cargoLabel }}
@@ -770,7 +787,7 @@
                 <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1 text-center">
                   <thead>
                     <tr class="bg-info text-white">
-                      <th class="bg-transparent text-light" scope="col" width="10%">Action</th>
+                      <th class="bg-transparent text-light" scope="col" width="5%"></th>
                       <th class="bg-transparent text-light" scope="col">Charge</th>
                       <th class="bg-transparent text-light" scope="col">Charge Desc</th>
                       <th class="bg-transparent text-light" scope="col">Unit</th>
@@ -787,8 +804,8 @@
                   <tbody>
                     <ng-container *ngFor="let sc of group.items">
                       <tr>
-                        <td rowspan="2">
-                          <button class="btn btn-info btn-sm" (click)="applyTariff(sc)">Apply Charge</button>
+                        <td rowspan="2" class="text-center">
+                          <input class="form-check-input" type="checkbox" [(ngModel)]="sc.selected">
                         </td>
                         <td rowspan="2">{{ getChargeCode(sc.ChargeMasterSid) }}</td>
                         <td rowspan="2">{{ sc.ChargeDescription }}</td>
@@ -826,6 +843,9 @@
 
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" (click)="closeTariffModal()">Close</button>
+          <button type="button" class="btn btn-primary"
+            [disabled]="!tariffDetails?.length"
+            (click)="applySelectedTariffs()">Apply Selected</button>
         </div>
       </div>
     </div>

@@ -196,6 +196,7 @@ export class QuotationEntryComponent implements OnInit {
   TandCList: any[] = []
   tariffDetails : any[] = [];
   tariffCargoGroups: { cargoLabel: string; items: any[] }[] = [];
+  tariffSearchedCombination: string = '';
   standardChargeDetails:any[] = [];
   filteredUnits: any[][] = [];
   costAgentList : any[] = [];
@@ -3498,9 +3499,22 @@ isRateLockDisabled(): boolean {
       ?? cargoItems.find((cargo: any) => !!cargo.CargoType)?.CargoType
       ?? 'General';
 
+    // forkJoin([]) completes without emitting in RxJS 7 — spinner would hang forever.
+    // Always ensure at least one cargo item using route-level fields as fallback.
+    const effectiveCargoItems = cargoItems.length > 0 ? cargoItems : [{
+      CargoType: payloadCargoType,
+      ContainerType: payloadContainerType,
+      ContainerTypeName: null,
+      GrossWeight: null,
+      Volume: null,
+      NoofContainers: 1,
+      ChargeableWeight: null,
+      ShipmentTerms: null,
+    }];
+
     const basePayload = {
       CompanyMasterSid: this.currentCompany.CompanyMasterSid,
-      BranchMasterSod : this.currentBranch?.BranchMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
       DepartmentMasterSid: routeRawValue?.DepartmentMasterSid,
       PORSid: routeRawValue?.PORSid,
       POLSid: routeRawValue?.POLSid,
@@ -3511,7 +3525,32 @@ isRateLockDisabled(): boolean {
       Carrier: carrierRawValue?.CarrierMasterSid,
       IncoTerms: routeRawValue?.ServiceLevel,
     };
-    const tariffObservables = cargoItems.map((cargo: any) =>
+    const _deptName = this.getDepartmentName(routeRawValue?.DepartmentMasterSid);
+    const _porCode = this.getPortCodeBySid(routeRawValue?.PORSid);
+    const _polCode = this.getPortCodeBySid(routeRawValue?.POLSid);
+    const _podCode = this.getPortCodeBySid(routeRawValue?.PODSid);
+    const _fpodCode = this.getPortCodeBySid(routeRawValue?.FPODSid);
+    const _carrierName = carrierRawValue?.CarrierName;
+    const _incoTerms = routeRawValue?.ServiceLevel;
+    const _cargoDesc = effectiveCargoItems
+      .map((c: any) => [c.CargoType, c.ContainerTypeName].filter(Boolean).join(' '))
+      .filter(Boolean).join(', ');
+    const _formatDate = (d: any) => d ? new Date(d).toLocaleDateString() : '';
+    const _comboParts: string[] = [];
+    if (_deptName) _comboParts.push(`Department: ${_deptName}`);
+    if (_porCode) _comboParts.push(`POO: ${_porCode}`);
+    if (_polCode) _comboParts.push(`POL: ${_polCode}`);
+    if (_podCode) _comboParts.push(`POD: ${_podCode}`);
+    if (_fpodCode) _comboParts.push(`FPOD: ${_fpodCode}`);
+    if (_carrierName) _comboParts.push(`Carrier: ${_carrierName}`);
+    if (_incoTerms) _comboParts.push(`IncoTerms: ${_incoTerms}`);
+    if (_cargoDesc) _comboParts.push(`Cargo: ${_cargoDesc}`);
+    if (routeRawValue?.effDate) _comboParts.push(`Period: ${_formatDate(routeRawValue.effDate)}${routeRawValue?.expDate ? ' – ' + _formatDate(routeRawValue.expDate) : ''}`);
+    this.tariffSearchedCombination = _comboParts.length
+      ? `Specific tariff not found for: ${_comboParts.join(' · ')}. Showing standard rates.`
+      : 'No specific tariff found for the searched combination. Showing standard rates.';
+
+    const tariffObservables = effectiveCargoItems.map((cargo: any) =>
       this.leadService.getTariffDetailsByQuote({
         ...basePayload,
         CargoType: cargo?.CargoType || payloadCargoType,
@@ -3543,7 +3582,7 @@ isRateLockDisabled(): boolean {
 
       results.forEach((resp: any, index: number) => {
         const response: any[] = resp?.status && Array.isArray(resp.data) ? resp.data : [];
-        const cargo: any = cargoItems[index] || {};
+        const cargo: any = effectiveCargoItems[index] || {};
         const isStandardRate = response[0]?.isStandardRate === true;
         const label = `Cargo ${index + 1}`
           + (cargo.ContainerTypeName ? ` - ${cargo.ContainerTypeName}` : '')
@@ -3723,6 +3762,7 @@ canGetTariff(routeIndex: number): boolean {
     this.currentRouteIndex = undefined;
     this.tariffDetails = [];
     this.tariffCargoGroups = [];
+    this.tariffSearchedCombination = '';
     this.ngbModal.dismissAll();
   }
 
