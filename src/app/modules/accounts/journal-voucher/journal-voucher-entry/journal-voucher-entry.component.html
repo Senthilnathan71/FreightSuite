@@ -83,8 +83,7 @@
               [ngClass]="{ 'btn-warning': isDirty, 'btn-info': !isDirty }"
               (click)="saveDraft()"
               [disabled]="
-                isReadOnly || (!mps.can('update') && editMode) || isSaving || (voucherConstraints.isClosed && showVoucherDateError)
-              "
+                isReadOnly || (!mps.can('update') && editMode) || isSaving              "
             >
               <i class="fas fa-save me-1"></i>
               <span>{{ isSaving ? "Saving..." : "Save" }}</span>
@@ -165,7 +164,6 @@
                                 </button>
                             </div>
                             <label class="input-label" for="dp">Voucher Date <span class="text-danger">*</span></label>
-                            <small *ngIf="voucherConstraints.errorMessage && showVoucherDateError" class="text-danger d-block">{{ voucherConstraints.errorMessage }}</small>
                         </div>
                     </aside>
 

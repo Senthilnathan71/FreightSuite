@@ -742,9 +742,10 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   }
 
   applyVoucherDateConstraints(): void {
-    // Validation runs in create AND edit mode (message shows when invalid).
-    // Only view mode skips.
-    if (this.isViewMode) {
+    // Skip grace/closed validation in edit & view mode (per manager rules 4 & 5).
+    // Edit-mode safety is provided by the datepicker's month restriction
+    // + a save-time cross-month popup.
+    if (this.headerId || this.isViewMode) {
       this.voucherConstraints = { isClosed: false, errorMessage: null };
       return;
     }
@@ -1111,7 +1112,17 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       { emitEvent: false }
     );
 
-    // Edit mode: datepicker keeps the full FY range so user can re-date into any past month.
+    // In edit mode, restrict the date picker to the original document's month
+    // (so a voucher generated within grace stays in that month; April dates blocked)
+    const _invoiceOrigDate = new Date(data.VoucherDate);
+    if (!isNaN(_invoiceOrigDate.getTime())) {
+      const _y = _invoiceOrigDate.getFullYear(), _m = _invoiceOrigDate.getMonth() + 1;
+      const _monthEnd = new Date(_y, _m, 0);
+      const _today = new Date(); _today.setHours(0, 0, 0, 0);
+      const _effectiveEnd = _monthEnd < _today ? _monthEnd : _today;
+      this.fyMinDate = { year: _y, month: _m, day: 1 };
+      this.fyMaxDate = { year: _effectiveEnd.getFullYear(), month: _effectiveEnd.getMonth() + 1, day: _effectiveEnd.getDate() };
+    }
 
     if (
       data?.CurrencyMasterSid === this.currentCompany?.CurrencyMasterSid ||

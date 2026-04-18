@@ -707,8 +707,13 @@ private deepEqual(obj1: any, obj2: any): boolean {
   }
 
   applyVoucherDateConstraints(): void {
-    // Validation runs in create AND edit mode (message shows when invalid).
-    // Posted vouchers have form.disable() so user can't interact; no skip needed here.
+    // Skip grace/closed validation in edit mode (per manager rules 4 & 5).
+    // Edit-mode safety is provided by the datepicker's month restriction
+    // + a save-time cross-month popup.
+    if (this.voucherHeaderSid || this.editMode) {
+      this.voucherConstraints = { isClosed: false, errorMessage: null };
+      return;
+    }
     const voucherDate = this.form?.get('voucherDate')?.value;
     this.voucherConstraints = this.voucherPeriodService.applyConstraints(voucherDate, 'GL');
   }
@@ -922,7 +927,17 @@ private deepEqual(obj1: any, obj2: any): boolean {
 
         this.form.patchValue(formPatchData);
         this.applyVoucherDateConstraints();
-        // Edit mode: datepicker keeps the full FY range so user can re-date into any past month.
+        // Edit mode: restrict the date picker to the original voucher's month so user
+        // cannot change the voucher date to a different month.
+        const _jvOrigDate = new Date(voucher.VoucherDate);
+        if (!isNaN(_jvOrigDate.getTime())) {
+          const _y = _jvOrigDate.getFullYear(), _m = _jvOrigDate.getMonth() + 1;
+          const _monthEnd = new Date(_y, _m, 0);
+          const _today = new Date(); _today.setHours(0, 0, 0, 0);
+          const _effectiveEnd = _monthEnd < _today ? _monthEnd : _today;
+          this.fyMinDate = { year: _y, month: _m, day: 1 };
+          this.fyMaxDate = { year: _effectiveEnd.getFullYear(), month: _effectiveEnd.getMonth() + 1, day: _effectiveEnd.getDate() };
+        }
            // Clear the manually edited tracking set
       this.manuallyEditedNarrationRows.clear();
       

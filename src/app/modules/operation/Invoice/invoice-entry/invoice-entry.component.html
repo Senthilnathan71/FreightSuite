@@ -86,8 +86,7 @@
             [ngClass]="{ 'btn-info': !isDirty, 'btn-warning': isDirty }"
             (click)="onSubmit(undefined, true)"
             [disabled]="
-              isReadOnly || (!mps.can('update') && isEditMode) || isSaving || (voucherConstraints.isClosed && showVoucherDateError)
-            "
+              isReadOnly || (!mps.can('update') && isEditMode) || isSaving            "
           >
             <i class="fas fa-save me-1"></i>
             <span>{{ isSaving ? "Saving..." : "Save" }}</span>
@@ -118,8 +117,7 @@
             [ngClass]="{ 'btn-warning': isDirty, 'btn-info': !isDirty }"
             (click)="onSubmit()"
             [disabled]="
-              isReadOnly || (!mps.can('update') && isEditMode) || isSaving || (voucherConstraints.isClosed && showVoucherDateError)
-            "
+              isReadOnly || (!mps.can('update') && isEditMode) || isSaving            "
           >
             <i class="fas fa-save me-1"></i>
             <span>{{ isSaving ? "Saving..." : "Save" }}</span>
@@ -291,7 +289,6 @@
                   <label class="input-label">Invoice Date
                     <span class="text-danger">*</span>
                   </label>
-                  <small *ngIf="voucherConstraints.errorMessage && showVoucherDateError" class="text-danger d-block">{{ voucherConstraints.errorMessage }}</small>
                 </div>
               </aside>
 
