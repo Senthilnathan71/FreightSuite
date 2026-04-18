@@ -1443,17 +1443,17 @@
                       [class.filled]="!!cargo.get('ContainerType')?.value">
                       <ng-select [items]="containerTypeList" bindLabel="ContainerName" bindValue="ContainerTypeMasterSid"
                         class="ng-select" formControlName="ContainerType" placeholder="" appendTo="body"
-                        (change)="onContainerTypeChange($event)">
+                        (change)="onContainerTypeChangeForCargo($event, cargoIndex)">
                       </ng-select>
-                      <label class="input-label">Container Type</label>
+                      <label class="input-label">Container Type</label> <span class="text-danger">*</span>
                     </div>
                   </aside>
                   <aside class="col-md-2" *ngIf="!isSurfaceCargoMode()">
                     <div class="custom-form-group">
                       <input type="text" class="custom-input-field sm" [onlyNumbers] formControlName="NoofContainers">
-                      <label class="input-label">No of Container</label>
+                      <label class="input-label">No of Container</label><span class="text-danger">*</span>
                     </div>
-                  </aside>
+                  </aside>    
                   }
                   <aside class="col-md-2">
                     <div class="custom-form-group">
@@ -1729,7 +1729,7 @@
                           </td>
                           @if(selectedDepartmentType !== 'AIR'){
                             <td>
-                              <ng-select class="ng-select" formControlName="MasterJobContainerSid" [items]="masterJobContainers"
+                              <ng-select class="ng-select" formControlName="MasterJobContainerSid" [items]="getFilteredMasterJobContainers(cargoIndex)"
                                 bindLabel="ContainerNumber" bindValue="MasterJobContainerSid" appendTo="body">
                               </ng-select>
                             </td>
@@ -2413,7 +2413,7 @@
                   </td>
                   @if(selectedDepartmentType !== 'AIR'){
                   <td>
-                    <ng-select class="ng-select" formControlName="MasterJobContainerSid" [items]="masterJobContainers"
+                    <ng-select class="ng-select" formControlName="MasterJobContainerSid" [items]="getFilteredMasterJobContainers()"
                       bindLabel="ContainerNumber" bindValue="MasterJobContainerSid" appendTo="body"></ng-select>
                   </td>
                   }
@@ -3518,7 +3518,7 @@
       <aside class="col-md-4" *ngIf="selectedDepartmentType !== 'AIR'">
         <div class="custom-form-group custom-form-group-select"
           [class.filled]="!!productForm.get('MasterJobContainerSid')?.value">
-          <ng-select [items]="masterJobContainers" placeholder="" bindLabel="ContainerNumber"
+          <ng-select [items]="getFilteredMasterJobContainers()" placeholder="" bindLabel="ContainerNumber"
             bindValue="MasterJobContainerSid" formControlName="MasterJobContainerSid">
           </ng-select>
           <label for="text-input" class="input-label">Container No<span class="text-danger"></span></label>

@@ -800,10 +800,10 @@ private getQuotationCargoProducts(cargo: any): any[] {
   return [];
 }
 
-private resolveContainerTypeSid(containerTypeValue: any): number | null {
-  if (!containerTypeValue) {
-    return null;
-  }
+  private resolveContainerTypeSid(containerTypeValue: any): number | null {
+    if (!containerTypeValue) {
+      return null;
+    }
 
   const containerType = this.containerTypeList.find(type =>
     type.ContainerCode === containerTypeValue ||
@@ -811,6 +811,10 @@ private resolveContainerTypeSid(containerTypeValue: any): number | null {
   );
 
   return containerType?.ContainerTypeMasterSid || null;
+}
+
+private isHazardous(value: any): boolean {
+  return value === true || value === 'Y' || value === 'y' || value === 1 || value === '1';
 }
 
   private mapQuotationCargoProduct(product: any): any {
@@ -1599,7 +1603,7 @@ private mapQuotationCargoForBooking(cargo: any): any {
           Height: data?.height || '',
           ProductUnit: data?.PackageTypeId || data?.ProductUnit || null,
           ChargeableWeight: data?.ChargeableWeight || '',
-          IsHaz: data?.IsHaz === "Y" || false,
+          IsHaz: this.isHazardous(data?.IsHaz),
           ImcoClass: data?.ImcoClass || null,
           UnNo: data?.UnNo || '',
           PkgGroup: data?.PkgGroup || '',
@@ -1653,6 +1657,7 @@ private mapQuotationCargoForBooking(cargo: any): any {
   }
 
   addQuoteProduct(routeIndex: number, data?: any, cargoIndex: number = -1) {
+    const isHaz = this.isHazardous(data?.IsHaz);
     const productForm = this.fb.group({
       QuoteProductSid : [data?.QuoteProductSid || null],
       Sno : [data?.Sno || null],
@@ -1687,10 +1692,10 @@ private mapQuotationCargoForBooking(cargo: any): any {
         Number(data?.ChargeableWeight).toFixed(this.digitsAfterDecimal) : 
         0
       ],
-      IsHaz : [data?.IsHaz === "Y" || false],
-      ImcoClass : [{ value : data?.ImcoClass || null, disabled : data?.IsHaz !=="Y" || true }],
-      UnNo : [data?.UnNo || ''],
-      PkgGroup : [{ value : data?.PkgGroup || null, disabled : data?.IsHaz !=="Y" || true }],
+      IsHaz : [isHaz],
+      ImcoClass : [{ value : data?.ImcoClass || null, disabled : !isHaz }],
+      UnNo : [{ value : data?.UnNo || '', disabled : !isHaz }],
+      PkgGroup : [{ value : data?.PkgGroup || null, disabled : !isHaz }],
       Remarks : [data?.Remarks || ''],
     });
 

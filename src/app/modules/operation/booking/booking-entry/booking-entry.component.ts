@@ -1274,13 +1274,20 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
 
   createBookingProductGroup(data?: any, isPatching: boolean = false): FormGroup {
     const isDimensionalCargo = this.usesDimensionalCargoFields();
+    const isHaz = this.isHazardous(data?.IsHaz);
     const productForm = this.fb.group({
       BookingProductSid: [data?.BookingProductSid || null],
       ProductName: [data?.ProductName || null,[Validators.required]],
       isProductFreeText: [data?.isProductFreeText || false],
       ShippingBillNo: [data?.ShippingBillNo || ''],
       ShippingBillDate: [data?.ShippingBillDate ? new Date(data?.ShippingBillDate) : null],
-      ExternaPkg: [data?.ExternaPkg || null, [Validators.required]],
+      ExternaPkg: [this.resolvePackageTypeSid(
+        data?.ExternaPkg ??
+        data?.ExternalPkg ??
+        data?.PackageTypeId ??
+        data?.ProductUnit ??
+        data?.PackageType
+      ), [Validators.required]],
       ExternlQty: [data?.ExternlQty || '', [Validators.required]],
       GrossWeight: [Number(data?.GrossWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required,Validators.min(0.001)]],
       NetWeight: [Number(data?.NetWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.min(0)]],
@@ -1288,10 +1295,10 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
         Number(data?.Volume || '').toFixed(this.digitsAfterDecimal) || '',
         this.isSurfaceCargoMode() ? [] : [Validators.required,Validators.min(0.001)]
       ],
-      IsHaz: [data?.IsHaz ? (data.IsHaz === "Y" ? true : false) : false],
-      ImcoClass: [{ value: data?.ImcoClass || null, disabled: true }],
-      UnNo: [{ value: data?.UnNo || '', disabled: true }],
-      PkgGroup: [{ value: data?.PkgGroup || '', disabled: true }],
+      IsHaz: [isHaz],
+      ImcoClass: [{ value: data?.ImcoClass || null, disabled: !isHaz }],
+      UnNo: [{ value: data?.UnNo || '', disabled: !isHaz }],
+      PkgGroup: [{ value: data?.PkgGroup || '', disabled: !isHaz }],
       Length: [data?.Length || ''],
       Width: [data?.Width || ''],
       Height: [data?.Height || ''],
@@ -1373,6 +1380,51 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       this.handleProductRelatedCalculation(targetCargoIndex);
     });
   });
+}
+
+private resolvePackageTypeSid(value: any): number | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+
+  if (typeof value === 'number' && !Number.isNaN(value)) {
+    return value;
+  }
+
+  const numericValue = Number(value);
+  if (!Number.isNaN(numericValue) && String(value).trim() !== '') {
+    return numericValue;
+  }
+
+  const normalizedValue = String(value).trim().toLowerCase();
+  const matchedPackage = (this.packageTypeList || []).find(type =>
+    String(type?.UOMCode || '').trim().toLowerCase() === normalizedValue ||
+    String(type?.UOMName || '').trim().toLowerCase() === normalizedValue
+  );
+
+  return matchedPackage?.UOMMasterSid || null;
+}
+
+private isHazardous(value: any): boolean {
+  return value === true || value === 'Y' || value === 'y' || value === 1 || value === '1';
+}
+
+getPackageTypeCode(value: any): string {
+  if (value === null || value === undefined || value === '') {
+    return '';
+  }
+
+  const resolvedId = this.resolvePackageTypeSid(value);
+  if (resolvedId !== null) {
+    const packageType = (this.packageTypeList || []).find(
+      (type: any) => type?.UOMMasterSid === resolvedId
+    );
+    if (packageType?.UOMCode) {
+      return packageType.UOMCode;
+    }
+  }
+
+  return String(value);
 }
 
 
@@ -1891,7 +1943,13 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       cargoProductsFromResponse.length ? cargoProductsFromResponse :
       response.quoteRoute?.[0]?.quoteProducts?.map((product: any) => ({
         ProductName: product.ProductName,
-        ExternaPkg: product.PackageType ?? product.ExternalPkg ?? null,
+        ExternaPkg: this.resolvePackageTypeSid(
+          product.PackageTypeId ??
+          product.ExternalPkg ??
+          product.ExternaPkg ??
+          product.ProductUnit ??
+          product.PackageType
+        ),
         ExternlQty: product.ExternalQty ?? product.ExternlQty ?? '',
         GrossWeight: product.GrossWeight,
         NetWeight: product.NetWeight,
@@ -2063,17 +2121,23 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       this.loadProductLookups();
     }
     if (data) {
-      this.productForm.patchValue({
-        BookingProductSid: data?.BookingProductSid,
-        ProductName: data?.ProductName,
-        ShippingBillNo: data?.ShippingBillNo,
-        ShippingBillDate: new Date(data?.ShippingBillDate),
-        ExternaPkg: data?.ExternaPkg,
-        ExternlQty: data?.ExternlQty,
-        GrossWeight: data?.GrossWeight,
-        NetWeight: data?.NetWeight,
+        this.productForm.patchValue({
+          BookingProductSid: data?.BookingProductSid,
+          ProductName: data?.ProductName,
+          ShippingBillNo: data?.ShippingBillNo,
+          ShippingBillDate: new Date(data?.ShippingBillDate),
+          ExternaPkg: this.resolvePackageTypeSid(
+            data?.ExternaPkg ??
+            data?.ExternalPkg ??
+            data?.PackageTypeId ??
+            data?.ProductUnit ??
+            data?.PackageType
+          ),
+          ExternlQty: data?.ExternlQty,
+          GrossWeight: data?.GrossWeight,
+          NetWeight: data?.NetWeight,
         Volume: data?.Volume,
-        IsHaz: data?.IsHaz,
+        IsHaz: this.isHazardous(data?.IsHaz),
         ImcoClass: data?.ImcoClass,
         UnNo: data?.UnNo,
         PkgGroup: data?.PkgGroup,
@@ -2379,7 +2443,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
           ProductName: product.ProductName || '',
           ShippingBillNo: product.ShippingBillNo || '',
           ShippingBillDate: product.ShippingBillDate ? new Date(product.ShippingBillDate) : null,
-          ExternaPkg: product.ExternaPkg || null,
+          ExternaPkg: this.resolvePackageTypeSid(product.ExternaPkg),
           ExternlQty: String(product.ExternlQty),
           GrossWeight: parseFloat(product.GrossWeight) || 0,
           NetWeight: parseFloat(product.NetWeight) || 0,
@@ -2404,7 +2468,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
           ProductName: product.ProductName || '',
           ShippingBillNo: product.ShippingBillNo || '',
           ShippingBillDate: product.ShippingBillDate ? new Date(product.ShippingBillDate) : null,
-          ExternaPkg: product.ExternaPkg || null,
+          ExternaPkg: this.resolvePackageTypeSid(product.ExternaPkg),
           ExternlQty: String(product.ExternlQty),
           GrossWeight: parseFloat(product.GrossWeight) || 0,
           NetWeight: parseFloat(product.NetWeight) || 0,
@@ -4581,7 +4645,7 @@ ${this.userData['userName']}`;
       ProductName: product.value.ProductName || '',
       ShippingBillNo: product.value.ShippingBillNo || '',
       ShippingBillDate: this.datePipe.transform(product.value.ShippingBillDate) || '',
-      ExternalPkg: product.value.ExternaPkg || '',
+      ExternalPkg: this.getPackageTypeCode(product.value.ExternaPkg) || '',
       ExternalQty: product.value.ExternlQty || '',
       GrossWeight: product.value.GrossWeight || '',
       NetWeight: product.value.NetWeight || '',

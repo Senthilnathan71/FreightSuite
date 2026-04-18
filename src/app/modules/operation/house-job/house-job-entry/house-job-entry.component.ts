@@ -353,6 +353,7 @@ auditLogs: any[] = []; // Stores audit logs
   productForm !: FormGroup;
   countryOfCompany : string;
   masterJobContainers : any[] = [];
+  private filteredMasterJobContainerCache = new Map<string, any[]>();
   
 
   // Variable Declaration - Other Part
@@ -956,10 +957,11 @@ private setupMBLDateListener(): void {
   }
 
   private createCargoGroup(data?: any, isPatching: boolean = false): FormGroup {
+    const isFclMode = this.selectedCargoMode === 'FCL';
     const cargoGroup = this.fb.group({
       HouseJobCargoSid: [data?.HouseJobCargoSid || null],
       CargoType: [data?.CargoType || 'General', Validators.required],
-      ContainerType: [data?.ContainerType || null],
+      ContainerType: [data?.ContainerType || null, isFclMode ? [Validators.required] : []],
       NoofContainers: [data?.NoofContainers ?? ''],
       GrossWeight: [data?.GrossWeight ?? '', Validators.required],
       NetWeight: [data?.NetWeight ?? ''],
@@ -1137,6 +1139,7 @@ shouldCalculateVolume(): boolean {
   // Product Form Initialization
   initProductForm() {
     const isAirOrLCL = this.usesDimensionalCargoFields();
+    const isFclMode = this.selectedCargoMode === 'FCL';
     this.productForm = this.fb.group({
       HouseJobProductSid: [null],
       ProductName: [null,[Validators.required]],
@@ -1162,7 +1165,7 @@ shouldCalculateVolume(): boolean {
       ReceivedQty:[''],
       DamageQty:[''],
       DamageRemarks: [''],
-      MasterJobContainerSid: [null], 
+      MasterJobContainerSid: [null, isFclMode ], 
       ContainerNo: ['', { disabled: true }], 
       MarksAndNumbers : [''],
       DeliveredQty: [null],
@@ -1185,9 +1188,9 @@ shouldCalculateVolume(): boolean {
     this.productForm.get('ContainerNo')?.setValue('');
     return;
   }
-  
-  const selectedContainer = this.masterJobContainers.find(
-    container => container.MasterJobContainerSid === containerSid
+
+  const selectedContainer = this.getFilteredMasterJobContainers().find(
+    container => Number(container.MasterJobContainerSid) === Number(containerSid)
   );
   
   if (selectedContainer) {
@@ -1414,6 +1417,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
 
   createBookingProductGroup(data?: any, isPatching: boolean = false): FormGroup {
     const isAirOrLCL = this.usesDimensionalCargoFields();
+    const isFclMode = this.selectedCargoMode === 'FCL';
     const productForm = this.fb.group({
       HouseJobProductSid: [data?.HouseJobProductSid || null],
       ProductName: [data?.ProductName || null,[Validators.required]],
@@ -1439,7 +1443,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       ReceivedQty: [data?.ReceivedQty || ''],
       DamageQty: [data?.DamageQty || ''],
       DamageRemarks: [data?.DamageRemarks || ''],
-      MasterJobContainerSid: [data?.MasterJobContainerSid || null],
+      MasterJobContainerSid: [data?.MasterJobContainerSid || null, isFclMode ? [Validators.required] : []],
       ContainerNo :[{value: data?.ContainerNo || '', disabled: false}],
       MarksAndNumbers : [data?.MarksAndNumbers || ''],
       DeliveryDate: [data?.DeliveryDate ? new Date(data?.DeliveryDate) : null],
@@ -1526,9 +1530,10 @@ onFormArrayContainerChange(containerSid: number | null, productForm: FormGroup):
     productForm.get('ContainerNo')?.setValue('');
     return;
   }
-  
-  const selectedContainer = this.masterJobContainers.find(
-    container => container.MasterJobContainerSid === containerSid
+
+  const cargoIndex = this.getCargoIndexForProductForm(productForm);
+  const selectedContainer = this.getFilteredMasterJobContainers(cargoIndex).find(
+    container => Number(container.MasterJobContainerSid) === Number(containerSid)
   );
   
   if (selectedContainer) {
@@ -2256,11 +2261,124 @@ private applyExportToImportFieldLocks(): void {
   }
 
   onContainerTypeChange(containerType : any){
-    if(!containerType){
-      this.selectedContainerType = '';
+    this.onContainerTypeChangeForCargo(containerType, this.houseJobCargoActiveIndex);
+  }
+
+  onContainerTypeChangeForCargo(containerType: any, cargoIndex: number): void {
+    if (!this.detailForm) {
+      this.selectedContainerType = containerType || '';
       return;
     }
-    this.selectedContainerType = containerType;
+    const normalizedCargoIndex = cargoIndex >= 0 ? cargoIndex : this.houseJobCargoActiveIndex;
+    const targetCargo = this.houseJobCargos.at(normalizedCargoIndex) as FormGroup;
+    if (!targetCargo) {
+      this.selectedContainerType = containerType || '';
+      return;
+    }
+
+    // Do not write back ContainerType here; ng-select already updates the form control.
+    // Writing value in change handler can break selection when event payload shape differs.
+    const selectedType = this.normalizeContainerTypeValue(targetCargo.get('ContainerType')?.value);
+    this.selectedContainerType = selectedType || '';
+    this.clearFilteredMasterJobContainerCache();
+
+    const bookingProducts = targetCargo.get('bookingProducts') as FormArray;
+    bookingProducts.controls.forEach((productControl) => {
+      productControl.get('MasterJobContainerSid')?.setValue(null, { emitEvent: false });
+      productControl.get('ContainerNo')?.setValue('', { emitEvent: false });
+      productControl.get('MasterJobContainerSid')?.markAsTouched();
+      productControl.get('MasterJobContainerSid')?.updateValueAndValidity({ emitEvent: false });
+    });
+
+    if (this.houseJobCargoActiveIndex === normalizedCargoIndex && this.productForm) {
+      this.productForm.get('MasterJobContainerSid')?.setValue(null, { emitEvent: false });
+      this.productForm.get('ContainerNo')?.setValue('', { emitEvent: false });
+      this.productForm.get('MasterJobContainerSid')?.updateValueAndValidity({ emitEvent: false });
+    }
+  }
+
+  getFilteredMasterJobContainers(cargoIndex?: number): any[] {
+    if (!this.detailForm) {
+      return this.masterJobContainers;
+    }
+    const indexToUse = typeof cargoIndex === 'number' ? cargoIndex : this.houseJobCargoActiveIndex;
+    const targetCargo = this.houseJobCargos?.at(indexToUse) as FormGroup | undefined;
+    const selectedContainerType = this.normalizeContainerTypeValue(
+      targetCargo?.get('ContainerType')?.value ?? this.cargoForm?.get('ContainerType')?.value
+    );
+
+    if (!selectedContainerType) {
+      return this.masterJobContainers;
+    }
+    const cacheKey = `${indexToUse}|${selectedContainerType}|${this.masterJobContainers.length}`;
+    const cached = this.filteredMasterJobContainerCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    const filtered = this.masterJobContainers.filter(
+      (container) => Number(container?.ContainerType) === Number(selectedContainerType)
+    );
+    this.filteredMasterJobContainerCache.set(cacheKey, filtered);
+    return filtered;
+  }
+
+  private normalizeContainerTypeValue(value: any): number | null {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+    if (typeof value === 'object') {
+      const candidate = value.ContainerTypeMasterSid ?? value.ContainerType ?? value.id ?? null;
+      if (candidate === null || candidate === undefined || candidate === '') {
+        return null;
+      }
+      const parsed = Number(candidate);
+      return Number.isNaN(parsed) ? null : parsed;
+    }
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+
+  private clearFilteredMasterJobContainerCache(): void {
+    this.filteredMasterJobContainerCache.clear();
+  }
+
+  private applyFclContainerValidators(): void {
+    if (!this.detailForm) {
+      return;
+    }
+    const isFclMode = this.selectedCargoMode === 'FCL';
+
+    this.houseJobCargos.controls.forEach((cargoControl: AbstractControl, cargoIndex: number) => {
+      const cargoGroup = cargoControl as FormGroup;
+      const containerTypeControl = cargoGroup.get('ContainerType');
+      containerTypeControl?.setValidators(isFclMode ? [Validators.required] : []);
+      containerTypeControl?.updateValueAndValidity({ emitEvent: false });
+
+      const filteredContainers = this.getFilteredMasterJobContainers(cargoIndex);
+      const bookingProducts = cargoGroup.get('bookingProducts') as FormArray;
+      bookingProducts.controls.forEach((productControl) => {
+        const containerSidControl = productControl.get('MasterJobContainerSid');
+        containerSidControl?.setValidators(isFclMode ? [Validators.required] : []);
+
+        const selectedContainerSid = containerSidControl?.value;
+        const isMapped = !selectedContainerSid || filteredContainers.some(
+          (container) => Number(container.MasterJobContainerSid) === Number(selectedContainerSid)
+        );
+        if (!isMapped) {
+          containerSidControl?.setValue(null, { emitEvent: false });
+          productControl.get('ContainerNo')?.setValue('', { emitEvent: false });
+        }
+
+        containerSidControl?.updateValueAndValidity({ emitEvent: false });
+      });
+    });
+
+    if (this.productForm) {
+      const modalContainerControl = this.productForm.get('MasterJobContainerSid');
+      modalContainerControl?.setValidators(isFclMode ? [Validators.required] : []);
+      modalContainerControl?.updateValueAndValidity({ emitEvent: false });
+    }
   }
 
   openProductModal(content: TemplateRef<any>, productIndex?: number, data?: any) {
@@ -2320,7 +2438,9 @@ private applyExportToImportFieldLocks(): void {
     if(!MasterJobSid) return;
     this.operationService.getAllMasterJobContainers(MasterJobSid).subscribe((resp: any) => {
       if (resp.status) {
-        this.masterJobContainers = resp.data;
+        this.masterJobContainers = resp.data || [];
+        this.clearFilteredMasterJobContainerCache();
+        this.applyFclContainerValidators();
       } else {
         this.appSettingService.showError("Error loading containers");
       }
@@ -3081,6 +3201,7 @@ shouldShowAirHousePrintOption(reportName: 'HAWB' | 'HAWB Draft'): boolean {
         });
       });
     });
+    this.applyFclContainerValidators();
   
   // Set the form control value
   this.b['DepartmentMasterSid'].setValue(department.DepartmentMasterSid, controlOptions);

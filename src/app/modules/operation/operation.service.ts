@@ -1013,8 +1013,9 @@ processProductUpload(payload: any): Observable<any> {
     )
   }
 
-  getAllMasterJobContainers(MasterJobSid: number) {
-    return this.http.get<{ data: any[] }>(`house-job/fetch-containers/${MasterJobSid}`).pipe(
+  getAllMasterJobContainers(MasterJobSid: number, containerType?: number | null) {
+    const query = containerType ? `?ContainerType=${containerType}` : '';
+    return this.http.get<{ data: any[] }>(`house-job/fetch-containers/${MasterJobSid}${query}`).pipe(
       map((resp) => {
         return resp;
       })
