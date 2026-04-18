@@ -248,6 +248,23 @@
                         </aside>
                         <aside class="col-md-6">
                             <div class="custom-form-group custom-form-group-select"
+                                [class.filled]="!!roleForm.get('CompanyMasterSid')?.value">
+                                <ng-select [items]="companyList" bindLabel="companyName" bindValue="CompanyMasterSid"
+                                    formControlName="CompanyMasterSid" [clearable]="false" [searchable]="false"
+                                    [disabled]="isEditMode"
+                                    (change)="onCompanySelectionChange($event)"
+                                    [class.is-invalid]="roleForm.get('CompanyMasterSid')?.invalid && roleForm.get('CompanyMasterSid')?.touched">
+                                </ng-select>
+                                <label class="input-label">Company <span class="text-danger">*</span></label>
+                                @if(roleForm.get('CompanyMasterSid')?.touched && roleForm.get('CompanyMasterSid')?.invalid){
+                                <div class="error-message">
+                                    <span>Required</span>
+                                </div>
+                                }
+                            </div>
+                        </aside>
+                        <aside class="col-md-6">
+                            <div class="custom-form-group custom-form-group-select"
                                 [class.filled]="!!roleForm.get('status')?.value">
                                 <ng-select [items]="statusList" bindLabel="name" bindValue="id" formControlName="status"
                                     [class.is-invalid]="roleForm.get('status')?.invalid && roleForm.get('status')?.touched">

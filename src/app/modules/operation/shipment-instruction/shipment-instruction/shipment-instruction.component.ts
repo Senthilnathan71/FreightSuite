@@ -208,20 +208,69 @@ export class ShipmentInstructionComponent {
     };
   }
 
+  private toNumber(value: any): number {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  private getCargoForProduct(data: any, product: any): any {
+    const cargos = data?.Cargo || [];
+    const cargoSid = product?.HouseJobCargoSid || product?.houseJobCargoSid || product?.BookingCargoSid || product?.bookingCargoSid;
+
+    if (cargoSid) {
+      const matchedCargo = cargos.find((cargo: any) =>
+        cargo?.HouseJobCargoSid === cargoSid ||
+        cargo?.houseJobCargoSid === cargoSid ||
+        cargo?.BookingCargoSid === cargoSid ||
+        cargo?.bookingCargoSid === cargoSid
+      );
+
+      if (matchedCargo) {
+        return matchedCargo;
+      }
+    }
+
+    return cargos.length === 1 ? cargos[0] : {};
+  }
+
+  private getContainerNumberForProduct(data: any, product: any): string {
+    if (product?.ContainerNo || product?.ContainerNumber) {
+      return product.ContainerNo || product.ContainerNumber;
+    }
+
+    const masterJobContainers = data?.masterJob?.containers || data?.containers || [];
+    const masterJobContainerSid = product?.MasterJobContainerSid || product?.masterJobContainerSid;
+
+    if (masterJobContainerSid) {
+      const matchedContainer = masterJobContainers.find((container: any) =>
+        container?.MasterJobContainerSid === masterJobContainerSid ||
+        container?.masterJobContainerSid === masterJobContainerSid
+      );
+
+      if (matchedContainer) {
+        return matchedContainer.ContainerNumber || matchedContainer.ContainerNo || '';
+      }
+    }
+
+    return product?.masterJobContainer?.ContainerNumber || '';
+  }
+
   mapContainerData(data: any) {
     const containers = [];
     const bookingProducts = data.Products || [];
 
     if (bookingProducts.length > 0) {
-      bookingProducts.forEach((product: any, index: number) => {
+      bookingProducts.forEach((product: any) => {
+        const cargo = this.getCargoForProduct(data, product);
+
         containers.push({
-          containerNo: `${product.ShippingBillNo || 'Container'}`,
-          marksAndNos: product.MarksAndNumber,
-          descriptionOfGoods: product.ProductDescription || '',
-          packCount: parseInt(product.ExternlQty) || 0,
+          containerNo: this.getContainerNumberForProduct(data, product),
+          marksAndNos: cargo?.MarksAndNumber || product?.MarksAndNumber || '',
+          descriptionOfGoods: cargo?.CommodityDescription || product?.ProductDescription || product?.ProductName || '',
+          packCount: this.toNumber(product.ExternlQty || product.NoOfPackage),
           packType: this.getPackageType(product.ExternaPkg) || 'Cartons',
-          grossWeight: parseFloat(product.GrossWeight) || 0,
-          volume: parseFloat(product.Volume) || 0
+          grossWeight: this.toNumber(product.GrossWeight),
+          volume: this.toNumber(product.Volume)
         });
       });
     }
@@ -422,29 +471,37 @@ export class ShipmentInstructionComponent {
         updatedBy: otherFormValue.updatedBy,
         status: otherFormValue.status
       },
-      houseJobProduct: detailFormValue.map((product: any) => ({
-        HouseJobProductSid: product.HouseJobProductSid || null,
-        ProductName: product.ProductName || '',
-        ShippingBillNo: product.ShippingBillNo || '',
-        ShippingBillDate: product.ShippingBillDate ? new Date(product.ShippingBillDate) : null,
-        ExternaPkg: product.ExternaPkg || null,
-        ExternlQty: String(product.ExternlQty),
-        GrossWeight: parseFloat(product.GrossWeight) || 0,
-        NetWeight: parseFloat(product.NetWeight) || 0,
-        Volume: parseFloat(product.Volume) || 0,
-        IsHaz: product.IsHaz ? 'Y' : 'N',
-        ImcoClass: product.ImcoClass || '',
-        UnNo: product.UnNo || '',
-        PkgGroup: product.PkgGroup || '',
-        Length: Number(product.Length),
-        Width: Number(product.Width),
-        Height: Number(product.Height),
-        UomMasterSid: product.UomMasterSid,
-        CargoRecDate: product.CargoRecDate,
-        createdBy: otherFormValue.createdBy,
-        updatedBy: otherFormValue.updatedBy,
-        status: otherFormValue.status
-      })),
+      houseJobProduct: detailFormValue.map((product: any, index: number) => {
+        const editedContainer = this.shipmentData.containers?.[index] || {};
+
+        return {
+          HouseJobProductSid: product.HouseJobProductSid || null,
+          HouseJobCargoSid: product.HouseJobCargoSid || product.BookingCargoSid || null,
+          BookingCargoSid: product.BookingCargoSid || null,
+          MasterJobContainerSid: product.MasterJobContainerSid || null,
+          ContainerNo: editedContainer.containerNo || product.ContainerNo || '',
+          ProductName: product.ProductName || '',
+          ShippingBillNo: product.ShippingBillNo || '',
+          ShippingBillDate: product.ShippingBillDate ? new Date(product.ShippingBillDate) : null,
+          ExternaPkg: product.ExternaPkg || editedContainer.packType || null,
+          ExternlQty: String(editedContainer.packCount ?? product.ExternlQty ?? ''),
+          GrossWeight: this.toNumber(editedContainer.grossWeight ?? product.GrossWeight),
+          NetWeight: parseFloat(product.NetWeight) || 0,
+          Volume: this.toNumber(editedContainer.volume ?? product.Volume),
+          IsHaz: product.IsHaz ? 'Y' : 'N',
+          ImcoClass: product.ImcoClass || '',
+          UnNo: product.UnNo || '',
+          PkgGroup: product.PkgGroup || '',
+          Length: Number(product.Length),
+          Width: Number(product.Width),
+          Height: Number(product.Height),
+          UomMasterSid: product.UomMasterSid,
+          CargoRecDate: product.CargoRecDate,
+          createdBy: otherFormValue.createdBy,
+          updatedBy: otherFormValue.updatedBy,
+          status: otherFormValue.status
+        };
+      }),
       bookingConnection: this.bookingResponse.houseConnections
     };
 

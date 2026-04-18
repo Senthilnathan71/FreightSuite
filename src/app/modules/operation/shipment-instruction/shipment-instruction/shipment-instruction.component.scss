@@ -1,7 +1,6 @@
 // Bill of Lading Styles
 .bl-container {
   background: white;
-  font-family: Arial, sans-serif;
   font-size: 12px;
   line-height: 1.2;
 
@@ -49,13 +48,14 @@
     font-size: 11px;
 
     th, td {
-      padding: 4px 6px;
+      padding: 4px;
       border: 1px solid #dee2e6;
       vertical-align: top;
     }
 
     th {
-      background-color: #f8f9fa;
+      background-color: #05608d;
+      color: #ffffff;
       font-weight: 600;
     }
 

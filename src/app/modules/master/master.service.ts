@@ -1897,7 +1897,7 @@ getFieldConfiguration() {
   editHssac(id: number, payload: any) {
     return this.http.patch<{ data: any }>(`hssac/update/${id}`, payload).pipe(
       map((resp) => {
-        let response = resp.data;
+        let response = resp;
         return response;
       })
 
@@ -3180,6 +3180,9 @@ getFieldConfiguration() {
     CompanyMasterSid: number;
     BranchMasterSid: number;
     CreatedBy: string;
+    ARGraceDays?: number;
+    APGraceDays?: number;
+    GLGraceDays?: number;
   }) {
     return this.http.post<any>('voucher-period/create-periods-for-year', payload).pipe(
       map((resp) => resp)

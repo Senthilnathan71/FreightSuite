@@ -30,6 +30,7 @@ import { Observable } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { CommonService } from 'src/app/common/common.service';
+import { MasterService } from 'src/app/modules/master/master.service';
 @Component({
   selector: 'app-role',
   standalone: true,
@@ -113,6 +114,7 @@ export class RoleComponent extends BaseListComponent implements OnInit {
   // Company
   currentCompany: any;
   currentBranch: any;
+  companyList: any[] = [];
   MenuMasterSid: any;
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
@@ -131,7 +133,8 @@ export class RoleComponent extends BaseListComponent implements OnInit {
     private excelReportService: ExcelExportService,
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
-    private commonService: CommonService
+    private commonService: CommonService,
+    private masterService: MasterService
   ) {
     super(paginationService);
   }
@@ -153,6 +156,7 @@ export class RoleComponent extends BaseListComponent implements OnInit {
     }
 
     this.initForm();
+    this.loadCompanyMaster();
     this.route.paramMap.subscribe(params => {
       this.RoleMasterSid = +params.get('id');
       if (this.RoleMasterSid) {
@@ -176,15 +180,46 @@ export class RoleComponent extends BaseListComponent implements OnInit {
   }
 
   protected getSearchParams(): SearchParams {
+    const selectedCompanySid = this.roleForm?.get('CompanyMasterSid')?.value || this.currentCompany?.CompanyMasterSid;
     return {
       search: this.filterValue.trim(),
       page: Number(this.page),
       pageSize: Number(this.pageSize),
-      activeCompanyId: this.currentCompany?.CompanyMasterSid,
+      activeCompanyId: selectedCompanySid,
+      CurrentCompanySid: selectedCompanySid,
       activeBranchId: this.currentBranch?.BranchMasterSid,
       sortColumn: this.sortColumn,
       sortDirection: this.sortDirection
     };
+  }
+
+  private loadCompanyMaster(): void {
+    this.masterService.getAllCompanies().pipe(take(1)).subscribe({
+      next: (companies: any[]) => {
+        this.companyList = companies || [];
+        const selectedCompanySid = this.currentCompany?.CompanyMasterSid;
+        if (selectedCompanySid) {
+          const selectedCompany = this.companyList.find((company: any) => company.CompanyMasterSid === selectedCompanySid);
+          if (selectedCompany) {
+            this.currentCompany = selectedCompany;
+          }
+          this.roleForm.patchValue({ CompanyMasterSid: selectedCompanySid }, { emitEvent: false });
+        }
+      },
+      error: () => {
+        this.companyList = [];
+      }
+    });
+  }
+
+  onCompanySelectionChange(companyMasterSid: number | null): void {
+    if (!companyMasterSid) {
+      return;
+    }
+    const selectedCompany = this.companyList.find((company: any) => company.CompanyMasterSid === companyMasterSid);
+    if (selectedCompany) {
+      this.currentCompany = selectedCompany;
+    }
   }
 
   protected processSearchResults(response: any): void {
@@ -463,6 +498,7 @@ export class RoleComponent extends BaseListComponent implements OnInit {
         Validators.minLength(3),
         this.alphaValidator()
       ]],
+      CompanyMasterSid: [{ value: null, disabled: true }, Validators.required],
       LicenseType: ['', [
         Validators.maxLength(50),
         this.alphaSpaceValidator()
@@ -529,10 +565,13 @@ export class RoleComponent extends BaseListComponent implements OnInit {
     this.roleForm.reset({
       UserRoleName: '',
       UserRoleCode: '',
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid ?? null,
       LicenseType: '',
       status: 'Active'
     });
 
+    // Create mode: company should be editable
+    this.roleForm.get('CompanyMasterSid')?.enable();
     // Enable status field if it was disabled
     this.roleForm.get('status')?.enable();
 
@@ -547,6 +586,7 @@ export class RoleComponent extends BaseListComponent implements OnInit {
   openModal(content: any): void {
     this.isEditMode = false;
     this.resetForm();
+    this.roleForm.get('CompanyMasterSid')?.enable();
     this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
   }
 
@@ -561,9 +601,12 @@ export class RoleComponent extends BaseListComponent implements OnInit {
         this.roleForm.patchValue({
           UserRoleName: role.UserRoleName,
           UserRoleCode: role.UserRoleCode,
+          CompanyMasterSid: role.CompanyMasterSid ?? this.currentCompany?.CompanyMasterSid ?? null,
           LicenseType: role.LicenseType || '',
           status: role.status === 'A' ? 'Active' : 'Suspended'
         });
+        // Edit mode: company should be read-only
+        this.roleForm.get('CompanyMasterSid')?.disable();
         this.roleForm.get('status')?.enable();
         this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
       },
@@ -586,9 +629,12 @@ export class RoleComponent extends BaseListComponent implements OnInit {
         this.roleForm.patchValue({
           UserRoleName: data.UserRoleName,
           UserRoleCode: data.UserRoleCode,
+          CompanyMasterSid: data.CompanyMasterSid ?? this.currentCompany?.CompanyMasterSid ?? null,
           LicenseType: data.LicenseType,
           status: data.status === 'A' ? 'Active' : 'Suspended'
         });
+        // Edit mode: company should be read-only
+        this.roleForm.get('CompanyMasterSid')?.disable();
       },
       (error) => {
         this.appSettingService.showError('Error loading data.');
@@ -608,7 +654,7 @@ export class RoleComponent extends BaseListComponent implements OnInit {
     } else {
       let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
       let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
-      const formValue = this.roleForm.value;
+      const formValue = this.roleForm.getRawValue();
 
       const payload = {
         ...formValue,
@@ -617,7 +663,7 @@ export class RoleComponent extends BaseListComponent implements OnInit {
           formValue.status === 'Active' || formValue.status === 'A'
             ? 'A'
             : 'S',
-        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        CompanyMasterSid: formValue.CompanyMasterSid || this.currentCompany?.CompanyMasterSid,
       };
 
       if (this.isEditMode) {
