@@ -26,7 +26,7 @@
   <div id="printContent" class="p-1 ">
 
     <div
-      style="width:280mm; min-height:400mm; margin:10px auto; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; display:flex; flex-direction:column; page-break-after:always; position: relative; ">
+      style="width:280mm; min-height:400mm; margin:10px auto; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; display:flex; flex-direction:column; page-break-after:always; position: relative;font-size: 14px;">
 
       <!-- Company Info -->
 
@@ -34,9 +34,9 @@
 
 
       <!-- Title -->
-      <h3
-        style="  text-align:center; padding:5px; border-top:1px solid black;border-bottom:1px solid black; font-size: 20px;font-weight: bolder;">
-        <strong>Delivery Order</strong></h3>
+      <h4
+        style="  text-align:center; padding:5px; border-top:1px solid black;border-bottom:1px solid black; font-weight: bolder;">
+        <strong>Delivery Order</strong></h4>
 
       <!-- Release To / Details -->
    <!-- Release To / Details -->
@@ -55,7 +55,6 @@
     style="
       flex:0 0 50%;
       max-width:50%;
-      font-size:17px;
       font-weight:bolder;
       margin-bottom:0;
       line-height:1.2;
@@ -79,7 +78,6 @@
     style="
       flex:0 0 50%;
       max-width:50%;
-      font-size:16px;
       margin-bottom:0;
       line-height:1.2;
     "
@@ -108,24 +106,24 @@
 
 
       <!-- Shipment Details -->
-      <h4 style="margin:2px 0 0 0;
+      <h5 style="margin:2px 0 0 0;
     padding-left:10px;
     font-weight:bolder;
-    line-height:1.2;"><strong>SHIPMENT DETAILS</strong></h4>
+    line-height:1.2;">SHIPMENT DETAILS</h5>
 
       <!-- Shipper & Consignee -->
       <div
-        style="border-top:1px solid black; padding:0px 25px 20px 25px; margin-bottom:10px;font-size: 16px;">
+        style="border-top:1px solid black; padding:0px 25px 20px 25px; margin-bottom:10px;">
 
         <div style="display:flex; flex-wrap:wrap; ">
-          <div style="flex:0 0 50%; max-width:50%; margin-bottom:8px;margin-top: 5px;font-size: 16px;">
+          <div style="flex:0 0 50%; max-width:50%; margin-bottom:8px;margin-top: 5px;">
             <strong style="font-weight: bolder;">Shipper</strong><br>
             <div style="padding-left: 30px;">
               <span>{{ housejobData?.ShipperName }}<br>{{ housejobData?.ShipperAddress }}</span>
             </div>
           </div>
 
-          <div style="flex:0 0 50%; max-width:50%;margin-top: 5px;font-size: 16px;">
+          <div style="flex:0 0 50%; max-width:50%;margin-top: 5px;">
             <strong style="font-weight: bolder;">Consignee</strong><br>
             <div style="padding-left: 30px;">
               <span>{{ housejobData?.ConsigneeName }}<br>{{ housejobData?.ConsigneeAddress }}</span>
@@ -140,7 +138,7 @@
       <!-- Notify & Goods Available -->
       <div style="display:flex; border-top:1px solid black; padding:0px 25px 20px 25px;">
 
-        <div style="flex:1; padding-right:20px;margin-bottom:8px; margin-top: 5px;font-size: 16px;">
+        <div style="flex:1; padding-right:20px;margin-bottom:8px; margin-top: 5px;">
           <strong style="display:block; margin-bottom:4px;font-weight: bolder;">Notify Party</strong>
           <div style="padding-left: 30px;">
 
@@ -148,7 +146,7 @@
           </div>
         </div>
 
-        <div style="flex:1; margin-bottom:8px; margin-top:5px; font-size:16px;">
+        <div style="flex:1; margin-bottom:8px; margin-top:5px;">
   <div style="display:flex; align-items:flex-start;">
     <div style="width:150px; font-weight:bolder;">
       Goods Available At
@@ -169,21 +167,21 @@
       <div style="border-top:1px solid black;border-bottom: 1px solid black; margin-bottom:8px;">
         <div style="display:flex; flex-wrap:wrap; padding:8px 20px;">
           <div style="flex:0 0 50%; max-width:50%;">
-            <div style="display:flex; margin-bottom:4px; flex-wrap:wrap;font-size: 16px;">
+            <div style="display:flex; margin-bottom:4px; flex-wrap:wrap;">
               <strong style="width:155px;font-weight: bolder;">Release Type</strong>
               <span>: {{ housejobData?.Others?.[0]?.ReleaseType }}</span>
             </div>
-            <div style="display:flex; margin-bottom:4px; flex-wrap:wrap;font-size: 16px;">
+            <div style="display:flex; margin-bottom:4px; flex-wrap:wrap;">
               <strong style="width:155px;font-weight: bolder;">Order No. / Ref</strong>
               <span>: {{ housejobData?.Others?.[0]?.CustomerRefNo }}</span>
             </div>
           </div>
           <div style="flex:0 0 50%; max-width:50%;">
-            <div style="display:flex; margin-bottom:4px; flex-wrap:wrap;font-size: 16px;">
+            <div style="display:flex; margin-bottom:4px; flex-wrap:wrap;">
               <strong style="width:160px;font-weight: bolder;">Ocean Bill Of Lading</strong>
               <span>: {{ housejobData?.masterJob?.MBLNo }}</span>
             </div>
-            <div style="display:flex; margin-bottom:4px; flex-wrap:wrap;font-size: 16px;">
+            <div style="display:flex; margin-bottom:4px; flex-wrap:wrap;">
               <strong style="width:160px;font-weight: bolder;">Commodity</strong>
               <span>: {{ housejobData?.Products?.[0]?.ProductName }}</span>
             </div>
@@ -194,19 +192,18 @@
 
       <!-- Container / Cargo Table -->
       <!-- Container / Cargo Table -->
-      <div style="overflow-x:auto; margin-bottom:10px;font-size: 16px;">
+      <div style="overflow-x:auto; margin-bottom:10px;">
 
        <!-- FCL Heading -->
-<h4 *ngIf="selectedFCLLCL === 'FCL'"
+<h5 *ngIf="selectedFCLLCL === 'FCL'"
     style="
       margin:0;
       padding:0 0 10px 10px;
       font-weight:bolder;
-      font-size:16px;
       line-height:1.1;
     ">
-  <strong>ROUTING INFORMATION</strong>
-</h4>
+  ROUTING INFORMATION
+</h5>
 
 
         <!-- FCL TABLE -->
@@ -250,7 +247,7 @@
         </table>
 
         <!-- LCL TABLE -->
-        <table *ngIf="selectedFCLLCL === 'LCL'" style="width:100%; border-collapse:collapse; table-layout:fixed;font-size: 16px;">
+        <table *ngIf="selectedFCLLCL === 'LCL'" style="width:100%; border-collapse:collapse; table-layout:fixed;">
           <thead>
             <tr>
               <th style="width:20%; border:1px solid black; text-align:center; border-left:none;font-weight: bolder;"><strong>No. of
@@ -286,7 +283,7 @@
      <!-- Description -->
 <div
   style="border-top:1px solid black;border-bottom:1px solid black;padding-bottom: 20px;
-         padding-top:3px;margin-bottom:8px;font-size:16px;">
+         padding-top:3px;margin-bottom:8px;">
 
   <div style="display:flex;">
 
@@ -305,7 +302,7 @@
   style="
     flex:0 0 50%;
     max-width:50%;
-    padding:10px;
+    
     box-sizing:border-box;
   "
 >
@@ -336,7 +333,7 @@
 
       <!-- Charges Table -->
       <div style="overflow-x:auto; margin-bottom:8px;">
-        <table style="width:100%; border-collapse:collapse; table-layout:fixed;font-size: 16px;">
+        <table style="width:100%; border-collapse:collapse; table-layout:fixed;">
           <thead>
             <tr>
               <th style="border:1px solid black; text-align:center;border-left: none;font-weight: bolder; width: 30%;"><strong>Charge
@@ -381,7 +378,7 @@
       </div>
 
       <div
-        style="display:flex; flex-wrap:wrap; align-items:flex-start; margin-top:10px; gap:6px; margin:8px 0; margin-left:15px;font-size: 16px;">
+        style="display:flex; flex-wrap:wrap; align-items:flex-start; margin-top:10px; gap:6px; margin:8px 0; margin-left:15px;">
         <strong style="white-space:nowrap;min-width:155px;font-weight: bolder;">Amount in Words</strong>
         <p style="margin:0; line-height:22px; word-break:break-word;">
           : <strong>{{ getAmountInWords() || 'Zero' }}</strong>
@@ -391,7 +388,7 @@
 
       <!-- Terms & Conditions -->
       <div style="margin-top: 1rem;padding-left: 15px;">
-        <h5 style=" margin-bottom: 0.5rem;font-weight: bolder;font-size: 16px;"><strong>Terms and Conditions</strong></h5>
+        <h5 style=" margin-bottom: 0.5rem;font-weight: bolder;"><strong>Terms and Conditions</strong></h5>
         <ul style="margin-top: 0; padding-left: 1.2rem;">
           @for(term of TandCList; track term){
           <li>{{ term.TandC }}</li>

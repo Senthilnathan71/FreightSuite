@@ -439,7 +439,7 @@ function buildChargesTable(data: CargoArrivalPdfData): any {
   return {
     table: {
       headerRows: 1,
-      widths: ['*', 34, 34, 48, 52, 52, 58],
+      widths: ['*', 50, 34, 48, 52, 52, 58],
       body: [
         [
           { text: 'Charge Description', style: 'tableHeader' },
