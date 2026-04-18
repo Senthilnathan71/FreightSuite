@@ -833,7 +833,7 @@
                                         <ng-option [value]="ct.ContainerTypeMasterSid">{{ct.ContainerCode}} - {{ct.ContainerSize}}</ng-option>
                                         }
                                     </ng-select>
-                                    <label class="input-label">Container Type <span class="text-danger">*</span></label>
+                                    <label class="input-label">Container Type @if(isContainerTypeRequiredForSelectedUom()){<span class="text-danger">*</span>}</label>
                                     @if(tariffDetailsForm.get('detailContainerType')?.touched && tariffDetailsForm.get('detailContainerType')?.invalid){
                                     <div class="error-message">
                                         @if(tariffDetailsForm.get('detailContainerType')?.hasError('required')){ <span>Required</span> }

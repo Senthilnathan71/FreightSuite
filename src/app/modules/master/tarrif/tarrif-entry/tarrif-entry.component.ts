@@ -72,6 +72,7 @@ import { ModalService } from 'src/app/core/common-modal/common-modal.service';
   ],
 })
 export class TarrifEntryComponent implements OnInit {
+  private readonly containerRequiredUomCodes = new Set(['CON', '20F', '40F', '45F']);
   selectedDepartment: any;
   selectedDepartmentType: string = '';
   selectedFCLLCL: string = '';
@@ -294,7 +295,7 @@ getCurrencyCode(currencySid: any): string {
       detailChargeCode: [null, [Validators.required]],
       detailDescription: [''],
       detailCargoType: [null, [Validators.required]],
-      detailContainerType: [null, this.selectedFCLLCL === 'FCL' ? [Validators.required] : []],
+      detailContainerType: [null],
       detailUOMSid: [null, [Validators.required]],
       detailSaleCurrency: [null, Validators.required],
       detailSalePerUnitPrice: ['', [Validators.required]],
@@ -309,6 +310,10 @@ getCurrencyCode(currencySid: any): string {
 
     this.tariffDetailsForm.get('detailisSlabApplicable')?.valueChanges.subscribe(() => {
       this.updateSlabValidators();
+    });
+
+    this.tariffDetailsForm.get('detailUOMSid')?.valueChanges.subscribe(() => {
+      this.updateContainerTypeValidators();
     });
 
     // Charge code change: only apply "next-day" rule in CREATE mode
@@ -327,6 +332,8 @@ getCurrencyCode(currencySid: any): string {
     this.setChargeDetails(this.chargeList.find(c => c.chargeCode === chargeCode));
   }
 });
+
+    this.updateContainerTypeValidators();
   }
 
   get tariffDetails(): FormArray {
@@ -383,6 +390,42 @@ getCurrencyCode(currencySid: any): string {
     }
     slabFromCtrl?.updateValueAndValidity();
     slabToCtrl?.updateValueAndValidity();
+  }
+
+  isContainerTypeRequiredForSelectedUom(): boolean {
+    const uomSid = this.tariffDetailsForm?.get('detailUOMSid')?.value;
+    return this.isContainerTypeRequiredForUom(uomSid);
+  }
+
+  private isContainerTypeRequiredForUom(uomSid: any): boolean {
+    if (uomSid === null || uomSid === undefined || uomSid === '') {
+      return false;
+    }
+
+    const matchedUom = this.UOMList?.find(
+      (item: any) => Number(item.UOMMasterSid) === Number(uomSid)
+    );
+    const normalizedCode = String(matchedUom?.UOMCode || matchedUom?.UOMName || '')
+      .trim()
+      .toUpperCase();
+
+    return this.containerRequiredUomCodes.has(normalizedCode);
+  }
+
+  private updateContainerTypeValidators(): void {
+    const containerTypeControl = this.tariffDetailsForm?.get('detailContainerType');
+    if (!containerTypeControl) {
+      return;
+    }
+
+    if (this.isContainerTypeRequiredForSelectedUom()) {
+      containerTypeControl.setValidators([Validators.required]);
+    } else {
+      containerTypeControl.clearValidators();
+      containerTypeControl.setValue(null, { emitEvent: false });
+    }
+
+    containerTypeControl.updateValueAndValidity({ emitEvent: false });
   }
 
   openTariffDetailEntryModal(content: TemplateRef<any>, data?: any, index?: number) {
