@@ -1,0 +1,45 @@
+<div class="p-3">
+  <div class="d-flex align-items-center justify-content-between mb-2">
+    <h5 class="m-0">{{ data.scriptName }}</h5>
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-outline-primary" [disabled]="loading || !result || !result.rowCount" (click)="download()">
+        <i class="fas fa-file-excel"></i> Download Excel
+      </button>
+      <button class="btn btn-sm btn-secondary" (click)="close()">Close</button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-muted">Executing…</div>
+
+  <div *ngIf="!loading && error" class="alert alert-danger">
+    <b>Execution failed:</b> {{ error }}
+  </div>
+
+  <ng-container *ngIf="!loading && result">
+    <div class="small text-muted mb-2">
+      Rows: {{ result.rowCount }} · Duration: {{ result.durationMs }} ms
+      <span *ngIf="result.truncated" class="ms-2 badge bg-warning text-dark">Truncated at 10,000 rows</span>
+    </div>
+
+    <div *ngIf="result.truncated" class="alert alert-warning py-2">
+      Showing first 10,000 rows. Use <b>Download Excel</b> for the capped export, or refine your script to narrow the result.
+    </div>
+
+    <div *ngIf="!result.rowCount" class="alert alert-success">No rows returned — no exceptions found.</div>
+
+    <div *ngIf="result.rowCount" class="table-responsive" style="max-height: 55vh">
+      <table class="table table-sm table-striped table-hover">
+        <thead class="table-light sticky-top">
+          <tr>
+            <th *ngFor="let c of result.columns">{{ c }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of result.rows">
+            <td *ngFor="let c of result.columns">{{ row[c] }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+</div>
