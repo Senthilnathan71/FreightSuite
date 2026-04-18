@@ -333,6 +333,20 @@ getCurrencyCode(currencySid: any): string {
   }
 });
 
+this.tariffDetailsForm.get('detailCargoType')?.valueChanges.subscribe(() => {
+  const chargeCode = this.tariffDetailsForm.get('detailChargeCode')?.value;
+  if (chargeCode && this.editingDetailIndex === null) {
+    this.setEffectiveDateBasedOnChargeCode(chargeCode);
+  }
+});
+
+this.tariffDetailsForm.get('detailContainerType')?.valueChanges.subscribe(() => {
+  const chargeCode = this.tariffDetailsForm.get('detailChargeCode')?.value;
+  if (chargeCode && this.editingDetailIndex === null) {
+    this.setEffectiveDateBasedOnChargeCode(chargeCode);
+  }
+});
+
     this.updateContainerTypeValidators();
   }
 
@@ -391,6 +405,22 @@ getCurrencyCode(currencySid: any): string {
     slabFromCtrl?.updateValueAndValidity();
     slabToCtrl?.updateValueAndValidity();
   }
+
+  private isSameEffectiveDateGroup(detail: any, chargeCode: string, cargoType: string, containerType: any): boolean {
+  if (detail.ChargeCode !== chargeCode) return false;
+  if (detail.CargoType !== cargoType) return false;
+
+  // ContainerType should be considered only if available
+  const currentContainerType = containerType ?? null;
+  const rowContainerType = detail.ContainerType ?? null;
+
+  if (currentContainerType !== null && currentContainerType !== '' &&
+      rowContainerType !== null && rowContainerType !== '') {
+    return rowContainerType === currentContainerType;
+  }
+
+  return true;
+}
 
   isContainerTypeRequiredForSelectedUom(): boolean {
     const uomSid = this.tariffDetailsForm?.get('detailUOMSid')?.value;
@@ -1606,27 +1636,31 @@ handlePODChange(selectedPort: any): void {
 }
 
   filterPodList(port: any) {
-    if (!port) {
-      this.tariffHeaderForm.get('POLTerminal')?.setValue('');
-      this.podList = [...(this.filteredPorts || this.portList || [])];
-      return;
-    }
-    this.tariffHeaderForm.get('POLTerminal')?.setValue(port.PortCode);
-    this.podList = (this.filteredPorts || this.portList).filter(each => each.PortMasterSid !== port.PortMasterSid);
-  }
-  
-  filterPolList(port: any) {
   if (!port) {
-    this.tariffHeaderForm.get('PODTerminal')?.setValue('');
-    this.tariffHeaderForm.get('FDCSid')?.setValue(null); // Clear FDC when POD is cleared
-    this.polList = [...(this.filteredPorts || this.portList || [])];
+    this.tariffHeaderForm.get('POLTerminal')?.setValue('');
+    this.podList = [...(this.filteredPOD || [])];
     return;
   }
-  
+
+  this.tariffHeaderForm.get('POLTerminal')?.setValue(port.PortCode);
+  this.podList = (this.filteredPOD || []).filter(
+    each => Number(each.PortMasterSid) !== Number(port.PortMasterSid)
+  );
+}
+
+filterPolList(port: any) {
+  if (!port) {
+    this.tariffHeaderForm.get('PODTerminal')?.setValue('');
+    this.tariffHeaderForm.get('FDCSid')?.setValue(null);
+    this.polList = [...(this.filteredPOL || [])];
+    return;
+  }
+
   this.tariffHeaderForm.get('PODTerminal')?.setValue(port.PortCode);
-  this.polList = (this.filteredPorts || this.portList).filter(each => each.PortMasterSid !== port.PortMasterSid);
-  
-  // ✅ Set FDC to the same value as POD
+  this.polList = (this.filteredPOL || []).filter(
+    each => Number(each.PortMasterSid) !== Number(port.PortMasterSid)
+  );
+
   this.tariffHeaderForm.get('FDCSid')?.setValue(port.PortMasterSid);
 }
 
@@ -1755,16 +1789,21 @@ handlePODChange(selectedPort: any): void {
     return;
   }
 
-  const sameChargeDetails = this.tariffDetails.getRawValue().filter(
-    (detail: any) => detail.ChargeCode === chargeCode && detail.status === 'A'
+  const cargoType = this.tariffDetailsForm.get('detailCargoType')?.value;
+  const containerType = this.tariffDetailsForm.get('detailContainerType')?.value;
+
+  const sameDetails = this.tariffDetails.getRawValue().filter(
+    (detail: any) =>
+      detail.status === 'A' &&
+      this.isSameEffectiveDateGroup(detail, chargeCode, cargoType, containerType)
   );
 
-  if (sameChargeDetails.length === 0) {
+  if (sameDetails.length === 0) {
     const today = new Date();
     this.tariffDetailsForm.get('detailEffectiveDate')?.setValue(today);
     this.minEffectiveFrom = this.toNgbDateStruct(today);
   } else {
-    const expiredDates = sameChargeDetails.map((detail: any) => new Date(detail.ExpiredOn));
+    const expiredDates = sameDetails.map((detail: any) => new Date(detail.ExpiredOn));
     const maxExpiredDate = new Date(Math.max(...expiredDates.map((date: Date) => date.getTime())));
     const nextDay = new Date(maxExpiredDate);
     nextDay.setDate(nextDay.getDate() + 1);
@@ -1795,15 +1834,21 @@ handlePODChange(selectedPort: any): void {
     return;
   }
 
-  const sameChargeDetails = this.tariffDetails.getRawValue().filter(
-    (detail: any) => detail.ChargeCode === chargeCode && detail.status === 'A'
+  const cargoType = this.tariffDetailsForm.get('detailCargoType')?.value;
+  const containerType = this.tariffDetailsForm.get('detailContainerType')?.value;
+
+  const sameDetails = this.tariffDetails.getRawValue().filter(
+    (detail: any, index: number) =>
+      detail.status === 'A' &&
+      index !== this.editingDetailIndex &&
+      this.isSameEffectiveDateGroup(detail, chargeCode, cargoType, containerType)
   );
 
-  if (sameChargeDetails.length === 0) {
+  if (sameDetails.length === 0) {
     const today = new Date(this.todayDate);
     this.minEffectiveFrom = this.toNgbDateStruct(today);
   } else {
-    const expiredDates = sameChargeDetails.map((detail: any) => new Date(detail.ExpiredOn));
+    const expiredDates = sameDetails.map((detail: any) => new Date(detail.ExpiredOn));
     const maxExpiredDate = new Date(Math.max(...expiredDates.map((date: Date) => date.getTime())));
     const nextDay = new Date(maxExpiredDate);
     nextDay.setDate(nextDay.getDate() + 1);
@@ -1815,31 +1860,33 @@ handlePODChange(selectedPort: any): void {
     if (!control.value) return null;
 
     const chargeCode = control.parent?.get('detailChargeCode')?.value;
+    const cargoType = control.parent?.get('detailCargoType')?.value;
+    const containerType = control.parent?.get('detailContainerType')?.value;
     const effectiveDate = new Date(control.value);
 
-    if (!chargeCode) return null;
+    if (!chargeCode || !cargoType) return null;
 
     effectiveDate.setHours(0, 0, 0, 0);
     const today = getDefaultTodayDate();
     today.setHours(0, 0, 0, 0);
 
-    const sameChargeDetails = this.tariffDetails.getRawValue().filter(
+    const sameDetails = this.tariffDetails.getRawValue().filter(
       (detail: any, index: number) =>
-        detail.ChargeCode === chargeCode &&
         detail.status === 'A' &&
-        index !== this.editingDetailIndex
+        index !== this.editingDetailIndex &&
+        this.isSameEffectiveDateGroup(detail, chargeCode, cargoType, containerType)
     );
 
-    if (sameChargeDetails.length === 0) {
+    if (sameDetails.length === 0) {
       if (effectiveDate < today) {
         return {
-          invalidEffectiveDate: 'Effective date cannot be in the past for new charge codes'
+          invalidEffectiveDate: 'Effective date cannot be in the past'
         };
       }
       return null;
     }
 
-    const expiredDates = sameChargeDetails.map((detail: any) => new Date(detail.ExpiredOn));
+    const expiredDates = sameDetails.map((detail: any) => new Date(detail.ExpiredOn));
     const maxExpiredDate = new Date(Math.max(...expiredDates.map((date: Date) => date.getTime())));
     maxExpiredDate.setHours(0, 0, 0, 0);
 
@@ -1848,14 +1895,13 @@ handlePODChange(selectedPort: any): void {
 
     if (effectiveDate < requiredEffectiveDate) {
       return {
-        invalidEffectiveDate: `Effective date must be ${requiredEffectiveDate.toLocaleDateString()} or later for this charge code`
+        invalidEffectiveDate: `Effective date must be ${requiredEffectiveDate.toLocaleDateString()} or later`
       };
     }
 
     return null;
   };
 }
-
   selectTab(tab: string) {
     this.selectedTab = tab;
   }
