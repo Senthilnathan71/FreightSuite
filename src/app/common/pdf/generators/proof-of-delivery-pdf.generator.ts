@@ -40,6 +40,7 @@ export interface ProofOfDeliveryPdfData {
   products: ProofOfDeliveryProductRow[];
   remarks: string;
   isSea: boolean;
+  isLcl: boolean;
   receivingSection: ProofOfDeliveryReceivingSection;
   config?: {
     pageSize?: 'A4' | 'LETTER';
@@ -87,7 +88,7 @@ export function generateProofOfDeliveryDocument(data: ProofOfDeliveryPdfData): a
       buildTitle(data),
       ...buildPartyBlocks(data.partyBlocks),
       buildJobInfoSection(data.jobInfo),
-      buildProductsTable(data.products, data.isSea),
+      buildProductsTable(data.products, data.isSea, data.isLcl),
       buildRemarks(data.remarks),
       buildReceivedStatement(),
       buildReceivingSection(data.receivingSection)
@@ -242,14 +243,19 @@ function buildKeyValueRow(label: string, value?: string, labelWidth = 110): any 
   };
 }
 
-function buildProductsTable(rows: ProofOfDeliveryProductRow[], isSea: boolean): any {
+function buildProductsTable(rows: ProofOfDeliveryProductRow[], isSea: boolean, isLcl: boolean): any {
   const header = isSea
-    ? ['Commodity', 'Container', 'Type', 'Pkgs', 'Volume', 'Net Wt.', 'Gross Wt.', 'Volume Wt.']
-    : ['Commodity', 'Pkgs', 'Volume', 'Net Wt.', 'Gross Wt.', 'Volume Wt.'];
+    ? ['Commodity', 'No.of Container', 'Type', 'Pkgs', 'Volume', 'Net Wt.', 'Gross Wt.']
+    : ['Commodity', 'Pkgs', 'Volume', 'Net Wt.', 'Gross Wt.'];
 
   const widths = isSea
-    ? ['*', 70, 50, 45, 55, 55, 55, 55]
-    : ['*', 45, 55, 55, 55, 55];
+    ? ['*', 70, 70, 45, 55, 55, 55]
+    : ['*', 45, 55, 55, 55];
+
+  if (isLcl) {
+    header.push('Volume Wt.');
+    widths.push(55);
+  }
 
   const body = rows.map((row) => {
     const rowCells = [
@@ -265,9 +271,12 @@ function buildProductsTable(rows: ProofOfDeliveryProductRow[], isSea: boolean): 
       buildNumberCell(row.pkgs, 0),
       buildNumberCell(row.volume, 3),
       buildNumberCell(row.netWeight, 3),
-      buildNumberCell(row.grossWeight, 3),
-      buildNumberCell(row.volumeWeight, 3)
+      buildNumberCell(row.grossWeight, 3)
     );
+
+    if (isLcl) {
+      rowCells.push(buildNumberCell(row.volumeWeight, 3));
+    }
 
     return rowCells;
   });
@@ -402,6 +411,7 @@ export function transformProofOfDeliveryApiData(
   const containerTypeList = options?.containerTypeList || [];
   const selectedFclLcl = (options?.selectedFclLcl || '').toUpperCase();
   const isSea = selectedFclLcl === 'FCL' || selectedFclLcl === 'LCL';
+  const isLcl = selectedFclLcl === 'LCL';
 
   const getPortName = (portCode: string): string => {
     if (!portCode) return '';
@@ -414,11 +424,26 @@ export function transformProofOfDeliveryApiData(
     return containerTypeList.find((c: any) => c.ContainerTypeMasterSid === sid)?.ContainerName || '';
   };
 
-  const products: ProofOfDeliveryProductRow[] = (housejobData?.Products || []).map((item: any) => ({
-    commodity: item?.ProductName || '',
+  const productsSource = housejobData?.Products?.length
+    ? housejobData.Products
+    : (housejobData?.Cargo || []).map((cargo: any) => ({
+        ProductName: cargo?.CommodityDescription,
+        CommodityDescription: cargo?.CommodityDescription,
+        ContainerNo: cargo?.ContainerNo || cargo?.NoofContainers || '',
+        ContainerType: cargo?.ContainerType,
+        ExternlQty: cargo?.ExternlQty ?? cargo?.NoOfPackage,
+        NoOfPackage: cargo?.NoOfPackage,
+        Volume: cargo?.Volume,
+        NetWeight: cargo?.NetWeight,
+        GrossWeight: cargo?.GrossWeight,
+        Volumetric: cargo?.Volumetric
+      }));
+
+  const products: ProofOfDeliveryProductRow[] = productsSource.map((item: any) => ({
+    commodity: item?.ProductName || item?.CommodityDescription || '',
     containerNo: item?.ContainerNo || '',
-    containerType: getContainerName(item?.masterJobContainer?.ContainerType),
-    pkgs: item?.ExternlQty || 0,
+    containerType: getContainerName(item?.masterJobContainer?.ContainerType || item?.ContainerType),
+    pkgs: item?.ExternlQty ?? item?.NoOfPackage ?? 0,
     volume: toNumber(item?.Volume),
     netWeight: toNumber(item?.NetWeight),
     grossWeight: toNumber(item?.GrossWeight),
@@ -488,8 +513,9 @@ export function transformProofOfDeliveryApiData(
     ],
     jobInfo: { left: jobLeft, right: jobRight },
     products,
-    remarks: housejobData?.InternalNote || '',
+    remarks: housejobData?.InternalNote || housejobData?.Others?.[0]?.InternalNote || '',
     isSea,
+    isLcl,
     receivingSection: {
       left: [
         'Delivery Received',

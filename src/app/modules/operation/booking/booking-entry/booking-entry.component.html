@@ -44,9 +44,9 @@
             <i class="fas fa-print"></i> Print
           </button>
           <div ngbDropdownMenu aria-labelledby="dropdownManual">
-            <button *ngIf="mps.canPrint('Booking Confirmation', 'Print')" ngbDropdownItem (click)="reportAndEmailModel(reportModel)" class="fw-bold">Booking Confirmation</button>
-            <button *ngIf="mps.canPrint('BarCode', 'Print')" ngbDropdownItem (click)="barCode(BarModal)" class="fw-bold">BarCode</button>
-            <button *ngIf="mps.canPrint('BarCode 2', 'Print')" ngbDropdownItem (click)="barCode(BarModalWithoutCompany)" class="fw-bold">BarCode 2</button>
+            <button *ngIf="mps.canPrint('Booking Confirmation', 'Print')" ngbDropdownItem (click)="reportAndEmailModel(reportModel)" class="text-black">Booking Confirmation</button>
+            <button *ngIf="mps.canPrint('BarCode', 'Print')" ngbDropdownItem (click)="barCode(BarModal)" class="text-black">BarCode</button>
+            <button *ngIf="mps.canPrint('BarCode 2', 'Print')" ngbDropdownItem (click)="barCode(BarModalWithoutCompany)" class="text-black">BarCode 2</button>
           </div>
         </div>
       </div>
@@ -1227,8 +1227,310 @@
         (dataEmitter)="handleRateChange($event)" (reloadParent)="loadBookingById($event)"></app-cost-entry>
     </div>
 
-    <!-- Other Tabs -->
     <div class="workspace-content" *ngIf="selectedTab === 'Cargo'">
+      <div class="d-flex justify-content-end align-items-center gap-2 px-3 mb-2">
+        <button class="btn btn-sm btn-info" type="button" (click)="addBookingCargo()"
+          [disabled]="selectedFCLLCL !== 'FCL' || (isEditMode && isSuspended)">
+          <i class="fas fa-plus me-1"></i> Add Cargo
+        </button>
+      </div>
+
+      <div class="col-12 px-1" [formGroup]="detailForm">
+        <div formArrayName="bookingCargo" ngbAccordion [closeOthers]="true" class="custom-accordion">
+          <div ngbAccordionItem *ngFor="let cargo of bookingCargo.controls; let cargoIndex = index"
+            [formGroupName]="cargoIndex" [ngbAccordionItem]="'cargo-' + cargoIndex" class="mb-2"
+            [collapsed]="!isCargoExpanded(cargoIndex)">
+            <h2 ngbAccordionHeader>
+              <button ngbAccordionButton class="d-flex justify-content-between align-items-center w-100 position-relative"
+                (click)="toggleCargoExpansion(cargoIndex)">
+                <h6 class="fw-semibold my-1 text-light">
+                  Cargo {{ cargoIndex + 1 }} - {{ cargo.get('CargoType')?.value || 'General' }}
+                </h6>
+                <button type="button" class="btn btn-sm text-light" *ngIf="bookingCargo.length > 1"
+                  (click)="removeBookingCargo(cargoIndex); $event.stopPropagation()">
+                  <i class="fas fa-trash text-danger"></i>
+                </button>
+              </button>
+            </h2>
+
+            <div ngbAccordionCollapse [id]="'cargo-' + cargoIndex">
+              <div class="px-2 py-2">
+                <div class="row compact-form">
+                  <aside class="col-md-2">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!cargo.get('CargoType')?.value">
+                      <ng-select [items]="modeOfCargoType" bindLabel="name" bindValue="name" class="ng-select"
+                        formControlName="CargoType" placeholder="" appendTo="body">
+                      </ng-select>
+                      <label class="input-label">Cargo Type</label>
+                    </div>
+                  </aside>
+                  @if(selectedFCLLCL === "FCL"){
+                  <aside class="col-md-2">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!cargo.get('ContainerType')?.value">
+                      <dofi-searchable-dropdown [items]="containerTypeList" formControlName="ContainerType" placeholder=""
+                        [displayFields]="containerTypeLookupConfig.displayFields"
+                        [displayLabels]="containerTypeLookupConfig.displayLabels"
+                        [labelFields]="containerTypeLookupConfig.labelFields" bindLabel="ContainerName"
+                        bindValue="ContainerTypeMasterSid">
+                      </dofi-searchable-dropdown>
+                      <label class="input-label">Container Type</label>
+                    </div>
+                  </aside>
+                  <aside class="col-md-2">
+                    <div class="custom-form-group">
+                      <input type="text" class="custom-input-field sm" [onlyNumbers] formControlName="NoofContainers">
+                      <label class="input-label">No. of Container</label>
+                    </div>
+                  </aside>
+                  }
+                  <aside class="col-md-2">
+                    <div class="custom-form-group">
+                      <input type="text" class="custom-input-field sm" formControlName="GrossWeight"
+                        DecimalPrecision [DecimalPrecisionBefore]="10"
+                        [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
+                      <label class="input-label">Gross Weight</label>
+                    </div>
+                  </aside>
+                  <aside class="col-md-2">
+                    <div class="custom-form-group">
+                      <input type="text" class="custom-input-field sm" formControlName="NetWeight"
+                        DecimalPrecision [DecimalPrecisionBefore]="7"
+                        [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999"
+                        (blur)="cargo.get('GrossWeight')?.updateValueAndValidity()"
+                        (input)="cargo.get('GrossWeight')?.updateValueAndValidity()">
+                      <label class="input-label">Net Weight</label>
+                    </div>
+                  </aside>
+                  <aside class="col-md-2">
+                    <div class="custom-form-group">
+                      <input type="text" class="custom-input-field sm" formControlName="Volume"
+                        DecimalPrecision [DecimalPrecisionBefore]="7"
+                        [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
+                      <label class="input-label">Volume(CBM)</label>
+                    </div>
+                  </aside>
+                  @if(usesDimensionalCargoFields() || isSurfaceCargoMode()) {
+                    @if(usesDimensionalCargoFields()) {
+                    <aside class="col-md-2">
+                      <div class="custom-form-group">
+                        <input type="text" class="custom-input-field sm" formControlName="Volumetric"
+                          DecimalPrecision [DecimalPrecisionBefore]="7"
+                          [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
+                        <label class="input-label">Volumetric</label>
+                      </div>
+                    </aside>
+                    }
+                    <aside class="col-md-2">
+                      <div class="custom-form-group">
+                        <input type="text" class="custom-input-field sm" formControlName="ChargeableWeight"
+                          DecimalPrecision [DecimalPrecisionBefore]="7"
+                          [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
+                        <label class="input-label">Chargeable Weight</label>
+                      </div>
+                    </aside>
+                  }
+                  <aside class="col-md-2">
+                    <div class="custom-form-group">
+                      <input type="text" class="custom-input-field sm" formControlName="NoOfPackage"
+                        DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="0"
+                        max="9999999.999">
+                      <label class="input-label">No. of Pkg</label>
+                    </div>
+                  </aside>
+                  <aside class="col-md-2">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!cargo.get('MovementType')?.value">
+                      <ng-select [items]="modeOfMovementType" bindLabel="name" bindValue="name" class="ng-select"
+                        placeholder="" formControlName="MovementType" appendTo="body">
+                      </ng-select>
+                      <label class="input-label">Movement Type</label>
+                    </div>
+                  </aside>
+                  <aside class="col-md-2">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!cargo.get('ModeOfTransport')?.value">
+                      <ng-select [items]="modeOfTransport" bindLabel="name" bindValue="name" placeholder=""
+                        formControlName="ModeOfTransport" appendTo="body">
+                      </ng-select>
+                      <label class="input-label">Mode of Transport</label>
+                    </div>
+                  </aside>
+                  <aside class="col-md-2">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!cargo.get('StuffingAt')?.value">
+                      <ng-select [items]="stuffingAt" bindLabel="name" bindValue="name" class="ng-select" placeholder=""
+                        formControlName="StuffingAt" (change)="handleCFSOrYard()" appendTo="body">
+                      </ng-select>
+                      <label class="input-label">Stuffing at</label>
+                    </div>
+                  </aside>
+                  <aside class="col-md-2">
+                    <div class="custom-form-group custom-form-group-select"
+                      [class.filled]="!!cargo.get('ShipmentTerms')?.value">
+                      <ng-select [items]="modeOfShipmentTerms" bindLabel="name" bindValue="name" class="ng-select"
+                        appendTo="body" placeholder="" formControlName="ShipmentTerms">
+                      </ng-select>
+                      <label class="input-label">Shipment Terms</label>
+                    </div>
+                  </aside>
+                </div>
+
+                <div class="d-flex justify-content-end mt-2">
+                  <button class="btn btn-sm btn-info" type="button" (click)="addBookingCargoProduct(cargoIndex)"
+                    [disabled]="isEditMode && isSuspended">
+                    <i class="fas fa-plus me-1"></i> Add Product
+                  </button>
+                </div>
+
+                <div class="table-responsive table-borderless1 mt-2" formArrayName="bookingProducts" style="overflow-y: hidden;">
+                  <table class="table table-hover align-middle no-wrap table-sm mb-0">
+                    <thead>
+                      <tr class="bg-info text-center">
+                        <th class="bg-transparent text-light" scope="col" *ngIf="bookingCargoProducts(cargoIndex).length > 0" width="2%"></th>
+                        <th class="bg-transparent text-light dofi-min-w-160" scope="col">Commodity<span class="text-danger">*</span></th>
+                        <th class="bg-transparent text-light dofi-min-w-40" scope="col">Shipping Bill No</th>
+                        <th class="bg-transparent text-light dofi-min-w-130" scope="col">Shipping Bill Date</th>
+                        <th class="bg-transparent text-light dofi-min-w-40" scope="col">Extl Pkg<span class="text-danger">*</span></th>
+                        <th class="bg-transparent text-light dofi-min-w-40" scope="col">No.of Pkg<span class="text-danger">*</span></th>
+                        @if(usesDimensionalCargoFields()){
+                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">UOM <span class="text-danger">*</span></th>
+                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">Length<span class="text-danger"></span></th>
+                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">Width<span class="text-danger"></span></th>
+                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">Height<span class="text-danger"></span></th>
+                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">Volumetric<span class="text-danger">*</span></th>
+                          <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM <span class="text-danger">*</span></th>
+                          <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wgt<span class="text-danger">*</span></th>
+                          <th class="bg-transparent text-light dofi-min-w-70" scope="col">Net Wgt<span class="text-danger"></span></th>
+                        }
+                        @if(selectedFCLLCL === 'FCL' || isSurfaceCargoMode()){
+                          <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wgt <span class="text-danger">*</span></th>
+                          <th class="bg-transparent text-light dofi-min-w-70" scope="col">Net Wgt<span class="text-danger"></span></th>
+                          <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM <span class="text-danger">*</span></th>
+                        }
+                        <th class="bg-transparent text-light dofi-min-w-130" scope="col">Cargo Recd. Date</th>
+                        <th class="bg-transparent text-light" scope="col">Is Haz</th>
+                        <th class="bg-transparent text-light dofi-min-w-90" scope="col">Imco Class</th>
+                        <th class="bg-transparent text-light dofi-min-w-60" scope="col">UN No</th>
+                        <th class="bg-transparent text-light dofi-min-w-60" scope="col">Pkg Group</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @if(bookingCargoProducts(cargoIndex).length > 0){
+                        <tr *ngFor="let product of bookingCargoProducts(cargoIndex).controls; let productIndex = index"
+                          [formGroupName]="productIndex" class="py-0">
+                          <td>
+                            <button class="btn btn-link text-danger py-0 px-1"
+                              (click)="deleteBookingProduct(productIndex,product.value.BookingProductSid,cargoIndex)" ngbTooltip="Delete">
+                              <i class="fas fa-trash text-center fs-2"></i>
+                            </button>
+                          </td>
+                          <td>
+                            <div class="custom-form-group custom-form-group-select inputChnages my-0"
+                              [class.filled]="!!product.get('ProductName')?.value">
+                              <div class="d-flex align-items-center" *ngIf="!product.get('isProductFreeText')?.value">
+                                <dofi-searchable-dropdown [items]="productList" formControlName="ProductName" placeholder=""
+                                  [displayFields]="['ProductCode', 'ProductName']" [displayLabels]="['Code', 'Name']"
+                                  [labelFields]="['ProductName']" bindLabel="ProductName" bindValue="ProductName"
+                                  (itemSelected)="handleProductChange($event, productIndex, cargoIndex)" style="width: 100%;">
+                                </dofi-searchable-dropdown>
+                                <button class="btn btn-link p-0 ms-1"
+                                  (click)="toggleProductInputType($any(product), 'ProductName', 'isProductFreeText', $event)"
+                                  ngbTooltip="Switch to text input" type="button">
+                                  <i class="fas fa-pen text-primary"></i>
+                                </button>
+                              </div>
+                              <div class="d-flex align-items-center" *ngIf="product.get('isProductFreeText')?.value">
+                                <input type="text" class="custom-input-field sm" formControlName="ProductName" placeholder=""
+                                  style="width: 100%;">
+                                <button class="btn btn-link p-0 ms-1"
+                                  (click)="toggleProductInputType($any(product), 'ProductName', 'isProductFreeText', $event)"
+                                  ngbTooltip="Switch to dropdown" type="button">
+                                  <i class="fas fa-list text-primary"></i>
+                                </button>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <input type="text" formControlName="ShippingBillNo" class="custom-input-field sm" [textWithNumbers]="20">
+                          </td>
+                          <td>
+                            <div class="d-flex align-items-center">
+                              <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #dp="ngbDatepicker"
+                                [minDate]="minDate" (keydown.arrowDown)="dp.open()" (click)="dp.toggle()"
+                                formControlName="ShippingBillDate" container="body" />
+                              <button class="btn bi bi-calendar3 p-0" (click)="dp.toggle()" type="button">
+                                <i-feather name="calendar" class="feather-sm"></i-feather>
+                              </button>
+                            </div>
+                          </td>
+                          <td>
+                            <dofi-searchable-dropdown [items]="packageTypeList" formControlName="ExternaPkg" [placeholder]="''"
+                              [displayFields]="uomLookupConfig.displayFields" [displayLabels]="uomLookupConfig.displayLabels"
+                              [labelFields]="uomLookupConfig.labelFields" [bindValue]="'UOMMasterSid'" style="padding:0;">
+                            </dofi-searchable-dropdown>
+                          </td>
+                          <td>
+                            <input type="text" formControlName="ExternlQty" class="custom-input-field sm">
+                          </td>
+                          @if(usesDimensionalCargoFields()){
+                            <td>
+                              <ng-select [items]="measurementUnitList" bindLabel="name" bindValue="id" formControlName="UomMasterSid"
+                                class="ng-select" placeholder="" appendTo="body">
+                              </ng-select>
+                            </td>
+                            <td><input type="text" formControlName="Length" class="custom-input-field sm"></td>
+                            <td><input type="text" formControlName="Width" class="custom-input-field sm"></td>
+                            <td><input type="text" formControlName="Height" class="custom-input-field sm"></td>
+                            <td><input type="text" formControlName="Volumetric" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"></td>
+                            <td><input type="text" formControlName="Volume" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"></td>
+                            <td><input type="text" formControlName="GrossWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"></td>
+                            <td><input type="text" formControlName="NetWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"></td>
+                          }
+                          @if(selectedFCLLCL === 'FCL' || isSurfaceCargoMode()){
+                            <td><input type="text" formControlName="GrossWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"></td>
+                            <td><input type="text" formControlName="NetWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"></td>
+                            <td><input type="text" formControlName="Volume" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"></td>
+                          }
+                          <td>
+                            <div class="d-flex align-items-center" style="margin-top: 4px;">
+                              <input class="form-control" placeholder="" name="dp" ngbDatepicker #dp1="ngbDatepicker"
+                                (click)="dp1.toggle()" formControlName="CargoRecDate" (keydown.arrowDown)="dp1.open()"
+                                [maxDate]="today" container="body" readonly />
+                              <button class="btn p-0" (click)="dp1.toggle()" type="button">
+                                <i-feather name="calendar" class="feather-sm"></i-feather>
+                              </button>
+                            </div>
+                          </td>
+                          <td>
+                            <input type="checkbox" formControlName="IsHaz" (change)="toggleHazProduct(productIndex,cargoIndex)" />
+                          </td>
+                          <td>
+                            <ng-select [items]="imcoList" bindLabel="ImcoName" bindValue="ImcoName" formControlName="ImcoClass"
+                              class="ng-select" placeholder="" appendTo="body" (change)="onImcoChange(productIndex,$event,cargoIndex)">
+                            </ng-select>
+                          </td>
+                          <td><input type="text" formControlName="UnNo" class="custom-input-field sm"></td>
+                          <td><input type="text" formControlName="PkgGroup" class="custom-input-field sm"></td>
+                        </tr>
+                      } @else {
+                        <tr>
+                          <td colspan="16" class="text-center">No Products added</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Other Tabs -->
+    <div class="workspace-content d-none" *ngIf="selectedTab === 'Cargo'">
       <div class="empty-state d-none">
         <div class="empty-icon">
           <i class="fas fa-boxes"></i>
@@ -1493,7 +1795,7 @@
                 <td>{{product.value.ProductName}}</td>
                 <td>{{product.value.ShippingBillNo}}</td>
                 <td>{{product.value.ShippingBillDate | formatDate}}</td>
-                <td>{{product.value.ExternaPkg}}</td>
+                <td>{{ getPackageTypeCode(product.value.ExternaPkg) }}</td>
                 <td>{{product.value.ExternlQty}}</td>
                 <td>{{product.value.GrossWeight}}</td>
                 <td>{{product.value.NetWeight}}</td>
@@ -1636,7 +1938,7 @@
                     <dofi-searchable-dropdown [items]="packageTypeList" formControlName="ExternaPkg"
                       [placeholder]="''" [displayFields]="uomLookupConfig.displayFields"
                       [displayLabels]="uomLookupConfig.displayLabels" [labelFields]="uomLookupConfig.labelFields"
-                      [bindValue]="'UOMCode'" style="padding:0;">
+                      [bindValue]="'UOMMasterSid'" style="padding:0;">
                     </dofi-searchable-dropdown>
                   </td>
                   <td>
@@ -1646,7 +1948,7 @@
                   @if(usesDimensionalCargoFields()){
                     <td >
                     <ng-select class="ng-select" formControlName="UomMasterSid" [items]="measurementUnitList" bindLabel="name"
-                      bindValue="id" appendTo="body"></ng-select>
+                      bindValue="id" appendTo="body" appendTo="body"></ng-select>
                    
                   </td>
                   <td>
@@ -2447,7 +2749,7 @@
                   <td>{{product.value.ProductName}}</td>
                   <td>{{product.value.ShippingBillNo}}</td>
                   <td>{{product.value.ShippingBillDate | formatDate}}</td>
-                  <td>{{product.value.ExternaPkg}}</td>
+                  <td>{{ getPackageTypeCode(product.value.ExternaPkg) }}</td>
                   <td>{{product.value.ExternlQty}}</td>
                   <td>{{product.value.GrossWeight}}</td>
                   <td>{{product.value.NetWeight}}</td>
@@ -2538,9 +2840,10 @@
       </div>
       <aside class="col-md-4">
         <div class="custom-form-group custom-form-group-select" [class.filled]="!!productForm.get('ExternaPkg')?.value">
-          <ng-select [items]="packageTypeList" placeholder="" bindLabel="UOMName" bindValue="UOMName"
-            formControlName="ExternaPkg">
-          </ng-select>
+          <dofi-searchable-dropdown [items]="packageTypeList" formControlName="ExternaPkg" [placeholder]="''"
+            [displayFields]="uomLookupConfig.displayFields" [displayLabels]="uomLookupConfig.displayLabels"
+            [labelFields]="uomLookupConfig.labelFields" [bindValue]="'UOMMasterSid'" style="padding:0;">
+          </dofi-searchable-dropdown>
           <label for="text-input" class="input-label">External Pkg <span class="text-danger">*</span></label>
           @if(productForm.get('ExternaPkg')?.touched && productForm.get('ExternaPkg')?.invalid){
           <div class="error-message">
@@ -3127,7 +3430,8 @@
   box-sizing:border-box;
   color:#000;
   page-break-after:always;
-  position:relative;        /* REQUIRED for bottom footer */
+  position:relative;    
+  font-size:14px    
 ">  <div>
 
  <!-- Company Info -->
@@ -3136,9 +3440,9 @@
 <!-- Top Border -->
 <div style="border-top:1px solid #000; margin:10px 0;"></div>
 
-<h3 style="text-align:center; font-size:20px; font-weight:bolder; margin:6px 0;">
+<h4 style="text-align:center;  font-weight:bolder; margin:6px 0;">
   <strong>Booking Confirmation - {{ selectedDepartment?.departmentName }}</strong>
-</h3>
+</h4>
 
 <div style="border-top:1px solid #000; margin:10px 0;"></div>
 
@@ -3147,19 +3451,19 @@
   <tr>
     <!-- LEFT COLUMN -->
     <td style="width:50%; vertical-align:top; padding:0 0 0 30px;">
-      <div style="margin:0 0 4px 0; font-weight:bolder;font-size:17px;">
+      <div style="margin:0 0 4px 0; font-weight:bolder;">
         <strong>Customer</strong>
       </div>
-      <div style="margin:0; font-size:17px;padding-left: 30px;">
+      <div style="margin:0; padding-left: 30px;">
         {{ bookingHeader?.CustomerName }}
       </div>
-      <div style="margin:0; font-size:17px;padding-left: 30px;">
+      <div style="margin:0; padding-left: 30px;">
         {{ bookingHeader?.CustomerAddress }}
       </div>
     </td>
 
     <!-- RIGHT COLUMN -->
-    <td style="width:50%; vertical-align:top; padding:0 0 0 80px;font-size: 17px;">
+    <td style="width:50%; vertical-align:top; padding:0 0 0 80px;">
       <table style="width:100%; border-collapse:collapse; margin:0; padding:0;">
         <tr>
           <td style="width:140px; font-weight:bolder; padding:2px 0;"><strong>Booking No.</strong></td>
@@ -3200,7 +3504,7 @@
 <div style="border-top:1px solid #000; margin:8px 0;"></div>
 
   <!-- Booking Details -->
-<p style="font-weight:bolder; padding-left: 30px;margin-top: 0px;margin-bottom: 5px;  font-size: 17px;">
+<p style="font-weight:bolder; padding-left: 30px;margin-top: 0px;margin-bottom: 5px;  ">
   <strong>  We are pleased to confirm your booking as below </strong>
 </p>
 
@@ -3255,7 +3559,7 @@
     </td>
 
     <!-- RIGHT COLUMN -->
-    <td style="width:50%; vertical-align:top;padding-left: 80px;padding-top: 15px;padding-bottom: 15px;font-size: 17px;">
+    <td style="width:50%; vertical-align:top;padding-left: 80px;padding-top: 15px;padding-bottom: 15px;">
       <table style="width:100%; border-collapse:collapse;">
         <tr>
           <td style="width:140px; font-weight:bolder;">
@@ -3314,19 +3618,18 @@
 </table>
 
 
-<h3 style="
+<h5 style="
     font-weight:bolder;
     padding-left: 30px;
     margin-top: 5px;
     margin-bottom: 5px;
-    font-size:20px;
 ">
     <strong>Cargo Details</strong>
-</h3>
+</h5>
 
 
     <div style="width:100%; overflow-x:auto;">
-      <table style="width:100%; border-collapse:collapse; font-size:17px;">
+      <table style="width:100%; border-collapse:collapse;">
         <thead>
           <tr>
             <th style="border:1px solid #000; padding:5px;font-weight: bolder;text-align: center;"><strong>Cargo Type</strong></th>
@@ -3352,41 +3655,41 @@
         </thead>
 
         <tbody>
-          <tr>
+          <tr *ngFor="let cargo of bookingHeader?.bookingCargo">
             <td style="border:1px solid #000; padding:5px;">
-              {{bookingHeader?.bookingCargo[0]?.CargoType || ''}}
+              {{cargo?.CargoType || ''}}
             </td>
 
             @if(selectedFCLLCL === "FCL"){
               <td style="border:1px solid #000; padding:5px;">
-                {{getContainerName(bookingHeader?.bookingCargo[0]?.ContainerType) || ''}}
+                {{getContainerName(cargo?.ContainerType) || ''}}
               </td>
               <td style="border:1px solid #000; padding:5px; text-align:right;">
-                {{bookingHeader?.bookingCargo[0]?.NoofContainers || ''}}
+                {{cargo?.NoofContainers || ''}}
               </td>
             }
 
             <td style="border:1px solid #000; padding:5px; text-align:right;">
-              {{bookingHeader?.bookingCargo[0]?.GrossWeight  | number:'1.3-3'}}
+              {{cargo?.GrossWeight  | number:'1.3-3'}}
             </td>
 
             @if(selectedFCLLCL === "LCL"){
               <td style="border:1px solid #000; padding:5px; text-align:right;">
-                {{bookingHeader?.bookingCargo[0]?.NoOfPackage || ''}}
+                {{cargo?.NoOfPackage || ''}}
               </td>
                <td style="border:1px solid #000; padding:5px; text-align:right;">
-                {{bookingHeader?.bookingCargo[0]?.ChargeableWeight | number:'1.3-3'}}
+                {{cargo?.ChargeableWeight | number:'1.3-3'}}
               </td>
             }
 
             @if(selectedFCLLCL === "AIR"){
               <td style="border:1px solid #000; padding:5px; text-align:right;">
-                {{bookingHeader?.bookingCargo[0]?.ChargeableWeight || ''}}
+                {{cargo?.ChargeableWeight || ''}}
               </td>
             }
 
             <td style="border:1px solid #000; padding:5px; text-align:right;">
-              {{bookingHeader?.bookingCargo[0]?.Volume  | number:'1.3-3'}}
+              {{cargo?.Volume  | number:'1.3-3'}}
             </td>
 
           </tr>
@@ -3397,7 +3700,6 @@
 
        <!-- Terms & Conditions -->
 <div style="
-    font-size:17px;
     padding-left:25px;
     padding-top:0;       
     margin-top:40px;        
@@ -3427,7 +3729,7 @@
 </div>
 
     <!-- Footer -->
-<div style="position:absolute;bottom:15px;left:0;width:100%;font-size:16px;font-weight: bolder;">
+<div style="position:absolute;bottom:15px;left:0;width:100%;font-weight: bolder;">
 
   <!-- Left: Signature -->
   <div style="margin-left:10px;">

@@ -904,7 +904,7 @@
         <div class="modal-body ">
             <div id="printContent">
                 <div
-                    style="width:280mm; min-height:385mm; margin:10px;  background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; position:relative; page-break-after:always;">
+                    style="width:280mm; min-height:385mm; margin:10px;  background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; position:relative; page-break-after:always;font-size: 14px;">
 
                     <!-- Company Info -->
                         <app-print-header></app-print-header>
@@ -919,7 +919,7 @@
                                 <div style="width:150px;font-weight: bolder;"><strong>MBL No.</strong></div>
                                 <div>: {{loadingPlanData[0]?.MBLNo}}</div>
                             </div> -->
-                          <div style="display:flex; margin-bottom:4px;font-size: 16px; padding-left: 50px;">
+                          <div style="display:flex; margin-bottom:4px; padding-left: 50px;">
                              <div style="width:140px;font-weight:bolder;">
                                 <strong>Vessel / Voy No.</strong>
                             </div>
@@ -933,26 +933,26 @@
   </div>
 </div>
 
-                            <div style="display:flex; margin-bottom:4px;font-size: 16px;padding-left: 50px;">
+                            <div style="display:flex; margin-bottom:4px;padding-left: 50px;">
                                 <div style="width:140px;font-weight: bolder;"><strong>Carrier</strong></div>
                                 <div>: {{this.loadingPlanForm.get('carrier')?.value || ''}}</div>
                             </div>
-                            <div style="display:flex; margin-bottom:4px;font-size: 16px;padding-left: 50px;">
+                            <div style="display:flex; margin-bottom:4px;padding-left: 50px;">
                                 <div style="width:140px;font-weight: bolder;"><strong>PP/CC</strong></div>
                                 <div>: {{loadingPlanData[0]?.FreightTerms}}</div>
                             </div>
-                            <div style="display:flex; margin-bottom:4px;padding-left: 50px;font-size: 16px;">
+                            <div style="display:flex; margin-bottom:4px;padding-left: 50px;">
                                 <div style="width:140px;font-weight: bolder;"><strong>ETD</strong></div>
                                 <div>: {{loadingPlanData[0]?.ETD}}</div>
                             </div>
-                                <div style="display:flex; margin-bottom:4px;padding-left: 50px;font-size: 16px;">
+                                <div style="display:flex; margin-bottom:4px;padding-left: 50px;">
                                 <div style="width:140px;font-weight: bolder;"><strong>ETA</strong></div>
                                 <div>: {{loadingPlanData[0]?.ETA}}</div>
                             </div>
                         </div>
 
                         <!-- Column 2 -->
-                        <div style="flex:1; min-width:180px;font-size: 16px;">
+                        <div style="flex:1; min-width:180px;">
                             <div style="display:flex; margin-bottom:4px;padding-left: 50px;">
                                 <div style="width:60px;font-weight: bolder;"><strong>POR</strong></div>
                                 <div>: {{getPortName(loadingPlanData[0]?.POO)}}</div>
@@ -974,7 +974,7 @@
 
                     <!-- Table Section -->
                     <div style="width:100%; overflow-x:auto; margin-bottom:8px;">
-                        <table style="width:100%; border-collapse:collapse; font-size:16px; margin:10px 0;">
+                        <table style="width:100%; border-collapse:collapse;  margin:10px 0;">
                             <thead style="background-color:#f8f9fa;">
                                 <tr>
                                     <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;border-left: none;"><strong>BL No.</strong></th>

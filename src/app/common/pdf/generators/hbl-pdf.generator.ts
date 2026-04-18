@@ -112,6 +112,7 @@ export function generateHblDocument(data: HblPdfData): any {
       : undefined,
     content: [
       { text: data.title, bold: true, fontSize: 12, margin: [0, 0, 0, 2] },
+      buildFixedBottomSection(data, declarationText),
 
       {
         table: {
@@ -298,8 +299,15 @@ export function generateHblDocument(data: HblPdfData): any {
         margin: [0, 0, 0, 0],
       },
 
-      { text: '', margin: [0, 0, 0, 235] },
+    ],
+  };
+}
 
+function buildFixedBottomSection(data: HblPdfData, declarationText: string): any {
+  return {
+    absolutePosition: { x: 14, y: 600 },
+    width: 567,
+    stack: [
       {
         table: {
           widths: ['67%', '33%'],
@@ -315,9 +323,7 @@ export function generateHblDocument(data: HblPdfData): any {
             return 1;
           },
         },
-        margin: [0, 0, 0, 0],
       },
-
       {
         table: {
           widths: ['50%', '50%'],
@@ -334,9 +340,7 @@ export function generateHblDocument(data: HblPdfData): any {
             return 1;
           },
         },
-        margin: [0, 0, 0, 0],
       },
-
       {
         table: {
           widths: ['50%', '50%'],
@@ -358,9 +362,8 @@ export function generateHblDocument(data: HblPdfData): any {
             return 1;
           },
         },
-        margin: [0, 0, 0, 18],
+        margin: [0, 0, 0, 12],
       },
-
       {
         columns: [
           { text: `Printed By: ${data.printedBy || ''}`, fontSize: 8 },

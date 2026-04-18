@@ -189,6 +189,12 @@ export class CargoManifestComponent {
     }, 0);
   }
 
+  getHousePackages(houseJob: any): number {
+    return (houseJob?.Cargo || []).reduce((total, cargo) => {
+      return total + (+cargo?.NoOfPackage || 0);
+    }, 0);
+  }
+
   // Calculate total GrossWeight
   getTotalGrossWeight(): number {
     if (!this.masterJobData?.houseJob) return 0;
@@ -198,12 +204,24 @@ export class CargoManifestComponent {
     }, 0);
   }
 
+  getHouseGrossWeight(houseJob: any): number {
+    return (houseJob?.Cargo || []).reduce((total, cargo) => {
+      return total + (+cargo?.GrossWeight || 0);
+    }, 0);
+  }
+
   // Calculate total Volume
   getTotalVolume(): number {
     if (!this.masterJobData?.houseJob) return 0;
     return this.masterJobData.houseJob.reduce((totalH, h) => {
       const totalCargo = h.Cargo?.reduce((totalC, c) => totalC + (+c.Volume || 0), 0) || 0;
       return totalH + totalCargo;
+    }, 0);
+  }
+
+  getHouseVolume(houseJob: any): number {
+    return (houseJob?.Cargo || []).reduce((total, cargo) => {
+      return total + (+cargo?.Volume || 0);
     }, 0);
   }
 

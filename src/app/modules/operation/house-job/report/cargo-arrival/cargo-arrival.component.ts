@@ -135,11 +135,11 @@ export class CargoArrivalComponent {
 
 
     getPackageTypeName(pkgTypeSid: number): string {
-    if (!pkgTypeSid) return 'Unknown';
+    if (!pkgTypeSid) return '';
     const packageType = this.packageTypeList.find(
       (pt) => pt.UOMMasterSid === pkgTypeSid
     );
-    return packageType ? packageType.UOMName : 'Unknown';
+    return packageType ? packageType.UOMName : '';
   }
   
    getPortName(portCode: string): string {

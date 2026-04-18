@@ -114,7 +114,7 @@ function buildFirstPage(data: any, isSeaMode: boolean, reportTitle: string): any
               infoLine('Carrier', voyages?.CarrierName || '', 90),
               infoLine('Carrier Ref.', others?.CarrierRef || '', 90),
               infoLine('Agents Ref.', others?.AgentRef || '', 90),
-              infoLine(isSeaMode ? 'Package' : 'Chargeable Wt.', isSeaMode ? (job?.containers?.[0]?.NoOfPkg ?? '') : number3(job?.ChargeableWeight ?? ''), 90),
+              infoLine(isSeaMode ? 'Package' : 'Chargeable Wt.', isSeaMode ? (job?.NoOfPkg ?? '') : number3(job?.ChargeableWeight ?? ''), 90),
               infoLine('Gross Wt.', number3(job?.GrossWeight), 90),
               infoLine('Volume', number3(job?.Volume), 90)
             ],
@@ -283,24 +283,21 @@ function buildHouseCargoTable(data: any): any {
 
   houseJobs.forEach((h: any, i: number) => {
     const cargoList = h?.Cargo || [];
-    cargoList.forEach((c: any, j: number) => {
-      body.push([
-        { text: j === 0 ? String(i + 1) : '', alignment: 'center' },
-        { text: j === 0 ? (h?.HBLNo || '') : '', noWrap: true },
-        {
-          text: j === 0
-            ? `Shipper: ${h?.ShipperName || ''}\nConsignee: ${h?.ConsigneeName || ''}\nNotify: ${h?.Notify || ''}`
-            : ''
-        },
-        c?.MarksAndNumber || '',
-        `${c?.NoOfPackage || ''} Pkg\n${c?.CommodityDescription || ''}`,
-        { text: number3(c?.GrossWeight), alignment: 'right' },
-        { text: number3(c?.Volume), alignment: 'right' },
-        h?.FreightTerms || '',
-        '',
-        c?.ShipmentTerms || ''
-      ]);
-    });
+    const firstCargo = cargoList[0] || {};
+    body.push([
+      { text: String(i + 1), alignment: 'center' },
+      { text: h?.HBLNo || '', noWrap: true },
+      {
+        text: `Shipper: ${h?.ShipperName || ''}\nConsignee: ${h?.ConsigneeName || ''}\nNotify: ${h?.Notify || ''}`
+      },
+      firstCargo?.MarksAndNumber || '',
+      `${getHousePackages(h) || ''} Pkg\n${firstCargo?.CommodityDescription || ''}`,
+      { text: number3(getHouseGrossWeight(h)), alignment: 'right' },
+      { text: number3(getHouseVolume(h)), alignment: 'right' },
+      h?.FreightTerms || '',
+      '',
+      firstCargo?.ShipmentTerms || ''
+    ]);
   });
 
   body.push([
@@ -481,6 +478,11 @@ function getTotalPackages(data: any): number {
   }, 0);
 }
 
+function getHousePackages(houseJob: any): number {
+  const cargo = houseJob?.Cargo || [];
+  return cargo.reduce((sum: number, c: any) => sum + (Number(c?.NoOfPackage) || 0), 0);
+}
+
 function getTotalHouseGrossWeight(data: any): number {
   const houseJobs = data?.masterJobData?.houseJob || [];
   return houseJobs.reduce((hSum: number, h: any) => {
@@ -489,12 +491,22 @@ function getTotalHouseGrossWeight(data: any): number {
   }, 0);
 }
 
+function getHouseGrossWeight(houseJob: any): number {
+  const cargo = houseJob?.Cargo || [];
+  return cargo.reduce((sum: number, c: any) => sum + (Number(c?.GrossWeight) || 0), 0);
+}
+
 function getTotalHouseVolume(data: any): number {
   const houseJobs = data?.masterJobData?.houseJob || [];
   return houseJobs.reduce((hSum: number, h: any) => {
     const cargo = h?.Cargo || [];
     return hSum + cargo.reduce((cSum: number, c: any) => cSum + (Number(c?.Volume) || 0), 0);
   }, 0);
+}
+
+function getHouseVolume(houseJob: any): number {
+  const cargo = houseJob?.Cargo || [];
+  return cargo.reduce((sum: number, c: any) => sum + (Number(c?.Volume) || 0), 0);
 }
 
 function number3(value: any): string {

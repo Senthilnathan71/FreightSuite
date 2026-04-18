@@ -205,7 +205,7 @@ function buildKeyValueRow(label: string, value?: string): any {
 function buildProductsTable(data: JobCardPdfData, isSea: boolean): any {
   const header = isSea
     ? [
-        'Commodity', 'Container No.', 'Type', 'No. of Pkg', 'Gross Weight', 'Volume', 'Net Weight'
+        'Commodity', 'No. of Container', 'Type', 'No. of Pkg', 'Gross Weight', 'Volume', 'Net Weight'
       ]
     : [
         'Commodity', 'Length', 'Width', 'Height', 'Volumetric', 'No. of Pkg', 'Gross Weight', 'Volume', 'Net Weight'
@@ -503,7 +503,7 @@ export function transformJobCardApiData(
   const getContainerTypeName = (containerTypeMasterSid?: number): string => {
     if (!containerTypeMasterSid) return '';
     const match = (options?.containerTypeList || []).find((item: any) => item.ContainerTypeMasterSid === containerTypeMasterSid);
-    return match?.ContainerName || '';
+    return match?.ContainerName || match?.ContainerType || match?.ContainerCode || '';
   };
 
   const getChargeName = (chargeMasterSid?: number): string => {
@@ -536,15 +536,33 @@ export function transformJobCardApiData(
     profit: Number(item.profit || 0)
   }));
 
-  const productRows: JobCardProductPdfRow[] = products.map((item: any) => ({
-    commodity: item?.ProductName || '',
-    containerNo: item?.ContainerNo || '',
-    containerType: getContainerTypeName(item?.masterJobContainer?.ContainerType),
+  const productSource = products.length
+    ? products
+    : (apiData?.Cargo || []).map((cargo: any) => ({
+        ProductName: cargo?.CommodityDescription,
+        CommodityDescription: cargo?.CommodityDescription,
+        ContainerNo: cargo?.ContainerNo || cargo?.NoofContainers || '',
+        ContainerType: cargo?.ContainerType,
+        ExternlQty: cargo?.ExternlQty ?? cargo?.NoOfPackage,
+        NoOfPackage: cargo?.NoOfPackage,
+        GrossWeight: cargo?.GrossWeight,
+        Volume: cargo?.Volume,
+        NetWeight: cargo?.NetWeight,
+        Length: cargo?.Length,
+        Width: cargo?.Width,
+        Height: cargo?.Height,
+        Volumetric: cargo?.Volumetric
+      }));
+
+  const productRows: JobCardProductPdfRow[] = productSource.map((item: any) => ({
+    commodity: item?.ProductName || item?.CommodityDescription || '',
+    containerNo: item?.ContainerNo || item?.NoofContainers || '',
+    containerType: getContainerTypeName(item?.masterJobContainer?.ContainerType || item?.ContainerType),
     length: Number(item?.Length || 0),
     width: Number(item?.Width || 0),
     height: Number(item?.Height || 0),
     volumetric: Number(item?.Volumetric || 0),
-    noOfPackage: Number(item?.ExternlQty || 0),
+    noOfPackage: Number(item?.ExternlQty ?? item?.NoOfPackage ?? 0),
     grossWeight: Number(item?.GrossWeight || 0),
     volume: Number(item?.Volume || 0),
     netWeight: Number(item?.NetWeight || 0)
@@ -636,7 +654,7 @@ export function transformJobCardApiData(
     costRevenueCharges,
     revenueByParty: groupPartyAmounts(charges, 'revenueCustomerMaster', 'RevenueLocalAmount'),
     expenseByParty: groupPartyAmounts(charges, 'costCustomerMaster', 'CostLocalAmount'),
-    internalRemarks: apiData?.InternalNote || ''
+    internalRemarks: apiData?.InternalNote || apiData?.Others?.[0]?.InternalNote || ''
   };
 }
 

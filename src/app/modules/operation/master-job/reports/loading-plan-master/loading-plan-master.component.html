@@ -5,15 +5,17 @@
         <div class="spinner-overlay">
             <div class="spinner"></div>
         </div>
-<!--         
+        <!--         
         <button type="button" class="btn btn-sm btn-warning rounded-5 py-0" (click)="printDiv('printContent')">
             <i class="fas fa-download me-1"></i> Print
         </button> -->
 
-        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()" *ngIf="mps.canPrint('Loading Plan','Download')">
-                    <i class="fas fa-download me-1"></i> Download PDF
-                </button>
-        <button type="button" class="btn btn-sm btn-success rounded-5 py-0" *ngIf="mps.canPrint('Loading Plan','Send Mail')">
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()"
+            *ngIf="mps.canPrint('Loading Plan','Download')">
+            <i class="fas fa-download me-1"></i> Download PDF
+        </button>
+        <button type="button" class="btn btn-sm btn-success rounded-5 py-0"
+            *ngIf="mps.canPrint('Loading Plan','Send Mail')">
             <i class="fas fa-envelope me-1"></i>Send Email
         </button>
 
@@ -25,24 +27,25 @@
 <div class="modal-body ">
     <div id="printContent">
         <div
-            style="width:300mm; min-height:500mm; margin:10px;  background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; position:relative; page-break-after:always;">
+            style="width:300mm; min-height:500mm; margin:10px;  background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; position:relative; page-break-after:always;font-size: 14px;">
 
             <!-- Company Info -->
             <app-print-header></app-print-header>
 
             <h4
-                style="text-align: center; font-weight: bolder; text-transform: uppercase; margin: 10px 0; padding-top: 10px; border-top: 1px solid black;font-size: 20px;">
-                <strong>Container Load Plan</strong></h4>
+                style="text-align: center; font-weight: bolder; text-transform: uppercase; margin: 10px 0; padding-top: 10px; border-top: 1px solid black;">
+                <strong>Load Plan</strong>
+            </h4>
 
             <!-- Info Section -->
             <div style="display:flex; flex-wrap:wrap; margin-bottom:8px; gap:10px;padding-left: 20px;">
                 <!-- Column 1 -->
                 <div style="flex:1; min-width:180px;">
-                    <div style="display:flex; margin-bottom:4px;font-size: 16px;">
+                    <div style="display:flex; margin-bottom:4px;">
                         <div style="width:130px;font-weight: bolder;"><strong>MBL No.</strong></div>
                         <div>: {{ masterJobData?.MBLNo }}</div>
                     </div>
-                    <div style="display:flex; margin-bottom:4px;font-size: 16px;">
+                    <div style="display:flex; margin-bottom:4px;">
                         <div style="width:130px;font-weight:bolder;">
                             <strong>Vessel / Voy No.</strong>
                         </div>
@@ -60,25 +63,25 @@
                         </div>
                     </div>
 
-                    <div style="display:flex; margin-bottom:4px;font-size: 16px;">
+                    <div style="display:flex; margin-bottom:4px;">
                         <div style="width:130px;font-weight: bolder;"><strong>Carrier</strong></div>
                         <div>: {{ masterJobData?.voyages?.[0]?.CarrierName }}</div>
                     </div>
-                    <div style="display:flex; margin-bottom:4px;font-size: 16px;">
+                    <div style="display:flex; margin-bottom:4px;">
                         <div style="width:130px;font-weight: bolder;"><strong>PP/CC</strong></div>
                         <div>: {{ masterJobData?.houseJob?.[0]?.FreightTerms }}</div>
                     </div>
                 </div>
 
                 <!-- Column 2 -->
-                <div style="flex:1; min-width:180px;font-size: 16px;">
+                <div style="flex:1; min-width:180px;">
                     <div style="display:flex; margin-bottom:4px;">
                         <div style="width:80px;font-weight: bolder;"><strong>Job No.</strong></div>
                         <div>: {{ masterJobData?.MasterJobNumber }} </div>
                     </div>
                     <div style="display:flex; margin-bottom:4px;">
                         <div style="width:80px;font-weight: bolder;"><strong>Job Date</strong></div>
-                        <div>: {{masterJobData?.MasterJobDate  | formatDate}}</div>
+                        <div>: {{masterJobData?.MasterJobDate | formatDate}}</div>
                     </div>
                     <div style="display:flex; margin-bottom:4px;">
                         <div style="width:80px;font-weight: bolder;"><strong>ETD</strong></div>
@@ -91,7 +94,7 @@
                 </div>
 
                 <!-- Column 3 -->
-                <div style="flex:1; min-width:180px;font-size: 16px;">
+                <div style="flex:1; min-width:180px;">
                     <div style="display:flex; margin-bottom:4px;">
                         <div style="width:60px;font-weight: bolder;"><strong>POR</strong></div>
                         <div>: {{ getPortName(masterJobData?.POO) }}</div>
@@ -112,10 +115,11 @@
             </div>
 
             <div style="width:100%; overflow-x:auto;" *ngIf="containersForPrint.length">
-                <table style="width:100%; border-collapse:collapse; font-size:16px; margin:10px 0 6px 0;">
+                <table style="width:100%; border-collapse:collapse;  margin:10px 0 6px 0;">
                     <thead>
                         <tr>
-                            <th style="border-top:1px solid black; border-right:1px solid black; border-bottom:1px solid black; border-left:none; padding:2px 8px; text-align:center;  font-weight:bold;">
+                            <th
+                                style="border-top:1px solid black; border-right:1px solid black; border-bottom:1px solid black; border-left:none; padding:2px 8px; text-align:center;  font-weight:bold;">
                                 Container Type
                             </th>
                             <th style="border:1px solid black; padding:2px 8px; text-align:center; font-weight:bold;">
@@ -130,14 +134,16 @@
                             <th style="border:1px solid black; padding:2px 8px; text-align:center; font-weight:bold;">
                                 Net Weight
                             </th>
-                            <th style="border-top:1px solid black; border-right:none; border-bottom:1px solid black; border-left:1px solid black; padding:2px 8px; text-align:center;  font-weight:bold;">
+                            <th
+                                style="border-top:1px solid black; border-right:none; border-bottom:1px solid black; border-left:1px solid black; padding:2px 8px; text-align:center;  font-weight:bold;">
                                 Volume
                             </th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr *ngFor="let container of containersForPrint">
-                            <td style="border-top:1px solid black; border-right:1px solid black; border-bottom:1px solid black; border-left:none; padding:2px 8px;">
+                            <td
+                                style="border-top:1px solid black; border-right:1px solid black; border-bottom:1px solid black; border-left:none; padding:2px 8px;">
                                 {{ getContainerTypeName(container?.ContainerType) }}
                             </td>
                             <td style="border:1px solid black; padding:2px 8px;">
@@ -152,7 +158,8 @@
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">
                                 {{ (container?.NetWeight || 0) | number:'1.3-3' }}
                             </td>
-                            <td style="border-top:1px solid black; border-right:none; border-bottom:1px solid black; border-left:1px solid black; padding:2px 8px; text-align:right;">
+                            <td
+                                style="border-top:1px solid black; border-right:none; border-bottom:1px solid black; border-left:1px solid black; padding:2px 8px; text-align:right;">
                                 {{ (container?.Volume || 0) | number:'1.3-3' }}
                             </td>
                         </tr>
@@ -162,12 +169,13 @@
 
             <!-- Table Section -->
             <div style="width:100%; overflow-x:auto; margin-bottom:8px;">
-                <table style="width:100%; border-collapse:collapse; font-size:16px; margin:10px 0;">
+                <table style="width:100%; border-collapse:collapse; margin:10px 0;">
                     <thead style="background-color:transparent;">
                         <tr>
                             <th
                                 style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;border-left: none;">
-                                <strong>HBL No.</strong></th>
+                                <strong>HBL No.</strong>
+                            </th>
                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
                                 <strong>Origin</strong>
                             </th>
@@ -181,34 +189,49 @@
                                 <strong>Consignee & Address</strong>
                             </th>
                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
-                                <strong>Commodity Desc</strong></th>
+                                <strong>Commodity Desc</strong>
+                            </th>
                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
-                                <strong>Marks & No.</strong></th>
+                                <strong>Marks & No.</strong>
+                            </th>
                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
-                                <strong>No.of Pkg</strong></th>
+                                <strong>No.of Pkg</strong>
+                            </th>
                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
-                                <strong>G.Wt.</strong></th>
+                                <strong>G.Wt.</strong>
+                            </th>
                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
-                                <strong>Nt Wt.</strong></th>
+                                <strong>Nt Wt.</strong>
+                            </th>
                             <th
                                 style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder; border-right: none;">
-                                <strong>Vol. </strong></th>
+                                <strong>Vol. </strong>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
-                         <tr *ngFor="let item of masterJobData?.houseJob;">
-                                    <td style="border:1px solid black; padding:2px 8px;border-left: none;">{{ getHouseBlNo(item) }}</td>
-                                    <td style="border:1px solid black; padding:2px 8px;">{{ getHouseOrigin(item) }}</td>
-                                    <td style="border:1px solid black; padding:2px 8px;">{{ getHouseDestination(item) }}</td>
-                                    <td style="border:1px solid black; padding:2px 8px;">{{ item?.ShipperName }} & {{ item?.ShipperAddress }}</td>
-                                    <td style="border:1px solid black; padding:2px 8px;">{{ item?.ConsigneeName }} & {{ item?.ConsigneeAddress }}</td>
-                                    <td style="border:1px solid black; padding:2px 8px;">{{ item?.Cargo?.[0]?.CommodityDescription }} </td>
-                                    <td style="border:1px solid black; padding:2px 8px;">{{ item?.Cargo?.[0]?.MarksAndNumber }} </td>
-                                    <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ item?.Cargo?.[0]?.NoOfPackage }}</td>
-                                    <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ item?.Cargo?.[0]?.GrossWeight | number:'1.3-3'}} </td>
-                                    <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ item?.Cargo?.[0]?.NetWeight | number:'1.3-3'}} </td>
-                                    <td style="border:1px solid black; padding:2px 8px; text-align:right;border-right: none;">{{ item?.Cargo?.[0]?.Volume | number:'1.3-3'}}</td>
-                                </tr>
+                        <tr *ngFor="let item of masterJobData?.houseJob;">
+                            <td style="border:1px solid black; padding:2px 8px;border-left: none;">{{ getHouseBlNo(item)
+                                }}</td>
+                            <td style="border:1px solid black; padding:2px 8px;">{{ getHouseOrigin(item) }}</td>
+                            <td style="border:1px solid black; padding:2px 8px;">{{ getHouseDestination(item) }}</td>
+                            <td style="border:1px solid black; padding:2px 8px;">{{ item?.ShipperName }} & {{
+                                item?.ShipperAddress }}</td>
+                            <td style="border:1px solid black; padding:2px 8px;">{{ item?.ConsigneeName }} & {{
+                                item?.ConsigneeAddress }}</td>
+                            <td style="border:1px solid black; padding:2px 8px;">{{
+                                item?.Cargo?.[0]?.CommodityDescription }} </td>
+                            <td style="border:1px solid black; padding:2px 8px;">{{ item?.Cargo?.[0]?.MarksAndNumber }}
+                            </td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
+                                getHouseCargoTotal(item, 'NoOfPackage') }}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
+                                getHouseCargoTotal(item, 'GrossWeight') | number:'1.3-3'}} </td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
+                                getHouseCargoTotal(item, 'NetWeight') | number:'1.3-3'}} </td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;border-right: none;">{{
+                                getHouseCargoTotal(item, 'Volume') | number:'1.3-3'}}</td>
+                        </tr>
                     </tbody>
                     <tfoot>
                         <tr style="font-weight:bolder;">
@@ -231,7 +254,7 @@
             </div>
 
             <!-- Footer -->
-           <app-print-footer></app-print-footer>
+            <app-print-footer></app-print-footer>
 
         </div>
 

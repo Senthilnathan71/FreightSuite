@@ -1307,7 +1307,15 @@
                                         </div>
                                         }
                                         <!-- #endregion -->
-
+                                         @if(selectedCargoMode === 'FCL'){
+                                        <div class="d-flex justify-content-end mt-2">
+                                            <button class="btn btn-info btn-sm ms-auto" type="button"
+                                                (click)="addCargo(routeIndex)"
+                                                [disabled]="disableAddButtons || quotationCreatedAgainstThisEnquiry || (isEditMode && isSuspended)">
+                                                <i-feather class="feather-sm ms-2" name="plus"></i-feather> Add Cargo
+                                            </button>
+                                        </div>
+                                        }
                                         <!-- #region FCL -->
                                         @if(selectedCargoMode ==='FCL'){
                                         <div formArrayName="cargo" class="table-responsive table-borderless"
@@ -1317,6 +1325,13 @@
                                                     style="min-width: 1200px; width: 100%;">
                                                     <thead>
                                                         <tr class="bg-info text-center">
+                                                             @if( routeCargo(routeIndex).controls.length > 1){
+                                                            <td class="bg-transparent text-light" style="width: 200px;"
+                                                                [ngClass]="{ '': isMobile, '': !isMobile }">
+                                                                <label for="" class="form-label mb-0">Action</label>
+                                                            </td>
+                                                            }
+                                                            
                                                             <td class="bg-transparent text-light" style="width: 200px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
                                                                 <label class="form-label mb-0">Cargo Type <span
@@ -1384,18 +1399,25 @@
                                                                 <label class="form-label mb-0">Shipment Terms <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
-                                                            @if( routeCargo(routeIndex).controls.length > 1){
-                                                            <td class="bg-transparent text-light" style="width: 200px;"
-                                                                [ngClass]="{ '': isMobile, '': !isMobile }">
-                                                                <label for="" class="form-label mb-0">Action</label>
-                                                            </td>
-                                                            }
+                                                           
                                                         </tr>
                                                     </thead>
                                                     <tbody>
 
                                                         <tr *ngFor="let cargo of routeCargo(routeIndex).controls; let cargoIndex = index"
                                                             [formGroupName]="cargoIndex">
+                                                            @if( routeCargo(routeIndex).controls.length > 1){
+                                                            <td data-label="Action">
+                                                                <section class="action-items">
+                                                                    <button class="btn btn-sm btn-link text-danger mx-2"
+                                                                        (click)="deleteCargo(routeIndex ,cargoIndex)"
+                                                                        [disabled]="disableAddButtons">
+                                                                        <i-feather name="trash-2"
+                                                                            class="feather-sm"></i-feather>
+                                                                    </button>
+                                                                </section>
+                                                            </td>
+                                                            }
                                                             <td>
                                                                 <ng-select #CargoTypeNg formControlName="CargoType"
                                                                     class="ng-select" appendTo="body" placeholder=""
@@ -1501,22 +1523,11 @@
                                                                 </ng-select>
                                                             </td>
 
-                                                            @if( routeCargo(routeIndex).controls.length > 1){
-                                                            <td data-label="Action">
-                                                                <section class="action-items">
-                                                                    <button class="btn btn-sm btn-link text-danger mx-2"
-                                                                        (click)="deleteCargo(routeIndex ,cargoIndex)"
-                                                                        [disabled]="disableAddButtons">
-                                                                        <i-feather name="trash-2"
-                                                                            class="feather-sm"></i-feather>
-                                                                    </button>
-                                                                </section>
-                                                            </td>
-                                                            }
+                                                            
                                                         </tr>
                                                     </tbody>
                                                 </table>
-                                            </div>
+                                        </div>
                                         </div>
                                         }
                                         <!-- #endregion -->
@@ -2204,17 +2215,17 @@
 
             </div> -->
 
-            <div style="width:280mm; min-height:400mm; margin:0 auto; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; page-break-after:always; display:flex; flex-direction:column;position: relative;">
+            <div style="width:280mm; min-height:400mm; margin:0 auto; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; page-break-after:always; display:flex; flex-direction:column;position: relative;font-size: 14px;">
 
             <app-print-header></app-print-header>
 
-            <h3 style="text-align: center;margin: 0px;padding: 6px 15px;border-top: 1px solid black;font-weight: bolder;font-size: 20px;"><strong> ENQUIRY</strong></h3>
+            <h4 style="text-align: center;margin: 0px;padding: 6px 15px;border-top: 1px solid black;font-weight: bolder;"><strong> ENQUIRY</strong></h4>
 
             <!-- Enquiry Details -->
             <div style="display:flex;flex-wrap:wrap;margin:0;padding:15px 10px;border-top:1px solid black;border-bottom:1px solid black;box-sizing:border-box;line-height:1.2;">
 
             <!-- LEFT COLUMN -->
-            <div style="width:50%;padding-left:3rem;box-sizing:border-box;font-size:16px;margin:0;">
+            <div style="width:50%;padding-left:3rem;box-sizing:border-box;margin:0;">
 
                         <!-- Dept -->
                         <div style="display:flex; margin-bottom:2px;">
@@ -2264,7 +2275,7 @@
 
 
                         <!-- Port of Loading -->
-                        <div style="display: flex;align-items: flex-start;margin: 6px 0;font-size: 16px;">
+                        <div style="display: flex;align-items: flex-start;margin: 6px 0;">
                             <!-- Label -->
                             <div style="width: 140px;font-weight: bolder;white-space: nowrap;">Port of Origin</div>
 
@@ -2278,7 +2289,7 @@
 
 
                         <!-- Port of Loading -->
-                        <div style="display: flex;align-items: flex-start;margin: 6px 0;font-size: 16px;">
+                        <div style="display: flex;align-items: flex-start;margin: 6px 0;">
                             <!-- Label -->
                             <div style="width: 140px;font-weight: bolder;white-space: nowrap;">Port of Loading</div>
 
@@ -2306,7 +2317,6 @@
     width:50%;
     padding-left:2rem;
     box-sizing:border-box;
-    font-size:16px;
     margin:0;
 ">
 
@@ -2394,7 +2404,7 @@
                         </div>
 
 <!-- Port of Discharge -->
-<div style="display:flex; align-items:flex-start; margin:6px 0; font-size:16px;">
+<div style="display:flex; align-items:flex-start; margin:6px 0;">
 
     <!-- Label -->
     <div style="width:190px; font-weight:bolder;">
@@ -2414,7 +2424,7 @@
 </div>
 
 <!-- Final Destination -->
-<div style="display:flex; align-items:flex-start; margin:6px 0; font-size:16px;">
+<div style="display:flex; align-items:flex-start; margin:6px 0;">
 
     <!-- Label -->
     <div style="width:190px; font-weight:bolder;">
@@ -2441,14 +2451,14 @@
                 <!-- Product Table -->
                 <div style="margin-top: 0;">
                     <div style=" padding-top:8px;padding-bottom: 8px;">
-                        <h4 style="margin:0; padding-left:55px;text-align: start; font-weight:bolder;">
+                        <h5 style="margin:0; padding-left:55px;text-align: start; font-weight:bolder;">
                             <strong>Product Details</strong>
-                        </h4>
+                        </h5>
                     </div>
 
                     <div style="overflow-x: auto;">
                         <table
-                            style="width: 100%; border-collapse: collapse;  table-layout:fixed; margin: 0; font-size: 16px;">
+                            style="width: 100%; border-collapse: collapse;  table-layout:fixed; margin: 0;">
                             <thead>
                                 <tr>
                                     <th
@@ -2798,7 +2808,6 @@
     margin-top:8px;
     margin-bottom:12px;
     padding:6px 10px;
-    font-size:16px;
 ">
                     <div style="white-space:nowrap; font-weight:bolder;width: 185px;">
                         <strong>Enquiry Remarks</strong>

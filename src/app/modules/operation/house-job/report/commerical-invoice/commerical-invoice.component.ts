@@ -172,6 +172,14 @@ export class CommericalInvoiceComponent {
     this.activeModal.close()
   }
 
+  getCargoTotal(field: 'NoOfPackage' | 'GrossWeight' | 'NetWeight' | 'Volume'): number {
+    const cargo = this.housejobData?.Cargo || [];
+    return cargo.reduce((sum: number, item: any) => {
+      const value = Number(item?.[field]);
+      return sum + (Number.isFinite(value) ? value : 0);
+    }, 0);
+  }
+
   getTotalPkg(){
      const noofPkgs = this.housejobData?.Products || [];
     return noofPkgs.reduce((sum: number, item: any) => {
@@ -183,7 +191,7 @@ export class CommericalInvoiceComponent {
   getGrossWeight(){
     const grossWeight  = this.housejobData?.Products || [];
     return grossWeight.reduce((sum:number,item:any)=>{
-      const grossAmount = parseFloat(item?.GrossWeight)
+      const grossAmount = parseFloat(item?.GrossWeight) || 0;
       return sum + grossAmount;
     },0)
   }
@@ -191,15 +199,15 @@ export class CommericalInvoiceComponent {
   NetWeightTotal(){
     const netWeight = this.housejobData?.Products || [];
     return netWeight.reduce((sum:number,item:any)=>{
-      const totalNetWeight = parseFloat(item?.NetWeight)
+      const totalNetWeight = parseFloat(item?.NetWeight) || 0;
       return sum + totalNetWeight
     },0)
   }
 
   voluemTotal(){
-    const vol =this.housejobData?.Products ;
+    const vol = this.housejobData?.Products || [];
     return vol.reduce((sum:number, item:any)=>{
-      const totalVol = parseFloat(item?.Volume)
+      const totalVol = parseFloat(item?.Volume) || 0;
       return sum + totalVol
     },0)
   }

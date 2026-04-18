@@ -229,8 +229,8 @@ function formatDecimal(value: unknown): string {
 }
 
 function buildBookingCargoDetails(data: BookingPdfData): any {
-  const firstCargo = data.cargo?.[0];
-  if (!firstCargo) {
+  const cargoList = data.cargo || [];
+  if (cargoList.length === 0) {
     return { text: '' };
   }
 
@@ -239,9 +239,35 @@ function buildBookingCargoDetails(data: BookingPdfData): any {
   const headerRow: any[] = [
     { text: 'Cargo Type', style: 'tableHeader', alignment: 'center' }
   ];
-  const valueRow: any[] = [
-    { text: firstCargo.cargoType || '', style: 'tableCell' }
-  ];
+  const buildValueRow = (cargo: any): any[] => {
+    const valueRow: any[] = [
+      { text: cargo.cargoType || '', style: 'tableCell' }
+    ];
+
+    if (fclLcl === 'FCL') {
+      valueRow.push(
+        { text: cargo.containerType || '', style: 'tableCell' },
+        { text: safeText(cargo.noOfContainers), style: 'tableCell', alignment: 'right' },
+        { text: formatDecimal(cargo.grossWeight), style: 'tableCell', alignment: 'right' },
+        { text: formatDecimal(cargo.volume), style: 'tableCell', alignment: 'right' }
+      );
+    } else if (fclLcl === 'LCL') {
+      valueRow.push(
+        { text: formatDecimal(cargo.grossWeight), style: 'tableCell', alignment: 'right' },
+        { text: safeText(cargo.noOfPackage), style: 'tableCell', alignment: 'right' },
+        { text: formatDecimal(cargo.chargeableWeight), style: 'tableCell', alignment: 'right' },
+        { text: formatDecimal(cargo.volume), style: 'tableCell', alignment: 'right' }
+      );
+    } else if (fclLcl === 'AIR') {
+      valueRow.push(
+        { text: formatDecimal(cargo.grossWeight), style: 'tableCell', alignment: 'right' },
+        { text: formatDecimal(cargo.chargeableWeight), style: 'tableCell', alignment: 'right' },
+        { text: formatDecimal(cargo.volume), style: 'tableCell', alignment: 'right' }
+      );
+    }
+
+    return valueRow;
+  };
 
   if (fclLcl === 'FCL') {
     // FCL: Cargo Type | Container Type | No. of Containers | Gross Weight | Volume (CBM)
@@ -251,12 +277,6 @@ function buildBookingCargoDetails(data: BookingPdfData): any {
       { text: 'Gross Weight', style: 'tableHeader', alignment: 'center' },
       { text: 'Volume (CBM)', style: 'tableHeader', alignment: 'center' }
     );
-    valueRow.push(
-      { text: firstCargo.containerType || '', style: 'tableCell' },
-      { text: safeText(firstCargo.noOfContainers), style: 'tableCell', alignment: 'right' },
-      { text: formatDecimal(firstCargo.grossWeight), style: 'tableCell', alignment: 'right' },
-      { text: formatDecimal(firstCargo.volume), style: 'tableCell', alignment: 'right' }
-    );
   } else if (fclLcl === 'LCL') {
     // LCL: Cargo Type | Gross Weight | No. of Pkg | Chargeable Weight | Volume (CBM)
     headerRow.push(
@@ -265,12 +285,6 @@ function buildBookingCargoDetails(data: BookingPdfData): any {
       { text: 'Chargeable Weight', style: 'tableHeader', alignment: 'center' },
       { text: 'Volume (CBM)', style: 'tableHeader', alignment: 'center' }
     );
-    valueRow.push(
-      { text: formatDecimal(firstCargo.grossWeight), style: 'tableCell', alignment: 'right' },
-      { text: safeText(firstCargo.noOfPackage), style: 'tableCell', alignment: 'right' },
-      { text: formatDecimal(firstCargo.chargeableWeight), style: 'tableCell', alignment: 'right' },
-      { text: formatDecimal(firstCargo.volume), style: 'tableCell', alignment: 'right' }
-    );
   } else if (fclLcl === 'AIR') {
     // AIR: Cargo Type | Gross Weight | Chargeable Weight | Volume (CBM)
     headerRow.push(
@@ -278,12 +292,9 @@ function buildBookingCargoDetails(data: BookingPdfData): any {
       { text: 'Chargeable Weight', style: 'tableHeader', alignment: 'center' },
       { text: 'Volume (CBM)', style: 'tableHeader', alignment: 'center' }
     );
-    valueRow.push(
-      { text: formatDecimal(firstCargo.grossWeight), style: 'tableCell', alignment: 'right' },
-      { text: formatDecimal(firstCargo.chargeableWeight), style: 'tableCell', alignment: 'right' },
-      { text: formatDecimal(firstCargo.volume), style: 'tableCell', alignment: 'right' }
-    );
   }
+
+  const valueRows = cargoList.map((cargo) => buildValueRow(cargo));
 
   return {
     stack: [
@@ -292,7 +303,7 @@ function buildBookingCargoDetails(data: BookingPdfData): any {
         table: {
           headerRows: 1,
           widths: new Array(headerRow.length).fill('*'),
-          body: [headerRow, valueRow]
+          body: [headerRow, ...valueRows]
         },
         layout: 'bordered',
         margin: [0, 0, 0, 6]

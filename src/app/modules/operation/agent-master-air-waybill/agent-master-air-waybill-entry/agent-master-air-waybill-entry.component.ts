@@ -3914,12 +3914,30 @@ getVoyageTypeBasedOnDept(deptId: number) {
     const FPODSid = (this.portList.find(p => p.PortCode === selectedFPD)?.PortMasterSid)
     const Carrier = this.houseJobForm.get('CarrierSid')?.value;
     const IncoTerms = this.houseJobForm.get('IncoTerms')?.value
-    const CargoType = this.cargoForm.get('CargoType')?.value;
-    const NetWeight = this.cargoForm.get('NetWeight')?.value;
-    const GrossWeight =this.cargoForm.get('GrossWeight')?.value;
-    const NoofContainers = this.cargoForm.get('NoofContainers')?.value;
-    const Volume = this.cargoForm.get('Volume')?.value;
-    const ChargeableWeight = this.cargoForm.get('ChargeableWeight')?.value
+    const primaryCargo = this.bookingData?.Cargo?.[0] || {};
+    const CargoType = primaryCargo.CargoType;
+    const NetWeight = primaryCargo.NetWeight;
+    const GrossWeight = primaryCargo.GrossWeight;
+    const NoofContainers = primaryCargo.NoofContainers;
+    const Volume = primaryCargo.Volume;
+    const ChargeableWeight = primaryCargo.ChargeableWeight;
+    const cargoItems = (this.bookingData?.Cargo || []).map((cargo: any) => {
+      const containerTypeSid = cargo.ContainerType || null;
+      const containerTypeName = this.containerTypeList.find(
+        ct => ct.ContainerTypeMasterSid === containerTypeSid
+      )?.ContainerTypeName || null;
+      return {
+        CargoType: cargo.CargoType,
+        ContainerType: containerTypeSid,
+        ContainerTypeName: containerTypeName,
+        GrossWeight: cargo.GrossWeight,
+        Volume: cargo.Volume,
+        NoofContainers: cargo.NoofContainers,
+        ChargeableWeight: cargo.ChargeableWeight,
+        ShipmentTerms: cargo.ShipmentTerms,
+      };
+    });
+    const containerTypeSid = cargoItems.find((cargo: any) => cargo.ContainerType)?.ContainerType || null;
     const CustomerMasterSid = this.b['CustomerMasterSid']?.getRawValue();
     const CustomerBranchSid = this.b['CustomerBranchSid']?.getRawValue();
     const BookingHeaderSid = this.b['BookingHeaderSid']?.value;
@@ -3947,12 +3965,14 @@ getVoyageTypeBasedOnDept(deptId: number) {
       ExpiredDate,
       Carrier,
       IncoTerms,
+      ContainerType: containerTypeSid,
       CargoType,
       GrossWeight,
       NetWeight,
       Volume,
       NoofContainers,
       ChargeableWeight,
+      cargoItems,
       countryOfCompany: this.countryOfCompany,
       SalesmanName : salesmanName
     }

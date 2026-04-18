@@ -195,6 +195,8 @@ export class QuotationEntryComponent implements OnInit {
   containerTypeList: any[] = []
   TandCList: any[] = []
   tariffDetails : any[] = [];
+  tariffCargoGroups: { cargoLabel: string; items: any[] }[] = [];
+  tariffSearchedCombination: string = '';
   standardChargeDetails:any[] = [];
   filteredUnits: any[][] = [];
   costAgentList : any[] = [];
@@ -366,8 +368,15 @@ dataFromEnqPage:any;
 
   // SECTION3 - NGONIT
   ngOnInit(): void {
-    
-    this.initQuotationForm();
+    const initialQuotationData = this.leadService.getQuotationData();
+    const historyState = window.history.state as any;
+    const hasSeedData = !!(
+      historyState?.dashboardQuoteData ||
+      historyState?.enquiryConversionData?.rateRequest ||
+      initialQuotationData?.rateRequest
+    );
+
+    this.initQuotationForm(!hasSeedData);
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
@@ -399,7 +408,6 @@ dataFromEnqPage:any;
      this.canUserLockRates = false;
   });
   
-    const historyState = window.history.state as any;
     const dashboardQuoteData = historyState?.dashboardQuoteData;
     const enquiryConversionData = historyState?.enquiryConversionData;
     if (dashboardQuoteData || enquiryConversionData) {
@@ -450,12 +458,8 @@ dataFromEnqPage:any;
   if (!this.isEditMode || !data) return;
 
   const isSuspended = data.status === 'S';
-  const hasBooking = !!data.BookingHeaderSid;
-  const isApproved = data.quoteRoute?.some((route: any) =>
-    route.quoteCarrier?.some((carrier: any) => carrier.ApprovalStatus === 'Approved')
-  );
 
-  if (isSuspended || hasBooking || isApproved) {
+  if (isSuspended) {
     this.quotationForm.disable({ emitEvent: false });
   }
 }
@@ -490,230 +494,224 @@ dataFromEnqPage:any;
     return defaultValue;
   }
 
-  patchEnqPageValues(enqData: any) { 
-  
-  // --- Header form setup ---------------------------------
-  this.enquiryNumber = enqData?.EnquiryNumber;
-  this.quoteRoutes.clear();
-  const parsedContact = this.parsePhone(enqData?.ContactNumber);
+  patchEnqPageValues(enqData: any): void {
+    this.enquiryNumber = enqData?.EnquiryNumber;
+    this.quoteRoutes.clear();
 
-  const headerFields = [
-    'EnquirySid',
-    'LeadOrCustomer',
-    'PreCustomerMasterSid',
-    'CustomerMasterSid',
-    'CustomerBranchSid',
-    'CustomerRef',
-    'CustomerName',
-    'CustomerAddress',
-    'ContactPerson',
-    'ContactNumber',
-    'ContactNumberCode',
-    'Email',
-    'FreightPPCC',
-    'SalesmanSid',
-    'ClearanceBy',
-    'TransportBy'
-  ];
-
-  this.quotationForm.patchValue(
-    {
-      ...headerFields.reduce(
-      (obj, field) => ({ ...obj, [field]: enqData?.[field] }),
-      {}
-      ),
-      ContactNumberCode: parsedContact.phoneCode,
-      ContactNumber: parsedContact.phoneNumber
-    }
-  );
-  if (!this.quotationForm.get('FreightPPCC')?.value) {
-    this.quotationForm.get('FreightPPCC')?.setValue('Prepaid');
-  }
-
-
-  headerFields.forEach(field => {
-    if (enqData?.[field]) {
-      this.quotationForm.get(field)?.disable()
-    }
-  });
-
-  // --- Routes array check ---------------------------------
-  const routes = Array.isArray(enqData?.quoteRoutes)
-    ? enqData.quoteRoutes
-    : [];
-
-
-
-  if (!routes.length) {
-    console.warn('No routes to process');
-    return;
-  }
-
-  // --- Determine segment type -----------------------------
-  const segment = this.getSegmentTypeFromShipmentType(enqData?.ShipmentType);
-
-  // --- Process each route ---------------------------------
-  for (const [routeIndex, route] of routes.entries()) {
-    // Process cargo data from the route
-    const cargoData = this.extractCargoData(route.enquiryCargo);
-    
-    const routeData = {
-      QuoteRouteSid: route?.QuoteRouteSid || null,
-      DepartmentMasterSid: enqData.DepartmentMasterSid,
-      PORSid: route?.PORSid || null,
-      POLSid: route?.POLSid || null,
-      PODSid: route?.PODSid || null,
-      FPODSid: route?.FPODSid || null, // Use FDPSid from the actual data
-      CarrierMasterSid: route?.CarrierMasterSid || null,
-      CarrierName: route?.CarrierName || '',
-      CargoType: route?.CargoType || 'General',
-      ContainerType: route?.ContainerType || null,
-      BookingHeaderSid: route?.BookingHeaderSid || null,
-      BookingNo: route?.BookingNo || route?.bookingHeader?.BookingNo || '',
-      Qty : route?.Qty || 1,
-      GrossWeight : route?.GrossWeight || 0,
-      NetWeight : route?.NetWeight || 0,
-      Volume: route?.Volume || 1,
-      ContainerQty: Number(route?.ContainerQty) || 1,
-      CBM: route?.CBM || 1,
-      ChargeableWeight: route?.ChargeableWeight || 0,
-      effDate: new Date(),
-      expDate: null, 
-      TransitDays: route?.TransitDays || '',
-      ServiceLevel: route?.ServiceLevel || null,
-      POLFreeDays: route?.POLFreeDays || 0,
-      PODFreeDays: route?.PODFreeDays || 0,
-      FreightPPCC: enqData?.FreightPPCC || 'Prepaid',
-      authorizerStatus: route?.authorizerStatus || 'Pending',
-      segmentType: segment,
-      ShipmentTerms: route?.ShipmentTerms || null
-    };
-
-    // Add the route to the form
-    this.addQuoteRoute(routeData);
-    const lastAddedQuote = this.quoteRoutes.length - 1;
-    this.addQuoteCarrier(lastAddedQuote);
-
-    
-    // let packageTypeId = null;
-    // if (route?.PackageType) {
-      
-    //   // Case 1: If PackageType is a string (like "CON", "CBM", etc.)
-    //   if (typeof route?.PackageType === 'string') {
-    //     // First try to find by UOMCode (this is likely what you need)
-    //     const packageTypeByCode = this.packageTypes.find(uom => 
-    //       uom.UOMCode === route?.PackageType
-    //     );
-        
-    //     // If not found by code, try by name
-    //     const packageTypeByName = this.packageTypes.find(uom => 
-    //       uom.UOMName === route?.PackageType
-    //     );
-        
-    //     // Use whichever is found
-    //     const foundPackageType = packageTypeByCode || packageTypeByName;
-        
-    //     if (foundPackageType) {
-    //       packageTypeId = foundPackageType.UOMMasterSid;
-    //       console.log(`Found package type: ${foundPackageType.UOMCode} (${foundPackageType.UOMName}) -> ID: ${packageTypeId}`);
-    //     } else {
-    //       console.warn(`No package type found for: "${route?.PackageType}"`);
-    //       console.warn('Available:', this.packageTypes?.map(p => p.UOMCode).join(', '));
-    //     }
-    //   }
-    // } 
-    
-    this.addQuoteProduct(lastAddedQuote,{
-      Sno : 1,
-      ProductSid : null,
-      ProductName : route?.ProductName,
-      PackageType : route?.PackageType, 
-      CargoDescription : null, 
-      GrossWeight: route?.GrossWeight,
-      NetWeight: route?.NetWeight,
-      ChargeableWeight: route?.ChargeableWeight,
-      Volume: route?.Volume || route?.CBM,
-      ExternalPkg: route?.PackageTypeId,
-      ExternalQty: route?.PackageQty,
-      Length: route?.length,
-      Volumetric: route?.Volumetric,
-      Width: route?.width,
-      Height: route?.height,
-      ProductUnit: route?.PackageTypeId,
-    })
-
-    // Handle additional logic
-    // this.addQuoteCharge(routeIndex);
-    // this.handleValidationOnDept(routeIndex,segment);
-    this.onRouteChange(routeIndex);
-
-    // Disable the patched fields for this route
-    const routeGroup = this.quoteRoutes.at(routeIndex);
-    const fieldsToDisable = [
-      'DepartmentMasterSid', 'PORSid', 'POLSid', 'PODSid', 
-      'FPODSid', 'CargoType', 'ContainerType', 'CBM', 'ChargeableWeight', 'ServiceLevel'
+    const parsedContact = this.parsePhone(enqData?.ContactNumber);
+    const headerFields = [
+      'EnquirySid',
+      'LeadOrCustomer',
+      'PreCustomerMasterSid',
+      'CustomerMasterSid',
+      'CustomerBranchSid',
+      'CustomerRef',
+      'CustomerName',
+      'CustomerAddress',
+      'ContactPerson',
+      'ContactNumber',
+      'ContactNumberCode',
+      'Email',
+      'FreightPPCC',
+      'SalesmanSid',
+      'ClearanceBy',
+      'TransportBy'
     ];
-    
-    fieldsToDisable.forEach(field => {
-      if (routeData[field] !== null && routeData[field] !== undefined) {
-        routeGroup.get(field)?.disable();
+
+    this.quotationForm.patchValue(
+      {
+        ...headerFields.reduce((obj, field) => ({ ...obj, [field]: enqData?.[field] }), {}),
+        ContactNumberCode: parsedContact.phoneCode,
+        ContactNumber: parsedContact.phoneNumber
+      },
+      { emitEvent: false }
+    );
+
+    if (!this.quotationForm.get('FreightPPCC')?.value) {
+      this.quotationForm.get('FreightPPCC')?.setValue('Prepaid');
+    }
+
+    headerFields.forEach(field => {
+      if (enqData?.[field] !== null && enqData?.[field] !== undefined) {
+        this.quotationForm.get(field)?.disable({ emitEvent: false });
       }
     });
+
+    const routes = Array.isArray(enqData?.quoteRoutes)
+      ? enqData.quoteRoutes
+      : [];
+
+    if (!routes.length) {
+      this.quoteRoutes.updateValueAndValidity({ emitEvent: false });
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const segment = this.getSegmentTypeFromShipmentType(enqData?.ShipmentType);
+
+    for (const [routeIndex, route] of routes.entries()) {
+      const cargoGroups = Array.isArray(route?.quoteCargo) && route.quoteCargo.length
+        ? route.quoteCargo
+        : (Array.isArray(route?.enquiryCargo) ? route.enquiryCargo : []);
+      const primaryCargo = cargoGroups[0] || this.extractCargoData(route?.enquiryCargo);
+      const isFclRoute = this.isFclQuotationSegment(segment);
+
+      const routeData = {
+        QuoteRouteSid: route?.QuoteRouteSid || null,
+        DepartmentMasterSid: enqData?.DepartmentMasterSid || null,
+        PORSid: route?.PORSid || null,
+        POLSid: route?.POLSid || null,
+        PODSid: route?.PODSid || null,
+        FPODSid: route?.FPODSid || route?.FDPSid || null,
+        CarrierMasterSid: route?.CarrierMasterSid || null,
+        CarrierName: route?.CarrierName || '',
+        CargoType: primaryCargo?.CargoType || route?.CargoType || 'General',
+        ContainerType: primaryCargo?.ContainerType || route?.ContainerType || null,
+        BookingHeaderSid: route?.BookingHeaderSid || null,
+        BookingNo: route?.BookingNo || route?.bookingHeader?.BookingNo || '',
+        Qty: primaryCargo?.Qty || route?.Qty || 1,
+        GrossWeight: primaryCargo?.GrossWeight || route?.GrossWeight || 0,
+        NetWeight: primaryCargo?.NetWeight || route?.NetWeight || 0,
+        Volume: primaryCargo?.Volume || route?.Volume || 1,
+        ContainerQty: Number(primaryCargo?.ContainerQty || route?.ContainerQty) || 1,
+        CBM: primaryCargo?.CBM || route?.CBM || 1,
+        ChargeableWeight: primaryCargo?.ChargeableWeight || route?.ChargeableWeight || 0,
+        effDate: new Date(),
+        expDate: null,
+        TransitDays: route?.TransitDays || '',
+        ServiceLevel: route?.ServiceLevel || null,
+        POLFreeDays: route?.POLFreeDays || 0,
+        PODFreeDays: route?.PODFreeDays || 0,
+        FreightPPCC: enqData?.FreightPPCC || 'Prepaid',
+        authorizerStatus: route?.authorizerStatus || 'Pending',
+        segmentType: segment,
+        ShipmentTerms: primaryCargo?.ShipmentTerms || route?.ShipmentTerms || null,
+        PackageType: primaryCargo?.PackageType || route?.PackageType || null,
+        PackageQty: primaryCargo?.PackageQty || route?.PackageQty || null,
+        CargoDescription: primaryCargo?.CargoDescription || route?.CargoDescription || null
+      };
+
+      this.addQuoteRoute(routeData);
+      const addedRouteIndex = this.quoteRoutes.length - 1;
+      this.addQuoteCarrier(addedRouteIndex);
+
+      if (isFclRoute) {
+        cargoGroups.forEach((cargo: any) => {
+          this.addQuoteCargo(addedRouteIndex, cargo);
+        });
+      } else {
+        this.addQuoteProduct(addedRouteIndex, {
+          Sno: 1,
+          ProductSid: null,
+          ProductName: primaryCargo?.ProductName || route?.ProductName,
+          PackageType: primaryCargo?.PackageType || route?.PackageType,
+          CargoDescription: null,
+          GrossWeight: primaryCargo?.GrossWeight || route?.GrossWeight,
+          NetWeight: primaryCargo?.NetWeight || route?.NetWeight,
+          ChargeableWeight: primaryCargo?.ChargeableWeight || route?.ChargeableWeight,
+          Volume: primaryCargo?.Volume || route?.Volume || route?.CBM,
+          ExternalPkg: this.resolvePackageTypeSid(primaryCargo?.PackageTypeId || route?.PackageTypeId || primaryCargo?.PackageType || route?.PackageType),
+          ExternalQty: primaryCargo?.PackageQty || route?.PackageQty,
+          Length: primaryCargo?.length || route?.length,
+          Volumetric: primaryCargo?.Volumetric || route?.Volumetric,
+          Width: primaryCargo?.width || route?.width,
+          Height: primaryCargo?.height || route?.height,
+          ProductUnit: this.resolvePackageTypeSid(primaryCargo?.PackageTypeId || route?.PackageTypeId || primaryCargo?.PackageType || route?.PackageType)
+        });
+
+        cargoGroups.slice(1).forEach((cargo: any) => {
+          this.addQuoteCargo(addedRouteIndex, cargo);
+        });
+      }
+
+      this.onRouteChange(addedRouteIndex);
+
+      const routeGroup = this.quoteRoutes.at(addedRouteIndex);
+      const fieldsToDisable = [
+        'DepartmentMasterSid',
+        'PORSid',
+        'POLSid',
+        'PODSid',
+        'FPODSid',
+        'CargoType',
+        'ContainerType',
+        'CBM',
+        'ChargeableWeight',
+        'ServiceLevel'
+      ];
+
+      fieldsToDisable.forEach(field => {
+        if (routeData[field] !== null && routeData[field] !== undefined) {
+          routeGroup.get(field)?.disable({ emitEvent: false });
+        }
+      });
+    }
+
+    this.quoteRoutes.updateValueAndValidity({ emitEvent: false });
+    this.cdr.detectChanges();
   }
-}
 
   patchDashboardValues(data: any): void {
-    this.quotationForm.patchValue({
-      LeadOrCustomer: true,
-      SalesmanSid: data.SalesmanSid,
-    }, { emitEvent: false });
-    if (data.CustomerMasterSid) {
-      this.customerlist = this.customerlist.filter(c => c.CustomerMasterSid === data.CustomerMasterSid);
-      if(this.customerlist.length > 0){
+    this.quotationForm.patchValue(
+      {
+        LeadOrCustomer: true,
+        SalesmanSid: data?.SalesmanSid,
+      },
+      { emitEvent: false }
+    );
+
+    if (data?.CustomerMasterSid) {
+      this.customerlist = this.customerlist.filter(
+        c => c.CustomerMasterSid === data.CustomerMasterSid
+      );
+
+      if (this.customerlist.length > 0) {
         const firstItem = this.customerlist[0];
         const parsedContact = this.parsePhone(firstItem.ContactNumber);
+
         this.quotationForm.patchValue({
-          CustomerMasterSid : firstItem.CustomerMasterSid ,
+          CustomerMasterSid: firstItem.CustomerMasterSid,
           CustomerName: firstItem.CustomerName,
           CustomerAddress: firstItem.Address,
-          Email : firstItem.Email,
-          CustomerBranchSid : firstItem.CustomerBranchSid,
-          ContactPerson : firstItem.ContactPerson,
+          Email: firstItem.Email,
+          CustomerBranchSid: firstItem.CustomerBranchSid,
+          ContactPerson: firstItem.ContactPerson,
           ContactNumberCode: parsedContact.phoneCode,
           ContactNumber: parsedContact.phoneNumber
         });
-        ["CustomerMasterSid",'CustomerName','CustomerAddress','Email','CustomerBranchSid','ContactPerson','ContactNumber','LeadOrCustomer','SalesmanSid'].forEach(key => {
-          if(this.quotationForm.get(key)?.value){
-            this.quotationForm.get(key)?.disable({emitEvent : false});
-          }
-        })
+
+        ['CustomerMasterSid', 'CustomerName', 'CustomerAddress', 'Email', 'CustomerBranchSid', 'ContactPerson', 'ContactNumber', 'LeadOrCustomer', 'SalesmanSid']
+          .forEach(key => {
+            if (this.quotationForm.get(key)?.value) {
+              this.quotationForm.get(key)?.disable({ emitEvent: false });
+            }
+          });
       } else {
         console.info(`Customer with Branch not found for CustomerMasterSid ${data.CustomerMasterSid}`);
-        ['LeadOrCustomer','SalesmanSid'].forEach(key => {
-          if(this.quotationForm.get(key)?.value){
-            this.quotationForm.get(key)?.disable({emitEvent : false});
+        ['LeadOrCustomer', 'SalesmanSid'].forEach(key => {
+          if (this.quotationForm.get(key)?.value) {
+            this.quotationForm.get(key)?.disable({ emitEvent: false });
           }
-        })
+        });
       }
     } else {
-      const parsedContact = this.parsePhone(data.ContactNumber);
+      const parsedContact = this.parsePhone(data?.ContactNumber);
       this.quotationForm.patchValue({
-        CustomerMasterSid : data.CustomerMasterSid ,
-        CustomerName: data.CustomerName,
-        CustomerAddress: data.Address,
-        Email : data.Email,
-        SalesmanSid : data.SalesmanSid,
-        ContactPerson : data.ContactPerson,
-        ContactNumber : parsedContact.phoneNumber
+        CustomerMasterSid: data?.CustomerMasterSid,
+        CustomerName: data?.CustomerName,
+        CustomerAddress: data?.Address,
+        Email: data?.Email,
+        SalesmanSid: data?.SalesmanSid,
+        ContactPerson: data?.ContactPerson,
+        ContactNumber: parsedContact.phoneNumber
       });
-      [
-        "CustomerMasterSid", 'CustomerName', 'CustomerAddress', 'Email',
-        'ContactPerson', 'ContactNumber', 'LeadOrCustomer', 'SalesmanSid'
-      ].forEach(key => {
-        if (this.quotationForm.get(key)?.value) {
-          this.quotationForm.get(key)?.disable({emitEvent : false});
-        }
-      })
+
+      ['CustomerMasterSid', 'CustomerName', 'CustomerAddress', 'Email', 'ContactPerson', 'ContactNumber', 'LeadOrCustomer', 'SalesmanSid']
+        .forEach(key => {
+          if (this.quotationForm.get(key)?.value) {
+            this.quotationForm.get(key)?.disable({ emitEvent: false });
+          }
+        });
     }
   }
 
@@ -772,6 +770,166 @@ private extractCargoData(enquiryCargo: any[]): any {
   return enquiryCargo[0];
 }
 
+private getRouteCargoGroups(route: any): any[] {
+  if (!route) {
+    return [];
+  }
+
+  if (Array.isArray(route.quoteCargo) && route.quoteCargo.length > 0) {
+    return route.quoteCargo;
+  }
+
+  return route.quoteCargo ? [route.quoteCargo] : [];
+}
+
+private getQuotationCargoProducts(cargo: any): any[] {
+  if (!cargo) {
+    return [];
+  }
+
+  if (Array.isArray(cargo.quoteProducts) && cargo.quoteProducts.length > 0) {
+    return cargo.quoteProducts;
+  }
+
+  if (Array.isArray(cargo.quoteProduct) && cargo.quoteProduct.length > 0) {
+    return cargo.quoteProduct;
+  }
+
+  if (Array.isArray(cargo.products) && cargo.products.length > 0) {
+    return cargo.products;
+  }
+
+  return [];
+}
+
+  private resolveContainerTypeSid(containerTypeValue: any): number | null {
+    if (!containerTypeValue) {
+      return null;
+    }
+
+  const containerType = this.containerTypeList.find(type =>
+    type.ContainerCode === containerTypeValue ||
+    type.ContainerName === containerTypeValue
+  );
+
+  return containerType?.ContainerTypeMasterSid || null;
+}
+
+private resolveContainerTypeName(containerTypeValue: any): string | null {
+  if (!containerTypeValue) {
+    return null;
+  }
+
+  const resolvedSid = this.resolveContainerTypeSid(containerTypeValue);
+  const containerType = this.containerTypeList.find(type =>
+    Number(type.ContainerTypeMasterSid) === Number(resolvedSid)
+  );
+
+  return containerType?.ContainerTypeName || null;
+}
+
+private resolveTariffQtyValue(
+  routeForm: FormGroup,
+  cargoItems: any[],
+  charge: any,
+  tariffDetail?: any
+): number {
+  const qtySourceField = this.findFieldForQty(charge?.UnitQty);
+
+  if (qtySourceField === 'NoofContainers') {
+    const matchingCargoItems = cargoItems.filter((cargo: any) =>
+      this.isMatchingContainerQtyCargo(cargo, charge?.UnitQty, tariffDetail)
+    );
+
+    const totalContainers = matchingCargoItems.reduce((sum: number, cargo: any) => {
+      return sum + (Number(cargo?.NoofContainers) || 0);
+    }, 0);
+
+    return totalContainers || 1;
+  }
+
+  if (typeof qtySourceField === 'string' && routeForm.get(qtySourceField)) {
+    return Number(routeForm.get(qtySourceField)?.value) || 1;
+  }
+
+  if (typeof qtySourceField === 'number') {
+    return qtySourceField;
+  }
+
+  return 1;
+}
+
+private isMatchingContainerQtyCargo(cargo: any, unitQty: any, tariffDetail?: any): boolean {
+  const cargoContainerTypeSid = Number(cargo?.ContainerType);
+  const tariffContainerTypeSid = Number(tariffDetail?.ContainerType);
+
+  if (cargoContainerTypeSid && tariffContainerTypeSid) {
+    return cargoContainerTypeSid === tariffContainerTypeSid;
+  }
+
+  const normalizedUnitQty = String(unitQty || '').trim().toUpperCase();
+  const cargoContainer = this.containerTypeList.find(
+    (type: any) => Number(type.ContainerTypeMasterSid) === cargoContainerTypeSid
+  );
+  const cargoContainerCode = String(cargoContainer?.ContainerCode || '').trim().toUpperCase();
+
+  if (normalizedUnitQty.includes('20FT') || normalizedUnitQty === '20FT' || normalizedUnitQty === '20F') {
+    return cargoContainerCode === '20F';
+  }
+
+  if (normalizedUnitQty.includes('40FT') || normalizedUnitQty === '40FT' || normalizedUnitQty === '40F') {
+    return cargoContainerCode === '40F';
+  }
+
+  if (normalizedUnitQty.includes('45FT') || normalizedUnitQty === '45FT' || normalizedUnitQty === '45F') {
+    return cargoContainerCode === '45F';
+  }
+
+  return true;
+}
+
+private isHazardous(value: any): boolean {
+  return value === true || value === 'Y' || value === 'y' || value === 1 || value === '1';
+}
+
+  private mapQuotationCargoProduct(product: any): any {
+    return {
+      ProductName: product.ProductName || '',
+      ExternaPkg: this.resolvePackageTypeSid(
+        product.PackageTypeId ?? product.ExternalPkg ?? product.ProductUnit ?? product.PackageType
+      ),
+      ExternlQty: product.ExternalQty ?? product.ExternlQty ?? '',
+      GrossWeight: product.GrossWeight,
+      NetWeight: product.NetWeight,
+    Volume: product.Volume,
+    IsHaz: product.IsHaz,
+    ImcoClass: product.ImcoClass,
+    UnNo: product.UnNo,
+    PkgGroup: product.PkgGroup,
+    Length: product.Length,
+    Width: product.Width,
+    Height: product.Height,
+    UomMasterSid: product.UomMasterSid,
+    Volumetric: this.deriveProductVolumetric(product),
+  };
+}
+
+private mapQuotationCargoForBooking(cargo: any): any {
+  return {
+    BookingCargoSid: cargo?.BookingCargoSid || null,
+    CargoType: cargo?.CargoType || "General",
+    GrossWeight: cargo?.GrossWeight || 0,
+    NetWeight: cargo?.NetWeight || 0,
+    Volume: cargo?.Volume || 0,
+    Volumetric: cargo?.Volumetric || 0,
+    ChargeableWeight: cargo?.ChargeableWeight || 0,
+    ContainerType: this.resolveContainerTypeSid(cargo?.ContainerType),
+    NoofContainers: cargo?.Qty || cargo?.NoofContainers || 0,
+    NoOfPackage: cargo?.PackageQty || cargo?.NoOfPackage || 0,
+    ShipmentTerms: cargo?.ShipmentTerms || null,
+  };
+}
+
 
   hasAnyDropdownPermission(): boolean {
     const dropdownButtons = ['Edoc', 'Terms and Condition', 'Authority', 'Email'];
@@ -793,9 +951,9 @@ private extractCargoData(enquiryCargo: any[]): any {
 
     
 
-    if(this.quotationApproved){
-      return;
-    }
+    // if(this.quotationApproved){
+    //   return;
+    // }
 
 
     this.leadService.isUserAuthorizer(payload).subscribe(
@@ -831,7 +989,7 @@ private extractCargoData(enquiryCargo: any[]): any {
   }
 
   // SECTION4 - FORM AND FORM ARRAY RELATION
-  initQuotationForm() {
+  initQuotationForm(seedDefaultRoute: boolean = true) {
     const today = getDefaultTodayDate();
     this.quotationForm = this.fb.group({
       LeadOrCustomer : [true],
@@ -857,7 +1015,9 @@ private extractCargoData(enquiryCargo: any[]): any {
       ContactNumberCode: [this.getDefaultContactDialCode()],
       ContactNumber: ['', [Validators.maxLength(15), this.phoneNumberValidator]]
     })
-    this.addQuoteRoute();
+    if (seedDefaultRoute) {
+      this.addQuoteRoute();
+    }
     this.quotationForm.get('EnquirySid')?.disable();
     this.quoteRoutes.controls.forEach((route, index) => {
       route.get('PODSid')?.valueChanges.subscribe(() => this.onRouteChange(index));
@@ -1041,6 +1201,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       // FormArrays (Route wise multiple)
       quoteCarriers : this.fb.array([]),
       quoteProducts : this.fb.array([]),
+      quoteCargo : this.fb.array([]),
     })
     const routeIndex = this.quoteRoutes.length;
     this.quoteRoutes.push(routeForm);
@@ -1229,6 +1390,10 @@ private extractCargoData(enquiryCargo: any[]): any {
     return this.quoteCarriers(routeIndex).at(carrierIndex).get('quoteCharges') as FormArray;
   }
 
+  quoteCargo(routeIndex: number): FormArray {
+    return this.quoteRoutes.at(routeIndex).get('quoteCargo') as FormArray;
+  }
+
   isContractValid(): boolean {
   // If not a contract, return true (no expiration check needed)
   if (!this.f['IsContract']?.value) {
@@ -1268,6 +1433,8 @@ private extractCargoData(enquiryCargo: any[]): any {
       ChargeDisplayName : [data?.ChargeDisplayName, [Validators.required]],
       Qty : [data?.Qty || 1],
       unitQtyBasis: [data?.UnitQty || null],  // This is to track Charge Based on Unit Qty
+      TariffCargoType: [data?.TariffCargoType || null],
+      TariffContainerType: [data?.TariffContainerType || null],
 
       RevenueChargeUomSid: [data?.RevenueChargeUomSid || null, [Validators.required]],
       RevenuePrepaidCollect: [data?.RevenuePrepaidCollect || "Prepaid"],
@@ -1388,8 +1555,10 @@ private extractCargoData(enquiryCargo: any[]): any {
   updateSingleChargeQty(routeIndex: number, carrierIndex: number, chargeIndex: number): void {
     const chargeGroup = this.quoteCharges(routeIndex, carrierIndex).at(chargeIndex) as FormGroup;
     const routeGroup = this.quoteRoutes.at(routeIndex) as FormGroup;
+    const chargeRawValue = chargeGroup.getRawValue();
+    const quoteCargoItems = this.quoteCargo(routeIndex)?.getRawValue?.() || [];
 
-    const unitQtyBasis = chargeGroup.get('unitQtyBasis')?.value;
+    const unitQtyBasis = chargeRawValue?.unitQtyBasis;
     if (!unitQtyBasis) {
       return; 
     }
@@ -1397,8 +1566,29 @@ private extractCargoData(enquiryCargo: any[]): any {
     const qtySourceField = this.findFieldForQty(unitQtyBasis);
     let newQty = 1;
 
-    if (typeof qtySourceField === 'string' && routeGroup.get(qtySourceField)) {
-      newQty = routeGroup.get(qtySourceField)?.value || 1;
+    if (typeof qtySourceField === 'string') {
+      const matchingCargoItems = quoteCargoItems.filter((cargo: any) => {
+        const matchesContainer = chargeRawValue?.TariffContainerType
+          ? Number(cargo?.ContainerType) === Number(chargeRawValue.TariffContainerType)
+          : true;
+        const matchesCargoType = chargeRawValue?.TariffCargoType
+          ? cargo?.CargoType === chargeRawValue.TariffCargoType
+          : true;
+
+        return matchesContainer && matchesCargoType;
+      });
+
+      if (matchingCargoItems.length > 0) {
+        const cargoField = qtySourceField === 'NoofContainers' ? 'Qty' : qtySourceField;
+        newQty = matchingCargoItems.reduce((sum: number, cargo: any) => {
+          const rawValue = qtySourceField === 'NoofContainers'
+            ? (cargo?.Qty ?? cargo?.NoofContainers)
+            : cargo?.[cargoField];
+          return sum + (Number(rawValue) || 0);
+        }, 0) || 1;
+      } else if (routeGroup.get(qtySourceField)) {
+        newQty = routeGroup.get(qtySourceField)?.value || 1;
+      }
     } else if (typeof qtySourceField === 'number') {
       newQty = qtySourceField;
     }
@@ -1446,8 +1636,86 @@ private extractCargoData(enquiryCargo: any[]): any {
 
   // Quote Product
 
-  quoteProducts(routeIndex: number): FormArray {
-    return this.quoteRoutes.at(routeIndex)?.get('quoteProducts') as FormArray;
+  quoteProducts(routeIndex: number, cargoIndex: number = -1): FormArray {
+    if (cargoIndex < 0) {
+      return this.quoteRoutes.at(routeIndex)?.get('quoteProducts') as FormArray;
+    }
+
+    return this.quoteCargo(routeIndex).at(cargoIndex)?.get('quoteProducts') as FormArray;
+  }
+
+  private createQuoteCargoGroup(data?: any): FormGroup {
+    return this.fb.group({
+      QuoteCargoSid: [data?.QuoteCargoSid || null],
+      CargoType: [data?.CargoType || null],
+      WeightUnitSid: [data?.WeightUnitSid || null],
+      GrossWeight: [data?.GrossWeight ? Number(data?.GrossWeight).toFixed(this.digitsAfterDecimal) : 0 || 0],
+      NetWeight: [data?.NetWeight ? Number(data?.NetWeight).toFixed(this.digitsAfterDecimal) : 0 || 0],
+      Volume: [data?.Volume ? Number(data?.Volume).toFixed(this.digitsAfterDecimal) : 0 || 0],
+      ChargeableWeight: [data?.ChargeableWeight ? Number(data?.ChargeableWeight).toFixed(this.digitsAfterDecimal) : 0 || 0],
+      ContainerType: [data?.ContainerType || null],
+      Qty: [data?.Qty || 1],
+      ShipmentTerms: [data?.ShipmentTerms || null],
+      PackageType: [data?.PackageType || null],
+      PackageQty: [data?.PackageQty || null],
+      CargoDescription: [data?.CargoDescription || ''],
+      quoteProducts: this.fb.array([]),
+    });
+  }
+
+  private syncQuoteCargoValidation(routeIndex: number): void {
+    const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+    const isFclRoute = this.isFclQuotationSegment(routeForm?.get('segmentType')?.value);
+
+    this.quoteCargo(routeIndex).controls.forEach((cargoControl: AbstractControl) => {
+      const cargoForm = cargoControl as FormGroup;
+      this.setOrClearRequired(cargoForm.get('CargoType'), isFclRoute);
+      this.setOrClearRequired(cargoForm.get('ContainerType'), isFclRoute);
+      this.setOrClearRequired(cargoForm.get('Qty'), isFclRoute);
+    });
+  }
+
+  addQuoteCargo(routeIndex: number, data?: any) {
+    const cargoGroup = this.createQuoteCargoGroup(data);
+    this.quoteCargo(routeIndex).push(cargoGroup);
+    const cargoIndex = this.quoteCargo(routeIndex).length - 1;
+    this.syncQuoteCargoValidation(routeIndex);
+
+    const cargoProducts = Array.isArray(data?.quoteProducts)
+      ? data.quoteProducts
+      : (Array.isArray(data?.quoteProduct)
+        ? data.quoteProduct
+        : (Array.isArray(data?.products) ? data.products : []));
+
+    const defaultCargoProduct = (!cargoProducts.length && (data?.ProductName || data?.PackageType || data?.GrossWeight || data?.NetWeight || data?.Volume))
+      ? [{
+          ProductSid: data?.ProductSid || null,
+          ProductName: data?.ProductName || '',
+          PackageType: data?.PackageType || null,
+          CargoDescription: data?.CargoDescription || '',
+          ExternalPkg: data?.PackageTypeId || data?.ExternalPkg || null,
+          ExternalQty: data?.PackageQty || data?.ExternalQty || '',
+          GrossWeight: data?.GrossWeight || '',
+          NetWeight: data?.NetWeight || '',
+          Volume: data?.Volume || '',
+          Length: data?.length || '',
+          Width: data?.width || '',
+          Height: data?.height || '',
+          ProductUnit: data?.PackageTypeId || data?.ProductUnit || null,
+          ChargeableWeight: data?.ChargeableWeight || '',
+          IsHaz: this.isHazardous(data?.IsHaz),
+          ImcoClass: data?.ImcoClass || null,
+          UnNo: data?.UnNo || '',
+          PkgGroup: data?.PkgGroup || '',
+          Remarks: data?.Remarks || '',
+        }]
+      : [];
+
+    if (cargoProducts.length || defaultCargoProduct.length) {
+      (cargoProducts.length ? cargoProducts : defaultCargoProduct).forEach((product: any) => {
+        this.addQuoteProduct(routeIndex, product, cargoIndex);
+      });
+    }
   }
 
   private deriveProductVolumetric(product: any): number {
@@ -1465,7 +1733,31 @@ private extractCargoData(enquiryCargo: any[]): any {
     return 0;
   }
 
-  addQuoteProduct(routeIndex: number, data?: any) {
+  private resolvePackageTypeSid(value: any): number | null {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+
+    if (typeof value === 'number' && !Number.isNaN(value)) {
+      return value;
+    }
+
+    const numericValue = Number(value);
+    if (!Number.isNaN(numericValue) && String(value).trim() !== '') {
+      return numericValue;
+    }
+
+    const matchedPackage = this.packageTypes.find(type =>
+      type.UOMMasterSid === value ||
+      type.UOMCode === value ||
+      type.UOMName === value
+    );
+
+    return matchedPackage?.UOMMasterSid || null;
+  }
+
+  addQuoteProduct(routeIndex: number, data?: any, cargoIndex: number = -1) {
+    const isHaz = this.isHazardous(data?.IsHaz);
     const productForm = this.fb.group({
       QuoteProductSid : [data?.QuoteProductSid || null],
       Sno : [data?.Sno || null],
@@ -1473,7 +1765,7 @@ private extractCargoData(enquiryCargo: any[]): any {
       ProductName : [data?.ProductName || '' ],
       PackageType : [data?.PackageType || null ],
       CargoDescription : [data?.CargoDescription || ''],
-      ExternalPkg : [data?.ExternalPkg || null ],
+       ExternalPkg : [this.resolvePackageTypeSid(data?.ExternalPkg ?? data?.PackageTypeId ?? data?.PackageType) ],
       ExternalQty : [data?.ExternalQty ?? '' ],
       GrossWeight : [
         data?.GrossWeight ? 
@@ -1494,25 +1786,25 @@ private extractCargoData(enquiryCargo: any[]): any {
       Volumetric: [data?.Volumetric || ''],
       Width : [data?.Width ?? ''],
       Height : [data?.Height ?? ''],
-      ProductUnit : [data?.ProductUnit ?? null],
+       ProductUnit : [this.resolvePackageTypeSid(data?.ProductUnit ?? data?.PackageTypeId ?? data?.PackageType)],
       ChargeableWeight : [
         data?.ChargeableWeight ? 
         Number(data?.ChargeableWeight).toFixed(this.digitsAfterDecimal) : 
         0
       ],
-      IsHaz : [data?.IsHaz === "Y" || false],
-      ImcoClass : [{ value : data?.ImcoClass || null, disabled : data?.IsHaz !=="Y" || true }],
-      UnNo : [data?.UnNo || ''],
-      PkgGroup : [{ value : data?.PkgGroup || null, disabled : data?.IsHaz !=="Y" || true }],
+      IsHaz : [isHaz],
+      ImcoClass : [{ value : data?.ImcoClass || null, disabled : !isHaz }],
+      UnNo : [{ value : data?.UnNo || '', disabled : !isHaz }],
+      PkgGroup : [{ value : data?.PkgGroup || null, disabled : !isHaz }],
       Remarks : [data?.Remarks || ''],
     });
 
 
-    this.quoteProducts(routeIndex).push(productForm);
-    const productLength = this.quoteProducts(routeIndex).length;
-    this.handleSegmentChangeOnProduct(routeIndex, productLength - 1);
+    this.quoteProducts(routeIndex, cargoIndex).push(productForm);
+    const productLength = this.quoteProducts(routeIndex, cargoIndex).length;
+    this.handleSegmentChangeOnProduct(routeIndex, productLength - 1, cargoIndex);
     productForm.updateValueAndValidity();
-    this.handleCalculation(routeIndex);
+    this.handleCalculation(routeIndex, cargoIndex);
     productForm.get("GrossWeight").valueChanges.subscribe(() => {
       this.setOrResetWeightError(productForm);
     });
@@ -1521,17 +1813,17 @@ private extractCargoData(enquiryCargo: any[]): any {
     });
   }
 
-  handleSegmentChangeOnAllProducts(routeIndex: number) {
-    this.quoteProducts(routeIndex).controls.forEach((product, index) => {
-      this.handleSegmentChangeOnProduct(routeIndex, index);
+  handleSegmentChangeOnAllProducts(routeIndex: number, cargoIndex: number = -1) {
+    this.quoteProducts(routeIndex, cargoIndex).controls.forEach((product, index) => {
+      this.handleSegmentChangeOnProduct(routeIndex, index, cargoIndex);
     });
   }
 
-  logProduct(routeIndex:number,productIndex:number){
-    const product = this.quoteProducts(routeIndex).at(productIndex) as FormGroup;
+  logProduct(routeIndex:number,productIndex:number,cargoIndex: number = -1){
+    const product = this.quoteProducts(routeIndex, cargoIndex).at(productIndex) as FormGroup;
   }
 
-  handleSegmentChangeOnProduct(routeIndex: number,productIndex:number) {
+  handleSegmentChangeOnProduct(routeIndex: number,productIndex:number,cargoIndex: number = -1) {
     const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
     if (!routeForm) return;
 
@@ -1542,18 +1834,6 @@ private extractCargoData(enquiryCargo: any[]): any {
     const isFCL = cargoMode === "FCL";
     const isAir = cargoMode === 'AIR';
     const isRoad = cargoMode === 'ROAD';
-
-    const routeControlsToValidate = {
-        ContainerType: isFCL,
-        Qty: isFCL,
-    };
-
-    for (const [key, isRequired] of Object.entries(routeControlsToValidate)) {
-      const control = routeForm.get(key);
-      if (control) {
-        this.setOrClearRequired(control, isRequired);
-      }
-    }
 
     const productControlsToValidate = {
         GrossWeight: isLCL || isFCL || isRoad,
@@ -1567,7 +1847,7 @@ private extractCargoData(enquiryCargo: any[]): any {
         ProductUnit: isAir,
     };
 
-    this.quoteProducts(routeIndex).controls.forEach(productControl => {
+    this.quoteProducts(routeIndex, cargoIndex).controls.forEach(productControl => {
         for (const [key, isRequired] of Object.entries(productControlsToValidate)) {
             const control = (productControl as FormGroup).get(key);
             if (control) {
@@ -1575,7 +1855,8 @@ private extractCargoData(enquiryCargo: any[]): any {
             }
         }
     });
-    this.quoteProducts(routeIndex).updateValueAndValidity();
+    this.syncQuoteCargoValidation(routeIndex);
+    this.quoteProducts(routeIndex, cargoIndex).updateValueAndValidity();
   }
   private setOrClearRequired(control: AbstractControl, isRequired: boolean) {
     const hasRequired = control.hasValidator(Validators.required);
@@ -1589,43 +1870,43 @@ private extractCargoData(enquiryCargo: any[]): any {
     control.updateValueAndValidity({ emitEvent: false });
   }
 
-  isProductRequired(routeIndex: number, productIndex: number, ctrl: string) {
-    const productForm = this.quoteProducts(routeIndex)?.at(productIndex);
+  isProductRequired(routeIndex: number, productIndex: number, ctrl: string, cargoIndex: number = -1) {
+    const productForm = this.quoteProducts(routeIndex, cargoIndex)?.at(productIndex);
     const control = productForm?.get(ctrl);
     return control ? control.hasValidator(Validators.required) : false;
   }
 
-  onHazChange(routeIndex:number,productIndex:number,event:any){
+  onHazChange(routeIndex:number,productIndex:number,event:any,cargoIndex: number = -1){
       const element = event.target as HTMLInputElement;
-      const control = this.quoteProducts(routeIndex).at(productIndex).get('IsHaz');
+      const control = this.quoteProducts(routeIndex, cargoIndex).at(productIndex).get('IsHaz');
       if(event instanceof KeyboardEvent){
         element.checked = !element.checked;
       }
       control.setValue(element.checked);
-      this.toggleHazProduct(routeIndex,productIndex);
+      this.toggleHazProduct(routeIndex,productIndex,cargoIndex);
   }
 
-  toggleHazProduct(routeIndex:number,productIndex:number){
-    const isHaz = this.quoteProducts(routeIndex).at(productIndex).get('IsHaz')?.value;
+  toggleHazProduct(routeIndex:number,productIndex:number,cargoIndex: number = -1){
+    const isHaz = this.quoteProducts(routeIndex, cargoIndex).at(productIndex).get('IsHaz')?.value;
    
     if(isHaz){
-      this.quoteProducts(routeIndex).at(productIndex).get('ImcoClass')?.enable();
-      this.quoteProducts(routeIndex).at(productIndex).get('PkgGroup')?.enable();
-      this.quoteProducts(routeIndex).at(productIndex).get('ImcoClass')?.setValidators(Validators.required);
-      this.quoteProducts(routeIndex).at(productIndex).get('PkgGroup')?.setValidators(Validators.required);
+      this.quoteProducts(routeIndex, cargoIndex).at(productIndex).get('ImcoClass')?.enable();
+      this.quoteProducts(routeIndex, cargoIndex).at(productIndex).get('PkgGroup')?.enable();
+      this.quoteProducts(routeIndex, cargoIndex).at(productIndex).get('ImcoClass')?.setValidators(Validators.required);
+      this.quoteProducts(routeIndex, cargoIndex).at(productIndex).get('PkgGroup')?.setValidators(Validators.required);
     } else {
-      this.quoteProducts(routeIndex).at(productIndex).get('ImcoClass')?.setValue(null);
-      this.quoteProducts(routeIndex).at(productIndex).get('PkgGroup')?.setValue('');
-      this.quoteProducts(routeIndex).at(productIndex).get('ImcoClass')?.clearValidators();
-      this.quoteProducts(routeIndex).at(productIndex).get('ImcoClass')?.disable();
-      this.quoteProducts(routeIndex).at(productIndex).get('PkgGroup')?.clearValidators();
-      this.quoteProducts(routeIndex).at(productIndex).get('PkgGroup')?.disable();
+      this.quoteProducts(routeIndex, cargoIndex).at(productIndex).get('ImcoClass')?.setValue(null);
+      this.quoteProducts(routeIndex, cargoIndex).at(productIndex).get('PkgGroup')?.setValue('');
+      this.quoteProducts(routeIndex, cargoIndex).at(productIndex).get('ImcoClass')?.clearValidators();
+      this.quoteProducts(routeIndex, cargoIndex).at(productIndex).get('ImcoClass')?.disable();
+      this.quoteProducts(routeIndex, cargoIndex).at(productIndex).get('PkgGroup')?.clearValidators();
+      this.quoteProducts(routeIndex, cargoIndex).at(productIndex).get('PkgGroup')?.disable();
     }
   }
 
-  onImcoChange(routeIndex:number,productIndex,item:any){
+  onImcoChange(routeIndex:number,productIndex,item:any,cargoIndex: number = -1){
 
-    const productForm = this.quoteProducts(routeIndex).at(productIndex) as FormGroup;
+    const productForm = this.quoteProducts(routeIndex, cargoIndex).at(productIndex) as FormGroup;
     if(!item){
       productForm.get('UnNo')?.setValue("");
       productForm.get('PkgGroup')?.setValue("");
@@ -1635,14 +1916,14 @@ private extractCargoData(enquiryCargo: any[]): any {
     productForm.get('PkgGroup')?.setValue(item.PackingGroup);
   }
 
-  deleteQuoteProduct(routeIndex:number, productIndex:number,QuoteProductSid:number){
-    const ctrl = this.quoteProducts(routeIndex) as FormArray;
+  deleteQuoteProduct(routeIndex:number, productIndex:number,QuoteProductSid:number,cargoIndex: number = -1){
+    const ctrl = this.quoteProducts(routeIndex, cargoIndex) as FormArray;
     if(QuoteProductSid){
       this.leadService.deleteProduct(QuoteProductSid).subscribe((resp:any) => {
         if(resp.status){
           ctrl.removeAt(productIndex);
-          this.quoteProducts(routeIndex).updateValueAndValidity();
-          this.handleCalculation(routeIndex);
+          this.quoteProducts(routeIndex, cargoIndex).updateValueAndValidity();
+          this.handleCalculation(routeIndex, cargoIndex);
           this.appSettingService.showSuccess("Product Deleted Successfully");
         } else {
           this.appSettingService.showError("Error Deleting Product");
@@ -1650,14 +1931,36 @@ private extractCargoData(enquiryCargo: any[]): any {
       });
     } else {
       ctrl.removeAt(productIndex);
-      this.quoteProducts(routeIndex).updateValueAndValidity();
-      this.handleCalculation(routeIndex);
+      this.quoteProducts(routeIndex, cargoIndex).updateValueAndValidity();
+      this.handleCalculation(routeIndex, cargoIndex);
       this.appSettingService.showSuccess("Product Deleted Successfully");
     }
   }
 
-  onProductChange(product:any,routeIndex:number,productIndex:number){
-    const productForm = this.quoteProducts(routeIndex)?.at(productIndex) as FormGroup;
+  deleteQuoteCargo(routeIndex: number, cargoIndex: number, quoteCargoSid: number | null) {
+    const ctrl = this.quoteCargo(routeIndex) as FormArray;
+    const removeCargoFromForm = () => {
+      ctrl.removeAt(cargoIndex);
+      this.syncQuoteCargoValidation(routeIndex);
+      this.quoteCargo(routeIndex).controls.forEach((_, existingCargoIndex) => {
+        this.handleCalculation(routeIndex, existingCargoIndex);
+      });
+      this.quotationForm.markAsDirty();
+    };
+
+    // Cargo delete for persisted records is finalized on Save in update payload sync.
+    if (quoteCargoSid) {
+      removeCargoFromForm();
+      this.appSettingService.showSuccess("Cargo removed. Click Save to update.");
+      return;
+    }
+
+    removeCargoFromForm();
+    this.appSettingService.showSuccess("Cargo Deleted Successfully");
+  }
+
+  onProductChange(product:any,routeIndex:number,productIndex:number,cargoIndex: number = -1){
+    const productForm = this.quoteProducts(routeIndex, cargoIndex)?.at(productIndex) as FormGroup;
     
     productForm.get('ProductName')?.setValue("");
     productForm.get('IsHaz')?.setValue(false);
@@ -1828,7 +2131,9 @@ isRateLockDisabled(): boolean {
     this.quotationForm.get('status')?.disable();
   }
     (response.quoteRoute || []).forEach((route, routeIndex) => {
-      const cargo = route.quoteCargo[0];
+      const cargoGroups = Array.isArray(route?.quoteCargo) ? route.quoteCargo : [];
+      const cargo = cargoGroups[0];
+      const isFclRoute = this.isFclQuotationSegment(route.segmentType);
       const fullRouteData = {
         ...route,
         QuoteCargoSid : cargo?.QuoteCargoSid || null,
@@ -1855,6 +2160,10 @@ isRateLockDisabled(): boolean {
     // Store in route form for easy access
     const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
     routeForm.addControl('isRouteApproved', this.fb.control(isRouteApproved));
+
+      if (isRouteApproved) {
+        routeForm.disable({ emitEvent: false });
+      }
       
       if (response.RateLock === "Y" && this.canUserLockRates)  {
         this.lockAllRateFields();
@@ -1889,15 +2198,31 @@ isRateLockDisabled(): boolean {
         }, 100);
       }
       
-      if (cargo) {
-        (cargo.quoteProduct || []).forEach(product => {
-          const productUnNo = this.productList.find(prod => prod.ProductMasterSid === product.ProductMasterSid)?.UnNo;
-          this.addQuoteProduct(routeIndex, {
-            ...product,
-            Volumetric: this.deriveProductVolumetric(product),
-            UnNo: productUnNo
+      if (isFclRoute) {
+        cargoGroups.forEach((cargoItem: any) => {
+          this.addQuoteCargo(routeIndex, {
+            ...cargoItem,
+            quoteProducts: cargoItem?.quoteProducts || cargoItem?.quoteProduct || cargoItem?.products || []
           });
-        })
+        });
+      } else {
+        if (cargo) {
+          (cargo.quoteProduct || cargo.quoteProducts || []).forEach(product => {
+            const productUnNo = this.productList.find(prod => prod.ProductMasterSid === product.ProductMasterSid)?.UnNo;
+            this.addQuoteProduct(routeIndex, {
+              ...product,
+              Volumetric: this.deriveProductVolumetric(product),
+              UnNo: productUnNo
+            });
+          })
+        }
+
+        cargoGroups.slice(1).forEach((extraCargo: any) => {
+          this.addQuoteCargo(routeIndex, {
+            ...extraCargo,
+            quoteProducts: extraCargo?.quoteProducts || extraCargo?.quoteProduct || extraCargo?.products || []
+          });
+        });
       }
 
       (route?.quoteCarrier || []).forEach((carrier,carrierIndex) => {
@@ -2121,7 +2446,72 @@ isRateLockDisabled(): boolean {
           ApprovedBy : this.authorizerDetails?.ApprovedBy
       },
 
-      quoteRoutes: (formValue.quoteRoutes || []).map((route, routeIndex) => ({
+      quoteRoutes: (formValue.quoteRoutes || []).map((route, routeIndex) => {
+        const cargoItems = Array.isArray(route.quoteCargo) ? route.quoteCargo : [];
+        const isFclRoute = this.isFclQuotationSegment(route.segmentType);
+
+        const mapProducts = (products: any[] = []) => products.map((product: any) => {
+          const productUnNo = this.productList.find(prod => prod.ProductMasterSid === product.ProductMasterSid)?.UnNo;
+          const imcoUnNo = this.imcoList.find(imco => imco.ImcoMasterSid === product.IMOClass)?.ImcoUn;
+          return {
+            ...product,
+            UnNo: productUnNo || imcoUnNo,
+          };
+        });
+
+        const quoteCargo = isFclRoute
+          ? cargoItems.map((cargo: any) => ({
+              QuoteCargoSid: cargo.QuoteCargoSid,
+              CargoType: cargo.CargoType,
+              WeightUnitSid: cargo.WeightUnitSid,
+              GrossWeight: cargo.GrossWeight,
+              NetWeight: cargo.NetWeight,
+              Volume: cargo.Volume,
+              ChargeableWeight: cargo.ChargeableWeight,
+              ContainerType: cargo.ContainerType,
+              Qty: cargo.Qty,
+              BookingHeaderSid: cargo.BookingHeaderSid,
+              ShipmentTerms: cargo.ShipmentTerms,
+              PackageType: cargo.PackageType,
+              PackageQty: cargo.PackageQty,
+              CargoDescription: cargo.CargoDescription,
+              quoteProducts: mapProducts(cargo.quoteProducts || cargo.quoteProduct || cargo.products || [])
+            }))
+          : [{
+              QuoteCargoSid: route.QuoteCargoSid,
+              CargoType: route.CargoType,
+              WeightUnitSid: route.WeightUnitSid,
+              GrossWeight: route.GrossWeight,
+              NetWeight: route.NetWeight,
+              Volume: route.Volume,
+              ChargeableWeight: route.ChargeableWeight,
+              ContainerType: route.ContainerType,
+              Qty: route.Qty,
+              BookingHeaderSid: route.BookingHeaderSid,
+              ShipmentTerms: route.ShipmentTerms,
+              PackageType: route.PackageType,
+              PackageQty: route.PackageQty,
+              CargoDescription: route.CargoDescription,
+              quoteProducts: mapProducts(route.quoteProducts || [])
+            }, ...cargoItems.map((cargo: any) => ({
+              QuoteCargoSid: cargo.QuoteCargoSid,
+              CargoType: cargo.CargoType,
+              WeightUnitSid: cargo.WeightUnitSid,
+              GrossWeight: cargo.GrossWeight,
+              NetWeight: cargo.NetWeight,
+              Volume: cargo.Volume,
+              ChargeableWeight: cargo.ChargeableWeight,
+              ContainerType: cargo.ContainerType,
+              Qty: cargo.Qty,
+              BookingHeaderSid: cargo.BookingHeaderSid,
+              ShipmentTerms: cargo.ShipmentTerms,
+              PackageType: cargo.PackageType,
+              PackageQty: cargo.PackageQty,
+              CargoDescription: cargo.CargoDescription,
+              quoteProducts: mapProducts(cargo.quoteProducts || cargo.quoteProduct || cargo.products || [])
+            }))];
+
+        return {
         // Route Part
         QuoteRouteSid: route.QuoteRouteSid,
         DepartmentMasterSid: route.DepartmentMasterSid,
@@ -2139,31 +2529,22 @@ isRateLockDisabled(): boolean {
         ServiceLevel: route.ServiceLevel,
 
         // Route - Cargo
-        QuoteCargoSid : route.QuoteCargoSid,
+        QuoteCargoSid: route.QuoteCargoSid,
         CargoType: route.CargoType,
-        WeightUnitSid : route.WeightUnitSid,
-        GrossWeight : route.GrossWeight,
-        NetWeight : route.NetWeight,
-        Volume : route.Volume,
-        ChargeableWeight : route.ChargeableWeight,
+        WeightUnitSid: route.WeightUnitSid,
+        GrossWeight: route.GrossWeight,
+        NetWeight: route.NetWeight,
+        Volume: route.Volume,
+        ChargeableWeight: route.ChargeableWeight,
         ContainerType: route.ContainerType,
         Qty: route.Qty,
         BookingHeaderSid: route.BookingHeaderSid,
-        ShipmentTerms : route.ShipmentTerms,
-        PackageType : route.PackageType,
-        PackageQty : route.PackageQty,
-        CargoDescription : route.CargoDescription,
-
-        // Route - Cargo - Product
-        quoteProducts : (route.quoteProducts || []).map(product => {
-          const isHaz = product.ProductType === "2";
-          const productUnNo = this.productList.find(prod => prod.ProductMasterSid === product.ProductMasterSid)?.UnNo;
-          const imcoUnNo = this.imcoList.find(imco => imco.ImcoMasterSid === product.IMOClass)?.ImcoUn;
-          return {
-          ...product,
-          UnNo : productUnNo || imcoUnNo,
-          }
-        }),
+        ShipmentTerms: route.ShipmentTerms,
+        PackageType: route.PackageType,
+        PackageQty: route.PackageQty,
+        CargoDescription: route.CargoDescription,
+        quoteProducts: isFclRoute ? [] : quoteCargo[0].quoteProducts,
+        quoteCargo,
 
         // Route - Carrier
         quoteCarriers : (route.quoteCarriers || []).map((carrier) => {
@@ -2186,7 +2567,8 @@ isRateLockDisabled(): boolean {
             quoteCharges : allCharges
           }
         })
-      })),
+      };
+      }),
     };
 
     if (this.isEditMode) {
@@ -2355,16 +2737,17 @@ isRateLockDisabled(): boolean {
     const cargoMode = this.getQuotationCargoMode(type);
 
     const validationConfig = {
-      FCL: ['ContainerType', 'Qty'],
+      FCL: [],
       LCL: ['GrossWeight', 'Volume'],
       AIR: ['GrossWeight', 'ChargeableWeight'],
       ROAD: ['GrossWeight', 'NetWeight'],
     };
 
     let allDynamicFields;
+    const routeCargoControls = ['CargoType', 'GrossWeight', 'NetWeight', 'Volume', 'ChargeableWeight', 'ContainerType', 'Qty'];
     switch (cargoMode) {
       case 'FCL':
-        allDynamicFields = ['GrossWeight','ChargeableWeight'];
+        allDynamicFields = ['GrossWeight', 'NetWeight', 'Volume', 'ChargeableWeight'];
         break;
       case 'LCL':
         allDynamicFields = ['ContainerType', 'Qty','ChargeableWeight'];
@@ -2377,6 +2760,19 @@ isRateLockDisabled(): boolean {
         break;
       default:
         allDynamicFields = [];
+    }
+
+    if (cargoMode === 'FCL') {
+      routeCargoControls.forEach(fieldName => {
+        const control = routeForm.get(fieldName);
+        if (control) {
+          if (['GrossWeight', 'NetWeight', 'Volume', 'ChargeableWeight'].includes(fieldName)) {
+            control.setValue(null, { emitEvent: false });
+          }
+          control.clearValidators();
+          control.updateValueAndValidity({ emitEvent: false });
+        }
+      });
     }
 
     allDynamicFields.forEach(fieldName => {
@@ -2409,6 +2805,8 @@ isRateLockDisabled(): boolean {
         }
       });
     }
+
+    this.syncQuoteCargoValidation(index);
 
     routeForm.updateValueAndValidity();
   }
@@ -2639,7 +3037,7 @@ isRateLockDisabled(): boolean {
 
   private getQuotationCargoMode(segment: string | null | undefined): 'FCL' | 'LCL' | 'AIR' | 'ROAD' {
     const normalizedSegment = this.normalizePortText(segment);
-    if (normalizedSegment === 'FCL') {
+    if (normalizedSegment.includes('FCL')) {
       return 'FCL';
     }
     if (normalizedSegment === 'AIR') {
@@ -2655,8 +3053,27 @@ isRateLockDisabled(): boolean {
     return this.getQuotationCargoMode(segment) === 'LCL';
   }
 
+  getRouteSegmentType(routeControl: AbstractControl | null | undefined): string {
+    if (!routeControl) {
+      return 'LCL';
+    }
+
+    const routeForm = routeControl as FormGroup;
+    const segmentFromControl = routeForm.get('segmentType')?.value;
+    if (segmentFromControl) {
+      return segmentFromControl;
+    }
+
+    const segmentFromRaw = routeForm.getRawValue?.()?.segmentType;
+    return segmentFromRaw || 'LCL';
+  }
+
   isSurfaceQuotationSegment(segment: string | null | undefined): boolean {
     return this.getQuotationCargoMode(segment) === 'ROAD';
+  }
+
+  isFclQuotationSegment(segment: string | null | undefined): boolean {
+    return this.getQuotationCargoMode(segment) === 'FCL';
   }
 
   private applyRoutePortFilterLists(routeIndex: number, filteredLists: any): void {
@@ -3019,6 +3436,9 @@ isRateLockDisabled(): boolean {
   getTariffDetails(routeIndex: number, carrierIndex: number, template: TemplateRef<any>) {
     const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
     const carrierForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+    const routeRawValue = routeForm.getRawValue();
+    const carrierRawValue = carrierForm.getRawValue();
+    const isFclRoute = this.isFclQuotationSegment(routeForm.get('segmentType')?.value);
     this.isStandardRate = false;
 
     if (!this.hasEveryRequiredFieldsFilled(routeIndex)) {
@@ -3030,6 +3450,22 @@ isRateLockDisabled(): boolean {
       });
       return;
     }
+
+    if (isFclRoute) {
+      const cargoControls = this.quoteCargo(routeIndex).controls as FormGroup[];
+      const hasSelectedContainerType = cargoControls.some(
+        (cargoCtrl: FormGroup) => !!cargoCtrl.get('ContainerType')?.value
+      );
+
+      if (!hasSelectedContainerType) {
+        cargoControls.forEach((cargoCtrl: FormGroup) => {
+          cargoCtrl.get('ContainerType')?.markAsTouched();
+          cargoCtrl.get('ContainerType')?.updateValueAndValidity({ emitEvent: false });
+        });
+        this.toastr.warning('Please choose Container Type to fetch tariff.');
+        return;
+      }
+    }
     
     this.tariffLoading = true;
     this.currentRouteIndex = routeIndex;
@@ -3037,79 +3473,241 @@ isRateLockDisabled(): boolean {
 
     this.ngbModal.open(template, { size: 'lg', centered: true, backdrop: 'static' });
 
-    const payload = {
+    const cargoItems = this.quoteCargo(routeIndex).controls.map((cargoCtrl: any) => {
+      const cargoRawValue = cargoCtrl.getRawValue();
+      const containerTypeValue = cargoRawValue?.ContainerType || null;
+      const containerTypeSid = this.resolveContainerTypeSid(containerTypeValue);
+      const containerTypeName = this.resolveContainerTypeName(containerTypeValue);
+      return {
+        CargoType: cargoRawValue?.CargoType,
+        ContainerType: containerTypeSid,
+        ContainerTypeName: containerTypeName,
+        GrossWeight: cargoRawValue?.GrossWeight,
+        Volume: cargoRawValue?.Volume,
+        NoofContainers: cargoRawValue?.Qty,
+        ChargeableWeight: cargoRawValue?.ChargeableWeight,
+        ShipmentTerms: cargoRawValue?.ShipmentTerms,
+      };
+    });
+
+    const routeContainerTypeValue = routeRawValue?.ContainerType || null;
+    const routeContainerTypeSid = this.resolveContainerTypeSid(routeContainerTypeValue);
+    const payloadContainerType = routeContainerTypeSid
+      ?? cargoItems.find((cargo: any) => cargo.ContainerType)?.ContainerType
+      ?? null;
+    const payloadCargoType = routeRawValue?.CargoType
+      ?? cargoItems.find((cargo: any) => !!cargo.CargoType)?.CargoType
+      ?? 'General';
+
+    // forkJoin([]) completes without emitting in RxJS 7 — spinner would hang forever.
+    // Always ensure at least one cargo item using route-level fields as fallback.
+    const effectiveCargoItems = cargoItems.length > 0 ? cargoItems : [{
+      CargoType: payloadCargoType,
+      ContainerType: payloadContainerType,
+      ContainerTypeName: null,
+      GrossWeight: null,
+      Volume: null,
+      NoofContainers: 1,
+      ChargeableWeight: null,
+      ShipmentTerms: null,
+    }];
+
+    const basePayload = {
       CompanyMasterSid: this.currentCompany.CompanyMasterSid,
-      BranchMasterSod : this.currentBranch?.BranchMasterSid,
-      DepartmentMasterSid: routeForm.get('DepartmentMasterSid')?.value,
-      PORSid: routeForm.get('PORSid')?.value,
-      POLSid: routeForm.get('POLSid')?.value,
-      PODSid: routeForm.get('PODSid')?.value,
-      FPODSid: routeForm.get('FPODSid')?.value,
-      CargoType: routeForm.get('CargoType')?.value,
-      EffectiveDate: routeForm.get('effDate')?.value ? new Date(routeForm.get('effDate')?.value) : null,
-      ExpiredDate: routeForm.get('expDate')?.value ? new Date(routeForm.get('expDate')?.value) : null,
-      Carrier: carrierForm.get('CarrierMasterSid')?.value,
-      IncoTerms: routeForm.get('ServiceLevel')?.value,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      DepartmentMasterSid: routeRawValue?.DepartmentMasterSid,
+      PORSid: routeRawValue?.PORSid,
+      POLSid: routeRawValue?.POLSid,
+      PODSid: routeRawValue?.PODSid,
+      FPODSid: routeRawValue?.FPODSid,
+      EffectiveDate: routeRawValue?.effDate ? new Date(routeRawValue.effDate) : null,
+      ExpiredDate: routeRawValue?.expDate ? new Date(routeRawValue.expDate) : null,
+      Carrier: carrierRawValue?.CarrierMasterSid,
+      IncoTerms: routeRawValue?.ServiceLevel,
     };
+    const _deptName = this.getDepartmentName(routeRawValue?.DepartmentMasterSid);
+    const _porCode = this.getPortCodeBySid(routeRawValue?.PORSid);
+    const _polCode = this.getPortCodeBySid(routeRawValue?.POLSid);
+    const _podCode = this.getPortCodeBySid(routeRawValue?.PODSid);
+    const _fpodCode = this.getPortCodeBySid(routeRawValue?.FPODSid);
+    const _carrierName = carrierRawValue?.CarrierName;
+    const _incoTerms = routeRawValue?.ServiceLevel;
+    const _cargoDesc = effectiveCargoItems
+      .map((c: any) => [c.CargoType, c.ContainerTypeName].filter(Boolean).join(' '))
+      .filter(Boolean).join(', ');
+    const _formatDate = (d: any) => d ? new Date(d).toLocaleDateString() : '';
+    const _comboParts: string[] = [];
+    if (_deptName) _comboParts.push(`Department: ${_deptName}`);
+    if (_porCode) _comboParts.push(`POO: ${_porCode}`);
+    if (_polCode) _comboParts.push(`POL: ${_polCode}`);
+    if (_podCode) _comboParts.push(`POD: ${_podCode}`);
+    if (_fpodCode) _comboParts.push(`FPOD: ${_fpodCode}`);
+    if (_carrierName) _comboParts.push(`Carrier: ${_carrierName}`);
+    if (_incoTerms) _comboParts.push(`IncoTerms: ${_incoTerms}`);
+    if (_cargoDesc) _comboParts.push(`Cargo: ${_cargoDesc}`);
+    if (routeRawValue?.effDate) _comboParts.push(`Period: ${_formatDate(routeRawValue.effDate)}${routeRawValue?.expDate ? ' – ' + _formatDate(routeRawValue.expDate) : ''}`);
+    this.tariffSearchedCombination = _comboParts.length
+      ? `Specific tariff not found for: ${_comboParts.join(' · ')}. Showing standard rates.`
+      : 'No specific tariff found for the searched combination. Showing standard rates.';
 
-    this.leadService.getTariffDetailsByQuote(payload).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          const response: any[] = resp.data || [];
-          const existingCharges = (routeForm.getRawValue().quoteCarriers[carrierIndex]?.quoteCharges || []);
-          const existingTariffDetailId = existingCharges.map((ch: any) => ch.TariffDetailSid);
-          this.isStandardRate = response[0]?.isStandardRate || false;
-          this.tariffDetails = response
-            .filter(td => !existingTariffDetailId.includes(td.TariffDetailSid))
-            .map((td: any) => {
-              const charge = this.getCharge(td.ChargeCode);
-              let qtySourceField = this.findFieldForQty(charge?.UnitQty);
-              let qtyValue = 1; // Default to 1
-
-              if (typeof qtySourceField === 'string' && routeForm.get(qtySourceField)) {
-                qtyValue = routeForm.get(qtySourceField)?.value || 1;
-              } else if (typeof qtySourceField === 'number') {
-                qtyValue = qtySourceField;
-              }
-              
-              const revenueAmount = (Number(qtyValue) || 1) * (Number(td?.SalePerUnitPrice) || 0);
-              const costAmount = (Number(qtyValue) || 1) * (Number(td?.BuyPerUnitPrice) || 0);
-
-              return {
-                ...td,
-                selected: true, // <-- Property for checkbox binding
-                TariffDetailSid : td?.TariffDetailSid,
-                ChargeDisplayName: charge?.chargeName,
-                chargeCode: charge?.chargeCode,
-                ChargeUomSid: charge?.ChargeMasterSid,
-                Qty: Number(qtyValue) || 1,
-                
-                RevenueChargeUomSid: td?.UOMSid,
-                RevenuePrepaidCollect: "Prepaid",
-                RevenueCurrencyMasterSid: td?.SaleCurrency,
-                RevenueRate: (Number(td?.SalePerUnitPrice) || 0).toFixed(this.digitsAfterDecimal),
-                RevenueExchangeRate: (Number(td?.revenueExchangeRate) || 0).toFixed(this.digitsAfterDecimal),
-                RevenueDrCr: "C",
-                RevenueAmount: revenueAmount.toFixed(this.digitsAfterDecimal),
-                RevenueLocalAmount: (revenueAmount * (Number(td?.revenueExchangeRate) || 0)).toFixed(this.digitsAfterDecimal),
-
-                CostChargeUomSid: td?.UOMSid,
-                CostPrepaidCollect: "Prepaid",
-                CostCurrencyMasterSid: td?.BuyCurrency,
-                CostRate: (Number(td?.BuyPerUnitPrice) || 0).toFixed(this.digitsAfterDecimal),
-                CostExchangeRate: (Number(td?.costExchangeRate) || 0).toFixed(this.digitsAfterDecimal),
-                CostDrCr: "D",
-                CostAmount: costAmount.toFixed(this.digitsAfterDecimal),
-                CostLocalAmount: (costAmount * (Number(td?.costExchangeRate) || 0)).toFixed(this.digitsAfterDecimal),
-              };
-            });
-          this.tariffLoading = false;
-        } else {
-          this.appSettingService.showError("Error loading Tariff Details");
-          this.tariffLoading = false;
-        }
-      }
+    const tariffObservables = effectiveCargoItems.map((cargo: any) =>
+      this.leadService.getTariffDetailsByQuote({
+        ...basePayload,
+        CargoType: cargo?.CargoType || payloadCargoType,
+        ContainerType: cargo?.ContainerType || payloadContainerType,
+        cargoItems: [cargo],
+      }).pipe(catchError(() => of({ status: false, data: [] })))
     );
+
+    forkJoin(tariffObservables).subscribe((results: any[]) => {
+      const seenCommonTariffSids = new Set<number>();
+      const standardRateLabels: string[] = [];
+      const commonItems: any[] = [];
+      const existingCharges = (routeForm.getRawValue().quoteCarriers[carrierIndex]?.quoteCharges || []);
+      const existingTariffDetailSids = new Set<number>(
+        existingCharges
+          .filter((row: any) => row?.ChargeUomSid && row?.TariffDetailSid)
+          .map((row: any) => Number(row.TariffDetailSid))
+      );
+      const existingCommonChargeKeys = new Set<string>(
+        existingCharges
+          .filter((row: any) => row?.ChargeUomSid)
+          .map((row: any) => this.getAppliedTariffChargeKey(row))
+          .filter((key: string) => !!key)
+      );
+
+      this.tariffDetails = [];
+      this.tariffCargoGroups = [];
+      this.isStandardRate = false;
+
+      results.forEach((resp: any, index: number) => {
+        const response: any[] = resp?.status && Array.isArray(resp.data) ? resp.data : [];
+        const cargo: any = effectiveCargoItems[index] || {};
+        const isStandardRate = response[0]?.isStandardRate === true;
+        const label = `Cargo ${index + 1}`
+          + (cargo.ContainerTypeName ? ` - ${cargo.ContainerTypeName}` : '')
+          + (cargo.CargoType ? ` (${cargo.CargoType})` : '');
+
+        const items = response
+          .map((td: any) => {
+            const charge = this.getCharge(td.ChargeCode);
+            const qtyValue = this.resolveTariffQtyValue(routeForm, [cargo], charge, td);
+            const revenueAmount = (Number(qtyValue) || 1) * (Number(td?.SalePerUnitPrice) || 0);
+            const costAmount = (Number(qtyValue) || 1) * (Number(td?.BuyPerUnitPrice) || 0);
+            const isCommonCharge = this.isCommonTariffCharge(charge?.UnitQty);
+
+            return {
+              ...td,
+              selected: true,
+              TariffDetailSid: td?.TariffDetailSid,
+              ChargeDisplayName: charge?.chargeName,
+              chargeCode: charge?.chargeCode,
+              ChargeUomSid: charge?.ChargeMasterSid,
+              UnitQty: charge?.UnitQty,
+              TariffCargoType: cargo?.CargoType || td?.CargoType || null,
+              TariffContainerType: cargo?.ContainerType || td?.ContainerType || null,
+              Qty: Number(qtyValue) || 1,
+              RevenueChargeUomSid: td?.UOMSid,
+              RevenuePrepaidCollect: 'Prepaid',
+              RevenueCurrencyMasterSid: td?.SaleCurrency,
+              RevenueRate: (Number(td?.SalePerUnitPrice) || 0).toFixed(this.digitsAfterDecimal),
+              RevenueExchangeRate: (Number(td?.revenueExchangeRate) || 0).toFixed(this.digitsAfterDecimal),
+              RevenueDrCr: 'C',
+              RevenueAmount: revenueAmount.toFixed(this.digitsAfterDecimal),
+              RevenueLocalAmount: (revenueAmount * (Number(td?.revenueExchangeRate) || 0)).toFixed(this.digitsAfterDecimal),
+              CostChargeUomSid: td?.UOMSid,
+              CostPrepaidCollect: 'Prepaid',
+              CostCurrencyMasterSid: td?.BuyCurrency,
+              CostRate: (Number(td?.BuyPerUnitPrice) || 0).toFixed(this.digitsAfterDecimal),
+              CostExchangeRate: (Number(td?.costExchangeRate) || 0).toFixed(this.digitsAfterDecimal),
+              CostDrCr: 'D',
+              CostAmount: costAmount.toFixed(this.digitsAfterDecimal),
+              CostLocalAmount: (costAmount * (Number(td?.costExchangeRate) || 0)).toFixed(this.digitsAfterDecimal),
+              isCommonCharge,
+            };
+          })
+          .filter((item: any) => !this.isTariffAlreadyApplied(item, existingTariffDetailSids, existingCommonChargeKeys));
+
+        const splitItems = items.filter((item: any) => !item.isCommonCharge);
+        const newCommonItems = items.filter((item: any) => {
+          if (!item.isCommonCharge || seenCommonTariffSids.has(Number(item.TariffDetailSid))) {
+            return false;
+          }
+          seenCommonTariffSids.add(Number(item.TariffDetailSid));
+          return true;
+        });
+
+        if (splitItems.length > 0) {
+          this.tariffCargoGroups.push({ cargoLabel: label, items: splitItems });
+          this.tariffDetails.push(...splitItems);
+        }
+
+        if (newCommonItems.length > 0) {
+          commonItems.push(...newCommonItems);
+          this.tariffDetails.push(...newCommonItems);
+        }
+
+        if (isStandardRate) {
+          standardRateLabels.push(label);
+        }
+      });
+
+      if (commonItems.length > 0) {
+        this.tariffCargoGroups.unshift({ cargoLabel: 'Common Charges', items: commonItems });
+      }
+
+      this.isStandardRate = standardRateLabels.length > 0;
+
+      if (this.tariffCargoGroups.length === 0) {
+        this.appSettingService.showError('No tariff charges found for the selected criteria.');
+        this.ngbModal.dismissAll();
+      } else if (standardRateLabels.length > 0) {
+        this.appSettingService.showInfo('No specific tariff found. Displaying standard rates.');
+      }
+
+      this.tariffLoading = false;
+    }, () => {
+      this.tariffLoading = false;
+      this.ngbModal.dismissAll();
+      this.appSettingService.showError('Error loading Tariff Details');
+    });
+  }
+
+  getQtyByContainerType(routeIndex: number, containerType: number): number {
+    const cargoControls = this.quoteCargo(routeIndex).controls as FormGroup[];
+
+    return cargoControls
+      .map(ctrl => ctrl.getRawValue())
+      .filter(cargo => cargo.ContainerType === containerType)
+      .reduce((sum, cargo) => sum + (Number(cargo.Qty) || 0), 0);
+  }
+
+  isCommonTariffCharge(unitQty: string) {
+    const trimmedUnitQty = String(unitQty || '').trim();
+    return trimmedUnitQty === 'Per BL'
+      || trimmedUnitQty === 'BL'
+      || trimmedUnitQty === 'Per Shipment'
+      || trimmedUnitQty === 'Shipment';
+  }
+
+  getAppliedTariffChargeKey(item: any) {
+    const chargeMasterSid = item?.ChargeMasterSid || item?.ChargeUomSid;
+    const unitQty = String(item?.UnitQty || item?.unitQtyBasis || '').trim();
+
+    if (!chargeMasterSid || !this.isCommonTariffCharge(unitQty)) {
+      return '';
+    }
+
+    return `${chargeMasterSid}__${unitQty}`;
+  }
+
+  isTariffAlreadyApplied(item: any, existingTariffDetailSids: Set<number>, existingCommonChargeKeys: Set<string>) {
+    if (item?.TariffDetailSid && existingTariffDetailSids.has(Number(item.TariffDetailSid))) {
+      return true;
+    }
+
+    const commonChargeKey = this.getAppliedTariffChargeKey(item);
+    return !!commonChargeKey && existingCommonChargeKeys.has(commonChargeKey);
   }
 
   // Add this method to your component class
@@ -3163,6 +3761,8 @@ canGetTariff(routeIndex: number): boolean {
   closeTariffModal(){
     this.currentRouteIndex = undefined;
     this.tariffDetails = [];
+    this.tariffCargoGroups = [];
+    this.tariffSearchedCombination = '';
     this.ngbModal.dismissAll();
   }
 
@@ -3190,6 +3790,9 @@ canGetTariff(routeIndex: number): boolean {
   // }
 
   applySelectedTariffs(): void {
+    const routeIndex = this.currentRouteIndex;
+    const carrierIndex = this.currentCarrierIndex;
+
     const selectedTariffs = this.tariffDetails.filter(tariff => tariff.selected);
 
     if (selectedTariffs.length === 0) {
@@ -3197,35 +3800,91 @@ canGetTariff(routeIndex: number): boolean {
       return;
     }
 
+    // 🔹 Precompute container-wise Qty map
+    const containerQtyMap = new Map<number, number>();
+    const cargoControls = this.quoteCargo(routeIndex).controls as FormGroup[];
+
+    cargoControls.forEach(ctrl => {
+      const cargo = ctrl.getRawValue();
+      const containerType = cargo?.ContainerType;
+      const qty = Number(cargo?.Qty) || 0;
+
+      if (containerType) {
+        containerQtyMap.set(
+          containerType,
+          (containerQtyMap.get(containerType) || 0) + qty
+        );
+      }
+    });
+
     selectedTariffs.forEach(tariffData => {
-      const isEmpty = this.checkIfLastChargeEmpty(this.currentRouteIndex, this.currentCarrierIndex);
-      let chargeIndex;
+
+      let finalQty = Number(tariffData.Qty) || 1;
+
+      // 🔹 Override Qty using container grouping logic
+      if (tariffData?.TariffContainerType && containerQtyMap.has(tariffData.TariffContainerType)) {
+        const groupedQty = containerQtyMap.get(tariffData.TariffContainerType);
+        if (groupedQty && groupedQty > 0) {
+          finalQty = groupedQty;
+        }
+      }
+
+      // 🔹 Recalculate amounts
+      const revenueRate = Number(tariffData.RevenueRate || 0);
+      const costRate = Number(tariffData.CostRate || 0);
+      const revenueExRate = Number(tariffData.RevenueExchangeRate || 0);
+      const costExRate = Number(tariffData.CostExchangeRate || 0);
+
+      const revenueAmount = finalQty * revenueRate;
+      const costAmount = finalQty * costRate;
+
+      const updatedTariff = {
+        ...tariffData,
+        Qty: finalQty,
+        RevenueAmount: revenueAmount.toFixed(this.digitsAfterDecimal),
+        CostAmount: costAmount.toFixed(this.digitsAfterDecimal),
+        RevenueLocalAmount: (revenueAmount * revenueExRate).toFixed(this.digitsAfterDecimal),
+        CostLocalAmount: (costAmount * costExRate).toFixed(this.digitsAfterDecimal),
+      };
+
+      const isEmpty = this.checkIfLastChargeEmpty(routeIndex, carrierIndex);
+      let chargeIndex: number;
 
       if (isEmpty) {
-        chargeIndex = this.quoteCharges(this.currentRouteIndex, this.currentCarrierIndex).length - 1;
-        const chargeForm = this.quoteCharges(this.currentRouteIndex, this.currentCarrierIndex).at(chargeIndex) as FormGroup;
-        chargeForm.patchValue({ ...tariffData });
-        chargeForm.updateValueAndValidity();
+        chargeIndex = this.quoteCharges(routeIndex, carrierIndex).length - 1;
+        const chargeForm = this.quoteCharges(routeIndex, carrierIndex).at(chargeIndex) as FormGroup;
+
+        chargeForm.patchValue(updatedTariff, { emitEvent: false });
+        chargeForm.updateValueAndValidity({ emitEvent: false });
+
       } else {
-        this.addQuoteCharge(this.currentRouteIndex, this.currentCarrierIndex, tariffData);
-        chargeIndex = this.quoteCharges(this.currentRouteIndex, this.currentCarrierIndex).length - 1;
+        this.addQuoteCharge(routeIndex, carrierIndex, updatedTariff);
+        chargeIndex = this.quoteCharges(routeIndex, carrierIndex).length - 1;
       }
-      
-      // After adding/patching, run necessary updates for the new charge
-      this.updateSingleChargeQty(this.currentRouteIndex, this.currentCarrierIndex, chargeIndex);
-      this.fetchExchangeRate(this.currentRouteIndex, this.currentCarrierIndex, chargeIndex, 'revenue');
-      this.fetchExchangeRate(this.currentRouteIndex, this.currentCarrierIndex, chargeIndex, 'cost');
+
+      // ❗ IMPORTANT: Prevent Qty override issue
+      // If your updateSingleChargeQty recalculates Qty incorrectly, avoid calling it
+      // OR modify that function to respect existing Qty
+
+      // this.updateSingleChargeQty(routeIndex, carrierIndex, chargeIndex);
+
+      // 🔹 Still fetch exchange rates (safe)
+      this.fetchExchangeRate(routeIndex, carrierIndex, chargeIndex, 'revenue');
+      this.fetchExchangeRate(routeIndex, carrierIndex, chargeIndex, 'cost');
     });
+
     this.disableTariffFieldsForCurrentRoute();
 
     const customerId = this.quotationForm.get('CustomerMasterSid')?.value;
     const customer = this.customers.find(c => c.CustomerMasterSid === customerId);
+
     if (customer) {
       this.handleCustomerChangeOnCharges(customer);
     }
 
     this.closeTariffModal();
   }
+
   disableTariffFieldsForCurrentRoute(): void {
   if (this.currentRouteIndex === undefined || this.currentRouteIndex === null) {
     return;
@@ -3762,21 +4421,27 @@ ${this.userData.userName}`;
   //   costExchangeRate?.updateValueAndValidity();
   // }
 
-  handleCalculation(routeIndex:number){
-    const routeCtrl = this.quoteRoutes.at(routeIndex) as FormGroup;
-    const productFormArr = this.quoteProducts(routeIndex);
+  handleCalculation(routeIndex:number, cargoIndex: number = -1){
+    const targetCtrl = cargoIndex < 0
+      ? (this.quoteRoutes.at(routeIndex) as FormGroup)
+      : (this.quoteCargo(routeIndex).at(cargoIndex) as FormGroup);
+    const productFormArr = this.quoteProducts(routeIndex, cargoIndex);
+    let totalPackageQty = 0;
     let totalGrossWeight = 0;
     let totalNetWeight = 0;
     let totalVolume = 0;
     let totalChargeableWeight = 0;
     if (productFormArr.length === 0) {
-      routeCtrl.get('GrossWeight')?.enable();
-      routeCtrl.get('NetWeight')?.enable()
-      routeCtrl.get('Volume')?.enable();
-      routeCtrl.get('ChargeableWeight')?.enable();
+      targetCtrl.get('PackageQty')?.enable();
+      targetCtrl.get('PackageQty')?.setValue('');
+      targetCtrl.get('GrossWeight')?.enable();
+      targetCtrl.get('NetWeight')?.enable()
+      targetCtrl.get('Volume')?.enable();
+      targetCtrl.get('ChargeableWeight')?.enable();
       return;
     }
     productFormArr.controls.forEach((productForm:FormGroup)=>{
+      totalPackageQty += Number(productForm.get('ExternalQty')?.value) || 0;
       totalGrossWeight += Number(productForm.get('GrossWeight')?.value) || 0;
       totalNetWeight += Number(productForm.get('NetWeight')?.value) || 0;
       totalVolume += Number(productForm.get('Volume')?.value) || 0;
@@ -3792,16 +4457,19 @@ ${this.userData.userName}`;
 
       totalChargeableWeight += Math.max(volumetricChargeable, mappedChargeable);
     });
-    routeCtrl.get('GrossWeight')?.setValue(totalGrossWeight);
-    routeCtrl.get('NetWeight')?.setValue(totalNetWeight);
-    routeCtrl.get('Volume')?.setValue(totalVolume);
-    routeCtrl.get('ChargeableWeight')?.setValue(totalChargeableWeight);
-    routeCtrl.get('GrossWeight')?.updateValueAndValidity();
+    targetCtrl.get('PackageQty')?.setValue(totalPackageQty > 0 ? Number(totalPackageQty.toFixed(this.digitsAfterDecimal)) : '', { emitEvent: false });
+    targetCtrl.get('GrossWeight')?.setValue(totalGrossWeight);
+    targetCtrl.get('NetWeight')?.setValue(totalNetWeight);
+    targetCtrl.get('Volume')?.setValue(totalVolume);
+    targetCtrl.get('ChargeableWeight')?.setValue(totalChargeableWeight);
+    targetCtrl.get('PackageQty')?.updateValueAndValidity();
+    targetCtrl.get('GrossWeight')?.updateValueAndValidity();
 
-    routeCtrl.get('GrossWeight')?.disable();
-    routeCtrl.get('NetWeight')?.disable()
-    routeCtrl.get('Volume')?.disable();
-    routeCtrl.get('ChargeableWeight')?.disable();
+    targetCtrl.get('PackageQty')?.disable({ emitEvent: false });
+    targetCtrl.get('GrossWeight')?.disable();
+    targetCtrl.get('NetWeight')?.disable()
+    targetCtrl.get('Volume')?.disable();
+    targetCtrl.get('ChargeableWeight')?.disable();
 
     this.updateAllChargeQuantitiesForRoute(routeIndex);
   }
@@ -3855,22 +4523,29 @@ ${this.userData.userName}`;
   findFieldForQty(UnitQty:string){
     const trimmedUnitQty = String(UnitQty).trim();
     switch(trimmedUnitQty){
-      case 'GrossWeight':
-        return 'GrossWeight';
-      case 'CBM':
-        return 'Volume';
+      case 'Per 20ft Cont':
+      case 'Per 40ft Cont':
+      case 'Per 45ft Cont':
+      case 'Per Cont':
       case '20ft':
-        return 'Qty';
       case '40ft':
-        return 'Qty';
+        return 'NoofContainers';
+      case 'Per CBM':
+      case 'GrossWeight':
+      case 'CBM':
+        return trimmedUnitQty === 'GrossWeight' ? 'GrossWeight' : 'Volume';
+      case 'Per GrossWeight':
+        return 'GrossWeight';
       case 'ChargeableWeight':
         return 'ChargeableWeight';
+      case 'Per BL':
       case 'BL':
-        return '1';
+        return 1;
+      case 'Per Shipment':
       case 'Shipment':
-        return '1';
+        return 1;
       default:
-        return '1';
+        return 1;
     }
   }
 
@@ -4414,7 +5089,8 @@ ${this.userData['userEmail']}`;
         currencyMaster: this.currencyMaster,
         chargeUnitMaster: this.chargeUnitMaster,
         departments: this.departments,
-        ports: this.ports
+        ports: this.ports,
+        containerTypeList: this.containerTypeList
       }
     );
 
@@ -4499,6 +5175,53 @@ ${this.userData['userEmail']}`;
     } else {
       return (this.currencyMaster.find(curr => curr.CurrencyMasterSid === CurrencyMasterSid))?.currencyCode || 'N/A';
     }
+  }
+
+  getRoutePrintCargoDetails(route: any): Array<{ cargoType: string; containerType: string; quantity: number | string }> {
+    const cargoGroups = this.getRouteCargoGroups(route);
+    return cargoGroups
+      .map((cargo: any) => ({
+        cargoType: cargo?.CargoType || '',
+        containerType: this.getContainerTypeDisplay(cargo?.ContainerType),
+        quantity: cargo?.Qty ?? cargo?.NoofContainers ?? ''
+      }))
+      .filter((cargo: any) => cargo.cargoType || cargo.containerType || cargo.quantity !== '');
+  }
+
+  getContainerTypeDisplay(containerType: any): string {
+    if (containerType === null || containerType === undefined || containerType === '') {
+      return '';
+    }
+
+    const matchedType = this.containerTypeList.find((type: any) =>
+      type.ContainerTypeMasterSid === containerType ||
+      String(type.ContainerTypeMasterSid) === String(containerType) ||
+      type.ContainerCode === containerType ||
+      type.ContainerName === containerType
+    );
+
+    if (!matchedType) {
+      return String(containerType);
+    }
+
+    return matchedType.ContainerCode || matchedType.ContainerName || String(containerType);
+  }
+
+  shouldShowContainerQuantity(route: any): boolean {
+    const departmentName = (this.getDepartmentName(route?.DepartmentMasterSid) || '').toLowerCase();
+    return departmentName.includes('fcl');
+  }
+
+  shouldShowRouteCargoTable(route: any): boolean {
+    return this.shouldShowContainerQuantity(route) && this.getRoutePrintCargoDetails(route).length > 0;
+  }
+
+  getRoutePrintCargoTypeSummary(route: any): string {
+    const cargoTypes = this.getRoutePrintCargoDetails(route)
+      .map((cargo: any) => cargo?.cargoType)
+      .filter((cargoType: string) => !!cargoType);
+
+    return cargoTypes.length ? Array.from(new Set(cargoTypes)).join(', ') : '-';
   }
 
   //  goForBookingCreation() {
@@ -4941,24 +5664,29 @@ private async createBookingFromQuotation() {
 
     const QuoteData = quoteResponse.data;
     
-    const approvedRoute = QuoteData.quoteRoute?.[0] || [];
+    const approvedRoute = (QuoteData.quoteRoute || []).find(route =>
+      (route?.quoteCarrier || []).some(carrier => carrier.ApprovalStatus === "Approved")
+    );
+
+    if (!approvedRoute) {
+      this.spinner.hide();
+      this.appSettingService.showWarning("No approved route found for booking creation.");
+      return;
+    }
     const POO = this.ports.find(port => port.PortMasterSid === approvedRoute.PORSid);
     const POL = this.ports.find(port => port.PortMasterSid === approvedRoute.POLSid);
     const POD = this.ports.find(port => port.PortMasterSid === approvedRoute.PODSid);
     const FPD = this.ports.find(port => port.PortMasterSid === approvedRoute.FDPSid);
 
-    const approvedCarrier = approvedRoute?.quoteCarrier?.[0] || {};
-    const cargo = approvedRoute?.quoteCargo?.[0] || {};
-    
-    // Find container type ID if it exists
-    let containerTypeId = null;
-    if (cargo?.ContainerType) {
-      const containerType = this.containerTypeList.find(type => 
-        type.ContainerCode === cargo.ContainerType || 
-        type.ContainerName === cargo.ContainerType
-      );
-      containerTypeId = containerType?.ContainerTypeMasterSid || null;
-    }
+    const approvedCarrier = approvedRoute?.quoteCarrier?.find((carrier: any) => carrier?.ApprovalStatus === "Approved") ||
+      approvedRoute?.quoteCarrier?.[0] || {};
+    const cargoGroups = this.getRouteCargoGroups(approvedRoute);
+    const bookingCargoSource = cargoGroups.length ? cargoGroups : [{}];
+    const bookingCargo = bookingCargoSource.map((cargo: any) => ({
+      ...this.mapQuotationCargoForBooking(cargo),
+      bookingProducts: this.getQuotationCargoProducts(cargo).map((product: any) => this.mapQuotationCargoProduct(product))
+    }));
+    const bookingProducts = bookingCargo.flatMap((cargo: any) => cargo.bookingProducts || []);
 
     // Extract shipper and consignee from enquiry if available
     const enquiryData = QuoteData.EnquiryHeader;
@@ -4982,8 +5710,9 @@ private async createBookingFromQuotation() {
       }
     }
     // Prepare booking data
-    const cargoCurrency = cargo?.CargoCurrency || enquiryOther?.CargoCurrency || null;
-    const cargoValue = Number(cargo?.CargoValue ?? enquiryOther?.CargoValue ?? 0) || 0;
+    const primaryCargo = bookingCargoSource[0] || {};
+    const cargoCurrency = primaryCargo?.CargoCurrency || enquiryOther?.CargoCurrency || null;
+    const cargoValue = Number(primaryCargo?.CargoValue ?? enquiryOther?.CargoValue ?? 0) || 0;
 
     const bookingData = {
       quotation: true,
@@ -5020,18 +5749,7 @@ private async createBookingFromQuotation() {
       FPD: FPD?.PortCode || null,
 
       // Cargo details
-      bookingCargo: cargo ? [{
-        CargoType: cargo.CargoType || "General",
-        GrossWeight: cargo.GrossWeight || 0,
-        NetWeight: cargo.NetWeight || 0,
-        Volume: cargo.Volume || 0,
-        Volumetric: cargo.Volumetric ||  0,
-        ChargeableWeight: cargo.ChargeableWeight || 0,
-        ContainerType: containerTypeId,
-        NoofContainers: cargo.Qty || 0,
-        NoOfPackage: cargo.PackageQty || 0,
-        ShipmentTerms: cargo.ShipmentTerms || null,
-      }] : [],
+      bookingCargo,
 
       // Other details (Booking tab "Cargo Value" patches from bookingOthers)
       bookingOthers: [{
@@ -5040,23 +5758,7 @@ private async createBookingFromQuotation() {
       }],
 
       // Product details
-      bookingProduct: (cargo?.quoteProduct || []).map(product => ({
-        ProductName: product.ProductName,
-        ExternaPkg: product.PackageType,
-        ExternlQty: product.ExternalQty,
-        GrossWeight: product.GrossWeight,
-        NetWeight: product.NetWeight,
-        Volume: product.Volume,
-        IsHaz: product.IsHaz,
-        ImcoClass: product.ImcoClass,
-        UnNo: product.UnNo,
-        PkgGroup: product.PkgGroup,
-        Length: product.Length,
-        Width: product.Width,
-        Height: product.Height,
-        UomMasterSid: product.UomMasterSid,
-        Volumetric: this.deriveProductVolumetric(product),
-      })),
+      bookingProduct: bookingProducts,
 
       // Rate details
       bookingRates: (approvedCarrier?.quoteCharge || []).map((charge, index) => ({
@@ -5534,17 +6236,13 @@ private async createBookingFromRoute(routeIndex: number, carrierIndex: number) {
     const FPD = this.ports.find(port => port.PortMasterSid === routeData.FDPSid);
 
     const approvedCarrier = routeData?.quoteCarrier?.[carrierIndex] || {};
-    const cargo = routeData?.quoteCargo?.[0] || {};
-    
-    // Find container type ID if it exists
-    let containerTypeId = null;
-    if (cargo?.ContainerType) {
-      const containerType = this.containerTypeList.find(type => 
-        type.ContainerCode === cargo.ContainerType || 
-        type.ContainerName === cargo.ContainerType
-      );
-      containerTypeId = containerType?.ContainerTypeMasterSid || null;
-    }
+    const cargoGroups = this.getRouteCargoGroups(routeData);
+    const bookingCargoSource = cargoGroups.length ? cargoGroups : [{}];
+    const bookingCargo = bookingCargoSource.map((cargo: any) => ({
+      ...this.mapQuotationCargoForBooking(cargo),
+      bookingProducts: this.getQuotationCargoProducts(cargo).map((product: any) => this.mapQuotationCargoProduct(product))
+    }));
+    const bookingProducts = bookingCargo.flatMap((cargo: any) => cargo.bookingProducts || []);
 
     // Extract shipper and consignee from enquiry if available
     const enquiryData = QuoteData.EnquiryHeader;
@@ -5571,8 +6269,9 @@ private async createBookingFromRoute(routeIndex: number, carrierIndex: number) {
 
     
     // Prepare booking data
-    const cargoCurrency = cargo?.CargoCurrency || enquiryOther?.CargoCurrency || null;
-    const cargoValue = Number(cargo?.CargoValue ?? enquiryOther?.CargoValue ?? 0) || 0;
+    const primaryCargo = bookingCargoSource[0] || {};
+    const cargoCurrency = primaryCargo?.CargoCurrency || enquiryOther?.CargoCurrency || null;
+    const cargoValue = Number(primaryCargo?.CargoValue ?? enquiryOther?.CargoValue ?? 0) || 0;
 
     const bookingData = {
       quotation: true,
@@ -5610,18 +6309,7 @@ private async createBookingFromRoute(routeIndex: number, carrierIndex: number) {
       
 
       // Cargo details
-      bookingCargo: cargo ? [{
-        CargoType: cargo.CargoType || "General",
-        GrossWeight: cargo.GrossWeight || 0,
-        NetWeight: cargo.NetWeight || 0,
-        Volume: cargo.Volume || 0,
-        Volumetric: cargo.Volumetric ||  0,
-        ChargeableWeight: cargo.ChargeableWeight || 0,
-        ContainerType: containerTypeId,
-        NoofContainers: cargo.Qty || 0,
-        NoOfPackage: cargo.PackageQty || 0,
-        ShipmentTerms: cargo.ShipmentTerms || null,
-      }] : [],
+      bookingCargo,
 
       // Other details (Booking tab "Cargo Value" patches from bookingOthers)
       bookingOthers: [{
@@ -5630,23 +6318,7 @@ private async createBookingFromRoute(routeIndex: number, carrierIndex: number) {
       }],
 
       // Product details
-      bookingProduct: (cargo?.quoteProduct || []).map(product => ({
-        ProductName: product.ProductName,
-        ExternaPkg: product.PackageType,
-        ExternlQty: product.ExternalQty,
-        GrossWeight: product.GrossWeight,
-        NetWeight: product.NetWeight,
-        Volume: product.Volume,
-        IsHaz: product.IsHaz,
-        ImcoClass: product.ImcoClass,
-        UnNo: product.UnNo,
-        PkgGroup: product.PkgGroup,
-        Length: product.Length,
-        Width: product.Width,
-        Height: product.Height,
-        UomMasterSid: product.UomMasterSid,
-        Volumetric: this.deriveProductVolumetric(product),
-      })),
+      bookingProduct: bookingProducts,
 
       // Rate details
       bookingRates: (approvedCarrier?.quoteCharge || []).map((charge, index) => ({
