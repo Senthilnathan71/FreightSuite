@@ -950,9 +950,9 @@ private mapQuotationCargoForBooking(cargo: any): any {
 
     
 
-    if(this.quotationApproved){
-      return;
-    }
+    // if(this.quotationApproved){
+    //   return;
+    // }
 
 
     this.leadService.isUserAuthorizer(payload).subscribe(
@@ -1934,6 +1934,28 @@ private mapQuotationCargoForBooking(cargo: any): any {
       this.handleCalculation(routeIndex, cargoIndex);
       this.appSettingService.showSuccess("Product Deleted Successfully");
     }
+  }
+
+  deleteQuoteCargo(routeIndex: number, cargoIndex: number, quoteCargoSid: number | null) {
+    const ctrl = this.quoteCargo(routeIndex) as FormArray;
+    const removeCargoFromForm = () => {
+      ctrl.removeAt(cargoIndex);
+      this.syncQuoteCargoValidation(routeIndex);
+      this.quoteCargo(routeIndex).controls.forEach((_, existingCargoIndex) => {
+        this.handleCalculation(routeIndex, existingCargoIndex);
+      });
+      this.quotationForm.markAsDirty();
+    };
+
+    // Cargo delete for persisted records is finalized on Save in update payload sync.
+    if (quoteCargoSid) {
+      removeCargoFromForm();
+      this.appSettingService.showSuccess("Cargo removed. Click Save to update.");
+      return;
+    }
+
+    removeCargoFromForm();
+    this.appSettingService.showSuccess("Cargo Deleted Successfully");
   }
 
   onProductChange(product:any,routeIndex:number,productIndex:number,cargoIndex: number = -1){
@@ -3028,6 +3050,21 @@ isRateLockDisabled(): boolean {
 
   isLclStyleQuotationSegment(segment: string | null | undefined): boolean {
     return this.getQuotationCargoMode(segment) === 'LCL';
+  }
+
+  getRouteSegmentType(routeControl: AbstractControl | null | undefined): string {
+    if (!routeControl) {
+      return 'LCL';
+    }
+
+    const routeForm = routeControl as FormGroup;
+    const segmentFromControl = routeForm.get('segmentType')?.value;
+    if (segmentFromControl) {
+      return segmentFromControl;
+    }
+
+    const segmentFromRaw = routeForm.getRawValue?.()?.segmentType;
+    return segmentFromRaw || 'LCL';
   }
 
   isSurfaceQuotationSegment(segment: string | null | undefined): boolean {
