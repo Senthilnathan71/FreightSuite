@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, TemplateRef } from '@angular/core';
+import { Component, HostListener, OnDestroy } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbAccordionModule, NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal, NgbModalRef, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
@@ -13,7 +13,7 @@ import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPr
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { OperationService } from '../../operation.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { forkJoin } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
@@ -26,6 +26,8 @@ import { MasterService } from 'src/app/modules/master/master.service';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { PreventMultiClickDirective } from "src/app/core/Directives/prevent-multi-click.directive";
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { debounceTime } from 'rxjs/operators';
 
 @Component({
   selector: 'app-credit-request-entry',
@@ -55,7 +57,7 @@ import { AuditLogComponent } from '../../audit-log/audit-log.component';
     DatePipe
   ]
 })
-export class CreditRequestEntryComponent {
+export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy {
   MenuMasterSid: any;
   cusForm: FormGroup;
   isEditMode = false;
@@ -83,6 +85,9 @@ export class CreditRequestEntryComponent {
   creditRequestAuthorized: boolean = false;
   creditRequestApproved: boolean = false;
   isTermsAndConditionsEnabled: boolean = true;
+  isDirty: boolean = false;
+  private initialFormValue: any = null;
+  private formChangesSub?: Subscription;
   
   authorizerDetails = {
     isAuthorizer: false,
@@ -176,6 +181,9 @@ export class CreditRequestEntryComponent {
     if(userProfile){
       this.userData = userProfile;
     }
+
+    this.subscribeToFormChanges();
+    this.scheduleDirtyTrackingSnapshot();
   }
 
   initForm() {
@@ -483,6 +491,7 @@ creditForm.get('ApprovalStatus')?.valueChanges.subscribe(() => {
           } else {
             this.addCreditRequestRow();
           }
+          this.scheduleDirtyTrackingSnapshot();
         } else {
           console.warn('Empty customer response:', resp);
         }
@@ -510,24 +519,37 @@ creditForm.get('ApprovalStatus')?.valueChanges.subscribe(() => {
     return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   }
 
-  onSubmit() {
+  onSubmit(resolve?: (value: boolean) => void) {
     this.isSaving = true;
+
     if (this.cusForm.invalid) {
       this.markFormGroupTouched(this.cusForm);
       this.appSettingService.showError('Please fill all required fields before saving');
       this.isSaving = false;
+      if (resolve) resolve(false);
+      return;
+    }
+
+    const raw = this.cusForm.getRawValue();
+    if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      this.cusForm.markAsUntouched();
+      this.isSaving = false;
+      if (resolve) resolve(false);
       return;
     }
 
     if (this.creditRequest.controls.length === 0) {
       this.appSettingService.showError('Please add at least one Credit Request entry before saving');
       this.isSaving = false;
+      if (resolve) resolve(false);
       return;
     }
 
     if (this.hasApprovedRowsWithoutKyc()) {
       this.appSettingService.showError('Please add at least one KYC document before saving');
       this.isSaving = false;
+      if (resolve) resolve(false);
       return;
     }
 
@@ -536,6 +558,7 @@ creditForm.get('ApprovalStatus')?.valueChanges.subscribe(() => {
     if (continuityError) {
       this.appSettingService.showError(continuityError);
       this.isSaving = false;
+      if (resolve) resolve(false);
       return;
     }
 
@@ -544,6 +567,7 @@ creditForm.get('ApprovalStatus')?.valueChanges.subscribe(() => {
       const docList = missingUploads.map(item => item.docName).join(', ');
       this.appSettingService.showError(`Please upload KYC documents for: ${docList}`);
       this.isSaving = false;
+      if (resolve) resolve(false);
       return;
     }
     this.btnDisable = true;
@@ -607,8 +631,11 @@ creditForm.get('ApprovalStatus')?.valueChanges.subscribe(() => {
             // Fallback to fetch full data (includes names, attachments)
             this.getCustomerById(this.customerId);
           }
+          this.isDirty = false;
+          if (resolve) resolve(true);
         } else {
           this.appSettingService.showError(response.message || 'Failed to save credit request.');
+          if (resolve) resolve(false);
         }
       },
       error: (err) => {
@@ -617,6 +644,7 @@ creditForm.get('ApprovalStatus')?.valueChanges.subscribe(() => {
         this.loading = false;
         this.btnDisable = false;
         this.isSaving = false;
+        if (resolve) resolve(false);
       },
     });
   }
@@ -655,6 +683,8 @@ creditForm.get('ApprovalStatus')?.valueChanges.subscribe(() => {
     } else {
       this.expandedIndex = 0;
     }
+
+    this.scheduleDirtyTrackingSnapshot();
   }
 
   private markFormGroupTouched(formGroup: FormGroup) {
@@ -1010,11 +1040,94 @@ getDepartmentName(deptId: number, rowIndex: number): string {
       this.customerData = null;
 
       this.addCreditRequestRow();
+      this.scheduleDirtyTrackingSnapshot();
     }
 
     this.btnDisable = false;
     this.loading = false;
     this.isSaving = false;
+    this.isDirty = false;
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
+
+  private subscribeToFormChanges(): void {
+    this.formChangesSub?.unsubscribe();
+    this.formChangesSub = this.cusForm.valueChanges.pipe(debounceTime(300)).subscribe(() => {
+      if (this.initialFormValue === null) {
+        return;
+      }
+      this.isDirty = !this.deepEqual(
+        this.initialFormValue,
+        this.cusForm.getRawValue()
+      );
+    });
+  }
+
+  private scheduleDirtyTrackingSnapshot(): void {
+    setTimeout(() => {
+      this.initialFormValue = this.cusForm.getRawValue();
+      this.isDirty = false;
+    }, 0);
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+
+    if (value instanceof Date) {
+      return value.toISOString().split('T')[0];
+    }
+
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+      return Number(value);
+    }
+
+    if (typeof value === 'number') {
+      return Number(value.toFixed(6));
+    }
+
+    if (Array.isArray(value)) {
+      return value.map(v => this.normalizeValue(v));
+    }
+
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
+  }
+
+  ngOnDestroy(): void {
+    this.formChangesSub?.unsubscribe();
   }
 
   openEDoc(creditIndex: number, kycIndex: number) {

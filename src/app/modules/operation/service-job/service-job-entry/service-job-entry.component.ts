@@ -1,4 +1,4 @@
-import { Component, ViewChild, TemplateRef, OnInit, Input, OnDestroy } from '@angular/core';
+import { Component, ViewChild, TemplateRef, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef, NgbPaginationModule, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -6,7 +6,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { catchError, delay, firstValueFrom, forkJoin, of, Subject, tap } from 'rxjs';
+import { catchError, debounceTime, firstValueFrom, forkJoin, of, Subject, takeUntil, tap } from 'rxjs';
 import { OperationService } from '../../operation.service';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
@@ -51,6 +51,7 @@ import { ToastrService } from 'ngx-toastr';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { JobCardComponent } from '../../house-job/report/job-card/job-card.component';
 import { ProofOfDeliveryComponent } from '../../house-job/report/proof-of-delivery/proof-of-delivery.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 
 
@@ -93,7 +94,7 @@ import { ProofOfDeliveryComponent } from '../../house-job/report/proof-of-delive
     CustomDatePipe
   ],
 })
-export class ServiceJobEntryComponent implements OnInit, OnDestroy {
+export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
 
 
   /**
@@ -171,7 +172,8 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
   permissions: any[] = [];
   currentMenuPermissions = {};
 
-  private initialFormValue: string;
+  private initialFormValue: any = null;
+  isDirty = false;
   houseStatusTimeline : any[];
 
 
@@ -313,14 +315,18 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
 
     this.initServiceJobForm();
     this.initCargoForm();
+    this.subscribeToFormChanges();
 
     this.spinner.show();
     this.loadHeaderMandatoryParts().subscribe(() => {
-      this.currentRoute.paramMap.subscribe((param) => {
+      this.currentRoute.paramMap.pipe(takeUntil(this.destroy$)).subscribe((param) => {
         this.HouseJobSid = +param.get('id');
         if (this.HouseJobSid) {
           this.isEditMode = true;
           this.loadServiceJobById(this.HouseJobSid);
+        } else {
+          this.isEditMode = false;
+          this.captureInitialFormState();
         }
       });
 
@@ -598,15 +604,29 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
 
   handleRateChange(allRates: any[]) {
     console.log(allRates);
-    if (allRates.length > 0) {
-      this.serviceJobRateResults = [...allRates];
+    this.serviceJobRateResults = [...allRates];
+    this.updateDirtyState();
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
     }
   }
 
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
 
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
 
-
-   async onSubmit() {
+  async onSubmit(resolve?: (value: boolean) => void) {
    const fy = this.appSettingService.getCurrentFinancialYear();
     if(fy){
       const MBLDate =new Date (this. serviceJobForm.getRawValue().MBLDate);
@@ -615,26 +635,29 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       if(MBLDate < fyStartDate || MBLDate > fyEndDate){
         this.toastr.error('The date of the master job must be between the financial year start date and end date');
         this.serviceJobForm.get('MasterJobDate')?.setErrors({ invalidDate: true });
+        if (resolve) resolve(false);
         return;
       }
     }
     console.log('Submit triggered', this.serviceJobForm.value);
-    if (this.isEditMode) {
-      const currentFormState = JSON.stringify(this.getCurrentFormState());
-      if (this.initialFormValue === currentFormState) {
-        this.appSettingService.showWarning('No changes are there to save.');
-        return;
-      }
+    const currentFormState = this.getCurrentFormState();
+    if (this.initialFormValue !== null && this.deepEqual(currentFormState, this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      if (resolve) resolve(false);
+      return;
     }
+
     if (this.serviceJobForm.invalid) {
       this.serviceJobForm.markAllAsTouched();
       this.serviceJobForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all required fields correctly.');
+      if (resolve) resolve(false);
       return;
     }
 
     if (!this.costEntryComponent.validateRateArray()) {
       this.selectedTab = 'Rate';
+      if (resolve) resolve(false);
       return;
     }
 
@@ -768,6 +791,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
 
       if (!shouldProceed) {
         this.isSaving = false;
+        if (resolve) resolve(false);
         return; // STOP submission
       }
     }
@@ -777,34 +801,50 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
     if (this.isEditMode && this.HouseJobSid) {
       this.operationService.updateServiceJobById(this.HouseJobSid, payload).subscribe({
         next: (resp: any) => {
+          this.spinner.hide();
+          this.isSaving = false;
           if (resp.status) {
             this.appSettingService.showSuccess('Service Job successfully updated.');
+            this.isDirty = false;
             this.loadServiceJobById(this.HouseJobSid);
+            if (resolve) resolve(true);
           } else {
             this.appSettingService.showError('Error updating Service Job.');
             console.error(resp.message);
+            if (resolve) resolve(false);
           }
         },
         error: (err) => {
+          this.spinner.hide();
+          this.isSaving = false;
           this.appSettingService.showError('Failed to update Service Job.');
           console.error(err);
+          if (resolve) resolve(false);
         }
       });
     } else {
       this.operationService.createServiceJob(payload).subscribe({
         next: (resp: any) => {
+          this.spinner.hide();
+          this.isSaving = false;
           if (resp.status) {
             this.appSettingService.showSuccess('Service Job successfully created.');
+            this.isDirty = false;
             const houseId = resp.data?.HouseJobSid;
             this.router.navigate(['operation/service-job/entry', houseId]);
+            if (resolve) resolve(true);
           } else {
             this.appSettingService.showError('Error creating service job.');
             console.error(resp.message);
+            if (resolve) resolve(false);
           }
         },
         error: (err) => {
+          this.spinner.hide();
+          this.isSaving = false;
           this.appSettingService.showError('Failed to create service job.');
           console.error(err);
+          if (resolve) resolve(false);
         }
       });
     }
@@ -1795,28 +1835,75 @@ openEDoc() {
             }
           }
 
-  /**
-* Captures the current state of all forms and related data properties.
-* A short delay ensures all data bindings are synchronized before capture.
-*/
-  private captureInitialFormState(): void {
-    // Use a small timeout to ensure the form values are fully settled after patching.
-    setTimeout(() => {
-      this.initialFormValue = JSON.stringify(this.getCurrentFormState());
-    }, 500);
+  private subscribeToFormChanges(): void {
+    this.serviceJobForm.valueChanges
+      .pipe(takeUntil(this.destroy$), debounceTime(300))
+      .subscribe(() => this.updateDirtyState());
+
+    this.cargoForm.valueChanges
+      .pipe(takeUntil(this.destroy$), debounceTime(300))
+      .subscribe(() => this.updateDirtyState());
   }
 
-  /**
-   * Gathers the raw values from all forms and child component outputs
-   * into a single object for state comparison.
-   * @returns A single object representing the current state of the page.
-   */
+  private updateDirtyState(): void {
+    if (this.initialFormValue === null) {
+      return;
+    }
+    this.isDirty = !this.deepEqual(this.initialFormValue, this.getCurrentFormState());
+  }
+
+  private captureInitialFormState(): void {
+    setTimeout(() => {
+      this.initialFormValue = this.getCurrentFormState();
+      this.isDirty = false;
+    }, 0);
+  }
+
   private getCurrentFormState(): any {
     return {
-      bookingForm: this.serviceJobForm.getRawValue(),
-      cargoForm: this.cargoForm.getRawValue(),
-      rateResult: this.serviceJobRateResults,
+      bookingForm: this.serviceJobForm?.getRawValue?.(),
+      cargoForm: this.cargoForm?.getRawValue?.(),
+      rateResult: this.serviceJobRateResults || [],
     };
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+
+    if (value instanceof Date) {
+      return value.toISOString().split('T')[0];
+    }
+
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+      return Number(value);
+    }
+
+    if (typeof value === 'number') {
+      return Number(value.toFixed(6));
+    }
+
+    if (Array.isArray(value)) {
+      return value.map((v) => this.normalizeValue(v));
+    }
+
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
   }
        
  private async performDuplicateCheck(payload: any): Promise<boolean> {
