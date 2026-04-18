@@ -150,6 +150,19 @@ export class MblComponent {
     return packageType ? packageType.UOMName : 'Unknown';
   }
 
+  getContainerTypeName(containerTypeSid: number): string {
+    if (!containerTypeSid || !this.containerTypeList?.length) return '';
+    const containerType = this.containerTypeList.find(
+      (ct: any) => Number(ct?.ContainerTypeMasterSid) === Number(containerTypeSid)
+    );
+    return (
+      containerType?.ContainerName ||
+      containerType?.ContainerType ||
+      containerType?.ContainerCode ||
+      ''
+    );
+  }
+
   modalClose() {
     this.activeModal.close();
   }
@@ -173,7 +186,8 @@ export class MblComponent {
           currentDate: this.currentDate,
           currentBranchCityName: this.currentBranchCityName,
           packageTypeList: this.packageTypeList,
-          agentList: this.agentList
+          agentList: this.agentList,
+          containerTypeList: this.containerTypeList
         },
         logo
       );

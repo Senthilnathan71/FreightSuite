@@ -132,15 +132,18 @@ export class JobCardComponent implements OnChanges {
   // Helper methods
 
   getContainerTypeName(ContainerTypeMasterSid: number): string {
+    if (!ContainerTypeMasterSid || !this.containerTypeList?.length) {
+      return '';
+    }
     const containerType = this.containerTypeList.find(
       (ct) => ct.ContainerTypeMasterSid === ContainerTypeMasterSid
     );
-    return containerType ? containerType.ContainerName : '';
+    return containerType?.ContainerName || containerType?.ContainerType || containerType?.ContainerCode || '';
   }
 
   getChargeName(ChargeMasterSid: number): string {
     if (!ChargeMasterSid || !this.chargeList || this.chargeList.length === 0) {
-      return ' ';
+      return '';
     }
     const charge = this.chargeList.find(
       (c) => c.ChargeMasterSid === ChargeMasterSid
@@ -175,57 +178,84 @@ export class JobCardComponent implements OnChanges {
       : 'N/A';
   }
 
-    get totalLength(): number {
-    return this.housejobData?.Products?.reduce((sum, c) => {
+  get totalLength(): number {
+    return this.jobCardRows.reduce((sum, c) => {
       const value = Number(c.Length) || 0;
       return sum + value;
     }, 0);
   }
       get totalWidth(): number {
-    return this.housejobData?.Products?.reduce((sum, c) => {
+    return this.jobCardRows.reduce((sum, c) => {
       const value = Number(c.Width) || 0;
       return sum + value;
     }, 0);
   }
       get totalHeight(): number {
-    return this.housejobData?.Products?.reduce((sum, c) => {
+    return this.jobCardRows.reduce((sum, c) => {
       const value = Number(c.Height) || 0;
       return sum + value;
     }, 0);
   }
       get totalVolumteric(): number {
-    return this.housejobData?.Products?.reduce((sum, c) => {
+    return this.jobCardRows.reduce((sum, c) => {
       const value = Number(c.Volumetric) || 0;
       return sum + value;
     }, 0);
   }
 
   get totalNoOfPkg(): number {
-    return this.housejobData?.Products?.reduce((sum, c) => {
-      const value = Number(c.ExternlQty) || 0;
+    return this.jobCardRows.reduce((sum, c) => {
+      const value = Number(c.ExternlQty ?? c.NoOfPackage) || 0;
       return sum + value;
     }, 0);
   }
 
   get totalGrossWeight(): number {
-    return this.housejobData?.Products?.reduce((sum, c) => {
+    return this.jobCardRows.reduce((sum, c) => {
       const value = Number(c.GrossWeight) || 0;
       return sum + value;
     }, 0);
   }
 
   get totalVolume(): number {
-    return this.housejobData?.Products?.reduce((sum, c) => {
+    return this.jobCardRows.reduce((sum, c) => {
       const value = Number(c.Volume) || 0;
       return sum + value;
     }, 0);
   }
 
   get totalNetWeight(): number {
-    return this.housejobData?.Products?.reduce((sum, c) => {
+    return this.jobCardRows.reduce((sum, c) => {
       const value = Number(c.NetWeight) || 0;
       return sum + value;
     }, 0);
+  }
+
+  get jobCardRows(): any[] {
+    const products = this.housejobData?.Products || [];
+    if (products.length) {
+      return products;
+    }
+
+    const cargoRows = this.housejobData?.Cargo || [];
+    return cargoRows.map((cargo: any) => ({
+      ProductName: cargo?.CommodityDescription,
+      ContainerNo: cargo?.ContainerNo || cargo?.NoofContainers || '',
+      ContainerType: cargo?.ContainerType,
+      ExternlQty: cargo?.ExternlQty ?? cargo?.NoOfPackage,
+      NoOfPackage: cargo?.NoOfPackage,
+      GrossWeight: cargo?.GrossWeight,
+      Volume: cargo?.Volume,
+      NetWeight: cargo?.NetWeight,
+      Length: cargo?.Length,
+      Width: cargo?.Width,
+      Height: cargo?.Height,
+      Volumetric: cargo?.Volumetric
+    }));
+  }
+
+  getInternalRemarks(): string {
+    return this.housejobData?.InternalNote || this.housejobData?.Others?.[0]?.InternalNote || '';
   }
 
 get totalSales() {
@@ -270,7 +300,7 @@ get profit() {
       const costAmt = parseFloat(item.CostLocalAmount);
       const revenueAmt = parseFloat(item.RevenueLocalAmount);
       const charge = this.chargeList.find(c => c.ChargeMasterSid === item.ChargeMasterSid);
-      const chargeName = charge ? charge.chargeName : "";
+      const chargeName = charge?.chargeName || charge?.ChargeName || item?.ChargeDescription || "";
 
       let existing = this.profitSummary.find(p => p.chargeName === chargeName);
 

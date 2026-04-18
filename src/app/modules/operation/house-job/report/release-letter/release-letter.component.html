@@ -57,9 +57,10 @@
 
 <!-- FCL -->
 
-    <table style="width:100%;border-collapse:collapse;margin:5px 0;border:1px solid black;font-size: 16px;"*ngIf="selectedFCLLCL === 'FCL'" >
+    <table style="width:100%;border-collapse:collapse;margin:5px 0;border:1px solid black;font-size: 16px;" *ngIf="isFcl" >
         <thead>
             <tr>
+                <th style="border:1px solid black;text-align:center;padding:4px;font-weight: bolder;width: 15%;"><strong>Cargo Type</strong></th>
                 <th style="border:1px solid black;text-align:center;padding:4px;font-weight: bolder;width: 15%;"><strong>No.Container</strong></th>
                 <th style="border:1px solid black;text-align:center;padding:4px;font-weight: bolder;"><strong>Container Type</strong></th>
                 <th style="border:1px solid black;text-align:center;padding:4px;font-weight: bolder;width: 10%;"><strong>No. of Pkgs</strong></th>
@@ -69,14 +70,13 @@
         </thead>
 
         <tbody>
-            <tr>
-                <td style="border:1px solid black;padding:4px;text-align:right;"> {{ housejobData?.Cargo?.[0]?.NoofContainers }}</td>
-              <td style="border:1px solid black;padding:4px;text-align:start;">
-  {{ getContainerName(housejobData?.Cargo?.[0]?.ContainerType) }}
-</td>
-                <td style="border:1px solid black;padding:4px;text-align:right;">{{ housejobData?.Cargo?.[0]?.NoOfPackage }}</td>
-                <td style="border:1px solid black;padding:4px;text-align:right;">{{ housejobData?.Cargo?.[0]?.GrossWeight | number:'1.3-3' }}</td>
-                <td style="border:1px solid black;padding:4px;text-align:right;">{{ housejobData?.Cargo?.[0]?.Volume | number:'1.3-3' }}</td>
+            <tr *ngFor="let cargo of releaseLetterCargoRows">
+                <td style="border:1px solid black;padding:4px;text-align:left;">{{ cargo?.CargoType || '-' }}</td>
+                <td style="border:1px solid black;padding:4px;text-align:right;">{{ cargo?.NoofContainers || 0 }}</td>
+                <td style="border:1px solid black;padding:4px;text-align:start;">{{ getContainerName(cargo?.ContainerType) || '-' }}</td>
+                <td style="border:1px solid black;padding:4px;text-align:right;">{{ cargo?.NoOfPackage || 0 }}</td>
+                <td style="border:1px solid black;padding:4px;text-align:right;">{{ (cargo?.GrossWeight || 0) | number:'1.3-3' }}</td>
+                <td style="border:1px solid black;padding:4px;text-align:right;">{{ (cargo?.Volume || 0) | number:'1.3-3' }}</td>
             </tr>
 
             <!-- <tr style="font-weight:700;">
@@ -91,9 +91,10 @@
 
     <!-- LCL -->
 
-      <table style="width:100%;border-collapse:collapse;margin:5px 0;border:1px solid black;font-size: 16px;"*ngIf="selectedFCLLCL === 'LCL'"  >
+      <table style="width:100%;border-collapse:collapse;margin:5px 0;border:1px solid black;font-size: 16px;" *ngIf="!isFcl"  >
         <thead>
             <tr>
+                <th style="border:1px solid black;text-align:center;padding:4px;font-weight: bolder;width:20%; "><strong>Cargo Type</strong></th>
                 <th style="border:1px solid black;text-align:center;padding:4px;font-weight: bolder;width:20%; "><strong>No. of Pkgs</strong></th>
                 <th style="border:1px solid black;text-align:center;padding:4px;font-weight: bolder;width:20%; "><strong>Gross Weight</strong></th>
                 <th style="border:1px solid black;text-align:center;padding:4px;font-weight: bolder;width:20%; "><strong>Volume</strong></th>
@@ -101,10 +102,11 @@
         </thead>
 
         <tbody>
-            <tr>
-                <td style="border:1px solid black;padding:4px;text-align:right;">{{ housejobData?.Cargo?.[0]?.NoOfPackage }}</td>
-                <td style="border:1px solid black;padding:4px;text-align:right;">{{ housejobData?.Cargo?.[0]?.GrossWeight | number:'1.3-3' }}</td>
-                <td style="border:1px solid black;padding:4px;text-align:right;">{{ housejobData?.Cargo?.[0]?.Volume | number:'1.3-3' }}</td>
+            <tr *ngFor="let cargo of releaseLetterCargoRows">
+                <td style="border:1px solid black;padding:4px;text-align:left;">{{ cargo?.CargoType || '-' }}</td>
+                <td style="border:1px solid black;padding:4px;text-align:right;">{{ cargo?.NoOfPackage || 0 }}</td>
+                <td style="border:1px solid black;padding:4px;text-align:right;">{{ (cargo?.GrossWeight || 0) | number:'1.3-3' }}</td>
+                <td style="border:1px solid black;padding:4px;text-align:right;">{{ (cargo?.Volume || 0) | number:'1.3-3' }}</td>
             </tr>
 
             <!-- <tr style="font-weight:700;">
@@ -122,7 +124,7 @@
         <p style="margin:0;">:  {{housejobData?.CustomerName}}</p>
      </div>
 
-    <div style="display:flex;margin-bottom:4px;font-size: 16px;margin-left: 25px;"><strong style="width:105px;font-weight: bolder;">Mark and No.</strong><span>: {{housejobData?.Cargo?.[0]?.MarksAndNumber}}</span></div>
+    <div style="display:flex;margin-bottom:4px;font-size: 16px;margin-left: 25px;"><strong style="width:105px;font-weight: bolder;">Mark and No.</strong><span>: {{ primaryCargoRow?.MarksAndNumber }}</span></div>
 
     <div style="display:flex;padding-bottom:30px;font-size: 16px;margin-left: 25px;margin-top: 30px;">
         <strong style="width:105px;font-weight: bolder;">Remarks</strong>

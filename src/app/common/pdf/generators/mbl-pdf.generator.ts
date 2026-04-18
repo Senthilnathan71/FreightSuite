@@ -630,6 +630,7 @@ export function transformMblApiData(
     currentBranchCityName?: string | null;
     packageTypeList?: any[];
     agentList?: any[];
+    containerTypeList?: any[];
   },
   logo?: string,
 ): MblPdfData {
@@ -654,10 +655,29 @@ export function transformMblApiData(
     return found?.CustomerName || '';
   };
 
+  const containerTypeName = (containerTypeSid: number): string => {
+    if (!containerTypeSid) return '';
+    const found = (options?.containerTypeList || []).find(
+      (x: any) => Number(x?.ContainerTypeMasterSid) === Number(containerTypeSid),
+    );
+    return found?.ContainerName || found?.ContainerType || found?.ContainerCode || '';
+  };
+
   const containerRows: MblPdfContainerRow[] = containers.map(
     (container: any) => ({
       containerInfo: cleanJoin(
-        [container?.ContainerNumber, container?.LineSeal],
+        [
+          cleanJoin(
+            [
+              container?.ContainerNumber,
+              containerTypeName(container?.ContainerType)
+                ? `(${containerTypeName(container?.ContainerType)})`
+                : '',
+            ],
+            ' ',
+          ),
+          container?.LineSeal,
+        ],
         ' / ',
       ),
       packageInfo: cleanJoin(

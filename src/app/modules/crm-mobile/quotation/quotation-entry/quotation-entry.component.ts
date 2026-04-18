@@ -5012,7 +5012,8 @@ ${this.userData['userEmail']}`;
         currencyMaster: this.currencyMaster,
         chargeUnitMaster: this.chargeUnitMaster,
         departments: this.departments,
-        ports: this.ports
+        ports: this.ports,
+        containerTypeList: this.containerTypeList
       }
     );
 
@@ -5097,6 +5098,53 @@ ${this.userData['userEmail']}`;
     } else {
       return (this.currencyMaster.find(curr => curr.CurrencyMasterSid === CurrencyMasterSid))?.currencyCode || 'N/A';
     }
+  }
+
+  getRoutePrintCargoDetails(route: any): Array<{ cargoType: string; containerType: string; quantity: number | string }> {
+    const cargoGroups = this.getRouteCargoGroups(route);
+    return cargoGroups
+      .map((cargo: any) => ({
+        cargoType: cargo?.CargoType || '',
+        containerType: this.getContainerTypeDisplay(cargo?.ContainerType),
+        quantity: cargo?.Qty ?? cargo?.NoofContainers ?? ''
+      }))
+      .filter((cargo: any) => cargo.cargoType || cargo.containerType || cargo.quantity !== '');
+  }
+
+  getContainerTypeDisplay(containerType: any): string {
+    if (containerType === null || containerType === undefined || containerType === '') {
+      return '';
+    }
+
+    const matchedType = this.containerTypeList.find((type: any) =>
+      type.ContainerTypeMasterSid === containerType ||
+      String(type.ContainerTypeMasterSid) === String(containerType) ||
+      type.ContainerCode === containerType ||
+      type.ContainerName === containerType
+    );
+
+    if (!matchedType) {
+      return String(containerType);
+    }
+
+    return matchedType.ContainerCode || matchedType.ContainerName || String(containerType);
+  }
+
+  shouldShowContainerQuantity(route: any): boolean {
+    const departmentName = (this.getDepartmentName(route?.DepartmentMasterSid) || '').toLowerCase();
+    return departmentName.includes('fcl');
+  }
+
+  shouldShowRouteCargoTable(route: any): boolean {
+    return this.shouldShowContainerQuantity(route) && this.getRoutePrintCargoDetails(route).length > 0;
+  }
+
+  getRoutePrintCargoTypeSummary(route: any): string {
+    const cargoTypes = this.getRoutePrintCargoDetails(route)
+      .map((cargo: any) => cargo?.cargoType)
+      .filter((cargoType: string) => !!cargoType);
+
+    return cargoTypes.length ? Array.from(new Set(cargoTypes)).join(', ') : '-';
   }
 
   //  goForBookingCreation() {

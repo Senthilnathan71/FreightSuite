@@ -1,5 +1,6 @@
 import {
   ReleaseLetterFclCargoRow,
+  ReleaseLetterLclCargoRow,
   ReleaseLetterPdfData
 } from '../interfaces/pdf-document.interfaces';
 import { formatDate, formatNumberWithCommas, joinNonEmpty } from '../helpers/pdf-formatters';
@@ -33,7 +34,7 @@ export function generateReleaseLetterDocument(data: ReleaseLetterPdfData): any {
       buildTitle(data),
       buildInfoSection(data),
       buildCargoHeading(),
-      isFcl ? buildFclTable(data.fclCargo) : buildLclTable(data),
+      isFcl ? buildFclTable(data.fclCargo) : buildLclTable(data.lclCargo),
       buildReleaseToSection(data),
       buildMarksSection(data),
       buildRemarksSection(data),
@@ -160,9 +161,10 @@ function buildFclTable(rows: ReleaseLetterFclCargoRow[]): any {
   return {
     table: {
       headerRows: 1,
-      widths: [85, '*', 70, 85, 85],
+      widths: [75, 65, '*', 60, 75, 75],
       body: [
         [
+          { text: 'Cargo Type', style: 'tableHeader' },
           { text: 'No.Container', style: 'tableHeader' },
           { text: 'Container Type', style: 'tableHeader' },
           { text: 'No. of Pkgs', style: 'tableHeader' },
@@ -170,8 +172,9 @@ function buildFclTable(rows: ReleaseLetterFclCargoRow[]): any {
           { text: 'Volume', style: 'tableHeader' }
         ],
         ...rows.map((item) => [
+          buildTextCell(item.cargoType || '-'),
           buildNumberCell(item.containerCount, 0),
-          buildTextCell(item.containerType),
+          buildTextCell(item.containerType || '-'),
           buildNumberCell(item.noOfPackages, 0),
           buildNumberCell(item.grossWeight, 3),
           buildNumberCell(item.volume, 3)
@@ -183,23 +186,24 @@ function buildFclTable(rows: ReleaseLetterFclCargoRow[]): any {
   };
 }
 
-function buildLclTable(data: ReleaseLetterPdfData): any {
-  const summary = data.lclCargo || {};
+function buildLclTable(rows: ReleaseLetterLclCargoRow[]): any {
   return {
     table: {
       headerRows: 1,
-      widths: ['*', '*', '*'],
+      widths: ['*', '*', '*', '*'],
       body: [
         [
+          { text: 'Cargo Type', style: 'tableHeader' },
           { text: 'No. of Pkgs', style: 'tableHeader' },
           { text: 'Gross Weight', style: 'tableHeader' },
           { text: 'Volume', style: 'tableHeader' }
         ],
-        [
-          buildNumberCell(summary.noOfPackages, 0),
-          buildNumberCell(summary.grossWeight, 3),
-          buildNumberCell(summary.volume, 3)
-        ]
+        ...rows.map((item) => [
+          buildTextCell(item.cargoType || '-'),
+          buildNumberCell(item.noOfPackages, 0),
+          buildNumberCell(item.grossWeight, 3),
+          buildNumberCell(item.volume, 3)
+        ])
       ]
     },
     layout: borderedLayout(),
@@ -337,8 +341,18 @@ export function transformReleaseLetterApiData(
     portList?: any[];
   }
 ): ReleaseLetterPdfData {
-  const cargo = apiData?.Cargo?.[0] || {};
   const other = apiData?.Others?.[0] || {};
+  const cargoRows = (apiData?.Cargo || []).filter((cargo: any) =>
+    !!(
+      cargo?.CargoType ||
+      cargo?.ContainerType ||
+      toNumber(cargo?.NoOfPackage) ||
+      toNumber(cargo?.GrossWeight) ||
+      toNumber(cargo?.Volume) ||
+      toNumber(cargo?.NoofContainers)
+    )
+  );
+  const primaryCargo = cargoRows[0] || apiData?.Cargo?.[0] || {};
 
   const getContainerName = (containerTypeMasterSid?: number): string => {
     if (!containerTypeMasterSid) return '';
@@ -391,20 +405,22 @@ export function transformReleaseLetterApiData(
       portOfDischarge: getPortName(apiData?.POD),
       finalDestination: getPortName(apiData?.FPD)
     },
-    fclCargo: [{
+    fclCargo: cargoRows.map((cargo: any) => ({
+      cargoType: cargo?.CargoType || '-',
       containerCount: toNumber(cargo?.NoofContainers),
-      containerType: getContainerName(cargo?.ContainerType),
+      containerType: getContainerName(cargo?.ContainerType) || '-',
       noOfPackages: toNumber(cargo?.NoOfPackage),
       grossWeight: toNumber(cargo?.GrossWeight),
       volume: toNumber(cargo?.Volume)
-    }],
-    lclCargo: {
+    })),
+    lclCargo: cargoRows.map((cargo: any) => ({
+      cargoType: cargo?.CargoType || '-',
       noOfPackages: toNumber(cargo?.NoOfPackage),
       grossWeight: toNumber(cargo?.GrossWeight),
       volume: toNumber(cargo?.Volume)
-    },
+    })),
     releaseTo: apiData?.CustomerName || '',
-    marksAndNumber: cargo?.MarksAndNumber || '',
+    marksAndNumber: primaryCargo?.MarksAndNumber || '',
     remarks: apiData?.InternalNote || '',
     signatureCompanyName: company?.companyName || company?.CompanyName || ''
   };

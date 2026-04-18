@@ -489,7 +489,11 @@
           <tbody>
             <tr *ngFor="let container of masterJobData?.containers">
               <td style="border:1px solid black; padding:2px 8px; border-left: none;">
-                {{container?.ContainerNumber}} / {{ container?.LineSeal }}
+                {{ container?.ContainerNumber }}
+                <span *ngIf="getContainerTypeName(container?.ContainerType)">
+                  ({{ getContainerTypeName(container?.ContainerType) }})
+                </span>
+                / {{ container?.LineSeal }}
               </td>
 
             <td style="border:1px solid black; padding:2px 8px;">

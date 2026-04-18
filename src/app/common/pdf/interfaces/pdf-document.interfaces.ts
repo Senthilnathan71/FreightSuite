@@ -34,6 +34,7 @@ export interface QuotationPdfData extends PdfDocumentBase {
   chargeUnitMaster?: any[];
   departments?: any[];
   ports?: any[];
+  containerTypeList?: any[];
 }
 
 export interface QuotationRouteData {
@@ -1228,11 +1229,7 @@ export interface ReleaseLetterPdfData extends PdfDocumentBase {
     finalDestination?: string;
   };
   fclCargo: ReleaseLetterFclCargoRow[];
-  lclCargo: {
-    noOfPackages?: number;
-    grossWeight?: number;
-    volume?: number;
-  };
+  lclCargo: ReleaseLetterLclCargoRow[];
   releaseTo?: string;
   marksAndNumber?: string;
   remarks?: string;
@@ -1240,8 +1237,16 @@ export interface ReleaseLetterPdfData extends PdfDocumentBase {
 }
 
 export interface ReleaseLetterFclCargoRow {
+  cargoType?: string;
   containerCount?: number;
   containerType?: string;
+  noOfPackages?: number;
+  grossWeight?: number;
+  volume?: number;
+}
+
+export interface ReleaseLetterLclCargoRow {
+  cargoType?: string;
   noOfPackages?: number;
   grossWeight?: number;
   volume?: number;

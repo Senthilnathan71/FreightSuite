@@ -260,7 +260,7 @@
                              @if(selectedFCLLCL === "FCL" || selectedFCLLCL === "LCL"){
                                 <th
                                     style="border:1px solid black; padding:4px; text-align:center;font-weight: bolder;">
-                                    <strong>Container</strong>
+                                    <strong> No.of Container</strong>
                                 </th>
 
                                 <th
@@ -295,10 +295,10 @@
 
                         <tbody>
                             
-                            <tr *ngFor="let item of  housejobData?.Products">
+                            <tr *ngFor="let item of proofOfDeliveryRows">
 
                                 <td style="border:1px solid black; padding:4px; text-align:start; border-left:none;">
-                                     {{ item?.ProductName }}
+                                     {{ item?.ProductName || item?.CommodityDescription }}
                                 </td>
                 
                              @if(selectedFCLLCL === "FCL" || selectedFCLLCL === "LCL"){
@@ -307,12 +307,12 @@
                                 </td>
 
                                 <td style="border:1px solid black; padding:4px; text-align:center;">
-                                      {{ getContainerName(item.masterJobContainer?.ContainerType) }}
+                                      {{ getContainerName(item.masterJobContainer?.ContainerType || item?.ContainerType) }}
                                 </td>
                                   }
 
                                 <td style="border:1px solid black; padding:4px; text-align:right;">
-                                    {{ item?.ExternlQty }}
+                                    {{ item?.ExternlQty ?? item?.NoOfPackage }}
                                 </td>
 
                                 <td style="border:1px solid black; padding:4px; text-align:right;">
@@ -348,7 +348,7 @@
                 <!-- Remarks -->
                 <div style="display:flex; align-items:center; margin-top:10px; padding-left:18px;">
                     <div style=" width:140px;font-weight: bolder;"><strong>Remarks</strong></div>
-                    <div>: {{ housejobData?.InternalNote }}</div>
+                    <div>: {{ getRemarks() }}</div>
                 </div>
 
                 <div style="text-align: center;margin-top: 10px;">

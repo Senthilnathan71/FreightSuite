@@ -203,7 +203,7 @@
                             </th>
                              @if(selectedDepartmentType === "SEA"){
                             <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
-                                <strong>Container No.</strong>
+                                <strong>No. of Container</strong>
                             </th>               
                             <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
                                 <strong>Type</strong>
@@ -244,14 +244,14 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let container of housejobData?.Products">
-                            <td style="border:1px solid black; padding:2px 8px;">{{container?.ProductName }}
+                        <tr *ngFor="let container of jobCardRows">
+                            <td style="border:1px solid black; padding:2px 8px;">{{container?.ProductName || container?.CommodityDescription }}
                             </td>
                              @if(selectedDepartmentType === "SEA"){
                             <td style="border:1px solid black; padding:2px 8px;text-align: start;">{{
                                 container?.ContainerNo }}</td>
                             <td style="border:1px solid black; padding:2px 8px;text-align: start;">{{
-                                getContainerTypeName(container?.masterJobContainer?.ContainerType) }}</td>
+                                getContainerTypeName(container?.masterJobContainer?.ContainerType || container?.ContainerType) }}</td>
                             }@else{
                                   <td style="border:1px solid black; padding:2px 8px;text-align: right;">{{
                                 container?.Length | number:'1.3-3'}}</td>
@@ -263,7 +263,7 @@
                                 container?.Volumetric | number:'1.3-3'}}</td>
                             }
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">
-                                {{container?.ExternlQty}}</td>
+                                {{container?.ExternlQty || container?.NoOfPackage}}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
                                 container?.GrossWeight | number:'1.3-3'}}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ container?.Volume
@@ -401,7 +401,7 @@
                     </thead>
                     <tbody>
                         <tr *ngFor="let item of housejobData?.costRevenueCharges">
-                            <td style="border:1px solid black; padding:2px 8px;">{{ getChargeName(item.ChargeMasterSid)
+                            <td style="border:1px solid black; padding:2px 8px;">{{ getChargeName(item.ChargeMasterSid) || item?.ChargeDescription
                                 }}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">
                                 {{
@@ -506,7 +506,7 @@
 
             <div style="display:flex; margin-bottom:1px;padding-top: 10px; padding-left: 0px;">
                 <div style="width:135px;font-weight: bolder;"><strong>Internal Remarks</strong></div>
-                <div>: {{ housejobData?.InternalNote }}</div>
+                <div>: {{ getInternalRemarks() }}</div>
             </div>
 
 

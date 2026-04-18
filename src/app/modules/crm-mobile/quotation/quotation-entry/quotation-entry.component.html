@@ -3262,70 +3262,163 @@
             </td>
           </tr>
 
-          @for(carrier of route.quoteCarrier; track carrier){
+      @for(carrier of route.quoteCarrier; track carrier){
+  <tbody>
+
+    <!-- Header Row -->
+    <tr>
+      <td colspan="8">
+        <div style="display: flex; padding: 5px 22px; align-items: center;">
+
+          <!-- Left -->
+          <p style="flex: 1; margin: 0; padding: 4px;">
+            <strong>Carrier :</strong> {{ carrier?.CarrierName }}
+          </p>
+
+          @if(!shouldShowContainerQuantity(route)){
+            <p style="flex: 1; margin: 0; padding: 4px; text-align: center;">
+              <strong>Cargo Type :</strong> {{ getRoutePrintCargoTypeSummary(route) }}
+            </p>
+          }
+
+          <!-- Center -->
+          <p style="flex: 1; text-align: center; margin: 0; padding: 4px;">
+            <strong>Valid From :</strong>
+            {{ route.effDate | formatDate }}
+          </p>
+
+          <!-- Right -->
+          <p style="flex: 1; text-align: right; margin: 0; padding: 4px;">
+            <strong>Valid To :</strong>
+            {{ route.expdate | formatDate }}
+          </p>
+
+        </div>
+      </td>
+    </tr>
+
+    <!-- Cargo Details -->
+    @if(shouldShowRouteCargoTable(route)){
+      <tr>
+        <td colspan="8" style="padding: 8px 22px 12px 22px;">
+          <table style="width: 80%; border-collapse: collapse; font-size: 15px; margin: 0 auto;">
+            <thead>
+              <tr>
+                <th style="text-align: left; font-weight: bolder; width: 33%; border: 1px solid #000; padding: 6px 10px;">
+                  Cargo Type
+                </th>
+                <th style="text-align: left; font-weight: bolder; width: 33%; border: 1px solid #000; padding: 6px 10px;">
+                  Container Type
+                </th>
+                @if(shouldShowContainerQuantity(route)){
+                  <th style="text-align: center; font-weight: bolder; width: 33%; border: 1px solid #000; padding: 6px 10px;">
+                    No Of Container
+                  </th>
+                }
+              </tr>
+            </thead>
+
             <tbody>
-              <tr>
-                <td colspan="8">
-                  <div style="display: flex;  border-top: none;padding-left: 22px; padding-right: 22px;padding-top: 5px;padding-bottom: 5px;">
-                    <p style="margin: 0; padding: 4px; width: 25%;;">
-                     <strong>
-                        <span  style="font-weight: bolder;">Carrier :</span>
-                     </strong>  {{ route.quoteCarrier[0]?.CarrierName }}
-                    </p>
-                    <p style="margin: 0; padding: 4px; width: 25%;">
-                     <strong>
-                          <span style="font-weight: bolder;">Cargo Type :</span>
-                     </strong>  {{ route.quoteCargo[0]?.CargoType }}
-                    </p>
-                    <p style="margin: 0; padding: 4px; width: 25%; ">
-                      <strong>
-                        <span style="font-weight: bolder;"> Valid From :</span>
-                      </strong>
-                      {{ route.effDate | formatDate }}
-                    </p>
-                    <p style="margin: 0; padding: 4px; width: 25%;margin-left: auto; width: auto;">
-                      <strong>
-                        <span style="font-weight: bolder;"> Valid To :</span>
-                      </strong>
-                      {{ route.expdate | formatDate }}
-                    </p>
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <th style="border: 1px solid #000; padding: 4px;text-align: center;border-left:none;width: 30%;font-weight: bolder;"><strong>Charge</strong></th>
-                <td style="border: 1px solid #000; padding: 4px;text-align: center;width: 10%;font-weight: bolder;"><strong>Unit</strong></td>
-                <td style="border: 1px solid #000; padding: 4px;text-align: center;width: 8%;font-weight: bolder;"><strong>Qty.</strong></td>
-                <td style="border: 1px solid #000; padding: 4px;text-align: center;width: 8%;font-weight: bolder;"><strong>Curr.</strong></td>
-                @if(selectedItem.AgreedRate === "Y"){
-                  <td style="border: 1px solid #000; padding: 4px;text-align: center;width: 10%;font-weight: bolder;"><strong>Ex Rate</strong></td>
-                }
-                <td style="border: 1px solid #000; padding: 4px;text-align: center;width: 10%;font-weight: bolder;"><strong>Rate</strong></td>
-                <td style="border: 1px solid #000; padding: 4px;text-align: center;border-right:none;width: 10%;font-weight: bolder;"><strong>Amt</strong></td>
-                @if(selectedItem.AgreedRate === "Y"){
-                  <td style="border: 1px solid #000; padding: 4px;text-align: center;border-right:none;font-weight: bolder;"><strong>Local Amt</strong></td>
-                }
-              </tr>
-
-              @for(charge of route.quoteCarrier[0]?.quoteCharge; track charge){
+              @for(cargoDetail of getRoutePrintCargoDetails(route); track $index){
                 <tr>
-                  <td style="border: 1px solid #000; padding: 4px;border-left:none; text-align: start;">{{ charge.ChargeDisplayName }}</td>
-                  <td style="border: 1px solid #000; padding: 4px;text-align: start;">{{ getChargeUOMCodeById(charge.RevenueChargeUomSid) }}</td>
-                  <td style="border: 1px solid #000; padding: 4px;text-align: end;">{{ charge.Qty }}</td>
-                  <td style="border: 1px solid #000; padding: 4px;text-align: start;">{{ getCurrencyCodeById(charge.RevenueCurrencyMasterSid) }}</td>
-                  @if(selectedItem.AgreedRate === "Y"){
-                    <td style="border: 1px solid #000; padding: 4px;text-align: right;">{{ charge.RevenueExchangeRate | number: '1.3-3'}}</td>
-                  }
-                  <td style="border: 1px solid #000; padding: 4px;text-align: end;">{{ charge.RevenueRate | number: '1.3-3'}}</td>
-                  <td style="border: 1px solid #000; padding: 4px;text-align: end;border-right:none">{{ charge.RevenueAmount | number: '1.3-3' }}</td>
-                  @if(selectedItem.AgreedRate === "Y"){
-                    <td style="border: 1px solid #000; padding: 4px;text-align: end;border-right:none">{{ charge.RevenueLocalAmount | number: '1.3-3'}}</td>
+                  <td style="padding: 6px 10px; text-align: left; border: 1px solid #000;">
+                    {{ cargoDetail.cargoType || '-' }}
+                  </td>
+                  <td style="padding: 6px 10px; text-align: left; border: 1px solid #000;">
+                    {{ cargoDetail.containerType || '-' }}
+                  </td>
+                  @if(shouldShowContainerQuantity(route)){
+                    <td style="padding: 6px 10px; text-align: center; border: 1px solid #000;">
+                      {{ cargoDetail.quantity || '-' }}
+                    </td>
                   }
                 </tr>
               }
             </tbody>
-          }
+          </table>
+        </td>
+      </tr>
+    }
+
+    <!-- Charges Header -->
+    <tr>
+      <th style="border: 1px solid #000; padding: 4px; text-align: center; border-left:none; width: 30%; font-weight: bolder;">
+        Charge
+      </th>
+      <td style="border: 1px solid #000; padding: 4px; text-align: center; width: 10%; font-weight: bolder;">
+        Unit
+      </td>
+      <td style="border: 1px solid #000; padding: 4px; text-align: center; width: 8%; font-weight: bolder;">
+        Qty.
+      </td>
+      <td style="border: 1px solid #000; padding: 4px; text-align: center; width: 8%; font-weight: bolder;">
+        Curr.
+      </td>
+
+      @if(selectedItem.AgreedRate === "Y"){
+        <td style="border: 1px solid #000; padding: 4px; text-align: center; width: 10%; font-weight: bolder;">
+          Ex Rate
+        </td>
+      }
+
+      <td style="border: 1px solid #000; padding: 4px; text-align: center; width: 10%; font-weight: bolder;">
+        Rate
+      </td>
+
+      <td style="border: 1px solid #000; padding: 4px; text-align: center; border-right:none; width: 10%; font-weight: bolder;">
+        Amt
+      </td>
+
+      @if(selectedItem.AgreedRate === "Y"){
+        <td style="border: 1px solid #000; padding: 4px; text-align: center; border-right:none; font-weight: bolder;">
+          Local Amt
+        </td>
+      }
+    </tr>
+
+    <!-- Charges Rows -->
+    @for(charge of carrier?.quoteCharge; track charge){
+      <tr>
+        <td style="border: 1px solid #000; padding: 4px; border-left:none; text-align: start;">
+          {{ charge.ChargeDisplayName }}
+        </td>
+
+        <td style="border: 1px solid #000; padding: 4px; text-align: start;">
+          {{ getChargeUOMCodeById(charge.RevenueChargeUomSid) }}
+        </td>
+
+        <td style="border: 1px solid #000; padding: 4px; text-align: end;">
+          {{ charge.Qty }}
+        </td>
+
+        <td style="border: 1px solid #000; padding: 4px; text-align: start;">
+          {{ getCurrencyCodeById(charge.RevenueCurrencyMasterSid) }}
+        </td>
+
+        @if(selectedItem.AgreedRate === "Y"){
+          <td style="border: 1px solid #000; padding: 4px; text-align: right;">
+            {{ charge.RevenueExchangeRate | number: '1.3-3' }}
+          </td>
+        }
+
+        <td style="border: 1px solid #000; padding: 4px; text-align: end;">
+          {{ charge.RevenueRate | number: '1.3-3' }}
+        </td>
+
+        <td style="border: 1px solid #000; padding: 4px; text-align: end; border-right:none;">
+          {{ charge.RevenueAmount | number: '1.3-3' }}
+        </td>
+
+        @if(selectedItem.AgreedRate === "Y"){
+          <td style="border: 1px solid #000; padding: 4px; text-align: end; border-right:none;">
+            {{ charge.RevenueLocalAmount | number: '1.3-3' }}
+          </td>
+        }
+      </tr>
+    }
+
+  </tbody>
+}
         </table>
       </div>
     }
@@ -3486,84 +3579,128 @@
         </div>
       </div>
 
-      @for(route of selectedItem.quoteRoute; track route){
-      <aside class="table-responsive  px-3 px-md-5">
-        <table class="table">
+    @for(route of selectedItem.quoteRoute; track route){
+  <div style="overflow-x: auto; margin-bottom: 50px; border: 1.5px solid #000; border-radius: 4px; padding: 10px 0;">
+    <table style="width: 100%; border-collapse: collapse; font-size: 16px;">
+      <tr>
+        <td colspan="8">
+          <div style="display: flex; justify-content: space-between; border-top: 1px solid black; border-bottom: 1px solid black; padding-left: 22px; padding-right: 15px; padding-top: 5px; padding-bottom: 5px;">
+            <div style="border-left: none;">
+              <p style="margin: 0; padding: 4px; font-weight: bolder;">{{ getDepartmentName(route.DepartmentMasterSid) }}</p>
+            </div>
+            <div style="padding-right: 60px;">
+              <p style="margin: 0; padding: 4px; border-right: none; font-weight: bolder;">
+                <strong>{{ getFormattedPort(route.POLSid) }} - {{ getFormattedPort(route.PODSid) }}
+                  {{ route.PODSid !== route.FDPSid ? '- ' + getFormattedPort(route.FDPSid) : '' }}</strong>
+              </p>
+            </div>
+          </div>
+        </td>
+      </tr>
 
-
+      @for(carrier of route.quoteCarrier; track carrier){
+        <tbody>
           <tr>
-            <td colspan="8" style="border:2px solid black">
-              <aside class="d-flex gap-3 justify-content-between">
-                <div>
-                  <p class="mb-0  fw-bold">{{route.departmentMaster?.departmentName}} </p>
-                </div>
-                <div>
-                  <p class="mb-0 fw-normal col">{{getFormattedPort(route.POLSid)}} - {{getFormattedPort(route.PODSid)}}
-                    {{route.PODSid !== route.FDPSid ? '- ' + getFormattedPort(route.FDPSid) : ''}}.</p>
-                </div>
-              </aside>
+            <td colspan="8">
+              <div style="display: flex; border-top: none; padding-left: 22px; padding-right: 22px; padding-top: 5px; padding-bottom: 5px; align-items: flex-start;">
+                <p style="margin: 0; padding: 4px; width: 34%;">
+                  <strong><span style="font-weight: bolder;">Carrier :</span></strong> {{ carrier?.CarrierName }}
+                </p>
+                @if(!shouldShowContainerQuantity(route)){
+                  <p style="margin: 0; padding: 4px; width: 22%;">
+                    <strong><span style="font-weight: bolder;">Cargo Type :</span></strong> {{ getRoutePrintCargoTypeSummary(route) }}
+                  </p>
+                }
+                <p style="margin: 0; padding: 4px; width: 22%;">
+                  <strong><span style="font-weight: bolder;">Valid From :</span></strong>
+                  {{ route.effDate | formatDate }}
+                </p>
+                <p style="margin: 0; padding: 4px; width: 22%;">
+                  <strong><span style="font-weight: bolder;">Valid To :</span></strong>
+                  {{ route.expdate | formatDate }}
+                </p>
+              </div>
             </td>
           </tr>
-          <tbody>
+
+          @if(shouldShowRouteCargoTable(route)){
             <tr>
-              <td colspan="8" class="p-0" style="border:2px solid black">
-                <aside class="d-flex flex-wrap">
-                  <p class="mb-0 col-3 border-end p-2"><span><strong>Carrier :</strong></span>
-                    {{route.quoteCarrier[0]?.CarrierName}}
-                  </p>
-                  <p class="mb-0 col-3 border-end p-2"><span><strong>Cargo Type :</strong></span>
-                    {{route.quoteCargo[0]?.CargoType}}</p>
-                  <p class="mb-0 col-3 border-end p-2"><span><strong>Valid From : </strong></span>
-                    {{route.effDate | formatDate }}</p>
-                  <p class="mb-0 col-3 p-2"><span class="fw-bold"><strong>Valid To : </strong></span> {{route.expdate | formatDate }}
-                  </p>
-                </aside>
+              <td colspan="8" style="padding: 8px 22px 12px 22px;">
+                <table style="width: 80%; border-collapse: collapse; font-size: 15px; margin: 0 auto;">
+                  <thead>
+                    <tr>
+                      <th style="text-align: left; font-weight: bolder; width: 33%; border: 1px solid #000; padding: 6px 10px;">
+                        Cargo Type
+                      </th>
+                      <th style="text-align: left; font-weight: bolder; width: 33%; border: 1px solid #000; padding: 6px 10px;">
+                        Container Type
+                      </th>
+                      @if(shouldShowContainerQuantity(route)){
+                        <th style="text-align: center; font-weight: bolder; width: 33%; border: 1px solid #000; padding: 6px 10px;">
+                          No Of Container
+                        </th>
+                      }
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for(cargoDetail of getRoutePrintCargoDetails(route); track $index){
+                      <tr>
+                        <td style="padding: 6px 10px; text-align: left; border: 1px solid #000;">
+                          {{ cargoDetail.cargoType || '-' }}
+                        </td>
+                        <td style="padding: 6px 10px; text-align: left; border: 1px solid #000;">
+                          {{ cargoDetail.containerType || '-' }}
+                        </td>
+                        @if(shouldShowContainerQuantity(route)){
+                          <td style="padding: 6px 10px; text-align: center; border: 1px solid #000;">
+                            {{ cargoDetail.quantity || '-' }}
+                          </td>
+                        }
+                      </tr>
+                    }
+                  </tbody>
+                </table>
               </td>
             </tr>
+          }
 
-            <tr style="border:2px solid black">
-              <td class="fw-bold table-secondary border border-dark"><strong>Charge</strong></td>
-              <td class="fw-bold table-secondary border border-dark"><strong>Unit</strong></td>
-              <td class="fw-bold table-secondary border border-dark"><strong>Qty</strong></td>
-              <td class="fw-bold table-secondary border border-dark"><strong>Curr</strong></td>
-              <td class="fw-bold table-secondary border border-dark"><strong>Rate</strong></td>
-              <td class="fw-bold table-secondary border border-dark"><strong>Amt.</strong></td>
+          <tr>
+            <th style="border: 1px solid #000; padding: 4px; text-align: center; border-left: none; width: 30%; font-weight: bolder;"><strong>Charge</strong></th>
+            <td style="border: 1px solid #000; padding: 4px; text-align: center; width: 10%; font-weight: bolder;"><strong>Unit</strong></td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: center; width: 8%; font-weight: bolder;"><strong>Qty.</strong></td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: center; width: 8%; font-weight: bolder;"><strong>Curr.</strong></td>
+            @if(selectedItem.AgreedRate === "Y"){
+              <td style="border: 1px solid #000; padding: 4px; text-align: center; width: 10%; font-weight: bolder;"><strong>Ex Rate</strong></td>
+            }
+            <td style="border: 1px solid #000; padding: 4px; text-align: center; width: 10%; font-weight: bolder;"><strong>Rate</strong></td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: center; border-right: none; width: 10%; font-weight: bolder;"><strong>Amt</strong></td>
+            @if(selectedItem.AgreedRate === "Y"){
+              <td style="border: 1px solid #000; padding: 4px; text-align: center; border-right: none; font-weight: bolder;"><strong>Local Amt</strong></td>
+            }
+          </tr>
+
+          @for(charge of carrier?.quoteCharge; track charge){
+            <tr>
+              <td style="border: 1px solid #000; padding: 4px; border-left: none; text-align: start;">{{ charge.ChargeDisplayName }}</td>
+              <td style="border: 1px solid #000; padding: 4px; text-align: start;">{{ getChargeUOMCodeById(charge.RevenueChargeUomSid) }}</td>
+              <td style="border: 1px solid #000; padding: 4px; text-align: end;">{{ charge.Qty }}</td>
+              <td style="border: 1px solid #000; padding: 4px; text-align: start;">{{ getCurrencyCodeById(charge.RevenueCurrencyMasterSid) }}</td>
               @if(selectedItem.AgreedRate === "Y"){
-              <td class="fw-bold table-secondary border border-dark">Ex Rate</td>
-              <td class="fw-bold table-secondary border border-dark">Local Amount</td>
+                <td style="border: 1px solid #000; padding: 4px; text-align: right;">{{ charge.RevenueExchangeRate | number: '1.3-3' }}</td>
+              }
+              <td style="border: 1px solid #000; padding: 4px; text-align: end;">{{ charge.RevenueRate | number: '1.3-3' }}</td>
+              <td style="border: 1px solid #000; padding: 4px; text-align: end; border-right: none;">{{ charge.RevenueAmount | number: '1.3-3' }}</td>
+              @if(selectedItem.AgreedRate === "Y"){
+                <td style="border: 1px solid #000; padding: 4px; text-align: end; border-right: none;">{{ charge.RevenueLocalAmount | number: '1.3-3' }}</td>
               }
             </tr>
-            @for(charge of route.quoteCarrier[0]?.quoteCharge;track charge){
-            <tr style="border:2px solid black">
-              <td class="border border-dark">{{charge.ChargeDisplayName}}</td>
-              <td class="border border-dark">{{ getChargeUOMCodeById(charge.CostChargeUomSid)}}</td>
-              <td class="border border-dark">{{charge.Qty}}</td>
-              <td class="border border-dark">{{getCurrencyCodeById(charge.CostCurrencyMasterSid)}}</td>
-              <td class="border border-dark">{{charge.CostRate}}</td>
-              <td class="border border-dark">{{charge.CostAmount}}</td>
-              @if(selectedItem.AgreedRate === "Y"){
-              <td class="border border-dark">{{charge.CostExchangeRate}}</td>
-              <td class="border border-dark">{{charge.CostLocalAmount}}</td>
-              }
-
-            </tr>
-            }
-
-
-          </tbody>
-        </table>
-
-        <div class="mt-3">
-          <h6 class="fw-bold">Terms and Conditions:</h6>
-          <ul>
-            @for(term of TandCList; track term){
-            <li>{{ term.TandC }}</li>
-            }
-          </ul>
-        </div>
-
-      </aside>
+          }
+        </tbody>
       }
+    </table>
+  </div>
+}
+
     </div>
 
     <div class="d-flex align-items-center justify-content-between mt-5 pt-3">
