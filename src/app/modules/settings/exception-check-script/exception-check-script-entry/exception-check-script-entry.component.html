@@ -1,0 +1,104 @@
+<ngx-spinner bdColor="rgba(0,0,0,0.8)" size="medium" color="#fff" type="ball-scale-ripple" [fullScreen]="true">
+  <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
+
+<form [formGroup]="form" (ngSubmit)="save(false)" class="container-fluid py-2">
+  <div class="row">
+    <div class="col-md-6 mb-2">
+      <label class="form-label">Script Name *</label>
+      <input class="form-control" formControlName="ScriptName" maxlength="200" />
+    </div>
+
+    <div class="col-md-6 mb-2">
+      <label class="form-label">Execution Mode *</label>
+      <div>
+        <label class="me-3"><input type="radio" value="MANUAL"    formControlName="ExecutionMode"> Manual</label>
+        <label><input type="radio" value="SCHEDULED" formControlName="ExecutionMode"> Scheduled</label>
+      </div>
+    </div>
+
+    <div class="col-12 mb-2">
+      <label class="form-label">Description</label>
+      <textarea class="form-control" formControlName="ScriptDescription" rows="2"></textarea>
+    </div>
+
+    <div class="col-12 mb-2">
+      <div class="d-flex align-items-center justify-content-between">
+        <label class="form-label mb-0">Script (SELECT only) *</label>
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="validateScript()">Validate Script</button>
+      </div>
+      <textarea
+        class="form-control font-monospace"
+        formControlName="ScriptText"
+        rows="18"
+        spellcheck="false"
+        style="resize:vertical"></textarea>
+      <div class="mt-1 small">
+        <ng-container [ngSwitch]="validation.state">
+          <span *ngSwitchCase="'checking'" class="text-muted">Validating…</span>
+          <span *ngSwitchCase="'ok'"       class="text-success">✓ {{ validation.message }}</span>
+          <span *ngSwitchCase="'bad'"      class="text-danger">✗ {{ validation.message }}</span>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- Scheduler section -->
+    <div class="col-12" *ngIf="form.get('ExecutionMode')!.value === 'SCHEDULED'">
+      <hr>
+      <h6 class="mb-3">Scheduler</h6>
+
+      <div class="row">
+        <div class="col-md-3 mb-2">
+          <label class="form-label">Frequency *</label>
+          <select class="form-select" formControlName="Frequency">
+            <option [ngValue]="null" disabled>Select…</option>
+            <option *ngFor="let o of frequencyOptions" [ngValue]="o.value">{{ o.label }}</option>
+          </select>
+        </div>
+
+        <div class="col-md-3 mb-2" *ngIf="form.get('Frequency')!.value === 'WEEKLY'">
+          <label class="form-label">Day of Week *</label>
+          <select class="form-select" formControlName="DayOfWeek">
+            <option [ngValue]="null" disabled>Select…</option>
+            <option *ngFor="let d of dayOfWeekOptions" [ngValue]="d.value">{{ d.label }}</option>
+          </select>
+        </div>
+
+        <div class="col-md-3 mb-2" *ngIf="form.get('Frequency')!.value === 'MONTHLY'">
+          <label class="form-label">Day of Month *</label>
+          <input class="form-control" type="number" min="1" max="28" formControlName="DayOfMonth" />
+        </div>
+
+        <div class="col-md-3 mb-2">
+          <label class="form-label">Time (HH:mm) *</label>
+          <input class="form-control" type="time" formControlName="ScheduleTime" />
+        </div>
+
+        <div class="col-md-3 mb-2">
+          <label class="form-label">Time Zone</label>
+          <input class="form-control" placeholder="e.g. Asia/Kolkata" formControlName="TimeZone" />
+        </div>
+
+        <div class="col-md-6 mb-2">
+          <label class="form-label">To Emails *</label>
+          <input class="form-control" placeholder="a@x.com, b@y.com" formControlName="ToEmails" />
+        </div>
+
+        <div class="col-md-6 mb-2">
+          <label class="form-label">CC Emails</label>
+          <input class="form-control" placeholder="optional" formControlName="CcEmails" />
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 mb-3">
+      <label><input type="checkbox" formControlName="IsActive"> Active</label>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary" [disabled]="saving">Save</button>
+    <button type="button" class="btn btn-outline-primary" [disabled]="saving" (click)="save(true)">Save &amp; Execute</button>
+    <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+  </div>
+</form>
