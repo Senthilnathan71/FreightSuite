@@ -12,6 +12,8 @@ import { NumberSeriesListComponent } from "./number-series/number-series-list/nu
 import { NumberSeriesEntryComponent } from "./number-series/number-series-entry/number-series-entry.component";
 import { ReportScheduleListComponent } from "./report-schedule/report-schedule-list/report-schedule-list.component";
 import { ReportScheduleEntryComponent } from "./report-schedule/report-schedule-entry/report-schedule-entry.component";
+import { ExceptionCheckScriptListComponent } from "./exception-check-script/exception-check-script-list/exception-check-script-list.component";
+import { ExceptionCheckScriptEntryComponent } from "./exception-check-script/exception-check-script-entry/exception-check-script-entry.component";
 import { MenuUserConfigComponent } from "../crm-mobile/activity-allocation/menu-user-config/menu-user-config.component";
 import { ActivityAllocationComponent } from "../crm-mobile/activity-allocation/activity-allocation.component";
 import { ActivityAllocationEntryComponent } from "../crm-mobile/activity-allocation/activity-allocation-entry/activity-allocation-entry.component";
@@ -157,6 +159,38 @@ export const SettingsRoutes: Routes = [
                 data: {
                     title: 'Edit Report Schedule',
                     urls: [{ title: 'Settings', url: '/settings' }, { title: 'Report Schedule', url: '/settings/report-schedule/list' }, { title: 'Edit' }],
+                },
+            },
+            {
+                path: 'exception-check-script/list',
+                component: ExceptionCheckScriptListComponent,
+                data: {
+                    title: 'Exception Check',
+                    urls: [{ title: 'Settings', url: '/settings' }, { title: 'Exception Check' }],
+                },
+            },
+            {
+                path: 'exception-check-script/entry',
+                component: ExceptionCheckScriptEntryComponent,
+                data: {
+                    title: 'Add Exception Check',
+                    urls: [
+                        { title: 'Settings' },
+                        { title: 'Exception Check', url: '/settings/exception-check-script/list' },
+                        { title: 'Add' },
+                    ],
+                },
+            },
+            {
+                path: 'exception-check-script/entry/:id',
+                component: ExceptionCheckScriptEntryComponent,
+                data: {
+                    title: 'Edit Exception Check',
+                    urls: [
+                        { title: 'Settings' },
+                        { title: 'Exception Check', url: '/settings/exception-check-script/list' },
+                        { title: 'Edit' },
+                    ],
                 },
             },
             {
