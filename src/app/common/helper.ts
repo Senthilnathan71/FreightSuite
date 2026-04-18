@@ -379,7 +379,8 @@ export function toNumber(value: any): number {
     return value;
   }
   
-  return parseFloat(value.toString()) || 0;
+  const cleaned = value.toString().replace(/,/g, '');
+  return parseFloat(cleaned) || 0;
 }
 
 

@@ -23,44 +23,23 @@
 <div class="modal-body">
     <div id="printContent" class="p-1">
         <div
-            style="width:280mm; min-height:400mm; margin:10px auto; padding:10px; background:#fff; border:1px solid #000; box-sizing:border-box; font-size:16px; color:#000; display:flex; flex-direction:column; justify-content:space-between; page-break-after:always; ">
+            style="width:280mm; min-height:400mm; margin:10px auto; padding:10px; background:#fff; border:1px solid #000; box-sizing:border-box; font-size:14px; color:#000;position: relative; ">
 
-            <!-- Company Info -->
-            <div style="display: flex; flex-direction: column; margin-bottom: 0.5rem; width: 100%;">
-                <div style="display: flex; justify-content: space-between;flex-wrap: wrap;">
-                    <div style="display: flex; flex-direction: column;">
-                        <!-- Print logo -->
-                        <img [src]="(logoService.reportLogo$ | async)" alt="Company Logo" class="company-logo img-fluid"
-                            style="width: 100px;height:100px;" />
-                        <!-- <h4 style="margin: 0;"><strong>{{ currentCompany?.companyName || 'Company Name' }}</strong></h4> -->
-                    </div>
-                    <div style="flex: 1; text-align: center; font-size: 17px; padding-right:8%;">
-                        <h3 style="margin: 0; font-weight: 900;">{{ currentCompany?.companyName || 'Company Name' }}
-                        </h3>
-                        <h5 style="margin: 0; font-weight: 900;">{{ currentBranch?.branchName || 'Company Branch' }}
-                        </h5>
-                        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine1 || '' }}</p>
-                        <p style="margin: 2px 0; font-size: 16px;">{{ currentBranch?.addressLine2 || '' }}, {{
-                            currentBranch?.cityMaster?.cityName || currentCompany?.City ||
-                            ''
-                            }} {{ currentBranch?.postalCode || currentBranch?.ZipCode || '' }} , {{
-                            currentBranch?.phoneNumber || currentBranch?.Phone || '' }}</p>
-                    </div>
-                </div>
-            </div>
+
+            <app-print-header></app-print-header>
 
 
 
             <!-- Title -->
             <h4
-                style="text-align:center;  margin:0 0 10px 0; padding:5px 0px; border-top: 1px solid black;font-weight: bolder;font-size: 20px;">
+                style="text-align:center;  margin:0 0 10px 0; padding:5px 0px; border-top: 1px solid black;font-weight: bolder;">
                 <strong>Sailing Confirmation</strong>
             </h4>
 
             <!-- Enquiry Details -->
             <div style="display:flex; flex-wrap:wrap; border:1px solid black; padding:10px;margin-top: 0;">
                 <!-- Left Column -->
-                <div style="flex:0 0 50%; max-width:50%; padding-right:10px; box-sizing:border-box;font-size:16px;">
+                <div style="flex:0 0 50%; max-width:50%; padding-right:10px; box-sizing:border-box;">
                     <div style="display:flex; margin-bottom:5px;">
                         <div style="width:130px; white-space:nowrap;font-weight: bolder;"><strong>MBL No.</strong></div>
                         <div>: {{ housejobData?.masterJob?.MBLNo }}</div>
@@ -117,7 +96,7 @@
                 </div>
 
                 <!-- Right Column -->
-                <div style="flex:0 0 50%; max-width:50%; padding-left:10px; box-sizing:border-box;font-size:16px;">
+                <div style="flex:0 0 50%; max-width:50%; padding-left:10px; box-sizing:border-box;">
                     <div style="display:flex; margin-bottom:5px;">
                         <div style="width:150px; white-space:nowrap;font-weight: bolder;"><strong>HBL No.</strong></div>
                         <div>: {{ housejobData?.HBLNo }}</div>
@@ -162,8 +141,8 @@
             </div>
 
             <div style="margin:10px 0;font-weight: bolder;">
-                <p style="font-size:17px; margin:0;"><strong>Dear Sir,</strong></p>
-                <p style="margin:5px 0;font-size: 17px;">We are pleased to advice you the dispatch of your shipment.
+                <p style=" margin:0;"><strong>Dear Sir,</strong></p>
+                <p style="margin:5px 0;">We are pleased to advice you the dispatch of your shipment.
                     <br>
                     <strong>MBL No :</strong> {{housejobData?.masterJob?.MasterJobNumber}} , <strong>HBL No :</strong>
                     {{
@@ -179,13 +158,7 @@
             </div>
 
             <!-- Footer -->
-            <footer style="margin-top:auto; text-align:center; padding:10px; ">
-                <div style="display:flex; justify-content:space-between;">
-                    <div>Printed By: {{userData.userName}}</div>
-                    <span>This document is computer-generated and does not require a signature.</span>
-                    <div>Printed On: {{ currentDate | formatDate }}</div>
-                </div>
-            </footer>
+            <app-print-footer></app-print-footer>
 
         </div>
 

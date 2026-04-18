@@ -122,11 +122,32 @@ get totalGrossWeight(): number {
   }, 0) || 0;
 }
 
-get totalVolume(): number {
+  get totalVolume(): number {
   return this.housejobData?.Cargo?.reduce((sum, c) => {
     const value = Number(c.Volume) || 0;
     return sum + value;
   }, 0) || 0;
+}
+
+get isFcl(): boolean {
+  return (this.selectedFCLLCL || '').toUpperCase() === 'FCL';
+}
+
+get releaseLetterCargoRows(): any[] {
+  return (this.housejobData?.Cargo || []).filter((cargo: any) =>
+    !!(
+      cargo?.CargoType ||
+      cargo?.ContainerType ||
+      (Number(cargo?.NoOfPackage) || 0) ||
+      (Number(cargo?.GrossWeight) || 0) ||
+      (Number(cargo?.Volume) || 0) ||
+      (Number(cargo?.NoofContainers) || 0)
+    )
+  );
+}
+
+get primaryCargoRow(): any {
+  return this.releaseLetterCargoRows[0] || this.housejobData?.Cargo?.[0] || {};
 }
 
  getContainerName(ContainerTypeMasterSid: number) {

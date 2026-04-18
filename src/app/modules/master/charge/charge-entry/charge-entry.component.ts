@@ -54,6 +54,9 @@ export class ChargeEntryComponent implements OnInit {
   { name: "TDS Details"}
 ];
 unitQtyOptions = [
+  { value: 'Per 45ft Cont', name: 'Per 45ft Cont' },
+  { value: 'Per 40ft Cont', name: 'Per 40ft Cont' },
+  { value: 'Per 20ft Cont', name: 'Per 20ft Cont' },
   { value: 'Per Cont', name: 'Per Cont' },
   { value: 'Per CBM', name: 'Per CBM' },
   { value: 'Per BL', name: 'Per BL' },
@@ -383,9 +386,10 @@ validateUOMDepartmentCompatibility(): boolean {
     return false;
   }
 
-  // Validation 2: LCL department (both Export and Import) cannot have CON UOM
-  if (hasLCL && selectedUOM === 'CON') {
-    this.appSettingService.showError('CON is not applicable for LCL');
+  // Validation 2: LCL department cannot have container-based UOMs
+  const containerUoms = ['CON', '20F', '40F', '45F'];
+  if (hasLCL && containerUoms.includes(selectedUOM)) {
+    this.appSettingService.showError(`${selectedUOM} is not applicable for LCL`);
     this.chargeForm.get('UOM')?.setErrors({ invalidCombination: true });
     return false;
   }

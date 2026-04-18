@@ -904,7 +904,7 @@ export class EnquiryEntryComponent implements OnInit {
     this.routes.push(routeForm);
     this.subscribeToRouteChanges(routeForm, this.routes.length - 1);
     this.subscribeToRouteAutoFill(routeForm);
-    this.addCargo(this.routes.length - 1);
+    this.addCargo(this.routes.length - 1, true);
     const initialPorts = this.getFilteredPortsBySegment();
     this.filteredPOOPorts[this.routes.length - 1] = initialPorts;
     this.filteredPOLPorts[this.routes.length - 1] = initialPorts;
@@ -1111,7 +1111,15 @@ ${this.userData.userName}`;
   }
 
 
-  addCargo(routeIndex: number) {
+  addCargo(routeIndex: number, isInitialCargo = false) {
+    if (!isInitialCargo && this.selectedCargoMode !== 'FCL') {
+      return;
+    }
+
+    if (this.quotationCreatedAgainstThisEnquiry) {
+      return;
+    }
+
     const cargoForm = this.fb.group({
       CargoType: [null, [Validators.required]],
       ProductName: [null],
@@ -2141,8 +2149,8 @@ private parseFloatSafe(value: any): number {
       selectedFCLLCL = dept?.departmentType?.toUpperCase();
     }
 
-    let routeDetails = (response.enquiryRoute || []).flatMap(route => {
-      return (route.enquiryCargo || []).map(cargo => {
+    const routeDetails = (response.enquiryRoute || []).map(route => {
+      const cargoList = (route.enquiryCargo || []).map(cargo => {
         const containerTypeCode = (this.containerTypes || []).find(
           con => con.ContainerName === cargo.ContainerType
         )?.ContainerCode || null;
@@ -2153,55 +2161,49 @@ private parseFloatSafe(value: any): number {
           packageTypeId = packageType?.UOMMasterSid;
         }
 
-        // if (cargo.PackageType) {
-
-        //   if (typeof cargo.PackageType === 'string') {
-        //     // First try to find by UOMCode (this is likely what you need)
-        //     const packageTypeByCode = this.packageTypes.find(uom => 
-        //       uom.UOMCode === cargo.PackageType
-        //     );
-
-        //     // If not found by code, try by name
-        //     const packageTypeByName = this.packageTypes.find(uom => 
-        //       uom.UOMName === cargo.PackageType
-        //     );
-
-        //     // Use whichever is found
-        //     const foundPackageType = packageTypeByCode || packageTypeByName;
-
-        //     if (foundPackageType) {
-        //       packageTypeId = foundPackageType.UOMMasterSid;
-        //       console.log(`Found package type: ${foundPackageType.UOMCode} (${foundPackageType.UOMName}) -> ID: ${packageTypeId}`);
-        //     } else {
-        //       console.warn(`No package type found for: "${cargo.PackageType}"`);
-        //       console.warn('Available:', this.packageTypes?.map(p => p.UOMCode).join(', '));
-        //     }
-        //   }
-        // } 
         return {
+          ...cargo,
+          EnquiryRouteSid: route.EnquiryRouteSid,
           PORSid: route.PORSid,
           POLSid: route.POLSid,
           PODSid: route.PODSid,
           FPODSid: route.FDPSid,
-          CargoType: cargo.CargoType,
-          GrossWeight: cargo.GrossWeight,
-          NetWeight: cargo.NetWeight,
-          Volume: cargo.Volume,
-          ContainerType: containerTypeCode,
+          ContainerType: containerTypeCode || cargo.ContainerType || null,
           Qty: cargo.PackageQty,
-          ChargeableWeight: cargo.ChargeableWeight,
-          PackageQty: cargo.PackageQty,
-          PackageType: cargo.PackageType,
           PackageTypeId: packageTypeId,
           ServiceLevel: response.IncoTerms,
-          ProductName: cargo.ProductName,
-          length: cargo.length,
-          width: cargo.width,
-          height: cargo.height,
-          Volumetric: cargo.Volumetric,
-          ShipmentTerms: cargo.ShipmentTerms,
         };
       });
+
+      const primaryCargo = cargoList[0] || {};
+
+      return {
+        EnquiryRouteSid: route.EnquiryRouteSid,
+        PORSid: route.PORSid,
+        POLSid: route.POLSid,
+        PODSid: route.PODSid,
+        FDPSid: route.FDPSid,
+        FPODSid: route.FDPSid,
+        DepartmentMasterSid: route.DepartmentMasterSid ?? response.DepartmentMasterSid,
+        ShipmentTerms: primaryCargo.ShipmentTerms || null,
+        CargoType: primaryCargo.CargoType || null,
+        GrossWeight: primaryCargo.GrossWeight || null,
+        NetWeight: primaryCargo.NetWeight || null,
+        Volume: primaryCargo.Volume || null,
+        ContainerType: primaryCargo.ContainerType || null,
+        Qty: primaryCargo.Qty || primaryCargo.PackageQty || 1,
+        ChargeableWeight: primaryCargo.ChargeableWeight || null,
+        PackageQty: primaryCargo.PackageQty || null,
+        PackageType: primaryCargo.PackageType || null,
+        PackageTypeId: primaryCargo.PackageTypeId || null,
+        ServiceLevel: response.IncoTerms,
+        ProductName: primaryCargo.ProductName || null,
+        length: primaryCargo.length || 0,
+        width: primaryCargo.width || 0,
+        height: primaryCargo.height || 0,
+        Volumetric: primaryCargo.Volumetric || null,
+        quoteCargo: cargoList,
+      };
     });
 
     const enqData = {

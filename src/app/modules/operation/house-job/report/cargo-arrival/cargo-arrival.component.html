@@ -315,25 +315,25 @@
 
 
         <div
-            style="width:280mm; min-height:400mm; margin:10px auto; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; display:flex; flex-direction:column; page-break-after:always; position: relative; ">
+            style="width:280mm; min-height:400mm; margin:10px auto; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; display:flex; flex-direction:column; page-break-after:always; position: relative; font-size: 14px;">
 
         <!-- Company Info -->
 
              <app-print-header></app-print-header>
 
 
-            <h3
-                style="text-align:center; font-weight:bolder; padding:5px 0; border-top: 1px solid black;font-size: 20px;margin-bottom: 0;">
-                <strong>CARGO ARRIVAL NOTICE {{ withOrWithoutCharge ? 'WITH' : 'WITHOUT'}} CHARGES</strong></h3>
+            <h4
+                style="text-align:center; font-weight:bolder; padding:5px 0; border-top: 1px solid black;margin-bottom: 0;">
+                <strong>CARGO ARRIVAL NOTICE {{ withOrWithoutCharge ? 'WITH' : 'WITHOUT'}} CHARGES</strong></h4>
 
             <div
                 style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; margin-bottom:0.10rem; padding-left:2%; padding-right:2%;padding-top: 1%;">
-                <div style="flex:0 0 50%; max-width:50%;font-size: 17px;">
+                <div style="flex:0 0 50%; max-width:50%;">
                     <div style="display:flex;font-weight: bolder;"><strong><span> {{housejobData?.CustomerName}} <br>
                                 {{housejobData?.CustomerAddress}} </span></strong></div>
                 </div>
 
-                <div style="flex:0 0 50%; max-width:50%; margin-bottom:0.25rem;font-size: 16px;">
+                <div style="flex:0 0 50%; max-width:50%; margin-bottom:0.25rem;">
                     <div style="display:flex;"><strong style="width:140px;font-weight: bolder;">HBL</strong><span>:
                             {{housejobData?.HBLNo}}</span></div>
                     <div style="display:flex;"><strong style="width:140px;font-weight: bolder;">HBL Date</strong><span>:
@@ -346,12 +346,12 @@
             <div
                 style=" border-top:1px solid black; border-left:none;padding-bottom:40px;padding-top: 5px; border-right:none;">
                 <div style="display:flex;">
-                    <div style="flex:0 0 50%; max-width:50%;font-size: 16px;">
+                    <div style="flex:0 0 50%; max-width:50%;">
                         <div style=" margin:0;padding-left: 3%;font-weight: bolder;"><strong>Shipper</strong></div>
                         <div style="margin-left: 50px;margin-top: 5px;">{{housejobData?.ShipperName}} <br>
                             {{housejobData?.ShipperAddress}}</div>
                     </div>
-                    <div style="flex:0 0 50%; max-width:50%;font-size: 16px;">
+                    <div style="flex:0 0 50%; max-width:50%;">
                         <div style=" margin:0;padding-left: 0;font-weight: bolder;"><strong>Consignee</strong></div>
                         <div style="margin-left: 50px;margin-top: 5px;">{{housejobData?.ConsigneeName}} <br>
                             {{housejobData?.ConsigneeAddress}}</div>
@@ -361,12 +361,12 @@
 
             <div style="padding-bottom:40px;padding-top: 5px; border-top:1px solid black;  border-left:none; border-right:none;">
                 <div style="display:flex; flex-wrap:wrap;">
-                    <div style="flex:0 0 50%; max-width:50%;font-size: 16px;">
+                    <div style="flex:0 0 50%; max-width:50%;">
                         <div style=" margin:0;padding-left: 3%;font-weight: bolder;"><strong>Notify Party</strong></div>
                         <div style="margin-left: 50px;margin-top: 5px;">{{housejobData?.Notify}} <br>
                             {{housejobData?.NotifyAddress}}</div>
                     </div>
-                    <div style="flex:0 0 50%; max-width:50%;font-size: 16px;">
+                    <div style="flex:0 0 50%; max-width:50%;">
                         <div style="font-weight: bolder;"><strong>Goods Available At</strong></div>
                         <div style="margin-left: 50px;margin-top: 5px;">{{housejobData?.Others?.[0]?.YardCFS}}</div>
                     </div>
@@ -388,7 +388,7 @@
                 <div style="display:flex; flex-wrap:wrap;">
 
                     <!-- LEFT COLUMN -->
-                    <div style="flex:0 0 50%; max-width:50%;font-size: 16px;">
+                    <div style="flex:0 0 50%; max-width:50%;">
 
                         <div style="display:flex;  margin-bottom:5px;">
                             <div style="width:183px;font-weight: bolder;"><strong>Release Type</strong></div>
@@ -486,7 +486,7 @@
                     </div>
 
                     <!-- RIGHT COLUMN -->
-                    <div style="flex:0 0 50%; max-width:50%;font-size: 16px;">
+                    <div style="flex:0 0 50%; max-width:50%;">
 
                         <div style="display:flex; align-items:center; margin-bottom:5px;">
                             <div style="width:140px;font-weight: bolder;"><strong>Commodity</strong></div>
@@ -516,12 +516,12 @@
 
 
 
-            <h3 style="margin:0;padding-top: 0px; padding-bottom: 5px;text-align:start;font-size: 20px;font-weight:bolder;padding-left: 15px;"><strong>Routing Information</strong></h3>
+            <h4 style="margin:0;padding-top: 0px; padding-bottom: 5px;text-align:start;font-weight:bolder;padding-left: 15px;"><strong>Routing Information</strong></h4>
 
             <div
                 style="padding-left:15px; padding-right:2%; margin-bottom:0.25rem;  border-left:none; border-right:none; border-top:1px solid black;  border-bottom:1px solid black;">
                 <div style="display:flex; flex-wrap:wrap;margin-top: 10px;">
-                    <div style="flex:0 0 50%; max-width:50%;font-size: 16px;">
+                    <div style="flex:0 0 50%; max-width:50%;">
                         <div style="display:flex; align-items:center; ">
                             <div style=" width:180px; font-weight: bolder;"><strong>Mode</strong></div>
                             <div>: {{ housejobData?.Cargo?.[0]?.ModeOfTransport }}</div>
@@ -540,7 +540,7 @@
                         </div>
                     </div>
 
-                    <div style="flex:0 0 50%; max-width:50%;font-size: 16px;">
+                    <div style="flex:0 0 50%; max-width:50%;">
                         <div style="display:flex; align-items:center;">
                             <div style=" width:140px; font-weight: bolder;"><strong>Port of Loading</strong></div>
                             <div>: {{ getPortName(housejobData?.POL)}}</div>
@@ -567,7 +567,7 @@
             @if(selectedFCLLCL === "FCL"){
                 <div style="padding: 0px 10px;">
                     <table
-                style="width:100%;  border-collapse: collapse;table-layout:fixed;   margin-bottom:0.25rem;font-size: 16px;border: 1px solid black;margin-top: 5px;">
+                style="width:100%;  border-collapse: collapse;table-layout:fixed;   margin-bottom:0.25rem;border: 1px solid black;margin-top: 5px;">
                 <thead>
                     <tr>
                         <th
@@ -612,7 +612,7 @@
             <!-- LCL Table -->
             @if(selectedFCLLCL === "LCL"){
                 <div style="padding: 0 10px;margin-top: 5px;">
-                        <table style="width:100%;  border-collapse: collapse;table-layout:fixed; margin-bottom:0.25rem;font-size: 16px;">
+                        <table style="width:100%;  border-collapse: collapse;table-layout:fixed; margin-bottom:0.25rem;">
                 <thead>
                     <tr>
                         <th
@@ -653,7 +653,7 @@
 
             <!-- Charges Table -->
             @if(withOrWithoutCharge){
-            <table style="width:100%; border-collapse: collapse;  margin-bottom:0.25rem;font-size: 16px;margin-top: 10px;">
+            <table style="width:100%; border-collapse: collapse;  margin-bottom:0.25rem;margin-top: 10px;">
                 <thead>
                     <tr>
                         <th
@@ -703,7 +703,7 @@
             @if(withOrWithoutCharge){
 
             <div
-                style="display:flex; flex-wrap:wrap; align-items:flex-start; padding-top:10px; gap:6px; margin:8px 0; padding-left:20px;font-size: 16px;font-weight: bolder;">
+                style="display:flex; flex-wrap:wrap; align-items:flex-start; padding-top:10px; gap:6px; margin:8px 0; padding-left:20px;font-weight: bolder;">
                 <strong style="white-space:nowrap;min-width:175px;font-weight: bolder;">Amount in Words </strong>
 
                 <p style="margin:0; line-height:22px; word-break:break-word;">
@@ -714,7 +714,7 @@
             }
 
 
-           <div style="margin-top:20px; text-align:left; font-size:16px;padding-left: 20px;">
+           <div style="margin-top:20px; text-align:left;padding-left: 20px;">
   <h4 style="margin:0; font-weight:bold;">
     Yours sincerely
   </h4>

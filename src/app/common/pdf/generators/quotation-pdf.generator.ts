@@ -221,17 +221,24 @@ function buildRouteSections(data: QuotationPdfData): any[] {
 
     const carriers = route.carriers || [];
     carriers.forEach((carrier: any) => {
-      const cargo = route.cargo?.[0] || {};
+      const showCargoTable = shouldShowRouteCargoTable(route, data);
+      const showCargoSummary = !shouldShowContainerQuantity(route, data);
 
       blocks.push({
         columns: [
           { text: [{ text: 'Carrier : ', bold: true }, carrier?.carrierName || ''], width: '25%', margin: [10, 4, 0, 4] },
-          { text: [{ text: 'Cargo Type : ', bold: true }, cargo?.cargoType || ''], width: '25%', margin: [0, 4, 0, 4] },
+          showCargoSummary
+            ? { text: [{ text: 'Cargo Type : ', bold: true }, getRoutePrintCargoTypeSummary(route, data)], width: '25%', margin: [0, 4, 0, 4] }
+            : { text: '', width: '25%', margin: [0, 4, 0, 4] },
           { text: [{ text: 'Valid From : ', bold: true }, formatDate(route.effDate)], width: '25%', margin: [0, 4, 0, 4] },
           { text: [{ text: 'Valid To : ', bold: true }, formatDate(route.expDate)], width: '25%', alignment: 'right', margin: [0, 4, 10, 4] }
         ],
         columnGap: 0
       });
+
+      if (showCargoTable) {
+        blocks.push(buildRouteCargoTable(route, data));
+      }
 
       blocks.push(buildChargeTable(carrier?.charges || [], showAgreedRate));
     });
@@ -240,6 +247,44 @@ function buildRouteSections(data: QuotationPdfData): any[] {
   });
 
   return blocks;
+}
+
+function buildRouteCargoTable(route: any, data: QuotationPdfData): any {
+  const showQuantity = shouldShowContainerQuantity(route, data);
+  const cargoDetails = getRoutePrintCargoDetails(route, data);
+  const widths = showQuantity ? ['33%', '33%', '34%'] : ['50%', '50%'];
+  const body: any[] = [[
+    { text: 'Cargo Type', bold: true, alignment: 'left' },
+    { text: 'Container Type', bold: true, alignment: 'left' },
+    ...(showQuantity ? [{ text: 'No Of Container', bold: true, alignment: 'center' }] : [])
+  ]];
+
+  cargoDetails.forEach((cargo: any) => {
+    body.push([
+      { text: cargo?.cargoType || '-', alignment: 'left' },
+      { text: cargo?.containerType || '-', alignment: 'left' },
+      ...(showQuantity ? [{ text: cargo?.quantity || '-', alignment: 'center' }] : [])
+    ]);
+  });
+
+  return {
+    table: {
+      headerRows: 1,
+      widths,
+      body
+    },
+    layout: {
+      hLineWidth: () => 1,
+      vLineWidth: () => 1,
+      hLineColor: () => '#000',
+      vLineColor: () => '#000',
+      paddingLeft: () => 6,
+      paddingRight: () => 6,
+      paddingTop: () => 5,
+      paddingBottom: () => 5
+    },
+    margin: [55, 0, 55, 8]
+  };
 }
 
 function buildChargeTable(charges: any[], showAgreedRate: boolean): any {
@@ -374,6 +419,58 @@ function formatNumeric(value: any, precision: number = 0): string {
   });
 }
 
+function getRouteCargoGroups(route: any): any[] {
+  if (!route) return [];
+  if (Array.isArray(route.cargo) && route.cargo.length > 0) return route.cargo;
+  return route.cargo ? [route.cargo] : [];
+}
+
+function getContainerTypeDisplay(containerType: any, data: QuotationPdfData): string {
+  if (containerType === null || containerType === undefined || containerType === '') {
+    return '';
+  }
+
+  const matchedType = (data.containerTypeList || []).find((type: any) =>
+    type?.ContainerTypeMasterSid === containerType ||
+    String(type?.ContainerTypeMasterSid) === String(containerType) ||
+    type?.ContainerCode === containerType ||
+    type?.ContainerName === containerType
+  );
+
+  if (!matchedType) {
+    return String(containerType);
+  }
+
+  return matchedType.ContainerCode || matchedType.ContainerName || String(containerType);
+}
+
+function getRoutePrintCargoDetails(route: any, data: QuotationPdfData): Array<{ cargoType: string; containerType: string; quantity: number | string }> {
+  return getRouteCargoGroups(route)
+    .map((cargo: any) => ({
+      cargoType: cargo?.cargoType || cargo?.CargoType || '',
+      containerType: getContainerTypeDisplay(cargo?.containerType ?? cargo?.ContainerType, data),
+      quantity: cargo?.qty ?? cargo?.Qty ?? cargo?.noOfContainers ?? cargo?.NoofContainers ?? ''
+    }))
+    .filter((cargo: any) => cargo.cargoType || cargo.containerType || cargo.quantity !== '');
+}
+
+function shouldShowContainerQuantity(route: any, data: QuotationPdfData): boolean {
+  const departmentName = (route?.departmentName || getDepartmentName(route?.departmentSid, data.departments || []) || '').toLowerCase();
+  return departmentName.includes('fcl');
+}
+
+function shouldShowRouteCargoTable(route: any, data: QuotationPdfData): boolean {
+  return shouldShowContainerQuantity(route, data) && getRoutePrintCargoDetails(route, data).length > 0;
+}
+
+function getRoutePrintCargoTypeSummary(route: any, data: QuotationPdfData): string {
+  const cargoTypes = getRoutePrintCargoDetails(route, data)
+    .map((cargo: any) => cargo?.cargoType)
+    .filter((cargoType: string) => !!cargoType);
+
+  return cargoTypes.length ? Array.from(new Set(cargoTypes)).join(', ') : '-';
+}
+
 export function transformQuotationApiData(
   apiData: any,
   company: any,
@@ -385,6 +482,7 @@ export function transformQuotationApiData(
     chargeUnitMaster?: any[];
     departments?: any[];
     ports?: any[];
+    containerTypeList?: any[];
   }
 ): QuotationPdfData {
   const quotation = apiData || {};
@@ -444,7 +542,9 @@ export function transformQuotationApiData(
         }))
       })),
       cargo: (route.quoteCargo || []).map((cargo: any) => ({
-        cargoType: cargo.CargoType || ''
+        cargoType: cargo.CargoType || '',
+        containerType: cargo.ContainerType,
+        noOfContainers: cargo.Qty ?? cargo.NoofContainers ?? 0
       }))
     })),
     terms: (quotation.terms || []).map((term: any) => ({
@@ -453,6 +553,7 @@ export function transformQuotationApiData(
     currencyMaster: lookups?.currencyMaster || [],
     chargeUnitMaster: lookups?.chargeUnitMaster || [],
     departments: lookups?.departments || [],
-    ports: lookups?.ports || []
+    ports: lookups?.ports || [],
+    containerTypeList: lookups?.containerTypeList || []
   };
 }

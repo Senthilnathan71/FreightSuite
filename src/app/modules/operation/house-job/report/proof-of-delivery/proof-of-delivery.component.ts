@@ -105,6 +105,30 @@ export class ProofOfDeliveryComponent {
     return this.containerTypeList.find(con => con.ContainerTypeMasterSid === ContainerTypeMasterSid)?.ContainerName || ""
   }
 
+  get proofOfDeliveryRows(): any[] {
+    const products = this.housejobData?.Products || [];
+    if (products.length) {
+      return products;
+    }
+
+    const cargoRows = this.housejobData?.Cargo || [];
+    return cargoRows.map((cargo: any) => ({
+      ProductName: cargo?.CommodityDescription,
+      ContainerNo: cargo?.ContainerNo || cargo?.NoofContainers || '',
+      ContainerType: cargo?.ContainerType,
+      ExternlQty: cargo?.ExternlQty ?? cargo?.NoOfPackage,
+      NoOfPackage: cargo?.NoOfPackage,
+      GrossWeight: cargo?.GrossWeight,
+      Volume: cargo?.Volume,
+      NetWeight: cargo?.NetWeight,
+      Volumetric: cargo?.Volumetric
+    }));
+  }
+
+  getRemarks(): string {
+    return this.housejobData?.InternalNote || this.housejobData?.Others?.[0]?.InternalNote || '';
+  }
+
 
    modalClose() {
     this.activeModal.close();

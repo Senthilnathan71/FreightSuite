@@ -24,12 +24,12 @@
 <div class="modal-body">
     <div id="printContent" class="p-1">
         <div
-            style="width:280mm; min-height:400mm; margin:10px; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000;  font-size:16px; page-break-after:always;">
+            style="width:280mm; min-height:400mm; margin:10px; padding:2mm 5mm; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000;   page-break-after:always; font-size: 14px;">
 
             <!-- Company Info -->
             <app-print-header></app-print-header>
 
-            <h4 style="text-align:center;font-weight:bolder;margin:0;padding:6px 0 4px 0;border-top:1px solid black;font-size:20px;line-height:1.2;">
+            <h4 style="text-align:center;font-weight:bolder;margin:0;padding:6px 0 4px 0;border-top:1px solid black;line-height:1.2;">
                 <strong>Job Card / Job No - {{ housejobData?.masterJob?.MasterJobNumber }}</strong>
             </h4>
 
@@ -37,7 +37,7 @@
             <div style="display:flex; padding:0;">
 
                 <!-- Client -->
-                <div style="width:50%; border:1px solid #000; padding:10px; box-sizing:border-box;font-size: 16px;">
+                <div style="width:50%; border:1px solid #000; padding:10px; box-sizing:border-box;">
                     <div style="display:flex; flex-direction: column;">
                         <div style="width:125px;font-weight: bolder;"><strong>Client</strong></div>
 
@@ -50,7 +50,7 @@
 
                 <!-- Shipper -->
                 <div
-                    style="width:50%; border-top:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000; padding:10px; box-sizing:border-box;font-size: 16px;">
+                    style="width:50%; border-top:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000; padding:10px; box-sizing:border-box;">
                     <div style="display:flex; flex-direction: column;">
                         <div style="width:120px;font-weight: bolder;"><strong>Shipper</strong></div>
 
@@ -67,7 +67,7 @@
 
                 <!-- Consignee -->
                 <div
-                    style="width:50%; border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000; padding:10px; box-sizing:border-box;font-size: 16px;">
+                    style="width:50%; border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000; padding:10px; box-sizing:border-box;">
                     <div style="display:flex;flex-direction: column;">
                         <div style="width:123px;font-weight: bolder;"><strong>Consignee</strong></div>
 
@@ -80,7 +80,7 @@
 
                 <!-- Forwarder -->
                 <div
-                    style="width:50%; border-right:1px solid #000; border-bottom:1px solid #000; padding:10px; box-sizing:border-box;font-size: 16px;">
+                    style="width:50%; border-right:1px solid #000; border-bottom:1px solid #000; padding:10px; box-sizing:border-box;">
                     <div style="display:flex;flex-direction: column;">
                         <div style="width:120px;font-weight: bolder;"><strong>Forwarder</strong></div>
 
@@ -97,7 +97,7 @@
             <!-- Job Details -->
             <div
                 style="display:flex; border-bottom:1px solid black;border-left: 1px solid black; border-right: 1px solid black; margin:0;padding-left: 10px;">
-                <div style="flex:0 0 50%; max-width:50%; padding:5px;font-size: 16px;">
+                <div style="flex:0 0 50%; max-width:50%; padding:5px;">
                     <div style="display:flex; margin-bottom:1px;">
                         <div style="width:120px;font-weight: bolder;"><strong>Job No.</strong></div>
                         <div>: {{ housejobData?.masterJob?.MasterJobNumber }}</div>
@@ -146,7 +146,7 @@
                         <div>: {{getSalespersonName(housejobData?.SalesmanSid)}}</div>
                     </div>
                 </div>
-                <div style="flex:0 0 50%; max-width:50%; padding:5px;padding-left: 10px;font-size: 16px;">
+                <div style="flex:0 0 50%; max-width:50%; padding:5px;padding-left: 10px;">
                     <div style="display:flex; margin-bottom:1px;">
                         <div style="width:150px;font-weight: bolder;"><strong>{{ selectedDepartmentType === 'SEA' ? 'MBL No.' : 'MAWB No.'}}</strong></div>
                         <div>: {{housejobData?.masterJob?.MBLNo}}</div>
@@ -194,7 +194,7 @@
             <!-- Containers Table -->
             <div style="overflow-x:auto; margin-top:5px;">
                 <table
-                    style="width:100%; border-collapse:collapse; font-size:16px; border-bottom:1px solid black;border-left: 1px solid black; border-right: 1px solid black;">
+                    style="width:100%; border-collapse:collapse; border-bottom:1px solid black;border-left: 1px solid black; border-right: 1px solid black;">
                     <thead style="background-color:#f8f9fa;">
                         <tr>
                            
@@ -203,7 +203,7 @@
                             </th>
                              @if(selectedDepartmentType === "SEA"){
                             <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
-                                <strong>Container No.</strong>
+                                <strong>No. of Container</strong>
                             </th>               
                             <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
                                 <strong>Type</strong>
@@ -244,14 +244,14 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let container of housejobData?.Products">
-                            <td style="border:1px solid black; padding:2px 8px;">{{container?.ProductName }}
+                        <tr *ngFor="let container of jobCardRows">
+                            <td style="border:1px solid black; padding:2px 8px;">{{container?.ProductName || container?.CommodityDescription }}
                             </td>
                              @if(selectedDepartmentType === "SEA"){
                             <td style="border:1px solid black; padding:2px 8px;text-align: start;">{{
                                 container?.ContainerNo }}</td>
                             <td style="border:1px solid black; padding:2px 8px;text-align: start;">{{
-                                getContainerTypeName(container?.masterJobContainer?.ContainerType) }}</td>
+                                getContainerTypeName(container?.masterJobContainer?.ContainerType || container?.ContainerType) }}</td>
                             }@else{
                                   <td style="border:1px solid black; padding:2px 8px;text-align: right;">{{
                                 container?.Length | number:'1.3-3'}}</td>
@@ -263,7 +263,7 @@
                                 container?.Volumetric | number:'1.3-3'}}</td>
                             }
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">
-                                {{container?.ExternlQty}}</td>
+                                {{container?.ExternlQty || container?.NoOfPackage}}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
                                 container?.GrossWeight | number:'1.3-3'}}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ container?.Volume
@@ -310,7 +310,7 @@
 
             <!-- Profit Summary Table -->
             <div style="overflow-x:auto; margin-top:5px;">
-                <table style="width:100%; border-collapse:collapse; font-size:16px; border:1px solid black;">
+                <table style="width:100%; border-collapse:collapse; border:1px solid black;">
                     <thead style="background-color:#f8f9fa;">
                         <tr>
                             <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
@@ -342,7 +342,7 @@
                         </tr>
                     </tbody>
                     <tfoot>
-                        <tr style="font-weight:bolder;font-size: 16px;">
+                        <tr style="font-weight:bolder;">
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">
                                 <strong>TOTAL</strong>
                             </td>
@@ -359,7 +359,7 @@
 
             <!-- Cost/Revenue Charges Table -->
             <div style="overflow-x:auto; margin-top:5px;">
-                <table style="width:100%; border-collapse:collapse; font-size:16px; border:1px solid black;">
+                <table style="width:100%; border-collapse:collapse; border:1px solid black;">
                     <thead style="background-color:#f8f9fa;">
                         <tr>
                             <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
@@ -401,13 +401,13 @@
                     </thead>
                     <tbody>
                         <tr *ngFor="let item of housejobData?.costRevenueCharges">
-                            <td style="border:1px solid black; padding:2px 8px;">{{ getChargeName(item.ChargeMasterSid)
+                            <td style="border:1px solid black; padding:2px 8px;">{{ getChargeName(item.ChargeMasterSid) || item?.ChargeDescription
                                 }}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">
                                 {{
                                 getUnitCode(item.ChargeUomSid) }}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
-                                getCurrencyName(item.CostCurrencyMasterSid) }}</td>
+                                getCurrencyName(item.RevenueCurrencyMasterSid || item.CostCurrencyMasterSid) }}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
                                 item.RevenueExchangeRate | number:'1.3-3'}}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
@@ -431,12 +431,12 @@
 
                 <!-- Revenue -->
                 <div style="width:49.5%; box-sizing:border-box;">
-                    <h4 style="text-align:center; margin:0 0 4px 0; font-weight:bolder;font-size: 16px;">
+                    <h5 style="text-align:center; margin:0 0 4px 0; font-weight:bolder;">
                         <strong style="text-decoration: underline;"> Revenue</strong>
-                    </h4>
+                    </h5>
 
                     <table
-                        style="width:100%; border-collapse:collapse; border:1px solid #000; box-sizing:border-box; font-size:16px;">
+                        style="width:100%; border-collapse:collapse; border:1px solid #000; box-sizing:border-box; ">
                         <thead>
                             <tr>
                                 <th
@@ -467,12 +467,12 @@
 
                 <!-- Expense -->
                 <div style="width:49.5%; box-sizing:border-box; margin-left:1%;">
-                    <h4 style="text-align:center; margin:0 0 4px 0; font-weight:bolder;font-size: 16px;">
+                    <h5 style="text-align:center; margin:0 0 4px 0; font-weight:bolder;">
                         <strong style="text-decoration: underline;">Expense</strong>
-                    </h4>
+                    </h5>
 
                     <table
-                        style="width:100%; border-collapse:collapse; border:1px solid #000; box-sizing:border-box; font-size:16px;">
+                        style="width:100%; border-collapse:collapse; border:1px solid #000; box-sizing:border-box; ">
                         <thead>
                             <tr>
                                 <th
@@ -506,7 +506,7 @@
 
             <div style="display:flex; margin-bottom:1px;padding-top: 10px; padding-left: 0px;">
                 <div style="width:135px;font-weight: bolder;"><strong>Internal Remarks</strong></div>
-                <div>: {{ housejobData?.InternalNote }}</div>
+                <div>: {{ getInternalRemarks() }}</div>
             </div>
 
 

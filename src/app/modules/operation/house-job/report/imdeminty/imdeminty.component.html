@@ -25,41 +25,41 @@
   <div id="printContent" class="p-2 pt-1">
 
     <div *ngFor="let containerNo of containerList; let i = index"
-      style="width:280mm; margin:20px auto; padding:10px; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; page-break-after:always; display:flex; flex-direction:column; min-height:401mm;position: relative;">
+      style="width:280mm; margin:20px auto; padding:10px; background:#fff; border:1px solid #000; box-sizing:border-box; color:#000; page-break-after:always; display:flex; flex-direction:column; min-height:401mm;position: relative;font-size: 14px;">
 
       <!-- Company Info -->
          <app-print-header></app-print-header>
 
-<h4 style="text-align:center;font-weight:bolder;text-transform:uppercase;padding:4px 0 2px 0;border-top:1px solid black;font-size:20px;line-height:1.2;display:block;margin-top: 5px;">
+<h4 style="text-align:center;font-weight:bolder;text-transform:uppercase;padding:4px 0 2px 0;border-top:1px solid black;line-height:1.2;display:block;margin-top: 5px;">
   <strong>LETTER OF INDEMNITY</strong>
 </h4>
 
 
       <!-- Greeting -->
       <div>
-        <h3 style="font-weight: bolder; margin: 0 0 10px 0;font-size: 17px;"><strong>Dear Sir,</strong></h3>
+        <h5 style="font-weight: bolder; margin: 0 0 10px 0;"><strong>Dear Sir,</strong></h5>
 
         <!-- Vessel Details -->
         <div style="border: 1px solid black; padding: 10px;  margin-bottom: 15px;">
           <div style="display: flex; gap: 40px;">
             <!-- Left Column -->
             <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
-              <div style="display: flex;font-size: 16px;">
+              <div style="display: flex;">
                 <strong style="width: 150px;font-weight: bolder;">Vessel Name</strong>: {{ housejobData?.VesselName }}
               </div>
-              <div style="display: flex;font-size: 16px;">
+              <div style="display: flex;">
                 <strong style="width: 150px; font-weight: bolder;">ETA</strong>: {{ housejobData?.ETA | formatDate }}
               </div>
-              <div style="display: flex;font-size: 16px;">
+              <div style="display: flex;">
                 <strong style="width: 150px;font-weight: bolder;">Container No.</strong>: {{ containerNo }}
               </div>
             </div>
             <!-- Right Column -->
             <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
-              <div style="display: flex;font-size: 16px;">
+              <div style="display: flex;">
                 <strong style="width: 150px;font-weight: bolder;">Voyage No.</strong>: {{ housejobData?.VoyageNo }}
               </div>
-              <div style="display: flex;font-size: 16px;">
+              <div style="display: flex;">
                 <strong style="width: 150px; font-weight: bolder;">Date</strong>: {{ housejobData?.HBLDate | formatDate }}
               </div>
             </div>
@@ -68,7 +68,7 @@
       </div>
 
 <!-- Intro Paragraph -->
-<p style="font-size:16px; margin:2px; padding:0;font-weight: bolder;">
+<p style=" margin:2px; padding:0;font-weight: bolder;">
   We should advise that according to the bill of lading, the details of the following consignment are as follows:
 </p>
 
@@ -76,12 +76,12 @@
       <!-- FIRST TABLE -->
       <div style="overflow-x:auto; margin-bottom: 10px;">
         <table
-          style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid black; font-size: 16px;margin-top: 5px;">
+          style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid black; margin-top: 5px;">
           <thead>
             <tr>
-              <th style="border: 1px solid black; padding: 5px;font-weight: bolder;font-size: 16px;"><strong>HBL No.</strong></th>
-              <th style="border: 1px solid black; padding: 5px;font-weight: bolder;font-size: 16px;"><strong>Marks and Numbers</strong></th>
-              <th style="border: 1px solid black; padding: 5px;font-weight: bolder;font-size: 16px;"><strong>Goods Description</strong></th>
+              <th style="border: 1px solid black; padding: 5px;font-weight: bolder;"><strong>HBL No.</strong></th>
+              <th style="border: 1px solid black; padding: 5px;font-weight: bolder;"><strong>Marks and Numbers</strong></th>
+              <th style="border: 1px solid black; padding: 5px;font-weight: bolder;"><strong>Goods Description</strong></th>
             </tr>
           </thead>
           <tbody>
@@ -94,19 +94,19 @@
         </table>
       </div>
 
-      <p style="margin:0; font-size:16px; padding:0;font-weight: bolder;">
+      <p style="margin:0;  padding:0;font-weight: bolder;">
         However, we have found that the cargo outturned with the following details:
       </p>
 
       <!-- SECOND TABLE -->
       <div style="overflow-x:auto; margin-bottom: 15px;">
         <table
-          style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid black; font-size: 16px;margin-top: 5px;">
+          style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid black;margin-top: 5px;">
           <thead>
             <tr>
-              <th style="border: 1px solid black; padding: 5px;font-weight: bolder;font-size: 16px;"><strong>BL No.</strong></th>
-              <th style="border: 1px solid black; padding: 5px;font-weight: bolder;font-size: 16px;"><strong>Marks and Numbers</strong></th>
-              <th style="border: 1px solid black; padding: 5px;font-weight: bolder;font-size: 16px;"><strong>Goods Description</strong></th>
+              <th style="border: 1px solid black; padding: 5px;font-weight: bolder;"><strong>BL No.</strong></th>
+              <th style="border: 1px solid black; padding: 5px;font-weight: bolder;"><strong>Marks and Numbers</strong></th>
+              <th style="border: 1px solid black; padding: 5px;font-weight: bolder;"><strong>Goods Description</strong></th>
             </tr>
           </thead>
           <tbody>
@@ -121,7 +121,7 @@
 
       <!-- Body Paragraph -->
       <div style="flex: 1; margin-bottom: 20px;">
-        <p style="font-size: 16px; margin-top: 20px;">
+        <p style=" margin-top: 20px;">
           We hereby undertake & agree to indemnify you fully against all consequences and/or liabilities of any kind
           whatsoever directly or indirectly arising or relating to the said delivery & immediately on demand against all
           payments made by you in respect of such consequences and/or liabilities, including costs as between solicitor

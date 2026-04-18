@@ -129,6 +129,14 @@ export class HblComponent {
     return agent ? agent.CustomerName : '';
   }
 
+  getContainerTypeName(containerTypeSid: number): string {
+    if (!containerTypeSid || !this.containerTypeList?.length) return '';
+    const containerType = this.containerTypeList.find(
+      (ct: any) => Number(ct?.ContainerTypeMasterSid) === Number(containerTypeSid),
+    );
+    return containerType?.ContainerName || containerType?.ContainerType || '';
+  }
+
   async downloadPDF() {
     if (this.selectedReport === 'HBLDraft') {
       await this.generateAndDownloadPdf();

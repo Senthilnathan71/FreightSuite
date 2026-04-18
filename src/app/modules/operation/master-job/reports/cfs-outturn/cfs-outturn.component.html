@@ -6,10 +6,12 @@
         <!-- <button type="button" class="btn btn-sm btn-warning rounded-5 py-0" (click)="printDiv('printContent')">
             <i class="fas fa-download me-1"></i> Print
         </button> -->
-        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()" *ngIf="mps.canPrint('CFS Outturn','Download')">
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()"
+            *ngIf="mps.canPrint('CFS Outturn','Download')">
             <i class="fas fa-download me-1"></i> Download PDF
         </button>
-        <button type="button" class="btn btn-sm btn-success rounded-5 py-0" *ngIf="mps.canPrint('CFS Outturn','Send Mail')">
+        <button type="button" class="btn btn-sm btn-success rounded-5 py-0"
+            *ngIf="mps.canPrint('CFS Outturn','Send Mail')">
             <i class="fas fa-envelope me-1"></i> Send Email
         </button>
         <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal()"></button>
@@ -21,22 +23,22 @@
         <div id="printContent" class="p-1">
             <!-- Single unified structure for both cases -->
             <div *ngFor="let containerNo of containerList; let containerIndex = index"
-                style="width:300mm; min-height:205mm; margin:10px; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000; page-break-after: always;"
+                style="width:300mm; min-height:205mm; margin:10px; background:#fff; border:1px solid #000; box-sizing:border-box; position:relative; color:#000; page-break-after: always;font-size: 14px;"
                 [ngClass]="{'page-break': containerIndex < containerList.length - 1}">
                 <!-- Company Info -->
                 <app-print-header></app-print-header>
 
                 <!-- Report Title -->
-                <h3
-                    style="text-align: center; padding: 0.5rem 0; margin: 0; border-top: 1px solid black; padding:10px;font-weight: bolder;font-size: 20px;margin-top: 5px;">
+                <h4
+                    style="text-align: center; padding: 0.5rem 0; margin: 0; border-top: 1px solid black; padding:10px;font-weight: bolder;margin-top: 5px;">
                     <strong>CFS Outturn Report</strong>
-                </h3>
+                </h4>
 
                 <!-- Container Details -->
                 <!-- Container Details -->
                 <div style="display: flex; flex-wrap: nowrap; margin-top: 0.5rem; padding-left: 60px;">
                     <!-- Left Column -->
-                    <div style="width:50%; font-size: 16px;">
+                    <div style="width:50%; ">
                         <div style="display:flex; margin-bottom:4px;">
                             <div style="width:150px; font-weight:bolder;"><strong>Container No.</strong></div>
                             <div>: {{ containerNo !== 'No Container Data' ? containerNo : '' }}</div>
@@ -62,7 +64,7 @@
                     </div>
 
                     <!-- Right Column -->
-                    <div style="width:50%;font-size: 16px;">
+                    <div style="width:50%;">
                         <div style="display:flex; margin-bottom:4px;">
                             <div style="width:80px; font-weight:bolder;"><strong>Shed</strong></div>
                             <div>: {{ getYardName(masterJobData?.others?.[0]?.Yard || masterJobData?.others?.[0]?.CFS ||
@@ -72,48 +74,40 @@
                             <div style="width:80px; font-weight:bolder;"><strong>Seal</strong></div>
                             <div>: {{ masterJobData?.containers?.[0]?.LineSeal || '' }} </div>
                         </div>
-                        <div
-  style="
+                        <div style="
     display:flex;
     align-items:flex-start;
     margin-bottom:4px;
     width:100%;
     box-sizing:border-box;
-  "
->
-  <!-- Label -->
-  <div
-    style="
+  ">
+                            <!-- Label -->
+                            <div style="
       width:80px;
       font-weight:bolder;
       box-sizing:border-box;
-    "
-  >
-    Remarks
-  </div>
+    ">
+                                Remarks
+                            </div>
 
-  <!-- Colon -->
-  <div
-    style="
+                            <!-- Colon -->
+                            <div style="
       width:15px;
-    "
-  >
-    :
-  </div>
+    ">
+                                :
+                            </div>
 
-  <!-- Value -->
-  <div
-    style="
+                            <!-- Value -->
+                            <div style="
       flex:1;
       white-space:normal;
       word-break:break-word;
       overflow-wrap:break-word;
       box-sizing:border-box;
-    "
-  >
-    {{ masterJobData?.others?.[0]?.InternalNote || '' }}
-  </div>
-</div>
+    ">
+                                {{ masterJobData?.others?.[0]?.InternalNote || '' }}
+                            </div>
+                        </div>
 
                     </div>
                 </div>
@@ -121,7 +115,7 @@
                 <!-- Products Table - Unified for both cases -->
                 <div style="margin-top: 0.5rem;">
                     <div style="overflow-x: auto;">
-                        <table style="width: 100%; border-collapse: collapse; margin: 0;font-size: 15px;">
+                        <table style="width: 100%; border-collapse: collapse; margin: 0;">
                             <thead>
                                 <tr>
                                     <th
@@ -211,11 +205,13 @@
                                         </td>
 
                                         <td style="border:1px solid #000; padding:6px; text-align:right;">
-                                            {{ product.GrossWeight || getHouseJobData()?.Cargo?.[0]?.GrossWeight || 0  | number:'1.3-3' }}
+                                            {{ product.GrossWeight || getHouseJobData()?.Cargo?.[0]?.GrossWeight || 0 |
+                                            number:'1.3-3' }}
                                         </td>
 
                                         <td style="border:1px solid #000; padding:6px; text-align:right;">
-                                            {{ product.Volume || getHouseJobData()?.Cargo?.[0]?.Volume || 0  | number:'1.3-3' }}
+                                            {{ product.Volume || getHouseJobData()?.Cargo?.[0]?.Volume || 0 |
+                                            number:'1.3-3' }}
                                         </td>
 
                                         <td style="border:1px solid #000; padding:6px; text-align:center;">
@@ -339,8 +335,8 @@
                 </div>
 
                 <!-- Footer -->
-               <app-print-footer></app-print-footer>
-               
+                <app-print-footer></app-print-footer>
+
             </div>
         </div>
     </div>

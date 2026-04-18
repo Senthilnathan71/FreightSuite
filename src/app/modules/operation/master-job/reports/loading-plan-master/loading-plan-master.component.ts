@@ -133,10 +133,16 @@ export class LoadingPlanMasterComponent {
     return this.getCargoTotal('Volume');
   }
 
+  getHouseCargoTotal(item: any, field: 'NoOfPackage' | 'GrossWeight' | 'NetWeight' | 'Volume'): number {
+    return (item?.Cargo || []).reduce((total: number, cargo: any) => {
+      const value = Number(cargo?.[field]);
+      return total + (Number.isFinite(value) ? value : 0);
+    }, 0);
+  }
+
   private getCargoTotal(field: 'GrossWeight' | 'NetWeight' | 'Volume'): number {
     return (this.masterJobData?.houseJob || []).reduce((total: number, item: any) => {
-      const value = Number(item?.Cargo?.[0]?.[field]);
-      return total + (Number.isFinite(value) ? value : 0);
+      return total + this.getHouseCargoTotal(item, field);
     }, 0);
   }
 

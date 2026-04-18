@@ -176,7 +176,8 @@ export class DecimalPrecisionDirective implements OnInit, AfterViewInit, OnChang
     }
 
     // Convert to number
-    const numValue = typeof value === 'number' ? value : parseFloat(value);
+    const cleaned = typeof value === 'number' ? String(value) : String(value).replace(/,/g, '');
+    const numValue = parseFloat(cleaned);
 
     // Handle NaN
     if (isNaN(numValue)) {

@@ -99,13 +99,13 @@ function buildHeader(data: DeliveryOrderPdfData): any {
               {
                 text: (company?.companyName || '').toUpperCase(),
                 bold: true,
-                fontSize: 14,
+                fontSize: 12,
                 alignment: 'right',
               },
               {
                 text: branch?.branchName || '',
                 bold: true,
-                fontSize: 11,
+                fontSize: 9,
                 alignment: 'right',
                 margin: [0, 2, 0, 0],
               },

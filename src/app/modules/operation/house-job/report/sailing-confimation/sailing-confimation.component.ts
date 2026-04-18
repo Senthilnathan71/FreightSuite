@@ -11,11 +11,13 @@ import { LogoService } from 'src/app/core/services/logo.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { OperationService } from '../../../operation.service';
+import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
+import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 
 @Component({
   selector: 'app-sailing-confimation',
   standalone: true,
-  imports: [CustomDatePipe, CommonModule],
+  imports: [CustomDatePipe, CommonModule,PrintHeaderComponent,PrintFooterComponent],
   templateUrl: './sailing-confimation.component.html',
   styles: ``
 })

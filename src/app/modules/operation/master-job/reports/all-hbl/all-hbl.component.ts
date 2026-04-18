@@ -115,6 +115,35 @@ export class AllHBLComponent {
     return housejobData?.Products || [];
   }
 
+  getContainerLineSeal(housejobData: any, containerNo: string): string {
+    const containers = housejobData?.masterJob?.containers || [];
+    if (!Array.isArray(containers) || containers.length === 0) {
+      return '';
+    }
+
+    const matchedContainer = containers.find(
+      (container: any) => container?.ContainerNumber === containerNo,
+    );
+
+    return matchedContainer?.LineSeal || '';
+  }
+
+  getProductCargoField(housejobData: any, product: any, field: 'MarksAndNumber' | 'CommodityDescription'): string {
+    const cargoList = housejobData?.Cargo || [];
+    if (!Array.isArray(cargoList) || cargoList.length === 0) {
+      return '';
+    }
+
+    const productCargoSid = Number(product?.HouseJobCargoSid || product?.houseJobCargoSid || product?.BookingCargoSid || product?.bookingCargoSid || 0);
+    const matchedCargo = productCargoSid
+      ? cargoList.find((cargo: any) => Number(cargo?.HouseJobCargoSid || cargo?.houseJobCargoSid || cargo?.BookingCargoSid || cargo?.bookingCargoSid || 0) === productCargoSid)
+      : cargoList.length === 1
+        ? cargoList[0]
+        : null;
+
+    return matchedCargo?.[field] || '';
+  }
+
   getDestinationAgentName(CustomerMasterSid: number | string): string {
     const agent = this.agentList.find((a) => a.CustomerMasterSid == CustomerMasterSid);
     return agent ? agent.CustomerName : '';

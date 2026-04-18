@@ -3358,6 +3358,17 @@ onETDDateSelect(): void {
     const Volume = this.f['Volume']?.value;
     const ChargeableWeight = this.f['ChargeableWeight']?.value;
     const MovementType = this.selectedDepartmentType;
+    const cargoItems = this.masterJobContainers.getRawValue().map((container: any) => ({
+      CargoType,
+      ContainerType: container?.ContainerType || null,
+      ContainerTypeName: this.getContainerTypeName(container?.ContainerType),
+      GrossWeight: container?.GrossWeight || GrossWeight,
+      Volume: container?.Volume || Volume,
+      NoofContainers: 1,
+      ChargeableWeight: container?.ChargeableWeight || ChargeableWeight,
+      ShipmentTerms: null,
+    }));
+    const containerTypeSid = cargoItems.find((cargo: any) => cargo.ContainerType)?.ContainerType || null;
     // const CustomerMasterSid = this.b['CustomerMasterSid']?.value;
     // const CustomerBranchSid = this.b['CustomerBranchSid']?.value;
     // const BookingHeaderSid = this.BookingHeaderSid || this.bookingData?.BookingHeaderSid || this.b['BookingHeaderSid']?.value;
@@ -3380,12 +3391,14 @@ onETDDateSelect(): void {
       FPODSid,
       EffectiveDate,
       ExpiredDate,
+      ContainerType: containerTypeSid,
       CargoType,
       GrossWeight,
       NetWeight,
       Volume,
       NoofContainers,
       ChargeableWeight,
+      cargoItems,
       countryOfCompany: this.countryOfCompany
     }
   }
@@ -3417,6 +3430,17 @@ onETDDateSelect(): void {
     const NoofContainers = this.masterJobContainers.length;
     const Volume = this.f['Volume']?.value;
     const ChargeableWeight = this.f['ChargeableWeight']?.value;
+    const cargoItems = this.masterJobContainers.getRawValue().map((container: any) => ({
+      CargoType,
+      ContainerType: container?.ContainerType || null,
+      ContainerTypeName: this.getContainerTypeName(container?.ContainerType),
+      GrossWeight: container?.GrossWeight || GrossWeight,
+      Volume: container?.Volume || Volume,
+      NoofContainers: 1,
+      ChargeableWeight: container?.ChargeableWeight || ChargeableWeight,
+      ShipmentTerms: null,
+    }));
+    const containerTypeSid = cargoItems.find((cargo: any) => cargo.ContainerType)?.ContainerType || null;
 
     this.currentFormValue = {
       CompanyMasterSid,
@@ -3432,14 +3456,20 @@ onETDDateSelect(): void {
       POLSid,
       PODSid,
       FPODSid,
+      PORCode: this.getPortCode(PORSid) || null,
+      POLCode: this.getPortCode(POLSid) || null,
+      PODCode: this.getPortCode(PODSid) || null,
+      FPODCode: this.getPortCode(FPODSid) || null,
       EffectiveDate,
       ExpiredDate,
+      ContainerType: containerTypeSid,
       CargoType,
       GrossWeight,
       NetWeight,
       Volume,
       NoofContainers,
       ChargeableWeight,
+      cargoItems,
       countryOfCompany: this.countryOfCompany
     }
   }
