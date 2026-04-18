@@ -195,6 +195,7 @@ export class QuotationEntryComponent implements OnInit {
   containerTypeList: any[] = []
   TandCList: any[] = []
   tariffDetails : any[] = [];
+  tariffCargoGroups: { cargoLabel: string; items: any[] }[] = [];
   standardChargeDetails:any[] = [];
   filteredUnits: any[][] = [];
   costAgentList : any[] = [];
@@ -813,6 +814,79 @@ private getQuotationCargoProducts(cargo: any): any[] {
   return containerType?.ContainerTypeMasterSid || null;
 }
 
+private resolveContainerTypeName(containerTypeValue: any): string | null {
+  if (!containerTypeValue) {
+    return null;
+  }
+
+  const resolvedSid = this.resolveContainerTypeSid(containerTypeValue);
+  const containerType = this.containerTypeList.find(type =>
+    Number(type.ContainerTypeMasterSid) === Number(resolvedSid)
+  );
+
+  return containerType?.ContainerTypeName || null;
+}
+
+private resolveTariffQtyValue(
+  routeForm: FormGroup,
+  cargoItems: any[],
+  charge: any,
+  tariffDetail?: any
+): number {
+  const qtySourceField = this.findFieldForQty(charge?.UnitQty);
+
+  if (qtySourceField === 'NoofContainers') {
+    const matchingCargoItems = cargoItems.filter((cargo: any) =>
+      this.isMatchingContainerQtyCargo(cargo, charge?.UnitQty, tariffDetail)
+    );
+
+    const totalContainers = matchingCargoItems.reduce((sum: number, cargo: any) => {
+      return sum + (Number(cargo?.NoofContainers) || 0);
+    }, 0);
+
+    return totalContainers || 1;
+  }
+
+  if (typeof qtySourceField === 'string' && routeForm.get(qtySourceField)) {
+    return Number(routeForm.get(qtySourceField)?.value) || 1;
+  }
+
+  if (typeof qtySourceField === 'number') {
+    return qtySourceField;
+  }
+
+  return 1;
+}
+
+private isMatchingContainerQtyCargo(cargo: any, unitQty: any, tariffDetail?: any): boolean {
+  const cargoContainerTypeSid = Number(cargo?.ContainerType);
+  const tariffContainerTypeSid = Number(tariffDetail?.ContainerType);
+
+  if (cargoContainerTypeSid && tariffContainerTypeSid) {
+    return cargoContainerTypeSid === tariffContainerTypeSid;
+  }
+
+  const normalizedUnitQty = String(unitQty || '').trim().toUpperCase();
+  const cargoContainer = this.containerTypeList.find(
+    (type: any) => Number(type.ContainerTypeMasterSid) === cargoContainerTypeSid
+  );
+  const cargoContainerCode = String(cargoContainer?.ContainerCode || '').trim().toUpperCase();
+
+  if (normalizedUnitQty.includes('20FT') || normalizedUnitQty === '20FT' || normalizedUnitQty === '20F') {
+    return cargoContainerCode === '20F';
+  }
+
+  if (normalizedUnitQty.includes('40FT') || normalizedUnitQty === '40FT' || normalizedUnitQty === '40F') {
+    return cargoContainerCode === '40F';
+  }
+
+  if (normalizedUnitQty.includes('45FT') || normalizedUnitQty === '45FT' || normalizedUnitQty === '45F') {
+    return cargoContainerCode === '45F';
+  }
+
+  return true;
+}
+
 private isHazardous(value: any): boolean {
   return value === true || value === 'Y' || value === 'y' || value === 1 || value === '1';
 }
@@ -1358,6 +1432,8 @@ private mapQuotationCargoForBooking(cargo: any): any {
       ChargeDisplayName : [data?.ChargeDisplayName, [Validators.required]],
       Qty : [data?.Qty || 1],
       unitQtyBasis: [data?.UnitQty || null],  // This is to track Charge Based on Unit Qty
+      TariffCargoType: [data?.TariffCargoType || null],
+      TariffContainerType: [data?.TariffContainerType || null],
 
       RevenueChargeUomSid: [data?.RevenueChargeUomSid || null, [Validators.required]],
       RevenuePrepaidCollect: [data?.RevenuePrepaidCollect || "Prepaid"],
@@ -1478,8 +1554,10 @@ private mapQuotationCargoForBooking(cargo: any): any {
   updateSingleChargeQty(routeIndex: number, carrierIndex: number, chargeIndex: number): void {
     const chargeGroup = this.quoteCharges(routeIndex, carrierIndex).at(chargeIndex) as FormGroup;
     const routeGroup = this.quoteRoutes.at(routeIndex) as FormGroup;
+    const chargeRawValue = chargeGroup.getRawValue();
+    const quoteCargoItems = this.quoteCargo(routeIndex)?.getRawValue?.() || [];
 
-    const unitQtyBasis = chargeGroup.get('unitQtyBasis')?.value;
+    const unitQtyBasis = chargeRawValue?.unitQtyBasis;
     if (!unitQtyBasis) {
       return; 
     }
@@ -1487,8 +1565,29 @@ private mapQuotationCargoForBooking(cargo: any): any {
     const qtySourceField = this.findFieldForQty(unitQtyBasis);
     let newQty = 1;
 
-    if (typeof qtySourceField === 'string' && routeGroup.get(qtySourceField)) {
-      newQty = routeGroup.get(qtySourceField)?.value || 1;
+    if (typeof qtySourceField === 'string') {
+      const matchingCargoItems = quoteCargoItems.filter((cargo: any) => {
+        const matchesContainer = chargeRawValue?.TariffContainerType
+          ? Number(cargo?.ContainerType) === Number(chargeRawValue.TariffContainerType)
+          : true;
+        const matchesCargoType = chargeRawValue?.TariffCargoType
+          ? cargo?.CargoType === chargeRawValue.TariffCargoType
+          : true;
+
+        return matchesContainer && matchesCargoType;
+      });
+
+      if (matchingCargoItems.length > 0) {
+        const cargoField = qtySourceField === 'NoofContainers' ? 'Qty' : qtySourceField;
+        newQty = matchingCargoItems.reduce((sum: number, cargo: any) => {
+          const rawValue = qtySourceField === 'NoofContainers'
+            ? (cargo?.Qty ?? cargo?.NoofContainers)
+            : cargo?.[cargoField];
+          return sum + (Number(rawValue) || 0);
+        }, 0) || 1;
+      } else if (routeGroup.get(qtySourceField)) {
+        newQty = routeGroup.get(qtySourceField)?.value || 1;
+      }
     } else if (typeof qtySourceField === 'number') {
       newQty = qtySourceField;
     }
@@ -3299,6 +3398,9 @@ isRateLockDisabled(): boolean {
   getTariffDetails(routeIndex: number, carrierIndex: number, template: TemplateRef<any>) {
     const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
     const carrierForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+    const routeRawValue = routeForm.getRawValue();
+    const carrierRawValue = carrierForm.getRawValue();
+    const isFclRoute = this.isFclQuotationSegment(routeForm.get('segmentType')?.value);
     this.isStandardRate = false;
 
     if (!this.hasEveryRequiredFieldsFilled(routeIndex)) {
@@ -3310,6 +3412,22 @@ isRateLockDisabled(): boolean {
       });
       return;
     }
+
+    if (isFclRoute) {
+      const cargoControls = this.quoteCargo(routeIndex).controls as FormGroup[];
+      const hasSelectedContainerType = cargoControls.some(
+        (cargoCtrl: FormGroup) => !!cargoCtrl.get('ContainerType')?.value
+      );
+
+      if (!hasSelectedContainerType) {
+        cargoControls.forEach((cargoCtrl: FormGroup) => {
+          cargoCtrl.get('ContainerType')?.markAsTouched();
+          cargoCtrl.get('ContainerType')?.updateValueAndValidity({ emitEvent: false });
+        });
+        this.toastr.warning('Please choose Container Type to fetch tariff.');
+        return;
+      }
+    }
     
     this.tariffLoading = true;
     this.currentRouteIndex = routeIndex;
@@ -3317,79 +3435,203 @@ isRateLockDisabled(): boolean {
 
     this.ngbModal.open(template, { size: 'lg', centered: true, backdrop: 'static' });
 
-    const payload = {
+    const cargoItems = this.quoteCargo(routeIndex).controls.map((cargoCtrl: any) => {
+      const cargoRawValue = cargoCtrl.getRawValue();
+      const containerTypeValue = cargoRawValue?.ContainerType || null;
+      const containerTypeSid = this.resolveContainerTypeSid(containerTypeValue);
+      const containerTypeName = this.resolveContainerTypeName(containerTypeValue);
+      return {
+        CargoType: cargoRawValue?.CargoType,
+        ContainerType: containerTypeSid,
+        ContainerTypeName: containerTypeName,
+        GrossWeight: cargoRawValue?.GrossWeight,
+        Volume: cargoRawValue?.Volume,
+        NoofContainers: cargoRawValue?.Qty,
+        ChargeableWeight: cargoRawValue?.ChargeableWeight,
+        ShipmentTerms: cargoRawValue?.ShipmentTerms,
+      };
+    });
+
+    const routeContainerTypeValue = routeRawValue?.ContainerType || null;
+    const routeContainerTypeSid = this.resolveContainerTypeSid(routeContainerTypeValue);
+    const payloadContainerType = routeContainerTypeSid
+      ?? cargoItems.find((cargo: any) => cargo.ContainerType)?.ContainerType
+      ?? null;
+    const payloadCargoType = routeRawValue?.CargoType
+      ?? cargoItems.find((cargo: any) => !!cargo.CargoType)?.CargoType
+      ?? 'General';
+
+    const basePayload = {
       CompanyMasterSid: this.currentCompany.CompanyMasterSid,
       BranchMasterSod : this.currentBranch?.BranchMasterSid,
-      DepartmentMasterSid: routeForm.get('DepartmentMasterSid')?.value,
-      PORSid: routeForm.get('PORSid')?.value,
-      POLSid: routeForm.get('POLSid')?.value,
-      PODSid: routeForm.get('PODSid')?.value,
-      FPODSid: routeForm.get('FPODSid')?.value,
-      CargoType: routeForm.get('CargoType')?.value,
-      EffectiveDate: routeForm.get('effDate')?.value ? new Date(routeForm.get('effDate')?.value) : null,
-      ExpiredDate: routeForm.get('expDate')?.value ? new Date(routeForm.get('expDate')?.value) : null,
-      Carrier: carrierForm.get('CarrierMasterSid')?.value,
-      IncoTerms: routeForm.get('ServiceLevel')?.value,
+      DepartmentMasterSid: routeRawValue?.DepartmentMasterSid,
+      PORSid: routeRawValue?.PORSid,
+      POLSid: routeRawValue?.POLSid,
+      PODSid: routeRawValue?.PODSid,
+      FPODSid: routeRawValue?.FPODSid,
+      EffectiveDate: routeRawValue?.effDate ? new Date(routeRawValue.effDate) : null,
+      ExpiredDate: routeRawValue?.expDate ? new Date(routeRawValue.expDate) : null,
+      Carrier: carrierRawValue?.CarrierMasterSid,
+      IncoTerms: routeRawValue?.ServiceLevel,
     };
-
-    this.leadService.getTariffDetailsByQuote(payload).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          const response: any[] = resp.data || [];
-          const existingCharges = (routeForm.getRawValue().quoteCarriers[carrierIndex]?.quoteCharges || []);
-          const existingTariffDetailId = existingCharges.map((ch: any) => ch.TariffDetailSid);
-          this.isStandardRate = response[0]?.isStandardRate || false;
-          this.tariffDetails = response
-            .filter(td => !existingTariffDetailId.includes(td.TariffDetailSid))
-            .map((td: any) => {
-              const charge = this.getCharge(td.ChargeCode);
-              let qtySourceField = this.findFieldForQty(charge?.UnitQty);
-              let qtyValue = 1; // Default to 1
-
-              if (typeof qtySourceField === 'string' && routeForm.get(qtySourceField)) {
-                qtyValue = routeForm.get(qtySourceField)?.value || 1;
-              } else if (typeof qtySourceField === 'number') {
-                qtyValue = qtySourceField;
-              }
-              
-              const revenueAmount = (Number(qtyValue) || 1) * (Number(td?.SalePerUnitPrice) || 0);
-              const costAmount = (Number(qtyValue) || 1) * (Number(td?.BuyPerUnitPrice) || 0);
-
-              return {
-                ...td,
-                selected: true, // <-- Property for checkbox binding
-                TariffDetailSid : td?.TariffDetailSid,
-                ChargeDisplayName: charge?.chargeName,
-                chargeCode: charge?.chargeCode,
-                ChargeUomSid: charge?.ChargeMasterSid,
-                Qty: Number(qtyValue) || 1,
-                
-                RevenueChargeUomSid: td?.UOMSid,
-                RevenuePrepaidCollect: "Prepaid",
-                RevenueCurrencyMasterSid: td?.SaleCurrency,
-                RevenueRate: (Number(td?.SalePerUnitPrice) || 0).toFixed(this.digitsAfterDecimal),
-                RevenueExchangeRate: (Number(td?.revenueExchangeRate) || 0).toFixed(this.digitsAfterDecimal),
-                RevenueDrCr: "C",
-                RevenueAmount: revenueAmount.toFixed(this.digitsAfterDecimal),
-                RevenueLocalAmount: (revenueAmount * (Number(td?.revenueExchangeRate) || 0)).toFixed(this.digitsAfterDecimal),
-
-                CostChargeUomSid: td?.UOMSid,
-                CostPrepaidCollect: "Prepaid",
-                CostCurrencyMasterSid: td?.BuyCurrency,
-                CostRate: (Number(td?.BuyPerUnitPrice) || 0).toFixed(this.digitsAfterDecimal),
-                CostExchangeRate: (Number(td?.costExchangeRate) || 0).toFixed(this.digitsAfterDecimal),
-                CostDrCr: "D",
-                CostAmount: costAmount.toFixed(this.digitsAfterDecimal),
-                CostLocalAmount: (costAmount * (Number(td?.costExchangeRate) || 0)).toFixed(this.digitsAfterDecimal),
-              };
-            });
-          this.tariffLoading = false;
-        } else {
-          this.appSettingService.showError("Error loading Tariff Details");
-          this.tariffLoading = false;
-        }
-      }
+    const tariffObservables = cargoItems.map((cargo: any) =>
+      this.leadService.getTariffDetailsByQuote({
+        ...basePayload,
+        CargoType: cargo?.CargoType || payloadCargoType,
+        ContainerType: cargo?.ContainerType || payloadContainerType,
+        cargoItems: [cargo],
+      }).pipe(catchError(() => of({ status: false, data: [] })))
     );
+
+    forkJoin(tariffObservables).subscribe((results: any[]) => {
+      const seenCommonTariffSids = new Set<number>();
+      const standardRateLabels: string[] = [];
+      const commonItems: any[] = [];
+      const existingCharges = (routeForm.getRawValue().quoteCarriers[carrierIndex]?.quoteCharges || []);
+      const existingTariffDetailSids = new Set<number>(
+        existingCharges
+          .filter((row: any) => row?.ChargeUomSid && row?.TariffDetailSid)
+          .map((row: any) => Number(row.TariffDetailSid))
+      );
+      const existingCommonChargeKeys = new Set<string>(
+        existingCharges
+          .filter((row: any) => row?.ChargeUomSid)
+          .map((row: any) => this.getAppliedTariffChargeKey(row))
+          .filter((key: string) => !!key)
+      );
+
+      this.tariffDetails = [];
+      this.tariffCargoGroups = [];
+      this.isStandardRate = false;
+
+      results.forEach((resp: any, index: number) => {
+        const response: any[] = resp?.status && Array.isArray(resp.data) ? resp.data : [];
+        const cargo: any = cargoItems[index] || {};
+        const isStandardRate = response[0]?.isStandardRate === true;
+        const label = `Cargo ${index + 1}`
+          + (cargo.ContainerTypeName ? ` - ${cargo.ContainerTypeName}` : '')
+          + (cargo.CargoType ? ` (${cargo.CargoType})` : '');
+
+        const items = response
+          .map((td: any) => {
+            const charge = this.getCharge(td.ChargeCode);
+            const qtyValue = this.resolveTariffQtyValue(routeForm, [cargo], charge, td);
+            const revenueAmount = (Number(qtyValue) || 1) * (Number(td?.SalePerUnitPrice) || 0);
+            const costAmount = (Number(qtyValue) || 1) * (Number(td?.BuyPerUnitPrice) || 0);
+            const isCommonCharge = this.isCommonTariffCharge(charge?.UnitQty);
+
+            return {
+              ...td,
+              selected: true,
+              TariffDetailSid: td?.TariffDetailSid,
+              ChargeDisplayName: charge?.chargeName,
+              chargeCode: charge?.chargeCode,
+              ChargeUomSid: charge?.ChargeMasterSid,
+              UnitQty: charge?.UnitQty,
+              TariffCargoType: cargo?.CargoType || td?.CargoType || null,
+              TariffContainerType: cargo?.ContainerType || td?.ContainerType || null,
+              Qty: Number(qtyValue) || 1,
+              RevenueChargeUomSid: td?.UOMSid,
+              RevenuePrepaidCollect: 'Prepaid',
+              RevenueCurrencyMasterSid: td?.SaleCurrency,
+              RevenueRate: (Number(td?.SalePerUnitPrice) || 0).toFixed(this.digitsAfterDecimal),
+              RevenueExchangeRate: (Number(td?.revenueExchangeRate) || 0).toFixed(this.digitsAfterDecimal),
+              RevenueDrCr: 'C',
+              RevenueAmount: revenueAmount.toFixed(this.digitsAfterDecimal),
+              RevenueLocalAmount: (revenueAmount * (Number(td?.revenueExchangeRate) || 0)).toFixed(this.digitsAfterDecimal),
+              CostChargeUomSid: td?.UOMSid,
+              CostPrepaidCollect: 'Prepaid',
+              CostCurrencyMasterSid: td?.BuyCurrency,
+              CostRate: (Number(td?.BuyPerUnitPrice) || 0).toFixed(this.digitsAfterDecimal),
+              CostExchangeRate: (Number(td?.costExchangeRate) || 0).toFixed(this.digitsAfterDecimal),
+              CostDrCr: 'D',
+              CostAmount: costAmount.toFixed(this.digitsAfterDecimal),
+              CostLocalAmount: (costAmount * (Number(td?.costExchangeRate) || 0)).toFixed(this.digitsAfterDecimal),
+              isCommonCharge,
+            };
+          })
+          .filter((item: any) => !this.isTariffAlreadyApplied(item, existingTariffDetailSids, existingCommonChargeKeys));
+
+        const splitItems = items.filter((item: any) => !item.isCommonCharge);
+        const newCommonItems = items.filter((item: any) => {
+          if (!item.isCommonCharge || seenCommonTariffSids.has(Number(item.TariffDetailSid))) {
+            return false;
+          }
+          seenCommonTariffSids.add(Number(item.TariffDetailSid));
+          return true;
+        });
+
+        if (splitItems.length > 0) {
+          this.tariffCargoGroups.push({ cargoLabel: label, items: splitItems });
+          this.tariffDetails.push(...splitItems);
+        }
+
+        if (newCommonItems.length > 0) {
+          commonItems.push(...newCommonItems);
+          this.tariffDetails.push(...newCommonItems);
+        }
+
+        if (isStandardRate) {
+          standardRateLabels.push(label);
+        }
+      });
+
+      if (commonItems.length > 0) {
+        this.tariffCargoGroups.unshift({ cargoLabel: 'Common Charges', items: commonItems });
+      }
+
+      this.isStandardRate = standardRateLabels.length > 0;
+
+      if (this.tariffCargoGroups.length === 0) {
+        this.appSettingService.showError('No tariff charges found for the selected criteria.');
+        this.ngbModal.dismissAll();
+      } else if (standardRateLabels.length > 0) {
+        this.appSettingService.showInfo('No specific tariff found. Displaying standard rates.');
+      }
+
+      this.tariffLoading = false;
+    }, () => {
+      this.tariffLoading = false;
+      this.ngbModal.dismissAll();
+      this.appSettingService.showError('Error loading Tariff Details');
+    });
+  }
+
+  getQtyByContainerType(routeIndex: number, containerType: number): number {
+    const cargoControls = this.quoteCargo(routeIndex).controls as FormGroup[];
+
+    return cargoControls
+      .map(ctrl => ctrl.getRawValue())
+      .filter(cargo => cargo.ContainerType === containerType)
+      .reduce((sum, cargo) => sum + (Number(cargo.Qty) || 0), 0);
+  }
+
+  isCommonTariffCharge(unitQty: string) {
+    const trimmedUnitQty = String(unitQty || '').trim();
+    return trimmedUnitQty === 'Per BL'
+      || trimmedUnitQty === 'BL'
+      || trimmedUnitQty === 'Per Shipment'
+      || trimmedUnitQty === 'Shipment';
+  }
+
+  getAppliedTariffChargeKey(item: any) {
+    const chargeMasterSid = item?.ChargeMasterSid || item?.ChargeUomSid;
+    const unitQty = String(item?.UnitQty || item?.unitQtyBasis || '').trim();
+
+    if (!chargeMasterSid || !this.isCommonTariffCharge(unitQty)) {
+      return '';
+    }
+
+    return `${chargeMasterSid}__${unitQty}`;
+  }
+
+  isTariffAlreadyApplied(item: any, existingTariffDetailSids: Set<number>, existingCommonChargeKeys: Set<string>) {
+    if (item?.TariffDetailSid && existingTariffDetailSids.has(Number(item.TariffDetailSid))) {
+      return true;
+    }
+
+    const commonChargeKey = this.getAppliedTariffChargeKey(item);
+    return !!commonChargeKey && existingCommonChargeKeys.has(commonChargeKey);
   }
 
   // Add this method to your component class
@@ -3443,6 +3685,7 @@ canGetTariff(routeIndex: number): boolean {
   closeTariffModal(){
     this.currentRouteIndex = undefined;
     this.tariffDetails = [];
+    this.tariffCargoGroups = [];
     this.ngbModal.dismissAll();
   }
 
@@ -3470,6 +3713,9 @@ canGetTariff(routeIndex: number): boolean {
   // }
 
   applySelectedTariffs(): void {
+    const routeIndex = this.currentRouteIndex;
+    const carrierIndex = this.currentCarrierIndex;
+
     const selectedTariffs = this.tariffDetails.filter(tariff => tariff.selected);
 
     if (selectedTariffs.length === 0) {
@@ -3477,35 +3723,91 @@ canGetTariff(routeIndex: number): boolean {
       return;
     }
 
+    // 🔹 Precompute container-wise Qty map
+    const containerQtyMap = new Map<number, number>();
+    const cargoControls = this.quoteCargo(routeIndex).controls as FormGroup[];
+
+    cargoControls.forEach(ctrl => {
+      const cargo = ctrl.getRawValue();
+      const containerType = cargo?.ContainerType;
+      const qty = Number(cargo?.Qty) || 0;
+
+      if (containerType) {
+        containerQtyMap.set(
+          containerType,
+          (containerQtyMap.get(containerType) || 0) + qty
+        );
+      }
+    });
+
     selectedTariffs.forEach(tariffData => {
-      const isEmpty = this.checkIfLastChargeEmpty(this.currentRouteIndex, this.currentCarrierIndex);
-      let chargeIndex;
+
+      let finalQty = Number(tariffData.Qty) || 1;
+
+      // 🔹 Override Qty using container grouping logic
+      if (tariffData?.TariffContainerType && containerQtyMap.has(tariffData.TariffContainerType)) {
+        const groupedQty = containerQtyMap.get(tariffData.TariffContainerType);
+        if (groupedQty && groupedQty > 0) {
+          finalQty = groupedQty;
+        }
+      }
+
+      // 🔹 Recalculate amounts
+      const revenueRate = Number(tariffData.RevenueRate || 0);
+      const costRate = Number(tariffData.CostRate || 0);
+      const revenueExRate = Number(tariffData.RevenueExchangeRate || 0);
+      const costExRate = Number(tariffData.CostExchangeRate || 0);
+
+      const revenueAmount = finalQty * revenueRate;
+      const costAmount = finalQty * costRate;
+
+      const updatedTariff = {
+        ...tariffData,
+        Qty: finalQty,
+        RevenueAmount: revenueAmount.toFixed(this.digitsAfterDecimal),
+        CostAmount: costAmount.toFixed(this.digitsAfterDecimal),
+        RevenueLocalAmount: (revenueAmount * revenueExRate).toFixed(this.digitsAfterDecimal),
+        CostLocalAmount: (costAmount * costExRate).toFixed(this.digitsAfterDecimal),
+      };
+
+      const isEmpty = this.checkIfLastChargeEmpty(routeIndex, carrierIndex);
+      let chargeIndex: number;
 
       if (isEmpty) {
-        chargeIndex = this.quoteCharges(this.currentRouteIndex, this.currentCarrierIndex).length - 1;
-        const chargeForm = this.quoteCharges(this.currentRouteIndex, this.currentCarrierIndex).at(chargeIndex) as FormGroup;
-        chargeForm.patchValue({ ...tariffData });
-        chargeForm.updateValueAndValidity();
+        chargeIndex = this.quoteCharges(routeIndex, carrierIndex).length - 1;
+        const chargeForm = this.quoteCharges(routeIndex, carrierIndex).at(chargeIndex) as FormGroup;
+
+        chargeForm.patchValue(updatedTariff, { emitEvent: false });
+        chargeForm.updateValueAndValidity({ emitEvent: false });
+
       } else {
-        this.addQuoteCharge(this.currentRouteIndex, this.currentCarrierIndex, tariffData);
-        chargeIndex = this.quoteCharges(this.currentRouteIndex, this.currentCarrierIndex).length - 1;
+        this.addQuoteCharge(routeIndex, carrierIndex, updatedTariff);
+        chargeIndex = this.quoteCharges(routeIndex, carrierIndex).length - 1;
       }
-      
-      // After adding/patching, run necessary updates for the new charge
-      this.updateSingleChargeQty(this.currentRouteIndex, this.currentCarrierIndex, chargeIndex);
-      this.fetchExchangeRate(this.currentRouteIndex, this.currentCarrierIndex, chargeIndex, 'revenue');
-      this.fetchExchangeRate(this.currentRouteIndex, this.currentCarrierIndex, chargeIndex, 'cost');
+
+      // ❗ IMPORTANT: Prevent Qty override issue
+      // If your updateSingleChargeQty recalculates Qty incorrectly, avoid calling it
+      // OR modify that function to respect existing Qty
+
+      // this.updateSingleChargeQty(routeIndex, carrierIndex, chargeIndex);
+
+      // 🔹 Still fetch exchange rates (safe)
+      this.fetchExchangeRate(routeIndex, carrierIndex, chargeIndex, 'revenue');
+      this.fetchExchangeRate(routeIndex, carrierIndex, chargeIndex, 'cost');
     });
+
     this.disableTariffFieldsForCurrentRoute();
 
     const customerId = this.quotationForm.get('CustomerMasterSid')?.value;
     const customer = this.customers.find(c => c.CustomerMasterSid === customerId);
+
     if (customer) {
       this.handleCustomerChangeOnCharges(customer);
     }
 
     this.closeTariffModal();
   }
+
   disableTariffFieldsForCurrentRoute(): void {
   if (this.currentRouteIndex === undefined || this.currentRouteIndex === null) {
     return;
@@ -4144,22 +4446,29 @@ ${this.userData.userName}`;
   findFieldForQty(UnitQty:string){
     const trimmedUnitQty = String(UnitQty).trim();
     switch(trimmedUnitQty){
-      case 'GrossWeight':
-        return 'GrossWeight';
-      case 'CBM':
-        return 'Volume';
+      case 'Per 20ft Cont':
+      case 'Per 40ft Cont':
+      case 'Per 45ft Cont':
+      case 'Per Cont':
       case '20ft':
-        return 'Qty';
       case '40ft':
-        return 'Qty';
+        return 'NoofContainers';
+      case 'Per CBM':
+      case 'GrossWeight':
+      case 'CBM':
+        return trimmedUnitQty === 'GrossWeight' ? 'GrossWeight' : 'Volume';
+      case 'Per GrossWeight':
+        return 'GrossWeight';
       case 'ChargeableWeight':
         return 'ChargeableWeight';
+      case 'Per BL':
       case 'BL':
-        return '1';
+        return 1;
+      case 'Per Shipment':
       case 'Shipment':
-        return '1';
+        return 1;
       default:
-        return '1';
+        return 1;
     }
   }
 

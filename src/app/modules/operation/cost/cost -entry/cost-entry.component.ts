@@ -1837,18 +1837,27 @@ createRateFormGroup(data?: any): FormGroup {
       return;
     }
 
-    this.modalService.open(content, { size: 'lg', centered: true, backdrop: 'static' });
     const cargoItems: any[] = this.parentFormValue?.cargoItems?.length
       ? this.parentFormValue.cargoItems
       : [{
           CargoType: this.parentFormValue?.CargoType,
-          ContainerType: null,
+          ContainerType: this.parentFormValue?.ContainerType || null,
           ContainerTypeName: null,
           GrossWeight: this.parentFormValue?.GrossWeight,
           Volume: this.parentFormValue?.Volume,
           NoofContainers: this.parentFormValue?.NoofContainers,
           ChargeableWeight: this.parentFormValue?.ChargeableWeight,
         }];
+
+    const isFclSegment = String(this.parentFormValue?.Segment || '').trim().toUpperCase() === 'FCL';
+    const hasSelectedContainerType = cargoItems.some((cargo: any) => !!cargo?.ContainerType);
+
+    if (isFclSegment && !hasSelectedContainerType) {
+      this.appSettingService.showWarning('Please choose Container Type to fetch tariff.');
+      return;
+    }
+
+    this.modalService.open(content, { size: 'lg', centered: true, backdrop: 'static' });
 
     const basePayload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -2316,6 +2325,10 @@ createRateFormGroup(data?: any): FormGroup {
   
   isCurrentScreen(screenName : 'Booking' | 'Master Job' | 'House Job' | 'House Air Waybill' | 'Master Air Waybill' | 'Service Job'| 'Agent Master Air Waybill'){
     return this.screenName === screenName;
+  }
+
+  get showGetTariffButton(): boolean {
+    return ['Booking', 'House Job', 'House Air Waybill', 'Service Job', 'Agent Master Air Waybill'].includes(this.screenName);
   }
 
   initVoucherForm() {

@@ -1310,6 +1310,21 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
     const MasterJobSid = this.serviceJobData?.MasterJobSid || this.b['MasterJobSid']?.value;
     const MasterJobNumber = this.serviceJobData?.masterJob?.MasterJobNumber || this.b['MasterJobNumber']?.value;
 
+    const rawCargo = this.serviceJobData?.Cargo?.[0] || {};
+    const containerTypeSid = rawCargo.ContainerType || null;
+    const cargoItems = [{
+      CargoType: rawCargo.CargoType,
+      ContainerType: containerTypeSid,
+      ContainerTypeName: this.containerTypeList?.find(
+        ct => ct.ContainerTypeMasterSid === containerTypeSid
+      )?.ContainerTypeName || null,
+      GrossWeight: rawCargo.GrossWeight,
+      Volume: rawCargo.Volume,
+      NoofContainers: rawCargo.NoofContainers,
+      ChargeableWeight: rawCargo.ChargeableWeight,
+      ShipmentTerms: rawCargo.ShipmentTerms,
+    }];
+
     this.currentFormValue = {
       CompanyMasterSid,
       DepartmentMasterSid,
@@ -1333,12 +1348,14 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy {
       PODSid,
       EffectiveDate,
       ExpiredDate,
+      ContainerType: containerTypeSid,
       CargoType,
       GrossWeight,
       NetWeight,
       Volume,
       NoofContainers,
       ChargeableWeight,
+      cargoItems,
       countryOfCompany : this.countryOfCompany,
       MasterJobSid,
       MasterJobNumber

@@ -4368,6 +4368,25 @@ getVoyageTypeBasedOnDept(deptId: number) {
     const salesmanSid = this.b['SalesmanSid']?.value || '';
     const salesmanName = this.salesmanList.find(s => s.UserMasterSid === salesmanSid)?.userName || '';
 
+    const rawCargos: any[] = this.housejobData?.Cargo || this.housejobData?.houseJobCargo || [];
+    const cargoItems = rawCargos.map((cargo: any) => {
+      const containerTypeSid = cargo.ContainerType || null;
+      const containerTypeName = this.containerTypeList.find(
+        ct => ct.ContainerTypeMasterSid === containerTypeSid
+      )?.ContainerTypeName || null;
+      return {
+        CargoType: cargo.CargoType,
+        ContainerType: containerTypeSid,
+        ContainerTypeName: containerTypeName,
+        GrossWeight: cargo.GrossWeight,
+        Volume: cargo.Volume,
+        NoofContainers: cargo.NoofContainers,
+        ChargeableWeight: cargo.ChargeableWeight,
+        ShipmentTerms: cargo.ShipmentTerms,
+      };
+    });
+    const containerTypeSid = cargoItems.find((cargo: any) => cargo.ContainerType)?.ContainerType || null;
+
     this.currentFormValue = {
       CompanyMasterSid,
       DepartmentMasterSid,
@@ -4391,12 +4410,14 @@ getVoyageTypeBasedOnDept(deptId: number) {
       ExpiredDate,
       Carrier,
       IncoTerms,
+      ContainerType: containerTypeSid,
       CargoType,
       GrossWeight,
       NetWeight,
       Volume,
       NoofContainers,
       ChargeableWeight,
+      cargoItems,
       countryOfCompany: this.countryOfCompany,
       SalesmanName : salesmanName
     }

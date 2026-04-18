@@ -2878,6 +2878,16 @@ loadMawbStock(data: any): void {
     const Volume = this.f['Volume']?.value;
     const ChargeableWeight = this.f['ChargeableWeight']?.value;
     const MovementType = this.selectedDepartmentType;
+    const cargoItems = [{
+      CargoType,
+      ContainerType: null,
+      ContainerTypeName: null,
+      GrossWeight,
+      Volume,
+      NoofContainers,
+      ChargeableWeight,
+      ShipmentTerms: null,
+    }];
     // const CustomerMasterSid = this.b['CustomerMasterSid']?.value;
     // const CustomerBranchSid = this.b['CustomerBranchSid']?.value;
     // const BookingHeaderSid = this.BookingHeaderSid || this.bookingData?.BookingHeaderSid || this.b['BookingHeaderSid']?.value;
@@ -2900,12 +2910,14 @@ loadMawbStock(data: any): void {
       FPODSid,
       EffectiveDate,
       ExpiredDate,
+      ContainerType: null,
       CargoType,
       GrossWeight,
       NetWeight,
       Volume,
       NoofContainers,
       ChargeableWeight,
+      cargoItems,
       countryOfCompany : this.countryOfCompany
     }
   }
@@ -2937,6 +2949,16 @@ loadMawbStock(data: any): void {
     const NoofContainers = this.masterJobContainers.length;
     const Volume = this.f['Volume']?.value;
     const ChargeableWeight = this.f['ChargeableWeight']?.value;
+    const cargoItems = [{
+      CargoType,
+      ContainerType: null,
+      ContainerTypeName: null,
+      GrossWeight,
+      Volume,
+      NoofContainers,
+      ChargeableWeight,
+      ShipmentTerms: null,
+    }];
 
     this.currentFormValue = {
       CompanyMasterSid,
@@ -2954,12 +2976,14 @@ loadMawbStock(data: any): void {
       FPODSid,
       EffectiveDate,
       ExpiredDate,
+      ContainerType: null,
       CargoType,
       GrossWeight,
       NetWeight,
       Volume,
       NoofContainers,
       ChargeableWeight,
+      cargoItems,
       countryOfCompany: this.countryOfCompany
     }
   }

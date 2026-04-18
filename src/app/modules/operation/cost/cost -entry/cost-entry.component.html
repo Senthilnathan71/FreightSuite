@@ -105,7 +105,7 @@
             <button class="btn btn-sm btn-info" (click)="addRateRow()" [disabled]="isFormDisabled || !isHBLNoValid()">
               <i class="fas fa-plus"></i> Add Charge
             </button>
-            <button class="table-action-btn primary" (click)="getTariffDetails(tariffDetailsModal)" *ngIf="parentFormValue.ParentSid" [disabled]="isFormDisabled || !isHBLNoValid()">
+            <button class="table-action-btn primary" (click)="getTariffDetails(tariffDetailsModal)" *ngIf="parentFormValue.ParentSid && showGetTariffButton" [disabled]="isFormDisabled || !isHBLNoValid()">
               <i class="fas fa-plus"></i> Get Tariff
             </button>
              <button class="table-action-btn primary" (click)="getStdChargeModal()" [disabled]="isFormDisabled || !isHBLNoValid()" *ngIf="isEditMode">

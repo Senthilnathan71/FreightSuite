@@ -4155,6 +4155,7 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
         ShipmentTerms: cargoCtrl.get('ShipmentTerms')?.value,
       };
     });
+    const containerTypeSid = cargoItems.find((cargo: any) => cargo.ContainerType)?.ContainerType || null;
 
     this.currentFormValue = {
       CompanyMasterSid,
@@ -4178,6 +4179,7 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
       Carrier,
       CarrierName: carrierName || null,
       IncoTerms,
+      ContainerType: containerTypeSid,
       GrossWeight,
       NetWeight,
       Volume,
