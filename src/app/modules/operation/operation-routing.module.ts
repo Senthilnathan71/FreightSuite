@@ -491,6 +491,7 @@ export const OperationRoutes: Routes = [
       {
         path: 'service-job/entry',
         component: ServiceJobEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Service Job',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Service Job' }],
@@ -499,6 +500,7 @@ export const OperationRoutes: Routes = [
       {
         path: 'service-job/entry/:id',
         component: ServiceJobEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Service Job',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Service Job' }],

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NgxSpinnerModule } from 'ngx-spinner';
@@ -11,7 +11,8 @@ import {
 } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { NgSelectComponent } from '@ng-select/ng-select';
-import { forkJoin } from 'rxjs';
+import { Subject, forkJoin } from 'rxjs';
+import { debounceTime, takeUntil } from 'rxjs/operators';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
@@ -27,6 +28,7 @@ import { OperationService } from '../../operation.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 @Component({
   selector: 'app-payment-request-entry',
@@ -52,7 +54,7 @@ import { PrintHeaderComponent } from 'src/app/shared/components/print-header/pri
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
   ],
 })
-export class PaymentRequestEntryComponent implements OnInit {
+export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   @ViewChild('paymentRequestPrintModal') paymentRequestPrintModal!: TemplateRef<any>;
 
   form!: FormGroup;
@@ -65,6 +67,9 @@ export class PaymentRequestEntryComponent implements OnInit {
   loading = false;
   saving = false;
   lookupsLoaded = false;
+  isDirty = false;
+  private initialFormValue: any = null;
+  private destroy$ = new Subject<void>();
 
   currencyList: any[] = [];
   departmentList: any[] = [];
@@ -139,12 +144,22 @@ export class PaymentRequestEntryComponent implements OnInit {
       this.applyPreview(preview);
     }
 
-    this.route.params.subscribe((params) => {
+    this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       if (params['id']) {
         this.isEditMode = true;
         this.loadRequest(Number(params['id']));
+      } else {
+        this.isEditMode = false;
+        this.scheduleDirtyTrackingSnapshot();
       }
     });
+
+    this.subscribeToFormChanges();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   get detailItems(): FormArray {
@@ -203,6 +218,7 @@ export class PaymentRequestEntryComponent implements OnInit {
     if (preview?.detailItems?.length) {
       this.applyPreview(preview);
     }
+    this.scheduleDirtyTrackingSnapshot();
   }
 
   private isApprovedStatus(status: any): boolean {
@@ -235,57 +251,7 @@ export class PaymentRequestEntryComponent implements OnInit {
   }
 
   save() {
-    if (this.isReadOnly) {
-      this.appSettingsService.showWarning('Approved payment request cannot be modified');
-      return;
-    }
-
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      this.appSettingsService.showWarning('Please fill mandatory fields');
-      return;
-    }
-
-    const selectedDetails = this.detailItems.getRawValue().filter((item: any) => item.Selected);
-    if (!selectedDetails.length) {
-      this.appSettingsService.showWarning('Please select at least one detail row');
-      return;
-    }
-
-    this.saving = true;
-    const payload = {
-      ...this.form.getRawValue(),
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      CreatedBy: this.userData?.userEmail,
-      UpdatedBy: this.userData?.userEmail,
-      detailItems: this.detailItems.getRawValue(),
-    };
-
-    const request$ = this.isEditMode
-      ? this.operationService.updatePaymentRequest(this.form.get('PaymentRequestSid')?.value, payload)
-      : this.operationService.createPaymentRequest(payload);
-
-    request$.subscribe({
-      next: (resp: any) => {
-        this.saving = false;
-        if (resp.status) {
-          this.appSettingsService.showSuccess(resp.message);
-          const id = resp.data?.PaymentRequestSid || resp.data?.PaymentRequestHeader?.PaymentRequestSid;
-          if (id) {
-            this.router.navigate(['/operation/payment-request/entry', id]);
-          } else {
-            this.goBack();
-          }
-        } else {
-          this.appSettingsService.showError(resp.message);
-        }
-      },
-      error: () => {
-        this.saving = false;
-        this.appSettingsService.showError('Failed to save payment request');
-      },
-    });
+    this.saveWithCallback();
   }
 
   getCurrencyCode(currencyMasterSid: number): string {
@@ -581,6 +547,7 @@ export class PaymentRequestEntryComponent implements OnInit {
 
         this.syncDetailPartyWithHeader();
         this.applyApprovalReadOnlyState(request.PaymentRequestStatus);
+        this.scheduleDirtyTrackingSnapshot();
       },
       error: () => {
         this.loading = false;
@@ -623,6 +590,7 @@ export class PaymentRequestEntryComponent implements OnInit {
 
     this.syncDetailPartyWithHeader();
     this.applyApprovalReadOnlyState('Pending');
+    this.scheduleDirtyTrackingSnapshot();
   }
 
   private createDetailRow(data: any) {
@@ -882,6 +850,153 @@ export class PaymentRequestEntryComponent implements OnInit {
       value: Number(value || 0),
       currencyCode: currency?.currencyCode,
     });
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.saveWithCallback(resolve);
+    });
+  }
+
+  private saveWithCallback(resolve?: (value: boolean) => void): void {
+    if (this.isReadOnly) {
+      this.appSettingsService.showWarning('Approved payment request cannot be modified');
+      if (resolve) resolve(false);
+      return;
+    }
+
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.appSettingsService.showWarning('Please fill mandatory fields');
+      if (resolve) resolve(false);
+      return;
+    }
+
+    const selectedDetails = this.detailItems.getRawValue().filter((item: any) => item.Selected);
+    if (!selectedDetails.length) {
+      this.appSettingsService.showWarning('Please select at least one detail row');
+      if (resolve) resolve(false);
+      return;
+    }
+
+    const raw = this.form.getRawValue();
+    if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+      this.appSettingsService.showWarning('No changes to save');
+      this.form.markAsUntouched();
+      if (resolve) resolve(false);
+      return;
+    }
+
+    this.saving = true;
+    const payload = {
+      ...raw,
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      CreatedBy: this.userData?.userEmail,
+      UpdatedBy: this.userData?.userEmail,
+      detailItems: this.detailItems.getRawValue(),
+    };
+
+    const request$ = this.isEditMode
+      ? this.operationService.updatePaymentRequest(this.form.get('PaymentRequestSid')?.value, payload)
+      : this.operationService.createPaymentRequest(payload);
+
+    request$.subscribe({
+      next: (resp: any) => {
+        this.saving = false;
+        if (resp.status) {
+          this.isDirty = false;
+          this.appSettingsService.showSuccess(resp.message);
+          const id = resp.data?.PaymentRequestSid || resp.data?.PaymentRequestHeader?.PaymentRequestSid;
+          if (id) {
+            this.form.patchValue({ PaymentRequestSid: id }, { emitEvent: false });
+            this.scheduleDirtyTrackingSnapshot();
+            this.router.navigate(['/operation/payment-request/entry', id]);
+          } else {
+            this.scheduleDirtyTrackingSnapshot();
+            this.goBack();
+          }
+          if (resolve) resolve(true);
+        } else {
+          this.appSettingsService.showError(resp.message);
+          if (resolve) resolve(false);
+        }
+      },
+      error: () => {
+        this.saving = false;
+        this.appSettingsService.showError('Failed to save payment request');
+        if (resolve) resolve(false);
+      },
+    });
+  }
+
+  private subscribeToFormChanges(): void {
+    this.form.valueChanges
+      .pipe(takeUntil(this.destroy$), debounceTime(300))
+      .subscribe(() => {
+        if (this.initialFormValue === null) {
+          return;
+        }
+        this.isDirty = !this.deepEqual(this.initialFormValue, this.form.getRawValue());
+      });
+  }
+
+  private scheduleDirtyTrackingSnapshot(): void {
+    setTimeout(() => {
+      this.initialFormValue = this.form.getRawValue();
+      this.isDirty = false;
+    }, 0);
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+
+    if (value instanceof Date) {
+      return value.toISOString().split('T')[0];
+    }
+
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+      return Number(value);
+    }
+
+    if (typeof value === 'number') {
+      return Number(value.toFixed(6));
+    }
+
+    if (Array.isArray(value)) {
+      return value.map(v => this.normalizeValue(v));
+    }
+
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
   }
 
   private getToday() {
