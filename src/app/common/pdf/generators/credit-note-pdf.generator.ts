@@ -28,6 +28,16 @@ function isIndianCompany(data: CreditNotePdfData): boolean {
   );
 }
 
+function estimateWrappedLineCount(text: string, charsPerLine: number): number {
+  if (!text) {
+    return 0;
+  }
+
+  return text
+    .split(/\r?\n/)
+    .reduce((count, line) => count + Math.max(1, Math.ceil((line || '').length / charsPerLine)), 0);
+}
+
 export function generateCreditNoteDocument(data: CreditNotePdfData): any {
   // console.log(data, 'generateInvoiceDocument');
   const chargesCount = data.charges?.length || 0;
@@ -39,7 +49,18 @@ export function generateCreditNoteDocument(data: CreditNotePdfData): any {
   const extraTopMarginForLogo = Math.max(0, logoHeaderHeight - 55);
   const extraTopMarginForIndiaInfo = isIndiaCompany ? 24 : 0;
   const extraTopMarginForGstCode = isIndiaCompany && (printData?.GSTCode || data.companyGstCode) ? 12 : 0;
-  const dynamicTopMargin = baseTopMargin + extraTopMarginForLogo + extraTopMarginForIndiaInfo + extraTopMarginForGstCode;
+  const billedTo = String(printData?.BilledTo || data.credit?.customerName || '');
+  const billingAddress = String(printData?.BillingAddress || data.credit?.customerAddress || '');
+  const billedToLines =
+    estimateWrappedLineCount(billedTo, 34) +
+    estimateWrappedLineCount(billingAddress, 52);
+  const extraTopMarginForBilledTo = Math.max(0, billedToLines - 3) * 16;
+  const dynamicTopMargin =
+    baseTopMargin +
+    extraTopMarginForLogo +
+    extraTopMarginForIndiaInfo +
+    extraTopMarginForGstCode +
+    extraTopMarginForBilledTo;
   const configuredMargins = data.config?.pageMargins as number[] | undefined;
   const resolvedPageMargins = configuredMargins
     ? [
@@ -295,6 +316,7 @@ function buildCreditNoteInfo(data: CreditNotePdfData): any {
   const PAGE_RIGHT = 565;
   const RIGHT_LABEL_WIDTH = 110;
   const COLON_WIDTH = 6;
+  const BILLED_TO_INDENT = 30;
 
   const buildInfoRow = (label: string, value: string, marginBottom = 5): any => ({
     columns: [
@@ -310,12 +332,27 @@ function buildCreditNoteInfo(data: CreditNotePdfData): any {
   const billingAddress = printData?.BillingAddress || credit?.customerAddress || '';
 
   const leftStack: any[] = [
-    { text: 'Billed To', style: 'labelBold', margin: [0, 0, 0, 3] },
-    { text: billedTo, margin: [0, 0, 0, 3] }
+    { text: 'BILLED TO', style: 'labelBold', margin: [0, 0, 0, 6] },
+    { text: billedTo, margin: [BILLED_TO_INDENT, 0, 0, 6] }
   ];
 
   if (billingAddress) {
-    leftStack.push({ text: billingAddress, margin: [0, 0, 0, 3] });
+    leftStack.push({
+      text: billingAddress,
+      margin: [BILLED_TO_INDENT, 0, 0, 0],
+      lineHeight: 1.2
+    });
+  }
+
+  if (isIndiaCompany && (printData?.PAN || (data as any)?.companyPan)) {
+    leftStack.push({
+      columns: [
+        { text: 'PAN', width: 28, style: 'labelBold' },
+        { text: ':', width: COLON_WIDTH },
+        { text: printData?.PAN || (data as any)?.companyPan || '', width: '*' }
+      ],
+      margin: [BILLED_TO_INDENT, 4, 0, 0]
+    });
   }
 
   // ✅ Right side — build rows one by one clearly
@@ -367,7 +404,7 @@ function buildCreditNoteInfo(data: CreditNotePdfData): any {
       x2: PAGE_RIGHT, y2: 0,
       lineWidth: 1.5
     }],
-    margin: [0, 2, 0, 0]
+    margin: [0, 6, 0, 0]
   };
 
   return {
@@ -483,7 +520,7 @@ function buildShipmentDetails(data: CreditNotePdfData): any {
       { text: ':', width: COLON_WIDTH },
       { text: item.value, width: '*', margin: [4, 0, 0, 0] }
     ],
-    margin: [10, 0, 0, 2]
+    margin: [10, 3, 0, 3]
   }));
 
 
@@ -493,7 +530,7 @@ function buildShipmentDetails(data: CreditNotePdfData): any {
       { text: ':', width: COLON_WIDTH },
       { text: item.value, width: '*', margin: [4, 0, 0, 0] }
     ],
-    margin: [0, 0, 0, 2]
+    margin: [0, 3, 0, 3]
   }));
 
   // Cargo table

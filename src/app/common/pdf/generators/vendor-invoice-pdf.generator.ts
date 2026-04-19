@@ -23,6 +23,47 @@
   // HTML print logo uses 110px. pdfMake works in pt, so convert px -> pt (72/96).
   const INVOICE_LOGO_HEIGHT_PX = 110;
   const INVOICE_LOGO_HEIGHT_PT = INVOICE_LOGO_HEIGHT_PX * 0.75;
+
+  function isIndianCompany(data: VendorInvoicePdfData): boolean {
+    const branchCountryCode = String(data.branch?.countryCode || '').trim().toLowerCase();
+    const companyCountryCode = String(data.company?.countryCode || '').trim().toLowerCase();
+    const gstCode = String(data.companyGstCode || '').trim();
+    const usesIndiaGst =
+      !!data.taxDisplayConfig?.showCGST ||
+      !!data.taxDisplayConfig?.showSGST ||
+      !!data.taxDisplayConfig?.showIGST;
+
+    return (
+      branchCountryCode === 'in' ||
+      companyCountryCode === 'in' ||
+      usesIndiaGst ||
+      gstCode.length >= 15
+    );
+  }
+
+  function isUaeCompany(data: VendorInvoicePdfData): boolean {
+    const branchCountryCode = String(data.branch?.countryCode || '').trim().toLowerCase();
+    const companyCountryCode = String(data.company?.countryCode || '').trim().toLowerCase();
+    const placeOfSupply = String(data.invoice?.placeOfSupply || '').trim().toLowerCase();
+
+    return (
+      branchCountryCode === 'ae' ||
+      companyCountryCode === 'ae' ||
+      placeOfSupply === 'dubai' ||
+      placeOfSupply === 'uae' ||
+      placeOfSupply === 'united arab emirates'
+    );
+  }
+
+  function estimateWrappedLineCount(text: string, charsPerLine: number): number {
+    if (!text) {
+      return 0;
+    }
+
+    return text
+      .split(/\r?\n/)
+      .reduce((count, line) => count + Math.max(1, Math.ceil((line || '').length / charsPerLine)), 0);
+  }
   /**
    * Generate invoice PDF document definition
    */
@@ -30,10 +71,25 @@
     console.log(data, 'generateVendorInvoiceDocument');
     const chargesCount = data.charges?.length || 0;
     const shouldBreakPageForTerms = chargesCount > 20;
+    const isIndiaCompany = isIndianCompany(data);
+    const printData = (data as any).vendorInvoiceData || (data as any).invoicePrintData;
     const logoHeaderHeight = INVOICE_LOGO_HEIGHT_PT;
     const baseTopMargin = 150;
     const extraTopMarginForLogo = Math.max(0, logoHeaderHeight - 55);
-    const dynamicTopMargin = baseTopMargin + extraTopMarginForLogo;
+    const extraTopMarginForIndiaInfo = isIndiaCompany ? 24 : 0;
+    const extraTopMarginForGstCode = isIndiaCompany && (data.companyGstCode || '') ? 12 : 0;
+    const billedTo = String(printData?.BilledTo || data.invoice?.customerName || '');
+    const billingAddress = String(printData?.BillingAddress || data.invoice?.customerAddress || '');
+    const billedToLines =
+      estimateWrappedLineCount(billedTo, 34) +
+      estimateWrappedLineCount(billingAddress, 52);
+    const extraTopMarginForBilledTo = Math.max(0, billedToLines - 3) * 16;
+    const dynamicTopMargin =
+      baseTopMargin +
+      extraTopMarginForLogo +
+      extraTopMarginForIndiaInfo +
+      extraTopMarginForGstCode +
+      extraTopMarginForBilledTo;
     const configuredMargins = data.config?.pageMargins as number[] | undefined;
     const resolvedPageMargins = configuredMargins
       ? [
@@ -135,6 +191,7 @@
     const logo = data.logo;
     const PAGE_LEFT = -10;
     const PAGE_RIGHT = 565;
+    const isIndiaCompany = isIndianCompany(data);
 
     const LOGO_HEIGHT = INVOICE_LOGO_HEIGHT_PT; // 110px in HTML ~= 82.5pt in pdfMake
 
@@ -195,10 +252,10 @@
       });
     }
 
-    const vatNo = data.companyPan;
-    if (vatNo) {
+    const companyTaxNo = data.companyPan;
+    if (companyTaxNo) {
       companyInfoStack.push({
-        text: `VAT No : ${vatNo}`,
+        text: `${isIndiaCompany ? 'GST No' : 'VAT No'} : ${companyTaxNo}`,
         style: 'addressText',
         alignment: 'right'
       });
@@ -235,14 +292,30 @@
   function buildInvoiceTitle(data: VendorInvoicePdfData): any {
     const title = data.invoiceTitle ||
       (data.invoice?.postStatus === 'P' ? 'TAX INVOICE' : 'TAX INVOICE DRAFT');
+    const isIndiaCompany = isIndianCompany(data);
+    const gstCode = data.companyGstCode || '';
 
     return {
-      text: title,
-      style: 'Tax Invoice',
-      alignment: 'center',
-      bold: true,
-      fontSize: 12,
-      margin: [0, 2, 0, 7]
+      stack: [
+        {
+          text: title,
+          style: 'Tax Invoice',
+          alignment: 'center',
+          bold: true,
+          fontSize: 12,
+          margin: [0, 2, 0, isIndiaCompany && gstCode ? 2 : 7]
+        },
+        ...(isIndiaCompany && gstCode
+          ? [{
+              text: [
+                { text: 'GST Code :', bold: true },
+                { text: ` ${gstCode}` }
+              ],
+              alignment: 'center',
+              margin: [0, 0, 0, 7]
+            }]
+          : [])
+      ]
     };
   }
 
@@ -252,6 +325,26 @@
 function buildInvoiceInfo(data: VendorInvoicePdfData): any {
   const invoice = data.invoice;
   const printData = (data as any).vendorInvoiceData || (data as any).invoicePrintData;
+  const isIndiaCompany = isIndianCompany(data);
+  const isUAECompany = isUaeCompany(data);
+
+
+  const gstVatNo =
+    printData?.GSTVAT ||
+    printData?.GST_VAT ||
+    printData?.GSTNo ||
+    printData?.VATNo ||
+    printData?.vatNo ||
+    invoice?.customerGstVat ||
+    (data as any)?.companyVatNo ||
+    '';
+
+  const irnNumber =
+    printData?.IRNNumber ||
+    printData?.IRNNo ||
+    printData?.IRN ||
+    invoice?.irnNumber ||
+    '';
 
   const PAGE_LEFT = -10;
   const PAGE_RIGHT = 565;
@@ -261,10 +354,8 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
   // -----------------------------
   // Left side - Billed To
   // -----------------------------
-  const billedTo =
-    printData?.BilledTo || invoice?.customerName || '';
-  const billingAddress =
-    printData?.BillingAddress || invoice?.customerAddress || '';
+  const billedTo = printData?.BilledTo || invoice?.customerName || '';
+  const billingAddress = printData?.BillingAddress || invoice?.customerAddress || '';
 
   const leftStack: any[] = [
     {
@@ -285,6 +376,17 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
     });
   }
 
+  if (isIndiaCompany && (printData?.PAN || data.companyPan)) {
+    leftStack.push({
+      columns: [
+        { text: 'PAN', width: 28, style: 'labelBold' },
+        { text: ':', width: COLON_WIDTH },
+        { text: printData?.PAN || data.companyPan || '', width: '*' }
+      ],
+      margin: [10, 0, 0, 3]
+    });
+  }
+
   // -----------------------------
   // Right side - Invoice Details
   // -----------------------------
@@ -294,7 +396,7 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
   rightStack.push({
     columns: [
       { text: 'Vendor Invoice No', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-     { text: ':', width: COLON_WIDTH },
+      { text: ':', width: COLON_WIDTH },
       { text: printData?.InvoiceNo || invoice?.invoiceNo || '', width: '*' }
     ],
     margin: [0, 0, 0, 5]
@@ -304,7 +406,7 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
   rightStack.push({
     columns: [
       { text: 'Vendor Invoice Date', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-      { text: ':', width: COLON_WIDTH  },
+      { text: ':', width: COLON_WIDTH },
       {
         text: printData?.InvoiceDate
           ? formatDate(printData.InvoiceDate)
@@ -315,29 +417,38 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
     margin: [0, 0, 0, 5]
   });
 
-  // VAT No
-  rightStack.push({
-    columns: [
-      { text: 'VAT No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
-      { text: ':', width: COLON_WIDTH },
-      { text: printData?.GST_VAT || invoice?.customerGstVat || '', width: '*' }
-    ],
-    margin: [0, 0, 0, 7]
-  });
-
-  // IRN Number (Optional)
-  if (printData?.IRNNumber || invoice?.irnNumber) {
+  // ✅ FIXED: India → GST + IRN | UAE → VAT No only | Others → nothing
+  if (isIndiaCompany) {
     rightStack.push({
       columns: [
-        { text: 'IRN Number', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
+        { text: 'GST No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
         { text: ':', width: COLON_WIDTH },
-        { text: printData?.IRNNumber || invoice?.irnNumber || '', width: '*' }
+        { text: gstVatNo, width: '*' }
+      ],
+      margin: [0, 0, 0, 7]
+    });
+
+    rightStack.push({
+      columns: [
+        { text: 'IRN No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
+        { text: ':', width: COLON_WIDTH },
+        { text: irnNumber, width: '*' }
+      ],
+      margin: [0, 0, 0, 7]
+    });
+  } else if (isUAECompany || gstVatNo) {
+    // ✅ Show VAT No. if UAE company OR if vatNo value exists (fallback safety)
+    rightStack.push({
+      columns: [
+        { text: 'VAT No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
+        { text: ':', width: COLON_WIDTH },
+        { text: gstVatNo, width: '*' }
       ],
       margin: [0, 0, 0, 7]
     });
   }
 
-  // 🔥 Remove bottom margin from the LAST row automatically
+  // Remove bottom margin from the LAST row
   if (rightStack.length > 0) {
     rightStack[rightStack.length - 1].margin = [0, 0, 0, 0];
   }
@@ -347,22 +458,13 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
   // -----------------------------
   const twoColumnLayout = {
     columns: [
-      {
-        width: '50%',
-        stack: leftStack
-      },
-      {
-        width: '50%',
-        stack: rightStack
-      }
+      { width: '50%', stack: leftStack },
+      { width: '50%', stack: rightStack }
     ],
     columnGap: 0,
-    margin: [8, 0, 0, 0]
+    margin: [8, 4, 0, 0]
   };
 
-  // -----------------------------
-  // Bottom Line (No Extra Space)
-  // -----------------------------
   const bottomLine = {
     canvas: [
       {
@@ -378,10 +480,7 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
   };
 
   return {
-    stack: [
-      twoColumnLayout,
-      bottomLine
-    ],
+    stack: [twoColumnLayout, bottomLine],
     margin: [0, 0, 0, 0]
   };
 }
@@ -524,19 +623,7 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
   // -----------------------------
   return {
     stack: [
-      {
-        canvas: [
-          {
-            type: 'line',
-            x1: PAGE_LEFT,
-            y1: 0,
-            x2: PAGE_RIGHT,
-            y2: 0,
-            lineWidth: 0.8
-          }
-        ],
-        margin: [0, 0, 0, 4]
-      },
+   
       {
         table: {
           widths: ['50%', '50%'],
@@ -556,41 +643,45 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
   /**
    * Build charges table - using vendorInvoiceData.voucherDetails
    */
-  function buildChargesTable(data: VendorInvoicePdfData): any {
-    const charges = data.charges || [];
-    const printData = (data as any).vendorInvoiceData || (data as any).invoicePrintData;
-    const voucherDetails = printData?.voucherDetails || [];
+ function buildChargesTable(data: VendorInvoicePdfData): any {
+  const charges = data.charges || [];
+  const printData = (data as any).vendorInvoiceData || (data as any).invoicePrintData;
+  const voucherDetails = printData?.voucherDetails || [];
+  const isIndiaCompany = isIndianCompany(data);
+  const showVATColumns = isUaeCompany(data);
 
-    const taxConfig = data.taxDisplayConfig || {
-      showCGST: false,
-      showSGST: false,
-      showIGST: false,
-      showVAT: false
+  const taxConfig = data.taxDisplayConfig || {
+    showCGST: false,
+    showSGST: false,
+    showIGST: false,
+    showVAT: false
+  };
+
+  const localCurrency = data.localCurrency || 'AED';
+  const invoiceCurr = data.invoice?.currencyCode;
+  const grandTotal = printData?.totalPartyAmount || data.totals?.grandTotal || 0;
+
+  const displayDetails = voucherDetails.length > 0 ? voucherDetails : charges;
+  if (!displayDetails.length) return { text: '' };
+
+  return (() => {
+    const firstFilled = (...values: any[]): string => {
+      for (const value of values) {
+        if (value !== null && value !== undefined && String(value).trim() !== '') {
+          return String(value);
+        }
+      }
+
+      return '';
     };
 
-    const localCurrency = data.localCurrency || 'AED';
-    const invoiceCurr = data.invoice?.currencyCode;
-    const grandTotal = printData?.totalPartyAmount || data.totals?.grandTotal || 0;
+    const formatValue = (value: any, decimals: number): string =>
+      formatNumberWithCommas(Number(value) || 0, decimals);
 
-    const displayDetails = voucherDetails.length > 0 ? voucherDetails : charges;
-    if (!displayDetails.length) return { text: '' };
-
-    /* ---------------- COLUMN COUNT ---------------- */
-    const totalColumns =
-      7 +
-      (taxConfig.showCGST ? 2 : 0) +
-      (taxConfig.showSGST ? 2 : 0) +
-      (taxConfig.showIGST ? 2 : 0) +
-      (taxConfig.showVAT ? 2 : 0) +
-      (invoiceCurr && invoiceCurr !== localCurrency ? 1 : 0);
-
-    const baseFontSize = totalColumns > 8 ? 9 : 12;
-    const headerFontSize = baseFontSize;
-
-    /* ---------------- HEADER ---------------- */
     const headerRow: any[] = [
       { text: 'S.No', style: 'tableHeaderSmall', alignment: 'center' },
-      { text: 'Particulars', style: 'tableHeaderSmall',alignment:'center'},
+      { text: 'Particulars', style: 'tableHeaderSmall', alignment: 'center' },
+      ...(isIndiaCompany ? [{ text: 'HSN/SAC', style: 'tableHeaderSmall', alignment: 'center' }] : []),
       { text: 'Curr.', style: 'tableHeaderSmall', alignment: 'center' },
       { text: 'No. of Unit', style: 'tableHeaderSmall', alignment: 'center' },
       { text: 'Rate', style: 'tableHeaderSmall', alignment: 'center' },
@@ -619,10 +710,10 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
       );
     }
 
-    if (taxConfig.showVAT) {
+    if (showVATColumns) {
       headerRow.push(
         { text: 'VAT %', style: 'tableHeaderSmall', alignment: 'right' },
-        { text: 'VAT Amt', style: 'tableHeaderSmall', alignment: 'right' }
+        { text: 'VAT Amt.', style: 'tableHeaderSmall', alignment: 'right' }
       );
     }
 
@@ -640,55 +731,151 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
       });
     }
 
-    /* ---------------- ROWS ---------------- */
     const dataRows = displayDetails.map((detail: any, index: number) => {
       const row: any[] = [
-        { text: detail.Sno || index + 1, style: 'tableCellSmall', alignment: 'center' },
-        { text: detail.ChargeDescription || detail.chargeName || '', style: 'tableCellSmall' , noWrap : false},
-        { text: detail.CurrencyCode || detail.currencyCode || '', style: 'tableCellSmall', alignment: 'center' },
-        { text: detail.NumberOfUnit || formatNumberWithCommas(detail.qty, 3), style: 'tableCellSmall', alignment: 'right' },
-        { text: detail.Rate || formatNumberWithCommas(detail.rate, 3), style: 'tableCellSmall', alignment: 'right' },
-        { text: detail.ExchangeRate || formatNumberWithCommas(detail.roe || 1, 4), style: 'tableCellSmall', alignment: 'right' },
-        { text: detail.TaxableAmount || formatNumberWithCommas(detail.taxableAmount || detail.amount, 2), style: 'tableCellSmall', alignment: 'right' }
+        {
+          text: firstFilled(detail.Sno, detail.sno, index + 1),
+          style: 'tableCellSmall',
+          alignment: 'center'
+        },
+        {
+          text: firstFilled(
+            detail.ChargeDescription,
+            detail.chargeName,
+            detail.SubledgerName,
+            detail.Subledger,
+            detail.Narration
+          ),
+          style: 'tableCellSmall',
+          noWrap: false
+        },
+        ...(isIndiaCompany
+          ? [{
+              text: firstFilled(
+                detail.HSNCode,
+                detail.HSNSAC,
+                detail.hsnSacCode,
+                detail.hSSACMaster?.HSSACCode,
+                '-'
+              ),
+              style: 'tableCellSmall',
+              alignment: 'center'
+            }]
+          : []),
+        {
+          text: firstFilled(detail.CurrencyCode, detail.currencyCode),
+          style: 'tableCellSmall',
+          alignment: 'center'
+        },
+        {
+          text: firstFilled(detail.NumberOfUnit, detail.qty !== undefined ? formatValue(detail.qty, 3) : '', '1.000'),
+          style: 'tableCellSmall',
+          alignment: 'right'
+        },
+        {
+          text: firstFilled(detail.Rate, detail.rate !== undefined ? formatValue(detail.rate, 2) : '', '0.00'),
+          style: 'tableCellSmall',
+          alignment: 'right'
+        },
+        {
+          text: firstFilled(
+            detail.ExchangeRate,
+            detail.roe !== undefined ? formatValue(detail.roe, 4) : '',
+            '1.0000'
+          ),
+          style: 'tableCellSmall',
+          alignment: 'right'
+        },
+        {
+          text: firstFilled(
+            detail.TaxableAmount,
+            detail.taxableAmount !== undefined ? formatValue(detail.taxableAmount, 2) : '',
+            detail.Amount !== undefined ? formatValue(detail.Amount, 2) : '',
+            detail.amount !== undefined ? formatValue(detail.amount, 2) : '',
+            '0.00'
+          ),
+          style: 'tableCellSmall',
+          alignment: 'right'
+        }
       ];
 
       if (taxConfig.showCGST) {
         row.push(
-          { text: detail.cgstRate || formatNumberWithCommas(detail.cgstPercent, 2), style: 'tableCellSmall', alignment: 'right' },
-          { text: detail.cgstAmt || formatNumberWithCommas(detail.cgstAmount, 2), style: 'tableCellSmall', alignment: 'right' }
+          {
+            text: firstFilled(detail.cgstRate, formatValue(detail.cgstPercent ?? Number(detail.TaxPercentage1) / 2, 3)),
+            style: 'tableCellSmall',
+            alignment: 'right'
+          },
+          {
+            text: firstFilled(detail.cgstAmt, formatValue(detail.cgstAmount ?? Number(detail.TaxAmount1) / 2, 2)),
+            style: 'tableCellSmall',
+            alignment: 'right'
+          }
         );
       }
 
       if (taxConfig.showSGST) {
         row.push(
-          { text: detail.sgstRate || formatNumberWithCommas(detail.sgstPercent, 2), style: 'tableCellSmall', alignment: 'right' },
-          { text: detail.sgstAmt || formatNumberWithCommas(detail.sgstAmount, 2), style: 'tableCellSmall', alignment: 'right' }
+          {
+            text: firstFilled(detail.sgstRate, formatValue(detail.sgstPercent ?? Number(detail.TaxPercentage1) / 2, 3)),
+            style: 'tableCellSmall',
+            alignment: 'right'
+          },
+          {
+            text: firstFilled(detail.sgstAmt, formatValue(detail.sgstAmount ?? Number(detail.TaxAmount1) / 2, 2)),
+            style: 'tableCellSmall',
+            alignment: 'right'
+          }
         );
       }
 
       if (taxConfig.showIGST) {
         row.push(
-          { text: detail.igstRate || formatNumberWithCommas(detail.igstPercent, 2), style: 'tableCellSmall', alignment: 'right' },
-          { text: detail.igstAmt || formatNumberWithCommas(detail.igstAmount, 2), style: 'tableCellSmall', alignment: 'right' }
+          {
+            text: firstFilled(detail.igstRate, formatValue(detail.igstPercent ?? detail.TaxPercentage1, 3)),
+            style: 'tableCellSmall',
+            alignment: 'right'
+          },
+          {
+            text: firstFilled(detail.igstAmt, formatValue(detail.igstAmount ?? detail.TaxAmount1, 2)),
+            style: 'tableCellSmall',
+            alignment: 'right'
+          }
         );
       }
 
-      if (taxConfig.showVAT) {
+      if (showVATColumns) {
         row.push(
-          { text: detail.vatRate || formatNumberWithCommas(detail.vatPercent, 2), style: 'tableCellSmall', alignment: 'right' },
-          { text: detail.vatAmt || formatNumberWithCommas(detail.vatAmount, 2), style: 'tableCellSmall', alignment: 'right' }
+          {
+            text: firstFilled(detail.vatRate, formatValue(detail.vatPercent ?? detail.TaxPercentage1, 3)),
+            style: 'tableCellSmall',
+            alignment: 'right'
+          },
+          {
+            text: firstFilled(detail.vatAmt, formatValue(detail.vatAmount ?? detail.TaxAmount1, 2)),
+            style: 'tableCellSmall',
+            alignment: 'right'
+          }
         );
       }
 
       row.push({
-        text: detail.LocalAmount || formatNumberWithCommas(detail.localAmount, 2),
+        text: firstFilled(
+          detail.LocalAmount,
+          detail.localAmount !== undefined ? formatValue(detail.localAmount, 2) : '',
+          '0.00'
+        ),
         style: 'tableCellSmall',
         alignment: 'right'
       });
 
       if (invoiceCurr && invoiceCurr !== localCurrency) {
         row.push({
-          text: detail.PartyAmount || formatNumberWithCommas(detail.partyAmount, 2),
+          text: firstFilled(
+            detail.PartyAmount,
+            detail.partyAmount !== undefined ? formatValue(detail.partyAmount, 2) : '',
+            '0.00'
+          ),
           style: 'tableCellSmall',
           alignment: 'right'
         });
@@ -697,7 +884,6 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
       return row;
     });
 
-    /* ---------------- TOTAL ROW ---------------- */
     const totalRow: any[] = [];
     const colCount = headerRow.length;
 
@@ -708,29 +894,28 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
     totalRow.push({ text: 'Total', style: 'tableCellBoldSmall', alignment: 'right' });
     totalRow.push({ text: Number(grandTotal).toFixed(2), style: 'tableCellBoldSmall', alignment: 'right' });
 
-    /* ---------------- WIDTHS (FIXED + SAFE) ---------------- */
     const widths: (number | string)[] = [
-      18,    // S.No
-      '*',   // Particulars
-      22,    // Curr
-      40,    // Qty
-      36,    // Rate
-      36,    // ROE
-      46     // Taxable
+      18,
+      '*',
+      ...(isIndiaCompany ? [42] : []),
+      22,
+      40,
+      36,
+      36,
+      46
     ];
 
     if (taxConfig.showCGST) widths.push(24, 38);
     if (taxConfig.showSGST) widths.push(24, 38);
     if (taxConfig.showIGST) widths.push(24, 38);
-    if (taxConfig.showVAT)  widths.push(24, 38);
+    if (showVATColumns) widths.push(24, 38);
 
-    widths.push(48); // Amt in Local Currency
+    widths.push(48);
 
     if (invoiceCurr && invoiceCurr !== localCurrency) {
-      widths.push(48); // Amt in Party Currency
+      widths.push(48);
     }
 
-    /* ---------------- RETURN ---------------- */
     return {
       table: {
         headerRows: 1,
@@ -739,12 +924,7 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
       },
       layout: {
         hLineWidth: () => 1,
-        vLineWidth: (i: number, node: any) => {
-          const last = node.table.widths.length;
-          // Remove only outer left/right borders of the charges table
-          if (i === 0 || i === last) return 0;
-          return 1;
-        },
+        vLineWidth: () => 1,
         hLineColor: () => '#000',
         vLineColor: () => '#000',
         paddingLeft: () => 4,
@@ -752,11 +932,11 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
         paddingTop: () => 3,
         paddingBottom: () => 3
       },
-      // Extend only this table to touch the page border lines (x=10 and x=pageWidth-10)
       margin: [-10, 0, -10, 2],
       style: { noWrap: false }
     };
-  }
+  })();
+}
 
 
   /**
@@ -1220,6 +1400,7 @@ function buildRemarks(remarks: string): any {
         addressLine1: company?.addressLine1 || company?.Address || '',
         addressLine2: company?.addressLine2 || '',
         city: company?.City || '',
+        countryCode: company?.countryMaster?.countryCode || company?.CountryCode || company?.countryCode || company?.country?.countryCode || '',
         postalCode: company?.postal_code || company?.ZipCode || '',
         phoneNumber: company?.phoneNumber || company?.Phone || ''
       },
@@ -1228,6 +1409,7 @@ function buildRemarks(remarks: string): any {
         addressLine1: branch?.addressLine1 || '',
         addressLine2: branch?.addressLine2 || '',
         cityName: branch?.cityMaster?.cityName || '',
+        countryCode: branch?.countryMaster?.countryCode || branch?.CountryCode || branch?.countryCode || branch?.country?.countryCode || '',
         postalCode: branch?.postalCode || branch?.ZipCode || '',
         phoneNumber: branch?.phoneNumber || '',
         cityMaster: branch?.cityMaster
