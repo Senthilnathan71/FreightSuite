@@ -344,7 +344,7 @@
                                     <aside class="col-md-6">
     <div class="custom-form-group " style="margin-top: 7px;">
         <input type="text" formControlName="MBLNo" class="custom-input-field sm"
-            [textWithNumbers]="20" placeholder="">
+            maxlength="20" placeholder="">
         <label class="input-label">MBL NO 
             @if(!selectedDepartment?.departmentName?.toLowerCase().includes('export')) {
                 <span class="text-danger">*</span>

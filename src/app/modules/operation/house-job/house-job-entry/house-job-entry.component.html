@@ -1445,13 +1445,13 @@
                         class="ng-select" formControlName="ContainerType" placeholder="" appendTo="body"
                         (change)="onContainerTypeChangeForCargo($event, cargoIndex)">
                       </ng-select>
-                      <label class="input-label">Container Type</label> <span class="text-danger">*</span>
+                      <label class="input-label">Container Type <span class="text-danger">*</span></label>
                     </div>
                   </aside>
                   <aside class="col-md-2" *ngIf="!isSurfaceCargoMode()">
                     <div class="custom-form-group">
                       <input type="text" class="custom-input-field sm" [onlyNumbers] formControlName="NoofContainers">
-                      <label class="input-label">No of Container</label><span class="text-danger">*</span>
+                      <label class="input-label">No of Container<span class="text-danger">*</span></label>
                     </div>
                   </aside>    
                   }

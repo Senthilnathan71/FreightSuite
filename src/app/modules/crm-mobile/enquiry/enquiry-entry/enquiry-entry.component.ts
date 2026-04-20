@@ -124,7 +124,9 @@ export class EnquiryEntryComponent implements OnInit {
   errorMessage: string = ''; // To store any error messages
   btnDisable: boolean = false;
   enquiry: any;
-  selectedFCLLCL: string = ''; // Store selected segment's FCL/LCL type
+  // selectedFCLLCL is used for port filtering (AIR/SEA/FCL/LCL/ROAD/TRANSPORT/etc).
+  // selectedCargoMode drives which cargo fields/table are shown + cargo validators.
+  selectedFCLLCL: string = ''; // Store selected segment/department type (and Sea FCL/LCL)
   selectedCargoMode: 'FCL' | 'LCL' | 'AIR' | 'ROAD' = 'LCL';
   selectedCustomerName: any;
   statusList = ['Active', 'Suspended'];
@@ -1133,6 +1135,7 @@ ${this.userData.userName}`;
       ShipmentTerms: [null],
       cbm: ['1'],
       ContainerType: [null],
+      ContainerNo: [''],
       ChargeableWeight: [''],
       volumetric: [''],
       length: [''],
@@ -1410,7 +1413,7 @@ private parseFloatSafe(value: any): number {
     const AIRFields = ['CargoType', 'PackageType','ChargeableWeight','WeightUnitSid','PackageQty','cbm', 'volumetric','GrossWeight', 'ChargeableWeight', 'ProductName'];
     const ROADFields = ['CargoType', 'Qty','cbm', 'GrossWeight', 'NetWeight'];
 
-    resetFields(['PackageType', 'Qty', 'WeightUnitSid', 'PackageQty', 'ShipmentTerms', 'cbm', 'ContainerType', 'volumetric', 'length', 'width', 'height']);
+    resetFields(['PackageType', 'Qty', 'WeightUnitSid', 'PackageQty', 'ShipmentTerms', 'cbm', 'ContainerType', 'ContainerNo', 'volumetric', 'length', 'width', 'height']);
 
     if (type === 'FCL') {
       setRequired(FCLFields);
@@ -1693,6 +1696,7 @@ private parseFloatSafe(value: any): number {
             ShipmentTerms: [cargo.ShipmentTerms || null],
             cbm: [cargo.Volume ?? ''],
             ContainerType: [cargo.ContainerType || null],
+            ContainerNo: [cargo.ContainerNo || ''],
             ChargeableWeight: [cargo.ChargeableWeight || null],
             length: [cargo.length || null],
             width: [cargo.width || null],
@@ -2331,7 +2335,7 @@ private parseFloatSafe(value: any): number {
   private clearInvalidRoutePortSelections(routeForm: FormGroup, filteredLists: any): boolean {
     let hasChanges = false;
 
-    hasChanges = this.clearRoutePortControlIfInvalid(routeForm, 'POO', filteredLists.filteredPOOPorts) || hasChanges;
+    // hasChanges = this.clearRoutePortControlIfInvalid(routeForm, 'POO', filteredLists.filteredPOOPorts) || hasChanges;
     hasChanges = this.clearRoutePortControlIfInvalid(routeForm, 'POL', filteredLists.filteredPOLPorts) || hasChanges;
     hasChanges = this.clearRoutePortControlIfInvalid(routeForm, 'POD', filteredLists.filteredPODPorts) || hasChanges;
     hasChanges = this.clearRoutePortControlIfInvalid(routeForm, 'FDC', filteredLists.filteredFDCPorts) || hasChanges;
@@ -2517,20 +2521,27 @@ private parseFloatSafe(value: any): number {
   }
 
   private resolveCargoMode(department: any): 'FCL' | 'LCL' | 'AIR' | 'ROAD' {
-    const selectedSegment = this.resolveSelectedSegment(department);
+    const departmentType = this.normalizePortText(department?.departmentType);
 
-    if (selectedSegment === 'FCL') {
-      return 'FCL';
+    // Sea: keep existing behavior (department.FCLLCL drives the cargo mode)
+    if (departmentType === 'SEA') {
+      const seaMode = this.normalizePortText(department?.FCLLCL) || 'LCL';
+      return seaMode === 'FCL' ? 'FCL' : 'LCL';
     }
 
-    if (selectedSegment === 'AIR') {
+    // Air: always LCL-like fields; ignore FCL/LCL selection.
+    if (departmentType === 'AIR') {
       return 'AIR';
     }
 
-    if (selectedSegment === 'ROAD' || selectedSegment === 'TRANSPORT') {
-      return 'ROAD';
+    // Road/Transport: use department.FCLLCL to decide which cargo fields to show.
+    // Others behaves like FCL per requirement.
+    if (departmentType === 'ROAD' || departmentType === 'TRANSPORT') {
+      const roadMode = this.normalizePortText(department?.FCLLCL) || 'FCL';
+      return roadMode === 'LCL' ? 'LCL' : 'FCL';
     }
 
+    // Default: use LCL fields.
     return 'LCL';
   }
 
@@ -2549,8 +2560,10 @@ private parseFloatSafe(value: any): number {
       return 'AIR';
     }
 
+    // Older data can have ShipmentType as ROAD/TRANSPORT only. In that case,
+    // drive cargo mode using department.FCLLCL (Others -> FCL).
     if (shipmentType.includes('ROAD') || shipmentType.includes('TRANSPORT')) {
-      return 'ROAD';
+      return this.resolveCargoMode(department);
     }
 
     return this.resolveCargoMode(department);

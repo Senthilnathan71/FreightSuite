@@ -3178,7 +3178,7 @@ onCarrierChangeForAir(carrier: any): void {
   private clearInvalidPortSelections(filteredLists: any): boolean {
     let hasChanges = false;
 
-    hasChanges = this.clearPortControlIfInvalid('POO', filteredLists.filteredPOO) || hasChanges;
+    // hasChanges = this.clearPortControlIfInvalid('POO', filteredLists.filteredPOO) || hasChanges;
     hasChanges = this.clearPortControlIfInvalid('POL', filteredLists.filteredPOL) || hasChanges;
     hasChanges = this.clearPortControlIfInvalid('POD', filteredLists.filteredPOD) || hasChanges;
     hasChanges = this.clearPortControlIfInvalid('FPD', filteredLists.filteredFPOD) || hasChanges;
@@ -3256,39 +3256,57 @@ onCarrierChangeForAir(carrier: any): void {
   }
 
   private resolveSelectedSegment(department: any): string {
-    const departmentType = this.normalizePortText(department?.departmentType);
-    if (departmentType === 'SEA') {
-      return this.normalizePortText(department?.FCLLCL) || 'LCL';
-    }
+  const departmentType = this.normalizePortText(department?.departmentType);
 
-    return departmentType || 'LCL';
+  if (departmentType === 'SEA') {
+    return this.normalizePortText(department?.FCLLCL) || 'LCL';
   }
 
+  // Road/Transport: return FCL if department FCLLCL is FCL or Others, else LCL
+  if (departmentType === 'ROAD' || departmentType === 'TRANSPORT') {
+    const fcllcl = this.normalizePortText(department?.FCLLCL);
+    if (fcllcl === 'FCL' || fcllcl === 'OTHERS' || fcllcl === '') {
+      return 'FCL'; // Will show container fields in template
+    }
+    return 'LCL'; // Will show dimensional fields
+  }
+
+  return departmentType || 'LCL';
+}
+
   private resolveCargoMode(department: any): 'FCL' | 'LCL' | 'AIR' | 'ROAD' {
-    const selectedSegment = this.resolveSelectedSegment(department);
+  const departmentType = this.normalizePortText(department?.departmentType);
+  const fcllcl = this.normalizePortText(department?.FCLLCL);
 
-    if (selectedSegment === 'FCL') {
-      return 'FCL';
-    }
+  if (departmentType === 'AIR') {
+    return 'AIR';
+  }
 
-    if (selectedSegment === 'AIR') {
-      return 'AIR';
-    }
-
-    if (selectedSegment === 'ROAD' || selectedSegment === 'TRANSPORT') {
-      return 'ROAD';
-    }
-
+  if (departmentType === 'SEA') {
+    if (fcllcl === 'FCL') return 'FCL';
     return 'LCL';
   }
 
-  isSurfaceCargoMode(): boolean {
-    return this.selectedCargoMode === 'ROAD';
+  if (departmentType === 'ROAD' || departmentType === 'TRANSPORT') {
+    if (fcllcl === 'LCL') return 'LCL'; // Road + LCL → dimensional
+    return 'ROAD'; // Road + FCL or Others → container fields
   }
 
-  usesDimensionalCargoFields(): boolean {
-    return this.selectedCargoMode === 'LCL' || this.selectedCargoMode === 'AIR';
-  }
+  // Default
+  const selectedSegment = this.resolveSelectedSegment(department);
+  if (selectedSegment === 'FCL') return 'FCL';
+  if (selectedSegment === 'AIR') return 'AIR';
+  return 'LCL';
+}
+
+isSurfaceCargoMode(): boolean {
+  // Only pure ROAD (Road+FCL or Road+Others) uses container-like fields without dimensional
+  return this.selectedCargoMode === 'ROAD';
+}
+
+usesDimensionalCargoFields(): boolean {
+  return this.selectedCargoMode === 'LCL' || this.selectedCargoMode === 'AIR';
+}
 
   private shouldUseAllPortOptions(): boolean {
     const departmentType = this.normalizePortText(this.selectedDepartmentType || this.selectedDepartment?.departmentType);

@@ -992,7 +992,7 @@
                                                     {{item.PortName}} ({{ item.PortCode }})
                                                 </ng-option>
                                             </ng-select> -->
-                                            <dofi-searchable-dropdown #pooDd [items]="filteredPOOPorts[routeIndex]" formControlName="POO"
+                                            <dofi-searchable-dropdown #pooDd [items]="ports" formControlName="POO"
                                                 placeholder="" [displayFields]="portLookupConfig.displayFields"
                                                 [displayLabels]="portLookupConfig.displayLabels"
                                                 [labelFields]="portLookupConfig.labelFields" bindLabel="PortName"
@@ -1056,7 +1056,7 @@
                                                     {{item.PortName}} ({{ item.PortCode }})
                                                 </ng-option>
                                             </ng-select> -->
-                                            <dofi-searchable-dropdown #fdcDd [items]="filteredFDCPorts[routeIndex]" formControlName="FDC"
+                                            <dofi-searchable-dropdown #fdcDd [items]="ports" formControlName="FDC"
                                                 placeholder="" [displayFields]="portLookupConfig.displayFields"
                                                 [displayLabels]="portLookupConfig.displayLabels"
                                                 [labelFields]="portLookupConfig.labelFields" bindLabel="PortName"
