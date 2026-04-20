@@ -1665,7 +1665,7 @@ private mapQuotationCargoForBooking(cargo: any): any {
 
   private syncQuoteCargoValidation(routeIndex: number): void {
     const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
-    const isFclRoute = this.isFclQuotationSegment(routeForm?.get('segmentType')?.value);
+    const isFclRoute = this.isFclQuotationSegment(routeForm);
 
     this.quoteCargo(routeIndex).controls.forEach((cargoControl: AbstractControl) => {
       const cargoForm = cargoControl as FormGroup;
@@ -1687,7 +1687,14 @@ private mapQuotationCargoForBooking(cargo: any): any {
         ? data.quoteProduct
         : (Array.isArray(data?.products) ? data.products : []));
 
-    const defaultCargoProduct = (!cargoProducts.length && (data?.ProductName || data?.PackageType || data?.GrossWeight || data?.NetWeight || data?.Volume))
+    const routeForm = this.quoteRoutes.at(routeIndex);
+    const isFCL = this.isFclQuotationSegment(routeForm);
+
+
+    const defaultCargoProduct = (
+      !isFCL &&
+      !cargoProducts.length &&
+      (data?.ProductName || data?.PackageType || data?.GrossWeight || data?.NetWeight || data?.Volume))
       ? [{
           ProductSid: data?.ProductSid || null,
           ProductName: data?.ProductName || '',
@@ -1829,7 +1836,7 @@ private mapQuotationCargoForBooking(cargo: any): any {
 
     const segmentType = routeForm.get('segmentType')?.value;
     if(!segmentType) return;
-    const cargoMode = this.getQuotationCargoMode(segmentType);
+    const cargoMode = this.getRouteCargoMode(routeForm, segmentType);
     const isLCL = cargoMode === 'LCL';
     const isFCL = cargoMode === "FCL";
     const isAir = cargoMode === 'AIR';
@@ -2133,7 +2140,7 @@ isRateLockDisabled(): boolean {
     (response.quoteRoute || []).forEach((route, routeIndex) => {
       const cargoGroups = Array.isArray(route?.quoteCargo) ? route.quoteCargo : [];
       const cargo = cargoGroups[0];
-      const isFclRoute = this.isFclQuotationSegment(route.segmentType);
+      const isFclRoute = this.isFclQuotationSegment(route);
       const fullRouteData = {
         ...route,
         QuoteCargoSid : cargo?.QuoteCargoSid || null,
@@ -2448,7 +2455,7 @@ isRateLockDisabled(): boolean {
 
       quoteRoutes: (formValue.quoteRoutes || []).map((route, routeIndex) => {
         const cargoItems = Array.isArray(route.quoteCargo) ? route.quoteCargo : [];
-        const isFclRoute = this.isFclQuotationSegment(route.segmentType);
+        const isFclRoute = this.isFclQuotationSegment(route);
 
         const mapProducts = (products: any[] = []) => products.map((product: any) => {
           const productUnNo = this.productList.find(prod => prod.ProductMasterSid === product.ProductMasterSid)?.UnNo;
@@ -2734,7 +2741,7 @@ isRateLockDisabled(): boolean {
 
   handleValidationOnDept(index: number, type: string | null) {
     const routeForm = this.quoteRoutes.at(index) as FormGroup;
-    const cargoMode = this.getQuotationCargoMode(type);
+    const cargoMode = this.getRouteCargoMode(routeForm, type);
 
     const validationConfig = {
       FCL: [],
@@ -2827,14 +2834,22 @@ isRateLockDisabled(): boolean {
     const deptType = dept?.departmentType;
    
     const selectedFCLLCL = deptType === "Sea" ? dept?.FCLLCL : deptType?.toUpperCase()
+    const selectedCargoMode = this.resolveCargoModeByDepartment(dept);
     routeForm.get('segmentType').setValue(selectedFCLLCL);
-    this.handleValidationOnDept(routeIndex, selectedFCLLCL);
+    this.handleValidationOnDept(routeIndex, selectedCargoMode);
+    
     this.refreshRoutePortFilters(routeIndex);
     this.quoteRoutes.controls.forEach((route:FormGroup)=>{
       this.handleSegmentChangeOnAllProducts(routeIndex);
     })
 
     this.filterChargesBySegment(routeIndex, selectedFCLLCL);
+    if (selectedCargoMode === 'FCL') {
+      const cargoArray = this.quoteCargo(routeIndex);
+      if (cargoArray.length === 0) {
+        this.addQuoteCargo(routeIndex);
+      }
+    }
   }
 
   onCustomerChange(event: any): void {
@@ -3049,8 +3064,60 @@ isRateLockDisabled(): boolean {
     return 'LCL';
   }
 
-  isLclStyleQuotationSegment(segment: string | null | undefined): boolean {
-    return this.getQuotationCargoMode(segment) === 'LCL';
+  private resolveCargoModeByDepartment(department: any): 'FCL' | 'LCL' | 'AIR' | 'ROAD' {
+    const departmentType = this.normalizePortText(department?.departmentType);
+
+    // Sea: keep existing behavior from FCL/LCL setup.
+    if (departmentType === 'SEA') {
+      return this.normalizePortText(department?.FCLLCL) === 'FCL' ? 'FCL' : 'LCL';
+    }
+
+    if (departmentType === 'AIR') {
+      return 'AIR';
+    }
+
+    // Road/Transport: FCL/LCL decides fields; Others behaves like FCL.
+    if (departmentType === 'ROAD' || departmentType === 'TRANSPORT') {
+      return this.normalizePortText(department?.FCLLCL) === 'LCL' ? 'LCL' : 'FCL';
+    }
+
+    return this.getQuotationCargoMode(departmentType);
+  }
+
+  private getRouteCargoMode(
+    segmentOrRoute: AbstractControl | string | any | null | undefined,
+    fallbackSegment?: string | null | undefined
+  ): 'FCL' | 'LCL' | 'AIR' | 'ROAD' {
+    if (typeof segmentOrRoute === 'string' || segmentOrRoute == null) {
+      return this.getQuotationCargoMode(segmentOrRoute ?? fallbackSegment);
+    }
+
+    // FormGroup flow.
+    if (typeof segmentOrRoute?.get === 'function') {
+      const routeForm = segmentOrRoute as FormGroup;
+      const department = this.getRouteDepartment(routeForm);
+      if (department) {
+        return this.resolveCargoModeByDepartment(department);
+      }
+
+      return this.getQuotationCargoMode(routeForm.get('segmentType')?.value ?? fallbackSegment);
+    }
+
+    // Raw route object flow (payload/response mapping).
+    const routeLike = segmentOrRoute as any;
+    const departmentSid = Number(routeLike?.DepartmentMasterSid);
+    const department = this.departments.find(
+      dep => Number(dep?.DepartmentMasterSid) === departmentSid
+    );
+    if (department) {
+      return this.resolveCargoModeByDepartment(department);
+    }
+
+    return this.getQuotationCargoMode(routeLike?.segmentType ?? fallbackSegment);
+  }
+
+  isLclStyleQuotationSegment(segmentOrRoute: AbstractControl | string | null | undefined): boolean {
+    return this.getRouteCargoMode(segmentOrRoute) === 'LCL';
   }
 
   getRouteSegmentType(routeControl: AbstractControl | null | undefined): string {
@@ -3068,12 +3135,16 @@ isRateLockDisabled(): boolean {
     return segmentFromRaw || 'LCL';
   }
 
-  isSurfaceQuotationSegment(segment: string | null | undefined): boolean {
-    return this.getQuotationCargoMode(segment) === 'ROAD';
+  isSurfaceQuotationSegment(segmentOrRoute: AbstractControl | string | null | undefined): boolean {
+    return this.getRouteCargoMode(segmentOrRoute) === 'ROAD';
   }
 
-  isFclQuotationSegment(segment: string | null | undefined): boolean {
-    return this.getQuotationCargoMode(segment) === 'FCL';
+  isAirQuotationSegment(segmentOrRoute: AbstractControl | string | null | undefined): boolean {
+    return this.getRouteCargoMode(segmentOrRoute) === 'AIR';
+  }
+
+  isFclQuotationSegment(segmentOrRoute: AbstractControl | string | null | undefined): boolean {
+    return this.getRouteCargoMode(segmentOrRoute) === 'FCL';
   }
 
   private applyRoutePortFilterLists(routeIndex: number, filteredLists: any): void {
@@ -3087,7 +3158,7 @@ isRateLockDisabled(): boolean {
   private clearInvalidRoutePortSelections(routeForm: FormGroup, filteredLists: any): boolean {
     let hasChanges = false;
 
-    hasChanges = this.clearRoutePortControlIfInvalid(routeForm, 'PORSid', filteredLists.filteredPORPorts) || hasChanges;
+    // hasChanges = this.clearRoutePortControlIfInvalid(routeForm, 'PORSid', filteredLists.filteredPORPorts) || hasChanges;
     hasChanges = this.clearRoutePortControlIfInvalid(routeForm, 'POLSid', filteredLists.filteredPOLPorts) || hasChanges;
     hasChanges = this.clearRoutePortControlIfInvalid(routeForm, 'PODSid', filteredLists.filteredPODPorts) || hasChanges;
     hasChanges = this.clearRoutePortControlIfInvalid(routeForm, 'FPODSid', filteredLists.filteredFPODPorts) || hasChanges;
@@ -3438,7 +3509,7 @@ isRateLockDisabled(): boolean {
     const carrierForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
     const routeRawValue = routeForm.getRawValue();
     const carrierRawValue = carrierForm.getRawValue();
-    const isFclRoute = this.isFclQuotationSegment(routeForm.get('segmentType')?.value);
+    const isFclRoute = this.isFclQuotationSegment(routeForm);
     this.isStandardRate = false;
 
     if (!this.hasEveryRequiredFieldsFilled(routeIndex)) {
@@ -6151,66 +6222,80 @@ isRouteApproved(routeIndex: number): boolean {
   
   return hasApprovedCarrier;
 }
-doesBookingExistForRoute(routeIndex: number): boolean {
-  if (!this.quotationData || !this.quotationData.quoteRoute) return false;
-  
-  const routeData = this.quotationData.quoteRoute[routeIndex];
-  const isContract = this.quotationForm.get('IsContract')?.value;
-  
-  // For contract quotes, we don't check booking existence (button should always be enabled)
-  if (isContract) {
-    return false; // Always return false so button stays enabled
-    
-  }
-  
-  // For non-contract quotes, check if booking exists
-  return !!routeData?.BookingHeaderSid || 
-         (!!routeData?.bookingHeader && !!routeData.bookingHeader.BookingHeaderSid);
+private getSavedRouteBySid(routeSid: number | null | undefined): any | null {
+  if (!routeSid || !this.quotationData?.quoteRoute?.length) return null;
+  return (
+    this.quotationData.quoteRoute.find((r: any) => Number(r?.QuoteRouteSid) === Number(routeSid)) ??
+    null
+  );
 }
-async goForBookingCreationForRoute(routeIndex: number) {
+
+doesBookingExistForRoute(routeSid: number | null | undefined): boolean {
+  const isContract = this.quotationForm.get('IsContract')?.value;
+
+  // For contract quotes, we don't check booking existence (button should always be enabled)
+  if (isContract) return false;
+
+  const savedRoute = this.getSavedRouteBySid(routeSid);
+  if (!savedRoute) return false;
+
+  return (
+    !!savedRoute?.BookingHeaderSid ||
+    (!!savedRoute?.bookingHeader && !!savedRoute.bookingHeader.BookingHeaderSid)
+  );
+}
+
+private resolveRouteSidForBooking(routeIndex: number, routeSid: number | null | undefined): number | null {
+  const formRouteSid = Number(this.quoteRoutes.at(routeIndex)?.get('QuoteRouteSid')?.value);
+  if (formRouteSid) {
+    return formRouteSid;
+  }
+
+  const savedRouteSid = Number(this.quotationData?.quoteRoute?.[routeIndex]?.QuoteRouteSid);
+  if (savedRouteSid) {
+    return savedRouteSid;
+  }
+
+  const clickedRouteSid = Number(routeSid);
+  return clickedRouteSid || null;
+}
+
+async goForBookingCreationForRoute(routeIndex: number, routeSid: number | null | undefined) {
   if (!this.validateCustomerForBookingCreation()) {
     return;
   }
-  // Check if the specific route is approved
-  if (!this.isRouteApproved(routeIndex)) {
-    this.appSettingService.showWarning("This route is not approved. Please approve the route before creating a booking.");
+
+  const resolvedRouteSid = this.resolveRouteSidForBooking(routeIndex, routeSid);
+  if (!resolvedRouteSid) {
+    this.appSettingService.showWarning("Route is not saved yet. Please save quotation before creating booking.");
+    return;
+  }
+
+  // Check against SAVED data, not form state
+  const savedRoute = this.getSavedRouteBySid(resolvedRouteSid);
+  const savedApprovedCarrier = (savedRoute?.quoteCarrier || [])
+    .find((carrier: any) => carrier?.ApprovalStatus === 'Approved');
+
+  if (!savedRoute || !savedApprovedCarrier) {
+    this.appSettingService.showWarning("This route is not approved and saved. Please save after approving the route before creating a booking.");
     return;
   }
 
   const isContract = this.quotationForm.get('IsContract')?.value;
-  const hasExistingBooking = this.doesBookingExistForRoute(routeIndex);
-  
-  // For non-contract quotes, show confirmation if booking exists
+  const hasExistingBooking = this.doesBookingExistForRoute(resolvedRouteSid);
+
   if (!isContract && hasExistingBooking) {
-    // Show confirmation modal
     const confirmed = await this.showBookingConfirmationModal();
-    
     if (!confirmed) {
-      // User cancelled
       this.appSettingService.showInfo('Booking creation cancelled');
       return;
     }
   }
 
-  // Find the approved carrier index
-  const carrierArr = this.quoteCarriers(routeIndex);
-  let approvedCarrierIndex = -1;
-  
-  carrierArr.controls.forEach((carrier: FormGroup, index: number) => {
-    if (carrier.get('authorizerStatus')?.value === "Approved") {
-      approvedCarrierIndex = index;
-    }
-  });
-
-  if (approvedCarrierIndex === -1) {
-    this.appSettingService.showWarning("No approved carrier found for this route.");
-    return;
-  }
-
-  // Proceed with booking creation
-  await this.createBookingFromRoute(routeIndex, approvedCarrierIndex);
+  await this.createBookingFromRoute(Number(savedRoute.QuoteRouteSid), Number(savedApprovedCarrier.QuoteCarrierSid));
 }
-private async createBookingFromRoute(routeIndex: number, carrierIndex: number) {
+
+private async createBookingFromRoute(routeSid: number, approvedCarrierSid: number) {
   try {
     this.spinner.show();
     
@@ -6229,13 +6314,28 @@ private async createBookingFromRoute(routeIndex: number, carrierIndex: number) {
     
     
     // Get the specific route data
-    const routeData = QuoteData.quoteRoute?.[routeIndex] || {};
+    const routeData = (QuoteData.quoteRoute || []).find((r: any) => Number(r?.QuoteRouteSid) === Number(routeSid));
+    if (!routeData) {
+      this.spinner.hide();
+      this.appSettingService.showWarning("Selected route was not found in saved quotation.");
+      return;
+    }
+
     const POO = this.ports.find(port => port.PortMasterSid === routeData.PORSid);
     const POL = this.ports.find(port => port.PortMasterSid === routeData.POLSid);
     const POD = this.ports.find(port => port.PortMasterSid === routeData.PODSid);
     const FPD = this.ports.find(port => port.PortMasterSid === routeData.FDPSid);
 
-    const approvedCarrier = routeData?.quoteCarrier?.[carrierIndex] || {};
+    const approvedCarrier =
+      (routeData?.quoteCarrier || []).find((c: any) => Number(c?.QuoteCarrierSid) === Number(approvedCarrierSid)) ||
+      (routeData?.quoteCarrier || []).find((c: any) => c?.ApprovalStatus === 'Approved') ||
+      {};
+    if (!approvedCarrier?.QuoteCarrierSid) {
+      this.spinner.hide();
+      this.appSettingService.showWarning("Approved carrier for selected route was not found.");
+      return;
+    }
+
     const cargoGroups = this.getRouteCargoGroups(routeData);
     const bookingCargoSource = cargoGroups.length ? cargoGroups : [{}];
     const bookingCargo = bookingCargoSource.map((cargo: any) => ({
@@ -6287,6 +6387,7 @@ private async createBookingFromRoute(routeIndex: number, carrierIndex: number) {
       FreightTerms: routeData.FreightPPCC || "",
       QuotationHeaderSid: QuoteData.QuoteHeaderSid || null,
       QuoteRouteSid: routeData.QuoteRouteSid || null,// Add this to identify the route
+      QuoteCarrierSid: approvedCarrier.QuoteCarrierSid || null,
       CarrierName: approvedCarrier?.CarrierName || "",
       status: 'A',
       JobType: jobType,
@@ -6365,7 +6466,7 @@ private async createBookingFromRoute(routeIndex: number, carrierIndex: number) {
         dataFromQuotation: bookingData,
         isNewBooking: true,
         existingBookingId: routeData.BookingHeaderSid,
-        quoteRouteIndex: routeIndex // Pass route index for reference
+        quoteRouteSid: routeSid // Pass route sid for reference
         
       }
     });
@@ -6426,17 +6527,14 @@ allApprovedRoutesSaved(): boolean {
   });
 }
 
-getBookingNumber(routeIndex: number): string {
-  if (!this.quotationData || !this.quotationData.quoteRoute) {
-    return '';
-  }
-  
-  const routeData = this.quotationData.quoteRoute[routeIndex];
-  if (routeData && routeData.bookingHeader) {
-    return routeData.bookingHeader.BookingNo || '';
-  }
-  
-  return '';
+getBookingNumber(routeSid: number | null | undefined): string {
+  const savedRoute = this.getSavedRouteBySid(routeSid);
+  return savedRoute?.bookingHeader?.BookingNo || '';
+}
+
+getBookingHeader(routeSid: number | null | undefined): any {
+  const savedRoute = this.getSavedRouteBySid(routeSid);
+  return savedRoute?.bookingHeader || null;
 }
 
 // Add this method to get booking header SID for a specific route
@@ -6477,8 +6575,9 @@ isQuotationSavedAfterApproval(routeIndex: number): boolean {
     return false;
   }
   
-  // Check if this approval is already saved in the database
-  const savedRoute = this.quotationData.quoteRoute?.[routeIndex];
+  // Check if this approval is already saved in the database (by QuoteRouteSid, not index)
+  const routeSid = routeForm?.get('QuoteRouteSid')?.value;
+  const savedRoute = this.getSavedRouteBySid(routeSid);
   const savedCarriers = savedRoute?.quoteCarrier || [];
   
   const hasSavedApproval = savedCarriers.some(carrier => 

@@ -89,7 +89,7 @@ export class QuotationListManager {
         }
 
         const uniqueStatuses: string[] = [...new Set<string>(statuses)];
-        return uniqueStatuses.length === 1 ? uniqueStatuses[0] : 'Mixed';
+        return uniqueStatuses.length === 1 ? uniqueStatuses[0] : 'Pending';
     }
 
     // Helper method to get formatted approval status label
@@ -102,7 +102,6 @@ export class QuotationListManager {
             'Pending': 'Pending',
             'Approved': 'Approved',
             'Rejected': 'Rejected',
-            'Mixed': 'Mixed',
             'Counter': 'Counter Offer',
             'WaitingForFinalApproval': 'Waiting for Final Approval',
             'WaitingForCustomerApproval': 'Waiting for Customer Approval',

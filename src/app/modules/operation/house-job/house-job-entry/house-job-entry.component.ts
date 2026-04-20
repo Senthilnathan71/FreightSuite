@@ -1023,6 +1023,54 @@ private setupMBLDateListener(): void {
     );
   }
 }
+// 🔥 ADD HERE
+private validateContainerWeight(): boolean {
+
+  const containerMap = new Map<number, number>();
+
+  this.houseJobCargos.controls.forEach((cargoGroup: FormGroup) => {
+    const products = cargoGroup.get('bookingProducts') as FormArray;
+
+    products.controls.forEach((product: FormGroup) => {
+
+      const containerSid = product.get('MasterJobContainerSid')?.value;
+      const grossWeight = Number(product.get('GrossWeight')?.value) || 0;
+
+      if (!containerSid) return;
+
+      containerMap.set(
+        containerSid,
+        (containerMap.get(containerSid) || 0) + grossWeight
+      );
+    });
+  });
+
+  // 🔥 VALIDATION
+  for (let [containerSid, totalWeight] of containerMap.entries()) {
+
+    const container = this.masterJobContainers.find(
+  c => Number(c.MasterJobContainerSid) === Number(containerSid)
+);
+
+if (!container) continue;
+
+const containerType = this.containerTypeList.find(
+  ct => Number(ct.ContainerTypeMasterSid) === Number(container.ContainerType)
+);
+
+// 🔥 USE THIS (IMPORTANT)
+const maxWeight = Number(containerType?.GrossWeight) || 0;
+
+if (totalWeight > maxWeight) {
+  this.appSettingService.showError(
+    `Container ${container.ContainerNumber} exceeded limit. Max: ${maxWeight}, Entered: ${totalWeight}`
+  );
+  return false;
+}
+  }
+
+  return true;
+}
 toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
   event.stopPropagation();
   const value = this.b[flagCtrl]?.value;
@@ -1139,7 +1187,6 @@ shouldCalculateVolume(): boolean {
   // Product Form Initialization
   initProductForm() {
     const isAirOrLCL = this.usesDimensionalCargoFields();
-    const isFclMode = this.selectedCargoMode === 'FCL';
     this.productForm = this.fb.group({
       HouseJobProductSid: [null],
       ProductName: [null,[Validators.required]],
@@ -1165,7 +1212,7 @@ shouldCalculateVolume(): boolean {
       ReceivedQty:[''],
       DamageQty:[''],
       DamageRemarks: [''],
-      MasterJobContainerSid: [null, isFclMode ], 
+      MasterJobContainerSid: [null], 
       ContainerNo: ['', { disabled: true }], 
       MarksAndNumbers : [''],
       DeliveredQty: [null],
@@ -1189,15 +1236,30 @@ shouldCalculateVolume(): boolean {
     return;
   }
 
-  const selectedContainer = this.getFilteredMasterJobContainers().find(
+  const activeCargo = this.houseJobCargos?.at(this.houseJobCargoActiveIndex) as FormGroup | undefined;
+  const selectedContainer = this.masterJobContainers.find(
     container => Number(container.MasterJobContainerSid) === Number(containerSid)
   );
-  
-  if (selectedContainer) {
-    this.productForm.get('ContainerNo')?.setValue(selectedContainer.ContainerNumber);
-  } else {
+
+  if (!selectedContainer) {
+    this.productForm.get('MasterJobContainerSid')?.setValue(null, { emitEvent: false });
     this.productForm.get('ContainerNo')?.setValue('');
+    this.appSettingService.showWarning('Container Number must be selected from Master Job Containers.');
+    return;
   }
+
+  const cargoContainerType = this.normalizeContainerTypeValue(activeCargo?.get('ContainerType')?.value);
+  const masterContainerType = this.normalizeContainerTypeValue(
+    selectedContainer?.ContainerType ?? selectedContainer?.ContainerTypeMasterSid
+  );
+  if (cargoContainerType && masterContainerType && cargoContainerType !== masterContainerType) {
+    this.productForm.get('MasterJobContainerSid')?.setValue(null, { emitEvent: false });
+    this.productForm.get('ContainerNo')?.setValue('');
+    this.appSettingService.showWarning('Selected Container Number does not match the Cargo Container Type.');
+    return;
+  }
+
+  this.productForm.get('ContainerNo')?.setValue(selectedContainer.ContainerNumber || '');
 }
 
   private setupImmediateCBMCalculation() {
@@ -1419,7 +1481,6 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
 
   createBookingProductGroup(data?: any, isPatching: boolean = false): FormGroup {
     const isAirOrLCL = this.usesDimensionalCargoFields();
-    const isFclMode = this.selectedCargoMode === 'FCL';
     const productForm = this.fb.group({
       HouseJobProductSid: [data?.HouseJobProductSid || null],
       ProductName: [data?.ProductName || null,[Validators.required]],
@@ -1445,7 +1506,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       ReceivedQty: [data?.ReceivedQty || ''],
       DamageQty: [data?.DamageQty || ''],
       DamageRemarks: [data?.DamageRemarks || ''],
-      MasterJobContainerSid: [data?.MasterJobContainerSid || null, isFclMode ? [Validators.required] : []],
+      MasterJobContainerSid: [data?.MasterJobContainerSid || null],
       ContainerNo :[{value: data?.ContainerNo || '', disabled: false}],
       MarksAndNumbers : [data?.MarksAndNumbers || ''],
       DeliveryDate: [data?.DeliveryDate ? new Date(data?.DeliveryDate) : null],
@@ -1534,15 +1595,30 @@ onFormArrayContainerChange(containerSid: number | null, productForm: FormGroup):
   }
 
   const cargoIndex = this.getCargoIndexForProductForm(productForm);
-  const selectedContainer = this.getFilteredMasterJobContainers(cargoIndex).find(
+  const selectedContainer = this.masterJobContainers.find(
     container => Number(container.MasterJobContainerSid) === Number(containerSid)
   );
-  
-  if (selectedContainer) {
-    productForm.get('ContainerNo')?.setValue(selectedContainer.ContainerNumber);
-  } else {
+
+  if (!selectedContainer) {
+    productForm.get('MasterJobContainerSid')?.setValue(null, { emitEvent: false });
     productForm.get('ContainerNo')?.setValue('');
+    this.appSettingService.showWarning('Container Number must be selected from Master Job Containers.');
+    return;
   }
+
+  const cargoGroup = this.houseJobCargos?.at(cargoIndex) as FormGroup | undefined;
+  const cargoContainerType = this.normalizeContainerTypeValue(cargoGroup?.get('ContainerType')?.value);
+  const masterContainerType = this.normalizeContainerTypeValue(
+    selectedContainer?.ContainerType ?? selectedContainer?.ContainerTypeMasterSid
+  );
+  if (cargoContainerType && masterContainerType && cargoContainerType !== masterContainerType) {
+    productForm.get('MasterJobContainerSid')?.setValue(null, { emitEvent: false });
+    productForm.get('ContainerNo')?.setValue('');
+    this.appSettingService.showWarning('Selected Container Number does not match the Cargo Container Type.');
+    return;
+  }
+
+  productForm.get('ContainerNo')?.setValue(selectedContainer.ContainerNumber || '');
 }
 private calculateProductFormCBMAndVolumetric(productForm: FormGroup) {
     if (this.isPatching) {
@@ -2347,6 +2423,120 @@ private applyExportToImportFieldLocks(): void {
     this.filteredMasterJobContainerCache.clear();
   }
 
+  private parseNumberSafe(value: any): number {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  private getContainerTypeLabel(container: any): string {
+    const typeSid = this.normalizeContainerTypeValue(
+      container?.ContainerType ?? container?.ContainerTypeMasterSid
+    );
+    const typeName = container?.ContainerName
+      || this.containerTypeList.find((ct: any) => Number(ct?.ContainerTypeMasterSid) === Number(typeSid))?.ContainerName
+      || 'Container';
+    return String(typeName).trim();
+  }
+
+  private getContainerTypeMasterData(container: any): any {
+    const typeSid = this.normalizeContainerTypeValue(
+      container?.ContainerType ?? container?.ContainerTypeMasterSid
+    );
+    if (!typeSid) {
+      return null;
+    }
+    return this.containerTypeList.find((ct: any) => Number(ct?.ContainerTypeMasterSid) === Number(typeSid)) || null;
+  }
+
+  private validateContainerCapacityRules(
+    pendingProduct?: { cargoIndex: number; productIndex: number; value: any }
+  ): boolean {
+    const containerWiseTotals = new Map<number, { container: any; gross: number; volume: number }>();
+    const allProducts: Array<{ cargoIndex: number; value: any }> = [];
+
+    this.houseJobCargos.controls.forEach((cargoControl: AbstractControl, cargoIndex: number) => {
+      const cargoGroup = cargoControl as FormGroup;
+      const products = cargoGroup.get('bookingProducts') as FormArray;
+      products.getRawValue().forEach((product: any, productIndex: number) => {
+        if (
+          pendingProduct &&
+          pendingProduct.cargoIndex === cargoIndex &&
+          pendingProduct.productIndex === productIndex
+        ) {
+          allProducts.push({ cargoIndex, value: pendingProduct.value });
+          return;
+        }
+        allProducts.push({ cargoIndex, value: product });
+      });
+    });
+
+    if (pendingProduct && pendingProduct.productIndex === -1) {
+      allProducts.push({ cargoIndex: pendingProduct.cargoIndex, value: pendingProduct.value });
+    }
+
+    for (const item of allProducts) {
+      const containerSid = Number(item?.value?.MasterJobContainerSid) || 0;
+      if (!containerSid) {
+        continue;
+      }
+
+      const container = this.masterJobContainers.find(
+        (row: any) => Number(row?.MasterJobContainerSid) === containerSid
+      );
+      if (!container) {
+        this.appSettingService.showWarning('Container Number must be selected from Master Job Containers.');
+        return false;
+      }
+
+      const cargoGroup = this.houseJobCargos.at(item.cargoIndex) as FormGroup;
+      const cargoContainerType = this.normalizeContainerTypeValue(cargoGroup?.get('ContainerType')?.value);
+      const masterContainerType = this.normalizeContainerTypeValue(
+        container?.ContainerType ?? container?.ContainerTypeMasterSid
+      );
+      if (cargoContainerType && masterContainerType && cargoContainerType !== masterContainerType) {
+        this.appSettingService.showWarning('Container Type must match Master Job Container Type.');
+        return false;
+      }
+
+      const bucket = containerWiseTotals.get(containerSid) || { container, gross: 0, volume: 0 };
+      bucket.gross += this.parseNumberSafe(item?.value?.GrossWeight);
+      bucket.volume += this.parseNumberSafe(item?.value?.Volume);
+      containerWiseTotals.set(containerSid, bucket);
+    }
+
+    for (const [, totals] of containerWiseTotals) {
+      const containerTypeMaster = this.getContainerTypeMasterData(totals.container);
+      const grossLimit = this.parseNumberSafe(
+        totals.container?.GrossWeight
+        ?? totals.container?.MaxGrossWeight
+        ?? containerTypeMaster?.GrossWeight
+      );
+      const volumeLimit = this.parseNumberSafe(
+        totals.container?.MaxVolume
+        ?? totals.container?.Volume
+        ?? containerTypeMaster?.MaxVolume
+      );
+      const containerNumber = totals.container?.ContainerNumber || '';
+      const containerTypeLabel = this.getContainerTypeLabel(totals.container);
+
+      if (grossLimit > 0 && totals.gross > grossLimit) {
+        this.appSettingService.showWarning(
+          `Total cargo weight exceeds the allowed limit for selected container (${containerTypeLabel} - ${containerNumber})`
+        );
+        return false;
+      }
+
+      if (volumeLimit > 0 && totals.volume > volumeLimit) {
+        this.appSettingService.showWarning(
+          `Total volume exceeds container capacity (${containerTypeLabel} - ${containerNumber})`
+        );
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   private applyFclContainerValidators(): void {
     if (!this.detailForm) {
       return;
@@ -2363,7 +2553,7 @@ private applyExportToImportFieldLocks(): void {
       const bookingProducts = cargoGroup.get('bookingProducts') as FormArray;
       bookingProducts.controls.forEach((productControl) => {
         const containerSidControl = productControl.get('MasterJobContainerSid');
-        containerSidControl?.setValidators(isFclMode ? [Validators.required] : []);
+        containerSidControl?.setValidators([]);
 
         const selectedContainerSid = containerSidControl?.value;
         const isMapped = !selectedContainerSid || filteredContainers.some(
@@ -2380,7 +2570,7 @@ private applyExportToImportFieldLocks(): void {
 
     if (this.productForm) {
       const modalContainerControl = this.productForm.get('MasterJobContainerSid');
-      modalContainerControl?.setValidators(isFclMode ? [Validators.required] : []);
+      modalContainerControl?.setValidators([]);
       modalContainerControl?.updateValueAndValidity({ emitEvent: false });
     }
   }
@@ -2488,6 +2678,15 @@ private applyExportToImportFieldLocks(): void {
     }
       return;
     }
+    const pendingProductValue = this.productForm.getRawValue();
+    const activeCargoIndex = this.houseJobCargoActiveIndex >= 0 ? this.houseJobCargoActiveIndex : 0;
+    if (!this.validateContainerCapacityRules({
+      cargoIndex: activeCargoIndex,
+      productIndex: this.currentProductIndex,
+      value: pendingProductValue
+    })) {
+      return;
+    }
     if (this.currentProductIndex === -1) {
       const productForm = this.productForm;
       this.bookingProducts.push(productForm);
@@ -2540,6 +2739,35 @@ private applyExportToImportFieldLocks(): void {
     }
 
     return 'Please fill all required product fields correctly.';
+  }
+
+  private logInvalidProductControls(): void {
+    const invalidLogs: Array<{ cargoIndex: number; productIndex: number; field: string; errors: any; value: any }> = [];
+
+    this.houseJobCargos.controls.forEach((cargoControl, cargoIndex) => {
+      const cargoGroup = cargoControl as FormGroup;
+      const productArray = cargoGroup.get('bookingProducts') as FormArray;
+
+      productArray.controls.forEach((control, productIndex) => {
+        const productGroup = control as FormGroup;
+        Object.keys(productGroup.controls).forEach((field) => {
+          const ctrl = productGroup.get(field);
+          if (ctrl?.invalid) {
+            invalidLogs.push({
+              cargoIndex,
+              productIndex,
+              field,
+              errors: ctrl.errors,
+              value: ctrl.value
+            });
+          }
+        });
+      });
+    });
+
+    if (invalidLogs.length) {
+      console.warn('Invalid product controls on save:', invalidLogs);
+    }
   }
 
   private getHouseJobFieldLabel(fieldName: string): string {
@@ -2678,6 +2906,9 @@ onCurrencyChange(event: any) {
   }
 
   private submitHouseJob(resolve?: (value: boolean) => void) {
+    if (!this.validateContainerWeight()) {
+  return;
+}
     if (this.isSubmitting || this.isSaving) {
       resolve?.(false);
       return;
@@ -2746,7 +2977,13 @@ if (this.houseJobCargos.length > 0) {
 
   if (hasInvalidCargo) {
     this.houseJobCargos.markAllAsTouched();
+    this.logInvalidProductControls();
     this.appSettingService.showWarning(this.getProductValidationMessage());
+    this.selectedTab = 'Cargo';
+    resolve?.(false);
+    return;
+  }
+  if (!this.validateContainerCapacityRules()) {
     this.selectedTab = 'Cargo';
     resolve?.(false);
     return;

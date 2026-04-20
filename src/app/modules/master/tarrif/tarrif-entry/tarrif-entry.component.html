@@ -264,7 +264,7 @@
                             <label for="text-input" [ngClass]="{
                                 'input-label': true,
                                 'bg-transparent': !tariffHeaderForm.get('POLTerminal')?.value
-                              }">POL Terminal <span class="text-danger">*</span></label>
+                              }">POL Terminal <span class="text-danger"></span></label>
                             @if(tariffHeaderForm.get('POLTerminal')?.touched &&
                             tariffHeaderForm.get('POLTerminal')?.errors){
                             <div class="error-message">
@@ -285,7 +285,7 @@
                             <label for="text-input"  [ngClass]="{
                                 'input-label': true,
                                 'bg-transparent': !tariffHeaderForm.get('PODTerminal')?.value
-                              }">POD Terminal <span class="text-danger">*</span></label>
+                              }">POD Terminal <span class="text-danger"></span></label>
                             @if(tariffHeaderForm.get('PODTerminal')?.touched &&
                             tariffHeaderForm.get('PODTerminal')?.errors){
                             <div class="error-message">
