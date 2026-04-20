@@ -413,6 +413,9 @@
                     [clearable]="false"
                     appendTo="body"
                     (change)="onPaymentInvoiceTypeChange($event?.id)">
+                    <ng-template ng-label-tmp let-item="item">
+                      <span class="text-danger">{{item.name}}</span>
+                    </ng-template>
                   </ng-select>
                   <label class="input-label fw-bold">Invoice Type
                      @if (r['InvoiceType']?.value === 'RCM') {

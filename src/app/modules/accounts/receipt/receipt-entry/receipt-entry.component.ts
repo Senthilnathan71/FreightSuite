@@ -631,6 +631,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       InstrumentNumber: ['', [Validators.required]],
       InstrumentDate: [null, [Validators.required]],
       ClearanceDate: [null],
+      PlaceOfSupply: [''],
 
       // Form arrays
       detailItems: this.fb.array([]), // charge detail formArray
@@ -3221,6 +3222,11 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       return;
     }
     this.previousPartyBranchSid = party.CustomerBranchSid;
+    const partyCountryCode = String(party?.countryMaster?.countryCode || '').toLowerCase();
+    const isOverseas = partyCountryCode && partyCountryCode !== this.currentCompanyCountryCode;
+    const placeOfSupply = isOverseas
+      ? (this.appSettingService.getCurrentBranchState()?.stateName || '')
+      : (party.stateMaster?.stateName || '');
     this.receiptForm.patchValue({
       PartyMasterSid: party.SubledgerMasterSid,
       PartyName: party.CustomerName,
@@ -3230,6 +3236,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       LedgerMasterSid: party.SubledgerMasterSid,
       GST_VAT:
         this.currentCompanyCountryCode !== 'in' ? party.PanType : party.GSTNo,
+      PlaceOfSupply: placeOfSupply,
     });
 
     // Default header currency from the party's configured currency

@@ -831,7 +831,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         currencyCode: localCurrencyCode
       })
 
-      this.invoiceForm.get('InvoiceType')?.setValue('REG');
+      this.invoiceForm.get('InvoiceType')?.setValue(null);
       this.invoiceForm.get('GSTType')?.setValue('');
       return;
     }
@@ -848,7 +848,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         PartyName: customer.CustomerName || '',
         PartyMasterSid: customer.SubledgerMasterSid || null,
         COAMasterSid: customer.COAMappedId || null,
-        InvoiceType: 'REG',
+        InvoiceType: null,
         CurrencyMasterSid : customerCurrency?.CurrencyMasterSid ?? localCurrencyId,
         CurrencyCode : customerCurrency?.currencyCode ?? localCurrencyCode,
       });
@@ -884,6 +884,31 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       });
   }
 
+  private getDefaultInvoiceTypeFromGstType(gstType: string): string {
+    if (!gstType) return 'REG';
+    const map: Record<string, string> = {
+      'Regular':       'REG',
+      'Composite':     'BOS',
+      'Composition':   'BOS',    // legacy
+      'Unregistered':  'BOS',    // legacy
+      'Exempt':        'EXE',
+      'RCM Others':    'RCM',
+      'RCM Specified': 'RCM',
+      'SEZ':           'NONGST',
+      'Zero Rated':    'NONGST',
+      'Export':        'NONGST', // legacy
+      'REG':    'REG',
+      'BOS':    'BOS',
+      'NONGST': 'NONGST',
+      'EXE':    'EXE',
+      'RCM':    'RCM',
+      'REIMB':  'REIMB',
+    };
+    const mapped = map[gstType] ?? 'REG';
+    const available = this.activeInvoiceTypes.map(t => t.id);
+    return available.includes(mapped) ? mapped : 'REG';
+  }
+
   onCustomerBranchChange(selectedBranch: any) {
     const branchSid =
       typeof selectedBranch === 'object' && selectedBranch !== null
@@ -917,6 +942,10 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       } else {
         this.invoiceForm.get('GST_VAT')?.setValue(foundBranch?.customerMaster?.PanType || '');
       }
+      const defaultInvoiceType = this.currentCompanyCountryCode === 'in'
+        ? this.getDefaultInvoiceTypeFromGstType(foundBranch?.CustomerGstType)
+        : 'REG';
+      this.invoiceForm.get('InvoiceType')?.setValue(defaultInvoiceType ?? null);
     } else {
       this.invoiceForm.get('PartyAddress')?.setValue('');
       this.invoiceForm.get('PlaceOfSupply')?.setValue('');
