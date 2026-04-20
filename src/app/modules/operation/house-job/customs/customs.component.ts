@@ -44,6 +44,7 @@ export class CustomsComponent implements OnInit, OnChanges {
   @Input() formData: any;
   @Input() dataItems: any[] = [];
   @Input() resetTrigger = false;
+  @Input() isFormDisabled: boolean = false;
   @Input() screenName: 'HouseJob' | 'MasterJob' = 'HouseJob';
 
   @Output() dataEmitter = new EventEmitter<any>();
@@ -187,6 +188,8 @@ export class CustomsComponent implements OnInit, OnChanges {
     if (changes['resetTrigger'] && this.resetTrigger) {
       this.resetForm();
     }
+
+    this.updateFormDisabledState();
   }
 
   onFormChange() {
@@ -222,7 +225,7 @@ export class CustomsComponent implements OnInit, OnChanges {
 
   emitData() {
     const data = {
-      dataItems: [this.customsForm.value], // Wrap in array for consistency
+      dataItems: [this.customsForm.getRawValue()], // Wrap in array for consistency
       formData: this.formData
     };
     this.dataEmitter.emit(data);
@@ -230,7 +233,7 @@ export class CustomsComponent implements OnInit, OnChanges {
 
   getCustomsData(): any[] {
     // Return an array with the single form value if form is valid and has data
-    const formValue = this.customsForm.value;
+    const formValue = this.customsForm.getRawValue();
     
     // Check if any required field is filled
     const hasData = formValue.LineCode || 
@@ -333,6 +336,9 @@ export class CustomsComponent implements OnInit, OnChanges {
   }
 
   generateEDIManifest() {
+    if (this.isEffectiveFormDisabled) {
+      return;
+    }
     // Basic frontend validation - show in modal instead of toast
     const customsData = this.customsForm.value;
     const basicErrors: MandatoryFieldError[] = [];
@@ -516,5 +522,25 @@ export class CustomsComponent implements OnInit, OnChanges {
     link.click();
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
+  }
+
+  get isEffectiveFormDisabled(): boolean {
+    return this.isFormDisabled || this.isSuspendedStatus(this.formData?.status);
+  }
+
+  private updateFormDisabledState(): void {
+    if (!this.customsForm) {
+      return;
+    }
+    if (this.isEffectiveFormDisabled) {
+      this.customsForm.disable({ emitEvent: false });
+    } else {
+      this.customsForm.enable({ emitEvent: false });
+    }
+  }
+
+  private isSuspendedStatus(status: any): boolean {
+    const value = String(status ?? '').trim().toLowerCase();
+    return value === 's' || value === 'suspended';
   }
 }

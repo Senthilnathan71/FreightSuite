@@ -9,6 +9,8 @@
   [virtualScroll]="true"
   [placeholder]=""
   [searchable]="searchable"
+  [readonly]="control?.disabled"
+  [clearable]="!(control?.disabled ?? false)"
   (blur)="onTouched()"
   (open)="onOpen()"
   (close)="resetFilter()"
@@ -22,6 +24,7 @@
           class="form-check-input"
           id="selectAll"
           [checked]="control?.value?.length === filteredItems.length"
+          [disabled]="control?.disabled"
           (change)="toggleSelectAll()"
           (keydown.enter)="toggleSelectAll()"
           tabindex="0"
@@ -38,6 +41,7 @@
           class="form-control pe-5 border-0"
           placeholder="Search"
           [(ngModel)]="filterValue"
+          [disabled]="control?.disabled"
           (input)="onSearchInput($event)"
           (keydown)="$event.stopPropagation()"
           tabindex="0"
@@ -64,11 +68,12 @@
   </ng-template>
   <ng-template ng-option-tmp let-item="item" let-item$="item$" let-selected="selected" let-marked="marked">
     <div class="form-check">
-      <input
-        type="checkbox"
-        class="form-check-input"
-        [checked]="isSelected(item[bindValue])"
-        (click)="$event.stopPropagation(); toggleItem(item[bindValue])"
+        <input
+          type="checkbox"
+          class="form-check-input"
+          [checked]="isSelected(item[bindValue])"
+          [disabled]="control?.disabled"
+          (click)="$event.stopPropagation(); toggleItem(item[bindValue])"
       >
       <label class="form-check-label">{{ item[bindLabel] }}</label>
     </div>

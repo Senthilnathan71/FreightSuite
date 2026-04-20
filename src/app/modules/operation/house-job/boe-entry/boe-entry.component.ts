@@ -52,6 +52,7 @@ export class BoeEntryComponent implements OnInit, OnChanges {
   @Input() screenName: string;
   @Input() formData: any;
   @Input() resetTrigger: boolean = false;
+  @Input() isFormDisabled: boolean = false;
   
   // Use only setter/getter for dataItems to avoid duplication
   private _dataItems: any[] = [];
@@ -115,6 +116,7 @@ export class BoeEntryComponent implements OnInit, OnChanges {
     if (this._dataItems && this._dataItems.length > 0) {
       this.patchValues(this._dataItems);
     }
+    this.updateFormDisabledState();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -135,6 +137,8 @@ export class BoeEntryComponent implements OnInit, OnChanges {
     if (changes['formData'] && this.formData) {
       this.setParentData(this.formData);
     }
+
+    this.updateFormDisabledState();
   }
 
   private setParentData(value: any) {
@@ -207,6 +211,9 @@ export class BoeEntryComponent implements OnInit, OnChanges {
 
   // Add new BOE row
   addBoeRow(data?: any) {
+    if (this.isEffectiveFormDisabled && !data) {
+      return;
+    }
     // When adding a new row without data, populate it with parent form values
     if (!data && this.formData) {
       const ParentSid = this.formData?.HouseJobSid;
@@ -227,6 +234,9 @@ export class BoeEntryComponent implements OnInit, OnChanges {
 
   // Delete BOE row
   deleteBoe(index: number, HouseJobBOESid?: number) {
+    if (this.isEffectiveFormDisabled) {
+      return;
+    }
     const formGroup = this.boeFormArray.at(index) as FormGroup;
 
     if (HouseJobBOESid) {
@@ -255,6 +265,9 @@ export class BoeEntryComponent implements OnInit, OnChanges {
 
   // Save BOE row
   saveBoe(index: number) {
+    if (this.isEffectiveFormDisabled) {
+      return;
+    }
     const formGroup = this.boeFormArray.at(index) as FormGroup;
     
     if (formGroup.invalid) {
@@ -382,7 +395,7 @@ export class BoeEntryComponent implements OnInit, OnChanges {
 
   // Check if BOE can be edited (always true for BOE)
   canEditBoe(index: number): boolean {
-    return true;
+    return !this.isEffectiveFormDisabled;
   }
   getBoeData(): any[] {
   return this.boeFormArray ? this.boeFormArray.getRawValue() : [];
@@ -390,4 +403,24 @@ export class BoeEntryComponent implements OnInit, OnChanges {
 validateBoeData(): boolean {
   return this.validateBoeArray();
 }
+
+  get isEffectiveFormDisabled(): boolean {
+    return this.isFormDisabled || this.isSuspendedStatus(this.formData?.status);
+  }
+
+  private updateFormDisabledState(): void {
+    if (!this.boeForm) {
+      return;
+    }
+    if (this.isEffectiveFormDisabled) {
+      this.boeForm.disable({ emitEvent: false });
+    } else {
+      this.boeForm.enable({ emitEvent: false });
+    }
+  }
+
+  private isSuspendedStatus(status: any): boolean {
+    const value = String(status ?? '').trim().toLowerCase();
+    return value === 's' || value === 'suspended';
+  }
 }

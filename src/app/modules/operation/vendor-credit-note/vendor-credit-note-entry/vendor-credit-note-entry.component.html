@@ -55,7 +55,7 @@
             type="button"
             class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="openPrintModal()"
-            [disabled]="!vendorCreditNoteData"
+            [disabled]="!vendorCreditNoteData || (this.vendorCreditNoteData?.Status !== 'A')"
             appPreventMultiClick
           >
             <i class="fas fa-print me-1"></i> Print
@@ -83,7 +83,7 @@
             <i class="fas fa-sync-alt me-1"></i> Reset
           </button>
 
-          <button type="button" class="btn btn-info btn-sm text-nowrap" *ngIf="isEditMode" (click)="sendManualMail()">
+          <button type="button" class="btn btn-info btn-sm text-nowrap" *ngIf="isEditMode" (click)="sendManualMail()" [disabled]="(this.vendorCreditNoteData?.Status !== 'A')">
             <i class="fas fa-envelope me-1"></i> Send Mail
           </button>
 
@@ -950,6 +950,7 @@
                             type="button"
                             class="btn border-0 btn-sm pt-1"
                             (click)="removeDetailRow(i)"
+                            [disabled]="isReadOnly"
                           >
                             <i class="fas fa-trash text-danger fs-2"></i>
                           </button>

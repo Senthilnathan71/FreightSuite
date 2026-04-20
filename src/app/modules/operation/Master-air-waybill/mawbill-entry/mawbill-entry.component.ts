@@ -461,6 +461,10 @@ export class MawbillEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   });
   }
 
+  get isSuspended() : boolean {
+    return this.masterJobData?.Status === 'S';
+  }
+
   private loadTermsAndConditionsConfig(): void {
     const companyId = this.currentCompany?.CompanyMasterSid;
     if (!companyId) {

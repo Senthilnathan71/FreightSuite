@@ -27,7 +27,6 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { PreventMultiClickDirective } from "src/app/core/Directives/prevent-multi-click.directive";
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
-import { debounceTime } from 'rxjs/operators';
 
 @Component({
   selector: 'app-credit-request-entry',
@@ -530,8 +529,8 @@ creditForm.get('ApprovalStatus')?.valueChanges.subscribe(() => {
       return;
     }
 
-    const raw = this.cusForm.getRawValue();
-    if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+    const currentValue = this.getCurrentNormalizedFormValue();
+    if (this.deepEqual(currentValue, this.initialFormValue)) {
       this.appSettingService.showWarning('No changes to save');
       this.cusForm.markAsUntouched();
       this.isSaving = false;
@@ -1058,7 +1057,10 @@ getDepartmentName(deptId: number, rowIndex: number): string {
   }
 
   hasUnsavedChanges(): boolean {
-    return this.isDirty;
+    if (this.initialFormValue === null) {
+      return false;
+    }
+    return !this.deepEqual(this.getCurrentNormalizedFormValue(), this.initialFormValue);
   }
 
   async saveChanges(): Promise<boolean> {
@@ -1069,22 +1071,23 @@ getDepartmentName(deptId: number, rowIndex: number): string {
 
   private subscribeToFormChanges(): void {
     this.formChangesSub?.unsubscribe();
-    this.formChangesSub = this.cusForm.valueChanges.pipe(debounceTime(300)).subscribe(() => {
+    this.formChangesSub = this.cusForm.valueChanges.subscribe(() => {
       if (this.initialFormValue === null) {
         return;
       }
-      this.isDirty = !this.deepEqual(
-        this.initialFormValue,
-        this.cusForm.getRawValue()
-      );
+      this.isDirty = this.hasUnsavedChanges();
     });
   }
 
   private scheduleDirtyTrackingSnapshot(): void {
     setTimeout(() => {
-      this.initialFormValue = this.cusForm.getRawValue();
+      this.initialFormValue = this.getCurrentNormalizedFormValue();
       this.isDirty = false;
     }, 0);
+  }
+
+  private getCurrentNormalizedFormValue(): any {
+    return this.normalizeValue(this.cusForm.getRawValue());
   }
 
   private normalizeValue(value: any): any {

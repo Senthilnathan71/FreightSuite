@@ -93,6 +93,9 @@ export class MultiSelectComponent implements ControlValueAccessor {
   }
 
   onModelChange(value: any[]): void {
+    if (this.control?.disabled) {
+      return;
+    }
     if (this.control) {
       this.control.setValue(value);
       this.onChange(value);
@@ -101,7 +104,7 @@ export class MultiSelectComponent implements ControlValueAccessor {
   }
 
   toggleSelectAll(): void {
-    if (!this.control || !this.filteredItems) return;
+    if (!this.control || !this.filteredItems || this.control.disabled) return;
     const currentValue = this.control.value || [];
     if (currentValue.length === this.filteredItems.length) {
       this.control.setValue([]);
@@ -115,7 +118,7 @@ export class MultiSelectComponent implements ControlValueAccessor {
   }
 
   toggleItem(itemValue: any): void {
-    if (!this.control) return;
+    if (!this.control || this.control.disabled) return;
     const currentValue = this.control.value || [];
     const newValue = currentValue.includes(itemValue)
       ? currentValue.filter((v: any) => v !== itemValue)
@@ -132,7 +135,7 @@ export class MultiSelectComponent implements ControlValueAccessor {
   }
 
   removeItem(item: any, event: Event): void {
-    if (!this.control) return;
+    if (!this.control || this.control.disabled) return;
     event.stopPropagation();
     const currentValue = this.control.value || [];
     const newValue = currentValue.filter((v: any) => v !== item[this.bindValue]);
@@ -159,6 +162,9 @@ export class MultiSelectComponent implements ControlValueAccessor {
   }
 
   onOpen(): void {
+    if (this.control?.disabled) {
+      return;
+    }
     this.onTouched();
     if (this.control) {
       this.control.markAsTouched();

@@ -458,6 +458,7 @@ export const OperationRoutes: Routes = [
       {
         path: 'credit-request/entry',
         component: CreditRequestEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Credit Request',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Credit Request' }],
@@ -466,6 +467,7 @@ export const OperationRoutes: Routes = [
       {
         path: 'credit-request/entry/:CustomerMasterSid',
         component: CreditRequestEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Credit Request',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Credit Request' }],

@@ -173,6 +173,7 @@ isTermsAndConditionsEnabled: boolean = true;
 isCreditRequestCheckingEnabled: boolean = false;
 // Customs pre-save validation modal
 showCustomsValidationModal = false;
+isFormDisabled: boolean = false;
 customsValidationErrors: { recordType: string; fieldRef: string; fieldName: string; tabName?: string }[] = [];
   showCreditValidationModal = false;
   creditValidationActionLabel = '';
@@ -1469,7 +1470,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
     
     // If we have data with volume, trigger calculation AFTER form is stable
     // This allows the patched value to be set first, then calculations take over
-    if (data && (data.Length || data.Width || data.Height)) {
+    if (!isPatching && data && (data.Length || data.Width || data.Height)) {
       setTimeout(() => {
         // Trigger calculation by emitting a change event
         productForm.get('UomMasterSid')?.updateValueAndValidity({ emitEvent: true });
@@ -1826,6 +1827,10 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
   });
 }
 
+get isSuspended() : boolean {
+    return this.housejobData?.status === 'S';
+  }
+
   loadOtherLookups() {
     forkJoin({
       currencies: this.operationService.getAllCurrencies().pipe(catchError(err => of({ data: [] }))),
@@ -1921,6 +1926,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
     this.bookingHeader = response;
     this.isExportToImportLinked = response?.masterJob?.others?.[0]?.ExportToImport === 'Y';
     const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
+    const shouldDisableForms = (this.isEditMode && response.status !== 'A');
     this.selectedDepartment = selectedDepartment;
     this.selectedDepartmentType = selectedDepartment?.departmentType?.toUpperCase() || '';
     this.filterTabs();
@@ -2082,13 +2088,6 @@ private loadMasterJobDetails(masterJobSid: number): void {
         (cargoGroup.get('bookingProducts') as FormArray).push(this.createBookingProductGroup(product, true));
       });
 
-      if (cargoGroup.get('Volumetric')?.value === '' || cargoGroup.get('Volumetric')?.value === null) {
-        const calculatedVolumetric = cargoProducts.reduce((sum: number, product: any) => sum + (Number(product?.Volumetric) || 0), 0);
-        if (calculatedVolumetric > 0) {
-          cargoGroup.get('Volumetric')?.setValue(calculatedVolumetric, { emitEvent: false });
-        }
-      }
-
       this.houseJobCargos.push(cargoGroup);
       this.houseJobCargoExpanded.push(cargoIndex === 0);
     });
@@ -2154,6 +2153,12 @@ private loadMasterJobDetails(masterJobSid: number): void {
     this.evaluateDropdownOrFreeText();
 
     this.productDataLength = flatProducts.length;
+    if (shouldDisableForms) {
+      this.disableAllForms();
+      if (this.isEditMode && response.status !== 'A') {
+        this.houseJobForm.get('status')?.disable();
+      }
+    }
     this.updateProductPagination();
 
     this.bookingConnectionsArr = (response.Connections || []).map(connection => {
@@ -2170,6 +2175,14 @@ private loadMasterJobDetails(masterJobSid: number): void {
       status: br.status === "A" ? "Active" : "Suspended"
     }));
     this.rateResult = [...this.bookingRateArr];
+    if (
+      this.isEditMode &&
+      this.bookingRateArr?.some(rate =>
+        rate.CostVoucherHeaderSid !== null || rate.RevenueVoucherHeaderSid !== null
+      )
+    ) {
+      this.houseJobForm.get('status')?.disable();
+    }
     this.syncFormValueWithRateComponent();
     this.calculateChargeWiseProfit();
     this.calculateCustomerWiseAmount();
@@ -2209,12 +2222,15 @@ private applyExportToImportFieldLocks(): void {
   }
 
   const lockFields = ['ConsigneeName', 'ConsigneeAddress', 'Notify', 'NotifyAddress'];
-  if (this.isExportToImportLinked) {
+  const shouldKeepDisabled = this.isFormDisabled || (this.isEditMode && this.isSuspended);
+  if (this.isExportToImportLinked || shouldKeepDisabled) {
     lockFields.forEach(field => this.houseJobForm.get(field)?.disable({ emitEvent: false }));
-    this.houseJobForm.patchValue({
-      isConsigneeFreeText: false,
-      isNotifyFreeText: false,
-    }, { emitEvent: false });
+    if (this.isExportToImportLinked) {
+      this.houseJobForm.patchValue({
+        isConsigneeFreeText: false,
+        isNotifyFreeText: false,
+      }, { emitEvent: false });
+    }
   } else {
     lockFields.forEach(field => this.houseJobForm.get(field)?.enable({ emitEvent: false }));
   }
@@ -2226,7 +2242,7 @@ private applyExportToImportFieldLocks(): void {
   }
 
   this.houseJobCargos.controls.forEach((cargoControl: AbstractControl) => {
-    if (this.isExportToImportLinked) {
+    if (this.isExportToImportLinked || this.isFormDisabled || (this.isEditMode && this.isSuspended)) {
       cargoControl.disable({ emitEvent: false });
     } else {
       cargoControl.enable({ emitEvent: false });
@@ -2236,7 +2252,7 @@ private applyExportToImportFieldLocks(): void {
 
   private applyProductTabLocks(): void {
   if (this.productForm) {
-    if (this.isExportToImportLinked) {
+    if (this.isExportToImportLinked || this.isFormDisabled || (this.isEditMode && this.isSuspended)) {
       this.productForm.disable({ emitEvent: false });
     } else {
       this.productForm.enable({ emitEvent: false });
@@ -2251,7 +2267,7 @@ private applyExportToImportFieldLocks(): void {
     const cargoGroup = cargoControl as FormGroup;
     const productArray = cargoGroup.get('bookingProducts') as FormArray;
     productArray.controls.forEach(control => {
-      if (this.isExportToImportLinked) {
+      if (this.isExportToImportLinked || this.isFormDisabled || (this.isEditMode && this.isSuspended)) {
         control.disable({ emitEvent: false });
       } else {
         control.enable({ emitEvent: false });
@@ -2417,7 +2433,7 @@ private applyExportToImportFieldLocks(): void {
         MarksAndNumbers : data?.MarksAndNumbers,
         DeliveryDate: data?.DeliveryDate,
         DeliveredQty: data?.DeliveredQty,
-      })
+      }, { emitEvent: false })
       const productItem = this.slicedProductArr[productIndex];
       this.currentProductIndex = this.bookingProducts.controls.indexOf(productItem);
       this.productEditMode = true;
@@ -6534,6 +6550,38 @@ getProductFormGroup(index: number): FormGroup {
   goToCustomsTab() {
     this.closeCustomsValidationModal();
     this.selectedTab = 'Customs';
+  }
+
+  private disableAllForms(): void {
+    Object.keys(this.houseJobForm.controls).forEach(key => {
+      if (!['status'].includes(key)) {
+        this.houseJobForm.get(key)?.disable();
+      }
+    });
+
+    Object.keys(this.otherForm.controls).forEach(key => {
+      this.otherForm.get(key)?.disable();
+    });
+
+    Object.keys(this.cargoForm.controls).forEach(key => {
+      this.cargoForm.get(key)?.disable();
+    });
+
+    this.houseJobCargos.controls.forEach((cargoGroup: FormGroup) => {
+      Object.keys(cargoGroup.controls).forEach(key => {
+        if (key !== 'bookingProducts') {
+          cargoGroup.get(key)?.disable();
+        }
+      });
+
+      (cargoGroup.get('bookingProducts') as FormArray)?.controls.forEach((product: FormGroup) => {
+        Object.keys(product.controls).forEach(key => {
+          product.get(key)?.disable();
+        });
+      });
+    });
+
+    this.isFormDisabled = true;
   }
 }
 
