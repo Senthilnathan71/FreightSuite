@@ -2407,7 +2407,7 @@ createRateFormGroup(data?: any): FormGroup {
       PlaceOfSupply : [{ value : '' , disabled : true },[Validators.required]],
       State : [''],
       GST_VAT : [{ value : '', disabled : true }],
-      InvoiceType : [''],
+      InvoiceType : [null],
       TaxNumber : [''],
       GSTType : [''],
       Remarks : [''],
@@ -3205,6 +3205,10 @@ createRateFormGroup(data?: any): FormGroup {
       }
 
 
+      const defaultInvoiceType = this.isIndianCompany()
+        ? this.getDefaultInvoiceTypeFromGstType(customerBranch?.CustomerGstType)
+        : 'REG';
+
       this.voucherForm.patchValue({
         PartyMasterSid: PartyLedgerMasterSid,
         COAMasterSid: PartyCOAMasterSid,
@@ -3218,6 +3222,7 @@ createRateFormGroup(data?: any): FormGroup {
         GST_VAT: GST_VAT || '',
         GSTType: this.currentCompanyCountryCode !== 'in' ? 'VAT' : GSTType,
         TaxType: this.currentCompanyCountryCode !== 'in' ? 'VAT' : 'GST',
+        InvoiceType: defaultInvoiceType ?? null,
         ...(this.parentFormValue?.parentMenuName === 'Service Job' && isRevenue ? { DocumentNumber: this.parentFormValue?.ShipmentNo || null } : {}),
       })
 
@@ -4277,6 +4282,31 @@ createRateFormGroup(data?: any): FormGroup {
   // Add this method to check if current company is in India
   isIndianCompany(): boolean {
     return this.taxCalculationService.isIndiaGST;
+  }
+
+  private getDefaultInvoiceTypeFromGstType(gstType: string): string {
+    if (!gstType) return 'REG';
+    const map: Record<string, string> = {
+      'Regular':       'REG',
+      'Composite':     'BOS',
+      'Composition':   'BOS',    // legacy
+      'Unregistered':  'BOS',    // legacy
+      'Exempt':        'EXE',
+      'RCM Others':    'RCM',
+      'RCM Specified': 'RCM',
+      'SEZ':           'NONGST',
+      'Zero Rated':    'NONGST',
+      'Export':        'NONGST', // legacy
+      'REG':    'REG',
+      'BOS':    'BOS',
+      'NONGST': 'NONGST',
+      'EXE':    'EXE',
+      'RCM':    'RCM',
+      'REIMB':  'REIMB',
+    };
+    const mapped = map[gstType] ?? 'REG';
+    const available = this.activeInvoiceTypes.map(t => t.id);
+    return available.includes(mapped) ? mapped : 'REG';
   }
 
   // Add this method to check if current company is in UAE

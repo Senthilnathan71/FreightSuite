@@ -661,7 +661,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       InstrumentDate: [null, [Validators.required]],
       ClearanceDate: [null],
 
-      InvoiceType: [''],
+      InvoiceType: [null],
+      PlaceOfSupply: [''],
 
       // Form arrays
       detailItems: this.fb.array([]), // charge detail formArray
@@ -3185,6 +3186,31 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     return this.paymentForm.controls || {};
   }
 
+  private getDefaultInvoiceTypeFromGstType(gstType: string): string {
+    if (!gstType) return 'REG';
+    const map: Record<string, string> = {
+      'Regular':       'REG',
+      'Composite':     'BOS',
+      'Composition':   'BOS',    // legacy
+      'Unregistered':  'BOS',    // legacy
+      'Exempt':        'EXE',
+      'RCM Others':    'RCM',
+      'RCM Specified': 'RCM',
+      'SEZ':           'NONGST',
+      'Zero Rated':    'NONGST',
+      'Export':        'NONGST', // legacy
+      'REG':    'REG',
+      'BOS':    'BOS',
+      'NONGST': 'NONGST',
+      'EXE':    'EXE',
+      'RCM':    'RCM',
+      'REIMB':  'REIMB',
+    };
+    const mapped = map[gstType] ?? 'REG';
+    const available = this.invoiceTypeOptions.map(t => t.id);
+    return available.includes(mapped) ? mapped : 'REG';
+  }
+
   get interBranches(): FormArray {
     return this.paymentForm.get('interBranches') as FormArray;
   }
@@ -3399,6 +3425,14 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       return;
     }
     this.previousPartyBranchSid = party.CustomerBranchSid;
+    const defaultInvoiceType = this.currentCompanyCountryCode === 'in'
+      ? this.getDefaultInvoiceTypeFromGstType(party.CustomerGstType)
+      : 'REG';
+    const partyCountryCode = String(party?.countryMaster?.countryCode || '').toLowerCase();
+    const isOverseas = partyCountryCode && partyCountryCode !== this.currentCompanyCountryCode;
+    const placeOfSupply = isOverseas
+      ? (this.appSettingService.getCurrentBranchState()?.stateName || '')
+      : (party.stateMaster?.stateName || '');
     this.paymentForm.patchValue({
       PartyMasterSid: party.SubledgerMasterSid,
       PartyName: party.CustomerName,
@@ -3408,6 +3442,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       LedgerMasterSid: party.SubledgerMasterSid,
       GST_VAT:
         this.currentCompanyCountryCode !== 'in' ? party.PanType : party.GSTNo,
+      InvoiceType: defaultInvoiceType ?? null,
+      PlaceOfSupply: placeOfSupply,
     });
 
     this.taxCalculationService.updateParty({
