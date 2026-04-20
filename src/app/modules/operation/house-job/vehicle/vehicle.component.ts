@@ -18,6 +18,7 @@ export class VehicleComponent implements OnChanges {
   @Input() formData: any;
   @Input() dataItems: any[] = [];
   @Input() resetTrigger = false;
+  @Input() isFormDisabled: boolean = false;
 
   @Output() dataEmitter = new EventEmitter<any>();
 
@@ -79,10 +80,15 @@ export class VehicleComponent implements OnChanges {
     if (changes['resetTrigger'] && this.resetTrigger) {
       this.resetForm();
     }
+
+    this.updateFormDisabledState();
   }
 
   // Add vehicle to array
   addVehicle() {
+    if (this.isEffectiveFormDisabled) {
+      return;
+    }
     if (this.vehicleForm.invalid) {
       this.vehicleForm.markAllAsTouched();
       return;
@@ -106,6 +112,9 @@ export class VehicleComponent implements OnChanges {
 
   // Edit vehicle
   editVehicle(index: number) {
+    if (this.isEffectiveFormDisabled) {
+      return;
+    }
     const vehicle = this.vehicleDataArray[index];
     this.vehicleForm.patchValue(vehicle);
     this.vehicleDataArray.splice(index, 1);
@@ -114,6 +123,9 @@ export class VehicleComponent implements OnChanges {
 
   // Delete vehicle
   deleteVehicle(index: number) {
+  if (this.isEffectiveFormDisabled) {
+    return;
+  }
   const vehicle = this.vehicleDataArray[index];
   const vehicleId = vehicle.HouseJobVehicleSid; // or BoeSid, adjust based on your actual ID field
   
@@ -151,7 +163,7 @@ export class VehicleComponent implements OnChanges {
 
   // Method to get vehicle data for parent
   getVehicleData(): any[] {
-    if(this.vehicleForm.valid && this.vehicleForm.dirty){
+    if(!this.isEffectiveFormDisabled && this.vehicleForm.valid && this.vehicleForm.dirty){
       this.addVehicle()
     }
     return this.vehicleDataArray;
@@ -168,6 +180,26 @@ export class VehicleComponent implements OnChanges {
   getRollingLabel(value: string): string {
     const type = this.rollingList.find(item => item.value === value);
     return type ? type.label : value;
+  }
+
+  get isEffectiveFormDisabled(): boolean {
+    return this.isFormDisabled || this.isSuspendedStatus(this.formData?.status);
+  }
+
+  private updateFormDisabledState(): void {
+    if (!this.vehicleForm) {
+      return;
+    }
+    if (this.isEffectiveFormDisabled) {
+      this.vehicleForm.disable({ emitEvent: false });
+    } else {
+      this.vehicleForm.enable({ emitEvent: false });
+    }
+  }
+
+  private isSuspendedStatus(status: any): boolean {
+    const value = String(status ?? '').trim().toLowerCase();
+    return value === 's' || value === 'suspended';
   }
   
 }

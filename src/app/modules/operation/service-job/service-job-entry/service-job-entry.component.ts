@@ -116,6 +116,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
   detailForm !: FormGroup;
   userData: any;
   isPrintLoading: boolean;
+  isFormDisabled: boolean = false;
   currentCompany: any;
   currentBranch: any;
   countryOfCompany : string;
@@ -335,6 +336,10 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
     });
   }
 
+  get isSuspended() : boolean {
+    return this.houseData?.status !== 'A';
+  }
+
   ngAfterViewInit(): void {
     if (!this.isEditMode) {
       this.departmentLookup.focus();
@@ -529,6 +534,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
   patchValues(response: any) {
     const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
     const selectedCustomer = this.customerList.find(cus => cus.CustomerMasterSid === response.CustomerMasterSid);
+    const shouldDisableForms = (this.isEditMode && response.status !== 'A');
     this.onDeptChange(selectedDepartment);
     this.onCustomerChange(selectedCustomer);
     this.serviceJobForm.patchValue({
@@ -594,11 +600,42 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
       status : br.status  === "A" ? "Active" : "Suspended"
     }));
 
+    if (shouldDisableForms) {
+      this.disableAllForms();
+      if (this.isEditMode && response.status !== 'A') {
+        this.serviceJobForm.get('status')?.disable();
+      }
+    }
+
     
     this.serviceJobRateResults = [...this.serviceJobRateArr];
 
+    if (
+      this.isEditMode &&
+      this.serviceJobRateArr?.some(rate =>
+        rate.CostVoucherHeaderSid !== null || rate.RevenueVoucherHeaderSid !== null
+      )
+    ) {
+      this.serviceJobForm.get('status')?.disable();
+    }
+
 
     this.syncFormValueWithRateComponent();
+  }
+
+  private disableAllForms(): void {
+    Object.keys(this.serviceJobForm.controls).forEach(key => {
+      if (!['status'].includes(key)) {
+        this.serviceJobForm.get(key)?.disable();
+      }
+    });
+
+    Object.keys(this.cargoForm.controls).forEach(key => {
+      this.cargoForm.get(key)?.disable();
+    });
+
+
+    this.isFormDisabled = true;
   }
 
 

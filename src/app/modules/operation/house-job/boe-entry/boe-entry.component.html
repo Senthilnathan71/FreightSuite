@@ -4,7 +4,7 @@
       <h5 class="my-0">BOE Management</h5>
     </div>
     <div class="toolbar-right">
-      <button type="button" class="table-action-btn primary" (click)="addBoeRow()">
+      <button type="button" class="table-action-btn primary" (click)="addBoeRow()" [disabled]="isEffectiveFormDisabled">
         <i class="fas fa-plus"></i> Add BOE
       </button>
     </div>
@@ -53,7 +53,7 @@
                 <i class="fas fa-save me-1 text-info fs-3"></i>
               </button> -->
               <button type="button" (click)="deleteBoe((page-1)*pageSize + i, row.get('HouseJobBOESid')?.value)" 
-                      class="btn btn-delete px-1 py-0" title="Delete BOE">
+                      class="btn btn-delete px-1 py-0" title="Delete BOE" [disabled]="isEffectiveFormDisabled">
                 <i class="fas fa-trash text-danger fs-2"></i>
               </button>
             </td>
@@ -85,7 +85,7 @@
                                  (click)="d1.toggle()"
                                  formControlName="BOEDate"
                                  container="body" style="width:130px; height:22px; padding:2px 4px; font-size:12px;"/>
-                          <button class="btn py-0" (click)="d1.toggle()" type="button">
+                          <button class="btn py-0" (click)="d1.toggle()" type="button" [disabled]="isEffectiveFormDisabled">
                             <i-feather name="calendar" class="feather-sm"></i-feather>
                           </button>
                         </div>
@@ -130,7 +130,7 @@
                                  (click)="d3.toggle()"
                                  formControlName="ProcessDate"
                                  container="body" style="width:130px; height:22px; padding:2px 4px; font-size:12px;"/>
-                          <button class="btn py-0" (click)="d3.toggle()" type="button">
+                          <button class="btn py-0" (click)="d3.toggle()" type="button" [disabled]="isEffectiveFormDisabled">
                             <i-feather name="calendar" class="feather-sm"></i-feather>
                           </button>
                         </div>
@@ -146,7 +146,7 @@
                                  (click)="d2.toggle()"
                                  formControlName="ReceivedDate"
                                  container="body" style="width:130px; height:22px; padding:2px 4px; font-size:12px;"/>
-                          <button class="btn py-0" (click)="d2.toggle()" type="button">
+                          <button class="btn py-0" (click)="d2.toggle()" type="button" [disabled]="isEffectiveFormDisabled">
                             <i-feather name="calendar" class="feather-sm"></i-feather>
                           </button>
                         </div>
@@ -169,7 +169,7 @@
                                  (click)="d4.toggle()"
                                  formControlName="AckDate"
                                  container="body" style="width:130px; height:22px; padding:2px 4px; font-size:12px;"/>
-                          <button class="btn py-0" (click)="d4.toggle()" type="button">
+                          <button class="btn py-0" (click)="d4.toggle()" type="button" [disabled]="isEffectiveFormDisabled">
                             <i-feather name="calendar" class="feather-sm"></i-feather>
                           </button>
                         </div>

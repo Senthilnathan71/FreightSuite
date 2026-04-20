@@ -6,7 +6,7 @@
         Clear
       </button> -->
       <button class="btn btn-info btn-sm  dofi-min-w-120" (click)="generateEDIManifest()"
-              [disabled]="(!houseJobSid && !masterJobSid) || loading">
+              [disabled]="(!houseJobSid && !masterJobSid) || loading || isEffectiveFormDisabled">
         <i class="fas fa-file-export me-1"></i>
         Generate EDI Manifest
       </button>

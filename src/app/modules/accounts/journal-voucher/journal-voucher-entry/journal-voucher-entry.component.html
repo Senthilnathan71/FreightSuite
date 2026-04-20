@@ -21,7 +21,7 @@
                     class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                    
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="reportJournalVoucher()" [disabled]="!voucherData" *ngIf="editMode && mps.canPrint('Journal Voucher', 'Print')">
+                        (click)="reportJournalVoucher()" [disabled]="!voucherData || (this.voucherData?.Status !== 'A')" *ngIf="editMode && mps.canPrint('Journal Voucher', 'Print')">
                         <i class="fas fa-print me-1"></i> Print
                     </button>
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"

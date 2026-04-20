@@ -78,6 +78,14 @@ export class TarrifListComponent extends BaseListComponent implements OnInit {
   private initializeTableConfig() {
   this.tableConfig = {
     columns: [
+      {
+      key: 'TariffHeaderSid',
+      label: 'Tariff No.',
+      sortable: true,
+      filterable: true,
+      visible: true,
+      dataType: 'number'
+    },
        {
       key: 'Dept',
       label: 'Department',
@@ -119,14 +127,14 @@ export class TarrifListComponent extends BaseListComponent implements OnInit {
       dataType: 'string',
       cellClass: 'vessel-column'
     },
-    // {
-    //   key: 'EffectiveDate',
-    //   label: 'Effective From',
-    //   sortable: true,
-    //   filterable: true,
-    //   visible: true,
-    //   dataType: 'string'
-    // },
+    {
+      key: 'createdBy',
+      label: 'Created By',
+      sortable: true,
+      filterable: true,
+      visible: true,
+      dataType: 'string'
+    },
     {
       key: 'status',
       label: 'Status',

@@ -505,6 +505,10 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     });
   }
 
+  get isSuspended() : boolean {
+    return this.masterJobData?.Status === 'S';
+  }
+
   private parseConfigBoolean(value: any, defaultValue: boolean): boolean {
     if (value === true || value === false) return value;
     if (value === null || value === undefined) return defaultValue;

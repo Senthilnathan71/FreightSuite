@@ -7041,7 +7041,32 @@ private prepareCopiedBookingData(): any {
 
   copiedData.bookingConnection = [];
 
-  copiedData.bookingRates = [];
+  const rateFieldsToExclude = new Set([
+    'PaymentRequestSid',
+    'revenueVoucherHeader',
+    'revenueVoucherTypeMaster',
+    'costVoucherHeader',
+    'costVoucherTypeMaster',
+    'CostVoucherHeaderSid',
+    'CostVoucherTypeMasterSid',
+    'RevenueVoucherHeaderSid',
+    'RevenueVoucherTypeMasterSid',
+    'AgentBranchSid',
+    'AgentMasterSid',
+    'CustomerMasterSid',
+    'CustomerBranchSid',
+    'BookingRatesSid',
+    'BookingHeaderSid'
+  ]);
+
+  copiedData.bookingRates = (copiedData.bookingRates || []).map((rate: any) => {
+    return Object.keys(rate).reduce((cleanRate: any, key: string) => {
+      if (!rateFieldsToExclude.has(key)) {
+        cleanRate[key] = rate[key];
+      }
+      return cleanRate;
+    }, {});
+  });
 
   Object.assign(copiedData, fieldsToClear);
 

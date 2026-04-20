@@ -40,7 +40,7 @@
             class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="openPrintModal()"
             *ngIf="isEditMode && mps.canPrint('Invoice', 'Print')"
-            [disabled]="!invoiceData"
+            [disabled]="!invoiceData || (this.invoiceData?.Status !== 'A')"
           >
             <i class="fas fa-print me-1"></i> Print
           </button>
@@ -75,7 +75,7 @@
           </div> -->
 
           <button type="button" class="btn btn-info btn-sm text-nowrap" *ngIf="isEditMode"
-            (click)="sendManualMail()">
+            (click)="sendManualMail()" [disabled]="(this.invoiceData?.Status !== 'A')">
             <i class="fas fa-envelope me-1"></i> Send Mail
           </button>
 

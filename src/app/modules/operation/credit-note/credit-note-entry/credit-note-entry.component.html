@@ -54,7 +54,7 @@
             class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="openPrintModal()"
             *ngIf="isEditMode && mps.canPrint('Credit Note', 'Print')"
-            [disabled]="!creditNoteData"
+            [disabled]="!creditNoteData || (this.creditNoteData?.Status !== 'A')"
           >
             <i class="fas fa-print me-1"></i> Print
           </button>
@@ -84,7 +84,7 @@
           </button>
 
           <button type="button" class="btn btn-info btn-sm text-nowrap" *ngIf="isEditMode"
-            (click)="sendManualMail()">
+            (click)="sendManualMail()" [disabled]="(this.creditNoteData?.Status !== 'A')">
             <i class="fas fa-envelope me-1"></i> Send Mail
           </button>
 

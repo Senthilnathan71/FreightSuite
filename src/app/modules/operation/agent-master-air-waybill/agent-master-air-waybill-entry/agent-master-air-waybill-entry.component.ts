@@ -148,6 +148,7 @@ export class AgentMasterAirWaybillEntryComponent  implements OnInit, HasUnsavedC
   showParsedData = false;
   uploadResult: any = null;
   decimalAfterPrecision = 3;
+  isFormDisabled: boolean = false;
   digitsAfterDecimal = 3;
   isETDFreeText: boolean = false;
 isETAFreeText: boolean = false;
@@ -943,6 +944,10 @@ private setupCargoCalculationSubscriptions(): void {
     })
   }
 
+  get isSuspended() : boolean {
+    return this.housejobData?.status === 'S';
+  }
+
  private calculateChargeableWeight(): void {
   // Skip if patching or manual override
   if (this.isPatching || this.chargeableWeightManualOverride) {
@@ -1090,6 +1095,7 @@ shouldCalculateVolume(): boolean {
     const isAirOrLCL = this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL';
     this.productForm = this.fb.group({
       HouseJobProductSid: [null],
+      HouseJobCargoSid: [this.cargoForm?.get('HouseJobCargoSid')?.value || null],
       ProductName: [null,[Validators.required]],
       isProductFreeText: [false],
       ShippingBillNo: [''],
@@ -1344,6 +1350,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
     const isAirOrLCL = this.selectedFCLLCL === 'AIR' || this.selectedFCLLCL === 'LCL';
     const productForm = this.fb.group({
       HouseJobProductSid: [data?.HouseJobProductSid || null],
+      HouseJobCargoSid: [data?.HouseJobCargoSid || this.cargoForm?.get('HouseJobCargoSid')?.value || null],
       ProductName: [data?.ProductName || null,[Validators.required]],
       isProductFreeText: [data?.isProductFreeText || false],
       ShippingBillNo: [data?.ShippingBillNo || ''],
@@ -1894,6 +1901,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
   try {
     this.bookingHeader = response;
     const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
+    const shouldDisableForms = (this.isEditMode && response.status !== 'A');
     this.selectedDepartment = selectedDepartment;
     this.selectedDepartmentType = selectedDepartment?.departmentType?.toUpperCase() || '';
     this.filterTabs();
@@ -2031,6 +2039,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
     }
     
     this.evaluateDropdownOrFreeText();
+    
     this.handleCFSOrYard();
     const otherData = response.Others[0];
     
@@ -2102,6 +2111,13 @@ private loadMasterJobDetails(masterJobSid: number): void {
       this.updateProductPagination();
     }
 
+    if (shouldDisableForms) {
+      this.disableAllForms();
+      if (this.isEditMode && response.status !== 'A') {
+        this.houseJobForm.get('status')?.disable();
+      }
+    }
+
     this.bookingConnectionsArr = (response.Connections || []).map(connection => {
       return {
         ...connection,
@@ -2116,6 +2132,14 @@ private loadMasterJobDetails(masterJobSid: number): void {
       status: br.status === "A" ? "Active" : "Suspended"
     }));
     this.rateResult = [...this.bookingRateArr];
+     if (
+      this.isEditMode &&
+      this.bookingRateArr?.some(rate =>
+        rate.CostVoucherHeaderSid !== null || rate.RevenueVoucherHeaderSid !== null
+      )
+    ) {
+      this.houseJobForm.get('status')?.disable();
+    }
     this.syncFormValueWithRateComponent();
     this.calculateChargeWiseProfit();
     this.calculateCustomerWiseAmount();
@@ -2480,6 +2504,39 @@ onCurrencyChange(event: any) {
     }
   }
 
+  const cargoSid = cargoFormValue.HouseJobCargoSid || null;
+  const mappedHouseJobProducts = (detailFormValue.bookingProducts || []).map((product: any) => ({
+      HouseJobProductSid: product.HouseJobProductSid || null,
+      HouseJobCargoSid: product.HouseJobCargoSid || cargoSid,
+      ProductName: product.ProductName || '',
+      ShippingBillNo: product.ShippingBillNo || '',
+      ShippingBillDate: product.ShippingBillDate,
+      ExternaPkg: product.ExternaPkg || null,
+      ExternlQty: String(product.ExternlQty),
+      GrossWeight: parseFloat(product.GrossWeight) || 0,
+      NetWeight: parseFloat(product.NetWeight) || 0,
+      Volume: parseFloat(product.Volume) || 0,
+      Volumetric: parseFloat(product.Volumetric) || 0,
+      IsHaz: product.IsHaz ? 'Y' : 'N',
+      ImcoClass: product.ImcoClass || '',
+      UnNo: String(product.UnNo ?? ''),
+      PkgGroup: product.PkgGroup || '',
+      Length: parseFloat(product.Length),
+      Width: parseFloat(product.Width),
+      Height: parseFloat(product.Height),
+      UomMasterSid: product.UomMasterSid,
+      HSCode: product.HSCode,
+      CargoRecDate: product.CargoRecDate,
+      DamageQty: product.DamageQty,
+      ReceivedQty: product.ReceivedQty,
+      DamageRemarks: product.DamageRemarks,
+      MasterJobContainerSid: product.MasterJobContainerSid || null,
+      ContainerNo: product.ContainerNo,
+      MarksAndNumbers: product.MarksAndNumbers,
+      DeliveryDate: product.DeliveryDate,
+      DeliveredQty: product.DeliveredQty,
+  }));
+
   const payload = {
     // Master Job fields (for MasterJob table)
     MasterJobSid: Number(houseJobFormValue.MasterJobSid) || null,
@@ -2543,7 +2600,7 @@ onCurrencyChange(event: any) {
     
     // Related data
     houseJobCargo: {
-      HouseJobCargoSid: cargoFormValue.HouseJobCargoSid || null,
+      HouseJobCargoSid: cargoSid,
       CargoType: cargoFormValue.CargoType || 'General',
       ContainerType: cargoFormValue.ContainerType || null,
       NoofContainers: parseFloat(cargoFormValue.NoofContainers) || 0,
@@ -2561,6 +2618,8 @@ onCurrencyChange(event: any) {
       FreightTerms: cargoFormValue.FreightTerms || null,
       ModeOfTransport: cargoFormValue.ModeOfTransport || null,
       StuffingAt: cargoFormValue.StuffingAt || 'Dock',
+      bookingProducts: mappedHouseJobProducts,
+      products: mappedHouseJobProducts
     },
     
     houseJobOthers: {
@@ -2611,36 +2670,7 @@ onCurrencyChange(event: any) {
       GeneralNote: otherFormValue?.GeneralNote || ''
     },
     
-    houseJobProduct: detailFormValue.bookingProducts.map((product: any) => ({
-      HouseJobProductSid: product.HouseJobProductSid || null,
-      ProductName: product.ProductName || '',
-      ShippingBillNo: product.ShippingBillNo || '',
-      ShippingBillDate: product.ShippingBillDate,
-      ExternaPkg: product.ExternaPkg || null,
-      ExternlQty: String(product.ExternlQty),
-      GrossWeight: parseFloat(product.GrossWeight) || 0,
-      NetWeight: parseFloat(product.NetWeight) || 0,
-      Volume: parseFloat(product.Volume) || 0,
-      Volumetric: parseFloat(product.Volumetric) || 0,
-      IsHaz: product.IsHaz ? 'Y' : 'N',
-      ImcoClass: product.ImcoClass || '',
-      UnNo: String(product.UnNo) || '',
-      PkgGroup: product.PkgGroup || '',
-      Length: parseFloat(product.Length),
-      Width: parseFloat(product.Width),
-      Height: parseFloat(product.Height),
-      UomMasterSid: product.UomMasterSid,
-      HSCode: product.HSCode,
-      CargoRecDate: product.CargoRecDate,
-      DamageQty: product.DamageQty,
-      ReceivedQty: product.ReceivedQty,
-      DamageRemarks: product.DamageRemarks,
-      MasterJobContainerSid: product.MasterJobContainerSid || null,
-      ContainerNo: product.ContainerNo,
-      MarksAndNumbers: product.MarksAndNumbers,
-      DeliveryDate: product.DeliveryDate,
-      DeliveredQty: product.DeliveredQty,
-    })),
+    houseJobProduct: mappedHouseJobProducts,
     houseJobBOE: boeData,
     houseJobVehicle: vehicleData,
     houseJobCustoms: customsData,
@@ -5880,7 +5910,30 @@ loadMawbStock(data: any): void {
   });
 }
 
+private disableAllForms(): void {
+    Object.keys(this.houseJobForm.controls).forEach(key => {
+      if (!['status'].includes(key)) {
+        this.houseJobForm.get(key)?.disable();
+      }
+    });
 
+    Object.keys(this.otherForm.controls).forEach(key => {
+      this.otherForm.get(key)?.disable();
+    });
+
+    Object.keys(this.cargoForm.controls).forEach(key => {
+    this.cargoForm.get(key)?.disable();
+  });
+
+  this.bookingProducts.controls.forEach((productGroup: AbstractControl) => {
+    const group = productGroup as FormGroup;
+    Object.keys(group.controls).forEach(key => {
+      group.get(key)?.disable();
+    });
+  });
+
+    this.isFormDisabled = true;
+  }
 
 }
 
