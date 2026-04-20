@@ -206,8 +206,11 @@
                     <div class="data-field chargeable-weight">
                         {{ masterAirWayData?.aggregatedTotals?.ChargeableWeight | number:'1.3-3' }}
                     </div>
-                    <div class="data-field rate-charge">
+                    <!-- <div class="data-field rate-charge">
                         {{ getFreightTotals().totalExchangeRate | number:'1.2-2'}}
+                    </div> -->
+                      <div class="data-field rate-charge">
+                        {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.IATARate | number:'1.2-2' }}
                     </div>
                     <div class="data-field total-charge">
                         {{ getFreightTotals().totalRevenueAmount | number:'1.2-2'}}
@@ -235,6 +238,7 @@
                     <!-- <div class="data-field total-rate">
                         {{ getFreightTotals().totalExchangeRate | number:'1.2-2' }}
                     </div> -->
+                  
                     <div class="data-field total-amount">
                         {{ getFreightTotals().totalRevenueAmount | number:'1.2-2' }}
                     </div>
@@ -307,7 +311,7 @@
                         {{ masterAirWayData?.MBLDate |  date:'dd-MMM-yyyy HH:mm' }}
                     </div>
                     <div class="data-field execution-place">
-                        {{ currentCountryName }}
+                        {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.PlaceOfSupply }}
                     </div>
                     <div class="data-field execution-signature">
                         {{ getAgentName(masterAirWayData?.DestinationAgent) }}

@@ -1478,7 +1478,7 @@ getOtherPrepaidTotal(): number {
       field(206, -250, agg?.NoOfPkg?.toString() || '', { width: 20, alignment: 'center' }),
       field(206, -210, fmtNum(agg?.GrossWeight, 3), { width: 25, alignment: 'center' }),
       field(206, -72, fmtNum(agg?.ChargeableWeight, 3), { width: 30, alignment: 'center' }),
-      field(206, -15, fmtNum(freightTotals.totalExchangeRate), { width: 25, alignment: 'center' }),
+      field(206, -15, fmtNum(others?.IATARate, 3), { width: 25, alignment: 'center' }),
       field(206, 50, fmtNum(freightTotals.totalRevenueAmount), { width: 25, alignment: 'center' }),
       wrapField(206, 185, goodsDesc,  95 , {fontSize: 8}),
       wrapField(220, 10, hj?.GeneralNote || '', 70, { fontSize: 8 }),
@@ -1511,7 +1511,7 @@ getOtherPrepaidTotal(): number {
 
       // Execution info
       field(370, -17, fmtDateTime(data?.MBLDate), { width: 40, alignment: 'center' }),
-      field(370, 84, this.currentCountryName?.toString() || '', { alignment: 'center' }),
+      field(370, 100,others?.PlaceOfSupply || '', { alignment: 'center' }),
       field(370, 200, this.getAgentName(data?.DestinationAgent), { width: 60, alignment: 'center' }),
 
       // Bottom MAWB number

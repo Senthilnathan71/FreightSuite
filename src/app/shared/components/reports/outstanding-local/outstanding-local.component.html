@@ -109,9 +109,7 @@
                             </td> -->
 
                             <td style="text-align: right;">
-                                  {{ fullData?.transactions?.[fullData.transactions.length -
-                            1]?.currencyWiseCumulative
-                            | number:'1.2-2' }}
+                                {{ getGroupCurrencyCumulative(group.transactions) | number:'1.2-2' }}
                             </td>
 
 
@@ -157,7 +155,7 @@
                 <thead>
                     <tr class="bg-info text-white">
                         <th class="bg-transparent text-light text-center">Currency</th>
-                        <th class="bg-transparent text-light text-center">Total Outstanding [{{currentCurrencyCode}}]
+                        <th class="bg-transparent text-light text-center">Total Outstanding
                         </th>
                         <th class="bg-transparent text-light text-center">0 - 30 Days</th>
                         <th class="bg-transparent text-light text-center">31 - 60 Days</th>

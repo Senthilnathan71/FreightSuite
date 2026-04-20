@@ -44,7 +44,7 @@
               Edit
             </button>
             <button *ngIf="showShipmentInstruction && isEditMode" type="button"
-              class="btn btn-info btn-sm text-nowrap" (click)="sendManualMail()">
+              class="btn btn-info btn-sm dofi-min-w-100 dofi-max-w-100" (click)="sendManualMail()">
               <i class="fas fa-envelope me-1"></i> Send Mail
             </button>
             <button *ngIf="showShipmentInstruction && isEditMode" type="button"
@@ -179,8 +179,8 @@
       <div class="card-body py-3 px-3">
         <h6 class="fw-bold mb-3">Multiple House Jobs found for MBL No: <span class="text-info">{{searchHbl}}</span> — Select one to view</h6>
         <div class="table-responsive">
-          <table class="table table-bordered table-hover mb-0">
-            <thead class="table-light">
+          <table class="table table-borderless table-hover mb-0">
+            <thead class="house-table">
               <tr>
                 <th class="small">#</th>
                 <th class="small">HBL No</th>
@@ -195,7 +195,7 @@
               <tr *ngFor="let result of searchResults; let i = index" (click)="selectHouseJob(result)"
                 style="cursor: pointer;">
                 <td>{{i + 1}}</td>
-                <td>{{result.HBLNo || '-'}}</td>
+                <td class="text-info">{{result.HBLNo || '-'}}</td>
                 <td>{{result.ShipmentNo || '-'}}</td>
                 <td>{{result.CustomerName || '-'}}</td>
                 <td>{{result.ShipperName || '-'}}</td>
@@ -212,48 +212,48 @@
   <!-- Bill of Lading Format Section -->
   <div class="col-12" *ngIf="showShipmentInstruction">
     <div class="card h-100 mb-0">
-      <div class="card-body">
+      <div class="card-body p-0">
         <!-- BL Header -->
-        <div class="bl-container border " [ngClass]="{'edit-mode': isEditMode, 'view-mode': !isEditMode}">
+        <div class="bl-container " [ngClass]="{'edit-mode': isEditMode, 'view-mode': !isEditMode}">
           <!-- Top Section -->
           <div class="row g-0">
             <!-- Left Column -->
             <div class="col-md-6 border-end">
               <!-- Shipper/Exporter -->
               <div class="bl-section border-bottom p-1">
-                <label class="bl-label fw-bold mb-1">Shipper/Exporter(Complete Name and Address)</label>
+                <label class="bl-label  mb-1">Shipper/Exporter(Complete Name and Address)</label>
                 <div class="editable-field-group">
-                  <input type="text" class="form-control border-0 bg-transparent fw-bold mb-1 editable-field"
-                    [(ngModel)]="shipmentData.shipper.name" [readonly]="!isEditMode" placeholder="Company Name">
+                  <input type="text" class="form-control border-0 bg-transparent  mb-1 editable-field"
+                    [(ngModel)]="shipmentData.shipper.name" [readonly]="!isEditMode" placeholder="">
                   <textarea class="form-control border-0 bg-transparent editable-field"
                     [(ngModel)]="shipmentData.shipper.address" [readonly]="!isEditMode" rows="3"
-                    placeholder="Complete Address" style="resize: none;"></textarea>
+                    placeholder="" style="resize: none;"></textarea>
                 </div>
               </div>
 
               <!-- Consignee -->
               <div class="bl-section border-bottom p-1">
-                <label class="bl-label fw-bold mb-1">Consignee(Name and Address) Not Negotiable Unless Consigned To
+                <label class="bl-label  mb-1">Consignee(Name and Address) Not Negotiable Unless Consigned To
                   Order</label>
                 <div class="editable-field-group">
-                  <input type="text" class="form-control border-0 bg-transparent fw-bold mb-1 editable-field"
-                    [(ngModel)]="shipmentData.consignee.name" [readonly]="!isEditMode" placeholder="Consignee Name">
+                  <input type="text" class="form-control border-0 bg-transparent  mb-1 editable-field"
+                    [(ngModel)]="shipmentData.consignee.name" [readonly]="!isEditMode" placeholder="">
                   <textarea class="form-control border-0 bg-transparent editable-field"
                     [(ngModel)]="shipmentData.consignee.address" [readonly]="!isEditMode" rows="3"
-                    placeholder="Consignee Address" style="resize: none;"></textarea>
+                    placeholder="" style="resize: none;"></textarea>
                 </div>
               </div>
 
               <!-- Notify Party -->
               <div class="bl-section p-1">
-                <label class="bl-label fw-bold mb-1">Notify Party(Name and Address)</label>
+                <label class="bl-label  mb-1">Notify Party(Name and Address)</label>
                 <div class="editable-field-group">
-                  <input type="text" class="form-control border-0 bg-transparent fw-bold mb-1 editable-field"
+                  <input type="text" class="form-control border-0 bg-transparentmb-1 editable-field"
                     [(ngModel)]="shipmentData.notifyParty.name" [readonly]="!isEditMode"
-                    placeholder="Notify Party Name">
+                    placeholder="">
                   <textarea class="form-control border-0 bg-transparent editable-field"
                     [(ngModel)]="shipmentData.notifyParty.address" [readonly]="!isEditMode" rows="3"
-                    placeholder="Notify Party Address" style="resize: none;"></textarea>
+                    placeholder="" style="resize: none;"></textarea>
                 </div>
               </div>
             </div>
@@ -264,15 +264,15 @@
               <div class="bl-section border-bottom p-1">
                 <div class="row">
                   <div class="col-md-6">
-                    <label class="bl-label fw-bold mb-1">Bill Of Lading No</label>
-                    <input type="text" class="form-control border-0 bg-transparent fw-bold editable-field"
-                      [(ngModel)]="shipmentData.billOfLadingNo" [readonly]="!isEditMode" placeholder="Enter BL Number">
+                    <label class="bl-label mb-1">Bill of Lading No</label>
+                    <input type="text" class="form-control border-0 bg-transparent editable-field"
+                      [(ngModel)]="shipmentData.billOfLadingNo" [readonly]="!isEditMode" placeholder="">
                   </div>
                   <div class="col-md-6">
-                    <label class="bl-label fw-bold mb-1">Export Reference</label>
+                    <label class="bl-label mb-1">Export Reference</label>
                     <input type="text" class="form-control border-0 bg-transparent editable-field"
                       [(ngModel)]="shipmentData.exportReference" [readonly]="!isEditMode"
-                      placeholder="Export Reference">
+                      placeholder="">
                   </div>
                 </div>
 
@@ -282,32 +282,32 @@
 
               <!-- BL Title and Description -->
               <div class="bl-section border-bottom p-1">
-                <h6 class="text-start fw-bold text-primary mb-2">BILL OF LADING(FOR COMBINED TRANSPORT OR PORT TO PORT
+                <h6 class="text-start fw-bold text-info mb-2">BILL OF LADING(FOR COMBINED TRANSPORT OR PORT TO PORT
                   SHIPMENT)</h6>
-                <p class="small mb-1">
+                <p class="small mb-1 text-black">
                   <strong>RECEIVED</strong> by the carrier the Goods as specified below in apparent good order and
                   condition unless otherwise stated, to be transported to such place as agreed, authorised or permitted
                   herein and subject to all the terms and conditions appearing on the front and reverse of this Bill of
                   Lading, any local privileges and customs notwithstanding.
                 </p>
-                <p class="small mb-2">
+                <p class="small mb-2 text-black">
                   The Particulars given above as stated by the shipper and the weight, measure, quantity, condition,
                   contents and value of the Goods are unknown to the carrier.
                 </p>
-                <label class="bl-label fw-bold">Delivery Agent</label>
+                <label class="bl-label ">Delivery Agent</label>
                 <input type="text" class="form-control border-0 bg-transparent editable-field"
-                  [(ngModel)]="shipmentData.deliveryAgent" [readonly]="!isEditMode" placeholder="Delivery Agent">
+                  [(ngModel)]="shipmentData.deliveryAgent" [readonly]="!isEditMode" placeholder="">
               </div>
 
               <!-- Notify2 -->
               <div class="bl-section p-1">
-                <label class="bl-label fw-bold mb-1">Notify2</label>
+                <label class="bl-label  mb-1">Notify2</label>
                 <div class="editable-field-group">
-                  <input type="text" class="form-control border-0 bg-transparent fw-bold mb-1 editable-field"
-                    placeholder="ENTER NOTIFY PARTY NAME" [(ngModel)]="shipmentData.notifyParty2.name"
+                  <input type="text" class="form-control border-0 bg-transparent  mb-1 editable-field"
+                    placeholder="" [(ngModel)]="shipmentData.notifyParty2.name"
                     [readonly]="!isEditMode">
                   <textarea class="form-control border-0 bg-transparent editable-field"
-                    placeholder="NOTIFY PARTY ADDRESS" [(ngModel)]="shipmentData.notifyParty2.address"
+                    placeholder="" [(ngModel)]="shipmentData.notifyParty2.address"
                     [readonly]="!isEditMode" rows="2" style="resize: none;"></textarea>
                 </div>
               </div>
@@ -317,49 +317,46 @@
           <!-- Middle Section - Transport Details -->
           <div class="row g-0 border-top">
             <div class="col-3 border-end p-1">
-              <label class="bl-label fw-bold small">Vessel/Voy No</label>
+              <label class="bl-label  small">Vessel/Voy No</label>
               <input type="text" class="form-control border-0 bg-transparent small editable-field"
-                [(ngModel)]="shipmentData.vesselVoyNo" [readonly]="!isEditMode" placeholder="Vessel/Voyage No">
+                [(ngModel)]="shipmentData.vesselVoyNo" [readonly]="!isEditMode" placeholder="">
             </div>
             <div class="col-3 border-end p-1">
-              <label class="bl-label fw-bold small">Place of Receipt</label>
+              <label class="bl-label  small">Place of Receipt</label>
               <input type="text" class="form-control border-0 bg-transparent small editable-field"
-                [(ngModel)]="shipmentData.placeOfReceipt" [readonly]="!isEditMode" placeholder="Place of Receipt">
+                [(ngModel)]="shipmentData.placeOfReceipt" [readonly]="!isEditMode" placeholder="">
             </div>
             <div class="col-3 border-end p-1">
-              <label class="bl-label fw-bold small">Port of Discharge</label>
+              <label class="bl-label  small">Port of Discharge</label>
               <input type="text" class="form-control border-0 bg-transparent small editable-field"
-                [(ngModel)]="shipmentData.portOfDischarge" [readonly]="!isEditMode" placeholder="Port of Discharge">
+                [(ngModel)]="shipmentData.portOfDischarge" [readonly]="!isEditMode" placeholder="">
             </div>
             <div class="col-3 p-1">
-              <label class="bl-label fw-bold small">Place of Delivery</label>
+              <label class="bl-label  small">Place of Delivery</label>
               <input type="text" class="form-control border-0 bg-transparent small editable-field"
-                [(ngModel)]="shipmentData.placeOfDelivery" [readonly]="!isEditMode" placeholder="Place of Delivery">
+                [(ngModel)]="shipmentData.placeOfDelivery" [readonly]="!isEditMode" placeholder="">
             </div>
           </div>
 
           <!-- Bottom Section - BL Details -->
           <div class="row g-0 border-top">
             <div class="col-3 border-end p-1">
-              <label class="bl-label fw-bold small">Number of Original BL</label>
+              <label class="bl-label  small">Number of Original BL</label>
               <div class="d-flex gap-2">
-                <select class="form-control border-0 bg-transparent small editable-field"
-                  [(ngModel)]="shipmentData.releaseType" [disabled]="!isEditMode">
-                  <option>Draft</option>
-                  <option>Original</option>
-                </select>
+                <input type="number" class="form-control border-0 bg-transparent small editable-field"
+                  [(ngModel)]="shipmentData.noOfOriginal" [readonly]="!isEditMode" min="0">
               </div>
             </div>
             <div class="col-3 border-end p-1">
-              <label class="bl-label fw-bold small">Port of Loading</label>
+              <label class="bl-label  small">Port of Loading</label>
               <input type="text" class="form-control border-0 bg-transparent small editable-field"
-                [(ngModel)]="shipmentData.portOfLoading" [readonly]="!isEditMode" placeholder="Port of Loading">
+                [(ngModel)]="shipmentData.portOfLoading" [readonly]="!isEditMode" placeholder="">
             </div>
           </div>
 
           <!-- Container Details Table -->
           <div class="border-top">
-            <h6 class="text-center fw-bold py-2 mb-0 bg-light">Particulars Furnished By Shipper</h6>
+            <h6 class=" p-2 mb-0 bg-light">Particulars Furnished By Shipper</h6>
             <div class="table-responsive">
               <table class="table table-borderless mb-0">
                 <thead class="table-light">
@@ -375,7 +372,7 @@
                 </thead>
                 <tbody>
                   <tr *ngFor="let container of shipmentData.containers; let i = index">
-                    <td>{{i+1}}</td>
+                    <td class="text-center">{{i+1}}</td>
                     <td>
                       <input type="text" class="form-control border-0 bg-transparent small editable-field"
                         [(ngModel)]="container.containerNo" [readonly]="!isEditMode" placeholder="">
@@ -423,17 +420,17 @@
               <div class="row">
                 <div class="col-md-6">
                   <div class="p-1">
-                    <label class="bl-label fw-bold small">Freight Payable at</label>
+                    <label class="bl-label  small">Freight Payable at</label>
                     <input type="text" class="form-control border-0 bg-transparent small editable-field"
                       [(ngModel)]="shipmentData.freightPayableAt" [readonly]="!isEditMode"
-                      placeholder="Freight Payable at">
+                      placeholder="">
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="p-1">
-                    <label class="bl-label fw-bold small">Type of Service</label>
+                    <label class="bl-label  small">Inco Terms</label>
                     <input type="text" class="form-control border-0 bg-transparent small editable-field"
-                      [(ngModel)]="shipmentData.typeOfService" [readonly]="!isEditMode" placeholder="Type of Service">
+                      [(ngModel)]="shipmentData.typeOfService" [readonly]="!isEditMode" placeholder="">
                   </div>
                 </div>
               </div>
@@ -444,18 +441,18 @@
               <div class="row">
                 <div class="col-md-6">
                   <div class="p-1">
-                    <label class="bl-label fw-bold small">Shipped On Board</label>
+                    <label class="bl-label  small">Shipped On Board</label>
                     <input class="form-control border-0 bg-transparent small editable-field"
                       [(ngModel)]="shipmentData.shippedOnBoard" [readonly]="!isEditMode" rows="1" style="resize: none;"
-                      placeholder="Shipped On Board" />
+                      placeholder="" />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="p-1">
-                    <label class="bl-label fw-bold small">Place and Date of Issue</label>
+                    <label class="bl-label  small">Place and Date of Issue</label>
                     <input class="form-control border-0 bg-transparent small editable-field"
                       [(ngModel)]="shipmentData.placeAndDateOfIssue" [readonly]="!isEditMode" rows="1"
-                      style="resize: none;" placeholder="Place and Date of Issue" />
+                      style="resize: none;" placeholder="" />
                   </div>
                 </div>
               </div>
@@ -474,29 +471,29 @@
 
           <!-- Rider BL Section -->
           <div class="border-top">
-            <h6 class="text-center fw-bold py-2 mb-0 bg-light">Rider BL</h6>
+            <h6 class=" p-2 mb-0 bg-light">Rider BL</h6>
             <div class="row g-0">
               <div class="col-6 border-end p-1">
-                <label class="bl-label fw-bold small">Rider Marks No</label>
+                <label class="bl-label  small">Rider Marks No</label>
                 <input class="form-control border-0 bg-transparent small editable-field"
                   [(ngModel)]="shipmentData.riderMarksNo" [readonly]="!isEditMode" rows="3" style="resize: none;"
-                  placeholder="Rider Marks No" />
+                  placeholder="R" />
               </div>
               <div class="col-6 p-1">
-                <label class="bl-label fw-bold small">Rider Desc</label>
+                <label class="bl-label  small">Rider Desc</label>
                 <input class="form-control border-0 bg-transparent small editable-field"
                   [(ngModel)]="shipmentData.riderDesc" [readonly]="!isEditMode" rows="3" style="resize: none;"
-                  placeholder="Rider Description" />
+                  placeholder="" />
               </div>
             </div>
           </div>
 
           <!-- Remarks Section -->
           <div class="border-top">
-            <h6 class="text-center fw-bold py-2 mb-0 bg-light">Remarks</h6>
+            <h6 class=" p-2 mb-0 bg-light">Remarks</h6>
             <div class="p-2">
               <textarea class="form-control editable-field" [(ngModel)]="remarks" [readonly]="!isEditMode" rows="3"
-                placeholder="Enter remarks..." style="resize: none;"></textarea>
+                placeholder="" style="resize: none;"></textarea>
             </div>
           </div>
         </div>

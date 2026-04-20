@@ -90,6 +90,11 @@ export class OutstandingLocalComponent {
     }, 0);
   }
 
+  getGroupCurrencyCumulative(transactions: any[]): number {
+    if (!transactions || transactions.length === 0) return 0;
+    return Number(transactions[transactions.length - 1]?.currencyWiseCumulative) || 0;
+  }
+
 
   get fullData(): any {
     return this.data || {};
@@ -310,7 +315,7 @@ export class OutstandingLocalComponent {
             ),
             colspan: 4
           },
-          { value: 'Total', colspan: 1 , alignment:{horizontal:'right'} },
+          { value: 'Total', colspan: 1 , alignment:{horizontal:'center'} },
 
           {
             value: this.formatNumber(
@@ -323,7 +328,7 @@ export class OutstandingLocalComponent {
             )
           },
 
-          {value: this.formatNumber(this.fullData?.transactions?.[this.fullData.transactions.length - 1]?.currencyWiseCumulative)},
+          { value: this.formatNumber(this.getGroupCurrencyCumulative(group.transactions)) },
           { value: '', colspan: 1 }
         ],
         style: 'total'
@@ -334,7 +339,7 @@ export class OutstandingLocalComponent {
 
     const summaryHeaders = [
       'Currency',
-      `Total Outstanding [${this.currentCurrencyCode}]`,
+      `Total Outstanding`,
       '0 - 30 Days',
       '31 - 60 Days',
       '61 - 90 Days',

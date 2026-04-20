@@ -120,7 +120,7 @@ export class PaymentRequestListComponent extends BaseListComponent implements On
           sortable: true,
           filterable: true,
           visible: true,
-          width: '130px',
+        
         },
         {
           key: 'PaymentRequestDate',
@@ -136,7 +136,6 @@ export class PaymentRequestListComponent extends BaseListComponent implements On
           sortable: true,
           filterable: true,
           visible: true,
-          width: '190px',
           cellClass: 'text-truncate'
         },
         {
@@ -145,7 +144,7 @@ export class PaymentRequestListComponent extends BaseListComponent implements On
           sortable: true,
           filterable: true,
           visible: true,
-          width: '190px',
+         
           cellClass: 'text-truncate'
         },
         {
@@ -158,7 +157,7 @@ export class PaymentRequestListComponent extends BaseListComponent implements On
         },
         {
           key: 'CurrencyCode',
-          label: 'Currency',
+          label: 'Cur',
           sortable: true,
           filterable: true,
           visible: true,

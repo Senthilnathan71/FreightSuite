@@ -477,7 +477,6 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 filterable: true,
                 visible: true,
                 dataType: 'string',
-                width: '100px'
             },
             {
                 key: 'CustomerName',
@@ -486,7 +485,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 filterable: true,
                 visible: true,
                 dataType: 'string',
-                width: '200px'
+                
             },
             {
                 key: 'POL',

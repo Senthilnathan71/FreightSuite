@@ -60,6 +60,7 @@ export class ShipmentInstructionComponent {
     portOfDischarge: '',
     placeOfDelivery: '',
     releaseType: 'Draft',
+    noOfOriginal: '',
     freightPayableAt: '',
     typeOfService: '',
     shippedOnBoard: '',
@@ -71,6 +72,7 @@ export class ShipmentInstructionComponent {
 
   packageTypeMap: { [key: string]: string } = {};
   portList: any
+  agentList: any[] = [];
   userData: any;
   currentCompany: any;
   currentBranch: any;
@@ -88,6 +90,7 @@ export class ShipmentInstructionComponent {
     this.userData = this.appSettingService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.loadAllAgents(this.currentCompany?.CompanyMasterSid);
   }
 
   loadPublicSIData(token: string) {
@@ -95,7 +98,9 @@ export class ShipmentInstructionComponent {
       next: (resp: any) => {
         if (resp.status) {
           this.bookingResponse = resp.data;
+          this.loadAllAgents(resp.data?.CompanyMasterSid);
           this.shipmentData = this.initializeShipmentData(resp.data);
+          this.loadMasterJobNoOfOriginal(resp.data);
           this.showShipmentInstruction = true;
           this.isEditMode = false;
           this.siConfirmed = resp.data.SIStatus === 'Confirmed';
@@ -125,6 +130,23 @@ export class ShipmentInstructionComponent {
     )
   }
 
+  loadAllAgents(companyMasterSid: number) {
+    if (!companyMasterSid) return;
+
+    this.operationService.getAllAgents(companyMasterSid).subscribe({
+      next: (resp: any) => {
+        this.agentList = Array.isArray(resp) ? resp : [];
+
+        if (this.bookingResponse) {
+          this.shipmentData.deliveryAgent = this.getDeliveryAgentName(this.bookingResponse);
+        }
+      },
+      error: (error) => {
+        console.error('Error loading agents', error);
+      }
+    });
+  }
+
   initializeShipmentData(bookingData?: any) {
     if (!bookingData) {
       return {
@@ -141,6 +163,7 @@ export class ShipmentInstructionComponent {
         portOfDischarge: '',
         placeOfDelivery: '',
         releaseType: 'Draft',
+        noOfOriginal: '',
         freightPayableAt: '',
         typeOfService: '',
         shippedOnBoard: '',
@@ -191,13 +214,14 @@ export class ShipmentInstructionComponent {
       },
       billOfLadingNo: data.HBLNo || '',
       exportReference: data.BookingNo || '',
-      deliveryAgent: data.CustomerName || data.AgentName || '',
+      deliveryAgent: this.getDeliveryAgentName(data),
       vesselVoyNo: `${data.VesselName || ''} / ${data.VoyageNo || ''}`.replace(' / ', ' / ').trim(),
       placeOfReceipt: getPortName(data.POO),
       portOfLoading: getPortName(data.POL),
       portOfDischarge: getPortName(data.POD),
       placeOfDelivery: getPortName(data.FPD),
       releaseType: bookingOthers.ReleaseType || 'Draft',
+      noOfOriginal: this.getNoOfOriginal(data),
       freightPayableAt: getPortName(data.POD),
       typeOfService: data.IncoTerms || '',
       shippedOnBoard: formatDate(data.ETD),
@@ -206,6 +230,95 @@ export class ShipmentInstructionComponent {
       riderDesc: '',
       containers: this.mapContainerData(data)
     };
+  }
+
+  private getFirstAvailable(...values: any[]): any {
+    return values.find((value) => value !== undefined && value !== null && value !== '');
+  }
+
+  private getNoOfOriginal(data: any): any {
+    return this.getFirstAvailable(
+      data?.masterJob?.NoofOriginal,
+      data?.masterJob?.NoOfOriginal,
+      data?.masterJob?.noOfOriginal,
+      data?.masterJobData?.NoofOriginal,
+      data?.masterJobData?.NoOfOriginal,
+      data?.MasterJob?.NoofOriginal,
+      data?.MasterJob?.NoOfOriginal,
+      data?.NoofOriginal,
+      data?.NoOfOriginal,
+      data?.noOfOriginal,
+      data?.Others?.[0]?.NoofOriginal,
+      data?.Others?.[0]?.NoOfOriginal
+    ) ?? '';
+  }
+
+  private getDeliveryAgentName(data: any): string {
+    const directName = this.getFirstAvailable(
+      data?.DestinationAgentName,
+      data?.destinationAgentName,
+      data?.DeliveryAgentName,
+      data?.deliveryAgentName,
+      data?.AgentName
+    );
+
+    if (directName) {
+      return directName;
+    }
+
+    const destinationAgentSid = this.getFirstAvailable(
+      data?.DestinationAgent,
+      data?.destinationAgent,
+      data?.masterJob?.DestinationAgent,
+      data?.masterJobData?.DestinationAgent,
+      data?.MasterJob?.DestinationAgent
+    );
+
+    const matchedAgent = this.agentList.find((agent: any) =>
+      String(agent?.CustomerMasterSid) === String(destinationAgentSid)
+    );
+
+    return matchedAgent?.CustomerName || '';
+  }
+
+  private getMasterJobSid(data: any): number | null {
+    const masterJobSid = this.getFirstAvailable(
+      data?.MasterJobSid,
+      data?.masterJobSid,
+      data?.masterJob?.MasterJobSid,
+      data?.masterJob?.masterJobSid,
+      data?.masterJobData?.MasterJobSid,
+      data?.MasterJob?.MasterJobSid
+    );
+
+    const parsedSid = Number(masterJobSid);
+    return Number.isFinite(parsedSid) && parsedSid > 0 ? parsedSid : null;
+  }
+
+  private loadMasterJobNoOfOriginal(houseJobData: any): void {
+    if (this.shipmentData.noOfOriginal !== '') {
+      return;
+    }
+
+    const masterJobSid = this.getMasterJobSid(houseJobData);
+    if (!masterJobSid) {
+      console.warn('MasterJobSid not found for NoofOriginal lookup', houseJobData);
+      return;
+    }
+
+    this.operationService.getMasterJobById({
+      screenName: 'Master Job',
+      MasterJobSid: masterJobSid
+    }).subscribe({
+      next: (resp: any) => {
+        if (resp?.status && resp?.data) {
+          this.shipmentData.noOfOriginal = this.getNoOfOriginal(resp.data);
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load master job NoofOriginal', err);
+      }
+    });
   }
 
   private toNumber(value: any): number {
@@ -266,7 +379,7 @@ export class ShipmentInstructionComponent {
         containers.push({
           containerNo: this.getContainerNumberForProduct(data, product),
           marksAndNos: cargo?.MarksAndNumber || product?.MarksAndNumber || '',
-          descriptionOfGoods: cargo?.CommodityDescription || product?.ProductDescription || product?.ProductName || '',
+          descriptionOfGoods: cargo?.CommodityDescription,
           packCount: this.toNumber(product.ExternlQty || product.NoOfPackage),
           packType: this.getPackageType(product.ExternaPkg) || 'Cartons',
           grossWeight: this.toNumber(product.GrossWeight),
@@ -352,6 +465,7 @@ export class ShipmentInstructionComponent {
     this.isEditMode = false;
     this.remarks = '';
     this.shipmentData = this.initializeShipmentData(houseJobData);
+    this.loadMasterJobNoOfOriginal(houseJobData);
   }
 
   toggleEditMode() {

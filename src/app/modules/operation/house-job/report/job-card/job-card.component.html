@@ -403,10 +403,10 @@
                         <tr *ngFor="let item of housejobData?.costRevenueCharges">
                             <td style="border:1px solid black; padding:2px 8px;">{{ getChargeName(item.ChargeMasterSid) || item?.ChargeDescription
                                 }}</td>
-                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">
+                            <td style="border:1px solid black; padding:2px 8px; text-align:center;">
                                 {{
                                 getUnitCode(item.ChargeUomSid) }}</td>
-                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
+                            <td style="border:1px solid black; padding:2px 8px; text-align:center;">{{
                                 getCurrencyName(item.RevenueCurrencyMasterSid || item.CostCurrencyMasterSid) }}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
                                 item.RevenueExchangeRate | number:'1.3-3'}}</td>
@@ -414,7 +414,7 @@
                                 item.RevenueRate | number:'1.2-2'}}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
                                 item.RevenueLocalAmount | number:'1.2-2' }}</td>
-                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
+                            <td style="border:1px solid black; padding:2px 8px; text-align:center;">{{
                                 getCurrencyName(item.CostCurrencyMasterSid) }}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
                                 item.CostExchangeRate | number:'1.3-3' }}</td>

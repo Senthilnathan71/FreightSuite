@@ -9,15 +9,16 @@
   }
 
   .bl-label {
-    font-size: 11px;
+    font-size: 12px;
     color: #333;
     margin-bottom: 2px;
+    font-weight: 800;
   }
 
   .form-control.border-0 {
     border: none !important;
     padding: 2px 4px;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.3;
 
     &:focus {
@@ -45,7 +46,7 @@
   }
 
   .table {
-    font-size: 11px;
+    font-size: 12px;
 
     th, td {
       padding: 4px;
@@ -64,10 +65,16 @@
       height: auto;
       padding: 2px 4px;
     }
+      .house-table{
+        background-color: #05608d;
+        color: #ffffff;
+      }
+
   }
 
+
   .small {
-    font-size: 11px !important;
+    font-size: 12px !important;
   }
 
   // Print styles for better formatting
@@ -182,12 +189,14 @@
     background: transparent !important;
     padding-left: 2px;
     color: #333;
+    font-weight: 600;
   }
 
   .editable-field[disabled] {
     border: none !important;
     background: transparent !important;
     color: #333;
+    font-weight: 600;
   }
 }
 

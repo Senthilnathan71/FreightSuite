@@ -2750,8 +2750,10 @@ loadMawbStock(data: any): void {
   }
 
   onReset(): void {
+  if (this.isEditMode) {
+    return; 
+  }
     this.formSubmitted = false;
-    this.isEditMode = false; 
     this.masterJobForm.reset({
       BLReleaseType: 'Original',
       NoofOriginal: 3,
