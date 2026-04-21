@@ -824,13 +824,13 @@
                                             <div class="d-flex justify-content-end mt-2">
                                                 <button class="btn btn-sm btn-info ms-auto"
                                                 *ngIf="isEditMode"
-                                                    (click)="openAttachModal()"><i class="fas fa-paperclip"></i> Attach
+                                                    (click)="openAttachModal()" [disabled]="isSuspended"><i class="fas fa-paperclip"></i> Attach
                                                     Booking</button>
 
 
                                                 <button class="btn btn-sm btn-info ms-1"
                                                 *ngIf="isEditMode"
-                                                    (click)="navigateToHouseJobCreation()">
+                                                    (click)="navigateToHouseJobCreation()" [disabled]="isSuspended">
                                                     <i class="fas fa-plus me-1"></i> Create
                                                 </button>
                                             </div>
@@ -1458,7 +1458,7 @@
                             [class.filled]="!!masterJobForm.get('Status')?.value">
                             <ng-select *ngIf="isEditMode" formControlName="Status" [items]="modeOfStatus"
                                 bindLabel="name" bindValue="name" placeholder="" class="ng-select"
-                                appendTo="body"></ng-select>
+                                appendTo="body" (change)="onStatusChange()"></ng-select>
                             <input *ngIf="!isEditMode" type="text" name="Status" class="custom-input-field sm"
                                 formControlName="Status" readonly>
                             <label class="input-label">Status</label>
@@ -1572,7 +1572,7 @@
         <div class="workspace-content" [hidden]="selectedTab !== 'Connection'">
             <app-connection screenName="MasterJob" [connectionIdField]="'MasterJobConnectionSid'"
                 [dataItems]="masterjobConnectionArr" [resetTrigger]="connectionResetTrigger" [portList]="portList"
-                [disableAdd]="!masterJobForm.get('POL')?.value || !masterJobForm.get('POD')?.value"
+                [disableAdd]="!masterJobForm.get('POL')?.value || !masterJobForm.get('POD')?.value" [isFormDisabled]="isFormDisabled"
                 (dataEmitter)="handleConnectionChange($event)">
             </app-connection>
         </div>
@@ -1580,7 +1580,7 @@
 
         <div class="workspace-content" [hidden]="selectedTab !== 'Rate'">
             <app-cost-entry #costEntryComponent screenName="Master Air Waybill" [currencyList]="currencyList"
-                [agentList]="agentList" [customerList]="customerList" [dataItems]="masterJobRateArr"
+                [agentList]="agentList" [customerList]="customerList" [dataItems]="masterJobRateArr" [isFormDisabled]="isFormDisabled"
                 [resetTrigger]="rateResetTrigger" [formData]="currentFormValue" (dataEmitter)="handleRateChange($event)"
                 (reloadParent)="loadMasterJobData($event)">
             </app-cost-entry>

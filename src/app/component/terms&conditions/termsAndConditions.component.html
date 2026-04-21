@@ -57,9 +57,9 @@
                     <td class="bg-transparent text-light" style="width: 90px;">
                       <label class="form-label mb-0">Action</label>
                     </td>
-                    <td class="bg-transparent text-light" style="width: 110px;">
+                    <!-- <td class="bg-transparent text-light" style="width: 110px;">
                       <label class="form-label mb-0">Default</label>
-                    </td>
+                    </td> -->
                     <td class="bg-transparent text-light">
                       <label class="form-label mb-0">Details</label>
                     </td>
@@ -104,7 +104,7 @@
                         </section>
                       </td>
 
-                      <td class="text-center">
+                      <!-- <td class="text-center">
                         <div *ngIf="editIndex !== $index" class="d-flex justify-content-center">
                           <dofi-toggler
                             [toggleValue]="item.IsDefaut === 'S'"
@@ -119,11 +119,11 @@
                         >
                           <dofi-toggler formControlName="IsDefaut"></dofi-toggler>
                         </form>
-                      </td>
+                      </td> -->
 
                       <td>
                         <div *ngIf="editIndex !== $index" class="text-truncate">
-                          {{ item.TandC }}
+                          {{ item.Terms || item.TandC}}
                         </div>
 
                         <form *ngIf="editIndex === $index" [formGroup]="editForm">
@@ -147,11 +147,11 @@
                     <tr>
                       <td></td>
 
-                      <td class="text-center">
+                      <!-- <td class="text-center">
                         <form [formGroup]="addForm" class="d-flex justify-content-center">
                           <dofi-toggler formControlName="IsDefaut"></dofi-toggler>
                         </form>
-                      </td>
+                      </td> -->
 
                       <td>
                         <form [formGroup]="addForm">

@@ -337,7 +337,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
   }
 
   get isSuspended() : boolean {
-    return this.houseData?.status !== 'A';
+    return this.serviceJobData?.status !== 'A';
   }
 
   ngAfterViewInit(): void {
@@ -1522,10 +1522,16 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
 
   openTandC() {
     this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     const departmentSid = this.serviceJobData?.DepartmentMasterSid;
     const pol = this.serviceJobData?.POL;
     const pod = this.serviceJobData?.POD;
     const carrier = this.serviceJobData?.CarrierSid;
+    const transactionPayload = {
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    MenuMasterSid: this.currentMenuId,
+    DocumentSid: this.serviceJobData?.HouseJobSid
+  };
     const payload = { 
       MenuMasterSid: this.currentMenuId,
       DepartmentMasterSid: departmentSid,
@@ -1534,6 +1540,20 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
       Carrier: carrier,
       DocumentSid: this.serviceJobData?.HouseJobSid
      };
+     const getTermText = (item: any): string =>
+    (item?.Terms || item?.TandC || '').trim().toLowerCase();
+
+  const isSameTerm = (a: any, b: any): boolean =>
+    (
+      a?.TandCTransactionSid &&
+      b?.TandCTransactionSid &&
+      a.TandCTransactionSid === b.TandCTransactionSid
+    ) ||
+    (
+      getTermText(a) === getTermText(b) &&
+      (a?.DocumentSid ?? this.serviceJobData?.HouseJobSid ?? null) ===
+      (b?.DocumentSid ?? this.serviceJobData?.HouseJobSid ?? null)
+    );
      const openModal = (terms: any[]) => {
       const modalRef = this.modalService.open(TermsAndConditionsComponent, {
             size: 'lg',
@@ -1550,13 +1570,30 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
           modalRef.componentInstance.loadAllOnGet = !this.isTermsAndConditionsEnabled;
      }
 
-     if (!this.isTermsAndConditionsEnabled) {
-      this.TandCList = [];
-      openModal(this.TandCList);
-      return;
-    }
+     if (this.isTermsAndConditionsEnabled) {
+    forkJoin({
+      tandc: this.masterService.getTandC(transactionPayload),
+      defaults: this.masterService.getTandCByCondition(payload)
+    }).subscribe(
+      (resp: any) => {
+        const tandcData = resp?.tandc?.status ? (resp.tandc.data || []) : [];
+        const defaultData = resp?.defaults?.status ? (resp.defaults.data || []) : [];
 
-    this.masterService.getTandCByCondition(payload).subscribe(
+        const combined = [...tandcData, ...defaultData].filter(
+          (item: any, index: number, arr: any[]) =>
+            index === arr.findIndex((x: any) => isSameTerm(x, item))
+        );
+
+        this.TandCList = combined;
+        openModal(this.TandCList);
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+    return;
+  }
+    this.masterService.getTandC(transactionPayload).subscribe(
       (resp: any) => {
         if (resp.status) {
           this.TandCList = resp.data;
