@@ -462,6 +462,18 @@ dataFromEnqPage:any;
   if (isSuspended) {
     this.quotationForm.disable({ emitEvent: false });
   }
+   if (data.quoteRoute) {
+    data.quoteRoute.forEach((route: any, routeIndex: number) => {
+      route.quoteCarrier?.forEach((carrier: any, carrierIndex: number) => {
+        if (carrier.ApprovalStatus === "Approved") {
+          const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+          if (routeForm) {
+            routeForm.disable({ emitEvent: false });
+          }
+        }
+      });
+    });
+  }
 }
 
   private loadTermsAndConditionsConfig(): void {
@@ -596,10 +608,13 @@ dataFromEnqPage:any;
       this.addQuoteCarrier(addedRouteIndex);
 
       if (isFclRoute) {
-        cargoGroups.forEach((cargo: any) => {
-          this.addQuoteCargo(addedRouteIndex, cargo);
-        });
-      } else {
+  cargoGroups.forEach((cargo: any) => {
+    this.addQuoteCargo(addedRouteIndex, {
+      ...cargo,
+      isFromEnquiry: true   // ✅ ADD THIS HERE ONLY
+    });
+  });
+} else {
         this.addQuoteProduct(addedRouteIndex, {
           Sno: 1,
           ProductSid: null,
@@ -620,8 +635,11 @@ dataFromEnqPage:any;
         });
 
         cargoGroups.slice(1).forEach((cargo: any) => {
-          this.addQuoteCargo(addedRouteIndex, cargo);
-        });
+  this.addQuoteCargo(addedRouteIndex, {
+    ...cargo,
+    isFromEnquiry: true   // ✅ ADD HERE ALSO
+  });
+});
       }
 
       this.onRouteChange(addedRouteIndex);
@@ -1312,12 +1330,17 @@ private mapQuotationCargoForBooking(cargo: any): any {
       quoteCharges : this.fb.array([])
     })
     this.quoteCarriers(routeIndex).push(carrierForm);
+    if (data?.ApprovalStatus === "Approved") {
+      carrierForm.disable({ emitEvent: false });
+    }
 
     if(!data || data === undefined){
       this.addQuoteCharge(routeIndex,this.quoteCarriers(routeIndex).length - 1);
     }
     this.updateCarrierValidationBasedOnStatus(carrierForm);
-
+    if (data?.ApprovalStatus === "Approved") {
+      carrierForm.get('authorizerStatus')?.disable({ emitEvent: false });
+    }
     this.subscription.add(
       carrierForm.get('authorizerStatus')?.valueChanges.subscribe(value => {
        this.updateCarrierValidationBasedOnStatus(carrierForm);
@@ -1393,6 +1416,9 @@ private mapQuotationCargoForBooking(cargo: any): any {
   quoteCargo(routeIndex: number): FormArray {
     return this.quoteRoutes.at(routeIndex).get('quoteCargo') as FormArray;
   }
+  get isContract(): boolean {
+  return this.quotationForm.get('IsContract')?.value === true;
+}
 
   isContractValid(): boolean {
   // If not a contract, return true (no expiration check needed)
@@ -1659,6 +1685,7 @@ private mapQuotationCargoForBooking(cargo: any): any {
       PackageType: [data?.PackageType || null],
       PackageQty: [data?.PackageQty || null],
       CargoDescription: [data?.CargoDescription || ''],
+      isFromEnquiry: [data?.isFromEnquiry === true],
       quoteProducts: this.fb.array([]),
     });
   }
@@ -1812,6 +1839,11 @@ private mapQuotationCargoForBooking(cargo: any): any {
     this.handleSegmentChangeOnProduct(routeIndex, productLength - 1, cargoIndex);
     productForm.updateValueAndValidity();
     this.handleCalculation(routeIndex, cargoIndex);
+    this.subscription.add(
+      productForm.valueChanges.subscribe(() => {
+        this.updateCargoTotals(routeIndex, cargoIndex);
+      })
+    );
     productForm.get("GrossWeight").valueChanges.subscribe(() => {
       this.setOrResetWeightError(productForm);
     });
@@ -1876,6 +1908,32 @@ private mapQuotationCargoForBooking(cargo: any): any {
 
     control.updateValueAndValidity({ emitEvent: false });
   }
+  private updateCargoTotals(routeIndex: number, cargoIndex: number = -1): void {
+  const route = this.quoteRoutes.at(routeIndex) as FormGroup;
+
+  const products = this.quoteProducts(routeIndex, cargoIndex)?.getRawValue() || [];
+
+  const totalGross = products.reduce((sum, p) => sum + Number(p.GrossWeight || 0), 0);
+  const totalNet = products.reduce((sum, p) => sum + Number(p.NetWeight || 0), 0);
+  const totalVolume = products.reduce((sum, p) => sum + Number(p.Volume || 0), 0);
+
+  if (cargoIndex >= 0) {
+    const cargo = this.quoteCargo(routeIndex).at(cargoIndex) as FormGroup;
+
+    cargo.patchValue({
+      GrossWeight: totalGross.toFixed(this.digitsAfterDecimal),
+      NetWeight: totalNet.toFixed(this.digitsAfterDecimal),
+      Volume: totalVolume.toFixed(this.digitsAfterDecimal)
+    }, { emitEvent: false });
+
+  } else {
+    route.patchValue({
+      GrossWeight: totalGross.toFixed(this.digitsAfterDecimal),
+      NetWeight: totalNet.toFixed(this.digitsAfterDecimal),
+      Volume: totalVolume.toFixed(this.digitsAfterDecimal)
+    }, { emitEvent: false });
+  }
+}
 
   isProductRequired(routeIndex: number, productIndex: number, ctrl: string, cargoIndex: number = -1) {
     const productForm = this.quoteProducts(routeIndex, cargoIndex)?.at(productIndex);
@@ -2236,7 +2294,14 @@ isRateLockDisabled(): boolean {
         this.addQuoteCarrier(routeIndex,carrier);
         (carrier?.quoteCharge || []).forEach(charge => {
           this.addQuoteCharge(routeIndex,carrierIndex, charge);
-        }) 
+        }) ;
+        const carrierForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
+        if (carrier.ApprovalStatus === "Approved") {
+          const statusControl = carrierForm.get('authorizerStatus');
+          if (statusControl) {
+            statusControl.disable({ emitEvent: false });
+          }
+        }
       })
       
       this.applyBookingLockForRoute(routeIndex, route);
@@ -4670,10 +4735,17 @@ ${this.userData.userName}`;
   //   })
   // }
 onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status: any) {
- 
-
   const carriersFA = this.quoteCarriers(routeIndex);
   const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
+  
+  // Get the current carrier form
+  const currentCarrier = carriersFA.at(carrierIndex) as FormGroup;
+  
+  // ADD THIS CHECK - If already approved, prevent changes
+  if (this.isCarrierApproved(routeIndex, carrierIndex)) {
+    this.appSettingService.showWarning("Approved carriers cannot be modified");
+    return;
+  }
 
   // Only when Approved is selected
   if (status?.value === 'Approved') {
@@ -4693,16 +4765,15 @@ onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status:
 
       if (!statusCtrl) return;
 
-    
-
       if (index === carrierIndex) {
         // Selected carrier - set to Approved
         statusCtrl.setValue('Approved', { emitEvent: false });
-        statusCtrl.enable({ emitEvent: false });
+        // DISABLE the status dropdown for approved carrier
+        statusCtrl.disable({ emitEvent: false });
         this.updateCarrierValidationBasedOnStatus(carrierForm);
         this.syncCarrierSelectionState(routeIndex, index);
       } else {
-        // Force change other carriers to "Pending" (not "Waiting For Approval")
+        // Force change other carriers to "Pending"
         statusCtrl.setValue('Pending', { emitEvent: false });
         statusCtrl.enable({ emitEvent: false });
         
@@ -4717,8 +4788,6 @@ onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status:
         this.updateCarrierValidationBasedOnStatus(carrierForm);
         this.syncCarrierSelectionState(routeIndex, index);
       }
-
-    
     });
 
     routeForm.get('isRouteApproved')?.setValue(true);
@@ -4726,24 +4795,18 @@ onCustomerApprovalStatusChange(routeIndex: number, carrierIndex: number, status:
     return;
   }
 
-  // Other statuses (Rejected, Counter, etc.)
-  const currentCarrier = carriersFA.at(carrierIndex) as FormGroup;
-
-
-  // Enable the status control before setting value
+  // For other statuses (Rejected, Counter, etc.) - only if not already approved
   const statusCtrl = currentCarrier.get('authorizerStatus');
   if (statusCtrl && !this.isCarrierApproved(routeIndex, carrierIndex)) {
     statusCtrl.enable({ emitEvent: false });
     statusCtrl.setValue(status?.value, { emitEvent: false });
   }
 
-
   routeForm.get('isRouteApproved')?.setValue(false);
   this.enableCarrierFields(routeIndex, carrierIndex);
   this.updateCarrierValidationBasedOnStatus(currentCarrier);
   this.syncCarrierSelectionState(routeIndex, carrierIndex);
   this.applyBookingLockForRoute(routeIndex);
-
 }
 
 
@@ -4779,7 +4842,7 @@ private syncCarrierSelectionState(routeIndex: number, carrierIndex: number, rout
   );
 }
 
-private isCarrierApproved(routeIndex: number, carrierIndex: number, routeData?: any): boolean {
+isCarrierApproved(routeIndex: number, carrierIndex: number, routeData?: any): boolean {
   const sourceRoute = routeData || this.quotationData?.quoteRoute?.[routeIndex];
   const dataCarrier = sourceRoute?.quoteCarrier?.[carrierIndex];
   if (dataCarrier?.ApprovalStatus === 'Approved') {
@@ -5277,7 +5340,15 @@ ${this.userData['userEmail']}`;
 
     return matchedType.ContainerCode || matchedType.ContainerName || String(containerType);
   }
-
+getContainerTypeName(containerCode: string): string {
+  if (!containerCode) return 'Container';
+  
+  const container = this.containerTypeList.find(
+    type => type.ContainerCode === containerCode || type.ContainerName === containerCode
+  );
+  
+  return container?.ContainerName || containerCode;
+}
   shouldShowContainerQuantity(route: any): boolean {
     const departmentName = (this.getDepartmentName(route?.DepartmentMasterSid) || '').toLowerCase();
     return departmentName.includes('fcl');
@@ -6281,10 +6352,10 @@ async goForBookingCreationForRoute(routeIndex: number, routeSid: number | null |
     return;
   }
 
-  const isContract = this.quotationForm.get('IsContract')?.value;
+  // const isContract = this.quotationForm.get('IsContract')?.value;
   const hasExistingBooking = this.doesBookingExistForRoute(resolvedRouteSid);
 
-  if (!isContract && hasExistingBooking) {
+  if (!this.isContract && hasExistingBooking) {
     const confirmed = await this.showBookingConfirmationModal();
     if (!confirmed) {
       this.appSettingService.showInfo('Booking creation cancelled');

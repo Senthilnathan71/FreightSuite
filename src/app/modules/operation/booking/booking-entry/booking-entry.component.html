@@ -1244,9 +1244,10 @@
               <button ngbAccordionButton class="d-flex justify-content-between align-items-center w-100 position-relative"
                 (click)="toggleCargoExpansion(cargoIndex)">
                 <h6 class="fw-semibold my-1 text-light">
-                  Cargo {{ cargoIndex + 1 }} - {{ cargo.get('CargoType')?.value || 'General' }}
+                  Cargo {{ cargoIndex + 1 }} - {{ cargo.get('CargoType')?.value || 'General' }}  ({{ getContainerName(cargo.get('ContainerType')?.value) }})
                 </h6>
                 <button type="button" class="btn btn-sm text-light" *ngIf="bookingCargo.length > 1"
+                   [disabled]="isCargoFromQuotation(cargoIndex)"
                   (click)="removeBookingCargo(cargoIndex); $event.stopPropagation()">
                   <i class="fas fa-trash text-danger"></i>
                 </button>
@@ -1422,6 +1423,7 @@
                           [formGroupName]="productIndex" class="py-0">
                           <td>
                             <button class="btn btn-link text-danger py-0 px-1"
+                            [disabled]="isCargoFromQuotation(cargoIndex)"
                               (click)="deleteBookingProduct(productIndex,product.value.BookingProductSid,cargoIndex)" ngbTooltip="Delete">
                               <i class="fas fa-trash text-center fs-2"></i>
                             </button>

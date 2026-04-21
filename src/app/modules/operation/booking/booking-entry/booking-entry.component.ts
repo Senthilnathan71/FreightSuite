@@ -1846,7 +1846,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         ModeOfTransport: cargoData?.ModeOfTransport,
         StuffingAt: cargoData?.StuffingAt
       });
-
+      if (response.QuotationHeaderSid) {
+    cargoGroup.addControl('isFromQuotation', this.fb.control(true));
+  }
       this.bookingCargo.push(cargoGroup);
       this.bookingCargoExpanded.push(cargoIndex === 0);
       const cargoProducts = Array.isArray(cargoData?.bookingProducts)
@@ -2081,6 +2083,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
   // Patch booking from quotation
   patchBookingFromQuotation(data: any) {
+    this.isPatching = true; 
     const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === data.DepartmentMasterSid);
     this.onDeptChange(selectedDepartment);
 
@@ -2104,6 +2107,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       FreightTerms: data.FreightTerms,
       JobType: data.JobType,
     });
+    this.isPatching = false;
   }
 
   onContainerTypeChange(containerType: any) {
@@ -7071,6 +7075,18 @@ private prepareCopiedBookingData(): any {
   Object.assign(copiedData, fieldsToClear);
 
   return copiedData;
+}
+isCargoFromQuotation(cargoIndex: number): boolean {
+  if (!this.b['QuotationHeaderSid']?.getRawValue()) {
+    return false;
+  }
+
+  const cargoGroup = this.bookingCargo.at(cargoIndex) as FormGroup;
+  if (!cargoGroup) {
+    return false;
+  }
+
+  return !!cargoGroup.get('isFromQuotation')?.value;
 }
 
 }

@@ -842,7 +842,7 @@
 
       <button class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120" 
               (click)="goForBookingCreationForRoute(routeIndex, route.value?.QuoteRouteSid)"
-              [disabled]="!isContractValid() || !isQuotationSavedAfterApproval(routeIndex) || quotationForm.get('status')?.getRawValue() === 'Suspended'">
+              [disabled]="!isContractValid() || !isQuotationSavedAfterApproval(routeIndex) || quotationForm.get('status')?.getRawValue() === 'Suspended'|| (!isContract && doesBookingExistForRoute(route.value?.QuoteRouteSid))">
 
         @if(doesBookingExistForRoute(route.value?.QuoteRouteSid) && quotationForm.get('IsContract')?.value) {
           <i class="fas fa-plus me-1"></i> Create Booking
@@ -1061,14 +1061,14 @@
                                 </span>
                           
                                 <span class="small text-light">
-                                  {{ cargo.get('ContainerType')?.value || 'Container' }} | Qty: {{ cargo.get('Qty')?.value || 0 }}
+                                   {{ getContainerTypeName(cargo.get('ContainerType')?.value) }} | Qty: {{ cargo.get('Qty')?.value || 0 }}
                                 </span>
                               </div>
                           
                               <!-- RIGHT (DELETE BUTTON) -->
                               <button class="btn btn-sm waves-effect waves-light text-light" type="button" *ngIf="quoteCargo(routeIndex).length > 1"
                                 (click)="deleteQuoteCargo(routeIndex, cargoIndex, cargo.value.QuoteCargoSid); $event.stopPropagation()"
-                                [disabled]="isRouteApproved(routeIndex) || disableAllModification || isBookingLockedForRoute(routeIndex) || (isEditMode && isSuspended)">
+                                [disabled]=" cargo.get('isFromEnquiry')?.value || isRouteApproved(routeIndex) || disableAllModification || isBookingLockedForRoute(routeIndex) || (isEditMode && isSuspended)">
                                 <i class="fas fa-trash text-danger me-1"></i>
                               </button>
                           
@@ -1355,10 +1355,10 @@
                                         <aside class="col-md-3">
                                           <div class="custom-form-group custom-form-group-select"
                                             [class.filled]="!!quoteCarriers(routeIndex).at(carrierIndex).get('authorizerStatus')?.value">
-                                            <ng-select formControlName="authorizerStatus" [items]="allApprovalStatus"
+                                            <ng-select formControlName="authorizerStatus"  [items]="authorizerDetails.isAuthorizer ? allApprovalStatus : approvalStatus"
                                               bindLabel="name" bindValue="value"
                                               (change)="onCustomerApprovalStatusChange(routeIndex,carrierIndex,$event)"
-                                              [disabled]="isCarrierApprovalLocked(routeIndex, carrierIndex)">
+                                              [disabled]="isCarrierApproved(routeIndex, carrierIndex) || isCarrierApprovalLocked(routeIndex, carrierIndex)">
                                             </ng-select>
                                             <label for="" class="input-label">Authorization Status <span
                                                 class="text-danger"></span></label>
@@ -1558,7 +1558,7 @@
                                         <td *ngIf="quoteCharges(routeIndex,carrierIndex).length > 1">
   <button class="btn btn-link text-danger py-0"
           (click)="removeCharge(routeIndex,carrierIndex,chargeIndex,charge.value.QuoteChargeSid)"
-          [disabled]="disableAllModification || isRateLocked() || isBookingLockedForRoute(routeIndex)" 
+          [disabled]="disableAllModification || isRateLocked() || isBookingLockedForRoute(routeIndex) || quoteCarriers(routeIndex).at(carrierIndex).disabled" 
           ngbTooltip="Delete">
     <i class="fas fa-trash text-center fs-2"></i>
   </button>
@@ -2591,7 +2591,7 @@
                                           style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                                           <button class="btn btn-link text-danger"
                                             (click)="removeCharge(routeIndex,carrierIndex,chargeIndex,charge.value.QuoteChargeSid)"
-                                            [disabled]="disableAllModification || isBookingLockedForRoute(routeIndex)">
+                                            [disabled]="disableAllModification || isBookingLockedForRoute(routeIndex) || quoteCarriers(routeIndex).at(carrierIndex).disabled">
                                             <i class="fas fa-trash text-center"></i>
                                           </button>
                                         </td>
