@@ -21,7 +21,7 @@ import { NgbAccordionDirective } from '@ng-bootstrap/ng-bootstrap';
 import { AbstractControl, Form, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LeadService } from '../../Services/lead.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { catchError, debounceTime, distinctUntilChanged, firstValueFrom, forkJoin, from, map, merge, Observable, of, Subject, Subscription, tap } from 'rxjs';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
@@ -111,7 +111,8 @@ type Html2PdfOptions = {
     NgbTooltip,
     PreventMultiClickDirective,
     PrintHeaderComponent,
-    DialCodeDropdownComponent
+    DialCodeDropdownComponent,
+    RouterModule,
     // MultiColumnComboboxComponent
   ],
   templateUrl: './quotation-entry.component.html',
@@ -197,6 +198,7 @@ export class QuotationEntryComponent implements OnInit {
   tariffDetails : any[] = [];
   tariffCargoGroups: { cargoLabel: string; items: any[] }[] = [];
   tariffSearchedCombination: string = '';
+  tariffHeaderSid: number | null = null;
   standardChargeDetails:any[] = [];
   filteredUnits: any[][] = [];
   costAgentList : any[] = [];
@@ -3650,6 +3652,7 @@ isRateLockDisabled(): boolean {
       this.tariffDetails = [];
       this.tariffCargoGroups = [];
       this.isStandardRate = false;
+      this.tariffHeaderSid = null;
 
       results.forEach((resp: any, index: number) => {
         const response: any[] = resp?.status && Array.isArray(resp.data) ? resp.data : [];
@@ -3728,6 +3731,7 @@ isRateLockDisabled(): boolean {
       }
 
       this.isStandardRate = standardRateLabels.length > 0;
+      this.tariffHeaderSid = this.tariffDetails[0]?.TariffHeaderSid || null;
 
       if (this.tariffCargoGroups.length === 0) {
         this.appSettingService.showError('No tariff charges found for the selected criteria.');
@@ -3834,6 +3838,7 @@ canGetTariff(routeIndex: number): boolean {
     this.tariffDetails = [];
     this.tariffCargoGroups = [];
     this.tariffSearchedCombination = '';
+    this.tariffHeaderSid = null;
     this.ngbModal.dismissAll();
   }
 

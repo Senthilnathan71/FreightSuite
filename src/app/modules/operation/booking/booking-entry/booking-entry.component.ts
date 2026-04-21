@@ -4154,6 +4154,8 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
     const status=this.b['status']?.value;
     const HBLNo = this.b['HBLNo']?.getRawValue()||'';
     const HouseJobSid = this.b['HouseJobSid']?.getRawValue()||'';
+    const DestinationAgent = this.b['DestinationAgent']?.value || null;
+    const AgentName = this.getDestinationAgent(DestinationAgent) || null;
     const salesmanSid = this.b['SalesmanSid']?.value || '';
     const salesmanName = this.salesmanList.find(s => s.UserMasterSid === salesmanSid)?.userName || '';
     const cargoItems = this.bookingCargo.controls.map((cargoCtrl: any) => {
@@ -4200,6 +4202,8 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
       CargoType,
       Carrier,
       CarrierName: carrierName || null,
+      Agent: DestinationAgent,
+      AgentName,
       IncoTerms,
       ContainerType: containerTypeSid,
       GrossWeight,

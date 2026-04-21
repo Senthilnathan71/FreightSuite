@@ -746,6 +746,11 @@
       <div class="modal-content custom-modal">
         <div class="modal-header">
           <h5 class="modal-title">Tariff Details</h5>
+          <a *ngIf="tariffHeaderSid" class="btn btn-sm btn-outline-info ms-2"
+            [routerLink]="['/master/tarrif/entry', tariffHeaderSid]" target="_blank"
+            title="Open Tariff">
+            <i class="fas fa-external-link-alt me-1"></i>View Tariff({{ tariffHeaderSid }})
+          </a>
           <button type="button" class="btn-close" aria-label="Close" (click)="closeTariffModal()"></button>
         </div>
 

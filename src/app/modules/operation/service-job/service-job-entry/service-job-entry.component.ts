@@ -1366,14 +1366,18 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const DepartmentMasterSid = this.b['DepartmentMasterSid']?.value;
     const departmentName = this.selectedDepartment?.departmentName;
+    const selectedPOO = this.b['POO']?.value;
     const selectedPOL = this.b['POL']?.value;
     const selectedPOD = this.b['POD']?.value;
+    const selectedFPD = this.b['FPD']?.value;
     const MBLNo = this.b['MBLNo']?.value;
     const HBLNo = this.b['HBLNo']?.value;
     const EffectiveDate = this.b['MBLDate']?.value;
     const ExpiredDate = this.b['MBLDate']?.value;
+    const PORSid = (this.portList.find(p => p.PortCode === selectedPOO)?.PortMasterSid)
     const POLSid = (this.portList.find(p => p.PortCode === selectedPOL)?.PortMasterSid)
     const PODSid = (this.portList.find(p => p.PortCode === selectedPOD)?.PortMasterSid)
+    const FPODSid = (this.portList.find(p => p.PortCode === selectedFPD)?.PortMasterSid)
     const CargoType = this.c['CargoType']?.value;
     const NetWeight = this.c['NetWeight']?.value;
     const GrossWeight = this.c['GrossWeight']?.value;
@@ -1421,10 +1425,14 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
       status: this.b['status']?.value || '',
       parentMenuName: 'Service Job',
       Segment: this.selectedFCLLCL,
+      PORSid,
       POLSid,
       PODSid,
+      FPODSid,
+      PORCode: selectedPOO || null,
       POLCode: selectedPOL || null,
       PODCode: selectedPOD || null,
+      FPODCode: selectedFPD || null,
       EffectiveDate,
       ExpiredDate,
       ContainerType: containerTypeSid,

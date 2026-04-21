@@ -3943,6 +3943,9 @@ getVoyageTypeBasedOnDept(deptId: number) {
     const PODSid = (this.portList.find(p => p.PortCode === selectedPOD)?.PortMasterSid)
     const FPODSid = (this.portList.find(p => p.PortCode === selectedFPD)?.PortMasterSid)
     const Carrier = this.houseJobForm.get('CarrierSid')?.value;
+    const CarrierName = this.houseJobForm.get('CarrierName')?.value || null;
+    const Agent = this.houseJobForm.get('DestinationAgent')?.value || null;
+    const AgentName = this.houseJobForm.get('AgentName')?.value || null;
     const IncoTerms = this.houseJobForm.get('IncoTerms')?.value
     const primaryCargo = this.bookingData?.Cargo?.[0] || {};
     const CargoType = primaryCargo.CargoType;
@@ -3991,9 +3994,16 @@ getVoyageTypeBasedOnDept(deptId: number) {
       POLSid,
       PODSid,
       FPODSid,
+      PORCode: selectedPOO || null,
+      POLCode: selectedPOL || null,
+      PODCode: selectedPOD || null,
+      FPODCode: selectedFPD || null,
       EffectiveDate,
       ExpiredDate,
       Carrier,
+      CarrierName,
+      Agent,
+      AgentName,
       IncoTerms,
       ContainerType: containerTypeSid,
       CargoType,
