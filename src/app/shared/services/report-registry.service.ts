@@ -882,6 +882,65 @@ export class ReportRegistryService {
             error,
           );
         }
+        // GST Outward Register
+        try {
+          const { GSTOutwardRegisterComponent } =
+            await import('../components/reports/gst-outward-register/gst-outward-register.component');
+
+          this.registerReport({
+            id: 'GST-outward',
+            title: 'GST Outward Register',
+            component: GSTOutwardRegisterComponent,
+            filenameTemplate: 'GST_Outward_Register_{date}',
+            module: 'accounts-report',
+            apiEndpoint: 'accounts-report/send-email',
+            request: 'POST',
+            fetchDataEndpoint: 'accounts/reports/{id}/generate',
+            emailSubjectTemplate: 'GST_Outward_Register',
+            emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>GST Outward Register</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+            modalSize: 'xl',
+            pdfOrientation: 'landscape',
+          });
+        } catch (error) {
+          console.warn(
+            ' GST Outward Register component not yet created:',
+            error,
+          );
+        }
+        // GSTR3B Report
+        try {
+          const { GSTR3BComponent } =
+            await import('../components/reports/gstr3-b/gstr3-b.component');
+
+          this.registerReport({
+            id: 'GSTR',
+            title: 'GSTR3B Report',
+            component: GSTR3BComponent,
+            filenameTemplate: 'GSTR3B_Report_{date}',
+            module: 'accounts-report',
+            apiEndpoint: 'accounts-report/send-email',
+            request: 'POST',
+            fetchDataEndpoint: 'accounts/reports/{id}/generate',
+            emailSubjectTemplate: 'GSTR3B Report',
+            emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>GSTR3B Report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+            modalSize: 'xl',
+            pdfOrientation: 'landscape',
+          });
+        } catch (error) {
+          console.warn(' GSTR3B Report component not yet created:', error);
+        }
 // ======================================================
     // operation report
 

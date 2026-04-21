@@ -440,25 +440,7 @@ onTableActionClick(event: TableEventData): void {
 }
 
 viewTax(content: any, row: any) {
-  this.TaxMasterSid = row.TaxMasterSid; 
-  this.openModal(content);
- 
-  this.isEditMode = true;
-  this.selectedId = row.TaxMasterSid;
-  const taxType = this.modeofTaxType.find(type => type.name === row.TaxType);
-    const taxCategory = this.taxCategoryOptions.find(cat => cat.name === row.TaxCategory);
-  this.taxGroupForm.patchValue({
-    TaxGroupSid: row.TaxGroupSid,
-      TaxName: row.TaxName,
-      TaxCode: row.TaxCode,
-      TaxType: taxType ? taxType.name : null,
-      TaxCategory: taxCategory ? taxCategory.name : null,
-      EffectiveFrom: new Date(row.EffectiveFrom),
-      TaxRate: row.TaxRate,
-      TaxExempt: row.TaxExempt === 'Y',
-      CountryMasterSid: row.CountryMasterSid,
-      InvoiceType: row.InvoiceType || null,
-  });
+  this.openEditModal(content, row.TaxMasterSid);
 }
 
   onTableRowClick(row: any): void {
@@ -532,15 +514,7 @@ viewTax(content: any, row: any) {
         .subscribe({
           next: (taxGroup: any) => {
             this.taxGroupData = taxGroup;
-            this.taxGroupForm.patchValue({
-              TaxName: taxGroup.TaxName,
-              TaxCode: taxGroup.TaxCode,
-              TaxType: taxGroup.TaxType,
-              EffectiveFrom: new Date(taxGroup.EffectiveFrom),
-              TaxRate: taxGroup.TaxRate,
-              TaxExempt: taxGroup.TaxExempt === 'Y' ? true : false,
-              Remarks: taxGroup.Remarks,
-            });
+            this.patchTaxForm(taxGroup);
           },
           error: () => {
             this.appSettingService.showError('Error reloading tax group data.');
@@ -592,23 +566,28 @@ viewTax(content: any, row: any) {
 
   openEditModal(content: any, id: number): void {
     this.isEditMode = true;
+    this.selectedId = id;
+    this.TaxMasterSid = id;
+    this.taxGroupForm.reset({
+      TaxGroupSid: '',
+      TaxName: '',
+      TaxCode: '',
+      TaxType: null,
+      TaxCategory: null,
+      EffectiveFrom: '',
+      TaxRate: null,
+      TaxExempt: false,
+      CountryMasterSid: '',
+      InvoiceType: null,
+    });
 
     this.masterService
-      .fetchTaxById(this.TaxMasterSid)
+      .fetchTaxById(id)
       .pipe(take(1))
       .subscribe({
         next: (taxGroup: any) => {
           this.taxGroupData = taxGroup;
-
-          this.taxGroupForm.patchValue({
-            TaxName: taxGroup.TaxName,
-            TaxCode: taxGroup.TaxCode,
-            TaxType: taxGroup.TaxType,
-            EffectiveFrom: new Date(taxGroup.EffectiveFrom),
-            TaxRate: taxGroup.TaxRate,
-            TaxExempt: taxGroup.TaxExempt === 'Y' ? true : false,
-            Remarks: taxGroup.Remarks,
-          });
+          this.patchTaxForm(taxGroup);
 
           this.modalRef = this.modalService.open(content, {
             centered: true,
@@ -620,6 +599,21 @@ viewTax(content: any, row: any) {
           this.appSettingService.showError('Error loading data for editing.');
         },
       });
+  }
+
+  private patchTaxForm(taxGroup: any): void {
+    this.taxGroupForm.patchValue({
+      TaxGroupSid: taxGroup.TaxGroupSid ?? taxGroup.taxGroup?.TaxGroupSid ?? '',
+      TaxName: taxGroup.TaxName ?? '',
+      TaxCode: taxGroup.TaxCode ?? null,
+      TaxType: taxGroup.TaxType ?? null,
+      TaxCategory: taxGroup.TaxCategory ?? null,
+      EffectiveFrom: taxGroup.EffectiveFrom ? new Date(taxGroup.EffectiveFrom) : '',
+      TaxRate: taxGroup.TaxRate ?? null,
+      TaxExempt: taxGroup.TaxExempt === 'Y' || taxGroup.TaxExempt === true,
+      CountryMasterSid: taxGroup.CountryMasterSid ?? taxGroup.countryMaster?.CountryMasterSid ?? '',
+      InvoiceType: taxGroup.InvoiceType || null,
+    });
   }
 
   onSubmit(): void {

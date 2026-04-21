@@ -3235,7 +3235,14 @@
             </div>
              <div class="d-flex mb-1 flex-wrap">
               <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">Shipping Bill No</div>
-              <div class="text-break">: {{bookingHeader?.bookingProduct[0]?.ShippingBillNo || ''}}</div>
+              <div class="text-break">
+                :
+                <ng-container *ngFor="let product of bookingHeader?.bookingProduct; let i = index">
+                  <ng-container *ngIf="product?.ShippingBillNo">
+                    {{ product.ShippingBillNo }}<span *ngIf="i < (bookingHeader?.bookingProduct?.length || 0) - 1">, </span>
+                  </ng-container>
+                </ng-container>
+              </div>
             </div> -->
             <!-- <div class="d-flex mb-1 flex-wrap">
         <div class="fw-bold me-2 flex-shrink-0" style="min-width:150px;">POL ETD</div>
@@ -3541,7 +3548,14 @@
         </tr>
         <tr>
           <td style="font-weight:bolder;padding-top: 3px;white-space: nowrap;"><strong>Shipping Bill No.</strong></td>
-          <td>: {{ bookingHeader?.bookingProduct[0]?.ShippingBillNo || '' }}</td>
+          <td>
+            :
+            <ng-container *ngFor="let product of bookingHeader?.bookingProduct; let i = index">
+              <ng-container *ngIf="product?.ShippingBillNo">
+                {{ product.ShippingBillNo }}<span *ngIf="i < (bookingHeader?.bookingProduct?.length || 0) - 1">, </span>
+              </ng-container>
+            </ng-container>
+          </td>
         </tr>
         <tr>
           <td style="font-weight:bolder;padding-top: 3px;"><strong>Inco Terms</strong></td>
@@ -3656,15 +3670,15 @@
 
         <tbody>
           <tr *ngFor="let cargo of bookingHeader?.bookingCargo">
-            <td style="border:1px solid #000; padding:5px;">
+            <td style="border:1px solid #000; padding:5px;text-align:center">
               {{cargo?.CargoType || ''}}
             </td>
 
             @if(selectedFCLLCL === "FCL"){
-              <td style="border:1px solid #000; padding:5px;">
+              <td style="border:1px solid #000; padding:5px;text-align:center">
                 {{getContainerName(cargo?.ContainerType) || ''}}
               </td>
-              <td style="border:1px solid #000; padding:5px; text-align:right;">
+              <td style="border:1px solid #000; padding:5px; text-align:right;text-align:center">
                 {{cargo?.NoofContainers || ''}}
               </td>
             }

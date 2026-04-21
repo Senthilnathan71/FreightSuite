@@ -1,0 +1,67 @@
+<div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
+    <app-print-header></app-print-header>
+
+    <h4 class="text-center fw-bold py-2" style="margin: 0;">
+        GSTR3B Report
+    </h4>
+    <div style="margin-top: 1rem;">
+
+        <div style="display: flex; justify-content:space-between;">
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="width: 130px;">From Date </strong>
+                    <p class="ms-1 my-0">: {{ params?.FromDate | formatDate }}</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <strong style="width: 130px;">To Date </strong>
+                    <p class="ms-1 my-0">: {{ params?.ToDate | formatDate }}</p>
+                </div>
+            </div>
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="width: 130px;">State</strong>
+                    <p class="ms-1 my-0">: {{ fullData?.state}}</p>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                <thead>
+                    <tr class="bg-info" style="white-space: nowrap;">
+                        <th class="bg-transparent text-light text-center">Item Type</th>
+                        <th class="bg-transparent text-light text-center">Item Details</th>
+                        <th class="bg-transparent text-light text-center">Place of Supply</th>
+                        <th class="bg-transparent text-light text-center">Total Taxable Value</th>
+                        <th class="bg-transparent text-light text-center">IGST</th>
+                        <th class="bg-transparent text-light text-center">CGST</th>
+                        <th class="bg-transparent text-light text-center">SGST</th>
+                        <th class="bg-transparent text-light text-center">CESS</th>
+                        <th class="bg-transparent text-light text-center">Source</th>
+                        <th class="bg-transparent text-light text-center">Table No.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of tableData;" style="white-space: nowrap;">
+                        <td>{{ item.ItemType || '' }}</td>
+                        <td>{{ item.ItemDetails || '' }}</td>
+                        <td>{{ item.PlaceOfSupply || '' }}</td>
+                        <td class="text-end">{{ item.TotalTaxableValue | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.IGST | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.CGST | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.SGST | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ item.CESS | number:'1.2-2' }}</td>
+                        <td>{{ item.Source || '' }}</td>
+                        <td>{{ item.TableNo || '' }}</td>
+                    </tr>
+                    <tr *ngIf="tableData.length === 0">
+                        <td colspan="10" class="text-center fw-bold py-1">
+                            No Record Found
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <app-print-footer></app-print-footer>
+</div>

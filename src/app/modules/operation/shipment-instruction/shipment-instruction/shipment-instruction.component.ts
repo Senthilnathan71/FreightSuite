@@ -81,7 +81,7 @@ export class ShipmentInstructionComponent {
     if (token) {
       this.isPublicMode = true;
       this.publicToken = token;
-      this.loadPublicSIData(token);
+      this.loadAllPorts(() => this.loadPublicSIData(token));
       return;
     }
 
@@ -115,11 +115,12 @@ export class ShipmentInstructionComponent {
     });
   }
 
-  loadAllPorts() {
+  loadAllPorts(afterLoad?: () => void) {
     this.masterService.getAllPorts().subscribe(
       (resp: any) => {
         if (resp.status) {
           this.portList = resp.data;
+          afterLoad?.();
         } else {
           this.appSettingService.showError('Error Loading Ports')
         }
@@ -192,7 +193,7 @@ export class ShipmentInstructionComponent {
         p.code === portCode ||
         p.Code === portCode
       );
-      return port ? port.PortCode : portCode;
+      return port ? `${port.PortName || portCode} (${port.PortCode || portCode})` : portCode;
     };
 
     return {
@@ -222,7 +223,7 @@ export class ShipmentInstructionComponent {
       placeOfDelivery: getPortName(data.FPD),
       releaseType: bookingOthers.ReleaseType || 'Draft',
       noOfOriginal: this.getNoOfOriginal(data),
-      freightPayableAt: getPortName(data.POD),
+      freightPayableAt: this.getFreightPayableAt(data),
       typeOfService: data.IncoTerms || '',
       shippedOnBoard: formatDate(data.ETD),
       placeAndDateOfIssue: `${getPortName(data.POL)}, ${formatDate(String(new Date()))}`,
@@ -250,6 +251,22 @@ export class ShipmentInstructionComponent {
       data?.noOfOriginal,
       data?.Others?.[0]?.NoofOriginal,
       data?.Others?.[0]?.NoOfOriginal
+    ) ?? '';
+  }
+
+  private getFreightPayableAt(data: any): string {
+    return this.getFirstAvailable(
+      data?.masterJob?.FreightPPCC,
+      data?.masterJob?.FreightTerms,
+      data?.masterJobData?.FreightPPCC,
+      data?.masterJobData?.FreightTerms,
+      data?.MasterJob?.FreightPPCC,
+      data?.MasterJob?.FreightTerms,
+      data?.FreightPPCC,
+      data?.FreightTerms,
+      data?.Cargo?.[0]?.FreightTerms,
+      data?.Others?.[0]?.FreightPPCC,
+      data?.Others?.[0]?.FreightTerms
     ) ?? '';
   }
 
@@ -281,6 +298,22 @@ export class ShipmentInstructionComponent {
     return matchedAgent?.CustomerName || '';
   }
 
+  private getPortCode(value: string): string {
+    if (!value) return '';
+
+    const bracketCode = value.match(/\(([^()]+)\)\s*$/);
+    if (bracketCode) {
+      return bracketCode[1].trim();
+    }
+
+    const matchedPort = this.portList?.find((port: any) =>
+      String(port?.PortName || '').trim().toLowerCase() === value.trim().toLowerCase() ||
+      String(port?.PortCode || '').trim().toLowerCase() === value.trim().toLowerCase()
+    );
+
+    return matchedPort?.PortCode || value;
+  }
+
   private getMasterJobSid(data: any): number | null {
     const masterJobSid = this.getFirstAvailable(
       data?.MasterJobSid,
@@ -296,7 +329,7 @@ export class ShipmentInstructionComponent {
   }
 
   private loadMasterJobNoOfOriginal(houseJobData: any): void {
-    if (this.shipmentData.noOfOriginal !== '') {
+    if (this.shipmentData.noOfOriginal !== '' && this.shipmentData.freightPayableAt !== '') {
       return;
     }
 
@@ -312,7 +345,12 @@ export class ShipmentInstructionComponent {
     }).subscribe({
       next: (resp: any) => {
         if (resp?.status && resp?.data) {
-          this.shipmentData.noOfOriginal = this.getNoOfOriginal(resp.data);
+          if (this.shipmentData.noOfOriginal === '') {
+            this.shipmentData.noOfOriginal = this.getNoOfOriginal(resp.data);
+          }
+          if (this.shipmentData.freightPayableAt === '') {
+            this.shipmentData.freightPayableAt = this.getFreightPayableAt(resp.data);
+          }
         }
       },
       error: (err) => {
@@ -513,8 +551,8 @@ export class ShipmentInstructionComponent {
       ETA: bookingFormValue.ETA ? new Date(bookingFormValue.ETA) : null,
       ETD: bookingFormValue.ETD ? new Date(bookingFormValue.ETD) : null,
       POO: bookingFormValue.POO || null,
-      POL: this.shipmentData.portOfLoading || null,
-      POD: this.shipmentData.portOfDischarge || null,
+      POL: this.getPortCode(this.shipmentData.portOfLoading) || null,
+      POD: this.getPortCode(this.shipmentData.portOfDischarge) || null,
       POLTerminal: bookingFormValue.POLTerminal || '',
       PODTerminal: bookingFormValue.PODTerminal || '',
       FPD: bookingFormValue.FPD || null,

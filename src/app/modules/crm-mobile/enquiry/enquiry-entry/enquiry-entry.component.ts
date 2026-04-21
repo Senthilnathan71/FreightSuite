@@ -1072,7 +1072,29 @@ ${this.userData.userName}`;
 
 
   deleteCargo(routeIndex: number, cargoIndex: number) {
-    (this.routeCargo(routeIndex) as FormArray).removeAt(cargoIndex);
+    const cargoArray = this.routeCargo(routeIndex) as FormArray;
+    const cargoGroup = cargoArray.at(cargoIndex) as FormGroup;
+    const enquiryCargoSid = Number(cargoGroup?.get('EnquiryCargoSid')?.value) || 0;
+
+    if (enquiryCargoSid > 0) {
+      this.leadService.deleteEnquiryCargo(enquiryCargoSid).subscribe({
+        next: (resp: any) => {
+          if (resp?.status !== false) {
+            cargoArray.removeAt(cargoIndex);
+            this.appSettingsService.showSuccess('Cargo deleted successfully');
+          } else {
+            this.appSettingsService.showError('Error deleting cargo');
+          }
+        },
+        error: (error) => {
+          console.error('Error deleting enquiry cargo:', error);
+          this.appSettingsService.showError('Error deleting cargo');
+        }
+      });
+      return;
+    }
+
+    cargoArray.removeAt(cargoIndex);
   }
 
   get f(): { [key: string]: AbstractControl<any, any> } {
@@ -1123,6 +1145,7 @@ ${this.userData.userName}`;
     }
 
     const cargoForm = this.fb.group({
+      EnquiryCargoSid: [null],
       CargoType: [null, [Validators.required]],
       ProductName: [null],
       CargoDescription: [''],

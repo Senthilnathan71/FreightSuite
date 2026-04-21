@@ -3580,7 +3580,6 @@ onYardChange(selectedYard: any): void {
         modalRef.componentInstance.currencyList=this.currencyList;
         modalRef.componentInstance.portList=this.portList;
         modalRef.componentInstance.chargeList=this.chargeList;
-        modalRef.componentInstance.selectedReport = type;
       }
 
       getFormattedPort(code:string){
