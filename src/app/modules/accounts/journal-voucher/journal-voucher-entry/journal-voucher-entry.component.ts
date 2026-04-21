@@ -707,13 +707,12 @@ private deepEqual(obj1: any, obj2: any): boolean {
   }
 
   applyVoucherDateConstraints(): void {
-    // Skip grace/closed validation in edit mode (per manager rules 4 & 5).
-    // Edit-mode safety is provided by the datepicker's month restriction
-    // + a save-time cross-month popup.
-    if (this.voucherHeaderSid || this.editMode) {
+    // Edit mode AND user hasn't changed the date → skip (allow save without checking).
+    if ((this.voucherHeaderSid || this.editMode) && !this.showVoucherDateError) {
       this.voucherConstraints = { isClosed: false, errorMessage: null };
       return;
     }
+    // Create mode, or edit mode after user changed the date → validate like create.
     const voucherDate = this.form?.get('voucherDate')?.value;
     this.voucherConstraints = this.voucherPeriodService.applyConstraints(voucherDate, 'GL');
   }
@@ -2448,8 +2447,6 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
 
   // NEW: Final Save with Posting functionality
   onFinalSave(): void {
-    // Reveal error label now that user has clicked save
-    this.showVoucherDateError = true;
     // Re-validate voucher date constraints at save time (edit mode may have stale state)
     this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed
@@ -2603,8 +2600,6 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
   // Existing saveDraft method (for draft saving)
   saveDraft(resolve?: (value: boolean) => void, isPostingTrue?: boolean) {
     console.log("saveDraft")
-  // Reveal error label now that user has clicked save
-  this.showVoucherDateError = true;
   // Re-validate voucher date constraints at save time (edit mode may have stale state)
   this.applyVoucherDateConstraints();
   // Block save if voucher period grace days exceeded or module closed

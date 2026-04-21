@@ -145,7 +145,7 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
       this.displayFields.forEach((field, index) => {
         const value = item[field] ? item[field].toString() : '';
         const charLength = value.length;
-        let estimatedWidth = charLength * 8;
+        let estimatedWidth = charLength * 9;
         if (field.toLowerCase() === 'id') {
           estimatedWidth = Math.max(estimatedWidth, 60);
         }
@@ -159,7 +159,7 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
       this.columnWidths[index] = Math.max(this.columnWidths[index], estimatedWidth);
     });
 
-    this.columnWidths = this.columnWidths.map((width) => Math.min(width + 24, 200));
+    this.columnWidths = this.columnWidths.map((width) => Math.min(width + 24, 400));
   }
 
   searchFn = (term: string, item: any): boolean => {

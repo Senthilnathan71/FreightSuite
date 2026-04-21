@@ -742,13 +742,17 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   }
 
   applyVoucherDateConstraints(): void {
-    // Skip grace/closed validation in edit & view mode (per manager rules 4 & 5).
-    // Edit-mode safety is provided by the datepicker's month restriction
-    // + a save-time cross-month popup.
-    if (this.headerId || this.isViewMode) {
+    // View mode: never validate.
+    if (this.isViewMode) {
       this.voucherConstraints = { isClosed: false, errorMessage: null };
       return;
     }
+    // Edit mode AND user hasn't changed the date → skip (allow save without checking).
+    if (this.headerId && !this.showVoucherDateError) {
+      this.voucherConstraints = { isClosed: false, errorMessage: null };
+      return;
+    }
+    // Create mode, or edit mode after user changed the date → validate like create.
     const voucherDate = this.invoiceForm?.get('VoucherDate')?.value;
     this.voucherConstraints = this.voucherPeriodService.applyConstraints(voucherDate, 'AR');
   }
@@ -1141,17 +1145,8 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       { emitEvent: false }
     );
 
-    // In edit mode, restrict the date picker to the original document's month
-    // (so a voucher generated within grace stays in that month; April dates blocked)
-    const _invoiceOrigDate = new Date(data.VoucherDate);
-    if (!isNaN(_invoiceOrigDate.getTime())) {
-      const _y = _invoiceOrigDate.getFullYear(), _m = _invoiceOrigDate.getMonth() + 1;
-      const _monthEnd = new Date(_y, _m, 0);
-      const _today = new Date(); _today.setHours(0, 0, 0, 0);
-      const _effectiveEnd = _monthEnd < _today ? _monthEnd : _today;
-      this.fyMinDate = { year: _y, month: _m, day: 1 };
-      this.fyMaxDate = { year: _effectiveEnd.getFullYear(), month: _effectiveEnd.getMonth() + 1, day: _effectiveEnd.getDate() };
-    }
+    // Edit mode: datepicker keeps the full FY range. Grace/closed validation
+    // only fires when the user actually changes the voucher date.
 
     if (
       data?.CurrencyMasterSid === this.currentCompany?.CurrencyMasterSid ||
@@ -2200,8 +2195,6 @@ isSeaDepartment(): boolean {
       }
     }
 
-    // Reveal error label now that user has clicked save
-    this.showVoucherDateError = true;
     // Re-validate voucher date constraints at save time (edit mode may have stale state)
     this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed
@@ -2492,7 +2485,6 @@ isSeaDepartment(): boolean {
 
   async postVoucher(notFromSubmit: boolean = false) : Promise<void> {
     if (this.isSaving) return;
-    this.showVoucherDateError = true;
     this.applyVoucherDateConstraints();
     if (this.voucherConstraints.isClosed) {
       if (this.voucherConstraints.errorMessage) this.appSettingService.showWarning(this.voucherConstraints.errorMessage);

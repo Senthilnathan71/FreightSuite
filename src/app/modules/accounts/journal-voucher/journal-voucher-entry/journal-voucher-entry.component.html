@@ -106,8 +106,7 @@
                 form.invalid ||
                 !mps.can('post') ||
                 isDirty ||
-                isSaving || isReadOnly ||
-                (voucherConstraints.isClosed && showVoucherDateError)
+                isSaving || isReadOnly
               "
               [title]="
                 isDirty ? 'Please save the draft first before posting' : ''

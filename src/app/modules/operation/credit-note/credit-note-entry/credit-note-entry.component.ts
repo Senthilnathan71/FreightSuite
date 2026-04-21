@@ -1121,13 +1121,17 @@ export class CreditNoteEntryComponent {
   }
 
   applyVoucherDateConstraints(): void {
-    // Skip grace/closed validation in edit & view mode (per manager rules 4 & 5).
-    // Edit-mode safety is provided by the datepicker's month restriction
-    // + a save-time cross-month popup.
-    if (this.headerId || this.isViewMode) {
+    // View mode: never validate.
+    if (this.isViewMode) {
       this.voucherConstraints = { isClosed: false, errorMessage: null };
       return;
     }
+    // Edit mode AND user hasn't changed the date → skip (allow save without checking).
+    if (this.headerId && !this.showVoucherDateError) {
+      this.voucherConstraints = { isClosed: false, errorMessage: null };
+      return;
+    }
+    // Create mode, or edit mode after user changed the date → validate like create.
     const voucherDate = this.creditNoteForm?.get('VoucherDate')?.value;
     this.voucherConstraints = this.voucherPeriodService.applyConstraints(
       voucherDate,
@@ -2317,8 +2321,6 @@ export class CreditNoteEntryComponent {
       }
     }
 
-    // Reveal error label now that user has clicked save
-    this.showVoucherDateError = true;
     // Re-validate voucher date constraints at save time (edit mode may have stale state)
     this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed
@@ -2541,7 +2543,6 @@ export class CreditNoteEntryComponent {
 
   async postVoucher(notFromSubmit: boolean = false): Promise<void> {
     if (this.isSaving) return;
-    this.showVoucherDateError = true;
     this.applyVoucherDateConstraints();
     if (this.voucherConstraints.isClosed) {
       if (this.voucherConstraints.errorMessage) this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
