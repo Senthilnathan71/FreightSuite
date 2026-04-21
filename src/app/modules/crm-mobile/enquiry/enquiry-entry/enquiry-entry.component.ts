@@ -3177,6 +3177,30 @@ private parseFloatSafe(value: any): number {
     return total;
   }
 
+  calculateRouteGrossWeight(route: any): number {
+    let total = 0;
+    route?.enquiryCargo?.forEach((cargo: any) => {
+      total += Number(cargo?.GrossWeight) || 0;
+    });
+    return total;
+  }
+
+  calculateRouteCBM(route: any): number {
+    let total = 0;
+    route?.enquiryCargo?.forEach((cargo: any) => {
+      total += Number(cargo?.Volume) || 0;
+    });
+    return total;
+  }
+
+  calculateRouteNetWeight(route: any): number {
+    let total = 0;
+    route?.enquiryCargo?.forEach((cargo: any) => {
+      total += Number(cargo?.NetWeight) || 0;
+    });
+    return total;
+  }
+
 
 
   openFollowup() {

@@ -40,6 +40,16 @@
       gstCode.length >= 15
     );
   }
+
+  function estimateWrappedLineCount(text: string, charsPerLine: number): number {
+    if (!text) {
+      return 0;
+    }
+
+    return text
+      .split(/\r?\n/)
+      .reduce((count, line) => count + Math.max(1, Math.ceil((line || '').length / charsPerLine)), 0);
+  }
   /**
    * Generate invoice PDF document definition
    */
@@ -47,10 +57,25 @@
     console.log(data, 'generateVendorCreditNoteDocument');
     const chargesCount = data.charges?.length || 0;
     const shouldBreakPageForTerms = chargesCount > 20;
+    const isIndiaCompany = isIndianCompany(data);
+    const printData = (data as any).vendorCreditNoteData || (data as any).invoicePrintData;
     const logoHeaderHeight = INVOICE_LOGO_HEIGHT_PT;
     const baseTopMargin = 150;
     const extraTopMarginForLogo = Math.max(0, logoHeaderHeight - 55);
-    const dynamicTopMargin = baseTopMargin + extraTopMarginForLogo;
+    const extraTopMarginForIndiaInfo = isIndiaCompany ? 24 : 0;
+    const extraTopMarginForGstCode = isIndiaCompany && (data.companyGstCode || '') ? 12 : 0;
+    const billedTo = String(printData?.BilledTo || data.invoice?.customerName || '');
+    const billingAddress = String(printData?.BillingAddress || data.invoice?.customerAddress || '');
+    const billedToLines =
+      estimateWrappedLineCount(billedTo, 34) +
+      estimateWrappedLineCount(billingAddress, 52);
+    const extraTopMarginForBilledTo = Math.max(0, billedToLines - 3) * 16;
+    const dynamicTopMargin =
+      baseTopMargin +
+      extraTopMarginForLogo +
+      extraTopMarginForIndiaInfo +
+      extraTopMarginForGstCode +
+      extraTopMarginForBilledTo;
     const configuredMargins = data.config?.pageMargins as number[] | undefined;
     const resolvedPageMargins = configuredMargins
       ? [
@@ -292,20 +317,51 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
   const invoice = data.invoice;
   const printData = (data as any).vendorCreditNoteData || (data as any).invoicePrintData;
   const isIndiaCompany = isIndianCompany(data);
+  const panNo =
+    printData?.PAN ||
+    printData?.Pan ||
+    printData?.VendorPAN ||
+    printData?.VendorPan ||
+    (invoice as any)?.PAN ||
+    (invoice as any)?.Pan ||
+    (invoice as any)?.VendorPAN ||
+    (invoice as any)?.VendorPan ||
+    data.companyPan ||
+    '';
   const gstVatNo =
     printData?.GSTVAT ||
     printData?.GST_VAT ||
     printData?.GSTNo ||
+    printData?.VatNo ||
+    printData?.VATNo ||
+    printData?.TaxNumber ||
+    printData?.VendorGSTVAT ||
+    printData?.VendorGST_VAT ||
+    printData?.VendorGSTNo ||
+    printData?.VendorTaxNumber ||
     invoice?.customerGstVat ||
+    (invoice as any)?.GSTVAT ||
+    (invoice as any)?.GST_VAT ||
+    (invoice as any)?.GSTNo ||
+    (invoice as any)?.VatNo ||
+    (invoice as any)?.VATNo ||
+    (invoice as any)?.TaxNumber ||
     (data as any)?.companyVatNo ||
     '';
   const irnNumber =
     printData?.IRNNumber ||
     printData?.IRNNo ||
     printData?.IRN ||
+    printData?.AckNo ||
+    printData?.AckNumber ||
+    printData?.ReferenceNo ||
     invoice?.irnNumber ||
     (invoice as any)?.IRNNumber ||
     (invoice as any)?.IRNNo ||
+    (invoice as any)?.IRN ||
+    (invoice as any)?.AckNo ||
+    (invoice as any)?.AckNumber ||
+    (invoice as any)?.ReferenceNo ||
     '';
   const invoiceDate =
     printData?.InvoiceDate ||
@@ -318,7 +374,7 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
   const PAGE_RIGHT = 565;
   const RIGHT_LABEL_WIDTH = 110;
   const COLON_WIDTH = 6;
-  const buildInfoRow = (label: string, value: string, marginBottom = 5) => ({
+  const buildInfoRow = (label: string, value: string, marginBottom = 4) => ({
     columns: [
       { text: label, width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
       { text: ':', width: COLON_WIDTH },
@@ -354,6 +410,17 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
     });
   }
 
+  if (isIndiaCompany && panNo) {
+    leftStack.push({
+      columns: [
+        { text: 'PAN', width: 28, style: 'labelBold' },
+        { text: ':', width: COLON_WIDTH },
+        { text: panNo, width: '*' }
+      ],
+      margin: [8, 0, 0, 3]
+    });
+  }
+
   // -----------------------------
   // Right side - Invoice Details
   // -----------------------------
@@ -374,10 +441,8 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
   );
 
   if (isIndiaCompany) {
-    rightStack.push(buildInfoRow('GST No.', gstVatNo, 7));
-    rightStack.push(buildInfoRow('IRN No.', irnNumber, 7));
-  } else {
-    rightStack.push(buildInfoRow('VAT No.', gstVatNo, 7));
+    rightStack.push(buildInfoRow('GST No.', gstVatNo, 4));
+    rightStack.push(buildInfoRow('IRN No.', irnNumber, 4));
   }
 
   // 🔥 Remove bottom margin from the LAST row automatically
@@ -400,7 +465,7 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
       }
     ],
     columnGap: 0,
-    margin: [10, 0, 0, 0]
+    margin: [10, 4, 0, 0]
   };
 
   // -----------------------------
@@ -500,7 +565,7 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
       { text: ':', width: COLON_WIDTH },
       { text: item.value, width: '*' }
     ],
-    margin: [5, 0, 0, 2]
+    margin: [5, 2, 0, 1]
   }));
 
   // -----------------------------
@@ -512,7 +577,7 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
       { text: ':', width: COLON_WIDTH },
       { text: item.value, width: '*' }
     ],
-    margin: [0, 0, 0, 2]
+    margin: [0, 2, 0, 1]
   }));
 
   // -----------------------------
@@ -563,19 +628,6 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
   return {
     stack: [
       {
-        canvas: [
-          {
-            type: 'line',
-            x1: PAGE_LEFT,
-            y1: 0,
-            x2: PAGE_RIGHT,
-            y2: 0,
-            lineWidth: 0.8
-          }
-        ],
-        margin: [0, 0, 0, 4]
-      },
-      {
         table: {
           widths: ['50%', '50%'],
           body: [[
@@ -587,7 +639,7 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
         margin: [0, 0, 0, 0]
       }
     ],
-    margin: [0, -4, 0, 0]
+    margin: [0, 0, 0, 0]
   };
 }
 

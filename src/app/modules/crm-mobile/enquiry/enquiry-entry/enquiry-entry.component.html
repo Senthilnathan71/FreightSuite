@@ -1308,7 +1308,7 @@
                                         }
                                         <!-- #endregion -->
                                          @if(selectedCargoMode === 'FCL'){
-                                        <div class="d-flex justify-content-end mt-2">
+                                        <div class="d-flex justify-content-end mt-2 me-2">
                                             <button class="btn btn-info btn-sm ms-auto" type="button"
                                                 (click)="addCargo(routeIndex)"
                                                 [disabled]="disableAddButtons || quotationCreatedAgainstThisEnquiry || (isEditMode && isSuspended)">
@@ -1321,7 +1321,7 @@
                                         <div formArrayName="cargo" class="table-responsive table-borderless"
                                             style="overflow-x: auto;">
                                             <div>
-                                                <table class="table table-hover align-middle no-wrap  table-sm mb-1 "
+                                                <table class="table table-hover align-middle no-wrap  table-sm mb-1 mt-1 "
                                                     style="min-width: 1200px; width: 100%;">
                                                     <thead>
                                                         <tr class="bg-info text-center">
@@ -2222,7 +2222,7 @@
             <h4 style="text-align: center;margin: 0px;padding: 6px 15px;border-top: 1px solid black;font-weight: bolder;"><strong> ENQUIRY</strong></h4>
 
             <!-- Enquiry Details -->
-            <div style="display:flex;flex-wrap:wrap;margin:0;padding:15px 10px;border-top:1px solid black;border-bottom:1px solid black;box-sizing:border-box;line-height:1.2;">
+            <div style="display:flex;flex-wrap:wrap;margin:0;padding:8px 10px;border-top:1px solid black;border-bottom:1px solid black;box-sizing:border-box;line-height:1.2;">
 
             <!-- LEFT COLUMN -->
             <div style="width:50%;padding-left:3rem;box-sizing:border-box;margin:0;">
@@ -2270,34 +2270,6 @@
                             <div style="padding-left:6px;">
                                 <!-- {{ (enquiryData?.EnquiryDate | formatDate)  }} -->
                                 {{ formatDate(enquiryData?.EnquiryDate ) }}
-                            </div>
-                        </div>
-
-
-                        <!-- Port of Loading -->
-                        <div style="display: flex;align-items: flex-start;margin: 6px 0;">
-                            <!-- Label -->
-                            <div style="width: 140px;font-weight: bolder;white-space: nowrap;">Port of Origin</div>
-
-                            <!-- Colon -->
-                            <div style="width: 15px;text-align: center;">:</div>
-
-                            <!-- Value -->
-                            <div style="flex: 1;line-height: 1.4;">{{ getPort(enquiryData?.enquiryRoute[0]?.PORSid) }}
-                            </div>
-                        </div>
-
-
-                        <!-- Port of Loading -->
-                        <div style="display: flex;align-items: flex-start;margin: 6px 0;">
-                            <!-- Label -->
-                            <div style="width: 140px;font-weight: bolder;white-space: nowrap;">Port of Loading</div>
-
-                            <!-- Colon -->
-                            <div style="width: 15px;text-align: center;">:</div>
-
-                            <!-- Value -->
-                            <div style="flex: 1;line-height: 1.4;">{{ getPort(enquiryData?.enquiryRoute[0]?.POLSid) }}
                             </div>
                         </div>
 
@@ -2402,403 +2374,273 @@
                                 {{ (enquiryData?.ShipmentExpectedDate | formatDate) || '' }}
                             </div>
                         </div>
-
-<!-- Port of Discharge -->
-<div style="display:flex; align-items:flex-start; margin:6px 0;">
-
-    <!-- Label -->
-    <div style="width:190px; font-weight:bolder;">
-        Port of Discharge
-    </div>
-
-    <!-- Colon -->
-    <div style="width:10px; text-align:center;">
-        :
-    </div>
-
-    <!-- Value -->
-    <div style="flex:1; padding-left:6px; line-height:1.4; word-break:break-word;">
-        {{ getPort(enquiryData?.enquiryRoute[0]?.PODSid) }}
-    </div>
-
-</div>
-
-<!-- Final Destination -->
-<div style="display:flex; align-items:flex-start; margin:6px 0;">
-
-    <!-- Label -->
-    <div style="width:190px; font-weight:bolder;">
-        Final Destination
-    </div>
-
-    <!-- Colon -->
-    <div style="width:10px; text-align:center;">
-        :
-    </div>
-
-    <!-- Value -->
-    <div style="flex:1; padding-left:6px; line-height:1.4; word-break:break-word;">
-        {{ getPort(enquiryData?.enquiryRoute[0]?.FDPSid) }}
-    </div>
-
-</div>
-
                     </div>
 
                 </div>
 
 
-                <!-- Product Table -->
-                <div style="margin-top: 0;">
-                    <div style=" padding-top:8px;padding-bottom: 8px;">
-                        <h5 style="margin:0; padding-left:55px;text-align: start; font-weight:bolder;">
-                            <strong>Product Details</strong>
-                        </h5>
+                <ng-container *ngFor="let route of enquiryData?.enquiryRoute; let routeIndex = index">
+                    <div style="margin-top: 0; border-top: 1px solid #000;" [style.marginTop.px]="routeIndex === 0 ? 0 : 12">
+                     
+<div>
+  <div style="display:flex; flex-direction:row; flex-wrap:nowrap; align-items:flex-start; margin:0; padding:10px 15px;  box-sizing:border-box; line-height:1.2;">
+
+    <!-- POO -->
+    <div style="display:flex; flex-direction:column; flex:1; min-width:0; padding-right:10px;">
+      <div style="font-weight:bolder;  color:#333;"><strong>POO</strong></div>
+      <div style=" overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+        {{ getPort(route?.PORSid) || '-' }}
+      </div>
+    </div>
+
+    <!-- POL -->
+    <div style="display:flex; flex-direction:column; flex:1; min-width:0; padding-right:10px;">
+      <div style="font-weight:bolder;  color:#333;"><strong>POL</strong></div>
+      <div style=" overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+        {{ getPort(route?.POLSid) || '-' }}
+      </div>
+    </div>
+
+    <!-- POD -->
+    <div style="display:flex; flex-direction:column; flex:1; min-width:0; padding-right:10px;">
+      <div style="font-weight:bolder;  color:#333;"><strong>POD</strong></div>
+      <div style=" overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+        {{ getPort(route?.PODSid) || '-' }}
+      </div>
+    </div>
+
+    <!-- FPOD -->
+    <div style="display:flex; flex-direction:column; flex:1; min-width:0;">
+      <div style="font-weight:bolder; color:#333;"><strong>FPOD</strong></div>
+      <div style=" overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+        {{ getPort(route?.FDPSid) || '-' }}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+                     <div style="overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse; table-layout:fixed; margin: 0;">
+        <thead>
+            <tr>
+                <th style="border: 1px solid #000; padding: 2px 4px; border-left:none; text-align: center; font-weight: bolder; width: 9%;">
+                    <strong>Cargo Type</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 25%;">
+                    <strong>Cargo Desc</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 12%;">
+                    <strong>Product Name</strong>
+                </th>
+                @if(selectedCargoMode === "AIR"){
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 13%;">
+                    <strong>Chargeable Wt.</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 8%;">
+                    <strong>Pkg Type</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 9%;">
+                    <strong>Qty.</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 9%;">
+                    <strong>Gross Wt.</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; border-right: none; width: 10%;">
+                    <strong>CBM</strong>
+                </th>
+                }
+                @if(selectedCargoMode === "FCL"){
+                <th style="border: 1px solid #000; padding: 2px 4px; font-weight: bolder; width: 12%; text-align: center;">
+                    <strong>Cont. Type</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; width: 10%; font-weight: bolder; text-align: center;">
+                    <strong>No. of Cont.</strong>
+                </th>
+                }
+                @if(selectedCargoMode === "LCL"){
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; width: 13%;">
+                    <strong>Chargeable Wt.</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder;">
+                    <strong>Qty.</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; font-weight: bolder; text-align: center;">
+                    <strong>Wt. Unit</strong>
+                </th>
+                }
+                @if(selectedCargoMode === "ROAD"){
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder;">
+                    <strong>Qty.</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder;">
+                    <strong>Gross Wt.</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder;">
+                    <strong>Net Wt.</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder;">
+                    <strong>CBM</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; text-align: center; font-weight: bolder; border-right: none;">
+                    <strong>Chargeable Wt.</strong>
+                </th>
+                }
+                @if(selectedCargoMode === "FCL" || selectedCargoMode==="LCL"){
+                <th style="border: 1px solid #000; padding: 2px 4px; font-weight: bolder; width: 8%; text-align: center;">
+                    <strong>Pkg Type</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; font-weight: bolder; text-align: center; width: 10%;">
+                    <strong>Gross Wt.</strong>
+                </th>
+                <th style="border: 1px solid #000; padding: 2px 4px; font-weight: bolder; border-right: none; text-align: center;">
+                    <strong>CBM</strong>
+                </th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            <ng-container *ngFor="let cargo of route?.enquiryCargo">
+                <tr style="line-height: 1.2;">
+                    <td style="border:1px solid #000; padding:2px 4px; border-left:none; text-align:start;">
+                        {{ cargo?.CargoType || '' }}
+                    </td>
+                    <td style="border:1px solid #000; padding:2px 4px; text-align:start;">
+                        {{ cargo?.CargoDescription || '' }}
+                    </td>
+                    <td style="border:1px solid #000; padding:2px 4px; text-align:start;">
+                        {{ cargo?.ProductName || '' }}
+                    </td>
+
+                    @if (selectedCargoMode === 'AIR') {
+                    <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                        {{ cargo?.ChargeableWeight | number:'1.3-3' }}
+                    </td>
+                    <td style="border:1px solid #000; padding:2px 4px; text-align:start;">
+                        {{ cargo?.PackageType || '' }}
+                    </td>
+                    <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                        {{ cargo?.PackageQty || ' ' }}
+                    </td>
+                    <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                        {{ cargo?.GrossWeight | number:'1.3-3' }}
+                    </td>
+                    <td style="border:1px solid #000; padding:2px 4px; text-align:right; border-right:none;">
+                        {{ cargo?.Volume | number:'1.3-3' }}
+                    </td>
+                    }
+
+                    @if (selectedCargoMode === 'FCL') {
+                    <td style="border:1px solid #000; padding:2px 4px;">
+                        {{ cargo?.ContainerType || '' }}
+                    </td>
+                    <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                        {{ cargo?.PackageQty || '' }}
+                    </td>
+                    }
+
+                    @if (selectedCargoMode === 'LCL') {
+                    <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                        {{ cargo?.ChargeableWeight || '' }}
+                    </td>
+                    <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                        {{ cargo?.PackageQty | number:'1.2-2' }}
+                    </td>
+                    <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                        {{ getUOMCode(cargo?.WeightUnitSid) }}
+                    </td>
+                    }
+
+                    @if (selectedCargoMode === 'ROAD') {
+                    <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                        {{ cargo?.Qty || '' }}
+                    </td>
+                    <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                        {{ cargo?.GrossWeight | number:'1.3-3' }}
+                    </td>
+                    <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                        {{ cargo?.NetWeight | number:'1.3-3' }}
+                    </td>
+                    <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                        {{ cargo?.Volume | number:'1.3-3' }}
+                    </td>
+                    <td style="border:1px solid #000; padding:2px 4px; text-align:right; border-right:none;">
+                        {{ cargo?.ChargeableWeight | number:'1.3-3' }}
+                    </td>
+                    }
+
+                    @if (selectedCargoMode === 'FCL' || selectedCargoMode === 'LCL') {
+                    <td style="border:1px solid #000; padding:2px 4px;">
+                        {{ cargo?.PackageType || '' }}
+                    </td>
+                    <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                        {{ cargo?.GrossWeight | number:'1.3-3' }}
+                    </td>
+                    <td style="border:1px solid #000; padding:2px 4px; text-align:right; border-right:none;">
+                        {{ cargo?.Volume | number:'1.3-3' }}
+                    </td>
+                    }
+                </tr>
+            </ng-container>
+            <tr style="line-height: 1.2; font-weight: 600;">
+                @if (selectedCargoMode === 'AIR') {
+                <td style="border:1px solid #000; padding:2px 4px; border-left:none;" colspan="5"></td>
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                    Total
+                </td>
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                    {{ calculateRouteGrossWeight(route) | number:'1.3-3' }}
+                </td>
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right; border-right:none;">
+                    {{ calculateRouteCBM(route) | number:'1.3-3' }}
+                </td>
+                }
+
+                @if (selectedCargoMode === 'FCL') {
+                <td style="border:1px solid #000; padding:2px 4px; border-left:none;" colspan="5"></td>
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                    Total
+                </td>
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                    {{ calculateRouteGrossWeight(route) | number:'1.3-3' }}
+                </td>
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right; border-right:none;">
+                    {{ calculateRouteCBM(route) | number:'1.3-3' }}
+                </td>
+                }
+
+                @if (selectedCargoMode === 'LCL') {
+                <td style="border:1px solid #000; padding:2px 4px; border-left:none;" colspan="6"></td>
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                    Total
+                </td>
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                    {{ calculateRouteGrossWeight(route) | number:'1.3-3' }}
+                </td>
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right; border-right:none;">
+                    {{ calculateRouteCBM(route) | number:'1.3-3' }}
+                </td>
+                }
+
+                @if (selectedCargoMode === 'ROAD') {
+                <td style="border:1px solid #000; padding:2px 4px; border-left:none;" colspan="5"></td>
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                    Total
+                </td>
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                    {{ calculateRouteGrossWeight(route) | number:'1.3-3' }}
+                </td>
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right; border-right:none;">
+                    {{ calculateRouteNetWeight(route) | number:'1.3-3' }}
+                </td>
+                }
+            </tr>
+        </tbody>
+    </table>
+</div>
+
                     </div>
-
-                    <div style="overflow-x: auto;">
-                        <table
-                            style="width: 100%; border-collapse: collapse;  table-layout:fixed; margin: 0;">
-                            <thead>
-                                <tr>
-                                    <th
-                                        style="border: 1px solid #000; padding: 4px;border-left:none;text-align: center;font-weight: bolder;width: 9%;">
-                                        <strong>Cargo Type</strong>
-                                    </th>
-                                    <th
-                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;width: 25%;">
-                                        <strong>Cargo Desc</strong>
-                                    </th>
-                                    <th
-                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;width: 12%;">
-                                        <strong>Product Name</strong>
-                                    </th>
-                                    @if(selectedCargoMode === "AIR"){
-                                    <th
-                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;width: 13%;">
-                                        <strong>Chargeable Wt.</strong>
-                                    </th>
-                                    <th
-                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;width: 8%;">
-                                        <strong>Pkg Type</strong>
-                                    </th>
-                                    <th
-                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;width: 9%;">
-                                        <strong>Qty.</strong>
-                                    </th>
-                                    <th
-                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;width: 9%;">
-                                        <strong>Gross Wt.</strong>
-                                    </th>
-                                    <th
-                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;border-right: none;width: 10%;">
-                                        <strong>CBM</strong>
-                                    </th>
-
-                                    }
-                                    @if(selectedCargoMode === "FCL"){
-                                    <th
-                                        style="border: 1px solid #000; padding: 4px;font-weight: bolder;width: 12%;text-align: center;">
-                                        <strong>Cont. Type</strong>
-                                    </th>
-                                    <th
-                                        style="border: 1px solid #000; padding: 4px;width: 10%;font-weight: bolder;text-align: center;">
-                                        <strong>No. of Cont.</strong>
-                                    </th>
-
-                                    }
-                                    @if(selectedCargoMode === "LCL"){
-                                    <th
-                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;width: 13%;text-align: center;">
-                                        <strong>Chargeable Wt.</strong>
-                                    </th>
-                                    <th
-                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;text-align: center;">
-                                        <strong>Qty.</strong>
-                                    </th>
-                                    <th
-                                        style="border: 1px solid #000; padding: 4px;font-weight: bolder;text-align: center;">
-                                        <strong>Wt. Unit</strong>
-                                    </th>
-                                    }
-                                    @if(selectedCargoMode === "ROAD"){
-                                    <th
-                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;">
-                                        <strong>Qty.</strong>
-                                    </th>
-                                    <th
-                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;">
-                                        <strong>Gross Wt.</strong>
-                                    </th>
-                                    <th
-                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;">
-                                        <strong>Net Wt.</strong>
-                                    </th>
-                                    <th
-                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;">
-                                        <strong>CBM</strong>
-                                    </th>
-                                    <th
-                                        style="border: 1px solid #000; padding: 4px;text-align: center;font-weight: bolder;border-right: none;">
-                                        <strong>Chargeable Wt.</strong>
-                                    </th>
-                                    }
-                                    @if(selectedCargoMode === "FCL" || selectedCargoMode==="LCL"){
-                                    <th
-                                        style="border: 1px solid #000; padding: 4px;font-weight: bolder;width: 8%;text-align: center;">
-                                        <strong>Pkg Type</strong>
-                                    </th>
-                                    <th
-                                        style="border: 1px solid #000; padding: 4px;font-weight: bolder;text-align: center;width: 10%;">
-                                        <strong>Gross Wt.</strong>
-                                    </th>
-                                    <th
-                                        style="border: 1px solid #000; padding: 4px;font-weight: bolder;border-right: none;text-align: center;">
-                                        <strong>CBM</strong>
-                                    </th>
-                                    }
-                                </tr>
-                            </thead>
-                            <tbody>
-
-                                <!-- ROUTE LOOP -->
-                                <ng-container *ngFor="let route of enquiryData?.enquiryRoute">
-
-                                    <!-- CARGO LOOP -->
-                                    <ng-container *ngFor="let cargo of route?.enquiryCargo">
-
-                                        <tr>
-                                            <td
-                                                style="border:1px solid #000;padding:4px;border-left:none;text-align:start;">
-                                                {{ cargo?.CargoType || '' }}
-                                            </td>
-
-                                            <td style="border:1px solid #000;padding:4px;text-align:start;">
-                                                {{ cargo?.CargoDescription || '' }}
-                                            </td>
-
-                                            <td style="border:1px solid #000;padding:4px;text-align:start;">
-                                                {{ cargo?.ProductName || '' }}
-                                            </td>
-
-                                            <!-- AIR -->
-                                            @if (selectedCargoMode === 'AIR') {
-                                            <td style="border:1px solid #000;padding:4px;text-align:right;">
-                                                {{ cargo?.ChargeableWeight  | number:'1.3-3' }}
-                                            </td>
-                                            <td style="border:1px solid #000;padding:4px;text-align:start;">
-                                                {{ cargo?.PackageType || '' }}
-                                            </td>
-                                            <td style="border:1px solid #000;padding:4px;text-align:right;">
-                                                {{ cargo?.PackageQty || ' ' }}
-                                            </td>
-                                            <td style="border:1px solid #000;padding:4px;text-align:right;">
-                                                {{ cargo?.GrossWeight | number:'1.3-3' }}
-                                            </td>
-                                            <td
-                                                style="border:1px solid #000;padding:4px;text-align:right;border-right:none;">
-                                                {{ cargo?.Volume | number:'1.3-3' }}
-                                            </td>
-                                            }
-
-                                            <!-- FCL -->
-                                            @if (selectedCargoMode === 'FCL') {
-
-                                            <td style="border:1px solid #000;padding:4px;">
-                                                {{ cargo?.ContainerType || '' }}
-                                            </td>
-                                            <td style="border:1px solid #000;padding:4px;text-align:right;">
-                                                {{ cargo?.PackageQty || '' }}
-                                            </td>
-                                            }
-
-                                            <!-- LCL -->
-                                            @if (selectedCargoMode === 'LCL') {
-                                            <td style="border:1px solid #000;padding:4px;text-align:right;">
-                                                {{ cargo?.ChargeableWeight || '' }}
-                                            </td>
-                                            <td style="border:1px solid #000;padding:4px;text-align:right;">
-                                                {{ cargo?.PackageQty | number:'1.2-2' }}
-                                            </td>
-                                            <td style="border:1px solid #000;padding:4px;text-align:right;">
-                                                {{ getUOMCode(cargo?.WeightUnitSid) }}
-                                            </td>
-
-                                            }
-
-                                            <!-- ROAD -->
-                                            @if (selectedCargoMode === 'ROAD') {
-                                            <td style="border:1px solid #000;padding:4px;text-align:right;">
-                                                {{ cargo?.Qty || '' }}
-                                            </td>
-                                            <td style="border:1px solid #000;padding:4px;text-align:right;">
-                                                {{ cargo?.GrossWeight | number:'1.3-3' }}
-                                            </td>
-                                            <td style="border:1px solid #000;padding:4px;text-align:right;">
-                                                {{ cargo?.NetWeight | number:'1.3-3' }}
-                                            </td>
-                                            <td style="border:1px solid #000;padding:4px;text-align:right;">
-                                                {{ cargo?.Volume | number:'1.3-3' }}
-                                            </td>
-                                            <td
-                                                style="border:1px solid #000;padding:4px;text-align:right;border-right:none;">
-                                                {{ cargo?.ChargeableWeight | number:'1.3-3' }}
-                                            </td>
-                                            }
-
-                                            <!-- FCL + LCL COMMON -->
-                                            @if (selectedCargoMode === 'FCL' || selectedCargoMode === 'LCL') {
-                                            <td style="border:1px solid #000;padding:4px;">
-                                                {{ cargo?.PackageType || '' }}
-                                            </td>
-
-                                            <td style="border:1px solid #000;padding:4px;text-align:right;">
-                                                {{ cargo?.GrossWeight | number:'1.3-3' }}
-                                            </td>
-                                            <td
-                                                style="border:1px solid #000;padding:4px;text-align:right;border-right: none;">
-                                                {{ cargo?.Volume | number:'1.3-3' }}
-                                            </td>
-
-                                            }
-                                        </tr>
-
-                                    </ng-container>
-                                </ng-container>
-
-                                <!-- LCL TOTAL ROW -->
-                                @if (selectedCargoMode === 'LCL') {
-                                <tr>
-                                    <td style="border:1px solid #000;padding:4px;border-left:none;"></td>
-                                    <td style="border:1px solid #000;padding:4px;"></td>
-                                    <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
-                                        Total</td>
-                                    <td style="border:1px solid #000;padding:4px;"></td>
-                                    <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
-                                        {{ calculateTotalPackageQty() | number:'1.2-2' }}
-                                    </td>
-                                    <td style="border:1px solid #000;padding:4px;"></td>
-                                    <td style="border:1px solid #000;padding:4px;"></td>
-                                    <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
-                                        {{ calculateTotalGrossWeight() | number:'1.3-3' }}
-                                    </td>
-                                    <!-- <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
-        {{ calculateTotalNetWeight() | number:'1.3-3' }}
-      </td> -->
-                                    <td
-                                        style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;border-right:none;">
-                                        {{ calculateTotalCBM() | number:'1.3-3' }}
-                                    </td>
-
-                                </tr>
-                                }
-
-                                @if (selectedCargoMode === 'FCL') {
-                                <tr>
-                                    <td style="border:1px solid #000;padding:4px;border-left:none;"></td>
-                                    <td style="border:1px solid #000;padding:4px;"></td>
-                                    <td style="border:1px solid #000;padding:4px;"></td>
-                                    <td style="border:1px solid #000;padding:4px;"></td>
-                                    <td style="border:1px solid #000;padding:4px;"></td>
-                                    <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
-                                        Total</td>
-                                    <!-- <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
-        {{ calculateTotalPackageQty() | number:'1.2-2' }}
-      </td> -->
-
-                                    <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
-                                        {{ calculateTotalGrossWeight() | number:'1.3-3' }}
-                                    </td>
-                                    <!-- <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
-        {{ calculateTotalNetWeight() | number:'1.3-3' }}
-      </td> -->
-                                    <td
-                                        style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;border-right:none;">
-                                        {{ calculateTotalCBM() | number:'1.3-3' }}
-                                    </td>
-
-                                </tr>
-                                }
-                                @if (selectedCargoMode === 'ROAD') {
-                                <tr>
-                                    <td style="border:1px solid #000;padding:4px;border-left:none;"></td>
-                                    <td style="border:1px solid #000;padding:4px;"></td>
-                                    <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
-                                        Total</td>
-                                    <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
-                                        {{ calculateTotalQty() }}
-                                    </td>
-                                    <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
-                                        {{ calculateTotalGrossWeight() | number:'1.3-3' }}
-                                    </td>
-                                    <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
-                                        {{ calculateTotalNetWeight() | number:'1.3-3' }}
-                                    </td>
-                                    <td style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;">
-                                        {{ calculateTotalCBM() | number:'1.3-3' }}
-                                    </td>
-                                    <td
-                                        style="border:1px solid #000;padding:4px;text-align:right;font-weight:bold;border-right:none;">
-                                        {{ calculateTotalChargeableWeight() | number:'1.3-3' }}
-                                    </td>
-                                </tr>
-                                }
-                                @if (selectedCargoMode === 'AIR') {
-                                <tr>
-                                    <!-- MERGED EMPTY AREA -->
-
-                                    <td colspan="4" style="
-      border:1px solid #000;
-      border-left:none;
-    ">
-                                    </td>
-
-                                    <!-- TOTAL LABEL -->
-                                    <td style="
-      border:1px solid #000;
-      text-align:right;
-      font-weight:bold;
-    ">
-                                        Total
-                                    </td>
-
-                                    <!-- QTY TOTAL -->
-                                    <td style="
-      border:1px solid #000;
-      text-align:right;
-      font-weight:bold;
-    ">
-                                        {{ calculateTotalPackageQty() || ' ' }}
-                                    </td>
-
-                                    <!-- GROSS WT TOTAL -->
-                                    <td style="
-      border:1px solid #000;
-      text-align:right;
-      font-weight:bold;
-    ">
-                                        {{ calculateTotalGrossWeight() | number:'1.3-3' }}
-                                    </td>
-
-                                    <!-- CBM TOTAL -->
-                                    <td style="
-      border:1px solid #000;
-      border-right:none;
-      text-align:right;
-      font-weight:bold;
-    ">
-                                        {{ calculateTotalCBM() | number:'1.3-3' }}
-                                    </td>
-                                </tr>
-                                }
-
-
-                            </tbody>
-
-                        </table>
-                    </div>
-
-                </div>
+                </ng-container>
 
                 <!-- Remarks -->
                 <div style="

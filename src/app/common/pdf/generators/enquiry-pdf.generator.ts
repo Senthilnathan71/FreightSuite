@@ -152,41 +152,69 @@ function buildEnquiryInfo(data: EnquiryPdfData): any {
 function buildCargoSection(data: EnquiryPdfData): any[] {
   const content: any[] = [];
   const routes = data.routes || [];
+  const routesWithCargo = routes.filter(route => (route.cargo || []).length > 0);
 
-  // Collect all cargo from all routes
-  const allCargo: any[] = [];
-  routes.forEach(route => {
-    if (route.cargo && route.cargo.length > 0) {
-      allCargo.push(...route.cargo);
-    }
-  });
-
-  if (allCargo.length === 0) {
+  if (routesWithCargo.length === 0) {
     return content;
   }
 
-  content.push(buildSectionTitle('Product Details', { margin: [0, 6, 0, 6] }));
+  routesWithCargo.forEach((route, routeIndex) => {
+    const cargoData = (route.cargo || []).map(cargo => ({
+      CargoType: cargo.cargoType || '',
+      CargoDesc: cargo.cargoDescription || '',
+      ProductName: cargo.productName || '',
+      ContainerType: cargo.containerType || '',
+      NoofContainers: cargo.noOfContainers ?? cargo.packageQty ?? cargo.noOfPackage ?? 0,
+      NoOfPackage: cargo.packageQty || cargo.noOfPackage || 0,
+      Qty: cargo.packageQty || cargo.noOfPackage || 0,
+      GrossWeight: cargo.grossWeight || 0,
+      NetWeight: cargo.netWeight || 0,
+      Volume: cargo.volume || 0,
+      ChargeableWeight: cargo.chargeableWeight || 0,
+      PackageType: cargo.packageType || '',
+      WeightUnit: cargo.weightUnit || ''
+    }));
 
-  // Transform cargo data for table
-  const cargoData = allCargo.map(cargo => ({
-    CargoType: cargo.cargoType || '',
-    CargoDesc: cargo.cargoDescription || '',
-    ProductName: cargo.productName || '',
-    ContainerType: cargo.containerType || '',
-    NoofContainers: cargo.noOfContainers ?? cargo.containerQty ?? cargo.qty ?? cargo.Qty ?? cargo.packageQty ?? cargo.noOfPackage ?? 0,
-    NoOfPackage: cargo.packageQty || cargo.noOfPackage || 0,
-    Qty: cargo.packageQty || cargo.noOfPackage || 0,
-    GrossWeight: cargo.grossWeight || 0,
-    NetWeight: cargo.netWeight || 0,
-    Volume: cargo.volume || 0,
-    ChargeableWeight: cargo.chargeableWeight || 0,
-    PackageType: cargo.packageType || '',
-    WeightUnit: cargo.weightUnit || ''
-  }));
+    if (routeIndex > 0) {
+      content.push(buildDivider({ width: 575, margin: [-10, 2, -10, 2] }));
+      content.push({
+        text: '',
+        margin: [0, 0, 0, 0]
+      });
+    }
 
-  content.push(buildCargoTable(cargoData, data.fclLcl, { margin: [-10, 0, -10, 6] }));
+    content.push(buildRoutePortSummary(route));
+    content.push(buildCargoTable(cargoData, data.fclLcl, { margin: [-10, 4, -10, 3] }));
+  });
 
   return content;
+}
+
+function buildRoutePortSummary(route: EnquiryPdfData['routes'][number]): any {
+  const item = (label: string, value: string) => ({
+    stack: [
+      { text: label, style: 'labelBold', margin: [0, 0, 0, 2] },
+      { text: value || '-', noWrap: true }
+    ],
+    margin: [0, 0, 10, 0]
+  });
+
+  return {
+    columns: [
+      item('POO', formatPort(route.poo)),
+      item('POL', formatPort(route.pol)),
+      item('POD', formatPort(route.pod)),
+      {
+        stack: [
+          { text: 'FPOD', style: 'labelBold', margin: [0, 0, 0, 2] },
+          { text: formatPort(route.fpd) || '-', noWrap: true }
+        ],
+        margin: [0, 0, 0, 0]
+      }
+    ],
+    columnGap: 8,
+    margin: [5, 2, 5, 3]
+  };
 }
 
 /**
