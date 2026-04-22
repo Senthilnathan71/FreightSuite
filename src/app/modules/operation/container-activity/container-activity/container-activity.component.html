@@ -5,10 +5,10 @@
               
             </div>
             <div class="toolbar-right">
-                  <button class="table-action-btn primary" (click)="openActivityModal()" [disabled]="disableAddBtn">
+                  <button class="table-action-btn primary" (click)="openActivityModal()" [disabled]="disableAddBtn || isFormDisabled">
                     <i class="fas fa-plus"></i> Add
                 </button>
-                <button class="table-action-btn export" (click)="reportActivities()">
+                <button class="table-action-btn export" (click)="reportActivities()" [disabled]="isFormDisabled">
                     <i class="fas fa-download"></i> Export
                 </button>
             </div>
@@ -34,11 +34,11 @@
                     <tr class="table-row">
                         <td class="actions-cell">
                             <div class="d-flex align-items-center justify-content-center">
-                                <a class="text-info mx-2" (click)="openActivityModal(activity, activityIndex)">
+                                <a class="text-info mx-2" (click)="isFormDisabled ? null : openActivityModal(activity, activityIndex)">
                                     <i-feather class="feather-sm text-info" name="eye"></i-feather>
                                 </a>
                                 <a class="text-danger mx-2 ps-3 border-start" 
-                                   (click)="deleteActivity(activityIndex, activity.ContainerActivitySid)">
+                                   (click)="isFormDisabled ? null : deleteActivity(activityIndex, activity.ContainerActivitySid)">
                                     <i-feather name="trash-2" class="feather-sm"></i-feather>
                                 </a>
                             </div>
@@ -85,7 +85,8 @@
                            bindValue="ContainerNumber"
                            placeholder=""
                            (change)="onContainerChange($event)"
-                           (search)="filterContainers($event.term)">
+                           (search)="filterContainers($event.term)"
+                           [readonly]="isFormDisabled">
                         <ng-template ng-option-tmp let-item="item">
                             <div>
                                 <strong>{{ item.ContainerNumber }}</strong>
@@ -107,7 +108,7 @@
                            bindLabel="ContainerName"
                            bindValue="ContainerTypeMasterSid"
                            placeholder=""
-                           [readonly]="!!activityForm.get('ContainerNumber')?.value">
+                           [readonly]="isFormDisabled || !!activityForm.get('ContainerNumber')?.value">
                     </ng-select>
                     <label class="input-label">Container Type</label>
                 </div>
@@ -120,7 +121,8 @@
                               bindLabel="ActivityName" 
                               bindValue="ActivityCode"
                               placeholder=""
-                              (change)="onActivityChange($event)">
+                              (change)="onActivityChange($event)"
+                              [readonly]="isFormDisabled">
                     </ng-select>
                     <label class="input-label">Activity Name <span class="text-danger">*</span></label>
                     @if(c['ActivityCode']?.touched && c['ActivityCode']?.errors?.['required']){
@@ -133,8 +135,8 @@
                 <div class="custom-form-group custom-form-group-select-date">
                     <div class="input-group">
                         <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d="ngbDatepicker"
-                            formControlName="ActivityDate" (click)="d.toggle()" />
-                        <button class="btn bi bi-calendar3" (click)="d.toggle()" type="button">
+                            formControlName="ActivityDate" (click)="isFormDisabled ? null : d.toggle()" [readonly]="isFormDisabled" />
+                        <button class="btn bi bi-calendar3" (click)="isFormDisabled ? null : d.toggle()" type="button" [disabled]="isFormDisabled">
                             <i-feather name="calendar" class="feather-sm"></i-feather>
                         </button>
                     </div>
@@ -150,7 +152,8 @@
                     <ng-select formControlName="ActivityFrom"
                                [items]="fromOptions"
                                placeholder="Select From"
-                               (change)="onFromChange($event)">
+                               (change)="onFromChange($event)"
+                               [readonly]="isFormDisabled">
                     </ng-select>
                     <label class="input-label">From</label>
                 </div>
@@ -161,7 +164,8 @@
                     <ng-select formControlName="ActivityTo"
                                [items]="toOptions"
                                placeholder="Select To"
-                               (change)="onToChange($event)">
+                               (change)="onToChange($event)"
+                               [readonly]="isFormDisabled">
                     </ng-select>
                     <label class="input-label">To</label>
                 </div>
@@ -169,7 +173,7 @@
 
             <aside class="col-md-4">
                 <div class="custom-form-group mt-1">
-                    <textarea formControlName="Remarks" class="custom-input-field sm" rows="1" placeholder=""></textarea>
+                    <textarea formControlName="Remarks" class="custom-input-field sm" rows="1" placeholder="" [readonly]="isFormDisabled"></textarea>
                     <label class="input-label">Remarks</label>
                 </div>
             </aside>
@@ -178,6 +182,6 @@
 
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss('Cancel')">Cancel</button>
-        <button type="button" class="btn btn-sm btn-info" (click)="onActivitySubmit()">Save</button>
+        <button type="button" class="btn btn-sm btn-info" (click)="onActivitySubmit()" [disabled]="isFormDisabled">Save</button>
     </div>
 </ng-template>

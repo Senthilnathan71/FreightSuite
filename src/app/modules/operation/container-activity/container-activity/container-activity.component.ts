@@ -56,6 +56,7 @@ export class ContainerActivityComponent implements OnInit, OnChanges {
   private _dataItems: any[] = [];
   @Input() formData: any;
   @Input() JobMasterSid: number | null = null;
+  @Input() isFormDisabled: boolean = false;
   
   // Input for master job containers (array)
   private _masterJobContainers: any[] = [];
@@ -244,6 +245,10 @@ export class ContainerActivityComponent implements OnInit, OnChanges {
   }
 
   openActivityModal(data?: any, activityIndex?: number) {
+    if (this.isFormDisabled) {
+      return;
+    }
+
     this.activityForm = this.initActivityForm();
     
     if (data) {
@@ -303,6 +308,10 @@ export class ContainerActivityComponent implements OnInit, OnChanges {
   }
 
   onActivitySubmit() {
+    if (this.isFormDisabled) {
+      return;
+    }
+
     const containerNumber = this.activityForm.get('ContainerNumber')?.value;
     const containerType = this.activityForm.get('ContainerType')?.value;
 
@@ -356,6 +365,10 @@ export class ContainerActivityComponent implements OnInit, OnChanges {
   }
 
   deleteActivity(activityIndex: number, ContainerActivitySid?: number) {
+    if (this.isFormDisabled) {
+      return;
+    }
+
     const realIndex = ((this.page - 1) * this.pageSize) + activityIndex;
     
     if (ContainerActivitySid) {

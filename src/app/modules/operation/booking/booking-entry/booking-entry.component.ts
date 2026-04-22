@@ -4356,10 +4356,16 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
 
   openTandC() {
     this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     const departmentSid = this.bookingData?.DepartmentMasterSid;
     const pol = this.bookingData?.POL;
     const pod = this.bookingData?.POD;
     const carrier = this.bookingData?.CarrierSid || null;
+    const transactionPayload = {
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    MenuMasterSid: this.currentMenuId,
+    DocumentSid: this.bookingData?.BookingHeaderSid
+  };
     const payload = { 
       MenuMasterSid: this.currentMenuId,
       DepartmentMasterSid: departmentSid,
@@ -4368,6 +4374,20 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
       Carrier: carrier,
       DocumentSid: this.bookingData?.BookingHeaderSid
     };
+      const getTermText = (item: any): string =>
+    (item?.Terms || item?.TandC || '').trim().toLowerCase();
+
+  const isSameTerm = (a: any, b: any): boolean =>
+    (
+      a?.TandCTransactionSid &&
+      b?.TandCTransactionSid &&
+      a.TandCTransactionSid === b.TandCTransactionSid
+    ) ||
+    (
+      getTermText(a) === getTermText(b) &&
+      (a?.DocumentSid ?? this.bookingData?.BookingHeaderSid ?? null) ===
+      (b?.DocumentSid ?? this.bookingData?.BookingHeaderSid ?? null)
+    );
      const openModal = (terms: any[]) => {
       const modalRef = this.modalService.open(TermsAndConditionsComponent, {
             size: 'lg',
@@ -4383,12 +4403,30 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
           modalRef.componentInstance.Carrier = carrier;
           modalRef.componentInstance.loadAllOnGet = !this.isTermsAndConditionsEnabled;
      };
-     if (!this.isTermsAndConditionsEnabled) {
-      this.TandCList = [];
-      openModal(this.TandCList);
-      return;
-    }
-    this.masterService.getTandCByCondition(payload).subscribe(
+   if (this.isTermsAndConditionsEnabled) {
+    forkJoin({
+      tandc: this.masterService.getTandC(transactionPayload),
+      defaults: this.masterService.getTandCByCondition(payload)
+    }).subscribe(
+      (resp: any) => {
+        const tandcData = resp?.tandc?.status ? (resp.tandc.data || []) : [];
+        const defaultData = resp?.defaults?.status ? (resp.defaults.data || []) : [];
+
+        const combined = [...tandcData, ...defaultData].filter(
+          (item: any, index: number, arr: any[]) =>
+            index === arr.findIndex((x: any) => isSameTerm(x, item))
+        );
+
+        this.TandCList = combined;
+        openModal(this.TandCList);
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+    return;
+  }
+    this.masterService.getTandC(transactionPayload).subscribe(
       (resp: any) => {
         if (resp.status) {
           this.TandCList = resp.data;

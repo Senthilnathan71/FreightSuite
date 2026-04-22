@@ -2842,30 +2842,67 @@ export class VendorInvoiceEntryComponent implements OnInit {
   // Terms & Conditions Method
   openTandC() {
     this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
-    const payload = { 
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    const payload = {
       MenuMasterSid: this.currentMenuId,
       DocumentSid: this.vendorInvoiceData?.VoucherHeaderSid
     };
+    const transactionPayload = {
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    MenuMasterSid: this.currentMenuId,
+    DocumentSid: this.vendorInvoiceData?.VoucherHeaderSid
+  };
+  const getTermText = (item: any): string =>
+    (item?.Terms || item?.TandC || '').trim().toLowerCase();
+
+  const isSameTerm = (a: any, b: any): boolean =>
+    (
+      a?.TandCTransactionSid &&
+      b?.TandCTransactionSid &&
+      a.TandCTransactionSid === b.TandCTransactionSid
+    ) ||
+    (
+      getTermText(a) === getTermText(b) &&
+      (a?.DocumentSid ?? this.vendorInvoiceData?.VoucherHeaderSid ?? null) ===
+      (b?.DocumentSid ?? this.vendorInvoiceData?.VoucherHeaderSid ?? null)
+    );
 
     const openModal = (terms: any[]) => {
       const modelRef = this.modalService.open(TermsAndConditionsComponent, {
-              size: 'lg',
-              backdrop: 'static',
-              centered: true,
-            });
-            modelRef.componentInstance.terms = terms || [];
-          modelRef.componentInstance.MenuMasterSid = this.currentMenuId;
-          modelRef.componentInstance.DocumentSid = this.vendorInvoiceData?.VoucherHeaderSid;
-          modelRef.componentInstance.loadAllOnGet = !this.isTermsAndConditionsEnabled;
+        size: 'lg',
+        backdrop: 'static',
+        centered: true,
+      });
+      modelRef.componentInstance.terms = terms || [];
+      modelRef.componentInstance.MenuMasterSid = this.currentMenuId;
+      modelRef.componentInstance.DocumentSid = this.vendorInvoiceData?.VoucherHeaderSid;
+      modelRef.componentInstance.loadAllOnGet = !this.isTermsAndConditionsEnabled;
     };
 
-    if (!this.isTermsAndConditionsEnabled) {
-      this.TandCList = [];
-      openModal(this.TandCList);
-      return;
-    }
+    if (this.isTermsAndConditionsEnabled) {
+    forkJoin({
+      tandc: this.masterService.getTandC(transactionPayload),
+      defaults: this.masterService.getTandCByCondition(payload)
+    }).subscribe(
+      (resp: any) => {
+        const tandcData = resp?.tandc?.status ? (resp.tandc.data || []) : [];
+        const defaultData = resp?.defaults?.status ? (resp.defaults.data || []) : [];
 
-    this.masterService.getTandCByCondition(payload).subscribe(
+        const combined = [...tandcData, ...defaultData].filter(
+          (item: any, index: number, arr: any[]) =>
+            index === arr.findIndex((x: any) => isSameTerm(x, item))
+        );
+
+        this.TandCList = combined;
+        openModal(this.TandCList);
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+    return;
+  }
+    this.masterService.getTandC(transactionPayload).subscribe(
       (resp: any) => {
         if (resp.status) {
           this.TandCList = resp.data;

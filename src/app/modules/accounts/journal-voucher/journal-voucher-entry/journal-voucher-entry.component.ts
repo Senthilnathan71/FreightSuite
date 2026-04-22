@@ -379,7 +379,7 @@ private saveDraftWithCallback(resolve?: (value: boolean) => void) {
           this.isSaving = false;
           const message = isFinal ? 'Journal voucher saved and posted successfully!' : 'Journal voucher saved as draft successfully!';
           this.appSettingService.showSuccess(message);
-
+          this.loadVoucherForEdit(voucherHeaderSid);
           if (voucherHeaderSid) {
 
   if (!this.voucherHeaderSid) {
@@ -2516,7 +2516,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
             this.isSaving = false;
             const message = isFinal ? 'Journal voucher saved and posted successfully!' : 'Journal voucher saved as draft successfully!';
             this.appSettingService.showSuccess(message);
-
+            this.loadVoucherForEdit(voucherHeaderSid);
             if (!this.voucherHeaderSid && voucherHeaderSid) {
               this.voucherHeaderSid = voucherHeaderSid;
               this.router.navigate(['/accounts/journal-voucher/entry', voucherHeaderSid]);
@@ -2580,6 +2580,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
 
       if (result.status) {
         this.appSettingService.showSuccess('Journal voucher saved and posted successfully!');
+        this.loadVoucherForEdit(voucherHeaderSid);
         this.isPosted = true; // Update local state
 
         // Force reload of the same entry route so component state is fully refreshed

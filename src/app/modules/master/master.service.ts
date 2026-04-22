@@ -2111,6 +2111,15 @@ getFieldConfiguration() {
     )
   }
 
+  getTandC(payload) {
+    return this.http.post<{ data: any[] }>('terms-and-conditions/TandC', payload).pipe(
+      map((resp : any) => {
+        let response = resp;
+        return response;
+      })
+    )
+  }
+
   getTandCByCondition(payload) {
     return this.http.post<{ data: any[] }>('terms-and-conditions/fetchByCondition', payload).pipe(
       map((resp : any) => {

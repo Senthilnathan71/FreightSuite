@@ -216,6 +216,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   connectionResult : any[] =[];
   connectionResetTrigger = false;
   isTermsAndConditionsEnabled: boolean = true;
+  isFormDisabled: boolean = false;
   masterjobConnectionArr:any[]=[];
   currentFormValue: any;
   customerList: any[] = []; 
@@ -1673,6 +1674,14 @@ loadMawbStock(data: any): void {
       status : rate.status  === "A" ? "Active" : "Suspended"
     }));
     this.rateResult = [...this.masterJobRateArr];
+    if (
+      this.isEditMode &&
+      this.masterJobRateArr?.some(rate =>
+        rate.CostVoucherHeaderSid !== null || rate.RevenueVoucherHeaderSid !== null
+      )
+    ) {
+      this.masterJobForm.get('Status')?.disable();
+    }
     this.calculateChargeWiseProfit();
     this.calculateCustomerWiseAmount();
 
@@ -1722,6 +1731,8 @@ loadMawbStock(data: any): void {
   if(data.allShipments.length > 0) {
     this.patchShipments(allShipments);
   }
+
+  this.applyStatusDrivenFormState();
 
   this.isSaving = false;
   this.logMawbDebug('patchFormValues:end', {
@@ -2604,6 +2615,7 @@ loadMawbStock(data: any): void {
                 this.spinner.hide();
                 if (response.status) {
                     this.resetDirtyState();
+                    this.loadMasterJobData(this.masterJobSid);
                     this.masterJobForm.markAsUntouched();
                     this.containerFormGroup.markAsUntouched();
                     const masterJobSid =
@@ -2686,6 +2698,96 @@ loadMawbStock(data: any): void {
             }
         });
     }
+  }
+
+  onStatusChange(): void {
+    const status = this.masterJobForm.get('Status')?.getRawValue();
+    const hasHouseJobs = Array.isArray(this.masterJobData?.houseJob) && this.masterJobData.houseJob.length > 0;
+    const initialStatus = this.masterJobData?.Status === 'S' ? 'Suspended' : 'Active';
+    const statusChanged = this.isEditMode && !!status && status !== initialStatus;
+
+    if (hasHouseJobs && (status === 'Suspended' || !status)) {
+      const firstHouseJob = this.masterJobData?.houseJob?.[0];
+      const hblNo = firstHouseJob?.HBLNo ? `\n\nHouse Job with HAWB No: ${firstHouseJob.HBLNo} is associated with it.` : '';
+
+      this.appSettingsService.showWarning(
+        `This master job cannot be suspended.${hblNo}`
+      );
+      this.masterJobForm.get('Status')?.setValue('Active');
+    }
+
+    if (statusChanged) {
+      this.markAsDirty();
+    }
+
+    this.applyStatusDrivenFormState();
+  }
+
+  private applyStatusDrivenFormState(): void {
+    const statusValue = this.masterJobForm.get('Status')?.getRawValue();
+    const shouldDisableAll = this.isEditMode && statusValue === 'Suspended';
+
+    if (shouldDisableAll) {
+      this.disableAllForms();
+    } else {
+      this.enableAllForms();
+    }
+
+    this.applyStatusFieldLock();
+  }
+
+  private applyStatusFieldLock(): void {
+    const statusControl = this.masterJobForm.get('Status');
+    if (!statusControl) {
+      return;
+    }
+
+    const hasPostedRates = this.masterJobRateArr?.some(rate =>
+      rate.CostVoucherHeaderSid !== null || rate.RevenueVoucherHeaderSid !== null
+    );
+
+    if (this.isEditMode && (this.hasHouseJobLinked || hasPostedRates || this.isFormDisabled)) {
+      statusControl.disable({ emitEvent: false });
+      return;
+    }
+
+    statusControl.enable({ emitEvent: false });
+  }
+
+  private get hasHouseJobLinked(): boolean {
+    return this.hasHouseJobs ||
+      this.masterJobData?.hashousejob === true ||
+      this.masterJobData?.hasHouseJob === true ||
+      this.masterJobData?.hasHousejob === 'Y';
+  }
+
+  private disableAllForms(): void {
+    Object.keys(this.masterJobForm.controls).forEach(key => {
+      if (key !== 'Status') {
+        this.masterJobForm.get(key)?.disable({ emitEvent: false });
+      }
+    });
+
+    this.isFormDisabled = true;
+  }
+
+  private enableAllForms(): void {
+    Object.keys(this.masterJobForm.controls).forEach(key => {
+      this.masterJobForm.get(key)?.enable({ emitEvent: false });
+    });
+
+    if (this.isEditMode) {
+      this.masterJobForm.get('DepartmentMasterSid')?.disable({ emitEvent: false });
+      this.masterJobForm.get('MasterJobDate')?.disable({ emitEvent: false });
+      this.masterJobForm.get('POL')?.disable({ emitEvent: false });
+      this.masterJobForm.get('POD')?.disable({ emitEvent: false });
+    }
+
+    if (this.masterJobForm.get('Coload')?.value !== true) {
+      this.masterJobForm.get('CoLoader')?.disable({ emitEvent: false });
+    }
+
+    this.isFormDisabled = false;
   }
 
 

@@ -826,7 +826,7 @@
         type="button"
         class="btn btn-info btn-sm dofi-min-w-70 dofi-max-w-70" 
         *ngIf="isEditMode" 
-        (click)="navigateToHouseJobCreation()">
+        (click)="navigateToHouseJobCreation()" [disabled]="isSuspended">
         <i class="fas fa-plus me-1"></i> Create
       </button>
         </div>
@@ -837,7 +837,7 @@
         type="button"
         class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120" 
         *ngIf="isEditMode"
-        (click)="openAttachModal()">
+        (click)="openAttachModal()" [disabled]="isSuspended">
         <i class="fas fa-save me-1"></i> Attach Booking
       </button>
         </div>
@@ -1093,18 +1093,18 @@
           <!-- Process Upload Button (shown when preview is available) -->
         <button *ngIf="showContainerPreview" class="table-action-btn info" 
                 (click)="processContainerUpload()"
-                [disabled]="isProcessingContainerUpload || containerValidationErrors.length > 0">
+                [disabled]="isFormDisabled || isProcessingContainerUpload || containerValidationErrors.length > 0">
             <i class="fas fa-check me-1"></i> Add Containers
         </button>
         
         <!-- Cancel Upload Button -->
         <button *ngIf="showContainerPreview" class="table-action-btn danger" 
-                (click)="resetContainerUpload()">
+                (click)="resetContainerUpload()" [disabled]="isFormDisabled">
             <i class="fas fa-times me-1"></i> Cancel
         </button>
         <!-- Download Template Button -->
         <button class="table-action-btn success" (click)="downloadContainerTemplate()"
-                [disabled]="isProcessingContainerUpload">
+                [disabled]="isFormDisabled || isProcessingContainerUpload">
             <i class="fas fa-download me-1"></i> Container Download  
         </button>
         
@@ -1112,10 +1112,10 @@
         <div class="file-upload-wrapper">
             <input type="file" id="containerFileInput" #containerFileInput 
                    accept=".xlsx,.xls" (change)="onContainerFileSelected($event)"
-                   style="display: none" [disabled]="isProcessingContainerUpload">
+                   style="display: none" [disabled]="isFormDisabled || isProcessingContainerUpload">
             
             <button class="table-action-btn primary" (click)="containerFileInput.click()"
-                    [disabled]="isProcessingContainerUpload">
+                    [disabled]="isFormDisabled || isProcessingContainerUpload">
                 <i class="fas fa-upload me-1"></i>Container Upload
             </button>
             
@@ -1130,7 +1130,7 @@
                             <div class="d-flex align-items-center gap-2">
     <!-- Download Template Button -->
     <button class="table-action-btn success" (click)="downloadProductTemplate()"
-            [disabled]="isProcessingProductUpload">
+            [disabled]="isFormDisabled || isProcessingProductUpload">
         <i class="fas fa-download me-1"></i>Product Download
     </button>
     
@@ -1138,10 +1138,10 @@
     <div  class="file-upload-wrapper">
         <input type="file" id="productFileInput" #productFileInput 
                accept=".xlsx,.xls" (change)="onProductFileSelected($event)"
-               style="display: none" [disabled]="isProcessingProductUpload">
+               style="display: none" [disabled]="isFormDisabled || isProcessingProductUpload">
         
         <button class="table-action-btn primary" (click)="productFileInput.click()"
-                [disabled]="isProcessingProductUpload">
+                [disabled]="isFormDisabled || isProcessingProductUpload">
             <i class="fas fa-upload me-1"></i> Product Upload 
         </button>
         
@@ -1154,13 +1154,13 @@
     <!-- Process Upload Button (shown when preview is available) -->
     <button *ngIf="showProductPreview" class="table-action-btn info" 
             (click)="processProductUpload()"
-            [disabled]="isProcessingProductUpload || productValidationErrors.length > 0">
+            [disabled]="isFormDisabled || isProcessingProductUpload || productValidationErrors.length > 0">
         <i class="fas fa-check me-1"></i> Upload Products
     </button>
     
     <!-- Cancel Upload Button -->
     <button *ngIf="showProductPreview" class="table-action-btn danger" 
-            (click)="resetProductUpload()">
+            (click)="resetProductUpload()" [disabled]="isFormDisabled">
         <i class="fas fa-times me-1"></i> Cancel
     </button>
 </div>
@@ -1776,6 +1776,7 @@
             <app-connection screenName="MasterJob" [connectionIdField]="'MasterJobConnectionSid'" [dataItems]="masterjobConnectionArr"
                 [resetTrigger]="connectionResetTrigger" [portList]="portList" [vesselList]="vesselList"
                 [disableAdd]="!masterJobForm.get('POL')?.value || !masterJobForm.get('POD')?.value"
+                [isFormDisabled]="isFormDisabled"
                 (dataEmitter)="handleConnectionChange($event)">
             </app-connection>
         </div>
@@ -1784,6 +1785,7 @@
             <div class="workspace-content" [hidden]="selectedTab !== 'Rate'">
                 <app-cost-entry #costEntryComponent screenName="Master Job" [currencyList]="currencyList" [agentList]="agentList"[customerList]="customerList"
                     [dataItems]="masterJobRateArr" [resetTrigger]="rateResetTrigger" [formData]="currentFormValue"
+                    [isFormDisabled]="isFormDisabled"
                     (dataEmitter)="handleRateChange($event)" (reloadParent)="loadMasterJobData($event)">
                 </app-cost-entry>
             </div>
@@ -1922,6 +1924,7 @@
                 [dataItems]="customsDataArray"
                 [resetTrigger]="customsResetTrigger"
                 [formData]="currentCustomsFormValue"
+                [isFormDisabled]="isFormDisabled"
                 (dataEmitter)="handleCustomsChange($event)">
             </app-customs>
         </div>
@@ -1929,6 +1932,7 @@
         <div class="workspace-content" *ngIf="selectedTab === 'Container Activity'">
             <app-container-activity [dataItems]="containerActivityData" [resetTrigger]="containerActivityResetTrigger"
                 [formData]="currentContainerActivityFormValue" [masterJobContainers]="masterJobContainers.value"
+                [isFormDisabled]="isFormDisabled"
                 (dataEmitter)="handleContainerActivityChange($event)">
             </app-container-activity>
         </div>

@@ -92,12 +92,7 @@ editForm: FormGroup;
       MenuMasterSid: this.MenuMasterSid,
       createdBy: currentUserEmail,
       TandC: formValue.newTerm,
-      IsDefaut: formValue.IsDefaut ? 'S' : 'N',
       DocumentSid: this.DocumentSid,
-      ...(this.DepartmentMasterSid != null && { DepartmentMasterSid: this.DepartmentMasterSid }),
-      ...(this.POL && { POL: this.POL }),
-      ...(this.POD && { POD: this.POD }),
-      ...(this.Carrier != null && { Carrier: this.Carrier }),
     };
 
     try {
@@ -138,6 +133,21 @@ editForm: FormGroup;
     DocumentSid: this.DocumentSid
   };
 
+  const getTermText = (item: any): string =>
+    (item?.Terms || item?.TandC || '').trim().toLowerCase();
+
+  const isSameTerm = (a: any, b: any): boolean =>
+    (
+      a?.TandCTransactionSid &&
+      b?.TandCTransactionSid &&
+      a.TandCTransactionSid === b.TandCTransactionSid
+    ) ||
+    (
+      getTermText(a) === getTermText(b) &&
+      (a?.DocumentSid ?? this.DocumentSid ?? null) ===
+      (b?.DocumentSid ?? this.DocumentSid ?? null)
+    );
+
   if (this.loadAllOnGet) {
     forkJoin({
       defaults: this.masterService.getTandCByCondition(payload),
@@ -154,18 +164,8 @@ editForm: FormGroup;
           return;
         }
 
-        const newTerms = combined.filter((newItem: any) =>
-          !this.terms.some((existing: any) =>
-            (
-              existing?.TandCTransactionSid &&
-              newItem?.TandCTransactionSid &&
-              existing.TandCTransactionSid === newItem.TandCTransactionSid
-            ) ||
-            (
-              (existing?.TandC || '').trim().toLowerCase() === (newItem?.TandC || '').trim().toLowerCase() &&
-              (existing?.DocumentSid ?? null) === (newItem?.DocumentSid ?? null)
-            )
-          )
+        const newTerms = combined.filter(
+          (newItem: any) => !this.terms.some((existing: any) => isSameTerm(existing, newItem))
         );
 
         this.terms = [...this.terms, ...newTerms];
@@ -189,19 +189,9 @@ editForm: FormGroup;
       if (resp.status) {
 
         if (resp.data?.length) {
-            const newTerms = resp.data.filter((newItem: any) =>
-              !this.terms.some((existing: any) =>
-                (
-                  existing?.TandCTransactionSid &&
-                  newItem?.TandCTransactionSid &&
-                  existing.TandCTransactionSid === newItem.TandCTransactionSid
-                ) ||
-                (
-                  (existing?.TandC || '').trim().toLowerCase() === (newItem?.TandC || '').trim().toLowerCase() &&
-                  (existing?.DocumentSid ?? null) === (newItem?.DocumentSid ?? null)
-                )
-              )
-            );
+            const newTerms = resp.data.filter(
+            (newItem: any) => !this.terms.some((existing: any) => isSameTerm(existing, newItem))
+          );;
 
             this.terms = [...this.terms, ...newTerms];
             this.showEmptyTemplate = this.terms.length === 0 && !this.showAddRow;
@@ -258,14 +248,12 @@ deleteTerm(item: any, index: number) {
 
 
 editTerm(item: any, index: number) {
-
   this.editIndex = index;
 
   this.editForm.patchValue({
-    TandC: item.TandC,
-    IsDefaut: item.IsDefaut === 'S'
+    TandC: item?.Terms || item?.TandC || '',
+    IsDefaut: item?.IsDefaut === 'S'
   });
-
 }
 
 cancelEdit() {
@@ -285,7 +273,6 @@ updateTerm(item: any, index: number) {
   const payload = {
     TandCTransactionSid: item.TandCTransactionSid,
     Terms: formValue.TandC,
-    IsDefaut: formValue.IsDefaut ? 'S' : 'N',
     DocumentSid: this.DocumentSid
   };
 
@@ -297,7 +284,8 @@ updateTerm(item: any, index: number) {
         this.appSettingService.showSuccess('Term updated successfully');
 
         this.terms[index].TandC = formValue.TandC;
-        this.terms[index].IsDefaut = formValue.IsDefaut ? 'S' : 'N';
+this.terms[index].Terms = formValue.TandC;
+this.terms[index].IsDefaut = formValue.IsDefaut ? 'S' : 'N';
 
         this.cancelEdit();
 
