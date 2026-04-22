@@ -86,8 +86,7 @@ export class MAWBComponent implements OnChanges {
       this.currentBranch = branchRecord?.branchMaster || this.currentBranch;
     }
 
-    this.currentUserCode = this.userData?.userCode?.trim();
-    console.log(this.currentUserCode, "User Code")
+    this.currentUserCode = this.userData?.userName?.trim();
     // IDs
     this.currentCountry = Number(this.currentCompany?.CountryMasterSid);
     this.currentCurrency = Number(this.currentCompany?.CurrencyMasterSid);
@@ -288,6 +287,11 @@ export class MAWBComponent implements OnChanges {
 
   return port?.PortCode || value;
 }
+
+  getHouseJobs(): any[] {
+    const houses = this.masterAirWayData?.houseJob;
+    return Array.isArray(houses) && houses.length ? houses : [null];
+  }
 
 
   private getActiveConnections(): any[] {
@@ -1237,8 +1241,15 @@ getOtherPrepaidTotal(): number {
   private async downloadPdfWithPdfMake(filename: string): Promise<void> {
     const { pdfMake } = await this.getPdfDependencies();
 
-    const page1Content = this.buildMawbPdfContent();
-    const content: any[] = [...page1Content];
+    const houses = this.getHouseJobs();
+    const content: any[] = [];
+
+    houses.forEach((house, index) => {
+      content.push(...this.buildMawbPdfContent(house));
+      if (index < houses.length - 1) {
+        content.push({ text: '', pageBreak: 'after' });
+      }
+    });
 
     const hasLegalPage = this.selectedReport === 'MAWB';
    
@@ -1254,7 +1265,7 @@ getOtherPrepaidTotal(): number {
       pageSize: 'A4',
       pageMargins: [0, 0, 0, 0] as [number, number, number, number],
       background: (currentPage: number) => {
-        if (currentPage === 1 && this.mawbImageBase64) {
+        if (currentPage <= houses.length && this.mawbImageBase64) {
           return {
             image: this.mawbImageBase64,
             width: pageWidthPt * 1.08,
@@ -1326,14 +1337,14 @@ getOtherPrepaidTotal(): number {
     img.src = 'assets/images/MAWB.png';
   }
 
-  private buildMawbPdfContent(): any[] {
+  private buildMawbPdfContent(house?: any): any[] {
     // mm → pt conversion: CSS container is 280mm x 401mm, PDF is A4 (595.28pt x 841.89pt)
     // Scale factor = min(595.28/(280*2.8346), 841.89/(401*2.8346)) ≈ 0.741
     // So 1mm CSS = 2.8346 * 0.741 ≈ 2.10 pt
     const mm = (val: number) => val * 2.10;
 
     const data = this.masterAirWayData;
-    const hj = data?.houseJob?.[0];
+    const hj = house ?? data?.houseJob?.[0];
     const others = hj?.Others?.[0];
     const agg = data?.aggregatedTotals;
     const voyage = data?.voyages?.[0];
@@ -1463,9 +1474,9 @@ getOtherPrepaidTotal(): number {
       field(147, 240, others?.DeclaredValueOfCustoms?.toString() || '', { width: 30, alignment: 'center' }),
 
       // Flight row
-      field(159, -210, this.getPortDisplay(data?.FPD) || '', { width: 40, alignment: 'center' }),
-      field(159, -110, voyage?.VesselName || '', { fontSize: 8, width: 40, alignment: 'center' }),
-      field(159, -30, fmtDate(voyage?.ETA), { fontSize: 8, width: 40, alignment: 'center' }),
+      field(159, -210, this.getPortDisplay(data?.FPD) || '', { fontSize: 8, width: 40, alignment: 'center' }),
+      // field(159, -110, voyage?.VesselName || '', { fontSize: 8, width: 40, alignment: 'center' }),
+      // field(159, -30, fmtDate(voyage?.ETA), { fontSize: 8, width: 40, alignment: 'center' }),
       field(159, 40, fmtNum(others?.ValueForInsurance), { width: 40, alignment: 'center' }),
 
       // Handling information
@@ -1501,7 +1512,7 @@ getOtherPrepaidTotal(): number {
       field(338, -120, fmtNum(this.getOtherDueCarrierCollectTotal()), { width: 35, alignment: 'center' }),
 
       // Agent certification
-      field(345, 110, data?.houseJob?.[0]?.ShipperName, { width: 80, alignment: 'center' }),
+      field(345, 110, hj?.ShipperName, { width: 80, alignment: 'center' }),
 
       // Totals
       // field(363, 9, fmtNum(this.getGrandTotal()), { width: 35, alignment: 'center' }),
@@ -1512,7 +1523,7 @@ getOtherPrepaidTotal(): number {
       // Execution info
       field(370, -17, fmtDateTime(data?.MBLDate), { width: 40, alignment: 'center' }),
       field(370, 100,others?.PlaceOfSupply || '', { alignment: 'center' }),
-      field(370, 200, this.getAgentName(data?.DestinationAgent), { width: 60, alignment: 'center' }),
+      field(370, 200, this.currentUserCode || '', { alignment: 'center' }),
 
       // Bottom MAWB number
       field(386, 204, this.getFormattedMBLNo(), { fontSize: 14 }),

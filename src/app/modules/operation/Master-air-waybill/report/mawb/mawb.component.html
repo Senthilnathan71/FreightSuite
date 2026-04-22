@@ -4,10 +4,10 @@
         <div class="spinner-overlay">
             <div class="spinner"></div>
         </div>
-        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()" appPreventMultiClick *ngIf="mps.canPrint('MAWB Draft','Download')">
+        <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()" appPreventMultiClick *ngIf="mps.canPrint('MAWB Draft','Download') || mps.canPrint('AMAWB Draft','Download')">
             <i class="fas fa-download me-1"></i> Download PDF
         </button>
-        <button type="button" class="btn btn-sm btn-success rounded-5 py-0" *ngIf="mps.canPrint('MAWB Draft','Send Mail')">
+        <button type="button" class="btn btn-sm btn-success rounded-5 py-0" *ngIf="mps.canPrint('MAWB Draft','Send Mail') || mps.canPrint('AMAWB Draft','Send Mail')">
             <i class="fas fa-envelope me-1"></i>Send Email
         </button>
         <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modalClose()"></button>
@@ -17,7 +17,7 @@
 <div class="modal-body">
     <div id="printContent" class="p-1">
 
-        <div class="mawb-report">
+        <div class="mawb-report" *ngFor="let house of getHouseJobs()">
             <div class="mawb-page">
 
                 <img class="mawb-background-image" src="assets/images/MAWB.png" alt="MAWB Template" />
@@ -44,10 +44,10 @@
 
                     <!-- Shipper Information -->
                     <div class="data-field shipper-name">
-                        {{ masterAirWayData?.houseJob?.[0]?.ShipperName }}
+                        {{ house?.ShipperName }}
                     </div>
                     <div class="data-field shipper-address">
-                        {{ masterAirWayData?.houseJob?.[0]?.ShipperAddress }}
+                        {{ house?.ShipperAddress }}
                     </div>
                     <div class="data-field shipper-account">
                         <!-- Shipper Account Number -->
@@ -55,10 +55,10 @@
 
                     <!-- Consignee Information -->
                     <div class="data-field consignee-name">
-                        {{ masterAirWayData?.houseJob?.[0]?.ConsigneeName }}
+                        {{ house?.ConsigneeName }}
                     </div>
                     <div class="data-field consignee-address">
-                        {{ masterAirWayData?.houseJob?.[0]?.ConsigneeAddress }}
+                        {{ house?.ConsigneeAddress }}
                     </div>
                     <div class="data-field consignee-account">
                         <!-- Consignee Account Number -->
@@ -96,7 +96,7 @@
 
                     <!-- Reference Information -->
                     <div class="data-field reference-number">
-                        {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.CustomerRefNo }}
+                        {{ house?.Others?.[0]?.CustomerRefNo }}
                     </div>
                     <div class="data-field shipping-info">
                         <!-- Optional Shipping Information -->
@@ -148,10 +148,10 @@
 
                     <!-- Declared Values -->
                     <div class="data-field declared-carriage">
-                        {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.DeclaredValueOfCarriage }}
+                        {{ house?.Others?.[0]?.DeclaredValueOfCarriage }}
                     </div>
                     <div class="data-field declared-customs">
-                        {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.DeclaredValueOfCustoms }}
+                        {{ house?.Others?.[0]?.DeclaredValueOfCustoms }}
                     </div>
 
                     <!-- Airport Destination -->
@@ -159,35 +159,34 @@
 
                     <!-- Flight Name -->
                     <div class="data-field flight-name">
-                        {{masterAirWayData?.voyages?.[0]?.VesselName}}
+                        <!-- {{masterAirWayData?.voyages?.[0]?.VesselName}} -->
                     </div>
 
                     <!-- Flight Date -->
                     <div class="data-field flight-date">
-                        {{ masterAirWayData?.voyages?.[0]?.ETA | formatDate }}
+                        <!-- {{ masterAirWayData?.voyages?.[0]?.ETA | formatDate }} -->
                     </div>
 
                     <!-- Insurance -->
                     <div class="data-field insurance-amount">
                         <!-- Amount of Insurance -->
-                        {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.ValueForInsurance | number:'1.2-2'}}
+                        {{ house?.Others?.[0]?.ValueForInsurance | number:'1.2-2'}}
                     </div>
 
 
                     <!-- Handling Information -->
                     <div class="data-field handling-info">
-                        {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.HandlingInformation }}
+                        {{ house?.Others?.[0]?.HandlingInformation }}
                     </div>
                     <div 
                     class="data-field notify"
-                    *ngIf="masterAirWayData?.houseJob?.[0]?.Notify 
-                            || masterAirWayData?.houseJob?.[0]?.NotifyAddress">
+                    *ngIf="house?.Notify || house?.NotifyAddress">
 
                     <div class="notify-label">
                         Notify
                     </div>
-                    {{ masterAirWayData?.houseJob?.[0]?.Notify }} <br>
-                    {{ masterAirWayData?.houseJob?.[0]?.NotifyAddress }}
+                    {{ house?.Notify }} <br>
+                    {{ house?.NotifyAddress }}
                     </div>
 
                     <!-- Package Details -->
@@ -210,7 +209,7 @@
                         {{ getFreightTotals().totalExchangeRate | number:'1.2-2'}}
                     </div> -->
                       <div class="data-field rate-charge">
-                        {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.IATARate | number:'1.2-2' }}
+                        {{ house?.Others?.[0]?.IATARate | number:'1.2-2' }}
                     </div>
                     <div class="data-field total-charge">
                         {{ getFreightTotals().totalRevenueAmount | number:'1.2-2'}}
@@ -222,7 +221,7 @@
                     </div>
 
                     <div class="data-field external-note">
-                        {{masterAirWayData?.houseJob?.[0]?.GeneralNote}}
+                        {{house?.GeneralNote}}
                     </div>
 
                     <!-- Totals Row -->
@@ -260,7 +259,7 @@
                     </div>
 
                     <div class="data-field valuation-charge">
-                        {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.ValuationCharge | number:'1.2-2'}}
+                        {{ house?.Others?.[0]?.ValuationCharge | number:'1.2-2'}}
                     </div>
                     <!-- Total Other Charges -->
                     <div class="data-field total-other-agent">
@@ -277,7 +276,7 @@
                     </div>
                     <!-- Shipper Certificate -->
                     <div class="data-field agent-name-cert">
-                        {{ masterAirWayData?.houseJob?.[0]?.ShipperName }}
+                        {{ house?.ShipperName }}
                     </div>
 
                     <!-- Totals -->
@@ -311,10 +310,11 @@
                         {{ masterAirWayData?.MBLDate |  date:'dd-MMM-yyyy HH:mm' }}
                     </div>
                     <div class="data-field execution-place">
-                        {{ masterAirWayData?.houseJob?.[0]?.Others?.[0]?.PlaceOfSupply }}
+                        {{ house?.Others?.[0]?.PlaceOfSupply }}
                     </div>
                     <div class="data-field execution-signature">
-                        {{ getAgentName(masterAirWayData?.DestinationAgent) }}
+                        <!-- {{ getAgentName(masterAirWayData?.DestinationAgent) }} -->
+                           {{ currentUserCode }}
                     </div>
 
                     <div class="data-field mawbno" style="font-size:18px">

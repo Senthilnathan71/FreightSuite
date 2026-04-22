@@ -941,7 +941,8 @@
                                 <span class="fw-bold mb-0 text-light">{{getRouteInfo(routeIndex)}}</span>
                                 @if(routes.controls.length > 1){
                                 <button class="btn btn-sm waves-effect waves-light text-danger px-1 py-0"
-                                    (click)="removeRoute(routeIndex)" [disabled]="disableAddButtons">
+                                    (click)="removeRoute(routeIndex)"
+                                    [disabled]="disableAddButtons || quotationCreatedAgainstThisEnquiry">
                                     <i class="fas fa-trash text-danger mx-1"></i>
                                 </button>
                                 }
@@ -1165,7 +1166,7 @@
                                                             @if( routeCargo(routeIndex).controls.length > 1){
                                                             <td class="bg-transparent text-light " style="width: 200px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
-                                                                <label for="" class="form-label mb-0">Action</label>
+                                                                <label for="" class="form-label mb-0"></label>
                                                             </td>
                                                             }
                                                         </tr>
@@ -1293,9 +1294,8 @@
                                                                 <section class="action-items">
                                                                     <button class="btn btn-sm btn-link text-danger mx-2"
                                                                         (click)="deleteCargo(routeIndex ,cargoIndex)"
-                                                                        [disabled]="disableAddButtons">
-                                                                        <i-feather name="trash-2"
-                                                                            class="feather-sm"></i-feather>
+                                                                        [disabled]="disableAddButtons || quotationCreatedAgainstThisEnquiry">
+                                                                         <i class="fas fa-trash text-center fs-2"></i>
                                                                     </button>
                                                                 </section>
                                                             </td>
@@ -1312,7 +1312,7 @@
                                             <button class="btn btn-info btn-sm ms-auto" type="button"
                                                 (click)="addCargo(routeIndex)"
                                                 [disabled]="disableAddButtons || quotationCreatedAgainstThisEnquiry || (isEditMode && isSuspended)">
-                                                <i-feather class="feather-sm ms-2" name="plus"></i-feather> Add Cargo
+                                                 <i class="fas fa-plus"></i> Add Cargo
                                             </button>
                                         </div>
                                         }
@@ -1326,9 +1326,9 @@
                                                     <thead>
                                                         <tr class="bg-info text-center">
                                                              @if( routeCargo(routeIndex).controls.length > 1){
-                                                            <td class="bg-transparent text-light" style="width: 200px;"
+                                                            <td class="bg-transparent text-light" style="width: 20px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
-                                                                <label for="" class="form-label mb-0">Action</label>
+                                                                <label for="" class="form-label mb-0"></label>
                                                             </td>
                                                             }
                                                             
@@ -1409,11 +1409,10 @@
                                                             @if( routeCargo(routeIndex).controls.length > 1){
                                                             <td data-label="Action">
                                                                 <section class="action-items">
-                                                                    <button class="btn btn-sm btn-link text-danger mx-2"
+                                                                    <button class="btn btn-sm btn-link text-danger"
                                                                         (click)="deleteCargo(routeIndex ,cargoIndex)"
-                                                                        [disabled]="disableAddButtons">
-                                                                        <i-feather name="trash-2"
-                                                                            class="feather-sm"></i-feather>
+                                                                        [disabled]="disableAddButtons || quotationCreatedAgainstThisEnquiry">
+                                                                         <i class="fas fa-trash text-center fs-2"></i>
                                                                     </button>
                                                                 </section>
                                                             </td>
@@ -1619,7 +1618,7 @@
                                                             @if( routeCargo(routeIndex).controls.length > 1){
                                                             <td class="bg-transparent text-light" style="width: 200px;"
                                                                 [ngClass]="{ '': isMobile, '': !isMobile }">
-                                                                <label for="" class="form-label mb-0">Action</label>
+                                                                <label for="" class="form-label mb-0"></label>
                                                             </td>
                                                             }
                                                         </tr>
@@ -1737,9 +1736,8 @@
                                                                 <section class="action-items">
                                                                     <button class="btn btn-sm btn-link text-danger mx-2"
                                                                         (click)="deleteCargo(routeIndex ,cargoIndex)"
-                                                                        [disabled]="disableAddButtons">
-                                                                        <i-feather name="trash-2"
-                                                                            class="feather-sm"></i-feather>
+                                                                        [disabled]="disableAddButtons || quotationCreatedAgainstThisEnquiry">
+                                                                         <i class="fas fa-trash text-center fs-2"></i>
                                                                     </button>
                                                                 </section>
                                                             </td>
@@ -1790,7 +1788,7 @@
                                                             </td>
                                                             @if( routeCargo(routeIndex).controls.length > 1){
                                                             <td class="bg-transparent text-light" style="width: 120px;">
-                                                                <label class="form-label mb-0">Action</label>
+                                                                <label class="form-label mb-0"></label>
                                                             </td>
                                                             }
                                                         </tr>
@@ -1856,9 +1854,8 @@
                                                                 <section class="action-items">
                                                                     <button class="btn btn-sm btn-link text-danger mx-2"
                                                                         (click)="deleteCargo(routeIndex ,cargoIndex)"
-                                                                        [disabled]="disableAddButtons">
-                                                                        <i-feather name="trash-2"
-                                                                            class="feather-sm"></i-feather>
+                                                                        [disabled]="disableAddButtons || quotationCreatedAgainstThisEnquiry">
+                                                                        <i class="fas fa-trash text-center fs-2"></i>
                                                                     </button>
                                                                 </section>
                                                             </td>

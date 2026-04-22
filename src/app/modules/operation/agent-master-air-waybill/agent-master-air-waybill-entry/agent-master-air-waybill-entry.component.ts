@@ -66,6 +66,8 @@ import { AwbPreprintComponent } from '../report/awb-preprint/awb-preprint.compon
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { MAWBComponent } from '../../Master-air-waybill/report/mawb/mawb.component';
+
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -1840,6 +1842,7 @@ loadDefaultBLClauses(DepartmentMasterSid: number): void {
         this.patchValues(this.bookingData);
         this.loadAllMasterJobContainers();
         this.housejobData = this.bookingData;
+        this.masterJobData = this.buildMawbReportData();
         this.loadMasterJobARAPData();
         
         this.minDate = undefined;
@@ -4952,29 +4955,58 @@ ${this.userData['userName']}`;
 
   reportAWAB() {
     // this.selectedReportAir = type;
-    const modalRef = this.modalService.open(AwbDraftComponent, {
+    const reportData = this.buildMawbReportData();
+    if (!reportData) {
+      this.appSettingService.showWarning('No MAWB data found for report.');
+      return;
+    }
+
+    const modalRef = this.modalService.open(MAWBComponent, {
       size: 'xl',
       scrollable: true,
     })
-    modalRef.componentInstance.masterJobData = this.masterJobData;
-    modalRef.componentInstance.housejobData = this.housejobData || [];
-    modalRef.componentInstance.currencyList = this.currencyList || [];
-    modalRef.componentInstance.uomList = this.uomList || [];
-    modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
-    modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
-    modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
-    modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
-    modalRef.componentInstance.chargeList = this.chargeList || [];
-    modalRef.componentInstance.agentList = this.agentList || [];
-    modalRef.componentInstance.deliveryAgentList = this.deliveryAgentList || [];
-    // modalRef.componentInstance.selectedReportAir = type;
-    // modalRef.componentInstance.hblCountUpdated.subscribe(() => {
-    //   const prev = toNumber(this.houseJobForm.get('HBLCount')?.value);
-    //   this.houseJobForm.patchValue({
-    //     HBLCount: prev + 1
-    //   });
-    //   this.housejobData.HBLCount = prev + 1;
-    // });
+    
+    modalRef.componentInstance.masterAirWayData = reportData;
+    modalRef.componentInstance.containerTypeList = this.containerTypeList;
+    modalRef.componentInstance.packageTypeList = this.packageTypeList;
+    modalRef.componentInstance.agentList = this.agentList;
+    modalRef.componentInstance.currencyList = this.currencyList;
+    modalRef.componentInstance.portList = this.portList;
+    modalRef.componentInstance.chargeList = this.chargeList;
+  }
+
+  private buildMawbReportData(): any {
+    const source = this.housejobData || this.bookingData;
+    if (!source) {
+      return null;
+    }
+
+    const master = source.masterJob || this.masterJobData || {};
+    const masterConnections = master.masterJobConnection || source.masterJobConnection || [];
+    const voyages = master.voyages || source.voyages || [];
+    const houseJobs = Array.isArray(master.houseJob)
+      ? master.houseJob
+      : [source];
+
+    return {
+      ...master,
+      MBLNo: master.MBLNo || source.MBLNo || '',
+      MBLDate: master.MBLDate || source.MBLDate || null,
+      MasterJobSid: master.MasterJobSid || source.MasterJobSid || null,
+      MasterJobNumber: master.MasterJobNumber || source.MasterJobNumber || '',
+      POL: master.POL || source.POL || '',
+      POD: master.POD || source.POD || '',
+      FPD: master.FPD || source.FPD || '',
+      FreightPPCC: master.FreightPPCC || source.FreightTerms || source.FreightPPCC || '',
+      DestinationAgent: master.DestinationAgent || source.DestinationAgent || null,
+      DestinationAgentAddress: master.DestinationAgentAddress || source.AgentAddress || '',
+      CommodityDescription: master.CommodityDescription || source.CommodityDescription || '',
+      MarksandNumber: master.MarksandNumber || source.MarksandNumber || '',
+      voyages,
+      masterJobConnection: masterConnections,
+      costRevenueCharges: source.costRevenueCharges || master.costRevenueCharges || [],
+      houseJob: houseJobs
+    };
   }
 
 

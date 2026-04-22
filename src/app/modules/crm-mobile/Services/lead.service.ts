@@ -299,6 +299,14 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     );
   }
 
+  deleteEnquiryCargo(id: number) {
+    return this.http.delete(`ff-enquiry/cargo/${id}`).pipe(
+      map((res: any) => {
+        return res;
+      })
+    );
+  }
+
 
   deleteCharge(id: number) {
     return this.http.delete(`ff-quotation/charge/${id}`).pipe(
