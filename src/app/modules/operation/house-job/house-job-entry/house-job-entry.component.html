@@ -79,10 +79,10 @@
       </div>
       <div class="action-group" *ngIf="isEditMode && ( shouldShowAirHousePrintOption('HAWB')
        || shouldShowAirHousePrintOption('HAWB Draft') || mps.canPrint('Exit Form', 'Print') || 
-       mps.canPrint('Job Card', 'Print') || mps.canPrint('Delivery Order', 'Print') ||
-        mps.canPrint('Cargo Arrival Notice with charges', 'Print') || mps.canPrint('Cargo Arrival Notice without charges', 'Print') 
-        || shouldShowHousePrintOption('HBL') || shouldShowHousePrintOption('HBLDraft') || mps.canPrint('House Profit and Loss', 'Print') || mps.canPrint('Indemnity', 'Print')|| 
-        mps.canPrint('Commercial Invoice', 'Print') || mps.canPrint('Packing List', 'Print') || mps.canPrint('Release Letter', 'Print') || shouldShowHousePrintOption('Sailing Confirmation') || mps.canPrint('Proof of Delivery', 'Print') )">
+       mps.canPrint('Job Card', 'Print') || (mps.canPrint('Delivery Order', 'Print') && isPrintOptionVisible('Delivery Order')) ||
+        (mps.canPrint('Cargo Arrival Notice with charges', 'Print') && isPrintOptionVisible('Cargo Arrival Notice with charges')) || (mps.canPrint('Cargo Arrival Notice without charges', 'Print') && isPrintOptionVisible('Cargo Arrival Notice without charges')) 
+        || (shouldShowHousePrintOption('HBL') && isPrintOptionVisible('HBL')) || (shouldShowHousePrintOption('HBLDraft') && isPrintOptionVisible('HBLDraft')) || (mps.canPrint('House Profit and Loss', 'Print') && isPrintOptionVisible('House Profit and Loss')) || (mps.canPrint('Indemnity', 'Print') && isPrintOptionVisible('Indemnity'))|| 
+        (mps.canPrint('Commerical Invoice', 'Print') && isPrintOptionVisible('Commerical Invoice')) || (mps.canPrint('Packing List', 'Print') && isPrintOptionVisible('Packing List')) || (mps.canPrint('Release Letter', 'Print') && isPrintOptionVisible('Release Letter')) || (shouldShowHousePrintOption('Sailing Confirmation') && isPrintOptionVisible('Sailing Confirmation')) || (mps.canPrint('Proof of Delivery', 'Print') && isPrintOptionVisible('Proof of Delivery')) )">
         <div ngbDropdown container="body" class="d-inline-block">
           <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" id="dropdownUpload"
             ngbDropdownToggle [disabled]="!housejobData || hasUnsavedChanges() || isSuspended">
@@ -96,31 +96,31 @@
                 <button *ngIf="mps.canPrint('Job Card', 'Print') " class="text-dark" ngbDropdownItem (click)="reportjobCard()">Job Card</button>
              }@else{ 
               @if(houseJobForm.get('JobType')?.value !== 'Transhipment'){
-            <button *ngIf="mps.canPrint('Delivery Order', 'Print') "  class="text-dark" ngbDropdownItem (click)="reportDeliveryOrder()">Delivery
+            <button *ngIf="mps.canPrint('Delivery Order', 'Print')  && isPrintOptionVisible('Delivery Order')"  class="text-dark" ngbDropdownItem (click)="reportDeliveryOrder()">Delivery
               Order</button>
-            <button *ngIf="mps.canPrint('Cargo Arrival Notice with charges', 'Print')" class="text-dark" ngbDropdownItem (click)="reportCargoArrival(true)">Cargo Arrival
+            <button *ngIf="mps.canPrint('Cargo Arrival Notice with charges', 'Print') && isPrintOptionVisible('Cargo Arrival Notice with charges')" class="text-dark" ngbDropdownItem (click)="reportCargoArrival(true)">Cargo Arrival
               Notice with charges</button>
-               <button *ngIf="mps.canPrint('Cargo Arrival Notice without charges', 'Print')" class="text-dark" ngbDropdownItem (click)="reportCargoArrival(false)">Cargo Arrival
+               <button *ngIf="mps.canPrint('Cargo Arrival Notice without charges', 'Print')&& isPrintOptionVisible('Cargo Arrival Notice without charges')" class="text-dark" ngbDropdownItem (click)="reportCargoArrival(false)">Cargo Arrival
               Notice without charges</button>
                }
-           <button *ngIf="shouldShowHousePrintOption('HBL')" class="text-dark" ngbDropdownItem (click)="reportBill('HBL')">HBL</button>
-           <button *ngIf="shouldShowHousePrintOption('HBLDraft')" class="text-dark" ngbDropdownItem (click)="reportBill('HBLDraft')">HBL Draft</button>
-            <button  *ngIf="mps.canPrint('House Profit and Loss', 'Print')" class="text-dark" ngbDropdownItem (click)="reportShipmentProfit()">House Profit and
+           <button *ngIf="shouldShowHousePrintOption('HBL')&& isPrintOptionVisible('HBL')" class="text-dark" ngbDropdownItem (click)="reportBill('HBL')">HBL</button>
+           <button *ngIf="shouldShowHousePrintOption('HBLDraft') && isPrintOptionVisible('HBLDraft')" class="text-dark" ngbDropdownItem (click)="reportBill('HBLDraft')">HBL Draft</button>
+            <button  *ngIf="mps.canPrint('House Profit and Loss', 'Print') && isPrintOptionVisible('House Profit and Loss')" class="text-dark" ngbDropdownItem (click)="reportShipmentProfit()">House Profit and
               Loss</button>
-            <button *ngIf="mps.canPrint('Indemnity', 'Print')" class="text-dark" ngbDropdownItem (click)="reportIndeminty()">Indeminty</button>
-            <button *ngIf="mps.canPrint('Commerical Invoice' , 'Print')" class="text-dark" ngbDropdownItem (click)="reportCommericalInvoice()">Commerical
+            <button *ngIf="mps.canPrint('Indemnity', 'Print')&& isPrintOptionVisible('Indemnity')" class="text-dark" ngbDropdownItem (click)="reportIndeminty()">Indeminty</button>
+            <button *ngIf="mps.canPrint('Commerical Invoice' , 'Print') && isPrintOptionVisible('Commerical Invoice')" class="text-dark" ngbDropdownItem (click)="reportCommericalInvoice()">Commerical
               Invoice</button>
             <!-- <button class="text-dark" ngbDropdownItem (click)="reportCertificateofOrgin()">Certificate of
               Origin
             </button> -->
-              <button  *ngIf="mps.canPrint('Job Card', 'Print') " class="text-dark" ngbDropdownItem (click)="reportjobCard()">Job Card</button>
-             <button *ngIf="mps.canPrint('Packing List' , 'Print')" class="text-dark" ngbDropdownItem (click)="reportPackingList()">Packing List
+              <button  *ngIf="mps.canPrint('Job Card', 'Print') && isPrintOptionVisible('Job Card') " class="text-dark" ngbDropdownItem (click)="reportjobCard()">Job Card</button>
+             <button *ngIf="mps.canPrint('Packing List' , 'Print') && isPrintOptionVisible('Packing List')" class="text-dark" ngbDropdownItem (click)="reportPackingList()">Packing List
                             </button>
-              <button *ngIf="mps.canPrint('Release Letter', 'Print')" class="text-dark" ngbDropdownItem (click)="reportReleaseLetter()">Release Letter
+              <button *ngIf="mps.canPrint('Release Letter', 'Print') && isPrintOptionVisible('Release Letter')" class="text-dark" ngbDropdownItem (click)="reportReleaseLetter()">Release Letter
             </button>
-             <button *ngIf="shouldShowHousePrintOption('Sailing Confirmation')" class="text-dark" ngbDropdownItem (click)="reportSailingConfirmation()">Sailing Confirmation
+             <button *ngIf="shouldShowHousePrintOption('Sailing Confirmation') && isPrintOptionVisible('Sailing Confirmation')" class="text-dark" ngbDropdownItem (click)="reportSailingConfirmation()">Sailing Confirmation
             </button>
-             <button *ngIf="mps.canPrint('Exit Form', 'Print')" class="text-dark" ngbDropdownItem (click)="reportExitForm()">Exit Form
+             <button *ngIf="mps.canPrint('Exit Form', 'Print') && isPrintOptionVisible('Exit Form')" class="text-dark" ngbDropdownItem (click)="reportExitForm()">Exit Form
             </button>
              <!-- <button class="text-dark" ngbDropdownItem (click)="reportReleaseOrder()">Release Order
             </button> -->
@@ -132,7 +132,7 @@
             <!-- <button class="text-dark" ngbDropdownItem (click)="reportDeliveryNote()">Delivery Note
             </button> -->
              }
-             <button *ngIf="mps.canPrint('Proof of Delivery', 'Print')" class="text-dark" ngbDropdownItem (click)="reportProofofDelivery()">Proof of Delivery</button>
+             <button *ngIf="mps.canPrint('Proof of Delivery', 'Print') && isPrintOptionVisible('Proof of Delivery')" class="text-dark" ngbDropdownItem (click)="reportProofofDelivery()">Proof of Delivery</button>
           </div>
         </div>
       </div>
