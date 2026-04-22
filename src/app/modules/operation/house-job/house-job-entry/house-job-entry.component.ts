@@ -212,6 +212,7 @@ customsValidationErrors: { recordType: string; fieldRef: string; fieldName: stri
     { name: 'Connection', icon: 'fas fa-link' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
     { name: 'Rate', icon: 'fas fa-rupee-sign' },
+    { name: 'Proxy', icon: 'fas fa-random' },
     { name: 'BOE', icon: 'fas fa-file-invoice' },
     { name: 'Vehicle', icon: 'fas fa-truck' },
     { name: 'Customs', icon: 'fas fa-passport' },
@@ -383,6 +384,7 @@ auditLogs: any[] = []; // Stores audit logs
     { id: 3, name: 'Inch'}
   ]
   otherForm !: FormGroup;
+  proxyForm !: FormGroup;
 
   // Variable Declaration - Connection Part
   PODandFPODsame : boolean = true;
@@ -524,10 +526,18 @@ hblModalRef?: NgbModalRef;
 // }
 
   filterTabs(){
-    if (this.selectedDepartmentType === 'AIR') {
-      this.filteredTabs = this.allTabs.filter(tab => tab.name !== 'Vehicle');
-    } else {
-      this.filteredTabs = [...this.allTabs];
+    this.filteredTabs = this.allTabs.filter(tab => {
+      if (this.selectedDepartmentType !== 'SEA' && tab.name === 'Proxy') {
+        return false;
+      }
+      if (this.selectedDepartmentType === 'AIR' && tab.name === 'Vehicle') {
+        return false;
+      }
+      return true;
+    });
+
+    if (!this.filteredTabs.some(tab => tab.name === this.selectedTab)) {
+      this.selectedTab = 'Shipment';
     }
   }
 
@@ -559,6 +569,7 @@ hblModalRef?: NgbModalRef;
     this.houseJobForm?.markAsPristine();
     this.cargoForm?.markAsPristine();
     this.otherForm?.markAsPristine();
+    this.proxyForm?.markAsPristine();
     this.detailForm?.markAsPristine();
     this.initialProductsCount = this.bookingProducts?.length || 0;
     this.initialConnectionsCount = this.connectionResult?.length || 0;
@@ -599,6 +610,7 @@ hblModalRef?: NgbModalRef;
       houseJobForm: this.houseJobForm?.getRawValue() ?? null,
       cargoForm: this.cargoForm?.getRawValue() ?? null,
       otherForm: this.otherForm?.getRawValue() ?? null,
+      proxyForm: this.proxyForm?.getRawValue() ?? null,
       detailForm: this.detailForm?.getRawValue() ?? null,
       bookingProducts: this.bookingProducts?.getRawValue?.() ?? [],
       connectionResult: this.connectionResult ?? [],
@@ -709,6 +721,7 @@ hblModalRef?: NgbModalRef;
   this.initBookingForm();
   this.initCargoForm();
   this.initOtherForm();
+  this.initProxyForm();
   this.initDetailsForm();
   this.setupMBLDateListener();
   this.spinner.show();
@@ -1398,16 +1411,10 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       InsuranceAmount: [''],
       ValuationCharge: [''],
       HandlingInformation: [''],
-      SwitchBL: [false],
       BacktoBack: [false],
       Depo: [''],
       ROValidity: [''],
       BlClause:[[]],
-      SwitchBLAgent: [null],
-      AgentAddress: [''],
-      SwitchBLShipper: [null],
-      SwitchBLConsignee: [null],
-      SwitchLocation: [''],
       CarrierBookingRef : [''],
       CarrierBookingDate : [''],
       DONo : [''],
@@ -1421,6 +1428,59 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
         this.recomputeDirtyState();
       }
     });
+  }
+
+  initProxyForm() {
+    this.proxyForm = this.fb.group({
+      HouseJobProxySid: [null],
+      SwitchBL: [false],
+      SwitchLocation: [''],
+      CustomerName: [null],
+      CustomerAddress: [''],
+      AgentName: [null],
+      AgentAddress: [''],
+      ShipperName: [null],
+      ShipperAddress: [''],
+      ConsigneeName: [null],
+      ConsigneeAddress: [''],
+      VesselName: [null],
+      VoyageNo: [''],
+      POO: [''],
+      FPD: [''],
+      CarrierName: [null],
+      isProxyCustomerFreeText: [true],
+      isProxyAgentFreeText: [true],
+      isProxyShipperFreeText: [true],
+      isProxyConsigneeFreeText: [true],
+      isProxyCarrierFreeText: [true],
+    });
+
+    this.proxyForm.get('SwitchBL')?.valueChanges.subscribe((checked) => {
+      if (this.isPatching) {
+        return;
+      }
+
+      if (!checked) {
+        this.clearProxyFields();
+      }
+
+      this.formSaved = false;
+      this.recomputeDirtyState();
+    });
+
+    this.proxyForm.valueChanges.subscribe(() => {
+      if (!this.isPatching) {
+        this.formSaved = false;
+        this.recomputeDirtyState();
+      }
+    });
+  }
+
+  toggleProxyInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
+    event.stopPropagation();
+    const currentValue = this.proxyForm.get(flagCtrl)?.value;
+    this.proxyForm.get(flagCtrl)?.setValue(!currentValue);
+    this.proxyForm.get(mainCtrl)?.reset();
   }
 
   initDetailsForm() {
@@ -2178,6 +2238,8 @@ private loadMasterJobDetails(masterJobSid: number): void {
     this.evaluateDropdownOrFreeText();
     this.handleCFSOrYard();
     const otherData = response.Others[0];
+    const proxyData = response.HouseJobProxy?.[0] || response.houseJobProxy?.[0] || response.Proxy?.[0];
+    const hasProxyData = !!proxyData && Object.values(proxyData).some(value => value !== null && value !== undefined && value !== '');
     
     if (otherData) {
       this.otherForm.patchValue({
@@ -2210,15 +2272,9 @@ private loadMasterJobDetails(masterJobSid: number): void {
         InsuranceAmount: otherData?.InsuranceAmount,
         ValuationCharge: otherData?.ValuationCharge,
         HandlingInformation: otherData?.HandlingInformation,
-        SwitchBL: otherData?.SwitchBL === "Y" ? true : false,
         BacktoBack: otherData?.BacktoBack === "Y" ? true : false,
         Depo: otherData?.Depo,
         ROValidity: otherData?.ROValidity ? new Date(otherData?.ROValidity) : null,
-        SwitchBLAgent: otherData?.SwitchBLAgent,
-        AgentAddress: otherData?.AgentAddress,
-        SwitchBLShipper: otherData?.SwitchBLShipper,
-        SwitchBLConsignee: otherData?.SwitchBLConsignee,
-        SwitchLocation: otherData?.SwitchLocation,
         CarrierBookingRef: otherData?.CarrierBookingRef,
         CarrierBookingDate: otherData?.CarrierBookingDate ? new Date(otherData?.CarrierBookingDate) : null,
         DONo: otherData?.DONo || '',
@@ -2229,6 +2285,25 @@ private loadMasterJobDetails(masterJobSid: number): void {
         GeneralNote: otherData?.GeneralNote || ''
       }, { emitEvent: false }); // IMPORTANT: Add emitEvent: false
     }
+
+    this.proxyForm.patchValue({
+      HouseJobProxySid: proxyData?.HouseJobProxySid || null,
+      SwitchBL: otherData?.SwitchBL === "Y" || hasProxyData ? true : false,
+      SwitchLocation: otherData?.SwitchLocation || '',
+      CustomerName: proxyData?.CustomerName || null,
+      CustomerAddress: proxyData?.CustomerAddress || '',
+      AgentName: proxyData?.AgentName || null,
+      AgentAddress: proxyData?.AgentAddress || '',
+      ShipperName: proxyData?.ShipperName || null,
+      ShipperAddress: proxyData?.ShipperAddress || '',
+      ConsigneeName: proxyData?.ConsigneeName || null,
+      ConsigneeAddress: proxyData?.ConsigneeAddress || '',
+      VesselName: proxyData?.VesselName || null,
+      VoyageNo: proxyData?.VoyageNo || '',
+      POO: proxyData?.POO || '',
+      FPD: proxyData?.FPD || '',
+      CarrierName: proxyData?.CarrierName || null,
+    }, { emitEvent: false });
     
     this.evaluateDropdownOrFreeText();
 
@@ -3057,6 +3132,8 @@ if (this.houseJobCargos.length > 0) {
     }
   
   const houseJobFormValue = this.houseJobForm.getRawValue();
+  const otherFormValue = this.otherForm.getRawValue();
+  const proxyFormValue = this.proxyForm.getRawValue();
   const existingBookingHeaderSid = this.bookingData?.BookingHeaderSid || null;
   const exportImportType = this.selectedDepartment?.ExportImport;
   const hblNo = houseJobFormValue.HBLNo;
@@ -3084,7 +3161,6 @@ if (this.houseJobCargos.length > 0) {
   this.isSubmitting = true;
   this.isSaving = true;
   this.spinner.show();
-  const otherFormValue = this.otherForm.getRawValue();
   const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
   const currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
   const boeData = this.boeComponent ? this.boeComponent.getBoeData() : [];
@@ -3273,17 +3349,16 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
       ValueForInsurance: otherFormValue.ValueForInsurance || 0,
       InsuranceAmount: otherFormValue.InsuranceAmount || 0,
       ValuationCharge: otherFormValue.ValuationCharge || 0,
-      SwitchBL: otherFormValue.SwitchBL ? 'Y' : 'N',
+      SwitchBL: proxyFormValue.SwitchBL ? 'Y' : 'N',
       BacktoBack: otherFormValue.BacktoBack ? 'Y' : 'N',
       Depo: otherFormValue.Depo || '',
       ROValidity: otherFormValue.ROValidity ? new Date(otherFormValue.ROValidity) : null,
-      SwitchBLAgent: otherFormValue?.SwitchBLAgent || null,
-      AgentName: otherFormValue?.AgentName || null,
-      AgentAddress: otherFormValue?.AgentAddress || '',
+      SwitchBLAgent: proxyFormValue?.AgentName || null,
+      AgentAddress: proxyFormValue?.AgentAddress || '',
       // FIXED: Correct field names
-      SwitchBLShipper: otherFormValue?.SwitchBLShipper || null,
-      SwitchBLConsignee: otherFormValue?.SwitchBLConsignee || null,
-      SwitchLocation: otherFormValue?.SwitchLocation || '',
+      SwitchBLShipper: proxyFormValue?.ShipperName || null,
+      SwitchBLConsignee: proxyFormValue?.ConsigneeName || null,
+      SwitchLocation: proxyFormValue?.SwitchLocation || '',
       CarrierBookingRef: otherFormValue?.CarrierBookingRef || '',
       CarrierBookingDate: otherFormValue?.CarrierBookingDate ? new Date(otherFormValue?.CarrierBookingDate) : null,
       // FIXED: DONo and DODate handling
@@ -3294,6 +3369,22 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
       InternalNote: otherFormValue?.InternalNote || '',
       GeneralNote: otherFormValue?.GeneralNote || ''
     },
+    houseJobProxy: proxyFormValue.SwitchBL ? [{
+      HouseJobProxySid: proxyFormValue.HouseJobProxySid || null,
+      CustomerName: proxyFormValue.CustomerName || null,
+      CustomerAddress: proxyFormValue.CustomerAddress || '',
+      AgentName: proxyFormValue.AgentName || null,
+      AgentAddress: proxyFormValue.AgentAddress || '',
+      ShipperName: proxyFormValue.ShipperName || null,
+      ShipperAddress: proxyFormValue.ShipperAddress || '',
+      ConsigneeName: proxyFormValue.ConsigneeName || null,
+      ConsigneeAddress: proxyFormValue.ConsigneeAddress || '',
+      VesselName: proxyFormValue.VesselName || null,
+      VoyageNo: proxyFormValue.VoyageNo || '',
+      POO: proxyFormValue.POO || '',
+      FPD: proxyFormValue.FPD || '',
+      CarrierName: proxyFormValue.CarrierName || null,
+    }] : [],
     
     products: flatCargoProducts,
     houseJobProduct: flatCargoProducts,
@@ -4127,7 +4218,50 @@ usesDimensionalCargoFields(): boolean {
   }
 
   setAddress(controlName: string, item: any) {
-    this.b[controlName]?.setValue(item ? item.CustomerAddress1 : '')
+    this.b[controlName]?.setValue(item ? (item.CustomerAddress1 || item.Address || item.CustomerAddress || '') : '')
+  }
+
+  setProxyAddress(controlName: string, item: any) {
+    this.proxyForm.get(controlName)?.setValue(item ? (item.CustomerAddress1 || item.Address || item.CustomerAddress || '') : '');
+  }
+
+  clearProxyFields(): void {
+    this.proxyForm.patchValue({
+      HouseJobProxySid: this.proxyForm.get('HouseJobProxySid')?.value || null,
+      CustomerName: null,
+      CustomerAddress: '',
+      AgentName: null,
+      AgentAddress: '',
+      ShipperName: null,
+      ShipperAddress: '',
+      ConsigneeName: null,
+      ConsigneeAddress: '',
+      VesselName: null,
+      VoyageNo: '',
+      POO: '',
+      FPD: '',
+      CarrierName: null,
+      isProxyCustomerFreeText: true,
+      isProxyAgentFreeText: true,
+      isProxyShipperFreeText: true,
+      isProxyConsigneeFreeText: true,
+      isProxyCarrierFreeText: true,
+    }, { emitEvent: false });
+  }
+
+  onProxyVesselChange(vesselVoyage: any) {
+    if (!vesselVoyage) {
+      this.proxyForm.patchValue({
+        VesselName: null,
+        VoyageNo: ''
+      }, { emitEvent: false });
+      return;
+    }
+
+    this.proxyForm.patchValue({
+      VesselName: vesselVoyage.VesselName || null,
+      VoyageNo: vesselVoyage.VoyageNo || ''
+    }, { emitEvent: false });
   }
 
   handlePOLChange(selectedPort: any,resetTrigger:boolean = true) {
@@ -4859,6 +4993,29 @@ resetForm() {
   this.slicedProductArr = [];
   this.productDataLength = 0;
   this.otherForm.reset();
+  this.proxyForm.reset({
+    HouseJobProxySid: null,
+    SwitchBL: false,
+    SwitchLocation: '',
+    CustomerName: null,
+    CustomerAddress: '',
+    AgentName: null,
+    AgentAddress: '',
+    ShipperName: null,
+    ShipperAddress: '',
+    ConsigneeName: null,
+    ConsigneeAddress: '',
+    VesselName: null,
+    VoyageNo: '',
+    POO: '',
+    FPD: '',
+    CarrierName: null,
+    isProxyCustomerFreeText: true,
+    isProxyAgentFreeText: true,
+    isProxyShipperFreeText: true,
+    isProxyConsigneeFreeText: true,
+    isProxyCarrierFreeText: true,
+  });
   this.applyExportToImportFieldLocks();
   this.resetDirtyState();
   }
@@ -6875,6 +7032,10 @@ getProductFormGroup(index: number): FormGroup {
 
     Object.keys(this.otherForm.controls).forEach(key => {
       this.otherForm.get(key)?.disable();
+    });
+
+    Object.keys(this.proxyForm.controls).forEach(key => {
+      this.proxyForm.get(key)?.disable();
     });
 
     Object.keys(this.cargoForm.controls).forEach(key => {

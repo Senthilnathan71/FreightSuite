@@ -1363,6 +1363,199 @@
         [resetTrigger]="resetTriggerRate" [formData]="currentFormValue" (dataEmitter)="handleRateChange($event)" [isFormDisabled]="isFormDisabled"
         (reloadParent)="loadHouseById($event)"></app-cost-entry>
     </div>
+    <div class="workspace-content" [hidden]="selectedTab !== 'Proxy'">
+      @if(selectedDepartmentType === 'SEA'){
+      <div class="col-md-12">
+        <div class="row compact-form" [formGroup]="proxyForm">
+          <aside class="col-md-3 d-flex align-items-center">
+            <div class="form-check form-check-inline p-0 mt-0">
+              <div class="form-check d-flex align-items-center">
+                <input type="checkbox" id="proxySwitchBl" class="form-check-input sm" formControlName="SwitchBL">
+                <label for="proxySwitchBl" class="form-check-label sm">Switch BL</label>
+              </div>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" id="proxy-switch-location" placeholder="" class="custom-input-field sm"
+                formControlName="SwitchLocation">
+              <label for="proxy-switch-location" class="input-label">Switch Location</label>
+            </div>
+          </aside>
+        </div>
+
+        @if(proxyForm.get('SwitchBL')?.value){
+        <div class="row compact-form mt-2" [formGroup]="proxyForm">
+          <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('CustomerName')?.value">
+              <div class="d-flex align-items-center" *ngIf="proxyForm.get('isProxyCustomerFreeText')?.value">
+                <input type="text" class="custom-input-field sm" placeholder="" formControlName="CustomerName" style="width: 85%" />
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('CustomerName','isProxyCustomerFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <div class="d-flex align-items-center" *ngIf="!proxyForm.get('isProxyCustomerFreeText')?.value">
+                <dofi-searchable-dropdown [items]="customerList" formControlName="CustomerName" placeholder=""
+                  [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                  [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerName"
+                  (itemSelected)="setProxyAddress('CustomerAddress',$event)" style="width: 85%">
+                </dofi-searchable-dropdown>
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('CustomerName','isProxyCustomerFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <label class="input-label">Customer Name</label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" class="custom-input-field sm" placeholder="" formControlName="CustomerAddress">
+              <label class="input-label">Customer Address</label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('AgentName')?.value">
+              <div class="d-flex align-items-center" *ngIf="proxyForm.get('isProxyAgentFreeText')?.value">
+                <input type="text" class="custom-input-field sm" placeholder="" formControlName="AgentName" style="width: 85%" />
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('AgentName','isProxyAgentFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <div class="d-flex align-items-center" *ngIf="!proxyForm.get('isProxyAgentFreeText')?.value">
+                <dofi-searchable-dropdown [items]="originAgentList" formControlName="AgentName" placeholder=""
+                  [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                  [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerName"
+                  (itemSelected)="setProxyAddress('AgentAddress',$event)" style="width: 85%">
+                </dofi-searchable-dropdown>
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('AgentName','isProxyAgentFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <label class="input-label">Agent Name</label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" class="custom-input-field sm" placeholder="" formControlName="AgentAddress">
+              <label class="input-label">Agent Address</label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('ShipperName')?.value">
+              <div class="d-flex align-items-center" *ngIf="proxyForm.get('isProxyShipperFreeText')?.value">
+                <input type="text" class="custom-input-field sm" placeholder="" formControlName="ShipperName" style="width: 85%" />
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('ShipperName','isProxyShipperFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <div class="d-flex align-items-center" *ngIf="!proxyForm.get('isProxyShipperFreeText')?.value">
+                <dofi-searchable-dropdown [items]="shipperList" formControlName="ShipperName" placeholder=""
+                  [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                  [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerName"
+                  (itemSelected)="setProxyAddress('ShipperAddress',$event)" style="width: 85%">
+                </dofi-searchable-dropdown>
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('ShipperName','isProxyShipperFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <label class="input-label">Shipper Name</label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" class="custom-input-field sm" placeholder="" formControlName="ShipperAddress">
+              <label class="input-label">Shipper Address</label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('ConsigneeName')?.value">
+              <div class="d-flex align-items-center" *ngIf="proxyForm.get('isProxyConsigneeFreeText')?.value">
+                <input type="text" class="custom-input-field sm" placeholder="" formControlName="ConsigneeName" style="width: 85%" />
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('ConsigneeName','isProxyConsigneeFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <div class="d-flex align-items-center" *ngIf="!proxyForm.get('isProxyConsigneeFreeText')?.value">
+                <dofi-searchable-dropdown [items]="consigneeList" formControlName="ConsigneeName" placeholder=""
+                  [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                  [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerName"
+                  (itemSelected)="setProxyAddress('ConsigneeAddress',$event)" style="width: 85%">
+                </dofi-searchable-dropdown>
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('ConsigneeName','isProxyConsigneeFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <label class="input-label">Consignee Name</label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" class="custom-input-field sm" placeholder="" formControlName="ConsigneeAddress">
+              <label class="input-label">Consignee Address</label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('POO')?.value">
+              <!-- <dofi-searchable-dropdown [items]="portList" formControlName="POO" placeholder=""
+                [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
+                [labelFields]="portLookupConfig.labelFields" bindValue="PortCode">
+              </dofi-searchable-dropdown> -->
+              <input type="text" class="custom-input-field sm" placeholder="" formControlName="POO">
+              <label class="input-label">POO</label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('FPD')?.value">
+              <!-- <dofi-searchable-dropdown [items]="portList" formControlName="FPD" placeholder=""
+                [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
+                [labelFields]="portLookupConfig.labelFields" bindValue="PortCode">
+              </dofi-searchable-dropdown> -->
+              <input type="text" class="custom-input-field sm" placeholder="" formControlName="FPD">
+              <label class="input-label">FPD</label>
+            </div>
+          </aside>
+           <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('VesselName')?.value">
+              <!-- <dofi-searchable-dropdown [items]="headerVesselList" formControlName="VesselName" placeholder=""
+                [displayFields]="vesselVoyageConfig.displayFields" [displayLabels]="vesselVoyageConfig.displayLabels"
+                [labelFields]="vesselVoyageConfig.labelFields" bindValue="VesselName"
+                (itemSelected)="onProxyVesselChange($event)">
+              </dofi-searchable-dropdown> -->
+              <input type="text" class="custom-input-field sm" placeholder="" formControlName="VesselName">
+              <label class="input-label">Vessel Name</label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group">
+              <input type="text" class="custom-input-field sm" placeholder="" formControlName="VoyageNo">
+              <label class="input-label">Voyage No</label>
+            </div>
+          </aside>
+          <aside class="col-md-3">
+            <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('CarrierName')?.value">
+              <div class="d-flex align-items-center" *ngIf="proxyForm.get('isProxyCarrierFreeText')?.value">
+                <input type="text" class="custom-input-field sm" placeholder="" formControlName="CarrierName" style="width: 85%" />
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('CarrierName','isProxyCarrierFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <div class="d-flex align-items-center" *ngIf="!proxyForm.get('isProxyCarrierFreeText')?.value">
+                <dofi-searchable-dropdown [items]="carrierList" formControlName="CarrierName" placeholder=""
+                  [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                  [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerName" style="width: 85%">
+                </dofi-searchable-dropdown>
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('CarrierName','isProxyCarrierFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div>
+              <label class="input-label">Carrier Name</label>
+            </div>
+          </aside>
+        </div>
+        }
+      </div>
+      }
+    </div>
 <!-- BOE -->
   <!-- BOE Tab -->
 <div class="workspace-content" [hidden]="selectedTab !== 'BOE'">
@@ -2658,8 +2851,7 @@
               <label for="text-input" class="input-label">Notify Address 2<span class="text-danger"></span></label>
             </div>
           </aside>
-
-          <aside class="col-md-3">
+           <aside class="col-md-3">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
                 formControlName="PickupPlace" [textWithNumbers]="200">
@@ -2875,15 +3067,6 @@
             </div>
           </aside>
         }
-          @if(selectedDepartmentType === "SEA") {
-          <aside class="col-md-3 d-flex align-items-center">
-            <div class="form-check form-check-inline p-0 mt-0">
-              <div class="form-check d-flex align-items-center">
-                <input type="checkbox" id="switchBl" class="form-check-input sm" formControlName="SwitchBL">
-                <label for="switchBl" class="form-check-label sm">Switch BL <span class="text-danger"></span></label>
-              </div>
-            </div>
-          </aside>
           <aside class="col-md-3 d-flex align-items-center">
             <div class="form-check form-check-inline p-0 mt-0">
               <div class="form-check d-flex align-items-center">
@@ -2893,7 +3076,6 @@
               </div>
             </div>
           </aside>
-          }
           @if(selectedCargoMode === "FCL"){
           <aside class="col-md-3">
             <div class="custom-form-group">
@@ -2914,61 +3096,6 @@
               <label for="shipmentDacteExpected" class="input-label">Ro Validity <span class="text-danger"></span>
               </label>
 
-            </div>
-          </aside>
-          }
-          @if(otherForm.get('SwitchBL')?.value){
-          <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select"
-              [class.filled]="!!otherForm.get('SwitchBLAgent')?.value">
-              <ng-select class="ng-select" [items]="agentList" bindLabel="CustomerName" bindValue="CustomerName"
-                placeholder="" formControlName="SwitchBLAgent" appendTo="body"
-                (change)="setAddressOthers('AgentAddress',$event)">
-                <ng-template ng-option-tmp let-item="item">
-                  <div>
-                    <strong>{{ item.CustomerName }}</strong><br>
-                    <small>{{ item.CustomerAddress1 }}</small>
-                  </div>
-                </ng-template>
-              </ng-select>
-              <label for="text-input" class="input-label">BL Agent <span class="text-danger"></span></label>
-            </div>
-          </aside>
-
-          <aside class="col-md-3">
-            <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                formControlName="AgentAddress">
-              <label for="text-input" class="input-label">Agent Address<span class="text-danger"></span></label>
-            </div>
-          </aside>
-
-          <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select"
-              [class.filled]="!!otherForm.get('SwitchBLShipper')?.value">
-              <ng-select class="ng-select" [items]="shipperList" bindLabel="CustomerName" bindValue="CustomerName"
-                placeholder="" formControlName="SwitchBLShipper" appendTo="body">
-              </ng-select>
-              <label for="text-input" class="input-label">BL Shipper<span class="text-danger"></span></label>
-            </div>
-          </aside>
-
-          <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select"
-              [class.filled]="!!otherForm.get('SwitchBLConsignee')?.value">
-              <ng-select class="ng-select" [items]="shipperList" bindLabel="CustomerName" bindValue="CustomerName"
-                formControlName="SwitchBLConsignee" placeholder="" appendTo="body">
-              </ng-select>
-              <label for="text-input" class="input-label">BL Consignee<span class="text-danger"></span></label>
-            </div>
-
-          </aside>
-
-          <aside class="col-md-3">
-            <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
-                formControlName="SwitchLocation">
-              <label for="text-input" class="input-label">Location<span class="text-danger"></span></label>
             </div>
           </aside>
           }
@@ -4935,11 +5062,11 @@
               <div style="width: 120px;"><strong>ETA</strong></div>
               <div>: {{ housejobData?.ETA | formatDate }}</div>
             </div>
-            <div class="d-flex mb-1">
-  <div style="width: 120px;"><strong>Vessel/Voyage</strong></div>
-  <div style="padding-left: 5px;" [innerHTML]="formatVesselVoyage(housejobData?.VesselName, housejobData?.VoyageNo)"></div>
-</div>
- 
+                <div class="d-flex mb-1">
+   <div style="width: 120px;"><strong>Vessel/Voyage</strong></div>
+   <div style="padding-left: 5px;" [innerHTML]="formatVesselVoyage(housejobData?.VesselName, housejobData?.VoyageNo)"></div>
+ </div>
+
             <div class="d-flex mb-1">
               <div style="width: 120px;"><strong>PP/CC</strong></div>
               <div>: {{housejobData?.FreightTerms}}</div>
