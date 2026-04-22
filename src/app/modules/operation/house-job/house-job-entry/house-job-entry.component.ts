@@ -3783,32 +3783,53 @@ validateHBLNo(): boolean {
   }
 
   private resolveSelectedSegment(department: any): string {
-    const departmentType = this.normalizePortText(department?.departmentType);
-    if (departmentType === 'SEA') {
-      return this.normalizePortText(department?.FCLLCL) || 'LCL';
-    }
+  const departmentType = this.normalizePortText(department?.departmentType);
 
-    return departmentType || 'LCL';
+  if (departmentType === 'SEA') {
+    return this.normalizePortText(department?.FCLLCL) || 'LCL';
   }
 
-  private resolveCargoMode(department: any): 'FCL' | 'LCL' | 'AIR' | 'ROAD' {
-    const segment = this.resolveSelectedSegment(department);
-    if (segment === 'FCL' || segment === 'AIR') {
-      return segment;
-    }
-    if (segment === 'ROAD' || segment === 'TRANSPORT') {
-      return 'ROAD';
-    }
-    return 'LCL';
+  if (departmentType === 'ROAD' || departmentType === 'TRANSPORT') {
+    const fcllcl = this.normalizePortText(department?.FCLLCL);
+    // Road/Transport + LCL → dimensional fields
+    if (fcllcl === 'LCL') return 'LCL';
+    // Road/Transport + FCL or Others → container fields
+    return 'FCL';
   }
 
-  isSurfaceCargoMode(): boolean {
-    return this.selectedCargoMode === 'ROAD';
+  return departmentType || 'LCL';
+}
+
+private resolveCargoMode(department: any): 'FCL' | 'LCL' | 'AIR' | 'ROAD' {
+  const departmentType = this.normalizePortText(department?.departmentType);
+  const fcllcl = this.normalizePortText(department?.FCLLCL);
+
+  if (departmentType === 'AIR') return 'AIR';
+
+  if (departmentType === 'SEA') {
+    return fcllcl === 'FCL' ? 'FCL' : 'LCL';
   }
 
-  usesDimensionalCargoFields(): boolean {
-    return this.selectedCargoMode === 'LCL' || this.selectedCargoMode === 'AIR';
+  if (departmentType === 'ROAD' || departmentType === 'TRANSPORT') {
+    if (fcllcl === 'LCL') return 'LCL';
+    // FCL or Others → use FCL mode so container fields show
+    return 'FCL';
   }
+
+  const segment = this.resolveSelectedSegment(department);
+  if (segment === 'FCL') return 'FCL';
+  if (segment === 'AIR') return 'AIR';
+  return 'LCL';
+}
+
+isSurfaceCargoMode(): boolean {
+  // Never block CBM for Road — Road uses FCL or LCL mode now
+  return false;
+}
+
+usesDimensionalCargoFields(): boolean {
+  return this.selectedCargoMode === 'LCL' || this.selectedCargoMode === 'AIR';
+}
 
   private shouldUseAllPortOptions(): boolean {
     const departmentType = this.normalizePortText(this.selectedDepartmentType || this.selectedDepartment?.departmentType);
@@ -6826,6 +6847,7 @@ getProductFormGroup(index: number): FormGroup {
 
     this.isFormDisabled = true;
   }
+  
 }
 
 
