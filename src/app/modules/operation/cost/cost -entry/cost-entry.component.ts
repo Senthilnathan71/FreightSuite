@@ -81,6 +81,7 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   tariffCargoGroups: { cargoLabel: string; items: any[] }[] = [];
   isStandardRate: boolean = false;
   tariffSearchedCombination: string = '';
+  tariffHeaderSid: number | null = null;
   profitSummary: any[] = [];
   profitProratedCharges: any[] = [];
   isProfitProrateLoading = false;
@@ -1838,15 +1839,16 @@ createRateFormGroup(data?: any): FormGroup {
 
     const basePayload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-      BranchMasterSid : this.currentBranch?.BranchMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
       DepartmentMasterSid: this.parentFormValue?.DepartmentMasterSid || null,
-      PORSid: this.parentFormValue?.PORSid || null,
       POLSid: this.parentFormValue?.POLSid || null,
-      PODSid:this.parentFormValue?.PODSid || null,
-      FPODSid: this.parentFormValue?.FPODSid || null,
+      PODSid: this.parentFormValue?.PODSid || null,
       EffectiveDate: this.isEditMode ? this.parentFormValue?.EffectiveDate : new Date(),
       ExpiredDate: this.isEditMode ? this.parentFormValue?.ExpiredDate : new Date(),
+      PORSid: this.parentFormValue?.PORSid || null,
+      FPODSid: this.parentFormValue?.FPODSid || null,
       Carrier: this.parentFormValue?.Carrier || null,
+      AgentSid: this.parentFormValue?.Agent || null,
       IncoTerms: this.parentFormValue?.IncoTerms || null,
     };
 
@@ -1879,6 +1881,7 @@ createRateFormGroup(data?: any): FormGroup {
         this.tariffDetails = [];
         this.tariffCargoGroups = [];
         this.isStandardRate = false;
+        this.tariffHeaderSid = null;
 
         results.forEach((resp, idx) => {
           const cargo = cargoItems[idx] || {};
@@ -1903,6 +1906,7 @@ createRateFormGroup(data?: any): FormGroup {
               }
 
               return {
+                TariffHeaderSid: td.TariffHeaderSid,
                 TariffDetailSid : td.TariffDetailSid,
                 ChargeMasterSid: charge?.ChargeMasterSid,
                 ChargeDescription: td.Description,
@@ -1959,6 +1963,7 @@ createRateFormGroup(data?: any): FormGroup {
         });
 
         this.isStandardRate = standardRateLabels.length > 0;
+        this.tariffHeaderSid = this.tariffDetails[0]?.TariffHeaderSid || null;
 
         if (commonItems.length > 0) {
           this.tariffCargoGroups.unshift({ cargoLabel: 'Common Charges', items: commonItems });
@@ -2101,6 +2106,9 @@ createRateFormGroup(data?: any): FormGroup {
     const carrier = this.parentFormValue?.CarrierName;
     if (carrier) parts.push(`Carrier: ${carrier}`);
 
+    const agent = this.parentFormValue?.AgentName;
+    if (agent) parts.push(`Agent: ${agent}`);
+
     const incoTerms = this.parentFormValue?.IncoTerms;
     if (incoTerms) parts.push(`IncoTerms: ${incoTerms}`);
 
@@ -2142,6 +2150,7 @@ createRateFormGroup(data?: any): FormGroup {
     this.tariffCargoGroups = [];
     this.isStandardRate = false;
     this.tariffSearchedCombination = '';
+    this.tariffHeaderSid = null;
     this.modalService.dismissAll();
   }
 
