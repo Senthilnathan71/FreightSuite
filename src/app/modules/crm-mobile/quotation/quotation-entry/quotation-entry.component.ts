@@ -5343,7 +5343,7 @@ ${this.userData['userEmail']}`;
       return String(containerType);
     }
 
-    return matchedType.ContainerCode || matchedType.ContainerName || String(containerType);
+    return matchedType.ContainerName || matchedType.ContainerTypeName || matchedType.ContainerCode || String(containerType);
   }
 getContainerTypeName(containerCode: string): string {
   if (!containerCode) return 'Container';

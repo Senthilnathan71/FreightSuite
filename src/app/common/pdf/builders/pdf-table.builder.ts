@@ -280,10 +280,10 @@ export function buildCargoTable(
     const totalVolume = cargo.reduce((sum, item) => sum + (Number(item.Volume) || 0), 0);
 
     const totalRow: any[] = columns.map(() => ({ text: '', style: opts.cellStyle }));
-    totalRow[4] = { text: 'Total', style: opts.cellStyle, alignment: 'right' };
-    totalRow[5] = { text: formatNumber(totalQty, 2), style: opts.cellStyle, alignment: 'right' };
-    totalRow[6] = { text: formatNumber(totalGrossWeight, 3), style: opts.cellStyle, alignment: 'right' };
-    totalRow[7] = { text: formatNumber(totalVolume, 3), style: opts.cellStyle, alignment: 'right' };
+    totalRow[4] = { text: 'Total', style: 'tableCellBold', alignment: 'right' };
+    totalRow[5] = { text: formatNumber(totalQty, 2), style: 'tableCellBold', alignment: 'right' };
+    totalRow[6] = { text: formatNumber(totalGrossWeight, 3), style: 'tableCellBold', alignment: 'right' };
+    totalRow[7] = { text: formatNumber(totalVolume, 3), style: 'tableCellBold', alignment: 'right' };
 
     const widths = columns.map(col => col.width || '*');
     const layout = {
@@ -365,9 +365,9 @@ export function buildCargoTable(
     const totalVolume = cargo.reduce((sum, item) => sum + (Number(item.Volume) || 0), 0);
 
     const totalRow: any[] = columns.map(() => ({ text: '', style: opts.cellStyle }));
-    totalRow[5] = { text: 'Total', style: opts.cellStyle, alignment: 'right' };
-    totalRow[6] = { text: formatNumber(totalGrossWeight, 3), style: opts.cellStyle, alignment: 'right' };
-    totalRow[7] = { text: formatNumber(totalVolume, 3), style: opts.cellStyle, alignment: 'right' };
+    totalRow[5] = { text: 'Total', style: 'tableCellBold', alignment: 'right' };
+    totalRow[6] = { text: formatNumber(totalGrossWeight, 3), style: 'tableCellBold', alignment: 'right' };
+    totalRow[7] = { text: formatNumber(totalVolume, 3), style: 'tableCellBold', alignment: 'right' };
 
     const widths = columns.map(col => col.width || '*');
     const layout = {
@@ -450,10 +450,10 @@ export function buildCargoTable(
   const totalVolume = cargo.reduce((sum, item) => sum + (Number(item.Volume) || 0), 0);
 
   const totalRow: any[] = columns.map(() => ({ text: '', style: opts.cellStyle }));
-  totalRow[2] = { text: 'Total', style: opts.cellStyle, alignment: 'right' };
-  totalRow[4] = { text: formatNumber(totalQty, 0), style: opts.cellStyle, alignment: 'right' };
-  totalRow[7] = { text: formatNumber(totalGrossWeight, 3), style: opts.cellStyle, alignment: 'right' };
-  totalRow[8] = { text: formatNumber(totalVolume, 3), style: opts.cellStyle, alignment: 'right' };
+  totalRow[2] = { text: 'Total', style: 'tableCellBold', alignment: 'right' };
+  totalRow[4] = { text: formatNumber(totalQty, 0), style: 'tableCellBold', alignment: 'right' };
+  totalRow[7] = { text: formatNumber(totalGrossWeight, 3), style: 'tableCellBold', alignment: 'right' };
+  totalRow[8] = { text: formatNumber(totalVolume, 3), style: 'tableCellBold', alignment: 'right' };
 
   const widths = columns.map(col => col.width || '*');
   const layout = {
