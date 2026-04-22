@@ -1297,6 +1297,8 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       DODate : [''],
       SIConfirmationDate : [''],
       DGConfirmationDate : [''],
+      IATARate : [''],
+      PlaceOfSupply : ['']
     })
     this.otherForm.valueChanges.subscribe(() => {
       if (this.otherForm.dirty) {
@@ -2091,7 +2093,9 @@ private loadMasterJobDetails(masterJobSid: number): void {
         SIConfirmationDate: otherData?.SIConfirmationDate ? new Date(otherData?.SIConfirmationDate) : null,
         DGConfirmationDate: otherData?.DGConfirmationDate ? new Date(otherData?.DGConfirmationDate) : null,
         InternalNote: otherData?.InternalNote || '',
-        GeneralNote: otherData?.GeneralNote || ''
+        GeneralNote: otherData?.GeneralNote || '',
+        IATARate: otherData?.IATARate || '',
+        PlaceOfSupply: otherData?.PlaceOfSupply || ''
       }, { emitEvent: false }); // IMPORTANT: Add emitEvent: false
     }
     
@@ -2670,7 +2674,9 @@ onCurrencyChange(event: any) {
       SIConfirmationDate: otherFormValue?.SIConfirmationDate ? new Date(otherFormValue?.SIConfirmationDate) : null,
       DGConfirmationDate: otherFormValue?.DGConfirmationDate ? new Date(otherFormValue?.DGConfirmationDate) : null,
       InternalNote: otherFormValue?.InternalNote || '',
-      GeneralNote: otherFormValue?.GeneralNote || ''
+      GeneralNote: otherFormValue?.GeneralNote || '',
+      IATARate: otherFormValue?.IATARate || '',
+      PlaceOfSupply: otherFormValue?.PlaceOfSupply || ''
     },
     
     houseJobProduct: mappedHouseJobProducts,
