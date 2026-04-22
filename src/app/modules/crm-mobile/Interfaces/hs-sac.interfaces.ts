@@ -5,6 +5,7 @@ export interface HSSAC {
     ServiceName: string;
     TaxRate: number;
     TaxType: string;
+    HSNorSAC: string;
     EffectiveFrom: any;
     Remarks: string;
     status: string;

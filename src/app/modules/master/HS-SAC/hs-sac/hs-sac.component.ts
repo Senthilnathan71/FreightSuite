@@ -87,7 +87,8 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
   errorMessage: string = '';
   btnDisable: boolean = false;
   hssacList: any[] = [];
-  statusList = ["Active", "Suspended"]
+  statusList = ["Active", "Suspended"];
+  HSNorSAC = ["HSN", "SAC"]
   taxList: any[] = [];
   modalRef!: NgbModalRef;
   searchType = 'HSSACCode';
@@ -524,6 +525,7 @@ hasAnyDropdownPermission(): boolean {
     this.hssacForm = this.fb.group({
       HSSACCode: ['', [Validators.required]],
       HSSACName: ['', [Validators.required]],
+      HSNorSAC: ['', [Validators.required]],
       ServiceName: ['', [Validators.required]],
       TaxRate: ['Default', [Validators.required]],
       TaxType: ['', [Validators.required]],
@@ -605,6 +607,7 @@ hasAnyDropdownPermission(): boolean {
       HSSACCode: null,
       HSSACName: null,
       ServiceName: null,
+      HSNorSAC: null,
       TaxRate: 'Default',
       TaxType: null,
       EffectiveFrom: null,
@@ -670,6 +673,7 @@ editHssac(id: number, content: TemplateRef<any>) {
         HSSACCode: data.HSSACCode,
         HSSACName: data.HSSACName,
         ServiceName: data.ServiceName,
+        HSNorSAC: data.HSNorSAC,
         TaxRate: data.TaxRate,
         TaxType: data.TaxType,
         // Safe Date Parsing: Ensure date is valid before creating object
@@ -708,6 +712,7 @@ editHssac(id: number, content: TemplateRef<any>) {
         this.hssacForm.patchValue({
           HSSACCode: hssac.HSSACCode,
           HSSACName: hssac.HSSACName,
+          HSNorSAC: hssac.HSNorSAC,
           ServiceName: hssac.ServiceName,
           TaxRate: hssac.TaxRate,
           TaxType: hssac.TaxType,

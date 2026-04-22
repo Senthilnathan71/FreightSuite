@@ -285,9 +285,15 @@
 
 
                             <td>
-                                <ng-select formControlName="coaMasterSid" [items]="coaList" bindLabel="LedgerName"
+                                <!-- <ng-select formControlName="coaMasterSid" [items]="coaList" bindLabel="LedgerName"
                                     bindValue="COAMasterSid" appendTo="body" placeholder="">
-                                </ng-select>
+                                </ng-select> -->
+                                <dofi-searchable-dropdown [items]="coaList" formControlName="coaMasterSid" placeholder=""
+                        [displayFields]="LEDGERLookupConfig.displayFields"
+                        [displayLabels]="LEDGERLookupConfig.displayLabels"
+                        [labelFields]="LEDGERLookupConfig.labelFields" bindLabel="LedgerName"
+                        bindValue="COAMasterSid">
+                      </dofi-searchable-dropdown>
                             </td>
                             <td>
                                 <ng-select formControlName="ledgerMasterSid"

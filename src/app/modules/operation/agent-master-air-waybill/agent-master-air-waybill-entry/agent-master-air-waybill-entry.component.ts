@@ -4128,10 +4128,16 @@ resetForm() {
 
   openTandC() {
         const currentMenuId = this.bookingData?.MenuMasterSid;
+        this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
         const departmentSid = this.bookingData?.DepartmentMasterSid;
         const pol = this.bookingData?.POL;
         const pod = this.bookingData?.POD;
         const carrier = this.bookingData?.CarrierSid || null;
+        const transactionPayload = {
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    MenuMasterSid: this.currentMenuId,
+    DocumentSid: this.HouseJobSid
+  };
         const payload = { 
           MenuMasterSid: currentMenuId,
           DepartmentMasterSid: departmentSid,
@@ -4140,6 +4146,20 @@ resetForm() {
           Carrier: carrier,
           DocumentSid: this.HouseJobSid
         };
+        const getTermText = (item: any): string =>
+    (item?.Terms || item?.TandC || '').trim().toLowerCase();
+
+  const isSameTerm = (a: any, b: any): boolean =>
+    (
+      a?.TandCTransactionSid &&
+      b?.TandCTransactionSid &&
+      a.TandCTransactionSid === b.TandCTransactionSid
+    ) ||
+    (
+      getTermText(a) === getTermText(b) &&
+      (a?.DocumentSid ?? this.HouseJobSid ?? null) ===
+      (b?.DocumentSid ?? this.HouseJobSid ?? null)
+    );
         const openModal = (terms : any[]) => {
           const modalRef = this.modalService.open(TermsAndConditionsComponent, {
                 size: 'lg',
@@ -4155,25 +4175,42 @@ resetForm() {
               modalRef.componentInstance.Carrier = carrier;
               modalRef.componentInstance.loadAllOnGet = !this.isTermsAndConditionsEnabled;
         };
-        if (!this.isTermsAndConditionsEnabled) {
-      this.TandCList = [];
-      openModal(this.TandCList);
-      return;
-    }
-        this.masterService.getTandCByCondition(payload).subscribe(
-          (resp: any) => {
-            if (resp.status) {
-              this.TandCList = resp.data;
-              openModal(this.TandCList);
-    
-            } else {
-              this.appSettingService.showError('Error loading Terms and Conditions');
-            }
-          },
-          (error) => {
-            this.appSettingService.showError('Error loading Terms and Conditions',error);
-          }
+        if (this.isTermsAndConditionsEnabled) {
+    forkJoin({
+      tandc: this.masterService.getTandC(transactionPayload),
+      defaults: this.masterService.getTandCByCondition(payload)
+    }).subscribe(
+      (resp: any) => {
+        const tandcData = resp?.tandc?.status ? (resp.tandc.data || []) : [];
+        const defaultData = resp?.defaults?.status ? (resp.defaults.data || []) : [];
+
+        const combined = [...tandcData, ...defaultData].filter(
+          (item: any, index: number, arr: any[]) =>
+            index === arr.findIndex((x: any) => isSameTerm(x, item))
         );
+
+        this.TandCList = combined;
+        openModal(this.TandCList);
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+    return;
+  }
+    this.masterService.getTandC(transactionPayload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          openModal(this.TandCList);
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
       }
   async openEmail() {
     if (!this.bookingData) return;

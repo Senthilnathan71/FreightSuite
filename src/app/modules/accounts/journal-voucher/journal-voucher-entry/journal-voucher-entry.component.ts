@@ -39,6 +39,7 @@ import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-d
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { ToastrService } from 'ngx-toastr';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { SearchableDropdown } from "src/app/component/searchable-dropdown/searchable-dropdown.component";
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
 @Component({
@@ -52,7 +53,8 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     NgSelectModule,
     NgbDropdownModule,
     DecimalPrecisionDirective,
-  ],
+    SearchableDropdown
+],
   templateUrl: './journal-voucher-entry.component.html',
   styles: [``],
     providers: [
@@ -138,6 +140,12 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
     displayFields: ['HSSACCode', 'HSSACName'],
     displayLabels: ['Code', 'Name'],
     labelFields: ['HSSACCode'],
+  };
+
+  LEDGERLookupConfig = {
+    displayFields: ['LedgerName', 'SubGroupName'],
+    displayLabels: ['Ledger Name', 'SubGroup Name'],
+    labelFields: ['LedgerName'],
   };
 
   statusList = [
@@ -2769,10 +2777,31 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
   }
   openTandC() {
     this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     const payload = { 
       MenuMasterSid: this.currentMenuId,
       DocumentSid: this.voucherData?.VoucherHeaderSid
      };
+     const transactionPayload = {
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    MenuMasterSid: this.currentMenuId,
+    DocumentSid: this.voucherData?.VoucherHeaderSid
+  };
+
+  const getTermText = (item: any): string =>
+    (item?.Terms || item?.TandC || '').trim().toLowerCase();
+
+  const isSameTerm = (a: any, b: any): boolean =>
+    (
+      a?.TandCTransactionSid &&
+      b?.TandCTransactionSid &&
+      a.TandCTransactionSid === b.TandCTransactionSid
+    ) ||
+    (
+      getTermText(a) === getTermText(b) &&
+      (a?.DocumentSid ?? this.voucherData?.VoucherHeaderSid ?? null) ===
+      (b?.DocumentSid ?? this.voucherData?.VoucherHeaderSid ?? null)
+    );
      const openModal = (terms: any[]) => {
       const modalRef = this.modalService.open(TermsAndConditionsComponent, {
             size: 'lg',
@@ -2784,12 +2813,30 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
           modalRef.componentInstance.DocumentSid = this.voucherData?.VoucherHeaderSid;
           modalRef.componentInstance.loadAllOnGet = !this.isTermsAndConditionsEnabled;
      };
-     if (!this.isTermsAndConditionsEnabled) {
-      this.TandCList = [];
-      openModal(this.TandCList);
-      return;
-    }
-    this.masterService.getTandCByCondition(payload).subscribe(
+     if (this.isTermsAndConditionsEnabled) {
+    forkJoin({
+      tandc: this.masterService.getTandC(transactionPayload),
+      defaults: this.masterService.getTandCByCondition(payload)
+    }).subscribe(
+      (resp: any) => {
+        const tandcData = resp?.tandc?.status ? (resp.tandc.data || []) : [];
+        const defaultData = resp?.defaults?.status ? (resp.defaults.data || []) : [];
+
+        const combined = [...tandcData, ...defaultData].filter(
+          (item: any, index: number, arr: any[]) =>
+            index === arr.findIndex((x: any) => isSameTerm(x, item))
+        );
+
+        this.TandCList = combined;
+        openModal(this.TandCList);
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+    return;
+  }
+    this.masterService.getTandC(transactionPayload).subscribe(
       (resp: any) => {
         if (resp.status) {
           this.TandCList = resp.data;

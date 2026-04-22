@@ -2946,14 +2946,35 @@ isSeaDepartment(): boolean {
   
   openTandC() {
     this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     const menuMasterSid =
       this.invoiceData?.voucherTypeMaster?.MenuMasterSid ?? this.currentMenuId;
     const documentSid = this.invoiceData?.VoucherHeaderSid ?? this.headerId;
 
+    const transactionPayload = {
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    MenuMasterSid: this.currentMenuId,
+    DocumentSid: this.invoiceData?.VoucherHeaderSid
+  };
     const payload = {
       MenuMasterSid: menuMasterSid,
       DocumentSid: documentSid,
     };
+
+    const getTermText = (item: any): string =>
+    (item?.Terms || item?.TandC || '').trim().toLowerCase();
+
+  const isSameTerm = (a: any, b: any): boolean =>
+    (
+      a?.TandCTransactionSid &&
+      b?.TandCTransactionSid &&
+      a.TandCTransactionSid === b.TandCTransactionSid
+    ) ||
+    (
+      getTermText(a) === getTermText(b) &&
+      (a?.DocumentSid ?? this.invoiceData?.VoucherHeaderSid ?? null) ===
+      (b?.DocumentSid ?? this.invoiceData?.VoucherHeaderSid ?? null)
+    );
 
     const openModal = (terms: any[]) => {
       const modalRef = this.modalService.open(TermsAndConditionsComponent, {
@@ -2976,38 +2997,40 @@ isSeaDepartment(): boolean {
       return;
     }
 
-    // If disabled by config, don't auto-load defaults. User can click "Get" inside modal.
-    if (!this.isTermsAndConditionsEnabled) {
-      this.TandCList = [];
-      this.TandCFetched = true;
-      openModal(this.TandCList);
-      return;
-    }
+   if (this.isTermsAndConditionsEnabled) {
+    forkJoin({
+      tandc: this.masterService.getTandC(transactionPayload),
+      defaults: this.masterService.getTandCByCondition(payload)
+    }).subscribe(
+      (resp: any) => {
+        const tandcData = resp?.tandc?.status ? (resp.tandc.data || []) : [];
+        const defaultData = resp?.defaults?.status ? (resp.defaults.data || []) : [];
 
-    // If already fetched simply open the modal
-    if (this.TandCFetched) {
-      openModal(this.TandCList);
-      return;
-    }
+        const combined = [...tandcData, ...defaultData].filter(
+          (item: any, index: number, arr: any[]) =>
+            index === arr.findIndex((x: any) => isSameTerm(x, item))
+        );
 
-    // If not fetched then fetch and open the modal
-    this.masterService.getTandCByCondition(payload).subscribe(
+        this.TandCList = combined;
+        openModal(this.TandCList);
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
+    return;
+  }
+    this.masterService.getTandC(transactionPayload).subscribe(
       (resp: any) => {
         if (resp.status) {
-          this.TandCFetched = true;
           this.TandCList = resp.data;
           openModal(this.TandCList);
         } else {
-          this.appSettingService.showError(
-            'Error loading Terms and Conditions'
-          );
+          this.appSettingService.showError('Error loading Terms and Conditions');
         }
       },
       (error) => {
-        this.appSettingService.showError(
-          'Error loading Terms and Conditions',
-          error
-        );
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
       }
     );
   }
