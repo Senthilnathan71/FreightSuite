@@ -3797,7 +3797,7 @@ onETDDateSelect(): void {
       action: 'UPDATE',
       context: {
         userName: this.userData?.userName,
-        menuEmail: ''
+        toEmail: ''
       }
     });
     const payload = {

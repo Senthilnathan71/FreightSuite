@@ -209,15 +209,15 @@ export class EmailTriggerService {
     const companyInfo = this.appSettingService.getCurrentCompanyInfo();
     const branchInfo = this.appSettingService.getCurrentBranchInfo();
 
-    let menuEmail = context?.['menuEmail'] || '';
+    let toEmail = context?.['toEmail'] || '';
     const logoUrl = this.getStoredLogoUrl();
 
-    if (!menuEmail && context?.['customerBranchSid']) {
+    if (!toEmail && context?.['customerBranchSid']) {
       try {
         const resp: any = await firstValueFrom(
           this.operationService.getCustomerBranchEmail(context['customerBranchSid'])
         );
-        menuEmail = resp?.data?.Email || '';
+        toEmail = resp?.data?.Email || '';
       } catch (e) {
         console.error(e);
       }
@@ -225,8 +225,8 @@ export class EmailTriggerService {
 
     return {
       ...context,
-      menuEmail,
-      organizationEmail: menuEmail,
+      toEmail,
+      organizationEmail: toEmail,
       userEmail: userData?.userEmail || '',
       userName: context?.['userName'] || userData?.userName || '',
       companyName: companyInfo?.companyName || companyInfo?.CompanyName || 'Dofi Infosys',

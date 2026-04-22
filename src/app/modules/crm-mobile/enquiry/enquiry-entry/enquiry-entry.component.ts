@@ -1938,7 +1938,7 @@ private parseFloatSafe(value: any): number {
                 FPD: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.FDPSid),
                 customerName: this.enquiryData?.CustomerName,
                 userName: this.userData?.userName,
-                menuEmail: this.enquiryData?.Email || '',
+                toEmail: this.enquiryData?.Email || '',
                 customerBranchSid: this.enquiryData?.CustomerBranchSid || null
               }
             });
@@ -1997,7 +1997,7 @@ private parseFloatSafe(value: any): number {
               FPD: getFormattedPort(this.ports, this.routes?.at(0)?.get('FDC')?.value),
               customerName: this.rateRequestForm.get('customerName')?.value,
               userName: this.userData?.userName,
-              menuEmail: this.rateRequestForm.get('Email')?.value || '',
+              toEmail: this.rateRequestForm.get('Email')?.value || '',
               customerBranchSid: this.rateRequestForm.get('CustomerBranchSid')?.value || null
             }
           });
@@ -2121,7 +2121,7 @@ private parseFloatSafe(value: any): number {
         FPD: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.FDPSid),
         customerName: this.enquiryData?.CustomerName,
         userName: this.userData?.userName,
-        menuEmail: this.enquiryData?.Email || '',
+        toEmail: this.enquiryData?.Email || '',
         customerBranchSid: this.enquiryData?.CustomerBranchSid || null
       }
     });

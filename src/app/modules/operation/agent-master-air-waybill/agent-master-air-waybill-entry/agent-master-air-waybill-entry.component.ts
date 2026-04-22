@@ -4038,7 +4038,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
       context: {
         ShipmentNo: this.bookingData?.ShipmentNo,
         userName: this.userData?.userName,
-        menuEmail: ''
+        toEmail: ''
       }
     });
     const payload = {

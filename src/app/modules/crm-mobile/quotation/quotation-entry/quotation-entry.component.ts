@@ -2684,7 +2684,7 @@ isRateLockDisabled(): boolean {
                 departmentName: this.getDepartmentName(this.quotationData?.quoteRoute?.[0]?.DepartmentMasterSid),
                 customerName: this.quotationData?.CustomerName,
                 userName: this.userData?.userName,
-                menuEmail: this.quotationData?.Email || '',
+                toEmail: this.quotationData?.Email || '',
                 customerBranchSid: this.quotationData?.CustomerBranchSid || null,
                 approvalLink: window.location.origin + '/crm/quotation/entry/' + this.QuoteHeaderSid
               }
@@ -2732,7 +2732,7 @@ isRateLockDisabled(): boolean {
                 departmentName: this.getDepartmentName(this.quoteRoutes?.at(0)?.get('DepartmentMasterSid')?.value),
                 customerName: this.quotationForm.get('CustomerName')?.value || this.quotationForm.get('customerName')?.value,
                 userName: this.userData?.userName,
-                menuEmail: this.quotationForm.get('Email')?.value || '',
+                toEmail: this.quotationForm.get('Email')?.value || '',
                 customerBranchSid: this.quotationForm.get('CustomerBranchSid')?.value || null,
                 approvalLink: window.location.origin + '/crm/quotation/entry/' + resp.data?.quoteHeader?.QuoteHeaderSid
               }
@@ -4377,7 +4377,7 @@ ${this.userData.userName}`;
         FPD: this.getFormattedPort(this.quotationData?.quoteRoute?.[0]?.FPODSid),
         customerName: this.quotationData?.CustomerName,
         userName: this.userData?.userName,
-        menuEmail: this.quotationData?.Email || '',
+        toEmail: this.quotationData?.Email || '',
         customerBranchSid: this.quotationData?.CustomerBranchSid || null,
         approvalLink: window.location.origin + '/crm/quotation/entry/' + this.QuoteHeaderSid
       }

@@ -4747,7 +4747,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
         shipperName: this.bookingData?.ShipperName,
         consigneeName: this.bookingData?.ConsigneeName,
         userName: this.userData?.userName,
-        menuEmail: this.bookingData?.Email || this.selectedCustomerBranch?.Email || '',
+        toEmail: this.bookingData?.Email || this.selectedCustomerBranch?.Email || '',
         customerBranchSid: this.bookingData?.CustomerBranchSid || null
       }
     });

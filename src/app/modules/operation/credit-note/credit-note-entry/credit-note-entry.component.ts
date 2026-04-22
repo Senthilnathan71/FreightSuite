@@ -3176,7 +3176,7 @@ export class CreditNoteEntryComponent {
       attachmentFile,
       context: {
         userName: this.userData?.userName,
-        menuEmail: ''
+        toEmail: ''
       }
     });
   }
