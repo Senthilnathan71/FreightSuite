@@ -35,6 +35,39 @@ function cleanJoin(parts: any[], sep: string): string {
     .join(sep);
 }
 
+function isSwitchBLEnabled(houseJobData: any): boolean {
+  const switchBL =
+    houseJobData?.Others?.[0]?.SwitchBL ??
+    houseJobData?.houseJobProxy?.[0]?.SwitchBL ??
+    houseJobData?.HouseJobProxy?.[0]?.SwitchBL ??
+    houseJobData?.Proxy?.[0]?.SwitchBL ??
+    houseJobData?.SwitchBL;
+
+  return String(switchBL || '').toUpperCase() === 'Y';
+}
+
+function getProxyPrintData(houseJobData: any): any {
+  return (
+    houseJobData?.HouseJobProxy?.[0] ||
+    houseJobData?.houseJobProxy?.[0] ||
+    houseJobData?.Proxy?.[0] ||
+    houseJobData?.Others?.[0] ||
+    null
+  );
+}
+
+function pickPrintValue(houseJobData: any, primaryValue: any, proxyValue: any): string {
+  const hasProxyValue =
+    proxyValue !== null &&
+    proxyValue !== undefined &&
+    String(proxyValue).trim() !== '';
+
+  const value = isSwitchBLEnabled(houseJobData)
+    ? (hasProxyValue ? proxyValue : primaryValue)
+    : primaryValue;
+  return value === null || value === undefined ? '' : String(value);
+}
+
 export function transformAllHblItemApiData(
   houseJobData: any,
   options: AllHblTransformOptions,
@@ -121,6 +154,7 @@ export function transformAllHblItemApiData(
     ],
     ', ',
   );
+  const proxyPrintData = getProxyPrintData(houseJobData);
 
   const isDraft = options?.isDraft === true;
   const title = options?.title || (isDraft
@@ -131,13 +165,15 @@ export function transformAllHblItemApiData(
     isDraft,
     title,
     billNo: houseJobData?.HBLNo || '',
-    shipperName: houseJobData?.ShipperName || '',
-    shipperAddress: houseJobData?.ShipperAddress || '',
-    consigneeName: houseJobData?.ConsigneeName || '',
-    consigneeAddress: houseJobData?.ConsigneeAddress || '',
+    shipperName: pickPrintValue(houseJobData, houseJobData?.ShipperName, proxyPrintData?.ShipperName),
+    shipperAddress: pickPrintValue(houseJobData, houseJobData?.ShipperAddress, proxyPrintData?.ShipperAddress),
+    consigneeName: pickPrintValue(houseJobData, houseJobData?.ConsigneeName, proxyPrintData?.ConsigneeName),
+    consigneeAddress: pickPrintValue(houseJobData, houseJobData?.ConsigneeAddress, proxyPrintData?.ConsigneeAddress),
     notifyName: houseJobData?.Notify || '',
     notifyAddress: houseJobData?.NotifyAddress || '',
-    deliveryAgent: agentName(houseJobData?.DestinationAgent),
+    deliveryAgent: isSwitchBLEnabled(houseJobData)
+      ? cleanJoin([proxyPrintData?.AgentName || proxyPrintData?.DestinationAgentName, proxyPrintData?.AgentAddress], '\n')
+      : agentName(houseJobData?.DestinationAgent),
     placeOfReceipt: houseJobData?.POO || '',
     portOfLoading: houseJobData?.POL || '',
     jobNo: houseJobData?.HBLNo || '',

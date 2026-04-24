@@ -69,6 +69,39 @@ function cleanJoin(parts: any[], sep: string): string {
     .join(sep);
 }
 
+function isSwitchBLEnabled(apiData: any): boolean {
+  const switchBL =
+    apiData?.Others?.[0]?.SwitchBL ??
+    apiData?.houseJobProxy?.[0]?.SwitchBL ??
+    apiData?.HouseJobProxy?.[0]?.SwitchBL ??
+    apiData?.Proxy?.[0]?.SwitchBL ??
+    apiData?.SwitchBL;
+
+  return String(switchBL || '').toUpperCase() === 'Y';
+}
+
+function getProxyPrintData(apiData: any): any {
+  return (
+    apiData?.HouseJobProxy?.[0] ||
+    apiData?.houseJobProxy?.[0] ||
+    apiData?.Proxy?.[0] ||
+    apiData?.Others?.[0] ||
+    null
+  );
+}
+
+function pickPrintValue(apiData: any, primaryValue: any, proxyValue: any): string {
+  const hasProxyValue =
+    proxyValue !== null &&
+    proxyValue !== undefined &&
+    String(proxyValue).trim() !== '';
+
+  const value = isSwitchBLEnabled(apiData)
+    ? (hasProxyValue ? proxyValue : primaryValue)
+    : primaryValue;
+  return value === null || value === undefined ? '' : String(value);
+}
+
 function lineLayout(): any {
   return {
     hLineWidth: () => 1,
@@ -427,18 +460,21 @@ export function transformHblApiData(
     options?.branch?.postalCode || options?.branch?.ZipCode,
     options?.branch?.phoneNumber || options?.branch?.Phone,
   ], ', ');
+  const proxyPrintData = getProxyPrintData(apiData);
 
   return {
     isDraft,
     title,
     billNo: apiData?.HBLNo || '',
-    shipperName: apiData?.ShipperName || '',
-    shipperAddress: apiData?.ShipperAddress || '',
-    consigneeName: apiData?.ConsigneeName || '',
-    consigneeAddress: apiData?.ConsigneeAddress || '',
+    shipperName: pickPrintValue(apiData, apiData?.ShipperName, proxyPrintData?.ShipperName),
+    shipperAddress: pickPrintValue(apiData, apiData?.ShipperAddress, proxyPrintData?.ShipperAddress),
+    consigneeName: pickPrintValue(apiData, apiData?.ConsigneeName, proxyPrintData?.ConsigneeName),
+    consigneeAddress: pickPrintValue(apiData, apiData?.ConsigneeAddress, proxyPrintData?.ConsigneeAddress),
     notifyName: apiData?.Notify || '',
     notifyAddress: apiData?.NotifyAddress || '',
-    deliveryAgent: agentName(apiData?.DestinationAgent),
+    deliveryAgent: isSwitchBLEnabled(apiData)
+      ? cleanJoin([proxyPrintData?.AgentName || proxyPrintData?.DestinationAgentName, proxyPrintData?.AgentAddress], '\n')
+      : agentName(apiData?.DestinationAgent),
     placeOfReceipt: apiData?.POO || '',
     portOfLoading: apiData?.POL || '',
     jobNo: apiData?.HBLNo || '',

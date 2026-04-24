@@ -412,6 +412,7 @@ isExportToImportLinked: boolean = false;
   // Variable Declaration - Milestone Part
   resetTriggerMilestone : boolean;
   milestoneResult: any[] =[];
+  private milestoneSyncInitialized = false;
   arapData: any[] = [];
  arapLoading = false;
  arapFilter = {
@@ -550,6 +551,30 @@ hblModalRef?: NgbModalRef;
   }
 
   hasUnsavedChanges(): boolean {
+    const currentSnapshot = this.buildCurrentStateSnapshot();
+    if (this.initialStateSnapshot && this.isDirty) {
+      console.log('[HouseJob dirty source]', {
+        changedSections: {
+          houseJobForm: !this.deepEqual(this.initialStateSnapshot.houseJobForm, currentSnapshot.houseJobForm),
+          cargoForm: !this.deepEqual(this.initialStateSnapshot.cargoForm, currentSnapshot.cargoForm),
+          otherForm: !this.deepEqual(this.initialStateSnapshot.otherForm, currentSnapshot.otherForm),
+          proxyForm: !this.deepEqual(this.initialStateSnapshot.proxyForm, currentSnapshot.proxyForm),
+          detailForm: !this.deepEqual(this.initialStateSnapshot.detailForm, currentSnapshot.detailForm),
+          bookingProducts: !this.deepEqual(this.initialStateSnapshot.bookingProducts, currentSnapshot.bookingProducts),
+          connectionResult: !this.deepEqual(this.initialStateSnapshot.connectionResult, currentSnapshot.connectionResult),
+          rateResult: !this.deepEqual(this.initialStateSnapshot.rateResult, currentSnapshot.rateResult),
+          milestoneResult: !this.deepEqual(this.initialStateSnapshot.milestoneResult, currentSnapshot.milestoneResult),
+          selectedDepartmentType: this.initialStateSnapshot.selectedDepartmentType !== currentSnapshot.selectedDepartmentType,
+          selectedFCLLCL: this.initialStateSnapshot.selectedFCLLCL !== currentSnapshot.selectedFCLLCL,
+        },
+      });
+    }
+    // console.log('[HouseJob dirty check]', {
+    //   isDirty: this.isDirty,
+    //   formSaved: this.formSaved,
+    //   externalDirty: this.externalDirty,
+    //   hasSnapshot: !!this.initialStateSnapshot,
+    // });
     if (this.formSaved) {
       return false;
     }
@@ -575,34 +600,72 @@ hblModalRef?: NgbModalRef;
     this.initialConnectionsCount = this.connectionResult?.length || 0;
     this.initialRatesCount = this.rateResult?.length || 0;
     this.initialStateSnapshot = this.buildCurrentStateSnapshot();
+    console.log('[HouseJob dirty reset]', {
+      selectedDepartmentType: this.selectedDepartmentType,
+      selectedFCLLCL: this.selectedFCLLCL,
+      houseJobSnapshot: this.initialStateSnapshot?.houseJobForm,
+      cargoSnapshot: this.initialStateSnapshot?.cargoForm,
+      otherSnapshot: this.initialStateSnapshot?.otherForm,
+      proxySnapshot: this.initialStateSnapshot?.proxyForm,
+      detailSnapshot: this.initialStateSnapshot?.detailForm,
+    });
   }
 
-  private markAsDirty(): void {
+  private markAsDirty(source: string = 'unknown'): void {
     this.formSaved = false;
-    this.recomputeDirtyState();
+    this.recomputeDirtyState(source);
   }
 
-  private markExternalDirty(): void {
+  private markExternalDirty(source: string = 'unknown'): void {
     this.formSaved = false;
-    this.externalDirty = true;
-    this.recomputeDirtyState();
+    this.recomputeDirtyState(source);
   }
 
-  private recomputeDirtyState(): void {
+  private recomputeDirtyState(source: string = 'unknown'): void {
     if (this.formSaved) {
       this.isDirty = false;
+      console.log('[HouseJob dirty recompute]', source, {
+        formSaved: this.formSaved,
+        isDirty: this.isDirty,
+        ignoredBecauseFormSaved: true,
+      });
       return;
     }
 
     if (!this.initialStateSnapshot) {
       this.isDirty = this.externalDirty;
+      console.log('[HouseJob dirty recompute]', source, {
+        formSaved: this.formSaved,
+        isDirty: this.isDirty,
+        reason: 'no snapshot',
+        externalDirty: this.externalDirty,
+      });
       return;
     }
 
-    this.isDirty = this.externalDirty || !this.deepEqual(
+    const currentSnapshot = this.buildCurrentStateSnapshot();
+    const snapshotChanged = !this.deepEqual(
       this.initialStateSnapshot,
-      this.buildCurrentStateSnapshot()
+      currentSnapshot
     );
+    this.isDirty = this.externalDirty || snapshotChanged;
+    console.log('[HouseJob dirty recompute]', source, {
+      formSaved: this.formSaved,
+      isDirty: this.isDirty,
+      externalDirty: this.externalDirty,
+      snapshotChanged,
+      houseJobChanged: !this.deepEqual(this.initialStateSnapshot?.houseJobForm, currentSnapshot?.houseJobForm),
+      cargoChanged: !this.deepEqual(this.initialStateSnapshot?.cargoForm, currentSnapshot?.cargoForm),
+      otherChanged: !this.deepEqual(this.initialStateSnapshot?.otherForm, currentSnapshot?.otherForm),
+      proxyChanged: !this.deepEqual(this.initialStateSnapshot?.proxyForm, currentSnapshot?.proxyForm),
+      detailChanged: !this.deepEqual(this.initialStateSnapshot?.detailForm, currentSnapshot?.detailForm),
+      bookingProductsChanged: !this.deepEqual(this.initialStateSnapshot?.bookingProducts, currentSnapshot?.bookingProducts),
+      connectionChanged: !this.deepEqual(this.initialStateSnapshot?.connectionResult, currentSnapshot?.connectionResult),
+      rateChanged: !this.deepEqual(this.initialStateSnapshot?.rateResult, currentSnapshot?.rateResult),
+      milestoneChanged: !this.deepEqual(this.initialStateSnapshot?.milestoneResult, currentSnapshot?.milestoneResult),
+      selectedDepartmentTypeChanged: this.initialStateSnapshot?.selectedDepartmentType !== currentSnapshot?.selectedDepartmentType,
+      selectedFCLLCLChanged: this.initialStateSnapshot?.selectedFCLLCL !== currentSnapshot?.selectedFCLLCL,
+    });
   }
 
   private buildCurrentStateSnapshot(): any {
@@ -923,7 +986,7 @@ private setupMBLDateListener(): void {
         this.formSaved = false;
       }
       if (!this.isPatching) {
-        this.recomputeDirtyState();
+        this.recomputeDirtyState('houseJobForm.valueChanges');
       }
     })
   }
@@ -941,7 +1004,7 @@ private setupMBLDateListener(): void {
         this.formSaved = false;
       }
       if (!this.isPatching) {
-        this.recomputeDirtyState();
+        this.recomputeDirtyState('cargoForm.valueChanges');
       }
     });
   }
@@ -1438,17 +1501,17 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       SwitchBL: [false],
       SwitchLocation: [''],
       CustomerName: [null],
-      CustomerAddress: [''],
+      CustomerAddress: [null],
       AgentName: [null],
-      AgentAddress: [''],
+      AgentAddress: [null],
       ShipperName: [null],
-      ShipperAddress: [''],
+      ShipperAddress: [null],
       ConsigneeName: [null],
-      ConsigneeAddress: [''],
+      ConsigneeAddress: [null],
       VesselName: [null],
-      VoyageNo: [''],
-      POO: [''],
-      FPD: [''],
+      VoyageNo: [null],
+      POO: [null],
+      FPD: [null],
       CarrierName: [null],
       isProxyCustomerFreeText: [true],
       isProxyAgentFreeText: [true],
@@ -1467,13 +1530,13 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       }
 
       this.formSaved = false;
-      this.recomputeDirtyState();
+      this.recomputeDirtyState('proxyForm.SwitchBL');
     });
 
     this.proxyForm.valueChanges.subscribe(() => {
       if (!this.isPatching) {
         this.formSaved = false;
-        this.recomputeDirtyState();
+        this.recomputeDirtyState('proxyForm.valueChanges');
       }
     });
   }
@@ -1493,7 +1556,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
     this.detailForm.valueChanges.subscribe(() => {
       if (!this.isPatching) {
         this.formSaved = false;
-        this.recomputeDirtyState();
+        this.recomputeDirtyState('detailForm.valueChanges');
       }
     });
 
@@ -2036,7 +2099,7 @@ get isSuspended() : boolean {
 
           // ✅ Trigger reload for child components like BOE
           this.resetTriggerBOE = true;
-          this.resetDirtyState();
+          this.milestoneSyncInitialized = false;
         }
       }
     )
@@ -2053,7 +2116,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
         // Patch the Master Job Number to the form
         this.houseJobForm.patchValue({
           MasterJobNumber: masterJobData.MasterJobNumber
-        });
+        }, { emitEvent: false });
       
       }
     },
@@ -2307,19 +2370,19 @@ private loadMasterJobDetails(masterJobSid: number): void {
     this.proxyForm.patchValue({
       HouseJobProxySid: proxyData?.HouseJobProxySid || null,
       SwitchBL: otherData?.SwitchBL === "Y" || hasProxyData ? true : false,
-      SwitchLocation: otherData?.SwitchLocation || '',
+      SwitchLocation: otherData?.SwitchLocation || null,
       CustomerName: proxyData?.CustomerName || null,
-      CustomerAddress: proxyData?.CustomerAddress || '',
+      CustomerAddress: proxyData?.CustomerAddress ||null,
       AgentName: proxyData?.AgentName || null,
-      AgentAddress: proxyData?.AgentAddress || '',
+      AgentAddress: proxyData?.AgentAddress || null,
       ShipperName: proxyData?.ShipperName || null,
-      ShipperAddress: proxyData?.ShipperAddress || '',
+      ShipperAddress: proxyData?.ShipperAddress || null,
       ConsigneeName: proxyData?.ConsigneeName || null,
-      ConsigneeAddress: proxyData?.ConsigneeAddress || '',
+      ConsigneeAddress: proxyData?.ConsigneeAddress || null,
       VesselName: proxyData?.VesselName || null,
-      VoyageNo: proxyData?.VoyageNo || '',
-      POO: proxyData?.POO || '',
-      FPD: proxyData?.FPD || '',
+      VoyageNo: proxyData?.VoyageNo || null,
+      POO: proxyData?.POO || null,
+      FPD: proxyData?.FPD || null,
       CarrierName: proxyData?.CarrierName || null,
     }, { emitEvent: false });
     
@@ -2385,6 +2448,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
     // CRITICAL FIX: Reset isPatching flag AFTER a longer delay to ensure all patching completes
     setTimeout(() => {
       this.isPatching = false;
+      this.resetDirtyState();
     }, 1000); // Increased from 100ms to 1000ms
   }
 }
@@ -2851,7 +2915,7 @@ private applyExportToImportFieldLocks(): void {
       })
       this.currentProductIndex = -1;
     }
-    this.markAsDirty();
+    this.markAsDirty('onProductSubmit');
     this.appSettingService.showSuccess("Product saved successfully");
     this.bookingProducts.updateValueAndValidity();
     this.productDataLength = this.bookingProducts.length;
@@ -3009,7 +3073,7 @@ private applyExportToImportFieldLocks(): void {
     this.connectionResult = [...allConnections];
     this.bookingConnectionsArr = [...allConnections];
     if (!this.isPatching) {
-      this.markAsDirty();
+      this.markAsDirty('handleConnectionChange');
     }
 
     if (this.housejobData) {
@@ -3025,7 +3089,7 @@ private applyExportToImportFieldLocks(): void {
     if(allRates){
       this.rateResult = [...allRates];
       if (!this.isPatching) {
-        this.markAsDirty();
+        this.markAsDirty('handleRateChange');
       }
     }
   }
@@ -3034,8 +3098,16 @@ private applyExportToImportFieldLocks(): void {
    
     if(allmilestones.length !== 0){
       this.milestoneResult = [...allmilestones];
+      if (!this.milestoneSyncInitialized) {
+        this.milestoneSyncInitialized = true;
+        console.log('[HouseJob milestone init sync]', {
+          milestoneCount: allmilestones.length,
+        });
+        this.resetDirtyState();
+        return;
+      }
       if (!this.isPatching) {
-        this.markAsDirty();
+        this.markAsDirty('handleMilestoneChange');
       }
     }
     if(this.hblModalRef){
@@ -3055,6 +3127,17 @@ onCurrencyChange(event: any) {
 
 
   onSubmit() {
+    console.log('[HouseJob submit click]', {
+      isDirty: this.isDirty,
+      formSaved: this.formSaved,
+      externalDirty: this.externalDirty,
+      hasSnapshot: !!this.initialStateSnapshot,
+      houseJobDirty: this.houseJobForm?.dirty,
+      cargoDirty: this.cargoForm?.dirty,
+      proxyDirty: this.proxyForm?.dirty,
+      otherDirty: this.otherForm?.dirty,
+      detailDirty: this.detailForm?.dirty,
+    });
     this.submitHouseJob();
   }
 
@@ -3390,20 +3473,20 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
     houseJobProxy: proxyFormValue.SwitchBL ? [{
       HouseJobProxySid: proxyFormValue.HouseJobProxySid || null,
       CustomerName: proxyFormValue.CustomerName || null,
-      CustomerAddress: proxyFormValue.CustomerAddress || '',
+      CustomerAddress: proxyFormValue.CustomerAddress || null,
       AgentName: proxyFormValue.AgentName || null,
-      AgentAddress: proxyFormValue.AgentAddress || '',
+      AgentAddress: proxyFormValue.AgentAddress || null,
       ShipperName: proxyFormValue.ShipperName || null,
-      ShipperAddress: proxyFormValue.ShipperAddress || '',
+      ShipperAddress: proxyFormValue.ShipperAddress || null,
       ConsigneeName: proxyFormValue.ConsigneeName || null,
-      ConsigneeAddress: proxyFormValue.ConsigneeAddress || '',
+      ConsigneeAddress: proxyFormValue.ConsigneeAddress || null,
       VesselName: proxyFormValue.VesselName || null,
-      VoyageNo: proxyFormValue.VoyageNo || '',
-      POO: proxyFormValue.POO || '',
-      FPD: proxyFormValue.FPD || '',
+      VoyageNo: proxyFormValue.VoyageNo || null,
+      POO: proxyFormValue.POO || null,
+      FPD: proxyFormValue.FPD || null,
       CarrierName: proxyFormValue.CarrierName || null,
     }] : [],
-    
+     
     products: flatCargoProducts,
     houseJobProduct: flatCargoProducts,
     houseJobBOE: boeData,
@@ -3497,6 +3580,47 @@ private getAgentNameById(agentId: number): string {
   if (!agentId || !this.agentList || this.agentList.length === 0) return '';
   const agent = this.agentList.find(a => a.CustomerMasterSid === agentId);
   return agent ? agent.CustomerName : '';
+}
+
+isSwitchBLPrintEnabled(): boolean {
+  const switchBL =
+    this.housejobData?.Others?.[0]?.SwitchBL ??
+    this.housejobData?.HouseJobProxy?.[0]?.SwitchBL ??
+    this.housejobData?.houseJobProxy?.[0]?.SwitchBL ??
+    this.housejobData?.Proxy?.[0]?.SwitchBL ??
+    this.proxyForm?.get('SwitchBL')?.value ??
+    this.houseJobForm?.get('SwitchBL')?.value;
+
+  return String(switchBL || '').toUpperCase() === 'Y' || switchBL === true;
+}
+
+getHouseJobProxyValue(fieldName: string): any {
+  const proxy =
+    this.housejobData?.HouseJobProxy?.[0] ||
+    this.housejobData?.houseJobProxy?.[0] ||
+    this.housejobData?.Proxy?.[0] ||
+    null;
+
+  const value = proxy?.[fieldName];
+  return value === null || value === undefined ? '' : value;
+}
+
+getHblPrintValue(primaryValue: any, proxyValue: any): string {
+  const hasProxyValue =
+    proxyValue !== null &&
+    proxyValue !== undefined &&
+    String(proxyValue).trim() !== '';
+
+  const selectedValue = this.isSwitchBLPrintEnabled()
+    ? (hasProxyValue ? proxyValue : primaryValue)
+    : primaryValue;
+
+  if (selectedValue === null || selectedValue === undefined) {
+    return '';
+  }
+
+  const text = String(selectedValue).trim();
+  return text;
 }
 
 private isFclOrLclImportDepartment(): boolean {
@@ -4608,7 +4732,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
             this.productDataLength = productArray.length;
             this.appSettingService.showSuccess('Product Deleted Successfully');
             this.handleProductRelatedCalculation(cargoIndex);
-            this.markAsDirty();
+            this.markAsDirty('deleteBookingProduct cargo');
           } else {
             this.appSettingService.showError("Error deleting product.");
           }
@@ -4618,7 +4742,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
       this.productDataLength = productArray.length;
       this.appSettingService.showSuccess('Product Deleted Successfully');
       this.handleProductRelatedCalculation(cargoIndex);
-      this.markAsDirty();
+      this.markAsDirty('deleteBookingProduct cargo local');
     }
     productArray.updateValueAndValidity();
   }
@@ -6589,11 +6713,11 @@ calculateTotals(): any {
   };
 }
 
-handleBOEChange(event: any) {
+  handleBOEChange(event: any) {
 
   // You can process and save event data here
   if (!this.isPatching) {
-    this.markExternalDirty();
+    this.recomputeDirtyState('BOE change');
   }
 }
 
@@ -6601,14 +6725,14 @@ handleVehicleChange(event: any) {
 
   // You can process and save event data here
   if (!this.isPatching) {
-    this.markExternalDirty();
+    this.recomputeDirtyState('Vehicle change');
   }
 }
 handleCustomsChange(event: any) {
   
   // You can process and save event data here
   if (!this.isPatching) {
-    this.markExternalDirty();
+    this.recomputeDirtyState('Customs change');
   }
 }
 
@@ -6894,13 +7018,13 @@ prepopulateFromMasterJob(masterJobData: any): void {
     if (masterJobData.ETA) {
       this.houseJobForm.patchValue({
         ETA: new Date(masterJobData.ETA)
-      });
+      }, { emitEvent: false });
     }
     
     if (masterJobData.ETD) {
       this.houseJobForm.patchValue({
         ETD: new Date(masterJobData.ETD)
-      });
+      }, { emitEvent: false });
     }
     
     // Load master job details
@@ -6931,7 +7055,7 @@ private setPortFromCode(formControlName: string, portCode: string): void {
   // Update the form control
   this.houseJobForm.patchValue({
     [formControlName]: port.PortCode
-  });
+  }, { emitEvent: false });
   
   // Update filtered ports
   if (formControlName === 'POL') {

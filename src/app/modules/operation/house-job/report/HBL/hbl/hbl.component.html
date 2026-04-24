@@ -56,8 +56,12 @@
             style="display: table-cell; width: 50%; border:1px solid black; padding:5px; vertical-align: top;border-left: none;">
             <strong style="font-weight: bolder;">Shipper</strong>
             <div style=" margin-left:30px;min-height:70px;">
-              {{ housejobData?.ShipperName }} <br>
-              {{ housejobData?.ShipperAddress }}
+              <ng-container *ngIf="getShipperNameForPrint()">
+                {{ getShipperNameForPrint() }} <br>
+              </ng-container>
+              <ng-container *ngIf="getShipperAddressForPrint()">
+                {{ getShipperAddressForPrint() }}
+              </ng-container>
             </div>
           </div>
           <!-- Right Column -->
@@ -70,7 +74,12 @@
             <div style="margin-top:8px; padding-left: 5px;">
               <strong style="font-weight: bolder;">Delivery Agent & Ref.</strong>
               <div style="margin-left:40px;min-height:70px;">
-                {{ getDestinationAgentName(housejobData?.DestinationAgent) }}
+                <ng-container *ngIf="getAgentNameForPrint()">
+                  {{ getAgentNameForPrint() }}<br>
+                </ng-container>
+                <ng-container *ngIf="getAgentAddressForPrint()">
+                  {{ getAgentAddressForPrint() }}
+                </ng-container>
               </div>
             </div>
           </div>
@@ -85,8 +94,12 @@
             <div style="border-bottom:1px solid black; padding:5px;">
               <strong style="font-weight: bolder;">Consignee</strong>
               <div style=" margin-left:30px;min-height:70px;">
-                {{ housejobData?.ConsigneeName }} <br>
-                {{ housejobData?.ConsigneeAddress }}
+                <ng-container *ngIf="getConsigneeNameForPrint()">
+                  {{ getConsigneeNameForPrint() }} <br>
+                </ng-container>
+                <ng-container *ngIf="getConsigneeAddressForPrint()">
+                  {{ getConsigneeAddressForPrint() }}
+                </ng-container>
               </div>
             </div>
             <!-- Notify Party -->
