@@ -2784,7 +2784,7 @@ private parseFloatSafe(value: any): number {
     const transactionPayload = {
     CompanyMasterSid: this.currentCompany.CompanyMasterSid,
     MenuMasterSid: this.currentMenuId,
-    DocumentSid: this.EnquiryHeaderSid
+    DocumentSid: this.enquiryData?.enquiryRoute?.[routeIndex]?.EnquiryRouteSid
   };
     const payload = {
       MenuMasterSid: this.currentMenuId,
@@ -2792,7 +2792,7 @@ private parseFloatSafe(value: any): number {
       POL: pol,
       POD: pod,
       Carrier: carrier,
-      DocumentSid: this.EnquiryHeaderSid
+      DocumentSid: this.enquiryData?.enquiryRoute?.[routeIndex]?.EnquiryRouteSid
     };
 
     const getTermText = (item: any): string =>
@@ -2806,8 +2806,8 @@ private parseFloatSafe(value: any): number {
     ) ||
     (
       getTermText(a) === getTermText(b) &&
-      (a?.DocumentSid ?? this.EnquiryHeaderSid ?? null) ===
-      (b?.DocumentSid ?? this.EnquiryHeaderSid ?? null)
+      (a?.DocumentSid ?? this.enquiryData?.enquiryRoute?.[routeIndex]?.EnquiryRouteSid ?? null) ===
+      (b?.DocumentSid ?? this.enquiryData?.enquiryRoute?.[routeIndex]?.EnquiryRouteSid ?? null)
     );
 
     const openModal = (terms: any[]) => {
@@ -2819,7 +2819,7 @@ private parseFloatSafe(value: any): number {
   
         modalRef.componentInstance.terms = terms || [];
         modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-        modalRef.componentInstance.DocumentSid = this.EnquiryHeaderSid;
+        modalRef.componentInstance.DocumentSid = this.enquiryData?.enquiryRoute?.[routeIndex]?.EnquiryRouteSid;
         modalRef.componentInstance.DepartmentMasterSid = departmentSid;
         modalRef.componentInstance.POL = pol;
         modalRef.componentInstance.POD = pod;

@@ -4198,7 +4198,7 @@ canGetTariff(routeIndex: number): boolean {
   const transactionPayload = {
     CompanyMasterSid: this.currentCompany.CompanyMasterSid,
     MenuMasterSid: this.currentMenuId,
-    DocumentSid: this.QuoteHeaderSid
+    DocumentSid: this.quotationData?.quoteRoute?.[routeIndex]?.QuoteRouteSid
   };
   const payload = {
     MenuMasterSid: this.currentMenuId,
@@ -4206,7 +4206,7 @@ canGetTariff(routeIndex: number): boolean {
     POL: pol,
     POD: pod,
     Carrier: carrier,
-    DocumentSid: this.QuoteHeaderSid
+    DocumentSid: this.quotationData?.quoteRoute?.[routeIndex]?.QuoteRouteSid
   };
   const getTermText = (item: any): string =>
     (item?.Terms || item?.TandC || '').trim().toLowerCase();
@@ -4219,8 +4219,8 @@ canGetTariff(routeIndex: number): boolean {
     ) ||
     (
       getTermText(a) === getTermText(b) &&
-      (a?.DocumentSid ?? this.QuoteHeaderSid ?? null) ===
-      (b?.DocumentSid ?? this.QuoteHeaderSid ?? null)
+      (a?.DocumentSid ?? this.quotationData?.quoteRoute?.[routeIndex]?.QuoteRouteSid ?? null) ===
+      (b?.DocumentSid ?? this.quotationData?.quoteRoute?.[routeIndex]?.QuoteRouteSid ?? null)
     );
   const openModal = (terms: any[]) => {
     const modalRef = this.ngbModal.open(TermsAndConditionsComponent, {
@@ -4230,7 +4230,7 @@ canGetTariff(routeIndex: number): boolean {
       });
       modalRef.componentInstance.terms = terms || [];
       modalRef.componentInstance.MenuMasterSid = this.currentMenuId;
-      modalRef.componentInstance.DocumentSid = this.QuoteHeaderSid;
+      modalRef.componentInstance.DocumentSid = this.quotationData?.quoteRoute?.[routeIndex]?.QuoteRouteSid;
       modalRef.componentInstance.DepartmentMasterSid = departmentSid;
       modalRef.componentInstance.POL = pol;
       modalRef.componentInstance.POD = pod;
