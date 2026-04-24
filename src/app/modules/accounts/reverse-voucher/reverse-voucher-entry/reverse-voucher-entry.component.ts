@@ -6,7 +6,7 @@ import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStr
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-import { debounceTime, firstValueFrom, Subject, takeUntil } from 'rxjs';
+import { debounceTime, firstValueFrom, forkJoin, Subject, takeUntil } from 'rxjs';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
@@ -1800,10 +1800,30 @@ export class ReverseVoucherEntryComponent {
 
   openTandC() {
     this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     const payload = { 
       MenuMasterSid: this.currentMenuId,
       DocumentSid: this.reverseVoucherData?.VoucherHeaderSid
      };
+     const transactionPayload = {
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    MenuMasterSid: this.currentMenuId,
+    DocumentSid: this.reverseVoucherData?.VoucherHeaderSid
+  };
+     const getTermText = (item: any): string =>
+    (item?.Terms || item?.TandC || '').trim().toLowerCase();
+
+  const isSameTerm = (a: any, b: any): boolean =>
+    (
+      a?.TandCTransactionSid &&
+      b?.TandCTransactionSid &&
+      a.TandCTransactionSid === b.TandCTransactionSid
+    ) ||
+    (
+      getTermText(a) === getTermText(b) &&
+      (a?.DocumentSid ?? this.reverseVoucherData?.VoucherHeaderSid ?? null) ===
+      (b?.DocumentSid ?? this.reverseVoucherData?.VoucherHeaderSid ?? null)
+    );
      const openModal = (terms: any[])=> {
       const modalRef = this.modalService.open(TermsAndConditionsComponent, {
             size: 'lg',
@@ -1815,25 +1835,42 @@ export class ReverseVoucherEntryComponent {
           modalRef.componentInstance.DocumentSid = this.reverseVoucherData?.VoucherHeaderSid;
           modalRef.componentInstance.loadAllOnGet = !this.isTermsAndConditionsEnabled;
      };
-     if (!this.isTermsAndConditionsEnabled) {
-      this.TandCList = [];
-      openModal(this.TandCList);
-      return;
-    }
-    this.masterService.getTandCByCondition(payload).subscribe(
-      (resp: any) => {
-        if (resp.status) {
-          this.TandCList = resp.data;
-          openModal(this.TandCList);
-
-        } else {
-          this.appSettingService.showError('Error loading Terms and Conditions');
-        }
-      },
-      (error) => {
-        this.appSettingService.showError('Error loading Terms and Conditions', error);
-      }
-    );
+     if (this.isTermsAndConditionsEnabled) {
+         forkJoin({
+           tandc: this.masterService.getTandC(transactionPayload),
+           defaults: this.masterService.getTandCByCondition(payload)
+         }).subscribe(
+           (resp: any) => {
+             const tandcData = resp?.tandc?.status ? (resp.tandc.data || []) : [];
+             const defaultData = resp?.defaults?.status ? (resp.defaults.data || []) : [];
+     
+             const combined = [...tandcData, ...defaultData].filter(
+               (item: any, index: number, arr: any[]) =>
+                 index === arr.findIndex((x: any) => isSameTerm(x, item))
+             );
+     
+             this.TandCList = combined;
+             openModal(this.TandCList);
+           },
+           (error) => {
+             this.appSettingService.showError('Error loading Terms and Conditions', error);
+           }
+         );
+         return;
+       }
+         this.masterService.getTandC(transactionPayload).subscribe(
+           (resp: any) => {
+             if (resp.status) {
+               this.TandCList = resp.data;
+               openModal(this.TandCList);
+             } else {
+               this.appSettingService.showError('Error loading Terms and Conditions');
+             }
+           },
+           (error) => {
+             this.appSettingService.showError('Error loading Terms and Conditions', error);
+           }
+         );
   }
 
   openEmail() {

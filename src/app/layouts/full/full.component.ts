@@ -18,6 +18,7 @@ import { HorizontalSidebarComponent } from '../../shared/horizontal-sidebar/hori
 import { AppService } from 'src/app/service/app.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { VerticalSidebarService } from '../../shared/vertical-sidebar/vertical-sidebar.service';
+import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 
 @Component({
   selector: 'app-full-layout',
@@ -51,7 +52,8 @@ export class FullComponent implements OnInit, OnDestroy {
     public router: Router,
     private appService: AppService,
     public logoService: LogoService,
-    private sidebarService: VerticalSidebarService
+    private sidebarService: VerticalSidebarService,
+    private mps: MenuPermissionService
   ) {}
 
   tabStatus = 'justified';
@@ -102,6 +104,7 @@ export class FullComponent implements OnInit, OnDestroy {
     ).subscribe(([url, items]) => {
       if (items.length > 0) {
         this.syncMenuId(url);
+        this.mps.init().subscribe();
       }
     });
   }

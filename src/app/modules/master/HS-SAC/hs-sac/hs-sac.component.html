@@ -266,6 +266,25 @@
                             </div>
                         </aside>
                         <aside class="col-md-6">
+    <div class="custom-form-group custom-form-group-select"[class.filled]="!!hssacForm.get('HSNorSAC')?.value">
+        <ng-select 
+            formControlName="HSNorSAC" 
+            [items]="HSNorSAC"
+            bindLabel="HSNorSAC"
+            bindValue="HSNorSAC"
+            placeholder="">
+        </ng-select>
+        <label class="input-label">HSNorSAC <span class="text-danger">*</span></label>
+        @if(hssacForm.get('HSNorSAC')?.touched && hssacForm.get('HSNorSAC')?.invalid){
+            <div class="error-message">
+                @if(hssacForm.get('HSNorSAC')?.hasError('required')){
+                    <span>Required</span>
+                }
+            </div>
+        }
+    </div>
+</aside>
+                        <aside class="col-md-6">
                             <div class="custom-form-group">
                                 <input type="text" id="text-input" class="custom-input-field sm"
                                     formControlName="ServiceName" placeholder="">

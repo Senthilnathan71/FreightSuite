@@ -5527,10 +5527,16 @@ findElementByTextContent(selector: string, text: string): Element | null {
   }
   openTandC() {
     this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     const departmentSid = this.masterJobData?.DepartmentMasterSid;
     const pol = this.masterJobData?.POL;
     const pod = this.masterJobData?.POD;
     const carrier = this.masterJobData?.voyages?.[0]?.CarrierSid || null;
+    const transactionPayload = {
+    CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+    MenuMasterSid: this.currentMenuId,
+    DocumentSid: this.masterJobData?.MasterJobSid
+  };
     const payload = {
        MenuMasterSid: this.currentMenuId,
        DepartmentMasterSid: departmentSid,
@@ -5539,6 +5545,20 @@ findElementByTextContent(selector: string, text: string): Element | null {
        Carrier: carrier,
        DocumentSid: this.masterJobData?.MasterJobSid,
        };
+       const getTermText = (item: any): string =>
+    (item?.Terms || item?.TandC || '').trim().toLowerCase();
+
+  const isSameTerm = (a: any, b: any): boolean =>
+    (
+      a?.TandCTransactionSid &&
+      b?.TandCTransactionSid &&
+      a.TandCTransactionSid === b.TandCTransactionSid
+    ) ||
+    (
+      getTermText(a) === getTermText(b) &&
+      (a?.DocumentSid ?? this.masterJobData?.MasterJobSid ?? null) ===
+      (b?.DocumentSid ?? this.masterJobData?.MasterJobSid ?? null)
+    );
     const openModal = (terms: any[]) => {
       const modelRef = this.modalService.open(TermsAndConditionsComponent, {
         size: 'lg',
@@ -5554,24 +5574,42 @@ findElementByTextContent(selector: string, text: string): Element | null {
       modelRef.componentInstance.Carrier = carrier;
       modelRef.componentInstance.loadAllOnGet = !this.isTermsAndConditionsEnabled;
     };
+if (this.isTermsAndConditionsEnabled) {
+    forkJoin({
+      tandc: this.masterService.getTandC(transactionPayload),
+      defaults: this.masterService.getTandCByCondition(payload)
+    }).subscribe(
+      (resp: any) => {
+        const tandcData = resp?.tandc?.status ? (resp.tandc.data || []) : [];
+        const defaultData = resp?.defaults?.status ? (resp.defaults.data || []) : [];
 
-    // If disabled by config, don't auto-load defaults. User can click "Get" inside modal.
-    if (!this.isTermsAndConditionsEnabled) {
-      this.TandCList = [];
-      openModal(this.TandCList);
-      return;
-    }
+        const combined = [...tandcData, ...defaultData].filter(
+          (item: any, index: number, arr: any[]) =>
+            index === arr.findIndex((x: any) => isSameTerm(x, item))
+        );
 
-    this.masterService.getTandCByCondition(payload).subscribe((resp: any) => {
-      if (resp.status) {
-        this.TandCList = resp.data;
+        this.TandCList = combined;
         openModal(this.TandCList);
-      } else {
-        this.appSettingService.showError('Error loading Terms and Conditions');
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
       }
-    }, (error) => {
-      this.appSettingService.showError('Error loading Terms and Conditions', error);
-    });
+    );
+    return;
+  }
+    this.masterService.getTandC(transactionPayload).subscribe(
+      (resp: any) => {
+        if (resp.status) {
+          this.TandCList = resp.data;
+          openModal(this.TandCList);
+        } else {
+          this.appSettingService.showError('Error loading Terms and Conditions');
+        }
+      },
+      (error) => {
+        this.appSettingService.showError('Error loading Terms and Conditions', error);
+      }
+    );
   }
 
   openConnectionModal(content: any) {
