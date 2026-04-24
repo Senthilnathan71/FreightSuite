@@ -848,6 +848,25 @@ private resolveContainerTypeName(containerTypeValue: any): string | null {
   return containerType?.ContainerTypeName || null;
 }
 
+private getTariffCargoDisplayLabel(cargo: any, isFclRoute: boolean): string {
+  const cargoType = cargo?.CargoType || '';
+  const containerType =
+    cargo?.ContainerTypeName ||
+    this.getContainerTypeDisplay(cargo?.ContainerType) ||
+    '';
+
+  if (isFclRoute) {
+    return [cargoType, containerType].filter(Boolean).join(' - ');
+  }
+
+  return cargoType || containerType;
+}
+
+private getTariffGroupLabel(cargo: any, index: number, isFclRoute: boolean): string {
+  const cargoLabel = this.getTariffCargoDisplayLabel(cargo, isFclRoute);
+  return cargoLabel ? `Cargo ${index + 1} (${cargoLabel})` : `Cargo ${index + 1}`;
+}
+
 private resolveTariffQtyValue(
   routeForm: FormGroup,
   cargoItems: any[],
@@ -3671,7 +3690,7 @@ isRateLockDisabled(): boolean {
     const _carrierName = carrierRawValue?.CarrierName;
     const _incoTerms = routeRawValue?.ServiceLevel;
     const _cargoDesc = effectiveCargoItems
-      .map((c: any) => [c.CargoType, c.ContainerTypeName].filter(Boolean).join(' '))
+      .map((c: any) => this.getTariffCargoDisplayLabel(c, isFclRoute))
       .filter(Boolean).join(', ');
     const _formatDate = (d: any) => d ? new Date(d).toLocaleDateString() : '';
     const _comboParts: string[] = [];
@@ -3723,9 +3742,7 @@ isRateLockDisabled(): boolean {
         const response: any[] = resp?.status && Array.isArray(resp.data) ? resp.data : [];
         const cargo: any = effectiveCargoItems[index] || {};
         const isStandardRate = response[0]?.isStandardRate === true;
-        const label = `Cargo ${index + 1}`
-          + (cargo.ContainerTypeName ? ` - ${cargo.ContainerTypeName}` : '')
-          + (cargo.CargoType ? ` (${cargo.CargoType})` : '');
+        const label = this.getTariffGroupLabel(cargo, index, isFclRoute);
 
         const items = response
           .map((td: any) => {
