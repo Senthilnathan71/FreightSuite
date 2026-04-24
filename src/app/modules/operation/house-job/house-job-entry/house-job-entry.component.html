@@ -1616,6 +1616,7 @@
                   Cargo {{ cargoIndex + 1 }} - {{ cargo.get('CargoType')?.value || 'General' }}
                 </h6>
                 <button type="button" class="btn btn-sm text-light" *ngIf="houseJobCargos.length > 1"
+                  [disabled]="isFormDisabled || isCargoFromBooking(cargoIndex)"
                   (click)="removeHouseJobCargo(cargoIndex); $event.stopPropagation()">
                   <i class="fas fa-trash text-danger"></i>
                 </button>
@@ -1824,7 +1825,7 @@
                         <tr *ngFor="let product of houseJobCargoProducts(cargoIndex).controls; let productIndex = index"
                           [formGroupName]="productIndex"  class="py-0">
                           <td>
-                            <button class="btn btn-link text-danger py-0 px-1" [disabled]="isFormDisabled"
+                            <button class="btn btn-link text-danger py-0 px-1" [disabled]="isFormDisabled || isProductFromBooking(cargoIndex, productIndex)"
                               (click)="deleteBookingProduct(productIndex, product.value.HouseJobProductSid, cargoIndex)" ngbTooltip="Delete">
                               <i class="fas fa-trash text-center fs-2"></i>
                             </button>
@@ -2291,11 +2292,11 @@
                       (click)="openProductModal(productModal,productIndex,product.value)">
                      <i class="fas fa-eye text-info fs-2"></i>
                     </button>
-                    <button type="button" class="btn btn-link text-danger ps-2 p-0"
-                      [disabled]="isExportToImportLinked"
-                      (click)="deleteBookingProduct(productIndex,product.value.HouseJobProductSid)">
-                      <i class="fas fa-trash text-center fs-2"></i>
-                    </button>
+                      <button type="button" class="btn btn-link text-danger ps-2 p-0"
+                        [disabled]="isExportToImportLinked || isProductFromBooking(houseJobCargoActiveIndex, productIndex)"
+                        (click)="deleteBookingProduct(productIndex,product.value.HouseJobProductSid)">
+                        <i class="fas fa-trash text-center fs-2"></i>
+                      </button>
                   </div>
                 </td>
                 <td>{{product.value.ProductName}}</td>
@@ -2381,11 +2382,11 @@
                 <tr *ngFor="let product of bookingProducts.controls; let productIndex = index" [formGroupName]="productIndex"
                   class="py-0">
                   <td>
-                    <button class="btn btn-link text-danger py-0 px-1"
-                      [disabled]="isExportToImportLinked"
-                      (click)="deleteBookingProduct(productIndex,product.value.HouseJobProductSid)" ngbTooltip="Delete">
-                      <i class="fas fa-trash text-center fs-2"></i>
-                    </button>
+                      <button class="btn btn-link text-danger py-0 px-1"
+                        [disabled]="isExportToImportLinked || isProductFromBooking(houseJobCargoActiveIndex, productIndex)"
+                        (click)="deleteBookingProduct(productIndex,product.value.HouseJobProductSid)" ngbTooltip="Delete">
+                        <i class="fas fa-trash text-center fs-2"></i>
+                      </button>
                   </td>
                   <td>
                     <div class="custom-form-group custom-form-group-select inputChnages my-0"
@@ -3360,10 +3361,13 @@
                         (click)="openProductModal(productModal,productIndex,product.value)">
                         <i-feather class="feather-sm text-info" name="eye"></i-feather>
                       </a>
-                      <a class="text-danger mx-2 ps-3 border-start"
-                        (click)="deleteBookingProduct(productIndex,product.value.BookingProductSid)">
-                        <i-feather name="trash-2" class="feather-sm"></i-feather>
-                      </a>
+                        <a class="text-danger mx-2 ps-3 border-start"
+                          [class.disabled]="isProductFromBooking(houseJobCargoActiveIndex, productIndex)"
+                          [style.pointer-events]="isProductFromBooking(houseJobCargoActiveIndex, productIndex) ? 'none' : 'auto'"
+                          [style.opacity]="isProductFromBooking(houseJobCargoActiveIndex, productIndex) ? '0.5' : '1'"
+                          (click)="deleteBookingProduct(productIndex,product.value.BookingProductSid)">
+                          <i-feather name="trash-2" class="feather-sm"></i-feather>
+                        </a>
                     </div>
                   </td>
                   <td>{{product.value.ProductName}}</td>

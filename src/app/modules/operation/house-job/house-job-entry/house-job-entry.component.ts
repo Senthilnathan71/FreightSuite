@@ -974,6 +974,8 @@ private setupMBLDateListener(): void {
     const isFclMode = this.selectedCargoMode === 'FCL';
     const cargoGroup = this.fb.group({
       HouseJobCargoSid: [data?.HouseJobCargoSid || null],
+      BookingCargoSid: [data?.BookingCargoSid || data?.bookingCargoSid || null],
+      isFromBooking: [data?.isFromBooking || false],
       CargoType: [data?.CargoType || 'General', Validators.required],
       ContainerType: [data?.ContainerType || null, isFclMode ? [Validators.required] : []],
       NoofContainers: [data?.NoofContainers ?? ''],
@@ -1544,6 +1546,9 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
     const isAirOrLCL = this.usesDimensionalCargoFields();
     const productForm = this.fb.group({
       HouseJobProductSid: [data?.HouseJobProductSid || null],
+      BookingProductSid: [data?.BookingProductSid || data?.bookingProductSid || null],
+      BookingCargoSid: [data?.BookingCargoSid || data?.bookingCargoSid || null],
+      isFromBooking: [data?.isFromBooking || false],
       ProductName: [data?.ProductName || null,[Validators.required]],
       isProductFreeText: [data?.isProductFreeText || false],
       ShippingBillNo: [data?.ShippingBillNo || ''],
@@ -2165,6 +2170,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
     }, { emitEvent: false }); // IMPORTANT: Add emitEvent: false
 
     this.PODandFPODsame = response.POD === response.FPD;
+    const isBookingGeneratedHouse = !!response.BookingHeaderSid || !!response.bookingHeader?.BookingHeaderSid;
     const cargoItems = Array.isArray(response?.Cargo) && response.Cargo.length
       ? response.Cargo
       : Array.isArray(response?.houseJobCargo) && response.houseJobCargo.length
@@ -2185,6 +2191,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
       const cargoGroup = this.createCargoGroup({
         ...cargoData,
         HouseJobCargoSid: cargoData?.HouseJobCargoSid || cargoData?.houseJobCargoSid || null,
+        BookingCargoSid: cargoData?.BookingCargoSid || cargoData?.bookingCargoSid || null,
         CargoType: cargoData?.CargoType || 'General',
         ContainerType: cargoData?.ContainerType,
         NoofContainers: Number(cargoData?.NoofContainers ?? cargoData?.Qty ?? 0) || 0,
@@ -2203,6 +2210,9 @@ private loadMasterJobDetails(masterJobSid: number): void {
         ModeOfTransport: cargoData?.ModeOfTransport,
         StuffingAt: cargoData?.StuffingAt
       }, true);
+      if (isBookingGeneratedHouse || cargoGroup.get('BookingCargoSid')?.value) {
+        cargoGroup.get('isFromBooking')?.setValue(true, { emitEvent: false });
+      }
 
       const explicitCargoProducts = Array.isArray(cargoData?.bookingProducts)
         ? cargoData.bookingProducts
@@ -2223,7 +2233,15 @@ private loadMasterJobDetails(masterJobSid: number): void {
           });
 
       cargoProducts.forEach((product: any) => {
-        (cargoGroup.get('bookingProducts') as FormArray).push(this.createBookingProductGroup(product, true));
+        const productGroup = this.createBookingProductGroup({
+          ...product,
+          BookingProductSid: product?.BookingProductSid || product?.bookingProductSid || null,
+          BookingCargoSid: product?.BookingCargoSid || product?.bookingCargoSid || null
+        }, true);
+        if (isBookingGeneratedHouse || productGroup.get('BookingProductSid')?.value || productGroup.get('BookingCargoSid')?.value) {
+          productGroup.get('isFromBooking')?.setValue(true, { emitEvent: false });
+        }
+        (cargoGroup.get('bookingProducts') as FormArray).push(productGroup);
       });
 
       this.houseJobCargos.push(cargoGroup);
@@ -4577,6 +4595,11 @@ getVoyageTypeBasedOnDept(deptId: number) {
     const productArray = cargoIndex >= 0
       ? this.houseJobCargoProducts(cargoIndex)
       : this.bookingProducts;
+    const productGroup = productArray.at(productIndex) as FormGroup | undefined;
+    if (productGroup?.get('isFromBooking')?.value) {
+      this.appSettingService.showInfo('Booking-created product cannot be deleted.');
+      return;
+    }
     if (HouseJobProductSid) {
       this.operationService.deleteHouseJobProduct(HouseJobProductSid).subscribe(
         (resp: any) => {
@@ -4678,8 +4701,8 @@ getVoyageTypeBasedOnDept(deptId: number) {
   }
 
   houseJobCargoProducts(cargoIndex: number): FormArray {
-    const cargoGroup = this.houseJobCargos.at(cargoIndex) as FormGroup;
-    return cargoGroup.get('bookingProducts') as FormArray;
+    const cargoGroup = this.houseJobCargos.at(cargoIndex) as FormGroup | undefined;
+    return (cargoGroup?.get('bookingProducts') as FormArray) || this.fb.array([]);
   }
 
   addHouseJobCargo(data?: any, bypassFclCheck: boolean = false): void {
@@ -4727,6 +4750,10 @@ getVoyageTypeBasedOnDept(deptId: number) {
     if (!cargoGroup) {
       return;
     }
+    if (cargoGroup.get('isFromBooking')?.value) {
+      this.appSettingService.showInfo('Booking-created cargo cannot be deleted.');
+      return;
+    }
 
     this.houseJobCargos.removeAt(cargoIndex);
     this.houseJobCargoExpanded.splice(cargoIndex, 1);
@@ -4738,6 +4765,16 @@ getVoyageTypeBasedOnDept(deptId: number) {
 
     this.houseJobCargoActiveIndex = Math.min(this.houseJobCargoActiveIndex, this.houseJobCargos.length - 1);
     this.cargoForm = this.houseJobCargos.at(this.houseJobCargoActiveIndex) as FormGroup;
+  }
+
+  isCargoFromBooking(cargoIndex: number): boolean {
+    const cargoGroup = this.houseJobCargos.at(cargoIndex) as FormGroup | undefined;
+    return !!cargoGroup?.get('isFromBooking')?.value;
+  }
+
+  isProductFromBooking(cargoIndex: number, productIndex: number): boolean {
+    const productGroup = this.houseJobCargoProducts(cargoIndex)?.at(productIndex) as FormGroup | undefined;
+    return !!productGroup?.get('isFromBooking')?.value;
   }
 
   // ************ END OF PRODUCT RELATED FUNCTIONS *************
