@@ -833,6 +833,17 @@ export class VendorInvoiceEntryComponent implements OnInit {
     this.voucherConstraints = this.voucherPeriodService.applyConstraints(voucherDate, 'AP');
   }
 
+  private restrictDatePickerToVoucherMonth(voucherDate: any): void {
+    const origDate = new Date(voucherDate);
+    if (isNaN(origDate.getTime())) return;
+    const y = origDate.getFullYear(), m = origDate.getMonth() + 1;
+    const monthEnd = new Date(y, m, 0);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const effectiveEnd = monthEnd < today ? monthEnd : today;
+    this.fyMinDate = { year: y, month: m, day: 1 };
+    this.fyMaxDate = { year: effectiveEnd.getFullYear(), month: effectiveEnd.getMonth() + 1, day: effectiveEnd.getDate() };
+  }
+
   onVoucherDateChange() {
     this.applyVoucherDateConstraints();
     // Edit mode: reveal error label + gate button-disable now that user has changed the date
@@ -1076,6 +1087,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
           this._isInitialLoad = true;
           this.patchValues(this.vendorInvoiceData);
           this.applyVoucherDateConstraints();
+          this.restrictDatePickerToVoucherMonth(this.vendorInvoiceData.VoucherDate);
           this.vendorInvoiceForm.get('PartyName')?.disable();
           this.vendorInvoiceForm.get('CustomerBranchSid')?.disable();
           this.vendorInvoiceForm.get('CurrencyMasterSid')?.disable();
@@ -1155,9 +1167,6 @@ export class VendorInvoiceEntryComponent implements OnInit {
       BillAmt: data.Amount || 0,
       HouseJobSid: data.HouseJobSid,
     }, { emitEvent: false });
-
-    // Edit mode: datepicker keeps the full FY range. Grace/closed validation
-    // only fires when the user actually changes the voucher date.
 
     if (data?.CurrencyMasterSid === this.currentCompany?.CurrencyMasterSid || this.isPosted) {
       this.vendorInvoiceForm.get('ExchangeRate')?.disable();

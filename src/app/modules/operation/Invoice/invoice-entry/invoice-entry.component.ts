@@ -757,6 +757,17 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     this.voucherConstraints = this.voucherPeriodService.applyConstraints(voucherDate, 'AR');
   }
 
+  private restrictDatePickerToVoucherMonth(voucherDate: any): void {
+    const origDate = new Date(voucherDate);
+    if (isNaN(origDate.getTime())) return;
+    const y = origDate.getFullYear(), m = origDate.getMonth() + 1;
+    const monthEnd = new Date(y, m, 0);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const effectiveEnd = monthEnd < today ? monthEnd : today;
+    this.fyMinDate = { year: y, month: m, day: 1 };
+    this.fyMaxDate = { year: effectiveEnd.getFullYear(), month: effectiveEnd.getMonth() + 1, day: effectiveEnd.getDate() };
+  }
+
   onVoucherDateChange(){
     this.applyVoucherDateConstraints();
     // Edit mode: reveal error label + gate button-disable now that user has changed the date
@@ -1061,6 +1072,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           this._isInitialLoad = true;
           this.patchValues(this.invoiceData);
           this.applyVoucherDateConstraints();
+          this.restrictDatePickerToVoucherMonth(this.invoiceData.VoucherDate);
           this.patchDueDate();
 
           this.invoiceForm.get('PartyName')?.disable();
@@ -1144,9 +1156,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       },
       { emitEvent: false }
     );
-
-    // Edit mode: datepicker keeps the full FY range. Grace/closed validation
-    // only fires when the user actually changes the voucher date.
 
     if (
       data?.CurrencyMasterSid === this.currentCompany?.CurrencyMasterSid ||
