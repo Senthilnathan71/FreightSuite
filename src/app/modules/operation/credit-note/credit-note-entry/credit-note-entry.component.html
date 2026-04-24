@@ -2693,33 +2693,39 @@
           </div>
         </div>
 
-        <div style="margin-top: 1rem; font-size: 12px; padding: 0 20px">
-          <h5 style="margin-bottom: 0.5rem; font-weight: bolder">
-            <strong>Terms and Conditions</strong>
-          </h5>
+        @if (
+          currentCompany?.CompanyMasterSid === 13 ||
+          (creditNotePrintData?.TermsAndConditions?.length || TandCList?.length)
+        ) {
+          <div style="margin-top: 1rem; font-size: 12px; padding: 0 20px">
+            <h5 style="margin-bottom: 0.5rem; font-weight: bolder">
+              <strong>Terms and Conditions</strong>
+            </h5>
 
-          @if (currentCompany?.CompanyMasterSid === 13) {
-            <!-- For CompanyMasterSid 55 - Show static terms -->
-            <ul style="margin-top: 0; padding-left: 1.5rem; font-size: 12px">
-              <li>
-                If any discrepancy is noticed in the invoice, kindly inform us
-                in writing within 7 days, otherwise <br />
-                the above amount will be considered as correct.
-              </li>
-              <li>
-                Please mention our invoice number(s) on your remittance
-                instructions.
-              </li>
-            </ul>
-          } @else {
-            <!-- For other companies - Use the existing TandCList -->
-            <ul style="margin-top: 0; padding-left: 1.2rem">
-              @for (term of TandCList; track term) {
-                <li>{{ term.TandC }}</li>
-              }
-            </ul>
-          }
-        </div>
+            @if (currentCompany?.CompanyMasterSid === 13) {
+              <ul style="margin-top: 0; padding-left: 1.5rem; font-size: 12px">
+                <li>
+                  If any discrepancy is noticed in the invoice, kindly inform us
+                  in writing within 7 days, otherwise <br />
+                  the above amount will be considered as correct.
+                </li>
+                <li>
+                  Please mention our invoice number(s) on your remittance
+                  instructions.
+                </li>
+              </ul>
+            } @else {
+              <ul style="margin-top: 0; padding-left: 1.2rem">
+                @for (
+                  term of creditNotePrintData?.TermsAndConditions || TandCList;
+                  track term
+                ) {
+                  <li>{{ term?.TandC || term?.Terms || term }}</li>
+                }
+              </ul>
+            }
+          </div>
+        }
 
         <!-- <div style="margin-top: 1rem; font-size: 16px; padding: 0 20px;">
   <h5 style="margin-bottom: 0.5rem; font-weight: bolder;">

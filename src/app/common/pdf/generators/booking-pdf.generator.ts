@@ -317,6 +317,20 @@ function safeText(value: unknown): string {
   return String(value);
 }
 
+function getTermText(term: any): string {
+  if (typeof term === 'string') {
+    return term.trim();
+  }
+
+  return (term?.content || term?.TandC || term?.Terms || '').trim();
+}
+
+function getUniqueTerms(terms: any[]): string[] {
+  return (terms || [])
+    .map((term: any) => getTermText(term))
+    .filter((term: string, index: number, arr: string[]) => !!term && arr.indexOf(term) === index);
+}
+
 function buildBookingFooter(data: BookingPdfData, currentPage: number, pageCount: number): any {
   const footerInfoRow = {
     columns: [
@@ -573,6 +587,7 @@ export function transformBookingApiData(
   const bookingCargo = booking.bookingCargo || [];
   const bookingProducts = booking.bookingProduct || [];
   const bookingOthers = booking.bookingOthers?.[0] || {};
+  const normalizedTerms = getUniqueTerms(booking.terms || []);
 
   // Helper to get port info
   const getPortInfo = (portCodeOrName: string, explicitCode?: string) => {
@@ -684,8 +699,8 @@ export function transformBookingApiData(
       shippingBillNo: product.ShippingBillNo || '',
       shippingBillDate: product.ShippingBillDate
     })),
-    terms: (booking.terms || []).map((term: any) => ({
-      content: term.TandC || term.content || ''
+    terms: normalizedTerms.map((term: string) => ({
+      content: term
     })),
     fclLcl: resolveFclLcl(),
     departmentName: booking.departmentMaster?.departmentName || booking.DepartmentName || ''
