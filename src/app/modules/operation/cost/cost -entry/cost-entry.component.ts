@@ -1887,9 +1887,7 @@ createRateFormGroup(data?: any): FormGroup {
           const cargo = cargoItems[idx] || {};
           const response: any[] = resp?.status && Array.isArray(resp.data) ? resp.data : [];
           const isStandardRate = response[0]?.isStandardRate === true;
-          const label = `Cargo ${idx + 1}`
-            + (cargo.ContainerTypeName ? ` - ${cargo.ContainerTypeName}` : '')
-            + (cargo.CargoType ? ` (${cargo.CargoType})` : '');
+          const label = this.getTariffGroupLabel(cargo, idx, isFclSegment);
 
           const items = response
             .map((td: any) => {
@@ -2087,6 +2085,7 @@ createRateFormGroup(data?: any): FormGroup {
 
   buildSearchedCombinationLabel(cargoItems: any[]): string {
     const parts: string[] = [];
+    const isFclSegment = String(this.parentFormValue?.Segment || '').trim().toUpperCase() === 'FCL';
 
     const dept = this.parentFormValue?.departmentName;
     if (dept) parts.push(`Department: ${dept}`);
@@ -2114,7 +2113,7 @@ createRateFormGroup(data?: any): FormGroup {
 
     if (cargoItems?.length) {
       const cargoDesc = cargoItems
-        .map(c => [c.CargoType, c.ContainerTypeName].filter(Boolean).join(' '))
+        .map(c => this.getTariffCargoDisplayLabel(c, isFclSegment))
         .filter(Boolean)
         .join(', ');
       if (cargoDesc) parts.push(`Cargo: ${cargoDesc}`);
@@ -2127,6 +2126,22 @@ createRateFormGroup(data?: any): FormGroup {
     return parts.length
       ? `Specific tariff not found for: ${parts.join(' · ')}. Showing standard rates.`
       : 'No specific tariff found for the searched combination. Showing standard rates.';
+  }
+
+  private getTariffCargoDisplayLabel(cargo: any, isFclSegment: boolean): string {
+    const cargoType = cargo?.CargoType || '';
+    const containerType = cargo?.ContainerTypeName || '';
+
+    if (isFclSegment) {
+      return [cargoType, containerType].filter(Boolean).join(' - ');
+    }
+
+    return cargoType || containerType;
+  }
+
+  private getTariffGroupLabel(cargo: any, index: number, isFclSegment: boolean): string {
+    const cargoLabel = this.getTariffCargoDisplayLabel(cargo, isFclSegment);
+    return cargoLabel ? `Cargo ${index + 1} (${cargoLabel})` : `Cargo ${index + 1}`;
   }
 
   private formatDateForDisplay(dateVal: any): string {

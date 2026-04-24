@@ -4164,9 +4164,7 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
     const salesmanName = this.salesmanList.find(s => s.UserMasterSid === salesmanSid)?.userName || '';
     const cargoItems = this.bookingCargo.controls.map((cargoCtrl: any) => {
       const containerTypeSid = cargoCtrl.get('ContainerType')?.value;
-      const containerTypeName = this.containerTypeList.find(
-        ct => ct.ContainerTypeMasterSid === containerTypeSid
-      )?.ContainerTypeName || null;
+      const containerTypeName = this.getContainerTypeDisplayLabel(containerTypeSid);
 
       return {
         CargoType: cargoCtrl.get('CargoType')?.value,
@@ -6246,13 +6244,23 @@ async generatePDFBlob(type: 'booking' | 'cro' | 'mail-attachment' = 'booking'): 
   }
 
 
- getContainerName(ContainerTypeMasterSid:number){
-    console.log(ContainerTypeMasterSid);
-    if(!ContainerTypeMasterSid || this.containerTypeList.length === 0){
-      return "";
+ private getContainerTypeDisplayLabel(containerTypeSid: any): string | null {
+    if (!containerTypeSid || this.containerTypeList.length === 0) {
+      return null;
     }
-    console.log("HERE",this.containerTypeList)
-    return this.containerTypeList.find(con => con.ContainerTypeMasterSid === ContainerTypeMasterSid)?.ContainerName || ""
+
+    const matchedContainer = this.containerTypeList.find((con: any) =>
+      con.ContainerTypeMasterSid === containerTypeSid ||
+      String(con.ContainerTypeMasterSid) === String(containerTypeSid) ||
+      con.ContainerCode === containerTypeSid ||
+      con.ContainerName === containerTypeSid
+    );
+
+    return matchedContainer?.ContainerName || matchedContainer?.ContainerTypeName || matchedContainer?.ContainerCode || null;
+  }
+
+ getContainerName(ContainerTypeMasterSid:number){
+    return this.getContainerTypeDisplayLabel(ContainerTypeMasterSid) || "";
   }
 
 // Open CRO print modal

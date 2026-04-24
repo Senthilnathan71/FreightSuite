@@ -4834,7 +4834,7 @@ getVoyageTypeBasedOnDept(deptId: number) {
       const containerTypeSid = cargo.ContainerType || null;
       const containerTypeName = this.containerTypeList.find(
         ct => ct.ContainerTypeMasterSid === containerTypeSid
-      )?.ContainerTypeName || null;
+      )?.ContainerName || null;
       return {
         CargoType: cargo.CargoType,
         ContainerType: containerTypeSid,

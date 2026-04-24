@@ -1398,7 +1398,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
       ContainerType: containerTypeSid,
       ContainerTypeName: this.containerTypeList?.find(
         ct => ct.ContainerTypeMasterSid === containerTypeSid
-      )?.ContainerTypeName || null,
+      )?.ContainerName || null,
       GrossWeight: rawCargo.GrossWeight,
       Volume: rawCargo.Volume,
       NoofContainers: rawCargo.NoofContainers,
