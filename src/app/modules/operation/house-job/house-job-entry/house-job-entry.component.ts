@@ -212,6 +212,7 @@ customsValidationErrors: { recordType: string; fieldRef: string; fieldName: stri
     { name: 'Connection', icon: 'fas fa-link' },
     { name: 'Others', icon: 'fas fa-ellipsis-h' },
     { name: 'Rate', icon: 'fas fa-rupee-sign' },
+    { name: 'Proxy', icon: 'fas fa-random' },
     { name: 'BOE', icon: 'fas fa-file-invoice' },
     { name: 'Vehicle', icon: 'fas fa-truck' },
     { name: 'Customs', icon: 'fas fa-passport' },
@@ -383,6 +384,7 @@ auditLogs: any[] = []; // Stores audit logs
     { id: 3, name: 'Inch'}
   ]
   otherForm !: FormGroup;
+  proxyForm !: FormGroup;
 
   // Variable Declaration - Connection Part
   PODandFPODsame : boolean = true;
@@ -524,10 +526,18 @@ hblModalRef?: NgbModalRef;
 // }
 
   filterTabs(){
-    if (this.selectedDepartmentType === 'AIR') {
-      this.filteredTabs = this.allTabs.filter(tab => tab.name !== 'Vehicle');
-    } else {
-      this.filteredTabs = [...this.allTabs];
+    this.filteredTabs = this.allTabs.filter(tab => {
+      if (this.selectedDepartmentType !== 'SEA' && tab.name === 'Proxy') {
+        return false;
+      }
+      if (this.selectedDepartmentType === 'AIR' && tab.name === 'Vehicle') {
+        return false;
+      }
+      return true;
+    });
+
+    if (!this.filteredTabs.some(tab => tab.name === this.selectedTab)) {
+      this.selectedTab = 'Shipment';
     }
   }
 
@@ -559,6 +569,7 @@ hblModalRef?: NgbModalRef;
     this.houseJobForm?.markAsPristine();
     this.cargoForm?.markAsPristine();
     this.otherForm?.markAsPristine();
+    this.proxyForm?.markAsPristine();
     this.detailForm?.markAsPristine();
     this.initialProductsCount = this.bookingProducts?.length || 0;
     this.initialConnectionsCount = this.connectionResult?.length || 0;
@@ -599,6 +610,7 @@ hblModalRef?: NgbModalRef;
       houseJobForm: this.houseJobForm?.getRawValue() ?? null,
       cargoForm: this.cargoForm?.getRawValue() ?? null,
       otherForm: this.otherForm?.getRawValue() ?? null,
+      proxyForm: this.proxyForm?.getRawValue() ?? null,
       detailForm: this.detailForm?.getRawValue() ?? null,
       bookingProducts: this.bookingProducts?.getRawValue?.() ?? [],
       connectionResult: this.connectionResult ?? [],
@@ -709,6 +721,7 @@ hblModalRef?: NgbModalRef;
   this.initBookingForm();
   this.initCargoForm();
   this.initOtherForm();
+  this.initProxyForm();
   this.initDetailsForm();
   this.setupMBLDateListener();
   this.spinner.show();
@@ -1024,54 +1037,54 @@ private setupMBLDateListener(): void {
     );
   }
 }
-// 🔥 ADD HERE
-private validateContainerWeight(): boolean {
+// // 🔥 ADD HERE
+// private validateContainerWeight(): boolean {
 
-  const containerMap = new Map<number, number>();
+//   const containerMap = new Map<number, number>();
 
-  this.houseJobCargos.controls.forEach((cargoGroup: FormGroup) => {
-    const products = cargoGroup.get('bookingProducts') as FormArray;
+//   this.houseJobCargos.controls.forEach((cargoGroup: FormGroup) => {
+//     const products = cargoGroup.get('bookingProducts') as FormArray;
 
-    products.controls.forEach((product: FormGroup) => {
+//     products.controls.forEach((product: FormGroup) => {
 
-      const containerSid = product.get('MasterJobContainerSid')?.value;
-      const grossWeight = Number(product.get('GrossWeight')?.value) || 0;
+//       const containerSid = product.get('MasterJobContainerSid')?.value;
+//       const grossWeight = Number(product.get('GrossWeight')?.value) || 0;
 
-      if (!containerSid) return;
+//       if (!containerSid) return;
 
-      containerMap.set(
-        containerSid,
-        (containerMap.get(containerSid) || 0) + grossWeight
-      );
-    });
-  });
+//       containerMap.set(
+//         containerSid,
+//         (containerMap.get(containerSid) || 0) + grossWeight
+//       );
+//     });
+//   });
 
-  // 🔥 VALIDATION
-  for (let [containerSid, totalWeight] of containerMap.entries()) {
+//   // 🔥 VALIDATION
+//   for (let [containerSid, totalWeight] of containerMap.entries()) {
 
-    const container = this.masterJobContainers.find(
-  c => Number(c.MasterJobContainerSid) === Number(containerSid)
-);
+//     const container = this.masterJobContainers.find(
+//   c => Number(c.MasterJobContainerSid) === Number(containerSid)
+// );
 
-if (!container) continue;
+// if (!container) continue;
 
-const containerType = this.containerTypeList.find(
-  ct => Number(ct.ContainerTypeMasterSid) === Number(container.ContainerType)
-);
+// const containerType = this.containerTypeList.find(
+//   ct => Number(ct.ContainerTypeMasterSid) === Number(container.ContainerType)
+// );
 
-// 🔥 USE THIS (IMPORTANT)
-const maxWeight = Number(containerType?.GrossWeight) || 0;
+// // 🔥 USE THIS (IMPORTANT)
+// const maxWeight = Number(containerType?.GrossWeight) || 0;
 
-if (totalWeight > maxWeight) {
-  this.appSettingService.showError(
-    `Container ${container.ContainerNumber} exceeded limit. Max: ${maxWeight}, Entered: ${totalWeight}`
-  );
-  return false;
-}
-  }
+// if (totalWeight > maxWeight) {
+//   this.appSettingService.showError(
+//     `Container ${container.ContainerNumber} exceeded limit. Max: ${maxWeight}, Entered: ${totalWeight}`
+//   );
+//   return false;
+// }
+//   }
 
-  return true;
-}
+//   return true;
+// }
 toggleInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
   event.stopPropagation();
   const value = this.b[flagCtrl]?.value;
@@ -1398,16 +1411,10 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       InsuranceAmount: [''],
       ValuationCharge: [''],
       HandlingInformation: [''],
-      SwitchBL: [false],
       BacktoBack: [false],
       Depo: [''],
       ROValidity: [''],
       BlClause:[[]],
-      SwitchBLAgent: [null],
-      AgentAddress: [''],
-      SwitchBLShipper: [null],
-      SwitchBLConsignee: [null],
-      SwitchLocation: [''],
       CarrierBookingRef : [''],
       CarrierBookingDate : [''],
       DONo : [''],
@@ -1421,6 +1428,59 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
         this.recomputeDirtyState();
       }
     });
+  }
+
+  initProxyForm() {
+    this.proxyForm = this.fb.group({
+      HouseJobProxySid: [null],
+      SwitchBL: [false],
+      SwitchLocation: [''],
+      CustomerName: [null],
+      CustomerAddress: [''],
+      AgentName: [null],
+      AgentAddress: [''],
+      ShipperName: [null],
+      ShipperAddress: [''],
+      ConsigneeName: [null],
+      ConsigneeAddress: [''],
+      VesselName: [null],
+      VoyageNo: [''],
+      POO: [''],
+      FPD: [''],
+      CarrierName: [null],
+      isProxyCustomerFreeText: [true],
+      isProxyAgentFreeText: [true],
+      isProxyShipperFreeText: [true],
+      isProxyConsigneeFreeText: [true],
+      isProxyCarrierFreeText: [true],
+    });
+
+    this.proxyForm.get('SwitchBL')?.valueChanges.subscribe((checked) => {
+      if (this.isPatching) {
+        return;
+      }
+
+      if (!checked) {
+        this.clearProxyFields();
+      }
+
+      this.formSaved = false;
+      this.recomputeDirtyState();
+    });
+
+    this.proxyForm.valueChanges.subscribe(() => {
+      if (!this.isPatching) {
+        this.formSaved = false;
+        this.recomputeDirtyState();
+      }
+    });
+  }
+
+  toggleProxyInputType(mainCtrl: string, flagCtrl: string, event: MouseEvent): void {
+    event.stopPropagation();
+    const currentValue = this.proxyForm.get(flagCtrl)?.value;
+    this.proxyForm.get(flagCtrl)?.setValue(!currentValue);
+    this.proxyForm.get(mainCtrl)?.reset();
   }
 
   initDetailsForm() {
@@ -2178,6 +2238,8 @@ private loadMasterJobDetails(masterJobSid: number): void {
     this.evaluateDropdownOrFreeText();
     this.handleCFSOrYard();
     const otherData = response.Others[0];
+    const proxyData = response.HouseJobProxy?.[0] || response.houseJobProxy?.[0] || response.Proxy?.[0];
+    const hasProxyData = !!proxyData && Object.values(proxyData).some(value => value !== null && value !== undefined && value !== '');
     
     if (otherData) {
       this.otherForm.patchValue({
@@ -2210,15 +2272,9 @@ private loadMasterJobDetails(masterJobSid: number): void {
         InsuranceAmount: otherData?.InsuranceAmount,
         ValuationCharge: otherData?.ValuationCharge,
         HandlingInformation: otherData?.HandlingInformation,
-        SwitchBL: otherData?.SwitchBL === "Y" ? true : false,
         BacktoBack: otherData?.BacktoBack === "Y" ? true : false,
         Depo: otherData?.Depo,
         ROValidity: otherData?.ROValidity ? new Date(otherData?.ROValidity) : null,
-        SwitchBLAgent: otherData?.SwitchBLAgent,
-        AgentAddress: otherData?.AgentAddress,
-        SwitchBLShipper: otherData?.SwitchBLShipper,
-        SwitchBLConsignee: otherData?.SwitchBLConsignee,
-        SwitchLocation: otherData?.SwitchLocation,
         CarrierBookingRef: otherData?.CarrierBookingRef,
         CarrierBookingDate: otherData?.CarrierBookingDate ? new Date(otherData?.CarrierBookingDate) : null,
         DONo: otherData?.DONo || '',
@@ -2229,6 +2285,25 @@ private loadMasterJobDetails(masterJobSid: number): void {
         GeneralNote: otherData?.GeneralNote || ''
       }, { emitEvent: false }); // IMPORTANT: Add emitEvent: false
     }
+
+    this.proxyForm.patchValue({
+      HouseJobProxySid: proxyData?.HouseJobProxySid || null,
+      SwitchBL: otherData?.SwitchBL === "Y" || hasProxyData ? true : false,
+      SwitchLocation: otherData?.SwitchLocation || '',
+      CustomerName: proxyData?.CustomerName || null,
+      CustomerAddress: proxyData?.CustomerAddress || '',
+      AgentName: proxyData?.AgentName || null,
+      AgentAddress: proxyData?.AgentAddress || '',
+      ShipperName: proxyData?.ShipperName || null,
+      ShipperAddress: proxyData?.ShipperAddress || '',
+      ConsigneeName: proxyData?.ConsigneeName || null,
+      ConsigneeAddress: proxyData?.ConsigneeAddress || '',
+      VesselName: proxyData?.VesselName || null,
+      VoyageNo: proxyData?.VoyageNo || '',
+      POO: proxyData?.POO || '',
+      FPD: proxyData?.FPD || '',
+      CarrierName: proxyData?.CarrierName || null,
+    }, { emitEvent: false });
     
     this.evaluateDropdownOrFreeText();
 
@@ -2465,93 +2540,141 @@ private applyExportToImportFieldLocks(): void {
   }
 
   private validateContainerCapacityRules(
-    pendingProduct?: { cargoIndex: number; productIndex: number; value: any }
-  ): boolean {
-    const containerWiseTotals = new Map<number, { container: any; gross: number; volume: number }>();
-    const allProducts: Array<{ cargoIndex: number; value: any }> = [];
-
-    this.houseJobCargos.controls.forEach((cargoControl: AbstractControl, cargoIndex: number) => {
-      const cargoGroup = cargoControl as FormGroup;
-      const products = cargoGroup.get('bookingProducts') as FormArray;
-      products.getRawValue().forEach((product: any, productIndex: number) => {
-        if (
-          pendingProduct &&
-          pendingProduct.cargoIndex === cargoIndex &&
-          pendingProduct.productIndex === productIndex
-        ) {
-          allProducts.push({ cargoIndex, value: pendingProduct.value });
-          return;
-        }
-        allProducts.push({ cargoIndex, value: product });
-      });
+  pendingProduct?: { cargoIndex: number; productIndex: number; value: any }
+): boolean {
+ 
+  // ── Build a flat list of ALL product values after the pending edit ──
+  const allProducts: Array<{ cargoIndex: number; productIndex: number; value: any }> = [];
+ 
+  this.houseJobCargos.controls.forEach((cargoControl: AbstractControl, cargoIndex: number) => {
+    const cargoGroup   = cargoControl as FormGroup;
+    const productArray = cargoGroup.get('bookingProducts') as FormArray;
+ 
+    productArray.getRawValue().forEach((product: any, productIndex: number) => {
+      const isBeingReplaced =
+        pendingProduct !== undefined &&
+        pendingProduct.cargoIndex   === cargoIndex &&
+        pendingProduct.productIndex === productIndex &&
+        pendingProduct.productIndex !== -1; // -1 means ADD (new row)
+ 
+      if (isBeingReplaced) {
+        // Substitute the OLD row with the PENDING (new) value
+        allProducts.push({ cargoIndex, productIndex, value: pendingProduct!.value });
+      } else {
+        allProducts.push({ cargoIndex, productIndex, value: product });
+      }
     });
-
-    if (pendingProduct && pendingProduct.productIndex === -1) {
-      allProducts.push({ cargoIndex: pendingProduct.cargoIndex, value: pendingProduct.value });
-    }
-
-    for (const item of allProducts) {
-      const containerSid = Number(item?.value?.MasterJobContainerSid) || 0;
-      if (!containerSid) {
-        continue;
-      }
-
-      const container = this.masterJobContainers.find(
-        (row: any) => Number(row?.MasterJobContainerSid) === containerSid
-      );
-      if (!container) {
-        this.appSettingService.showWarning('Container Number must be selected from Master Job Containers.');
-        return false;
-      }
-
-      const cargoGroup = this.houseJobCargos.at(item.cargoIndex) as FormGroup;
-      const cargoContainerType = this.normalizeContainerTypeValue(cargoGroup?.get('ContainerType')?.value);
-      const masterContainerType = this.normalizeContainerTypeValue(
-        container?.ContainerType ?? container?.ContainerTypeMasterSid
-      );
-      if (cargoContainerType && masterContainerType && cargoContainerType !== masterContainerType) {
-        this.appSettingService.showWarning('Container Type must match Master Job Container Type.');
-        return false;
-      }
-
-      const bucket = containerWiseTotals.get(containerSid) || { container, gross: 0, volume: 0 };
-      bucket.gross += this.parseNumberSafe(item?.value?.GrossWeight);
-      bucket.volume += this.parseNumberSafe(item?.value?.Volume);
-      containerWiseTotals.set(containerSid, bucket);
-    }
-
-    for (const [, totals] of containerWiseTotals) {
-      const containerTypeMaster = this.getContainerTypeMasterData(totals.container);
-      const grossLimit = this.parseNumberSafe(
-        totals.container?.GrossWeight
-        ?? totals.container?.MaxGrossWeight
-        ?? containerTypeMaster?.GrossWeight
-      );
-      const volumeLimit = this.parseNumberSafe(
-        totals.container?.MaxVolume
-        ?? totals.container?.Volume
-        ?? containerTypeMaster?.MaxVolume
-      );
-      const containerNumber = totals.container?.ContainerNumber || '';
-      const containerTypeLabel = this.getContainerTypeLabel(totals.container);
-
-      if (grossLimit > 0 && totals.gross > grossLimit) {
-        this.appSettingService.showWarning(
-          `Total cargo weight exceeds the allowed limit for selected container (${containerTypeLabel} - ${containerNumber})`
-        );
-        return false;
-      }
-
-      if (volumeLimit > 0 && totals.volume > volumeLimit) {
-        this.appSettingService.showWarning(
-          `Total volume exceeds container capacity (${containerTypeLabel} - ${containerNumber})`
-        );
-        return false;
-      }
-    }
-
-    return true;
+  });
+ 
+  // If this is a NEW product (productIndex === -1), append it
+  if (pendingProduct && pendingProduct.productIndex === -1) {
+    allProducts.push({
+      cargoIndex   : pendingProduct.cargoIndex,
+      productIndex : -1,
+      value        : pendingProduct.value,
+    });
   }
+ 
+  // ── Group totals by MasterJobContainerSid ──────────────────
+  const containerTotals = new Map<
+    number,
+    { container: any; gross: number; volume: number }
+  >();
+ 
+  for (const item of allProducts) {
+    const containerSid = Number(item.value?.MasterJobContainerSid) || 0;
+    if (!containerSid) continue;
+ 
+    const container = this.masterJobContainers.find(
+      (c: any) => Number(c.MasterJobContainerSid) === containerSid
+    );
+ 
+    if (!container) {
+      this.appSettingService.showWarning(
+        `⚠️ Container not found (SID: ${containerSid}).\nPlease select a valid container from the Master Job.`
+      );
+      return false;
+    }
+ 
+    // Container-type mismatch check
+    const cargoGroup       = this.houseJobCargos.at(item.cargoIndex) as FormGroup;
+    const cargoContainerType   = this.normalizeContainerTypeValue(cargoGroup?.get('ContainerType')?.value);
+    const masterContainerType  = this.normalizeContainerTypeValue(
+      container?.ContainerType ?? container?.ContainerTypeMasterSid
+    );
+ 
+    if (cargoContainerType && masterContainerType && cargoContainerType !== masterContainerType) {
+      this.appSettingService.showWarning(
+        `⚠️ Container Type Mismatch!\n` +
+        `The selected container "${container.ContainerNumber}" does not match ` +
+        `the cargo container type. Please select a matching container.`
+      );
+      return false;
+    }
+ 
+    const gross  = parseFloat(item.value?.GrossWeight) || 0;
+    const volume = parseFloat(item.value?.Volume)       || 0;
+ 
+    if (containerTotals.has(containerSid)) {
+      const bucket = containerTotals.get(containerSid)!;
+      bucket.gross  += gross;
+      bucket.volume += volume;
+    } else {
+      containerTotals.set(containerSid, { container, gross, volume });
+    }
+  }
+ 
+  // ── Validate against ContainerType master limits ───────────
+  for (const [, totals] of containerTotals.entries()) {
+    const containerTypeMaster = this.getContainerTypeMasterData(totals.container);
+ 
+    const maxGross  = this.parseNumberSafe(
+      totals.container?.GrossWeight     ??
+      totals.container?.MaxGrossWeight  ??
+      containerTypeMaster?.GrossWeight
+    );
+ 
+    const maxVolume = this.parseNumberSafe(
+      totals.container?.MaxVolume       ??
+      totals.container?.Volume          ??
+      containerTypeMaster?.MaxVolume
+    );
+ 
+    const containerNumber = totals.container?.ContainerNumber ?? '';
+    const containerLabel  = `${this.getContainerTypeLabel(totals.container)} — ${containerNumber}`;
+ 
+    // ── Gross Weight Validation ─────────────────────────────
+    if (maxGross > 0 && totals.gross > maxGross) {
+      this.appSettingService.showWarning(
+        `🚫 Gross Weight Limit Exceeded!\n\n` +
+        `Container  : ${containerLabel}\n` +
+        `Max Allowed: ${maxGross.toLocaleString()} kg\n` +
+        `Total Now  : ${totals.gross.toLocaleString()} kg\n` +
+        `Difference : +${(totals.gross - maxGross).toLocaleString()} kg\n\n` +
+        `Tip: Recalculated from ALL products linked to this container ` +
+        `(across all house jobs).`
+      );
+      return false;
+    }
+ 
+    // ── Volume Validation ────────────────────────────────────
+    if (maxVolume > 0 && totals.volume > maxVolume) {
+      this.appSettingService.showWarning(
+        `🚫 Volume (CBM) Limit Exceeded!\n\n` +
+        `Container  : ${containerLabel}\n` +
+        `Max Allowed: ${maxVolume.toLocaleString()} CBM\n` +
+        `Total Now  : ${totals.volume.toLocaleString()} CBM\n` +
+        `Difference : +${(totals.volume - maxVolume).toLocaleString()} CBM\n\n` +
+        `Tip: Recalculated from ALL products linked to this container ` +
+        `(across all house jobs).`
+      );
+      return false;
+    }
+  }
+ 
+  return true;
+}
+ 
 
   private applyFclContainerValidators(): void {
     if (!this.detailForm) {
@@ -2679,13 +2802,9 @@ private applyExportToImportFieldLocks(): void {
       this.productForm.markAllAsTouched();
       this.productForm.updateValueAndValidity();
       // Get all invalid fields for better error message
-    const invalidFields = [];
-    Object.keys(this.productForm.controls).forEach(key => {
-      const control = this.productForm.get(key);
-      if (control && control.invalid) {
-        invalidFields.push(this.getFieldLabel(key));
-      }
-    });
+   const invalidFields = Object.keys(this.productForm.controls)
+      .filter(key => this.productForm.get(key)?.invalid)
+      .map(key => this.getFieldLabel(key));
     
     if (invalidFields.length > 0) {
       this.appSettingService.showWarning(`Please fill all required fields: ${invalidFields.join(', ')}`);
@@ -2696,13 +2815,13 @@ private applyExportToImportFieldLocks(): void {
     }
     const pendingProductValue = this.productForm.getRawValue();
     const activeCargoIndex = this.houseJobCargoActiveIndex >= 0 ? this.houseJobCargoActiveIndex : 0;
-    if (!this.validateContainerCapacityRules({
-      cargoIndex: activeCargoIndex,
-      productIndex: this.currentProductIndex,
-      value: pendingProductValue
-    })) {
-      return;
-    }
+    const capacityOk = this.validateContainerCapacityRules({
+    cargoIndex   : activeCargoIndex,
+    productIndex : this.currentProductIndex, // -1 for add, >=0 for edit
+    value        : pendingProductValue,
+  });
+ 
+  if (!capacityOk) return;
     if (this.currentProductIndex === -1) {
       const productForm = this.productForm;
       this.bookingProducts.push(productForm);
@@ -3013,6 +3132,8 @@ if (this.houseJobCargos.length > 0) {
     }
   
   const houseJobFormValue = this.houseJobForm.getRawValue();
+  const otherFormValue = this.otherForm.getRawValue();
+  const proxyFormValue = this.proxyForm.getRawValue();
   const existingBookingHeaderSid = this.bookingData?.BookingHeaderSid || null;
   const exportImportType = this.selectedDepartment?.ExportImport;
   const hblNo = houseJobFormValue.HBLNo;
@@ -3040,7 +3161,6 @@ if (this.houseJobCargos.length > 0) {
   this.isSubmitting = true;
   this.isSaving = true;
   this.spinner.show();
-  const otherFormValue = this.otherForm.getRawValue();
   const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
   const currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
   const boeData = this.boeComponent ? this.boeComponent.getBoeData() : [];
@@ -3229,17 +3349,16 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
       ValueForInsurance: otherFormValue.ValueForInsurance || 0,
       InsuranceAmount: otherFormValue.InsuranceAmount || 0,
       ValuationCharge: otherFormValue.ValuationCharge || 0,
-      SwitchBL: otherFormValue.SwitchBL ? 'Y' : 'N',
+      SwitchBL: proxyFormValue.SwitchBL ? 'Y' : 'N',
       BacktoBack: otherFormValue.BacktoBack ? 'Y' : 'N',
       Depo: otherFormValue.Depo || '',
       ROValidity: otherFormValue.ROValidity ? new Date(otherFormValue.ROValidity) : null,
-      SwitchBLAgent: otherFormValue?.SwitchBLAgent || null,
-      AgentName: otherFormValue?.AgentName || null,
-      AgentAddress: otherFormValue?.AgentAddress || '',
+      SwitchBLAgent: proxyFormValue?.AgentName || null,
+      AgentAddress: proxyFormValue?.AgentAddress || '',
       // FIXED: Correct field names
-      SwitchBLShipper: otherFormValue?.SwitchBLShipper || null,
-      SwitchBLConsignee: otherFormValue?.SwitchBLConsignee || null,
-      SwitchLocation: otherFormValue?.SwitchLocation || '',
+      SwitchBLShipper: proxyFormValue?.ShipperName || null,
+      SwitchBLConsignee: proxyFormValue?.ConsigneeName || null,
+      SwitchLocation: proxyFormValue?.SwitchLocation || '',
       CarrierBookingRef: otherFormValue?.CarrierBookingRef || '',
       CarrierBookingDate: otherFormValue?.CarrierBookingDate ? new Date(otherFormValue?.CarrierBookingDate) : null,
       // FIXED: DONo and DODate handling
@@ -3250,6 +3369,22 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
       InternalNote: otherFormValue?.InternalNote || '',
       GeneralNote: otherFormValue?.GeneralNote || ''
     },
+    houseJobProxy: proxyFormValue.SwitchBL ? [{
+      HouseJobProxySid: proxyFormValue.HouseJobProxySid || null,
+      CustomerName: proxyFormValue.CustomerName || null,
+      CustomerAddress: proxyFormValue.CustomerAddress || '',
+      AgentName: proxyFormValue.AgentName || null,
+      AgentAddress: proxyFormValue.AgentAddress || '',
+      ShipperName: proxyFormValue.ShipperName || null,
+      ShipperAddress: proxyFormValue.ShipperAddress || '',
+      ConsigneeName: proxyFormValue.ConsigneeName || null,
+      ConsigneeAddress: proxyFormValue.ConsigneeAddress || '',
+      VesselName: proxyFormValue.VesselName || null,
+      VoyageNo: proxyFormValue.VoyageNo || '',
+      POO: proxyFormValue.POO || '',
+      FPD: proxyFormValue.FPD || '',
+      CarrierName: proxyFormValue.CarrierName || null,
+    }] : [],
     
     products: flatCargoProducts,
     houseJobProduct: flatCargoProducts,
@@ -4083,7 +4218,50 @@ usesDimensionalCargoFields(): boolean {
   }
 
   setAddress(controlName: string, item: any) {
-    this.b[controlName]?.setValue(item ? item.CustomerAddress1 : '')
+    this.b[controlName]?.setValue(item ? (item.CustomerAddress1 || item.Address || item.CustomerAddress || '') : '')
+  }
+
+  setProxyAddress(controlName: string, item: any) {
+    this.proxyForm.get(controlName)?.setValue(item ? (item.CustomerAddress1 || item.Address || item.CustomerAddress || '') : '');
+  }
+
+  clearProxyFields(): void {
+    this.proxyForm.patchValue({
+      HouseJobProxySid: this.proxyForm.get('HouseJobProxySid')?.value || null,
+      CustomerName: null,
+      CustomerAddress: '',
+      AgentName: null,
+      AgentAddress: '',
+      ShipperName: null,
+      ShipperAddress: '',
+      ConsigneeName: null,
+      ConsigneeAddress: '',
+      VesselName: null,
+      VoyageNo: '',
+      POO: '',
+      FPD: '',
+      CarrierName: null,
+      isProxyCustomerFreeText: true,
+      isProxyAgentFreeText: true,
+      isProxyShipperFreeText: true,
+      isProxyConsigneeFreeText: true,
+      isProxyCarrierFreeText: true,
+    }, { emitEvent: false });
+  }
+
+  onProxyVesselChange(vesselVoyage: any) {
+    if (!vesselVoyage) {
+      this.proxyForm.patchValue({
+        VesselName: null,
+        VoyageNo: ''
+      }, { emitEvent: false });
+      return;
+    }
+
+    this.proxyForm.patchValue({
+      VesselName: vesselVoyage.VesselName || null,
+      VoyageNo: vesselVoyage.VoyageNo || ''
+    }, { emitEvent: false });
   }
 
   handlePOLChange(selectedPort: any,resetTrigger:boolean = true) {
@@ -4815,6 +4993,29 @@ resetForm() {
   this.slicedProductArr = [];
   this.productDataLength = 0;
   this.otherForm.reset();
+  this.proxyForm.reset({
+    HouseJobProxySid: null,
+    SwitchBL: false,
+    SwitchLocation: '',
+    CustomerName: null,
+    CustomerAddress: '',
+    AgentName: null,
+    AgentAddress: '',
+    ShipperName: null,
+    ShipperAddress: '',
+    ConsigneeName: null,
+    ConsigneeAddress: '',
+    VesselName: null,
+    VoyageNo: '',
+    POO: '',
+    FPD: '',
+    CarrierName: null,
+    isProxyCustomerFreeText: true,
+    isProxyAgentFreeText: true,
+    isProxyShipperFreeText: true,
+    isProxyConsigneeFreeText: true,
+    isProxyCarrierFreeText: true,
+  });
   this.applyExportToImportFieldLocks();
   this.resetDirtyState();
   }
@@ -6833,6 +7034,10 @@ getProductFormGroup(index: number): FormGroup {
       this.otherForm.get(key)?.disable();
     });
 
+    Object.keys(this.proxyForm.controls).forEach(key => {
+      this.proxyForm.get(key)?.disable();
+    });
+
     Object.keys(this.cargoForm.controls).forEach(key => {
       this.cargoForm.get(key)?.disable();
     });
@@ -6853,6 +7058,138 @@ getProductFormGroup(index: number): FormGroup {
 
     this.isFormDisabled = true;
   }
+
+   
+private validateContainerWeight(): boolean {
+  // Step 1: Aggregate all products across all cargo groups
+  // Key = MasterJobContainerSid (number)
+  // Value = running totals for gross weight and volume
+  const containerTotals = new Map<
+    number,
+    { gross: number; volume: number; containerNumber: string; containerTypeSid: number }
+  >();
+ 
+  this.houseJobCargos.controls.forEach((cargoControl: AbstractControl) => {
+    const cargoGroup = cargoControl as FormGroup;
+    const products = cargoGroup.get('bookingProducts') as FormArray;
+    const rawProducts = products.getRawValue(); // getRawValue respects disabled controls
+ 
+    rawProducts.forEach((product: any) => {
+      const containerSid = Number(product.MasterJobContainerSid);
+      if (!containerSid) return; // skip products with no container mapped
+ 
+      const gross  = parseFloat(product.GrossWeight)  || 0;
+      const volume = parseFloat(product.Volume)        || 0;
+ 
+      if (containerTotals.has(containerSid)) {
+        const existing = containerTotals.get(containerSid)!;
+        existing.gross  += gross;
+        existing.volume += volume;
+      } else {
+        // Look up the master container record to get ContainerType
+        const masterContainer = this.masterJobContainers.find(
+          (c: any) => Number(c.MasterJobContainerSid) === containerSid
+        );
+        containerTotals.set(containerSid, {
+          gross,
+          volume,
+          containerNumber : masterContainer?.ContainerNumber  ?? `Container#${containerSid}`,
+          containerTypeSid: Number(masterContainer?.ContainerType ?? 0),
+        });
+      }
+    });
+  });
+ 
+  // Step 2: Validate each container's totals against ContainerType master limits
+  for (const [containerSid, totals] of containerTotals.entries()) {
+    const masterContainer = this.masterJobContainers.find(
+      (c: any) => Number(c.MasterJobContainerSid) === containerSid
+    );
+ 
+    if (!masterContainer) {
+      this.appSettingService.showError(
+        `⚠️ Container not found (SID: ${containerSid}). Please re-map the container and try again.`
+      );
+      return false;
+    }
+ 
+    // Find ContainerType master to get max limits
+    const containerTypeMaster = this.containerTypeList.find(
+      (ct: any) => Number(ct.ContainerTypeMasterSid) === totals.containerTypeSid
+    );
+ 
+    // Parse limits — 0 means "no limit configured"
+    const maxGross  = parseFloat(containerTypeMaster?.GrossWeight ?? '0') || 0;
+    const maxVolume = parseFloat(containerTypeMaster?.MaxVolume    ?? '0') || 0;
+    const containerLabel = `${containerTypeMaster?.ContainerName ?? 'Unknown'} — ${totals.containerNumber}`;
+ 
+    // ── Gross Weight Check ──────────────────────────────────
+    if (maxGross > 0 && totals.gross > maxGross) {
+      this.appSettingService.showError(
+        `🚫 Gross Weight Exceeded!\n\n` +
+        `Container  : ${containerLabel}\n` +
+        `Max Allowed: ${maxGross.toLocaleString()} kg\n` +
+        `Entered    : ${totals.gross.toLocaleString()} kg\n` +
+        `Over by    : ${(totals.gross - maxGross).toLocaleString()} kg\n\n` +
+        `⚠️ Please reduce the gross weight across all house jobs linked to this container.`
+      );
+      return false;
+    }
+ 
+    // ── Volume Check ────────────────────────────────────────
+    if (maxVolume > 0 && totals.volume > maxVolume) {
+      this.appSettingService.showError(
+        `🚫 Volume (CBM) Exceeded!\n\n` +
+        `Container  : ${containerLabel}\n` +
+        `Max Allowed: ${maxVolume.toLocaleString()} CBM\n` +
+        `Entered    : ${totals.volume.toLocaleString()} CBM\n` +
+        `Over by    : ${(totals.volume - maxVolume).toLocaleString()} CBM\n\n` +
+        `⚠️ Please reduce the volume across all house jobs linked to this container.`
+      );
+      return false;
+    }
+  }
+ 
+  return true; // all containers passed
+}
+
+
+  isPrintOptionVisible(reportName: string): boolean {
+  const exportImport = this.selectedDepartment?.ExportImport;
+
+  const importReports = [
+    'Delivery Order',
+    'Cargo Arrival Notice with charges',
+    'Cargo Arrival Notice without charges',
+    'House Profit and Loss',
+    'Indemnity',
+    'Exit Form',
+    'Proof of Delivery'
+  ];
+
+  const exportReports = [
+    'HBL',
+    'HBLDraft',
+    'House Profit and Loss',
+    'Indemnity',
+    'Commerical Invoice',
+    'Job Card',
+    'Packing List',
+    'Release Letter',
+    'Sailing Confirmation',
+    'Exit Form'
+  ];
+
+  const othersReports = [
+    'Job Card',
+    'Exit Form',
+    'Proof of Delivery'
+  ];
+
+  if (exportImport === 'Import') return importReports.includes(reportName);
+  if (exportImport === 'Export') return exportReports.includes(reportName);
+  return othersReports.includes(reportName);
+}
   
 }
 
