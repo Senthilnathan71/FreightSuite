@@ -11,7 +11,7 @@ export function generateQuotationDocument(
   return {
     pageSize: 'A4',
     pageOrientation: 'portrait',
-    pageMargins: [15, 20, 15, 28],
+    pageMargins: [15, 16, 15, 24],
     background: (_: number, pageSize: any) => ({
       canvas: [
         {
@@ -107,7 +107,7 @@ function buildHeader(data: QuotationPdfData): any {
         ]
       }
     ],
-    margin: [0, 0, 0, 2]
+    margin: [0, 0, 0, 1]
   };
 }
 
@@ -128,7 +128,7 @@ function buildTitle(title: string): any {
   return {
     table: {
       widths: ['*'],
-      body: [[{ text: title, bold: true, alignment: 'center', fontSize: 16, margin: [0, 4, 0, 4] }]]
+      body: [[{ text: title, bold: true, alignment: 'center', fontSize: 15, margin: [0, 2, 0, 2] }]]
     },
     layout: {
       hLineWidth: (i: number) => (i === 0 ? 1 : 0),
@@ -164,7 +164,7 @@ function buildCustomerInfo(data: QuotationPdfData, isContract: boolean): any {
       }
     ],
     columnGap: 4,
-    margin: [8, 8, 8, 0]
+    margin: [8, 5, 8, 0]
   };
 }
 
@@ -182,10 +182,10 @@ function infoLine(label: string, value: string): any {
 function buildGreeting(): any {
   return {
     stack: [
-      { text: 'Dear Sir/Mam,', bold: true, margin: [10, 6, 0, 2] },
+      { text: 'Dear Sir/Mam,', bold: true, margin: [10, 4, 0, 2] },
       {
         text: 'Thank you very much for the opportunity to quote for your esteemed organization.\nWe are pleased to submit our best rates as outlined below.',
-        margin: [10, 0, 0, 10]
+        margin: [10, 0, 0, 6]
       }
     ]
   };
@@ -207,8 +207,8 @@ function buildRouteSections(data: QuotationPdfData): any[] {
       table: {
         widths: ['20%', '80%'],
         body: [[
-          { text: deptName, bold: true, margin: [10, 2, 0, 4] },
-          { text: routeLabel, bold: true, alignment: 'right', margin: [0, 2, 14, 4] }
+          { text: deptName, bold: true, margin: [10, 1, 0, 2] },
+          { text: routeLabel, bold: true, alignment: 'right', margin: [0, 1, 14, 2] }
         ]]
       },
       layout: {
@@ -226,12 +226,12 @@ function buildRouteSections(data: QuotationPdfData): any[] {
 
       blocks.push({
         columns: [
-          { text: [{ text: 'Carrier : ', bold: true }, carrier?.carrierName || ''], width: '25%', margin: [10, 4, 0, 4] },
+          { text: [{ text: 'Carrier : ', bold: true }, carrier?.carrierName || ''], width: '25%', margin: [10, 2, 0, 2] },
           showCargoSummary
-            ? { text: [{ text: 'Cargo Type : ', bold: true }, getRoutePrintCargoTypeSummary(route, data)], width: '25%', margin: [0, 4, 0, 4] }
-            : { text: '', width: '25%', margin: [0, 4, 0, 4] },
-          { text: [{ text: 'Valid From : ', bold: true }, formatDate(route.effDate)], width: '25%', margin: [0, 4, 0, 4] },
-          { text: [{ text: 'Valid To : ', bold: true }, formatDate(route.expDate)], width: '25%', alignment: 'right', margin: [0, 4, 10, 4] }
+            ? { text: [{ text: 'Cargo Type : ', bold: true }, getRoutePrintCargoTypeSummary(route, data)], width: '25%', margin: [0, 2, 0, 2] }
+            : { text: '', width: '25%', margin: [0, 2, 0, 2] },
+          { text: [{ text: 'Valid From : ', bold: true }, formatDate(route.effDate)], width: '25%', margin: [0, 2, 0, 2] },
+          { text: [{ text: 'Valid To : ', bold: true }, formatDate(route.expDate)], width: '25%', alignment: 'right', margin: [0, 2, 10, 2] }
         ],
         columnGap: 0
       });
@@ -278,12 +278,12 @@ function buildRouteCargoTable(route: any, data: QuotationPdfData): any {
       vLineWidth: () => 1,
       hLineColor: () => '#000',
       vLineColor: () => '#000',
-      paddingLeft: () => 6,
-      paddingRight: () => 6,
-      paddingTop: () => 5,
-      paddingBottom: () => 5
+      paddingLeft: () => 5,
+      paddingRight: () => 5,
+      paddingTop: () => 2,
+      paddingBottom: () => 2
     },
-    margin: [55, 0, 55, 8]
+    margin: [55, 0, 55, 4]
   };
 }
 
@@ -340,10 +340,10 @@ function buildChargeTable(charges: any[], showAgreedRate: boolean): any {
       },
       hLineColor: () => '#000',
       vLineColor: () => '#000',
-      paddingLeft: () => 4,
-      paddingRight: () => 4,
-      paddingTop: () => 3,
-      paddingBottom: () => 3
+      paddingLeft: () => 3,
+      paddingRight: () => 3,
+      paddingTop: () => 1,
+      paddingBottom: () => 1
     },
     margin: [0, 0, 0, 0]
   };
@@ -441,7 +441,7 @@ function getContainerTypeDisplay(containerType: any, data: QuotationPdfData): st
     return String(containerType);
   }
 
-  return matchedType.ContainerCode || matchedType.ContainerName || String(containerType);
+  return matchedType.ContainerName || matchedType.ContainerTypeName || matchedType.ContainerCode || String(containerType);
 }
 
 function getRoutePrintCargoDetails(route: any, data: QuotationPdfData): Array<{ cargoType: string; containerType: string; quantity: number | string }> {

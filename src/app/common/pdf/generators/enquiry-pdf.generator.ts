@@ -177,20 +177,16 @@ function buildCargoSection(data: EnquiryPdfData): any[] {
 
     if (routeIndex > 0) {
       content.push(buildDivider({ width: 575, margin: [-10, 2, -10, 2] }));
-      content.push({
-        text: '',
-        margin: [0, 0, 0, 0]
-      });
     }
 
-    content.push(buildRoutePortSummary(route));
+    content.push(buildRoutePortSummary(route, routeIndex === 0));
     content.push(buildCargoTable(cargoData, data.fclLcl, { margin: [-10, 4, -10, 3] }));
   });
 
   return content;
 }
 
-function buildRoutePortSummary(route: EnquiryPdfData['routes'][number]): any {
+function buildRoutePortSummary(route: EnquiryPdfData['routes'][number], isFirstRoute = false): any {
   const item = (label: string, value: string) => ({
     stack: [
       { text: label, style: 'labelBold', margin: [0, 0, 0, 2] },
@@ -213,7 +209,7 @@ function buildRoutePortSummary(route: EnquiryPdfData['routes'][number]): any {
       }
     ],
     columnGap: 8,
-    margin: [5, 2, 5, 3]
+    margin: [5, isFirstRoute ? 6 : 8, 5, 3]
   };
 }
 
