@@ -2254,6 +2254,26 @@ export class VendorInvoiceEntryComponent implements OnInit {
     });
 
     const totalBillAmount = toNumber(this.getPartyCurrDebitAmt()) - toNumber(this.getPartyCurrCreditAmt());
+
+    // Calculate header Amount (party currency) and LocalAmount (local currency)
+    const localCurrencySid = this.currentCompany?.CurrencyMasterSid;
+    const headerCurrencySid = formValue.CurrencyMasterSid;
+    const headerExchangeRate = formValue.ExchangeRate ? toNumber(formValue.ExchangeRate) : 1;
+
+    let totalLocalAmountWithTax = 0;
+    for (const vd of voucherDetailArray) {
+      const localAmt = toNumber(vd.LocalAmount);
+      const tax1 = toNumber(vd.TaxAmount1);
+      const tax2 = toNumber(vd.TaxAmount2);
+      const rowTotal = localAmt + tax1 + tax2;
+      totalLocalAmountWithTax += vd.DrCr === 'D' ? rowTotal : -rowTotal;
+    }
+
+    const headerLocalAmount = toNumber(this.getFormattedAmount(totalLocalAmountWithTax, localCurrencySid));
+    const headerAmount = localCurrencySid === headerCurrencySid
+      ? headerLocalAmount
+      : toNumber(this.getFormattedAmount(totalLocalAmountWithTax / headerExchangeRate, headerCurrencySid));
+
     const payload: any = {
       ...(this.isEditMode
         ? { UpdatedBy: this.currUserEmail }
@@ -2277,6 +2297,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
       PostStatus: formValue.PostStatus || "U",
       CurrencyCode: formValue.CurrencyCode ?? null,
       ExchangeRate: formValue.ExchangeRate ? toNumber(formValue.ExchangeRate) : 0,
+      Amount: headerAmount,
+      LocalAmount: headerLocalAmount,
       MasterJobSid: formValue.MasterJobSid,
       HouseJobSid: formValue.HouseJobSid,
       Narration: formValue.Narration,
@@ -2289,9 +2311,9 @@ export class VendorInvoiceEntryComponent implements OnInit {
       BillAmt: totalBillAmount,
       MBLNo: formValue.MBLNo,
       HBLNo: formValue.HBLNo,
-      
+
       VoucherDetail: voucherDetailArray.length > 0 ? voucherDetailArray : undefined,
-      
+
       // Cost revenue pulled from jobs handling
       isPatching: isPatching,
       patchedIds,

@@ -2381,6 +2381,25 @@ isSeaDepartment(): boolean {
     const voucherOthersCandidate =
       this.buildVoucherOthersPayload(rawVoucherOthers);
 
+    // Calculate header Amount (party currency) and LocalAmount (local currency)
+    const localCurrencySid = this.currentCompany?.CurrencyMasterSid;
+    const headerCurrencySid = raw.CurrencyMasterSid;
+    const headerExchangeRate = raw.ExchangeRate != null ? Number(raw.ExchangeRate) : 1;
+
+    let totalLocalAmountWithTax = 0;
+    for (const vd of voucherDetailArray) {
+      const localAmt = toNumber(vd.LocalAmount);
+      const tax1 = toNumber(vd.TaxAmount1);
+      const tax2 = toNumber(vd.TaxAmount2);
+      const rowTotal = localAmt + tax1 + tax2;
+      totalLocalAmountWithTax += vd.DrCr === 'C' ? rowTotal : -rowTotal;
+    }
+
+    const headerLocalAmount = toNumber(this.getFormattedAmount(totalLocalAmountWithTax, localCurrencySid));
+    const headerAmount = localCurrencySid === headerCurrencySid
+      ? headerLocalAmount
+      : toNumber(this.getFormattedAmount(totalLocalAmountWithTax / headerExchangeRate, headerCurrencySid));
+
     const payload: any = {
       ...(this.isEditMode
         ? { UpdatedBy: this.currUserEmail }
@@ -2406,6 +2425,8 @@ isSeaDepartment(): boolean {
       CurrencyCode: raw.CurrencyCode || undefined,
       ExchangeRate:
         raw.ExchangeRate != null ? Number(raw.ExchangeRate) : undefined,
+      Amount: headerAmount,
+      LocalAmount: headerLocalAmount,
       MasterJobSid: raw.MasterJobSid ?? null,
       HouseJobSid: raw.HouseJobSid ? Number(raw.HouseJobSid) : null,
       Narration: raw.Narration !== undefined ? raw.Narration : undefined,

@@ -3940,6 +3940,30 @@ createRateFormGroup(data?: any): FormGroup {
         };
       });
 
+    // Calculate header Amount (party currency) and LocalAmount (local currency)
+    const localCurrencySid = this.currentCompany?.CurrencyMasterSid;
+    const headerCurrencySid = rawValue.CurrencyMasterSid;
+    const headerExchangeRate = toNumber(rawValue.ExchangeRate) || 1;
+
+    let totalLocalAmountWithTax = 0;
+    for (const vd of VoucherDetail) {
+      const localAmt = toNumber(vd.LocalAmount);
+      const tax1 = toNumber(vd.TaxAmount1);
+      const tax2 = toNumber(vd.TaxAmount2);
+      const rowTotal = localAmt + tax1 + tax2;
+
+      if (isInvoice) {
+        totalLocalAmountWithTax += vd.DrCr === 'C' ? rowTotal : -rowTotal;
+      } else {
+        totalLocalAmountWithTax += vd.DrCr === 'D' ? rowTotal : -rowTotal;
+      }
+    }
+
+    const headerLocalAmount = toNumber(this.getFormattedAmount(totalLocalAmountWithTax, localCurrencySid));
+    const headerAmount = localCurrencySid === headerCurrencySid
+      ? headerLocalAmount
+      : toNumber(this.getFormattedAmount(totalLocalAmountWithTax / headerExchangeRate, headerCurrencySid));
+
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
@@ -3959,6 +3983,8 @@ createRateFormGroup(data?: any): FormGroup {
       CurrencyMasterSid: rawValue.CurrencyMasterSid,
       CurrencyCode: rawValue.CurrencyCode,
       ExchangeRate: toNumber(rawValue.ExchangeRate),
+      Amount: headerAmount,
+      LocalAmount: headerLocalAmount,
       DocumentNumber: rawValue.DocumentNumber,
       DocumentDate: rawValue.DocumentDate,
       DepartmentMasterSid: rawValue.DepartmentMasterSid,
