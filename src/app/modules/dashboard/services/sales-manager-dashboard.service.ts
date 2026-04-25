@@ -6,7 +6,6 @@ import {
   SalespersonInfo,
   SalesManagerCounts,
   ScoreboardRow,
-  HeatmapSeries,
   WeeklyTrendPoint,
   ResponseTimeMetric,
   ActivityFeedItem,
@@ -44,10 +43,6 @@ export class SalesManagerDashboardService {
 
   getScoreboard(filters: SalesManagerFilters): Observable<ApiResponse<ScoreboardRow[]>> {
     return this.http.get<ApiResponse<ScoreboardRow[]>>(`${this.baseUrl}/scoreboard`, { params: this.buildParams(filters) });
-  }
-
-  getHeatmap(filters: SalesManagerFilters): Observable<ApiResponse<HeatmapSeries[]>> {
-    return this.http.get<ApiResponse<HeatmapSeries[]>>(`${this.baseUrl}/heatmap`, { params: this.buildParams(filters) });
   }
 
   getWeeklyTrend(filters: SalesManagerFilters): Observable<ApiResponse<WeeklyTrendPoint[]>> {

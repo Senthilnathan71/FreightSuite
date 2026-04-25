@@ -1,7 +1,7 @@
 <div class="reassign-modal">
   <div class="modal-header">
     <h5 class="modal-title">
-      <i class="fa-solid fa-arrow-right-arrow-left"></i> Reassign Lead
+      <i class="fas fa-exchange-alt"></i> Reassign Lead
     </h5>
     <button type="button" class="btn-close" (click)="activeModal.dismiss()"></button>
   </div>
@@ -10,7 +10,7 @@
     <!-- Lead info -->
     <div class="info-card" *ngIf="meeting">
       <div class="info-row">
-        <span class="info-label">Lead / Company</span>
+        <span class="info-label">Lead / Customer</span>
         <span class="info-value">{{ meeting.preCustomerName || meeting.companyName || '—' }}</span>
       </div>
       <div class="info-row">
@@ -38,7 +38,7 @@
   <div class="modal-footer">
     <button class="btn btn-outline" (click)="activeModal.dismiss()">Cancel</button>
     <button class="btn btn-primary" [disabled]="!isValid" (click)="onSubmit()">
-      <i class="fa-solid fa-check"></i> Reassign
+      <i class="fas fa-check"></i> Reassign
     </button>
   </div>
 </div>

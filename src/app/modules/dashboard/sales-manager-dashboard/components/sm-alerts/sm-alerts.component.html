@@ -1,6 +1,6 @@
 <div class="alerts-card">
   <div class="section-header">
-    <span class="section-icon danger"><i class="fa-solid fa-triangle-exclamation"></i></span>
+    <span class="section-icon danger"><i class="fas fa-exclamation-triangle"></i></span>
     <h3>At-Risk Alerts</h3>
     <span class="badge" *ngIf="alerts.length">{{ alerts.length }}</span>
   </div>
@@ -11,7 +11,7 @@
 
   <div class="alerts-list" *ngIf="!loading">
     <div class="empty-state" *ngIf="alerts.length === 0">
-      <i class="fa-solid fa-shield-check"></i>
+      <i class="fas fa-shield-alt"></i>
       <p>No alerts — your team is on track!</p>
     </div>
 

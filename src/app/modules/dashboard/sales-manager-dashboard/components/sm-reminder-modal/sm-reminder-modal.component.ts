@@ -18,9 +18,9 @@ export class SmReminderModalComponent {
   customMessage = '';
 
   reminderTypes: { value: 'overdue-meetings' | 'idle-leads' | 'pending-followups'; label: string; icon: string; desc: string }[] = [
-    { value: 'overdue-meetings', label: 'Overdue Meetings', icon: 'fa-solid fa-calendar-xmark', desc: 'Remind about meetings past their scheduled date' },
-    { value: 'idle-leads', label: 'Idle Leads', icon: 'fa-solid fa-user-clock', desc: 'Remind about leads with no meeting scheduled' },
-    { value: 'pending-followups', label: 'Pending Follow-ups', icon: 'fa-solid fa-phone-slash', desc: 'Remind about overdue follow-up calls' },
+    { value: 'overdue-meetings', label: 'Overdue Meetings', icon: 'fas fa-calendar-times', desc: 'Remind about meetings past their scheduled date' },
+    { value: 'idle-leads', label: 'Idle Leads', icon: 'fas fa-user-clock', desc: 'Remind about leads with no meeting scheduled' },
+    { value: 'pending-followups', label: 'Pending Follow-ups', icon: 'fas fa-phone-slash', desc: 'Remind about overdue follow-up calls' },
   ];
 
   constructor(public activeModal: NgbActiveModal) {}

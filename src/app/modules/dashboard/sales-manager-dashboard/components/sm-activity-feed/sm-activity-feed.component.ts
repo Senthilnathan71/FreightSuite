@@ -15,10 +15,10 @@ export class SmActivityFeedComponent {
 
   getIcon(type: string): string {
     switch (type) {
-      case 'meeting_completed': return 'fa-solid fa-handshake';
-      case 'quote_created': return 'fa-solid fa-file-invoice';
-      case 'booking_created': return 'fa-solid fa-ship';
-      default: return 'fa-solid fa-circle-info';
+      case 'meeting_completed': return 'fas fa-handshake';
+      case 'quote_created': return 'fas fa-file-invoice';
+      case 'booking_created': return 'fas fa-ship';
+      default: return 'fas fa-info-circle';
     }
   }
 

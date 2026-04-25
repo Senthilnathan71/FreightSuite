@@ -1,6 +1,8 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ScoreboardRow } from '../../../interfaces/sales-manager-dashboard.interfaces';
+import * as XLSX from 'xlsx';
+import * as FileSaver from 'file-saver';
 
 @Component({
   selector: 'app-sm-scoreboard',
@@ -75,5 +77,46 @@ export class SmScoreboardComponent {
   onRemind(event: Event, row: ScoreboardRow) {
     event.stopPropagation();
     this.remindClicked.emit(row);
+  }
+
+  downloadExcel() {
+    if (!this.rows.length) return;
+    const data = this.sortedRows.map(r => ({
+      'Salesperson': r.userName,
+      'Email': r.userEmail,
+      'S1 - Leads No Mtg': r.s1,
+      'S2 - Meetings Sched.': r.s2,
+      'S3 - Follow-Ups': r.s3,
+      'S4 - Not Converted': r.s4,
+      'S5 - Cust. No Quote': r.s5,
+      'S6 - Enq. No Quotation': r.s6,
+      'S7 - Pending Approval': r.s7,
+      'S8 - Appr. No Booking': r.s8,
+      'Conv. Rate': `${this.getConversionRate(r)}%`,
+      'Total': r.total,
+    }));
+
+    const t = this.teamTotal;
+    data.push({
+      'Salesperson': 'TEAM TOTAL',
+      'Email': `${this.rows.length} salespersons`,
+      'S1 - Leads No Mtg': t.s1,
+      'S2 - Meetings Sched.': t.s2,
+      'S3 - Follow-Ups': t.s3,
+      'S4 - Not Converted': t.s4,
+      'S5 - Cust. No Quote': t.s5,
+      'S6 - Enq. No Quotation': t.s6,
+      'S7 - Pending Approval': t.s7,
+      'S8 - Appr. No Booking': t.s8,
+      'Conv. Rate': '',
+      'Total': t.total,
+    });
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Scoreboard');
+    const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    FileSaver.saveAs(blob, `Scoreboard-${new Date().getTime()}.xlsx`);
   }
 }

@@ -17,7 +17,7 @@ export interface SalespersonInfo {
   UserMasterSid: number;
   userName: string;
   userEmail: string;
-  userMobileNo?: string;
+  contactNumber?: string;
   avatarColor: string;
 }
 
@@ -67,11 +67,6 @@ export interface ScoreboardRow {
   s7: number;
   s8: number;
   total: number;
-}
-
-export interface HeatmapSeries {
-  userName: string;
-  data: { x: string; y: number }[];
 }
 
 export interface WeeklyTrendPoint {

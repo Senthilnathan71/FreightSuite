@@ -15,12 +15,12 @@ export class SmAlertsComponent {
 
   getIcon(alertType: string): string {
     switch (alertType) {
-      case 'idle_leads': return 'fa-solid fa-user-clock';
-      case 'overdue_meetings': return 'fa-solid fa-calendar-xmark';
-      case 'stale_followups': return 'fa-solid fa-phone-slash';
-      case 'unconverted_hightouch': return 'fa-solid fa-handshake-slash';
-      case 'overload': return 'fa-solid fa-weight-hanging';
-      default: return 'fa-solid fa-triangle-exclamation';
+      case 'idle_leads': return 'fas fa-user-clock';
+      case 'overdue_meetings': return 'fas fa-calendar-times';
+      case 'stale_followups': return 'fas fa-phone-slash';
+      case 'unconverted_hightouch': return 'fas fa-handshake-slash';
+      case 'overload': return 'fas fa-weight-hanging';
+      default: return 'fas fa-exclamation-triangle';
     }
   }
 

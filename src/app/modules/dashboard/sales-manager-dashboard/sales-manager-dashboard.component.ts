@@ -1,10 +1,19 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ToastrService } from 'ngx-toastr';
+import {
+  NgbModal,
+  NgbDateAdapter,
+  NgbDateParserFormatter,
+  NgbDateStruct,
+  NgbDatepickerModule,
+} from '@ng-bootstrap/ng-bootstrap';
 import { Subject, forkJoin, interval } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { toNgbDateStruct } from 'src/app/common/helper';
+import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
+import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 
 import { AppSettingsService } from '../../../core/services/app-settings.service';
 import { SalesManagerDashboardService } from '../services/sales-manager-dashboard.service';
@@ -13,7 +22,6 @@ import {
   SalespersonInfo,
   SalesManagerCounts,
   ScoreboardRow,
-  HeatmapSeries,
   WeeklyTrendPoint,
   ResponseTimeMetric,
   ActivityFeedItem,
@@ -24,13 +32,11 @@ import {
 } from '../interfaces/sales-manager-dashboard.interfaces';
 
 // Sub-components
-import { SmFiltersComponent } from './components/sm-filters/sm-filters.component';
 import { SmKpiCardsComponent } from './components/sm-kpi-cards/sm-kpi-cards.component';
 import { SmMeetingsBoardComponent } from './components/sm-meetings-board/sm-meetings-board.component';
 import { SmFunnelChartComponent } from './components/sm-funnel-chart/sm-funnel-chart.component';
 import { SmLeadSourceChartComponent } from './components/sm-lead-source-chart/sm-lead-source-chart.component';
 import { SmTrendChartComponent } from './components/sm-trend-chart/sm-trend-chart.component';
-import { SmHeatmapChartComponent } from './components/sm-heatmap-chart/sm-heatmap-chart.component';
 import { SmScoreboardComponent } from './components/sm-scoreboard/sm-scoreboard.component';
 import { SmRadarChartComponent } from './components/sm-radar-chart/sm-radar-chart.component';
 import { SmResponseTimesComponent } from './components/sm-response-times/sm-response-times.component';
@@ -50,13 +56,13 @@ import { SmReminderModalComponent } from './components/sm-reminder-modal/sm-remi
   imports: [
     CommonModule,
     FormsModule,
-    SmFiltersComponent,
+    NgbDatepickerModule,
+    SearchableDropdown,
     SmKpiCardsComponent,
     SmMeetingsBoardComponent,
     SmFunnelChartComponent,
     SmLeadSourceChartComponent,
     SmTrendChartComponent,
-    SmHeatmapChartComponent,
     SmScoreboardComponent,
     SmRadarChartComponent,
     SmResponseTimesComponent,
@@ -66,25 +72,33 @@ import { SmReminderModalComponent } from './components/sm-reminder-modal/sm-remi
   ],
   templateUrl: './sales-manager-dashboard.component.html',
   styleUrls: ['./sales-manager-dashboard.component.scss'],
+  providers: [
+    { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+  ],
 })
 export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  private activityRefreshStarted = false;
 
   // Context
   companyMasterSid = 0;
   branchMasterSid = 0;
-  managerName = '';
 
   // Filter state
   currentFilters: SalesManagerFilters = {};
   lastUpdated: Date | null = null;
+  activePreset = 'month';
+  dateFromInput: Date | null = null;
+  dateToInput: Date | null = null;
+  selectedSalespersonId: number | null = null;
+  readonly maxDateTo: NgbDateStruct = toNgbDateStruct(new Date())!;
 
   // Data
   salespersons: SalespersonInfo[] = [];
   counts: SalesManagerCounts | null = null;
   kpiCards: KpiCardConfig[] = [];
   scoreboard: ScoreboardRow[] = [];
-  heatmap: HeatmapSeries[] = [];
   weeklyTrend: WeeklyTrendPoint[] = [];
   responseTimes: ResponseTimeMetric[] = [];
   activityFeed: ActivityFeedItem[] = [];
@@ -104,12 +118,12 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
     private appSettings: AppSettingsService,
     private service: SalesManagerDashboardService,
     private modalService: NgbModal,
-    private toastr: ToastrService,
   ) {}
 
   ngOnInit() {
     this.initContext();
     this.loadSalespersons();
+    this.setPreset('month');
   }
 
   ngOnDestroy() {
@@ -121,10 +135,8 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
     try {
       const company = this.appSettings.decrypt(localStorage.getItem('selected-company'));
       const branch = this.appSettings.decrypt(localStorage.getItem('selected-branch'));
-      const profile = this.appSettings.getDecryptedUserProfile();
       this.companyMasterSid = company?.CompanyMasterSid || 0;
       this.branchMasterSid = branch?.BranchMasterSid || 0;
-      this.managerName = profile?.userName || 'Sales Manager';
     } catch {
       this.companyMasterSid = 0;
       this.branchMasterSid = 0;
@@ -139,22 +151,101 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ─── FILTER EVENTS ─────────────────────────────────────────────────
+  // ─── FILTER CONTROLS ────────────────────────────────────────────
 
-  onFiltersChanged(event: { dateFrom: Date | null; dateTo: Date | null; salespersonId: number | null }) {
-    const sp = event.salespersonId
-      ? this.salespersons.find((s) => s.UserMasterSid === event.salespersonId)
+  setPreset(preset: string) {
+    this.activePreset = preset;
+    const now = new Date();
+    const noon = (y: number, m: number, d: number) => new Date(y, m, d, 12);
+    const todayNoon = noon(now.getFullYear(), now.getMonth(), now.getDate());
+
+    switch (preset) {
+      case 'today':
+        this.dateFromInput = todayNoon;
+        this.dateToInput = todayNoon;
+        break;
+      case 'week': {
+        const monday = new Date(now);
+        monday.setDate(now.getDate() - now.getDay() + 1);
+        this.dateFromInput = noon(monday.getFullYear(), monday.getMonth(), monday.getDate());
+        this.dateToInput = todayNoon;
+        break;
+      }
+      case 'month':
+        this.dateFromInput = noon(now.getFullYear(), now.getMonth(), 1);
+        this.dateToInput = todayNoon;
+        break;
+      case 'quarter': {
+        const qMonth = Math.floor(now.getMonth() / 3) * 3;
+        this.dateFromInput = noon(now.getFullYear(), qMonth, 1);
+        this.dateToInput = todayNoon;
+        break;
+      }
+      case 'fy': {
+        const fy = this.appSettings.getCurrentFinancialYear();
+        if (fy) {
+          this.dateFromInput = noon(
+            new Date(fy.StartDate).getFullYear(),
+            new Date(fy.StartDate).getMonth(),
+            new Date(fy.StartDate).getDate(),
+          );
+          const fyEnd = noon(
+            new Date(fy.EndDate).getFullYear(),
+            new Date(fy.EndDate).getMonth(),
+            new Date(fy.EndDate).getDate(),
+          );
+          this.dateToInput = fyEnd < todayNoon ? fyEnd : todayNoon;
+        } else {
+          const fyStart = now.getMonth() >= 3
+            ? noon(now.getFullYear(), 3, 1)
+            : noon(now.getFullYear() - 1, 3, 1);
+          this.dateFromInput = fyStart;
+          this.dateToInput = todayNoon;
+        }
+        break;
+      }
+    }
+
+    this.applyFilters();
+  }
+
+  onDateChange() {
+    this.activePreset = '';
+    this.applyFilters();
+  }
+
+  onSalespersonChange(event: any) {
+    this.selectedSalespersonId = event || null;
+    this.applyFilters();
+  }
+
+  resetFilters() {
+    this.selectedSalespersonId = null;
+    this.setPreset('month');
+  }
+
+  getMinDateTo(): NgbDateStruct | undefined {
+    return this.dateFromInput ? (toNgbDateStruct(this.dateFromInput) ?? undefined) : undefined;
+  }
+
+  getMaxDateFrom(): NgbDateStruct {
+    return this.dateToInput ? (toNgbDateStruct(this.dateToInput) ?? this.maxDateTo) : this.maxDateTo;
+  }
+
+  private applyFilters() {
+    const sp = this.selectedSalespersonId
+      ? this.salespersons.find((s) => s.UserMasterSid === this.selectedSalespersonId)
       : null;
 
     this.currentFilters = {
       companyMasterSid: this.companyMasterSid,
       branchMasterSid: this.branchMasterSid,
-      salespersonId: event.salespersonId || undefined,
+      salespersonId: this.selectedSalespersonId || undefined,
       salespersonEmail: sp?.userEmail || undefined,
-      dateFrom: event.dateFrom ? this.toDateTimeStr(event.dateFrom, 'start') : undefined,
-      dateTo: event.dateTo ? this.toDateTimeStr(event.dateTo, 'end') : undefined,
-      naiveDateFrom: event.dateFrom ? this.toNaiveDateTimeStr(event.dateFrom, 'start') : undefined,
-      naiveDateTo: event.dateTo ? this.toNaiveDateTimeStr(event.dateTo, 'end') : undefined,
+      dateFrom: this.dateFromInput ? this.toDateTimeStr(this.dateFromInput, 'start') : undefined,
+      dateTo: this.dateToInput ? this.toDateTimeStr(this.dateToInput, 'end') : undefined,
+      naiveDateFrom: this.dateFromInput ? this.toNaiveDateTimeStr(this.dateFromInput, 'start') : undefined,
+      naiveDateTo: this.dateToInput ? this.toNaiveDateTimeStr(this.dateToInput, 'end') : undefined,
     };
 
     this.loadAllData();
@@ -164,7 +255,7 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
     this.loadAllData();
   }
 
-  // ─── DATA LOADING ──────────────────────────────────────────────────
+  // ─── DATA LOADING ──────────────────────────────────────────────
 
   private loadAllData() {
     this.loadCounts();
@@ -206,12 +297,10 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
   private loadCharts() {
     this.chartsLoading = true;
     forkJoin({
-      heatmap: this.service.getHeatmap(this.currentFilters),
       trend: this.service.getWeeklyTrend(this.currentFilters),
       responseTimes: this.service.getResponseTimes(this.currentFilters),
     }).subscribe({
       next: (results) => {
-        this.heatmap = results.heatmap.data || [];
         this.weeklyTrend = results.trend.data || [];
         this.responseTimes = results.responseTimes.data || [];
         this.chartsLoading = false;
@@ -264,45 +353,46 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
       },
     });
 
-    // Auto-refresh every 60s
-    interval(60000)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.service.getActivityFeed(this.currentFilters).subscribe({
-          next: (resp) => {
-            this.activityFeed = resp.data || [];
-          },
+    // Auto-refresh every 60s — only start once
+    if (!this.activityRefreshStarted) {
+      this.activityRefreshStarted = true;
+      interval(60000)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          this.service.getActivityFeed(this.currentFilters).subscribe({
+            next: (resp) => {
+              this.activityFeed = resp.data || [];
+            },
+          });
         });
-      });
+    }
   }
 
-  // ─── KPI CARDS ─────────────────────────────────────────────────────
+  // ─── KPI CARDS ─────────────────────────────────────────────────
 
   private buildKpiCards() {
     if (!this.counts) return;
     const c = this.counts.counts;
     this.kpiCards = [
-      { key: 'leads', label: 'Leads — No Meeting', icon: 'fa-solid fa-user-plus', colorClass: 'leads', value: c.leadsNoMeeting, sectionNumber: 1 },
-      { key: 'meetings', label: 'Meetings Scheduled', icon: 'fa-solid fa-calendar-check', colorClass: 'meetings', value: c.meetingsScheduled, sectionNumber: 2 },
-      { key: 'followups', label: 'Follow-Ups Pending', icon: 'fa-solid fa-phone-flip', colorClass: 'followups', value: c.followUpsPending, sectionNumber: 3 },
-      { key: 'unconverted', label: 'Business Not Converted', icon: 'fa-solid fa-user-xmark', colorClass: 'unconverted', value: c.meetingsNotConverted, sectionNumber: 4 },
-      { key: 'noQuote', label: 'Customer No Quote', icon: 'fa-solid fa-file-circle-xmark', colorClass: 'no-quote', value: c.customersNoQuote, sectionNumber: 5 },
-      { key: 'enquiry', label: 'Enquiry — No Quotation', icon: 'fa-solid fa-magnifying-glass-chart', colorClass: 'enquiry', value: c.enquiriesNoQuotation, sectionNumber: 6 },
-      { key: 'pending', label: 'Quote Pending Approval', icon: 'fa-solid fa-hourglass-half', colorClass: 'pending', value: c.quotesNotApproved, sectionNumber: 7 },
-      { key: 'approved', label: 'Approved — No Booking', icon: 'fa-solid fa-circle-check', colorClass: 'approved', value: c.quotesNoBooking, sectionNumber: 8 },
+      { key: 'leads', label: 'Leads — No Meeting', icon: 'fas fa-user-plus', colorClass: 'leads', value: c.leadsNoMeeting, sectionNumber: 1 },
+      { key: 'meetings', label: 'Meetings Scheduled', icon: 'fas fa-calendar-check', colorClass: 'meetings', value: c.meetingsScheduled, sectionNumber: 2 },
+      { key: 'followups', label: 'Follow-Ups Pending', icon: 'fas fa-phone', colorClass: 'followups', value: c.followUpsPending, sectionNumber: 3 },
+      { key: 'unconverted', label: 'Business Not Converted', icon: 'fas fa-user-times', colorClass: 'unconverted', value: c.meetingsNotConverted, sectionNumber: 4 },
+      { key: 'noQuote', label: 'Customer No Quote', icon: 'fas fa-file-alt', colorClass: 'no-quote', value: c.customersNoQuote, sectionNumber: 5 },
+      { key: 'enquiry', label: 'Enquiry — No Quotation', icon: 'fas fa-search', colorClass: 'enquiry', value: c.enquiriesNoQuotation, sectionNumber: 6 },
+      { key: 'pending', label: 'Quote Pending Approval', icon: 'fas fa-hourglass-half', colorClass: 'pending', value: c.quotesNotApproved, sectionNumber: 7 },
+      { key: 'approved', label: 'Approved — No Booking', icon: 'fas fa-check-circle', colorClass: 'approved', value: c.quotesNoBooking, sectionNumber: 8 },
     ];
   }
 
-  // ─── KPI CARD CLICK → Drill-Down ──────────────────────────────────
+  // ─── KPI CARD CLICK → Drill-Down ──────────────────────────────
 
   onKpiCardClicked(card: KpiCardConfig) {
-    // Open drill-down showing team-level section data
-    // For now, scroll to scoreboard
     const el = document.getElementById('scoreboard-section');
     el?.scrollIntoView({ behavior: 'smooth' });
   }
 
-  // ─── SCOREBOARD ACTIONS ────────────────────────────────────────────
+  // ─── SCOREBOARD ACTIONS ────────────────────────────────────────
 
   onScoreboardRowClicked(row: ScoreboardRow) {
     const modalRef = this.modalService.open(SmDrillDownModalComponent, { size: 'xl', centered: true });
@@ -327,12 +417,12 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
             .subscribe({
               next: (resp) => {
                 if (resp.status) {
-                  this.toastr.success(resp.message || 'Reminder sent');
+                  this.appSettings.showSuccess(resp.message || 'Reminder sent');
                 } else {
-                  this.toastr.error(resp.message || 'Failed to send reminder');
+                  this.appSettings.showError(resp.message || 'Failed to send reminder');
                 }
               },
-              error: () => this.toastr.error('Failed to send reminder'),
+              error: () => this.appSettings.showError('Failed to send reminder'),
             });
         }
       },
@@ -340,14 +430,13 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
     );
   }
 
-  // ─── MEETINGS BOARD ACTIONS ────────────────────────────────────────
+  // ─── MEETINGS BOARD ACTIONS ────────────────────────────────────
 
   onMeetingClicked(meeting: any) {
-    // Open reassign modal for the meeting
     this.openReassignModal(meeting);
   }
 
-  // ─── MODAL HELPERS ─────────────────────────────────────────────────
+  // ─── MODAL HELPERS ─────────────────────────────────────────────
 
   openReassignModal(meeting: any) {
     const modalRef = this.modalService.open(SmReassignModalComponent, { centered: true });
@@ -369,14 +458,14 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
             .subscribe({
               next: (resp) => {
                 if (resp.status) {
-                  this.toastr.success('Lead reassigned successfully');
+                  this.appSettings.showSuccess('Lead reassigned successfully');
                   this.loadMeetingsBoard();
                   this.loadScoreboard();
                 } else {
-                  this.toastr.error(resp.message || 'Reassignment failed');
+                  this.appSettings.showError(resp.message || 'Reassignment failed');
                 }
               },
-              error: () => this.toastr.error('Reassignment failed'),
+              error: () => this.appSettings.showError('Reassignment failed'),
             });
         }
       },
@@ -402,15 +491,15 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
             .subscribe({
               next: (resp) => {
                 if (resp.status) {
-                  this.toastr.success('Meeting created successfully');
+                  this.appSettings.showSuccess('Meeting created successfully');
                   this.loadCounts();
                   this.loadMeetingsBoard();
                   this.loadScoreboard();
                 } else {
-                  this.toastr.error(resp.message || 'Failed to create meeting');
+                  this.appSettings.showError(resp.message || 'Failed to create meeting');
                 }
               },
-              error: () => this.toastr.error('Failed to create meeting'),
+              error: () => this.appSettings.showError('Failed to create meeting'),
             });
         }
       },
@@ -418,7 +507,7 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
     );
   }
 
-  // ─── DATE UTILITIES ────────────────────────────────────────────────
+  // ─── DATE UTILITIES ────────────────────────────────────────────
 
   private toDateTimeStr(date: Date, boundary: 'start' | 'end'): string {
     const d = new Date(date);

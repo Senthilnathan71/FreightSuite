@@ -1,55 +1,102 @@
-<!-- ═══ DARK HEADER ZONE ═══ -->
-<div class="dashboard-header">
-  <div class="header-top">
-    <div class="header-title">
-      <h1>Sales Manager Dashboard</h1>
-      <span class="header-subtitle">{{ managerName }} &middot; Team Performance Overview</span>
+<div class="sm-dashboard-container">
+  <!-- HERO -->
+  <div class="hero">
+    <svg class="hero-svg" viewBox="0 0 1420 130" aria-hidden="true">
+      <defs>
+        <symbol id="cargoShip" viewBox="0 0 200 80">
+          <g fill="white">
+            <path d="M10 55 Q15 72 40 72 L160 72 Q185 72 190 55 L180 55 L170 40 L30 40 L20 55 Z" opacity="0.9"/>
+            <rect x="130" y="20" width="30" height="20" rx="3" opacity="0.8"/>
+            <rect x="40" y="28" width="18" height="12" rx="2" opacity="0.7"/>
+            <rect x="62" y="28" width="18" height="12" rx="2" opacity="0.6"/>
+            <rect x="84" y="28" width="18" height="12" rx="2" opacity="0.5"/>
+            <rect x="50" y="14" width="18" height="14" rx="2" opacity="0.4"/>
+            <rect x="72" y="14" width="18" height="14" rx="2" opacity="0.35"/>
+            <rect x="145" y="10" width="6" height="10" rx="1" opacity="0.6"/>
+            <circle cx="148" cy="6" r="3" opacity="0.25"/>
+            <circle cx="152" cy="3" r="2.5" opacity="0.18"/>
+          </g>
+        </symbol>
+      </defs>
+      <g class="ship-main" opacity=".18"><use href="#cargoShip" width="200" height="80"></use></g>
+      <g class="ship-back" opacity=".10"><use href="#cargoShip" width="160" height="64"></use></g>
+    </svg>
+    <div class="hero-content">
+      <div class="hero-text-block">
+        <h1>Sales Manager Dashboard</h1>
+        <p>Team performance overview &mdash; manage leads, meetings &amp; conversions</p>
+        <div class="hero-refresh-meta" *ngIf="lastUpdated">
+          Last refreshed {{ lastUpdated | date:'dd MMM yyyy, h:mm a' }}
+        </div>
+      </div>
+      <button class="hero-refresh-btn" type="button" (click)="onRefresh()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
+        Refresh
+      </button>
     </div>
   </div>
 
-  <!-- Filter Bar -->
-  <app-sm-filters
-    [salespersons]="salespersons"
-    [lastUpdated]="lastUpdated"
-    (filtersChanged)="onFiltersChanged($event)"
-    (refreshClicked)="onRefresh()">
-  </app-sm-filters>
+  <div class="content">
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <div class="filter-group filter-group--date">
+        <label>From</label>
+        <div class="compact-date-wrap">
+          <input class="form-control compact-date-input" placeholder="From"
+                 ngbDatepicker #dpFrom="ngbDatepicker"
+                 [(ngModel)]="dateFromInput" (ngModelChange)="onDateChange()"
+                 [maxDate]="getMaxDateFrom()" (click)="dpFrom.toggle()" readonly />
+          <button class="compact-date-toggle" (click)="dpFrom.toggle()" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="#05608D" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="filter-group filter-group--date">
+        <label>To</label>
+        <div class="compact-date-wrap">
+          <input class="form-control compact-date-input" placeholder="To"
+                 ngbDatepicker #dpTo="ngbDatepicker"
+                 [(ngModel)]="dateToInput" (ngModelChange)="onDateChange()"
+                 [minDate]="getMinDateTo()" [maxDate]="maxDateTo"
+                 (click)="dpTo.toggle()" readonly />
+          <button class="compact-date-toggle" (click)="dpTo.toggle()" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="#05608D" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="filter-group filter-group--sp">
+        <label>Salesperson</label>
+        <dofi-searchable-dropdown
+          [items]="salespersons" bindLabel="userName" bindValue="UserMasterSid"
+          [displayFields]="['userName', 'userEmail']" [displayLabels]="['Name', 'Email']"
+          placeholder="All Salespersons" [clearable]="true"
+          style="min-width: 200px; max-width: 260px;"
+          (itemSelected)="onSalespersonChange($event)">
+        </dofi-searchable-dropdown>
+      </div>
+      <div class="preset-buttons">
+        <button class="preset-btn" [class.active]="activePreset === 'today'" (click)="setPreset('today')">Today</button>
+        <button class="preset-btn" [class.active]="activePreset === 'week'" (click)="setPreset('week')">This Week</button>
+        <button class="preset-btn" [class.active]="activePreset === 'month'" (click)="setPreset('month')">This Month</button>
+        <button class="preset-btn" [class.active]="activePreset === 'quarter'" (click)="setPreset('quarter')">This Qtr</button>
+        <button class="preset-btn" [class.active]="activePreset === 'fy'" (click)="setPreset('fy')">FY</button>
+        <button class="preset-btn reset" (click)="resetFilters()">Reset</button>
+      </div>
+    </div>
 
-  <!-- KPI Cards -->
-  <app-sm-kpi-cards
-    [cards]="kpiCards"
-    [loading]="countsLoading"
-    (cardClicked)="onKpiCardClicked($event)">
-  </app-sm-kpi-cards>
-</div>
+    <!-- KPI Cards -->
+    <app-sm-kpi-cards [cards]="kpiCards" [loading]="countsLoading" (cardClicked)="onKpiCardClicked($event)"></app-sm-kpi-cards>
 
-<!-- ═══ WHITE CARD GRID ═══ -->
-<div class="dashboard-body">
+    <!-- Funnel + Lead Source -->
+    <div class="row-2col">
+      <app-sm-funnel-chart [data]="counts?.funnel || null"></app-sm-funnel-chart>
+      <app-sm-lead-source-chart [data]="counts?.leadSourceDistribution || []"></app-sm-lead-source-chart>
+    </div>
 
-  <!-- Row 1: Conversion Funnel + Weekly Trend -->
-  <div class="grid-row two-col">
-    <app-sm-funnel-chart
-      [data]="counts?.funnel || null">
-    </app-sm-funnel-chart>
+    <!-- 12-Week Trend -->
+    <app-sm-trend-chart [data]="weeklyTrend"></app-sm-trend-chart>
 
-    <app-sm-trend-chart
-      [data]="weeklyTrend">
-    </app-sm-trend-chart>
-  </div>
-
-  <!-- Row 2: Lead Source + Heatmap -->
-  <div class="grid-row two-col">
-    <app-sm-lead-source-chart
-      [data]="counts?.leadSourceDistribution || []">
-    </app-sm-lead-source-chart>
-
-    <app-sm-heatmap-chart
-      [data]="heatmap">
-    </app-sm-heatmap-chart>
-  </div>
-
-  <!-- Meetings Board (full width) -->
-  <div class="grid-row full-width">
+    <!-- Meetings Board -->
     <app-sm-meetings-board
       [overdue]="meetingsBoard?.overdue || { items: [], totalCount: 0 }"
       [today]="meetingsBoard?.today || { items: [], totalCount: 0 }"
@@ -58,47 +105,29 @@
       (meetingClicked)="onMeetingClicked($event)"
       (reassignClicked)="openReassignModal($event)">
     </app-sm-meetings-board>
+
+    <!-- Scoreboard -->
+    <div id="scoreboard-section">
+      <app-sm-scoreboard
+        [rows]="scoreboard" [loading]="scoreboardLoading"
+        (rowClicked)="onScoreboardRowClicked($event)"
+        (remindClicked)="onScoreboardRemindClicked($event)">
+      </app-sm-scoreboard>
+    </div>
+
+    <!-- Radar + Response Times -->
+    <div class="row-2col">
+      <app-sm-radar-chart [scoreboard]="scoreboard"></app-sm-radar-chart>
+      <app-sm-response-times [data]="responseTimes"></app-sm-response-times>
+    </div>
+
+    <!-- Alerts + Aging -->
+    <div class="row-2col">
+      <app-sm-alerts [alerts]="alerts" [loading]="alertsLoading"></app-sm-alerts>
+      <app-sm-aging-chart [data]="aging"></app-sm-aging-chart>
+    </div>
+
+    <!-- Activity Feed -->
+    <app-sm-activity-feed [items]="activityFeed" [loading]="activityLoading"></app-sm-activity-feed>
   </div>
-
-  <!-- Scoreboard (full width) -->
-  <div class="grid-row full-width" id="scoreboard-section">
-    <app-sm-scoreboard
-      [rows]="scoreboard"
-      [loading]="scoreboardLoading"
-      (rowClicked)="onScoreboardRowClicked($event)"
-      (remindClicked)="onScoreboardRemindClicked($event)">
-    </app-sm-scoreboard>
-  </div>
-
-  <!-- Row 3: Radar + Response Times -->
-  <div class="grid-row two-col">
-    <app-sm-radar-chart
-      [scoreboard]="scoreboard">
-    </app-sm-radar-chart>
-
-    <app-sm-response-times
-      [data]="responseTimes">
-    </app-sm-response-times>
-  </div>
-
-  <!-- Row 4: Alerts + Aging -->
-  <div class="grid-row two-col">
-    <app-sm-alerts
-      [alerts]="alerts"
-      [loading]="alertsLoading">
-    </app-sm-alerts>
-
-    <app-sm-aging-chart
-      [data]="aging">
-    </app-sm-aging-chart>
-  </div>
-
-  <!-- Activity Feed (full width) -->
-  <div class="grid-row full-width">
-    <app-sm-activity-feed
-      [items]="activityFeed"
-      [loading]="activityLoading">
-    </app-sm-activity-feed>
-  </div>
-
 </div>

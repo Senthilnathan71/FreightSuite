@@ -3,24 +3,23 @@
   border-radius: 10px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  padding: 20px;
+  padding: 10px;
+  height: 100%;
 }
 .section-title {
-  font-size: 15px; font-weight: 700; margin-bottom: 14px;
-  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 700; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 6px;
 }
 .title-icon {
-  width: 28px; height: 28px; border-radius: 6px;
-  display: flex; align-items: center; justify-content: center; font-size: 13px;
+  width: 22px; height: 22px; border-radius: 5px;
+  display: flex; align-items: center; justify-content: center; font-size: 11px;
 }
 .selectors {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
 }
 .person-select {
-  flex: 1; padding: 6px 10px; font-size: 12px; border: 1px solid #e2e8f0;
-  border-radius: 6px; font-family: inherit; color: #334155; background: #fff;
+  flex: 1; padding: 4px 8px; font-size: 11px; border: 1px solid #e2e8f0;
+  border-radius: 5px; font-family: inherit; color: #334155; background: #fff;
 }
-.vs {
-  font-size: 12px; font-weight: 600; color: #94a3b8;
-}
-.empty-state { text-align: center; padding: 40px; color: #94a3b8; font-size: 13px; }
+.vs { font-size: 11px; font-weight: 600; color: #94a3b8; }
+.empty-state { text-align: center; padding: 24px; color: #94a3b8; font-size: 12px; }

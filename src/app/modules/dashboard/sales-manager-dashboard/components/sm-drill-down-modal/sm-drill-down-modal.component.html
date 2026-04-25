@@ -48,7 +48,7 @@
     <div *ngIf="activeTab > 0">
       <!-- Search -->
       <div class="search-bar">
-        <i class="fa-solid fa-magnifying-glass"></i>
+        <i class="fas fa-magnifying-glass"></i>
         <input type="text" [(ngModel)]="searchTerm" placeholder="Search items..." (keyup.enter)="onSearch()">
         <button class="search-btn" (click)="onSearch()">Search</button>
       </div>
@@ -61,7 +61,7 @@
 
       <!-- Empty -->
       <div class="empty-state" *ngIf="!sectionLoading && sectionData.length === 0">
-        <i class="fa-solid fa-inbox"></i>
+        <i class="fas fa-inbox"></i>
         <p>No items found for this section.</p>
       </div>
 
@@ -103,13 +103,13 @@
       <!-- Pagination -->
       <div class="pagination" *ngIf="totalPages > 1">
         <button class="page-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
-          <i class="fa-solid fa-chevron-left"></i>
+          <i class="fas fa-chevron-left"></i>
         </button>
         <button *ngFor="let p of pages" class="page-btn" [class.active]="p === currentPage" (click)="onPageChange(p)">
           {{ p }}
         </button>
         <button class="page-btn" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)">
-          <i class="fa-solid fa-chevron-right"></i>
+          <i class="fas fa-chevron-right"></i>
         </button>
         <span class="page-info">{{ totalCount }} items</span>
       </div>

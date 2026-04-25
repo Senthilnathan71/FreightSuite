@@ -18,15 +18,15 @@ export class SmDrillDownModalComponent implements OnInit {
 
   activeTab = 0;
   tabs = [
-    { id: 0, label: 'Overview', icon: 'fa-solid fa-chart-pie' },
-    { id: 1, label: 'S1 — Leads', icon: 'fa-solid fa-user-plus' },
-    { id: 2, label: 'S2 — Meetings', icon: 'fa-solid fa-calendar-check' },
-    { id: 3, label: 'S3 — Follow-ups', icon: 'fa-solid fa-phone-flip' },
-    { id: 4, label: 'S4 — Not Converted', icon: 'fa-solid fa-user-xmark' },
-    { id: 5, label: 'S5 — No Quote', icon: 'fa-solid fa-file-circle-xmark' },
-    { id: 6, label: 'S6 — No Quotation', icon: 'fa-solid fa-magnifying-glass-chart' },
-    { id: 7, label: 'S7 — Pending', icon: 'fa-solid fa-hourglass-half' },
-    { id: 8, label: 'S8 — No Booking', icon: 'fa-solid fa-circle-check' },
+    { id: 0, label: 'Overview', icon: 'fas fa-chart-pie' },
+    { id: 1, label: 'S1 — Leads', icon: 'fas fa-user-plus' },
+    { id: 2, label: 'S2 — Meetings', icon: 'fas fa-calendar-check' },
+    { id: 3, label: 'S3 — Follow-ups', icon: 'fas fa-phone-alt' },
+    { id: 4, label: 'S4 — Not Converted', icon: 'fas fa-user-times' },
+    { id: 5, label: 'S5 — No Quote', icon: 'fas fa-file-alt' },
+    { id: 6, label: 'S6 — No Quotation', icon: 'fas fa-search-plus' },
+    { id: 7, label: 'S7 — Pending', icon: 'fas fa-hourglass-half' },
+    { id: 8, label: 'S8 — No Booking', icon: 'fas fa-check-circle' },
   ];
 
   sectionData: any[] = [];
@@ -124,14 +124,14 @@ export class SmDrillDownModalComponent implements OnInit {
   getOverviewCards(): { label: string; value: number; icon: string; color: string }[] {
     const sp = this.salesperson;
     return [
-      { label: 'Leads - No Meeting', value: sp.s1, icon: 'fa-solid fa-user-plus', color: '#3b82f6' },
-      { label: 'Meetings Scheduled', value: sp.s2, icon: 'fa-solid fa-calendar-check', color: '#8b5cf6' },
-      { label: 'Follow-Ups Pending', value: sp.s3, icon: 'fa-solid fa-phone-flip', color: '#f59e0b' },
-      { label: 'Not Converted', value: sp.s4, icon: 'fa-solid fa-user-xmark', color: '#ef4444' },
-      { label: 'Customer No Quote', value: sp.s5, icon: 'fa-solid fa-file-circle-xmark', color: '#06b6d4' },
-      { label: 'Enquiry No Quotation', value: sp.s6, icon: 'fa-solid fa-magnifying-glass-chart', color: '#10b981' },
-      { label: 'Quote Pending', value: sp.s7, icon: 'fa-solid fa-hourglass-half', color: '#f97316' },
-      { label: 'Approved No Booking', value: sp.s8, icon: 'fa-solid fa-circle-check', color: '#6366f1' },
+      { label: 'Leads - No Meeting', value: sp.s1, icon: 'fas fa-user-plus', color: '#3b82f6' },
+      { label: 'Meetings Scheduled', value: sp.s2, icon: 'fas fa-calendar-check', color: '#8b5cf6' },
+      { label: 'Follow-Ups Pending', value: sp.s3, icon: 'fas fa-phone-alt', color: '#f59e0b' },
+      { label: 'Not Converted', value: sp.s4, icon: 'fas fa-user-times', color: '#ef4444' },
+      { label: 'Customer No Quote', value: sp.s5, icon: 'fas fa-file-alt', color: '#06b6d4' },
+      { label: 'Enquiry No Quotation', value: sp.s6, icon: 'fas fa-search-plus', color: '#10b981' },
+      { label: 'Quote Pending', value: sp.s7, icon: 'fas fa-hourglass-half', color: '#f97316' },
+      { label: 'Approved No Booking', value: sp.s8, icon: 'fas fa-check-circle', color: '#6366f1' },
     ];
   }
 }

@@ -17,9 +17,10 @@ export class SmTrendChartComponent implements OnChanges {
 
   ngOnChanges() {
     if (!this.data?.length) return;
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const categories = this.data.map(d => {
       const date = new Date(d.weekStart);
-      return `${date.getDate()}/${date.getMonth() + 1}`;
+      return `${date.getDate()} ${months[date.getMonth()]}`;
     });
 
     this.chartOptions = {

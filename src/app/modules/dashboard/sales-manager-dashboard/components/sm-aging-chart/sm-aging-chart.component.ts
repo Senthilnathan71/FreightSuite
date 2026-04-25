@@ -24,7 +24,7 @@ export class SmAgingChartComponent implements OnChanges {
         { name: '31-60 days', data: this.data.map(d => d.days31to60) },
         { name: '60+ days', data: this.data.map(d => d.days60plus) },
       ],
-      chart: { type: 'bar', height: Math.max(220, this.data.length * 50), stacked: true, toolbar: { show: false }, fontFamily: 'Inter, sans-serif' },
+      chart: { type: 'bar', height: Math.min(350, Math.max(220, this.data.length * 50)), stacked: true, toolbar: { show: false }, fontFamily: 'Inter, sans-serif' },
       plotOptions: { bar: { horizontal: true, borderRadius: 3, barHeight: '65%' } },
       colors: ['#16a34a', '#f59e0b', '#f97316', '#ef4444'],
       xaxis: {
