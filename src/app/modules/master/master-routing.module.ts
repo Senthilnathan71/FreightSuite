@@ -72,6 +72,7 @@ import { DocumnetGenerationListComponent } from './document-number-generation/do
 import { DocumnetGenerationEntryComponent } from './document-number-generation/documnet-generation-entry/documnet-generation-entry.component';
 import { ContainerActivityListComponent } from './container-activity/container-activity-list/container-activity-list.component';
 import { ContainerActivityEntryComponent } from './container-activity/container-activity-entry/container-activity-entry.component';
+import { UserActivityConfigurationComponent } from './user-activity-configuration/user-activity-configuration.component';
 import { ReportMasterEntryComponent } from '../../master/components/report-master-entry/report-master-entry.component';
 import { ReportMasterListComponent } from '../../master/components/report-master-list/report-master-list.component';
 import { ReportParameterConfigComponent } from '../../master/components/report-parameter-config/report-parameter-config.component';
@@ -1146,7 +1147,19 @@ export const MasterRoutes: Routes = [
         { title: 'Container Activity' },
       ]
     }
-  },  
+  },
+  {
+    path: 'user-activity-configuration',
+    component: UserActivityConfigurationComponent,
+    data: {
+      title: 'User Activity Configuration',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'User Activity Configuration' },
+      ],
+    },
+  },
+
   {
     path: 'report-master/list',
     component: ReportMasterListComponent,
