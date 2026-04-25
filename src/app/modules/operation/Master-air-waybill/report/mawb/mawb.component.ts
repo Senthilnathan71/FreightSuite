@@ -168,18 +168,27 @@ export class MAWBComponent implements OnChanges {
   }
 
   handleCharges() {
-    this.costRevenueCharges = this.masterAirWayData.costRevenueCharges || [];
+    this.costRevenueCharges = (this.masterAirWayData?.costRevenueCharges || []).map((charge: any) => {
+      const chargeMaster = charge?.chargeMaster || this.chargeList?.find(
+        (item: any) => item?.ChargeMasterSid === charge?.ChargeMasterSid
+      );
+      return {
+        ...charge,
+        chargeMaster
+      };
+    });
     const filteredCharges = this.costRevenueCharges.filter(cost => !!cost.ChargeMasterSid);
     console.log("Filtered Charges", filteredCharges);
 
     this.freightCharges = filteredCharges.filter(cr => this.isWeightCharge(cr));
 
     console.log("only freight charges", this.freightCharges);
-     this.otherCharges = filteredCharges.filter(c => !this.isWeightCharge(c));
-    this.otherCharges1 = filteredCharges.filter(c => {
+    this.otherCharges = filteredCharges.filter(c => !this.isWeightCharge(c));
+    const groupedOtherCharges = filteredCharges.filter(c => {
       const chargeGroupName = String(c.chargeMaster?.chargeGroup?.GroupName || '').trim().toLowerCase();
       return chargeGroupName === 'other';
     });
+    this.otherCharges1 = groupedOtherCharges.length ? groupedOtherCharges : this.otherCharges;
 
     console.log("Other Charges", this.otherCharges)
     this.dueCarrierCharges = filteredCharges.filter(c => this.isCarrierCharge(c));
@@ -196,23 +205,44 @@ export class MAWBComponent implements OnChanges {
 
   private isCarrierCharge(charge: any): boolean {
     const groupName = String(charge?.chargeMaster?.chargeGroup?.GroupName || '').toLowerCase();
-    const chargeName = String(charge?.chargeMaster?.ChargeName || charge?.chargeMaster?.chargeName || '').toLowerCase();
-    const chargeCode = String(charge?.chargeMaster?.ChargeCode || charge?.chargeMaster?.chargeCode || '').toLowerCase();
+    const chargeName = String(
+      charge?.chargeMaster?.ChargeName ||
+      charge?.chargeMaster?.chargeName ||
+      charge?.ChargeDescription ||
+      ''
+    ).toLowerCase();
+    const chargeCode = String(
+      charge?.chargeMaster?.ChargeCode ||
+      charge?.chargeMaster?.chargeCode ||
+      charge?.chargeCode ||
+      ''
+    ).toLowerCase();
  
     return groupName.includes('freight') ||
       groupName.includes('airline') ||
       chargeName.includes('surcharge') ||
       chargeName.includes('freight') ||
-      chargeCode.includes('freight');
+      chargeCode.includes('freight') ||
+      chargeCode.includes('frt');
   }
 
   private isWeightCharge(charge: any): boolean {
     const groupName = String(charge?.chargeMaster?.chargeGroup?.GroupName || '').toLowerCase();
-    const chargeName = String(charge?.chargeMaster?.ChargeName || charge?.chargeMaster?.chargeName || charge?.ChargeDescription || '').toLowerCase();
-    const chargeCode = String(charge?.chargeMaster?.ChargeCode || charge?.chargeMaster?.chargeCode || '').toLowerCase();
+    const chargeName = String(
+      charge?.chargeMaster?.ChargeName ||
+      charge?.chargeMaster?.chargeName ||
+      charge?.ChargeDescription ||
+      ''
+    ).toLowerCase();
+    const chargeCode = String(
+      charge?.chargeMaster?.ChargeCode ||
+      charge?.chargeMaster?.chargeCode ||
+      charge?.chargeCode ||
+      ''
+    ).toLowerCase();
  
     // Weight charge bucket should contain freight line items only.
-    return groupName.includes('freight') &&
+    return (groupName.includes('freight') || chargeName.includes('freight') || chargeCode.includes('frt')) &&
       (chargeName.includes('freight') || chargeCode.includes('frt'));
   }
   getBankDetails() {
@@ -1446,7 +1476,7 @@ getOtherPrepaidTotal(): number {
 
       // Routing
       field(147, -256, data?.POD || '', { width: 15, alignment: 'center' }),
-      field(147, -190, voyage?.CarrierName || '', { width: 60, alignment: 'center' }),
+      field(147, -190, voyage?.CarrierName || data?.CarrierName , { width: 60, alignment: 'center' }),
       field(147, -90, this.getPortCodeByName(data?.masterJobConnection?.[0]?.POD) || '', { width: 15, alignment: 'center' }),
       field(147, -68, data?.masterJobConnection?.[0]?.VesselName || '', { width: 15, alignment: 'center' }),
       field(147, -40, this.getPortCodeByName(data?.masterJobConnection?.[1]?.POD) || '', { width: 15, alignment: 'center' }),

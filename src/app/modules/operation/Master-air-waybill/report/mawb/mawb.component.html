@@ -107,7 +107,7 @@
                         {{ masterAirWayData?.POD }}
                     </div>
                     <div class="data-field routing-carrier1">
-                        {{ masterAirWayData?.voyages?.[0]?.CarrierName }}
+                        {{ masterAirWayData?.voyages?.[0]?.CarrierName || masterAirWayData?.CarrierName}}
                     </div>
                    <div class="data-field routing-to2">
                     {{ getPortCodeByName(masterAirWayData?.masterJobConnection?.[0]?.POD) }}

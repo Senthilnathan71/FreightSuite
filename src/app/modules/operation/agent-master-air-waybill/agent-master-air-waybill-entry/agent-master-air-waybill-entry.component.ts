@@ -5025,8 +5025,30 @@ ${this.userData['userName']}`;
     }
 
     const master = source.masterJob || this.masterJobData || {};
-    const masterConnections = master.masterJobConnection || source.masterJobConnection || [];
+    const masterConnections = (
+      master.masterJobConnection ||
+      source.masterJobConnection ||
+      source.Connections ||
+      []
+    ).filter((connection: any) => !connection?.status || connection.status === 'A');
     const voyages = master.voyages || source.voyages || [];
+    const cargoList = source.Cargo || source.houseJobCargo || [];
+    const firstCargo = cargoList?.[0] || {};
+    const aggregatedTotals = cargoList.reduce(
+      (acc: any, cargo: any) => {
+        acc.NoOfPkg += Number(cargo?.NoOfPackage || 0);
+        acc.GrossWeight += Number(cargo?.GrossWeight || 0);
+        acc.ChargeableWeight += Number(cargo?.ChargeableWeight || 0);
+        acc.Volume += Number(cargo?.Volume || 0);
+        return acc;
+      },
+      {
+        NoOfPkg: 0,
+        GrossWeight: 0,
+        ChargeableWeight: 0,
+        Volume: 0
+      }
+    );
     const houseJobs = Array.isArray(master.houseJob)
       ? master.houseJob
       : [source];
@@ -5040,12 +5062,22 @@ ${this.userData['userName']}`;
       POL: master.POL || source.POL || '',
       POD: master.POD || source.POD || '',
       FPD: master.FPD || source.FPD || '',
+      CarrierName: voyages?.[0]?.CarrierName || source?.CarrierName || '',
       FreightPPCC: master.FreightPPCC || source.FreightTerms || source.FreightPPCC || '',
-      DestinationAgent: master.DestinationAgent || source.DestinationAgent || null,
+      DestinationAgent: master.DestinationAgent || source.DestinationAgent || '',
       DestinationAgentAddress: master.DestinationAgentAddress || source.AgentAddress || '',
-      CommodityDescription: master.CommodityDescription || source.CommodityDescription || '',
-      MarksandNumber: master.MarksandNumber || source.MarksandNumber || '',
+      CommodityDescription:
+        master.CommodityDescription ||
+        source.CommodityDescription ||
+        firstCargo.CommodityDescription ||
+        '',
+      MarksandNumber:
+        master.MarksandNumber ||
+        source.MarksandNumber ||
+        firstCargo.MarksAndNumber ||
+        '',
       voyages,
+      aggregatedTotals,
       masterJobConnection: masterConnections,
       costRevenueCharges: source.costRevenueCharges || master.costRevenueCharges || [],
       houseJob: houseJobs
