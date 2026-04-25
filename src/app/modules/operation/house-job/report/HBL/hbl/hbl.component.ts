@@ -64,6 +64,71 @@ export class HblComponent {
     public mps: MenuPermissionService
   ) {}
 
+  private isSwitchBLEnabled(): boolean {
+    const switchBL =
+      this.housejobData?.Others?.[0]?.SwitchBL ??
+      this.housejobData?.houseJobProxy?.[0]?.SwitchBL ??
+      this.housejobData?.HouseJobProxy?.[0]?.SwitchBL ??
+      this.housejobData?.Proxy?.[0]?.SwitchBL ??
+      this.housejobData?.SwitchBL;
+
+    return String(switchBL || '').toUpperCase() === 'Y';
+  }
+
+  private getProxyPrintData(): any {
+    return (
+      this.housejobData?.HouseJobProxy?.[0] ||
+      this.housejobData?.houseJobProxy?.[0] ||
+      this.housejobData?.Proxy?.[0] ||
+      this.housejobData?.Others?.[0] ||
+      null
+    );
+  }
+
+  private getPrintValue(primaryValue: any, proxyValue: any): string {
+    const hasProxyValue =
+      proxyValue !== null &&
+      proxyValue !== undefined &&
+      String(proxyValue).trim() !== '';
+
+    const value = this.isSwitchBLEnabled()
+      ? (hasProxyValue ? proxyValue : primaryValue)
+      : primaryValue;
+    return value === null || value === undefined ? '' : String(value);
+  }
+
+  getShipperNameForPrint(): string {
+    const proxy = this.getProxyPrintData();
+    return this.getPrintValue(this.housejobData?.ShipperName, proxy?.ShipperName);
+  }
+
+  getShipperAddressForPrint(): string {
+    const proxy = this.getProxyPrintData();
+    return this.getPrintValue(this.housejobData?.ShipperAddress, proxy?.ShipperAddress);
+  }
+
+  getConsigneeNameForPrint(): string {
+    const proxy = this.getProxyPrintData();
+    return this.getPrintValue(this.housejobData?.ConsigneeName, proxy?.ConsigneeName);
+  }
+
+  getConsigneeAddressForPrint(): string {
+    const proxy = this.getProxyPrintData();
+    return this.getPrintValue(this.housejobData?.ConsigneeAddress, proxy?.ConsigneeAddress);
+  }
+
+  getAgentNameForPrint(): string {
+    const proxy = this.getProxyPrintData();
+    const proxyAgentName = proxy?.AgentName || proxy?.DestinationAgentName;
+    const primaryAgentName = this.getDestinationAgentName(this.housejobData?.DestinationAgent);
+    return this.getPrintValue(primaryAgentName, proxyAgentName);
+  }
+
+  getAgentAddressForPrint(): string {
+    const proxy = this.getProxyPrintData();
+    return this.getPrintValue(this.housejobData?.AgentAddress, proxy?.AgentAddress);
+  }
+
   ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
     this.currentCompany = this.appSettingService.decrypt(
