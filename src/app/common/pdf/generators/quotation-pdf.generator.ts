@@ -349,19 +349,27 @@ function buildChargeTable(charges: any[], showAgreedRate: boolean): any {
   };
 }
 
-function buildTermsSection(data: QuotationPdfData): any {
-  const termValues = (data.terms || [])
-    .map((term: any) => (typeof term === 'string' ? term : (term?.content || term?.TandC || '')))
-    .filter((value: string) => !!value);
+function getTermText(term: any): string {
+  if (typeof term === 'string') {
+    return term.trim();
+  }
 
-  // if (!termValues.length) {
-  //   return { text: '' };
-  // }
+  return (term?.content || term?.TandC || term?.Terms || '').trim();
+}
+
+function getUniqueTerms(terms: any[]): string[] {
+  return (terms || [])
+    .map((term: any) => getTermText(term))
+    .filter((term: string, index: number, arr: string[]) => !!term && arr.indexOf(term) === index);
+}
+
+function buildTermsSection(data: QuotationPdfData): any {
+  const termValues = getUniqueTerms(data.terms || []);
 
   return {
     stack: [
-      { text: 'Terms and Conditions', bold: true, margin: [10, 2, 0, 2] },
-      { ul: termValues, margin: [12, 0, 0, 10] }
+      { text: 'Terms and Conditions', bold: true, margin: [10, 10, 0, 2] },
+      { ul: termValues, fontSize: 8, margin: [12, 0, 0, 10] }
     ]
   };
 }
@@ -487,6 +495,7 @@ export function transformQuotationApiData(
 ): QuotationPdfData {
   const quotation = apiData || {};
   const routes = quotation.quoteRoute || [];
+  const normalizedTerms = getUniqueTerms(quotation.terms || []);
 
   return {
     company: {
@@ -547,8 +556,8 @@ export function transformQuotationApiData(
         noOfContainers: cargo.Qty ?? cargo.NoofContainers ?? 0
       }))
     })),
-    terms: (quotation.terms || []).map((term: any) => ({
-      content: term?.TandC || term?.content || ''
+    terms: normalizedTerms.map((term: string) => ({
+      content: term
     })),
     currencyMaster: lookups?.currencyMaster || [],
     chargeUnitMaster: lookups?.chargeUnitMaster || [],

@@ -209,6 +209,7 @@ export class QuotationEntryComponent implements OnInit {
     showPdfLogo: boolean = true;
     isSaving: boolean = false;
     isTermsAndConditionsEnabled: boolean = true;
+    printTermsList: any[] = [];
 
   // PDF caching properties for performance optimization
   private cachedPdfBlob: Blob | null = null;
@@ -5077,6 +5078,7 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
   }
 
   reportAndEmailModel(content: TemplateRef<any>) {
+    this.prepareTermsForPrint();
     this.ngbModal.open(content, {
       size: 'xl',
       scrollable: true,
@@ -5266,10 +5268,11 @@ ${this.userData['userEmail']}`;
       return null;
     }
 
+    const terms = await this.prepareTermsForPrint();
     const logo = await this.resolveReportLogo();
     const apiData = {
       ...this.selectedItem,
-      terms: this.selectedItem?.terms?.length ? this.selectedItem.terms : this.TandCList
+      terms
     };
 
     const pdfData = transformQuotationApiData(
@@ -5289,6 +5292,94 @@ ${this.userData['userEmail']}`;
 
     const documentType = this.selectedItem?.IsContract === 'Y' ? 'contract' : 'quotation';
     return generateQuotationDocument(pdfData, documentType as any);
+  }
+
+  private getTermDisplayText(term: any): string {
+    return (term?.TandC || term?.Terms || term?.content || '').trim();
+  }
+
+  private isSameTerm(a: any, b: any): boolean {
+    const aText = this.getTermDisplayText(a).toLowerCase();
+    const bText = this.getTermDisplayText(b).toLowerCase();
+
+    return (
+      (a?.TandCTransactionSid &&
+        b?.TandCTransactionSid &&
+        a.TandCTransactionSid === b.TandCTransactionSid) ||
+      (aText !== '' &&
+        aText === bText &&
+        (a?.DocumentSid ?? this.QuoteHeaderSid ?? null) ===
+          (b?.DocumentSid ?? this.QuoteHeaderSid ?? null))
+    );
+  }
+
+  private getUniqueTerms(terms: any[]): any[] {
+    return (terms || []).filter((item: any, index: number, arr: any[]) => {
+      const text = this.getTermDisplayText(item);
+      if (!text) return false;
+
+      return index === arr.findIndex((existing: any) => this.isSameTerm(existing, item));
+    });
+  }
+
+  private buildTermsConditionPayload(route: any) {
+    return {
+      MenuMasterSid: this.currentMenuId,
+      DepartmentMasterSid: route?.DepartmentMasterSid ?? null,
+      POL: this.getPortCodeBySid(route?.POLSid),
+      POD: this.getPortCodeBySid(route?.PODSid),
+      Carrier: route?.quoteCarrier?.[0]?.CarrierMasterSid ?? null,
+      DocumentSid: this.QuoteHeaderSid
+    };
+  }
+
+  private async prepareTermsForPrint(): Promise<any[]> {
+    if (!this.quotationData || !this.currentCompany?.CompanyMasterSid || !this.currentMenuId) {
+      this.printTermsList = this.getUniqueTerms(
+        this.selectedItem?.terms?.length ? this.selectedItem.terms : this.TandCList
+      );
+      return this.printTermsList;
+    }
+
+    const transactionPayload = {
+      CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+      MenuMasterSid: this.currentMenuId,
+      DocumentSid: this.QuoteHeaderSid
+    };
+
+    try {
+      const savedTermsResponse = await firstValueFrom(this.masterService.getTandC(transactionPayload));
+      const savedTerms = savedTermsResponse?.status ? (savedTermsResponse.data || []) : [];
+
+      if (!this.isTermsAndConditionsEnabled) {
+        this.printTermsList = this.getUniqueTerms(savedTerms);
+        this.TandCList = this.printTermsList;
+        return this.printTermsList;
+      }
+
+      const routes = Array.isArray(this.quotationData?.quoteRoute) ? this.quotationData.quoteRoute : [];
+      const defaultRequests = routes.map((route: any) =>
+        firstValueFrom(this.masterService.getTandCByCondition(this.buildTermsConditionPayload(route)))
+          .then((resp: any) => (resp?.status ? (resp.data || []) : []))
+          .catch(() => [])
+      );
+
+      const defaultTermsByRoute = await Promise.all(defaultRequests);
+      const combinedTerms = this.getUniqueTerms([
+        ...savedTerms,
+        ...defaultTermsByRoute.flat()
+      ]);
+
+      this.printTermsList = combinedTerms;
+      this.TandCList = combinedTerms;
+      return combinedTerms;
+    } catch (error) {
+      console.error('Error preparing terms for print:', error);
+      this.printTermsList = this.getUniqueTerms(
+        this.selectedItem?.terms?.length ? this.selectedItem.terms : this.TandCList
+      );
+      return this.printTermsList;
+    }
   }
 
   private async resolveReportLogo(): Promise<string | undefined> {
@@ -6311,9 +6402,10 @@ get isSuspended() : boolean {
   }
 
   
-printDiv(divId: string): void {
+async printDiv(divId: string): Promise<void> {
   this.showPrintLogo = true;
   this.showPdfLogo = false;
+  await this.prepareTermsForPrint();
 
   setTimeout(() => {
     const printContents = document.getElementById(divId)?.innerHTML;

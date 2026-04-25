@@ -42,6 +42,7 @@ export function generateCreditNoteDocument(data: CreditNotePdfData): any {
   // console.log(data, 'generateInvoiceDocument');
   const chargesCount = data.charges?.length || 0;
   const shouldBreakPageForTerms = chargesCount > 20;
+  const resolvedTerms = getCreditNoteTerms(data);
   const isIndiaCompany = isIndianCompany(data);
   const printData = (data as any).creditNotePrintData;
   const logoHeaderHeight = INVOICE_LOGO_HEIGHT_PT;
@@ -112,10 +113,10 @@ export function generateCreditNoteDocument(data: CreditNotePdfData): any {
       buildAmountInWords(data),
       ...(data.credit?.remarks ? [buildRemarks(data.credit.remarks)] : []),
       ...buildBankDetailsSection(data),
-      ...(data.terms && data.terms.length > 0
+      ...(resolvedTerms.length > 0
         ? [
           // ...(shouldBreakPageForTerms ? [{ text: '', pageBreak: 'before' as const }] : []),
-          buildTermsSectionWithBullets(data.terms)
+          buildTermsSectionWithBullets(resolvedTerms)
         ]
         : []),
       ...buildAuthorisedSignatory(data)
@@ -1100,6 +1101,26 @@ function buildTermsSectionWithBullets(terms: (PdfTermItem | string)[]): any {
   };
 }
 
+function getCreditNoteTerms(data: CreditNotePdfData): PdfTermItem[] {
+  const companyMasterSid = Number((data.company as any)?.CompanyMasterSid || (data as any)?.companyMasterSid || 0);
+
+  if (companyMasterSid === 13) {
+    return [
+      {
+        content: 'If any discrepancy is noticed in the invoice, kindly inform us in writing within 7 days, otherwise the above amount will be considered as correct.'
+      },
+      {
+        content: 'Please mention our invoice number(s) on your remittance instructions.'
+      }
+    ];
+  }
+
+  return (data.terms || []).filter((term) => {
+    const content = typeof term === 'string' ? term : term?.content;
+    return !!String(content || '').trim();
+  }) as PdfTermItem[];
+}
+
 
 /**
  * Build authorised signatory
@@ -1248,12 +1269,13 @@ export function transformCreditNoteApiData(
   }));
 
   const terms: PdfTermItem[] = (options?.terms || []).map((term: any) => ({
-    content: term.TandC || ''
-  }));
+    content: term?.TandC || term?.Terms || term?.content || ''
+  })).filter((term: PdfTermItem) => !!String(term.content || '').trim());
 
   const result: any = {
     company: {
       companyName: company?.companyName || '',
+      CompanyMasterSid: company?.CompanyMasterSid,
       addressLine1: company?.addressLine1 || company?.Address || '',
       addressLine2: company?.addressLine2 || '',
       city: company?.City || '',
