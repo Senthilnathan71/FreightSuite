@@ -246,6 +246,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   filteredFPOD: any[] = [];
   incoList: any[] = [];
   TandCList: any[] = [];
+  printTermsList: any[] = [];
   bookingHeader: any;
   selectedCustomerBranch: any;
   isShipperOther: boolean
@@ -4416,6 +4417,7 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
         );
 
         this.TandCList = combined;
+        this.printTermsList = combined;
         openModal(this.TandCList);
       },
       (error) => {
@@ -4428,6 +4430,7 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
       (resp: any) => {
         if (resp.status) {
           this.TandCList = resp.data;
+          this.printTermsList = this.getUniqueTerms(this.TandCList);
           openModal(this.TandCList);
         } else {
           this.appSettingService.showError('Error loading Terms and Conditions');
@@ -4438,6 +4441,83 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
       }
     );
   }
+
+  private getTermDisplayText(term: any): string {
+    return (term?.TandC || term?.Terms || term?.content || '').trim();
+  }
+
+  private isSameTerm(a: any, b: any): boolean {
+    const aText = this.getTermDisplayText(a).toLowerCase();
+    const bText = this.getTermDisplayText(b).toLowerCase();
+
+    return (
+      (a?.TandCTransactionSid &&
+        b?.TandCTransactionSid &&
+        a.TandCTransactionSid === b.TandCTransactionSid) ||
+      (aText !== '' &&
+        aText === bText &&
+        (a?.DocumentSid ?? this.bookingData?.BookingHeaderSid ?? null) ===
+          (b?.DocumentSid ?? this.bookingData?.BookingHeaderSid ?? null))
+    );
+  }
+
+  private getUniqueTerms(terms: any[]): any[] {
+    return (terms || []).filter((item: any, index: number, arr: any[]) => {
+      const text = this.getTermDisplayText(item);
+      if (!text) return false;
+
+      return index === arr.findIndex((existing: any) => this.isSameTerm(existing, item));
+    });
+  }
+
+  private async prepareTermsForPrint(): Promise<any[]> {
+    this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+
+    if (!this.bookingData || !this.currentCompany?.CompanyMasterSid || !this.currentMenuId) {
+      this.printTermsList = this.getUniqueTerms(this.TandCList);
+      return this.printTermsList;
+    }
+
+    const transactionPayload = {
+      CompanyMasterSid: this.currentCompany.CompanyMasterSid,
+      MenuMasterSid: this.currentMenuId,
+      DocumentSid: this.bookingData?.BookingHeaderSid
+    };
+
+    const payload = {
+      MenuMasterSid: this.currentMenuId,
+      DepartmentMasterSid: this.bookingData?.DepartmentMasterSid ?? null,
+      POL: this.bookingData?.POL ?? null,
+      POD: this.bookingData?.POD ?? null,
+      Carrier: this.bookingData?.CarrierSid || null,
+      DocumentSid: this.bookingData?.BookingHeaderSid
+    };
+
+    try {
+      const savedTermsResponse = await firstValueFrom(this.masterService.getTandC(transactionPayload));
+      const savedTerms = savedTermsResponse?.status ? (savedTermsResponse.data || []) : [];
+
+      if (!this.isTermsAndConditionsEnabled) {
+        this.printTermsList = this.getUniqueTerms(savedTerms);
+        this.TandCList = this.printTermsList;
+        return this.printTermsList;
+      }
+
+      const defaultTermsResponse = await firstValueFrom(this.masterService.getTandCByCondition(payload));
+      const defaultTerms = defaultTermsResponse?.status ? (defaultTermsResponse.data || []) : [];
+      const combinedTerms = this.getUniqueTerms([...savedTerms, ...defaultTerms]);
+
+      this.printTermsList = combinedTerms;
+      this.TandCList = combinedTerms;
+      return combinedTerms;
+    } catch (error) {
+      console.error('Error preparing booking terms for print:', error);
+      this.printTermsList = this.getUniqueTerms(this.TandCList);
+      return this.printTermsList;
+    }
+  }
+
   async openEmail() {
     if (!this.bookingData) return;
 
@@ -4770,6 +4850,7 @@ getFormattedPort(code: string): string {
   }
 
   reportAndEmailModel(content: TemplateRef<any>) {
+    this.prepareTermsForPrint();
     this.modalService.open(content, {
       size: 'xl',
       scrollable: true,
@@ -5501,48 +5582,54 @@ exportReleaseOrder() {
 downloadPDF(type: 'booking' | 'cro'  = 'booking'): void {
   this.spinner.show();
 
-  try {
-    const logo = this.pdfMakeService.getReportLogo();
+  this.prepareTermsForPrint()
+    .then(() => {
+      const logo = this.pdfMakeService.getReportLogo();
 
-    this.pdfMakeService.generateBookingFromApi(
-      this.bookingHeader,
-      this.currentCompany,
-      this.currentBranch,
-      this.userData,
-      logo,
-      {
-        ports: this.portList,
-        departments: this.departmentList,
-        carriers: this.carrierList,
-        containerTypes: this.containerTypeList
-      },
-      type
-    );
+      this.pdfMakeService.generateBookingFromApi(
+        {
+          ...this.bookingHeader,
+          terms: this.printTermsList
+        },
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        {
+          ports: this.portList,
+          departments: this.departmentList,
+          carriers: this.carrierList,
+          containerTypes: this.containerTypeList
+        },
+        type
+      );
 
-    this.appSettingService.showSuccess(`${this.getPdfTypeName(type)} downloaded successfully!`);
-    const payload = {
-    tableName: 'BookingHeader',
-    recordId: String(this.bookingData?.BookingHeaderSid),
-    operation: 'PDF',
-    changedBy: this.appSettingService.userSettingSource.value['userEmail'],
-    changes: {
-      action: 'Download Pdf'
-    },
-    newVal: {
-     PDF :`${this.getPdfTypeName(type)} PDF Downloaded`
-    }
-  };
+      this.appSettingService.showSuccess(`${this.getPdfTypeName(type)} downloaded successfully!`);
+      const payload = {
+        tableName: 'BookingHeader',
+        recordId: String(this.bookingData?.BookingHeaderSid),
+        operation: 'PDF',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'Download Pdf'
+        },
+        newVal: {
+          PDF: `${this.getPdfTypeName(type)} PDF Downloaded`
+        }
+      };
 
-  this.operationService.createAuditLog(payload).subscribe({
-    next: () => {},
-    error: (err) => console.error(err)
-  });
-  } catch (error) {
-    console.error(`PDF generation error for ${type}:`, error);
-    this.appSettingService.showError(`Error generating ${this.getPdfTypeName(type)}. Please try again.`);
-  } finally {
-    this.spinner.hide();
-  }
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => {},
+        error: (err) => console.error(err)
+      });
+    })
+    .catch((error) => {
+      console.error(`PDF generation error for ${type}:`, error);
+      this.appSettingService.showError(`Error generating ${this.getPdfTypeName(type)}. Please try again.`);
+    })
+    .finally(() => {
+      this.spinner.hide();
+    });
 }
 
 // Legacy method using html2canvas (kept for fallback/barcode printing)
@@ -6098,6 +6185,7 @@ private generateEmailContent(type: string): { subject: string; body: string } {
 
 // Enhanced PDF blob generation method
 async generatePDFBlob(type: 'booking' | 'cro' | 'mail-attachment' = 'booking'): Promise<Blob | null> {
+  await this.prepareTermsForPrint();
   const elementId = this.getPdfElementId(type);
   const printContent = document.getElementById(elementId);
   

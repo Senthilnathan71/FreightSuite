@@ -247,7 +247,8 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         VoucherDateRaw: item?.VoucherDate,
         VoucherDate:this.datePipe.transform(item?.VoucherDate),
         PostStatusLabel: item.PostStatus === 'P' ? 'Posted' : 'Unposted',
-        Status: item.Status === 'A' ? 'Active' : 'Suspended'
+        Status: item.Status === 'A' ? 'Active' : 'Suspended',
+        AmountFormatted: this.formatAmount(item.Amount)
       }));
       this.totalLengthOfCollection = response?.data?.totalCount || rawItems.length || 0;
       this.applySorting();
@@ -362,6 +363,15 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         visible: true,
         dataType: 'string',
         width: '100px',
+      },
+      {
+        key: 'AmountFormatted',
+        label: 'Amount',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'number',
+        width: '120px',
       },
         {
         key: 'MasterNumber',
@@ -917,6 +927,13 @@ navigateToBooking(row: any): void {
   //     title: companyName
   //   });
   // }
+
+  private formatAmount(amount: number | string): string {
+    if (!amount) return '0.00';
+    const numValue = typeof amount === 'string' ? parseFloat(amount) : amount;
+    if (isNaN(numValue)) return '0.00';
+    return numValue.toFixed(2);
+  }
 
   formatDate(date: any): string {
     if (!date) return 'N/A';

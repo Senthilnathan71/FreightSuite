@@ -2490,6 +2490,7 @@
         </div>
     
 
+          @if (currentCompany?.CompanyMasterSid === 13 || (TandCList?.length || 0) > 0) {
           <div style="margin-top: 1rem; font-size: 12px; padding: 0 20px">
   <h5 style="margin-bottom: 0.5rem; font-weight: bolder">
     <strong>Terms and Conditions</strong>
@@ -2505,11 +2506,12 @@
     <!-- For other companies - Use the existing TandCList -->
     <ul style="margin-top: 0; padding-left: 1.2rem">
       @for (term of TandCList; track term) {
-        <li>{{ term.TandC }}</li>
+        <li>{{ term.TandC || term.Terms }}</li>
       }
     </ul>
   }
 </div>
+}
 
            <!-- <div style="margin-top: 1rem; font-size: 16px; padding: 0 20px;">
   <h5 style="margin-bottom: 0.5rem; font-weight: bolder;">

@@ -757,6 +757,17 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     this.voucherConstraints = this.voucherPeriodService.applyConstraints(voucherDate, 'AR');
   }
 
+  private restrictDatePickerToVoucherMonth(voucherDate: any): void {
+    const origDate = new Date(voucherDate);
+    if (isNaN(origDate.getTime())) return;
+    const y = origDate.getFullYear(), m = origDate.getMonth() + 1;
+    const monthEnd = new Date(y, m, 0);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const effectiveEnd = monthEnd < today ? monthEnd : today;
+    this.fyMinDate = { year: y, month: m, day: 1 };
+    this.fyMaxDate = { year: effectiveEnd.getFullYear(), month: effectiveEnd.getMonth() + 1, day: effectiveEnd.getDate() };
+  }
+
   onVoucherDateChange(){
     this.applyVoucherDateConstraints();
     // Edit mode: reveal error label + gate button-disable now that user has changed the date
@@ -1061,6 +1072,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           this._isInitialLoad = true;
           this.patchValues(this.invoiceData);
           this.applyVoucherDateConstraints();
+          this.restrictDatePickerToVoucherMonth(this.invoiceData.VoucherDate);
           this.patchDueDate();
 
           this.invoiceForm.get('PartyName')?.disable();
@@ -1144,9 +1156,6 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       },
       { emitEvent: false }
     );
-
-    // Edit mode: datepicker keeps the full FY range. Grace/closed validation
-    // only fires when the user actually changes the voucher date.
 
     if (
       data?.CurrencyMasterSid === this.currentCompany?.CurrencyMasterSid ||
@@ -2372,6 +2381,25 @@ isSeaDepartment(): boolean {
     const voucherOthersCandidate =
       this.buildVoucherOthersPayload(rawVoucherOthers);
 
+    // Calculate header Amount (party currency) and LocalAmount (local currency)
+    const localCurrencySid = this.currentCompany?.CurrencyMasterSid;
+    const headerCurrencySid = raw.CurrencyMasterSid;
+    const headerExchangeRate = raw.ExchangeRate != null ? Number(raw.ExchangeRate) : 1;
+
+    let totalLocalAmountWithTax = 0;
+    for (const vd of voucherDetailArray) {
+      const localAmt = toNumber(vd.LocalAmount);
+      const tax1 = toNumber(vd.TaxAmount1);
+      const tax2 = toNumber(vd.TaxAmount2);
+      const rowTotal = localAmt + tax1 + tax2;
+      totalLocalAmountWithTax += vd.DrCr === 'C' ? rowTotal : -rowTotal;
+    }
+
+    const headerLocalAmount = toNumber(this.getFormattedAmount(totalLocalAmountWithTax, localCurrencySid));
+    const headerAmount = localCurrencySid === headerCurrencySid
+      ? headerLocalAmount
+      : toNumber(this.getFormattedAmount(totalLocalAmountWithTax / headerExchangeRate, headerCurrencySid));
+
     const payload: any = {
       ...(this.isEditMode
         ? { UpdatedBy: this.currUserEmail }
@@ -2397,6 +2425,8 @@ isSeaDepartment(): boolean {
       CurrencyCode: raw.CurrencyCode || undefined,
       ExchangeRate:
         raw.ExchangeRate != null ? Number(raw.ExchangeRate) : undefined,
+      Amount: headerAmount,
+      LocalAmount: headerLocalAmount,
       MasterJobSid: raw.MasterJobSid ?? null,
       HouseJobSid: raw.HouseJobSid ? Number(raw.HouseJobSid) : null,
       Narration: raw.Narration !== undefined ? raw.Narration : undefined,

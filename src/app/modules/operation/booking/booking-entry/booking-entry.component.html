@@ -3735,9 +3735,9 @@
         padding-left:1.2rem;
         line-height:1.4;
     ">
-        @for (term of TandCList; track term) {
+        @for (term of (printTermsList.length ? printTermsList : TandCList); track term) {
             <li style="margin:0; padding:0;">
-                {{ term.TandC }}
+                {{ term.TandC || term.Terms }}
             </li>
         }
     </ul>

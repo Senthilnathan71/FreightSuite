@@ -90,6 +90,7 @@ export interface EnquiryPdfData extends PdfDocumentBase {
   routes: EnquiryRouteData[];
   fclLcl: 'FCL' | 'LCL' | 'AIR';
   departmentName?: string;
+  terms?: PdfTermItem[];
 }
 
 export interface EnquiryRouteData {
