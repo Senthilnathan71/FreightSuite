@@ -1,0 +1,81 @@
+// ─── DARK HEADER ────────────────────────────────────────────────
+.dashboard-header {
+  background: linear-gradient(135deg, #044a6c 0%, #05608D 50%, #0891b2 100%);
+  padding: 24px 24px 20px;
+  margin: -15px -15px 0;
+  // Compensate for the layout container padding
+
+  .header-top {
+    margin-bottom: 16px;
+  }
+
+  .header-title {
+    h1 {
+      color: #fff;
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 4px;
+    }
+
+    .header-subtitle {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 13px;
+    }
+  }
+}
+
+// ─── BODY GRID ──────────────────────────────────────────────────
+.dashboard-body {
+  background: #f4f7fb;
+  padding: 20px 24px 40px;
+  margin: 0 -15px;
+  min-height: calc(100vh - 300px);
+}
+
+.grid-row {
+  margin-bottom: 20px;
+
+  &.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  &.full-width {
+    display: block;
+  }
+}
+
+// ─── RESPONSIVE ─────────────────────────────────────────────────
+@media (max-width: 1200px) {
+  .grid-row.two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 16px 12px;
+
+    .header-title h1 {
+      font-size: 18px;
+    }
+  }
+
+  .dashboard-body {
+    padding: 12px 12px 30px;
+  }
+
+  .grid-row {
+    margin-bottom: 12px;
+
+    &.two-col {
+      gap: 12px;
+    }
+  }
+}
+
+// ─── HOST-LEVEL STYLES ──────────────────────────────────────────
+:host {
+  display: block;
+}

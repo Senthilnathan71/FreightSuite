@@ -1,0 +1,44 @@
+<div class="reassign-modal">
+  <div class="modal-header">
+    <h5 class="modal-title">
+      <i class="fa-solid fa-arrow-right-arrow-left"></i> Reassign Lead
+    </h5>
+    <button type="button" class="btn-close" (click)="activeModal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body">
+    <!-- Lead info -->
+    <div class="info-card" *ngIf="meeting">
+      <div class="info-row">
+        <span class="info-label">Lead / Company</span>
+        <span class="info-value">{{ meeting.preCustomerName || meeting.companyName || '—' }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Meeting Type</span>
+        <span class="info-value">{{ meeting.meetingType || '—' }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Current Assignee</span>
+        <span class="info-value current-assignee">{{ currentAssignee || '—' }}</span>
+      </div>
+    </div>
+
+    <!-- New salesperson -->
+    <div class="form-group">
+      <label class="form-label">Reassign To <span class="required">*</span></label>
+      <select class="form-select" [(ngModel)]="selectedSalespersonId">
+        <option [ngValue]="null" disabled>Select a salesperson...</option>
+        <option *ngFor="let sp of salespersons" [ngValue]="sp.UserMasterSid">
+          {{ sp.userName }} ({{ sp.userEmail }})
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-outline" (click)="activeModal.dismiss()">Cancel</button>
+    <button class="btn btn-primary" [disabled]="!isValid" (click)="onSubmit()">
+      <i class="fa-solid fa-check"></i> Reassign
+    </button>
+  </div>
+</div>

@@ -1,0 +1,63 @@
+.scoreboard-wrap {
+  background: #fff; border-radius: 10px; border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05); margin-bottom: 24px; overflow: hidden;
+}
+.scoreboard-header {
+  padding: 16px 20px; border-bottom: 1px solid #e2e8f0;
+  display: flex; align-items: center; justify-content: space-between;
+  h2 { font-size: 15px; font-weight: 700; margin: 0; }
+}
+.scoreboard-table {
+  width: 100%; border-collapse: collapse;
+  thead th {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.05em; color: #94a3b8; padding: 10px 12px;
+    text-align: center; border-bottom: 2px solid #e2e8f0;
+    white-space: nowrap; cursor: pointer;
+    &:hover { color: #05608D; }
+  }
+  .th-sub { font-size: 9px; font-weight: 500; text-transform: none; letter-spacing: 0; }
+  tbody td {
+    padding: 12px 12px; font-size: 13px; text-align: center;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  tbody tr { cursor: pointer; transition: background 0.15s; }
+  tbody tr:hover { background: #f8fafc; }
+}
+.sp-cell { display: flex; align-items: center; gap: 10px; }
+.sp-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: white; flex-shrink: 0;
+}
+.sp-info .sp-name { font-size: 13px; font-weight: 600; line-height: 1.2; }
+.sp-info .sp-email { font-size: 11px; color: #94a3b8; font-weight: 400; }
+.cell-value {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 32px; height: 28px; padding: 0 8px;
+  border-radius: 6px; font-weight: 600; font-size: 13px;
+  &.zero { color: #94a3b8; background: transparent; }
+  &.low { color: #16a34a; background: #f0fdf4; }
+  &.medium { color: #f59e0b; background: #fffbeb; }
+  &.high { color: #ef4444; background: #fef2f2; }
+  &.info { color: #05608D; background: #eff6ff; }
+}
+.conv-rate {
+  font-size: 12px; font-weight: 700;
+  &.good { color: #16a34a; }
+  &.okay { color: #f59e0b; }
+  &.bad { color: #ef4444; }
+}
+.total-row {
+  background: #f0f4f8;
+  td { font-weight: 700; }
+}
+.total-val { font-size: 15px; }
+.action-btn {
+  width: 28px; height: 28px; border-radius: 6px;
+  border: 1px solid #e2e8f0; background: #fff;
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+  color: #64748b; transition: all 0.15s;
+  &:hover { border-color: #05608D; color: #05608D; background: #eff6ff; }
+  &.remind:hover { border-color: #f59e0b; color: #f59e0b; background: #fffbeb; }
+}

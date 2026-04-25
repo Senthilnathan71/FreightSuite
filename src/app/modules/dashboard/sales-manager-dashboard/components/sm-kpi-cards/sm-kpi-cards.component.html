@@ -1,0 +1,14 @@
+<div class="kpi-grid">
+  <div class="kpi-card" *ngFor="let card of cards" [ngClass]="card.colorClass" (click)="onClick(card)">
+    <div class="kpi-skeleton" *ngIf="loading">
+      <div class="skeleton-icon"></div>
+      <div class="skeleton-value"></div>
+      <div class="skeleton-label"></div>
+    </div>
+    <ng-container *ngIf="!loading">
+      <div class="kpi-icon"><i [class]="card.icon"></i></div>
+      <div class="kpi-value">{{ card.value }}</div>
+      <div class="kpi-label">{{ card.label }}</div>
+    </ng-container>
+  </div>
+</div>

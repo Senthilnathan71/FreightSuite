@@ -1,0 +1,76 @@
+<div class="scoreboard-wrap">
+  <div class="scoreboard-header">
+    <h2><i class="fa-solid fa-ranking-star" style="color:#f59e0b;margin-right:6px"></i> Salesperson Scoreboard</h2>
+  </div>
+  <div style="overflow-x:auto">
+    <table class="scoreboard-table">
+      <thead>
+        <tr>
+          <th style="min-width:180px;text-align:left;padding-left:20px" (click)="sort('userName')">Salesperson</th>
+          <th (click)="sort('s1')"><div>S1</div><div class="th-sub">Leads<br>No Mtg</div></th>
+          <th (click)="sort('s2')"><div>S2</div><div class="th-sub">Meetings<br>Sched.</div></th>
+          <th (click)="sort('s3')"><div>S3</div><div class="th-sub">Follow-<br>Ups</div></th>
+          <th (click)="sort('s4')"><div>S4</div><div class="th-sub">Not<br>Converted</div></th>
+          <th (click)="sort('s5')"><div>S5</div><div class="th-sub">Cust. No<br>Quote</div></th>
+          <th (click)="sort('s6')"><div>S6</div><div class="th-sub">Enq. No<br>Quotation</div></th>
+          <th (click)="sort('s7')"><div>S7</div><div class="th-sub">Pending<br>Approval</div></th>
+          <th (click)="sort('s8')"><div>S8</div><div class="th-sub">Appr. No<br>Booking</div></th>
+          <th>Conv.<br>Rate</th>
+          <th (click)="sort('total')">Total</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of sortedRows" (click)="onRowClick(row)">
+          <td style="text-align:left;padding-left:20px">
+            <div class="sp-cell">
+              <div class="sp-avatar" [style.background]="row.avatarColor">{{ getInitials(row.userName) }}</div>
+              <div class="sp-info">
+                <div class="sp-name">{{ row.userName }}</div>
+                <div class="sp-email">{{ row.userEmail }}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="cell-value" [ngClass]="getCellClass(row.s1)">{{ row.s1 }}</span></td>
+          <td><span class="cell-value info">{{ row.s2 }}</span></td>
+          <td><span class="cell-value" [ngClass]="getCellClass(row.s3)">{{ row.s3 }}</span></td>
+          <td><span class="cell-value" [ngClass]="getCellClass(row.s4)">{{ row.s4 }}</span></td>
+          <td><span class="cell-value" [ngClass]="getCellClass(row.s5)">{{ row.s5 }}</span></td>
+          <td><span class="cell-value" [ngClass]="getCellClass(row.s6)">{{ row.s6 }}</span></td>
+          <td><span class="cell-value" [ngClass]="getCellClass(row.s7)">{{ row.s7 }}</span></td>
+          <td><span class="cell-value" [ngClass]="getCellClass(row.s8)">{{ row.s8 }}</span></td>
+          <td><span class="conv-rate" [ngClass]="getConvRateClass(getConversionRate(row))">{{ getConversionRate(row) }}%</span></td>
+          <td><strong>{{ row.total }}</strong></td>
+          <td>
+            <button class="action-btn remind" (click)="onRemind($event, row)" title="Send Reminder">
+              <i class="fa-solid fa-bell"></i>
+            </button>
+          </td>
+        </tr>
+        <!-- Team Total -->
+        <tr class="total-row" *ngIf="rows.length">
+          <td style="text-align:left;padding-left:20px;font-weight:700">
+            <div class="sp-cell">
+              <div class="sp-avatar" style="background:#0f172a"><i class="fa-solid fa-users" style="font-size:12px"></i></div>
+              <div class="sp-info">
+                <div class="sp-name">TEAM TOTAL</div>
+                <div class="sp-email">{{ rows.length }} salespersons</div>
+              </div>
+            </div>
+          </td>
+          <td><strong class="total-val">{{ teamTotal.s1 }}</strong></td>
+          <td><strong class="total-val">{{ teamTotal.s2 }}</strong></td>
+          <td><strong class="total-val">{{ teamTotal.s3 }}</strong></td>
+          <td><strong class="total-val">{{ teamTotal.s4 }}</strong></td>
+          <td><strong class="total-val">{{ teamTotal.s5 }}</strong></td>
+          <td><strong class="total-val">{{ teamTotal.s6 }}</strong></td>
+          <td><strong class="total-val">{{ teamTotal.s7 }}</strong></td>
+          <td><strong class="total-val">{{ teamTotal.s8 }}</strong></td>
+          <td></td>
+          <td><strong class="total-val">{{ teamTotal.total }}</strong></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

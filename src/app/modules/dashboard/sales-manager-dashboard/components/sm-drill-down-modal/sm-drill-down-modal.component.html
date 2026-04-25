@@ -1,0 +1,118 @@
+<div class="drill-down-modal">
+  <!-- Header -->
+  <div class="modal-header">
+    <div class="header-info">
+      <div class="avatar" [style.background]="salesperson.avatarColor">
+        {{ getInitials(salesperson.userName) }}
+      </div>
+      <div>
+        <h4 class="modal-title">{{ salesperson.userName }}</h4>
+        <span class="subtitle">{{ salesperson.userEmail }} &middot; Total: {{ salesperson.total }} items</span>
+      </div>
+    </div>
+    <button type="button" class="btn-close" (click)="activeModal.dismiss()"></button>
+  </div>
+
+  <!-- Overview mini-cards -->
+  <div class="overview-strip" *ngIf="activeTab === 0">
+    <div class="mini-card" *ngFor="let card of getOverviewCards(); let i = index"
+         (click)="onTabChange(i + 1)" [style.cursor]="'pointer'">
+      <div class="mini-icon" [style.color]="card.color">
+        <i [class]="card.icon"></i>
+      </div>
+      <div class="mini-value">{{ card.value }}</div>
+      <div class="mini-label">{{ card.label }}</div>
+    </div>
+  </div>
+
+  <!-- Tab nav -->
+  <div class="tab-nav">
+    <button *ngFor="let tab of tabs"
+            class="tab-btn"
+            [class.active]="activeTab === tab.id"
+            (click)="onTabChange(tab.id)">
+      <i [class]="tab.icon"></i>
+      <span class="tab-label">{{ tab.label }}</span>
+      <span class="tab-count" *ngIf="tab.id > 0">{{ getSectionCount(tab.id) }}</span>
+    </button>
+  </div>
+
+  <!-- Modal body -->
+  <div class="modal-body">
+    <!-- Overview Tab -->
+    <div *ngIf="activeTab === 0" class="overview-content">
+      <p class="overview-hint">Click any card above or tab to drill into that section's data.</p>
+    </div>
+
+    <!-- Section Data Tab -->
+    <div *ngIf="activeTab > 0">
+      <!-- Search -->
+      <div class="search-bar">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" [(ngModel)]="searchTerm" placeholder="Search items..." (keyup.enter)="onSearch()">
+        <button class="search-btn" (click)="onSearch()">Search</button>
+      </div>
+
+      <!-- Loading -->
+      <div class="loading-state" *ngIf="sectionLoading">
+        <div class="spinner"></div>
+        <span>Loading data...</span>
+      </div>
+
+      <!-- Empty -->
+      <div class="empty-state" *ngIf="!sectionLoading && sectionData.length === 0">
+        <i class="fa-solid fa-inbox"></i>
+        <p>No items found for this section.</p>
+      </div>
+
+      <!-- Data table -->
+      <div class="data-table-wrap" *ngIf="!sectionLoading && sectionData.length > 0">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name / Entity</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of sectionData; let i = index">
+              <td class="row-num">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+              <td class="entity-name">
+                {{ item.preCustomerName || item.customerName || item.enquiryNumber || item.quoteNumber || item.leadName || '—' }}
+              </td>
+              <td class="date-col">
+                {{ item.meetingDate || item.createdOn || item.followUpDate || item.quoteDate || '—' }}
+              </td>
+              <td>
+                <span class="status-badge" *ngIf="item.meetingStatus || item.leadStatus || item.authorizerStatus">
+                  {{ item.meetingStatus || item.leadStatus || item.authorizerStatus }}
+                </span>
+                <span *ngIf="!item.meetingStatus && !item.leadStatus && !item.authorizerStatus">—</span>
+              </td>
+              <td class="details-col">
+                {{ item.meetingType || item.matchedVia || item.companyName || '—' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" *ngIf="totalPages > 1">
+        <button class="page-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button *ngFor="let p of pages" class="page-btn" [class.active]="p === currentPage" (click)="onPageChange(p)">
+          {{ p }}
+        </button>
+        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <span class="page-info">{{ totalCount }} items</span>
+      </div>
+    </div>
+  </div>
+</div>

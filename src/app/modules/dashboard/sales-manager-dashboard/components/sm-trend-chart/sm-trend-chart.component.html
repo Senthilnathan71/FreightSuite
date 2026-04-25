@@ -1,0 +1,20 @@
+<div class="card">
+  <div class="section-title">
+    <div class="title-icon" style="background:#ecfeff;color:#06b6d4"><i class="fa-solid fa-chart-area"></i></div>
+    12-Week Trend
+  </div>
+  <apx-chart *ngIf="chartOptions.series"
+    [series]="chartOptions.series"
+    [chart]="chartOptions.chart"
+    [colors]="chartOptions.colors"
+    [stroke]="chartOptions.stroke"
+    [fill]="chartOptions.fill"
+    [xaxis]="chartOptions.xaxis"
+    [yaxis]="chartOptions.yaxis"
+    [grid]="chartOptions.grid"
+    [legend]="chartOptions.legend"
+    [tooltip]="chartOptions.tooltip"
+    [dataLabels]="chartOptions.dataLabels"
+  ></apx-chart>
+  <div *ngIf="!data?.length" class="empty-state">No trend data available</div>
+</div>

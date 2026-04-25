@@ -254,6 +254,11 @@ export class LoginComponent implements OnInit {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     const salespersonFlag = String(userProfile?.isSalesperson || '').toUpperCase();
 
+    // Sales manager gets their own dashboard (check before salesperson — manager may also have isSalesperson flag)
+    if (userProfile?.userType?.code === 'salesManager') {
+      return '/dashboard/sales-manager';
+    }
+
     if (salespersonFlag === '1' || salespersonFlag === 'Y') {
       return '/dashboard/sales';
     }

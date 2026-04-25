@@ -1,0 +1,19 @@
+<div class="card">
+  <div class="section-title">
+    <div class="title-icon" style="background:#fff7ed;color:#f97316"><i class="fa-solid fa-hourglass-start"></i></div>
+    Lead Aging by Salesperson
+  </div>
+  <apx-chart *ngIf="chartOptions.series"
+    [series]="chartOptions.series"
+    [chart]="chartOptions.chart"
+    [plotOptions]="chartOptions.plotOptions"
+    [colors]="chartOptions.colors"
+    [xaxis]="chartOptions.xaxis"
+    [yaxis]="chartOptions.yaxis"
+    [legend]="chartOptions.legend"
+    [dataLabels]="chartOptions.dataLabels"
+    [grid]="chartOptions.grid"
+    [tooltip]="chartOptions.tooltip"
+  ></apx-chart>
+  <div *ngIf="!data?.length" class="empty-state">No aging data available</div>
+</div>

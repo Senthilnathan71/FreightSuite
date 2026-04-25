@@ -1,0 +1,37 @@
+<div class="card">
+  <div class="section-title">
+    <div class="title-icon" style="background:#ecfeff;color:#06b6d4"><i class="fa-solid fa-gauge-high"></i></div>
+    Avg. Response Times
+  </div>
+  <div class="gauges-row">
+    <div class="gauge-item" *ngFor="let g of gauges">
+      <apx-chart
+        [series]="g.chartOptions.series"
+        [chart]="g.chartOptions.chart"
+        [colors]="g.chartOptions.colors"
+        [plotOptions]="g.chartOptions.plotOptions"
+      ></apx-chart>
+      <div class="gauge-label">{{ g.label }}</div>
+    </div>
+  </div>
+  <div *ngIf="!data?.length" class="empty-state">No response time data available</div>
+
+  <table class="rt-table" *ngIf="data?.length">
+    <thead>
+      <tr>
+        <th>Salesperson</th>
+        <th>Lead → Meeting</th>
+        <th>Lead → Customer</th>
+        <th>Quote → Approval</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let r of data">
+        <td class="sp-name">{{ r.userName }}</td>
+        <td>{{ r.avgLeadToMeeting }}d</td>
+        <td>{{ r.avgLeadToCustomer }}d</td>
+        <td>{{ r.avgQuoteToApproval }}d</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

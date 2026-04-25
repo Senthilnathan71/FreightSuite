@@ -1,0 +1,104 @@
+<!-- ═══ DARK HEADER ZONE ═══ -->
+<div class="dashboard-header">
+  <div class="header-top">
+    <div class="header-title">
+      <h1>Sales Manager Dashboard</h1>
+      <span class="header-subtitle">{{ managerName }} &middot; Team Performance Overview</span>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <app-sm-filters
+    [salespersons]="salespersons"
+    [lastUpdated]="lastUpdated"
+    (filtersChanged)="onFiltersChanged($event)"
+    (refreshClicked)="onRefresh()">
+  </app-sm-filters>
+
+  <!-- KPI Cards -->
+  <app-sm-kpi-cards
+    [cards]="kpiCards"
+    [loading]="countsLoading"
+    (cardClicked)="onKpiCardClicked($event)">
+  </app-sm-kpi-cards>
+</div>
+
+<!-- ═══ WHITE CARD GRID ═══ -->
+<div class="dashboard-body">
+
+  <!-- Row 1: Conversion Funnel + Weekly Trend -->
+  <div class="grid-row two-col">
+    <app-sm-funnel-chart
+      [data]="counts?.funnel || null">
+    </app-sm-funnel-chart>
+
+    <app-sm-trend-chart
+      [data]="weeklyTrend">
+    </app-sm-trend-chart>
+  </div>
+
+  <!-- Row 2: Lead Source + Heatmap -->
+  <div class="grid-row two-col">
+    <app-sm-lead-source-chart
+      [data]="counts?.leadSourceDistribution || []">
+    </app-sm-lead-source-chart>
+
+    <app-sm-heatmap-chart
+      [data]="heatmap">
+    </app-sm-heatmap-chart>
+  </div>
+
+  <!-- Meetings Board (full width) -->
+  <div class="grid-row full-width">
+    <app-sm-meetings-board
+      [overdue]="meetingsBoard?.overdue || { items: [], totalCount: 0 }"
+      [today]="meetingsBoard?.today || { items: [], totalCount: 0 }"
+      [upcoming]="meetingsBoard?.upcoming || { items: [], totalCount: 0 }"
+      [loading]="meetingsBoardLoading"
+      (meetingClicked)="onMeetingClicked($event)"
+      (reassignClicked)="openReassignModal($event)">
+    </app-sm-meetings-board>
+  </div>
+
+  <!-- Scoreboard (full width) -->
+  <div class="grid-row full-width" id="scoreboard-section">
+    <app-sm-scoreboard
+      [rows]="scoreboard"
+      [loading]="scoreboardLoading"
+      (rowClicked)="onScoreboardRowClicked($event)"
+      (remindClicked)="onScoreboardRemindClicked($event)">
+    </app-sm-scoreboard>
+  </div>
+
+  <!-- Row 3: Radar + Response Times -->
+  <div class="grid-row two-col">
+    <app-sm-radar-chart
+      [scoreboard]="scoreboard">
+    </app-sm-radar-chart>
+
+    <app-sm-response-times
+      [data]="responseTimes">
+    </app-sm-response-times>
+  </div>
+
+  <!-- Row 4: Alerts + Aging -->
+  <div class="grid-row two-col">
+    <app-sm-alerts
+      [alerts]="alerts"
+      [loading]="alertsLoading">
+    </app-sm-alerts>
+
+    <app-sm-aging-chart
+      [data]="aging">
+    </app-sm-aging-chart>
+  </div>
+
+  <!-- Activity Feed (full width) -->
+  <div class="grid-row full-width">
+    <app-sm-activity-feed
+      [items]="activityFeed"
+      [loading]="activityLoading">
+    </app-sm-activity-feed>
+  </div>
+
+</div>

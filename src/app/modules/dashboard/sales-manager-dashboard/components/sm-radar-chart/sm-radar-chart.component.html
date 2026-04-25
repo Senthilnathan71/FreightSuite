@@ -1,0 +1,28 @@
+<div class="card">
+  <div class="section-title">
+    <div class="title-icon" style="background:#eef2ff;color:#4f46e5"><i class="fa-solid fa-crosshairs"></i></div>
+    Salesperson Comparison
+  </div>
+  <div class="selectors" *ngIf="scoreboard.length >= 2">
+    <select [(ngModel)]="person1Id" (ngModelChange)="onSelectionChange()" class="person-select">
+      <option *ngFor="let sp of scoreboard" [ngValue]="sp.UserMasterSid">{{ sp.userName }}</option>
+    </select>
+    <span class="vs">vs</span>
+    <select [(ngModel)]="person2Id" (ngModelChange)="onSelectionChange()" class="person-select">
+      <option *ngFor="let sp of scoreboard" [ngValue]="sp.UserMasterSid">{{ sp.userName }}</option>
+    </select>
+  </div>
+  <apx-chart *ngIf="chartOptions.series"
+    [series]="chartOptions.series"
+    [chart]="chartOptions.chart"
+    [colors]="chartOptions.colors"
+    [xaxis]="chartOptions.xaxis"
+    [yaxis]="chartOptions.yaxis"
+    [stroke]="chartOptions.stroke"
+    [fill]="chartOptions.fill"
+    [markers]="chartOptions.markers"
+    [legend]="chartOptions.legend"
+    [tooltip]="chartOptions.tooltip"
+  ></apx-chart>
+  <div *ngIf="scoreboard.length < 2" class="empty-state">Need at least 2 salespersons for comparison</div>
+</div>
