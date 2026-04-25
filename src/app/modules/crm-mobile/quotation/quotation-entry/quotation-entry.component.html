@@ -1038,216 +1038,193 @@
                       </div>-->
 
                       @if(isFclQuotationSegment(route)){
-                      <div class="d-flex justify-content-end px-1 mt-2">
-                        <button class="btn btn-info btn-sm dofi-min-w-100 dofi-max-w-100" type="button"
+                      <div class="d-flex justify-content-end px-1">
+                        <button class="btn btn-info btn-sm dofi-min-w-100 dofi-max-w-100 me-3" type="button"
                           (click)="addQuoteCargo(routeIndex)"
                           [disabled]="isRouteApproved(routeIndex) || disableAllModification || isBookingLockedForRoute(routeIndex) || (isEditMode && isSuspended)">
                           <i class="fas fa-plus me-1"></i> Add Cargo
                         </button>
                       </div>
 
-                      <div formArrayName="quoteCargo" class="px-1 mt-2">
-                        <div ngbAccordion [closeOthers]="true" class="custom-accordion">
-                          <div ngbAccordionItem *ngFor="let cargo of quoteCargo(routeIndex).controls; let cargoIndex = index"
-                            [formGroupName]="cargoIndex" [ngbAccordionItem]="'cargo-' + routeIndex + '-' + cargoIndex"
-                            [collapsed]="cargoIndex !== 0" class="mb-2">
-                          <h2 ngbAccordionHeader>
-                            <button ngbAccordionButton class="d-flex justify-content-between align-items-center w-100">
-                          
-                              <!-- LEFT -->
-                              <div class="d-flex align-items-center gap-2">
-                                <span class="fw-semibold text-light">
-                                  Cargo {{ cargoIndex + 1 }}
-                                </span>
-                          
-                                <span class="small text-light">
-                                   {{ getContainerTypeName(cargo.get('ContainerType')?.value) }} | Qty: {{ cargo.get('Qty')?.value || 0 }}
-                                </span>
-                              </div>
-                          
-                              <!-- RIGHT (DELETE BUTTON) -->
-                              <button class="btn btn-sm waves-effect waves-light text-light" type="button" *ngIf="quoteCargo(routeIndex).length > 1"
-                                (click)="deleteQuoteCargo(routeIndex, cargoIndex, cargo.value.QuoteCargoSid); $event.stopPropagation()"
-                                [disabled]=" cargo.get('isFromEnquiry')?.value || isRouteApproved(routeIndex) || disableAllModification || isBookingLockedForRoute(routeIndex) || (isEditMode && isSuspended)">
-                                <i class="fas fa-trash text-danger me-1"></i>
-                              </button>
-                          
-                            </button>
-                          </h2>
-                            <div ngbAccordionCollapse>
-                              <div class="p-2 border rounded">
-                                <div class="row compact-form">
-                                  <aside class="col-md-2">
-                                    <div class="custom-form-group custom-form-group-select"
-                                      [class.filled]="!!quoteCargo(routeIndex).at(cargoIndex).get('CargoType')?.value">
-                                      <ng-select formControlName="CargoType" [items]="modeOfCargoType" bindLabel="name"
-                                        bindValue="name" placeholder=""></ng-select>
-                                      <label class="input-label">Cargo Type <span class="text-danger">*</span></label>
-                                      @if(cargo.get('CargoType')?.invalid && cargo.get('CargoType')?.touched){
-                                      <div class="error-message">
-                                        @if(cargo.get('CargoType')?.hasError('required')){
-                                        <span>Required</span>
-                                        }
-                                      </div>
-                                      }
-                                    </div>
-                                  </aside>
-                                  <aside class="col-md-2">
-                                    <div class="custom-form-group custom-form-group-select"
-                                      [class.filled]="!!quoteCargo(routeIndex).at(cargoIndex).get('ContainerType')?.value">
-                                      <ng-select [items]="containerTypeList" bindLabel="ContainerName"
-                                        bindValue="ContainerCode" formControlName="ContainerType" placeholder=""></ng-select>
-                                      <label class="input-label">Container Type <span class="text-danger">*</span></label>
-                                      @if(cargo.get('ContainerType')?.invalid && cargo.get('ContainerType')?.touched){
-                                      <div class="error-message">
-                                        @if(cargo.get('ContainerType')?.hasError('required')){
-                                        <span>Required</span>
-                                        }
-                                      </div>
-                                      }
-                                    </div>
-                                  </aside>
-                                  <aside class="col-md-2">
-                                    <div class="custom-form-group">
-                                      <input type="text" class="custom-input-field sm" formControlName="Qty" [onlyNumbers]>
-                                      <label class="input-label">No of Container <span class="text-danger">*</span></label>
-                                      @if(cargo.get('Qty')?.invalid && cargo.get('Qty')?.touched){
-                                      <div class="error-message">
-                                        @if(cargo.get('Qty')?.hasError('required')){
-                                        <span>Required</span>
-                                        }
-                                      </div>
-                                      }
-                                    </div>
-                                  </aside>
-                                  <aside class="col-md-2">
-                                    <div class="custom-form-group">
-                                      <input type="text" class="custom-input-field sm" formControlName="GrossWeight"
-                                        DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                                      <label class="input-label">Gross Weight <span class="text-danger">*</span></label>
-                                    </div>
-                                  </aside>
-                                  <aside class="col-md-1">
-                                    <div class="custom-form-group">
-                                      <input type="text" class="custom-input-field sm" formControlName="NetWeight"
-                                        DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                                      <label class="input-label">Net Weight <span class="text-danger">*</span></label>
-                                    </div>
-                                  </aside>
-                                  <aside class="col-md-1">
-                                    <div class="custom-form-group">
-                                      <input type="text" class="custom-input-field sm" formControlName="Volume"
-                                        DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                                      <label class="input-label">CBM</label>
-                                    </div>
-                                  </aside>
-                                  <aside class="col-md-2">
-                                    <div class="custom-form-group custom-form-group-select"
-                                      [class.filled]="!!quoteCargo(routeIndex).at(cargoIndex).get('ShipmentTerms')?.value">
-                                      <ng-select formControlName="ShipmentTerms" [items]="serviceLevel" bindLabel="name"
-                                        bindValue="name" placeholder=""></ng-select>
-                                      <label class="input-label">Shipment Terms</label>
-                                    </div>
-                                  </aside>
-                                </div>
-
-                                <div class="d-flex justify-content-end gap-2 mt-2">
-                                  <button class="btn btn-sm btn-info" type="button"
-                                    (click)="addQuoteProduct(routeIndex, undefined, cargoIndex)"
-                                    [disabled]="isRouteApproved(routeIndex) || disableAllModification || isBookingLockedForRoute(routeIndex) || (isEditMode && isSuspended)">
-                                    <i class="fas fa-plus me-1"></i> Add Product
-                                  </button>
-                                </div>
-
-                                <div class="table-responsive mt-2" formArrayName="quoteProducts">
-                                  <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
-                                    <thead>
-                                      <tr class="bg-info text-center">
-                                        <th class="bg-transparent text-light" scope="col"
-                                          *ngIf="quoteProducts(routeIndex, cargoIndex).length > 1">Action</th>
-                                        <th class="bg-transparent text-light dofi-min-w-150" scope="col">Commodity</th>
-                                        <th class="bg-transparent text-light dofi-min-w-150" scope="col">External Pkg</th>
-                                        <th class="bg-transparent text-light dofi-min-w-150" scope="col">No of Pkg</th>
-                                        <th class="bg-transparent text-light dofi-min-w-150" scope="col">Gross Weight</th>
-                                        <th class="bg-transparent text-light dofi-min-w-150" scope="col">Net Weight</th>
-                                        <th class="bg-transparent text-light dofi-min-w-150" scope="col">CBM</th>
-                                        <th class="bg-transparent text-light">Is Haz</th>
-                                        <th class="bg-transparent text-light dofi-min-w-150" scope="col">Imco Class</th>
-                                        <th class="bg-transparent text-light dofi-min-w-150" scope="col">UN No</th>
-                                        <th class="bg-transparent text-light dofi-min-w-150" scope="col">Pkg Group</th>
-                                        
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      <tr *ngIf="quoteProducts(routeIndex, cargoIndex).controls.length === 0" class="text-center">
-                                        <td colspan="11" class="ps-3">No products added.</td>
-                                      </tr>
-                                      <tr *ngFor="let product of quoteProducts(routeIndex, cargoIndex).controls; let productIndex = index"
-                                        [formGroupName]="productIndex">
-                                        <td *ngIf="quoteProducts(routeIndex, cargoIndex).length > 1">
-                                          <button class="btn btn-link text-danger"
-                                            (click)="deleteQuoteProduct(routeIndex,productIndex,product.value.QuoteProductSid,cargoIndex)"
-                                            [disabled]="isRouteApproved(routeIndex) || disableAllModification || isBookingLockedForRoute(routeIndex)">
-                                            <i class="fas fa-trash text-center"></i>
-                                          </button>
-                                        </td>
-                                        <td>
-                                          <dofi-searchable-dropdown [items]="productList" formControlName="ProductSid"
-                                            [placeholder]="''" [displayFields]="[ 'ProductCode','ProductName']"
-                                            [displayLabels]="[ 'Code','Name']" [labelFields]="['ProductName']"
-                                            [bindValue]="'ProductMasterSId'"
-                                            (itemSelected)="onProductChange($event,routeIndex,productIndex,cargoIndex)">
-                                          </dofi-searchable-dropdown>
-                                        </td>
-                                        <td>
-                                          <dofi-searchable-dropdown [items]="packageTypes" formControlName="ExternalPkg"
-                                            [placeholder]="''" [displayFields]="[ 'UOMCode','UOMName']"
-                                            [displayLabels]="[ 'Code','Name']" [labelFields]="['UOMName']"
-                                            [bindValue]="'UOMMasterSid'">
-                                          </dofi-searchable-dropdown>
-                                        </td>
-                                        <td>
-                                          <input type="text" formControlName="ExternalQty" class="custom-input-field sm">
-                                        </td>
-                                        <td>
-                                          <input type="text" formControlName="GrossWeight" class="custom-input-field sm"   DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                                        </td>
-                                        <td>
-                                          <input type="text" formControlName="NetWeight" class="custom-input-field sm"   DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                                        </td>
-                                        <td>
-                                          <input type="text" formControlName="Volume" class="custom-input-field sm"
-                                            (input)="logProduct(routeIndex,productIndex,cargoIndex)"   DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                                        </td>
-                                        <td>
-                                          <div class="form-check ms-2">
-                                            <input class="form-check-input" type="checkbox" formControlName="IsHaz"
-                                              (change)="toggleHazProduct(routeIndex,productIndex,cargoIndex)">
-                                          </div>
-                                        </td>
-                                        <td>
-                                          <ng-select class="ng-select" [items]="imcoList" bindLabel="ImcoName"
-                                            bindValue="ImcoMasterSid" appendTo="body" formControlName="ImcoClass"
-                                            (change)="onImcoChange(routeIndex,productIndex,$event,cargoIndex)"></ng-select>
-                                        </td>
-                                        <td>
-                                          <input type="text" class="custom-input-field sm" formControlName="UnNo">
-                                        </td>
-                                        <td>
-                                          <input type="text" formControlName="PkgGroup" class="custom-input-field sm">
-                                        </td>
-                                        
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div *ngIf="quoteCargo(routeIndex).length === 0" class="text-center text-muted py-2 border rounded">
-                          No cargo added.
-                        </div>
+                      <div formArrayName="quoteCargo" class="table-responsive table-borderless px-1 mt-2"
+                        style="overflow-x: auto;">
+                        <table class="table table-hover align-middle no-wrap table-sm mb-1 mt-1"
+                          style="min-width: 1400px; width: 100%;">
+                          <thead>
+                            <tr class="bg-info text-center">
+                              <th class="bg-transparent text-light" style="width: 20px;"
+                                *ngIf="quoteCargo(routeIndex).controls.length > 1">Action</th>
+                              <th class="bg-transparent text-light" style="width: 180px;">Cargo Type <span class="text-danger">*</span></th>
+                              <th class="bg-transparent text-light" style="width: 220px;">Cargo Description</th>
+                              <th class="bg-transparent text-light" style="width: 200px;">Container Type <span class="text-danger">*</span></th>
+                              <th class="bg-transparent text-light" style="width: 110px;">No. of Containers <span class="text-danger">*</span></th>
+                              <th class="bg-transparent text-light" style="width: 220px;">Product <span class="text-danger">*</span></th>
+                              <th class="bg-transparent text-light" style="width: 180px;">Package Type <span class="text-danger">*</span></th>
+                              <th class="bg-transparent text-light" style="width: 140px;">Gross Weight <span class="text-danger">*</span></th>
+                              <th class="bg-transparent text-light" style="width: 140px;">Net Weight</th>
+                              <th class="bg-transparent text-light" style="width: 140px;">CBM <span class="text-danger">*</span></th>
+                              <th class="bg-transparent text-light" style="width: 180px;">Shipment Terms <span class="text-danger">*</span></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr *ngIf="quoteCargo(routeIndex).controls.length === 0" class="text-center">
+                              <td colspan="11" class="ps-3">No cargo added.</td>
+                            </tr>
+                            <ng-container *ngFor="let cargo of quoteCargo(routeIndex).controls; let cargoIndex = index">
+                              <tr [formGroupName]="cargoIndex">
+                                <td *ngIf="quoteCargo(routeIndex).controls.length > 1" data-label="Action">
+                                  <section class="action-items">
+                                    <button class="btn btn-sm btn-link text-danger"
+                                      (click)="deleteQuoteCargo(routeIndex, cargoIndex, cargo.value.QuoteCargoSid)"
+                                      [disabled]="cargo.get('isFromEnquiry')?.value || isRouteApproved(routeIndex) || disableAllModification || isBookingLockedForRoute(routeIndex) || (isEditMode && isSuspended)">
+                                      <i class="fas fa-trash text-center fs-2"></i>
+                                    </button>
+                                  </section>
+                                </td>
+                                <td>
+                                  <ng-select formControlName="CargoType" [items]="modeOfCargoType" bindLabel="name"
+                                    bindValue="name" placeholder=""></ng-select>
+                                </td>
+                                <td>
+                                  <input type="text" formControlName="CargoDescription" class="custom-input-field sm">
+                                </td>
+                                <td>
+                                  <ng-select [items]="containerTypeList" bindLabel="ContainerName"
+                                    bindValue="ContainerCode" formControlName="ContainerType" placeholder=""></ng-select>
+                                </td>
+                                <td>
+                                  <input type="text" formControlName="Qty" class="custom-input-field sm text-end" [onlyNumbers]>
+                                </td>
+                                <td>
+                                  <dofi-searchable-dropdown [items]="productList" formControlName="ProductName"
+                                    [placeholder]="''" [displayFields]="[ 'ProductCode','ProductName']"
+                                    [displayLabels]="[ 'Code','Name']" [labelFields]="['ProductName']"
+                                    [bindValue]="'ProductName'">
+                                  </dofi-searchable-dropdown>
+                                </td>
+                                <td>
+                                  <ng-select [items]="packageTypes" bindLabel="UOMName" bindValue="UOMCode"
+                                    formControlName="PackageType" placeholder=""></ng-select>
+                                </td>
+                                <td>
+                                  <input type="text" formControlName="GrossWeight" class="custom-input-field sm text-end"
+                                    DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
+                                </td>
+                                <td>
+                                  <input type="text" formControlName="NetWeight" class="custom-input-field sm text-end"
+                                    DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
+                                </td>
+                                <td>
+                                  <input type="text" formControlName="Volume" class="custom-input-field sm text-end"
+                                    DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
+                                </td>
+                                <td>
+                                  <ng-select formControlName="ShipmentTerms" [items]="serviceLevel" bindLabel="name"
+                                    bindValue="name" placeholder=""></ng-select>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td [attr.colspan]="quoteCargo(routeIndex).controls.length > 1 ? 11 : 10" class="p-2">
+                                  <div class="d-flex justify-content-end gap-2 mb-2">
+                                    <button class="btn btn-sm btn-info" type="button"
+                                      (click)="addQuoteProduct(routeIndex, undefined, cargoIndex)"
+                                      [disabled]="isRouteApproved(routeIndex) || disableAllModification || isBookingLockedForRoute(routeIndex) || (isEditMode && isSuspended)">
+                                      <i class="fas fa-plus me-1"></i> Add Product
+                                    </button>
+                                  </div>
+                                  <div class="table-responsive table-borderless" formArrayName="quoteProducts"
+                                    style="overflow-x: auto; overflow-y: hidden;">
+                                    <table class="table table-hover align-middle no-wrap table-sm mb-1 mt-1"
+                                      style="min-width: 1200px; width: 100%;">
+                                      <thead>
+                                        <tr class="bg-info text-center">
+                                          <th class="bg-transparent text-light" scope="col"
+                                            *ngIf="quoteProducts(routeIndex, cargoIndex).length > 1"
+                                            style="width: 20px;">Action</th>
+                                          <th class="bg-transparent text-light" scope="col" style="width: 220px;">Commodity</th>
+                                          <th class="bg-transparent text-light" scope="col" style="width: 180px;">External Pkg</th>
+                                          <th class="bg-transparent text-light" scope="col" style="width: 140px;">No of Pkg</th>
+                                          <th class="bg-transparent text-light" scope="col" style="width: 140px;">Gross Weight</th>
+                                          <th class="bg-transparent text-light" scope="col" style="width: 140px;">Net Weight</th>
+                                          <th class="bg-transparent text-light" scope="col" style="width: 140px;">CBM</th>
+                                          <th class="bg-transparent text-light" scope="col" style="width: 90px;">Is Haz</th>
+                                          <th class="bg-transparent text-light" scope="col" style="width: 180px;">Imco Class</th>
+                                          <th class="bg-transparent text-light" scope="col" style="width: 180px;">UN No</th>
+                                          <th class="bg-transparent text-light" scope="col" style="width: 180px;">Pkg Group</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        <tr *ngIf="quoteProducts(routeIndex, cargoIndex).controls.length === 0" class="text-center">
+                                          <td colspan="11" class="ps-3">No products added.</td>
+                                        </tr>
+                                        <tr *ngFor="let product of quoteProducts(routeIndex, cargoIndex).controls; let productIndex = index"
+                                          [formGroupName]="productIndex">
+                                          <td *ngIf="quoteProducts(routeIndex, cargoIndex).length > 1" data-label="Action" class="dofi-max-w-150">
+                                            <section class="action-items">
+                                              <button class="btn btn-sm btn-link text-danger mx-2"
+                                                (click)="deleteQuoteProduct(routeIndex,productIndex,product.value.QuoteProductSid,cargoIndex)"
+                                                [disabled]="isRouteApproved(routeIndex) || disableAllModification || isBookingLockedForRoute(routeIndex)">
+                                                <i class="fas fa-trash text-center fs-2"></i>
+                                              </button>
+                                            </section>
+                                          </td>
+                                          <td>
+                                            <dofi-searchable-dropdown [items]="productList" formControlName="ProductSid"
+                                              [placeholder]="''" [displayFields]="[ 'ProductCode','ProductName']"
+                                              [displayLabels]="[ 'Code','Name']" [labelFields]="['ProductName']"
+                                              [bindValue]="'ProductMasterSId'"
+                                              (itemSelected)="onProductChange($event,routeIndex,productIndex,cargoIndex)">
+                                            </dofi-searchable-dropdown>
+                                          </td>
+                                          <td>
+                                            <dofi-searchable-dropdown [items]="packageTypes" formControlName="ExternalPkg"
+                                              [placeholder]="''" [displayFields]="[ 'UOMCode','UOMName']"
+                                              [displayLabels]="[ 'Code','Name']" [labelFields]="['UOMName']"
+                                              [bindValue]="'UOMMasterSid'">
+                                            </dofi-searchable-dropdown>
+                                          </td>
+                                          <td>
+                                            <input type="text" formControlName="ExternalQty" class="custom-input-field sm text-end w-100">
+                                          </td>
+                                          <td>
+                                            <input type="text" formControlName="GrossWeight" class="custom-input-field sm text-end w-100"
+                                              DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
+                                          </td>
+                                          <td>
+                                            <input type="text" formControlName="NetWeight" class="custom-input-field sm text-end w-100"
+                                              DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
+                                          </td>
+                                          <td>
+                                            <input type="text" formControlName="Volume" class="custom-input-field sm text-end w-100"
+                                              (input)="logProduct(routeIndex,productIndex,cargoIndex)" DecimalPrecision
+                                              [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
+                                          </td>
+                                          <td>
+                                            <div class="form-check ms-2">
+                                              <input class="form-check-input" type="checkbox" formControlName="IsHaz"
+                                                (change)="toggleHazProduct(routeIndex,productIndex,cargoIndex)">
+                                            </div>
+                                          </td>
+                                          <td>
+                                            <ng-select class="ng-select" [items]="imcoList" bindLabel="ImcoName"
+                                              bindValue="ImcoMasterSid" appendTo="body" formControlName="ImcoClass"
+                                              (change)="onImcoChange(routeIndex,productIndex,$event,cargoIndex)"></ng-select>
+                                          </td>
+                                          <td>
+                                            <input type="text" class="custom-input-field sm w-100" formControlName="UnNo">
+                                          </td>
+                                          <td>
+                                            <input type="text" formControlName="PkgGroup" class="custom-input-field sm w-100">
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </td>
+                              </tr>
+                            </ng-container>
+                          </tbody>
+                        </table>
                       </div>
                       }
 
@@ -1287,29 +1264,32 @@
                             <h2 ngbAccordionHeader>
                               <button ngbAccordionButton
                                 class="d-flex justify-content-between align-items-center w-100 position-relative">
-                                <h6 class="fw-semibold my-1 text-light">{{carrier.value.CarrierName || 'Carrier
-                                  Details'}}</h6>
-                                <span class="fw-semibold my-1 text-warning ps-2" *ngIf="isEditMode">
-                                  @if(getAuthorityStatusForCarrier(routeIndex,carrierIndex)){
-                                  @if(getAuthorityStatusForCarrier(routeIndex,carrierIndex) === "Approved"){
-                                  <span class="badge bg-success">Approved</span>
-                                  } @else if(getAuthorityStatusForCarrier(routeIndex,carrierIndex) === "Rejected"){
-                                  <span class="badge bg-danger">Rejected</span>
-                                  } @else if(getAuthorityStatusForCarrier(routeIndex,carrierIndex) === "Counter"){
-                                  <span class="badge bg-secondary">Counter</span>
-                                  } @else {
-                                  <span class="badge bg-warning">Waiting for Approval</span>
-                                  }
-                                  }
-                                </span>
+                                <div class="d-flex align-items-center gap-2">
+                                  <h6 class="fw-semibold my-1 text-light mb-0">{{carrier.value.CarrierName || 'Carrier Details'}}</h6>
+                                  <span class="fw-semibold my-1 text-warning" *ngIf="isEditMode">
+                                    @if(getAuthorityStatusForCarrier(routeIndex,carrierIndex)){
+                                    @if(getAuthorityStatusForCarrier(routeIndex,carrierIndex) === "Approved"){
+                                    <span class="badge bg-success">Approved</span>
+                                    } @else if(getAuthorityStatusForCarrier(routeIndex,carrierIndex) === "Rejected"){
+                                    <span class="badge bg-danger">Rejected</span>
+                                    } @else if(getAuthorityStatusForCarrier(routeIndex,carrierIndex) === "Counter"){
+                                    <span class="badge bg-secondary">Counter</span>
+                                    } @else {
+                                    <span class="badge bg-warning">Waiting for Approval</span>
+                                    }
+                                    }
+                                  </span>
+                                </div>
 
-                                @if(quoteCarriers(routeIndex).length > 1){
-                                <button class="btn btn-sm waves-effect waves-light text-light"
-                                  (click)="deleteCarrier(routeIndex,carrierIndex,carrier.value.QuoteCarrierSid)"
-                                  [disabled]="isBookingLockedForRoute(routeIndex)">
-                                  <i-feather class="feather-sm me-1 text-danger" name="trash-2"></i-feather>
-                                </button>
-                                }
+                                <div class="d-flex align-items-center gap-2 me-4">
+                                  @if(quoteCarriers(routeIndex).length > 1){
+                                  <button type="button" class="btn btn-sm btn-link text-danger p-0"
+                                    (click)="deleteCarrier(routeIndex,carrierIndex,carrier.value.QuoteCarrierSid); $event.stopPropagation()"
+                                    [disabled]="isBookingLockedForRoute(routeIndex)">
+                                    <i-feather class="feather-sm text-danger" name="trash-2"></i-feather>
+                                  </button>
+                                  }
+                                </div>
                               </button>
                             </h2>
 

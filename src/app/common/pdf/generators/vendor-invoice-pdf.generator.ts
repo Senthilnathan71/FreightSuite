@@ -329,12 +329,18 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
   const isUAECompany = isUaeCompany(data);
 
 
-  const gstVatNo =
-    printData?.GSTVAT ||
+  const gstNo =
     printData?.GST_VAT ||
     printData?.GSTNo ||
+    printData?.GSTVAT ||
+    invoice?.customerGstVat ||
+    '';
+
+  const vatNo =
     printData?.VATNo ||
     printData?.vatNo ||
+    printData?.GST_VAT ||
+    printData?.GSTVAT ||
     invoice?.customerGstVat ||
     (data as any)?.companyVatNo ||
     '';
@@ -423,7 +429,7 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
       columns: [
         { text: 'GST No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
         { text: ':', width: COLON_WIDTH },
-        { text: gstVatNo, width: '*' }
+        { text: gstNo, width: '*' }
       ],
       margin: [0, 0, 0, 7]
     });
