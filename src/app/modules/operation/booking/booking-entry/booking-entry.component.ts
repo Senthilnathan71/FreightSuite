@@ -1723,6 +1723,11 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   get isSuspended() : boolean {
     return this.bookingData?.status !== 'A';
   }
+
+  get hasHouseJobCreated(): boolean {
+    const houseJobSid = this.bookingData?.HouseJobSid ?? this.bookingHeader?.HouseJobSid ?? this.bookingData?.houseJob?.HouseJobSid ?? this.b?.['HouseJobSid']?.getRawValue();
+    return houseJobSid !== null && houseJobSid !== undefined && `${houseJobSid}`.trim() !== '';
+  }
   
   patchValues(response: any) {
   this.isPatching = true;

@@ -1230,7 +1230,7 @@
     <div class="workspace-content" *ngIf="selectedTab === 'Cargo'">
       <div class="d-flex justify-content-end align-items-center gap-2 px-3 mb-2">
         <button class="btn btn-sm btn-info" type="button" (click)="addBookingCargo()"
-          [disabled]="selectedFCLLCL !== 'FCL' || (isEditMode && isSuspended)">
+          [disabled]="selectedFCLLCL !== 'FCL' || (isEditMode && isSuspended) || hasHouseJobCreated">
           <i class="fas fa-plus me-1"></i> Add Cargo
         </button>
       </div>
@@ -1380,7 +1380,7 @@
 
                 <div class="d-flex justify-content-end mt-2">
                   <button class="btn btn-sm btn-info" type="button" (click)="addBookingCargoProduct(cargoIndex)"
-                    [disabled]="isEditMode && isSuspended">
+                    [disabled]="(isEditMode && isSuspended) || hasHouseJobCreated">
                     <i class="fas fa-plus me-1"></i> Add Product
                   </button>
                 </div>
@@ -1750,7 +1750,7 @@
           <div class="toolbar-left"></div>
 
           <div class="toolbar-right">
-            <button class="table-action-btn primary" (click)="addProduct()" [disabled]="!isHBLNoValid() || (isEditMode && isSuspended)">
+            <button class="table-action-btn primary" (click)="addProduct()" [disabled]="!isHBLNoValid() || (isEditMode && isSuspended) || hasHouseJobCreated">
               <i class="fas fa-plus"></i> Add Product
             </button>
             <button class="table-action-btn export" (click)="reportProducts()">

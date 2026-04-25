@@ -1513,11 +1513,11 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       POO: [null],
       FPD: [null],
       CarrierName: [null],
-      isProxyCustomerFreeText: [true],
-      isProxyAgentFreeText: [true],
-      isProxyShipperFreeText: [true],
-      isProxyConsigneeFreeText: [true],
-      isProxyCarrierFreeText: [true],
+      isProxyCustomerFreeText: [false],
+      isProxyAgentFreeText: [false],
+      isProxyShipperFreeText: [false],
+      isProxyConsigneeFreeText: [false],
+      isProxyCarrierFreeText: [false],
     });
 
     this.proxyForm.get('SwitchBL')?.valueChanges.subscribe((checked) => {
@@ -4377,11 +4377,11 @@ usesDimensionalCargoFields(): boolean {
       POO: '',
       FPD: '',
       CarrierName: null,
-      isProxyCustomerFreeText: true,
-      isProxyAgentFreeText: true,
-      isProxyShipperFreeText: true,
-      isProxyConsigneeFreeText: true,
-      isProxyCarrierFreeText: true,
+      isProxyCustomerFreeText: false,
+      isProxyAgentFreeText: false,
+      isProxyShipperFreeText: false,
+      isProxyConsigneeFreeText: false,
+      isProxyCarrierFreeText: false,
     }, { emitEvent: false });
   }
 
@@ -5165,11 +5165,11 @@ resetForm() {
     POO: '',
     FPD: '',
     CarrierName: null,
-    isProxyCustomerFreeText: true,
-    isProxyAgentFreeText: true,
-    isProxyShipperFreeText: true,
-    isProxyConsigneeFreeText: true,
-    isProxyCarrierFreeText: true,
+    isProxyCustomerFreeText: false,
+    isProxyAgentFreeText: false,
+    isProxyShipperFreeText: false,
+    isProxyConsigneeFreeText: false,
+    isProxyCarrierFreeText: false,
   });
   this.applyExportToImportFieldLocks();
   this.resetDirtyState();
