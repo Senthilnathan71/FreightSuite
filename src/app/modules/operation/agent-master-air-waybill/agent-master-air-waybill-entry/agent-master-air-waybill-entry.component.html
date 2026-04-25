@@ -2705,8 +2705,8 @@
 
 
         <div class="workspace-content" [hidden]="selectedTab !== 'Connection'">
-          <app-connection screenName="Booking" [dataItems]="bookingConnectionsArr"
-            [connectionIdField]="'TransactionSid'"
+          <app-connection screenName="HouseJob" [dataItems]="bookingConnectionsArr"
+            [connectionIdField]="'HouseJobConnectionSid'"
             [resetTrigger]="resetTriggerConnection" [minDate]="minStartDate" [portList]="portList" [isFormDisabled]="isFormDisabled"
             [disableAdd]="PODandFPODsame" [vesselList]="vesselList" (dataEmitter)="handleConnectionChange($event)">
           </app-connection>

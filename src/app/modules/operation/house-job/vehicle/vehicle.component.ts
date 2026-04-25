@@ -127,10 +127,11 @@ export class VehicleComponent implements OnChanges {
     return;
   }
   const vehicle = this.vehicleDataArray[index];
+  const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
   const vehicleId = vehicle.HouseJobVehicleSid; // or BoeSid, adjust based on your actual ID field
   
   if (confirm('Are you sure you want to delete this vehicle?')) {
-    this.operationService.deleteVehicleById(vehicleId).subscribe({
+    this.operationService.deleteVehicleById(vehicleId,updatedBy).subscribe({
       next: (response) => {
         // Remove from local array on successful deletion
         this.vehicleDataArray.splice(index, 1);

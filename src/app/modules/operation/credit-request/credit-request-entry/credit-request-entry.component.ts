@@ -388,6 +388,7 @@ creditForm.get('ApprovalStatus')?.valueChanges.subscribe(() => {
     const creditGroup = this.creditRequest.at(creditIndex) as FormGroup;
     const CustomerCreditRequestSid = creditGroup.get('CustomerCreditRequestSid')?.value;
     const approvalStatus = creditGroup.get('ApprovalStatus')?.value;
+    const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
 
     if (approvalStatus && approvalStatus !== 'Pending') {
       this.appSettingService.showWarning('Only pending credit requests can be deleted.');
@@ -406,7 +407,7 @@ creditForm.get('ApprovalStatus')?.valueChanges.subscribe(() => {
     const confirmed = confirm('Are you sure you want to delete this credit request?');
     if (!confirmed) return;
 
-    this.operationService.deleteCustomerCreditRequest(CustomerCreditRequestSid).subscribe({
+    this.operationService.deleteCustomerCreditRequest(CustomerCreditRequestSid,updatedBy).subscribe({
       next: (resp: any) => {
         if (resp?.status) {
           this.removeCreditRequestRow(creditIndex, true);

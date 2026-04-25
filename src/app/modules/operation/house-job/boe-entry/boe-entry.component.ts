@@ -238,9 +238,10 @@ export class BoeEntryComponent implements OnInit, OnChanges {
       return;
     }
     const formGroup = this.boeFormArray.at(index) as FormGroup;
+    const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
 
     if (HouseJobBOESid) {
-      this.operationService.deleteBoeById(HouseJobBOESid).subscribe({
+      this.operationService.deleteBoeById(HouseJobBOESid,updatedBy).subscribe({
         next: (resp: any) => {
           if (resp.status) {
             this.boeFormArray.removeAt(index);

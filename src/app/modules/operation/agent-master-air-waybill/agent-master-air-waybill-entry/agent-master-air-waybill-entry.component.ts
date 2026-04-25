@@ -3800,8 +3800,9 @@ getVoyageTypeBasedOnDept(deptId: number) {
     }
 
   deleteBookingProduct(productIndex: number, HouseJobProductSid?: number) {
+    const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
     if (HouseJobProductSid) {
-      this.operationService.deleteHouseJobProduct(HouseJobProductSid).subscribe(
+      this.operationService.deleteHouseJobProduct(HouseJobProductSid,updatedBy).subscribe(
         (resp: any) => {
           if (resp.status) {
             this.bookingProducts.removeAt(productIndex);
