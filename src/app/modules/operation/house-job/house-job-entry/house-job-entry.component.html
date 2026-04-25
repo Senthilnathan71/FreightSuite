@@ -1389,22 +1389,23 @@
           
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('AgentName')?.value">
+              <div class="d-flex align-items-center" *ngIf="!proxyForm.get('isProxyAgentFreeText')?.value">
+                <dofi-searchable-dropdown [items]="originAgentList" formControlName="AgentName" placeholder=""
+                  [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
+                  [labelFields]="customerLookupConfig.displayFields" bindValue="CustomerName"
+                  (itemSelected)="setProxyAddress('AgentAddress',$event)" style="width: 85%">
+                </dofi-searchable-dropdown>
+                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('AgentName','isProxyAgentFreeText',$event)" style="flex-shrink:0;">
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+              </div> 
               <div class="d-flex align-items-center" *ngIf="proxyForm.get('isProxyAgentFreeText')?.value">
                 <input type="text" class="custom-input-field sm" placeholder="" formControlName="AgentName" style="width: 85%" />
                 <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('AgentName','isProxyAgentFreeText',$event)" style="flex-shrink:0;">
                   <i class="fas fa-exchange-alt"></i>
                 </button>
               </div>
-              <div class="d-flex align-items-center" *ngIf="!proxyForm.get('isProxyAgentFreeText')?.value">
-                <dofi-searchable-dropdown [items]="originAgentList" formControlName="AgentName" placeholder=""
-                  [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
-                  [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerName"
-                  (itemSelected)="setProxyAddress('AgentAddress',$event)" style="width: 85%">
-                </dofi-searchable-dropdown>
-                <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('AgentName','isProxyAgentFreeText',$event)" style="flex-shrink:0;">
-                  <i class="fas fa-exchange-alt"></i>
-                </button>
-              </div>
+              
               <label class="input-label">Agent Name</label>
             </div>
           </aside>
@@ -1425,7 +1426,7 @@
               <div class="d-flex align-items-center" *ngIf="!proxyForm.get('isProxyShipperFreeText')?.value">
                 <dofi-searchable-dropdown [items]="shipperList" formControlName="ShipperName" placeholder=""
                   [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
-                  [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerName"
+                  [labelFields]="customerLookupConfig.displayFields" bindValue="CustomerName"
                   (itemSelected)="setProxyAddress('ShipperAddress',$event)" style="width: 85%">
                 </dofi-searchable-dropdown>
                 <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('ShipperName','isProxyShipperFreeText',$event)" style="flex-shrink:0;">
@@ -1452,7 +1453,7 @@
               <div class="d-flex align-items-center" *ngIf="!proxyForm.get('isProxyConsigneeFreeText')?.value">
                 <dofi-searchable-dropdown [items]="consigneeList" formControlName="ConsigneeName" placeholder=""
                   [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
-                  [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerName"
+                  [labelFields]="customerLookupConfig.displayFields" bindValue="CustomerName"
                   (itemSelected)="setProxyAddress('ConsigneeAddress',$event)" style="width: 85%">
                 </dofi-searchable-dropdown>
                 <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('ConsigneeName','isProxyConsigneeFreeText',$event)" style="flex-shrink:0;">
@@ -1470,21 +1471,21 @@
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('POO')?.value">
-              <!-- <dofi-searchable-dropdown [items]="portList" formControlName="POO" placeholder=""
+              <dofi-searchable-dropdown [items]="portList" formControlName="POO" placeholder=""
                 [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
                 [labelFields]="portLookupConfig.labelFields" bindValue="PortCode">
-              </dofi-searchable-dropdown> -->
-              <input type="text" class="custom-input-field sm" placeholder="" formControlName="POO">
+              </dofi-searchable-dropdown>
+              <!-- <input type="text" class="custom-input-field sm" placeholder="" formControlName="POO"> -->
               <label class="input-label">POO</label>
             </div>
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('FPD')?.value">
-              <!-- <dofi-searchable-dropdown [items]="portList" formControlName="FPD" placeholder=""
+              <dofi-searchable-dropdown [items]="portList" formControlName="FPD" placeholder=""
                 [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
                 [labelFields]="portLookupConfig.labelFields" bindValue="PortCode">
-              </dofi-searchable-dropdown> -->
-              <input type="text" class="custom-input-field sm" placeholder="" formControlName="FPD">
+              </dofi-searchable-dropdown>
+              <!-- <input type="text" class="custom-input-field sm" placeholder="" formControlName="FPD"> -->
               <label class="input-label">FPD</label>
             </div>
           </aside>
@@ -1516,7 +1517,7 @@
               <div class="d-flex align-items-center" *ngIf="!proxyForm.get('isProxyCarrierFreeText')?.value">
                 <dofi-searchable-dropdown [items]="carrierList" formControlName="CarrierName" placeholder=""
                   [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
-                  [labelFields]="customerLookupConfig.labelFields" bindValue="CustomerName" style="width: 85%">
+                  [labelFields]="customerLookupConfig.displayFields" bindValue="CustomerName" style="width: 85%">
                 </dofi-searchable-dropdown>
                 <button type="button" class="btn bi bi-calendar3 px-0" (click)="toggleProxyInputType('CarrierName','isProxyCarrierFreeText',$event)" style="flex-shrink:0;">
                   <i class="fas fa-exchange-alt"></i>
