@@ -4719,13 +4719,14 @@ getVoyageTypeBasedOnDept(deptId: number) {
     const productArray = cargoIndex >= 0
       ? this.houseJobCargoProducts(cargoIndex)
       : this.bookingProducts;
+      const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
     const productGroup = productArray.at(productIndex) as FormGroup | undefined;
     if (productGroup?.get('isFromBooking')?.value) {
       this.appSettingService.showInfo('Booking-created product cannot be deleted.');
       return;
     }
     if (HouseJobProductSid) {
-      this.operationService.deleteHouseJobProduct(HouseJobProductSid).subscribe(
+      this.operationService.deleteHouseJobProduct(HouseJobProductSid,updatedBy).subscribe(
         (resp: any) => {
           if (resp.status) {
             productArray.removeAt(productIndex);
