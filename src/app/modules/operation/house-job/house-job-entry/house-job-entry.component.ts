@@ -2710,17 +2710,8 @@ private applyExportToImportFieldLocks(): void {
   for (const [, totals] of containerTotals.entries()) {
     const containerTypeMaster = this.getContainerTypeMasterData(totals.container);
  
-    const maxGross  = this.parseNumberSafe(
-      totals.container?.GrossWeight     ??
-      totals.container?.MaxGrossWeight  ??
-      containerTypeMaster?.GrossWeight
-    );
- 
-    const maxVolume = this.parseNumberSafe(
-      totals.container?.MaxVolume       ??
-      totals.container?.Volume          ??
-      containerTypeMaster?.MaxVolume
-    );
+    const maxGross  = this.parseNumberSafe(containerTypeMaster?.GrossWeight);
+    const maxVolume = this.parseNumberSafe(containerTypeMaster?.MaxVolume);
  
     const containerNumber = totals.container?.ContainerNumber ?? '';
     const containerLabel  = `${this.getContainerTypeLabel(totals.container)} — ${containerNumber}`;
@@ -3142,9 +3133,6 @@ onCurrencyChange(event: any) {
   }
 
   private submitHouseJob(resolve?: (value: boolean) => void) {
-    if (!this.validateContainerWeight()) {
-  return;
-}
     if (this.isSubmitting || this.isSaving) {
       resolve?.(false);
       return;
@@ -3225,6 +3213,12 @@ if (this.houseJobCargos.length > 0) {
     return;
   }
 }
+
+    if (!this.validateContainerWeight()) {
+      this.selectedTab = 'Cargo';
+      resolve?.(false);
+      return;
+    }
 
     if (!this.costEntryComponent.validateRateArray()) {
       this.selectedTab = 'Rate';
@@ -7259,97 +7253,125 @@ getProductFormGroup(index: number): FormGroup {
 
    
 private validateContainerWeight(): boolean {
-  // Step 1: Aggregate all products across all cargo groups
-  // Key = MasterJobContainerSid (number)
-  // Value = running totals for gross weight and volume
-  const containerTotals = new Map<
-    number,
-    { gross: number; volume: number; containerNumber: string; containerTypeSid: number }
-  >();
- 
+  const currentFormWeightByContainer = new Map<number, number>();
+  const currentFormVolumeByContainer = new Map<number, number>();
+  const savedWeightByContainer = new Map<number, number>();
+  const savedVolumeByContainer = new Map<number, number>();
+
+  // Aggregate current form products by container
   this.houseJobCargos.controls.forEach((cargoControl: AbstractControl) => {
     const cargoGroup = cargoControl as FormGroup;
-    const products = cargoGroup.get('bookingProducts') as FormArray;
-    const rawProducts = products.getRawValue(); // getRawValue respects disabled controls
- 
-    rawProducts.forEach((product: any) => {
-      const containerSid = Number(product.MasterJobContainerSid);
-      if (!containerSid) return; // skip products with no container mapped
- 
-      const gross  = parseFloat(product.GrossWeight)  || 0;
-      const volume = parseFloat(product.Volume)        || 0;
- 
-      if (containerTotals.has(containerSid)) {
-        const existing = containerTotals.get(containerSid)!;
-        existing.gross  += gross;
-        existing.volume += volume;
-      } else {
-        // Look up the master container record to get ContainerType
-        const masterContainer = this.masterJobContainers.find(
-          (c: any) => Number(c.MasterJobContainerSid) === containerSid
-        );
-        containerTotals.set(containerSid, {
-          gross,
-          volume,
-          containerNumber : masterContainer?.ContainerNumber  ?? `Container#${containerSid}`,
-          containerTypeSid: Number(masterContainer?.ContainerType ?? 0),
-        });
-      }
+    const products = (cargoGroup.get('bookingProducts') as FormArray)?.getRawValue() || [];
+
+    products.forEach((product: any) => {
+      const containerSid = Number(product?.MasterJobContainerSid) || 0;
+      if (!containerSid) return;
+
+      const grossWeight = Number(product?.GrossWeight) || 0;
+      const volume = Number(product?.Volume) || 0;
+      currentFormWeightByContainer.set(
+        containerSid,
+        (currentFormWeightByContainer.get(containerSid) || 0) + grossWeight
+      );
+      currentFormVolumeByContainer.set(
+        containerSid,
+        (currentFormVolumeByContainer.get(containerSid) || 0) + volume
+      );
     });
   });
- 
-  // Step 2: Validate each container's totals against ContainerType master limits
-  for (const [containerSid, totals] of containerTotals.entries()) {
-    const masterContainer = this.masterJobContainers.find(
-      (c: any) => Number(c.MasterJobContainerSid) === containerSid
+
+  // Aggregate saved (last-persisted) products for this house job
+  const savedProducts = Array.isArray(this.housejobData?.Products)
+    ? this.housejobData.Products
+    : [];
+
+  savedProducts.forEach((product: any) => {
+    const containerSid = Number(product?.MasterJobContainerSid) || 0;
+    if (!containerSid) return;
+
+    const grossWeight = Number(product?.GrossWeight) || 0;
+    const volume = Number(product?.Volume) || 0;
+    savedWeightByContainer.set(
+      containerSid,
+      (savedWeightByContainer.get(containerSid) || 0) + grossWeight
     );
- 
-    if (!masterContainer) {
-      this.appSettingService.showError(
-        `⚠️ Container not found (SID: ${containerSid}). Please re-map the container and try again.`
+    savedVolumeByContainer.set(
+      containerSid,
+      (savedVolumeByContainer.get(containerSid) || 0) + volume
+    );
+  });
+
+  // Collect all container SIDs from both maps
+  const allContainerSids = new Set([
+    ...currentFormWeightByContainer.keys(),
+    ...currentFormVolumeByContainer.keys(),
+  ]);
+
+  for (const containerSid of allContainerSids) {
+    const container = this.masterJobContainers.find(
+      (item: any) => Number(item?.MasterJobContainerSid) === containerSid
+    );
+
+    if (!container) {
+      this.appSettingService.showWarning(
+        `Container not found for SID ${containerSid}. Please reselect the container.`
       );
       return false;
     }
- 
-    // Find ContainerType master to get max limits
-    const containerTypeMaster = this.containerTypeList.find(
-      (ct: any) => Number(ct.ContainerTypeMasterSid) === totals.containerTypeSid
+
+    const containerType = this.containerTypeList.find(
+      (item: any) => Number(item?.ContainerTypeMasterSid) === Number(container?.ContainerType)
     );
- 
-    // Parse limits — 0 means "no limit configured"
-    const maxGross  = parseFloat(containerTypeMaster?.GrossWeight ?? '0') || 0;
-    const maxVolume = parseFloat(containerTypeMaster?.MaxVolume    ?? '0') || 0;
-    const containerLabel = `${containerTypeMaster?.ContainerName ?? 'Unknown'} — ${totals.containerNumber}`;
- 
-    // ── Gross Weight Check ──────────────────────────────────
-    if (maxGross > 0 && totals.gross > maxGross) {
-      this.appSettingService.showError(
-        `🚫 Gross Weight Exceeded!\n\n` +
-        `Container  : ${containerLabel}\n` +
-        `Max Allowed: ${maxGross.toLocaleString()} kg\n` +
-        `Entered    : ${totals.gross.toLocaleString()} kg\n` +
-        `Over by    : ${(totals.gross - maxGross).toLocaleString()} kg\n\n` +
-        `⚠️ Please reduce the gross weight across all house jobs linked to this container.`
-      );
-      return false;
+    const containerNumber = container?.ContainerNumber || `Container ${containerSid}`;
+
+    // ── Gross Weight Validation ─────────────────────────────
+    const maxGrossWeight = Number(containerType?.GrossWeight) || 0;
+    if (maxGrossWeight > 0) {
+      const overallGrossWeight = Number(container?.GrossWeight) || 0;
+      const savedCurrentHouseWeight = savedWeightByContainer.get(containerSid) || 0;
+      const otherHouseJobsWeight = Math.max(0, overallGrossWeight - savedCurrentHouseWeight);
+      const currentFormWeight = currentFormWeightByContainer.get(containerSid) || 0;
+      const totalWeight = otherHouseJobsWeight + currentFormWeight;
+
+      if (totalWeight > maxGrossWeight) {
+        this.appSettingService.showWarning(
+          `Gross Weight Limit Exceeded!\n\n` +
+          `Container  : ${containerNumber}\n` +
+          `Max Allowed: ${maxGrossWeight.toLocaleString()} kg\n` +
+          `Other Jobs : ${otherHouseJobsWeight.toLocaleString()} kg\n` +
+          `This House : ${currentFormWeight.toLocaleString()} kg\n` +
+          `Total Now  : ${totalWeight.toLocaleString()} kg`
+        );
+        return false;
+      }
     }
- 
-    // ── Volume Check ────────────────────────────────────────
-    if (maxVolume > 0 && totals.volume > maxVolume) {
-      this.appSettingService.showError(
-        `🚫 Volume (CBM) Exceeded!\n\n` +
-        `Container  : ${containerLabel}\n` +
-        `Max Allowed: ${maxVolume.toLocaleString()} CBM\n` +
-        `Entered    : ${totals.volume.toLocaleString()} CBM\n` +
-        `Over by    : ${(totals.volume - maxVolume).toLocaleString()} CBM\n\n` +
-        `⚠️ Please reduce the volume across all house jobs linked to this container.`
-      );
-      return false;
+
+    // ── Volume Validation ───────────────────────────────────
+    const maxVolume = Number(containerType?.MaxVolume) || 0;
+    if (maxVolume > 0) {
+      const overallVolume = Number(container?.Volume) || 0;
+      const savedCurrentHouseVolume = savedVolumeByContainer.get(containerSid) || 0;
+      const otherHouseJobsVolume = Math.max(0, overallVolume - savedCurrentHouseVolume);
+      const currentFormVolume = currentFormVolumeByContainer.get(containerSid) || 0;
+      const totalVolume = otherHouseJobsVolume + currentFormVolume;
+
+      if (totalVolume > maxVolume) {
+        this.appSettingService.showWarning(
+          `Volume (CBM) Limit Exceeded!\n\n` +
+          `Container  : ${containerNumber}\n` +
+          `Max Allowed: ${maxVolume.toLocaleString()} CBM\n` +
+          `Other Jobs : ${otherHouseJobsVolume.toLocaleString()} CBM\n` +
+          `This House : ${currentFormVolume.toLocaleString()} CBM\n` +
+          `Total Now  : ${totalVolume.toLocaleString()} CBM`
+        );
+        return false;
+      }
     }
   }
- 
-  return true; // all containers passed
+
+  return true;
 }
+
 
 
   isPrintOptionVisible(reportName: string): boolean {
