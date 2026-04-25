@@ -12,6 +12,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 })
 export class PrintFooterComponent {
     @Input() showFooterNote: boolean = false;
+    @Input() position: 'absolute' | 'static' = 'absolute';
     userData: any;
     currentCompany: any;
     currentBranch: any;

@@ -5,7 +5,7 @@
 
 import { PackingListPdfData } from '../interfaces/pdf-document.interfaces';
 import { buildHeader } from '../builders/pdf-header.builder';
-import { buildDivider, buildSectionTitle, buildTermsSection } from '../builders/pdf-section.builder';
+import { buildDivider } from '../builders/pdf-section.builder';
 import { createFooterFunction } from '../builders/pdf-footer.builder';
 import { getPdfStyles, PDF_DEFAULT_CONFIG } from '../styles/pdf-styles';
 import { formatDate, formatNumber } from '../helpers/pdf-formatters';
@@ -14,7 +14,7 @@ export function generatePackingListDocument(data: PackingListPdfData): any {
   return {
     pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
     pageOrientation: data.config?.pageOrientation || PDF_DEFAULT_CONFIG.pageOrientation,
-    pageMargins: data.config?.pageMargins || [20, 20, 20, 80],
+    pageMargins: data.config?.pageMargins || [20, 20, 20, 55],
     background: function (currentPage, pageSize) {
       return {
         canvas: [
@@ -52,7 +52,8 @@ export function generatePackingListDocument(data: PackingListPdfData): any {
     ],
     footer: createFooterFunction(data.userData, {
       showPageNumbers: true,
-      pageMargins: [30, 8, 30, 0]
+      showDisclaimer: false,
+      pageMargins: [15, 10, 15, 2]
     }),
     styles: getPdfStyles(),
     defaultStyle: PDF_DEFAULT_CONFIG.defaultStyle
@@ -260,12 +261,28 @@ function buildRemarksSection(data: PackingListPdfData): any {
 }
 
 function buildPackingTermsSection(data: PackingListPdfData): any {
-  if (!data.terms || data.terms.length === 0) return { text: '' };
+  const terms = (data.terms || []).filter(Boolean);
+  if (terms.length === 0) return { text: '' };
 
-  return buildTermsSection(
-    data.terms.map(t => ({ content: t })),
-    { title: 'Terms and Conditions', margin: [0, 6, 0, 0] }
-  );
+  return {
+    stack: [
+      {
+        text: 'Terms and Conditions',
+        bold: true,
+        fontSize: 12,
+        margin: [15, 8, 0, 4]
+      },
+      {
+        ul: terms.map(term => ({
+          text: term,
+          fontSize: 10,
+          margin: [0, 1, 0, 2]
+        })),
+        margin: [28, 0, 15, 0]
+      }
+    ],
+    margin: [0, 0, 0, 0]
+  };
 }
 
 export function transformPackingListApiData(
@@ -335,7 +352,7 @@ export function transformPackingListApiData(
     },
     logo,
     selectedFclLcl: options?.selectedFclLcl || 'LCL',
-    terms: (options?.terms || []).map((t: any) => t?.TandC || t?.content || ''),
+    terms: (options?.terms || []).map((t: any) => t?.TandC || t?.Terms || t?.content || t || ''),
     packing: {
       shipperName: housejobData?.ShipperName || '',
       shipperAddress: housejobData?.ShipperAddress || '',
