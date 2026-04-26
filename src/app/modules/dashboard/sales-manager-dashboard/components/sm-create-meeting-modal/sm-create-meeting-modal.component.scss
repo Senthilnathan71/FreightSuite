@@ -32,7 +32,7 @@
 .info-card {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 14px;
   margin-bottom: 20px;
 }
@@ -84,15 +84,15 @@
   width: 100%;
   padding: 8px 12px;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 13px;
   color: #1e293b;
   background: #fff;
 
   &:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: #0f766e;
+    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
   }
 }
 
@@ -100,15 +100,15 @@
   width: 100%;
   padding: 8px 12px;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 13px;
   color: #1e293b;
   resize: vertical;
 
   &:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: #0f766e;
+    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
   }
 }
 
@@ -131,15 +131,15 @@
   }
 
   &.active {
-    background: #044a6c;
+    background: #0f766e;
     color: #fff;
-    border-color: #044a6c;
+    border-color: #0f766e;
   }
 }
 
 .btn {
   padding: 8px 16px;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -156,11 +156,11 @@
   }
 
   &.btn-primary {
-    background: #044a6c;
+    background: #0f766e;
     color: #fff;
 
     &:hover:not(:disabled) {
-      background: #05608D;
+      background: #14b8a6;
     }
 
     &:disabled {

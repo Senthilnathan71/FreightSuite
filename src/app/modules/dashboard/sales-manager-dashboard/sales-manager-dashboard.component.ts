@@ -29,6 +29,7 @@ import {
   AgingRow,
   MeetingsBoardData,
   KpiCardConfig,
+  ActionCenterItem,
 } from '../interfaces/sales-manager-dashboard.interfaces';
 
 // Sub-components
@@ -43,6 +44,7 @@ import { SmResponseTimesComponent } from './components/sm-response-times/sm-resp
 import { SmAgingChartComponent } from './components/sm-aging-chart/sm-aging-chart.component';
 import { SmAlertsComponent } from './components/sm-alerts/sm-alerts.component';
 import { SmActivityFeedComponent } from './components/sm-activity-feed/sm-activity-feed.component';
+import { SmTopPerformersComponent } from './components/sm-top-performers/sm-top-performers.component';
 
 // Modals
 import { SmDrillDownModalComponent } from './components/sm-drill-down-modal/sm-drill-down-modal.component';
@@ -69,6 +71,7 @@ import { SmReminderModalComponent } from './components/sm-reminder-modal/sm-remi
     SmAgingChartComponent,
     SmAlertsComponent,
     SmActivityFeedComponent,
+    SmTopPerformersComponent,
   ],
   templateUrl: './sales-manager-dashboard.component.html',
   styleUrls: ['./sales-manager-dashboard.component.scss'],
@@ -94,9 +97,16 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
   selectedSalespersonId: number | null = null;
   readonly maxDateTo: NgbDateStruct = toNgbDateStruct(new Date())!;
 
+  // V2 UI state
+  dateDropdownOpen = false;
+  showAllKpis = false;
+  liteMode = false;
+
   // Data
   salespersons: SalespersonInfo[] = [];
   counts: SalesManagerCounts | null = null;
+  primaryKpiCards: KpiCardConfig[] = [];
+  secondaryKpiCards: KpiCardConfig[] = [];
   kpiCards: KpiCardConfig[] = [];
   scoreboard: ScoreboardRow[] = [];
   weeklyTrend: WeeklyTrendPoint[] = [];
@@ -105,6 +115,7 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
   alerts: AtRiskAlert[] = [];
   aging: AgingRow[] = [];
   meetingsBoard: MeetingsBoardData | null = null;
+  actionCenterItems: ActionCenterItem[] = [];
 
   // Loading states
   countsLoading = false;
@@ -149,6 +160,33 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
         this.salespersons = resp.data || [];
       },
     });
+  }
+
+  // ─── V2 UI HELPERS ──────────────────────────────────────────
+
+  get activePresetLabel(): string {
+    switch (this.activePreset) {
+      case 'today': return 'Today';
+      case 'week': return 'This Week';
+      case 'month': return 'This Month';
+      case 'quarter': return 'This Quarter';
+      case 'fy': return 'Financial Year';
+      default: return 'Custom Range';
+    }
+  }
+
+  get selectedSalespersonLabel(): string {
+    if (!this.selectedSalespersonId) return 'All Salespersons';
+    const sp = this.salespersons.find(s => s.UserMasterSid === this.selectedSalespersonId);
+    return sp?.userName || 'Selected';
+  }
+
+  toggleDateDropdown() {
+    this.dateDropdownOpen = !this.dateDropdownOpen;
+  }
+
+  closeDateDropdown() {
+    this.dateDropdownOpen = false;
   }
 
   // ─── FILTER CONTROLS ────────────────────────────────────────────
@@ -206,6 +244,7 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
       }
     }
 
+    this.closeDateDropdown();
     this.applyFilters();
   }
 
@@ -273,6 +312,7 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
       next: (resp) => {
         this.counts = resp.data;
         this.buildKpiCards();
+        this.buildActionCenter();
         this.countsLoading = false;
       },
       error: () => {
@@ -373,7 +413,39 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
   private buildKpiCards() {
     if (!this.counts) return;
     const c = this.counts.counts;
-    this.kpiCards = [
+    const f = this.counts.funnel;
+
+    // 5 primary hero KPIs
+    this.primaryKpiCards = [
+      {
+        key: 'totalLeads', label: 'Total Leads', icon: 'fas fa-funnel-dollar',
+        colorClass: 'primary', value: f.leadsCreated, sectionNumber: 0,
+        isPrimary: true, percentChange: 12.5, changeDirection: 'up', progressPercent: 75
+      },
+      {
+        key: 'meetings', label: 'Meetings', icon: 'fas fa-calendar-check',
+        colorClass: 'primary', value: c.meetingsScheduled, sectionNumber: 2,
+        isPrimary: true, percentChange: 8.2, changeDirection: 'up', progressPercent: 60
+      },
+      {
+        key: 'quotes', label: 'Quotes', icon: 'fas fa-file-invoice',
+        colorClass: 'primary', value: f.quoteCreated, sectionNumber: 0,
+        isPrimary: true, percentChange: 5.1, changeDirection: 'up', progressPercent: 45
+      },
+      {
+        key: 'conversions', label: 'Conversions', icon: 'fas fa-user-check',
+        colorClass: 'primary', value: f.convertedToCustomer, sectionNumber: 0,
+        isPrimary: true, percentChange: 3.4, changeDirection: 'down', progressPercent: 30
+      },
+      {
+        key: 'revenue', label: 'Revenue', icon: 'fas fa-dollar-sign',
+        colorClass: 'primary', value: 120950, sectionNumber: 0,
+        isPrimary: true, isCurrency: true, percentChange: 15.8, changeDirection: 'up', progressPercent: 82
+      },
+    ];
+
+    // 8 detailed secondary KPIs (original ones)
+    this.secondaryKpiCards = [
       { key: 'leads', label: 'Leads — No Meeting', icon: 'fas fa-user-plus', colorClass: 'leads', value: c.leadsNoMeeting, sectionNumber: 1 },
       { key: 'meetings', label: 'Meetings Scheduled', icon: 'fas fa-calendar-check', colorClass: 'meetings', value: c.meetingsScheduled, sectionNumber: 2 },
       { key: 'followups', label: 'Follow-Ups Pending', icon: 'fas fa-phone', colorClass: 'followups', value: c.followUpsPending, sectionNumber: 3 },
@@ -382,6 +454,33 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
       { key: 'enquiry', label: 'Enquiry — No Quotation', icon: 'fas fa-search', colorClass: 'enquiry', value: c.enquiriesNoQuotation, sectionNumber: 6 },
       { key: 'pending', label: 'Quote Pending Approval', icon: 'fas fa-hourglass-half', colorClass: 'pending', value: c.quotesNotApproved, sectionNumber: 7 },
       { key: 'approved', label: 'Approved — No Booking', icon: 'fas fa-check-circle', colorClass: 'approved', value: c.quotesNoBooking, sectionNumber: 8 },
+    ];
+
+    // Combined for backward compat
+    this.kpiCards = [...this.primaryKpiCards, ...this.secondaryKpiCards];
+  }
+
+  // ─── ACTION CENTER ─────────────────────────────────────────────
+
+  private buildActionCenter() {
+    if (!this.counts) return;
+    const c = this.counts.counts;
+    this.actionCenterItems = [
+      {
+        key: 'noFollowUp', title: 'Leads Without Follow-Up',
+        subtitle: 'Needs immediate attention',
+        count: c.followUpsPending, icon: 'fas fa-phone-slash', colorClass: 'warning'
+      },
+      {
+        key: 'quotesPending', title: 'Quotes Pending Approval',
+        subtitle: 'Awaiting manager review',
+        count: c.quotesNotApproved, icon: 'fas fa-hourglass-half', colorClass: 'info'
+      },
+      {
+        key: 'overduesMeetings', title: 'Overdue Meetings',
+        subtitle: 'Past scheduled date',
+        count: c.meetingsOverdue, icon: 'fas fa-calendar-times', colorClass: 'danger'
+      },
     ];
   }
 

@@ -42,8 +42,8 @@ export class SmRadarChartComponent implements OnChanges {
         { name: p1.userName, data: [p1.s1, p1.s2, p1.s3, p1.s4, p1.s5, p1.s6, p1.s7, p1.s8] },
         { name: p2.userName, data: [p2.s1, p2.s2, p2.s3, p2.s4, p2.s5, p2.s6, p2.s7, p2.s8] }
       ],
-      chart: { type: 'radar', height: 320, toolbar: { show: false }, fontFamily: 'Inter, sans-serif' },
-      colors: ['#05608D', '#f59e0b'],
+      chart: { type: 'radar', height: 240, toolbar: { show: false }, fontFamily: 'Inter, sans-serif' },
+      colors: ['#0f766e', '#6366f1'],
       xaxis: { categories: this.categories, labels: { style: { fontSize: '11px', colors: '#64748b' } } },
       yaxis: { show: false },
       stroke: { width: 2 },

@@ -129,4 +129,28 @@ export interface KpiCardConfig {
   colorClass: string;
   value: number;
   sectionNumber: number;
+  percentChange?: number;
+  changeDirection?: 'up' | 'down' | 'flat';
+  progressPercent?: number;
+  isCurrency?: boolean;
+  isPrimary?: boolean;
+}
+
+export interface TopPerformer {
+  UserMasterSid: number;
+  userName: string;
+  userEmail: string;
+  avatarColor: string;
+  score: number;
+  leadsCount: number;
+  rank: number;
+}
+
+export interface ActionCenterItem {
+  key: string;
+  title: string;
+  subtitle: string;
+  count: number;
+  icon: string;
+  colorClass: string;
 }

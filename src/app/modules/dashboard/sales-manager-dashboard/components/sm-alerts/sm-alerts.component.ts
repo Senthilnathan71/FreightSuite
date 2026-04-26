@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AtRiskAlert } from '../../../interfaces/sales-manager-dashboard.interfaces';
+import { AtRiskAlert, ActionCenterItem } from '../../../interfaces/sales-manager-dashboard.interfaces';
 
 @Component({
   selector: 'app-sm-alerts',
@@ -12,6 +12,8 @@ import { AtRiskAlert } from '../../../interfaces/sales-manager-dashboard.interfa
 export class SmAlertsComponent {
   @Input() alerts: AtRiskAlert[] = [];
   @Input() loading = false;
+  @Input() actionCenterItems: ActionCenterItem[] = [];
+  @Input() redesignMode = false;
 
   getIcon(alertType: string): string {
     switch (alertType) {
@@ -32,6 +34,24 @@ export class SmAlertsComponent {
       case 'unconverted_hightouch': return 'Unconverted High-Touch';
       case 'overload': return 'Overload';
       default: return alertType;
+    }
+  }
+
+  getItemIconBg(colorClass: string): string {
+    switch (colorClass) {
+      case 'danger': return '#fef2f2';
+      case 'warning': return '#fffbeb';
+      case 'info': return '#f0fdfa';
+      default: return '#f1f5f9';
+    }
+  }
+
+  getItemIconColor(colorClass: string): string {
+    switch (colorClass) {
+      case 'danger': return '#ef4444';
+      case 'warning': return '#f59e0b';
+      case 'info': return '#0f766e';
+      default: return '#94a3b8';
     }
   }
 }

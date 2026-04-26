@@ -22,8 +22,8 @@ export class SmResponseTimesComponent implements OnChanges {
     const avgQA = this.average(this.data.map(d => d.avgQuoteToApproval));
 
     this.gauges = [
-      { label: 'Lead to Meeting', value: avgLM, color: '#06b6d4', chartOptions: this.buildGauge(avgLM, 30, '#06b6d4') },
-      { label: 'Lead to Customer', value: avgLC, color: '#8b5cf6', chartOptions: this.buildGauge(avgLC, 90, '#8b5cf6') },
+      { label: 'Lead to Meeting', value: avgLM, color: '#0f766e', chartOptions: this.buildGauge(avgLM, 30, '#0f766e') },
+      { label: 'Lead to Customer', value: avgLC, color: '#6366f1', chartOptions: this.buildGauge(avgLC, 90, '#6366f1') },
       { label: 'Quote to Approval', value: avgQA, color: '#f59e0b', chartOptions: this.buildGauge(avgQA, 30, '#f59e0b') },
     ];
   }
@@ -37,7 +37,7 @@ export class SmResponseTimesComponent implements OnChanges {
     const pct = Math.min(100, Math.round((value / maxDays) * 100));
     return {
       series: [pct],
-      chart: { type: 'radialBar', height: 180, sparkline: { enabled: true } },
+      chart: { type: 'radialBar', height: 130, sparkline: { enabled: true } },
       colors: [color],
       plotOptions: {
         radialBar: {
@@ -47,7 +47,7 @@ export class SmResponseTimesComponent implements OnChanges {
           dataLabels: {
             name: { show: false },
             value: {
-              show: true, fontSize: '20px', fontWeight: 700, color: '#0f172a',
+              show: true, fontSize: '16px', fontWeight: 700, color: '#0f172a',
               formatter: () => `${value}d`
             }
           }

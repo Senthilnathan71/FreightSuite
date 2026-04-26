@@ -20,13 +20,13 @@ export class SmFunnelChartComponent implements OnChanges {
     const d = this.data;
     const categories = ['Leads Created', 'Meetings Held', 'Converted to Customer', 'Quote Created', 'Quote Approved', 'Booking Created'];
     const values = [d.leadsCreated, d.meetingsHeld, d.convertedToCustomer, d.quoteCreated, d.quoteApproved, d.bookingCreated];
-    const colors = ['#8b5cf6', '#06b6d4', '#05608D', '#4f46e5', '#f59e0b', '#16a34a'];
+    const colors = ['#0f766e', '#14b8a6', '#5eead4', '#6366f1', '#f59e0b', '#16a34a'];
 
     this.chartOptions = {
       series: [{ name: 'Count', data: values }],
-      chart: { type: 'bar', height: 280, toolbar: { show: false }, fontFamily: 'Inter, sans-serif' },
+      chart: { type: 'bar', height: 240, toolbar: { show: false }, fontFamily: 'Inter, sans-serif' },
       plotOptions: {
-        bar: { horizontal: true, distributed: true, borderRadius: 4, barHeight: '70%' }
+        bar: { horizontal: true, distributed: true, borderRadius: 6, barHeight: '70%' }
       },
       colors,
       dataLabels: {

@@ -1,15 +1,21 @@
 <div class="scoreboard-wrap">
   <div class="scoreboard-header">
-    <h2><i class="fas fa-trophy" style="color:#f59e0b;margin-right:6px"></i> Salesperson Scoreboard</h2>
-    <button class="download-btn" (click)="downloadExcel()" *ngIf="rows.length" title="Download as Excel">
-      <i class="fas fa-file-excel"></i> Download
-    </button>
+    <div class="header-left">
+      <i class="fas fa-users" style="color:#0f766e"></i>
+      <h2>Sales Team Overview</h2>
+      <span class="member-count" *ngIf="rows.length">{{ rows.length }} members</span>
+    </div>
+    <div class="header-actions">
+      <button class="download-btn" (click)="downloadExcel()" *ngIf="rows.length" title="Download as Excel">
+        <i class="fas fa-download"></i> Download
+      </button>
+    </div>
   </div>
   <div style="overflow-x:auto">
     <table class="scoreboard-table">
       <thead>
         <tr>
-          <th style="min-width:180px;text-align:left;padding-left:20px" (click)="sort('userName')">Salesperson</th>
+          <th class="th-person" (click)="sort('userName')">Salesperson</th>
           <th (click)="sort('s1')"><div>S1</div><div class="th-sub">Leads<br>No Mtg</div></th>
           <th (click)="sort('s2')"><div>S2</div><div class="th-sub">Meetings<br>Sched.</div></th>
           <th (click)="sort('s3')"><div>S3</div><div class="th-sub">Follow-<br>Ups</div></th>
@@ -25,7 +31,7 @@
       </thead>
       <tbody>
         <tr *ngFor="let row of sortedRows" (click)="onRowClick(row)">
-          <td style="text-align:left;padding-left:20px">
+          <td class="td-person">
             <div class="sp-cell">
               <div class="sp-avatar" [style.background]="row.avatarColor">{{ getInitials(row.userName) }}</div>
               <div class="sp-info">
@@ -44,7 +50,10 @@
           <td><span class="cell-value" [ngClass]="getCellClass(row.s8)">{{ row.s8 }}</span></td>
           <td><span class="conv-rate" [ngClass]="getConvRateClass(getConversionRate(row))">{{ getConversionRate(row) }}%</span></td>
           <td><strong>{{ row.total }}</strong></td>
-          <td>
+          <td class="td-actions">
+            <button class="action-btn view" (click)="onRowClick(row); $event.stopPropagation()" title="View Details">
+              <i class="fas fa-eye"></i>
+            </button>
             <button class="action-btn remind" (click)="onRemind($event, row)" title="Send Reminder">
               <i class="fas fa-bell"></i>
             </button>
@@ -52,9 +61,9 @@
         </tr>
         <!-- Team Total -->
         <tr class="total-row" *ngIf="rows.length">
-          <td style="text-align:left;padding-left:20px;font-weight:700">
+          <td class="td-person">
             <div class="sp-cell">
-              <div class="sp-avatar" style="background:#0f172a"><i class="fas fa-users" style="font-size:12px"></i></div>
+              <div class="sp-avatar team-avatar"><i class="fas fa-users" style="font-size:12px"></i></div>
               <div class="sp-info">
                 <div class="sp-name">TEAM TOTAL</div>
                 <div class="sp-email">{{ rows.length }} salespersons</div>

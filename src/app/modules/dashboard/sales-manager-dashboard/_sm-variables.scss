@@ -1,0 +1,38 @@
+// ── Sales Manager Dashboard — Design Tokens ──
+$sm-primary: #05608D;
+$sm-primary-light: #0891b2;
+$sm-primary-bg: #f4f9fd;
+$sm-success: #16a34a;
+$sm-danger: #ef4444;
+$sm-bg-body: #f4f7fb;
+$sm-bg-card: #ffffff;
+$sm-text-primary: #0f172a;
+$sm-text-secondary: #0f172a;
+$sm-text-muted: #0f172a;
+$sm-border: #e2e8f0;
+$sm-radius-card: 12px;
+
+$sm-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+$sm-shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+// Chart palette
+$sm-chart-colors: #0f766e, #6366f1, #f59e0b, #ef4444, #8b5cf6, #06b6d4;
+
+// ── Mixins ──
+@mixin sm-card {
+  background: $sm-bg-card;
+  border-radius: $sm-radius-card;
+  border: none;
+  box-shadow: $sm-shadow-card;
+  padding: 14px;
+}
+
+@mixin sm-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: $sm-text-primary;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}

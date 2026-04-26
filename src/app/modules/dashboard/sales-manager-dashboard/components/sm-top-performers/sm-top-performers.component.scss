@@ -1,0 +1,95 @@
+@import '../../sm-variables';
+
+.top-performers-card {
+  @include sm-card;
+  height: 100%;
+}
+
+.section-header {
+  @include sm-section-title;
+  h3 { font-size: 13px; font-weight: 700; color: $sm-text-primary; margin: 0; }
+}
+
+.performers-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.performer-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  border-radius: 10px;
+  border: 1px solid $sm-border;
+  background: #fafbfc;
+  transition: all 0.2s;
+  text-align: center;
+
+  &:hover {
+    border-color: $sm-primary-light;
+    background: $sm-primary-bg;
+    box-shadow: 0 2px 8px rgba(15, 118, 110, 0.08);
+  }
+}
+
+.rank-badge {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  margin-bottom: 6px;
+
+  i { font-size: 11px; }
+}
+
+.performer-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.performer-info {
+  margin-bottom: 6px;
+}
+
+.performer-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: $sm-text-primary;
+  line-height: 1.2;
+}
+
+.performer-email {
+  font-size: 9px;
+  color: $sm-text-muted;
+}
+
+.performer-stats {
+  .stat-score {
+    font-size: 18px;
+    font-weight: 700;
+    color: $sm-primary;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 8px;
+    color: $sm-text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 1px;
+  }
+}
+
+@media (max-width: 500px) {
+  .performers-grid { grid-template-columns: 1fr; }
+}

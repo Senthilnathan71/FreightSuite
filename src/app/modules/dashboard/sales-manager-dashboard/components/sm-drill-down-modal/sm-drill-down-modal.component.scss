@@ -10,7 +10,7 @@
   justify-content: space-between;
   padding: 16px 20px;
   border-bottom: 1px solid #e2e8f0;
-  background: linear-gradient(135deg, #044a6c, #05608D);
+  background: linear-gradient(135deg, #0f766e, #14b8a6);
 
   .header-info {
     display: flex;
@@ -59,7 +59,7 @@
 .mini-card {
   text-align: center;
   padding: 10px 6px;
-  border-radius: 8px;
+  border-radius: 12px;
   background: #fff;
   border: 1px solid #e2e8f0;
   transition: box-shadow 0.2s;
@@ -116,9 +116,9 @@
   }
 
   &.active {
-    color: #044a6c;
+    color: #0f766e;
     font-weight: 600;
-    border-bottom-color: #044a6c;
+    border-bottom-color: #0f766e;
   }
 
   .tab-label {
@@ -130,12 +130,12 @@
     background: #e2e8f0;
     color: #475569;
     padding: 1px 6px;
-    border-radius: 8px;
+    border-radius: 12px;
     font-weight: 600;
   }
 
   &.active .tab-count {
-    background: #044a6c;
+    background: #0f766e;
     color: #fff;
   }
 }
@@ -162,7 +162,7 @@
   gap: 8px;
   padding: 8px 12px;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: 12px;
   background: #f8fafc;
   margin-bottom: 16px;
 
@@ -184,13 +184,13 @@
     padding: 4px 12px;
     border: none;
     border-radius: 6px;
-    background: #044a6c;
+    background: #0f766e;
     color: #fff;
     font-size: 12px;
     cursor: pointer;
 
     &:hover {
-      background: #05608D;
+      background: #14b8a6;
     }
   }
 }
@@ -204,7 +204,7 @@
     width: 32px;
     height: 32px;
     border: 3px solid #e2e8f0;
-    border-top-color: #044a6c;
+    border-top-color: #0f766e;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
     margin: 0 auto 10px;
@@ -320,9 +320,9 @@
   }
 
   &.active {
-    background: #044a6c;
+    background: #0f766e;
     color: #fff;
-    border-color: #044a6c;
+    border-color: #0f766e;
   }
 
   &:disabled {

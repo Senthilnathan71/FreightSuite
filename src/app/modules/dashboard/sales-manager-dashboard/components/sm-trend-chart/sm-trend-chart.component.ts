@@ -30,10 +30,10 @@ export class SmTrendChartComponent implements OnChanges {
         { name: 'Conversions', data: this.data.map(d => d.conversions) }
       ],
       chart: {
-        type: 'area', height: 280, toolbar: { show: false }, fontFamily: 'Inter, sans-serif',
+        type: 'area', height: 240, toolbar: { show: false }, fontFamily: 'Inter, sans-serif',
         zoom: { enabled: false }
       },
-      colors: ['#8b5cf6', '#06b6d4', '#16a34a'],
+      colors: ['#0f766e', '#6366f1', '#f59e0b'],
       stroke: { curve: 'smooth', width: 2 },
       fill: {
         type: 'gradient',

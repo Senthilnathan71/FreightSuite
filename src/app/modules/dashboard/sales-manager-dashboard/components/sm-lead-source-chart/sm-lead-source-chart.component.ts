@@ -15,13 +15,13 @@ export class SmLeadSourceChartComponent implements OnChanges {
 
   chartOptions: any = {};
 
-  private colors = ['#8b5cf6', '#06b6d4', '#f59e0b', '#ec4899', '#4f46e5', '#16a34a', '#ef4444', '#f97316', '#0d9488', '#6366f1', '#a855f7', '#14b8a6'];
+  private colors = ['#0f766e', '#6366f1', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316', '#14b8a6', '#4f46e5', '#a855f7', '#16a34a'];
 
   ngOnChanges() {
     if (!this.data?.length) return;
     this.chartOptions = {
       series: this.data.map(d => d.count),
-      chart: { type: 'donut', height: 280, fontFamily: 'Inter, sans-serif' },
+      chart: { type: 'donut', height: 240, fontFamily: 'Inter, sans-serif' },
       labels: this.data.map(d => d.source),
       colors: this.colors.slice(0, this.data.length),
       legend: {
