@@ -87,6 +87,8 @@ import { VoucherPeriodEntryComponent } from './voucher-period/voucher-period-ent
 import { StandardChargeListComponent } from './standard-charge/standard-charge-list/standard-charge-list.component';
 import { StandardChargeEntryComponent } from './standard-charge/standard-charge-entry/standard-charge-entry.component';
 import { PrintMasterListComponent } from './print-master/print-master-list/print-master-list.component';
+import { PreCustomerEventListComponent } from './pre-customer-event/pre-customer-event-list/pre-customer-event-list.component';
+import { PreCustomerEventEntryComponent } from './pre-customer-event/pre-customer-event-entry/pre-customer-event-entry.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -126,6 +128,30 @@ export const MasterRoutes: Routes = [
         data: {
           title: 'Edit Department',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Department' }],
+        },
+      },
+      {
+        path: 'pre-customer-event/list',
+        component: PreCustomerEventListComponent,
+        data: {
+          title: 'Pre-Customer Events',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Pre-Customer Events' }],
+        },
+      },
+      {
+        path: 'pre-customer-event/entry',
+        component: PreCustomerEventEntryComponent,
+        data: {
+          title: 'Add Event',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Pre-Customer Events' }],
+        },
+      },
+      {
+        path: 'pre-customer-event/entry/:id',
+        component: PreCustomerEventEntryComponent,
+        data: {
+          title: 'Edit Event',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Pre-Customer Events' }],
         },
       },
       {

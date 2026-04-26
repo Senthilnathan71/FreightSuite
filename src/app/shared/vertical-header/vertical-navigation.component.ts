@@ -11,7 +11,7 @@ import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
 import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Branch } from 'src/app/modules/crm-mobile/Interfaces/branch.interface';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
-import { Subject, takeUntil, debounceTime, distinctUntilChanged, switchMap, of, catchError, take } from 'rxjs';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged, switchMap, of, catchError, take, interval } from 'rxjs';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { DocumentSearchResult } from './document-search.interface';
 import { VerticalSidebarService } from '../vertical-sidebar/vertical-sidebar.service';
@@ -29,6 +29,8 @@ interface notifications {
   title: string;
   subject: string;
   time: string;
+  PreCustomerEventSid?: number;
+  whenLabel?: string;
 }
 
 interface messages {
@@ -117,6 +119,11 @@ ngOnInit(): void {
   let storedCompany = null;
   let storedBranch = null;
   this.getMenusFromSideBar();
+
+  this.loadEventNotifications();
+  interval(5 * 60 * 1000)
+    .pipe(takeUntil(this.unsubscribe$))
+    .subscribe(() => this.loadEventNotifications());
 
   try {
     const encryptedCompany = localStorage.getItem('selected-company');
@@ -855,37 +862,21 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
 
   // ------------ END OF RECENT ACTIVITY RELATED FUNCTION ----------------- \\
 
-  // This is for Notifications
-  notifications: notifications[] = [
-    {
-      btn: 'btn-danger',
-      icon: 'ti-link',
-      title: 'Luanch Admin',
-      subject: 'Just see the my new admin!',
-      time: '9:30 AM'
-    },
-    {
-      btn: 'btn-success',
-      icon: 'ti-calendar',
-      title: 'Event today',
-      subject: 'Just a reminder that you have event',
-      time: '9:10 AM'
-    },
-    {
-      btn: 'btn-info',
-      icon: 'ti-settings',
-      title: 'Settings',
-      subject: 'You can customize this template as you want',
-      time: '9:08 AM'
-    },
-    {
-      btn: 'btn-warning',
-      icon: 'ti-user',
-      title: 'Pavan kumar',
-      subject: 'Just see the my admin!',
-      time: '9:00 AM'
-    }
-  ];
+  // Live event notifications (creator OR event leader, EventDate today/tomorrow)
+  notifications: notifications[] = [];
+
+  loadEventNotifications(): void {
+    this.masterService.getPreCustomerEventNotifications().subscribe({
+      next: (resp: any) => {
+        if (resp?.status && Array.isArray(resp.data)) {
+          this.notifications = resp.data;
+        }
+      },
+      error: () => {
+        // silent — bell stays empty if endpoint fails
+      },
+    });
+  }
 
   // This is for Mymessages
   mymessages: messages[] = [

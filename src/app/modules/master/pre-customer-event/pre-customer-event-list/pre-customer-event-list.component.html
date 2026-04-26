@@ -1,0 +1,109 @@
+<ngx-spinner
+  bdColor="rgba(0,0,0,0.8)"
+  size="medium"
+  color="#fff"
+  type="ball-scale-ripple"
+  [fullScreen]="true">
+  <p style="color: white;" class="m-0">Loading...</p>
+</ngx-spinner>
+
+<div class="row compact-form">
+  <div class="col-12">
+    <app-page-header
+      [title]="'Pre-Customer Events'"
+      [showFavorite]="true"
+      [showSearch]="true"
+      [searchPlaceholder]="'Search by name, city or remarks'"
+      [searchButtonText]="'Search'"
+      [(searchValue)]="filterValue"
+      [actions]="headerActions"
+      (searchTriggered)="onSearchTriggered($event)"
+      (searchCleared)="onSearchCleared()"
+      (actionTriggered)="onActionTriggered($event)">
+    </app-page-header>
+  </div>
+
+  <!-- Stats Strip -->
+  <div class="col-12 mb-2">
+    <div class="row g-2">
+      <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-2">
+            <div class="d-flex align-items-center">
+              <div class="rounded-circle bg-light-info d-flex align-items-center justify-content-center me-2" style="width:36px;height:36px;">
+                <i class="fas fa-calendar text-info"></i>
+              </div>
+              <div>
+                <div class="text-muted fs-2">Total Events</div>
+                <div class="fw-bold fs-4">{{ totalEvents }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-2">
+            <div class="d-flex align-items-center">
+              <div class="rounded-circle bg-light-success d-flex align-items-center justify-content-center me-2" style="width:36px;height:36px;">
+                <i class="fas fa-clock text-success"></i>
+              </div>
+              <div>
+                <div class="text-muted fs-2">Upcoming</div>
+                <div class="fw-bold fs-4">{{ upcomingEvents }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-2">
+            <div class="d-flex align-items-center">
+              <div class="rounded-circle bg-light-warning d-flex align-items-center justify-content-center me-2" style="width:36px;height:36px;">
+                <i class="fas fa-users text-warning"></i>
+              </div>
+              <div>
+                <div class="text-muted fs-2">Total Leads</div>
+                <div class="fw-bold fs-4">{{ totalLeads | number }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-2">
+            <div class="d-flex align-items-center">
+              <div class="rounded-circle bg-light-danger d-flex align-items-center justify-content-center me-2" style="width:36px;height:36px;">
+                <i class="fas fa-trophy text-danger"></i>
+              </div>
+              <div class="flex-grow-1">
+                <div class="text-muted fs-2">Conversion</div>
+                <div class="fw-bold fs-4">{{ conversionPct }}%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reusable Table -->
+  <div class="col-12">
+    <app-reusable-table
+      #eventTable
+      [config]="tableConfig"
+      [data]="allItems"
+      [loading]="tableLoading"
+      [totalRecords]="totalLengthOfCollection"
+      [paginationConfig]="paginationConfig"
+      (actionClick)="onTableActionClick($event)"
+      (rowClick)="onTableRowClick($event)"
+      (sortChange)="onTableSortChange($event)"
+      (filterChange)="onTableFilterChange($event)"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)">
+    </app-reusable-table>
+  </div>
+</div>

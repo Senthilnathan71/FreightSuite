@@ -1,0 +1,169 @@
+<form [formGroup]="form" class="px-0 compact-form" (ngSubmit)="onSubmit()">
+
+  <!-- Section: Event Details -->
+  <div class="card mb-2 shadow-sm border-0">
+    <div class="card-header bg-light-info py-2 d-flex align-items-center">
+      <i class="fas fa-calendar-alt text-info me-2"></i>
+      <h5 class="mb-0 fw-semibold">Event Details</h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <aside class="col-md-6">
+          <div class="custom-form-group">
+            <input type="text" formControlName="EventName" class="custom-input-field sm" maxlength="100" />
+            <label class="input-label">Event Name <span class="text-danger fw-bold">*</span></label>
+            <div class="error-message">
+              @if (form.get('EventName')?.touched && form.get('EventName')?.invalid) {
+                @if (form.get('EventName')?.hasError('required')) { <span>Required</span> }
+                @if (form.get('EventName')?.hasError('maxlength')) { <span>Max 100 characters</span> }
+              }
+            </div>
+          </div>
+        </aside>
+        <aside class="col-md-6">
+          <div class="custom-form-group custom-form-group-select"
+               [class.filled]="!!form.get('CityMasterSid')?.value">
+            <ng-select class="ng-select"
+                       formControlName="CityMasterSid"
+                       [items]="cityList"
+                       bindLabel="cityName"
+                       bindValue="CityMasterSid">
+            </ng-select>
+            <label class="input-label">City <span class="text-danger fw-bold">*</span></label>
+            <div class="error-message">
+              @if (form.get('CityMasterSid')?.touched && form.get('CityMasterSid')?.invalid) {
+                <span>Required</span>
+              }
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="row">
+        <aside class="col-md-6">
+          <div class="custom-form-group custom-form-group-select-date">
+            <div class="input-group">
+              <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
+                #d1="ngbDatepicker" (click)="d1.toggle()"
+                [minDate]="minDate" [maxDate]="maxDate"
+                formControlName="EventDate" readonly />
+              <button class="btn bi bi-calendar3" (click)="d1.toggle()" type="button">
+                <i-feather name="calendar" class="feather-sm"></i-feather>
+              </button>
+            </div>
+            <label class="input-label">Event Date <span class="text-danger fw-bold">*</span></label>
+            <div class="error-message">
+              @if (form.get('EventDate')?.touched && form.get('EventDate')?.invalid) {
+                <span>Required</span>
+              }
+            </div>
+          </div>
+        </aside>
+
+        <aside class="col-md-6">
+          <div class="custom-form-group custom-form-group-select"
+               [class.filled]="!!form.get('EventLeader')?.value">
+            <ng-select class="ng-select"
+                       formControlName="EventLeader"
+                       [items]="userList"
+                       bindLabel="userName"
+                       bindValue="UserMasterSid">
+            </ng-select>
+            <label class="input-label">Event Leader <span class="text-danger fw-bold">*</span></label>
+            <div class="error-message">
+              @if (form.get('EventLeader')?.touched && form.get('EventLeader')?.invalid) {
+                <span>Required</span>
+              }
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section: Lead Tracking -->
+  <div class="card mb-2 shadow-sm border-0">
+    <div class="card-header bg-light-warning py-2 d-flex align-items-center">
+      <i class="fas fa-chart-line text-warning me-2"></i>
+      <h5 class="mb-0 fw-semibold">Lead Tracking</h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <aside class="col-md-6">
+          <div class="custom-form-group">
+            <input type="number" formControlName="TotalLeadRecd" class="custom-input-field sm" min="0" />
+            <label class="input-label">Leads Received <span class="text-danger fw-bold">*</span></label>
+          </div>
+        </aside>
+        <aside class="col-md-6">
+          <div class="custom-form-group">
+            <input type="number" formControlName="TotalLeadSuccess" class="custom-input-field sm" min="0" />
+            <label class="input-label">Leads Success <span class="text-danger fw-bold">*</span></label>
+          </div>
+        </aside>
+      </div>
+
+      <div class="row mt-2">
+        <div class="col-12">
+          <div class="d-flex align-items-center">
+            <div class="flex-grow-1 me-3">
+              <div class="progress" style="height:8px;">
+                <div class="progress-bar bg-success" role="progressbar"
+                     [style.width.%]="conversionPct"></div>
+              </div>
+            </div>
+            <div class="fw-semibold">{{ conversionPct }}% conversion</div>
+          </div>
+          @if (form.hasError('leadsExceed')) {
+            <div class="text-danger fs-2 mt-1">
+              <i class="fas fa-exclamation-triangle me-1"></i>
+              Leads Success cannot exceed Leads Received
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section: Notes -->
+  <div class="card mb-2 shadow-sm border-0">
+    <div class="card-header bg-light-secondary py-2 d-flex align-items-center">
+      <i class="fas fa-sticky-note text-secondary me-2"></i>
+      <h5 class="mb-0 fw-semibold">Notes</h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <aside class="col-md-8">
+          <div class="custom-form-group">
+            <textarea formControlName="Remarks" rows="2" class="custom-input-field sm" maxlength="300"></textarea>
+            <label class="input-label">Remarks</label>
+          </div>
+        </aside>
+        <aside class="col-md-4">
+          <div class="custom-form-group custom-form-group-select"
+               [class.filled]="!!form.get('Status')?.value">
+            <ng-select class="ng-select"
+                       formControlName="Status"
+                       [items]="statusList"
+                       [clearable]="false">
+            </ng-select>
+            <label class="input-label">Status <span class="text-danger fw-bold">*</span></label>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer actions -->
+  <div class="d-flex justify-content-end gap-2 mb-3">
+    <button type="button" class="btn btn-light btn-sm" (click)="goBack()">
+      <i class="fas fa-arrow-left me-1"></i> Back
+    </button>
+    <button type="button" class="btn btn-secondary btn-sm" (click)="reset()" [disabled]="btnDisable">
+      <i class="fas fa-sync-alt me-1"></i> Reset
+    </button>
+    <button type="submit" class="btn btn-info btn-sm" [disabled]="btnDisable">
+      <i class="fas fa-save me-1"></i> {{ isEditMode ? 'Update' : 'Save' }}
+    </button>
+  </div>
+</form>
