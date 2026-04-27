@@ -3,12 +3,12 @@
   class="activity-allocation-page"
   aria-label="Activity allocation summary dashboard"
 >
-  <header class="page-header d-flex justify-content-between align-items-center mb-3">
+  <header class="page-header d-flex justify-content-between align-items-center mb-2">
     <div>
-      <h1 class="page-title mb-1">
-        <i class="fas fa-tasks me-2 text-primary" aria-hidden="true"></i>
+      <h4 class="page-title mb-0">
+        <i class="fas fa-tasks me-2" aria-hidden="true"></i>
         Activity Allocation
-      </h1>
+      </h4>
     </div>
 
     <div class="d-flex align-items-center gap-2">
@@ -24,10 +24,11 @@
   </header>
 
 
-  <section class="filters-bar mb-3" aria-label="Search and filter controls">
-    <div class="filters-row d-flex flex-wrap gap-3 align-items-center">
+  <section class="filters-bar mb-2" aria-label="Search and filter controls">
+    <div class="filters-row d-flex flex-wrap gap-3 align-items-center justify-content-between">
       
-      <div class="search-box flex-grow-1">
+      <div class="d-flex align-items-center gap-3">
+         <div class="search-box flex-grow-1">
         <i class="fas fa-search" aria-hidden="true"></i>
         <input
           type="text"
@@ -50,7 +51,7 @@
 
       
       <div class="status-filter d-flex align-items-center gap-2">
-        <label for="modeSelect" class="status-label mb-0 text-muted small">Filter:</label>
+        <label for="modeSelect" class="status-label mb-0 text-muted small">Filter</label>
         <select
           id="modeSelect"
           class="form-select form-select-sm"
@@ -63,12 +64,13 @@
           <option value="All">All</option>
         </select>
       </div>
-
+      </div>
      
-      <div class="filters-actions d-flex gap-2">
+
+      <div class=" d-flex gap-2">
         <button
           type="button"
-          class="btn btn-sm btn-primary"
+          class="btn btn-sm btn-info"
           [disabled]="!displayRows.length"
           (click)="onReportClick()"
         >
@@ -94,7 +96,7 @@
   </div>
 
  
-  <section class="kpi-section mb-3" *ngIf="!isLoading">
+  <section class="kpi-section mb-2" *ngIf="!isLoading">
     
     <div class="row g-3" *ngIf="mode === 'Pending'">
       <div class="col-lg-3 col-md-6">
@@ -109,7 +111,7 @@
           <div class="kpi-icon-inline"><i class="fas fa-clipboard-list"></i></div>
           <div class="kpi-details">
             <div class="kpi-label">TOTAL ACTIVITIES</div>
-            <div class="kpi-value">{{ totalActivities }}</div>
+            <div class="kpi-value">{{ animatedTotalActivities }}</div>
             <div class="kpi-sublabel">Pending view</div>
           </div>
         </div>
@@ -119,7 +121,7 @@
           <div class="kpi-icon-inline"><i class="fas fa-hourglass-half"></i></div>
           <div class="kpi-details">
             <div class="kpi-label">PENDING</div>
-            <div class="kpi-value">{{ pendingCount }}</div>
+            <div class="kpi-value">{{ animatedPendingCount }}</div>
             <div class="kpi-sublabel">100% of view</div>
           </div>
         </div>
@@ -129,7 +131,7 @@
           <div class="kpi-icon-inline"><i class="fas fa-exclamation-triangle"></i></div>
           <div class="kpi-details">
             <div class="kpi-label">OVERDUE</div>
-            <div class="kpi-value">{{ overdueCount }}</div>
+            <div class="kpi-value">{{ animatedOverdueCount }}</div>
             <div class="kpi-sublabel">Past deadline</div>
           </div>
         </div>
@@ -139,7 +141,7 @@
           <div class="kpi-icon-inline"><i class="fas fa-users"></i></div>
           <div class="kpi-details">
             <div class="kpi-label">USERS</div>
-            <div class="kpi-value">{{ totalUsersCount }}</div>
+            <div class="kpi-value">{{ animatedTotalUsersCount }}</div>
           </div>
         </div>
       </div>
@@ -159,7 +161,7 @@
           <div class="kpi-icon-inline"><i class="fas fa-clipboard-list"></i></div>
           <div class="kpi-details">
             <div class="kpi-label">TOTAL ACTIVITIES</div>
-            <div class="kpi-value">{{ totalActivities }}</div>
+            <div class="kpi-value">{{ animatedTotalActivities }}</div>
             <div class="kpi-sublabel">Processed view</div>
           </div>
         </div>
@@ -169,7 +171,7 @@
           <div class="kpi-icon-inline"><i class="fas fa-check-circle"></i></div>
           <div class="kpi-details">
             <div class="kpi-label">PROCESSED</div>
-            <div class="kpi-value">{{ processedCount }}</div>
+            <div class="kpi-value">{{ animatedProcessedCount }}</div>
             <div class="kpi-sublabel">100% of view</div>
           </div>
         </div>
@@ -179,7 +181,7 @@
           <div class="kpi-icon-inline"><i class="fas fa-calendar-week"></i></div>
           <div class="kpi-details">
             <div class="kpi-label">THIS WEEK</div>
-            <div class="kpi-value">{{ completedThisWeek }}</div>
+            <div class="kpi-value">{{ animatedCompletedThisWeek }}</div>
           </div>
         </div>
       </div>
@@ -188,7 +190,7 @@
           <div class="kpi-icon-inline"><i class="fas fa-users"></i></div>
           <div class="kpi-details">
             <div class="kpi-label">USERS</div>
-            <div class="kpi-value">{{ totalUsersCount }}</div>
+            <div class="kpi-value">{{ animatedTotalUsersCount }}</div>
           </div>
         </div>
       </div>
@@ -201,7 +203,7 @@
           <div class="kpi-icon-inline"><i class="fas fa-clipboard-list"></i></div>
           <div class="kpi-details">
             <div class="kpi-label">TOTAL</div>
-            <div class="kpi-value">{{ totalActivities }}</div>
+            <div class="kpi-value">{{ animatedTotalActivities }}</div>
             <div class="kpi-sublabel">All activities</div>
           </div>
         </div>
@@ -221,7 +223,7 @@
             <div class="kpi-label">PENDING</div>
             <div class="kpi-value">
               <ng-container *ngIf="!isLoadingGlobalCounts; else kpiLoading">
-                {{ pendingCount }}
+                {{ animatedPendingCount }}
               </ng-container>
             </div>
             <div class="kpi-sublabel">
@@ -247,7 +249,7 @@
             <div class="kpi-label">PROCESSED</div>
             <div class="kpi-value">
               <ng-container *ngIf="!isLoadingGlobalCounts; else kpiLoading">
-                {{ processedCount }}
+                {{ animatedProcessedCount }}
               </ng-container>
             </div>
             <div class="kpi-sublabel">
@@ -266,7 +268,7 @@
             <div class="kpi-label">OVERDUE</div>
             <div class="kpi-value">
               <ng-container *ngIf="!isLoadingGlobalCounts; else kpiLoading">
-                {{ overdueCount }}
+                {{ animatedOverdueCount }}
               </ng-container>
             </div>
             <div class="kpi-sublabel">Past deadline</div>
@@ -279,7 +281,7 @@
           <div class="kpi-icon-inline"><i class="fas fa-users"></i></div>
           <div class="kpi-details">
             <div class="kpi-label">USERS</div>
-            <div class="kpi-value">{{ totalUsersCount }}</div>
+            <div class="kpi-value">{{ animatedTotalUsersCount }}</div>
           </div>
         </div>
       </div>
@@ -328,7 +330,7 @@
 
             <th class="col-count" (click)="changeSort('quotationCount')">
               <div class="th-content">
-                <span><i class="fas fa-file-alt me-1 text-info"></i>Quotation</span>
+               <span><i class="fas fa-file-alt me-1 text-info"></i>Quotation</span>
                 <i class="fas" [ngClass]="getSortIcon('quotationCount')"></i>
               </div>
             </th>
@@ -371,56 +373,56 @@
             <td class="col-count">
               <span
                 *ngIf="row.rateRequestCount > 0"
-                class="count-badge badge-primary"
+                class=" badge-primary"
                 (click)="$event.stopPropagation(); openWorkload('RateRequest', row)"
               >
                 {{ row.rateRequestCount }}
               </span>
-              <span *ngIf="!row.rateRequestCount" class="count-badge badge-empty">0</span>
+              <span *ngIf="!row.rateRequestCount" class=" badge-empty">0</span>
             </td>
 
             <td class="col-count">
               <span
                 *ngIf="row.quotationCount > 0"
-                class="count-badge badge-info"
+                class=" badge-info"
                 (click)="$event.stopPropagation(); openWorkload('Quotation', row)"
               >
                 {{ row.quotationCount }}
               </span>
-              <span *ngIf="!row.quotationCount" class="count-badge badge-empty">0</span>
+              <span *ngIf="!row.quotationCount" class=" badge-empty">0</span>
             </td>
 
             <td class="col-count">
               <span
                 *ngIf="row.bookingCount > 0"
-                class="count-badge badge-warning"
+                class=" badge-warning"
                 (click)="$event.stopPropagation(); openWorkload('Booking', row)"
               >
                 {{ row.bookingCount }}
               </span>
-              <span *ngIf="!row.bookingCount" class="count-badge badge-empty">0</span>
+              <span *ngIf="!row.bookingCount" class=" badge-empty">0</span>
             </td>
 
             <td class="col-count">
               <span
                 *ngIf="row.loadPlanCount > 0"
-                class="count-badge badge-success"
+                class=" badge-success"
                 (click)="$event.stopPropagation(); openWorkload('LoadPlan', row)"
               >
                 {{ row.loadPlanCount }}
               </span>
-              <span *ngIf="!row.loadPlanCount" class="count-badge badge-empty">0</span>
+              <span *ngIf="!row.loadPlanCount" class=" badge-empty">0</span>
             </td>
 
             <td class="col-count">
               <span
                 *ngIf="row.masterJobCount > 0"
-                class="count-badge badge-purple"
+                class=" badge-purple"
                 (click)="$event.stopPropagation(); openWorkload('MasterJob', row)"
               >
                 {{ row.masterJobCount }}
               </span>
-              <span *ngIf="!row.masterJobCount" class="count-badge badge-empty">0</span>
+              <span *ngIf="!row.masterJobCount" class=" badge-empty">0</span>
             </td>
 
             <td class="col-total">
