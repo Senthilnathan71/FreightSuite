@@ -9,7 +9,7 @@
 }
 
 .scoreboard-header {
-  padding: 10px 14px;
+  padding: 5px 14px;
   border-bottom: 1px solid $sm-border;
   display: flex;
   align-items: center;
@@ -64,9 +64,10 @@
 .scoreboard-table {
   width: 100%;
   border-collapse: collapse;
+ 
 
   thead th {
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -76,8 +77,10 @@
     border-bottom: 1px solid $sm-border;
     white-space: nowrap;
     cursor: pointer;
+    background-color: $sm-primary;
+    color: #ffffff;
 
-    &:hover { color: $sm-primary; }
+    // &:hover { color: $sm-primary; }
   }
 
   .th-person {
@@ -87,11 +90,17 @@
   }
 
   .th-sub {
-    font-size: 7px;
-    font-weight: 500;
+    font-size: 10px;
+    font-weight: 600;
     text-transform: none;
     letter-spacing: 0;
     line-height: 1.2;
+
+    i {
+      margin-left: 4px;
+      font-size: 9px;
+      opacity: 0.9;
+    }
   }
 
   tbody td {

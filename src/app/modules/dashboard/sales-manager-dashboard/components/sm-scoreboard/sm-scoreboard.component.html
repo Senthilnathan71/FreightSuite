@@ -7,7 +7,7 @@
     </div>
     <div class="header-actions">
       <button class="download-btn" (click)="downloadExcel()" *ngIf="rows.length" title="Download as Excel">
-        <i class="fas fa-download"></i> Download
+        <i class="fas fa-download"></i> Excel
       </button>
     </div>
   </div>
@@ -16,17 +16,17 @@
       <thead>
         <tr>
           <th class="th-person" (click)="sort('userName')">Salesperson</th>
-          <th (click)="sort('s1')"><div>S1</div><div class="th-sub">Leads<br>No Mtg</div></th>
-          <th (click)="sort('s2')"><div>S2</div><div class="th-sub">Meetings<br>Sched.</div></th>
-          <th (click)="sort('s3')"><div>S3</div><div class="th-sub">Follow-<br>Ups</div></th>
-          <th (click)="sort('s4')"><div>S4</div><div class="th-sub">Not<br>Converted</div></th>
-          <th (click)="sort('s5')"><div>S5</div><div class="th-sub">Cust. No<br>Quote</div></th>
-          <th (click)="sort('s6')"><div>S6</div><div class="th-sub">Enq. No<br>Quotation</div></th>
-          <th (click)="sort('s7')"><div>S7</div><div class="th-sub">Pending<br>Approval</div></th>
-          <th (click)="sort('s8')"><div>S8</div><div class="th-sub">Appr. No<br>Booking</div></th>
+          <th (click)="sort('s1')"><div class="th-sub">Leads<br>No Mtg <i [class]="getSortIcon('s1')"></i></div></th>
+          <th (click)="sort('s2')"><div class="th-sub">Meetings<br>Sched. <i [class]="getSortIcon('s2')"></i></div></th>
+          <th (click)="sort('s3')"><div class="th-sub">Follow-<br>Ups <i [class]="getSortIcon('s3')"></i></div></th>
+          <th (click)="sort('s4')"><div class="th-sub">Not<br>Converted <i [class]="getSortIcon('s4')"></i></div></th>
+          <th (click)="sort('s5')"><div class="th-sub"> Quote No<i [class]="getSortIcon('s5')"></i></div></th>
+          <th (click)="sort('s6')"><div class="th-sub">Enq. No <i [class]="getSortIcon('s6')"></i></div></th>
+          <th (click)="sort('s7')"><div class="th-sub">Pending<br>Approval <i [class]="getSortIcon('s7')"></i></div></th>
+          <th (click)="sort('s8')"><div class="th-sub">Appr. No<br>Booking <i [class]="getSortIcon('s8')"></i></div></th>
           <th>Conv.<br>Rate</th>
-          <th (click)="sort('total')">Total</th>
-          <th>Actions</th>
+          <th (click)="sort('total')">Total <i [class]="getSortIcon('total')"></i></th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
