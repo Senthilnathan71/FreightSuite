@@ -1390,7 +1390,8 @@ private mapQuotationCargoForBooking(cargo: any): any {
     if (QuoteRouteSid) {
       this.leadService.deleteRoute(QuoteRouteSid).subscribe((resp: any) => {
         if (resp.status) {
-          this.removeQuoteRoute(routeIndex)
+          this.removeQuoteRoute(routeIndex);
+          this.loadQuotation(this.QuoteHeaderSid);
         } else {
           this.appSettingService.showError("Error deleting route")
         }

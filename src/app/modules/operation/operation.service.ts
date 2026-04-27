@@ -801,8 +801,8 @@ processProductUpload(payload: any): Observable<any> {
     );
   }
 
-  softDeleteMasterJobConnection(MasterJobConnectionSid: number) {
-    return this.http.delete<{ data: any }>(`master-job/connection/delete/${MasterJobConnectionSid}`).pipe(
+  softDeleteMasterJobConnection(MasterJobConnectionSid: number,updatedBy?: string) {
+    return this.http.delete<{ data: any }>(`master-job/connection/delete/${MasterJobConnectionSid}`,{body: {updatedBy}}).pipe(
       map((resp) => {
         return resp;
       })
@@ -818,8 +818,8 @@ processProductUpload(payload: any): Observable<any> {
 }
 
 
-  softDeleteMasterJobContainer(MasterJobContainerSid: number) {
-    return this.http.delete<{ data: any }>(`master-job/container/delete/${MasterJobContainerSid}`).pipe(
+  softDeleteMasterJobContainer(MasterJobContainerSid: number, updatedBy: string) {
+    return this.http.delete<{ data: any }>(`master-job/container/delete/${MasterJobContainerSid}`,{body: {updatedBy}}).pipe(
       map((resp) => {
         return resp;
       })

@@ -1049,6 +1049,7 @@ ${this.userData.userName}`;
         next: (resp: any) => {
           if (resp?.status !== false) {
             this.removeRouteAt(index);
+            this.loadEnquiry(this.EnquiryHeaderSid);
           } else {
             this.appSettingsService.showError('Error deleting route');
           }

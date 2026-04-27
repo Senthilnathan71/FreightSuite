@@ -3399,6 +3399,7 @@ onETDDateSelect(): void {
     const containerControl = this.masterJobContainers.at(index);
     const containerSid = containerControl.value.MasterJobContainerSid;
     const containerNumber = containerControl.value.ContainerNumber;
+    const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
     if (this.isContainerMapped(containerSid)) {
       const mappingCount = this.getContainerMappingCount(containerSid);
       this.toastr.warning(
@@ -3412,7 +3413,7 @@ onETDDateSelect(): void {
         this.isDeletingContainer = index;
         this.spinner.show();
 
-        this.operationService.softDeleteMasterJobContainer(containerSid).subscribe({
+        this.operationService.softDeleteMasterJobContainer(containerSid,updatedBy).subscribe({
           next: (response: any) => {
             this.spinner.hide();
             this.isDeletingContainer = null;
