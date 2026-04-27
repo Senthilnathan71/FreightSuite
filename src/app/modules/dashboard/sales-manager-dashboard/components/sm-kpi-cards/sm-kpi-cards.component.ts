@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { KpiCardConfig } from '../../../interfaces/sales-manager-dashboard.interfaces';
+import { toNumber } from 'src/app/common/helper';
 
 @Component({
   selector: 'app-sm-kpi-cards',
@@ -38,7 +39,7 @@ export class SmKpiCardsComponent implements OnChanges, OnDestroy {
   }
 
   formatValue(card: KpiCardConfig, rawValue?: number): string {
-    const value = rawValue ?? card.value ?? 0;
+    const value = toNumber(rawValue) || toNumber(card.value);
     if (card.isCurrency) {
       if (value >= 1000000) return '$' + (value / 1000000).toFixed(1) + 'M';
       if (value >= 1000) return '$' + (value / 1000).toFixed(1) + 'K';

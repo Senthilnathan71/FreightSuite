@@ -10,7 +10,7 @@ import {
 } from '@ng-bootstrap/ng-bootstrap';
 import { Subject, forkJoin, interval } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { toNgbDateStruct } from 'src/app/common/helper';
+import { toNgbDateStruct, toNumber } from 'src/app/common/helper';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
@@ -452,8 +452,8 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
         isPrimary: true, percentChange: 3.4, changeDirection: 'down', progressPercent: 30
       },
       {
-        key: 'revenue', label: 'Profit', icon: 'fas fa-dollar-sign',
-        colorClass: 'primary', value: f.profitAtQuote , sectionNumber: 0,
+        key: 'revenue', label: f.profitAtQuote === 0 ? 'No Profit / Loss' :(f.profitAtQuote > 0 ? 'Profit' : 'Loss'), icon: 'fas fa-dollar-sign',
+        colorClass: 'primary', value: toNumber(f.profitAtQuote) , sectionNumber: 0,
         isPrimary: true, isCurrency: true, percentChange: 15.8, changeDirection: 'up', progressPercent: 82
       },
     ];
