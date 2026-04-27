@@ -11,6 +11,6 @@
   width: 24px; height: 24px; border-radius: 6px;
   display: flex; align-items: center; justify-content: center;
   font-size: 11px;
-  background: #f5f3ff; color: #6366f1;
+  background: $sm-primary-bg; color: $sm-primary;
 }
 .empty-state { text-align: center; padding: 20px; color: $sm-text-muted; font-size: 11px; }

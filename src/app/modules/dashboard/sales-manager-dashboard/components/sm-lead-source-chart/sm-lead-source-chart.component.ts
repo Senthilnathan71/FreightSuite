@@ -15,31 +15,86 @@ export class SmLeadSourceChartComponent implements OnChanges {
 
   chartOptions: any = {};
 
-  private colors = ['#0f766e', '#6366f1', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316', '#14b8a6', '#4f46e5', '#a855f7', '#16a34a'];
+  private readonly palette = [
+    '#05608D',
+    '#06b6d4',
+    '#f59e0b',
+    '#16a34a',
+    '#f97316',
+    '#8b5cf6',
+    '#ec4899',
+    '#0ea5a4',
+    '#dc2626',
+    '#64748b',
+    '#84cc16',
+    '#14b8a6',
+  ];
 
   ngOnChanges() {
-    if (!this.data?.length) return;
+    const normalizedData = (this.data || [])
+      .map((item) => ({
+        source: item.source || 'Unknown',
+        count: item.count || 0,
+      }))
+      .sort((left, right) => right.count - left.count);
+
+    const hasData = normalizedData.length > 0;
+    const chartData = hasData
+      ? normalizedData
+      : [{ source: 'NoData', count: 1 }];
+    const totalLeads = normalizedData.reduce((sum, item) => sum + item.count, 0);
+    const colors = chartData.map((item, index) =>
+      item.source === 'NoData' ? '#cbd5e1' : this.palette[index % this.palette.length]
+    );
+
     this.chartOptions = {
-      series: this.data.map(d => d.count),
-      chart: { type: 'donut', height: 240, fontFamily: 'Inter, sans-serif' },
-      labels: this.data.map(d => d.source),
-      colors: this.colors.slice(0, this.data.length),
+      series: chartData.map((item) => item.count),
+      chart: { type: 'donut', height: 300, fontFamily: 'Inter, sans-serif' },
+      labels: chartData.map((item) => item.source === 'NoData' ? 'No data' : item.source),
+      colors,
       legend: {
-        position: 'right', fontSize: '12px', fontWeight: 500,
+        position: 'right',
+        fontSize: '11px',
+        fontWeight: 500,
         labels: { colors: '#475569' },
-        markers: { width: 10, height: 10, radius: 3 }
+        markers: { width: 10, height: 10, radius: 3 },
+        itemMargin: { vertical: 2 }
       },
-      dataLabels: { enabled: false },
+      dataLabels: {
+        enabled: hasData,
+        style: {
+          fontSize: '11px',
+          fontWeight: 700,
+          colors: colors.map((color) => this.getReadableTextColor(color)),
+        },
+        dropShadow: { enabled: false },
+      },
       plotOptions: {
         pie: {
           donut: {
-            size: '60%',
+            background: '#0d4f74',
+            size: '62%',
             labels: {
               show: true,
+              name: {
+                fontSize: '12px',
+                fontWeight: 700,
+                color: '#ffffff',
+              },
+              value: {
+                fontSize: '18px',
+                fontWeight: 800,
+                color: '#ffffff',
+                formatter: (value: string) => hasData ? value : '0',
+              },
               total: {
-                show: true, label: 'Total Leads', fontSize: '12px', color: '#94a3b8',
-                formatter: (w: any) => w.globals.spikeWidth ? '' : w.globals.series.reduce((a: number, b: number) => a + b, 0).toString()
-              }
+                show: true,
+                label: hasData ? 'Total Leads' : 'No source data',
+                fontSize: '11px',
+                fontWeight: 700,
+                color: '#ffffff',
+                formatter: () => `${totalLeads}`,
+              },
             }
           }
         }
@@ -49,5 +104,18 @@ export class SmLeadSourceChartComponent implements OnChanges {
       },
       stroke: { width: 2, colors: ['#fff'] }
     };
+  }
+
+  private getReadableTextColor(color: string): string {
+    const normalized = color.replace('#', '');
+    const value = normalized.length === 3
+      ? normalized.split('').map((char) => char + char).join('')
+      : normalized;
+    const red = parseInt(value.slice(0, 2), 16);
+    const green = parseInt(value.slice(2, 4), 16);
+    const blue = parseInt(value.slice(4, 6), 16);
+    const luminance = (0.299 * red) + (0.587 * green) + (0.114 * blue);
+
+    return luminance > 160 ? '#0f172a' : '#ffffff';
   }
 }

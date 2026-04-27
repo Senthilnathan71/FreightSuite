@@ -1,114 +1,65 @@
 <div class="sm-dashboard-v2">
   <div class="dashboard-shell">
     <section class="dashboard-hero">
-      <div class="hero-header">
-        <div class="hero-main">
-          <div class="eyebrow">
-            <span class="eyebrow-dot"></span>
-            Sales cockpit
-          </div>
+      <div class="sales-header">
+        <div class="sales-header__identity">
           <h1>Sales Manager Dashboard</h1>
+          <p>Performance &amp; Pipeline Overview</p>
         </div>
 
-        <div class="hero-side">
-          <div class="hero-mini-stats">
-            <div class="hero-mini-stat">
-              <span class="stat-label">Reps</span>
+        <div class="sales-header__stats">
+          <div class="summary-stat">
+            <i class="fas fa-users"></i>
+            <div class="summary-stat__content">
+              <span class="summary-stat__label">Total Sales Team:</span>
               <strong>{{ salespersons.length }}</strong>
             </div>
-            <div class="hero-mini-stat">
-              <span class="stat-label">Range</span>
-              <strong>{{ activePresetLabel }}</strong>
-            </div>
           </div>
 
-          <div class="status-pill">
-            <span class="status-dot"></span>
-            {{ lastUpdated ? ('Updated ' + (lastUpdated | date:'h:mm a')) : 'Waiting for sync' }}
+          <div class="summary-stat summary-stat--time">
+            <i class="far fa-clock"></i>
+            <div class="summary-stat__content">
+              <span class="summary-stat__label">Last Updated:</span>
+              <strong>{{ lastUpdated ? (lastUpdated | date:'h:mm a') : '--' }}</strong>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="dashboard-header-v2">
-        <div class="controls-shell">
-          <div class="controls-grid">
-            <div class="filter-chip-wrapper">
-              <button class="filter-chip" [class.active]="dateDropdownOpen" (click)="toggleDateDropdown()">
-                <i class="fas fa-calendar-alt"></i>
-                <span>{{ activePresetLabel }}</span>
-                <i class="fas fa-chevron-down chevron" [class.open]="dateDropdownOpen"></i>
-              </button>
-
-              <div class="date-dropdown-panel" *ngIf="dateDropdownOpen">
-                <div class="preset-pills">
-                  <button class="preset-pill" [class.active]="activePreset === 'today'" (click)="setPreset('today')">Today</button>
-                  <button class="preset-pill" [class.active]="activePreset === 'week'" (click)="setPreset('week')">This Week</button>
-                  <button class="preset-pill" [class.active]="activePreset === 'month'" (click)="setPreset('month')">This Month</button>
-                  <button class="preset-pill" [class.active]="activePreset === 'quarter'" (click)="setPreset('quarter')">Quarter</button>
-                  <button class="preset-pill" [class.active]="activePreset === 'fy'" (click)="setPreset('fy')">FY</button>
-                </div>
-
-                <div class="custom-range">
-                  <div class="range-field">
-                    <label>From</label>
-                    <input class="form-control range-input" placeholder="From"
-                           ngbDatepicker #dpFrom="ngbDatepicker"
-                           [(ngModel)]="dateFromInput" (ngModelChange)="onDateChange()"
-                           [maxDate]="getMaxDateFrom()" (click)="dpFrom.toggle()" readonly />
-                  </div>
-                  <div class="range-field">
-                    <label>To</label>
-                    <input class="form-control range-input" placeholder="To"
-                           ngbDatepicker #dpTo="ngbDatepicker"
-                           [(ngModel)]="dateToInput" (ngModelChange)="onDateChange()"
-                           [minDate]="getMinDateTo()" [maxDate]="maxDateTo"
-                           (click)="dpTo.toggle()" readonly />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="filter-chip-wrapper sp-chip-wrapper">
-              <div class="filter-chip sp-chip">
-                <i class="fas fa-user"></i>
-                <dofi-searchable-dropdown
-                  [items]="salespersons" bindLabel="userName" bindValue="UserMasterSid"
-                  [displayFields]="['userName', 'userEmail']" [displayLabels]="['Name', 'Email']"
-                  placeholder="All Salespersons" [clearable]="true"
-                  (itemSelected)="onSalespersonChange($event)">
-                </dofi-searchable-dropdown>
-              </div>
-            </div>
+        <div class="sales-header__actions">
+          <div class="preset-toggle-group" aria-label="Date presets">
+            <button class="preset-toggle"
+                    type="button"
+                    [class.active]="activePreset === 'today'"
+                    (click)="setPreset('today')">
+              Today
+            </button>
+            <button class="preset-toggle"
+                    type="button"
+                    [class.active]="activePreset === 'week'"
+                    (click)="setPreset('week')">
+              This Week
+            </button>
+            <button class="preset-toggle"
+                    type="button"
+                    [class.active]="activePreset === 'month'"
+                    (click)="setPreset('month')">
+              This Month
+            </button>
+            <button class="preset-toggle"
+                    type="button"
+                    [class.active]="activePreset === 'quarter'"
+                    (click)="setPreset('quarter')">
+              This Quarter
+            </button>
           </div>
 
-          <div class="header-actions">
-            <button class="ghost-btn" type="button" (click)="resetFilters()">
-              <i class="fas fa-rotate-left"></i>
-              Reset
-            </button>
-
-            <button class="icon-btn refresh-btn" type="button" (click)="onRefresh()" title="Refresh">
-              <i class="fas fa-sync-alt"></i>
-            </button>
-
-            <button class="primary-btn" type="button" (click)="openCreateMeetingModal()">
-              <i class="fas fa-plus"></i>
-              New Meeting
-            </button>
-
-            <div class="lite-toggle-wrap" title="Lite mode hides advanced sections">
-              <span class="lite-label">Lite mode</span>
-              <label class="lite-toggle">
-                <input type="checkbox" [(ngModel)]="liteMode" />
-                <span class="toggle-track"><span class="toggle-thumb"></span></span>
-              </label>
-            </div>
-          </div>
+          <button class="meeting-btn" type="button" (click)="openCreateMeetingModal()">
+            <i class="fas fa-plus"></i>
+            New Meeting
+          </button>
         </div>
       </div>
     </section>
-
-    <div class="dropdown-backdrop" *ngIf="dateDropdownOpen" (click)="closeDateDropdown()"></div>
 
     <div class="content-v2">
       <section class="dashboard-section section-kpis">
