@@ -59,9 +59,9 @@
           </button>
           <button class="preset-toggle"
                   type="button"
-                  [class.active]="activePreset === 'quarter'"
-                  (click)="setPreset('quarter')">
-            This Quarter
+                  [class.active]="activePreset === 'lastMonth'"
+                  (click)="setPreset('lastMonth')">
+            Last Month
           </button>
           <button class="preset-toggle"
                   type="button"
@@ -114,7 +114,8 @@
     <div class="content-v2">
       <section class="dashboard-section section-kpis">
         <div class="section-heading">
-          <h2>Core pipeline metrics</h2>
+          <h2>Sales Overview</h2>
+          <p class="section-heading__range">{{ salesOverviewDateRangeLabel }}</p>
         </div>
 
         <app-sm-kpi-cards

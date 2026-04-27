@@ -165,7 +165,7 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
       case 'today': return 'Today';
       case 'week': return 'This Week';
       case 'month': return 'This Month';
-      case 'quarter': return 'This Quarter';
+      case 'lastMonth': return 'Last Month';
       case 'fy': return 'Financial Year';
       default: return 'Custom Range';
     }
@@ -175,6 +175,12 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
     if (!this.selectedSalespersonId) return 'All Salespersons';
     const sp = this.salespersons.find(s => s.UserMasterSid === this.selectedSalespersonId);
     return sp?.userName || 'Selected';
+  }
+
+  get salesOverviewDateRangeLabel(): string {
+    const from = this.dateFromInput ? this.formatDisplayDate(this.dateFromInput) : '--';
+    const to = this.dateToInput ? this.formatDisplayDate(this.dateToInput) : '--';
+    return `From: ${from}  To: ${to}`;
   }
 
   toggleDateDropdown() {
@@ -209,10 +215,18 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
         this.dateFromInput = noon(now.getFullYear(), now.getMonth(), 1);
         this.dateToInput = todayNoon;
         break;
-      case 'quarter': {
-        const qMonth = Math.floor(now.getMonth() / 3) * 3;
-        this.dateFromInput = noon(now.getFullYear(), qMonth, 1);
-        this.dateToInput = todayNoon;
+      case 'lastMonth': {
+        const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        this.dateFromInput = noon(
+          lastMonthDate.getFullYear(),
+          lastMonthDate.getMonth(),
+          1,
+        );
+        this.dateToInput = noon(
+          lastMonthDate.getFullYear(),
+          lastMonthDate.getMonth() + 1,
+          0,
+        );
         break;
       }
       case 'fy': {
@@ -622,5 +636,13 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
       return new Date(Date.UTC(y, m, d, 0, 0, 0)).toISOString();
     }
     return new Date(Date.UTC(y, m, d, 23, 59, 59)).toISOString();
+  }
+
+  private formatDisplayDate(date: Date): string {
+    return new Intl.DateTimeFormat('en-US', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }).format(date);
   }
 }
