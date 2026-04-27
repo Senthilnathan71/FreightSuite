@@ -3,6 +3,9 @@
 .card {
   @include sm-card;
   height: 100%;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
 }
 .section-title {
   @include sm-section-title;
@@ -14,6 +17,20 @@
 .selectors {
   display: flex; align-items: center; gap: 6px; margin-bottom: 6px;
 }
+
+.chart-wrap {
+  flex: 1;
+  min-height: 290px;
+  display: flex;
+  align-items: stretch;
+}
+
+.chart-wrap apx-chart {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .person-select {
   flex: 1; padding: 4px 8px; font-size: 11px; border: 1px solid $sm-border;
   border-radius: 6px; font-family: inherit; color: $sm-text-primary; background: $sm-bg-card;

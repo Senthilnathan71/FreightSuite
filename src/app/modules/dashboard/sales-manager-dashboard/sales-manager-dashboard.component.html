@@ -184,9 +184,9 @@
 
       <ng-container *ngIf="!liteMode">
         <section class="dashboard-section">
-          <div class="section-heading">
+          <!-- <div class="section-heading">
             <h2>Meetings board</h2>
-          </div>
+          </div> -->
 
           <app-sm-meetings-board
             [overdue]="meetingsBoard?.overdue || { items: [], totalCount: 0 }"
@@ -199,17 +199,18 @@
         </section>
 
         <section class="dashboard-section">
-          <div class="section-heading">
+          <!-- <div class="section-heading">
             <h2>Response times and radar view</h2>
-          </div>
+          </div> -->
 
           <div class="row-2col">
             <app-sm-radar-chart [scoreboard]="scoreboard"></app-sm-radar-chart>
-            <app-sm-response-times [data]="responseTimes"></app-sm-response-times>
+            <!-- <app-sm-response-times [data]="responseTimes"></app-sm-response-times> -->
+             <app-sm-activity-feed [items]="activityFeed" [loading]="activityLoading"></app-sm-activity-feed>
           </div>
         </section>
 
-        <section class="dashboard-section">
+        <!-- <section class="dashboard-section">
           <div class="section-heading">
             <h2>Aging and recent activity</h2>
           </div>
@@ -218,7 +219,7 @@
             <app-sm-aging-chart [data]="aging"></app-sm-aging-chart>
             <app-sm-activity-feed [items]="activityFeed" [loading]="activityLoading"></app-sm-activity-feed>
           </div>
-        </section>
+        </section> -->
       </ng-container>
     </div>
   </div>

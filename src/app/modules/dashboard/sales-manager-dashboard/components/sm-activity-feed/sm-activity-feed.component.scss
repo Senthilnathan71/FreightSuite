@@ -17,6 +17,8 @@
 
 .feed-card {
   @include sm-card;
+  padding: 8px;
+  height: 100%;
 }
 
 .feed-header {

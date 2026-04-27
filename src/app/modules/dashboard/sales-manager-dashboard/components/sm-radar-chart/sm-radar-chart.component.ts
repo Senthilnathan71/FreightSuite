@@ -18,7 +18,7 @@ export class SmRadarChartComponent implements OnChanges {
   person2Id: number | null = null;
   chartOptions: any = {};
 
-  private categories = ['S1 Leads', 'S2 Meetings', 'S3 Follow-Ups', 'S4 Not Conv.', 'S5 No Quote', 'S6 No Quotation', 'S7 Pending', 'S8 No Booking'];
+  private categories = ['Leads', 'Meetings', 'Follow-Ups', 'Not Conv.', 'Quote', 'Enq', 'Pending', 'No Booking'];
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['scoreboard'] && this.scoreboard?.length >= 2) {
@@ -42,7 +42,7 @@ export class SmRadarChartComponent implements OnChanges {
         { name: p1.userName, data: [p1.s1, p1.s2, p1.s3, p1.s4, p1.s5, p1.s6, p1.s7, p1.s8] },
         { name: p2.userName, data: [p2.s1, p2.s2, p2.s3, p2.s4, p2.s5, p2.s6, p2.s7, p2.s8] }
       ],
-      chart: { type: 'radar', height: 240, toolbar: { show: false }, fontFamily: 'Inter, sans-serif' },
+      chart: { type: 'radar', height: '100%', width: '100%', toolbar: { show: false }},
       colors: ['#0f766e', '#6366f1'],
       xaxis: { categories: this.categories, labels: { style: { fontSize: '11px', colors: '#64748b' } } },
       yaxis: { show: false },
