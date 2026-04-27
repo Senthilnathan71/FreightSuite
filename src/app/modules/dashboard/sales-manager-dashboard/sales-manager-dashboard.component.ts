@@ -35,8 +35,6 @@ import {
 // Sub-components
 import { SmKpiCardsComponent } from './components/sm-kpi-cards/sm-kpi-cards.component';
 import { SmMeetingsBoardComponent } from './components/sm-meetings-board/sm-meetings-board.component';
-import { SmFunnelChartComponent } from './components/sm-funnel-chart/sm-funnel-chart.component';
-import { SmLeadSourceChartComponent } from './components/sm-lead-source-chart/sm-lead-source-chart.component';
 import { SmTrendChartComponent } from './components/sm-trend-chart/sm-trend-chart.component';
 import { SmScoreboardComponent } from './components/sm-scoreboard/sm-scoreboard.component';
 import { SmRadarChartComponent } from './components/sm-radar-chart/sm-radar-chart.component';
@@ -62,8 +60,6 @@ import { SmReminderModalComponent } from './components/sm-reminder-modal/sm-remi
     SearchableDropdown,
     SmKpiCardsComponent,
     SmMeetingsBoardComponent,
-    SmFunnelChartComponent,
-    SmLeadSourceChartComponent,
     SmTrendChartComponent,
     SmScoreboardComponent,
     SmRadarChartComponent,

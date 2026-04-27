@@ -36,21 +36,16 @@ export interface SalesManagerCounts {
     quotesNoBooking: number;
   };
   funnel: FunnelData;
-  leadSourceDistribution: LeadSourceItem[];
 }
 
 export interface FunnelData {
   leadsCreated: number;
   meetingsHeld: number;
   convertedToCustomer: number;
+  enquiryCreated: number;
   quoteCreated: number;
   quoteApproved: number;
   bookingCreated: number;
-}
-
-export interface LeadSourceItem {
-  source: string;
-  count: number;
 }
 
 export interface ScoreboardRow {
