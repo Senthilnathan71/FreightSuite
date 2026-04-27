@@ -1249,6 +1249,7 @@ export class PdfMakeService {
     options?: {
       receiptType?: 'bank' | 'cash';
       coaList?: any[];
+      ledgerList?: any[];
       bankTypedLedgers?: any[];
       amountInWords?: string;
       currentUserCountry?: string;
@@ -1272,6 +1273,7 @@ export class PdfMakeService {
     options?: {
       receiptType?: 'bank' | 'cash';
       coaList?: any[];
+      ledgerList?: any[];
       bankTypedLedgers?: any[];
       amountInWords?: string;
       currentUserCountry?: string;

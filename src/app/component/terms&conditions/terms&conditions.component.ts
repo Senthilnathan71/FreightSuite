@@ -100,12 +100,11 @@ editForm: FormGroup;
       if (resp.status) {
         this.appSettingService.showSuccess('New Term is successfully created');
         this.termsUpdated.emit();
-        // this.terms.push(
-        //   {
-        //     TandC: this.addForm.get('newTerm').value,
-        //     IsDefaut: this.addForm.get('IsDefaut').value ? 'S' : 'N'
-        //   }
-        // )
+        this.terms.push(
+          {
+            TandC: this.addForm.get('newTerm').value,
+          }
+        )
         this.showAddRow = !this.showAddRow;
         this.addForm.reset({ newTerm: '', IsDefaut: false });
       } else {

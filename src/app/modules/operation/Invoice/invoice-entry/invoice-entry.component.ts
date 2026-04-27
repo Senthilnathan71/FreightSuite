@@ -3094,22 +3094,81 @@ isSeaDepartment(): boolean {
     return defaultValue;
   }
 
+  get effectiveTermsAndConditions(): any[] {
+    if (Array.isArray(this.TandCList) && this.TandCList.length > 0) {
+      return this.TandCList;
+    }
+
+    const printTerms = this.invoicePrintData?.TermsAndConditions;
+    if (Array.isArray(printTerms) && printTerms.length > 0) {
+      return printTerms;
+    }
+
+    return [];
+  }
+
   async getAndStoreTandC() : Promise<void> {
     try {
-      if (!this.isTermsAndConditionsEnabled) {
-        this.TandCList = [];
-        this.TandCFetched = true;
-        return;
-      }
-      const result = await firstValueFrom(this.getTandC());
+      const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+      const menuMasterSid = this.invoiceData?.voucherTypeMaster?.MenuMasterSid;
+      const documentSid = this.invoiceData?.VoucherHeaderSid;
+
+      const payload = {
+        CompanyMasterSid: companyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
+        MenuMasterSid: menuMasterSid,
+        DocumentSid: documentSid,
+      };
+
+      const transactionPayload = {
+        CompanyMasterSid: companyMasterSid,
+        MenuMasterSid: menuMasterSid,
+        DocumentSid: documentSid
+      };
+
+      const getTermText = (item: any): string =>
+        String(item?.Terms || item?.TandC || '').trim().toLowerCase();
+
+      const isSameTerm = (a: any, b: any): boolean =>
+        (
+          a?.TandCTransactionSid &&
+          b?.TandCTransactionSid &&
+          a.TandCTransactionSid === b.TandCTransactionSid
+        ) ||
+        (
+          getTermText(a) === getTermText(b) &&
+          (a?.DocumentSid ?? documentSid ?? null) ===
+          (b?.DocumentSid ?? documentSid ?? null)
+        );
+
+      const result = await firstValueFrom(
+        this.isTermsAndConditionsEnabled
+          ? forkJoin({
+              tandc: this.masterService.getTandC(transactionPayload),
+              defaults: this.masterService.getTandCByCondition(payload)
+            })
+          : this.masterService.getTandC(transactionPayload).pipe(
+              map((tandc: any) => ({ tandc, defaults: null }))
+            )
+      );
+
       this.TandCFetched = true;
-      if(result.status){
-        this.TandCList = result.data;
-      } else {
-        this.TandCList = [];
-      }
+      const tandcData = result?.tandc?.status && Array.isArray(result?.tandc?.data)
+        ? result.tandc.data
+        : [];
+      const defaultData = this.isTermsAndConditionsEnabled &&
+        result?.defaults?.status &&
+        Array.isArray(result?.defaults?.data)
+          ? result.defaults.data
+          : [];
+
+      this.TandCList = [...tandcData, ...defaultData].filter(
+        (item: any, index: number, arr: any[]) =>
+          index === arr.findIndex((x: any) => isSameTerm(x, item))
+      );
     } catch (error) {
       console.error(error);
+      this.TandCFetched = true;
       this.TandCList = [];
     }
   }

@@ -50,6 +50,24 @@ export class VendorInvoicePrintComponent {
     return this.sourceVendorInvoiceData || this.vendorInvoiceData;
   }
 
+  get effectiveTermsAndConditions(): any[] {
+    if (Array.isArray(this.TandCList) && this.TandCList.length > 0) {
+      return this.TandCList;
+    }
+
+    const printTerms = this.vendorInvoiceData?.TermsAndConditions;
+    if (Array.isArray(printTerms) && printTerms.length > 0) {
+      return printTerms;
+    }
+
+    const sourceTerms = this.sourceVendorInvoiceData?.TermsAndConditions;
+    if (Array.isArray(sourceTerms) && sourceTerms.length > 0) {
+      return sourceTerms;
+    }
+
+    return [];
+  }
+
   isSeaDepartment(): boolean {
     const departmentType =
       this.invoiceData?.departmentMaster?.departmentType ||
@@ -145,7 +163,7 @@ export class VendorInvoicePrintComponent {
       const options = {
         taxDisplayConfig: this.getTaxDisplayConfig(),
         bankDetails: this.vendorInvoiceData?.BankDetails || this.bankDetails || [],
-        terms: this.TandCList || [],
+        terms: this.effectiveTermsAndConditions,
         amountInWords: this.vendorInvoiceData?.AmountInWords || '',
         localCurrency: this.currentCompanyCurrency?.code || '',
         invoiceTitle: this.vendorInvoiceData?.invoiceTitle || 'Vendor Invoice',
