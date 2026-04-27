@@ -573,7 +573,7 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
   }
 
   openCreateMeetingModal(lead?: any) {
-    const modalRef = this.modalService.open(SmCreateMeetingModalComponent, { centered: true });
+    const modalRef = this.modalService.open(SmCreateMeetingModalComponent, { centered: true , size : 'lg' });
     modalRef.componentInstance.lead = lead;
     modalRef.componentInstance.salespersons = this.salespersons;
     modalRef.result.then(
