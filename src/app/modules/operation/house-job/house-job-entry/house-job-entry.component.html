@@ -1382,13 +1382,11 @@
               <label for="proxy-switch-location" class="input-label">Switch Location</label>
             </div>
           </aside>
-        </div>
-
-        @if(proxyForm.get('SwitchBL')?.value){
-        <div class="row compact-form mt-2" [formGroup]="proxyForm">
           
-          <aside class="col-md-3">
-            <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('AgentName')?.value">
+        @if(proxyForm.get('SwitchBL')?.value){
+        
+          <aside class="col-md-3" *ngIf="proxyForm.get('SwitchBL')?.value">
+            <div class="custom-form-group custom-form-group-select inputChnages mt-1" [class.filled]="!!proxyForm.get('AgentName')?.value">
               <div class="d-flex align-items-center" *ngIf="!proxyForm.get('isProxyAgentFreeText')?.value">
                 <dofi-searchable-dropdown [items]="originAgentList" formControlName="AgentName" placeholder=""
                   [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
@@ -1526,8 +1524,10 @@
               <label class="input-label">Carrier Name</label>
             </div>
           </aside>
-        </div>
+      
         }
+        </div>
+
       </div>
       }
     </div>

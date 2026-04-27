@@ -1046,6 +1046,7 @@ export interface ReceiptPdfData extends PdfDocumentBase {
     currencyCode?: string;
     exchangeRate?: number;
     bankName?: string;
+    headerLedgerDisplay?: string;
     instrumentMode?: string;
     instrumentNumber?: string;
     instrumentDate?: Date | string;

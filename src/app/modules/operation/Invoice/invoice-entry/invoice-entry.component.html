@@ -2490,7 +2490,7 @@
         </div>
     
 
-          @if (currentCompany?.CompanyMasterSid === 13 || (TandCList?.length || 0) > 0) {
+          @if (currentCompany?.CompanyMasterSid === 13 || (effectiveTermsAndConditions?.length || 0) > 0) {
           <div style="margin-top: 1rem; font-size: 12px; padding: 0 20px">
   <h5 style="margin-bottom: 0.5rem; font-weight: bolder">
     <strong>Terms and Conditions</strong>
@@ -2503,9 +2503,9 @@
       <li>Please mention our invoice number(s) on your remittance instructions.</li>
     </ul>
   } @else {
-    <!-- For other companies - Use the existing TandCList -->
+    <!-- For other companies - Use the effective terms list -->
     <ul style="margin-top: 0; padding-left: 1.2rem">
-      @for (term of TandCList; track term) {
+      @for (term of effectiveTermsAndConditions; track term) {
         <li>{{ term.TandC || term.Terms }}</li>
       }
     </ul>
