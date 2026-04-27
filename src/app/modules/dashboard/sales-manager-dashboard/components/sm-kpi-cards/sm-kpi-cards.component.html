@@ -23,7 +23,7 @@
       </div>
 
       <!-- Value -->
-      <div class="kpi-value" [class.primary-value]="card.isPrimary">{{ formatValue(card) }}</div>
+      <div class="kpi-value" [class.primary-value]="card.isPrimary">{{ formatValue(card, getAnimatedValue(card)) }}</div>
 
       <!-- Label -->
       <div class="kpi-label">{{ card.label }}</div>

@@ -125,19 +125,19 @@
           (cardClicked)="onKpiCardClicked($event)">
         </app-sm-kpi-cards>
 
-        <div class="expand-toggle-row">
+        <!-- <div class="expand-toggle-row">
           <button class="expand-toggle" (click)="showAllKpis = !showAllKpis">
             <i class="fas" [ngClass]="showAllKpis ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
             {{ showAllKpis ? 'Hide detailed metrics' : 'Show all 8 metrics' }}
           </button>
-        </div>
+        </div> -->
 
-        <app-sm-kpi-cards *ngIf="showAllKpis"
+        <!-- <app-sm-kpi-cards *ngIf="showAllKpis"
           [cards]="secondaryKpiCards"
           [loading]="countsLoading"
           [isSecondaryRow]="true"
           (cardClicked)="onKpiCardClicked($event)">
-        </app-sm-kpi-cards>
+        </app-sm-kpi-cards> -->
       </section>
 
       <section class="dashboard-section">
