@@ -140,12 +140,20 @@
         </app-sm-kpi-cards> -->
       </section>
 
-      <section class="dashboard-section">
-        <div class="section-heading">
-          <h2>12 week trendline</h2>
-        </div>
-
-        <app-sm-trend-chart [data]="weeklyTrend"></app-sm-trend-chart>
+      <section class="row">
+        <section class="col-md-7">
+          <!-- <div class="section-heading">
+            <h2>12 week trendline</h2>
+          </div> -->
+      
+          <app-sm-trend-chart [data]="weeklyTrend"></app-sm-trend-chart>
+        </section>
+        <section class="col-md-5">
+          <!-- <div class="section-heading">
+            <h2>Top performers and action center</h2>
+          </div> -->
+          <app-sm-top-performers [scoreboard]="scoreboard"></app-sm-top-performers>
+        </section>
       </section>
 
       <section class="dashboard-section">
