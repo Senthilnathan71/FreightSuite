@@ -67,6 +67,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { MAWBComponent } from '../../Master-air-waybill/report/mawb/mawb.component';
+import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
@@ -4309,6 +4310,20 @@ ${this.userData['userName']}`;
       centered: true, 
       backdrop: 'static' 
     })
+  }
+
+  openDocRef() {
+    const currentMenuId = this.bookingData?.MenuMasterSid;
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = currentMenuId;
+    modalRef.componentInstance.DocumentSid = this.HouseJobSid;
   }
 
   openFollowup() {

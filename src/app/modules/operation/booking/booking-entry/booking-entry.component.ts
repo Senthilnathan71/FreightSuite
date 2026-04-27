@@ -72,6 +72,7 @@ import { th } from 'date-fns/locale';
 import * as JsBarcode from 'jsbarcode';
 import { CreditValidationApiService } from '../../credit-request.service';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
+import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -4622,6 +4623,20 @@ ${this.userData['userName']}`;
   console.log(this.MenuMasterSid)
       this.commonService.documentData.set(data)
 }
+
+openDocRef() {
+    const currentMenuId = this.bookingData?.MenuMasterSid;
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = currentMenuId;
+    modalRef.componentInstance.DocumentSid = this.BookingHeaderSid;
+  }
 
 
 

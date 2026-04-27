@@ -554,7 +554,7 @@ export class ConnectionComponent implements OnInit {
     if (this.screenName === 'Booking') {
       deleteApi$ = this.operationService.deleteBookingConnection(connectionSid,updatedBy);
     } else if (this.screenName === 'MasterJob') {
-      deleteApi$ = this.operationService.softDeleteMasterJobConnection(connectionSid);
+      deleteApi$ = this.operationService.softDeleteMasterJobConnection(connectionSid,updatedBy);
     } else if (this.screenName === 'HouseJob') {
       deleteApi$ = this.operationService.softDeleteHouseJobConnection(connectionSid,updatedBy);
     }
