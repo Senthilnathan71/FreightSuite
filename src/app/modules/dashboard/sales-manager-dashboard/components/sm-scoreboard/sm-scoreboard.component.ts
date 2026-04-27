@@ -47,6 +47,11 @@ export class SmScoreboardComponent {
     }
   }
 
+  getSortIcon(field: string): string {
+    if (this.sortField !== field) return 'fas fa-sort';
+    return this.sortDir === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
+  }
+
   getInitials(name: string): string {
     return name?.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || '';
   }
