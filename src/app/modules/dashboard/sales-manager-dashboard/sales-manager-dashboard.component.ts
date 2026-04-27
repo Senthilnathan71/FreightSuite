@@ -180,10 +180,11 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
   get salesOverviewDateRangeLabel(): string {
     const from = this.dateFromInput ? this.formatDisplayDate(this.dateFromInput) : '--';
     const to = this.dateToInput ? this.formatDisplayDate(this.dateToInput) : '--';
-    return `From: ${from}  To: ${to}`;
+    return `From : ${from}  To : ${to}`;
   }
 
-  toggleDateDropdown() {
+  toggleDateDropdown(event?: MouseEvent) {
+    event?.stopPropagation();
     this.dateDropdownOpen = !this.dateDropdownOpen;
   }
 
@@ -260,6 +261,9 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
 
   onDateChange() {
     this.activePreset = '';
+    if (!this.dateFromInput || !this.dateToInput) {
+      return;
+    }
     this.applyFilters();
   }
 

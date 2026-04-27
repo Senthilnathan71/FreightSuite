@@ -2,39 +2,55 @@
   <div class="dashboard-shell">
     <section class="dashboard-hero">
       <div class="hero-accent"></div>
+      <div class="hero-glow hero-glow--teal" aria-hidden="true"></div>
+      <div class="hero-glow hero-glow--blue" aria-hidden="true"></div>
+      <div class="hero-motion" aria-hidden="true">
+        <div class="flight-path">
+          <i class="fas fa-plane"></i>
+        </div>
+      </div>
 
       <div class="hero-top">
         <div class="hero-identity">
-          <div class="hero-identity__title-row">
+          <div class="hero-identity__eyebrow">
             <span class="hero-badge">Sales Manager Dashboard</span>
           </div>
-          <p class="hero-subtitle">Performance &amp; Pipeline Overview</p>
-        </div>
-
-        <div class="hero-meta">
-          <div class="meta-chip">
-            <div class="meta-chip__icon"><i class="fas fa-users"></i></div>
-            <div class="meta-chip__body">
-              <span class="meta-chip__value">{{ salespersons.length }}</span>
-              <span class="meta-chip__label">Salesman Count</span>
-            </div>
-          </div>
-
-          <div class="meta-divider"></div>
-
-          <div class="meta-chip">
-            <div class="meta-chip__icon meta-chip__icon--clock"><i class="far fa-clock"></i></div>
-            <div class="meta-chip__body">
-              <span class="meta-chip__value">{{ lastUpdated ? (lastUpdated | date:'h:mm a') : '--' }}</span>
-              <span class="meta-chip__label">Last Sync</span>
-            </div>
+          <div class="hero-identity__title-row">
+            <h1 class="hero-title">Performance &amp; Pipeline Control Center</h1>
           </div>
         </div>
 
-        <button class="meeting-btn" type="button" (click)="openCreateMeetingModal()">
-          <i class="fas fa-plus"></i>
-          <span>New Meeting</span>
-        </button>
+        <div class="hero-side">
+          <div class="hero-meta">
+            <div class="meta-chip">
+              <div class="meta-chip__icon"><i class="fas fa-users"></i></div>
+              <div class="meta-chip__body">
+                <span class="meta-chip__value">{{ salespersons.length }}</span>
+                <span class="meta-chip__label">Salesman Count</span>
+              </div>
+            </div>
+
+            <div class="meta-divider"></div>
+
+            <div class="meta-chip">
+              <div class="meta-chip__icon meta-chip__icon--clock"><i class="far fa-clock"></i></div>
+              <div class="meta-chip__body">
+                <span class="meta-chip__value">{{ lastUpdated ? (lastUpdated | date:'dd MMM yyyy, h:mm a') : '--' }}</span>
+                <span class="meta-chip__label">Last Sync</span>
+              </div>
+            </div>
+          </div>
+
+          <button class="meeting-btn" type="button" (click)="openCreateMeetingModal()">
+            <i class="fas fa-plus"></i>
+            <span>New Meeting</span>
+          </button>
+
+          <button class="reset-dashboard-btn" type="button" (click)="resetFilters()">
+            <i class="fas fa-rotate-right"></i>
+            <span>Reset</span>
+          </button>
+        </div>
       </div>
 
       <div class="hero-filters">
@@ -75,13 +91,15 @@
           <button class="custom-range-trigger"
                   type="button"
                   [class.active]="dateDropdownOpen"
-                  (click)="toggleDateDropdown()">
+                  (click)="toggleDateDropdown($event)">
             <i class="fas fa-calendar-alt"></i>
             <span>Custom Range</span>
             <i class="fas fa-chevron-down chevron" [class.open]="dateDropdownOpen"></i>
           </button>
 
-          <div class="date-dropdown-panel" *ngIf="dateDropdownOpen">
+          <div class="date-dropdown-panel"
+               *ngIf="dateDropdownOpen"
+               (click)="$event.stopPropagation()">
             <div class="date-dropdown-panel__header">
               <strong>Custom Date Range</strong>
               <span>Choose a precise reporting window</span>
@@ -91,6 +109,7 @@
               <div class="range-field">
                 <label>From</label>
                 <input class="form-control range-input" placeholder="From"
+                       name="dateFromInput"
                        ngbDatepicker #dpFrom="ngbDatepicker" container="body"
                        [(ngModel)]="dateFromInput" (ngModelChange)="onDateChange()"
                        [maxDate]="getMaxDateFrom()" (click)="dpFrom.toggle()" readonly />
@@ -98,6 +117,7 @@
               <div class="range-field">
                 <label>To</label>
                 <input class="form-control range-input" placeholder="To"
+                       name="dateToInput"
                        ngbDatepicker #dpTo="ngbDatepicker" container="body"
                        [(ngModel)]="dateToInput" (ngModelChange)="onDateChange()"
                        [minDate]="getMinDateTo()" [maxDate]="maxDateTo"
@@ -108,8 +128,6 @@
         </div>
       </div>
     </section>
-
-    <div class="dropdown-backdrop" *ngIf="dateDropdownOpen" (click)="closeDateDropdown()"></div>
 
     <div class="content-v2">
       <section class="dashboard-section section-kpis">
