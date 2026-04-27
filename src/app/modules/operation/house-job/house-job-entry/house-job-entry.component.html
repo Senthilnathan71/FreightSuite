@@ -1370,7 +1370,8 @@
           <aside class="col-md-3 d-flex align-items-center">
             <div class="form-check form-check-inline p-0 mt-0">
               <div class="form-check d-flex align-items-center">
-                <input type="checkbox" id="proxySwitchBl" class="form-check-input sm" formControlName="SwitchBL">
+                <input type="checkbox" id="proxySwitchBl" class="form-check-input sm" formControlName="SwitchBL"
+                  [disabled]="otherForm.get('BacktoBack')?.value || isFormDisabled">
                 <label for="proxySwitchBl" class="form-check-label sm">Switch BL</label>
               </div>
             </div>
@@ -1384,7 +1385,19 @@
           </aside>
         </div>
 
-        @if(proxyForm.get('SwitchBL')?.value){
+        <div class="row compact-form mt-2" [formGroup]="otherForm">
+          <aside class="col-md-3 d-flex align-items-center">
+            <div class="form-check form-check-inline p-0 mt-0">
+              <div class="form-check d-flex align-items-center">
+                <input type="checkbox" id="proxyBacktoBack" class="form-check-input sm" formControlName="BacktoBack"
+                  [disabled]="proxyForm.get('SwitchBL')?.value || isFormDisabled">
+                <label for="proxyBacktoBack" class="form-check-label sm">Back to Back</label>
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        @if(proxyForm.get('SwitchBL')?.value || otherForm.get('BacktoBack')?.value){
         <div class="row compact-form mt-2" [formGroup]="proxyForm">
           
           <aside class="col-md-3">
@@ -3043,15 +3056,6 @@
             </div>
           </aside>
         }
-          <aside class="col-md-3 d-flex align-items-center">
-            <div class="form-check form-check-inline p-0 mt-0">
-              <div class="form-check d-flex align-items-center">
-                <input type="checkbox" id="BacktoBack" class="form-check-input sm" formControlName="BacktoBack">
-                <label for="BacktoBack" class="form-check-label sm">Back to Back <span
-                    class="text-danger"></span></label>
-              </div>
-            </div>
-          </aside>
           @if(selectedCargoMode === "FCL"){
           <aside class="col-md-3">
             <div class="custom-form-group">

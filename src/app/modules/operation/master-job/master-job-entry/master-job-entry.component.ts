@@ -4317,6 +4317,54 @@ onETDDateSelect(): void {
     return 'N/A';
   }
 
+  private isSwitchBLPrintEnabled(houseJob: any): boolean {
+    const switchBL =
+      houseJob?.Others?.[0]?.SwitchBL ??
+      houseJob?.Others?.[0]?.BacktoBack ??
+      houseJob?.HouseJobProxy?.[0]?.SwitchBL ??
+      houseJob?.houseJobProxy?.[0]?.SwitchBL ??
+      houseJob?.Proxy?.[0]?.SwitchBL ??
+      houseJob?.SwitchBL;
+
+    return String(switchBL || '').toUpperCase() === 'Y' || switchBL === true;
+  }
+
+  private getPrintableValue(primaryValue: any, proxyValue: any, useProxy: boolean): string {
+    const hasProxyValue =
+      proxyValue !== null &&
+      proxyValue !== undefined &&
+      String(proxyValue).trim() !== '';
+
+    const selectedValue = useProxy
+      ? (hasProxyValue ? proxyValue : primaryValue)
+      : primaryValue;
+
+    return selectedValue === null || selectedValue === undefined
+      ? ''
+      : String(selectedValue).trim();
+  }
+
+  private normalizeHouseJobForPrint(houseJob: any): any {
+    const proxy = houseJob?.HouseJobProxy?.[0] || houseJob?.houseJobProxy?.[0] || houseJob?.Proxy?.[0] || null;
+    const useProxy = this.isSwitchBLPrintEnabled(houseJob);
+
+    return {
+      ...houseJob,
+      ShipperName: this.getPrintableValue(houseJob?.ShipperName, proxy?.ShipperName, useProxy),
+      ShipperAddress: this.getPrintableValue(houseJob?.ShipperAddress, proxy?.ShipperAddress, useProxy),
+      ConsigneeName: this.getPrintableValue(houseJob?.ConsigneeName, proxy?.ConsigneeName, useProxy),
+      ConsigneeAddress: this.getPrintableValue(houseJob?.ConsigneeAddress, proxy?.ConsigneeAddress, useProxy),
+    };
+  }
+
+  private getPrintableMasterJobData(): any {
+    const printableMasterJobData = structuredClone(this.masterJobData || {});
+    printableMasterJobData.houseJob = (printableMasterJobData.houseJob || []).map((houseJob: any) =>
+      this.normalizeHouseJobForPrint(houseJob)
+    );
+    return printableMasterJobData;
+  }
+
   reportPreAlertModel() {
     if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
       // Check if containers exist and have ContainerNumber
@@ -4356,7 +4404,7 @@ onETDDateSelect(): void {
       scrollable: true,
       
     })
-    modalRef.componentInstance.masterJobData = this.masterJobData;
+    modalRef.componentInstance.masterJobData = this.getPrintableMasterJobData();
     modalRef.componentInstance.containerTypeList = this.containerTypeList;
     modalRef.componentInstance.masterJobContainers = this.masterJobData.containers || [];
     modalRef.componentInstance.packageTypeList = this.packageTypeList;
@@ -4434,7 +4482,7 @@ onETDDateSelect(): void {
       // size: 'xl',
       scrollable: true,
     });
-    modalRef.componentInstance.masterJobData = this.masterJobData;
+    modalRef.componentInstance.masterJobData = this.getPrintableMasterJobData();
     modalRef.componentInstance.containerTypeList = this.containerTypeList;
     modalRef.componentInstance.masterJobContainers = this.masterJobData.containers || [];
     modalRef.componentInstance.packageTypeList = this.packageTypeList;

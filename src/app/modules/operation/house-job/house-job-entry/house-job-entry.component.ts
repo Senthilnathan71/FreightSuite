@@ -1525,12 +1525,29 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
         return;
       }
 
+      if (checked) {
+        this.otherForm.get('BacktoBack')?.setValue(false, { emitEvent: false });
+      }
+
       if (!checked) {
         this.clearProxyFields();
       }
 
       this.formSaved = false;
       this.recomputeDirtyState('proxyForm.SwitchBL');
+    });
+
+    this.otherForm.get('BacktoBack')?.valueChanges.subscribe((checked) => {
+      if (this.isPatching) {
+        return;
+      }
+
+      if (checked) {
+        this.proxyForm.get('SwitchBL')?.setValue(false, { emitEvent: false });
+      }
+
+      this.formSaved = false;
+      this.recomputeDirtyState('otherForm.BacktoBack');
     });
 
     this.proxyForm.valueChanges.subscribe(() => {
@@ -2369,7 +2386,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
 
     this.proxyForm.patchValue({
       HouseJobProxySid: proxyData?.HouseJobProxySid || null,
-      SwitchBL: otherData?.SwitchBL === "Y" || hasProxyData ? true : false,
+      SwitchBL: otherData?.SwitchBL === "Y" && otherData?.BacktoBack !== "Y" ? true : false,
       SwitchLocation: otherData?.SwitchLocation || null,
       CustomerName: proxyData?.CustomerName || null,
       CustomerAddress: proxyData?.CustomerAddress ||null,
@@ -3464,7 +3481,7 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
       InternalNote: otherFormValue?.InternalNote || '',
       GeneralNote: otherFormValue?.GeneralNote || ''
     },
-    houseJobProxy: proxyFormValue.SwitchBL ? [{
+     houseJobProxy: (proxyFormValue.SwitchBL || otherFormValue.BacktoBack) ? [{
       HouseJobProxySid: proxyFormValue.HouseJobProxySid || null,
       CustomerName: proxyFormValue.CustomerName || null,
       CustomerAddress: proxyFormValue.CustomerAddress || null,
@@ -3579,10 +3596,12 @@ private getAgentNameById(agentId: number): string {
 isSwitchBLPrintEnabled(): boolean {
   const switchBL =
     this.housejobData?.Others?.[0]?.SwitchBL ??
+    this.housejobData?.Others?.[0]?.BacktoBack ??
     this.housejobData?.HouseJobProxy?.[0]?.SwitchBL ??
     this.housejobData?.houseJobProxy?.[0]?.SwitchBL ??
     this.housejobData?.Proxy?.[0]?.SwitchBL ??
     this.proxyForm?.get('SwitchBL')?.value ??
+    this.otherForm?.get('BacktoBack')?.value ??
     this.houseJobForm?.get('SwitchBL')?.value;
 
   return String(switchBL || '').toUpperCase() === 'Y' || switchBL === true;

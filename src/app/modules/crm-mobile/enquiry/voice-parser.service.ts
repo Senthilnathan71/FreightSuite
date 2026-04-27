@@ -14,9 +14,29 @@ if (
   lowerText === 'save' ||
   lowerText === 'submit' ||
   lowerText === 'save enquiry' ||
-  lowerText === 'save entry'
+  lowerText === 'save entry' ||
+  lowerText === 'save quotation' ||
+  lowerText === 'save quote'
 ) {
   return { type: 'CONTROL', action: 'SAVE' };
+}
+
+if (
+  lowerText.includes('add route')
+) {
+  return { type: 'CONTROL', action: 'ADD_ROUTE' };
+}
+
+if (
+  lowerText.includes('add cargo')
+) {
+  return { type: 'CONTROL', action: 'ADD_CARGO' };
+}
+
+if (
+  lowerText.includes('add product')
+) {
+  return { type: 'CONTROL', action: 'ADD_PRODUCT' };
 }
 
    /* =========================
@@ -27,6 +47,14 @@ if (
     lowerText.includes('enquiry tab')
   ) {
     return { type: 'CONTROL', action: 'TAB_ENQUIRY' };
+  }
+
+  if (
+    lowerText.includes('quotation tab') ||
+    lowerText === 'quotation' ||
+    lowerText.includes('quote tab')
+  ) {
+    return { type: 'CONTROL', action: 'TAB_QUOTATION' };
   }
 
   if (

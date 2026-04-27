@@ -1278,6 +1278,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
     const isHaz = this.isHazardous(data?.IsHaz);
     const productForm = this.fb.group({
       BookingProductSid: [data?.BookingProductSid || null],
+      BookingCargoSid: [data?.BookingCargoSid || null],
       ProductName: [data?.ProductName || null,[Validators.required]],
       isProductFreeText: [data?.isProductFreeText || false],
       ShippingBillNo: [data?.ShippingBillNo || ''],

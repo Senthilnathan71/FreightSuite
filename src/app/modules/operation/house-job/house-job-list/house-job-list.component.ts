@@ -442,7 +442,9 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
     }
 
     const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
-    this.allItems = rawItems.map((item: any) => ({
+    const filteredItems = this.applyAdvancedFilters(rawItems);
+
+    this.allItems = filteredItems.map((item: any) => ({
       ...item,
       MasterJobSid: item.MasterJobSid,
       MasterJobNumber: item.masterJob?.MasterJobNumber ?? item.MBLNo ?? '',
@@ -453,7 +455,10 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
       Status: item.status === 'A' ? 'Active' : 'Suspended'
     }));
 
-    this.totalLengthOfCollection = response?.data?.totalCount || rawItems.length || 0;
+    const responseTotal = Number(response?.data?.totalCount || 0);
+    this.totalLengthOfCollection = this.hasAdvancedFilterValues()
+      ? filteredItems.length
+      : responseTotal || rawItems.length || 0;
     this.applySorting();
     this.updateHeaderActionState();
   }
