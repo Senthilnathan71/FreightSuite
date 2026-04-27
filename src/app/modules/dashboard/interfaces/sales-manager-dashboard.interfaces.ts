@@ -35,17 +35,15 @@ export interface SalesManagerCounts {
     quotesNotApproved: number;
     quotesNoBooking: number;
   };
-  funnel: FunnelData;
+  kpi: KPIData;
 }
 
-export interface FunnelData {
+export interface KPIData {
   leadsCreated: number;
-  meetingsHeld: number;
-  convertedToCustomer: number;
-  enquiryCreated: number;
-  quoteCreated: number;
-  quoteApproved: number;
-  bookingCreated: number;
+  meetingScheduled: number;
+  quoteCreated : number;
+  leadConvertedToCustomer : number;
+  profitAtQuote : number;
 }
 
 export interface ScoreboardRow {

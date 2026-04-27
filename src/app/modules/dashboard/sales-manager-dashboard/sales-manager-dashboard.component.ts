@@ -427,33 +427,33 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
   private buildKpiCards() {
     if (!this.counts) return;
     const c = this.counts.counts;
-    const f = this.counts.funnel;
+    const f = this.counts.kpi;
 
     // 5 primary hero KPIs
     this.primaryKpiCards = [
       {
-        key: 'totalLeads', label: 'Total Leads', icon: 'fas fa-funnel-dollar',
+        key: 'totalLeads', label: 'Leads Created', icon: 'fas fa-funnel-dollar',
         colorClass: 'primary', value: f.leadsCreated, sectionNumber: 0,
         isPrimary: true, percentChange: 12.5, changeDirection: 'up', progressPercent: 75
       },
       {
-        key: 'meetings', label: 'Meetings', icon: 'fas fa-calendar-check',
-        colorClass: 'primary', value: c.meetingsScheduled, sectionNumber: 2,
+        key: 'meetings', label: 'Meeting Scheduled', icon: 'fas fa-calendar-check',
+        colorClass: 'primary', value: f.meetingScheduled, sectionNumber: 2,
         isPrimary: true, percentChange: 8.2, changeDirection: 'up', progressPercent: 60
       },
       {
-        key: 'quotes', label: 'Quotes', icon: 'fas fa-file-invoice',
+        key: 'quotes', label: 'Quotes Created', icon: 'fas fa-file-invoice',
         colorClass: 'primary', value: f.quoteCreated, sectionNumber: 0,
         isPrimary: true, percentChange: 5.1, changeDirection: 'up', progressPercent: 45
       },
       {
-        key: 'conversions', label: 'Conversions', icon: 'fas fa-user-check',
-        colorClass: 'primary', value: f.convertedToCustomer, sectionNumber: 0,
+        key: 'conversions', label: 'Lead to Customer Conversions', icon: 'fas fa-user-check',
+        colorClass: 'primary', value: f.leadConvertedToCustomer, sectionNumber: 0,
         isPrimary: true, percentChange: 3.4, changeDirection: 'down', progressPercent: 30
       },
       {
-        key: 'revenue', label: 'Revenue', icon: 'fas fa-dollar-sign',
-        colorClass: 'primary', value: 120950, sectionNumber: 0,
+        key: 'revenue', label: 'Profit', icon: 'fas fa-dollar-sign',
+        colorClass: 'primary', value: f.profitAtQuote , sectionNumber: 0,
         isPrimary: true, isCurrency: true, percentChange: 15.8, changeDirection: 'up', progressPercent: 82
       },
     ];
