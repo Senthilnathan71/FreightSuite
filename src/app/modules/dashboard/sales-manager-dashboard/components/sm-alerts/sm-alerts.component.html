@@ -1,47 +1,52 @@
 <!-- Action Center Mode (v2) -->
 <div class="action-center-card" *ngIf="redesignMode">
-  <div class="ac-header">
-    <i class="fas fa-bolt" style="color:#f59e0b"></i>
-    <h3>Action Center</h3>
-  </div>
-
-  <div class="ac-list">
-    <div class="ac-item" *ngFor="let item of actionCenterItems">
-      <div class="ac-icon" [style.background]="getItemIconBg(item.colorClass)" [style.color]="getItemIconColor(item.colorClass)">
-        <i [class]="item.icon"></i>
+  <div class="ac-layout">
+    <div class="ac-panel ac-panel--left">
+      <div class="ac-header">
+        <i class="fas fa-bolt" style="color:#f59e0b"></i>
+        <h3>Action Center</h3>
       </div>
-      <div class="ac-body">
-        <div class="ac-title">{{ item.title }}</div>
-        <div class="ac-subtitle">{{ item.subtitle }}</div>
-      </div>
-      <div class="ac-count" [class]="item.colorClass">{{ item.count }}</div>
-    </div>
 
-    <div class="ac-empty" *ngIf="!actionCenterItems.length">
-      <i class="fas fa-check-circle"></i>
-      <p>All clear — no pending actions</p>
-    </div>
-  </div>
-
-  <!-- Also show at-risk alerts below if any -->
-  <div class="ac-alerts-section" *ngIf="alerts.length">
-    <div class="ac-divider">
-      <span>At-Risk Alerts</span>
-      <span class="alert-count-badge">{{ alerts.length }}</span>
-    </div>
-    <div class="alerts-list">
-      <div class="alert-item" *ngFor="let alert of alerts"
-           [class.danger]="alert.severity === 'danger'"
-           [class.warning]="alert.severity === 'warning'"
-           [class.info]="alert.severity === 'info'">
-        <div class="alert-icon"><i [class]="getIcon(alert.alertType)"></i></div>
-        <div class="alert-body">
-          <div class="alert-header">
-            <span class="alert-type">{{ getAlertTypeLabel(alert.alertType) }}</span>
-            <span class="severity-badge" [class]="alert.severity">{{ alert.severity }}</span>
+      <div class="ac-list">
+        <div class="ac-item" *ngFor="let item of actionCenterItems">
+          <div class="ac-icon" [style.background]="getItemIconBg(item.colorClass)" [style.color]="getItemIconColor(item.colorClass)">
+            <i [class]="item.icon"></i>
           </div>
-          <div class="alert-person">{{ alert.salesperson }}</div>
-          <div class="alert-desc">{{ alert.description }}</div>
+          <div class="ac-body">
+            <div class="ac-title">{{ item.title }}</div>
+            <div class="ac-subtitle">{{ item.subtitle }}</div>
+          </div>
+          <div class="ac-count" [class]="item.colorClass">{{ item.count }}</div>
+        </div>
+
+        <div class="ac-empty" *ngIf="!actionCenterItems.length">
+          <i class="fas fa-check-circle"></i>
+          <p>All clear - no pending actions</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ac-panel ac-panel--right" *ngIf="alerts.length">
+      <div class="ac-alerts-section">
+        <div class="ac-divider">
+          <span>At-Risk Alerts</span>
+          <span class="alert-count-badge">{{ alerts.length }}</span>
+        </div>
+        <div class="alerts-list">
+          <div class="alert-item" *ngFor="let alert of alerts"
+               [class.danger]="alert.severity === 'danger'"
+               [class.warning]="alert.severity === 'warning'"
+               [class.info]="alert.severity === 'info'">
+            <div class="alert-icon"><i [class]="getIcon(alert.alertType)"></i></div>
+            <div class="alert-body">
+              <div class="alert-header">
+                <span class="alert-type">{{ getAlertTypeLabel(alert.alertType) }}</span>
+                <span class="severity-badge" [class]="alert.severity">{{ alert.severity }}</span>
+              </div>
+              <div class="alert-person">{{ alert.salesperson }}</div>
+              <div class="alert-desc">{{ alert.description }}</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -63,7 +68,7 @@
   <div class="alerts-list" *ngIf="!loading">
     <div class="empty-state" *ngIf="alerts.length === 0">
       <i class="fas fa-shield-alt"></i>
-      <p>No alerts — your team is on track!</p>
+      <p>No alerts - your team is on track!</p>
     </div>
 
     <div class="alert-item" *ngFor="let alert of alerts"
