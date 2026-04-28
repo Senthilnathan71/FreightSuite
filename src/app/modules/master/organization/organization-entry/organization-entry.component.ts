@@ -2076,7 +2076,7 @@ onCompanyTypeChange(): void {
       );
       const configs = response?.data ?? response ?? [];
       this.customerNameConfig = Array.isArray(configs)
-        ? configs.find((c: any) => c.ConfigurationName === 'CustomerName')
+        ? configs.find((c: any) => c.ConfigurationName === 'CustomerNameUpdateUsers')
         : null;
     } catch (error) {
       console.error('Error loading customer name configuration:', error);
@@ -2113,10 +2113,10 @@ onCompanyTypeChange(): void {
 
     const allowedEmails = configValue
       .split(',')
-      .map((email: string) => email.trim().toLowerCase())
+      .map((email: string) => email.trim())
       .filter((email: string) => email.length > 0);
 
-    this.canEditCustomerName = allowedEmails.includes(this.currentUserEmail.toLowerCase());
+    this.canEditCustomerName = allowedEmails.includes(this.currentUserEmail.trim());
     if (this.canEditCustomerName) {
       customerNameControl.enable({ emitEvent: false });
     } else {
