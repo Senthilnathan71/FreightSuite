@@ -40,6 +40,7 @@ import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { ToastrService } from 'ngx-toastr';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 import { SearchableDropdown } from "src/app/component/searchable-dropdown/searchable-dropdown.component";
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
 @Component({
@@ -2893,6 +2894,19 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
     }
 
     this.commonService.documentData.set(data)
+  }
+
+  openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.voucherHeaderSid;
   }
 
   openFollowup() {

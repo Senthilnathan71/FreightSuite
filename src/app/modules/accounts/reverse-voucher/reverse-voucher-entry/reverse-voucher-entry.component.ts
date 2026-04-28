@@ -33,6 +33,7 @@ import { CurrencyConfigurationService } from 'src/app/core/services/currency-con
 import { LogoService } from 'src/app/core/services/logo.service';
 import { ToastrService } from 'ngx-toastr';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -1915,6 +1916,19 @@ export class ReverseVoucherEntryComponent {
     }
 
     this.commonService.documentData.set(data)
+  }
+
+  openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.reverseVoucherData?.VoucherHeaderSid;
   }
 
   openFollowup() {

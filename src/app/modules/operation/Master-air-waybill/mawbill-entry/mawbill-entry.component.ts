@@ -63,6 +63,7 @@ import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { extractBackendErrorMessage } from 'src/app/common/error-handling/payload-validation-handler';
 import { JobCardComponent } from '../../master-job/reports/job-card/job-card.component';
+import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 @Component({
   selector: 'app-mawbill-entry',
   standalone: true,
@@ -3325,6 +3326,19 @@ handleEdocChange(event: any) {
       modalRef.componentInstance.recordId = this.masterJobSid.toString();
       modalRef.componentInstance.screenName = 'MasterAirwayBill';
     }
+
+    openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.masterJobSid;
+  }
 
   openTandC() {
       this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));

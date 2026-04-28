@@ -22,6 +22,7 @@ import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLengt
 import { CommonEntryHeaderComponent } from 'src/app/shared/components/common-entry-header/common-entry-header.component';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 
 interface IWindow extends Window {
   webkitSpeechRecognition: any;
@@ -240,7 +241,7 @@ noOfTeuOptions = [
    
 
 hasAnyDropdownPermission(): boolean {
-    const dropdownButtons = ['Edoc', 'Authority', 'Email'];
+    const dropdownButtons = ['Edoc', 'Authority', 'Email', 'Document Reference'];
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));
     }
 
@@ -610,6 +611,18 @@ openEDoc() {
 
       this.commonService.documentData.set(data)
 }
+openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.ContainerTypeMasterSid;
+  }
 ngOnDestroy(): void {
     this.commonService.clearDocumentData()
  }

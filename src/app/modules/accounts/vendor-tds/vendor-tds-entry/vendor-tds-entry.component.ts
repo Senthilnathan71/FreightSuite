@@ -23,6 +23,7 @@ import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 
 @Component({
   selector: 'app-vendor-tds-entry',
@@ -499,6 +500,19 @@ openAuditLogs(modal: TemplateRef<any>) {
 
       }
     }
+
+    openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.supplierTDSdata?.SupplierTdsMappingSid;
+  }
 
     openFollowup(){
 

@@ -224,6 +224,8 @@
               <button type="button" appPreventMultiClick ngbDropdownItem class="text-dark" (click)="openFollowup()">
             <i class="fas fa-paperclip me-1"></i> Followup
           </button>
+          <button *ngIf="mps.has('document_reference')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openDocRef()"><i
+              class="fas fa-paperclip me-1"></i>Document reference</button>
           </div>
         </div>
 

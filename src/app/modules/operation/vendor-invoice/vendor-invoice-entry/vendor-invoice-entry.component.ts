@@ -51,6 +51,7 @@ import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { offset } from '@popperjs/core';
 import { AppliedTaxMode, TaxCalculationService } from '../../services/tax-calculation.service';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
+import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -2869,6 +2870,19 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
     this.commonService.documentData.set(data);
   }
+
+  openDocRef() {
+      const modalRef = this.modalService.open(DocReferenceComponent, {
+        size: 'lg',
+        centered: true,
+        backdrop: 'static'
+      });
+    
+      modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+      modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+      modalRef.componentInstance.MenuMasterSid = Number(this.currentMenuId);  
+      modalRef.componentInstance.DocumentSid = this.vendorInvoiceData?.VoucherHeaderSid;
+    }
 
   // Terms & Conditions Method
   openTandC() {

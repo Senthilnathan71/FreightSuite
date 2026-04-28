@@ -20,6 +20,7 @@ import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/
 import { getDefaultTodayDate } from 'src/app/common/helper';
 import { catchError, of } from 'rxjs';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 @Component({
   selector: 'app-mawb-stock',
   standalone: true,
@@ -208,7 +209,7 @@ export class MawbStockComponent implements OnInit{
      
 
   hasAnyDropdownPermission(): boolean {
-    const dropdownButtons = ['Edoc','Authority', 'Email'];
+    const dropdownButtons = ['Edoc','Authority', 'Email', 'Document Reference'];
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));
     }
   
@@ -606,6 +607,19 @@ updateSaveButtonState(): void {
   }
 
       this.commonService.documentData.set(data)
+  }
+
+  openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.MawbStockSid;
   }
 
    openFollowup() {

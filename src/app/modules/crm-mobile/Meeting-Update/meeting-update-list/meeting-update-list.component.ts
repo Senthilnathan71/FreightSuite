@@ -39,6 +39,7 @@ import {
 } from 'src/app/shared/interfaces/advanced-filter.interface';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 
 @Component({
   selector: 'app-meeting-update-list',
@@ -1146,6 +1147,19 @@ private handleMeetingDateChange(newDate: string): void {
 
 
 
+  }
+
+  openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.PreCustomerMeetingSid;
   }
 
   deleteMeeting(PreCustomerMeetingSid: number) {

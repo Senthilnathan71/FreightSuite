@@ -23,6 +23,7 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 
 @Component({
   selector: 'app-charge-entry',
@@ -246,7 +247,7 @@ selectedTab = this.tab[0].name;
   
 
     hasAnyDropdownPermission(): boolean {
-  const dropdownButtons = ['Edoc','Authority', 'Email'];
+  const dropdownButtons = ['Edoc','Authority', 'Email', 'Document reference'];
   return dropdownButtons.some((btn) => this.permissions?.includes(btn));
 }
   loadLookupData() {
@@ -688,6 +689,19 @@ onUOMChange() {
   }
 
       this.commonService.documentData.set(data)
+  }
+
+  openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);
+    modalRef.componentInstance.DocumentSid = this.chargeData?.ChargeMasterSid;
   }
   ngOnDestroy(): void {
     this.commonService.clearDocumentData()

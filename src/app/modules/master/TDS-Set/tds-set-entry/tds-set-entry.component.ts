@@ -30,6 +30,7 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { OperationService } from 'src/app/modules/operation/operation.service';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 
 @Component({
     selector: 'app-tds-set-entry',
@@ -741,6 +742,19 @@ openAuditLogs(modal: TemplateRef<any>) {
 
       this.commonService.documentData.set(data)
     }
+
+    openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.TDSSetHeaderSid;
+  }
 
     updateDetailsPagination() {
         let start = (this.page - 1) * this.pageSize;

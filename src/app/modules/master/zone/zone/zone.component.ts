@@ -35,6 +35,7 @@ import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/hea
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 @Component({
   selector: 'app-zone',
   standalone: true,
@@ -275,7 +276,7 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
         label: 'Edoc',
         icon: 'fas fa-file-alt',
         action: 'edoc',
-        // condition: this.hasPermission('Edoc')
+        condition: this.mps.has('edoc')
       },
       // {
       //   label: 'Terms & Condition',
@@ -287,14 +288,21 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
         label: 'Authorize',
         icon: 'fas fa-shield-alt',
         action: 'authority',
-        // condition: this.hasPermission('Authority')
+        condition: this.mps.has('authority')
       },
       {
         label: 'Email',
         icon: 'fas fa-envelope',
         action: 'email',
-        // condition: this.hasPermission('Email')
+        condition: this.mps.has('email')
+      },
+      {
+        label: 'Document reference',
+        icon: 'fas fa-paperclip',
+        action: 'document_reference',
+        condition: this.mps.has('document_reference')
       }
+
     ];
   }
 
@@ -327,6 +335,9 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
         break;
       case 'email':
         this.openEmail();
+        break;
+      case 'document_reference':
+        this.openDocRef();
         break;
       default:
         console.warn(`Unknown dropdown action: ${action}`);
@@ -871,6 +882,19 @@ openEditModal(content: TemplateRef<any>, id: number): void {
 
       this.commonService.documentData.set(data)
 }
+
+openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.ZoneMasterSid;
+  }
  OnDestroy(): void {
     this.commonService.clearDocumentData()
  }

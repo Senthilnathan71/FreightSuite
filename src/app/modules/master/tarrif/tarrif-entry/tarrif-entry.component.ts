@@ -35,6 +35,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { getDefaultTodayDate } from 'src/app/common/helper';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 
 @Component({
   selector: 'app-tarrif-entry',
@@ -1744,6 +1745,19 @@ filterPolList(port: any) {
 
       this.commonService.documentData.set(data)
 }
+
+openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.TariffHeaderSid;
+  }
 
  openFollowup() {
     if (!this.tariffData) return;

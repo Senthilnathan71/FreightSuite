@@ -18,6 +18,7 @@ import { MasterService } from 'src/app/modules/master/master.service';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 
 @Component({
   selector: 'app-merge-booking',
@@ -428,6 +429,14 @@ export class MergeBookingComponent implements OnInit {
         backdrop: 'static' 
       });
     }
+
+    openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
   
     openFollowup() {
   
