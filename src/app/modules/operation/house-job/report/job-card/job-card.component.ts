@@ -1,12 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { LogoService } from 'src/app/core/services/logo.service';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
@@ -48,6 +50,7 @@ export class JobCardComponent implements OnChanges {
   salemanList:any[] = [];
   @Input() portList: any[] = []; // Add this input
   @Input() selectedDepartmentType : any;
+  @Input() houseMenuMasterSid: number | null = null;
    showPrintLogo: boolean = false;
     showPdfLogo: boolean = true;
 
@@ -60,7 +63,9 @@ export class JobCardComponent implements OnChanges {
     private pdfMakeService: PdfMakeService,
     public logoService : LogoService,
     public mps: MenuPermissionService,
-    private operationService: OperationService
+    private operationService: OperationService,
+    private modalService: NgbModal,
+    private emailTriggerService: EmailTriggerService
   ) { }
 
   ngOnInit() {
@@ -393,6 +398,155 @@ getGroupedExpenseByParty() {
     amount
   }));
 }
+
+  async sendMail(): Promise<void> {
+    this.spinner.show();
+
+    try {
+      const blob = await this.generatePDFBlob();
+      if (!blob) {
+        this.appSettingService.showError('Error generating PDF. Please try again.');
+        return;
+      }
+
+      const jobNo = this.housejobData?.masterJob?.MasterJobNumber || this.masterJobData?.MasterJobNumber || this.housejobData?.ShipmentNo || '';
+      const hblNo = this.housejobData?.HBLNo || '';
+      const documentName = 'Job Card';
+      const documentDate = this.formatEmailDate(this.housejobData?.HBLDate || this.housejobData?.HouseJobDate);
+      const toEmail = await this.emailTriggerService.resolveCustomerBranchEmailsByMenu({
+        customerBranchSid: this.getCustomerBranchSidForEmail(),
+        customerMasterSid: this.getCustomerMasterSidForEmail(),
+        menuMasterSid: this.getCurrentMenuMasterSidForEmail()
+      });
+
+      if (toEmail.length === 0) {
+        this.appSettingService.showError('No email found in customer branch email.');
+        return;
+      }
+
+      const emailContent = this.emailTriggerService.buildOperationEmailContent({
+        documentName,
+        documentNoLabel: 'Job No.',
+        documentNo: jobNo || hblNo,
+        documentDate,
+        pol: this.housejobData?.POL || '',
+        pod: this.housejobData?.POD || '',
+        fpd: this.housejobData?.FPD || '',
+        userName: this.userData?.userName || '',
+        introLine: `Please find attached the ${documentName} for your reference.`,
+        followupLine: 'Kindly review the attached details at your convenience.'
+      });
+
+      const file = new File([blob], `Job_Card_${jobNo || hblNo || 'Report'}.pdf`, { type: 'application/pdf' });
+      const emailRef = this.modalService.open(EmailEntryComponent, { size: 'lg' });
+      emailRef.componentInstance.setContent = {
+        EmailTo: toEmail,
+        EmailCC: this.userData?.userEmail ? [this.userData.userEmail] : [],
+        EmailBCC: [],
+        Subject: emailContent.subject,
+        Mailbody: emailContent.body,
+        context: {
+          documentName,
+          documentNoLabel: 'Job No',
+          menuName: documentName,
+          documentNo: jobNo || hblNo,
+          date: documentDate,
+          pol: this.housejobData?.POL || '',
+          pod: this.housejobData?.POD || '',
+          fpd: this.housejobData?.FPD || ''
+        },
+        attachments: [file]
+      };
+      emailRef.componentInstance.dataChange.subscribe(() => {
+        this.createEmailAuditLog(documentName);
+      });
+    } catch (error) {
+      console.error('Job Card email error:', error);
+      this.appSettingService.showError('Error preparing email');
+    } finally {
+      this.spinner.hide();
+    }
+  }
+
+  async generatePDFBlob(): Promise<Blob | null> {
+    try {
+      const logo = this.pdfMakeService.getReportLogo();
+      return await this.pdfMakeService.generateJobCardBlobFromApi(
+        this.housejobData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        this.getJobCardPdfOptions()
+      );
+    } catch (error) {
+      console.error('Job Card PDF blob error:', error);
+      return null;
+    }
+  }
+
+  private createEmailAuditLog(documentName: string): void {
+    const payload = {
+      tableName: 'HouseJob',
+      recordId: String(this.housejobData?.HouseJobSid),
+      operation: 'EMAIL',
+      changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+      changes: {
+        action: 'Send Mail'
+      },
+      newVal: {
+        Email: `${documentName} Mail Send`
+      }
+    };
+
+    this.operationService.createAuditLog(payload).subscribe({
+      next: () => { },
+      error: (err) => console.error(err)
+    });
+  }
+
+  private getCustomerBranchSidForEmail(): number | null {
+    const candidates = [
+      this.housejobData?.CustomerBranchSid,
+      this.housejobData?.customerBranch?.CustomerBranchSid,
+      this.housejobData?.CustomerBranch?.CustomerBranchSid
+    ];
+
+    const sid = candidates
+      .map(value => Number(value))
+      .find(value => Number.isFinite(value) && value > 0);
+
+    return sid || null;
+  }
+
+  private getCustomerMasterSidForEmail(): number | null {
+    const candidates = [
+      this.housejobData?.CustomerMasterSid,
+      this.housejobData?.customerMaster?.CustomerMasterSid,
+      this.housejobData?.CustomerMaster?.CustomerMasterSid
+    ];
+
+    const sid = candidates
+      .map(value => Number(value))
+      .find(value => Number.isFinite(value) && value > 0);
+
+    return sid || null;
+  }
+
+  private getCurrentMenuMasterSidForEmail(): number | null {
+    const sid = Number(
+      this.houseMenuMasterSid ||
+      this.housejobData?.MenuMasterSid
+    );
+
+    return Number.isFinite(sid) && sid > 0 ? sid : null;
+  }
+
+  private formatEmailDate(value: any): string {
+    if (!value) return '';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-GB');
+  }
 
 
 

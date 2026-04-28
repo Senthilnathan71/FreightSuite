@@ -11,7 +11,7 @@
     <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()" *ngIf="mps.canPrint('House Profit and Loss', 'Download')">
       <i class="fas fa-download me-1"></i> Download PDF
     </button>
-    <button type="button" class="btn btn-sm btn-success rounded-5 py-0" *ngIf="mps.canPrint('House Profit and Loss', 'Send Mail')">
+    <button type="button" class="btn btn-sm btn-success rounded-5 py-0" (click)="sendMail()" *ngIf="mps.canPrint('House Profit and Loss', 'Send Mail')">
       <i class="fas fa-envelope me-1"></i>Send Email
     </button>
 

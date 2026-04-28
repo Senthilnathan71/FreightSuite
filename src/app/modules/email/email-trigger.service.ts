@@ -8,6 +8,7 @@ import { SettingsService } from '../settings/settings.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { EmailEntryComponent } from '../settings/email/email-entry/email-entry.component';
 import { OperationService } from '../operation/operation.service';
+import { MasterService } from '../master/master.service';
 
 export interface EmailTriggerParams {
   companyId: number;
@@ -17,6 +18,44 @@ export interface EmailTriggerParams {
   context?: { [key: string]: any };
   changedFields?: string[];
   attachmentFile?: File;
+}
+
+export interface MailResolveParams {
+  companyId: number | null | undefined;
+  menuMasterSid: number | null | undefined;
+  action: string;
+  customerBranchSid?: number | null;
+  fallbackToEmail?: string;
+  context?: { [key: string]: any };
+}
+
+export interface MailResolveResult {
+  toEmail: string;
+  ccEmail: string;
+  subject: string;
+  body: string;
+  config?: any;
+}
+
+export interface CustomerBranchEmailResolveParams {
+  customerBranchSid?: number | null | undefined;
+  customerMasterSid?: number | null | undefined;
+  menuMasterSid: number | null | undefined;
+}
+
+export interface OperationEmailContentParams {
+  type?: string;
+  documentName?: string;
+  documentNoLabel?: string;
+  documentNo?: string;
+  documentDate?: string;
+  pol?: string;
+  pod?: string;
+  fpd?: string;
+  userName?: string;
+  subjectSuffix?: string;
+  introLine?: string;
+  followupLine?: string;
 }
 
 @Injectable({
@@ -80,8 +119,145 @@ export class EmailTriggerService {
     private settingsService: SettingsService,
     private appSettingService: AppSettingsService,
     private ngbModal: NgbModal,
-    private operationService: OperationService
+    private operationService: OperationService,
+    private masterService: MasterService
   ) {}
+
+  async resolveCustomerBranchEmailsByMenu(params: CustomerBranchEmailResolveParams): Promise<string[]> {
+    const customerBranchSid = Number(params.customerBranchSid);
+    const customerMasterSid = Number(params.customerMasterSid);
+    const menuMasterSid = Number(params.menuMasterSid);
+
+    if ((!customerBranchSid && !customerMasterSid) || !menuMasterSid) {
+      return [];
+    }
+
+    const branchEmails: any = await firstValueFrom(this.masterService.getAllCustomerBranchEmail());
+    const rows = Array.isArray(branchEmails) ? branchEmails : (branchEmails?.data || []);
+
+    const matchedEmails = rows
+      .filter((row: any) => {
+        const rowBranchSid = Number(
+          row?.CustomerBranchSid ??
+          row?.customerBranch?.CustomerBranchSid ??
+          row?.CustomerBranch?.CustomerBranchSid
+        );
+        const rowCustomerSid = Number(
+          row?.CustomerMasterSid ??
+          row?.customerMaster?.CustomerMasterSid ??
+          row?.CustomerMaster?.CustomerMasterSid
+        );
+        const rowMenuSid = Number(row?.MenuMasterSid ?? row?.menuMaster?.MenuMasterSid);
+        const branchMatched = !!customerBranchSid && rowBranchSid === customerBranchSid;
+        const customerMatched = !!customerMasterSid && rowCustomerSid === customerMasterSid;
+
+        return (branchMatched || customerMatched) &&
+          rowMenuSid === menuMasterSid &&
+          this.isActiveCustomerBranchEmail(row);
+      })
+      .flatMap((row: any) => this.splitEmailValues(this.getCustomerBranchEmailValue(row)));
+
+    return Array.from(new Set(matchedEmails));
+  }
+
+  private isActiveCustomerBranchEmail(row: any): boolean {
+    const status = String(row?.status ?? row?.Status ?? '').trim().toUpperCase();
+    return !status || status === 'A' || status === 'ACTIVE';
+  }
+
+  private getCustomerBranchEmailValue(row: any): string {
+    return String(row?.Toemail ?? row?.ToEmail ?? row?.Email ?? '').trim();
+  }
+
+  private splitEmailValues(value: string): string[] {
+    return value
+      .split(/[;,]/)
+      .map(email => email.trim())
+      .filter(email => !!email);
+  }
+
+  private sanitizeAttachmentFileName(fileName: string): string {
+    return (fileName || 'attachment')
+      .replace(/[\\/:*?"<>|]+/g, '_')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  buildOperationEmailContent(params: OperationEmailContentParams): { subject: string; body: string } {
+    const documentName = params.documentName || params.type || 'Document';
+    const documentLabel = documentName.toLowerCase();
+    const documentNoLabel = params.documentNoLabel || `${documentName} No.`;
+    const documentNo = params.documentNo || '';
+    const documentDate = params.documentDate || '';
+    const pol = params.pol || '';
+    const pod = params.pod || '';
+    const fpd = params.fpd || '';
+    const route = `${pol} - ${pod}${pod !== fpd && fpd ? ' - ' + fpd : ''}`;
+    const userName = params.userName || '';
+    const subjectSuffix = params.subjectSuffix ? ` ${params.subjectSuffix}` : '';
+    const introLine = params.introLine || `Please find enclosed the ${documentLabel} as requested.`;
+    const followupLine = params.followupLine || 'Looking forward to your feedback and the opportunity to work together.';
+
+    return {
+      subject: `${documentNoLabel}${documentNo} Date:${documentDate} ${route}${subjectSuffix}`.trim(),
+      body: `Dear Sir/Madam,
+${introLine}
+Kindly review the details at your convenience.
+${followupLine}
+Best Regards,
+${userName}`
+    };
+  }
+
+  async resolveMailForMenu(params: MailResolveParams): Promise<MailResolveResult> {
+    const context = {
+      ...(params.context || {}),
+      customerBranchSid: params.customerBranchSid,
+      toEmail: params.fallbackToEmail || params.context?.['toEmail'] || ''
+    };
+    const enrichedContext = await this.enrichContext(context);
+    let config: any;
+
+    try {
+      if (!params.companyId || !params.menuMasterSid) {
+        return {
+          toEmail: enrichedContext['toEmail'] || params.fallbackToEmail || '',
+          ccEmail: '',
+          subject: '',
+          body: ''
+        };
+      }
+
+      const resp: any = await firstValueFrom(this.emailService.getAllByCompany(params.companyId));
+      const configs = Array.isArray(resp?.data) ? resp.data : [];
+
+      const matchingConfigs = configs.filter((item: any) =>
+        item?.Status === 'A' &&
+        Number(item?.MenuMasterSid) === Number(params.menuMasterSid) &&
+        this.matchesAction(item?.Action, params.action)
+      );
+
+      config = matchingConfigs.find((item: any) => {
+        const resolvedToEmail = this.replacePlaceholders(item?.ToEmailidFrom || '', enrichedContext).trim();
+        return !!resolvedToEmail;
+      }) || matchingConfigs[0];
+    } catch (error) {
+      console.error('Error resolving mail configuration:', error);
+    }
+
+    const toEmailFromConfig = config
+      ? this.replacePlaceholders(config.ToEmailidFrom || '', enrichedContext).trim()
+      : '';
+    const toEmail = toEmailFromConfig || enrichedContext['toEmail'] || params.fallbackToEmail || '';
+
+    return {
+      toEmail,
+      ccEmail: config ? this.replacePlaceholders(config.CcEmailidFrom || '', enrichedContext).trim() : '',
+      subject: config ? this.replacePlaceholders(config.MailSubject || '', enrichedContext) : '',
+      body: config ? this.replacePlaceholders(config.MailBody || '', enrichedContext).replace(/<br\s*\/?>/gi, '\n') : '',
+      config
+    };
+  }
 
   triggerEmails(params: EmailTriggerParams): void {
     const { companyId, branchId, menuMasterSid, action, context, changedFields, attachmentFile } = params;
@@ -287,7 +463,7 @@ export class EmailTriggerService {
     formData.append('CreatedBy', userData?.userEmail || '');
 
     if (config.AttachmentRequire === 'Y' && attachmentFile) {
-      formData.append('attachments', attachmentFile, attachmentFile.name);
+      formData.append('attachments', attachmentFile, this.sanitizeAttachmentFileName(attachmentFile.name));
     }
 
     this.settingsService.createNewEmailLog(formData).subscribe({
