@@ -143,8 +143,8 @@ function buildInfoSection(data: ReceiptPdfData): any {
   ];
   if (data.receiptType === 'bank') {
     leftStack.push(infoRow('Bank', r.bankName || ''));
-  }
-  if (r.headerLedgerDisplay) {
+    leftStack.push(infoRow('Address', r.partyAddress || ''));
+  } else if (r.headerLedgerDisplay) {
     leftStack.push(infoRow('', r.headerLedgerDisplay || ''));
   }
 
@@ -455,6 +455,7 @@ export function transformReceiptApiData(
       voucherNumber: apiData?.VoucherNumber || '',
       voucherDate: apiData?.VoucherDate || '',
       partyName: apiData?.PartyName || '',
+      partyAddress: apiData?.PartyAddress || '',
       currencyCode: apiData?.CurrencyCode || '',
       exchangeRate: toNumber(apiData?.ExchangeRate),
       bankName: bank?.LedgerName || '',
