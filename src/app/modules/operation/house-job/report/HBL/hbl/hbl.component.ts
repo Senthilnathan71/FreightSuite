@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { firstValueFrom } from 'rxjs';
 import { take } from 'rxjs/operators';
@@ -12,9 +12,11 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { OperationService } from 'src/app/modules/operation/operation.service';
 import { SafeInsertShipmentMilestone, ShipmentMilestoneService } from 'src/app/modules/operation/services/shipment-milestone.service';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 
 @Component({
   selector: 'app-hbl',
@@ -42,6 +44,7 @@ export class HblComponent {
   @Input() containerTypeList: any;
   @Input() selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
   @Input() hblCount: number = 0;
+  @Input() houseMenuMasterSid: number | null = null;
   @Output() hblCountUpdated = new EventEmitter<void>();
 
   showPrintLogo: boolean = false;
@@ -61,7 +64,9 @@ export class HblComponent {
     public logoService: LogoService,
     private operationService: OperationService,
     private milestoneService : ShipmentMilestoneService,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private modalService: NgbModal,
+    private emailTriggerService: EmailTriggerService
   ) {}
 
   private isSwitchBLEnabled(): boolean {
@@ -286,6 +291,159 @@ export class HblComponent {
     } finally {
       this.spinner.hide();
     }
+  }
+
+  async sendMail(): Promise<void> {
+    this.spinner.show();
+
+    try {
+      const file = await this.generateHblPdfFileForMail();
+      const hblNo = this.housejobData?.HBLNo || '';
+      const documentName = this.selectedReport === 'HBLDraft' ? 'HBL Draft' : 'HBL';
+      const documentDate = this.formatEmailDate(
+        this.housejobData?.HBLDate
+      );
+      const toEmail = await this.emailTriggerService.resolveCustomerBranchEmailsByMenu({
+        customerBranchSid: this.getCustomerBranchSidForEmail(),
+        customerMasterSid: this.getCustomerMasterSidForEmail(),
+        menuMasterSid: this.getCurrentMenuMasterSidForEmail()
+      });
+
+      if (toEmail.length === 0) {
+        this.appSettingService.showError('No email found in customer branch email.');
+        return;
+      }
+
+      const emailContent = this.emailTriggerService.buildOperationEmailContent({
+        documentName,
+        documentNoLabel: 'HBL No.',
+        documentNo: hblNo,
+        documentDate,
+        pol: this.housejobData?.POL || '',
+        pod: this.housejobData?.POD || '',
+        fpd: this.housejobData?.FPD || '',
+        userName: this.userData?.userName || '',
+        introLine: `Please find attached the ${documentName} for your reference.`,
+        followupLine: 'Kindly review the attached details at your convenience.'
+      });
+
+      const emailRef = this.modalService.open(EmailEntryComponent, { size: 'lg' });
+      emailRef.componentInstance.setContent = {
+        EmailTo: toEmail,
+        EmailCC: this.userData?.userEmail ? [this.userData.userEmail] : [],
+        EmailBCC: [],
+        Subject: emailContent.subject,
+        Mailbody: emailContent.body,
+        context: {
+          documentName,
+          documentNoLabel: 'HBL No',
+          menuName: documentName,
+          documentNo: hblNo,
+          date: documentDate,
+          pol: this.housejobData?.POL || '',
+          pod: this.housejobData?.POD || '',
+          fpd: this.housejobData?.FPD || ''
+        },
+        attachments: [file]
+      };
+      emailRef.componentInstance.dataChange.subscribe(() => {
+        this.insertMilestoneSafelyForPrint();
+        this.createEmailAuditLog(documentName);
+      });
+    } catch (error) {
+      console.error('HBL email error:', error);
+      this.appSettingService.showError('Error preparing email');
+    } finally {
+      this.spinner.hide();
+    }
+  }
+
+  private async generateHblPdfFileForMail(): Promise<File> {
+    const { pdfMake } = await this.getPdfDependencies();
+    const logo = await this.resolveReportLogo();
+    const pdfData = transformHblApiData(
+      this.housejobData,
+      {
+        selectedReport: this.selectedReport,
+        hblCount: this.hblCount,
+        company: this.currentCompany,
+        branch: this.currentBranch,
+        userData: this.userData,
+        currentDate: this.currentDate,
+        currentBranchCityName: this.currentBranchCityName,
+        agentList: this.agentList,
+      },
+      logo,
+    );
+    const docDefinition = generateHblDocument(pdfData);
+    const blob = await new Promise<Blob>((resolve) => {
+      pdfMake.createPdf(docDefinition).getBlob(resolve);
+    });
+    const houseJob = this.housejobData?.HBLNo || 'Draft';
+    return new File([blob], `HBL_${houseJob}.pdf`, { type: 'application/pdf' });
+  }
+
+  private createEmailAuditLog(documentName: string): void {
+    const payload = {
+      tableName: 'HouseJob',
+      recordId: String(this.housejobData?.HouseJobSid),
+      operation: 'EMAIL',
+      changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+      changes: {
+        action: 'Send Mail'
+      },
+      newVal: {
+        Email: `${documentName} Mail Send`
+      }
+    };
+
+    this.operationService.createAuditLog(payload).subscribe({
+      next: () => { },
+      error: (err) => console.error(err)
+    });
+  }
+
+  private getCustomerBranchSidForEmail(): number | null {
+    const candidates = [
+      this.housejobData?.CustomerBranchSid,
+      this.housejobData?.customerBranch?.CustomerBranchSid,
+      this.housejobData?.CustomerBranch?.CustomerBranchSid
+    ];
+
+    const sid = candidates
+      .map(value => Number(value))
+      .find(value => Number.isFinite(value) && value > 0);
+
+    return sid || null;
+  }
+
+  private getCustomerMasterSidForEmail(): number | null {
+    const candidates = [
+      this.housejobData?.CustomerMasterSid,
+      this.housejobData?.customerMaster?.CustomerMasterSid,
+      this.housejobData?.CustomerMaster?.CustomerMasterSid
+    ];
+
+    const sid = candidates
+      .map(value => Number(value))
+      .find(value => Number.isFinite(value) && value > 0);
+
+    return sid || null;
+  }
+
+  private getCurrentMenuMasterSidForEmail(): number | null {
+    const sid = Number(
+      this.houseMenuMasterSid ||
+      this.housejobData?.MenuMasterSid
+    );
+
+    return Number.isFinite(sid) && sid > 0 ? sid : null;
+  }
+
+  private formatEmailDate(value: any): string {
+    if (!value) return '';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-GB');
   }
 
   async printDiv(divId: string): Promise<void> {

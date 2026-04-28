@@ -42,6 +42,7 @@ export class EmailEntryComponent implements OnInit {
   @Input() dataItems: any[] = [];
   @Input() resetTrigger: any;
   @Input() formData: any;
+  @Input() customSendHandler?: (payload: { formValue: any; files: File[]; formattedMailBody: string }) => Promise<any>;
   @Input()
   set setContent(value: any) {
     this.parentMailContent = value;
@@ -162,6 +163,39 @@ export class EmailEntryComponent implements OnInit {
     const formValue = this.emailForm.value;
     this.spinner.show();
 
+    if (this.customSendHandler) {
+      const formattedMailBody = this.buildCommonTemplate(
+        formValue.Mailbody,
+        formValue.Subject,
+        this.parentMailContent?.context
+      );
+
+      this.customSendHandler({
+        formValue,
+        files: this.selectedFiles,
+        formattedMailBody
+      }).then((resp: any) => {
+        this.emailSending = false;
+        this.spinner.hide();
+        if (resp?.status === false) {
+          this.appSettingService.showError(resp?.message || 'Email sending failed.');
+          return;
+        }
+
+        this.appSettingService.showSuccess('Email sent successfully.');
+        this.dataChange.emit({
+          dataItems: this.dataItems,
+          formData: this.emailForm.value,
+        });
+        this.closeModal();
+      }).catch((error) => {
+        this.emailSending = false;
+        this.spinner.hide();
+        this.appSettingService.showError(error?.error?.message || error?.message || 'Email sending failed.');
+      });
+      return;
+    }
+
     const companyMasterSid = this.currentCompany?.CompanyMasterSid;
     const branchMasterSid = this.currentBranch?.BranchMasterSid;
     const userEmail = this.userData.userEmail;
@@ -180,7 +214,7 @@ export class EmailEntryComponent implements OnInit {
     formData.append('CreatedBy', userEmail);
 
     this.selectedFiles.forEach((file) => {
-      formData.append('attachments', file, file.name);
+      formData.append('attachments', file, this.sanitizeAttachmentFileName(file.name));
     });
 
     this.settingsService.createNewEmailLog(formData).subscribe(
@@ -220,6 +254,13 @@ customEmailValidator(): ValidatorFn {
 
   clearFiles() {
     this.selectedFiles = [];
+  }
+
+  private sanitizeAttachmentFileName(fileName: string): string {
+    return (fileName || 'attachment')
+      .replace(/[\\/:*?"<>|]+/g, '_')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
   downloadFile(file: File) {
@@ -532,6 +573,20 @@ customEmailValidator(): ValidatorFn {
 
   private getHeaderLabel(subject: string): string {
     const mailBody = (this.parentMailContent?.Mailbody || this.parentMailContent?.mailbody || '').toString();
+    const context = this.parentMailContent?.context || {};
+    const contextLabel = (
+      context?.documentName ||
+      context?.menuName ||
+      context?.MenuName ||
+      this.parentMailContent?.menuName ||
+      this.parentMailContent?.MenuName ||
+      ''
+    ).toString().trim();
+
+    if (contextLabel) {
+      return contextLabel;
+    }
+
     const enquiryHints = `${subject || ''}\n${mailBody}`;
     if (/enquiry/i.test(enquiryHints)) return 'Enquiry';
 
@@ -614,6 +669,37 @@ customEmailValidator(): ValidatorFn {
     }
 
     const rows: Array<{ label: string; value: string }> = [];
+    const firstContextValue = (...keys: string[]): string => {
+      for (const key of keys) {
+        const value = context?.[key];
+        if (value !== null && value !== undefined && String(value).trim() !== '') {
+          return String(value).trim();
+        }
+      }
+      return '';
+    };
+    const contextDocumentName = firstContextValue('documentName', 'menuName', 'MenuName', 'documentType');
+    const contextDocumentNo = firstContextValue('documentNo', 'DocumentNo', 'referenceNo', 'ReferenceNo');
+    const contextDocumentNoLabel = firstContextValue('documentNoLabel', 'DocumentNoLabel') ||
+      (contextDocumentName ? `${contextDocumentName} No` : 'Reference No');
+    const contextDate = firstContextValue('documentDate', 'DocumentDate', 'date', 'Date');
+    const contextPol = firstContextValue('pol', 'POL', 'poo', 'POO');
+    const contextPod = firstContextValue('pod', 'POD');
+    const contextFpd = firstContextValue('fpd', 'FPD');
+    const contextRoute = firstContextValue('route', 'Route') ||
+      [contextPol, contextPod, contextFpd].filter(Boolean).join(' - ');
+
+    if (contextDocumentNo) {
+      rows.push({ label: contextDocumentNoLabel, value: contextDocumentNo });
+    }
+    if (contextDate) {
+      const genericDateLabel = /enquiry/i.test(headerLabel || '') ? 'Enquiry Date' :
+        /quotation/i.test(headerLabel || '') ? 'Quotation Date' : 'Date';
+      rows.push({ label: genericDateLabel, value: contextDate });
+    }
+    if (contextRoute) {
+      rows.push({ label: 'Route', value: contextRoute });
+    }
 
     if (subject) {
       const subjectPattern = /^(\S+)\s+([0-9]{1,2}\/[0-9]{1,2}\/[0-9]{2,4})\s+(.+?)\s*-\s*([A-Z0-9]{3,5})\s+(.+?)\s*-\s*([A-Z0-9]{3,5})/;

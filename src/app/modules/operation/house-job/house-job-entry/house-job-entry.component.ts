@@ -6000,6 +6000,7 @@ ${this.userData['userName']}`;
           modalRef.componentInstance.agentList = this.agentList || [];
           modalRef.componentInstance.selectedReport = type;
           modalRef.componentInstance.hblCount = this.houseJobForm.get('HBLCount')?.getRawValue();
+          modalRef.componentInstance.houseMenuMasterSid = this.currentMenuId;
 
          if (type === 'HBLDraft') {
            this.initializeMilestoneContentForHBLPrint();
@@ -6075,6 +6076,7 @@ ${this.userData['userName']}`;
         modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
         modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
         modalRef.componentInstance.portList = this.portList || [];
+        modalRef.componentInstance.houseMenuMasterSid = this.currentMenuId;
     }
 
   reportIndeminty() {
@@ -6097,6 +6099,7 @@ ${this.userData['userName']}`;
       scrollable: true,
     })
     modalRef.componentInstance.housejobData = this.housejobData || [];
+    modalRef.componentInstance.houseMenuMasterSid = this.currentMenuId;
   }
      reportCommericalInvoice() {
       const modalRef=this.modalService.open(CommericalInvoiceComponent,{
@@ -6106,6 +6109,7 @@ ${this.userData['userName']}`;
        modalRef.componentInstance.housejobData = this.housejobData || [];
         modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
         modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
+        modalRef.componentInstance.houseMenuMasterSid = this.currentMenuId;
     }
        reportCertificateofOrgin() {
         const modalRef=this.modalService.open(CertificateOfOriginComponent,{
@@ -6135,6 +6139,7 @@ ${this.userData['userName']}`;
       modalRef.componentInstance.uomList = this.costEntryComponent.uomList;
       modalRef.componentInstance.portList = this.portList || [];
       modalRef.componentInstance.selectedDepartmentType = this.selectedDepartmentType || [];
+      modalRef.componentInstance.houseMenuMasterSid = this.currentMenuId;
     }
 
   private async validateCreditForRelease(actionLabel: string): Promise<boolean> {
@@ -6312,6 +6317,7 @@ ${this.userData['userName']}`;
          modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
          modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
         modalRef.componentInstance.portList = this.portList || [];
+        modalRef.componentInstance.houseMenuMasterSid = this.currentMenuId;
         this.initializeMilestoneContentForReleaseLetter(modalRef);
       }
 
@@ -6371,6 +6377,7 @@ ${this.userData['userName']}`;
       modalRef.componentInstance.TandCList = this.TandCList || [];
       modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || 'LCL';
       modalRef.componentInstance.portList = this.portList || [];
+      modalRef.componentInstance.houseMenuMasterSid = this.currentMenuId;
     }
 
       reportProofofDelivery() {

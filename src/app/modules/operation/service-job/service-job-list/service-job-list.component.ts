@@ -279,7 +279,7 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
                 departmentName : item.departmentMaster?.departmentName,
                 MasterJobNumber: item.masterJob?.MasterJobNumber,
                 MBLDate:this.datePipe.transform(item?.MBLDate),
-                Status: item.status === 'A' ? 'Active' : 'Inactive',
+                Status: item.status === 'A' ? 'Active' : 'Suspended',
             }));
             this.totalLengthOfCollection = response?.data?.totalCount || rawItems.length || 0;
             this.applySorting();
