@@ -299,6 +299,7 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
       dateTo: this.dateToInput ? this.toDateTimeStr(this.dateToInput, 'end') : undefined,
       naiveDateFrom: this.dateFromInput ? this.toNaiveDateTimeStr(this.dateFromInput, 'start') : undefined,
       naiveDateTo: this.dateToInput ? this.toNaiveDateTimeStr(this.dateToInput, 'end') : undefined,
+      preset: this.activePreset || undefined
     };
 
     this.loadAllData();
@@ -427,34 +428,34 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
   private buildKpiCards() {
     if (!this.counts) return;
     const c = this.counts.counts;
-    const f = this.counts.kpi;
+    const k = this.counts.kpi;
 
     // 5 primary hero KPIs
     this.primaryKpiCards = [
       {
         key: 'totalLeads', label: 'Leads Created', icon: 'fas fa-funnel-dollar',
-        colorClass: 'primary', value: f.leadsCreated, sectionNumber: 0,
-        isPrimary: true, percentChange: 12.5, changeDirection: 'up', progressPercent: 75
+        colorClass: 'primary', value: k.leadsCreated.current, sectionNumber: 0,
+        isPrimary: true, percentChange: k.leadsCreated.percent, changeDirection: k.leadsCreated.direction, progressPercent: 75
       },
       {
         key: 'meetings', label: 'Meeting Scheduled', icon: 'fas fa-calendar-check',
-        colorClass: 'primary', value: f.meetingScheduled, sectionNumber: 2,
-        isPrimary: true, percentChange: 8.2, changeDirection: 'up', progressPercent: 60
+        colorClass: 'primary', value: k.meetingScheduled.current, sectionNumber: 2,
+        isPrimary: true, percentChange: k.meetingScheduled.percent , changeDirection: k.meetingScheduled.direction, progressPercent: 60
       },
       {
         key: 'quotes', label: 'Quotes Created', icon: 'fas fa-file-invoice',
-        colorClass: 'primary', value: f.quoteCreated, sectionNumber: 0,
-        isPrimary: true, percentChange: 5.1, changeDirection: 'up', progressPercent: 45
+        colorClass: 'primary', value: k.quoteCreated.current, sectionNumber: 0,
+        isPrimary: true, percentChange: k.quoteCreated.percent , changeDirection: k.quoteCreated.direction , progressPercent: 45
       },
       {
         key: 'conversions', label: 'Lead to Customer Conversions', icon: 'fas fa-user-check',
-        colorClass: 'primary', value: f.leadConvertedToCustomer, sectionNumber: 0,
-        isPrimary: true, percentChange: 3.4, changeDirection: 'down', progressPercent: 30
+        colorClass: 'primary', value: k.leadConvertedToCustomer.current , sectionNumber: 0,
+        isPrimary: true, percentChange: k.leadConvertedToCustomer.percent , changeDirection: k.leadConvertedToCustomer.direction , progressPercent: 30
       },
       {
-        key: 'revenue', label: f.profitAtQuote === 0 ? 'No Profit / Loss' :(f.profitAtQuote > 0 ? 'Profit' : 'Loss'), icon: 'fas fa-dollar-sign',
-        colorClass: 'primary', value: toNumber(f.profitAtQuote) , sectionNumber: 0,
-        isPrimary: true, isCurrency: true, percentChange: 15.8, changeDirection: 'up', progressPercent: 82
+        key: 'revenue', label: k.profitAtQuote.current === 0 ? 'No Profit / Loss' :(k.profitAtQuote.current > 0 ? 'Profit' : 'Loss'), icon: 'fas fa-dollar-sign',
+        colorClass: 'primary', value: toNumber(k.profitAtQuote.current) , sectionNumber: 0,
+        isPrimary: true, isCurrency: true, percentChange: k.profitAtQuote.percent, changeDirection: k.profitAtQuote.direction, progressPercent: 82
       },
     ];
 
@@ -650,3 +651,4 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
     }).format(date);
   }
 }
+

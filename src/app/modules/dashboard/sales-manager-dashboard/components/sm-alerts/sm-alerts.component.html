@@ -71,7 +71,7 @@
       <p>No alerts - your team is on track!</p>
     </div>
 
-    <div class="alert-item" *ngFor="let alert of alerts"
+    <div class="alert-item" #scrollContainer (scroll)="onUserScroll()" *ngFor="let alert of alerts"
          [class.danger]="alert.severity === 'danger'"
          [class.warning]="alert.severity === 'warning'"
          [class.info]="alert.severity === 'info'">

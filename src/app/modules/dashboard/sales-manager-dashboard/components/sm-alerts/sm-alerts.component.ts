@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AtRiskAlert, ActionCenterItem } from '../../../interfaces/sales-manager-dashboard.interfaces';
 
@@ -9,11 +9,50 @@ import { AtRiskAlert, ActionCenterItem } from '../../../interfaces/sales-manager
   templateUrl: './sm-alerts.component.html',
   styleUrls: ['./sm-alerts.component.scss']
 })
-export class SmAlertsComponent {
+export class SmAlertsComponent implements AfterViewInit , OnDestroy {
   @Input() alerts: AtRiskAlert[] = [];
   @Input() loading = false;
   @Input() actionCenterItems: ActionCenterItem[] = [];
   @Input() redesignMode = false;
+
+  @ViewChild('scrollContainer')
+  set scrollContainerSetter(el: ElementRef) {
+    if (el) {
+      this.scrollContainer = el;
+      this.startAutoScroll();
+    }
+  }
+
+  scrollContainer!: ElementRef;
+  private scrollInterval: any;
+  isAutoScroll = true;
+
+  ngAfterViewInit() {
+    console.log(this.scrollContainer);
+    this.startAutoScroll();
+  }
+
+  startAutoScroll() {
+    if (this.scrollInterval) return; // prevent duplicate
+
+    this.scrollInterval = setInterval(() => {
+      if (!this.isAutoScroll) return;
+
+      const el = this.scrollContainer?.nativeElement;
+      if (!el) return;
+
+      el.scrollTop += 1;
+
+      // loop back
+      if (el.scrollTop + el.clientHeight >= el.scrollHeight) {
+        el.scrollTop = 0;
+      }
+    }, 30);
+  }
+
+  onUserScroll() {
+    this.isAutoScroll = false;
+  }
 
   getIcon(alertType: string): string {
     switch (alertType) {
@@ -52,6 +91,12 @@ export class SmAlertsComponent {
       case 'warning': return '#f59e0b';
       case 'info': return '#0f766e';
       default: return '#94a3b8';
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.scrollInterval) {
+      clearInterval(this.scrollInterval);
     }
   }
 }

@@ -11,6 +11,7 @@ export interface SalesManagerFilters {
   pageSize?: number;
   search?: string;
   bucket?: 'overdue' | 'today' | 'future';
+  preset?: string;
 }
 
 export interface SalespersonInfo {
@@ -39,11 +40,36 @@ export interface SalesManagerCounts {
 }
 
 export interface KPIData {
-  leadsCreated: number;
-  meetingScheduled: number;
-  quoteCreated : number;
-  leadConvertedToCustomer : number;
-  profitAtQuote : number;
+  leadsCreated: {
+    current: number;
+    previous: number;
+    percent: number;
+    direction: 'up' | 'down' | 'flat';
+  };
+  meetingScheduled: {
+    current: number;
+    previous: number;
+    percent: number;
+    direction: 'up' | 'down' | 'flat';
+  };
+  quoteCreated: {
+    current: number;
+    previous: number;
+    percent: number;
+    direction: 'up' | 'down' | 'flat';
+  };
+  leadConvertedToCustomer: {
+    current: number;
+    previous: number;
+    percent: number;
+    direction: 'up' | 'down' | 'flat';
+  };
+  profitAtQuote: {
+    current: number;
+    previous: number;
+    percent: number;
+    direction: 'up' | 'down' | 'flat';
+  };
 }
 
 export interface ScoreboardRow {
@@ -147,3 +173,4 @@ export interface ActionCenterItem {
   icon: string;
   colorClass: string;
 }
+

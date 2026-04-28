@@ -29,7 +29,7 @@
         <span class="row-action">{{ getTypeLabel(item.activityType) }}</span>
         <span class="row-entity">{{ item.entityName }}</span>
       </div>
-      <div class="row-time">{{ formatTimeAgo(item.activityDate) }}</div>
+      <div class="row-time">{{ item.activityDate | timeAgo }}</div>
     </div>
   </div>
 </div>

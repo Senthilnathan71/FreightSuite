@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnChanges, OnDestroy, SimpleCha
 import { CommonModule } from '@angular/common';
 import { KpiCardConfig } from '../../../interfaces/sales-manager-dashboard.interfaces';
 import { toNumber } from 'src/app/common/helper';
+import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 
 @Component({
   selector: 'app-sm-kpi-cards',
@@ -19,6 +20,8 @@ export class SmKpiCardsComponent implements OnChanges, OnDestroy {
   @Output() cardClicked = new EventEmitter<KpiCardConfig>();
   animatedValues: Record<string, number> = {};
   private animationTimers: Record<string, any> = {};
+
+  constructor(private companySettings: CompanySettingsManagerService) {}
 
   onClick(card: KpiCardConfig) {
     this.cardClicked.emit(card);
@@ -39,11 +42,13 @@ export class SmKpiCardsComponent implements OnChanges, OnDestroy {
   }
 
   formatValue(card: KpiCardConfig, rawValue?: number): string {
-    const value = toNumber(rawValue) || toNumber(card.value);
+    let value = toNumber(rawValue) || toNumber(card.value);
     if (card.isCurrency) {
-      if (value >= 1000000) return '$' + (value / 1000000).toFixed(1) + 'M';
-      if (value >= 1000) return '$' + (value / 1000).toFixed(1) + 'K';
-      return '$' + value.toLocaleString();
+      const currencySymbol = this.companySettings.getCurrencySettings().symbol;
+      value = Math.abs(value);
+      if (value >= 1000000) return currencySymbol + " " + (value / 1000000).toFixed(1) + 'M';
+      if (value >= 1000) return currencySymbol+ " " + (value / 1000).toFixed(1) + 'K';
+      return currencySymbol+ " " + value.toLocaleString();
     }
     return value.toLocaleString();
   }

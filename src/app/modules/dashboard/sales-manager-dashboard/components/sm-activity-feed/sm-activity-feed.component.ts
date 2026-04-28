@@ -1,11 +1,12 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivityFeedItem } from '../../../interfaces/sales-manager-dashboard.interfaces';
+import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
 
 @Component({
   selector: 'app-sm-activity-feed',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule , TimeAgoPipe ],
   templateUrl: './sm-activity-feed.component.html',
   styleUrls: ['./sm-activity-feed.component.scss']
 })
@@ -40,12 +41,4 @@ export class SmActivityFeedComponent {
     }
   }
 
-  formatTimeAgo(dateStr: string): string {
-    if (!dateStr) return '';
-    const diff = Math.round((Date.now() - new Date(dateStr).getTime()) / 1000);
-    if (diff < 60) return 'Just now';
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-    return `${Math.floor(diff / 86400)}d ago`;
-  }
 }
