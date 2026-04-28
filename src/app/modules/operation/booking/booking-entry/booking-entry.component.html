@@ -1476,7 +1476,7 @@
                             </dofi-searchable-dropdown>
                           </td>
                           <td>
-                            <input type="text" formControlName="ExternlQty" class="custom-input-field sm">
+                            <input type="text" formControlName="ExternlQty" class="custom-input-field sm" [onlyNumbers] >
                           </td>
                           @if(usesDimensionalCargoFields()){
                             <td>
@@ -1484,18 +1484,18 @@
                                 class="ng-select" placeholder="" appendTo="body">
                               </ng-select>
                             </td>
-                            <td><input type="text" formControlName="Length" class="custom-input-field sm"></td>
-                            <td><input type="text" formControlName="Width" class="custom-input-field sm"></td>
-                            <td><input type="text" formControlName="Height" class="custom-input-field sm"></td>
-                            <td><input type="text" formControlName="Volumetric" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"></td>
-                            <td><input type="text" formControlName="Volume" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"></td>
-                            <td><input type="text" formControlName="GrossWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"></td>
-                            <td><input type="text" formControlName="NetWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"></td>
+                            <td><input type="text" formControlName="Length" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
+                            <td><input type="text" formControlName="Width" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
+                            <td><input type="text" formControlName="Height" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
+                            <td><input type="text" formControlName="Volumetric" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
+                            <td><input type="text" formControlName="Volume" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
+                            <td><input type="text" formControlName="GrossWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3" ></td>
+                            <td><input type="text" formControlName="NetWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
                           }
                           @if(selectedFCLLCL === 'FCL' || isSurfaceCargoMode()){
-                            <td><input type="text" formControlName="GrossWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"></td>
-                            <td><input type="text" formControlName="NetWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"></td>
-                            <td><input type="text" formControlName="Volume" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"></td>
+                            <td><input type="text" formControlName="GrossWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"  DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
+                            <td><input type="text" formControlName="NetWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"  DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
+                            <td><input type="text" formControlName="Volume" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"  DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
                           }
                           <td>
                             <div class="d-flex align-items-center" style="margin-top: 4px;">

@@ -2998,7 +2998,7 @@
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <input type="text" formControlName="NoOfPkg" class="custom-input-field sm" min="0" DecimalPrecision [DecimalPrecisionBefore]="100" [DecimalPrecisionAfter]="0"
-                                placeholder="">
+                                placeholder="" readonly>
                             <label class="input-label">No of Pkg</label>
                         </div>
                     </aside>
@@ -3008,7 +3008,7 @@
   <div class="custom-form-group">
     <input type="text" formControlName="GrossWeight" class="custom-input-field sm"
            DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"
-           step="0.001" min="0" placeholder="" >
+           step="0.001" min="0" placeholder="" readyonly>
     <label class="input-label">Gross Weight</label>
     
     <!-- Add error message for gross weight -->
@@ -3033,7 +3033,7 @@
   <div class="custom-form-group">
     <input type="text" formControlName="NetWeight" class="custom-input-field sm" step="0.001"
            DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"
-           min="0" placeholder="">
+           min="0" placeholder="" readonly>
     <label class="input-label">Net Weight</label>
     
     <!-- Add error message for net weight -->
@@ -3051,7 +3051,7 @@
                         <div class="custom-form-group">
                             <input type="text" formControlName="Volume" class="custom-input-field sm" step="0.001"
                              DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="3"
-                                min="0" placeholder="">
+                                min="0" placeholder="" readonly>
                             <label class="input-label">Volume (CBM)</label>
                         </div>
                     </aside>

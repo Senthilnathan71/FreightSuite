@@ -1645,6 +1645,7 @@
                   <aside class="col-md-2">
                     <div class="custom-form-group">
                       <input type="text" class="form-control custom-input-field sm" formControlName="GrossWeight"
+                        (input)="onCargoManualFieldInput($any(cargo), 'GrossWeight')"
                         DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="decimalAfterPrecision"
                         max="9999999.999">
                       <label class="input-label">Gross Weight <span class="text-danger">*</span></label>
@@ -1662,6 +1663,7 @@
                   <aside class="col-md-2">
                     <div class="custom-form-group">
                       <input type="text" class="form-control custom-input-field sm" formControlName="Volume"
+                        (input)="onCargoManualFieldInput($any(cargo), 'Volume')"
                         DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="decimalAfterPrecision"
                         max="9999999.999">
                       <label class="input-label">Volume(CBM)</label>
@@ -1671,6 +1673,7 @@
                   <aside class="col-md-2">
                     <div class="custom-form-group">
                       <input type="text" class="form-control custom-input-field sm" formControlName="Volumetric"
+                        (input)="onCargoManualFieldInput($any(cargo), 'Volumetric')"
                         DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="decimalAfterPrecision"
                         max="9999999.999">
                       <label class="input-label">Volumetric</label>
@@ -1679,6 +1682,7 @@
                   <aside class="col-md-2">
                     <div class="custom-form-group">
                       <input type="text" class="form-control custom-input-field sm" formControlName="ChargeableWeight"
+                        (input)="onCargoManualFieldInput($any(cargo), 'ChargeableWeight')"
                         DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="decimalAfterPrecision"
                         max="9999999.999">
                       <label class="input-label">Chargeable Weight</label>
@@ -1689,6 +1693,7 @@
                   <aside class="col-md-2">
                     <div class="custom-form-group">
                       <input type="text" class="form-control custom-input-field sm" formControlName="ChargeableWeight"
+                        (input)="onCargoManualFieldInput($any(cargo), 'ChargeableWeight')"
                         DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="decimalAfterPrecision"
                         max="9999999.999">
                       <label class="input-label">Chargeable Weight</label>
@@ -1871,7 +1876,7 @@
                             </dofi-searchable-dropdown>
                           </td>
                           <td>
-                            <input type="text" formControlName="ExternlQty" class="custom-input-field sm">
+                            <input type="text" formControlName="ExternlQty" class="custom-input-field sm" [onlyNumbers] >
                           </td>
                           @if(usesDimensionalCargoFields()){
                             <td>
@@ -1879,18 +1884,18 @@
                                 class="ng-select" placeholder="" appendTo="body">
                               </ng-select>
                             </td>
-                            <td><input type="text" formControlName="Length" class="custom-input-field sm"></td>
-                            <td><input type="text" formControlName="Width" class="custom-input-field sm"></td>
-                            <td><input type="text" formControlName="Height" class="custom-input-field sm"></td>
-                            <td><input type="text" formControlName="Volumetric" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"></td>
-                            <td><input type="text" formControlName="Volume" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"></td>
-                            <td><input type="text" formControlName="GrossWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"></td>
-                            <td><input type="text" formControlName="NetWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"></td>
+                            <td><input type="text" formControlName="Length" class="custom-input-field sm"DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
+                            <td><input type="text" formControlName="Width" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
+                            <td><input type="text" formControlName="Height" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
+                            <td><input type="text" formControlName="Volumetric" class="custom-input-field sm" (input)="onProductManualFieldInput($any(product), 'Volumetric', cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"> </td>
+                            <td><input type="text" formControlName="Volume" class="custom-input-field sm" (input)="onProductManualFieldInput($any(product), 'Volume', cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
+                            <td><input type="text" formControlName="GrossWeight" class="custom-input-field sm" (input)="onProductManualFieldInput($any(product), 'GrossWeight', cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
+                            <td><input type="text" formControlName="NetWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
                           }
                           @if(selectedFCLLCL === 'FCL' || isSurfaceCargoMode()){
-                            <td><input type="text" formControlName="GrossWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"></td>
-                            <td><input type="text" formControlName="NetWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"></td>
-                            <td><input type="text" formControlName="Volume" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"></td>
+                            <td><input type="text" formControlName="GrossWeight" class="custom-input-field sm" (input)="onProductManualFieldInput($any(product), 'GrossWeight', cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
+                            <td><input type="text" formControlName="NetWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
+                            <td><input type="text" formControlName="Volume" class="custom-input-field sm" (input)="onProductManualFieldInput($any(product), 'Volume', cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
                           }
                           <td>
                             <div class="d-flex align-items-center" style="margin-top: 4px;">
@@ -3538,6 +3543,7 @@
       <aside class="col-md-4">
         <div class="custom-form-group">
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Volumetric"
+            (input)="onProductManualFieldInput(productForm, 'Volumetric')"
             DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
             max="9999999.999">
           <label for="text-input" class="input-label">Volumetric <span class="text-danger">*</span></label>
@@ -3547,6 +3553,7 @@
       <aside class="col-md-4" *ngIf="!isSurfaceCargoMode()">
         <div class="custom-form-group">
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="Volume"
+            (input)="onProductManualFieldInput(productForm, 'Volume')"
             DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
             max="9999999.999">
           <label for="text-input" class="input-label">Volume <span class="text-danger">*</span></label>
@@ -3555,6 +3562,7 @@
       <aside class="col-md-4">
         <div class="custom-form-group">
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="GrossWeight"
+            (input)="onProductManualFieldInput(productForm, 'GrossWeight')"
             DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3" max="9999999.999">
           <label for="text-input" class="input-label">Gross Weight <span class="text-danger">*</span></label>
     @if ((productForm.get('GrossWeight')?.touched || productForm.get('GrossWeight')?.dirty) &&

@@ -238,6 +238,7 @@ customsValidationErrors: { recordType: string; fieldRef: string; fieldName: stri
   ];
   isPatching: boolean = false;
   chargeableWeightManualOverride: boolean = false;
+  private readonly manualOverrideSuffix = 'ManualOverride';
 
   // Variable Declaration - Header Part
   HouseJobSid: number;
@@ -1047,6 +1048,10 @@ private setupMBLDateListener(): void {
       Volume: [data?.Volume ?? ''],
       Volumetric: [data?.Volumetric ?? ''],
       ChargeableWeight: [data?.ChargeableWeight ?? ''],
+      isGrossWeightManualOverride: [data?.isGrossWeightManualOverride ?? false],
+      isVolumeManualOverride: [data?.isVolumeManualOverride ?? false],
+      isVolumetricManualOverride: [data?.isVolumetricManualOverride ?? false],
+      isChargeableWeightManualOverride: [data?.isChargeableWeightManualOverride ?? false],
       NoOfPackage: [data?.NoOfPackage ?? ''],
       ShipmentTerms: [data?.ShipmentTerms || null],
       MovementType: [data?.MovementType || null],
@@ -1072,6 +1077,10 @@ private setupMBLDateListener(): void {
   private calculateChargeableWeight(cargoGroup: FormGroup = this.cargoForm): void {
   // During patching, don't recalculate - use the patched value
   if (this.isPatching || this.chargeableWeightManualOverride) {
+    return;
+  }
+
+  if (this.isManualOverrideActive(cargoGroup, 'ChargeableWeight')) {
     return;
   }
 
@@ -1102,7 +1111,41 @@ private setupMBLDateListener(): void {
     );
   }
 }
-// // 🔥 ADD HERE
+  private getManualOverrideControlName(fieldName: string): string {
+    return `is${fieldName}${this.manualOverrideSuffix}`;
+  }
+
+  private isManualOverrideActive(formGroup: FormGroup, fieldName: string): boolean {
+    return !!formGroup.get(this.getManualOverrideControlName(fieldName))?.value;
+  }
+
+  private setManualOverrideActive(formGroup: FormGroup, fieldName: string, isManual: boolean): void {
+    const control = formGroup.get(this.getManualOverrideControlName(fieldName));
+    if (control && control.value !== isManual) {
+      control.setValue(isManual, { emitEvent: false });
+    }
+  }
+
+  onCargoManualFieldInput(formGroup: FormGroup, fieldName: 'GrossWeight' | 'Volume' | 'Volumetric' | 'ChargeableWeight'): void {
+    this.setManualOverrideActive(formGroup, fieldName, true);
+    if (fieldName !== 'ChargeableWeight') {
+      this.calculateChargeableWeight(formGroup);
+    }
+    this.markAsDirty(`cargo.${fieldName}.manual`);
+  }
+
+  onProductManualFieldInput(
+    productForm: FormGroup,
+    fieldName: 'GrossWeight' | 'Volume' | 'Volumetric',
+    cargoIndex: number = -1
+  ): void {
+    this.setManualOverrideActive(productForm, fieldName, true);
+    const resolvedCargoIndex = cargoIndex >= 0 ? cargoIndex : this.getCargoIndexForProductForm(productForm);
+    if (resolvedCargoIndex >= 0) {
+      this.handleProductRelatedCalculation(resolvedCargoIndex);
+    }
+    this.markAsDirty(`product.${fieldName}.manual`);
+  }
 // private validateContainerWeight(): boolean {
 
 //   const containerMap = new Map<number, number>();
@@ -1278,6 +1321,9 @@ shouldCalculateVolume(): boolean {
       NetWeight: ['', [Validators.min(0)]],
       Volume: ['', this.isSurfaceCargoMode() ? [] : [Validators.required,Validators.min(0.001)]],
       Volumetric: ['',isAirOrLCL ? [Validators.required] : []],
+      isGrossWeightManualOverride: [false],
+      isVolumeManualOverride: [false],
+      isVolumetricManualOverride: [false],
       IsHaz: [false],
       ImcoClass: [null],
       UnNo: [''],
@@ -1358,6 +1404,9 @@ getUomName(uomId: number): string {
 }
 
 private calculateCBM() {
+  if (this.isManualOverrideActive(this.productForm, 'Volume')) {
+    return;
+  }
   const externlQty = this.parseFloatSafe(this.productForm.get('ExternlQty')?.value);
   const length = this.parseFloatSafe(this.productForm.get('Length')?.value);
   const width = this.parseFloatSafe(this.productForm.get('Width')?.value);
@@ -1404,8 +1453,10 @@ loadHSSACLookups() {
 }
 private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
   const calculateVolumetric = () => {
+    if (this.isManualOverrideActive(productForm, 'Volumetric')) {
+      return;
+    }
     if (!this.usesDimensionalCargoFields()) {
-      productForm.get('Volumetric')?.setValue('', { emitEvent: false });
       return;
     }
     const externlQty = Number(productForm.get('ExternlQty')?.value) || 0;
@@ -1424,9 +1475,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       
       // Update volumetric field
       if (volumetric > 0) {
-        productForm.get('Volumetric')?.setValue(volumetric, 
-          { emitEvent: false }
-        );
+        productForm.get('Volumetric')?.setValue(volumetric, { emitEvent: false });
       } else {
         productForm.get('Volumetric')?.setValue('', { emitEvent: false });
       }
@@ -1639,6 +1688,9 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       NetWeight: [Number(data?.NetWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.min(0)]],
       Volume: [Number(data?.Volume || '').toFixed(this.digitsAfterDecimal) || '', this.isSurfaceCargoMode() ? [] : [Validators.required,Validators.min(0.001)]],
       Volumetric: [data?.Volumetric|| '',isAirOrLCL ? [Validators.required, Validators.min(0.001)] : []],
+      isGrossWeightManualOverride: [data?.isGrossWeightManualOverride ?? false],
+      isVolumeManualOverride: [data?.isVolumeManualOverride ?? false],
+      isVolumetricManualOverride: [data?.isVolumetricManualOverride ?? false],
       IsHaz : [data?.IsHaz ? (data.IsHaz === "Y" ? true : false) : false],
       ImcoClass : [data?.ImcoClass || null],
       UnNo : [data?.UnNo || ''],
@@ -1688,13 +1740,13 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
 
     if (data?.CargoRecDate) {
      
-      ['ExternlQty', 'NetWeight', 'Volume'].forEach(field => {
+      ['ExternlQty', 'NetWeight'].forEach(field => {
         productForm.get(field)?.disable();
       })
     }
      
    if (isPatching && data?.CargoRecDate) {
-  ['ExternlQty',  'NetWeight', 'Volume'].forEach(field => {
+  ['ExternlQty',  'NetWeight'].forEach(field => {
     productForm.get(field)?.disable();
   });
 }
@@ -1771,8 +1823,6 @@ private calculateProductFormCBMAndVolumetric(productForm: FormGroup) {
     return;
   }
   if (!this.usesDimensionalCargoFields()) {
-    productForm.get('Volume')?.setValue('', { emitEvent: false });
-    productForm.get('Volumetric')?.setValue('', { emitEvent: false });
     return;
   }
 
@@ -1791,16 +1841,24 @@ private calculateProductFormCBMAndVolumetric(productForm: FormGroup) {
     );
     
     // Update both fields
-    productForm.get('Volume')?.setValue(cbm > 0 ? cbm : '', { emitEvent: false });
-    productForm.get('Volumetric')?.setValue(volumetric > 0 ? volumetric : '', { emitEvent: false });
+    if (!this.isManualOverrideActive(productForm, 'Volume')) {
+      productForm.get('Volume')?.setValue(cbm > 0 ? cbm : '', { emitEvent: false });
+    }
+    if (!this.isManualOverrideActive(productForm, 'Volumetric')) {
+      productForm.get('Volumetric')?.setValue(volumetric > 0 ? volumetric : '', { emitEvent: false });
+    }
     
     // Update main cargo form totals
     setTimeout(() => {
       this.handleProductRelatedCalculation(this.getCargoIndexForProductForm(productForm));
     }, 100);
   } else {
-    productForm.get('Volume')?.setValue('', { emitEvent: false });
-    productForm.get('Volumetric')?.setValue('', { emitEvent: false });
+    if (!this.isManualOverrideActive(productForm, 'Volume')) {
+      productForm.get('Volume')?.setValue('', { emitEvent: false });
+    }
+    if (!this.isManualOverrideActive(productForm, 'Volumetric')) {
+      productForm.get('Volumetric')?.setValue('', { emitEvent: false });
+    }
   }
 }
 
@@ -1828,6 +1886,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
      if (this.isPatching) {
       return;
     }
+    if (this.isManualOverrideActive(productForm, 'Volumetric')) {
+      return;
+    }
     const externlQty = Number(productForm.get('ExternlQty')?.value) || 0;
     const length = Number(productForm.get('Length')?.value) || 0;
     const width = Number(productForm.get('Width')?.value) || 0;
@@ -1842,9 +1903,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       );;
       
       if (volumetric > 0) {
-        productForm.get('Volumetric')?.setValue(volumetric, 
-          { emitEvent: false }
-        );
+        productForm.get('Volumetric')?.setValue(volumetric, { emitEvent: false });
       } else {
         productForm.get('Volumetric')?.setValue('', { emitEvent: false });
       }
@@ -4798,11 +4857,21 @@ getVoyageTypeBasedOnDept(deptId: number) {
       }
 
       targetCargo.get('NoOfPackage')?.enable(); targetCargo.get('NoOfPackage')?.setValue(0);
-      targetCargo.get('GrossWeight')?.enable(); targetCargo.get('GrossWeight')?.setValue(0);
+      if (!this.isManualOverrideActive(targetCargo, 'GrossWeight')) {
+        targetCargo.get('GrossWeight')?.enable(); targetCargo.get('GrossWeight')?.setValue(0);
+      }
       targetCargo.get('NetWeight')?.enable(); targetCargo.get('NetWeight')?.setValue(0);
-      targetCargo.get('Volume')?.enable(); targetCargo.get('Volume')?.setValue(0);
-      targetCargo.get('Volumetric')?.enable(); targetCargo.get('Volumetric')?.setValue(0);
-      targetCargo.get('ChargeableWeight')?.enable(); targetCargo.get('ChargeableWeight')?.setValue(0);
+      if (!this.isManualOverrideActive(targetCargo, 'Volume')) {
+        targetCargo.get('Volume')?.enable(); targetCargo.get('Volume')?.setValue(0);
+      }
+      if (!this.isManualOverrideActive(targetCargo, 'Volumetric')) {
+        targetCargo.get('Volumetric')?.enable(); targetCargo.get('Volumetric')?.setValue(0);
+      }
+      targetCargo.get('ChargeableWeight')?.enable();
+      if (!this.isManualOverrideActive(targetCargo, 'ChargeableWeight')) {
+        targetCargo.get('ChargeableWeight')?.setValue(0);
+        this.calculateChargeableWeight(targetCargo);
+      }
       return;
     }
 
@@ -4822,16 +4891,24 @@ getVoyageTypeBasedOnDept(deptId: number) {
     });
 
     targetCargo.get('NoOfPackage')?.setValue(totalNoOfPkg);
-    targetCargo.get('NoOfPackage')?.disable();
-    targetCargo.get('GrossWeight')?.setValue(totalGrossWeight);
-    targetCargo.get('GrossWeight')?.disable();
+    targetCargo.get('NoOfPackage')?.enable();
+    if (!this.isManualOverrideActive(targetCargo, 'GrossWeight')) {
+      targetCargo.get('GrossWeight')?.setValue(totalGrossWeight);
+    }
+    targetCargo.get('GrossWeight')?.enable();
     targetCargo.get('NetWeight')?.setValue(totalNetWeight);
-    targetCargo.get('NetWeight')?.disable();
-    targetCargo.get('Volume')?.setValue(totalVolume);
-    targetCargo.get('Volume')?.disable();
-    targetCargo.get('Volumetric')?.setValue(Number(totalVolumetric.toFixed(this.decimalAfterPrecision)));
-    targetCargo.get('Volumetric')?.disable();
-    this.calculateChargeableWeight(targetCargo);
+    targetCargo.get('NetWeight')?.enable();
+    if (!this.isManualOverrideActive(targetCargo, 'Volume')) {
+      targetCargo.get('Volume')?.setValue(totalVolume);
+    }
+    targetCargo.get('Volume')?.enable();
+    if (!this.isManualOverrideActive(targetCargo, 'Volumetric')) {
+      targetCargo.get('Volumetric')?.setValue(Number(totalVolumetric.toFixed(this.decimalAfterPrecision)));
+    }
+    targetCargo.get('Volumetric')?.enable();
+    if (!this.isManualOverrideActive(targetCargo, 'ChargeableWeight')) {
+      this.calculateChargeableWeight(targetCargo);
+    }
 
   if (this.isExportToImportLinked) {
       targetCargo.disable({ emitEvent: false });

@@ -476,7 +476,7 @@
 
                   <button class="btn btn-sm waves-effect waves-light text-light"
                     (click)="removeRoute(routeIndex,route.value.QuoteRouteSid)"
-                    [disabled]="f['EnquirySid'].value || disableAllModification || doesBookingExistForRoute(route.value?.QuoteRouteSid) ">
+                    [disabled]="f['EnquirySid'].value || disableAllModification || doesBookingExistForRoute(route.value?.QuoteRouteSid) || isRouteApproved(routeIndex)">
                     <i class="fas fa-trash text-danger me-1"></i>
                   </button>
                   }
@@ -966,12 +966,12 @@
                                   <dofi-searchable-dropdown [items]="packageTypes" formControlName="ExternalPkg"
                                     [placeholder]="''" [displayFields]="[ 'UOMCode','UOMName']"
                                     [displayLabels]="[ 'Code','Name']" [labelFields]="['UOMCode']"
-                                    [bindValue]="'UOMMasterSid'">
+                                    [bindValue]="'UOMMasterSid'" >
                                   </dofi-searchable-dropdown>
                                 </td>
                                 <td>
-                                  <input type="text" id="text-input" formControlName="ExternalQty" [onlyNumbers] = 5
-                                    placeholder="" (input)="handleCalculation(routeIndex)"
+                                  <input type="text" id="text-input" formControlName="ExternalQty" DecimalPrecision [DecimalPrecisionBefore]="100" [DecimalPrecisionAfter]="0"
+                                    placeholder="" (input)="handleCalculation(routeIndex)"  [onlyNumbers]="15"
                                     class="custom-input-field sm text-end">
                                 </td>
                                 @if(isLclStyleQuotationSegment(route) || isSurfaceQuotationSegment(route)){
@@ -1235,7 +1235,7 @@
                                           </dofi-searchable-dropdown>
                                         </td>
                                         <td>
-                                          <input type="text" formControlName="ExternalQty" class="custom-input-field sm">
+                                          <input type="text" formControlName="ExternalQty" class="custom-input-field sm" [onlyNumbers]>
                                         </td>
                                         <td>
                                           <input type="text" formControlName="GrossWeight" class="custom-input-field sm"   DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
@@ -2012,7 +2012,7 @@
                 @if(quoteRoutes.length > 1){
                 <button class="btn btn-sm waves-effect waves-light text-light"
                   (click)="removeRoute(routeIndex,route.value.QuoteRouteSid)"
-                  [disabled]="f['EnquirySid'].value || disableAllModification">
+                  [disabled]="f['EnquirySid'].value || disableAllModification || isRouteApproved(routeIndex)">
                   <i-feather class="feather-sm me-1" name="trash-2"></i-feather>
                 </button>
                 }

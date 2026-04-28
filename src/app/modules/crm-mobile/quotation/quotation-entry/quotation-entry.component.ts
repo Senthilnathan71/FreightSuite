@@ -3006,6 +3006,7 @@ isRateLockDisabled(): boolean {
     if (!dept || dept === undefined) {
       routeForm.get('segmentType').setValue('LCL');
       this.handleValidationOnDept(routeIndex, 'LCL');
+      this.quoteCargo(routeIndex).clear();
       this.refreshRoutePortFilters(routeIndex);
       return;
     }
@@ -3015,6 +3016,9 @@ isRateLockDisabled(): boolean {
     const selectedCargoMode = this.resolveCargoModeByDepartment(dept);
     routeForm.get('segmentType').setValue(selectedFCLLCL);
     this.handleValidationOnDept(routeIndex, selectedCargoMode);
+    if (selectedCargoMode !== 'FCL') {
+      this.quoteCargo(routeIndex).clear();
+    }
     
     this.refreshRoutePortFilters(routeIndex);
     this.quoteRoutes.controls.forEach((route:FormGroup)=>{
