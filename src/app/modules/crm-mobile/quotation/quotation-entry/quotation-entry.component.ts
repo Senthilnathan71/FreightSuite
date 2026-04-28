@@ -7287,17 +7287,17 @@ checkRateLockPermissions(): void {
     return;
   }
 
-  // Split by comma and trim/lowercase each email
+  // Split by comma and trim each email (case-sensitive comparison)
   const allowedEmails = configValue
     .split(',')
-    .map((email: string) => email.trim().toLowerCase())
+    .map((email: string) => email.trim())
     .filter((email: string) => email.length > 0); // Remove empty strings
   
   // console.log('Allowed Emails:', allowedEmails);
-  // console.log('Current User Email (lowercase):', this.currentUserEmail.toLowerCase());
+  // console.log('Current User Email:', this.currentUserEmail.trim());
 
   // Check if current user's email is in the allowed list
-  this.canUserLockRates = allowedEmails.includes(this.currentUserEmail.toLowerCase());
+  this.canUserLockRates = allowedEmails.includes(this.currentUserEmail.trim());
   
 
   // Enable or disable the RateLock checkbox based on permission
