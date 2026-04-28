@@ -32,8 +32,12 @@
           <span>At-Risk Alerts</span>
           <span class="alert-count-badge">{{ alerts.length }}</span>
         </div>
-        <div class="alerts-list">
-          <div class="alert-item" *ngFor="let alert of alerts"
+        <div class="alerts-list"
+             #scrollContainer
+             (wheel)="onManualScrollStart()"
+             (touchstart)="onManualScrollStart()"
+             (pointerdown)="onManualScrollStart()">
+          <div class="alert-item" *ngFor="let alert of renderedAlerts; trackBy: trackAlert"
                [class.danger]="alert.severity === 'danger'"
                [class.warning]="alert.severity === 'warning'"
                [class.info]="alert.severity === 'info'">
@@ -65,13 +69,18 @@
     <div class="skeleton-item" *ngFor="let i of [1,2,3]"></div>
   </div>
 
-  <div class="alerts-list" *ngIf="!loading">
+  <div class="alerts-list"
+       #scrollContainer
+       (wheel)="onManualScrollStart()"
+       (touchstart)="onManualScrollStart()"
+       (pointerdown)="onManualScrollStart()"
+       *ngIf="!loading">
     <div class="empty-state" *ngIf="alerts.length === 0">
       <i class="fas fa-shield-alt"></i>
       <p>No alerts - your team is on track!</p>
     </div>
 
-    <div class="alert-item" #scrollContainer (scroll)="onUserScroll()" *ngFor="let alert of alerts"
+    <div class="alert-item" *ngFor="let alert of renderedAlerts; trackBy: trackAlert"
          [class.danger]="alert.severity === 'danger'"
          [class.warning]="alert.severity === 'warning'"
          [class.info]="alert.severity === 'info'">

@@ -142,6 +142,11 @@
   min-height: 0;
 }
 
+.ac-panel--right .alerts-list {
+  max-height: 160px;
+  min-height: 160px;
+}
+
 // ── Original Alerts ──
 .alerts-card {
   @include sm-card;
@@ -172,6 +177,8 @@
   max-height: 160px; overflow-y: auto;
   display: flex; flex-direction: column; gap: 4px;
   flex: 1;
+  min-height: 0;
+  scroll-behavior: auto;
 }
 
 .empty-state {

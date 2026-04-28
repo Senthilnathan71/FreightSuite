@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AtRiskAlert, ActionCenterItem } from '../../../interfaces/sales-manager-dashboard.interfaces';
 
@@ -9,49 +9,96 @@ import { AtRiskAlert, ActionCenterItem } from '../../../interfaces/sales-manager
   templateUrl: './sm-alerts.component.html',
   styleUrls: ['./sm-alerts.component.scss']
 })
-export class SmAlertsComponent implements AfterViewInit , OnDestroy {
+export class SmAlertsComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() alerts: AtRiskAlert[] = [];
   @Input() loading = false;
   @Input() actionCenterItems: ActionCenterItem[] = [];
   @Input() redesignMode = false;
+  renderedAlerts: AtRiskAlert[] = [];
 
   @ViewChild('scrollContainer')
-  set scrollContainerSetter(el: ElementRef) {
+  set scrollContainerSetter(el: ElementRef<HTMLDivElement> | undefined) {
     if (el) {
       this.scrollContainer = el;
-      this.startAutoScroll();
+      this.scheduleAutoScrollRestart();
     }
   }
 
-  scrollContainer!: ElementRef;
-  private scrollInterval: any;
+  scrollContainer?: ElementRef<HTMLDivElement>;
+  private autoScrollTimer?: ReturnType<typeof setInterval>;
   isAutoScroll = true;
 
   ngAfterViewInit() {
-    console.log(this.scrollContainer);
-    this.startAutoScroll();
+    this.updateRenderedAlerts();
+    this.scheduleAutoScrollRestart();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['alerts']) {
+      this.updateRenderedAlerts();
+      this.scheduleAutoScrollRestart();
+    }
   }
 
   startAutoScroll() {
-    if (this.scrollInterval) return; // prevent duplicate
+    if (this.autoScrollTimer || !this.shouldDuplicateAlerts) return;
 
-    this.scrollInterval = setInterval(() => {
+    this.autoScrollTimer = setInterval(() => {
       if (!this.isAutoScroll) return;
 
       const el = this.scrollContainer?.nativeElement;
       if (!el) return;
 
+      const loopHeight = el.scrollHeight / 2;
+      if (loopHeight <= el.clientHeight) return;
+
       el.scrollTop += 1;
 
-      // loop back
-      if (el.scrollTop + el.clientHeight >= el.scrollHeight) {
+      if (el.scrollTop >= loopHeight) {
         el.scrollTop = 0;
       }
     }, 30);
   }
 
-  onUserScroll() {
+  onManualScrollStart() {
+    this.stopAutoScroll();
+  }
+
+  stopAutoScroll() {
     this.isAutoScroll = false;
+    if (this.autoScrollTimer) {
+      clearInterval(this.autoScrollTimer);
+      this.autoScrollTimer = undefined;
+    }
+  }
+
+  private resetAutoScroll() {
+    const el = this.scrollContainer?.nativeElement;
+    if (el) {
+      el.scrollTop = 0;
+    }
+
+    this.stopAutoScroll();
+    this.isAutoScroll = true;
+  }
+
+  private scheduleAutoScrollRestart() {
+    setTimeout(() => {
+      this.resetAutoScroll();
+      this.startAutoScroll();
+    });
+  }
+
+  private updateRenderedAlerts() {
+    this.renderedAlerts = this.shouldDuplicateAlerts ? [...this.alerts, ...this.alerts] : [...this.alerts];
+  }
+
+  get shouldDuplicateAlerts(): boolean {
+    return this.alerts.length > 1;
+  }
+
+  trackAlert(index: number): number {
+    return index;
   }
 
   getIcon(alertType: string): string {
@@ -95,8 +142,6 @@ export class SmAlertsComponent implements AfterViewInit , OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.scrollInterval) {
-      clearInterval(this.scrollInterval);
-    }
+    this.stopAutoScroll();
   }
 }
