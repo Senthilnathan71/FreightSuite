@@ -137,6 +137,12 @@ getDisplayLedgerName(item: any): string {
 
   return subLedger ? subLedger : ledger;
 }
+
+getPaidToDisplay(): string {
+  const detailRow = this.getDrDetails()?.[0];
+  return detailRow ? this.getDisplayLedgerName(detailRow) : (this.paymentDataPrint?.BankPartyName || '');
+}
+
 getDrDetails() {
   return this.paymentDataPrint?.VoucherDetail?.filter(
     (item: any) =>

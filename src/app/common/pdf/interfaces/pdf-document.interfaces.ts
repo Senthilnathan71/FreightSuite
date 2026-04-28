@@ -1043,6 +1043,7 @@ export interface ReceiptPdfData extends PdfDocumentBase {
     voucherNumber?: string;
     voucherDate?: Date | string;
     partyName?: string;
+    partyAddress?: string;
     currencyCode?: string;
     exchangeRate?: number;
     bankName?: string;
