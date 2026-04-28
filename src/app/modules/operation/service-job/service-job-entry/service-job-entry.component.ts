@@ -52,6 +52,7 @@ import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { JobCardComponent } from '../../house-job/report/job-card/job-card.component';
 import { ProofOfDeliveryComponent } from '../../house-job/report/proof-of-delivery/proof-of-delivery.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 
 
 
@@ -1668,6 +1669,19 @@ openEDoc() {
 
       this.commonService.documentData.set(data)
 }
+
+openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.HouseJobSid;
+  }
 
 
 

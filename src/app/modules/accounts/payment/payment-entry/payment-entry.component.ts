@@ -86,6 +86,7 @@ import { MasterService } from 'src/app/modules/master/master.service';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 import { OperationService } from 'src/app/modules/operation/operation.service';
 import { TaxCalculationService } from 'src/app/modules/operation/services/tax-calculation.service';
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 
 /**
  * Payment Entry Component
@@ -4171,6 +4172,19 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       DocumentSid: this.paymentData?.VoucherHeaderSid,
     };
     this.commonService.documentData.set(data);
+  }
+
+  openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.currentMenuId);  
+    modalRef.componentInstance.DocumentSid = this.paymentData?.VoucherHeaderSid;
   }
 
   openTandC() {

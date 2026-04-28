@@ -27,6 +27,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { PreventMultiClickDirective } from "src/app/core/Directives/prevent-multi-click.directive";
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 
 @Component({
   selector: 'app-credit-request-entry',
@@ -1334,6 +1335,19 @@ getDepartmentName(deptId: number, rowIndex: number): string {
         modalRef.componentInstance.idLabel = 'Customer Id';
         modalRef.componentInstance.idValue = this.customerData?.CustomerMasterSid;
       }
+
+      openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.customerData?.CustomerMasterSid;
+  }
       openTandC() {
         this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
         this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));

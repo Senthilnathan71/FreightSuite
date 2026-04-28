@@ -84,6 +84,7 @@ import {
 import { ToastrService } from 'ngx-toastr';
 import { PdfMakeService } from 'src/app/common/pdf';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
+import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 
 interface NgbDateStructLike {
   day: number;
@@ -3354,6 +3355,19 @@ export class CreditNoteEntryComponent {
     };
 
     this.commonService.documentData.set(data);
+  }
+
+  openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.headerId;
   }
 
   async getAndStoreTandC(): Promise<void> {

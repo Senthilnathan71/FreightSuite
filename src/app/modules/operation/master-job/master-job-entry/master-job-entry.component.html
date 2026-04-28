@@ -158,7 +158,8 @@
           
           <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
             (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-         
+         <button *ngIf="mps.has('document_reference')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openDocRef()"><i
+              class="fas fa-paperclip me-1"></i>Document reference</button>
         </div>
       </div>
 

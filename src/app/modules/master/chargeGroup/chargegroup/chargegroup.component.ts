@@ -34,6 +34,7 @@ import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/hea
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 @Component({
   selector: 'app-chargegroup',
   standalone: true,
@@ -326,6 +327,9 @@ export class ChargegroupComponent extends BaseListComponent implements OnInit {
       case 'email':
         this.openEmail();
         break;
+      case 'document_reference':
+        this.openDocRef();
+        break;
       default:
         console.warn(`Unknown dropdown action: ${action}`);
     }
@@ -477,7 +481,7 @@ viewZone(id: number, content?: TemplateRef<any>) {
  
 
       hasAnyDropdownPermission(): boolean {
-  const dropdownButtons = ['Edoc', 'Authority', 'Email'];
+  const dropdownButtons = ['Edoc', 'Authority', 'Email', 'Document reference'];
   return dropdownButtons.some((btn) => this.permissions?.includes(btn));
 }
   //   loadChargeGroups(): void {
@@ -894,6 +898,20 @@ editChargeGroup(id: number, content: TemplateRef<any>) {
   }
   this.commonService.documentData.set(data)
 
+  }
+
+  openDocRef() {
+    const currentMenuId = this.chargeGroupData?.MenuMasterSid;
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);
+    modalRef.componentInstance.DocumentSid = this.ChargeGroupSid;
   }
   OnDestroy(): void {
     this.commonService.clearDocumentData()

@@ -78,6 +78,7 @@ import { VendorCreditNotePrintComponent } from '../report/vendor-credit-note-pri
 import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { AppliedTaxMode, TaxCalculationService } from '../../services/tax-calculation.service';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
+import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 
 interface NgbDateStructLike {
   day: number;
@@ -3044,6 +3045,19 @@ export class VendorCreditNoteEntryComponent {
     };
 
     this.commonService.documentData.set(data);
+  }
+
+  openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.headerId;
   }
 
   openTandC() {

@@ -69,6 +69,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import * as XLSX from 'xlsx';
 import { SearchableDropdownModal } from 'src/app/component/searchable-dropdown/searchable-dropdown-modal.component';
 import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/dial-code-dropdown.component';
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 
 
 @Component({
@@ -2125,7 +2126,7 @@ onCompanyTypeChange(): void {
 
 
   hasAnyDropdownPermission(): boolean {
-    const dropdownButtons = ['Edoc','Authority', 'Email'];
+    const dropdownButtons = ['Edoc','Authority', 'Email' , 'Document Reference'];
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));
     }
 
@@ -3653,6 +3654,19 @@ private extractApiErrorMessage(error: any, fallbackMessage: string): string {
   }
 
       this.commonService.documentData.set(data)
+  }
+
+  openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.CustomerMasterSid;
   }
 
 

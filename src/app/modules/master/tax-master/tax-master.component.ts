@@ -54,6 +54,7 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { Country } from 'src/app/modules/crm-mobile/Interfaces/country.interface';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { DocReferenceComponent } from '../../operation/doc-reference/doc-reference.component';
 @Component({
   selector: 'app-tax-group-list',
   standalone: true,
@@ -100,6 +101,7 @@ export class TaxMasterComponent extends BaseListComponent implements OnInit {
   TaxMasterSid!: number;
   results: any[] = [];
   taxGroupList: any[] = [];
+  MenuMasterSid: any;
   // page = 1;
   // pageSize = 5;
   // totalLengthOfCollection = 0;
@@ -185,6 +187,7 @@ export class TaxMasterComponent extends BaseListComponent implements OnInit {
   override ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.MenuMasterSid = sessionStorage.getItem('currentMenuId');
     this.initForm();
     this.taxGroupForm.valueChanges.subscribe(() => { });
     // this.loadTaxGroups();
@@ -789,5 +792,18 @@ viewTax(content: any, row: any) {
     modalRef.componentInstance.item = this.taxGroupData;
     modalRef.componentInstance.idLabel = 'Cost-Center Id';
     modalRef.componentInstance.idValue = this.taxGroupData?.TaxMasterSid;
+  }
+
+  openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.taxGroupData?.TaxMasterSid;
   }
 }

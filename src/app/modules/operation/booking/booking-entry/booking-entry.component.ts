@@ -4635,7 +4635,7 @@ openDocRef() {
   
     modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
     modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
-    modalRef.componentInstance.MenuMasterSid = currentMenuId;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);
     modalRef.componentInstance.DocumentSid = this.BookingHeaderSid;
   }
 

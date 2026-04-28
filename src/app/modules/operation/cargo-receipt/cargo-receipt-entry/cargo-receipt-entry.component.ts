@@ -23,6 +23,7 @@ import { AuthorityEntryComponent } from 'src/app/modules/master/authority/author
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
+import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 
 @Component({
   selector: 'app-cargo-receipt-entry',
@@ -406,6 +407,20 @@ export class CargoReceiptEntryComponent implements OnInit {
     
           this.commonService.documentData.set(data)
     }
+
+    openDocRef() {
+    const currentMenuId = this.bookingData?.MenuMasterSid;
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);
+    modalRef.componentInstance.DocumentSid = this.bookingData?.BookingHeaderSid;
+  }
   
     openFollowup() {
 

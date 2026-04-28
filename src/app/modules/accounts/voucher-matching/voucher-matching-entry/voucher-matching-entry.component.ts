@@ -34,6 +34,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { CommonService } from 'src/app/common/common.service';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 
 @Component({
   selector: 'app-voucher-matching-entry',
@@ -1412,6 +1413,19 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
       DocumentSid: this.VoucherMatchingHeaderSid,
     };
     this.commonService.documentData.set(data);
+  }
+
+  openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.currentMenuId);  
+    modalRef.componentInstance.DocumentSid = this.VoucherMatchingHeaderSid;
   }
 
   openTandC() {

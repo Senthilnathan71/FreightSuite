@@ -75,6 +75,7 @@ import { ProofOfDeliveryComponent } from '../../house-job/report/proof-of-delive
 import { ProofOfDeliveryMasterPrintComponent } from '../reports/proof-of-delivery-master-print/proof-of-delivery-master-print.component';
 import { InsertMilestoneByMasterJobPayload } from '../../services/shipment-milestone.service';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
+import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -5656,6 +5657,18 @@ findElementByTextContent(selector: string, text: string): Element | null {
         <p>${this.userData['userName']}</p>
       </div>
     `;
+  }
+  openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.masterJobSid;
   }
   openTandC() {
     this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));

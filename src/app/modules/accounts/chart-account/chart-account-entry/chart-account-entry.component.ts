@@ -23,6 +23,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { errorLogger } from 'src/app/common/helper';
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 
 @Component({
   selector: 'app-chart-account-entry',
@@ -614,6 +615,20 @@ export class ChartAccountEntryComponent implements OnInit {
 
       this.commonService.documentData.set(data)
 }
+
+openDocRef() {
+    const currentMenuId = this.chartData?.MenuMasterSid;
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);
+    modalRef.componentInstance.DocumentSid = this.chartData?.COAMasterSid;
+  }
 openFollowup() {
   
 }

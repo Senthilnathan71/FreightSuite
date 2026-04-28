@@ -73,6 +73,7 @@ import { greaterThanZero } from 'src/app/core/ValidationFn/greaterThanZero.valid
 import { PdfFileSaveService } from 'src/app/common/pdf-file-save.service';
 import { Menu } from 'angular-feather/icons';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
+import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 interface NgbDateStructLike {
   day: number;
   month: number;
@@ -3231,6 +3232,19 @@ isSeaDepartment(): boolean {
     };
 
     this.commonService.documentData.set(data);
+  }
+
+  openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.currentMenuId);  
+    modalRef.componentInstance.DocumentSid = this.invoiceData?.VoucherHeaderSid;
   }
 
   openFollowup() {}

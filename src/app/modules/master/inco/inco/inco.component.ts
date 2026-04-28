@@ -35,6 +35,7 @@ import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/compone
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 @Component({
   selector: 'app-inco',
   standalone: true,
@@ -263,7 +264,7 @@ export class IncoComponent extends BaseListComponent implements OnInit {
 
 
   hasAnyDropdownPermission(): boolean {
-    const dropdownButtons = ['Edoc', 'Authority', 'Email'];
+    const dropdownButtons = ['Edoc', 'Authority', 'Email', 'Document Reference'];
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));
     }
 
@@ -356,7 +357,7 @@ export class IncoComponent extends BaseListComponent implements OnInit {
         label: 'Edoc',
         icon: 'fas fa-file-alt',
         action: 'edoc',
-        
+        condition: this.mps.has('edoc')
       },
       // {
       //   label: 'Terms & Condition',
@@ -368,13 +369,19 @@ export class IncoComponent extends BaseListComponent implements OnInit {
         label: 'Authorize',
         icon: 'fas fa-shield-alt',
         action: 'authority',
-    
+        condition: this.mps.has('authority')
       },
       {
         label: 'Email',
         icon: 'fas fa-envelope',
         action: 'email',
-
+        condition: this.mps.has('email')
+      },
+      {
+        label: 'Document reference',
+        icon: 'fas fa-paperclip',
+        action: 'document_reference',
+        condition: this.mps.has('document_reference')
       }
     ];
   }
@@ -408,6 +415,9 @@ export class IncoComponent extends BaseListComponent implements OnInit {
         break;
       case 'email':
         this.openEmail();
+        break;
+      case 'document_reference':
+        this.openDocRef();  
         break;
       default:
         console.warn(`Unknown dropdown action: ${action}`);
@@ -933,6 +943,19 @@ export class IncoComponent extends BaseListComponent implements OnInit {
 
       this.commonService.documentData.set(data)
 }
+
+openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.IncoMasterSid;
+  }
  openFollowup() {
     if (!this.incoData) return;
     const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });

@@ -68,6 +68,7 @@ import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 import { VoiceRecognitionService } from '../../enquiry/voice-recognition.service';
 import { VoiceParserService } from '../../enquiry/voice-parser.service';
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -5403,6 +5404,19 @@ ${this.userData.userName}`;
     DocumentSid: this.QuoteHeaderSid
   }
     this.commonService.documentData.set(data)
+  }
+
+  openDocRef() {
+    const modalRef = this.ngbModal.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.QuoteHeaderSid;
   }
 
   logFormValue() {

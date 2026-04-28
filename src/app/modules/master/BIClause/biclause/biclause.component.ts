@@ -407,7 +407,6 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
   }
 
   openDocRef() {
-      const currentMenuId = this.blclauseData?.MenuMasterSid;
       const modalRef = this.modalService.open(DocReferenceComponent, {
         size: 'lg',
         centered: true,
@@ -416,7 +415,7 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
     
       modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
       modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
-      modalRef.componentInstance.MenuMasterSid = currentMenuId;
+      modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);
       modalRef.componentInstance.DocumentSid = this.blclauseData?.BLClauseMasterSid;
     }
 

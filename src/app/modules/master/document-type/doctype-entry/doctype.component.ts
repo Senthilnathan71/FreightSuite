@@ -20,6 +20,7 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 
 @Component({
 	selector: 'app-doctype',
@@ -149,7 +150,7 @@ currentBranch: any;
 	 
 
 hasAnyDropdownPermission(): boolean {
-    const dropdownButtons = ['Edoc', 'Authority', 'Email'];
+    const dropdownButtons = ['Edoc', 'Authority', 'Email','Document Reference'];
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));
     }
 
@@ -609,6 +610,18 @@ openEDoc() {
 
       this.commonService.documentData.set(data)
 }
+openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.VoucherTypeMasterSid;
+  }
  ngOnDestroy(): void {
     this.commonService.clearDocumentData()
  }
