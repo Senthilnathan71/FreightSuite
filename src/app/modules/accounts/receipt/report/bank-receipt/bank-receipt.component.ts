@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { PdfMakeService } from 'src/app/common/pdf';
@@ -14,6 +14,8 @@ import { MasterService } from 'src/app/modules/master/master.service';
 import { OperationService } from 'src/app/modules/operation/operation.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 
 @Component({
   selector: 'app-bank-receipt',
@@ -42,6 +44,7 @@ export class BankReceiptComponent implements OnChanges {
   @Input() bankTypedLedgers: any;
   @Input() coaList : any[] = [];
   @Input() ledgerList: any[] = [];
+  @Input() currentMenuId: number | null = null;
     currentUserCountry: string;
 
    ngOnInit() {
@@ -111,7 +114,9 @@ export class BankReceiptComponent implements OnChanges {
     private companySettings: CompanySettingsManagerService,
     public logoService : LogoService,
     public mps: MenuPermissionService,
-    private operationService: OperationService
+    private operationService: OperationService,
+    private modalService: NgbModal,
+    private emailTriggerService: EmailTriggerService
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -312,6 +317,130 @@ getAmountInWords(): string {
       console.error('Error generating PDF blob:', error);
       return null;
     }
+  }
+
+  async openEmailModal(): Promise<void> {
+    try {
+      const blob = await this.generatePDFBlob();
+      if (!blob) {
+        this.appSettingService.showError('Error generating PDF. Please try again.');
+        return;
+      }
+
+      const documentName = 'Bank Receipt';
+      const documentNo = this.receiptPrintData?.VoucherNo || this.receiptPrintData?.VoucherNumber || '';
+      const documentDate = this.formatEmailDate(this.receiptPrintData?.VoucherDate);
+      const emailRecipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
+        customerBranchSid: this.getCustomerBranchSidForEmail(),
+        customerMasterSid: this.getCustomerMasterSidForEmail(),
+        menuMasterSid: this.getCurrentMenuMasterSidForEmail()
+      });
+
+      if (emailRecipients.toEmail.length === 0) {
+        this.appSettingService.showError('No email found in customer branch email.');
+        return;
+      }
+
+      const emailContent = this.emailTriggerService.buildOperationEmailContent({
+        documentName,
+        documentNoLabel: 'Receipt No.',
+        documentNo,
+        documentDate,
+        userName: this.userData?.userName || '',
+        introLine: `Please find attached the ${documentName} for your reference.`,
+        followupLine: 'Kindly review the attached details at your convenience.'
+      });
+
+      const file = new File([blob], this.getReceiptPdfFilename(), { type: 'application/pdf' });
+      const emailRef = this.modalService.open(EmailEntryComponent, { size: 'lg' });
+      emailRef.componentInstance.setContent = {
+        EmailTo: emailRecipients.toEmail,
+        EmailCC: emailRecipients.ccEmail,
+        EmailBCC: [],
+        Subject: emailContent.subject,
+        Mailbody: emailContent.body,
+        context: {
+          documentName,
+          documentNoLabel: 'Receipt No',
+          menuName: documentName,
+          documentNo,
+          date: documentDate
+        },
+        attachments: [file]
+      };
+      emailRef.componentInstance.dataChange.subscribe(() => {
+        this.createEmailAuditLog(documentName);
+      });
+    } catch (error) {
+      console.error('Bank Receipt email error:', error);
+      this.appSettingService.showError('Error preparing email');
+    }
+  }
+
+  private createEmailAuditLog(documentName: string): void {
+    const payload = {
+      tableName: 'VoucherHeader',
+      recordId: String(this.receiptPrintData?.VoucherHeaderSid),
+      operation: 'EMAIL',
+      changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+      changes: {
+        action: 'Send Mail'
+      },
+      newVal: {
+        Email: `${documentName} Mail Send`
+      }
+    };
+
+    this.operationService.createAuditLog(payload).subscribe({
+      next: () => { },
+      error: (err) => console.error(err)
+    });
+  }
+
+  private getCustomerBranchSidForEmail(): number | null {
+    const candidates = [
+      this.receiptPrintData?.CustomerBranchSid,
+      this.receiptPrintData?.customerBranch?.CustomerBranchSid,
+      this.receiptPrintData?.CustomerBranch?.CustomerBranchSid
+    ];
+
+    const sid = candidates
+      .map(value => Number(value))
+      .find(value => Number.isFinite(value) && value > 0);
+
+    return sid || null;
+  }
+
+  private getCustomerMasterSidForEmail(): number | null {
+    const candidates = [
+      this.receiptPrintData?.CustomerMasterSid,
+      this.receiptPrintData?.customerMaster?.CustomerMasterSid,
+      this.receiptPrintData?.CustomerMaster?.CustomerMasterSid,
+      this.receiptPrintData?.customerBranch?.CustomerMasterSid,
+      this.receiptPrintData?.CustomerBranch?.CustomerMasterSid
+    ];
+
+    const sid = candidates
+      .map(value => Number(value))
+      .find(value => Number.isFinite(value) && value > 0);
+
+    return sid || null;
+  }
+
+  private getCurrentMenuMasterSidForEmail(): number | null {
+    const sid = Number(
+      this.currentMenuId ||
+      this.receiptPrintData?.voucherTypeMaster?.MenuMasterSid ||
+      this.receiptPrintData?.MenuMasterSid
+    );
+
+    return Number.isFinite(sid) && sid > 0 ? sid : null;
+  }
+
+  private formatEmailDate(value: any): string {
+    if (!value) return '';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-GB');
   }
 
         

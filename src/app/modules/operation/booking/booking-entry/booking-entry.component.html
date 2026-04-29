@@ -3991,7 +3991,7 @@
         <button *ngIf="mps.canPrint('BarCode', 'Download')" type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="openPdfQtyModal(printQtyModal)">
           <i class="fas fa-download me-1"></i> Download PDF
         </button>
-        <button *ngIf="mps.canPrint('BarCode', 'Send Mail')" type="button" class="btn btn-sm btn-success rounded-5 py-0" (click)="sendEmail('booking')">
+        <button *ngIf="mps.canPrint('BarCode', 'Send Mail')" type="button" class="btn btn-sm btn-success rounded-5 py-0" (click)="sendEmail('barcode')">
           <i class="fas fa-envelope me-1"></i>Send Email
         </button>
 
@@ -4184,7 +4184,7 @@
         <button *ngIf="mps.canPrint('BarCode 2', 'Download')" type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="openPdfQtyModalwithoutCompany(printQtyModal)">
           <i class="fas fa-download me-1"></i> Download PDF
         </button>
-        <button *ngIf="mps.canPrint('BarCode 2', 'Send Mail')" type="button" class="btn btn-sm btn-success rounded-5 py-0" (click)="sendEmail('booking')">
+        <button *ngIf="mps.canPrint('BarCode 2', 'Send Mail')" type="button" class="btn btn-sm btn-success rounded-5 py-0" (click)="sendEmail('barcode-no-company')">
           <i class="fas fa-envelope me-1"></i>Send Email
         </button>
 

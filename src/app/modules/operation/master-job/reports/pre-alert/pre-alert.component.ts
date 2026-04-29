@@ -9,6 +9,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { InsertMilestoneByMasterJobPayload, ShipmentMilestoneService } from 'src/app/modules/operation/services/shipment-milestone.service';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
@@ -41,6 +42,7 @@ export class PreAlertComponent {
    @Input() yardList: any[] = [];
    @Input() portList: any[] = []; // Add this input
      @Input()  selectedFCLLCL:any;
+   @Input() currentMenuId: number | null = null;
    private pdfDepsPromise?: Promise<{ pdfMake: any }>;
 
    @Input() autoInsertMilestone: boolean = false;
@@ -59,7 +61,8 @@ export class PreAlertComponent {
      private milestoneService: ShipmentMilestoneService,
      private modalService: NgbModal,
      public mps: MenuPermissionService,
-     private operationService: OperationService
+     private operationService: OperationService,
+     private emailTriggerService: EmailTriggerService
    ) { }
  
     showPrintLogo: boolean = false;
@@ -393,28 +396,93 @@ export class PreAlertComponent {
    }, 50); 
  }
 
- async sendEmail() {
-    this.spinner.show();
+ async generatePDFBlob(): Promise<Blob | null> {
     try {
       const docDefinition = await this.buildPreAlertDocDefinition();
       if (!docDefinition) {
         this.appSettingService.showError('No data available');
+        return null;
+      }
+
+      const { pdfMake } = await this.getPdfDependencies();
+      return await new Promise<Blob>((resolve, reject) => {
+        try {
+          pdfMake.createPdf(docDefinition).getBlob((blob: Blob) => resolve(blob));
+        } catch (error) {
+          reject(error);
+        }
+      });
+    } catch (error) {
+      console.error('Error generating Pre Alert PDF blob:', error);
+      return null;
+    }
+  }
+
+ async sendEmail() {
+    this.spinner.show();
+    try {
+      const blob = await this.generatePDFBlob();
+      if (!blob) {
         return;
       }
-      const { pdfMake } = await this.getPdfDependencies();
-      const blob = await new Promise<Blob>((resolve) => {
-        pdfMake.createPdf(docDefinition).getBlob(resolve);
+
+      const documentName = 'Pre Alert';
+      const documentNo = this.masterJobData?.MasterJobNumber || '';
+      const documentDate = this.formatEmailDate(this.masterJobData?.MasterJobDate);
+      const destinationAgentSid = Number(this.masterJobData?.DestinationAgent);
+      if (!Number.isFinite(destinationAgentSid) || destinationAgentSid <= 0) {
+        this.appSettingService.showError('Destination Agent is required to send email.');
+        return;
+      }
+
+      const emailRecipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
+        customerBranchSid: null,
+        customerMasterSid: destinationAgentSid,
+        menuMasterSid: this.getCurrentMenuMasterSidForEmail()
       });
-      const fileName = `Pre_Alert_${this.masterJobData?.MasterJobNumber || ''}.pdf`;
+
+      if (emailRecipients.toEmail.length === 0) {
+        this.appSettingService.showError('No email found in customer branch email.');
+        return;
+      }
+
+      const emailContent = this.emailTriggerService.buildOperationEmailContent({
+        documentName,
+        documentNoLabel: 'Master Job No.',
+        documentNo,
+        documentDate,
+        pol: this.masterJobData?.POL || '',
+        pod: this.masterJobData?.POD || '',
+        fpd: this.masterJobData?.FPD || '',
+        userName: this.userData?.userName || '',
+        introLine: `Please find attached the ${documentName} for your reference.`,
+        followupLine: 'Kindly review the attached details at your convenience.'
+      });
+
+      const fileName = `Pre_Alert_${documentNo || 'Report'}.pdf`;
       const file = new File([blob], fileName, { type: 'application/pdf' });
 
       const emailRef = this.modalService.open(EmailEntryComponent, { size: 'lg' });
       emailRef.componentInstance.setContent = {
-        Subject: `Pre Alert - ${this.masterJobData?.MasterJobNumber || ''}`,
-        Mailbody: `Please find attached the Pre Alert for Job No: ${this.masterJobData?.MasterJobNumber || ''}`,
+        EmailTo: emailRecipients.toEmail,
+        EmailCC: emailRecipients.ccEmail,
+        EmailBCC: [],
+        Subject: emailContent.subject,
+        Mailbody: emailContent.body,
+        context: {
+          documentName,
+          documentNoLabel: 'Master Job No',
+          menuName: documentName,
+          documentNo,
+          date: documentDate,
+          pol: this.masterJobData?.POL || '',
+          pod: this.masterJobData?.POD || '',
+          fpd: this.masterJobData?.FPD || ''
+        },
         attachments: [file]
       };
       emailRef.componentInstance.dataChange.subscribe(() => {
+        this.createEmailAuditLog(documentName);
         this.insertMilestoneSafelyForPrint();
       });
     } catch (error) {
@@ -424,6 +492,42 @@ export class PreAlertComponent {
       this.spinner.hide();
     }
   }
+
+ private createEmailAuditLog(documentName: string): void {
+   const payload = {
+     tableName: 'MasterJob',
+     recordId: String(this.masterJobData?.MasterJobSid),
+     operation: 'EMAIL',
+     changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+     changes: {
+       action: 'Send Mail'
+     },
+     newVal: {
+       Email: `${documentName} Mail Send`
+     }
+   };
+
+   this.operationService.createAuditLog(payload).subscribe({
+     next: () => { },
+     error: (err) => console.error(err)
+   });
+ }
+
+ private getCurrentMenuMasterSidForEmail(): number | null {
+   const sid = Number(
+     this.currentMenuId ||
+     this.masterJobData?.MenuMasterSid ||
+     sessionStorage.getItem('currentMenuId')
+   );
+
+   return Number.isFinite(sid) && sid > 0 ? sid : null;
+ }
+
+ private formatEmailDate(value: any): string {
+   if (!value) return '';
+   const date = new Date(value);
+   return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-GB');
+ }
 
  private async insertMilestoneSafelyForPrint(): Promise<void> {
    if (!this.autoInsertMilestone || !this.milestonePayload || this.milestoneInserted) {

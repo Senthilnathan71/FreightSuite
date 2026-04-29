@@ -2724,6 +2724,63 @@ isSeaDepartment(): boolean {
     return job?.MasterJobNumber || job?.displayLabel || '-';
   }
 
+  getHouseJobNumberByRow(detailIndex: number): string {
+    const row = this.details.at(detailIndex) as FormGroup;
+    const houseJobSid = Number(row?.get('HouseJobSid')?.value || 0);
+    if (!houseJobSid) {
+      return '-';
+    }
+
+    const matchedHouseJob = (this.houseJobList[detailIndex] || []).find(
+      (job: any) => Number(job?.HouseJobSid) === houseJobSid
+    );
+
+    return matchedHouseJob?.HBLNo || matchedHouseJob?.HouseJobNumber || '-';
+  }
+
+  navigateToDetailMasterJob(detailIndex: number): void {
+    const row = this.details.at(detailIndex) as FormGroup;
+    const masterJobSid = Number(row?.get('MasterJobSid')?.value || 0);
+    if (!masterJobSid) {
+      this.appSettingService.showWarning('Master Job not available');
+      return;
+    }
+
+    const departmentType = this.getDetailDepartmentType(row);
+    if (departmentType === 'AIR') {
+      this.router.navigate(['/operation/mawbill/entry', masterJobSid]);
+      return;
+    }
+
+    this.router.navigate(['/operation/master-job/entry', masterJobSid]);
+  }
+
+  navigateToDetailHouseJob(detailIndex: number): void {
+    const row = this.details.at(detailIndex) as FormGroup;
+    const houseJobSid = Number(row?.get('HouseJobSid')?.value || 0);
+    if (!houseJobSid) {
+      this.appSettingService.showWarning('House Job not available');
+      return;
+    }
+
+    const departmentType = this.getDetailDepartmentType(row);
+    if (departmentType === 'AIR') {
+      this.router.navigate(['/operation/hawb-bill/entry', houseJobSid]);
+      return;
+    }
+
+    this.router.navigate(['/operation/house-job/entry', houseJobSid]);
+  }
+
+  private getDetailDepartmentType(row: FormGroup): string {
+    const departmentMasterSid = Number(row?.get('DepartmentMasterSid')?.value || 0);
+    const department = this.departmentList.find(
+      (d: any) => Number(d?.DepartmentMasterSid) === departmentMasterSid
+    );
+
+    return String(department?.departmentType || '').trim().toUpperCase();
+  }
+
   // Print Modal Methods
   async openPrintModal() {
     if (!this.headerId) {
@@ -2747,9 +2804,142 @@ isSeaDepartment(): boolean {
   }
 
 
-  openEmailModal() {
-    this.initializeEmailForm();
-    this.modalService.open(this.emailModalRef, { size: 'lg' });
+  async openEmailModal(): Promise<void> {
+    this.spinner.show();
+
+    try {
+      const blob = await this.generatePDFBlob();
+      if (!blob) {
+        this.appSettingService.showError('Error generating PDF. Please try again.');
+        return;
+      }
+
+      const documentName = 'Invoice';
+      const voucherNumber = this.invoiceForm.get('VoucherNumber')?.value || this.invoiceData?.VoucherNumber || this.invoiceData?.InvoiceNo || '';
+      const documentDate = this.formatEmailDate(this.invoiceForm.get('VoucherDate')?.value || this.invoiceData?.VoucherDate);
+      const toEmail = await this.emailTriggerService.resolveCustomerBranchEmailsByMenu({
+        customerBranchSid: this.getCustomerBranchSidForEmail(),
+        customerMasterSid: this.getCustomerMasterSidForEmail(),
+        menuMasterSid: this.getCurrentMenuMasterSidForEmail()
+      });
+
+      if (toEmail.length === 0) {
+        this.appSettingService.showError('No email found in customer branch email.');
+        return;
+      }
+
+      const emailContent = this.emailTriggerService.buildOperationEmailContent({
+        documentName,
+        documentNoLabel: 'Invoice No.',
+        documentNo: voucherNumber,
+        documentDate,
+        pol: this.invoicePrintData?.POL || this.invoiceData?.POL || '',
+        pod: this.invoicePrintData?.POD || this.invoiceData?.POD || '',
+        fpd: this.invoicePrintData?.FPD || this.invoiceData?.FPD || '',
+        userName: this.userData?.userName || '',
+        introLine: `Please find attached the ${documentName} for your reference.`,
+        followupLine: 'Kindly review the attached details at your convenience.'
+      });
+
+      const file = new File([blob], `Invoice_${voucherNumber || 'Report'}.pdf`, { type: 'application/pdf' });
+      const emailRef = this.modalService.open(EmailEntryComponent, { size: 'lg' });
+      emailRef.componentInstance.setContent = {
+        EmailTo: toEmail,
+        EmailCC: this.userData?.userEmail ? [this.userData.userEmail] : [],
+        EmailBCC: [],
+        Subject: emailContent.subject,
+        Mailbody: emailContent.body,
+        context: {
+          documentName,
+          documentNoLabel: 'Invoice No',
+          menuName: documentName,
+          documentNo: voucherNumber,
+          date: documentDate,
+          pol: this.invoicePrintData?.POL || this.invoiceData?.POL || '',
+          pod: this.invoicePrintData?.POD || this.invoiceData?.POD || '',
+          fpd: this.invoicePrintData?.FPD || this.invoiceData?.FPD || ''
+        },
+        attachments: [file]
+      };
+      emailRef.componentInstance.dataChange.subscribe(() => {
+        this.createEmailAuditLog(documentName);
+      });
+    } catch (error) {
+      console.error('Invoice email error:', error);
+      this.appSettingService.showError('Error preparing email');
+    } finally {
+      this.spinner.hide();
+    }
+  }
+
+  private createEmailAuditLog(documentName: string): void {
+    const payload = {
+      tableName: 'VoucherHeader',
+      recordId: String(this.invoiceData?.VoucherHeaderSid || this.headerId),
+      operation: 'EMAIL',
+      changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+      changes: {
+        action: 'Send Mail'
+      },
+      newVal: {
+        Email: `${documentName} Mail Send`
+      }
+    };
+
+    this.operationService.createAuditLog(payload).subscribe({
+      next: () => { },
+      error: (err) => console.error(err)
+    });
+  }
+
+  private getCustomerBranchSidForEmail(): number | null {
+    const candidates = [
+      this.invoiceForm.get('CustomerBranchSid')?.getRawValue(),
+      this.invoiceData?.CustomerBranchSid,
+      this.invoiceData?.customerBranch?.CustomerBranchSid,
+      this.invoiceData?.CustomerBranch?.CustomerBranchSid
+    ];
+
+    const sid = candidates
+      .map(value => Number(value))
+      .find(value => Number.isFinite(value) && value > 0);
+
+    return sid || null;
+  }
+
+  private getCustomerMasterSidForEmail(): number | null {
+    const candidates = [
+      this.invoiceForm.get('CustomerMasterSid')?.getRawValue(),
+      this.invoiceData?.CustomerMasterSid,
+      this.invoiceData?.customerMaster?.CustomerMasterSid,
+      this.invoiceData?.CustomerMaster?.CustomerMasterSid,
+      this.invoiceData?.customerBranch?.CustomerMasterSid,
+      this.invoiceData?.CustomerBranch?.CustomerMasterSid
+    ];
+
+    const sid = candidates
+      .map(value => Number(value))
+      .find(value => Number.isFinite(value) && value > 0);
+
+    return sid || null;
+  }
+
+  private getCurrentMenuMasterSidForEmail(): number | null {
+    const sid = Number(
+      this.invoiceData?.voucherTypeMaster?.MenuMasterSid ||
+      this.currentMenuId
+    );
+
+    return Number.isFinite(sid) && sid > 0 ? sid : null;
+  }
+
+  private formatEmailDate(value: any): string {
+    if (!value) return '';
+    const date = value?.year && value?.month && value?.day
+      ? new Date(value.year, value.month - 1, value.day)
+      : new Date(value);
+
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-GB');
   }
 
   initializeEmailForm() {

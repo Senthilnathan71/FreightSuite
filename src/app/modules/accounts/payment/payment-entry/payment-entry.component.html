@@ -83,8 +83,7 @@
             <!-- Search Button -->
             <div class="d-flex align-items-end">
               <button
-                class="btn btn-info btn-sm mt-1"
-                style="width: 100px; height: 26px"
+                class="btn btn-info btn-sm mt-1 dofi-min-w-80 dofi-max-w-80"
                 [disabled]="
                   !searchOutstandingForm.get('SearchType')?.value ||
                   !(
@@ -540,7 +539,7 @@
                     for="text-input"
                     class="input-label"
                     style="font-size: 14px"
-                    >Pay To</label
+                    >Pay To <span class="text-danger">*</span></label
                   >
                 </div>
               </aside>
@@ -813,7 +812,7 @@
       <div class="flex-grow-1 text-start">
         @if(isEditMode && voucherMatchingInfo?.VoucherMatchingHeaderSid){
         <a
-          class="fw-bold px-2 text-decoration-underline"
+          class="fw-bold px-2"
           [routerLink]="[
             '/accounts/voucher-matching/entry',
             voucherMatchingInfo.VoucherMatchingHeaderSid
@@ -833,7 +832,7 @@
         }
 
         <!-- DETAIL TOTALS (Blue Tone) -->
-        <div class="px-2 py-1 rounded bg-primary bg-opacity-10 border border-primary">
+        <div class="px-2 py-0 rounded   border border-primary">
           <span class="me-3">
             Total Cr ({{ paymentForm.get('CurrencyCode')?.getRawValue() }}) :
             <span class="fw-bold text-primary">
@@ -850,7 +849,7 @@
         </div>
         
         <!-- MATCHING TOTAL (Warning Tone) -->
-        <div class="px-2 py-1 rounded bg-warning bg-opacity-10 border border-warning">
+        <div class="px-2 py-0 rounded  border border-warning">
           Net Matching ({{ paymentForm.get('CurrencyCode')?.getRawValue() }}) :
           <span class="fw-bold text-warning">
             {{ getTotalMatchPartyAmt() | number : "1.2-2" }}
@@ -1252,7 +1251,7 @@
                   <input
                     *ngIf="!v.get('voucherNo')?.value"
                     type="text"
-                    class="custom-input-field sm fw-bold px-2 text-decoration-underline"
+                    class="custom-input-field sm fw-bold px-2"
                     [value]="v.get('voucherNo')?.value || ''"
                     readonly
                   />
@@ -1266,7 +1265,7 @@
                         '/operation/invoice/entry',
                         v.get('VoucherHeaderSid')?.value
                       ]"
-                      class="fw-bold px-2 text-decoration-underline"
+                      class="fw-bold px-2"
                     >
                       {{ v.get("voucherNo")?.value }}
                     </a>
@@ -1278,7 +1277,7 @@
                         '/operation/vendor-invoice/entry',
                         v.get('VoucherHeaderSid')?.value
                       ]"
-                      class="fw-bold px-2 text-decoration-underline"
+                      class="fw-bold px-2"
                     >
                       {{ v.get("voucherNo")?.value }}
                     </a>
@@ -1290,7 +1289,7 @@
                         '/accounts/receipt/entry',
                         v.get('VoucherHeaderSid')?.value
                       ]"
-                      class="fw-bold px-2 text-decoration-underline"
+                      class="fw-bold px-2 "
                     >
                       {{ v.get("voucherNo")?.value }}
                     </a>
@@ -1302,7 +1301,7 @@
                         '/accounts/payment/entry',
                         v.get('VoucherHeaderSid')?.value
                       ]"
-                      class="fw-bold px-2 text-decoration-underline"
+                      class="fw-bold px-2 "
                     >
                       {{ v.get("voucherNo")?.value }}
                     </a>
@@ -1314,7 +1313,7 @@
                         '/accounts/journal-voucher/entry',
                         v.get('VoucherHeaderSid')?.value
                       ]"
-                      class="fw-bold px-2 text-decoration-underline"
+                      class="fw-bold px-2 "
                     >
                       {{ v.get("voucherNo")?.value }}
                     </a>
@@ -1325,7 +1324,7 @@
                         '/accounts/reverse-voucher/entry',
                         v.get('VoucherHeaderSid')?.value
                       ]"
-                      class="fw-bold px-2 text-decoration-underline"
+                      class="fw-bold px-2 "
                     >
                       {{ v.get("voucherNo")?.value }}
                     </a>
@@ -1337,7 +1336,7 @@
                         '/operation/credit-note/entry',
                         v.get('VoucherHeaderSid')?.value
                       ]"
-                      class="fw-bold px-2 text-decoration-underline"
+                      class="fw-bold px-2 "
                     >
                       {{ v.get("voucherNo")?.value }}
                     </a>
@@ -1349,7 +1348,7 @@
                         '/operation/vendor-credit-note/entry',
                         v.get('VoucherHeaderSid')?.value
                       ]"
-                      class="fw-bold px-2 text-decoration-underline"
+                      class="fw-bold px-2 "
                     >
                       {{ v.get("voucherNo")?.value }}
                     </a>
@@ -1357,7 +1356,7 @@
                     <!-- Default case -->
                     <span
                       *ngSwitchDefault
-                      class="fw-bold px-2 text-decoration-underline"
+                      class="fw-bold px-2 "
                     >
                       {{ v.get("voucherNo")?.value }}
                     </span>

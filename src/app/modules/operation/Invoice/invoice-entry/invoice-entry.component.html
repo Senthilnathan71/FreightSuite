@@ -75,7 +75,7 @@
           </div> -->
 
           <button type="button" class="btn btn-info btn-sm text-nowrap" *ngIf="isEditMode"
-            (click)="sendManualMail()" [disabled]="(this.invoiceData?.Status !== 'A')">
+            (click)="openEmailModal()" [disabled]="(this.invoiceData?.Status !== 'A')">
             <i class="fas fa-envelope me-1"></i> Send Mail
           </button>
 
@@ -1140,6 +1140,15 @@
 
                               <!-- MasterJobSid -->
                               <td class="text-center" style="min-width: 200px">
+                                @if (isEditMode) {
+                                <a
+                                  class="text-decoration-underline"
+                                  style="cursor: pointer"
+                                  (click)="navigateToDetailMasterJob(i)"
+                                >
+                                  {{ getMasterJobNumber(row.get('MasterJobSid')?.value) }}
+                                </a>
+                                } @else {
                                 <ng-select
                                   [items]="masterJobList"
                                   bindLabel="displayLabel"
@@ -1163,11 +1172,21 @@
                                     {{ item.MasterJobNumber }}
                                   </ng-template>
                                 </ng-select>
+                                }
                                 <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ getMasterJobNumber(row.get('MasterJobSid')?.value) }}</span> -->
                               </td>
 
                               <!-- HouseJobSid -->
                               <td class="text-center" style="min-width: 200px">
+                                @if (isEditMode) {
+                                <a
+                                  class="text-decoration-underline"
+                                  style="cursor: pointer"
+                                  (click)="navigateToDetailHouseJob(i)"
+                                >
+                                  {{ getHouseJobNumberByRow(i) }}
+                                </a>
+                                } @else {
                                 <ng-select
                                   [items]="houseJobList[i] || []"
                                   bindLabel="HBLNo"
@@ -1187,6 +1206,7 @@
                                     {{ item.HBLNo }}
                                   </ng-template>
                                 </ng-select>
+                                }
                                 <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ getHouseJobNumber(row.get('HouseJobSid')?.value,
                             row.get('MasterJobSid')?.value) }}</span> -->
                               </td>

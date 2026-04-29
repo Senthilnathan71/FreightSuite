@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { combineLatest, Subject } from 'rxjs';
@@ -32,6 +32,8 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
   styleUrls: ['./accounts-reports.component.scss']
 })
 export class AccountsReportsComponent implements OnInit, OnDestroy {
+  @ViewChild(ReportCardListComponent) reportCardList?: ReportCardListComponent;
+
   // State management
   reports: ReportCard[] = [];
   selectedReport: ReportCard | null = null;
@@ -112,6 +114,10 @@ export class AccountsReportsComponent implements OnInit, OnDestroy {
       this.reportData = [];
       this.reportParameters = {};
     }
+  }
+
+  openReportOrderPanel(): void {
+    this.reportCardList?.openReorderPanel();
   }
 
   /**

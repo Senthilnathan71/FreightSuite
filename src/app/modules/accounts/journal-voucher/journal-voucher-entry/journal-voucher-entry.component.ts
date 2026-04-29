@@ -3242,6 +3242,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
     modalRef.componentInstance.currencyList = this.currencyList || [];
     modalRef.componentInstance.coaList = this.coaList || [];
     modalRef.componentInstance.subledgerList = this.subledgerList || [];
+    modalRef.componentInstance.currentMenuId = this.currentMenuId;
   }
 
 

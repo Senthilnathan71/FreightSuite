@@ -5918,6 +5918,7 @@ ${this.userData['userName']}`;
     modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || [];
     modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
     modalRef.componentInstance.TandCList = this.TandCList || [];
+    modalRef.componentInstance.houseMenuMasterSid = this.currentMenuId;
   }
 
 
@@ -5949,6 +5950,7 @@ ${this.userData['userName']}`;
     modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
     modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
     modalRef.componentInstance.portList = this.portList || [];
+    modalRef.componentInstance.houseMenuMasterSid = this.currentMenuId;
   }
 
 
@@ -6408,6 +6410,7 @@ ${this.userData['userName']}`;
       modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || 'LCL';
       modalRef.componentInstance.portList = this.portList || [];
       modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+      modalRef.componentInstance.houseMenuMasterSid = this.currentMenuId;
     }
 
       reportMilestoneSummary() {
@@ -6455,6 +6458,7 @@ ${this.userData['userName']}`;
           modalRef.componentInstance.containerTypeList = this.containerTypeList;
           modalRef.componentInstance.packageTypeList = this.packageTypeList;
           modalRef.componentInstance.portList = this.portList || [];
+          modalRef.componentInstance.houseMenuMasterSid = this.currentMenuId;
         }
       
         // Exit form
@@ -6501,6 +6505,7 @@ ${this.userData['userName']}`;
     modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
     modalRef.componentInstance.chargeList = this.chargeList || [];
     modalRef.componentInstance.selectedReportAir = type;
+    modalRef.componentInstance.houseMenuMasterSid = this.currentMenuId;
      modalRef.result.then((result) => {
            if (result === 'UPDATED') {
              const prev = Number(this.houseJobForm.get('HBLCount')?.value);

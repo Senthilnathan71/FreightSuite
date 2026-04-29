@@ -1,5 +1,116 @@
 .report-card-container {
   padding: 6px 0;
+  position: relative;
+}
+
+.report-order-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(360px, calc(100vw - 32px));
+  max-height: 70vh;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid #cfe1ee;
+  border-radius: 8px;
+  box-shadow: rgba(5, 96, 141, 0.18) 0 14px 32px, rgba(0, 0, 0, 0.08) 0 4px 12px;
+  overflow: hidden;
+}
+
+.report-order-header,
+.report-order-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 10px;
+  background: #f6fbff;
+}
+
+.report-order-header {
+  border-bottom: 1px solid #d9e8f5;
+  color: #ffffff;
+  background-color: #05608d !important;
+}
+
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #e8f2f8;
+  color: #506273;
+
+  &:hover {
+    background: #e8f2f8;
+    color: #05608d;
+  }
+}
+
+.report-order-list {
+  padding: 6px;
+  overflow: auto;
+}
+
+.report-order-item {
+  min-height: 36px;
+  display: grid;
+  grid-template-columns: 22px 28px 1fr;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid #e0edf6;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #2d3748;
+  font-size: 0.8rem;
+  cursor: move;
+
+  & + & {
+    margin-top: 6px;
+  }
+
+  .mdi-drag {
+    color: #718096;
+    font-size: 1rem;
+  }
+}
+
+.report-order-index {
+  color: #718096;
+  font-weight: 700;
+}
+
+.report-order-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.report-order-actions {
+  justify-content: flex-end;
+  border-top: 1px solid #d9e8f5;
+}
+
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 6px;
+  box-shadow: rgba(5, 96, 141, 0.2) 0 10px 24px;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.35;
+}
+
+.cdk-drag-animating,
+.report-order-list.cdk-drop-list-dragging .report-order-item:not(.cdk-drag-placeholder) {
+  transition: transform 160ms ease;
 }
 
 .report-card {

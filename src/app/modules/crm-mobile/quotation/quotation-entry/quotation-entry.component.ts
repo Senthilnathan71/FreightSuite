@@ -1797,7 +1797,7 @@ private mapQuotationCargoForBooking(cargo: any): any {
       Qty: [data?.Qty || 1],
       ShipmentTerms: [data?.ShipmentTerms || null],
       PackageType: [data?.PackageType || null],
-      PackageQty: [data?.PackageQty || null],
+      // PackageQty: [data?.PackageQty || null],
       CargoDescription: [data?.CargoDescription || ''],
       isFromEnquiry: [data?.isFromEnquiry === true],
       quoteProducts: this.fb.array([]),
@@ -2196,7 +2196,8 @@ private mapQuotationCargoForBooking(cargo: any): any {
       ports: this.leadService.getAllPorts().pipe(catchError(err => of([]))),
       incos: this.leadService.getAllIncos().pipe(catchError(err => of([]))),
       salesman: this.leadService.getAllSalesman(CompanyMasterSid).pipe(catchError(err => of([]))),
-      masters: this.leadService.getAllMasters(CompanyMasterSid).pipe(catchError(err => of({ charges: [], currencies: [], units: [] }))),
+      masters: this.leadService.getAllMasters(CompanyMasterSid).pipe(catchError(err => of({ charges: [], units: [] }))),
+      currency: this.operationService.getAllCurrencies().pipe(catchError(err => of([]))),
       chargeUnits : this.leadService.getUOMsByType('C').pipe(catchError(err => of([]))),
       packageTypes : this.leadService.getUOMsByType('P').pipe(catchError(err => of([]))),
       measurementUnits : this.leadService.getUOMsByType('M').pipe(catchError(err => of([]))),
@@ -2205,7 +2206,7 @@ private mapQuotationCargoForBooking(cargo: any): any {
       containerTypes: this.leadService.getAllContainerTypes().pipe(catchError(err => of([]))),
       products : this.leadService.getAllProducts().pipe(catchError(err => of([]))),
       imcos : this.leadService.getAllImco().pipe(catchError(err => of([]))),
-    }).pipe(tap(({ countries, departments , cargoTypes, leads, customers, customerlist, vendors, ports, incos, salesman, masters,chargeUnits, containerTypes , packageTypes,products,imcos,measurementUnits,weightUnits }) => {
+    }).pipe(tap(({ countries, departments , cargoTypes, leads, customers, customerlist, vendors, ports, incos, salesman, masters,currency,chargeUnits, containerTypes , packageTypes,products,imcos,measurementUnits,weightUnits }) => {
       this.dropdownStore.countries.set(countries || []);
       this.packageTypes = cargoTypes || [];
       // this.carriers = carriers || [];
@@ -2216,7 +2217,14 @@ private mapQuotationCargoForBooking(cargo: any): any {
       this.ports = (ports || []).map(p => ({...p,Country : p.countryMaster?.countryName}));
       this.quoteRoutes.controls.forEach((_, routeIndex: number) => this.refreshRoutePortFilters(routeIndex));
       this.chargeMaster = masters.charges || [];
-      this.currencyMaster = masters.currencies || [];
+      // this.currencyMaster = masters.currencies || [];
+      const rawCurrencies: any[] = Array.isArray(currency)
+        ? currency
+        : currency?.data || [];
+      this.currencyMaster = rawCurrencies.map((c: any) => ({
+        ...c,
+        countryName: c?.countryMaster?.countryName || ''
+      }));
       this.chargeUnitMaster = chargeUnits.data || [];
       this.measurementUnitList = measurementUnits.data || [];
       this.weightUnitList = weightUnits.data || [];

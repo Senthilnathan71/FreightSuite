@@ -1,12 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { OperationService } from '../../../operation.service';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 
 @Component({
   selector: 'app-vendor-invoice-print',
@@ -27,6 +29,7 @@ export class VendorInvoicePrintComponent {
   @Input() TandCList: any[] = [];
   @Input() userData: any;
   @Input() isVATMode = false;
+  @Input() currentMenuId: number | null = null;
   @Input() printTaxDisplayConfig: {
     showCGST: boolean;
     showSGST: boolean;
@@ -42,7 +45,9 @@ export class VendorInvoicePrintComponent {
     private pdfMakeService: PdfMakeService,
     public mps: MenuPermissionService,
     private operationService: OperationService,
-    private appSettingService: AppSettingsService
+    private appSettingService: AppSettingsService,
+    private modalService: NgbModal,
+    private emailTriggerService: EmailTriggerService
   ) {}
 
   // Template compatibility alias
@@ -155,44 +160,50 @@ export class VendorInvoicePrintComponent {
     return baseColumns;
   }
 
+  private getRawVendorData(): any {
+    return this.sourceVendorInvoiceData || this.vendorInvoiceData;
+  }
+
+  private getVendorInvoicePdfOptions(): any {
+    return {
+      taxDisplayConfig: this.getTaxDisplayConfig(),
+      bankDetails: this.vendorInvoiceData?.BankDetails || this.bankDetails || [],
+      terms: this.effectiveTermsAndConditions,
+      amountInWords: this.vendorInvoiceData?.AmountInWords || '',
+      localCurrency: this.currentCompanyCurrency?.code || '',
+      invoiceTitle: this.vendorInvoiceData?.invoiceTitle || 'Vendor Invoice',
+      isSeaMode: this.isSeaDepartment(),
+      isVATMode: this.getTaxDisplayConfig().showVAT,
+      companyVatNo:
+        this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
+      shipmentDetails: {
+        shipper: this.vendorInvoiceData?.ShipperName,
+        consignee: this.vendorInvoiceData?.ConsigneeName,
+        vesselName: this.vendorInvoiceData?.Vessel,
+        voyageNo: this.vendorInvoiceData?.VoyageNo,
+        shipperRefNo: this.vendorInvoiceData?.DocumentNumber,
+        loadingPort: this.vendorInvoiceData?.POL,
+        finalDestination: this.vendorInvoiceData?.FPD,
+        etd: this.vendorInvoiceData?.ETD,
+        eta: this.vendorInvoiceData?.ETA,
+        invoiceDueDate: this.vendorInvoiceData?.InvoiceDueDate,
+        BillDate: this.vendorInvoiceData?.DocumentDate,
+      },
+      cargoDetails: {
+        packages: this.vendorInvoiceData?.pkg,
+        commodityDesc: this.vendorInvoiceData?.desc,
+        grossWeight: this.vendorInvoiceData?.grosswt,
+        chargeableWeight: this.vendorInvoiceData?.ChargeableWeight,
+        cbm: this.vendorInvoiceData?.cbm,
+      },
+      vendorInvoiceData: this.vendorInvoiceData,
+    };
+  }
+
   downloadPDF(): void {
     try {
       const rawVendorData = this.sourceVendorInvoiceData || this.vendorInvoiceData;
       const logo = this.pdfMakeService.getReportLogo();
-
-      const options = {
-        taxDisplayConfig: this.getTaxDisplayConfig(),
-        bankDetails: this.vendorInvoiceData?.BankDetails || this.bankDetails || [],
-        terms: this.effectiveTermsAndConditions,
-        amountInWords: this.vendorInvoiceData?.AmountInWords || '',
-        localCurrency: this.currentCompanyCurrency?.code || '',
-        invoiceTitle: this.vendorInvoiceData?.invoiceTitle || 'Vendor Invoice',
-        isSeaMode: this.isSeaDepartment(),
-        isVATMode: this.getTaxDisplayConfig().showVAT,
-        companyVatNo:
-          this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
-        shipmentDetails: {
-          shipper: this.vendorInvoiceData?.ShipperName,
-          consignee: this.vendorInvoiceData?.ConsigneeName,
-          vesselName: this.vendorInvoiceData?.Vessel,
-          voyageNo: this.vendorInvoiceData?.VoyageNo,
-          shipperRefNo: this.vendorInvoiceData?.DocumentNumber,
-          loadingPort: this.vendorInvoiceData?.POL,
-          finalDestination: this.vendorInvoiceData?.FPD,
-          etd: this.vendorInvoiceData?.ETD,
-          eta: this.vendorInvoiceData?.ETA,
-          invoiceDueDate: this.vendorInvoiceData?.InvoiceDueDate,
-          BillDate: this.vendorInvoiceData?.DocumentDate,
-        },
-        cargoDetails: {
-          packages: this.vendorInvoiceData?.pkg,
-          commodityDesc: this.vendorInvoiceData?.desc,
-          grossWeight: this.vendorInvoiceData?.grosswt,
-          chargeableWeight: this.vendorInvoiceData?.ChargeableWeight,
-          cbm: this.vendorInvoiceData?.cbm,
-        },
-        vendorInvoiceData: this.vendorInvoiceData,
-      };
 
       this.pdfMakeService.generateVendorInvoiceFromApi(
         rawVendorData,
@@ -204,7 +215,7 @@ export class VendorInvoicePrintComponent {
           hssacMaster: [],
           currencyMaster: [],
         },
-        options
+        this.getVendorInvoicePdfOptions()
       );
       const payload = {
         tableName: 'VoucherHeader',
@@ -228,5 +239,159 @@ export class VendorInvoicePrintComponent {
     }
   }
 
-  openEmailModal(): void {}
+  async generatePDFBlob(): Promise<Blob | null> {
+    try {
+      const logo = this.pdfMakeService.getReportLogo();
+      return await this.pdfMakeService.generateVendorInvoiceBlobFromApi(
+        this.getRawVendorData(),
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        {
+          hssacMaster: [],
+          currencyMaster: [],
+        },
+        this.getVendorInvoicePdfOptions()
+      );
+    } catch (error) {
+      console.error('Error generating vendor invoice PDF blob:', error);
+      return null;
+    }
+  }
+
+  async openEmailModal(): Promise<void> {
+    try {
+      const blob = await this.generatePDFBlob();
+      if (!blob) {
+        this.appSettingService.showError('Error generating PDF. Please try again.');
+        return;
+      }
+
+      const rawVendorData = this.getRawVendorData();
+      const documentName = 'Vendor Invoice';
+      const documentNo = rawVendorData?.VoucherNumber || this.vendorInvoiceData?.VoucherNumber || this.vendorInvoiceData?.DocumentNumber || '';
+      const documentDate = this.formatEmailDate(rawVendorData?.VoucherDate || this.vendorInvoiceData?.DocumentDate);
+      const toEmail = await this.emailTriggerService.resolveCustomerBranchEmailsByMenu({
+        customerBranchSid: this.getVendorBranchSidForEmail(),
+        customerMasterSid: this.getVendorMasterSidForEmail(),
+        menuMasterSid: this.getCurrentMenuMasterSidForEmail()
+      });
+
+      if (toEmail.length === 0) {
+        this.appSettingService.showError('No email found in customer branch email.');
+        return;
+      }
+
+      const emailContent = this.emailTriggerService.buildOperationEmailContent({
+        documentName,
+        documentNoLabel: 'Vendor Invoice No.',
+        documentNo,
+        documentDate,
+        pol: this.vendorInvoiceData?.POL || '',
+        pod: this.vendorInvoiceData?.POD || '',
+        fpd: this.vendorInvoiceData?.FPD || '',
+        userName: this.userData?.userName || '',
+        introLine: `Please find attached the ${documentName} for your reference.`,
+        followupLine: 'Kindly review the attached details at your convenience.'
+      });
+
+      const file = new File([blob], `Vendor_Invoice_${documentNo || 'Report'}.pdf`, { type: 'application/pdf' });
+      const emailRef = this.modalService.open(EmailEntryComponent, { size: 'lg' });
+      emailRef.componentInstance.setContent = {
+        EmailTo: toEmail,
+        EmailCC: this.userData?.userEmail ? [this.userData.userEmail] : [],
+        EmailBCC: [],
+        Subject: emailContent.subject,
+        Mailbody: emailContent.body,
+        context: {
+          documentName,
+          documentNoLabel: 'Vendor Invoice No',
+          menuName: documentName,
+          documentNo,
+          date: documentDate,
+          pol: this.vendorInvoiceData?.POL || '',
+          pod: this.vendorInvoiceData?.POD || '',
+          fpd: this.vendorInvoiceData?.FPD || ''
+        },
+        attachments: [file]
+      };
+      emailRef.componentInstance.dataChange.subscribe(() => {
+        this.createEmailAuditLog(documentName);
+      });
+    } catch (error) {
+      console.error('Vendor Invoice email error:', error);
+      this.appSettingService.showError('Error preparing email');
+    }
+  }
+
+  private createEmailAuditLog(documentName: string): void {
+    const rawVendorData = this.getRawVendorData();
+    const payload = {
+      tableName: 'VoucherHeader',
+      recordId: String(rawVendorData?.VoucherHeaderSid),
+      operation: 'EMAIL',
+      changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+      changes: {
+        action: 'Send Mail'
+      },
+      newVal: {
+        Email: `${documentName} Mail Send`
+      }
+    };
+
+    this.operationService.createAuditLog(payload).subscribe({
+      next: () => { },
+      error: (err) => console.error(err)
+    });
+  }
+
+  private getVendorBranchSidForEmail(): number | null {
+    const rawVendorData = this.getRawVendorData();
+    const candidates = [
+      rawVendorData?.CustomerBranchSid,
+      rawVendorData?.customerBranch?.CustomerBranchSid,
+      rawVendorData?.CustomerBranch?.CustomerBranchSid
+    ];
+
+    const sid = candidates
+      .map(value => Number(value))
+      .find(value => Number.isFinite(value) && value > 0);
+
+    return sid || null;
+  }
+
+  private getVendorMasterSidForEmail(): number | null {
+    const rawVendorData = this.getRawVendorData();
+    const candidates = [
+      rawVendorData?.CustomerMasterSid,
+      rawVendorData?.customerMaster?.CustomerMasterSid,
+      rawVendorData?.CustomerMaster?.CustomerMasterSid,
+      rawVendorData?.customerBranch?.CustomerMasterSid,
+      rawVendorData?.CustomerBranch?.CustomerMasterSid
+    ];
+
+    const sid = candidates
+      .map(value => Number(value))
+      .find(value => Number.isFinite(value) && value > 0);
+
+    return sid || null;
+  }
+
+  private getCurrentMenuMasterSidForEmail(): number | null {
+    const rawVendorData = this.getRawVendorData();
+    const sid = Number(
+      this.currentMenuId ||
+      rawVendorData?.voucherTypeMaster?.MenuMasterSid ||
+      rawVendorData?.MenuMasterSid
+    );
+
+    return Number.isFinite(sid) && sid > 0 ? sid : null;
+  }
+
+  private formatEmailDate(value: any): string {
+    if (!value) return '';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-GB');
+  }
 }

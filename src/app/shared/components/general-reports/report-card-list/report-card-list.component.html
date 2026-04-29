@@ -19,9 +19,29 @@
     <p class="text-muted">There are no reports configured for your company.</p>
   </div>
 
+  <div class="report-order-panel" *ngIf="reorderPanelOpen" (click)="$event.stopPropagation()">
+    <div class="report-order-header">
+      <strong>Report Order</strong>
+      <button type="button" class="icon-btn" (click)="closeReorderPanel()">
+        <i class="mdi mdi-close"></i>
+      </button>
+    </div>
+    <div class="report-order-list" cdkDropList [cdkDropListData]="draftReports" (cdkDropListDropped)="onReportDrop($event)">
+      <div class="report-order-item" *ngFor="let report of draftReports; let i = index; trackBy: trackByReportSid" cdkDrag>
+        <i class="mdi mdi-drag"></i>
+        <span class="report-order-index">{{ i + 1 }}</span>
+        <span class="report-order-name">{{ report.ReportDisplayName }}</span>
+      </div>
+    </div>
+    <div class="report-order-actions">
+      <button type="button" class="btn btn-light-secondary btn-sm" (click)="resetReportOrder()">Reset</button>
+      <button type="button" class="btn btn-info btn-sm" (click)="saveReportOrder()">Save</button>
+    </div>
+  </div>
+
   <!-- Report Cards Grid -->
-  <div *ngIf="!isLoading && reports.length > 0" class="row">
-    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-12" *ngFor="let report of reports" >
+  <div *ngIf="!isLoading && orderedReports.length > 0" class="row">
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-12" *ngFor="let report of orderedReports; trackBy: trackByReportSid" >
       <div class="card report-card mb-2"
         [class.report-card-disabled]="!isReportEnabled(report)"
         (click)="onSelectReport(report)"

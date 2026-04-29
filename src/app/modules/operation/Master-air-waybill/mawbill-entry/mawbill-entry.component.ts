@@ -3760,6 +3760,7 @@ onYardChange(selectedYard: any): void {
         modalRef.componentInstance.currencyList=this.currencyList;
         modalRef.componentInstance.portList=this.portList;
         modalRef.componentInstance.chargeList=this.chargeList;
+        modalRef.componentInstance.currentMenuId=this.currentMenuId || this.MenuMasterSid || Number(sessionStorage.getItem('currentMenuId'));
       }
 
       getFormattedPort(code:string){

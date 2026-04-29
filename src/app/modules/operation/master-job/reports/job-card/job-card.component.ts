@@ -1,15 +1,17 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { OperationService } from '../../../operation.service';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 interface summaryDTO {
   revenue : any[];
   cost : any[];
@@ -47,6 +49,7 @@ export class JobCardComponent implements AfterViewInit{
   @Input() uomList: any[] = [];
   salemanList:any[] = [];
   @Input() portList: any[] = []; // Add this input
+  @Input() currentMenuId: number | null = null;
 
   @Input() selectedFCLLCL: string = '';
   constructor(
@@ -57,7 +60,9 @@ export class JobCardComponent implements AfterViewInit{
     private spinner: NgxSpinnerService,
     private pdfMakeService: PdfMakeService,
     public logoService : LogoService,
-    private operationService: OperationService
+    private operationService: OperationService,
+    private emailTriggerService: EmailTriggerService,
+    private modalService: NgbModal
   ) { }
 
   ngOnInit() {
@@ -363,6 +368,132 @@ getGrandChargeColumnTotal(field: 'RevenueRate' | 'RevenueLocalAmount' | 'CostRat
     }
   }, 50);
 }
+
+  async generatePDFBlob(): Promise<Blob | null> {
+    try {
+      const logo = this.pdfMakeService.getReportLogo();
+      return await this.pdfMakeService.generateMasterJobCardBlobFromApi(
+        this.masterJobData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        this.getMasterJobCardPdfOptions()
+      );
+    } catch (error) {
+      console.error('Error generating Job Card PDF blob:', error);
+      return null;
+    }
+  }
+
+  async openEmailModal(): Promise<void> {
+    this.spinner.show();
+    try {
+      const blob = await this.generatePDFBlob();
+      if (!blob) {
+        this.appSettingService.showError('No data available to generate PDF');
+        return;
+      }
+
+      const documentName = 'Job Card';
+      const documentNo = this.masterJobData?.MasterJobNumber || '';
+      const documentDate = this.formatEmailDate(this.masterJobData?.MasterJobDate);
+      const destinationAgentSid = Number(this.masterJobData?.DestinationAgent);
+      if (!Number.isFinite(destinationAgentSid) || destinationAgentSid <= 0) {
+        this.appSettingService.showError('Destination Agent is required to send email.');
+        return;
+      }
+
+      const emailRecipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
+        customerBranchSid: null,
+        customerMasterSid: destinationAgentSid,
+        menuMasterSid: this.getCurrentMenuMasterSidForEmail()
+      });
+
+      if (emailRecipients.toEmail.length === 0) {
+        this.appSettingService.showError('No email found in customer branch email.');
+        return;
+      }
+
+      const emailContent = this.emailTriggerService.buildOperationEmailContent({
+        documentName,
+        documentNoLabel: 'Master Job No.',
+        documentNo,
+        documentDate,
+        pol: this.masterJobData?.POL || '',
+        pod: this.masterJobData?.POD || '',
+        fpd: this.masterJobData?.FPD || '',
+        userName: this.userData?.userName || '',
+        introLine: `Please find attached the ${documentName} for your reference.`,
+        followupLine: 'Kindly review the attached details at your convenience.'
+      });
+
+      const file = new File([blob], `Job_Card_${documentNo || 'Report'}.pdf`, { type: 'application/pdf' });
+      const emailRef = this.modalService.open(EmailEntryComponent, { size: 'lg' });
+      emailRef.componentInstance.setContent = {
+        EmailTo: emailRecipients.toEmail,
+        EmailCC: emailRecipients.ccEmail,
+        EmailBCC: [],
+        Subject: emailContent.subject,
+        Mailbody: emailContent.body,
+        context: {
+          documentName,
+          documentNoLabel: 'Master Job No',
+          menuName: documentName,
+          documentNo,
+          date: documentDate,
+          pol: this.masterJobData?.POL || '',
+          pod: this.masterJobData?.POD || '',
+          fpd: this.masterJobData?.FPD || ''
+        },
+        attachments: [file]
+      };
+      emailRef.componentInstance.dataChange.subscribe(() => {
+        this.createEmailAuditLog(documentName);
+      });
+    } catch (error) {
+      console.error('Job Card email error:', error);
+      this.appSettingService.showError('Error preparing email');
+    } finally {
+      this.spinner.hide();
+    }
+  }
+
+  private createEmailAuditLog(documentName: string): void {
+    const payload = {
+      tableName: 'MasterJob',
+      recordId: String(this.masterJobData?.MasterJobSid),
+      operation: 'EMAIL',
+      changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+      changes: {
+        action: 'Send Mail'
+      },
+      newVal: {
+        Email: `${documentName} Mail Send`
+      }
+    };
+
+    this.operationService.createAuditLog(payload).subscribe({
+      next: () => { },
+      error: (err) => console.error(err)
+    });
+  }
+
+  private getCurrentMenuMasterSidForEmail(): number | null {
+    const sid = Number(
+      this.currentMenuId ||
+      this.masterJobData?.MenuMasterSid ||
+      sessionStorage.getItem('currentMenuId')
+    );
+
+    return Number.isFinite(sid) && sid > 0 ? sid : null;
+  }
+
+  private formatEmailDate(value: any): string {
+    if (!value) return '';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-GB');
+  }
 
   private getMasterJobCardPdfOptions() {
     return {

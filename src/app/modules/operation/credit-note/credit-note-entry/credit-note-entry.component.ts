@@ -6147,9 +6147,144 @@ export class CreditNoteEntryComponent {
 
   
 
-  openEmailModal() {
-    this.initializeEmailForm();
-    this.modalService.open(this.emailModalRef, { size: 'lg' });
+  async openEmailModal(): Promise<void> {
+    this.spinner.show();
+
+    try {
+      const blob = await this.generatePDFBlob();
+      if (!blob) {
+        this.appSettingService.showError('Error generating PDF. Please try again.');
+        return;
+      }
+
+      const documentName = 'Credit Note';
+      const voucherNumber = this.creditNoteForm.get('VoucherNumber')?.value || this.creditNoteData?.VoucherNumber || this.creditNoteData?.CreditNoteNo || '';
+      const documentDate = this.formatEmailDate(this.creditNoteForm.get('VoucherDate')?.value || this.creditNoteData?.VoucherDate);
+      const emailRecipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
+        customerBranchSid: this.getCustomerBranchSidForEmail(),
+        customerMasterSid: this.getCustomerMasterSidForEmail(),
+        menuMasterSid: this.getCurrentMenuMasterSidForEmail()
+      });
+
+      if (emailRecipients.toEmail.length === 0) {
+        this.appSettingService.showError('No email found in customer branch email.');
+        return;
+      }
+
+      const emailContent = this.emailTriggerService.buildOperationEmailContent({
+        documentName,
+        documentNoLabel: 'Credit Note No.',
+        documentNo: voucherNumber,
+        documentDate,
+        pol: this.creditNotePrintData?.POL || this.creditNoteData?.POL || '',
+        pod: this.creditNotePrintData?.POD || this.creditNoteData?.POD || '',
+        fpd: this.creditNotePrintData?.FPD || this.creditNoteData?.FPD || '',
+        userName: this.userData?.userName || '',
+        introLine: `Please find attached the ${documentName} for your reference.`,
+        followupLine: 'Kindly review the attached details at your convenience.'
+      });
+
+      const file = new File([blob], `Credit_Note_${voucherNumber || 'Report'}.pdf`, { type: 'application/pdf' });
+      const emailRef = this.modalService.open(EmailEntryComponent, { size: 'lg' });
+      emailRef.componentInstance.setContent = {
+        EmailTo: emailRecipients.toEmail,
+        EmailCC: emailRecipients.ccEmail,
+        EmailBCC: [],
+        Subject: emailContent.subject,
+        Mailbody: emailContent.body,
+        context: {
+          documentName,
+          documentNoLabel: 'Credit Note No',
+          menuName: documentName,
+          documentNo: voucherNumber,
+          date: documentDate,
+          pol: this.creditNotePrintData?.POL || this.creditNoteData?.POL || '',
+          pod: this.creditNotePrintData?.POD || this.creditNoteData?.POD || '',
+          fpd: this.creditNotePrintData?.FPD || this.creditNoteData?.FPD || ''
+        },
+        attachments: [file]
+      };
+      emailRef.componentInstance.dataChange.subscribe(() => {
+        this.createEmailAuditLog(documentName);
+      });
+    } catch (error) {
+      console.error('Credit Note email error:', error);
+      this.appSettingService.showError('Error preparing email');
+    } finally {
+      this.spinner.hide();
+    }
+  }
+
+  private createEmailAuditLog(documentName: string): void {
+    const payload = {
+      tableName: 'VoucherHeader',
+      recordId: String(this.creditNoteData?.VoucherHeaderSid || this.headerId),
+      operation: 'EMAIL',
+      changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+      changes: {
+        action: 'Send Mail'
+      },
+      newVal: {
+        Email: `${documentName} Mail Send`
+      }
+    };
+
+    this.operationService.createAuditLog(payload).subscribe({
+      next: () => { },
+      error: (err) => console.error(err)
+    });
+  }
+
+  private getCustomerBranchSidForEmail(): number | null {
+    const candidates = [
+      this.creditNoteForm.get('CustomerBranchSid')?.getRawValue(),
+      this.creditNoteData?.CustomerBranchSid,
+      this.creditNoteData?.customerBranch?.CustomerBranchSid,
+      this.creditNoteData?.CustomerBranch?.CustomerBranchSid
+    ];
+
+    const sid = candidates
+      .map(value => Number(value))
+      .find(value => Number.isFinite(value) && value > 0);
+
+    return sid || null;
+  }
+
+  private getCustomerMasterSidForEmail(): number | null {
+    const candidates = [
+      this.creditNoteForm.get('CustomerMasterSid')?.getRawValue(),
+      this.creditNoteData?.CustomerMasterSid,
+      this.creditNoteData?.customerMaster?.CustomerMasterSid,
+      this.creditNoteData?.CustomerMaster?.CustomerMasterSid,
+      this.creditNoteData?.customerBranch?.CustomerMasterSid,
+      this.creditNoteData?.CustomerBranch?.CustomerMasterSid
+    ];
+
+    const sid = candidates
+      .map(value => Number(value))
+      .find(value => Number.isFinite(value) && value > 0);
+
+    return sid || null;
+  }
+
+  private getCurrentMenuMasterSidForEmail(): number | null {
+    const sid = Number(
+      this.currentMenuId ||
+      sessionStorage.getItem('currentMenuId') ||
+      this.creditNoteData?.voucherTypeMaster?.MenuMasterSid ||
+      this.creditNoteData?.MenuMasterSid
+    );
+
+    return Number.isFinite(sid) && sid > 0 ? sid : null;
+  }
+
+  private formatEmailDate(value: any): string {
+    if (!value) return '';
+    const date = value?.year && value?.month && value?.day
+      ? new Date(value.year, value.month - 1, value.day)
+      : new Date(value);
+
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-GB');
   }
 
   getCreditNoteConfig: ValidationMessageConfig = {

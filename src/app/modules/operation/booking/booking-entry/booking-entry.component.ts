@@ -94,6 +94,8 @@ type Html2PdfOptions = {
   };
 };
 
+type BookingEmailType = 'booking' | 'cro' | 'barcode' | 'barcode-no-company';
+
 @Component({
   selector: 'app-booking-entry',
   standalone: true,
@@ -3110,7 +3112,7 @@ onCarrierChangeForAir(carrier: any): void {
         return portType === 'ROAD' || portType.includes('ROAD') || portType.includes('LAND') || portType.includes('LOCATION');
       });
     } else if (normalizedSegment === 'TRANSPORT') {
-      return [...this.portList];
+      return this.portList.filter(port => this.normalizePortText(port?.PortType) === 'SEA');
     } else if (normalizedSegment === 'OTHER' || normalizedSegment === 'OTHERS') {
       return [...this.portList];
     }
@@ -4239,7 +4241,8 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
       const pdfBlob = await this.generatePDFBlob('mail-attachment');
       let attachmentFile: File | undefined;
       if (pdfBlob) {
-        attachmentFile = new File([pdfBlob], (this.bookingData?.BookingNo || 'Booking') + '.pdf', { type: 'application/pdf' });
+        const attachmentName = String(this.bookingData?.BookingNo || 'Booking').replace(/[\\/:*?"<>|]+/g, '_') + '.pdf';
+        attachmentFile = new File([pdfBlob], attachmentName, { type: 'application/pdf' });
       }
 
       this.emailTriggerService.triggerManualEmails({
@@ -4295,7 +4298,7 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
 
   resetForm() {
     if(this.isEditMode){
-      this.patchValues(this.bookingForm.getRawValue())
+      this.patchValues(this.bookingData)
     }else{
     const today = new Date();
     this.bookingForm.reset({
@@ -4526,64 +4529,7 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
   }
 
   async openEmail() {
-    if (!this.bookingData) return;
-
-    try {
-      this.spinner.show();
-
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // Generate PDF blob automatically
-      const pdfBlob = await this.generatePDFBlob();
-      const pdfFileName = (this.bookingHeader?.BookingNo || 'booking') + '.pdf';
-      const pdfFile = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
-
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-      const modalRef = this.modalService.open(EmailEntryComponent, {
-        size: 'lg',
-        centered: true,
-        backdrop: 'static'
-      });
-
-      const toEmailSet = new Set<string>();
-      toEmailSet.add(this.selectedCustomerBranch?.Email);
-
-      const toEmail = Array.from(toEmailSet);
-      const ccEmail = [this.userData['userEmail']];
-
-      const POL = this.bookingHeader?.POL;
-      const POD = this.bookingHeader?.POD;
-      const FPD = this.bookingHeader?.FPD;
-      const formattedPOL = this.getFormattedPort(POL);
-      const formattedPOD = this.getFormattedPort(POD);
-      const formattedFPD = this.getFormattedPort(FPD);
-
-      const subject = `Booking No.${this.bookingHeader.BookingNo} Date:${this.datePipe.transform(this.bookingHeader?.BookingDateTime)} ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''} confirmation`;
-
-      const mailBody = `Dear Sir/Madam,
-Please find here enclosed the booking details as requested.
-Kindly review the details at your convenience.
-Looking forward to confirm cargo readyness.
-Best Regards,
-${this.userData['userName']}`;
-
-      this.spinner.hide();
-
-      modalRef.componentInstance.setContent = {
-        EmailTo: toEmail,
-        EmailCC: ccEmail,
-        EmailBCC: [],
-        Subject: subject,
-        Mailbody: mailBody,
-        attachments: [pdfFile]
-      };
-
-    } catch (error) {
-      this.spinner.hide();
-      console.error('PDF generation error:', error);
-      this.appSettingService.showError('Error generating PDF for email attachment.');
-    }
+    await this.sendEmail('booking');
   }
 
   openAuthority() {
@@ -5780,6 +5726,55 @@ async downloadPDFBarCode(qty: number = 1, withCompany: boolean = this.isWithComp
   }
 }
 
+private async generateBarcodePdfBlobForMail(withCompany: boolean, qty: number = 1): Promise<Blob | null> {
+  try {
+    const safeQty = Math.max(1, Number(qty) || 1);
+    const imgData = await this.getBarcodePdfImageDataUrl(withCompany);
+    const pdf = withCompany
+      ? new jsPDF('p', 'mm', 'a4')
+      : new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: [101.6, 152.4]
+        });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    if (withCompany) {
+      const labelWidth = 100.5;
+      const labelHeight = 127;
+      const x = (pageWidth - labelWidth) / 2;
+      const y = (pageHeight - labelHeight) / 2;
+
+      for (let i = 0; i < safeQty; i++) {
+        if (i > 0) pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', x, y, labelWidth, labelHeight, undefined, 'FAST');
+      }
+    } else {
+      const contentAreaHeight = 114.3;
+      const dataUrlProps = pdf.getImageProperties(imgData);
+      const scale = Math.min(
+        pageWidth / dataUrlProps.width,
+        contentAreaHeight / dataUrlProps.height
+      );
+      const renderWidth = dataUrlProps.width * scale;
+      const renderHeight = dataUrlProps.height * scale;
+      const x = (pageWidth - renderWidth) / 2;
+      const y = 0;
+
+      for (let i = 0; i < safeQty; i++) {
+        if (i > 0) pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', x, y, renderWidth, renderHeight, undefined, 'FAST');
+      }
+    }
+
+    return pdf.output('blob');
+  } catch (error) {
+    console.error('Barcode PDF blob generation error:', error);
+    return null;
+  }
+}
+
 private preloadBarcodePdfImage(withCompany: boolean): void {
   setTimeout(() => {
     this.getBarcodePdfImageDataUrl(withCompany)
@@ -6034,6 +6029,8 @@ private getPdfElementId(type: string): string {
   switch (type) {
     case 'barcode':
       return `Barcode_${bookingNo}_${timestamp}`;
+    case 'barcode-no-company':
+      return `Barcode_Without_Company_${bookingNo}_${timestamp}`;
 
     case 'cro':
       return `CRO_${bookingNo}_${timestamp}`;
@@ -6049,6 +6046,10 @@ private getPdfTypeName(type: string): string {
   switch (type) {
     case 'cro':
       return 'Release Order (CRO)';
+    case 'barcode':
+      return 'Barcode';
+    case 'barcode-no-company':
+      return 'Barcode 2';
    
     case 'booking':
     default:
@@ -6056,99 +6057,141 @@ private getPdfTypeName(type: string): string {
   }
 }
 
+private getCurrentBookingMenuMasterSid(): number | null {
+  const syncedBookingMenuSid = this.sidebarService.syncMenuIdBeforeSubmit("Booking");
+  const candidates = [
+    this.bookingData?.MenuMasterSid,
+    this.bookingHeader?.MenuMasterSid,
+    syncedBookingMenuSid,
+    this.MenuMasterSid,
+    this.currentMenuId,
+    Number(sessionStorage.getItem('currentMenuId'))
+  ];
+
+  for (const value of candidates) {
+    const menuSid = Number(value);
+    if (Number.isFinite(menuSid) && menuSid > 0) {
+      return menuSid;
+    }
+  }
+
+  return null;
+}
+
+private async getBookingCustomerBranchEmailsByMenu(): Promise<string[]> {
+  const customerBranchSid = Number(this.bookingHeader?.CustomerBranchSid);
+  const menuMasterSid = this.getCurrentBookingMenuMasterSid();
+
+  if (!customerBranchSid || !menuMasterSid) {
+    return [];
+  }
+
+  return this.emailTriggerService.resolveCustomerBranchEmailsByMenu({
+    customerBranchSid,
+    menuMasterSid
+  });
+}
+
 // Method to send email with PDF attachment
-async sendEmail(type: 'booking' | 'cro'  = 'booking'): Promise<void> {
+async sendEmail(type: BookingEmailType = 'booking'): Promise<void> {
   try {
     this.spinner.show();
     
-    // Generate PDF blob
-    const pdfBlob = await this.generatePDFBlob(type);
+    const pdfBlob = await this.generateEmailPdfBlob(type);
     if (!pdfBlob) {
       this.spinner.hide();
       this.appSettingService.showError('Error generating PDF for email.');
       return;
     }
 
-    const formData = new FormData();
-    const toEmailSet = new Set<string>();
-
-    // Add recipient emails
-    if (this.bookingHeader?.Email) {
-      toEmailSet.add(this.bookingHeader.Email);
-    }
-    if (toEmailSet.size === 0 && this.bookingHeader?.CustomerBranchSid) {
-      const resp: any = await firstValueFrom(
-        this.operationService.getCustomerBranchEmail(this.bookingHeader.CustomerBranchSid)
-      );
-      if (resp?.status && resp.data?.Email) {
-        toEmailSet.add(resp.data.Email);
-      }
-    }
-
-    if (toEmailSet.size === 0) {
-      this.appSettingService.showError('To Email is missing.');
+    const pdfFileName = this.generateFileName(type).replace(/[\\/:*?"<>|]+/g, '_') + '.pdf';
+    const pdfFile = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
+    const toEmail = await this.getBookingCustomerBranchEmailsByMenu();
+    if (toEmail.length === 0) {
+      this.appSettingService.showError('No email found in customer branch email.');
       this.spinner.hide();
       return;
     }
 
-    // Add TO emails
-    const toEmail = Array.from(toEmailSet);
-    toEmail.forEach(email => {
-      if (email) {
-        formData.append("EmailTo[]", email);
-      }
+    const POL = this.bookingHeader?.POL;
+    const POD = this.bookingHeader?.POD;
+    const FPD = this.bookingHeader?.FPD;
+    const { subject, body } = this.emailTriggerService.buildOperationEmailContent({
+      documentName: type === 'cro' ? 'Release Order (CRO)' : 'Booking',
+      documentNoLabel: type === 'cro' ? 'Booking No.' : 'Booking No.',
+      documentNo: this.bookingHeader?.BookingNo || '',
+      documentDate: this.datePipe.transform(this.bookingHeader?.BookingDateTime),
+      pol: this.getFormattedPort(POL),
+      pod: this.getFormattedPort(POD),
+      fpd: this.getFormattedPort(FPD),
+      userName: this.userData?.['userName'] || '',
+      subjectSuffix: type === 'cro' ? '' : 'confirmation',
+      introLine: type === 'cro'
+        ? 'Please find attached the Container Release Order for your reference.'
+        : 'Please find here enclosed the booking details as requested.',
+      followupLine: type === 'cro'
+        ? 'Kindly proceed with the container release as per the attached document.'
+        : 'Looking forward to confirm cargo readiness.'
     });
 
-    // Add CC emails
-    const ccEmailSet = new Set<string>([this.userData['userEmail']]);
-    const ccEmail = Array.from(ccEmailSet);
-    ccEmail.forEach(email => {
-      if (email) {
-        formData.append("EmailCC[]", email);
-      }
+    const modalRef = this.modalService.open(EmailEntryComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
     });
 
-    // Set subject and body based on type
-    const { subject, body } = this.generateEmailContent(type);
-    formData.append('Subject', subject);
-    formData.append('Mailbody', body);
+    modalRef.componentInstance.setContent = {
+      EmailTo: toEmail,
+      EmailCC: this.userData?.['userEmail'] ? [this.userData['userEmail']] : [],
+      EmailBCC: [],
+      Subject: subject,
+      Mailbody: body,
+      attachments: [pdfFile],
+      context: {
+        menuName: 'Booking',
+        BookingNo: this.bookingHeader?.BookingNo || '',
+        date: this.datePipe.transform(this.bookingHeader?.BookingDateTime),
+        POL: this.getFormattedPort(POL),
+        POD: this.getFormattedPort(POD),
+        FPD: this.getFormattedPort(FPD)
+      }
+    };
+    modalRef.componentInstance.customSendHandler = ({ formValue, files, formattedMailBody }) => {
+      const formData = new FormData();
+      this.splitEmailForSend(formValue.EmailTo).forEach(email => formData.append('EmailTo[]', email));
+      this.splitEmailForSend(formValue.EmailCC).forEach(email => formData.append('EmailCC[]', email));
+      formData.append('Subject', formValue.Subject);
+      formData.append('Mailbody', formattedMailBody);
 
-    // Add PDF attachment
-    const fileName = this.generateFileName(type) + '.pdf';
-    formData.append('file', pdfBlob, fileName);
+      const attachment = files?.[0];
+      if (attachment) {
+        formData.append('file', attachment, attachment.name.replace(/[\\/:*?"<>|]+/g, '_'));
+      }
 
-    // Send email
-    this.operationService.bookingPrint(formData).subscribe(
-      (resp: any) => {
-        this.spinner.hide();
-        if (resp?.data) {
-          this.appSettingService.showSuccess(`${this.getPdfTypeName(type)} sent successfully!`);
-          const payload = {
-            tableName: 'BookingHeader',
-            recordId: String(this.bookingData?.BookingHeaderSid),
-            operation: 'EMAIL',
-            changedBy: this.appSettingService.userSettingSource.value['userEmail'],
-            changes: {
-              action: 'Send Mail'
-            },
-            newVal: {
-              Email: 'Booking Confirmation Mail Send'
-            }
-          };
+      return firstValueFrom(this.operationService.bookingPrint(formData));
+    };
 
-          this.operationService.createAuditLog(payload).subscribe({
-            next: () => { },
-            error: (err) => console.error(err)
-          });
-        } else {
-          this.appSettingService.showError('Failed to send email.');
+    modalRef.componentInstance.dataChange.subscribe(() => {
+      const payload = {
+        tableName: 'BookingHeader',
+        recordId: String(this.bookingData?.BookingHeaderSid),
+        operation: 'EMAIL',
+        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+        changes: {
+          action: 'Send Mail'
+        },
+        newVal: {
+          Email: 'Booking Confirmation Mail Send'
         }
-      },
-      error => {
-        this.spinner.hide();
-        this.appSettingService.showError('Failed to send email.');
-      }
-    );
+      };
+
+      this.operationService.createAuditLog(payload).subscribe({
+        next: () => { },
+        error: (err) => console.error(err)
+      });
+    });
+
+    this.spinner.hide();
 
   } catch (error) {
     this.spinner.hide();
@@ -6157,51 +6200,53 @@ async sendEmail(type: 'booking' | 'cro'  = 'booking'): Promise<void> {
   }
 }
 
-// Helper method to generate email content based on type
-private generateEmailContent(type: string): { subject: string; body: string } {
-  const bookingNo = this.bookingHeader?.BookingNo || '';
-  const bookingDate = this.datePipe.transform(this.bookingHeader?.BookingDateTime);
-  const POL = this.bookingHeader?.POL;
-  const POD = this.bookingHeader?.POD;
-  const FPD = this.bookingHeader?.FPD;
-  const formattedPOL = this.getFormattedPort(POL);
-  const formattedPOD = this.getFormattedPort(POD);
-  const formattedFPD = this.getFormattedPort(FPD);
-
-  let subject = '';
-  let body = '';
-
+private async generateEmailPdfBlob(type: BookingEmailType): Promise<Blob | null> {
   switch (type) {
-    case 'cro':
-      subject = `Release Order (CRO) - Booking No.${bookingNo}`;
-      body = `
-        <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
-          <p>Dear Sir/Madam,</p>
-          <p>Please find attached the Container Release Order for your reference.</p>
-          <p>Booking Details: ${bookingNo} | Date: ${bookingDate} | Route: ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''}</p>
-          <p>Kindly proceed with the container release as per the attached document.</p>
-          <p>Best Regards,</p>
-          <p>${this.userData['userName']}</p>
-        </div>
-      `;
-      break;
+    case 'barcode':
+      return this.generateBarcodePdfBlobForMail(true);
+    case 'barcode-no-company':
+      return this.generateBarcodePdfBlobForMail(false);
     case 'booking':
+    case 'cro':
     default:
-      subject = `Booking No.${bookingNo} Date:${bookingDate} ${formattedPOL} - ${formattedPOD}${POD !== FPD ? ' - ' + formattedFPD : ''} confirmation`;
-      body = `
-        <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
-          <p>Dear Sir/Madam,</p>
-          <p>Please find here enclosed the booking details as requested.</p>
-          <p>Kindly review the details at your convenience.</p>
-          <p>Looking forward to confirm cargo readiness.</p>
-          <p>Best Regards,</p>
-          <p>${this.userData['userName']}</p>
-        </div>
-      `;
-      break;
+      return this.generateBookingPdfBlobForMail(type === 'cro' ? 'cro' : 'booking');
   }
+}
 
-  return { subject, body };
+private splitEmailForSend(value: string | string[]): string[] {
+  const source = Array.isArray(value) ? value.join(',') : (value || '');
+  return source
+    .split(/[;,]/)
+    .map(email => email.trim())
+    .filter(email => !!email);
+}
+
+private async generateBookingPdfBlobForMail(type: 'booking' | 'cro' = 'booking'): Promise<Blob | null> {
+  try {
+    await this.prepareTermsForPrint();
+    const logo = this.pdfMakeService.getReportLogo();
+
+    return await this.pdfMakeService.generateBookingBlobFromApi(
+      {
+        ...this.bookingHeader,
+        terms: this.printTermsList
+      },
+      this.currentCompany,
+      this.currentBranch,
+      this.userData,
+      logo,
+      {
+        ports: this.portList,
+        departments: this.departmentList,
+        carriers: this.carrierList,
+        containerTypes: this.containerTypeList
+      },
+      type
+    );
+  } catch (error) {
+    console.error(`PDF blob generation error for ${type}:`, error);
+    return null;
+  }
 }
 
 // Enhanced PDF blob generation method
