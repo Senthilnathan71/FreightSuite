@@ -1,6 +1,6 @@
 import { CommonModule, formatDate } from '@angular/common';
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -9,6 +9,8 @@ import { MasterService } from 'src/app/modules/master/master.service';
 import { OperationService } from '../../../operation.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 
 @Component({
   selector: 'app-mawb',
@@ -43,6 +45,7 @@ export class MAWBComponent implements OnChanges {
   @Input() packageTypeList: any[] = [];
   @Input() portList: any[] = [];
   @Input() selectedReport: 'MAWB' | 'MAWBDraft' = 'MAWB'; 
+  @Input() currentMenuId: number | null = null;
   costRevenueCharges: any[] = [];
   freightCharges: any[] = [];
   otherCharges: any[] = [];
@@ -158,7 +161,9 @@ export class MAWBComponent implements OnChanges {
     private operationService: OperationService,
     public logoService: LogoService,
     private globalDateService: GlobalDateFormatService,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private modalService: NgbModal,
+    private emailTriggerService: EmailTriggerService
   ) { }
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['masterAirWayData']) {
@@ -1270,7 +1275,99 @@ getOtherPrepaidTotal(): number {
 
   private async downloadPdfWithPdfMake(filename: string): Promise<void> {
     const { pdfMake } = await this.getPdfDependencies();
+    const docDefinition = this.buildMawbDocDefinition();
 
+    await new Promise<void>((resolve, reject) => {
+      try {
+        pdfMake.createPdf(docDefinition).download(`${filename}.pdf`, () => resolve());
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
+  async generatePDFBlob(): Promise<Blob | null> {
+    try {
+      const { pdfMake } = await this.getPdfDependencies();
+      const docDefinition = this.buildMawbDocDefinition();
+      return await new Promise<Blob>((resolve, reject) => {
+        try {
+          pdfMake.createPdf(docDefinition).getBlob((blob: Blob) => resolve(blob));
+        } catch (error) {
+          reject(error);
+        }
+      });
+    } catch (error) {
+      console.error('Error generating MAWB PDF blob:', error);
+      return null;
+    }
+  }
+
+  async openEmailModal(): Promise<void> {
+    try {
+      const blob = await this.generatePDFBlob();
+      if (!blob) {
+        this.appSettingService.showError('Error generating PDF. Please try again.');
+        return;
+      }
+
+      const documentName = this.selectedReport === 'MAWB' ? 'MAWB' : 'MAWB Draft';
+      const documentNo = this.masterAirWayData?.MBLNo || this.masterAirWayData?.MasterBillNumber || '';
+      const documentDate = this.formatEmailDate(this.masterAirWayData?.MBLDate || this.masterAirWayData?.MasterJobDate);
+      const emailRecipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
+        customerBranchSid: this.getCustomerBranchSidForEmail(),
+        customerMasterSid: this.getCustomerMasterSidForEmail(),
+        menuMasterSid: this.getCurrentMenuMasterSidForEmail()
+      });
+
+      if (emailRecipients.toEmail.length === 0) {
+        this.appSettingService.showError('No email found in customer branch email.');
+        return;
+      }
+
+      const emailContent = this.emailTriggerService.buildOperationEmailContent({
+        documentName,
+        documentNoLabel: 'MAWB No.',
+        documentNo,
+        documentDate,
+        pol: this.masterAirWayData?.POL || '',
+        pod: this.masterAirWayData?.POD || '',
+        fpd: this.masterAirWayData?.FPD || '',
+        userName: this.userData?.userName || '',
+        introLine: `Please find attached the ${documentName} for your reference.`,
+        followupLine: 'Kindly review the attached details at your convenience.'
+      });
+
+      const file = new File([blob], this.getMawbPdfFilename(documentName, documentNo), { type: 'application/pdf' });
+      const emailRef = this.modalService.open(EmailEntryComponent, { size: 'lg' });
+      emailRef.componentInstance.setContent = {
+        EmailTo: emailRecipients.toEmail,
+        EmailCC: emailRecipients.ccEmail,
+        EmailBCC: [],
+        Subject: emailContent.subject,
+        Mailbody: emailContent.body,
+        context: {
+          documentName,
+          documentNoLabel: 'MAWB No',
+          menuName: documentName,
+          documentNo,
+          date: documentDate,
+          pol: this.masterAirWayData?.POL || '',
+          pod: this.masterAirWayData?.POD || '',
+          fpd: this.masterAirWayData?.FPD || ''
+        },
+        attachments: [file]
+      };
+      emailRef.componentInstance.dataChange.subscribe(() => {
+        this.createEmailAuditLog(documentName);
+      });
+    } catch (error) {
+      console.error('MAWB email error:', error);
+      this.appSettingService.showError('Error preparing email');
+    }
+  }
+
+  private buildMawbDocDefinition(): any {
     const houses = this.getHouseJobs();
     const content: any[] = [];
 
@@ -1281,17 +1378,14 @@ getOtherPrepaidTotal(): number {
       }
     });
 
-    const hasLegalPage = this.selectedReport === 'MAWB';
-   
-      content.push({ text: '', pageBreak: 'after' });
-      const legalContent = this.getLegalTextContent();
-      content.push(...legalContent);
-    
+    content.push({ text: '', pageBreak: 'after' });
+    const legalContent = this.getLegalTextContent();
+    content.push(...legalContent);
 
     const pageWidthPt = 595.28;
     const pageHeightPt = 841.89;
 
-    const docDefinition: any = {
+    return {
       pageSize: 'A4',
       pageMargins: [0, 0, 0, 0] as [number, number, number, number],
       background: (currentPage: number) => {
@@ -1316,14 +1410,77 @@ getOtherPrepaidTotal(): number {
         fontSize: 8
       }
     };
+  }
 
-    await new Promise<void>((resolve, reject) => {
-      try {
-        pdfMake.createPdf(docDefinition).download(`${filename}.pdf`, () => resolve());
-      } catch (err) {
-        reject(err);
+  private createEmailAuditLog(documentName: string): void {
+    const payload = {
+      tableName: 'MasterJob',
+      recordId: String(this.masterAirWayData?.MasterJobSid),
+      operation: 'EMAIL',
+      changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+      changes: {
+        action: 'Send Mail'
+      },
+      newVal: {
+        Email: `${documentName} Mail Send`
       }
+    };
+
+    this.operationService.createAuditLog(payload).subscribe({
+      next: () => { },
+      error: (err) => console.error(err)
     });
+  }
+
+  private getMawbPdfFilename(documentName: string, documentNo: string): string {
+    const safeName = documentName.replace(/\s+/g, '_');
+    return `${safeName}_${documentNo || 'Report'}.pdf`;
+  }
+
+  private getCustomerBranchSidForEmail(): number | null {
+    const firstHouse = this.masterAirWayData?.houseJob?.[0];
+    const candidates = [
+      this.masterAirWayData?.CustomerBranchSid,
+      this.masterAirWayData?.customerBranch?.CustomerBranchSid,
+      this.masterAirWayData?.CustomerBranch?.CustomerBranchSid,
+      firstHouse?.CustomerBranchSid,
+      firstHouse?.customerBranch?.CustomerBranchSid,
+      firstHouse?.CustomerBranch?.CustomerBranchSid
+    ];
+
+    const sid = candidates
+      .map(value => Number(value))
+      .find(value => Number.isFinite(value) && value > 0);
+
+    return sid || null;
+  }
+
+  private getCustomerMasterSidForEmail(): number | null {
+    const candidates = [
+      this.masterAirWayData?.DestinationAgent,
+    ];
+
+    const sid = candidates
+      .map(value => Number(value))
+      .find(value => Number.isFinite(value) && value > 0);
+
+    return sid || null;
+  }
+
+  private getCurrentMenuMasterSidForEmail(): number | null {
+    const sid = Number(
+      this.currentMenuId ||
+      this.masterAirWayData?.MenuMasterSid ||
+      sessionStorage.getItem('currentMenuId')
+    );
+
+    return Number.isFinite(sid) && sid > 0 ? sid : null;
+  }
+
+  private formatEmailDate(value: any): string {
+    if (!value) return '';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-GB');
   }
 
   private preloadPdfDependencies(): void {

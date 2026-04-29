@@ -106,6 +106,12 @@ export class CompanyConfigComponent implements OnInit {
       displayName: 'Export To Import Companies',
       type: 'string' as const,
       defaultValue: ''
+    },
+    {
+      name: 'OSandStatementShowBankDetails',
+      displayName: 'OS and Statement Show Bank Details',
+      type: 'boolean' as const,
+      defaultValue: false
     }
     
   ];

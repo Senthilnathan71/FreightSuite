@@ -4497,6 +4497,7 @@ onETDDateSelect(): void {
     modalRef.componentInstance.yardList = this.yardList;
     modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL;
     modalRef.componentInstance.portList = this.portList || [];
+    modalRef.componentInstance.currentMenuId = this.currentMenuId || this.MenuMasterSid || Number(sessionStorage.getItem('currentMenuId'));
     this.initializeMilestoneContentForPreAlert(modalRef);
   }
 
@@ -4575,6 +4576,7 @@ onETDDateSelect(): void {
     modalRef.componentInstance.yardList = this.yardList;
     modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL;
     modalRef.componentInstance.portList = this.portList || [];
+    modalRef.componentInstance.currentMenuId = this.currentMenuId || this.MenuMasterSid || Number(sessionStorage.getItem('currentMenuId'));
   }
 
 
@@ -4627,6 +4629,7 @@ onETDDateSelect(): void {
     modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
     modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
     modalRef.componentInstance.portList = this.portList || [];
+    modalRef.componentInstance.currentMenuId = this.currentMenuId || this.MenuMasterSid || Number(sessionStorage.getItem('currentMenuId'));
   }
 
   reportCFSoutturn() {
@@ -4654,6 +4657,7 @@ onETDDateSelect(): void {
     modalRef.componentInstance.packageTypeList = this.packageTypeList || [];
     modalRef.componentInstance.agentList = this.agentList || [];
     modalRef.componentInstance.yardList = this.yardList || [];
+    modalRef.componentInstance.currentMenuId = this.currentMenuId || this.MenuMasterSid || Number(sessionStorage.getItem('currentMenuId'));
   }
 
   reportreleaseOrder() {
@@ -4686,6 +4690,7 @@ onETDDateSelect(): void {
     modalRef.componentInstance.chargeWiseSummary = this.chargeWiseSummary || [];
     modalRef.componentInstance.uomList = this.costEntryComponent.uomList;
     modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL;
+    modalRef.componentInstance.currentMenuId = this.currentMenuId || this.MenuMasterSid || Number(sessionStorage.getItem('currentMenuId'));
   }
 
   reportPackingList() {
@@ -4759,6 +4764,7 @@ onETDDateSelect(): void {
     modalRef.componentInstance.agentList = this.agentList || [];
     modalRef.componentInstance.packageTypeList = this.packageTypeList;
     modalRef.componentInstance.selectedReport = type;
+    modalRef.componentInstance.currentMenuId = this.currentMenuId || this.MenuMasterSid || Number(sessionStorage.getItem('currentMenuId'));
 
   }
 
@@ -4822,6 +4828,7 @@ onETDDateSelect(): void {
     modalRef.componentInstance.masterJobContainers = this.masterJobContainers || [];
     modalRef.componentInstance.agentList = this.agentList || [];
     modalRef.componentInstance.packageTypeList = this.packageTypeList;
+    modalRef.componentInstance.currentMenuId = this.currentMenuId || this.MenuMasterSid || Number(sessionStorage.getItem('currentMenuId'));
 
 
   }

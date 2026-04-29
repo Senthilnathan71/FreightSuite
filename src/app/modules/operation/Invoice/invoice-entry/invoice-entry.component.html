@@ -75,7 +75,7 @@
           </div> -->
 
           <button type="button" class="btn btn-info btn-sm text-nowrap" *ngIf="isEditMode"
-            (click)="sendManualMail()" [disabled]="(this.invoiceData?.Status !== 'A')">
+            (click)="openEmailModal()" [disabled]="(this.invoiceData?.Status !== 'A')">
             <i class="fas fa-envelope me-1"></i> Send Mail
           </button>
 

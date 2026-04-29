@@ -1765,6 +1765,8 @@ openDocRef() {
     modalRef.componentInstance.uomList = this.costEntryComponent?.uomList || [];
     modalRef.componentInstance.portList = this.portList || [];
     modalRef.componentInstance.selectedDepartmentType = this.selectedDepartmentType || [];
+    modalRef.componentInstance.houseMenuMasterSid =
+      this.currentMenuId || Number(sessionStorage.getItem('currentMenuId'));
   }
 
   reportProofofDelivery() {
@@ -1781,6 +1783,8 @@ openDocRef() {
     modalRef.componentInstance.portList = this.portList || [];
     modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
     modalRef.componentInstance.selectedDepartmentType = this.selectedDepartmentType || [];
+    modalRef.componentInstance.houseMenuMasterSid =
+      this.currentMenuId || Number(sessionStorage.getItem('currentMenuId'));
   }
 
 

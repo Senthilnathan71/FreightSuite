@@ -1,12 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { OperationService } from '../../../operation.service';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 
 @Component({
   selector: 'app-vendor-credit-note-print',
@@ -27,6 +29,7 @@ export class VendorCreditNotePrintComponent {
   @Input() TandCList: any[] = [];
   @Input() userData: any;
   @Input() isVATMode = false;
+  @Input() currentMenuId: number | null = null;
   @Input() printTaxDisplayConfig: {
     showCGST: boolean;
     showSGST: boolean;
@@ -42,7 +45,9 @@ export class VendorCreditNotePrintComponent {
     private pdfMakeService: PdfMakeService,
     public mps: MenuPermissionService,
     private operationService: OperationService,
-    private appSettingService: AppSettingsService
+    private appSettingService: AppSettingsService,
+    private modalService: NgbModal,
+    private emailTriggerService: EmailTriggerService
   ) {}
 
   get creditNoteData(): any {
@@ -141,44 +146,50 @@ export class VendorCreditNotePrintComponent {
     return baseColumns;
   }
 
+  private getRawVendorCreditNoteData(): any {
+    return this.sourceVendorCreditNoteData || this.vendorCreditNoteData;
+  }
+
+  private getVendorCreditNotePdfOptions(): any {
+    return {
+      taxDisplayConfig: this.getTaxDisplayConfig(),
+      bankDetails: this.vendorCreditNoteData?.BankDetails || this.bankDetails || [],
+      terms: this.TandCList || [],
+      amountInWords: this.vendorCreditNoteData?.AmountInWords || '',
+      localCurrency: this.currentCompanyCurrency?.code || '',
+      invoiceTitle: this.vendorCreditNoteData?.invoiceTitle || 'Vendor Credit Note',
+      isSeaMode: this.isSeaDepartment(),
+      isVATMode: this.getTaxDisplayConfig().showVAT,
+      companyVatNo:
+        this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
+      shipmentDetails: {
+        shipper: this.vendorCreditNoteData?.ShipperName,
+        consignee: this.vendorCreditNoteData?.ConsigneeName,
+        vesselName: this.vendorCreditNoteData?.Vessel,
+        voyageNo: this.vendorCreditNoteData?.VoyageNo,
+        shipperRefNo: this.vendorCreditNoteData?.DocumentNumber,
+        loadingPort: this.vendorCreditNoteData?.POL,
+        finalDestination: this.vendorCreditNoteData?.FPD,
+        etd: this.vendorCreditNoteData?.ETD,
+        eta: this.vendorCreditNoteData?.ETA,
+        invoiceDueDate: this.vendorCreditNoteData?.InvoiceDueDate,
+        BillDate: this.vendorCreditNoteData?.DocumentDate,
+      },
+      cargoDetails: {
+        packages: this.vendorCreditNoteData?.pkg,
+        commodityDesc: this.vendorCreditNoteData?.desc,
+        grossWeight: this.vendorCreditNoteData?.grosswt,
+        chargeableWeight: this.vendorCreditNoteData?.ChargeableWeight,
+        cbm: this.vendorCreditNoteData?.cbm,
+      },
+      vendorCreditNoteData: this.vendorCreditNoteData,
+    };
+  }
+
   downloadPDF(): void {
     try {
-      const rawVendorData = this.sourceVendorCreditNoteData || this.vendorCreditNoteData;
+      const rawVendorData = this.getRawVendorCreditNoteData();
       const logo = this.pdfMakeService.getReportLogo();
-
-      const options = {
-        taxDisplayConfig: this.getTaxDisplayConfig(),
-        bankDetails: this.vendorCreditNoteData?.BankDetails || this.bankDetails || [],
-        terms: this.TandCList || [],
-        amountInWords: this.vendorCreditNoteData?.AmountInWords || '',
-        localCurrency: this.currentCompanyCurrency?.code || '',
-        invoiceTitle: this.vendorCreditNoteData?.invoiceTitle || 'Vendor Credit Note',
-        isSeaMode: this.isSeaDepartment(),
-        isVATMode: this.getTaxDisplayConfig().showVAT,
-        companyVatNo:
-          this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
-        shipmentDetails: {
-          shipper: this.vendorCreditNoteData?.ShipperName,
-          consignee: this.vendorCreditNoteData?.ConsigneeName,
-          vesselName: this.vendorCreditNoteData?.Vessel,
-          voyageNo: this.vendorCreditNoteData?.VoyageNo,
-          shipperRefNo: this.vendorCreditNoteData?.DocumentNumber,
-          loadingPort: this.vendorCreditNoteData?.POL,
-          finalDestination: this.vendorCreditNoteData?.FPD,
-          etd: this.vendorCreditNoteData?.ETD,
-          eta: this.vendorCreditNoteData?.ETA,
-          invoiceDueDate: this.vendorCreditNoteData?.InvoiceDueDate,
-          BillDate: this.vendorCreditNoteData?.DocumentDate,
-        },
-        cargoDetails: {
-          packages: this.vendorCreditNoteData?.pkg,
-          commodityDesc: this.vendorCreditNoteData?.desc,
-          grossWeight: this.vendorCreditNoteData?.grosswt,
-          chargeableWeight: this.vendorCreditNoteData?.ChargeableWeight,
-          cbm: this.vendorCreditNoteData?.cbm,
-        },
-        vendorCreditNoteData: this.vendorCreditNoteData,
-      };
 
       this.pdfMakeService.generateVendorCreditNoteFromApi(
         rawVendorData,
@@ -190,7 +201,7 @@ export class VendorCreditNotePrintComponent {
           hssacMaster: [],
           currencyMaster: [],
         },
-        options
+        this.getVendorCreditNotePdfOptions()
       );
       const payload = {
         tableName: 'VoucherHeader',
@@ -214,5 +225,159 @@ export class VendorCreditNotePrintComponent {
     }
   }
 
-  openEmailModal(): void {}
+  async generatePDFBlob(): Promise<Blob | null> {
+    try {
+      const logo = this.pdfMakeService.getReportLogo();
+      return await this.pdfMakeService.generateVendorCreditNoteBlobFromApi(
+        this.getRawVendorCreditNoteData(),
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        {
+          hssacMaster: [],
+          currencyMaster: [],
+        },
+        this.getVendorCreditNotePdfOptions()
+      );
+    } catch (error) {
+      console.error('Error generating vendor credit note PDF blob:', error);
+      return null;
+    }
+  }
+
+  async openEmailModal(): Promise<void> {
+    try {
+      const blob = await this.generatePDFBlob();
+      if (!blob) {
+        this.appSettingService.showError('Error generating PDF. Please try again.');
+        return;
+      }
+
+      const rawVendorData = this.getRawVendorCreditNoteData();
+      const documentName = 'Vendor Credit Note';
+      const documentNo = rawVendorData?.VoucherNumber || this.vendorCreditNoteData?.VoucherNumber || this.vendorCreditNoteData?.DocumentNumber || '';
+      const documentDate = this.formatEmailDate(rawVendorData?.VoucherDate || this.vendorCreditNoteData?.DocumentDate);
+      const emailRecipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
+        customerBranchSid: this.getVendorBranchSidForEmail(),
+        customerMasterSid: this.getVendorMasterSidForEmail(),
+        menuMasterSid: this.getCurrentMenuMasterSidForEmail()
+      });
+
+      if (emailRecipients.toEmail.length === 0) {
+        this.appSettingService.showError('No email found in customer branch email.');
+        return;
+      }
+
+      const emailContent = this.emailTriggerService.buildOperationEmailContent({
+        documentName,
+        documentNoLabel: 'Vendor Credit Note No.',
+        documentNo,
+        documentDate,
+        pol: this.vendorCreditNoteData?.POL || '',
+        pod: this.vendorCreditNoteData?.POD || '',
+        fpd: this.vendorCreditNoteData?.FPD || '',
+        userName: this.userData?.userName || '',
+        introLine: `Please find attached the ${documentName} for your reference.`,
+        followupLine: 'Kindly review the attached details at your convenience.'
+      });
+
+      const file = new File([blob], `Vendor_Credit_Note_${documentNo || 'Report'}.pdf`, { type: 'application/pdf' });
+      const emailRef = this.modalService.open(EmailEntryComponent, { size: 'lg' });
+      emailRef.componentInstance.setContent = {
+        EmailTo: emailRecipients.toEmail,
+        EmailCC: emailRecipients.ccEmail,
+        EmailBCC: [],
+        Subject: emailContent.subject,
+        Mailbody: emailContent.body,
+        context: {
+          documentName,
+          documentNoLabel: 'Vendor Credit Note No',
+          menuName: documentName,
+          documentNo,
+          date: documentDate,
+          pol: this.vendorCreditNoteData?.POL || '',
+          pod: this.vendorCreditNoteData?.POD || '',
+          fpd: this.vendorCreditNoteData?.FPD || ''
+        },
+        attachments: [file]
+      };
+      emailRef.componentInstance.dataChange.subscribe(() => {
+        this.createEmailAuditLog(documentName);
+      });
+    } catch (error) {
+      console.error('Vendor Credit Note email error:', error);
+      this.appSettingService.showError('Error preparing email');
+    }
+  }
+
+  private createEmailAuditLog(documentName: string): void {
+    const rawVendorData = this.getRawVendorCreditNoteData();
+    const payload = {
+      tableName: 'VoucherHeader',
+      recordId: String(rawVendorData?.VoucherHeaderSid),
+      operation: 'EMAIL',
+      changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+      changes: {
+        action: 'Send Mail'
+      },
+      newVal: {
+        Email: `${documentName} Mail Send`
+      }
+    };
+
+    this.operationService.createAuditLog(payload).subscribe({
+      next: () => { },
+      error: (err) => console.error(err)
+    });
+  }
+
+  private getVendorBranchSidForEmail(): number | null {
+    const rawVendorData = this.getRawVendorCreditNoteData();
+    const candidates = [
+      rawVendorData?.CustomerBranchSid,
+      rawVendorData?.customerBranch?.CustomerBranchSid,
+      rawVendorData?.CustomerBranch?.CustomerBranchSid
+    ];
+
+    const sid = candidates
+      .map(value => Number(value))
+      .find(value => Number.isFinite(value) && value > 0);
+
+    return sid || null;
+  }
+
+  private getVendorMasterSidForEmail(): number | null {
+    const rawVendorData = this.getRawVendorCreditNoteData();
+    const candidates = [
+      rawVendorData?.CustomerMasterSid,
+      rawVendorData?.customerMaster?.CustomerMasterSid,
+      rawVendorData?.CustomerMaster?.CustomerMasterSid,
+      rawVendorData?.customerBranch?.CustomerMasterSid,
+      rawVendorData?.CustomerBranch?.CustomerMasterSid
+    ];
+
+    const sid = candidates
+      .map(value => Number(value))
+      .find(value => Number.isFinite(value) && value > 0);
+
+    return sid || null;
+  }
+
+  private getCurrentMenuMasterSidForEmail(): number | null {
+    const rawVendorData = this.getRawVendorCreditNoteData();
+    const sid = Number(
+      this.currentMenuId ||
+      rawVendorData?.voucherTypeMaster?.MenuMasterSid ||
+      rawVendorData?.MenuMasterSid
+    );
+
+    return Number.isFinite(sid) && sid > 0 ? sid : null;
+  }
+
+  private formatEmailDate(value: any): string {
+    if (!value) return '';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-GB');
+  }
 }

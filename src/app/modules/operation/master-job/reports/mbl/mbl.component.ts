@@ -13,7 +13,9 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { OperationService } from '../../../operation.service';
 
 @Component({
@@ -29,7 +31,7 @@ export class MblComponent {
   userData: any;
   currentDate = new Date();
   branchDetails: any;
-  currentMenuId: any;
+  @Input() currentMenuId: any;
   TandCList: any[] = [];
 
   currentBranchCityName: string | null;
@@ -59,7 +61,8 @@ export class MblComponent {
     private modalService: NgbModal,
     public logoService: LogoService,
     public mps: MenuPermissionService,
-    private operationService: OperationService
+    private operationService: OperationService,
+    private emailTriggerService: EmailTriggerService
   ) {}
 
   ngOnInit() {
@@ -174,25 +177,12 @@ export class MblComponent {
 
     try {
       const { pdfMake } = await this.getPdfDependencies();
-      const logo = await this.resolveReportLogo();
+      const docDefinition = await this.buildMblDocDefinition();
+      if (!docDefinition) {
+        this.appSettingService.showError('No data available to generate PDF');
+        return;
+      }
 
-      const pdfData = transformMblApiData(
-        this.masterJobData,
-        {
-          selectedReport: this.selectedReport,
-          company: this.currentCompany,
-          branch: this.currentBranch,
-          userData: this.userData,
-          currentDate: this.currentDate,
-          currentBranchCityName: this.currentBranchCityName,
-          packageTypeList: this.packageTypeList,
-          agentList: this.agentList,
-          containerTypeList: this.containerTypeList
-        },
-        logo
-      );
-
-      const docDefinition = generateMblDocument(pdfData);
       const mblNo = this.masterJobData?.MBLNo || 'Draft';
       const reportname = this.selectedReport === 'MBL' ? 'MBL' :  'MBLDraft';
       pdfMake.createPdf(docDefinition).download(`MBL_${mblNo}.pdf`);
@@ -217,6 +207,100 @@ export class MblComponent {
     } catch (error) {
       console.error('MBL PDF generation error:', error);
       this.appSettingService.showError('Error generating PDF. Please try again.');
+    } finally {
+      this.spinner.hide();
+    }
+  }
+
+  async generatePDFBlob(): Promise<Blob | null> {
+    try {
+      const docDefinition = await this.buildMblDocDefinition();
+      if (!docDefinition) {
+        this.appSettingService.showError('No data available to generate PDF');
+        return null;
+      }
+
+      const { pdfMake } = await this.getPdfDependencies();
+      return await new Promise<Blob>((resolve, reject) => {
+        try {
+          pdfMake.createPdf(docDefinition).getBlob((blob: Blob) => resolve(blob));
+        } catch (error) {
+          reject(error);
+        }
+      });
+    } catch (error) {
+      console.error('Error generating MBL PDF blob:', error);
+      return null;
+    }
+  }
+
+  async openEmailModal(): Promise<void> {
+    this.spinner.show();
+    try {
+      const blob = await this.generatePDFBlob();
+      if (!blob) {
+        return;
+      }
+
+      const documentName = this.selectedReport === 'MBL' ? 'MBL' : 'MBL Draft';
+      const documentNo = this.masterJobData?.MBLNo || this.masterJobData?.MasterJobNumber || '';
+      const documentDate = this.formatEmailDate(this.masterJobData?.MBLDate || this.masterJobData?.MasterJobDate);
+      const destinationAgentSid = Number(this.masterJobData?.DestinationAgent);
+      if (!Number.isFinite(destinationAgentSid) || destinationAgentSid <= 0) {
+        this.appSettingService.showError('Destination Agent is required to send email.');
+        return;
+      }
+
+      const emailRecipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
+        customerBranchSid: null,
+        customerMasterSid: destinationAgentSid,
+        menuMasterSid: this.getCurrentMenuMasterSidForEmail()
+      });
+
+      if (emailRecipients.toEmail.length === 0) {
+        this.appSettingService.showError('No email found in customer branch email.');
+        return;
+      }
+
+      const emailContent = this.emailTriggerService.buildOperationEmailContent({
+        documentName,
+        documentNoLabel: 'MBL No.',
+        documentNo,
+        documentDate,
+        pol: this.masterJobData?.POL || '',
+        pod: this.masterJobData?.POD || '',
+        fpd: this.masterJobData?.FPD || '',
+        userName: this.userData?.userName || '',
+        introLine: `Please find attached the ${documentName} for your reference.`,
+        followupLine: 'Kindly review the attached details at your convenience.'
+      });
+
+      const file = new File([blob], `${documentName.replace(/\s+/g, '_')}_${documentNo || 'Report'}.pdf`, { type: 'application/pdf' });
+      const emailRef = this.modalService.open(EmailEntryComponent, { size: 'lg' });
+      emailRef.componentInstance.setContent = {
+        EmailTo: emailRecipients.toEmail,
+        EmailCC: emailRecipients.ccEmail,
+        EmailBCC: [],
+        Subject: emailContent.subject,
+        Mailbody: emailContent.body,
+        context: {
+          documentName,
+          documentNoLabel: 'MBL No',
+          menuName: documentName,
+          documentNo,
+          date: documentDate,
+          pol: this.masterJobData?.POL || '',
+          pod: this.masterJobData?.POD || '',
+          fpd: this.masterJobData?.FPD || ''
+        },
+        attachments: [file]
+      };
+      emailRef.componentInstance.dataChange.subscribe(() => {
+        this.createEmailAuditLog(documentName);
+      });
+    } catch (error) {
+      console.error('MBL email error:', error);
+      this.appSettingService.showError('Error preparing email');
     } finally {
       this.spinner.hide();
     }
@@ -271,6 +355,67 @@ export class MblComponent {
         this.appSettingService.showError('Error loading Terms and Conditions', error);
       }
     );
+  }
+
+  private createEmailAuditLog(documentName: string): void {
+    const payload = {
+      tableName: 'MasterJob',
+      recordId: String(this.masterJobData?.MasterJobSid),
+      operation: 'EMAIL',
+      changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+      changes: {
+        action: 'Send Mail'
+      },
+      newVal: {
+        Email: `${documentName} Mail Send`
+      }
+    };
+
+    this.operationService.createAuditLog(payload).subscribe({
+      next: () => { },
+      error: (err) => console.error(err)
+    });
+  }
+
+  private getCurrentMenuMasterSidForEmail(): number | null {
+    const sid = Number(
+      this.currentMenuId ||
+      this.masterJobData?.MenuMasterSid ||
+      sessionStorage.getItem('currentMenuId')
+    );
+
+    return Number.isFinite(sid) && sid > 0 ? sid : null;
+  }
+
+  private formatEmailDate(value: any): string {
+    if (!value) return '';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-GB');
+  }
+
+  private async buildMblDocDefinition(): Promise<any | null> {
+    if (!this.masterJobData) {
+      return null;
+    }
+
+    const logo = await this.resolveReportLogo();
+    const pdfData = transformMblApiData(
+      this.masterJobData,
+      {
+        selectedReport: this.selectedReport,
+        company: this.currentCompany,
+        branch: this.currentBranch,
+        userData: this.userData,
+        currentDate: this.currentDate,
+        currentBranchCityName: this.currentBranchCityName,
+        packageTypeList: this.packageTypeList,
+        agentList: this.agentList,
+        containerTypeList: this.containerTypeList
+      },
+      logo
+    );
+
+    return generateMblDocument(pdfData);
   }
 
   private async getPdfDependencies(): Promise<{ pdfMake: any }> {

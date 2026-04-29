@@ -30,14 +30,28 @@
      
     </div>
     <div class="col-12">
-      <div class="btn-group btn-group-sm">
-        <button class="btn" [ngClass]="activeTab === 'payments' ? 'btn-info' : 'btn-outline-info'" (click)="setTab('payments')">
-          Payment Voucher
-        </button>
-        <button class="btn" [ngClass]="activeTab === 'pending-request' ? 'btn-info' : 'btn-outline-info'" (click)="setTab('pending-request')">
-          Pending To Payment
-        </button>
-      </div>
+      <ul class="nav nav-pills bg-light p-0 rounded-3 d-inline-flex border" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button
+            type="button"
+            class="nav-link py-1 px-3 rounded-3 fs-2 fw-bold"
+            [class.active]="activeTab === 'payments'"
+            (click)="setTab('payments')">
+            <i class="fas fa-receipt me-1"></i>
+            Payment Voucher
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            type="button"
+            class="nav-link py-1 px-3 rounded-3 fs-2 fw-bold"
+            [class.active]="activeTab === 'pending-request'"
+            (click)="setTab('pending-request')">
+            <i class="fas fa-clock me-1"></i>
+            Pending Payment
+          </button>
+        </li>
+      </ul>
     </div>
      <!-- Reusable Table Component -->
     <div class="col-12" *ngIf="activeTab === 'payments'">

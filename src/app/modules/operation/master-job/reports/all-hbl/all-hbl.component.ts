@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { firstValueFrom } from 'rxjs';
 import { take } from 'rxjs/operators';
@@ -13,6 +13,8 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { OperationService } from '../../../operation.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 
 @Component({
   selector: 'app-all-hbl',
@@ -38,6 +40,7 @@ export class AllHBLComponent {
   @Input() currencyList: any;
   @Input() uomList: any;
   @Input() containerTypeList: any;
+  @Input() currentMenuId: number | null = null;
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
   @Input() masterJobSid: number;
@@ -52,7 +55,9 @@ export class AllHBLComponent {
     private spinner: NgxSpinnerService,
     private operationService: OperationService,
     public logoService: LogoService,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private emailTriggerService: EmailTriggerService,
+    private modalService: NgbModal
   ) {}
 
   ngOnInit() {
@@ -162,25 +167,12 @@ export class AllHBLComponent {
       }
 
       const { pdfMake } = await this.getPdfDependencies();
-      const logo = await this.resolveReportLogo();
+      const docDefinition = await this.buildAllHblDocDefinition();
+      if (!docDefinition) {
+        this.appSettingService.showError('No Record Found');
+        return;
+      }
 
-      const items = printable.map((houseJob: any) =>
-        transformAllHblItemApiData(
-          houseJob,
-          {
-            company: this.currentCompany,
-            branch: this.currentBranch,
-            userData: this.userData,
-            currentDate: this.currentDate,
-            currentBranchCityName: this.currentBranchCityName,
-            agentList: this.agentList,
-            masterJobData: this.masterJobData,
-          },
-          logo,
-        ),
-      );
-
-      const docDefinition = generateAllHblDocument(items);
       const fileRef = this.masterJobData?.MasterJobNumber || this.masterJobSid || 'ALL_HBL';
       pdfMake.createPdf(docDefinition).download(`ALL_HBL_${fileRef}.pdf`);
       this.appSettingService.showSuccess('PDF downloaded successfully!');
@@ -204,6 +196,100 @@ export class AllHBLComponent {
     } catch (error) {
       console.error('All HBL PDF generation error:', error);
       this.appSettingService.showError('Error generating PDF. Please try again.');
+    } finally {
+      this.spinner.hide();
+    }
+  }
+
+  async generatePDFBlob(): Promise<Blob | null> {
+    try {
+      const docDefinition = await this.buildAllHblDocDefinition();
+      if (!docDefinition) {
+        this.appSettingService.showError('No Record Found');
+        return null;
+      }
+
+      const { pdfMake } = await this.getPdfDependencies();
+      return await new Promise<Blob>((resolve, reject) => {
+        try {
+          pdfMake.createPdf(docDefinition).getBlob((blob: Blob) => resolve(blob));
+        } catch (error) {
+          reject(error);
+        }
+      });
+    } catch (error) {
+      console.error('Error generating All HBL PDF blob:', error);
+      return null;
+    }
+  }
+
+  async openEmailModal(): Promise<void> {
+    this.spinner.show();
+    try {
+      const blob = await this.generatePDFBlob();
+      if (!blob) {
+        return;
+      }
+
+      const documentName = 'All HBL';
+      const documentNo = this.masterJobData?.MasterJobNumber || '';
+      const documentDate = this.formatEmailDate(this.masterJobData?.MasterJobDate);
+      const destinationAgentSid = this.getDestinationAgentSidForEmail();
+      if (!Number.isFinite(destinationAgentSid) || destinationAgentSid <= 0) {
+        this.appSettingService.showError('Destination Agent is required to send email.');
+        return;
+      }
+
+      const emailRecipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
+        customerBranchSid: null,
+        customerMasterSid: destinationAgentSid,
+        menuMasterSid: this.getCurrentMenuMasterSidForEmail()
+      });
+
+      if (emailRecipients.toEmail.length === 0) {
+        this.appSettingService.showError('No email found in customer branch email.');
+        return;
+      }
+
+      const emailContent = this.emailTriggerService.buildOperationEmailContent({
+        documentName,
+        documentNoLabel: 'Master Job No.',
+        documentNo,
+        documentDate,
+        pol: this.masterJobData?.POL || '',
+        pod: this.masterJobData?.POD || '',
+        fpd: this.masterJobData?.FPD || '',
+        userName: this.userData?.userName || '',
+        introLine: `Please find attached the ${documentName} for your reference.`,
+        followupLine: 'Kindly review the attached details at your convenience.'
+      });
+
+      const file = new File([blob], `ALL_HBL_${documentNo || this.masterJobSid || 'Report'}.pdf`, { type: 'application/pdf' });
+      const emailRef = this.modalService.open(EmailEntryComponent, { size: 'lg' });
+      emailRef.componentInstance.setContent = {
+        EmailTo: emailRecipients.toEmail,
+        EmailCC: emailRecipients.ccEmail,
+        EmailBCC: [],
+        Subject: emailContent.subject,
+        Mailbody: emailContent.body,
+        context: {
+          documentName,
+          documentNoLabel: 'Master Job No',
+          menuName: documentName,
+          documentNo,
+          date: documentDate,
+          pol: this.masterJobData?.POL || '',
+          pod: this.masterJobData?.POD || '',
+          fpd: this.masterJobData?.FPD || ''
+        },
+        attachments: [file]
+      };
+      emailRef.componentInstance.dataChange.subscribe(() => {
+        this.createEmailAuditLog(documentName);
+      });
+    } catch (error) {
+      console.error('All HBL email error:', error);
+      this.appSettingService.showError('Error preparing email');
     } finally {
       this.spinner.hide();
     }
@@ -247,6 +333,77 @@ export class AllHBLComponent {
     return (this.masterJobHouseJobs || []).filter(
       (house) => house?.Others?.[0]?.ReleaseType,
     );
+  }
+
+  private async buildAllHblDocDefinition(): Promise<any | null> {
+    const printable = this.printableHouseJobs || [];
+    if (!printable.length) {
+      return null;
+    }
+
+    const logo = await this.resolveReportLogo();
+    const items = printable.map((houseJob: any) =>
+      transformAllHblItemApiData(
+        houseJob,
+        {
+          company: this.currentCompany,
+          branch: this.currentBranch,
+          userData: this.userData,
+          currentDate: this.currentDate,
+          currentBranchCityName: this.currentBranchCityName,
+          agentList: this.agentList,
+          masterJobData: this.masterJobData,
+        },
+        logo,
+      ),
+    );
+
+    return generateAllHblDocument(items);
+  }
+
+  private getDestinationAgentSidForEmail(): number {
+    const sid = Number(
+      this.masterJobData?.DestinationAgent ||
+      this.printableHouseJobs?.[0]?.DestinationAgent
+    );
+
+    return Number.isFinite(sid) ? sid : 0;
+  }
+
+  private createEmailAuditLog(documentName: string): void {
+    const payload = {
+      tableName: 'MasterJob',
+      recordId: String(this.masterJobData?.MasterJobSid),
+      operation: 'EMAIL',
+      changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+      changes: {
+        action: 'Send Mail'
+      },
+      newVal: {
+        Email: `${documentName} Mail Send`
+      }
+    };
+
+    this.operationService.createAuditLog(payload).subscribe({
+      next: () => { },
+      error: (err) => console.error(err)
+    });
+  }
+
+  private getCurrentMenuMasterSidForEmail(): number | null {
+    const sid = Number(
+      this.currentMenuId ||
+      this.masterJobData?.MenuMasterSid ||
+      sessionStorage.getItem('currentMenuId')
+    );
+
+    return Number.isFinite(sid) && sid > 0 ? sid : null;
+  }
+
+  private formatEmailDate(value: any): string {
+    if (!value) return '';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-GB');
   }
 
   private async getPdfDependencies(): Promise<{ pdfMake: any }> {
