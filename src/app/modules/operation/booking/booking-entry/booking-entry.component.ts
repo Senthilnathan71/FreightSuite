@@ -3110,7 +3110,7 @@ onCarrierChangeForAir(carrier: any): void {
         return portType === 'ROAD' || portType.includes('ROAD') || portType.includes('LAND') || portType.includes('LOCATION');
       });
     } else if (normalizedSegment === 'TRANSPORT') {
-      return [...this.portList];
+      return this.portList.filter(port => this.normalizePortText(port?.PortType) === 'SEA');
     } else if (normalizedSegment === 'OTHER' || normalizedSegment === 'OTHERS') {
       return [...this.portList];
     }
