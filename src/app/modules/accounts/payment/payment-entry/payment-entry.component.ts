@@ -4096,8 +4096,40 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   onSubledgerChange(subledger: any, index: number): void {
+    this.fillPayTo()
     this.checkAndUpdateForPartyDetail(index);
     this.loadHSSACForSubledger(index, subledger, false);
+  }
+
+  fillPayTo() {
+    const target = this.paymentForm.get('BankPartyName');
+    if (!target) return;
+
+    const currentValue = target.getRawValue();
+
+    // ✅ If already has value → do nothing
+    if (currentValue) return;
+
+    const rows = this.detailItems.getRawValue();
+
+    const syCrIndex = rows.findIndex((row) => {
+      const coaMaster = this.coaList.find(
+        (c) => c.COAMasterSid === row.COAMasterSid
+      );
+      return coaMaster?.LedgerType === 'Sy Cr';
+    });
+
+    if (syCrIndex === -1) return;
+
+    const syCrRow = rows[syCrIndex];
+
+    const ledger = this.ledgerList[syCrIndex]?.find(
+      (l) => l.SubledgerMasterSid === syCrRow?.LedgerMasterSid
+    );
+
+    if (ledger) {
+      target.setValue(ledger.SubledgerName, { emitEvent: false });
+    }
   }
 
   loadHSSACForSubledger(index: number, subledger: any, isPatching: boolean = false): void {
