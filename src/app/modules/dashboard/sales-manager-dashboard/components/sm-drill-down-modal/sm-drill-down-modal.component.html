@@ -13,39 +13,41 @@
     <button type="button" class="btn-close" (click)="activeModal.dismiss()"></button>
   </div>
 
-  <!-- Overview mini-cards -->
-  <div class="overview-strip" *ngIf="activeTab === 0">
-    <div class="mini-card" *ngFor="let card of getOverviewCards(); let i = index"
-         (click)="onTabChange(i + 1)" [style.cursor]="'pointer'">
-      <div class="mini-icon" [style.color]="card.color">
-        <i [class]="card.icon"></i>
+  <div class="modal-layout">
+    <!-- Sidebar nav -->
+    <aside class="drill-sidebar">
+      <div class="sidebar-title">Sections</div>
+      <div class="tab-nav">
+        <button *ngFor="let tab of tabs"
+                class="tab-btn"
+                [class.active]="activeTab === tab.id"
+                (click)="onTabChange(tab.id)">
+          <i [class]="tab.icon"></i>
+          <span class="tab-label">{{ tab.label }}</span>
+          <span class="tab-count" *ngIf="tab.id > 0">{{ getSectionCount(tab.id) }}</span>
+        </button>
       </div>
-      <div class="mini-value">{{ card.value }}</div>
-      <div class="mini-label">{{ card.label }}</div>
-    </div>
-  </div>
+    </aside>
 
-  <!-- Tab nav -->
-  <div class="tab-nav">
-    <button *ngFor="let tab of tabs"
-            class="tab-btn"
-            [class.active]="activeTab === tab.id"
-            (click)="onTabChange(tab.id)">
-      <i [class]="tab.icon"></i>
-      <span class="tab-label">{{ tab.label }}</span>
-      <span class="tab-count" *ngIf="tab.id > 0">{{ getSectionCount(tab.id) }}</span>
-    </button>
-  </div>
+    <!-- Modal body -->
+    <main class="modal-body">
+      <!-- Overview Tab -->
+      <div *ngIf="activeTab === 0" class="overview-content">
+        <div class="overview-strip">
+          <div class="mini-card" *ngFor="let card of getOverviewCards(); let i = index"
+              (click)="onTabChange(i + 1)" [style.cursor]="'pointer'">
+            <div class="mini-icon" [style.color]="card.color">
+              <i [class]="card.icon"></i>
+            </div>
+            <div class="mini-value">{{ card.value }}</div>
+            <div class="mini-label">{{ card.label }}</div>
+          </div>
+        </div>
+        <p class="overview-hint">Click any card or section to drill into that data.</p>
+      </div>
 
-  <!-- Modal body -->
-  <div class="modal-body">
-    <!-- Overview Tab -->
-    <div *ngIf="activeTab === 0" class="overview-content">
-      <p class="overview-hint">Click any card above or tab to drill into that section's data.</p>
-    </div>
-
-    <!-- Section Data Tab -->
-    <div *ngIf="activeTab > 0">
+      <!-- Section Data Tab -->
+      <div *ngIf="activeTab > 0">
       <!-- Search -->
       <div class="search-bar">
         <i class="fas fa-magnifying-glass"></i>
@@ -113,6 +115,7 @@
         </button>
         <span class="page-info">{{ totalCount }} items</span>
       </div>
-    </div>
+      </div>
+    </main>
   </div>
 </div>

@@ -44,7 +44,7 @@
 
 .dashboard-section {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid rgba(216, 230, 244, 0.95);
   border-radius: 22px;
   // box-shadow: 0 10px 26px rgba(148, 163, 184, 0.12);
@@ -79,11 +79,13 @@
 .hero-accent {
   position: absolute;
   top: 0;
-  left: 0;
-  width: 100%;
+  left: 24px;
+  right: 24px;
+  width: auto;
   height: 4px;
   background: linear-gradient(90deg, #0d9488 0%, #06b6d4 40%, #6366f1 100%);
-  border-radius: 24px 24px 0 0;
+  border-radius: 999px;
+  overflow: hidden;
 }
 
 .hero-glow {

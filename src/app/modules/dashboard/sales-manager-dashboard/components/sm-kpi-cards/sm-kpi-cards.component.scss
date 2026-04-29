@@ -37,8 +37,11 @@
 .kpi-card {
   position: relative;
   overflow: hidden;
-  // min-height: 150px;
+  min-height: 148px;
   padding: 10px 16px 14px;
+  display: grid;
+  grid-template-rows: 40px 28px minmax(34px, 1fr) 8px;
+  align-content: start;
   border: 1px solid rgba(214, 226, 239, 0.95);
   border-radius: 18px;
   background:
@@ -105,7 +108,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom:6px;
+  margin-bottom: 0;
 }
 
 .kpi-icon {
@@ -164,6 +167,7 @@
 .kpi-value {
   position: relative;
   z-index: 1;
+  align-self: end;
   font-size: 20px;
   font-weight: 800;
   line-height: 1;
@@ -179,6 +183,7 @@
   position: relative;
   z-index: 1;
   margin-top: 4px;
+  min-height: 34px;
   font-size: 11px;
   line-height: 1.4;
   font-weight: 700;
@@ -192,7 +197,8 @@
   position: relative;
   z-index: 1;
   height: 6px;
-  margin-top: 8px;
+  margin-top: 0;
+  align-self: end;
   border-radius: 999px;
   overflow: hidden;
   background: rgba(148, 163, 184, 0.16);

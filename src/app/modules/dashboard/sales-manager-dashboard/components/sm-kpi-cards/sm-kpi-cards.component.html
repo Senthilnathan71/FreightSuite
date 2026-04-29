@@ -1,4 +1,4 @@
-<div class="kpi-grid" [class.primary-grid]="isPrimaryRow" [class.secondary-grid]="isSecondaryRow">
+<div class="kpi-grid" >
   <div class="kpi-card" *ngFor="let card of cards"
        [class.primary-card]="card.isPrimary"
        [ngClass]="card.isPrimary ? '' : card.colorClass"
