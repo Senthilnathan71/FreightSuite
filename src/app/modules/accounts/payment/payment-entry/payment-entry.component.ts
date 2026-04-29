@@ -243,7 +243,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     PartyMasterSid: 'Party',
     COAMasterSid: 'Party Ledger',
     GST_VAT: 'GST/VAT',
-    BankPartyName: 'Bank Party Name',
+    BankPartyName: 'Pay To',
     Narration: 'Narration',
     InstrumentMode: 'Payment Mode',
     InstrumentNumber: 'Instrument Number',
@@ -658,7 +658,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       CustomerBranchSid: [null],
       COAMasterSid: [null],
       GST_VAT: [''],
-      BankPartyName: [''],
+      BankPartyName: ['',[Validators.required , Validators.maxLength(100)]],
       Narration: ['', [Validators.required, Validators.maxLength(300)]],
       Remarks: ['', [Validators.maxLength(100)]],
       InstrumentMode: [PaymentMode.NEFT, Validators.required],
@@ -666,7 +666,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       InstrumentDate: [null, [Validators.required]],
       ClearanceDate: [null],
 
-      InvoiceType: [null],
+      InvoiceType: ['REG'],
       PlaceOfSupply: [''],
 
       // Form arrays
