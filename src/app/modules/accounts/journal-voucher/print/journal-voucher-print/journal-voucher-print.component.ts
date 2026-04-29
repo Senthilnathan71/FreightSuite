@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
@@ -18,6 +18,8 @@ import { MasterService } from 'src/app/modules/master/master.service';
 import { OperationService } from 'src/app/modules/operation/operation.service';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 
 (pdfMake as any).vfs = (pdfFonts as any).pdfMake?.vfs || pdfFonts;
 
@@ -48,6 +50,7 @@ export class JournalVoucherPrintComponent {
   @Input() uomList: any;
   @Input() containerTypeList: any;
   @Input() VoucherDetail: any;
+  @Input() currentMenuId: number | null = null;
   currentUserCountry: string;
 
    ngOnInit() {
@@ -118,7 +121,9 @@ export class JournalVoucherPrintComponent {
     private companySettings: CompanySettingsManagerService,
     public logoService : LogoService,
     public mps: MenuPermissionService,
-    private operationService: OperationService
+    private operationService: OperationService,
+    private modalService: NgbModal,
+    private emailTriggerService: EmailTriggerService
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -340,6 +345,152 @@ getSubledgerName(SubledgerMasterSid : number){
       console.error('Error generating PDF blob:', error);
       return null;
     }
+  }
+
+  async openEmailModal(): Promise<void> {
+    try {
+      const blob = await this.generatePDFBlob();
+      if (!blob) {
+        this.appSettingService.showError('Error generating PDF. Please try again.');
+        return;
+      }
+
+      const documentName = 'Journal Voucher';
+      const documentNo = this.voucherData?.VoucherNo || this.voucherData?.VoucherNumber || '';
+      const documentDate = this.formatEmailDate(this.voucherData?.VoucherDate);
+      const emailRecipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
+        customerBranchSid: this.getCustomerBranchSidForEmail(),
+        customerMasterSid: this.getCustomerMasterSidForEmail(),
+        menuMasterSid: this.getCurrentMenuMasterSidForEmail()
+      });
+
+      if (emailRecipients.toEmail.length === 0) {
+        this.appSettingService.showError('No email found in customer branch email.');
+        return;
+      }
+
+      const emailContent = this.emailTriggerService.buildOperationEmailContent({
+        documentName,
+        documentNoLabel: 'Journal Voucher No.',
+        documentNo,
+        documentDate,
+        userName: this.userData?.userName || '',
+        introLine: `Please find attached the ${documentName} for your reference.`,
+        followupLine: 'Kindly review the attached details at your convenience.'
+      });
+
+      const file = new File([blob], this.getJournalVoucherPdfFilename(), { type: 'application/pdf' });
+      const emailRef = this.modalService.open(EmailEntryComponent, { size: 'lg' });
+      emailRef.componentInstance.setContent = {
+        EmailTo: emailRecipients.toEmail,
+        EmailCC: emailRecipients.ccEmail,
+        EmailBCC: [],
+        Subject: emailContent.subject,
+        Mailbody: emailContent.body,
+        context: {
+          documentName,
+          documentNoLabel: 'Journal Voucher No',
+          menuName: documentName,
+          documentNo,
+          date: documentDate
+        },
+        attachments: [file]
+      };
+      emailRef.componentInstance.dataChange.subscribe(() => {
+        this.createEmailAuditLog(documentName);
+      });
+    } catch (error) {
+      console.error('Journal Voucher email error:', error);
+      this.appSettingService.showError('Error preparing email');
+    }
+  }
+
+  private createEmailAuditLog(documentName: string): void {
+    const payload = {
+      tableName: 'VoucherHeader',
+      recordId: String(this.voucherData?.VoucherHeaderSid),
+      operation: 'EMAIL',
+      changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+      changes: {
+        action: 'Send Mail'
+      },
+      newVal: {
+        Email: `${documentName} Mail Send`
+      }
+    };
+
+    this.operationService.createAuditLog(payload).subscribe({
+      next: () => { },
+      error: (err) => console.error(err)
+    });
+  }
+
+  private getJournalVoucherPdfFilename(): string {
+    const voucherNo = this.voucherData?.VoucherNo || this.voucherData?.VoucherNumber || 'Draft';
+    return `Journal_Voucher_${voucherNo}.pdf`;
+  }
+
+  private getCustomerBranchSidForEmail(): number | null {
+    const candidates = [
+      this.voucherData?.CustomerBranchSid,
+      this.voucherData?.customerBranch?.CustomerBranchSid,
+      this.voucherData?.CustomerBranch?.CustomerBranchSid
+    ];
+
+    const sid = candidates
+      .map(value => Number(value))
+      .find(value => Number.isFinite(value) && value > 0);
+
+    return sid || null;
+  }
+
+  private getCustomerMasterSidForEmail(): number | null {
+    const candidates = [
+      this.voucherData?.CustomerMasterSid,
+      this.voucherData?.customerMaster?.CustomerMasterSid,
+      this.voucherData?.CustomerMaster?.CustomerMasterSid,
+      this.voucherData?.customerBranch?.CustomerMasterSid,
+      this.voucherData?.CustomerBranch?.CustomerMasterSid,
+      this.getCustomerMasterSidFromVoucherDetails()
+    ];
+
+    const sid = candidates
+      .map(value => Number(value))
+      .find(value => Number.isFinite(value) && value > 0);
+
+    return sid || null;
+  }
+
+  private getCustomerMasterSidFromVoucherDetails(): number | null {
+    const details = this.voucherData?.VoucherDetail || [];
+    for (const detail of details) {
+      const subledger = detail?.subledgerMaster || this.subledgerList.find(
+        (item: any) => Number(item?.SubledgerMasterSid) === Number(detail?.LedgerMasterSid)
+      );
+      if (String(subledger?.SubledgerType || '').trim().toLowerCase() === 'customer') {
+        const sid = Number(subledger?.SubledgerMappingSid);
+        if (Number.isFinite(sid) && sid > 0) {
+          return sid;
+        }
+      }
+    }
+    return null;
+  }
+
+  private getCurrentMenuMasterSidForEmail(): number | null {
+    const sid = Number(
+      this.currentMenuId ||
+      this.voucherData?.voucherTypeMaster?.MenuMasterSid ||
+      this.voucherData?.MenuMasterSid
+    );
+
+    return Number.isFinite(sid) && sid > 0 ? sid : null;
+  }
+
+  private formatEmailDate(value: any): string {
+    if (!value) return '';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-GB');
   }
 
         

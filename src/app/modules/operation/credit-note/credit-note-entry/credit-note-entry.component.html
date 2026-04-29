@@ -1342,7 +1342,7 @@
       <button
           type="button"
           class="btn btn-sm btn-success rounded-5 py-0"
-          (click)="openEmailModal(); modal.dismiss()"
+          (click)="openEmailModal()"
            *ngIf="mps.canPrint('Credit Note', 'Send Mail')" 
         >
           <i class="fas fa-envelope me-1"></i> Send Email

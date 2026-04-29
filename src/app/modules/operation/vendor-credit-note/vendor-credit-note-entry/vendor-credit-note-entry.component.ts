@@ -3695,6 +3695,7 @@ export class VendorCreditNoteEntryComponent {
       modalRef.componentInstance.isVATMode = this.printTaxDisplayConfig.showVAT;
       modalRef.componentInstance.printTaxDisplayConfig = this.printTaxDisplayConfig;
       modalRef.componentInstance.currentDate = this.currentDate;
+      modalRef.componentInstance.currentMenuId = this.currentMenuId;
     } finally {
       this.spinner.hide();
     }

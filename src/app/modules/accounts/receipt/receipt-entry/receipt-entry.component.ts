@@ -3828,6 +3828,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     modalRef.componentInstance.bankTypedLedgers = this.bankTypedLedgers || [];
     modalRef.componentInstance.coaList = this.coaList || [];
     modalRef.componentInstance.ledgerList = this.ledgerList || [];
+    modalRef.componentInstance.currentMenuId = this.currentMenuId;
   }
 
   reportCash() {
@@ -3838,6 +3839,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     modalRef.componentInstance.receiptPrintData = this.receiptPrintData || [];
     modalRef.componentInstance.coaList = this.coaList || [];
     modalRef.componentInstance.ledgerList = this.ledgerList || [];
+    modalRef.componentInstance.currentMenuId = this.currentMenuId;
   }
 
   ngOnDestroy(): void {

@@ -43,6 +43,11 @@ export interface CustomerBranchEmailResolveParams {
   menuMasterSid: number | null | undefined;
 }
 
+export interface CustomerBranchEmailRecipients {
+  toEmail: string[];
+  ccEmail: string[];
+}
+
 export interface OperationEmailContentParams {
   type?: string;
   documentName?: string;
@@ -124,18 +129,23 @@ export class EmailTriggerService {
   ) {}
 
   async resolveCustomerBranchEmailsByMenu(params: CustomerBranchEmailResolveParams): Promise<string[]> {
+    const recipients = await this.resolveCustomerBranchEmailRecipientsByMenu(params);
+    return recipients.toEmail;
+  }
+
+  async resolveCustomerBranchEmailRecipientsByMenu(params: CustomerBranchEmailResolveParams): Promise<CustomerBranchEmailRecipients> {
     const customerBranchSid = Number(params.customerBranchSid);
     const customerMasterSid = Number(params.customerMasterSid);
     const menuMasterSid = Number(params.menuMasterSid);
 
     if ((!customerBranchSid && !customerMasterSid) || !menuMasterSid) {
-      return [];
+      return { toEmail: [], ccEmail: [] };
     }
 
     const branchEmails: any = await firstValueFrom(this.masterService.getAllCustomerBranchEmail());
     const rows = Array.isArray(branchEmails) ? branchEmails : (branchEmails?.data || []);
 
-    const matchedEmails = rows
+    const matchedRows = rows
       .filter((row: any) => {
         const rowBranchSid = Number(
           row?.CustomerBranchSid ??
@@ -154,10 +164,18 @@ export class EmailTriggerService {
         return (branchMatched || customerMatched) &&
           rowMenuSid === menuMasterSid &&
           this.isActiveCustomerBranchEmail(row);
-      })
+      });
+
+    const toEmail = matchedRows
       .flatMap((row: any) => this.splitEmailValues(this.getCustomerBranchEmailValue(row)));
 
-    return Array.from(new Set(matchedEmails));
+    const ccEmail = matchedRows
+      .flatMap((row: any) => this.splitEmailValues(this.getCustomerBranchCcEmailValue(row)));
+
+    return {
+      toEmail: Array.from(new Set(toEmail)),
+      ccEmail: Array.from(new Set(ccEmail))
+    };
   }
 
   private isActiveCustomerBranchEmail(row: any): boolean {
@@ -167,6 +185,10 @@ export class EmailTriggerService {
 
   private getCustomerBranchEmailValue(row: any): string {
     return String(row?.Toemail ?? row?.ToEmail ?? row?.Email ?? '').trim();
+  }
+
+  private getCustomerBranchCcEmailValue(row: any): string {
+    return String(row?.CCemail ?? row?.CcEmail ?? row?.CCEmail ?? row?.Ccemail ?? '').trim();
   }
 
   private splitEmailValues(value: string): string[] {

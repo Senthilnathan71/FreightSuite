@@ -54,7 +54,7 @@ export class StatementReportComponent {
     this.currentCurrency = Number(this.currentCompany?.CurrencyMasterSid);
 
     this.operationService
-      .getCompanyConfig(this.currentCompany?.CompanyMasterSid, 'bankreportdetails')
+      .getCompanyConfig(this.currentCompany?.CompanyMasterSid, 'OSandStatementShowBankDetails')
       .subscribe((resp: any) => {
         const configValue = resp?.data;
         this.showBankDetails = configValue === 'Y';
