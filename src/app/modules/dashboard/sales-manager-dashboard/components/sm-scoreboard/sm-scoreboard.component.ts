@@ -17,7 +17,7 @@ export class SmScoreboardComponent {
   @Output() rowClicked = new EventEmitter<ScoreboardRow>();
   @Output() remindClicked = new EventEmitter<ScoreboardRow>();
 
-  sortField = 'total';
+  sortField = 'userName';
   sortDir: 'asc' | 'desc' = 'desc';
 
   get sortedRows(): ScoreboardRow[] {
@@ -63,12 +63,6 @@ export class SmScoreboardComponent {
     return 'high';
   }
 
-  getConversionRate(row: ScoreboardRow): number {
-    const total = row.s1 + row.s4;
-    if (total === 0) return 0;
-    return Math.round((row.s4 / (row.s1 + row.s4 + row.s5)) * 100) || 0;
-  }
-
   getConvRateClass(rate: number): string {
     if (rate >= 30) return 'good';
     if (rate >= 15) return 'okay';
@@ -97,7 +91,6 @@ export class SmScoreboardComponent {
       'S6 - Enq. No Quotation': r.s6,
       'S7 - Pending Approval': r.s7,
       'S8 - Appr. No Booking': r.s8,
-      'Conv. Rate': `${this.getConversionRate(r)}%`,
       'Total': r.total,
     }));
 
@@ -113,7 +106,6 @@ export class SmScoreboardComponent {
       'S6 - Enq. No Quotation': t.s6,
       'S7 - Pending Approval': t.s7,
       'S8 - Appr. No Booking': t.s8,
-      'Conv. Rate': '',
       'Total': t.total,
     });
 
