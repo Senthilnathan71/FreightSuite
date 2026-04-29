@@ -51,6 +51,13 @@
           (click)="reportAndEmailModel(reportModel)">
           <i class="fas fa-print me-1"></i> Print
         </button>
+<button type="button" class="btn btn-sm voice-assist-btn btn-info"
+          *ngIf="isVoiceSupported"
+          (click)="startVoiceNavigation()"
+          [ngClass]="voiceRecognitionService.isContinuous ? 'active' : ''">
+          <i class="fas" [ngClass]="voiceRecognitionService.isContinuous ? 'fa-wave-square' : 'fa-microphone'"></i>
+          {{ voiceRecognitionService.isContinuous ? 'Listening…' : 'Voice Assistant' }}
+        </button>
 
         <div class="action-group"  *ngIf="isEditMode">  
                 <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="createNew()" [disabled]="!mps.can('insert')">    
@@ -103,8 +110,29 @@
               (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
             <button *ngIf="mps.has('follow_up')" class="text-dark" ngbDropdownItem appPreventMultiClick
               (click)="openFollowup()"><i class="fas fa-paperclip me-1"></i> Followup</button>
+              <button *ngIf="mps.has('document_reference')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openDocRef()"><i
+              class="fas fa-paperclip me-1"></i>Document reference</button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="col-12 px-0" *ngIf="voiceRecognitionService.isContinuous">
+  <div class="voice-assistant-panel">
+    <div class="va-header">
+      <div class="voice-wave-icon">
+        <i class="fas fa-microphone-alt"></i>
+        <span class="wave w1"></span>
+        <span class="wave w2"></span>
+        <span class="wave w3"></span>
+      </div>
+      <span>Voice Assistant is listening</span>
+    </div>
+    <div class="va-body" *ngIf="spokenText">
+      <div class="va-row">
+        <label>You said</label>
+        <span class="spoken">“{{ spokenText }}”</span>
       </div>
     </div>
   </div>
@@ -439,6 +467,7 @@
         <div class="col-12" formArrayName="quoteRoutes">
           <div ngbAccordion #acc="ngbAccordion" [closeOthers]="true" class="custom-accordion">
             <div ngbAccordionItem *ngFor="let route of quoteRoutes.controls;let routeIndex = index"
+ [attr.data-route-index]="routeIndex"
               [formGroupName]="routeIndex" [ngbAccordionItem]="'route-' + routeIndex" class="mb-1"
               [collapsed]="routeIndex !== 0">
               <h2 ngbAccordionHeader>
@@ -449,7 +478,7 @@
 
                   <button class="btn btn-sm waves-effect waves-light text-light"
                     (click)="removeRoute(routeIndex,route.value.QuoteRouteSid)"
-                    [disabled]="f['EnquirySid'].value || disableAllModification || doesBookingExistForRoute(route.value?.QuoteRouteSid) ">
+                    [disabled]="f['EnquirySid'].value || disableAllModification || doesBookingExistForRoute(route.value?.QuoteRouteSid) || isRouteApproved(routeIndex)">
                     <i class="fas fa-trash text-danger me-1"></i>
                   </button>
                   }
@@ -939,12 +968,12 @@
                                   <dofi-searchable-dropdown [items]="packageTypes" formControlName="ExternalPkg"
                                     [placeholder]="''" [displayFields]="[ 'UOMCode','UOMName']"
                                     [displayLabels]="[ 'Code','Name']" [labelFields]="['UOMCode']"
-                                    [bindValue]="'UOMMasterSid'">
+                                    [bindValue]="'UOMMasterSid'" >
                                   </dofi-searchable-dropdown>
                                 </td>
                                 <td>
-                                  <input type="text" id="text-input" formControlName="ExternalQty" [onlyNumbers] = 5
-                                    placeholder="" (input)="handleCalculation(routeIndex)"
+                                  <input type="text" id="text-input" formControlName="ExternalQty" DecimalPrecision [DecimalPrecisionBefore]="100" [DecimalPrecisionAfter]="0"
+                                    placeholder="" (input)="handleCalculation(routeIndex)"  [onlyNumbers]="15"
                                     class="custom-input-field sm text-end">
                                 </td>
                                 @if(isLclStyleQuotationSegment(route) || isSurfaceQuotationSegment(route)){
@@ -1049,7 +1078,7 @@
                       <div formArrayName="quoteCargo" class="px-1 mt-2">
                         <div ngbAccordion [closeOthers]="true" class="custom-accordion">
                           <div ngbAccordionItem *ngFor="let cargo of quoteCargo(routeIndex).controls; let cargoIndex = index"
-                            [formGroupName]="cargoIndex" [ngbAccordionItem]="'cargo-' + routeIndex + '-' + cargoIndex"
+                            [formGroupName]="cargoIndex"  [attr.data-cargo-index]="cargoIndex"[ngbAccordionItem]="'cargo-' + routeIndex + '-' + cargoIndex"
                             [collapsed]="cargoIndex !== 0" class="mb-2">
                           <h2 ngbAccordionHeader>
                             <button ngbAccordionButton class="d-flex justify-content-between align-items-center w-100">
@@ -1183,7 +1212,8 @@
                                         <td colspan="11" class="ps-3">No products added.</td>
                                       </tr>
                                       <tr *ngFor="let product of quoteProducts(routeIndex, cargoIndex).controls; let productIndex = index"
-                                        [formGroupName]="productIndex">
+                                        [formGroupName]="productIndex"
+ [formGroupName]="productIndex">
                                         <td *ngIf="quoteProducts(routeIndex, cargoIndex).length > 1">
                                           <button class="btn btn-link text-danger"
                                             (click)="deleteQuoteProduct(routeIndex,productIndex,product.value.QuoteProductSid,cargoIndex)"
@@ -1207,7 +1237,7 @@
                                           </dofi-searchable-dropdown>
                                         </td>
                                         <td>
-                                          <input type="text" formControlName="ExternalQty" class="custom-input-field sm">
+                                          <input type="text" formControlName="ExternalQty" class="custom-input-field sm" [onlyNumbers]>
                                         </td>
                                         <td>
                                           <input type="text" formControlName="GrossWeight" class="custom-input-field sm"   DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
@@ -1984,7 +2014,7 @@
                 @if(quoteRoutes.length > 1){
                 <button class="btn btn-sm waves-effect waves-light text-light"
                   (click)="removeRoute(routeIndex,route.value.QuoteRouteSid)"
-                  [disabled]="f['EnquirySid'].value || disableAllModification">
+                  [disabled]="f['EnquirySid'].value || disableAllModification || isRouteApproved(routeIndex)">
                   <i-feather class="feather-sm me-1" name="trash-2"></i-feather>
                 </button>
                 }

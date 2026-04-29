@@ -75,6 +75,7 @@ import { ProofOfDeliveryComponent } from '../../house-job/report/proof-of-delive
 import { ProofOfDeliveryMasterPrintComponent } from '../reports/proof-of-delivery-master-print/proof-of-delivery-master-print.component';
 import { InsertMilestoneByMasterJobPayload } from '../../services/shipment-milestone.service';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
+import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 @Component({
   selector: 'app-master-job-entry',
   standalone: true,
@@ -284,6 +285,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   isProcessingProductUpload = false;
   // Dirty tracking for unsaved changes detection
   isDirty = false;
+  private initialFormState: any = null;
   private initialConnectionsCount = 0;
   private initialContainersCount = 0;
   private initialContainerActivitiesCount = 0;
@@ -481,6 +483,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
         this.syncFormValueWithEdocComponent();
         this.syncFormValueWithEmailComponent();
         this.syncFormValueWithContainerActivityComponent();
+        this.updateDirtyState();
       });
 
   }
@@ -554,8 +557,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       return true;
     }
 
-    // Check custom dirty flag
-    return this.isDirty;
+    return this.isDirty && !this.isSaving;
   }
 
   async saveChanges(): Promise<boolean> {
@@ -802,6 +804,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   }
 
   private resetDirtyState(): void {
+    this.initialFormState = this.normalizeValue(this.getCurrentFormState());
     this.isDirty = false;
     this.formSaved = false;
     this.masterJobForm?.markAsPristine();
@@ -811,8 +814,71 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   }
 
   private markAsDirty(): void {
-    this.isDirty = true;
     this.formSaved = false;
+    this.updateDirtyState();
+  }
+
+  private updateDirtyState(): void {
+    if (this.isSaving) {
+      return;
+    }
+
+    if (!this.masterJobForm) {
+      this.isDirty = false;
+      return;
+    }
+
+    this.isDirty = !this.deepEqual(this.initialFormState, this.normalizeValue(this.getCurrentFormState()));
+  }
+
+  private getCurrentFormState(): any {
+    return {
+      masterJobForm: this.masterJobForm?.getRawValue(),
+      masterJobContainers: this.masterJobContainers?.getRawValue?.() || [],
+      connectionResult: this.connectionResult || [],
+      masterJobRateArr: this.masterJobRateArr || [],
+      followUpData: this.followUpData || [],
+      edocData: this.edocData || [],
+      emailData: this.emailData || [],
+      containerActivityData: this.containerActivityData || [],
+      customsDataArray: this.customsDataArray || [],
+      attachedBookings: this.attachedBookings?.getRawValue?.() || [],
+      selectedTransferCompanySid: this.selectedTransferCompanySid,
+      selectedTransferBranchSid: this.selectedTransferBranchSid,
+      isVesselFreeText: this.isVesselFreeText,
+      isVoyageFreeText: this.isVoyageFreeText,
+      isETDFreeText: this.isETDFreeText,
+      isETAFreeText: this.isETAFreeText
+    };
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+
+    if (value instanceof Date) {
+      return value.toISOString().split('T')[0];
+    }
+
+    if (Array.isArray(value)) {
+      return value.map(item => this.normalizeValue(item));
+    }
+
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
   }
 
   // ===== END UNSAVED CHANGES DETECTION ===== //
@@ -1443,7 +1509,9 @@ onETDDateSelect(): void {
           });
           this.masterJobForm.get('MasterJobDate')?.disable();
 
-          this.loadCustomsData();
+          this.loadCustomsData(() => {
+            setTimeout(() => this.resetDirtyState(), 0);
+          });
           this.loadLinkedMasterJobNumber(data?.others?.[0]?.ImportMasterJobSid || null);
         }
 
@@ -1501,10 +1569,10 @@ onETDDateSelect(): void {
       screenName: 'Master Job'
     }).subscribe({
       next: (response: any) => {
-        linkedControl?.setValue(response?.data?.MasterJobNumber || '');
+        linkedControl?.setValue(response?.data?.MasterJobNumber || '', { emitEvent: false });
       },
       error: () => {
-        linkedControl?.setValue('');
+        linkedControl?.setValue('', { emitEvent: false });
       }
     });
   }
@@ -2848,15 +2916,18 @@ onETDDateSelect(): void {
     return portByName ? portByName.PortCode : (typeof portNameOrSid === 'string' ? portNameOrSid.substring(0, 5) : '');
   }
 
-  onSubmit(): void {
+  onSubmit(resolve?: (value: boolean) => void): void {
     if (this.isSaving || this.isLoading) {
+      resolve?.(false);
       return;
     }
     if (this.isEditMode && !this.hasUnsavedChanges()) {
       this.toastr.warning('No changes to save');
+      resolve?.(false);
       return;
     }
     if (!this.validateBeforeSave()) {
+      resolve?.(false);
       return;
     }
 
@@ -2998,8 +3069,10 @@ onETDDateSelect(): void {
             this.toastr.success('Master Job updated successfully');
             this.resetDirtyState();
             this.loadMasterJobData(this.masterJobSid);
+            resolve?.(true);
           } else {
             this.showBackendError(response, 'Failed to update Master Job');
+            resolve?.(false);
           }
         },
         error: (error) => {
@@ -3008,6 +3081,7 @@ onETDDateSelect(): void {
           this.spinner.hide();
           this.showBackendError(error, 'Failed to update Master Job');
           console.error('Error updating master job:', error);
+          resolve?.(false);
         }
       });
     } else {
@@ -3033,8 +3107,10 @@ onETDDateSelect(): void {
               this.toastr.warning('Master Job created but ID not returned. Check console for details.');
               this.router.navigate(['/operation/master-job/list']);
             }
+            resolve?.(true);
           } else {
             this.showBackendError(response, 'Failed to create Master Job');
+            resolve?.(false);
           }
         },
         error: (error) => {
@@ -3042,6 +3118,7 @@ onETDDateSelect(): void {
           this.isSaving = false;
           this.spinner.hide();
           this.showBackendError(error, 'Failed to create Master Job');
+          resolve?.(false);
         }
       });
     }
@@ -3148,8 +3225,9 @@ onETDDateSelect(): void {
     control.setErrors(Object.keys(remainingErrors).length ? remainingErrors : null);
   }
   handleCustomsChange(event: any) {
-
-    // You can process and save event data here
+    this.customsDataArray = Array.isArray(event?.dataItems) ? [...event.dataItems] : [];
+    this.currentCustomsFormValue = event?.formData || null;
+    this.markAsDirty();
   }
 
   onContainerSubmit(): void {
@@ -3248,8 +3326,12 @@ onETDDateSelect(): void {
   }
 
   onReset(): void {
+    if (this.hasUnsavedChanges() && !confirm('You have unsaved changes. Are you sure you want to reset?')) {
+      return;
+    }
+
     if (this.isEditMode) {
-      this.patchFormValues(this.masterJobData)
+      this.patchFormValues(this.masterJobData);
     }
     else{
         this.masterJobForm.reset({
@@ -3275,6 +3357,7 @@ onETDDateSelect(): void {
     this.voyageList = [];
     this.lastVesselSearchParams = null;
     }
+    this.resetDirtyState();
   }
 
   onHazChange(): void {
@@ -3399,6 +3482,7 @@ onETDDateSelect(): void {
     const containerControl = this.masterJobContainers.at(index);
     const containerSid = containerControl.value.MasterJobContainerSid;
     const containerNumber = containerControl.value.ContainerNumber;
+    const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
     if (this.isContainerMapped(containerSid)) {
       const mappingCount = this.getContainerMappingCount(containerSid);
       this.toastr.warning(
@@ -3412,7 +3496,7 @@ onETDDateSelect(): void {
         this.isDeletingContainer = index;
         this.spinner.show();
 
-        this.operationService.softDeleteMasterJobContainer(containerSid).subscribe({
+        this.operationService.softDeleteMasterJobContainer(containerSid,updatedBy).subscribe({
           next: (response: any) => {
             this.spinner.hide();
             this.isDeletingContainer = null;
@@ -3637,11 +3721,9 @@ onETDDateSelect(): void {
 
   // Add handler for Edoc data changes
   handleEdocChange(event: any) {
-
-
     this.edocData = event.dataItems || [];
     this.currentEdocFormValue = event.formData;
-
+    this.markAsDirty();
 
   }
 
@@ -3666,6 +3748,7 @@ onETDDateSelect(): void {
   handleEmailChange(event: any) {
     this.emailData = event.dataItems || [];
     this.currentEmailFormValue = event.formData || null;
+    this.markAsDirty();
 
   }
 
@@ -3727,17 +3810,19 @@ onETDDateSelect(): void {
   }
 
   // Load customs data for master job
-  loadCustomsData() {
+  loadCustomsData(onLoaded?: () => void) {
     if (!this.masterJobSid) return;
 
     this.operationService.getCustomsByMasterJobSid(this.masterJobSid).subscribe({
       next: (data: any[]) => {
         this.customsDataArray = data || [];
         this.syncFormValueWithCustomsComponent();
+        onLoaded?.();
       },
       error: (error) => {
         console.error('Error loading customs data:', error);
         this.customsDataArray = [];
+        onLoaded?.();
       }
     });
   }
@@ -4317,6 +4402,54 @@ onETDDateSelect(): void {
     return 'N/A';
   }
 
+  private isSwitchBLPrintEnabled(houseJob: any): boolean {
+    const switchBL =
+      houseJob?.Others?.[0]?.SwitchBL ??
+      houseJob?.Others?.[0]?.BacktoBack ??
+      houseJob?.HouseJobProxy?.[0]?.SwitchBL ??
+      houseJob?.houseJobProxy?.[0]?.SwitchBL ??
+      houseJob?.Proxy?.[0]?.SwitchBL ??
+      houseJob?.SwitchBL;
+
+    return String(switchBL || '').toUpperCase() === 'Y' || switchBL === true;
+  }
+
+  private getPrintableValue(primaryValue: any, proxyValue: any, useProxy: boolean): string {
+    const hasProxyValue =
+      proxyValue !== null &&
+      proxyValue !== undefined &&
+      String(proxyValue).trim() !== '';
+
+    const selectedValue = useProxy
+      ? (hasProxyValue ? proxyValue : primaryValue)
+      : primaryValue;
+
+    return selectedValue === null || selectedValue === undefined
+      ? ''
+      : String(selectedValue).trim();
+  }
+
+  private normalizeHouseJobForPrint(houseJob: any): any {
+    const proxy = houseJob?.HouseJobProxy?.[0] || houseJob?.houseJobProxy?.[0] || houseJob?.Proxy?.[0] || null;
+    const useProxy = this.isSwitchBLPrintEnabled(houseJob);
+
+    return {
+      ...houseJob,
+      ShipperName: this.getPrintableValue(houseJob?.ShipperName, proxy?.ShipperName, useProxy),
+      ShipperAddress: this.getPrintableValue(houseJob?.ShipperAddress, proxy?.ShipperAddress, useProxy),
+      ConsigneeName: this.getPrintableValue(houseJob?.ConsigneeName, proxy?.ConsigneeName, useProxy),
+      ConsigneeAddress: this.getPrintableValue(houseJob?.ConsigneeAddress, proxy?.ConsigneeAddress, useProxy),
+    };
+  }
+
+  private getPrintableMasterJobData(): any {
+    const printableMasterJobData = structuredClone(this.masterJobData || {});
+    printableMasterJobData.houseJob = (printableMasterJobData.houseJob || []).map((houseJob: any) =>
+      this.normalizeHouseJobForPrint(houseJob)
+    );
+    return printableMasterJobData;
+  }
+
   reportPreAlertModel() {
     if (this.selectedFCLLCL === "FCL" || this.selectedFCLLCL === "LCL") {
       // Check if containers exist and have ContainerNumber
@@ -4356,7 +4489,7 @@ onETDDateSelect(): void {
       scrollable: true,
       
     })
-    modalRef.componentInstance.masterJobData = this.masterJobData;
+    modalRef.componentInstance.masterJobData = this.getPrintableMasterJobData();
     modalRef.componentInstance.containerTypeList = this.containerTypeList;
     modalRef.componentInstance.masterJobContainers = this.masterJobData.containers || [];
     modalRef.componentInstance.packageTypeList = this.packageTypeList;
@@ -4434,7 +4567,7 @@ onETDDateSelect(): void {
       // size: 'xl',
       scrollable: true,
     });
-    modalRef.componentInstance.masterJobData = this.masterJobData;
+    modalRef.componentInstance.masterJobData = this.getPrintableMasterJobData();
     modalRef.componentInstance.containerTypeList = this.containerTypeList;
     modalRef.componentInstance.masterJobContainers = this.masterJobData.containers || [];
     modalRef.componentInstance.packageTypeList = this.packageTypeList;
@@ -5524,6 +5657,18 @@ findElementByTextContent(selector: string, text: string): Element | null {
         <p>${this.userData['userName']}</p>
       </div>
     `;
+  }
+  openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.masterJobSid;
   }
   openTandC() {
     this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));

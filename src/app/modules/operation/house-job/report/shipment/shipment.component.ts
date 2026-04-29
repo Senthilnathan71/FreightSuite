@@ -1,13 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { PdfMakeService } from 'src/app/common/pdf/pdf-make.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { LogoService } from 'src/app/core/services/logo.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { MasterService } from 'src/app/modules/master/master.service';
+import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { OperationService } from '../../../operation.service';
@@ -42,6 +44,7 @@ export class ShipmentComponent {
   @Input() customerWiseSummary : any;
   @Input() chargeWiseSummary : any;
   @Input() portList: any[] = []; // Add this input
+  @Input() houseMenuMasterSid: number | null = null;
     showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
   
@@ -85,7 +88,9 @@ export class ShipmentComponent {
     private spinner: NgxSpinnerService,
     public logoService : LogoService,
     public mps: MenuPermissionService,
-    private operationService: OperationService
+    private operationService: OperationService,
+    private modalService: NgbModal,
+    private emailTriggerService: EmailTriggerService
   ) { }
 
 
@@ -477,6 +482,141 @@ getPortName(portCode: string): string {
       console.error('Error generating shipment PDF blob:', error);
       return null;
     }
+  }
+
+  async sendMail(): Promise<void> {
+    this.spinner.show();
+
+    try {
+      const blob = await this.generatePDFBlob();
+      if (!blob) {
+        this.appSettingService.showError('Error generating PDF. Please try again.');
+        return;
+      }
+
+      const shipmentNo = this.housejobData?.ShipmentNo || this.housejobData?.HBLNo || '';
+      const documentName = 'House Profit and Loss';
+      const documentDate = this.formatEmailDate(
+        this.housejobData?.HBLDate ||
+        this.housejobData?.HouseJobDate ||
+        this.housejobData?.CreatedOn
+      );
+      const toEmail = await this.emailTriggerService.resolveCustomerBranchEmailsByMenu({
+        customerBranchSid: this.getCustomerBranchSidForEmail(),
+        customerMasterSid: this.getCustomerMasterSidForEmail(),
+        menuMasterSid: this.getCurrentMenuMasterSidForEmail()
+      });
+
+      if (toEmail.length === 0) {
+        this.appSettingService.showError('No email found in customer branch email.');
+        return;
+      }
+
+      const emailContent = this.emailTriggerService.buildOperationEmailContent({
+        documentName,
+        documentNoLabel: 'Shipment No.',
+        documentNo: shipmentNo,
+        documentDate,
+        pol: this.housejobData?.POL || '',
+        pod: this.housejobData?.POD || '',
+        fpd: this.housejobData?.FPD || '',
+        userName: this.userData?.userName || '',
+        introLine: `Please find attached the ${documentName} for your reference.`,
+        followupLine: 'Kindly review the attached details at your convenience.'
+      });
+
+      const file = new File([blob], `House_Profit_and_Loss_${shipmentNo || 'Shipment'}.pdf`, { type: 'application/pdf' });
+      const emailRef = this.modalService.open(EmailEntryComponent, { size: 'lg' });
+      emailRef.componentInstance.setContent = {
+        EmailTo: toEmail,
+        EmailCC: this.userData?.userEmail ? [this.userData.userEmail] : [],
+        EmailBCC: [],
+        Subject: emailContent.subject,
+        Mailbody: emailContent.body,
+        context: {
+          documentName,
+          documentNoLabel: 'Shipment No',
+          menuName: documentName,
+          documentNo: shipmentNo,
+          date: documentDate,
+          pol: this.housejobData?.POL || '',
+          pod: this.housejobData?.POD || '',
+          fpd: this.housejobData?.FPD || ''
+        },
+        attachments: [file]
+      };
+      emailRef.componentInstance.dataChange.subscribe(() => {
+        this.createEmailAuditLog(documentName);
+      });
+    } catch (error) {
+      console.error('Shipment email error:', error);
+      this.appSettingService.showError('Error preparing email');
+    } finally {
+      this.spinner.hide();
+    }
+  }
+
+  private createEmailAuditLog(documentName: string): void {
+    const payload = {
+      tableName: 'HouseJob',
+      recordId: String(this.housejobData?.HouseJobSid),
+      operation: 'EMAIL',
+      changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+      changes: {
+        action: 'Send Mail'
+      },
+      newVal: {
+        Email: `${documentName} Mail Send`
+      }
+    };
+
+    this.operationService.createAuditLog(payload).subscribe({
+      next: () => { },
+      error: (err) => console.error(err)
+    });
+  }
+
+  private getCustomerBranchSidForEmail(): number | null {
+    const candidates = [
+      this.housejobData?.CustomerBranchSid,
+      this.housejobData?.customerBranch?.CustomerBranchSid,
+      this.housejobData?.CustomerBranch?.CustomerBranchSid
+    ];
+
+    const sid = candidates
+      .map(value => Number(value))
+      .find(value => Number.isFinite(value) && value > 0);
+
+    return sid || null;
+  }
+
+  private getCustomerMasterSidForEmail(): number | null {
+    const candidates = [
+      this.housejobData?.CustomerMasterSid,
+      this.housejobData?.customerMaster?.CustomerMasterSid,
+      this.housejobData?.CustomerMaster?.CustomerMasterSid
+    ];
+
+    const sid = candidates
+      .map(value => Number(value))
+      .find(value => Number.isFinite(value) && value > 0);
+
+    return sid || null;
+  }
+
+  private getCurrentMenuMasterSidForEmail(): number | null {
+    const sid = Number(
+      this.houseMenuMasterSid ||
+      this.housejobData?.MenuMasterSid
+    );
+
+    return Number.isFinite(sid) && sid > 0 ? sid : null;
+  }
+
+  private formatEmailDate(value: any): string {
+    if (!value) return '';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-GB');
   }
 
   private getShipmentPdfOptions() {

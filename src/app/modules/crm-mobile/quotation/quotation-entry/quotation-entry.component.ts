@@ -66,6 +66,9 @@ import {
 import { GetStandardChargesComponent } from 'src/app/modules/operation/cost/get-standard-charges/get-standard-charges.component';
 import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/dial-code-dropdown.component';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { VoiceRecognitionService } from '../../enquiry/voice-recognition.service';
+import { VoiceParserService } from '../../enquiry/voice-parser.service';
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -293,7 +296,7 @@ dataFromEnqPage:any;
     this.selectedTab = tab;
   }
 
-   selectedTab1= 'Quotation';
+  selectedTab1= 'Quotation';
   tabs1 = [
     { name:'Quotation', icon: 'fas fa-file-signature' },
    { name: 'Route Details', icon: 'fas fa-layer-group' }
@@ -301,6 +304,90 @@ dataFromEnqPage:any;
   selectTab1(tab: string) {
     this.selectedTab1 = tab;
   }
+
+  // Voice Recognition
+  isVoiceSupported = false;
+  voiceStartedOnce = false;
+  isListening = false;
+  voiceCommands: string[] = [];
+  spokenText = '';
+  currentFieldIndex = 0;
+  currentFieldName = '';
+  currentRouteFieldIndex = 0;
+  currentCargoFieldIndex = 0;
+  currentProductFieldIndex = 0;
+  voiceRouteIndex = 0;
+  voiceCargoIndex = 0;
+  voiceProductIndex = 0;
+  isCargoVoiceMode = false;
+  isProductVoiceMode = false;
+
+  voiceFieldOrder: string[] = [
+    'LeadOrCustomer',
+    'CustomerBranchSid',
+    'PreCustomerMasterSid',
+    'CustomerAddress',
+    'Email',
+    'ContactPerson',
+    'ContactNumber',
+    'CustomerRef',
+    'SalesmanSid',
+    'AgreedRate',
+    'IsContract'
+  ];
+
+  routeVoiceFieldOrder: string[] = [
+    'DepartmentMasterSid',
+    'PORSid',
+    'POLSid',
+    'PODSid',
+    'FPODSid',
+    'effDate',
+    'expDate',
+    'ServiceLevel',
+    'FreightPPCC'
+  ];
+
+  cargoVoiceFieldOrder: string[] = [
+    'CargoType',
+    'CargoDescription',
+    'ContainerType',
+    'Qty',
+    'ProductName',
+    'PackageType',
+    'GrossWeight',
+    'NetWeight',
+    'Volume',
+    'ShipmentTerms'
+  ];
+
+  productVoiceFieldOrder: string[] = [
+    'ProductName',
+    'ExternalPkg',
+    'ExternalQty',
+    'GrossWeight',
+    'NetWeight',
+    'Volume',
+    'Length',
+    'Width',
+    'Height',
+    'ProductUnit',
+    'IsHaz',
+    'ImcoClass',
+    'UnNo',
+    'PkgGroup',
+    'Remarks'
+  ];
+
+  private voiceResumeState = {
+    tab: 'Quotation' as 'Quotation' | 'Route Details',
+    formIndex: 0,
+    routeIndex: 0,
+    cargoIndex: 0,
+    productIndex: 0,
+    cargoMode: false,
+    productMode: false
+  };
 
   private getApprovalUrl(quoteHeaderSid: number | null | undefined): string {
     const baseUrl = (window.location.origin || '').replace(/\/$/, '');
@@ -362,6 +449,8 @@ dataFromEnqPage:any;
     private operationService: OperationService,
     private cdr: ChangeDetectorRef,
     private emailTriggerService: EmailTriggerService,
+    public voiceRecognitionService: VoiceRecognitionService,
+    private voiceParserService: VoiceParserService,
   ) {
     effect(() =>{
       const carrierData = this.dropdownStore.customerTypeData();
@@ -402,7 +491,9 @@ dataFromEnqPage:any;
     this.loadTermsAndConditionsConfig();
     this.loadCityName();
     this.mps.init().subscribe();
-    
+    this.initializeVoiceNavigation();
+    this.setupVoiceSubscriptions();
+   
    this.loadAllFields();
    this.loadRateLockConfig().then(() => {
     this.checkRateLockPermissions();
@@ -1300,7 +1391,8 @@ private mapQuotationCargoForBooking(cargo: any): any {
     if (QuoteRouteSid) {
       this.leadService.deleteRoute(QuoteRouteSid).subscribe((resp: any) => {
         if (resp.status) {
-          this.removeQuoteRoute(routeIndex)
+          this.removeQuoteRoute(routeIndex);
+          this.loadQuotation(this.QuoteHeaderSid);
         } else {
           this.appSettingService.showError("Error deleting route")
         }
@@ -2915,6 +3007,7 @@ isRateLockDisabled(): boolean {
     if (!dept || dept === undefined) {
       routeForm.get('segmentType').setValue('LCL');
       this.handleValidationOnDept(routeIndex, 'LCL');
+      this.quoteCargo(routeIndex).clear();
       this.refreshRoutePortFilters(routeIndex);
       return;
     }
@@ -2924,6 +3017,9 @@ isRateLockDisabled(): boolean {
     const selectedCargoMode = this.resolveCargoModeByDepartment(dept);
     routeForm.get('segmentType').setValue(selectedFCLLCL);
     this.handleValidationOnDept(routeIndex, selectedCargoMode);
+    if (selectedCargoMode !== 'FCL') {
+      this.quoteCargo(routeIndex).clear();
+    }
     
     this.refreshRoutePortFilters(routeIndex);
     this.quoteRoutes.controls.forEach((route:FormGroup)=>{
@@ -3925,6 +4021,911 @@ canGetTariff(routeIndex: number): boolean {
     this.ngbModal.dismissAll();
   }
 
+  private initializeVoiceNavigation(): void {
+    this.isVoiceSupported = this.voiceRecognitionService.isSupported();
+    if (!this.isVoiceSupported) {
+      return;
+    }
+
+    this.voiceCommands = [
+      'quotation tab',
+      'route details',
+      'add route',
+      'add cargo',
+      'add product',
+      'save',
+      'next',
+      'previous',
+      'skip',
+      'clear',
+      'stop'
+    ];
+  }
+
+  private setupVoiceSubscriptions(): void {
+    this.voiceRecognitionService.navigationCommand.subscribe((command: string) => {
+      this.spokenText = command;
+      this.handleNavigationCommand(command);
+    });
+
+    this.voiceRecognitionService.voiceInputComplete.subscribe((transcript: string) => {
+      this.spokenText = transcript;
+      this.handleVoiceInput(transcript);
+    });
+  }
+
+  startVoiceNavigation(): void {
+    if (!this.isVoiceSupported) return;
+
+    if (this.voiceRecognitionService.isContinuous) {
+      this.saveVoiceState();
+      this.voiceRecognitionService.stopListening();
+      this.isListening = false;
+      this.toastr.info('Voice assistant stopped');
+      return;
+    }
+
+    this.voiceRecognitionService.startContinuous();
+    this.isListening = true;
+    this.toastr.success('Voice assistant started');
+
+    setTimeout(() => this.restoreVoiceState(), 250);
+  }
+
+  stopVoiceGuide(): void {
+    if (this.voiceRecognitionService.isContinuous) {
+      this.saveVoiceState();
+      this.voiceRecognitionService.stopListening();
+    }
+
+    this.isListening = false;
+    this.spokenText = '';
+    this.currentFieldName = '';
+  }
+
+  private saveVoiceState(): void {
+    this.voiceResumeState = {
+      tab: this.selectedTab1 as any,
+      formIndex: this.currentFieldIndex,
+      routeIndex: this.voiceRouteIndex,
+      cargoIndex: this.voiceCargoIndex,
+      productIndex: this.voiceProductIndex,
+      cargoMode: this.isCargoVoiceMode,
+      productMode: this.isProductVoiceMode
+    };
+  }
+
+  private restoreVoiceState(): void {
+    const state = this.voiceResumeState;
+    this.selectTab1(state.tab);
+    this.currentFieldIndex = state.formIndex;
+    this.voiceRouteIndex = state.routeIndex;
+    this.voiceCargoIndex = state.cargoIndex;
+    this.voiceProductIndex = state.productIndex;
+    this.isCargoVoiceMode = state.cargoMode;
+    this.isProductVoiceMode = state.productMode;
+
+    if (this.selectedTab1 === 'Route Details') {
+      if (this.isProductVoiceMode) {
+        this.focusProductField();
+      } else if (this.isCargoVoiceMode) {
+        this.focusCargoField();
+      } else {
+        this.focusRouteField();
+      }
+      return;
+    }
+
+    this.focusQuotationField();
+  }
+
+  private handleNavigationCommand(command: string): void {
+    const parsed = this.voiceParserService.parseNavigationCommand(command);
+    if (parsed.type === 'CONTROL') {
+      this.handleControlCommand(parsed.action || '');
+      return;
+    }
+
+    if (parsed.type === 'NAVIGATE') {
+      this.handleNavigation(parsed.direction || 'NEXT');
+    }
+  }
+
+  private handleControlCommand(action: string): void {
+    switch (action) {
+      case 'SAVE':
+        this.handleVoiceSave();
+        break;
+      case 'TAB_QUOTATION':
+        this.selectTab1('Quotation');
+        this.currentFieldIndex = 0;
+        this.isCargoVoiceMode = false;
+        this.isProductVoiceMode = false;
+        setTimeout(() => this.focusQuotationField(), 200);
+        break;
+      case 'TAB_ROUTE':
+        this.selectTab1('Route Details');
+        this.ensureVoiceRoute();
+        this.currentRouteFieldIndex = 0;
+        this.currentCargoFieldIndex = 0;
+        this.currentProductFieldIndex = 0;
+        this.isCargoVoiceMode = false;
+        this.isProductVoiceMode = false;
+        setTimeout(() => this.focusRouteField(), 200);
+        break;
+      case 'ADD_ROUTE':
+        this.addQuoteRoute();
+        this.selectTab1('Route Details');
+        this.voiceRouteIndex = this.quoteRoutes.length - 1;
+        this.currentRouteFieldIndex = 0;
+        this.isCargoVoiceMode = false;
+        this.isProductVoiceMode = false;
+        setTimeout(() => this.focusRouteField(), 200);
+        break;
+      case 'ADD_CARGO':
+        this.selectTab1('Route Details');
+        this.ensureVoiceRoute();
+        this.addQuoteCargo(this.voiceRouteIndex);
+        this.voiceCargoIndex = this.quoteCargo(this.voiceRouteIndex).length - 1;
+        this.isCargoVoiceMode = true;
+        this.isProductVoiceMode = false;
+        this.currentCargoFieldIndex = 0;
+        setTimeout(() => this.focusCargoField(), 200);
+        break;
+      case 'ADD_PRODUCT':
+        this.selectTab1('Route Details');
+        this.ensureVoiceRoute();
+        this.ensureVoiceCargo();
+        this.addQuoteProduct(this.voiceRouteIndex, undefined, this.voiceCargoIndex);
+        this.voiceProductIndex = this.quoteProducts(this.voiceRouteIndex, this.voiceCargoIndex).length - 1;
+        this.isProductVoiceMode = true;
+        this.isCargoVoiceMode = false;
+        this.currentProductFieldIndex = 0;
+        setTimeout(() => this.focusProductField(), 200);
+        break;
+      case 'CLEAR':
+        this.clearCurrentField();
+        break;
+      case 'STOP':
+        this.stopVoiceGuide();
+        this.toastr.info('Voice assistant stopped');
+        break;
+    }
+  }
+
+  private handleNavigation(direction: 'NEXT' | 'PREVIOUS' | 'SKIP'): void {
+    this.closeAllVoiceControls();
+
+    if (this.selectedTab1 === 'Route Details') {
+      if (this.isProductVoiceMode) {
+        if (direction === 'PREVIOUS') {
+          this.currentProductFieldIndex = Math.max(0, this.currentProductFieldIndex - 1);
+        } else {
+          this.currentProductFieldIndex++;
+        }
+        this.focusProductField();
+        return;
+      }
+
+      if (this.isCargoVoiceMode) {
+        if (direction === 'PREVIOUS') {
+          this.currentCargoFieldIndex = Math.max(0, this.currentCargoFieldIndex - 1);
+        } else {
+          this.currentCargoFieldIndex++;
+        }
+        this.focusCargoField();
+        return;
+      }
+
+      if (direction === 'PREVIOUS') {
+        this.currentRouteFieldIndex = Math.max(0, this.currentRouteFieldIndex - 1);
+      } else {
+        this.currentRouteFieldIndex++;
+      }
+      this.focusRouteField();
+      return;
+    }
+
+    if (direction === 'PREVIOUS') {
+      this.currentFieldIndex = Math.max(0, this.currentFieldIndex - 1);
+    } else {
+      this.currentFieldIndex++;
+    }
+    this.focusQuotationField();
+  }
+
+  private handleVoiceInput(transcript: string): void {
+    if (!transcript?.trim()) return;
+
+    if (this.selectedTab1 === 'Route Details') {
+      if (this.isProductVoiceMode) {
+        this.handleProductVoiceInput(transcript);
+      } else if (this.isCargoVoiceMode) {
+        this.handleCargoVoiceInput(transcript);
+      } else {
+        this.handleRouteVoiceInput(transcript);
+      }
+      return;
+    }
+
+    this.handleQuotationVoiceInput(transcript);
+  }
+
+  private handleVoiceSave(): void {
+    if (this.disableAllModification || this.isSaving) {
+      this.toastr.info('Saving is currently disabled');
+      return;
+    }
+
+    this.onSubmit();
+  }
+
+  private ensureVoiceRoute(): void {
+    if (this.quoteRoutes.length === 0) {
+      this.addQuoteRoute();
+    }
+    this.voiceRouteIndex = Math.min(this.voiceRouteIndex, this.quoteRoutes.length - 1);
+  }
+
+  private ensureVoiceCargo(): void {
+    this.ensureVoiceRoute();
+    if (this.quoteCargo(this.voiceRouteIndex).length === 0) {
+      this.addQuoteCargo(this.voiceRouteIndex);
+    }
+    this.voiceCargoIndex = Math.min(this.voiceCargoIndex, this.quoteCargo(this.voiceRouteIndex).length - 1);
+  }
+
+  private closeAllVoiceControls(): void {
+    const active = document.activeElement as HTMLElement | null;
+    active?.blur();
+  }
+
+  private clearCurrentField(): void {
+    const control = this.getCurrentVoiceControl();
+    control?.reset();
+    control?.updateValueAndValidity({ emitEvent: false });
+    this.toastr.info('Field cleared');
+  }
+
+  private getCurrentVoiceControl(): AbstractControl | null {
+    if (this.selectedTab1 === 'Route Details') {
+      if (this.isProductVoiceMode) {
+        return this.quoteProducts(this.voiceRouteIndex, this.voiceCargoIndex).at(this.voiceProductIndex) as FormGroup || null;
+      }
+      if (this.isCargoVoiceMode) {
+        return this.quoteCargo(this.voiceRouteIndex).at(this.voiceCargoIndex) as FormGroup || null;
+      }
+      return this.quoteRoutes.at(this.voiceRouteIndex) as FormGroup || null;
+    }
+
+    return this.quotationForm;
+  }
+
+  private focusQuotationField(): void {
+    while (this.currentFieldIndex < this.voiceFieldOrder.length) {
+      this.currentFieldName = this.voiceFieldOrder[this.currentFieldIndex];
+
+      if (!this.isQuotationVoiceFieldActive(this.currentFieldName)) {
+        this.currentFieldIndex++;
+        continue;
+      }
+
+      this.announceVoiceField(this.currentFieldName, 'Quotation');
+
+      const el = this.getQuotationFieldElement(this.currentFieldName);
+      if (el) {
+        this.focusElement(el);
+        this.openQuotationField(this.currentFieldName);
+        return;
+      }
+
+      this.currentFieldIndex++;
+    }
+
+    this.toastr.info('Quotation fields completed. Say "route details" to continue.');
+  }
+
+  private focusRouteField(): void {
+    this.ensureVoiceRoute();
+    while (this.currentRouteFieldIndex < this.routeVoiceFieldOrder.length) {
+      this.currentFieldName = this.routeVoiceFieldOrder[this.currentRouteFieldIndex];
+
+      if (!this.isRouteVoiceFieldActive(this.voiceRouteIndex, this.currentFieldName)) {
+        this.currentRouteFieldIndex++;
+        continue;
+      }
+
+      this.announceVoiceField(this.currentFieldName, `Route ${this.voiceRouteIndex + 1}`);
+
+      const el = this.getRouteFieldElement(this.voiceRouteIndex, this.currentFieldName);
+      if (el) {
+        this.focusElement(el);
+        this.openRouteField(this.voiceRouteIndex, this.currentFieldName);
+        return;
+      }
+
+      this.currentRouteFieldIndex++;
+    }
+
+    this.toastr.success('Route completed. You can say "add cargo" or "add product".');
+  }
+
+  private focusProductField(): void {
+    this.ensureVoiceCargo();
+    while (this.currentProductFieldIndex < this.productVoiceFieldOrder.length) {
+      const fieldName = this.productVoiceFieldOrder[this.currentProductFieldIndex];
+
+      if (!fieldName || !this.isProductVoiceFieldActive(this.voiceRouteIndex, this.voiceCargoIndex, this.voiceProductIndex, fieldName)) {
+        this.currentProductFieldIndex++;
+        continue;
+      }
+
+      this.currentFieldName = fieldName;
+      this.announceVoiceField(fieldName, `Product ${this.voiceProductIndex + 1}`);
+
+      const el = this.getProductFieldElement(this.voiceRouteIndex, this.voiceCargoIndex, this.voiceProductIndex, fieldName);
+      if (el) {
+        this.focusElement(el);
+        this.openProductField(this.voiceRouteIndex, this.voiceCargoIndex, this.voiceProductIndex, fieldName);
+        return;
+      }
+
+      this.currentProductFieldIndex++;
+    }
+
+    this.isProductVoiceMode = false;
+    this.toastr.success('Product completed');
+  }
+
+  private announceVoiceField(fieldName: string, scope: string): void {
+    const labels: Record<string, string> = {
+      LeadOrCustomer: 'Customer or Lead',
+      CustomerBranchSid: 'Customer',
+      PreCustomerMasterSid: 'Lead',
+      CustomerAddress: 'Customer address',
+      Email: 'Email',
+      ContactPerson: 'Contact person',
+      ContactNumber: 'Contact number',
+      CustomerRef: 'Customer reference',
+      SalesmanSid: 'Salesman',
+      AgreedRate: 'Rate agreed',
+      IsContract: 'Contract',
+      DepartmentMasterSid: 'Department',
+      PORSid: 'POO',
+      POLSid: 'POL',
+      PODSid: 'POD',
+      FPODSid: 'FPOD',
+      effDate: 'Effective date',
+      expDate: 'Expiry date',
+      ServiceLevel: 'Inco terms',
+      FreightPPCC: 'Freight PPCC',
+      CargoType: 'Cargo type',
+      CargoDescription: 'Cargo description',
+      ContainerType: 'Container type',
+      Qty: 'Quantity',
+      ProductName: 'Product name',
+      PackageType: 'Package type',
+      GrossWeight: 'Gross weight',
+      NetWeight: 'Net weight',
+      Volume: 'CBM',
+      ChargeableWeight: 'Chargeable weight',
+      ShipmentTerms: 'Shipment terms',
+      ExternalPkg: 'External package',
+      ExternalQty: 'Package quantity',
+      Length: 'Length',
+      Width: 'Width',
+      Height: 'Height',
+      ProductUnit: 'Product unit',
+      IsHaz: 'Hazardous flag',
+      ImcoClass: 'IMCO class',
+      UnNo: 'UN number',
+      PkgGroup: 'Package group',
+      Remarks: 'Remarks'
+    };
+
+    const label = labels[fieldName] || fieldName;
+    this.toastr.info(`Speak ${label} for ${scope}. Say "next" to continue or "stop" to pause.`, 'Voice assistant', {
+      positionClass: 'toast-top-center',
+      timeOut: 3500
+    });
+  }
+
+  private handleQuotationVoiceInput(transcript: string): void {
+    const text = transcript.toLowerCase().trim();
+    const fieldName = this.voiceFieldOrder[this.currentFieldIndex];
+
+    if (!fieldName) return;
+
+    if (fieldName === 'LeadOrCustomer') {
+      const isCustomer = text.includes('customer');
+      const isLead = text.includes('lead');
+        if (isCustomer || isLead) {
+        this.quotationForm.get('LeadOrCustomer')?.setValue(isCustomer);
+        this.cdr.detectChanges();
+        setTimeout(() => {
+          this.currentFieldIndex = this.voiceFieldOrder.indexOf(isCustomer ? 'CustomerBranchSid' : 'PreCustomerMasterSid');
+          this.focusQuotationField();
+        }, 200);
+      }
+      return;
+    }
+
+    if (fieldName === 'AgreedRate' || fieldName === 'IsContract') {
+      const checked = ['yes', 'true', 'on', '1', 'y'].some(v => text.includes(v));
+      this.quotationForm.get(fieldName)?.setValue(checked);
+      setTimeout(() => this.moveQuotationNext(), 200);
+      return;
+    }
+
+    if (fieldName === 'CustomerBranchSid') {
+      const match = this.matchDropdownItem(text, this.customerlist, ['CustomerName', 'BranchName', 'Address']);
+      if (match) {
+        this.quotationForm.get('CustomerBranchSid')?.setValue(match.CustomerBranchSid);
+        this.onSelectionChange(match);
+        setTimeout(() => this.moveQuotationNext(), 200);
+      }
+      return;
+    }
+
+    if (fieldName === 'PreCustomerMasterSid') {
+      const match = this.matchDropdownItem(text, this.leadList, ['preCustomerName', 'preCustomerAddress1']);
+      if (match) {
+        this.quotationForm.get('PreCustomerMasterSid')?.setValue(match.PreCustomerMasterSid);
+        this.onSelectionChange(match);
+        setTimeout(() => this.moveQuotationNext(), 200);
+      }
+      return;
+    }
+
+    if (fieldName === 'SalesmanSid') {
+      const match = this.matchDropdownItem(text, this.salesmanList, ['userName']);
+      if (match) {
+        this.quotationForm.get('SalesmanSid')?.setValue(match.UserMasterSid);
+        setTimeout(() => this.moveQuotationNext(), 200);
+      }
+      return;
+    }
+
+    if (fieldName === 'Email') {
+      const email = text.replace(/ at /g, '@').replace(/ dot /g, '.').replace(/\s+/g, '');
+      this.quotationForm.get('Email')?.setValue(email);
+      setTimeout(() => this.moveQuotationNext(), 200);
+      return;
+    }
+
+    if (fieldName === 'ContactNumber') {
+      const number = text.replace(/\D/g, '');
+      this.quotationForm.get('ContactNumber')?.setValue(number);
+      setTimeout(() => this.moveQuotationNext(), 200);
+      return;
+    }
+
+    const control = this.quotationForm.get(fieldName);
+    if (control) {
+      control.setValue(transcript);
+      setTimeout(() => this.moveQuotationNext(), 200);
+    }
+  }
+
+  private handleRouteVoiceInput(transcript: string): void {
+    this.ensureVoiceRoute();
+    const routeForm = this.quoteRoutes.at(this.voiceRouteIndex) as FormGroup;
+    if (!routeForm) return;
+
+    const fieldName = this.routeVoiceFieldOrder[this.currentRouteFieldIndex];
+    if (!fieldName) return;
+
+    const spoken = transcript.toLowerCase().trim();
+
+    if (fieldName === 'DepartmentMasterSid') {
+      const match = this.matchDropdownItem(spoken, this.departments, ['departmentName']);
+      if (match) {
+        routeForm.get('DepartmentMasterSid')?.setValue(match.DepartmentMasterSid);
+        this.onDeptChange(match, this.voiceRouteIndex);
+        setTimeout(() => this.moveRouteNext(), 250);
+      }
+      return;
+    }
+
+    if (['PORSid', 'POLSid', 'PODSid', 'FPODSid'].includes(fieldName)) {
+      const list = fieldName === 'POLSid'
+        ? (this.filteredPOLPorts[this.voiceRouteIndex] || [])
+        : fieldName === 'PODSid'
+          ? (this.filteredPODPorts[this.voiceRouteIndex] || [])
+          : this.ports;
+      const match = this.matchDropdownItem(spoken, list, ['PortCode', 'PortName']);
+      if (match) {
+        routeForm.get(fieldName)?.setValue(match.PortMasterSid);
+        if (fieldName === 'POLSid') this.onRouteChange(this.voiceRouteIndex);
+        if (fieldName === 'PODSid') this.onPODChange(match, this.voiceRouteIndex);
+        setTimeout(() => this.moveRouteNext(), 200);
+      }
+      return;
+    }
+
+    if (fieldName === 'effDate' || fieldName === 'expDate') {
+      const parsed = Date.parse(transcript);
+      if (!Number.isNaN(parsed)) {
+        routeForm.get(fieldName)?.setValue(new Date(parsed));
+        setTimeout(() => this.moveRouteNext(), 200);
+      } else {
+        this.toastr.warning('Could not understand the date');
+      }
+      return;
+    }
+
+    if (fieldName === 'ServiceLevel') {
+      const match = this.matchDropdownItem(spoken, this.incoList, ['IncoCode', 'IncoName']);
+      if (match) {
+        routeForm.get('ServiceLevel')?.setValue(match.IncoName || match.IncoCode);
+        this.handleFreightPPCCForDetail(match, this.voiceRouteIndex);
+        setTimeout(() => this.moveRouteNext(), 200);
+      }
+      return;
+    }
+
+    if (fieldName === 'FreightPPCC') {
+      const value = spoken.includes('collect') ? 'Collect' : 'Prepaid';
+      routeForm.get('FreightPPCC')?.setValue(value);
+      setTimeout(() => this.moveRouteNext(), 200);
+      return;
+    }
+
+    if (fieldName === 'CargoType') {
+      const match = this.matchDropdownItem(spoken, this.modeOfCargoType, ['name']);
+      if (match) {
+        routeForm.get('CargoType')?.setValue(match.name);
+        this.handleSegmentChangeOnAllProducts(this.voiceRouteIndex);
+        setTimeout(() => this.moveRouteNext(), 200);
+      }
+      return;
+    }
+
+    if (fieldName === 'ContainerType') {
+      const match = this.matchDropdownItem(spoken, this.containerTypeList, ['ContainerName', 'ContainerCode', 'ContainerTypeName']);
+      if (match) {
+        routeForm.get('ContainerType')?.setValue(match.ContainerCode || match.ContainerName || match.ContainerTypeName);
+        setTimeout(() => this.moveRouteNext(), 200);
+      }
+      return;
+    }
+
+    const control = routeForm.get(fieldName);
+    if (control) {
+      control.setValue(transcript);
+      setTimeout(() => this.moveRouteNext(), 200);
+    }
+  }
+
+  private focusCargoField(): void {
+    this.ensureVoiceCargo();
+    while (this.currentCargoFieldIndex < this.cargoVoiceFieldOrder.length) {
+      const fieldName = this.cargoVoiceFieldOrder[this.currentCargoFieldIndex];
+
+      if (!fieldName || !this.isCargoVoiceFieldActive(this.voiceRouteIndex, this.voiceCargoIndex, fieldName)) {
+        this.currentCargoFieldIndex++;
+        continue;
+      }
+
+      this.currentFieldName = fieldName;
+      this.announceVoiceField(fieldName, `Cargo ${this.voiceCargoIndex + 1}`);
+
+      const el = this.getCargoFieldElement(this.voiceRouteIndex, this.voiceCargoIndex, fieldName);
+      if (el) {
+        this.focusElement(el);
+        this.openCargoField(this.voiceRouteIndex, this.voiceCargoIndex, fieldName);
+        return;
+      }
+
+      this.currentCargoFieldIndex++;
+    }
+
+    this.isCargoVoiceMode = false;
+    this.toastr.success('Cargo completed');
+  }
+
+  private handleCargoVoiceInput(transcript: string): void {
+    this.ensureVoiceCargo();
+    const cargoForm = this.quoteCargo(this.voiceRouteIndex).at(this.voiceCargoIndex) as FormGroup;
+    if (!cargoForm) return;
+
+    const fieldName = this.cargoVoiceFieldOrder[this.currentCargoFieldIndex];
+    if (!fieldName) return;
+
+    const spoken = transcript.toLowerCase().trim();
+
+    if (fieldName === 'CargoType') {
+      const match = this.matchDropdownItem(spoken, this.modeOfCargoType, ['name']);
+      if (match) {
+        cargoForm.get('CargoType')?.setValue(match.name);
+        setTimeout(() => this.moveCargoNext(), 200);
+      }
+      return;
+    }
+
+    if (fieldName === 'ContainerType') {
+      const match = this.matchDropdownItem(spoken, this.containerTypeList, ['ContainerName', 'ContainerCode', 'ContainerTypeName']);
+      if (match) {
+        cargoForm.get('ContainerType')?.setValue(match.ContainerCode || match.ContainerName || match.ContainerTypeName);
+        setTimeout(() => this.moveCargoNext(), 200);
+      }
+      return;
+    }
+
+    if (fieldName === 'ProductName') {
+      const match = this.matchDropdownItem(spoken, this.productList, ['ProductCode', 'ProductName']);
+      if (match) {
+        cargoForm.get('ProductName')?.setValue(match.ProductName);
+        setTimeout(() => this.moveCargoNext(), 200);
+      }
+      return;
+    }
+
+    if (fieldName === 'PackageType') {
+      const match = this.matchDropdownItem(spoken, this.packageTypes, ['UOMCode', 'UOMName']);
+      if (match) {
+        cargoForm.get('PackageType')?.setValue(match.UOMCode || match.UOMName);
+        setTimeout(() => this.moveCargoNext(), 200);
+      }
+      return;
+    }
+
+    if (fieldName === 'ShipmentTerms') {
+      const match = this.matchDropdownItem(spoken, this.serviceLevel, ['name']);
+      if (match) {
+        cargoForm.get('ShipmentTerms')?.setValue(match.name);
+        setTimeout(() => this.moveCargoNext(), 200);
+      }
+      return;
+    }
+
+    if (['Qty', 'GrossWeight', 'NetWeight', 'Volume', 'ChargeableWeight'].includes(fieldName)) {
+      const numeric = spoken.replace(/[^\d.]/g, '');
+      cargoForm.get(fieldName)?.setValue(numeric);
+      setTimeout(() => this.moveCargoNext(), 200);
+      return;
+    }
+
+    const control = cargoForm.get(fieldName);
+    if (control) {
+      control.setValue(transcript);
+      setTimeout(() => this.moveCargoNext(), 200);
+    }
+  }
+
+  private moveCargoNext(): void {
+    this.currentCargoFieldIndex++;
+    if (this.currentCargoFieldIndex >= this.cargoVoiceFieldOrder.length) {
+      this.isCargoVoiceMode = false;
+      this.toastr.success('Cargo completed. Say "add product" or "next".');
+      return;
+    }
+    this.focusCargoField();
+  }
+
+  private handleProductVoiceInput(transcript: string): void {
+    this.ensureVoiceCargo();
+    const productForm = this.quoteProducts(this.voiceRouteIndex, this.voiceCargoIndex).at(this.voiceProductIndex) as FormGroup;
+    if (!productForm) return;
+
+    const fieldName = this.productVoiceFieldOrder[this.currentProductFieldIndex];
+    if (!fieldName) {
+      this.isProductVoiceMode = false;
+      return;
+    }
+
+    const spoken = transcript.toLowerCase().trim();
+
+    if (fieldName === 'ProductName') {
+      const match = this.matchDropdownItem(spoken, this.productList, ['ProductCode', 'ProductName']);
+      if (match) {
+        productForm.get('ProductName')?.setValue(match.ProductName);
+        this.onProductChange(match, this.voiceRouteIndex, this.voiceProductIndex, this.voiceCargoIndex);
+        setTimeout(() => this.moveProductNext(), 200);
+      }
+      return;
+    }
+
+    if (fieldName === 'ExternalPkg') {
+      const match = this.matchDropdownItem(spoken, this.packageTypes, ['UOMCode', 'UOMName']);
+      if (match) {
+        productForm.get('ExternalPkg')?.setValue(match.UOMMasterSid);
+        setTimeout(() => this.moveProductNext(), 200);
+      }
+      return;
+    }
+
+    if (fieldName === 'ProductUnit') {
+      const match = this.matchDropdownItem(spoken, this.measurementUnitList, ['name']);
+      if (match) {
+        productForm.get('ProductUnit')?.setValue(match.id);
+        setTimeout(() => this.moveProductNext(), 200);
+      }
+      return;
+    }
+
+    if (fieldName === 'IsHaz') {
+      const checked = ['yes', 'true', 'on', '1', 'haz', 'hazardous'].some(v => spoken.includes(v));
+      productForm.get('IsHaz')?.setValue(checked);
+      this.toggleHazProduct(this.voiceRouteIndex, this.voiceProductIndex, this.voiceCargoIndex);
+      setTimeout(() => this.moveProductNext(), 200);
+      return;
+    }
+
+    if (fieldName === 'ImcoClass') {
+      const match = this.matchDropdownItem(spoken, this.imcoList, ['ImcoName']);
+      if (match) {
+        productForm.get('ImcoClass')?.setValue(match.ImcoMasterSid);
+        this.onImcoChange(this.voiceRouteIndex, this.voiceProductIndex, match, this.voiceCargoIndex);
+        setTimeout(() => this.moveProductNext(), 200);
+      }
+      return;
+    }
+
+    if (['ExternalQty', 'GrossWeight', 'NetWeight', 'Volume', 'Length', 'Width', 'Height'].includes(fieldName)) {
+      const numeric = spoken.replace(/[^\d.]/g, '');
+      productForm.get(fieldName)?.setValue(numeric);
+      setTimeout(() => this.moveProductNext(), 200);
+      return;
+    }
+
+    const control = productForm.get(fieldName);
+    if (control) {
+      control.setValue(transcript);
+      setTimeout(() => this.moveProductNext(), 200);
+    }
+  }
+
+  private moveQuotationNext(): void {
+    this.currentFieldIndex++;
+    this.focusQuotationField();
+  }
+
+  private moveRouteNext(): void {
+    this.currentRouteFieldIndex++;
+    this.focusRouteField();
+  }
+
+  private moveProductNext(): void {
+    this.currentProductFieldIndex++;
+    if (this.currentProductFieldIndex >= this.productVoiceFieldOrder.length) {
+      this.isProductVoiceMode = false;
+      this.toastr.success('Product completed');
+      return;
+    }
+    this.focusProductField();
+  }
+
+  private getQuotationFieldElement(fieldName: string): HTMLElement | null {
+    return document.querySelector(`[formControlName="${fieldName}"]`) as HTMLElement | null;
+  }
+
+  private getRouteFieldElement(routeIndex: number, fieldName: string): HTMLElement | null {
+    return document.querySelector(`[data-route-index="${routeIndex}"] [formControlName="${fieldName}"]`) as HTMLElement | null;
+  }
+
+  private getCargoFieldElement(routeIndex: number, cargoIndex: number, fieldName: string): HTMLElement | null {
+    const selectors = [
+      `[data-route-index="${routeIndex}"] [data-cargo-index="${cargoIndex}"] [formControlName="${fieldName}"]`,
+      `[data-route-index="${routeIndex}"] [formControlName="${fieldName}"]`
+    ];
+
+    for (const selector of selectors) {
+      const el = document.querySelector(selector) as HTMLElement | null;
+      if (el) return el;
+    }
+
+    return null;
+  }
+
+  private getProductFieldElement(routeIndex: number, cargoIndex: number, productIndex: number, fieldName: string): HTMLElement | null {
+    const selectors = [
+      `[data-route-index="${routeIndex}"] [data-cargo-index="${cargoIndex}"] [data-product-index="${productIndex}"] [formControlName="${fieldName}"]`,
+      `[data-route-index="${routeIndex}"] [data-cargo-index="${cargoIndex}"] [formControlName="${fieldName}"]`
+    ];
+
+    for (const selector of selectors) {
+      const el = document.querySelector(selector) as HTMLElement | null;
+      if (el) return el;
+    }
+    return null;
+  }
+
+  private openQuotationField(fieldName: string): void {
+    if (fieldName === 'CustomerBranchSid' || fieldName === 'PreCustomerMasterSid' || fieldName === 'SalesmanSid') {
+      this.openDropdownForElement(this.getQuotationFieldElement(fieldName));
+    }
+  }
+
+  private openRouteField(routeIndex: number, fieldName: string): void {
+    if (['DepartmentMasterSid', 'PORSid', 'POLSid', 'PODSid', 'FPODSid', 'ServiceLevel', 'FreightPPCC', 'CargoType', 'ContainerType'].includes(fieldName)) {
+      this.openDropdownForElement(this.getRouteFieldElement(routeIndex, fieldName));
+    }
+
+    if (fieldName === 'effDate' || fieldName === 'expDate') {
+      const input = this.getRouteFieldElement(routeIndex, fieldName) as HTMLInputElement | null;
+      if (input) {
+        setTimeout(() => {
+          input.focus();
+          input.click();
+          input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+        }, 120);
+      }
+    }
+  }
+
+  private openCargoField(routeIndex: number, cargoIndex: number, fieldName: string): void {
+    if (['CargoType', 'ContainerType', 'ProductName', 'PackageType', 'ShipmentTerms'].includes(fieldName)) {
+      this.openDropdownForElement(this.getCargoFieldElement(routeIndex, cargoIndex, fieldName));
+    }
+  }
+
+  private openProductField(routeIndex: number, cargoIndex: number, productIndex: number, fieldName: string): void {
+    if (['ProductName', 'ExternalPkg', 'ProductUnit', 'ImcoClass'].includes(fieldName)) {
+      this.openDropdownForElement(this.getProductFieldElement(routeIndex, cargoIndex, productIndex, fieldName));
+    }
+  }
+
+  private openDropdownForElement(element: HTMLElement | null): void {
+    if (!element) return;
+    setTimeout(() => {
+      element.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+      element.click();
+      const input = element.querySelector('input, textarea') as HTMLInputElement | HTMLTextAreaElement | null;
+      input?.focus();
+    }, 120);
+  }
+
+  private focusElement(element: HTMLElement | null): void {
+    if (!element) return;
+    setTimeout(() => {
+      const input = element.matches('input, textarea, select') ? element as HTMLInputElement : element.querySelector('input, textarea, select') as HTMLInputElement | null;
+      input?.focus();
+    }, 120);
+  }
+
+  private matchDropdownItem(text: string, items: any[], fields: string[]): any | null {
+    return this.voiceParserService.matchDropdownValue(text, items || [], fields);
+  }
+
+  private isQuotationVoiceFieldActive(fieldName: string): boolean {
+    return this.isFieldActive(fieldName, this.quotationForm);
+  }
+
+  private isRouteVoiceFieldActive(routeIndex: number, fieldName: string): boolean {
+    const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup | null;
+    return this.isFieldActive(fieldName, routeForm || undefined);
+  }
+
+  private isCargoVoiceFieldActive(routeIndex: number, cargoIndex: number, fieldName: string): boolean {
+    const cargoForm = this.quoteCargo(routeIndex).at(cargoIndex) as FormGroup | null;
+    return this.isFieldActive(fieldName, cargoForm || undefined);
+  }
+
+  private isProductVoiceFieldActive(routeIndex: number, cargoIndex: number, productIndex: number, fieldName: string): boolean {
+    const productForm = this.quoteProducts(routeIndex, cargoIndex).at(productIndex) as FormGroup | null;
+    return this.isFieldActive(fieldName, productForm || undefined);
+  }
+
+  private isFieldActive(fieldName: string, formGroup?: FormGroup | null): boolean {
+    if (!formGroup) return false;
+
+    const control = formGroup.get(fieldName);
+    if (!control) return false;
+
+    if (control.disabled) return false;
+
+    if (fieldName === 'CustomerBranchSid' && this.quotationForm.get('LeadOrCustomer')?.value === false) {
+      return false;
+    }
+
+    if (fieldName === 'PreCustomerMasterSid' && this.quotationForm.get('LeadOrCustomer')?.value === true) {
+      return false;
+    }
+
+    return true;
+  }
+
   // applyTariff(tariffData:any){
     
   //   const isEmpty = this.checkIfLastChargeEmpty(this.currentRouteIndex,this.currentCarrierIndex);
@@ -4403,6 +5404,19 @@ ${this.userData.userName}`;
     DocumentSid: this.QuoteHeaderSid
   }
     this.commonService.documentData.set(data)
+  }
+
+  openDocRef() {
+    const modalRef = this.ngbModal.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.QuoteHeaderSid;
   }
 
   logFormValue() {
@@ -6277,17 +7291,17 @@ checkRateLockPermissions(): void {
     return;
   }
 
-  // Split by comma and trim/lowercase each email
+  // Split by comma and trim each email (case-sensitive comparison)
   const allowedEmails = configValue
     .split(',')
-    .map((email: string) => email.trim().toLowerCase())
+    .map((email: string) => email.trim())
     .filter((email: string) => email.length > 0); // Remove empty strings
   
   // console.log('Allowed Emails:', allowedEmails);
-  // console.log('Current User Email (lowercase):', this.currentUserEmail.toLowerCase());
+  // console.log('Current User Email:', this.currentUserEmail.trim());
 
   // Check if current user's email is in the allowed list
-  this.canUserLockRates = allowedEmails.includes(this.currentUserEmail.toLowerCase());
+  this.canUserLockRates = allowedEmails.includes(this.currentUserEmail.trim());
   
 
   // Enable or disable the RateLock checkbox based on permission

@@ -329,12 +329,18 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
   const isUAECompany = isUaeCompany(data);
 
 
-  const gstVatNo =
-    printData?.GSTVAT ||
+  const gstNo =
     printData?.GST_VAT ||
     printData?.GSTNo ||
+    printData?.GSTVAT ||
+    invoice?.customerGstVat ||
+    '';
+
+  const vatNo =
     printData?.VATNo ||
     printData?.vatNo ||
+    printData?.GST_VAT ||
+    printData?.GSTVAT ||
     invoice?.customerGstVat ||
     (data as any)?.companyVatNo ||
     '';
@@ -423,7 +429,7 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
       columns: [
         { text: 'GST No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
         { text: ':', width: COLON_WIDTH },
-        { text: gstVatNo, width: '*' }
+        { text: gstNo, width: '*' }
       ],
       margin: [0, 0, 0, 7]
     });
@@ -436,13 +442,13 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
       ],
       margin: [0, 0, 0, 7]
     });
-  } else if (isUAECompany || gstVatNo) {
+  } else if (isUAECompany || vatNo) {
     // ✅ Show VAT No. if UAE company OR if vatNo value exists (fallback safety)
     rightStack.push({
       columns: [
         { text: 'VAT No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
         { text: ':', width: COLON_WIDTH },
-        { text: gstVatNo, width: '*' }
+        { text: vatNo, width: '*' }
       ],
       margin: [0, 0, 0, 7]
     });

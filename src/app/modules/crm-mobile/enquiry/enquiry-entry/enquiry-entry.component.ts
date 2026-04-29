@@ -1049,6 +1049,7 @@ ${this.userData.userName}`;
         next: (resp: any) => {
           if (resp?.status !== false) {
             this.removeRouteAt(index);
+            this.loadEnquiry(this.EnquiryHeaderSid);
           } else {
             this.appSettingsService.showError('Error deleting route');
           }
@@ -3112,6 +3113,147 @@ if (this.isTermsAndConditionsEnabled) {
     }
   }
 
+  // Print Send Mail
+  async sendMail() {
+    const enquiry = this.enquiryData || this.rateRequestData;
+    if (!enquiry) {
+      this.appSettingService.showWarning('No enquiry data found.');
+      return;
+    }
+
+    try {
+      this.spinner.show();
+
+      const pdfBlob = await this.generatePDFBlob();
+      if (!pdfBlob) {
+        this.spinner.hide();
+        this.appSettingService.showError('Error generating PDF for email.');
+        return;
+      }
+
+      const enquiryNumber = enquiry?.EnquiryNumber || 'Enquiry';
+      const pdfFileName = `Enquiry_${enquiryNumber}`.replace(/[\\/:*?"<>|]+/g, '_') + '.pdf';
+      const pdfFile = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
+      const customerBranchSid = Number(enquiry?.CustomerBranchSid || this.rateRequestForm?.get('CustomerBranchSid')?.value);
+      const menuMasterSid = this.getCurrentEnquiryMenuMasterSid();
+      let toEmail = this.splitEmailForSend(enquiry?.Email || '');
+
+      if (toEmail.length === 0) {
+        toEmail = await this.emailTriggerService.resolveCustomerBranchEmailsByMenu({
+          customerBranchSid,
+          menuMasterSid
+        });
+      }
+
+      if (toEmail.length === 0) {
+        this.spinner.hide();
+        this.appSettingService.showError('No email found in enquiry or customer branch email.');
+        return;
+      }
+
+      const route = enquiry?.enquiryRoute?.[0] || {};
+      const POL = route?.POLSid;
+      const POD = route?.PODSid;
+      const FPD = route?.FDPSid;
+      const formattedPOL = getFormattedPort(this.ports, POL);
+      const formattedPOD = getFormattedPort(this.ports, POD);
+      const formattedFPD = getFormattedPort(this.ports, FPD);
+      const departmentName =
+        this.departments.find(dept => Number(dept.DepartmentMasterSid) === Number(enquiry?.DepartmentMasterSid))?.departmentName ||
+        this.selectedDepartment ||
+        '';
+      const { subject, body } = this.emailTriggerService.buildOperationEmailContent({
+        documentName: 'Enquiry',
+        documentNo: enquiryNumber,
+        documentDate: enquiry?.EnquiryDate ? this.datePipe.transform(enquiry.EnquiryDate) : '',
+        pol: formattedPOL,
+        pod: formattedPOD,
+        fpd: formattedFPD,
+        userName: this.userData?.userName || ''
+      });
+
+      const modalRef = this.ngbModal.open(EmailEntryComponent, {
+        size: 'lg',
+        centered: true,
+        backdrop: 'static'
+      });
+
+      modalRef.componentInstance.setContent = {
+        EmailTo: toEmail,
+        EmailCC: this.userData?.userEmail ? [this.userData.userEmail] : [],
+        EmailBCC: [],
+        Subject: subject,
+        Mailbody: body,
+        attachments: [pdfFile],
+        context: {
+          menuName: 'Enquiry',
+          EnquiryNo: enquiryNumber,
+          date: enquiry?.EnquiryDate ? this.datePipe.transform(enquiry.EnquiryDate) : '',
+          DepartmentName: departmentName,
+          POO: getFormattedPort(this.ports, route?.PORSid),
+          POL: formattedPOL,
+          POD: formattedPOD,
+          FPD: formattedFPD,
+          customerName: enquiry?.CustomerName || ''
+        }
+      };
+
+      modalRef.componentInstance.dataChange.subscribe(() => {
+        const payload = {
+          tableName: 'EnquiryHeader',
+          recordId: String(enquiry?.EnquiryHeaderSid),
+          operation: 'EMAIL',
+          changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+          changes: {
+            action: 'Email Send'
+          },
+          newVal: {
+            Email: 'Mail Send'
+          }
+        };
+
+        this.operationService.createAuditLog(payload).subscribe({
+          next: () => { },
+          error: (err) => console.error(err)
+        });
+      });
+
+      this.spinner.hide();
+    } catch (error) {
+      this.spinner.hide();
+      console.error('Enquiry email error:', error);
+      this.appSettingService.showError('Error sending enquiry email.');
+    }
+  }
+
+  private getCurrentEnquiryMenuMasterSid(): number | null {
+    const syncedMenuSid = this.sidebarService.syncMenuIdBeforeSubmit("Enquiry");
+    const candidates = [
+      this.enquiryData?.MenuMasterSid,
+      this.rateRequestData?.MenuMasterSid,
+      syncedMenuSid,
+      this.MenuMasterSid,
+      this.currentMenuId,
+      Number(sessionStorage.getItem('currentMenuId'))
+    ];
+
+    for (const value of candidates) {
+      const menuSid = Number(value);
+      if (Number.isFinite(menuSid) && menuSid > 0) {
+        return menuSid;
+      }
+    }
+
+    return null;
+  }
+
+  private splitEmailForSend(value: string | string[]): string[] {
+    const source = Array.isArray(value) ? value.join(',') : (value || '');
+    return source
+      .split(/[;,]/)
+      .map(email => email.trim())
+      .filter(email => !!email);
+  }
   // Legacy method using html2canvas (kept for fallback)
   async downloadPDFLegacy() {
     this.showPrintLogo = false;

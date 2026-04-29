@@ -69,6 +69,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import * as XLSX from 'xlsx';
 import { SearchableDropdownModal } from 'src/app/component/searchable-dropdown/searchable-dropdown-modal.component';
 import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/dial-code-dropdown.component';
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 
 
 @Component({
@@ -462,6 +463,9 @@ private normalizeStatus(value: string): 'A' | 'S' {
   btnCustomerSaveDisabled: boolean = true;
   userData: any;
   currentCounty: any;
+  currentUserEmail: string = '';
+  customerNameConfig: any = null;
+  canEditCustomerName: boolean = false;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
 
@@ -578,6 +582,7 @@ this.mps.init().subscribe();
       this.userData = userProfile;
       this.currentCounty = this.userData?.countryMaster?.countryName;
       this.currentCountyID = this.userData?.countryMaster?.CountryMasterSid;
+      this.currentUserEmail = this.getUserEmail();
       this.isCurrentUserIndian = this.isUserCountryIndia();
       console.log('currentCountry', this.currentCounty);
       console.log('User Profile loaded:', this.userData);
@@ -592,6 +597,7 @@ this.mps.init().subscribe();
     this.loadAllSpfields();
     // this.loadDepartments();
     this.loadMenus();
+    this.loadCustomerNameConfig();
     this.setupAirlineValidation();
     if (!this.isEditMode) {
     // For new customer, only show Party and Branch tabs initially
@@ -635,6 +641,7 @@ this.mps.init().subscribe();
       if (this.CustomerMasterSid) {
         this.isEditMode = true;
         this.customerForm.get('status')?.enable();
+        this.checkCustomerNamePermissions();
         this.showAdditionalTabs = true;
       
       // Update tabs to show all sections in edit mode
@@ -2057,9 +2064,69 @@ onCompanyTypeChange(): void {
     return email || '';
   }
 
+  async loadCustomerNameConfig(): Promise<void> {
+    try {
+      if (!this.currentCompany?.CompanyMasterSid) {
+        console.warn('No company ID available for customer name config');
+        return;
+      }
+
+      const response: any = await firstValueFrom(
+        this.masterService.getAllCompanyConfigsByCompanyId(this.currentCompany.CompanyMasterSid)
+      );
+      const configs = response?.data ?? response ?? [];
+      this.customerNameConfig = Array.isArray(configs)
+        ? configs.find((c: any) => c.ConfigurationName === 'CustomerNameUpdateUsers')
+        : null;
+    } catch (error) {
+      console.error('Error loading customer name configuration:', error);
+      this.customerNameConfig = null;
+      this.canEditCustomerName = false;
+    } finally {
+      this.checkCustomerNamePermissions();
+    }
+  }
+
+  checkCustomerNamePermissions(): void {
+    const customerNameControl = this.customerForm?.get('CustomerName');
+    if (!customerNameControl) return;
+
+    // Keep create mode unchanged.
+    if (!this.isEditMode) {
+      this.canEditCustomerName = true;
+      customerNameControl.enable({ emitEvent: false });
+      return;
+    }
+
+    if (!this.customerNameConfig || !this.currentUserEmail) {
+      this.canEditCustomerName = false;
+      customerNameControl.disable({ emitEvent: false });
+      return;
+    }
+
+    const configValue = this.customerNameConfig.ConfigurationValue;
+    if (!configValue || typeof configValue !== 'string') {
+      this.canEditCustomerName = false;
+      customerNameControl.disable({ emitEvent: false });
+      return;
+    }
+
+    const allowedEmails = configValue
+      .split(',')
+      .map((email: string) => email.trim())
+      .filter((email: string) => email.length > 0);
+
+    this.canEditCustomerName = allowedEmails.includes(this.currentUserEmail.trim());
+    if (this.canEditCustomerName) {
+      customerNameControl.enable({ emitEvent: false });
+    } else {
+      customerNameControl.disable({ emitEvent: false });
+    }
+  }
+
 
   hasAnyDropdownPermission(): boolean {
-    const dropdownButtons = ['Edoc','Authority', 'Email'];
+    const dropdownButtons = ['Edoc','Authority', 'Email' , 'Document Reference'];
     return dropdownButtons.some((btn) => this.permissions?.includes(btn));
     }
 
@@ -2097,7 +2164,7 @@ loadCustomerData(customerId: number) {
        if (this.isEditMode) {
         this.customerForm.get('CountryMasterSid')?.disable();
         this.customerForm.get('CurrencyMasterSid')?.disable();
-        this.customerForm.get('CustomerName')?.disable();
+        this.checkCustomerNamePermissions();
       }
       this.autoSelectCurrency();
       this.updateTaxIdLabel();
@@ -2789,6 +2856,9 @@ getTaxIdName(): string {
       // SINGLE PAYLOAD - Everything included
       const updatePayload = this.prepareUpdatePayload();
       await this.updateCustomerWithAllData(updatePayload);
+      if (this.hasCustomerNameChanged()) {
+        this.appSettingService.showWarning('The updated customer name will be reflected in new records only.');
+      }
     } else {
       // Create new customer
       const createPayload = this.prepareCreatePayload();
@@ -2800,6 +2870,12 @@ getTaxIdName(): string {
   } finally {
     this.btnDisable = false;
   }
+}
+
+private hasCustomerNameChanged(): boolean {
+  const currentName = (this.customerForm.getRawValue()?.CustomerName || '').toString().trim();
+  const originalName = (this.customerName || '').toString().trim();
+  return !!currentName && currentName !== originalName;
 }
 // Helper method to get the first invalid field
 private getFirstInvalidField(): string {
@@ -3578,6 +3654,19 @@ private extractApiErrorMessage(error: any, fallbackMessage: string): string {
   }
 
       this.commonService.documentData.set(data)
+  }
+
+  openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.CustomerMasterSid;
   }
 
 

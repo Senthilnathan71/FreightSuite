@@ -72,6 +72,7 @@ import { th } from 'date-fns/locale';
 import * as JsBarcode from 'jsbarcode';
 import { CreditValidationApiService } from '../../credit-request.service';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
+import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -1278,6 +1279,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
     const isHaz = this.isHazardous(data?.IsHaz);
     const productForm = this.fb.group({
       BookingProductSid: [data?.BookingProductSid || null],
+      BookingCargoSid: [data?.BookingCargoSid || null],
       ProductName: [data?.ProductName || null,[Validators.required]],
       isProductFreeText: [data?.isProductFreeText || false],
       ShippingBillNo: [data?.ShippingBillNo || ''],
@@ -1722,6 +1724,11 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
   get isSuspended() : boolean {
     return this.bookingData?.status !== 'A';
+  }
+
+  get hasHouseJobCreated(): boolean {
+    const houseJobSid = this.bookingData?.HouseJobSid ?? this.bookingHeader?.HouseJobSid ?? this.bookingData?.houseJob?.HouseJobSid ?? this.b?.['HouseJobSid']?.getRawValue();
+    return houseJobSid !== null && houseJobSid !== undefined && `${houseJobSid}`.trim() !== '';
   }
   
   patchValues(response: any) {
@@ -4617,6 +4624,20 @@ ${this.userData['userName']}`;
   console.log(this.MenuMasterSid)
       this.commonService.documentData.set(data)
 }
+
+openDocRef() {
+    const currentMenuId = this.bookingData?.MenuMasterSid;
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);
+    modalRef.componentInstance.DocumentSid = this.BookingHeaderSid;
+  }
 
 
 

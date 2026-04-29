@@ -64,6 +64,13 @@ export class CompanyConfigComponent implements OnInit {
       defaultValue: []
     },
     {
+      name: 'CustomerNameUpdateUsers',
+      displayName: 'Customer Name Update Users',
+     
+      type: 'email-array' as const,
+      defaultValue: []
+    },
+    {
       name: 'ExchangeJVCOA',
       displayName: 'Exchange JV COA',
       

@@ -61,6 +61,12 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
   isLoadingGlobalCounts = false;
   error: string | null = null;
   successMessage: string | null = null;
+  animatedTotalActivities = 0;
+  animatedPendingCount = 0;
+  animatedProcessedCount = 0;
+  animatedOverdueCount = 0;
+  animatedTotalUsersCount = 0;
+  animatedCompletedThisWeek = 0;
 
   sortColumn: SummarySortColumn = 'userName';
   sortDirection: 'asc' | 'desc' = 'asc';
@@ -68,6 +74,7 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
   private searchDebounceTimeout: any;
+  private animationTimers: Partial<Record<string, any>> = {};
 
   constructor(
     private activityService: ActivityAllocationService,
@@ -105,6 +112,7 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.clearTimeouts();
+    this.clearAnimationTimers();
   }
 
  
@@ -147,6 +155,7 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
           );
 
           if (this.mode === 'All') {
+            this.syncAnimatedCounts();
             this.cdr.detectChanges();
           }
         } else {
@@ -156,6 +165,7 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
           this.cachedProcessedRows = [];
           this.cachedGlobalPendingCount = 0;
           this.cachedGlobalProcessedCount = 0;
+          this.syncAnimatedCounts();
           this.cdr.detectChanges();
         }
       });
@@ -195,6 +205,7 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
         this.rows = data || [];
         this.applySortingAndFiltering();
         this.isLoading = false;
+        this.syncAnimatedCounts();
         this.cdr.detectChanges();
         console.log('✅ [ModeLoad] Complete for mode:', mode);
       });
@@ -263,6 +274,7 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
     }
 
     this.mode = newMode;
+    this.syncAnimatedCounts(true);
     this.loadSummaryForMode(this.mode);
 
     if (this.mode === 'All') {
@@ -411,6 +423,7 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
   clearSearch(): void {
     this.searchText = '';
     this.applySortingAndFiltering();
+    this.syncAnimatedCounts();
   }
 
   private filterDataBySearch(data: ResourceSummaryRow[]): ResourceSummaryRow[] {
@@ -462,6 +475,7 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
     });
 
     this.displayRows = rowsWithTotal;
+    this.syncAnimatedCounts();
     this.cdr.detectChanges();
   }
 
@@ -534,10 +548,6 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
     this.openWorkload(stage, row);
   }
 
-  openConfig(): void {
-    this.router.navigate(['/settings/activity-allocation/config']);
-  }
-
   onReportClick(): void {
     if (!this.displayRows.length) {
       this.appSettingService.showWarning('No data available to export.');
@@ -555,6 +565,7 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
     
     if (this.mode === 'All') {
       this.resetGlobalCounts();
+      this.syncAnimatedCounts(true);
       this.triggerGlobalLoad();
     }
 
@@ -563,10 +574,85 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
 
   
 
+  private syncAnimatedCounts(reset = false): void {
+    if (reset) {
+      this.clearAnimationTimers();
+      this.animatedTotalActivities = 0;
+      this.animatedPendingCount = 0;
+      this.animatedProcessedCount = 0;
+      this.animatedOverdueCount = 0;
+      this.animatedTotalUsersCount = 0;
+      this.animatedCompletedThisWeek = 0;
+    }
+
+    this.animateCount('animatedTotalActivities', this.totalActivities);
+    this.animateCount('animatedPendingCount', this.pendingCount);
+    this.animateCount('animatedProcessedCount', this.processedCount);
+    this.animateCount('animatedOverdueCount', this.overdueCount);
+    this.animateCount('animatedTotalUsersCount', this.totalUsersCount);
+    this.animateCount('animatedCompletedThisWeek', this.completedThisWeek);
+  }
+
+  private animateCount(
+    key:
+      | 'animatedTotalActivities'
+      | 'animatedPendingCount'
+      | 'animatedProcessedCount'
+      | 'animatedOverdueCount'
+      | 'animatedTotalUsersCount'
+      | 'animatedCompletedThisWeek',
+    target: number,
+  ): void {
+    if (this.animationTimers[key]) {
+      clearInterval(this.animationTimers[key]);
+      this.animationTimers[key] = null;
+    }
+
+    const safeTarget = Math.max(0, Math.floor(target || 0));
+    const start = Number(this[key]) || 0;
+
+    if (start === safeTarget) {
+      return;
+    }
+
+    if (safeTarget < start) {
+      this[key] = safeTarget;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const durationMs = 800;
+    const steps = 30;
+    const increment = Math.max(1, Math.ceil((safeTarget - start) / steps));
+    const intervalMs = Math.max(20, Math.floor(durationMs / steps));
+
+    this.animationTimers[key] = setInterval(() => {
+      const nextValue = Math.min(safeTarget, (Number(this[key]) || 0) + increment);
+      this[key] = nextValue;
+
+      if (nextValue >= safeTarget) {
+        clearInterval(this.animationTimers[key]);
+        this.animationTimers[key] = null;
+      }
+
+      this.cdr.detectChanges();
+    }, intervalMs);
+  }
+
   private clearTimeouts(): void {
     if (this.searchDebounceTimeout) {
       clearTimeout(this.searchDebounceTimeout);
       this.searchDebounceTimeout = null;
     }
+  }
+
+  private clearAnimationTimers(): void {
+    Object.keys(this.animationTimers).forEach(key => {
+      const timer = this.animationTimers[key];
+      if (timer) {
+        clearInterval(timer);
+      }
+      this.animationTimers[key] = null;
+    });
   }
 }

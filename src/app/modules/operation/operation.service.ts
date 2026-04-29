@@ -155,8 +155,8 @@ searchHouseJob(payload: any) {
   );
 }
 
-  deleteHouseJobProduct(id: number) {
-    return this.http.delete<{ data: any }>(`house-job/product/${id}`).pipe(
+  deleteHouseJobProduct(id: number,updatedBy?: string) {
+    return this.http.delete<{ data: any }>(`house-job/product/${id}`,{body: {updatedBy}}).pipe(
       map((resp) => {
         return resp;
       })
@@ -186,8 +186,8 @@ searchHouseJob(payload: any) {
     );
   }
 
-  deleteCostRevenueCharge(CostRevenueChargesSid: number) {
-    return this.http.delete<{ data: any }>(`operation-common/delete-cost-revenue/${CostRevenueChargesSid}`).pipe(
+  deleteCostRevenueCharge(CostRevenueChargesSid: number, updatedBy: string) {
+    return this.http.delete<{ data: any }>(`operation-common/delete-cost-revenue/${CostRevenueChargesSid}`,{body: {updatedBy}}).pipe(
       map((resp) => {
         return resp;
       })
@@ -801,16 +801,16 @@ processProductUpload(payload: any): Observable<any> {
     );
   }
 
-  softDeleteMasterJobConnection(MasterJobConnectionSid: number) {
-    return this.http.delete<{ data: any }>(`master-job/connection/delete/${MasterJobConnectionSid}`).pipe(
+  softDeleteMasterJobConnection(MasterJobConnectionSid: number,updatedBy?: string) {
+    return this.http.delete<{ data: any }>(`master-job/connection/delete/${MasterJobConnectionSid}`,{body: {updatedBy}}).pipe(
       map((resp) => {
         return resp;
       })
     );
   }
 
-  softDeleteHouseJobConnection(HouseJobConnectionSid: number) {
-  return this.http.delete<{ data: any }>(`house-job/connection/delete/${HouseJobConnectionSid}`).pipe(
+  softDeleteHouseJobConnection(HouseJobConnectionSid: number,updatedBy?: string) {
+  return this.http.delete<{ data: any }>(`house-job/connection/delete/${HouseJobConnectionSid}`,{body: {updatedBy}}).pipe(
     map((resp) => {
       return resp;
     })
@@ -818,8 +818,8 @@ processProductUpload(payload: any): Observable<any> {
 }
 
 
-  softDeleteMasterJobContainer(MasterJobContainerSid: number) {
-    return this.http.delete<{ data: any }>(`master-job/container/delete/${MasterJobContainerSid}`).pipe(
+  softDeleteMasterJobContainer(MasterJobContainerSid: number, updatedBy: string) {
+    return this.http.delete<{ data: any }>(`master-job/container/delete/${MasterJobContainerSid}`,{body: {updatedBy}}).pipe(
       map((resp) => {
         return resp;
       })
@@ -1472,9 +1472,9 @@ processProductUpload(payload: any): Observable<any> {
     );
   }
 
-  deleteCustomerCreditRequest(CustomerCreditRequestSid: number) {
+  deleteCustomerCreditRequest(CustomerCreditRequestSid: number, updatedBy: string) {
     return this.http.delete<{ status: boolean; message: string; data: any }>(
-      `credit-request/delete-credit-request/${CustomerCreditRequestSid}`
+      `credit-request/delete-credit-request/${CustomerCreditRequestSid}`,{body: {updatedBy}}
     ).pipe(
       map((resp) => {
         return resp;
@@ -1649,12 +1649,8 @@ processProductUpload(payload: any): Observable<any> {
     )
   }
 
-  deleteBoeById(BoeSid: number) {
-    return this.http.delete<{ data: any }>(`boe/${BoeSid}`).pipe(
-      map((resp) => {
-        return resp.data;
-      })
-    );
+  deleteBoeById(BoeSid: number,updatedBy?: string) {
+    return this.http.delete<{ status: boolean; data: any; message?: string }>(`boe/${BoeSid}`, { body: { updatedBy } });
   }
 
 
@@ -1692,8 +1688,8 @@ processProductUpload(payload: any): Observable<any> {
     )
   }
 
-  deleteVehicleById(BoeSid: number) {
-    return this.http.delete<{ data: any }>(`vehicle/${BoeSid}`).pipe(
+  deleteVehicleById(BoeSid: number,updatedBy: string) {
+    return this.http.delete<{ data: any }>(`vehicle/${BoeSid}`,{body: {updatedBy}}).pipe(
       map((resp) => {
         return resp.data;
       })

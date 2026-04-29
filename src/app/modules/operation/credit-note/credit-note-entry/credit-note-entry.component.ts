@@ -40,6 +40,7 @@ import {
   debounceTime,
   firstValueFrom,
   forkJoin,
+  map,
   Observable,
   of,
   Subject,
@@ -83,6 +84,7 @@ import {
 import { ToastrService } from 'ngx-toastr';
 import { PdfMakeService } from 'src/app/common/pdf';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
+import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 
 interface NgbDateStructLike {
   day: number;
@@ -3355,17 +3357,81 @@ export class CreditNoteEntryComponent {
     this.commonService.documentData.set(data);
   }
 
+  openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.headerId;
+  }
+
   async getAndStoreTandC(): Promise<void> {
     try {
-      const result = await firstValueFrom(this.getTandC());
+      const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+      const menuMasterSid = this.currentMenuId;
+      const documentSid = this.creditNoteData?.VoucherHeaderSid;
+
+      const payload = {
+        CompanyMasterSid: companyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
+        MenuMasterSid: menuMasterSid,
+        DocumentSid: documentSid,
+      };
+
+      const transactionPayload = {
+        CompanyMasterSid: companyMasterSid,
+        MenuMasterSid: menuMasterSid,
+        DocumentSid: documentSid
+      };
+
+      const getTermText = (item: any): string =>
+        String(item?.Terms || item?.TandC || '').trim().toLowerCase();
+
+      const isSameTerm = (a: any, b: any): boolean =>
+        (
+          a?.TandCTransactionSid &&
+          b?.TandCTransactionSid &&
+          a.TandCTransactionSid === b.TandCTransactionSid
+        ) ||
+        (
+          getTermText(a) === getTermText(b) &&
+          (a?.DocumentSid ?? documentSid ?? null) ===
+          (b?.DocumentSid ?? documentSid ?? null)
+        );
+
+      const result: any = await firstValueFrom(
+        this.isTermsAndConditionsEnabled
+          ? forkJoin({
+              tandc: this.masterService.getTandC(transactionPayload),
+              defaults: this.masterService.getTandCByCondition(payload)
+            })
+          : this.masterService.getTandC(transactionPayload).pipe(
+              map((tandc: any) => ({ tandc, defaults: null }))
+            )
+      );
+
       this.TandCFetched = true;
-      if (result.status) {
-        this.TandCList = result.data;
-      } else {
-        this.TandCList = [];
-      }
+      const tandcData = result?.tandc?.status && Array.isArray(result?.tandc?.data)
+        ? result.tandc.data
+        : [];
+      const defaultData = this.isTermsAndConditionsEnabled &&
+        result?.defaults?.status &&
+        Array.isArray(result?.defaults?.data)
+          ? result.defaults.data
+          : [];
+
+      this.TandCList = [...tandcData, ...defaultData].filter(
+        (item: any, index: number, arr: any[]) =>
+          index === arr.findIndex((x: any) => isSameTerm(x, item))
+      );
     } catch (error) {
       console.error(error);
+      this.TandCFetched = true;
       this.TandCList = [];
     }
   }

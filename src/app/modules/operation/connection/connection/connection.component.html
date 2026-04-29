@@ -221,7 +221,7 @@
                     </div>
             <aside class="col-md-4">
                 <div class="custom-form-group custom-form-group-select" [class.filled]="!!connectionForm.get('status')?.value">
-                    @if(c['TransactionSid']?.value){
+                    @if(c[connectionIdField]?.value){
                     <ng-select name="status" class="ng-select" formControlName="status" id="text-input">
                         <ng-option value="Active">Active</ng-option>
                         <ng-option value="Suspended">Suspended</ng-option>

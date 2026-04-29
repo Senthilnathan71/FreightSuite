@@ -1944,7 +1944,7 @@
             <button type="button" class="btn btn-sm btn-danger rounded-5 py-0" (click)="downloadPDF()" *ngIf="mps.canPrint('Enquiry', 'Download')">
                 <i class="fas fa-download me-1"></i> Download PDF
             </button>
-            <button type="button" class="btn btn-sm btn-success rounded-5 py-0" *ngIf="mps.canPrint('Enquiry', 'Send Mail')">
+            <button type="button" class="btn btn-sm btn-success rounded-5 py-0" *ngIf="mps.canPrint('Enquiry', 'Send Mail')" (click)="sendMail()">
                 <i class="fas fa-envelope me-1"></i> Send Email
             </button>
             <button type="button" class="btn-close btn-close-white" aria-label="Close"
@@ -2377,7 +2377,7 @@
 
 
                 <ng-container *ngFor="let route of enquiryData?.enquiryRoute; let routeIndex = index">
-                    <div style="margin-top: 0; border-top: 1px solid #000;" [style.marginTop.px]="routeIndex === 0 ? 0 : 12">
+                    <div style="margin-top: 0;" [style.marginTop.px]="routeIndex === 0 ? 0 : 0">
                      
 <div>
   <div style="display:flex; flex-direction:row; flex-wrap:nowrap; align-items:flex-start; margin:0; padding:10px 15px;  box-sizing:border-box; line-height:1.2;">
@@ -2595,39 +2595,39 @@
 
                 @if (selectedCargoMode === 'FCL') {
                 <td style="border:1px solid #000; padding:2px 4px; border-left:none;" colspan="5"></td>
-                <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right;font-weight: bolder;">
                     Total
                 </td>
-                <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right;font-weight: bolder;">
                     {{ calculateRouteGrossWeight(route) | number:'1.3-3' }}
                 </td>
-                <td style="border:1px solid #000; padding:2px 4px; text-align:right; border-right:none;">
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right; border-right:none;font-weight: bolder;">
                     {{ calculateRouteCBM(route) | number:'1.3-3' }}
                 </td>
                 }
 
                 @if (selectedCargoMode === 'LCL') {
                 <td style="border:1px solid #000; padding:2px 4px; border-left:none;" colspan="6"></td>
-                <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right; font-weight: bolder;">
                     Total
                 </td>
-                <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right; font-weight: bolder;">
                     {{ calculateRouteGrossWeight(route) | number:'1.3-3' }}
                 </td>
-                <td style="border:1px solid #000; padding:2px 4px; text-align:right; border-right:none;">
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right; border-right:none; font-weight: bolder;">
                     {{ calculateRouteCBM(route) | number:'1.3-3' }}
                 </td>
                 }
 
                 @if (selectedCargoMode === 'ROAD') {
                 <td style="border:1px solid #000; padding:2px 4px; border-left:none;" colspan="5"></td>
-                <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right; font-weight: bolder;">
                     Total
                 </td>
-                <td style="border:1px solid #000; padding:2px 4px; text-align:right;">
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right; font-weight: bolder;">
                     {{ calculateRouteGrossWeight(route) | number:'1.3-3' }}
                 </td>
-                <td style="border:1px solid #000; padding:2px 4px; text-align:right; border-right:none;">
+                <td style="border:1px solid #000; padding:2px 4px; text-align:right; border-right:none; font-weight: bolder;">
                     {{ calculateRouteNetWeight(route) | number:'1.3-3' }}
                 </td>
                 }

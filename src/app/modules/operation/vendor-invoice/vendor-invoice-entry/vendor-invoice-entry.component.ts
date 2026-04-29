@@ -51,6 +51,7 @@ import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { offset } from '@popperjs/core';
 import { AppliedTaxMode, TaxCalculationService } from '../../services/tax-calculation.service';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
+import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -2870,6 +2871,19 @@ export class VendorInvoiceEntryComponent implements OnInit {
     this.commonService.documentData.set(data);
   }
 
+  openDocRef() {
+      const modalRef = this.modalService.open(DocReferenceComponent, {
+        size: 'lg',
+        centered: true,
+        backdrop: 'static'
+      });
+    
+      modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+      modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+      modalRef.componentInstance.MenuMasterSid = Number(this.currentMenuId);  
+      modalRef.componentInstance.DocumentSid = this.vendorInvoiceData?.VoucherHeaderSid;
+    }
+
   // Terms & Conditions Method
   openTandC() {
     this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
@@ -3172,15 +3186,60 @@ export class VendorInvoiceEntryComponent implements OnInit {
   async getAndStoreVendorTandC(): Promise<void> {
     try {
       this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+      this.currentCompany = this.currentCompany || this.appSettingService.getCurrentCompanyInfo();
       const payload = {
         MenuMasterSid: this.currentMenuId,
         DocumentSid: this.vendorInvoiceData?.VoucherHeaderSid
       };
-      const resp: any = await firstValueFrom(this.masterService.getTandCByCondition(payload));
+      const transactionPayload = {
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        MenuMasterSid: this.currentMenuId,
+        DocumentSid: this.vendorInvoiceData?.VoucherHeaderSid
+      };
+
+      const getTermText = (item: any): string =>
+        String(item?.Terms || item?.TandC || '').trim().toLowerCase();
+
+      const isSameTerm = (a: any, b: any): boolean =>
+        (
+          a?.TandCTransactionSid &&
+          b?.TandCTransactionSid &&
+          a.TandCTransactionSid === b.TandCTransactionSid
+        ) ||
+        (
+          getTermText(a) === getTermText(b) &&
+          (a?.DocumentSid ?? this.vendorInvoiceData?.VoucherHeaderSid ?? null) ===
+          (b?.DocumentSid ?? this.vendorInvoiceData?.VoucherHeaderSid ?? null)
+        );
+
+      const resp: any = await firstValueFrom(
+        this.isTermsAndConditionsEnabled
+          ? forkJoin({
+              tandc: this.masterService.getTandC(transactionPayload),
+              defaults: this.masterService.getTandCByCondition(payload)
+            })
+          : this.masterService.getTandC(transactionPayload).pipe(
+              map((tandc: any) => ({ tandc, defaults: null }))
+            )
+      );
+
       this.TandCFetched = true;
-      this.TandCList = resp?.status && Array.isArray(resp?.data) ? resp.data : [];
+      const tandcData = resp?.tandc?.status && Array.isArray(resp?.tandc?.data)
+        ? resp.tandc.data
+        : [];
+      const defaultData = this.isTermsAndConditionsEnabled &&
+        resp?.defaults?.status &&
+        Array.isArray(resp?.defaults?.data)
+          ? resp.defaults.data
+          : [];
+
+      this.TandCList = [...tandcData, ...defaultData].filter(
+        (item: any, index: number, arr: any[]) =>
+          index === arr.findIndex((x: any) => isSameTerm(x, item))
+      );
     } catch (err) {
       console.error('Error fetching vendor terms and conditions', err);
+      this.TandCFetched = true;
       this.TandCList = [];
     }
   }

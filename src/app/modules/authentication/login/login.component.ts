@@ -84,7 +84,7 @@ export class LoginComponent implements OnInit {
     // Auto-fill credentials if saved in localStorage
     const savedEmail = localStorage.getItem('rememberedEmail');
     const savedPassword = localStorage.getItem('rememberedPassword');
-    const decryptedPass = this.appSettingService.decrypt(savedPassword);
+    const decryptedPass = savedPassword ? this.appSettingService.decrypt(savedPassword) : null;
 
     if (savedEmail && decryptedPass) {
       this.loginform.patchValue({

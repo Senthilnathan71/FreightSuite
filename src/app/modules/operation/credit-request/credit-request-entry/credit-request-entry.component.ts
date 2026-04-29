@@ -27,6 +27,7 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { PreventMultiClickDirective } from "src/app/core/Directives/prevent-multi-click.directive";
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 
 @Component({
   selector: 'app-credit-request-entry',
@@ -388,6 +389,7 @@ creditForm.get('ApprovalStatus')?.valueChanges.subscribe(() => {
     const creditGroup = this.creditRequest.at(creditIndex) as FormGroup;
     const CustomerCreditRequestSid = creditGroup.get('CustomerCreditRequestSid')?.value;
     const approvalStatus = creditGroup.get('ApprovalStatus')?.value;
+    const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
 
     if (approvalStatus && approvalStatus !== 'Pending') {
       this.appSettingService.showWarning('Only pending credit requests can be deleted.');
@@ -406,7 +408,7 @@ creditForm.get('ApprovalStatus')?.valueChanges.subscribe(() => {
     const confirmed = confirm('Are you sure you want to delete this credit request?');
     if (!confirmed) return;
 
-    this.operationService.deleteCustomerCreditRequest(CustomerCreditRequestSid).subscribe({
+    this.operationService.deleteCustomerCreditRequest(CustomerCreditRequestSid,updatedBy).subscribe({
       next: (resp: any) => {
         if (resp?.status) {
           this.removeCreditRequestRow(creditIndex, true);
@@ -1333,6 +1335,19 @@ getDepartmentName(deptId: number, rowIndex: number): string {
         modalRef.componentInstance.idLabel = 'Customer Id';
         modalRef.componentInstance.idValue = this.customerData?.CustomerMasterSid;
       }
+
+      openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.customerData?.CustomerMasterSid;
+  }
       openTandC() {
         this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
         this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));

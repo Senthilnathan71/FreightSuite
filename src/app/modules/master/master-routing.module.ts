@@ -72,6 +72,7 @@ import { DocumnetGenerationListComponent } from './document-number-generation/do
 import { DocumnetGenerationEntryComponent } from './document-number-generation/documnet-generation-entry/documnet-generation-entry.component';
 import { ContainerActivityListComponent } from './container-activity/container-activity-list/container-activity-list.component';
 import { ContainerActivityEntryComponent } from './container-activity/container-activity-entry/container-activity-entry.component';
+import { UserActivityConfigurationComponent } from './user-activity-configuration/user-activity-configuration.component';
 import { ReportMasterEntryComponent } from '../../master/components/report-master-entry/report-master-entry.component';
 import { ReportMasterListComponent } from '../../master/components/report-master-list/report-master-list.component';
 import { ReportParameterConfigComponent } from '../../master/components/report-parameter-config/report-parameter-config.component';
@@ -86,6 +87,8 @@ import { VoucherPeriodEntryComponent } from './voucher-period/voucher-period-ent
 import { StandardChargeListComponent } from './standard-charge/standard-charge-list/standard-charge-list.component';
 import { StandardChargeEntryComponent } from './standard-charge/standard-charge-entry/standard-charge-entry.component';
 import { PrintMasterListComponent } from './print-master/print-master-list/print-master-list.component';
+import { PreCustomerEventListComponent } from './pre-customer-event/pre-customer-event-list/pre-customer-event-list.component';
+import { PreCustomerEventEntryComponent } from './pre-customer-event/pre-customer-event-entry/pre-customer-event-entry.component';
 
 export const MasterRoutes: Routes = [
   {
@@ -125,6 +128,30 @@ export const MasterRoutes: Routes = [
         data: {
           title: 'Edit Department',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Department' }],
+        },
+      },
+      {
+        path: 'pre-customer-event/list',
+        component: PreCustomerEventListComponent,
+        data: {
+          title: 'Pre-Customer Events',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Pre-Customer Events' }],
+        },
+      },
+      {
+        path: 'pre-customer-event/entry',
+        component: PreCustomerEventEntryComponent,
+        data: {
+          title: 'Add Event',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Pre-Customer Events' }],
+        },
+      },
+      {
+        path: 'pre-customer-event/entry/:id',
+        component: PreCustomerEventEntryComponent,
+        data: {
+          title: 'Edit Event',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Pre-Customer Events' }],
         },
       },
       {
@@ -1146,7 +1173,19 @@ export const MasterRoutes: Routes = [
         { title: 'Container Activity' },
       ]
     }
-  },  
+  },
+  {
+    path: 'user-activity-configuration',
+    component: UserActivityConfigurationComponent,
+    data: {
+      title: 'User Activity Configuration',
+      urls: [
+        { title: 'Master', url: '/master' },
+        { title: 'User Activity Configuration' },
+      ],
+    },
+  },
+
   {
     path: 'report-master/list',
     component: ReportMasterListComponent,

@@ -75,6 +75,11 @@
                             <div style="width:130px;font-weight: bolder;"><strong>Bank</strong></div>
                             <div>: {{ getBankName(receiptPrintData?.BankCOA) }}</div>
                         </div>
+
+                        <div style="display:flex; ">
+                            <div style="width:130px;font-weight: bolder;"><strong>Address</strong></div>
+                            <div>: {{ receiptPrintData?.PartyAddress }}</div>
+                        </div>
                     </div>
 
                     <!-- RIGHT COLUMN -->
@@ -127,7 +132,7 @@
 
                     <tr *ngFor="let item of getDrDetails()">
                         <td style="border:1px solid black; padding:4px;text-align:start;border-left: none;">
-                            {{getLedgerName(item?.COAMasterSid)}}</td>
+                            {{ getPrintLedgerDisplay(item) }}</td>
                         <td style="border:1px solid black; padding:4px; text-align:start; border-left:none;">
                             {{item?.Narration}}
                         </td>

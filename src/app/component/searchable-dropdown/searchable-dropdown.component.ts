@@ -64,6 +64,11 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
 
   constructor() {}
 
+  @HostListener('click')
+  onHostClick(): void {
+    this.open();
+  }
+
   ngOnInit() {
    
     if (this.control) {
@@ -116,6 +121,7 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
     this.onChange(value); 
     this.onTouched(); 
     this.itemSelected.emit(item); 
+    setTimeout(() => this.close(), 0);
   }
 
   getLabel(item: any): string {

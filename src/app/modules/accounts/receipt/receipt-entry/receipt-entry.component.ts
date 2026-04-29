@@ -83,6 +83,7 @@ import { errorLoggerWithToastr, ValidationMessageConfig } from 'src/app/common/e
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 
 /**
  * Receipt Entry Component
@@ -3679,6 +3680,19 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       DocumentSid: this.receiptData?.VoucherHeaderSid,
     };
     this.commonService.documentData.set(data);
+  }
+
+  openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.currentMenuId);  
+    modalRef.componentInstance.DocumentSid = this.receiptData?.VoucherHeaderSid;
   }
 
   openTandC() {

@@ -37,6 +37,7 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 
 
 @Component({
@@ -179,7 +180,7 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
   
 
   hasAnyDropdownPermission(): boolean {
-  const dropdownButtons = ['Edoc', 'Authority', 'Email'];
+  const dropdownButtons = ['Edoc', 'Authority', 'Email','Document reference'];
   return dropdownButtons.some((btn) => this.permissions?.includes(btn));
 }
 
@@ -391,19 +392,32 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
       case 'edoc':
         this.openEDoc();
         break;
-      // case 'terms':
-      //   this.openTandC();
-      //   break;
       case 'authority':
         this.openAuthority();
         break;
       case 'email':
         this.openEmail();
         break;
+      case 'document_reference':
+        this.openDocRef();
+        break;
       default:
         console.warn(`Unknown dropdown action: ${action}`);
     }
   }
+
+  openDocRef() {
+      const modalRef = this.modalService.open(DocReferenceComponent, {
+        size: 'lg',
+        centered: true,
+        backdrop: 'static'
+      });
+    
+      modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+      modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+      modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);
+      modalRef.componentInstance.DocumentSid = this.blclauseData?.BLClauseMasterSid;
+    }
 
   private updateHeaderActionState(): void {
     this.headerActions = this.headerActions.map(action => {

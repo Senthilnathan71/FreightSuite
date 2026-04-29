@@ -4524,13 +4524,50 @@ getAuditLogsNetwork(tableName: string, recordId?: string) {
   const url = email 
     ? `standard-charge/delete-detail/${StdTariffDetailSid}?email=${encodeURIComponent(email)}`
     : `standard-charge/delete-detail/${StdTariffDetailSid}`;
-    
+
   return this.http.delete<{ data: any }>(url).pipe(
     map((resp) => {
       return resp;
     })
   );
 }
+
+  // PreCustomerEvent (Master)
+  createPreCustomerEvent(payload: any) {
+    return this.http.post('pre-customer-event-master/create', payload).pipe(
+      map((res: any) => res)
+    );
+  }
+
+  updatePreCustomerEventById(id: number, payload: any) {
+    return this.http.patch<{ data: any }>(`pre-customer-event-master/update/${id}`, payload).pipe(
+      map((resp) => resp)
+    );
+  }
+
+  getPreCustomerEventById(id: number) {
+    return this.http.get<{ data: any }>(`pre-customer-event-master/fetch/${id}`).pipe(
+      map((resp) => resp)
+    );
+  }
+
+  deletePreCustomerEventById(id: number) {
+    return this.http.delete<{ data: any }>(`pre-customer-event-master/delete/${id}`).pipe(
+      map((resp) => resp)
+    );
+  }
+
+  searchPreCustomerEventList(payload: any) {
+    return this.http.post('pre-customer-event-master/search-list', payload).pipe(
+      map((res: any) => res)
+    );
+  }
+
+  getPreCustomerEventNotifications() {
+    return this.http.get('pre-customer-event-master/notifications').pipe(
+      map((res: any) => res)
+    );
+  }
 
 }
 

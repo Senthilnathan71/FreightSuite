@@ -546,16 +546,17 @@ export class ConnectionComponent implements OnInit {
     return;
   }
   const realIndex = ((this.page1 - 1) * this.pageSize1) + connectionIndex;
+  const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
 
   if (connectionSid) {
     let deleteApi$;
 
     if (this.screenName === 'Booking') {
-      deleteApi$ = this.operationService.deleteBookingConnection(connectionSid);
+      deleteApi$ = this.operationService.deleteBookingConnection(connectionSid,updatedBy);
     } else if (this.screenName === 'MasterJob') {
-      deleteApi$ = this.operationService.softDeleteMasterJobConnection(connectionSid);
+      deleteApi$ = this.operationService.softDeleteMasterJobConnection(connectionSid,updatedBy);
     } else if (this.screenName === 'HouseJob') {
-      deleteApi$ = this.operationService.softDeleteHouseJobConnection(connectionSid);
+      deleteApi$ = this.operationService.softDeleteHouseJobConnection(connectionSid,updatedBy);
     }
 
     if (!deleteApi$) {

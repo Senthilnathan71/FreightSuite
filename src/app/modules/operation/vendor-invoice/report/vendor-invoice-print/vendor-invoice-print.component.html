@@ -1001,8 +1001,8 @@
         } @else {
         <!-- For other companies - Use the existing TandCList -->
         <ul style="margin-top: 0; padding-left: 1.2rem">
-          @for (term of TandCList; track term) {
-          <li>{{ term.TandC }}</li>
+          @for (term of effectiveTermsAndConditions; track term) {
+          <li>{{ term.TandC || term.Terms }}</li>
           }
         </ul>
         }

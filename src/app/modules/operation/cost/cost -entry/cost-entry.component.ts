@@ -1035,7 +1035,7 @@ createRateFormGroup(data?: any): FormGroup {
     if (RatesSid) {
       const api = this.isBooking ?
       this.operationService.deleteBookingRate(RatesSid,updatedBy) :
-      this.operationService.deleteCostRevenueCharge(RatesSid);
+      this.operationService.deleteCostRevenueCharge(RatesSid,updatedBy);
       api.subscribe({
         next: (resp: any) => {
           if (resp.status) {

@@ -63,6 +63,7 @@ import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { extractBackendErrorMessage } from 'src/app/common/error-handling/payload-validation-handler';
 import { JobCardComponent } from '../../master-job/reports/job-card/job-card.component';
+import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 @Component({
   selector: 'app-mawbill-entry',
   standalone: true,
@@ -566,8 +567,15 @@ export class MawbillEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   }
 
   private buildUnsavedSnapshot(): any {
+    const rawFormValue = this.masterJobForm?.getRawValue() ?? null;
+    const {
+      isMawbFreeText,
+      ImportMasterJobNumber,
+      ...trackedFormValue
+    } = rawFormValue || {};
+
     return {
-      form: this.masterJobForm?.getRawValue() ?? null,
+      form: trackedFormValue,
       attachedBookings: this.attachedBookings?.getRawValue?.() ?? [],
       connections: this.connectionResult ?? [],
       rates: this.rateResult ?? [],
@@ -617,6 +625,8 @@ export class MawbillEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
     if (!this.mawbDebugEnabled) {
       return;
     }
+
+    // console.log(`[MAWB DEBUG] ${stage}`, payload);
   }
 
   private isAirImportDepartment(): boolean {
@@ -1296,29 +1306,43 @@ loadMawbStock(data: any): void {
 
   this.operationService.getMawbStockForHouseJob(payload).subscribe({
     next: (resp: any) => {
-      this.mawbStockSource = resp?.stockSource || 'NONE';
-      if (resp?.data && Array.isArray(resp.data)) {
-        this.mawbStockList = resp.data.map(stock => {
-          // Find the airline name from airlineList using the Agent ID
-          const airline = this.airlineList.find(a => a.CustomerMasterSid === stock.Agent);
-          return {
-            ...stock,
-            AgentName: airline ? airline.CustomerName : `Airline ID: ${stock.Agent}` // Fallback if not found
-          };
-        });
-      } else {
-        this.mawbStockList = [];
-      }
+      const applyStockState = () => {
+        this.mawbStockSource = resp?.stockSource || 'NONE';
+        if (resp?.data && Array.isArray(resp.data)) {
+          this.mawbStockList = resp.data.map(stock => {
+            // Find the airline name from airlineList using the Agent ID
+            const airline = this.airlineList.find(a => a.CustomerMasterSid === stock.Agent);
+            return {
+              ...stock,
+              AgentName: airline ? airline.CustomerName : `Airline ID: ${stock.Agent}` // Fallback if not found
+            };
+          });
+        } else {
+          this.mawbStockList = [];
+        }
 
-      if (this.mawbStockSource === 'NONE' || this.mawbStockList.length === 0) {
-        this.isMawbDropdownDisabled = true;
-        this.f['isMawbFreeText']?.setValue(true, { emitEvent: false });
-        this.showNoMawbStockWarningOnce(warningKey);
-      } else {
-        this.lastNoMawbStockWarningKey = null;
-        this.isMawbDropdownDisabled = false;
-        this.f['isMawbFreeText']?.setValue(false, { emitEvent: false });
-      }
+        if (this.mawbStockSource === 'NONE' || this.mawbStockList.length === 0) {
+          this.isMawbDropdownDisabled = true;
+          this.f['isMawbFreeText']?.setValue(true, { emitEvent: false });
+          this.showNoMawbStockWarningOnce(warningKey);
+        } else {
+          this.lastNoMawbStockWarningKey = null;
+          this.isMawbDropdownDisabled = false;
+          this.f['isMawbFreeText']?.setValue(false, { emitEvent: false });
+        }
+
+        this.logMawbDebug('loadMawbStock:success', {
+          warningKey,
+          stockSource: this.mawbStockSource,
+          stockCount: this.mawbStockList.length,
+          dropdownDisabled: this.isMawbDropdownDisabled,
+          freeText: this.f['isMawbFreeText']?.value,
+        });
+
+        this.cdr.detectChanges();
+      };
+
+      Promise.resolve().then(applyStockState);
     },
     error: (err) => {
       console.error('[MAWB Stock] Error:', err);
@@ -3302,6 +3326,19 @@ handleEdocChange(event: any) {
       modalRef.componentInstance.recordId = this.masterJobSid.toString();
       modalRef.componentInstance.screenName = 'MasterAirwayBill';
     }
+
+    openDocRef() {
+    const modalRef = this.modalService.open(DocReferenceComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  
+    modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+    modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+    modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
+    modalRef.componentInstance.DocumentSid = this.masterJobSid;
+  }
 
   openTandC() {
       this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));

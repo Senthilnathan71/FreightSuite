@@ -197,6 +197,8 @@
                             (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
                         <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
                             (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+                        <button *ngIf="mps.has('document_reference')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openDocRef()"><i
+              class="fas fa-paperclip me-1"></i>Document reference</button>
                     </div>
                 </div>
                        <button type="button" class="btn-close btn-close-white" aria-label="Close"
