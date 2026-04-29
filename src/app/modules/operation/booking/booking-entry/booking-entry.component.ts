@@ -4298,7 +4298,7 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
 
   resetForm() {
     if(this.isEditMode){
-      this.patchValues(this.bookingForm.getRawValue())
+      this.patchValues(this.bookingData)
     }else{
     const today = new Date();
     this.bookingForm.reset({
