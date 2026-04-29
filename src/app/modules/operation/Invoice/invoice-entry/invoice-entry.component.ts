@@ -2724,6 +2724,63 @@ isSeaDepartment(): boolean {
     return job?.MasterJobNumber || job?.displayLabel || '-';
   }
 
+  getHouseJobNumberByRow(detailIndex: number): string {
+    const row = this.details.at(detailIndex) as FormGroup;
+    const houseJobSid = Number(row?.get('HouseJobSid')?.value || 0);
+    if (!houseJobSid) {
+      return '-';
+    }
+
+    const matchedHouseJob = (this.houseJobList[detailIndex] || []).find(
+      (job: any) => Number(job?.HouseJobSid) === houseJobSid
+    );
+
+    return matchedHouseJob?.HBLNo || matchedHouseJob?.HouseJobNumber || '-';
+  }
+
+  navigateToDetailMasterJob(detailIndex: number): void {
+    const row = this.details.at(detailIndex) as FormGroup;
+    const masterJobSid = Number(row?.get('MasterJobSid')?.value || 0);
+    if (!masterJobSid) {
+      this.appSettingService.showWarning('Master Job not available');
+      return;
+    }
+
+    const departmentType = this.getDetailDepartmentType(row);
+    if (departmentType === 'AIR') {
+      this.router.navigate(['/operation/mawbill/entry', masterJobSid]);
+      return;
+    }
+
+    this.router.navigate(['/operation/master-job/entry', masterJobSid]);
+  }
+
+  navigateToDetailHouseJob(detailIndex: number): void {
+    const row = this.details.at(detailIndex) as FormGroup;
+    const houseJobSid = Number(row?.get('HouseJobSid')?.value || 0);
+    if (!houseJobSid) {
+      this.appSettingService.showWarning('House Job not available');
+      return;
+    }
+
+    const departmentType = this.getDetailDepartmentType(row);
+    if (departmentType === 'AIR') {
+      this.router.navigate(['/operation/hawb-bill/entry', houseJobSid]);
+      return;
+    }
+
+    this.router.navigate(['/operation/house-job/entry', houseJobSid]);
+  }
+
+  private getDetailDepartmentType(row: FormGroup): string {
+    const departmentMasterSid = Number(row?.get('DepartmentMasterSid')?.value || 0);
+    const department = this.departmentList.find(
+      (d: any) => Number(d?.DepartmentMasterSid) === departmentMasterSid
+    );
+
+    return String(department?.departmentType || '').trim().toUpperCase();
+  }
+
   // Print Modal Methods
   async openPrintModal() {
     if (!this.headerId) {

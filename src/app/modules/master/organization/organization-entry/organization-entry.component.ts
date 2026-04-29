@@ -2340,7 +2340,13 @@ private normalizeCustomerTypeValue(customerType: any): Record<string, string> {
         this.salesPersonList = salesman || [];
         this.allCS = cs?.data || [];
         this.allDocs = docs?.data || [];
-        this.currencyList = currency || [];
+        const rawCurrencies: any[] = Array.isArray(currency)
+        ? currency
+        : currency?.data || [];
+      this.currencyList = rawCurrencies.map((c: any) => ({
+        ...c,
+        countryName: c?.countryMaster?.countryName || ''
+      }));
 
         // Populate departmentListForSelect once to avoid getter re-computation
         this.departmentListForSelect = this.spDepartmentList.map(dept => ({
@@ -2889,7 +2895,8 @@ private getFirstInvalidField(): string {
         'CustomerAddress1': 'Address1',
         'CountryMasterSid': 'Country',
         'CurrencyMasterSid': 'Currency',
-        'CustomerAddress2': 'Address2'
+        'CustomerAddress2': 'Address2',
+        'PanType': this.isUaeCountry() ? 'VAT Number' : 'PAN Number',
       };
       
       return fieldMap[key] || key;
