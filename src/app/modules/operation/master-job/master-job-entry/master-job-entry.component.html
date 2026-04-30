@@ -101,16 +101,17 @@
                     </button>
                     <div ngbDropdownMenu aria-labelledby="dropdownUpload" class="shadow">
                         <button class="text-dark" ngbDropdownItem (click)="uploadPDF()"
-                            [disabled]="isLoading">HBL</button>
+                            [disabled]="isLoading || isJobClosed">HBL</button>
                         <button class="text-dark" ngbDropdownItem (click)="uploadManifest()"
-                            [disabled]="isLoading">Manifest</button>
+                            [disabled]="isLoading || isJobClosed">Manifest</button>
                     </div>
                 </div>
             </div>
-             <div class="action-group"  *ngIf="isEditMode">  
-                <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateToMasterJob()">    
+             <div class="action-group"  *ngIf="isEditMode">
+                <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateToMasterJob()"
+                    [disabled]="isJobClosed">
                     <i class="fas fa-plus me-1"></i>
-                    <span>Create </span>    
+                    <span>Create </span>
                     </button>
             </div>
             <div class="action-group">
@@ -121,7 +122,7 @@
             </div>
             <div class="action-group">
                 <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onReset()"
-                    [disabled]="isLoading">
+                    [disabled]="isLoading || isJobClosed">
                     <i class="fas fa-sync-alt me-1"></i>
                     <span>Reset</span>
                 </button>
@@ -130,7 +131,7 @@
 
 
             <div class="action-group" *ngIf="isEditMode">
-                <button class="btn btn-info btn-sm text-nowrap" (click)="sendManualMail()" [disabled]="isSuspended">
+                <button class="btn btn-info btn-sm text-nowrap" (click)="sendManualMail()" [disabled]="isSuspended || isJobClosed">
                     <i class="fas fa-envelope me-1"></i>
                     <span>Send Mail</span>
                 </button>
@@ -139,7 +140,7 @@
                 <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
                         [ngClass]="{'btn-info': !isDirty, 'btn-warning': isDirty}"
                         (click)="onSubmit()" appPreventMultiClick
-                        [disabled]="isLoading || isSaving || (isEditMode && isSuspended)">
+                        [disabled]="isLoading || isSaving || (isEditMode && (isSuspended || isJobClosed))">
 
                     <i class="fas fa-save me-1"></i>
                     <span>{{ isSaving ? "Saving..." : "Save" }}</span>
@@ -1792,13 +1793,14 @@
             </div>
         <div class="workspace-content" [hidden]="selectedTab !== 'Mail'">
             <app-email-entry [dataItems]="emailData" [resetTrigger]="emailResetTrigger"
-                [formData]="currentEmailFormValue" (dataChange)="handleEmailChange($event)">
+                [formData]="currentEmailFormValue" [isFormDisabled]="isFormDisabled"
+                (dataChange)="handleEmailChange($event)">
             </app-email-entry>
         </div>
 
         <div class="workspace-content" [hidden]="selectedTab !== 'Follow Up'">
             <app-follow-up screenName="MasterJob" [documentSid]="documentSid" [parentMailbodyTemplate]="parentMailbody"
-      [parentSubject]="parentSubject">
+      [parentSubject]="parentSubject" [isFormDisabled]="isFormDisabled">
             </app-follow-up>
         </div>
 
@@ -1940,6 +1942,7 @@
 
          <div class="workspace-content" *ngIf="selectedTab === 'Edoc'">
         <app-edoc [dataItems]="edocData" [resetTrigger]="edocResetTrigger" [formData]="currentEdocFormValue"
+            [isFormDisabled]="isFormDisabled"
             (dataEmitter)="handleEdocChange($event)">
         </app-edoc>
     </div>

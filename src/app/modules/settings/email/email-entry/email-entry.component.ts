@@ -43,6 +43,21 @@ export class EmailEntryComponent implements OnInit {
   @Input() resetTrigger: any;
   @Input() formData: any;
   @Input() customSendHandler?: (payload: { formValue: any; files: File[]; formattedMailBody: string }) => Promise<any>;
+  private _isFormDisabled: boolean = false;
+  @Input()
+  set isFormDisabled(value: boolean) {
+    this._isFormDisabled = value;
+    if (this.emailForm) {
+      if (this._isFormDisabled) {
+        this.emailForm.disable({ emitEvent: false });
+      } else {
+        this.emailForm.enable({ emitEvent: false });
+      }
+    }
+  }
+  get isFormDisabled(): boolean {
+    return this._isFormDisabled;
+  }
   @Input()
   set setContent(value: any) {
     this.parentMailContent = value;

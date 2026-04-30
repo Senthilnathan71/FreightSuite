@@ -72,7 +72,7 @@
       </div>
       <div class="action-group" *ngIf="isEditMode && !otherForm.get('SIConfirmationDate')?.value">
         <button class="btn btn-light-secondary btn-sm dofi-min-w-80" style="white-space: nowrap;"
-          (click)="sendSIMail()" [disabled]="isSendingSIMail || isSuspended">
+          (click)="sendSIMail()" [disabled]="isSendingSIMail || isSuspended || isJobClosed">
           <i class="fas me-1" [ngClass]="isSendingSIMail ? 'fa-spinner fa-spin' : 'fa-envelope'"></i>
           <span>{{ isSendingSIMail ? 'Sending...' : 'Send SI Mail' }}</span>
         </button>
@@ -143,13 +143,14 @@
         </button>
       </div>
       <div class="action-group">
-        <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()">
+        <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()"
+          [disabled]="isJobClosed">
           <i class="fas fa-sync-alt  me-1"></i>
           <span>Reset</span>
         </button>
       </div>
       <div class="action-group" *ngIf="isEditMode">
-        <button class="btn btn-info btn-sm text-nowrap" (click)="sendManualMail()" [disabled]="isSuspended">
+        <button class="btn btn-info btn-sm text-nowrap" (click)="sendManualMail()" [disabled]="isSuspended || isJobClosed">
           <i class="fas fa-envelope me-1"></i>
           <span>Send Mail</span>
         </button>
@@ -159,7 +160,7 @@
         [ngClass]="{'btn-info': !hasUnsavedChanges(), 'btn-warning': hasUnsavedChanges()}"
         appPreventMultiClick
         (click)="onSubmit()"
-        [disabled]="isSaving || isSubmitting || (isEditMode && isSuspended)">
+        [disabled]="isSaving || isSubmitting || (isEditMode && (isSuspended || isJobClosed))">
           <i class="fas me-1" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
           <span>{{ isSaving ? 'Saving...' : 'Save' }}</span>
           <span *ngIf="hasUnsavedChanges()"
@@ -1590,7 +1591,7 @@
     <div class="workspace-content" *ngIf="selectedTab === 'Cargo'">
       <div class="d-flex justify-content-end align-items-center gap-2 px-3 mb-2">
         <button class="btn btn-sm btn-info" type="button" (click)="addHouseJobCargo(undefined, false)"
-          *ngIf="selectedFCLLCL === 'FCL'" [disabled]="(isEditMode && isExportToImportLinked) || (isEditMode && isSuspended)">
+          *ngIf="selectedFCLLCL === 'FCL'" [disabled]="(isEditMode && isExportToImportLinked) || (isEditMode && (isSuspended || isJobClosed))">
           <i class="fas fa-plus me-1"></i> Add Cargo
         </button>
       </div>
@@ -3284,7 +3285,7 @@
 
     <div class="workspace-content" *ngIf="selectedTab === 'Follow Up'">
       <app-follow-up screenName="houseJob" [documentSid]="documentSid" [parentMailbodyTemplate]="parentMailbody"
-      [parentSubject]="parentSubject"
+      [parentSubject]="parentSubject" [isFormDisabled]="isFormDisabled"
       ></app-follow-up>
     </div>
 
@@ -3388,7 +3389,8 @@
 
     <div class="workspace-content" *ngIf="selectedTab === 'Edoc'">
       <app-edoc [dataItems]="edocData" screenName="houseJob" [resetTrigger]="edocResetTrigger"
-        [formData]="currentEdocFormValue" (dataEmitter)="handleEdocChange($event)">
+        [formData]="currentEdocFormValue" [isFormDisabled]="isFormDisabled"
+        (dataEmitter)="handleEdocChange($event)">
       </app-edoc>
     </div>
   </div>

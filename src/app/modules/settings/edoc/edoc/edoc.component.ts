@@ -49,6 +49,21 @@ export class EdocComponent implements OnInit, OnDestroy {
   attachDocumentSid: any
   previewFileType: any
   edocform: FormGroup;
+  private _isFormDisabled: boolean = false;
+  @Input()
+  set isFormDisabled(value: boolean) {
+    this._isFormDisabled = value;
+    if (this.edocform) {
+      if (this._isFormDisabled) {
+        this.edocform.disable({ emitEvent: false });
+      } else {
+        this.edocform.enable({ emitEvent: false });
+      }
+    }
+  }
+  get isFormDisabled(): boolean {
+    return this._isFormDisabled;
+  }
   minDate: NgbDateStruct;
   selectedFiles: File[] = [];
   currentCompany: any

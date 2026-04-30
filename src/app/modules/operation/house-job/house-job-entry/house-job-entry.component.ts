@@ -2114,6 +2114,10 @@ get isSuspended() : boolean {
     return this.housejobData?.status === 'S';
   }
 
+  get isJobClosed(): boolean {
+    return this.housejobData?.masterJob?.JobStatus === 'Closed';
+  }
+
   loadOtherLookups() {
     forkJoin({
       currencies: this.operationService.getAllCurrencies().pipe(catchError(err => of({ data: [] }))),
@@ -2209,7 +2213,8 @@ private loadMasterJobDetails(masterJobSid: number): void {
     this.bookingHeader = response;
     this.isExportToImportLinked = response?.masterJob?.others?.[0]?.ExportToImport === 'Y';
     const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
-    const shouldDisableForms = (this.isEditMode && response.status !== 'A');
+    const shouldDisableForms = (this.isEditMode && response.status !== 'A')
+      || (this.isEditMode && response?.masterJob?.JobStatus === 'Closed');
     this.selectedDepartment = selectedDepartment;
     this.selectedDepartmentType = selectedDepartment?.departmentType?.toUpperCase() || '';
     this.filterTabs();

@@ -513,6 +513,10 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     return this.masterJobData?.Status === 'S';
   }
 
+  get isJobClosed(): boolean {
+    return this.masterJobData?.JobStatus === 'Closed';
+  }
+
   private parseConfigBoolean(value: any, defaultValue: boolean): boolean {
     if (value === true || value === false) return value;
     if (value === null || value === undefined) return defaultValue;
@@ -1881,7 +1885,7 @@ onETDDateSelect(): void {
 
   private applyStatusDrivenFormState(): void {
     const statusValue = this.masterJobForm.get('Status')?.getRawValue();
-    const shouldDisableAll = this.isEditMode && statusValue === 'Suspended';
+    const shouldDisableAll = this.isEditMode && (statusValue === 'Suspended' || this.isJobClosed);
 
     if (shouldDisableAll) {
       this.disableAllForms();

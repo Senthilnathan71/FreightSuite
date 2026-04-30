@@ -51,6 +51,21 @@ export class FollowUpComponent implements OnInit, OnChanges {
   @Input() dataItems: any[] = [];
   @Input() resetTrigger: boolean = false;
   @Input() formData: any;
+  private _isFormDisabled: boolean = false;
+  @Input()
+  set isFormDisabled(value: boolean) {
+    this._isFormDisabled = value;
+    if (this.followupForm) {
+      if (this._isFormDisabled) {
+        this.followupForm.disable({ emitEvent: false });
+      } else {
+        this.followupForm.enable({ emitEvent: false });
+      }
+    }
+  }
+  get isFormDisabled(): boolean {
+    return this._isFormDisabled;
+  }
   FollowupSid?: any;
 
   /**
