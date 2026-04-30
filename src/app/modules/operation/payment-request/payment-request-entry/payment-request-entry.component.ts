@@ -284,7 +284,13 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       uoms: this.operationService.getAllUom(),
     }).subscribe({
       next: ({ currencies, departments, suppliers, charges, uoms }: any) => {
-        this.currencyList = currencies?.data || [];
+        const rawCurrencies: any[] = Array.isArray(currencies)
+        ? currencies
+        : currencies?.data || [];
+      this.currencyList = rawCurrencies.map((c: any) => ({
+        ...c,
+        countryName: c?.countryMaster?.countryName || ''
+      }));
         this.numberToWords.initializeCurrencies(this.currencyList);
         this.departmentList = departments?.data || [];
         this.supplierList = suppliers?.data || [];

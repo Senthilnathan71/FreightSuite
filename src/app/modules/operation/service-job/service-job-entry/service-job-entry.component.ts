@@ -501,7 +501,13 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
       this.filteredConsigneeList = [...this.consigneeList];
       this.countryOfCompany = String((userCountry?.data?.countryName)).trim().toLowerCase();
       this.portList = (ports.data || []).map(p => ({ ...p, Country: p.countryMaster?.countryName }));
-      this.currencyList = (currencies.data || []).map(c => ({ ...c, Country: c?.countryMaster?.countryName }));
+      const rawCurrencies: any[] = Array.isArray(currencies)
+        ? currencies
+        : currencies?.data || [];
+      this.currencyList = rawCurrencies.map((c: any) => ({
+        ...c,
+        countryName: c?.countryMaster?.countryName || ''
+      }));
     }))
   }
 

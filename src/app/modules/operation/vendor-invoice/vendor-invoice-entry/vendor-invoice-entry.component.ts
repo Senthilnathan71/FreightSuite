@@ -795,7 +795,13 @@ export class VendorInvoiceEntryComponent implements OnInit {
         }
         forkJoin(otherSource).subscribe({
           next: ({ currencies, uom, departments, masterJobs, hssac }: any) => {
-            this.currencyList = currencies.data || [];
+            const rawCurrencies: any[] = Array.isArray(currencies)
+        ? currencies
+        : currencies?.data || [];
+      this.currencyList = rawCurrencies.map((c: any) => ({
+        ...c,
+        countryName: c?.countryMaster?.countryName || ''
+      }));
             this.currencyConfigService.initializeConfigurations(this.currencyList);
             this.numberToWords.initializeCurrencies(this.currencyList);
             this.uomList = uom.data || [];

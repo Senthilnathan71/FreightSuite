@@ -2746,8 +2746,18 @@ isSeaDepartment(): boolean {
       return;
     }
 
-    const departmentType = this.getDetailDepartmentType(row);
-    if (departmentType === 'AIR') {
+    const detailContext = this.getDetailNavigationContext(detailIndex, row);
+    if (detailContext.isAgentHouseJob && detailContext.houseJobSid) {
+      this.router.navigate(['/operation/agent-master-air-waybill/entry', detailContext.houseJobSid]);
+      return;
+    }
+
+    if (detailContext.isServiceJob && detailContext.houseJobSid) {
+      this.router.navigate(['/operation/service-job/entry', detailContext.houseJobSid]);
+      return;
+    }
+
+    if (detailContext.departmentType === 'AIR') {
       this.router.navigate(['/operation/mawbill/entry', masterJobSid]);
       return;
     }
@@ -2763,13 +2773,59 @@ isSeaDepartment(): boolean {
       return;
     }
 
-    const departmentType = this.getDetailDepartmentType(row);
-    if (departmentType === 'AIR') {
+    const detailContext = this.getDetailNavigationContext(detailIndex, row);
+    if (detailContext.isAgentHouseJob) {
+      this.router.navigate(['/operation/agent-master-air-waybill/entry', houseJobSid]);
+      return;
+    }
+
+    if (detailContext.isServiceJob) {
+      this.router.navigate(['/operation/service-job/entry', houseJobSid]);
+      return;
+    }
+
+    if (detailContext.departmentType === 'AIR') {
       this.router.navigate(['/operation/hawb-bill/entry', houseJobSid]);
       return;
     }
 
     this.router.navigate(['/operation/house-job/entry', houseJobSid]);
+  }
+
+  private getDetailNavigationContext(detailIndex: number, row: FormGroup): {
+    departmentType: string;
+    houseJobSid: number;
+    isAgentHouseJob: boolean;
+    isServiceJob: boolean;
+  } {
+    const houseJobSid = Number(row?.get('HouseJobSid')?.value || 0);
+    const matchedHouseJob = (this.houseJobList[detailIndex] || []).find(
+      (job: any) => Number(job?.HouseJobSid) === houseJobSid
+    );
+
+    const jobType = String(
+      matchedHouseJob?.JobType ??
+      this.invoiceData?.houseJob?.JobType ??
+      ''
+    ).trim();
+    const isAgentHouseJob = jobType === 'Agent';
+
+    const detailServiceFlag = String(row?.get('IsServiceJob')?.value ?? '').trim().toUpperCase();
+    const houseServiceFlag = String(matchedHouseJob?.IsServiceJob ?? '').trim().toUpperCase();
+    const invoiceServiceFlag = String(this.invoiceData?.IsServiceJob ?? '').trim().toUpperCase();
+    const invoiceHouseServiceFlag = String(this.invoiceData?.houseJob?.IsServiceJob ?? '').trim().toUpperCase();
+    const isServiceJob =
+      detailServiceFlag === 'Y' ||
+      houseServiceFlag === 'Y' ||
+      invoiceServiceFlag === 'Y' ||
+      invoiceHouseServiceFlag === 'Y';
+
+    return {
+      departmentType: this.getDetailDepartmentType(row),
+      houseJobSid,
+      isAgentHouseJob,
+      isServiceJob,
+    };
   }
 
   private getDetailDepartmentType(row: FormGroup): string {
