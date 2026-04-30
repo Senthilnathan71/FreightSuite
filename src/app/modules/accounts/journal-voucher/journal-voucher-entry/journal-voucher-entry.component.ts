@@ -41,6 +41,7 @@ import { ToastrService } from 'ngx-toastr';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 import { SearchableDropdown } from "src/app/component/searchable-dropdown/searchable-dropdown.component";
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
 @Component({
@@ -142,6 +143,7 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
     displayLabels: ['Code', 'Name'],
     labelFields: ['HSSACCode'],
   };
+  CurrencyLookupConfig = DROPDOWN_CONFIGS.CURRENCY;
 
   LEDGERLookupConfig = {
     displayFields: ['LedgerName', 'SubGroupName'],
@@ -736,7 +738,7 @@ private deepEqual(obj1: any, obj2: any): boolean {
     this.spinner.show();
 
     forkJoin({
-      currencies: this.dropdownStore.loadCurrencies(),
+      currencies: this.operationService.getAllCurrencies(),
       departments: this.dropdownStore.loadDepartments({
         CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
         BranchMasterSid: this.currentBranch?.BranchMasterSid
@@ -753,7 +755,13 @@ private deepEqual(obj1: any, obj2: any): boolean {
       customers: this.masterService.getAllCustomers(this.currentCompany?.CompanyMasterSid)
     }).subscribe({
       next: (result) => {
-        this.currencyList = result.currencies;
+        const rawCurrencies: any[] = Array.isArray(result.currencies)
+        ? result.currencies
+        : result.currencies?.data || [];
+      this.currencyList = rawCurrencies.map((c: any) => ({
+        ...c,
+        countryName: c?.countryMaster?.countryName || ''
+      }));
         this.currencyConfigService.initializeConfigurations(this.currencyList);
         this.departmentList = result.departments;
         this.costCenterList = result.costCenters.data;

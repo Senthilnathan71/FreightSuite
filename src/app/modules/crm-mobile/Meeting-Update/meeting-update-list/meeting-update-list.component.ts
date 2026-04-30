@@ -67,6 +67,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
 export class MeetingUpdateListComponent extends BaseListComponent implements OnInit, AfterViewInit {
   @ViewChild('meetingTable') meetingTable!: ReusableTableComponent;
   @ViewChild('modalContentAdd', { read: TemplateRef }) modalContentAdd!: TemplateRef<any>;
+  @ViewChild('customerCreatedModal', { static: true }) customerCreatedModal!: TemplateRef<any>;
   
   isEditMode: boolean = false;
   isMobile: boolean = false;
@@ -91,6 +92,7 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
     ],
     defaultValue: 'meetingDate'
   };
+  createdCustomerId: number | null = null;
   userLookupConfig = DROPDOWN_CONFIGS.USER;
   partyFilterConfig: PartyFilterConfig = {
   enabled: true,
@@ -978,7 +980,37 @@ private handleMeetingDateChange(newDate: string): void {
     this.leadService.createPreCustomerMeeting(payload).subscribe(
       resp => {
         if (resp.data && resp.status) {
-          this.commonModalService.openSuccessModal(resp.message);
+          const meetingStatus = (payload?.meetingStatus || '').toString().toLowerCase();
+          const leadOrCustomer = (
+            this.selectedMeeting?.LeadOrCustomer ??
+            resp?.data?.LeadOrCustomer ??
+            payload?.LeadOrCustomer ??
+            ''
+          ).toString();
+          const preCustomerMasterSid =
+            payload?.PreCustomerMasterSid ??
+            this.selectedMeeting?.PreCustomerMasterSid ??
+            this.selectedMeeting?.preCustomerMaster?.PreCustomerMasterSid ??
+            resp?.data?.PreCustomerMasterSid;
+
+          const isLeadConfirmedMeeting =
+            meetingStatus === 'confirmed' &&
+            leadOrCustomer === 'L' &&
+            !!preCustomerMasterSid;
+
+          const createdCustomerId = this.extractCreatedCustomerId(resp);
+
+          if (isLeadConfirmedMeeting && createdCustomerId) {
+            this.createdCustomerId = createdCustomerId;
+            this.modalService.open(this.customerCreatedModal, {
+              size: 'lg',
+              backdrop: 'static',
+              centered: true
+            });
+          } else {
+            this.commonModalService.openSuccessModal(resp.message);
+          }
+          
           this.btnDisable = false;
           this.modalRef.close();
           this.searchMeetings();
@@ -1203,5 +1235,27 @@ private handleMeetingDateChange(newDate: string): void {
   OnDestroy(): void {
     this.commonService.clearDocumentData()
 }
+
+private extractCreatedCustomerId(resp: any): number | null {
+    const candidate =
+      resp?.data?.createdCustomer?.CustomerMasterSid ??
+      resp?.data?.CustomerMasterSid ??
+      resp?.data?.customerMaster?.CustomerMasterSid ??
+      null;
+
+    const numericId = Number(candidate);
+    return Number.isFinite(numericId) && numericId > 0 ? numericId : null;
+  }
+
+  navigateToCreatedCustomer(): void {
+    if (!this.createdCustomerId) return;
+    this.router.navigate(['master/organization/entry', this.createdCustomerId]);
+    this.closeCustomerCreatedModal();
+  }
+
+  closeCustomerCreatedModal(): void {
+    this.createdCustomerId = null;
+    this.modalService.dismissAll();
+  }
 
 }

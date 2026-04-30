@@ -515,41 +515,86 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
     }
   }
   navigateToMasterJob(invoice: any): void {
-    const departmentType = String(invoice?.departmentMaster?.departmentType).toUpperCase();
-
-    if (invoice && departmentType) {
-      const masterJobSid = invoice.MasterJobSid;
-      if (departmentType === 'SEA') {
-        this.router.navigate(['/operation/master-job/entry', masterJobSid]);
-      } else if (departmentType === 'AIR') {
-        this.router.navigate(['/operation/mawbill/entry', masterJobSid]);
-      } else {
-        console.warn('Unknown department type:', departmentType);
-      }
-    } else {
+    const masterJobSid = Number(invoice?.MasterJobSid || 0);
+    if (!masterJobSid) {
       this.appSettingService.showWarning('Master Job not available');
+      return;
     }
+
+    const rowContext = this.getRowNavigationContext(invoice);
+    if (rowContext.isAgentHouseJob && rowContext.houseJobSid) {
+      this.router.navigate(['/operation/agent-master-air-waybill/entry', rowContext.houseJobSid]);
+      return;
+    }
+
+    if (rowContext.isServiceJob && rowContext.houseJobSid) {
+      this.router.navigate(['/operation/service-job/entry', rowContext.houseJobSid]);
+      return;
+    }
+
+    if (rowContext.departmentType === 'AIR') {
+      this.router.navigate(['/operation/mawbill/entry', masterJobSid]);
+      return;
+    }
+
+    this.router.navigate(['/operation/master-job/entry', masterJobSid]);
   }
-    navigateToHouse(row: any): void {
-    const houseJobSid = row?.HouseJobSid;
+  navigateToHouse(row: any): void {
+    const houseJobSid = Number(row?.HouseJobSid || 0);
     if (!houseJobSid) {
       this.appSettingService.showWarning('House Job not available');
       return;
     }
 
-    const departmentType = String(
-      row?.departmentMaster?.departmentType ??
-      row?.DepartmentType ??
-      row?.departmentType ??
-      ''
-    ).toUpperCase();
+    const rowContext = this.getRowNavigationContext(row);
+    if (rowContext.isAgentHouseJob) {
+      this.router.navigate(['/operation/agent-master-air-waybill/entry', houseJobSid]);
+      return;
+    }
 
-    if (departmentType === 'AIR') {
+    if (rowContext.isServiceJob) {
+      this.router.navigate(['/operation/service-job/entry', houseJobSid]);
+      return;
+    }
+
+    if (rowContext.departmentType === 'AIR') {
       this.router.navigate(['/operation/hawb-bill/entry', houseJobSid]);
       return;
     }
 
     this.router.navigate(['/operation/house-job/entry', houseJobSid]);
+  }
+
+  private getRowNavigationContext(row: any): {
+    departmentType: string;
+    houseJobSid: number;
+    isAgentHouseJob: boolean;
+    isServiceJob: boolean;
+  } {
+    const houseJobSid = Number(row?.HouseJobSid || 0);
+    const jobType = String(row?.houseJob?.JobType ?? row?.JobType ?? '').trim();
+    const isAgentHouseJob = jobType === 'Agent';
+
+    const rowServiceFlag = String(row?.IsServiceJob ?? '').trim().toUpperCase();
+    const houseServiceFlag = String(row?.houseJob?.IsServiceJob ?? '').trim().toUpperCase();
+    const isServiceJob = rowServiceFlag === 'Y' || houseServiceFlag === 'Y';
+
+    return {
+      departmentType: this.getRowDepartmentType(row),
+      houseJobSid,
+      isAgentHouseJob,
+      isServiceJob
+    };
+  }
+
+  private getRowDepartmentType(row: any): string {
+    return String(
+      row?.departmentMaster?.departmentType ??
+      row?.DepartmentType ??
+      row?.departmentType ??
+      row?.DepartmentMaster?.departmentType ??
+      ''
+    ).trim().toUpperCase();
   }
 
 navigateToBooking(row: any): void {
