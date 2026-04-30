@@ -4857,20 +4857,21 @@ getVoyageTypeBasedOnDept(deptId: number) {
         return;
       }
 
-      targetCargo.get('NoOfPackage')?.enable(); targetCargo.get('NoOfPackage')?.setValue(0);
+      // Preserve manually entered cargo values when no products exist.
+      // The product grid should only drive totals when at least one product row is present.
+      targetCargo.get('NoOfPackage')?.enable();
       if (!this.isManualOverrideActive(targetCargo, 'GrossWeight')) {
-        targetCargo.get('GrossWeight')?.enable(); targetCargo.get('GrossWeight')?.setValue(0);
+        targetCargo.get('GrossWeight')?.enable();
       }
-      targetCargo.get('NetWeight')?.enable(); targetCargo.get('NetWeight')?.setValue(0);
+      targetCargo.get('NetWeight')?.enable();
       if (!this.isManualOverrideActive(targetCargo, 'Volume')) {
-        targetCargo.get('Volume')?.enable(); targetCargo.get('Volume')?.setValue(0);
+        targetCargo.get('Volume')?.enable();
       }
       if (!this.isManualOverrideActive(targetCargo, 'Volumetric')) {
-        targetCargo.get('Volumetric')?.enable(); targetCargo.get('Volumetric')?.setValue(0);
+        targetCargo.get('Volumetric')?.enable();
       }
       targetCargo.get('ChargeableWeight')?.enable();
       if (!this.isManualOverrideActive(targetCargo, 'ChargeableWeight')) {
-        targetCargo.get('ChargeableWeight')?.setValue(0);
         this.calculateChargeableWeight(targetCargo);
       }
       return;
