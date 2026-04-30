@@ -836,7 +836,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       masterJobForm: this.masterJobForm?.getRawValue(),
       masterJobContainers: this.masterJobContainers?.getRawValue?.() || [],
       connectionResult: this.connectionResult || [],
-      masterJobRateArr: this.masterJobRateArr || [],
+      masterJobRateArr: this.rateResult || [],
       followUpData: this.followUpData || [],
       edocData: this.edocData || [],
       emailData: this.emailData || [],
@@ -3664,7 +3664,7 @@ onETDDateSelect(): void {
   }
 
   handleRateChange(allRates: any[]) {
-    if (allRates && allRates.length > 0) {
+    if (Array.isArray(allRates)) {
       this.rateResult = [...allRates];
       this.markAsDirty();
     }
