@@ -3056,6 +3056,10 @@ private applyExportToImportFieldLocks(): void {
   }
 
   private getHouseJobFieldLabel(fieldName: string): string {
+    if (fieldName === 'HBLNo') {
+      return this.selectedCargoMode === 'AIR' ? 'HAWBL No' : 'HBL No';
+    }
+
     const fieldLabels: Record<string, string> = {
       DepartmentMasterSid: 'Department',
       CustomerMasterSid: 'Customer',
@@ -3070,7 +3074,6 @@ private applyExportToImportFieldLocks(): void {
       POD: 'POD',
       FPD: 'FPD',
       IncoTerms: 'Inco Terms',
-      HBLNo: 'HBL No',
       HBLDate: 'HBL Date',
       status: 'Status',
       HouseStatus: 'House Status',
@@ -3099,6 +3102,7 @@ private applyExportToImportFieldLocks(): void {
       return message;
     }
 
+    const hblLabel = this.selectedCargoMode === 'AIR' ? 'HAWBL No' : 'HBL No';
     const replacements: Array<[RegExp, string]> = [
       [/\bDepartmentMasterSid\b|\bDepartment Master Sid\b/gi, 'Department'],
       [/\bCustomerMasterSid\b|\bCustomer Master Sid\b/gi, 'Customer'],
@@ -3113,7 +3117,7 @@ private applyExportToImportFieldLocks(): void {
       [/\bDestinationAgent\b/gi, 'Destination Agent'],
       [/\bAgentName\b/gi, 'Agent Name'],
       [/\bIncoTerms\b/gi, 'Inco Terms'],
-      [/\bHBLNo\b/gi, 'HBL No'],
+      [/\bHBLNo\b/gi, hblLabel],
       [/\bHBLDate\b/gi, 'HBL Date'],
       [/\bHouseStatus\b/gi, 'House Status']
     ];
@@ -3134,6 +3138,19 @@ private applyExportToImportFieldLocks(): void {
     const message = this.formatHouseJobBackendMessage(
       extractBackendErrorMessage(error, fallback)
     );
+    const normalizedMessage = message.toLowerCase();
+    if (
+      normalizedMessage.includes('duplicate') ||
+      normalizedMessage.includes('already exists') ||
+      normalizedMessage.includes('hbl no') ||
+      normalizedMessage.includes('hawbl no')
+    ) {
+      const hblControl = this.houseJobForm.get('HBLNo');
+      if (hblControl) {
+        hblControl.markAsTouched();
+        hblControl.setErrors({ ...(hblControl.errors || {}), duplicate: true });
+      }
+    }
     this.appSettingService.showError(message);
   }
 

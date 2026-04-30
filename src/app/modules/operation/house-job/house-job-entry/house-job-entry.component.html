@@ -239,6 +239,10 @@
          class="invalid-feedback d-block">
       HBL Number is required for Import
     </div>
+    <div *ngIf="b['HBLNo'].hasError('duplicate') && (b['HBLNo'].dirty || b['HBLNo'].touched)"
+         class="invalid-feedback d-block">
+      {{selectedCargoMode === 'AIR' ? 'HAWBL No' : 'HBL No'}} already exists
+    </div>
   </div>
 </div>
 
