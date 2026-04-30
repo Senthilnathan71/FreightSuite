@@ -1602,7 +1602,7 @@ onETDDateSelect(): void {
       DestinationAgentAddress: data.DestinationAgentAddress,
       MBLNo: data.MBLNo,
       MBLDate: data.MBLDate ? new Date(data.MBLDate) : null,
-      BLReleaseType: data.BLReleaseType,
+      BLReleaseType: data.BLReleaseType || 'Original',
       NoofOriginal: data.NoofOriginal,
       OriginAgent: data.OriginAgent,
       POO: findPortSidByCode(data.POO),

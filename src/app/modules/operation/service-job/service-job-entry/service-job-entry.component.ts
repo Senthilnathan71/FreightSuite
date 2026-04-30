@@ -1764,7 +1764,7 @@ openDocRef() {
     modalRef.componentInstance.packageTypeList = [];
     modalRef.componentInstance.agentList = [];
     modalRef.componentInstance.currencyList = this.currencyList || [];
-    modalRef.componentInstance.chargeList = [];
+    modalRef.componentInstance.chargeList = this.costEntryComponent?.chargeList || [];
     modalRef.componentInstance.profitSummary = [];
     modalRef.componentInstance.customerWiseSummary = { revenue: [], cost: [] };
     modalRef.componentInstance.chargeWiseSummary = [];

@@ -4006,16 +4006,7 @@ isSeaDepartment(): boolean {
   }
 
   private async downloadPDFByFilePath(): Promise<void> {
-    const { logo, lookups, options } = await this.getPdfGenerationContext();
-    const blob = await this.pdfMakeService.generateInvoiceBlobFromApi(
-      this.invoiceData,
-      this.currentCompany,
-      this.currentBranch,
-      this.userData,
-      logo,
-      lookups,
-      options
-    );
+    const blob = await this.getDownloadPDFBlob();
     const filename = this.getInvoicePdfFilename();
     await this.pdfFileSaveService.savePdf(blob, filename, true);
   }
@@ -4028,61 +4019,25 @@ isSeaDepartment(): boolean {
  
   async generatePDFBlob(): Promise<Blob | null> {
     try {
-      await this.preparePrintData();
-      const logo = this.pdfMakeService.getReportLogo();
-
-      const lookups = {
-        hssacMaster: this.hssacList?.flat() || [],
-        currencyMaster: this.currencyList || []
-      };
-
-      const options = {
-        taxDisplayConfig: this.printTaxDisplayConfig,
-        bankDetails: this.bankDetails || [],
-        terms: this.TandCList || [],
-        amountInWords: this.invoicePrintData?.AmountInWords || '',
-        localCurrency: this.currentCompanyCurrency?.code || '',
-        invoiceTitle: this.invoicePrintData?.invoiceTitle || '',
-        // Additional options for matching original PDF
-        isSeaMode: this.isSeaDepartment(),
-        isVATMode: this.printTaxDisplayConfig.showVAT,
-        companyVatNo: this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
-        shipmentDetails: {
-          shipper: this.invoicePrintData?.ShipperName,
-          consignee: this.invoicePrintData?.ConsigneeName,
-          vesselName: this.invoicePrintData?.Vessel,
-          voyageNo: this.invoicePrintData?.VoyageNo,
-          shipperRefNo: this.invoicePrintData?.CustomerRefNo,
-          loadingPort: this.invoicePrintData?.POL,
-          finalDestination: this.invoicePrintData?.FPD,
-          etd: this.invoicePrintData?.ETD,
-          eta: this.invoicePrintData?.ETA,
-          invoiceDueDate: this.invoicePrintData?.InvoiceDueDate
-        },
-        cargoDetails: {
-          packages: this.invoicePrintData?.pkg,
-          commodityDesc: this.invoicePrintData?.desc,
-          grossWeight: this.invoicePrintData?.grosswt,
-          chargeableWeight: this.invoicePrintData?.ChargeableWeight,
-          cbm: this.invoicePrintData?.cbm
-        }
-      };
-
-      const blob = await this.pdfMakeService.generateInvoiceBlobFromApi(
-        this.invoiceData,
-        this.currentCompany,
-        this.currentBranch,
-        this.userData,
-        logo,
-        lookups,
-        options
-      );
-
-      return blob;
+      return await this.getDownloadPDFBlob();
     } catch (error) {
       console.error('Error generating PDF blob:', error);
       return null;
     }
+  }
+
+  private async getDownloadPDFBlob(): Promise<Blob> {
+    const { logo, lookups, options } = await this.getPdfGenerationContext();
+
+    return await this.pdfMakeService.generateInvoiceBlobFromApi(
+      this.invoiceData,
+      this.currentCompany,
+      this.currentBranch,
+      this.userData,
+      logo,
+      lookups,
+      options
+    );
   }
 
   // Helper methods for tax display logic
