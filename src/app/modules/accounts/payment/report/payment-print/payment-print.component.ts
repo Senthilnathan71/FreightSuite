@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
@@ -24,7 +24,7 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
   templateUrl: './payment-print.component.html',
   styles: ``
 })
-export class PaymentPrintComponent {
+export class PaymentPrintComponent implements OnChanges {
 
 
   currentCompany: any
@@ -47,6 +47,7 @@ export class PaymentPrintComponent {
   @Input() currentMenuId: number | null = null;
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
+  headerSubledgerAddress = '';
   
     constructor(
     private activeModal: NgbActiveModal,
@@ -74,6 +75,13 @@ export class PaymentPrintComponent {
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
     this.loadCityName();
     this.loadCurrencyList();
+    this.loadHeaderSubledgerAddress();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['paymentDataPrint'] || changes['ledgerList']) {
+      this.loadHeaderSubledgerAddress();
+    }
   }
 
 
@@ -125,16 +133,111 @@ export class PaymentPrintComponent {
 }
 
 getSubledgerName(item: any): string {
-  console.log(item,"item");
+  const directName = item?.SubledgerName || item?.subledgerMaster?.SubledgerName || item?.SubledgerMaster?.SubledgerName;
+  if (directName) return directName;
+
   const index = (this.paymentDataPrint?.VoucherDetail || []).findIndex(vd => vd.VoucherDetailSid === item.VoucherDetailSid);
 
-  if (index === -1 || !item.LedgerMasterSid || !this.ledgerList[index]?.length) return '';
-  console.log(this.ledgerList[index],"this.ledgerList");
-  const ledger = this.ledgerList[index].find(
-    v => v?.SubledgerMasterSid === item.LedgerMasterSid
+  if (!item?.LedgerMasterSid) return '';
+
+  const indexedLedgers = index > -1 && Array.isArray(this.ledgerList[index]) ? this.ledgerList[index] : [];
+  const allLedgers = Array.isArray(this.ledgerList)
+    ? this.ledgerList.flatMap((ledger: any) => Array.isArray(ledger) ? ledger : [ledger])
+    : [];
+
+  const ledger = [...indexedLedgers, ...allLedgers].find(
+    v => Number(v?.SubledgerMasterSid) === Number(item.LedgerMasterSid)
   );
-console.log(ledger,"SubledgerName");
-  return ledger?.SubledgerName || '';
+
+  return ledger?.SubledgerName || ledger?.LedgerName || ledger?.CustomerName || '';
+}
+
+private getSubledgerRecord(item: any): any {
+  if (!item?.LedgerMasterSid) return null;
+
+  const index = (this.paymentDataPrint?.VoucherDetail || []).findIndex(vd => vd.VoucherDetailSid === item.VoucherDetailSid);
+  const indexedLedgers = index > -1 && Array.isArray(this.ledgerList[index]) ? this.ledgerList[index] : [];
+  const allLedgers = Array.isArray(this.ledgerList)
+    ? this.ledgerList.flatMap((ledger: any) => Array.isArray(ledger) ? ledger : [ledger])
+    : [];
+
+  return [...indexedLedgers, ...allLedgers].find(
+    v => Number(v?.SubledgerMasterSid) === Number(item.LedgerMasterSid)
+  ) || null;
+}
+
+private getSubledgerOrganizationId(item: any): number | null {
+  const subledger = this.getSubledgerRecord(item);
+  const id = Number(
+    subledger?.SubledgerMappingSid ||
+    subledger?.CustomerMasterSid ||
+    subledger?.customerMaster?.CustomerMasterSid ||
+    item?.SubledgerMappingSid ||
+    item?.CustomerMasterSid ||
+    item?.customerMaster?.CustomerMasterSid
+  );
+
+  return Number.isFinite(id) && id > 0 ? id : null;
+}
+
+private formatOrganizationAddress(organization: any): string {
+  const branch = organization?.CustomerBranch?.[0];
+  return String(branch?.Address || '').trim();
+}
+
+private getHeaderDetailRow(): any {
+  return this.getDrDetails()?.[0];
+}
+
+loadHeaderSubledgerAddress(): void {
+  this.headerSubledgerAddress = '';
+  const detailRow = this.getHeaderDetailRow();
+  if (!detailRow) return;
+
+  const subledger = this.getSubledgerRecord(detailRow);
+  const directAddress = subledger?.Address || subledger?.BranchAddress || detailRow?.BranchAddress || detailRow?.Address;
+  if (directAddress) {
+    this.headerSubledgerAddress = String(directAddress);
+    return;
+  }
+
+  const organizationId = this.getSubledgerOrganizationId(detailRow);
+  if (!organizationId) {
+    this.loadHeaderSubledgerAddressByName(detailRow);
+    return;
+  }
+
+  this.masterService.getCustomerById(organizationId).subscribe({
+    next: (organization: any) => {
+      this.headerSubledgerAddress = this.formatOrganizationAddress(organization);
+      if (!this.headerSubledgerAddress) {
+        this.loadHeaderSubledgerAddressByName(detailRow);
+      }
+    },
+    error: (error) => {
+      console.error('Failed to load subledger address:', error);
+      this.loadHeaderSubledgerAddressByName(detailRow);
+    }
+  });
+}
+
+private loadHeaderSubledgerAddressByName(detailRow: any): void {
+  const companyId = Number(this.currentCompany?.CompanyMasterSid || this.paymentDataPrint?.CompanyMasterSid);
+  const partyName = String(this.getSubledgerName(detailRow) || this.getPaidToDisplay() || '').trim().toLowerCase();
+
+  if (!companyId || !partyName) return;
+
+  this.masterService.getAllCustomersWithCustomerBranch(companyId).subscribe({
+    next: (organizations: any[]) => {
+      const organization = (organizations || []).find((item: any) =>
+        String(item?.CustomerName || '').trim().toLowerCase() === partyName
+      );
+      this.headerSubledgerAddress = this.formatOrganizationAddress(organization);
+    },
+    error: (error) => {
+      console.error('Failed to load organization address by name:', error);
+    }
+  });
 }
 getDisplayLedgerName(item: any): string {
   const subLedger = this.getSubledgerName(item);
@@ -143,9 +246,28 @@ getDisplayLedgerName(item: any): string {
   return subLedger ? subLedger : ledger;
 }
 
+private getRealPaidToValue(): string {
+  const paidTo = this.paymentDataPrint?.PartyName || this.paymentDataPrint?.BankPartyName || '';
+  const value = String(paidTo).trim();
+  return value && !['NA', 'N/A', '-', 'NULL'].includes(value.toUpperCase()) ? value : '';
+}
+
 getPaidToDisplay(): string {
+  const paidTo = this.getRealPaidToValue();
+  if (paidTo) return paidTo;
+
   const detailRow = this.getDrDetails()?.[0];
-  return detailRow ? this.getDisplayLedgerName(detailRow) : (this.paymentDataPrint?.BankPartyName || '');
+  return detailRow ? this.getDisplayLedgerName(detailRow) : '';
+}
+
+getHeaderSubledgerDisplay(): string {
+  const detailRow = this.getHeaderDetailRow();
+  return detailRow ? this.getSubledgerName(detailRow) : '';
+}
+
+getHeaderAddressDisplay(): string {
+  const partyAddress = String(this.paymentDataPrint?.PartyAddress || '').trim();
+  return partyAddress || this.headerSubledgerAddress;
 }
 
 getDrDetails() {

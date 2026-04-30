@@ -135,17 +135,38 @@ function infoRow(label: string, value: any): any {
   };
 }
 
+function valueOnlyRow(value: any): any {
+  return {
+    columns: [
+      { text: '', width: 70 },
+      { text: '', width: 8 },
+      { text: value ?? '', width: '*' }
+    ],
+    columnGap: 0,
+    margin: [0, 0, 0, 4]
+  };
+}
+
 function buildInfoSection(data: ReceiptPdfData): any {
   const r: any = data.receipt || {};
-  const leftStack: any[] = [
-    infoRow('Receipt No.', r.voucherNumber || ''),
-    infoRow('Received From', r.partyName || '')
-  ];
+  const leftStack: any[] = [];
+
   if (data.receiptType === 'bank') {
+    leftStack.push(infoRow('Received From', r.partyName || ''));
+    if (r.partyAddress) {
+      leftStack.push(valueOnlyRow(r.partyAddress));
+    }
+    leftStack.push(infoRow('Receipt No.', r.voucherNumber || ''));
     leftStack.push(infoRow('Bank', r.bankName || ''));
-    leftStack.push(infoRow('Address', r.partyAddress || ''));
-  } else if (r.headerLedgerDisplay) {
-    leftStack.push(infoRow('', r.headerLedgerDisplay || ''));
+  } else {
+    leftStack.push(infoRow('Receipt No.', r.voucherNumber || ''));
+    leftStack.push(infoRow('Received From', r.partyName || ''));
+    if (r.partyAddress) {
+      leftStack.push(valueOnlyRow(r.partyAddress));
+    }
+    if (r.headerLedgerDisplay) {
+      leftStack.push(infoRow('Ledger', r.headerLedgerDisplay || ''));
+    }
   }
 
   const rightStack: any[] = [
@@ -163,7 +184,7 @@ function buildInfoSection(data: ReceiptPdfData): any {
     { width: 'auto', stack: rightStack }
   ],
   columnGap: 40,   
-  margin: [80, 0, 0, 6]   
+  margin: [55, 0, 0, 6]   
 };
 }
 
@@ -222,11 +243,11 @@ return {
 function buildAmountInWords(data: ReceiptPdfData): any {
   return {
     columns: [
-      { text: 'Amount in Words', style: 'labelBold', width: 90 },
+      { text: 'Amount in Words', style: 'labelBold', width: data.receiptType === 'bank' ? 110 : 120 },
       { text: ':', width: 8 },
       { text: data.amountInWords || '', width: '*' }
     ],
-    margin: [10, 0, 10, 8]
+    margin: data.receiptType === 'bank' ? [10, 0, 10, 8] : [20, 2, 10, 8]
   };
 }
 
@@ -243,10 +264,12 @@ function buildRemittanceSection(data: ReceiptPdfData): any[] {
     { text: 'Curr. Amt', style: 'tableHeaderSmall', alignment: 'center' },
     { text: 'Local Amount', style: 'tableHeaderSmall', alignment: 'center' }
   ];
-  const widths: any[] = ['25%', '12%', '15%', '8%', '20%', '20%'];
+  const widths: any[] = data.receiptType === 'bank'
+    ? ['27%', '11%', '16%', '8%', '19%', '19%']
+    : ['22%', '13%', '15%', '7%', '15%', '15%'];
   if (isIndia) {
     header.push({ text: 'TDS Amount', style: 'tableHeaderSmall', alignment: 'center' });
-    widths.push('7%');
+    widths.push(data.receiptType === 'bank' ? '10%' : '13%');
   }
 
   const bodyRows = rows.map((r) => {
