@@ -20,6 +20,258 @@ import { toNumber } from 'src/app/common/helper';
   imports: [RouterModule, CommonModule, NgxSpinnerModule, ReactiveFormsModule, FeatherModule, DatePipe],
   templateUrl: './login.component.html',
   styles: [`
+    :host {
+      display: block;
+    }
+
+    .blufin-login-shell {
+      min-height: 100vh;
+      width: 100%;
+      padding: 0;
+      background: #cfd0d6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .login-stage {
+      width: min(960px, calc(100vw - 40px));
+      height: min(500px, calc(100vh - 96px));
+      min-height: 455px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.95fr);
+      background: #ffffff;
+      overflow: hidden;
+      box-shadow: 0 18px 50px rgba(15, 39, 71, 0.08);
+    }
+
+    .login-visual {
+      min-height: 100%;
+      background: #eef3f7;
+      overflow: hidden;
+    }
+
+    .login-visual img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    .blufin-login-shell .login-panel {
+      width: 100%;
+      min-width: 0;
+      max-width: none;
+      padding: 0;
+      border: 0;
+      box-shadow: none;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-panel-content {
+      width: min(285px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .brand-lockup {
+      margin-bottom: 26px;
+    }
+
+    .brand-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 70px;
+      height: 70px;
+      margin-bottom: 2px;
+    }
+
+    .brand-mark img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .brand-lockup h1 {
+      margin: 0;
+      color: #25272b;
+      font-size: 24px;
+      line-height: 1.15;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .brand-lockup p {
+      margin: 14px 0 0;
+      color: #767a81;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+    }
+
+    .login-input {
+      height: 42px;
+      border-radius: 6px;
+      background: #ededf1;
+      overflow: hidden;
+      box-shadow: inset 0 1px 2px rgba(20, 26, 34, 0.04);
+    }
+
+    .login-input .input-group-text,
+    .login-input .form-control,
+    .login-input .form-select {
+      height: 42px;
+      border: 0;
+      background: #ededf1;
+      color: #6f747c;
+      box-shadow: none;
+    }
+
+    .login-input .input-group-text {
+      width: 48px;
+      justify-content: center;
+      padding: 0;
+      color: #6e737b;
+      font-size: 18px;
+    }
+
+    .login-input .password-toggle {
+      width: 42px;
+      cursor: pointer;
+    }
+
+    .login-input .form-control,
+    .login-input .form-select {
+      padding-left: 0;
+      font-size: 14px;
+    }
+
+    .login-input .form-control::placeholder {
+      color: #80848b;
+      opacity: 1;
+    }
+
+    .login-input .form-control:focus,
+    .login-input .form-select:focus {
+      background: #ededf1;
+    }
+
+    .login-input:focus-within {
+      outline: 2px solid rgba(15, 88, 156, 0.16);
+      background: #f2f3f7;
+    }
+
+    .login-options {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 2px 0 8px;
+      color: #6f747a;
+      font-size: 14px;
+      line-height: 1.2;
+    }
+
+    .login-options .form-check {
+      min-height: 18px;
+      margin: 0;
+      padding-left: 0;
+      gap: 9px;
+    }
+
+    .login-options .form-check-input {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      border: 0;
+      background-color: #ececf2;
+      box-shadow: none;
+    }
+
+    .login-options .form-check-input:checked {
+      background-color: #155ea2;
+    }
+
+    .login-options .form-check-label {
+      color: #6b7077;
+      font-size: 14px;
+    }
+
+    .login-options a,
+    .create-account a {
+      color: #53575d;
+      text-decoration: none;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .login-options a:hover,
+    .create-account a:hover {
+      color: #155ea2;
+    }
+
+    .login-button {
+      height: 42px;
+      border: 0;
+      border-radius: 5px;
+      background: linear-gradient(180deg, #1f67ad 0%, #15539a 100%);
+      color: #ffffff;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1;
+      box-shadow: 0 4px 8px rgba(17, 78, 142, 0.28);
+    }
+
+    .login-button:hover,
+    .login-button:focus {
+      color: #ffffff;
+      background: linear-gradient(180deg, #236fb8 0%, #155ca8 100%);
+    }
+
+    .login-button:disabled {
+      opacity: 0.65;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    .create-account {
+      margin-top: 20px;
+      text-align: center;
+      color: #777a80;
+      font-size: 15px;
+    }
+
+    .recover-panel .brand-lockup {
+      margin-bottom: 26px;
+    }
+
+    .recover-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .back-button {
+      height: 42px;
+      border: 0;
+      border-radius: 5px;
+      background: #eef1f5;
+      color: #59606a;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
     .session-overlay {
       position: fixed;
       top: 0;
@@ -36,6 +288,66 @@ import { toNumber } from 'src/app/common/helper';
       max-width: 420px;
       width: 90%;
       border-radius: 12px;
+    }
+
+    @media (max-width: 900px) {
+      .blufin-login-shell {
+        min-height: 100svh;
+        overflow: auto;
+      }
+
+      .login-stage {
+        width: 100%;
+        height: auto;
+        min-height: 100svh;
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(230px, 42vh) auto;
+        box-shadow: none;
+      }
+
+      .login-panel {
+        padding: 32px 0 42px;
+      }
+
+      .brand-lockup {
+        margin-bottom: 26px;
+      }
+
+      .brand-mark {
+        width: 70px;
+        height: 70px;
+      }
+
+      .brand-lockup h1 {
+        font-size: 24px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .login-stage {
+        grid-template-rows: minmax(190px, 34vh) auto;
+      }
+
+      .login-panel-content {
+        width: min(330px, calc(100% - 32px));
+      }
+
+      .login-options {
+        align-items: flex-start;
+        font-size: 13px;
+      }
+
+      .login-options .form-check-label {
+        font-size: 13px;
+      }
+
+      .create-account {
+        font-size: 15px;
+      }
+
+      .recover-actions {
+        grid-template-columns: 1fr;
+      }
     }
   `]
 })
