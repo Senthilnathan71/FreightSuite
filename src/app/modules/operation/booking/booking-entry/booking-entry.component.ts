@@ -2770,9 +2770,13 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     isValid = false;
   }
 
-  // Validate Cargo Form / Cargo Groups
+  // Validate Cargo Form / Cargo Groups only after the user starts using cargo
   if (this.bookingCargo.length > 0) {
-    this.bookingCargo.controls.forEach((cargoGroup: FormGroup, cargoIndex: number) => {
+    this.bookingCargo.controls.forEach((control, cargoIndex: number) => {
+      const cargoGroup = control as FormGroup;
+      if (!this.shouldValidateBookingCargoGroup(cargoGroup)) {
+        return;
+      }
       if (cargoGroup.invalid) {
         cargoGroup.markAllAsTouched();
         setFirstInvalidTab('Cargo');
@@ -2817,7 +2821,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         }
       });
     });
-  } else if (this.cargoForm.invalid) {
+  } else if (this.bookingCargo.length === 0 && this.cargoForm.invalid) {
     this.cargoForm.markAllAsTouched();
     setFirstInvalidTab('Cargo');
 
@@ -5392,6 +5396,11 @@ deepEqual(obj1: any, obj2: any): boolean {
     });
 
     return cargoGroup;
+  }
+
+  private shouldValidateBookingCargoGroup(cargoGroup: FormGroup): boolean {
+    const cargoProducts = cargoGroup.get('bookingProducts') as FormArray | null;
+    return !!(cargoGroup.dirty || cargoProducts?.dirty);
   }
 
   private createCargoProductGroup(data?: any, isPatching: boolean = false): FormGroup {

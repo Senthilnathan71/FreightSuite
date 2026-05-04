@@ -95,14 +95,14 @@ export class AgentMasterAirWaybillListComponent extends BaseListComponent implem
     enabled: true,
     label: 'POL',
     options: [],
-    bindLabel: 'displayName',
+    bindLabel: 'PortName',
     bindValue: 'PortCode'
   };
   podFilterConfig: DropdownFilterConfig = {
     enabled: true,
     label: 'POD',
     options: [],
-    bindLabel: 'displayName',
+    bindLabel: 'PortName',
     bindValue: 'PortCode'
   };
 
