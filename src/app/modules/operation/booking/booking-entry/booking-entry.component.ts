@@ -70,7 +70,7 @@ import { HostListener } from '@angular/core';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { th } from 'date-fns/locale';
 import * as JsBarcode from 'jsbarcode';
-import { CreditValidationApiService } from '../../credit-request.service';
+import { CreditValidationApiService } from '../../services/credit-request.service';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 type Html2PdfOptions = {

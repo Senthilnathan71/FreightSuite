@@ -74,6 +74,7 @@ import { PdfFileSaveService } from 'src/app/common/pdf-file-save.service';
 import { Menu } from 'angular-feather/icons';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
+import { InvoiceService } from '../../services/invoice.service';
 interface NgbDateStructLike {
   day: number;
   month: number;
@@ -101,7 +102,6 @@ interface NgbDateStructLike {
     RouterModule
   ],
   templateUrl: './invoice-entry.component.html',
-  styleUrls: ['./invoice-entry.component.scss'],
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
@@ -323,6 +323,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     private route: ActivatedRoute,
     private fb: FormBuilder,
     private modalService: NgbModal,
+    private invoiceService : InvoiceService,
     private operationService: OperationService,
     private masterService: MasterService,
     private appSettingService: AppSettingsService,
@@ -1059,7 +1060,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   }
 
   loadInvoiceById(id: number) {
-    this.operationService.getInvoiceById(id).subscribe({
+    this.invoiceService.getInvoiceById(id).subscribe({
       next: (resp: any) => {
         if (resp?.status && resp.data) {
           this.destroy$.next();
@@ -2452,7 +2453,7 @@ isSeaDepartment(): boolean {
     this.spinner.show();
 
     if (this.isEditMode && this.headerId) {
-      this.operationService.updateInvoiceById(this.headerId, payload).subscribe({
+      this.invoiceService.updateInvoiceById(this.headerId, payload).subscribe({
         next: async (resp: any) => {
           this.isSaving = false;
           if (resp.status) {
@@ -2479,7 +2480,7 @@ isSeaDepartment(): boolean {
         }
       })
     } else {
-      this.operationService.createInvoice(payload).subscribe({
+      this.invoiceService.createInvoice(payload).subscribe({
         next: async (resp: any) => {
           this.isSaving = false;
           if (resp.status) {
@@ -3082,7 +3083,7 @@ isSeaDepartment(): boolean {
         };
 
         // Call API to send email
-        this.operationService.sendInvoiceEmail(payload).subscribe({
+        this.invoiceService.sendInvoiceEmail(payload).subscribe({
           next: (resp: any) => {
             this.spinner.hide();
             if (resp?.status) {
@@ -4507,7 +4508,7 @@ if (!customerMasterSid) {
   }
 
   this.spinner.show();
-  this.operationService.getUninvoicedRevenueCharges(payload).subscribe({
+  this.invoiceService.getUninvoicedRevenueCharges(payload).subscribe({
     next: (resp: any) => {
       this.spinner.hide();
       if (resp?.status && resp.data) {

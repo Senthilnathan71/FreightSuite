@@ -256,7 +256,7 @@
 import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { DocumentService, BillOfLadingData, UploadProgress } from '../document.service';
+import { DocumentService, BillOfLadingData, UploadProgress } from '../services/document.service';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({

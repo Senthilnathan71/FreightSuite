@@ -60,7 +60,7 @@ import { CFSOutturnComponent } from '../report/cfs-outturn/cfs-outturn.component
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 import { getDefaultTodayDate, getMaxDate,toNgbDateStruct, getMinDate, toNumber } from 'src/app/common/helper';
 import { PackingListComponent } from '../report/packing-list/packing-list.component';
-import { CreditValidationApiService } from '../../credit-request.service';
+import { CreditValidationApiService } from '../../services/credit-request.service';
 
 import { SailingConfimationComponent } from '../report/sailing-confimation/sailing-confimation.component';
 import { ExitFormComponent } from '../report/exit-form/exit-form.component';
