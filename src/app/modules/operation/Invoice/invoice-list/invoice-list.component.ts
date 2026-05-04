@@ -413,16 +413,6 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         width: '150px',
         template: 'status',
       },
-      
-       {
-        key: 'CreatedBy',
-        label: 'Create By ',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string',
-        width: '150px',
-      },
       {
         key: 'Status',
         label: 'Status',
@@ -434,6 +424,16 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         dataType: 'string',
         cellClass: 'status-column'
       },
+      
+       {
+        key: 'CreatedBy',
+        label: 'Create By ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width: '150px',
+      }
     ],
     actions: [
       {
