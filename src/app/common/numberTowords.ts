@@ -79,7 +79,9 @@ export class NumberToWordsService {
     const currencyCode = this.getCurrencyCode(currency);
     const unit = this.getCurrencyUnit(currency, currencyCode);
     const subUnit = currency?.CurrencySubUnit?.trim() || '';
-    const subUnitIn = this.parseSubUnitIn(currency?.SubUnitIn);
+    const rawSubUnitIn = currency?.SubUnitIn;
+    const subUnitIn = this.getSubUnitDigits(rawSubUnitIn, currency?.amountDecimal);
+    const effectiveSubUnitIn = this.getEffectiveSubUnitIn(currencyCode, subUnit, subUnitIn);
     const useIndianWords = this.shouldUseIndianWords(currencyCode, unit);
 
     /* ---------------- Integer Part ---------------- */
@@ -92,10 +94,10 @@ export class NumberToWordsService {
     }
 
 
-    /* ---------------- Decimal Part (FIXED) ---------------- */
-    if (subUnitIn > 0 && subUnit) {
-      const multiplier = Math.pow(10, subUnitIn);
-      const decimalNum = Math.round((amount - integerNum) * multiplier);
+    /* ---------------- Decimal Part ---------------- */
+    if (effectiveSubUnitIn > 0 && subUnit) {
+      const parts = amount.toFixed(effectiveSubUnitIn).split('.');
+      const decimalNum = parts[1] ? parseInt(parts[1], 10) : 0;
 
       if (decimalNum > 0) {
         const decimalWords = this.convertSmallNumber(decimalNum, useIndianWords);
@@ -235,9 +237,52 @@ export class NumberToWordsService {
   /* ---------------------------------------------
    * Safe SubUnitIn parsing
    * --------------------------------------------- */
-  private parseSubUnitIn(value: any): number {
-    const parsed = Number(value);
-    if (isNaN(parsed) || parsed < 0) return 0;
-    return Math.min(parsed, 10);
+  private getSubUnitDigits(subUnitIn: any, fallbackDecimals?: number): number {
+    const parsed = Number(subUnitIn);
+    if (!isFinite(parsed) || parsed <= 0) {
+      if (typeof fallbackDecimals === 'number' && fallbackDecimals >= 0) {
+        return Math.min(Math.floor(fallbackDecimals), 4);
+      }
+      return 0;
+    }
+
+    // Values >= 10 are treated as a subunit ratio (e.g. 100 paise = 1 rupee → 2 decimal places).
+    // This also prevents a raw decimal-places value like "10" from being used directly,
+    // which would cause floating-point noise in toFixed(10) on large amounts.
+    if (parsed >= 10) {
+      const log10 = Math.round(Math.log10(parsed));
+      if (Math.pow(10, log10) === parsed) {
+        return Math.min(log10, 4);
+      }
+      return 0;
+    }
+
+    // Values 1–9: treat as explicit decimal place count
+    if (Number.isInteger(parsed)) {
+      return Math.min(parsed, 4);
+    }
+
+    return 0;
+  }
+
+  private getEffectiveSubUnitIn(currencyCode: string, subUnit: string, subUnitIn: number): number {
+    if (subUnitIn <= 0) {
+      return 0;
+    }
+
+    const normalizedSubUnit = subUnit.trim().toUpperCase();
+    if (
+      currencyCode === 'INR' ||
+      currencyCode === 'IND' ||
+      normalizedSubUnit === 'PAISE' ||
+      normalizedSubUnit === 'PAISES'
+    ) {
+      return 2;
+    }
+
+    // Cap at 4: no real-world currency uses more than 4 decimal places, and
+    // toFixed() beyond ~6 introduces floating-point noise for million-range amounts.
+    return Math.min(subUnitIn, 4);
   }
 }
+
