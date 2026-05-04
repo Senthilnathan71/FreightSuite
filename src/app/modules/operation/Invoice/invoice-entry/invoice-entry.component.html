@@ -2351,7 +2351,111 @@
                 </tr>
 
                 <!-- Total Row with dynamic colspan -->
-                <tr style="font-weight: bolder">
+                <tr *ngIf="shouldShowIndiaGstAmountTotals(printTaxDisplayConfig)" style="font-weight: bolder">
+                  <td
+                    [attr.colspan]="calculateBaseInvoicePrintColspan() + 1"
+                    style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align: right;
+                      border-left: none;
+                    "
+                  >
+                    <strong>Total</strong>
+                  </td>
+                  <td
+                    style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align: right;
+                    "
+                  >
+                    <strong>{{ getInvoicePrintAmountTotal('cgstAmt') }}</strong>
+                  </td>
+                  <td
+                    style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align: right;
+                    "
+                  ></td>
+                  <td
+                    style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align: right;
+                    "
+                  >
+                    <strong>{{ getInvoicePrintAmountTotal('sgstAmt') }}</strong>
+                  </td>
+                  <td
+                    [style.border-right]="shouldShowForeignCurrencyColumn() ? '1px solid black' : 'none'"
+                    style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align: right;
+                    "
+                  >
+                    <strong>{{ shouldShowForeignCurrencyColumn() ? getInvoicePrintAmountTotal('LocalAmount') : invoicePrintData?.totalPartyAmount }}</strong>
+                  </td>
+                  <td
+                    *ngIf="shouldShowForeignCurrencyColumn()"
+                    style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      border-right: none;
+                      text-align: right;
+                    "
+                  >
+                    <strong>{{ invoicePrintData?.totalPartyAmount }}</strong>
+                  </td>
+                </tr>
+
+                <tr *ngIf="shouldShowVatAmountTotals(printTaxDisplayConfig)" style="font-weight: bolder">
+                  <td
+                    [attr.colspan]="calculateBaseInvoicePrintColspan() + 1"
+                    style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align: right;
+                      border-left: none;
+                    "
+                  >
+                    <strong>Total</strong>
+                  </td>
+                  <td
+                    style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align: right;
+                    "
+                  >
+                    <strong>{{ getInvoicePrintAmountTotal('vatAmt') }}</strong>
+                  </td>
+                  <td
+                    [style.border-right]="shouldShowForeignCurrencyColumn() ? '1px solid black' : 'none'"
+                    style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align: right;
+                    "
+                  >
+                    <strong>{{ shouldShowForeignCurrencyColumn() ? getInvoicePrintAmountTotal('LocalAmount') : invoicePrintData?.totalPartyAmount }}</strong>
+                  </td>
+                  <td
+                    *ngIf="shouldShowForeignCurrencyColumn()"
+                    style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      border-right: none;
+                      text-align: right;
+                    "
+                  >
+                    <strong>{{ invoicePrintData?.totalPartyAmount }}</strong>
+                  </td>
+                </tr>
+
+                <tr *ngIf="!shouldShowDetailedTaxAmountTotals(printTaxDisplayConfig)" style="font-weight: bolder">
                   <td
                     [attr.colspan]="calculateTotalColspan(printTaxDisplayConfig) + (shouldShowForeignCurrencyColumn() ? 1 : 0)"
                     style="
