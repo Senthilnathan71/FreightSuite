@@ -13,11 +13,12 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 import { MasterService } from '../../master/master.service';
 import { toNumber } from 'src/app/common/helper';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [RouterModule, CommonModule, NgxSpinnerModule, ReactiveFormsModule, FeatherModule, DatePipe],
+  imports: [RouterModule, CommonModule, NgxSpinnerModule, ReactiveFormsModule, FeatherModule, DatePipe, NgSelectModule],
   templateUrl: './login.component.html',
   styles: [`
     :host {
@@ -155,6 +156,41 @@ import { toNumber } from 'src/app/common/helper';
     .login-input .form-select {
       padding-left: 0;
       font-size: 14px;
+    }
+
+    .login-year-select {
+      min-width: 0;
+      height: 42px;
+      font-size: 14px;
+    }
+
+    :host ::ng-deep .login-year-select.ng-select-single .ng-select-container {
+      height: 42px;
+      min-height: 42px;
+      border: 0;
+      border-radius: 0;
+      background: #ededf1;
+      box-shadow: none;
+    }
+
+    :host ::ng-deep .login-year-select .ng-select-container .ng-value-container {
+      padding-left: 0;
+    }
+
+    :host ::ng-deep .login-year-select .ng-select-container .ng-value-container .ng-placeholder,
+    :host ::ng-deep .login-year-select .ng-select-container .ng-value-container .ng-value {
+      color: #6f747c;
+      font-size: 14px;
+      font-weight: 400;
+    }
+
+    :host ::ng-deep .login-year-select .ng-arrow-wrapper {
+      padding-right: 14px;
+    }
+
+    :host ::ng-deep .login-year-select.ng-select-focused:not(.ng-select-opened) > .ng-select-container {
+      border: 0;
+      box-shadow: none;
     }
 
     .login-input .form-control::placeholder {
@@ -438,7 +474,7 @@ export class LoginComponent implements OnInit {
         const storedYearId = localStorage.getItem('current-year-id');
         const storedIdExistInResponse = this.financialYears.find(fy => fy.YearMasterSid === +storedYearId);
         if (storedYearId && storedIdExistInResponse) {
-          this.loginform.get('yearMasterSid')?.setValue(storedYearId);
+          this.loginform.get('yearMasterSid')?.setValue(+storedYearId);
         } else {
           const currentYear = this.financialYears.find(fy => fy.CurrentYear === 'Y');
           if (currentYear) {

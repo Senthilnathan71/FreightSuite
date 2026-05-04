@@ -1121,9 +1121,7 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
     widths.push(BANK_COLUMN_WIDTH);
   }
 
-  return [
-    buildSectionTitle('Bank Details', { margin: [0, 10, 0, 3] }),  // Reduced margin
-    {
+  const bankTable = {
       table: {
         headerRows: 1,
         widths: widths,
@@ -1142,6 +1140,15 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
       },
       margin: [0, 0, 0, 5],  // Reduced bottom margin from 10 to 5
       style: { noWrap: false }
+    };
+
+  return [
+    {
+      stack: [
+        buildSectionTitle('Bank Details', { margin: [0, 10, 0, 3] }),  // Reduced margin
+        bankTable
+      ],
+      unbreakable: true
     }
   ];
 }

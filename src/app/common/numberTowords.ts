@@ -42,6 +42,7 @@ export class NumberToWordsService {
   ];
 
   private scalesIndian = ['', 'Thousand', 'Lakh', 'Crore'];
+  private scalesInternational = ['', 'Thousand', 'Million', 'Billion', 'Trillion'];
 
   private currencyList: any[] = [];
 
@@ -72,18 +73,20 @@ export class NumberToWordsService {
 
     /* ---------------- Currency ---------------- */
     const currency = this.currencyList.find(
-      c => c?.CurrencyMasterSid === CurrencyMasterSid
+      c => String(c?.CurrencyMasterSid) === String(CurrencyMasterSid)
     );
 
-    const unit = currency?.CurrencyUnit?.trim() || '';
+    const currencyCode = this.getCurrencyCode(currency);
+    const unit = this.getCurrencyUnit(currency, currencyCode);
     const subUnit = currency?.CurrencySubUnit?.trim() || '';
     const subUnitIn = this.parseSubUnitIn(currency?.SubUnitIn);
+    const useIndianWords = this.shouldUseIndianWords(currencyCode, unit);
 
     /* ---------------- Integer Part ---------------- */
     const integerNum = Math.floor(amount);
     let result = '';
     
-    result = this.convertInteger(integerNum);
+    result = this.convertInteger(integerNum, useIndianWords);
     if (unit) {
       result += ` ${unit} `;
     }
@@ -95,13 +98,12 @@ export class NumberToWordsService {
       const decimalNum = Math.round((amount - integerNum) * multiplier);
 
       if (decimalNum > 0) {
-        console.log(decimalNum)
-        const decimalWords = this.convertSmallNumber(decimalNum);
+        const decimalWords = this.convertSmallNumber(decimalNum, useIndianWords);
         result += ` and ${decimalWords} ${subUnit}`;
       }
     }
 
-    result += ' only'
+    result += ' Only'
 
     if (isNegative) {
       result = 'Minus ' + result;
@@ -113,17 +115,18 @@ export class NumberToWordsService {
   /* ---------------------------------------------
    * Integer conversion (Indian system)
    * --------------------------------------------- */
-  private convertInteger(num: number): string {
+  private convertInteger(num: number, useIndianWords = true): string {
     if (num === 0) return 'Zero';
 
-    const chunks = this.splitIndian(num);
+    const chunks = useIndianWords ? this.splitIndian(num) : this.splitInternational(num);
+    const scales = useIndianWords ? this.scalesIndian : this.scalesInternational;
     let words = '';
 
     for (let i = chunks.length - 1; i >= 0; i--) {
       if (chunks[i] !== 0) {
         words +=
           this.convertChunk(chunks[i]) +
-          (this.scalesIndian[i] ? ' ' + this.scalesIndian[i] : '') +
+          (scales[i] ? ' ' + scales[i] : '') +
           ' ';
       }
     }
@@ -158,15 +161,16 @@ export class NumberToWordsService {
   /* ---------------------------------------------
    * Convert decimal numbers
    * --------------------------------------------- */
-  private convertSmallNumber(num: number): string {
+  private convertSmallNumber(num: number, useIndianWords = true): string {
     if (num === 0) return 'Zero';
 
     let words = '';
-    const chunks = this.splitIndian(num);
+    const chunks = useIndianWords ? this.splitIndian(num) : this.splitInternational(num);
+    const scales = useIndianWords ? this.scalesIndian : this.scalesInternational;
 
     for (let i = chunks.length - 1; i >= 0; i--) {
       if (chunks[i] !== 0) {
-        words += this.convertChunk(chunks[i]) + ' ';
+        words += this.convertChunk(chunks[i]) + (scales[i] ? ' ' + scales[i] : '') + ' ';
       }
     }
 
@@ -189,6 +193,43 @@ export class NumberToWordsService {
     }
 
     return chunks;
+  }
+
+  private splitInternational(num: number): number[] {
+    const chunks: number[] = [];
+
+    while (num > 0) {
+      chunks.push(num % 1000);
+      num = Math.floor(num / 1000);
+    }
+
+    return chunks;
+  }
+
+  private getCurrencyCode(currency: any): string {
+    return String(
+      currency?.CurrencyCode ||
+      currency?.currencyCode ||
+      currency?.Code ||
+      currency?.code ||
+      currency?.CurrencyName ||
+      ''
+    ).trim().toUpperCase();
+  }
+
+  private getCurrencyUnit(currency: any, currencyCode: string): string {
+    const unit = currency?.CurrencyUnit?.trim() || '';
+
+    if (currencyCode === 'UAE' && unit && !unit.toUpperCase().startsWith('UAE ')) {
+      return `UAE ${unit}`;
+    }
+
+    return unit;
+  }
+
+  private shouldUseIndianWords(currencyCode: string, unit: string): boolean {
+    const normalizedUnit = unit.trim().toUpperCase();
+    return currencyCode === 'INR' || currencyCode === 'IND' || normalizedUnit === 'RUPEES' || normalizedUnit === 'RUPEE';
   }
 
   /* ---------------------------------------------
