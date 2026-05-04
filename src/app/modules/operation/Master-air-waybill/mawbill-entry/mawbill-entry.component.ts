@@ -1228,11 +1228,16 @@ private handleMawbSaveError(error: any, action: 'create' | 'update'): void {
   }
 
   if (backendMessage) {
-    if (backendMessage.includes('MBL Number') || backendMessage.toLowerCase().includes('duplicate')) {
+    if (
+      backendMessage.toLowerCase().includes('duplicate') ||
+      backendMessage.toLowerCase().includes('already exists') ||
+      backendMessage.toLowerCase().includes('mawb no') ||
+      backendMessage.toLowerCase().includes('mbl no')
+    ) {
       this.masterJobForm.get('MBLNo')?.enable();
       this.masterJobForm.get('MBLNo')?.markAsTouched();
       this.masterJobForm.get('MBLNo')?.setErrors({ duplicate: true });
-      this.toastr.warning(backendMessage, 'Duplicate MAWB');
+      this.toastr.error(backendMessage);
       return;
     }
 
@@ -2283,7 +2288,7 @@ loadMawbStock(data: any): void {
       MasterJobNumber: 'Master Job Number',
       MasterJobDate: 'Master Job Date',
       FreightPPCC: 'Freight PP/CC',
-      MBLNo: 'MAWB',
+      MBLNo: 'MAWB No',
       MBLDate: 'MAWB Date',
       NoofOriginal: 'No Of Original',
       POL: 'POL',

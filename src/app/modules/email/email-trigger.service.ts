@@ -408,14 +408,16 @@ ${userName}`
     const branchInfo = this.appSettingService.getCurrentBranchInfo();
 
     let toEmail = context?.['toEmail'] || '';
+    let ccEmail = context?.['ccEmail'] || '';
     const logoUrl = this.getStoredLogoUrl();
 
-    if (!toEmail && context?.['customerBranchSid']) {
+    if (context?.['customerBranchSid'] && (!toEmail || !ccEmail)) {
       try {
         const resp: any = await firstValueFrom(
           this.operationService.getCustomerBranchEmail(context['customerBranchSid'])
         );
-        toEmail = resp?.data?.Email || '';
+        if (!toEmail) toEmail = resp?.data?.Email || '';
+        if (!ccEmail) ccEmail = resp?.data?.CCemail || '';
       } catch (e) {
         console.error(e);
       }
@@ -424,7 +426,7 @@ ${userName}`
     return {
       ...context,
       toEmail,
-      organizationEmail: toEmail,
+      ccEmail,
       userEmail: userData?.userEmail || '',
       userName: context?.['userName'] || userData?.userName || '',
       companyName: companyInfo?.companyName || companyInfo?.CompanyName || 'Dofi Infosys',

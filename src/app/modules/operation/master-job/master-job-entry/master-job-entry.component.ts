@@ -836,7 +836,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       masterJobForm: this.masterJobForm?.getRawValue(),
       masterJobContainers: this.masterJobContainers?.getRawValue?.() || [],
       connectionResult: this.connectionResult || [],
-      masterJobRateArr: this.masterJobRateArr || [],
+      masterJobRateArr: this.rateResult || [],
       followUpData: this.followUpData || [],
       edocData: this.edocData || [],
       emailData: this.emailData || [],
@@ -1602,7 +1602,7 @@ onETDDateSelect(): void {
       DestinationAgentAddress: data.DestinationAgentAddress,
       MBLNo: data.MBLNo,
       MBLDate: data.MBLDate ? new Date(data.MBLDate) : null,
-      BLReleaseType: data.BLReleaseType,
+      BLReleaseType: data.BLReleaseType || 'Original',
       NoofOriginal: data.NoofOriginal,
       OriginAgent: data.OriginAgent,
       POO: findPortSidByCode(data.POO),
@@ -3125,12 +3125,15 @@ onETDDateSelect(): void {
   }
 
   private getControlLabel(controlName: string): string {
+    if (controlName === 'MBLNo') {
+      return this.selectedDepartment?.departmentType?.toUpperCase() === 'AIR' ? 'MAWB No' : 'MBL No';
+    }
+
     const controlLabelMap: { [key: string]: string } = {
       DepartmentMasterSid: 'Department',
       MasterJobNumber: 'Master Job Number',
       MasterJobDate: 'Master Job Date',
       FreightPPCC: 'Freight PP/CC',
-      MBLNo: 'MBL No',
       MBLDate: 'MBL Date',
       NoofOriginal: 'No Of Original',
       POL: 'POL',
@@ -3188,6 +3191,11 @@ onETDDateSelect(): void {
       return;
     }
 
+    if (invalidControl.hasError('duplicate')) {
+      this.toastr.error(`${label} already exists`);
+      return;
+    }
+
     this.toastr.error(`${label} is invalid. Please correct it.`);
   }
 
@@ -3204,7 +3212,22 @@ onETDDateSelect(): void {
   }
 
   private showBackendError(source: any, fallbackMessage: string): void {
-    this.toastr.error(extractBackendErrorMessage(source, fallbackMessage));
+    const backendMessage = extractBackendErrorMessage(source, fallbackMessage);
+
+    const normalizedMessage = backendMessage.toLowerCase();
+    if (
+      normalizedMessage.includes('duplicate') ||
+      (normalizedMessage.includes('already exists') && (normalizedMessage.includes('mbl') || normalizedMessage.includes('mawb')))
+    ) {
+      const mblControl = this.masterJobForm.get('MBLNo');
+      if (mblControl) {
+        mblControl.enable({ emitEvent: false });
+        mblControl.setErrors({ ...(mblControl.errors || {}), duplicate: true });
+        mblControl.markAsTouched();
+      }
+    }
+
+    this.toastr.error(backendMessage);
   }
 
   private mergeValidationError(controlName: string, errorKey: string): void {
@@ -3664,7 +3687,7 @@ onETDDateSelect(): void {
   }
 
   handleRateChange(allRates: any[]) {
-    if (allRates && allRates.length > 0) {
+    if (Array.isArray(allRates)) {
       this.rateResult = [...allRates];
       this.markAsDirty();
     }

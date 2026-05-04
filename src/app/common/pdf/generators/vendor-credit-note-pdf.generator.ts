@@ -41,6 +41,20 @@
     );
   }
 
+  function isUaeCompany(data: VendorCreditNotePdfData): boolean {
+    const branchCountryCode = String(data.branch?.countryCode || '').trim().toLowerCase();
+    const companyCountryCode = String(data.company?.countryCode || '').trim().toLowerCase();
+    const placeOfSupply = String(data.invoice?.placeOfSupply || '').trim().toLowerCase();
+
+    return (
+      branchCountryCode === 'ae' ||
+      companyCountryCode === 'ae' ||
+      placeOfSupply === 'dubai' ||
+      placeOfSupply === 'uae' ||
+      placeOfSupply === 'united arab emirates'
+    );
+  }
+
   function estimateWrappedLineCount(text: string, charsPerLine: number): number {
     if (!text) {
       return 0;
@@ -64,6 +78,15 @@
     const extraTopMarginForLogo = Math.max(0, logoHeaderHeight - 55);
     const extraTopMarginForIndiaInfo = isIndiaCompany ? 24 : 0;
     const extraTopMarginForGstCode = isIndiaCompany && (data.companyGstCode || '') ? 12 : 0;
+    const vatNo =
+      printData?.VATNo ||
+      printData?.vatNo ||
+      printData?.GST_VAT ||
+      printData?.GSTVAT ||
+      data.invoice?.customerGstVat ||
+      (data as any)?.companyVatNo ||
+      '';
+    const extraTopMarginForVatInfo = !isIndiaCompany && (isUaeCompany(data) || vatNo) ? 14 : 0;
     const billedTo = String(printData?.BilledTo || data.invoice?.customerName || '');
     const billingAddress = String(printData?.BillingAddress || data.invoice?.customerAddress || '');
     const billedToLines =
@@ -75,6 +98,7 @@
       extraTopMarginForLogo +
       extraTopMarginForIndiaInfo +
       extraTopMarginForGstCode +
+      extraTopMarginForVatInfo +
       extraTopMarginForBilledTo;
     const configuredMargins = data.config?.pageMargins as number[] | undefined;
     const resolvedPageMargins = configuredMargins
@@ -443,6 +467,8 @@ function buildInvoiceInfo(data: VendorCreditNotePdfData): any {
   if (isIndiaCompany) {
     rightStack.push(buildInfoRow('GST No.', gstVatNo, 4));
     rightStack.push(buildInfoRow('IRN No.', irnNumber, 4));
+  } else if (isUaeCompany(data) || gstVatNo) {
+    rightStack.push(buildInfoRow('VAT No.', gstVatNo, 4));
   }
 
   // 🔥 Remove bottom margin from the LAST row automatically

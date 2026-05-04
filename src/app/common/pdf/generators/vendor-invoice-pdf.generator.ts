@@ -78,6 +78,15 @@
     const extraTopMarginForLogo = Math.max(0, logoHeaderHeight - 55);
     const extraTopMarginForIndiaInfo = isIndiaCompany ? 24 : 0;
     const extraTopMarginForGstCode = isIndiaCompany && (data.companyGstCode || '') ? 12 : 0;
+    const vatNo =
+      printData?.VATNo ||
+      printData?.vatNo ||
+      printData?.GST_VAT ||
+      printData?.GSTVAT ||
+      data.invoice?.customerGstVat ||
+      (data as any)?.companyVatNo ||
+      '';
+    const extraTopMarginForVatInfo = !isIndiaCompany && (isUaeCompany(data) || vatNo) ? 14 : 0;
     const billedTo = String(printData?.BilledTo || data.invoice?.customerName || '');
     const billingAddress = String(printData?.BillingAddress || data.invoice?.customerAddress || '');
     const billedToLines =
@@ -89,6 +98,7 @@
       extraTopMarginForLogo +
       extraTopMarginForIndiaInfo +
       extraTopMarginForGstCode +
+      extraTopMarginForVatInfo +
       extraTopMarginForBilledTo;
     const configuredMargins = data.config?.pageMargins as number[] | undefined;
     const resolvedPageMargins = configuredMargins

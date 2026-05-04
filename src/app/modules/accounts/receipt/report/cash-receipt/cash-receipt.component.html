@@ -41,13 +41,15 @@
                     <div>: {{receiptPrintData?.VoucherNumber}}</div>
                 </div>
                 <div style="display:flex; font-size: 17px;">
+                    <div style="width:120px;"></div>
+                    <div style="width:12px;">&nbsp;</div>
+                    <div style="flex:1;">{{ receiptPrintData?.PartyAddress }}</div>
+                </div>
+                <div style="display:flex; font-size: 17px;">
                     <div style="width:120px; white-space:nowrap;font-weight: bolder;"><strong>Received From</strong></div>
                     <div>: {{receiptPrintData?.PartyName}}</div>
                 </div>
-                <div style="display:flex; font-size: 17px;">
-                    <div style="width:120px; white-space:nowrap;font-weight: bolder;"><strong>Address</strong></div>
-                    <div>: {{ receiptPrintData?.PartyAddress }}</div>
-                </div>
+               
             </div>
 
             <div style="flex:0 0 50%; max-width:50%; display:flex; flex-direction:column;padding-top:10px;">

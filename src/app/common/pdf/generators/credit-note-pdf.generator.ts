@@ -111,7 +111,7 @@ export function generateCreditNoteDocument(data: CreditNotePdfData): any {
       buildChargesTable(data),
       buildTotalsSection(data),
       buildAmountInWords(data),
-      ...(data.credit?.remarks ? [buildRemarks(data.credit.remarks)] : []),
+      buildRemarks(data.credit?.remarks || ''),
       ...buildBankDetailsSection(data),
       ...(resolvedTerms.length > 0
         ? [
@@ -847,10 +847,6 @@ function buildAmountInWords(data: CreditNotePdfData): any {
 * Build remarks
 */
 function buildRemarks(remarks: string): any {
-  if (!remarks) {
-    return { text: '' };
-  }
-
   return {
     margin: [0, 2, 0, 2],
     columns: [

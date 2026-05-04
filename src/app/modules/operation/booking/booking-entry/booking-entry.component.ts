@@ -7164,6 +7164,75 @@ isHBLNoValid(): boolean {
     }
   }
 
+  private getDepartmentTypeForNavigation(): string {
+    return String(
+      this.selectedDepartmentType ??
+      this.bookingData?.departmentMaster?.departmentType ??
+      this.bookingHeader?.departmentMaster?.departmentType ??
+      ''
+    ).toUpperCase();
+  }
+
+  canNavigateFromHBLNo(): boolean {
+    const houseJobSid =
+      this.bookingData?.HouseJobSid ??
+      this.bookingHeader?.HouseJobSid ??
+      this.bookingData?.houseJob?.HouseJobSid ??
+      this.b?.['HouseJobSid']?.getRawValue();
+    return !!houseJobSid;
+  }
+
+  canNavigateFromMBLNo(): boolean {
+    const masterJobSid =
+      this.bookingData?.MasterNoSid ??
+      this.bookingHeader?.MasterNoSid ??
+      this.bookingData?.houseJob?.masterJob?.MasterJobSid ??
+      this.bookingHeader?.houseJob?.masterJob?.MasterJobSid;
+    return !!masterJobSid;
+  }
+
+  navigateFromHBLNo(): void {
+    const houseJobSid =
+      this.bookingData?.HouseJobSid ??
+      this.bookingHeader?.HouseJobSid ??
+      this.bookingData?.houseJob?.HouseJobSid ??
+      this.b?.['HouseJobSid']?.getRawValue();
+
+    if (!houseJobSid) {
+      this.appSettingService.showWarning('House Job not available');
+      return;
+    }
+
+    const departmentType = this.getDepartmentTypeForNavigation();
+    if (departmentType === 'AIR') {
+      this.router.navigate(['/operation/hawb-bill/entry', houseJobSid]);
+      return;
+    }
+
+    this.router.navigate(['/operation/house-job/entry', houseJobSid]);
+  }
+
+  navigateFromMBLNo(): void {
+    const masterJobSid =
+      this.bookingData?.MasterNoSid ??
+      this.bookingHeader?.MasterNoSid ??
+      this.bookingData?.houseJob?.masterJob?.MasterJobSid ??
+      this.bookingHeader?.houseJob?.masterJob?.MasterJobSid;
+
+    if (!masterJobSid) {
+      this.appSettingService.showWarning('Master Job not available');
+      return;
+    }
+
+    const departmentType = this.getDepartmentTypeForNavigation();
+    if (departmentType === 'AIR') {
+      this.router.navigate(['/operation/mawbill/entry', masterJobSid]);
+      return;
+    }
+
+    this.router.navigate(['/operation/master-job/entry', masterJobSid]);
+  }
+
   /**
  * Creates a copy of the current booking with specific fields cleared
  */

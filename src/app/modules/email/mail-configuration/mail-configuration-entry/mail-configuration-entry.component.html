@@ -236,7 +236,7 @@
                     appPlaceholderAutocomplete
                     maxlength="200" placeholder="To email addresses">
                   <label class="input-label">To Email</label>
-                  <small class="form-hint">Picks from the Email field of the menu's entry screen (e.g., Customer/Enquiry email)</small>
+                  <small class="form-hint">{{ '{{toEmail}}' }} → To Email column under Organization → Email tab (CustomerBrEmail.Toemail)</small>
                 </div>
               </div>
               <div class="col-md-6 mb-2">
@@ -246,7 +246,7 @@
                     appPlaceholderAutocomplete
                     maxlength="200" placeholder="CC email addresses">
                   <label class="input-label">CC Email</label>
-                  <small class="form-hint">Organization email + logged-in user's email</small>
+                  <small class="form-hint">{{ '{{ccEmail}}' }} → CC Email column under Organization → Email tab (CustomerBrEmail.CCemail); {{ '{{userEmail}}' }} → logged-in user</small>
                 </div>
               </div>
             </div>

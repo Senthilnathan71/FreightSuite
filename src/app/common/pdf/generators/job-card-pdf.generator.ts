@@ -569,7 +569,7 @@ export function transformJobCardApiData(
   }));
 
   const costRevenueCharges: JobCardChargePdfRow[] = charges.map((item: any) => ({
-    chargeName: getChargeName(item.ChargeMasterSid),
+    chargeName: getChargeName(item.ChargeMasterSid) || item.ChargeDescription || item.ChargeName || '',
     unit: getUnitCode(item.ChargeUomSid),
     revenueCurrency: getCurrencyName(item.RevenueCurrencyMasterSid || item.CostCurrencyMasterSid),
     revenueExchangeRate: Number(item.RevenueExchangeRate || 0),

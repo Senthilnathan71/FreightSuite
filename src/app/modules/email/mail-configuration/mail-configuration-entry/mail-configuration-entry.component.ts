@@ -537,7 +537,7 @@ export class MailConfigurationEntryComponent implements OnInit {
     const newSno = this.rows.length > 0 ? Math.max(...this.rows.map(r => r.Sno)) + 1 : 1;
     this.rows.push({
       Sno: newSno, MailName: '', MenuMasterSid: null, MailSubject: '', MailBody: '',
-      ToEmailidFrom: '{{toEmail}}', CcEmailidFrom: '{{organizationEmail}}, {{userEmail}}',
+      ToEmailidFrom: '{{toEmail}}', CcEmailidFrom: '{{ccEmail}}, {{userEmail}}',
       AttachmentRequire: 'Y', Action: '', Trigger: 'A', AutoPopup: 'A', Status: 'A',
       isEditing: true, isNew: true
     });
@@ -557,7 +557,7 @@ export class MailConfigurationEntryComponent implements OnInit {
       MailSubject: '',
       MailBody: '',
       ToEmailidFrom: '{{toEmail}}',
-      CcEmailidFrom: '{{organizationEmail}}, {{userEmail}}',
+      CcEmailidFrom: '{{ccEmail}}, {{userEmail}}',
       AttachmentRequire: 'Y',
       Action: '',
       Trigger: 'A',

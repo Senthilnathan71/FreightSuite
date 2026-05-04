@@ -308,10 +308,21 @@
                                 </small>
                             </td>
                             <td>
-                                <ng-select formControlName="currencyMasterSid" [items]="currencyList"
+                                <!-- <ng-select formControlName="currencyMasterSid" [items]="currencyList"
                                     bindLabel="currencyCode" bindValue="CurrencyMasterSid" appendTo="body"
                                     placeholder="">
-                                </ng-select>
+                                </ng-select> -->
+                                <dofi-searchable-dropdown 
+      [items]="currencyList" 
+      formControlName="currencyMasterSid" 
+      placeholder=""
+      [displayFields]="CurrencyLookupConfig.displayFields"
+      [displayLabels]="CurrencyLookupConfig.displayLabels"
+      [labelFields]="CurrencyLookupConfig.labelFields" 
+      [bindValue]="'CurrencyMasterSid'"
+      [bindLabel]="'currencyCode'"
+      >
+    </dofi-searchable-dropdown>
                             </td>
                             <td>
                                 <input

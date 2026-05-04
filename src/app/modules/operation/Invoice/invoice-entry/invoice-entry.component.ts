@@ -2746,8 +2746,18 @@ isSeaDepartment(): boolean {
       return;
     }
 
-    const departmentType = this.getDetailDepartmentType(row);
-    if (departmentType === 'AIR') {
+    const detailContext = this.getDetailNavigationContext(detailIndex, row);
+    if (detailContext.isAgentHouseJob && detailContext.houseJobSid) {
+      this.router.navigate(['/operation/agent-master-air-waybill/entry', detailContext.houseJobSid]);
+      return;
+    }
+
+    if (detailContext.isServiceJob && detailContext.houseJobSid) {
+      this.router.navigate(['/operation/service-job/entry', detailContext.houseJobSid]);
+      return;
+    }
+
+    if (detailContext.departmentType === 'AIR') {
       this.router.navigate(['/operation/mawbill/entry', masterJobSid]);
       return;
     }
@@ -2763,13 +2773,59 @@ isSeaDepartment(): boolean {
       return;
     }
 
-    const departmentType = this.getDetailDepartmentType(row);
-    if (departmentType === 'AIR') {
+    const detailContext = this.getDetailNavigationContext(detailIndex, row);
+    if (detailContext.isAgentHouseJob) {
+      this.router.navigate(['/operation/agent-master-air-waybill/entry', houseJobSid]);
+      return;
+    }
+
+    if (detailContext.isServiceJob) {
+      this.router.navigate(['/operation/service-job/entry', houseJobSid]);
+      return;
+    }
+
+    if (detailContext.departmentType === 'AIR') {
       this.router.navigate(['/operation/hawb-bill/entry', houseJobSid]);
       return;
     }
 
     this.router.navigate(['/operation/house-job/entry', houseJobSid]);
+  }
+
+  private getDetailNavigationContext(detailIndex: number, row: FormGroup): {
+    departmentType: string;
+    houseJobSid: number;
+    isAgentHouseJob: boolean;
+    isServiceJob: boolean;
+  } {
+    const houseJobSid = Number(row?.get('HouseJobSid')?.value || 0);
+    const matchedHouseJob = (this.houseJobList[detailIndex] || []).find(
+      (job: any) => Number(job?.HouseJobSid) === houseJobSid
+    );
+
+    const jobType = String(
+      matchedHouseJob?.JobType ??
+      this.invoiceData?.houseJob?.JobType ??
+      ''
+    ).trim();
+    const isAgentHouseJob = jobType === 'Agent';
+
+    const detailServiceFlag = String(row?.get('IsServiceJob')?.value ?? '').trim().toUpperCase();
+    const houseServiceFlag = String(matchedHouseJob?.IsServiceJob ?? '').trim().toUpperCase();
+    const invoiceServiceFlag = String(this.invoiceData?.IsServiceJob ?? '').trim().toUpperCase();
+    const invoiceHouseServiceFlag = String(this.invoiceData?.houseJob?.IsServiceJob ?? '').trim().toUpperCase();
+    const isServiceJob =
+      detailServiceFlag === 'Y' ||
+      houseServiceFlag === 'Y' ||
+      invoiceServiceFlag === 'Y' ||
+      invoiceHouseServiceFlag === 'Y';
+
+    return {
+      departmentType: this.getDetailDepartmentType(row),
+      houseJobSid,
+      isAgentHouseJob,
+      isServiceJob,
+    };
   }
 
   private getDetailDepartmentType(row: FormGroup): string {
@@ -3950,16 +4006,7 @@ isSeaDepartment(): boolean {
   }
 
   private async downloadPDFByFilePath(): Promise<void> {
-    const { logo, lookups, options } = await this.getPdfGenerationContext();
-    const blob = await this.pdfMakeService.generateInvoiceBlobFromApi(
-      this.invoiceData,
-      this.currentCompany,
-      this.currentBranch,
-      this.userData,
-      logo,
-      lookups,
-      options
-    );
+    const blob = await this.getDownloadPDFBlob();
     const filename = this.getInvoicePdfFilename();
     await this.pdfFileSaveService.savePdf(blob, filename, true);
   }
@@ -3972,61 +4019,25 @@ isSeaDepartment(): boolean {
  
   async generatePDFBlob(): Promise<Blob | null> {
     try {
-      await this.preparePrintData();
-      const logo = this.pdfMakeService.getReportLogo();
-
-      const lookups = {
-        hssacMaster: this.hssacList?.flat() || [],
-        currencyMaster: this.currencyList || []
-      };
-
-      const options = {
-        taxDisplayConfig: this.printTaxDisplayConfig,
-        bankDetails: this.bankDetails || [],
-        terms: this.TandCList || [],
-        amountInWords: this.invoicePrintData?.AmountInWords || '',
-        localCurrency: this.currentCompanyCurrency?.code || '',
-        invoiceTitle: this.invoicePrintData?.invoiceTitle || '',
-        // Additional options for matching original PDF
-        isSeaMode: this.isSeaDepartment(),
-        isVATMode: this.printTaxDisplayConfig.showVAT,
-        companyVatNo: this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
-        shipmentDetails: {
-          shipper: this.invoicePrintData?.ShipperName,
-          consignee: this.invoicePrintData?.ConsigneeName,
-          vesselName: this.invoicePrintData?.Vessel,
-          voyageNo: this.invoicePrintData?.VoyageNo,
-          shipperRefNo: this.invoicePrintData?.CustomerRefNo,
-          loadingPort: this.invoicePrintData?.POL,
-          finalDestination: this.invoicePrintData?.FPD,
-          etd: this.invoicePrintData?.ETD,
-          eta: this.invoicePrintData?.ETA,
-          invoiceDueDate: this.invoicePrintData?.InvoiceDueDate
-        },
-        cargoDetails: {
-          packages: this.invoicePrintData?.pkg,
-          commodityDesc: this.invoicePrintData?.desc,
-          grossWeight: this.invoicePrintData?.grosswt,
-          chargeableWeight: this.invoicePrintData?.ChargeableWeight,
-          cbm: this.invoicePrintData?.cbm
-        }
-      };
-
-      const blob = await this.pdfMakeService.generateInvoiceBlobFromApi(
-        this.invoiceData,
-        this.currentCompany,
-        this.currentBranch,
-        this.userData,
-        logo,
-        lookups,
-        options
-      );
-
-      return blob;
+      return await this.getDownloadPDFBlob();
     } catch (error) {
       console.error('Error generating PDF blob:', error);
       return null;
     }
+  }
+
+  private async getDownloadPDFBlob(): Promise<Blob> {
+    const { logo, lookups, options } = await this.getPdfGenerationContext();
+
+    return await this.pdfMakeService.generateInvoiceBlobFromApi(
+      this.invoiceData,
+      this.currentCompany,
+      this.currentBranch,
+      this.userData,
+      logo,
+      lookups,
+      options
+    );
   }
 
   // Helper methods for tax display logic
