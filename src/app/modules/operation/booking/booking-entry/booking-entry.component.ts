@@ -1358,8 +1358,11 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       Volume: volume,
       NetWeight: netWeight,
       ExternlQty: qty
-    }, { emitEvent: false });
+      }, { emitEvent: false });
   }
+
+  // Keep BookingStatus aligned with cargo receipt dates while editing.
+  this.syncBookingStatusFromCargoDates();
 });
 
     return productForm;
@@ -5211,8 +5214,18 @@ deepEqual(obj1: any, obj2: any): boolean {
  * - If no products have a Cargo Received Date and the current status is 'Cargo Received',
  *   it reverts the status back to 'Booking'.
  */
-  private updateBookingStatusOnCargoDate(): void {
-    // Check if any product in the FormArray has a value for CargoRecDate
+  private getAllBookingProductsForStatusCheck(): FormGroup[] {
+    const topLevelProducts = this.bookingProducts?.controls ?? [];
+    const nestedCargoProducts = this.bookingCargo?.controls.flatMap((cargoGroup: AbstractControl) => {
+      const products = cargoGroup.get('bookingProducts') as FormArray | null;
+      return products?.controls ?? [];
+    }) ?? [];
+
+    return [...topLevelProducts, ...nestedCargoProducts] as FormGroup[];
+  }
+
+  private syncBookingStatusFromCargoDates(): void {
+    // Cargo-received status only applies to SEA + LCL + Export bookings.
     const isLCLExport = this.selectedDepartmentType === "SEA" 
       && this.selectedDepartment?.FCLLCL === 'LCL' 
       && this.selectedDepartment?.ExportImport === "Export";
@@ -5221,14 +5234,15 @@ deepEqual(obj1: any, obj2: any): boolean {
       return;
     }
 
-    const atLeastOneHasDate = this.bookingProducts.controls.some(
-      (product) => !!product.get('CargoRecDate')?.value
-    );
-    console.log("atLeastOneHasDate", atLeastOneHasDate);
     const bookingStatusControl = this.b['BookingStatus'];
     if (!bookingStatusControl) {
       return;
     }
+
+    const atLeastOneHasDate = this.getAllBookingProductsForStatusCheck().some(
+      (product) => !!product.get('CargoRecDate')?.value
+    );
+    console.log("atLeastOneHasDate", atLeastOneHasDate);
 
     const currentStatus = bookingStatusControl.value;
     console.log("currentStatus", currentStatus);
@@ -5239,6 +5253,10 @@ deepEqual(obj1: any, obj2: any): boolean {
       bookingStatusControl.setValue('Booked');
     }
     this.bookingForm.updateValueAndValidity();
+  }
+
+  private updateBookingStatusOnCargoDate(): void {
+    this.syncBookingStatusFromCargoDates();
   }
 
     getDestinationAgent(DestinationAgent: number) {

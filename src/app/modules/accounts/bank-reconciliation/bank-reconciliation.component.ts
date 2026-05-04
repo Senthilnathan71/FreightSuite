@@ -140,8 +140,8 @@ export class BankReconciliationComponent implements OnInit {
 
   private initializeHeaderActions(): void {
     this.headerActions = [
-      { label: 'Unmatch', icon: 'fas fa-unlink', action: 'unmatch' },
-      { label: 'Report', icon: 'fas fa-file-alt', action: 'report' },
+      // { label: 'Unmatch', icon: 'fas fa-unlink', action: 'unmatch' },
+      { label: 'Generate', icon: 'fas fa-file-alt', action: 'report' },
       { label: 'Excel', icon: 'fas fa-file-excel', action: 'excel' },
       { label: 'Reset', icon: 'fas fa-sync-alt', action: 'reset' },
     ];
@@ -157,6 +157,15 @@ export class BankReconciliationComponent implements OnInit {
 
   get clearanceDateControl(): FormControl {
     return this.filterForm.get('ClearanceDate') as FormControl;
+  }
+
+  get bankStatementBalanceControl(): FormControl {
+    return this.filterForm.get('BankStatementBalance') as FormControl;
+  }
+
+  isBankStatementBalanceFilled(): boolean {
+    const value = this.bankStatementBalanceControl?.value;
+    return value !== null && value !== undefined && value !== '';
   }
 
   get selectedBankRowValue(): BankTransactionRow | null {
@@ -864,9 +873,7 @@ export class BankReconciliationComponent implements OnInit {
             <tr>
               <td colspan="3" class="left">${this.escapeHtml(`To Date : ${toDate}`)}</td>
             </tr>
-            <tr>
-              <td colspan="3" class="left">${this.escapeHtml(`As On Date : ${asOnDate}`)}</td>
-            </tr>
+         
           </table>
 
           <table class="meta" style="margin-top: 8px;">
