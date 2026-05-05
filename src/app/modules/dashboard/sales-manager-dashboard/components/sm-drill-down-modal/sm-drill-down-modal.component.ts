@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgbActiveModal, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
@@ -25,7 +25,7 @@ import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
   templateUrl: './sm-drill-down-modal.component.html',
   styleUrls: ['./sm-drill-down-modal.component.scss']
 })
-export class SmDrillDownModalComponent implements OnInit , OnChanges {
+export class SmDrillDownModalComponent implements OnInit , OnChanges , OnDestroy {
   @Input() salesperson!: ScoreboardRow;
   @Input() filters: SalesManagerFilters = {};
 
@@ -52,16 +52,28 @@ export class SmDrillDownModalComponent implements OnInit , OnChanges {
   private companyMasterSid = 0;
   private branchMasterSid = 0;
 
+  private intervalId: any;
+
   constructor(
     public activeModal: NgbActiveModal,
     private salesDashboardService: SalesDashboardService,
     private router: Router,  // ← Add this
     private appSettings: AppSettingsService,  // ← Add this
-    private spinner: NgxSpinnerService  // ← Add this
+    private spinner: NgxSpinnerService,  // ← Add this
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
     this.extractCompanyAndBranch();
+    this.intervalId = setInterval(() => {
+      this.cdr.detectChanges();
+    }, 60000);
+  }
+
+  ngOnDestroy() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+    }
   }
 
   

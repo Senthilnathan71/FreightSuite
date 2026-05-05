@@ -26,10 +26,15 @@ export class SalesManagerDashboardService {
 
   constructor(private http: HttpClient) {}
 
-  getSalespersons(companyMasterSid: number, branchMasterSid: number): Observable<ApiResponse<SalespersonInfo[]>> {
+  getSalespersons(
+    companyMasterSid: number,
+    branchMasterSid: number,
+    userId: number,
+  ): Observable<ApiResponse<SalespersonInfo[]>> {
     const params = new HttpParams()
       .set('companyMasterSid', companyMasterSid)
-      .set('branchMasterSid', branchMasterSid);
+      .set('branchMasterSid', branchMasterSid)
+      .set('userId', userId);
     return this.http.get<ApiResponse<SalespersonInfo[]>>(`${this.baseUrl}/salespersons`, { params });
   }
 

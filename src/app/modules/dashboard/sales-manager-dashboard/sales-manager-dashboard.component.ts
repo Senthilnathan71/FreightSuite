@@ -79,6 +79,7 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
   // Context
   companyMasterSid = 0;
   branchMasterSid = 0;
+  userId = 0;
 
   // Filter state
   currentFilters: SalesManagerFilters = {};
@@ -141,16 +142,24 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
     try {
       const company = this.appSettings.decrypt(localStorage.getItem('selected-company'));
       const branch = this.appSettings.decrypt(localStorage.getItem('selected-branch'));
+      const userProfile = this.appSettings.getDecryptedUserProfile();
       this.companyMasterSid = company?.CompanyMasterSid || 0;
       this.branchMasterSid = branch?.BranchMasterSid || 0;
+      this.userId = userProfile?.UserMasterSid || 0;
     } catch {
       this.companyMasterSid = 0;
       this.branchMasterSid = 0;
+      this.userId = 0;
     }
   }
 
   private loadSalespersons() {
-    this.service.getSalespersons(this.companyMasterSid, this.branchMasterSid).subscribe({
+    if (this.userId <= 0) {
+      this.salespersons = [];
+      return;
+    }
+
+    this.service.getSalespersons(this.companyMasterSid, this.branchMasterSid, this.userId).subscribe({
       next: (resp) => {
         this.salespersons = resp.data || [];
       },
@@ -268,6 +277,11 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
   }
 
   private applyFilters() {
+    if (this.userId <= 0) {
+      this.currentFilters = {};
+      return;
+    }
+
     const sp = this.selectedSalespersonId
       ? this.salespersons.find((s) => s.UserMasterSid === this.selectedSalespersonId)
       : null;
@@ -275,6 +289,7 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
     this.currentFilters = {
       companyMasterSid: this.companyMasterSid,
       branchMasterSid: this.branchMasterSid,
+      userId: this.userId,
       salespersonId: this.selectedSalespersonId || undefined,
       salespersonEmail: sp?.userEmail || undefined,
       dateFrom: this.dateFromInput ? this.toDateTimeStr(this.dateFromInput, 'start') : undefined,

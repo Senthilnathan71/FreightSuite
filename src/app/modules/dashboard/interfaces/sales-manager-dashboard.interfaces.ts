@@ -1,6 +1,7 @@
 export interface SalesManagerFilters {
   companyMasterSid?: number;
   branchMasterSid?: number;
+  userId?: number;
   salespersonId?: number;
   salespersonEmail?: string;
   dateFrom?: string;
