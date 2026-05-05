@@ -101,14 +101,14 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
     enabled: true,
     label: 'POL',
     options: [],
-    bindLabel: 'displayName',
+    bindLabel: 'PortName',
     bindValue: 'PortCode'
   };
   enquiryPodFilterConfig: DropdownFilterConfig = {
     enabled: true,
     label: 'POD',
     options: [],
-    bindLabel: 'displayName',
+    bindLabel: 'PortName',
     bindValue: 'PortCode'
   };
 
@@ -134,14 +134,14 @@ export class QuotationViewComponent implements OnInit, OnDestroy {
     enabled: true,
     label: 'POL',
     options: [],
-    bindLabel: 'displayName',
+    bindLabel: 'PortName',
     bindValue: 'PortCode'
   };
   quotationPodFilterConfig: DropdownFilterConfig = {
     enabled: true,
     label: 'POD',
     options: [],
-    bindLabel: 'displayName',
+    bindLabel: 'PortName',
     bindValue: 'PortCode'
   };
   quotationApprovalStatusFilterConfig: DropdownFilterConfig = {

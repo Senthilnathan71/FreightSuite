@@ -1195,6 +1195,35 @@ onETDDateSelect(): void {
     };
   }
 
+  private normalizeContainerNumberValue(value: any): string {
+    return String(value ?? '').trim().toUpperCase();
+  }
+
+  private hasDuplicateContainerNumber(containerNumber: any, excludeIndex: number | null = null): boolean {
+    const normalizedContainerNumber = this.normalizeContainerNumberValue(containerNumber);
+    if (!normalizedContainerNumber) {
+      return false;
+    }
+
+    return this.masterJobContainers.controls.some((control, index) => {
+      if (excludeIndex !== null && index === excludeIndex) {
+        return false;
+      }
+
+      return this.normalizeContainerNumberValue(control.get('ContainerNumber')?.value) === normalizedContainerNumber;
+    });
+  }
+
+  private setContainerDuplicateError(): void {
+    const containerControl = this.containerFormGroup.get('ContainerNumber');
+    if (!containerControl) {
+      return;
+    }
+
+    this.setControlError(containerControl, 'duplicate', true);
+    containerControl.markAsTouched();
+  }
+
   validateContainerNumber(containerNumber: string): { isValid: boolean, checkDigit?: number } {
     if (!containerNumber || containerNumber.length !== 11) {
       return { isValid: false };
@@ -1312,6 +1341,7 @@ onETDDateSelect(): void {
     const input = event.target.value;
     // Auto-convert to uppercase as user types
     const upperValue = input.toUpperCase();
+    this.clearControlError(this.containerFormGroup.get('ContainerNumber'), 'duplicate');
     if (input !== upperValue) {
       event.target.value = upperValue;
       this.containerFormGroup.get('ContainerNumber')?.setValue(upperValue);
@@ -3227,6 +3257,15 @@ onETDDateSelect(): void {
       }
     }
 
+    if (normalizedMessage.includes('container no already exists') || (normalizedMessage.includes('duplicate') && normalizedMessage.includes('container'))) {
+      const containerControl = this.containerFormGroup?.get('ContainerNumber');
+      if (containerControl) {
+        containerControl.enable({ emitEvent: false });
+        containerControl.setErrors({ ...(containerControl.errors || {}), duplicate: true });
+        containerControl.markAsTouched();
+      }
+    }
+
     this.toastr.error(backendMessage);
   }
 
@@ -3264,6 +3303,12 @@ onETDDateSelect(): void {
     }
     if (this.containerFormGroup.valid) {
       const containerData = this.containerFormGroup.value;
+      const editingIndex = this.isEditContainer ? this.editingContainerIndex : null;
+      if (this.hasDuplicateContainerNumber(containerData.ContainerNumber, editingIndex)) {
+        this.setContainerDuplicateError();
+        this.toastr.error('Container No already exists');
+        return;
+      }
       if (this.selectedFCLLCL === 'FCL') {
         const currentContainerCount = this.masterJobContainers.length;
         const totalAllowedContainers = this.getTotalAllowedContainers();
@@ -3430,6 +3475,7 @@ onETDDateSelect(): void {
         IsHaz: false
       });
     }
+    this.clearControlError(this.containerFormGroup.get('ContainerNumber'), 'duplicate');
 
     if (this.isExportToImportCompleted) {
       this.containerFormGroup.disable({ emitEvent: false });

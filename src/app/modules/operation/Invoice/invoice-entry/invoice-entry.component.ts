@@ -74,6 +74,7 @@ import { PdfFileSaveService } from 'src/app/common/pdf-file-save.service';
 import { Menu } from 'angular-feather/icons';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
+import { InvoiceService } from '../../services/invoice.service';
 interface NgbDateStructLike {
   day: number;
   month: number;
@@ -101,7 +102,6 @@ interface NgbDateStructLike {
     RouterModule
   ],
   templateUrl: './invoice-entry.component.html',
-  styleUrls: ['./invoice-entry.component.scss'],
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
@@ -323,6 +323,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     private route: ActivatedRoute,
     private fb: FormBuilder,
     private modalService: NgbModal,
+    private invoiceService : InvoiceService,
     private operationService: OperationService,
     private masterService: MasterService,
     private appSettingService: AppSettingsService,
@@ -1059,7 +1060,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   }
 
   loadInvoiceById(id: number) {
-    this.operationService.getInvoiceById(id).subscribe({
+    this.invoiceService.getInvoiceById(id).subscribe({
       next: (resp: any) => {
         if (resp?.status && resp.data) {
           this.destroy$.next();
@@ -2452,7 +2453,7 @@ isSeaDepartment(): boolean {
     this.spinner.show();
 
     if (this.isEditMode && this.headerId) {
-      this.operationService.updateInvoiceById(this.headerId, payload).subscribe({
+      this.invoiceService.updateInvoiceById(this.headerId, payload).subscribe({
         next: async (resp: any) => {
           this.isSaving = false;
           if (resp.status) {
@@ -2479,7 +2480,7 @@ isSeaDepartment(): boolean {
         }
       })
     } else {
-      this.operationService.createInvoice(payload).subscribe({
+      this.invoiceService.createInvoice(payload).subscribe({
         next: async (resp: any) => {
           this.isSaving = false;
           if (resp.status) {
@@ -3082,7 +3083,7 @@ isSeaDepartment(): boolean {
         };
 
         // Call API to send email
-        this.operationService.sendInvoiceEmail(payload).subscribe({
+        this.invoiceService.sendInvoiceEmail(payload).subscribe({
           next: (resp: any) => {
             this.spinner.hide();
             if (resp?.status) {
@@ -4159,20 +4160,23 @@ isSeaDepartment(): boolean {
     vatAmt: number;
   } {
     const mode = appliedMode ?? this.taxCalculationService.context?.appliedTaxMode;
+    const taxableAmount = toNumber(detail.TaxableAmount);
+    const calculateTaxAmount = (rate: any): number =>
+      this.round((taxableAmount * toNumber(rate)) / 100);
 
     if (mode === 'CGST_SGST') {
       return {
-        cgstAmt: detail.TaxAmount1 || 0,
-        sgstAmt: detail.TaxAmount2 || 0,
+        cgstAmt: calculateTaxAmount(detail.TaxPercentage1),
+        sgstAmt: calculateTaxAmount(detail.TaxPercentage2),
         ugstAmt: 0,
         igstAmt: 0,
         vatAmt: 0,
       };
     } else if (mode === 'CGST_UGST') {
       return {
-        cgstAmt: detail.TaxAmount1 || 0,
+        cgstAmt: calculateTaxAmount(detail.TaxPercentage1),
         sgstAmt: 0,
-        ugstAmt: detail.TaxAmount2 || 0,
+        ugstAmt: calculateTaxAmount(detail.TaxPercentage2),
         igstAmt: 0,
         vatAmt: 0,
       };
@@ -4181,7 +4185,7 @@ isSeaDepartment(): boolean {
         cgstAmt: 0,
         sgstAmt: 0,
         ugstAmt: 0,
-        igstAmt: detail.TaxAmount1 || 0,
+        igstAmt: calculateTaxAmount(detail.TaxPercentage1),
         vatAmt: 0,
       };
     } else if (mode === 'VAT') {
@@ -4190,13 +4194,13 @@ isSeaDepartment(): boolean {
         sgstAmt: 0,
         ugstAmt: 0,
         igstAmt: 0,
-        vatAmt: detail.TaxAmount1 || 0,
+        vatAmt: calculateTaxAmount(detail.TaxPercentage1),
       };
     }
 
     return {
-      cgstAmt: toNumber(detail.TaxAmount1) || 0,
-      sgstAmt: toNumber(detail.TaxAmount2) || 0,
+      cgstAmt: calculateTaxAmount(detail.TaxPercentage1),
+      sgstAmt: calculateTaxAmount(detail.TaxPercentage2),
       ugstAmt: 0,
       igstAmt: 0,
       vatAmt: 0,
@@ -4265,6 +4269,47 @@ isSeaDepartment(): boolean {
 
   shouldShowForeignCurrencyColumn(): boolean {
     return this.invoiceData?.CurrencyCode !== this.currentCompanyCurrency?.code;
+  }
+
+  shouldShowIndiaGstAmountTotals(configOverride?: {
+    showCGST: boolean;
+    showSGST: boolean;
+  }): boolean {
+    const config = configOverride ?? this.printTaxDisplayConfig;
+    return this.currentCompanyCountryCode?.toLowerCase() === 'in' && !!config?.showCGST && !!config?.showSGST;
+  }
+
+  shouldShowVatAmountTotals(configOverride?: {
+    showVAT: boolean;
+  }): boolean {
+    const config = configOverride ?? this.printTaxDisplayConfig;
+    return this.currentCompanyCountryCode?.toLowerCase() === 'ae' && !!config?.showVAT;
+  }
+
+  shouldShowDetailedTaxAmountTotals(configOverride?: {
+    showCGST: boolean;
+    showSGST: boolean;
+    showVAT: boolean;
+  }): boolean {
+    return this.shouldShowIndiaGstAmountTotals(configOverride) || this.shouldShowVatAmountTotals(configOverride);
+  }
+
+  getInvoicePrintAmountTotal(fieldName: 'cgstAmt' | 'sgstAmt' | 'vatAmt' | 'LocalAmount'): string {
+    const total = (this.invoicePrintData?.voucherDetails || []).reduce((sum: number, detail: any) => {
+      return sum + toNumber(detail?.[fieldName]);
+    }, 0);
+
+    return this.getFormattedAndPaddedAmount(total, this.currentCompany.CurrencyMasterSid);
+  }
+
+  calculateBaseInvoicePrintColspan(): number {
+    let baseColumns = 7; // S.No, Particulars, Curr, No. of Unit, Rate, ROE, Taxable Amt
+
+    if (this.currentCompanyCountryCode?.toLowerCase() !== 'ae') {
+      baseColumns += 1; // HSN/SAC
+    }
+
+    return baseColumns;
   }
 
   getLocalCurrencyTotal(): number {
@@ -4507,7 +4552,7 @@ if (!customerMasterSid) {
   }
 
   this.spinner.show();
-  this.operationService.getUninvoicedRevenueCharges(payload).subscribe({
+  this.invoiceService.getUninvoicedRevenueCharges(payload).subscribe({
     next: (resp: any) => {
       this.spinner.hide();
       if (resp?.status && resp.data) {

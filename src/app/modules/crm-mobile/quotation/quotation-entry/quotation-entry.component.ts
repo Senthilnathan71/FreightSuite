@@ -6330,8 +6330,8 @@ ${this.userData['userEmail']}`;
         a.TandCTransactionSid === b.TandCTransactionSid) ||
       (aText !== '' &&
         aText === bText &&
-        (a?.DocumentSid ?? this.QuoteHeaderSid ?? null) ===
-          (b?.DocumentSid ?? this.QuoteHeaderSid ?? null))
+        (a?.DocumentSid ?? this.getTermsDocumentSid()) ===
+          (b?.DocumentSid ?? this.getTermsDocumentSid()))
     );
   }
 
@@ -6344,6 +6344,10 @@ ${this.userData['userEmail']}`;
     });
   }
 
+  private getTermsDocumentSid(route?: any): number | null {
+    return route?.QuoteRouteSid ?? this.quotationData?.quoteRoute?.[0]?.QuoteRouteSid ?? this.QuoteHeaderSid ?? null;
+  }
+
   private buildTermsConditionPayload(route: any) {
     return {
       MenuMasterSid: this.currentMenuId,
@@ -6351,7 +6355,7 @@ ${this.userData['userEmail']}`;
       POL: this.getPortCodeBySid(route?.POLSid),
       POD: this.getPortCodeBySid(route?.PODSid),
       Carrier: route?.quoteCarrier?.[0]?.CarrierMasterSid ?? null,
-      DocumentSid: this.QuoteHeaderSid
+      DocumentSid: this.getTermsDocumentSid(route)
     };
   }
 
@@ -6366,7 +6370,7 @@ ${this.userData['userEmail']}`;
     const transactionPayload = {
       CompanyMasterSid: this.currentCompany.CompanyMasterSid,
       MenuMasterSid: this.currentMenuId,
-      DocumentSid: this.QuoteHeaderSid
+      DocumentSid: this.getTermsDocumentSid()
     };
 
     try {

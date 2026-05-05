@@ -245,7 +245,7 @@
 
           <div class="custom-form-group custom-form-group-select" [class.filled]="!!selectedPOL">
 
-            <ng-select [items]="polFilterConfig!.options" [bindLabel]="polFilterConfig!.bindLabel"
+            <ng-select [items]="filteredPolOptions" [bindLabel]="polFilterConfig!.bindLabel"
               [bindValue]="polFilterConfig!.bindValue" [(ngModel)]="selectedPOL" (change)="onPolFilterChange()"
               [clearable]="true" appendTo="body">
 
@@ -265,7 +265,7 @@
 
           <div class="custom-form-group custom-form-group-select" [class.filled]="!!selectedPOD">
 
-            <ng-select [items]="podFilterConfig!.options" [bindLabel]="podFilterConfig!.bindLabel"
+            <ng-select [items]="filteredPodOptions" [bindLabel]="podFilterConfig!.bindLabel"
               [bindValue]="podFilterConfig!.bindValue" [(ngModel)]="selectedPOD" (change)="onPodFilterChange()"
               [clearable]="true" appendTo="body">
 

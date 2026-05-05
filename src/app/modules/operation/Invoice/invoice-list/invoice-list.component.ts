@@ -33,6 +33,7 @@ import {
   DropdownFilterConfig,
   PartyFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
+import { InvoiceService } from '../../services/invoice.service';
 
 @Component({
   selector: 'app-invoice-list',
@@ -53,8 +54,7 @@ import {
     CustomDatePipe
   ],
    providers: [CustomDatePipe],
-  templateUrl: './invoice-list.component.html',
-  styleUrl: './invoice-list.component.scss'
+  templateUrl: './invoice-list.component.html'
 })
 export class InvoiceListComponent extends BaseListComponent implements OnInit {
   @ViewChild('invoiceTable') invoiceTable!: ReusableTableComponent;
@@ -153,13 +153,13 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
      private datePipe: CustomDatePipe,
-     private mps: MenuPermissionService
+     private mps: MenuPermissionService,
+     private invoiceService: InvoiceService
   ) {
     super(paginationService);
   }
 
   override ngOnInit() {
-    this.getAllCompanies();
     this.loadJobMappings();
 
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
@@ -192,7 +192,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
   protected searchItems(): Observable<any> {
     this.tableLoading = true;
     this.spinner.show();
-    return this.operationService.searchInvoices(this.getSearchParams());
+    return this.invoiceService.searchInvoices(this.getSearchParams());
   }
 
   protected getSearchParams(): SearchParams & Record<string, any> {
@@ -413,16 +413,6 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         width: '150px',
         template: 'status',
       },
-      
-       {
-        key: 'CreatedBy',
-        label: 'Create By ',
-        sortable: true,
-        filterable: true,
-        visible: true,
-        dataType: 'string',
-        width: '150px',
-      },
       {
         key: 'Status',
         label: 'Status',
@@ -434,6 +424,16 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         dataType: 'string',
         cellClass: 'status-column'
       },
+      
+       {
+        key: 'CreatedBy',
+        label: 'Create By ',
+        sortable: true,
+        filterable: true,
+        visible: true,
+        dataType: 'string',
+        width: '150px',
+      }
     ],
     actions: [
       {
@@ -796,7 +796,7 @@ navigateToBooking(row: any): void {
       includeDetails: true // Request to include voucher details for calculation
     };
 
-    this.operationService.searchInvoices(params).subscribe({
+    this.invoiceService.searchInvoices(params).subscribe({
       next: (response: any) => {
         if (response.status) {
           this.results = this.processInvoiceData(response.data.items || response.data || []);
@@ -840,16 +840,6 @@ navigateToBooking(row: any): void {
     });
   }
 
-
-  getAllCompanies() {
-    // Assuming you have a service to get companies
-    // this.masterService.getAllCompanies().subscribe((companies: any[]) => {
-    //   this.companyMap = {};
-    //   companies.forEach(c => {
-    //     this.companyMap[c.CompanyMasterSid] = c.companyName;
-    //   });
-    // });
-  }
 
   // sort(column: string) {
   //   if (this.sortColumn === column) {

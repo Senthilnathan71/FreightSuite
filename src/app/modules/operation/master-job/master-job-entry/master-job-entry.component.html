@@ -2907,6 +2907,9 @@
       <span *ngIf="containerFormGroup.get('ContainerNumber')?.hasError('invalidContainerNumber')">
         Invalid container number 
       </span>
+      <span *ngIf="containerFormGroup.get('ContainerNumber')?.hasError('duplicate')">
+        Container No already exists
+      </span>
     </div>
     
     <!-- Show valid container number message -->

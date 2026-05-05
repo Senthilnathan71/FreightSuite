@@ -91,6 +91,8 @@ export class PageHeaderComponent implements OnInit, OnChanges, OnDestroy {
   selectedExtra: any = null;
   partySearchResults: any[] = [];
   partyLoading = false;
+  filteredPolOptions: any[] = [];
+  filteredPodOptions: any[] = [];
   private autoSearch$ = new Subject<{ searchValue: string; filters: AdvancedFilterValues }>();
   private destroy$ = new Subject<void>();
 
@@ -142,6 +144,8 @@ export class PageHeaderComponent implements OnInit, OnChanges, OnDestroy {
         this.selectedPOD = null;
       }
     }
+
+    this.refreshPortOptions();
   }
 
   initializeFilterDefaults(): void {
@@ -155,6 +159,7 @@ export class PageHeaderComponent implements OnInit, OnChanges, OnDestroy {
     this.selectedPOL = null;
     this.selectedPOD = null;
     this.selectedExtra = null;
+    this.refreshPortOptions();
   }
 
   private triggerAutoSearchIfEnabled(): void {
@@ -228,15 +233,40 @@ export class PageHeaderComponent implements OnInit, OnChanges, OnDestroy {
     this.selectedPOL = null;
     this.selectedPOD = null;
     this.departmentFilterChanged.emit(this.selectedDepartment);
+    this.refreshPortOptions();
     this.triggerAutoSearchIfEnabled();
   }
 
   onPolFilterChange(): void {
+    if (
+      this.selectedPOL !== null &&
+      this.selectedPOL !== undefined &&
+      this.selectedPOL !== '' &&
+      this.selectedPOD !== null &&
+      this.selectedPOD !== undefined &&
+      this.selectedPOD !== '' &&
+      String(this.selectedPOL) === String(this.selectedPOD)
+    ) {
+      this.selectedPOD = null;
+    }
+    this.refreshPortOptions();
     this.polFilterChanged.emit(this.selectedPOL);
     this.triggerAutoSearchIfEnabled();
   }
 
   onPodFilterChange(): void {
+    if (
+      this.selectedPOD !== null &&
+      this.selectedPOD !== undefined &&
+      this.selectedPOD !== '' &&
+      this.selectedPOL !== null &&
+      this.selectedPOL !== undefined &&
+      this.selectedPOL !== '' &&
+      String(this.selectedPOD) === String(this.selectedPOL)
+    ) {
+      this.selectedPOL = null;
+    }
+    this.refreshPortOptions();
     this.podFilterChanged.emit(this.selectedPOD);
     this.triggerAutoSearchIfEnabled();
   }
@@ -247,21 +277,28 @@ export class PageHeaderComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   getFilteredPolOptions(): any[] {
-    const options = this.polFilterConfig?.options || [];
-    const podBind = this.podFilterConfig?.bindValue;
-    if (!podBind || this.selectedPOD === null || this.selectedPOD === undefined || this.selectedPOD === '') {
-      return options;
-    }
-    return options.filter((opt: any) => opt?.[podBind] !== this.selectedPOD);
+    return this.filteredPolOptions;
   }
 
   getFilteredPodOptions(): any[] {
-    const options = this.podFilterConfig?.options || [];
+    return this.filteredPodOptions;
+  }
+
+  private refreshPortOptions(): void {
+    const polOptions = this.polFilterConfig?.options || [];
+    const podOptions = this.podFilterConfig?.options || [];
     const polBind = this.polFilterConfig?.bindValue;
-    if (!polBind || this.selectedPOL === null || this.selectedPOL === undefined || this.selectedPOL === '') {
-      return options;
-    }
-    return options.filter((opt: any) => opt?.[polBind] !== this.selectedPOL);
+    const podBind = this.podFilterConfig?.bindValue;
+
+    this.filteredPolOptions =
+      polBind && this.selectedPOD !== null && this.selectedPOD !== undefined && this.selectedPOD !== ''
+        ? polOptions.filter((opt: any) => String(opt?.[podBind] ?? '') !== String(this.selectedPOD))
+        : [...polOptions];
+
+    this.filteredPodOptions =
+      podBind && this.selectedPOL !== null && this.selectedPOL !== undefined && this.selectedPOL !== ''
+        ? podOptions.filter((opt: any) => String(opt?.[polBind] ?? '') !== String(this.selectedPOL))
+        : [...podOptions];
   }
 
   private loadPartyResults(searchTerm: string): void {
