@@ -38,8 +38,6 @@ import { SmMeetingsBoardComponent } from './components/sm-meetings-board/sm-meet
 import { SmTrendChartComponent } from './components/sm-trend-chart/sm-trend-chart.component';
 import { SmScoreboardComponent } from './components/sm-scoreboard/sm-scoreboard.component';
 import { SmRadarChartComponent } from './components/sm-radar-chart/sm-radar-chart.component';
-import { SmResponseTimesComponent } from './components/sm-response-times/sm-response-times.component';
-import { SmAgingChartComponent } from './components/sm-aging-chart/sm-aging-chart.component';
 import { SmAlertsComponent } from './components/sm-alerts/sm-alerts.component';
 import { SmActivityFeedComponent } from './components/sm-activity-feed/sm-activity-feed.component';
 import { SmTopPerformersComponent } from './components/sm-top-performers/sm-top-performers.component';
@@ -63,8 +61,6 @@ import { SmReminderModalComponent } from './components/sm-reminder-modal/sm-remi
     SmTrendChartComponent,
     SmScoreboardComponent,
     SmRadarChartComponent,
-    SmResponseTimesComponent,
-    SmAgingChartComponent,
     SmAlertsComponent,
     SmActivityFeedComponent,
     SmTopPerformersComponent,
@@ -95,21 +91,17 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
 
   // V2 UI state
   dateDropdownOpen = false;
-  showAllKpis = false;
   liteMode = false;
 
   // Data
   salespersons: SalespersonInfo[] = [];
   counts: SalesManagerCounts | null = null;
   primaryKpiCards: KpiCardConfig[] = [];
-  secondaryKpiCards: KpiCardConfig[] = [];
   kpiCards: KpiCardConfig[] = [];
   scoreboard: ScoreboardRow[] = [];
   weeklyTrend: WeeklyTrendPoint[] = [];
-  responseTimes: ResponseTimeMetric[] = [];
   activityFeed: ActivityFeedItem[] = [];
   alerts: AtRiskAlert[] = [];
-  aging: AgingRow[] = [];
   meetingsBoard: MeetingsBoardData | null = null;
   actionCenterItems: ActionCenterItem[] = [];
 
@@ -166,23 +158,6 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
   }
 
   // ─── V2 UI HELPERS ──────────────────────────────────────────
-
-  get activePresetLabel(): string {
-    switch (this.activePreset) {
-      case 'today': return 'Today';
-      case 'week': return 'This Week';
-      case 'month': return 'This Month';
-      case 'lastMonth': return 'Last Month';
-      case 'fy': return 'Financial Year';
-      default: return 'Custom Range';
-    }
-  }
-
-  get selectedSalespersonLabel(): string {
-    if (!this.selectedSalespersonId) return 'All Salespersons';
-    const sp = this.salespersons.find(s => s.UserMasterSid === this.selectedSalespersonId);
-    return sp?.userName || 'Selected';
-  }
 
   get salesOverviewDateRangeLabel(): string {
     const from = this.dateFromInput ? this.formatDisplayDate(this.dateFromInput) : '--';
@@ -323,12 +298,10 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
     this.weeklyTrend = [];
     this.scoreboard = [];
     this.alerts = [];
-    this.aging = [];
     this.activityFeed = [];
     this.meetingsBoard = null;
     this.actionCenterItems = [];
     this.primaryKpiCards = [];
-    this.secondaryKpiCards = [];
     this.kpiCards = [];
 
     this.loadCounts();
@@ -372,11 +345,9 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
     this.chartsLoading = true;
     forkJoin({
       trend: this.service.getWeeklyTrend(this.currentFilters),
-      responseTimes: this.service.getResponseTimes(this.currentFilters),
     }).subscribe({
       next: (results) => {
         this.weeklyTrend = results.trend.data || [];
-        this.responseTimes = results.responseTimes.data || [];
         this.chartsLoading = false;
       },
       error: () => {
@@ -402,11 +373,9 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
     this.alertsLoading = true;
     forkJoin({
       alerts: this.service.getAlerts(this.currentFilters),
-      aging: this.service.getAgingAnalysis(this.currentFilters),
     }).subscribe({
       next: (results) => {
         this.alerts = results.alerts.data || [];
-        this.aging = results.aging.data || [];
         this.alertsLoading = false;
       },
       error: () => {
@@ -478,20 +447,9 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
       },
     ];
 
-    // 8 detailed secondary KPIs (original ones)
-    this.secondaryKpiCards = [
-      { key: 'leads', label: 'Leads — No Meeting', icon: 'fas fa-user-plus', colorClass: 'leads', value: c.leadsNoMeeting, sectionNumber: 1 },
-      { key: 'meetings', label: 'Meetings Scheduled', icon: 'fas fa-calendar-check', colorClass: 'meetings', value: c.meetingsScheduled, sectionNumber: 2 },
-      { key: 'followups', label: 'Follow-Ups Pending', icon: 'fas fa-phone', colorClass: 'followups', value: c.followUpsPending, sectionNumber: 3 },
-      { key: 'unconverted', label: 'Business Not Converted', icon: 'fas fa-user-times', colorClass: 'unconverted', value: c.meetingsNotConverted, sectionNumber: 4 },
-      { key: 'noQuote', label: 'Customer No Quote', icon: 'fas fa-file-alt', colorClass: 'no-quote', value: c.customersNoQuote, sectionNumber: 5 },
-      { key: 'enquiry', label: 'Enquiry — No Quotation', icon: 'fas fa-search', colorClass: 'enquiry', value: c.enquiriesNoQuotation, sectionNumber: 6 },
-      { key: 'pending', label: 'Quote Pending Approval', icon: 'fas fa-hourglass-half', colorClass: 'pending', value: c.quotesNotApproved, sectionNumber: 7 },
-      { key: 'approved', label: 'Approved — No Booking', icon: 'fas fa-check-circle', colorClass: 'approved', value: c.quotesNoBooking, sectionNumber: 8 },
-    ];
 
     // Combined for backward compat
-    this.kpiCards = [...this.primaryKpiCards, ...this.secondaryKpiCards];
+    this.kpiCards = [...this.primaryKpiCards];
   }
 
   // ─── ACTION CENTER ─────────────────────────────────────────────
@@ -657,9 +615,9 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
     const m = date.getMonth();
     const d = date.getDate();
     if (boundary === 'start') {
-      return new Date(Date.UTC(y, m, d, 0, 0, 0)).toISOString();
+      return new Date(Date.UTC(y, m, d, 0, 0, 0, 0)).toISOString();
     }
-    return new Date(Date.UTC(y, m, d, 23, 59, 59)).toISOString();
+    return new Date(Date.UTC(y, m, d, 23, 59, 59, 999)).toISOString();
   }
 
   private formatDisplayDate(date: Date): string {

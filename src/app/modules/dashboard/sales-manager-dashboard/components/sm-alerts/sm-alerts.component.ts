@@ -41,7 +41,7 @@ export class SmAlertsComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   startAutoScroll() {
-    if (this.autoScrollTimer || !this.shouldDuplicateAlerts) return;
+    if (this.autoScrollTimer) return;
 
     this.autoScrollTimer = setInterval(() => {
       if (!this.isAutoScroll) return;
@@ -90,11 +90,11 @@ export class SmAlertsComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   private updateRenderedAlerts() {
-    this.renderedAlerts = this.shouldDuplicateAlerts ? [...this.alerts, ...this.alerts] : [...this.alerts];
+    this.renderedAlerts = [...this.alerts];
   }
 
   get shouldDuplicateAlerts(): boolean {
-    return this.alerts.length > 1;
+    return false;
   }
 
   trackAlert(index: number): number {

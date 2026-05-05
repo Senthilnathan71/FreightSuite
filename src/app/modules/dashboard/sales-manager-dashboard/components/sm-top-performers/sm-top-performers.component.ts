@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ScoreboardRow } from '../../../interfaces/sales-manager-dashboard.interfaces';
 
@@ -11,6 +11,7 @@ import { ScoreboardRow } from '../../../interfaces/sales-manager-dashboard.inter
 })
 export class SmTopPerformersComponent implements OnChanges {
   @Input() scoreboard: ScoreboardRow[] = [];
+  @Output() performerClicked = new EventEmitter<ScoreboardRow>(); 
 
   topPerformers: { row: ScoreboardRow; initials: string; rank: number }[] = [];
 
@@ -45,5 +46,9 @@ export class SmTopPerformersComponent implements OnChanges {
       case 3: return '#CD7F32';
       default: return '#0B6A7A';
     }
+  }
+  
+  onPerformerClick(performer: { row: ScoreboardRow; initials: string; rank: number }) {
+    this.performerClicked.emit(performer.row);
   }
 }

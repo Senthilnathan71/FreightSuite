@@ -35,7 +35,7 @@
       <div *ngIf="activeTab === 0" class="overview-content">
         <div class="overview-strip">
           <div class="mini-card" *ngFor="let card of getOverviewCards(); let i = index"
-              (click)="onTabChange(i + 1)" [style.cursor]="'pointer'">
+              (click)="onTabChange(i + 1)" style="cursor: pointer;">
             <div class="mini-icon" [style.color]="card.color">
               <i [class]="card.icon"></i>
             </div>
@@ -45,75 +45,456 @@
         </div>
       </div>
 
-      <!-- Section Data Tab -->
-      <div *ngIf="activeTab > 0">
-      <!-- Search -->
-      <div class="search-bar">
-        <i class="fas fa-magnifying-glass"></i>
-        <input type="text" [(ngModel)]="searchTerm" placeholder="Search items..." (keyup.enter)="onSearch()">
-        <button class="search-btn" (click)="onSearch()">Search</button>
+      <!-- Section 1: Leads No Meeting -->
+      <div *ngIf="activeTab === 1">
+        <div class="search-bar">
+          <i class="fas fa-magnifying-glass"></i>
+          <input type="text" [(ngModel)]="searchTerm" placeholder="Search leads..." (keyup.enter)="onSearch()">
+          <button class="search-btn" (click)="onSearch()">Search</button>
+        </div>
+
+        <div class="loading-state" *ngIf="sectionLoading">
+          <div class="spinner"></div>
+          <span>Loading data...</span>
+        </div>
+
+        <div class="data-table-wrap" *ngIf="!sectionLoading && sectionData.length > 0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Lead Name</th>
+                <th>Contact Person</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Source</th>
+                <th>Created</th>
+                <th>Created Ago</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of sectionData; let i = index">
+                <td class="row-num">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td><a class="link" (click)="navigateToLead(item.PreCustomerMasterSid)">{{ item.preCustomerName }}</a></td>
+                <td>{{ item.contactPerson }}</td>
+                <td><a [href]="'tel:' + item.phone">{{ item.phone }}</a></td>
+                <td><a [href]="'mailto:' + item.email">{{ item.email }}</a></td>
+                <td><span class="badge" [ngClass]="getLeadStatusClass(item.leadStatus)">{{ camelToWords(item.leadStatus) }}</span></td>
+                <td><span class="source-tag">{{ item.leadFrom }}</span></td>
+                <td>{{ item.createdOn | date:'dd/MM/yyyy' }}</td>
+                <td><span class="days-pill" [ngClass]="getIdlePillClass(item)">{{ item.idleDisplay }}</span></td>
+                <td><button class="action-btn schedule" (click)="navigateToCalendar(item)">Schedule</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="empty-state" *ngIf="!sectionLoading && sectionData.length === 0">
+          <i class="fas fa-inbox"></i>
+          <p>No leads without meetings found</p>
+        </div>
+
+        <div class="pagination" *ngIf="totalPages > 1">
+          <button class="page-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)"><i class="fas fa-chevron-left"></i></button>
+          <button *ngFor="let p of pages" class="page-btn" [class.active]="p === currentPage" (click)="onPageChange(p)">{{ p }}</button>
+          <button class="page-btn" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)"><i class="fas fa-chevron-right"></i></button>
+          <span class="page-info">{{ totalCount }} items</span>
+        </div>
       </div>
 
-      <!-- Loading -->
-      <div class="loading-state d-flex align-items-center justify-content-center gap-2" *ngIf="sectionLoading">
-        <div class="spinner"></div>
-        <span>Loading data...</span>
+      <!-- Section 2: Meetings Scheduled (All in one list, sorted by date) -->
+      <div *ngIf="activeTab === 2">
+        <div class="search-bar">
+          <i class="fas fa-magnifying-glass"></i>
+          <input type="text" [(ngModel)]="searchTerm" placeholder="Search meetings..." (keyup.enter)="onSearch()">
+          <button class="search-btn" (click)="onSearch()">Search</button>
+        </div>
+
+        <div class="loading-state" *ngIf="sectionLoading">
+          <div class="spinner"></div>
+          <span>Loading data...</span>
+        </div>
+
+        <div class="data-table-wrap" *ngIf="!sectionLoading && sectionData.length > 0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>L / C</th>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of sectionData; let i = index" class="clickable-row" (click)="navigateToMeetingUpdate(item.PreCustomerMeetingSid)">
+                <td class="row-num">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td><a class="link">{{ item.name }}</a></td>
+                <td><span class="badge" [ngClass]="item.LeadOrCustomer === 'L' ? 'lead-type' : 'customer-type'">{{ item.LeadOrCustomer === 'L' ? 'Lead' : 'Customer' }}</span></td>
+                <td><span class="days-pill" [ngClass]="getMeetingDateClass(item.meetingDate)">{{ formatMeetingDateTime(item.meetingDate) }}</span></td>
+                <td>{{ item.meetingType }}</td>
+                <td><span class="badge" [ngClass]="getMeetingStatusClass(item.meetingStatus)">{{ item.meetingStatus }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="empty-state" *ngIf="!sectionLoading && sectionData.length === 0">
+          <i class="fas fa-inbox"></i>
+          <p>No meetings found</p>
+        </div>
+
+        <div class="pagination" *ngIf="totalPages > 1">
+          <button class="page-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)"><i class="fas fa-chevron-left"></i></button>
+          <button *ngFor="let p of pages" class="page-btn" [class.active]="p === currentPage" (click)="onPageChange(p)">{{ p }}</button>
+          <button class="page-btn" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)"><i class="fas fa-chevron-right"></i></button>
+          <span class="page-info">{{ totalCount }} items</span>
+        </div>
       </div>
 
-      <!-- Empty -->
-      <div class="empty-state" *ngIf="!sectionLoading && sectionData.length === 0">
-        <i class="fas fa-inbox"></i>
-        <p>No items found for this section.</p>
+      <!-- Section 3: Follow-ups Pending -->
+      <div *ngIf="activeTab === 3">
+        <div class="search-bar">
+          <i class="fas fa-magnifying-glass"></i>
+          <input type="text" [(ngModel)]="searchTerm" placeholder="Search follow-ups..." (keyup.enter)="onSearch()">
+          <button class="search-btn" (click)="onSearch()">Search</button>
+        </div>
+
+        <div class="loading-state" *ngIf="sectionLoading">
+          <div class="spinner"></div>
+          <span>Loading data...</span>
+        </div>
+
+        <div class="data-table-wrap" *ngIf="!sectionLoading && sectionData.length > 0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Lead / Customer</th>
+                <th>Meeting Date</th>
+                <th>Type</th>
+                <th>Follow-Up Date</th>
+                <th>Status</th>
+                <th>Follow-Up Note</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of sectionData; let i = index">
+                <td class="row-num">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td><a class="link" (click)="navigateToLeadOrCustomer(item)">{{ getDisplayName(item) }}</a></td>
+                <td>{{ formatMeetingDateTime(item.meetingDate) }}</td>
+                <td><span class="source-tag">{{ item.meetingType }}</span></td>
+                <td><span class="days-pill" [ngClass]="getFollowUpDateClass(item.followUpStatus)">{{ formatMeetingDateTime(item.followUpDate) }}</span></td>
+                <td><span class="badge" [ngClass]="getFollowUpStatusClass(item.followUpStatus)">{{ item.followUpStatus }}</span></td>
+                <td class="note-cell" [title]="item.followUpNote">{{ item.followUpNote }}</td>
+                <td><button class="action-btn complete" (click)="navigateToMeetingUpdate(item.PreCustomerMeetingSid)">Complete</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="empty-state" *ngIf="!sectionLoading && sectionData.length === 0">
+          <i class="fas fa-inbox"></i>
+          <p>No follow-ups found</p>
+        </div>
+
+        <div class="pagination" *ngIf="totalPages > 1">
+          <button class="page-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)"><i class="fas fa-chevron-left"></i></button>
+          <button *ngFor="let p of pages" class="page-btn" [class.active]="p === currentPage" (click)="onPageChange(p)">{{ p }}</button>
+          <button class="page-btn" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)"><i class="fas fa-chevron-right"></i></button>
+          <span class="page-info">{{ totalCount }} items</span>
+        </div>
       </div>
 
-      <!-- Data table -->
-      <div class="data-table-wrap" *ngIf="!sectionLoading && sectionData.length > 0">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Name / Entity</th>
-              <th>Date</th>
-              <th>Status</th>
-              <th>Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let item of sectionData; let i = index">
-              <td class="row-num">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-              <td class="entity-name">
-                {{ item.preCustomerName || item.customerName || item.enquiryNumber || item.quoteNumber || item.leadName || '—' }}
-              </td>
-              <td class="date-col">
-                {{ item.meetingDate || item.createdOn || item.followUpDate || item.quoteDate || '—' }}
-              </td>
-              <td>
-                <span class="status-badge" *ngIf="item.meetingStatus || item.leadStatus || item.authorizerStatus">
-                  {{ item.meetingStatus || item.leadStatus || item.authorizerStatus }}
-                </span>
-                <span *ngIf="!item.meetingStatus && !item.leadStatus && !item.authorizerStatus">—</span>
-              </td>
-              <td class="details-col">
-                {{ item.meetingType || item.matchedVia || item.companyName || '—' }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Section 4: Not Converted -->
+      <div *ngIf="activeTab === 4">
+        <div class="search-bar">
+          <i class="fas fa-magnifying-glass"></i>
+          <input type="text" [(ngModel)]="searchTerm" placeholder="Search leads..." (keyup.enter)="onSearch()">
+          <button class="search-btn" (click)="onSearch()">Search</button>
+        </div>
+
+        <div class="loading-state" *ngIf="sectionLoading">
+          <div class="spinner"></div>
+          <span>Loading data...</span>
+        </div>
+
+        <div class="data-table-wrap" *ngIf="!sectionLoading && sectionData.length > 0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Lead Name</th>
+                <th>Contact</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Matched Via</th>
+                <th>Meetings</th>
+                <th>Last Meeting</th>
+                <th>Since</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of sectionData; let i = index">
+                <td class="row-num">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td><a class="link" (click)="navigateToLead(item.PreCustomerMasterSid)">{{ item.preCustomerName }}</a></td>
+                <td>{{ item.contactPerson }}</td>
+                <td><a [href]="'tel:' + item.phone">{{ item.phone }}</a></td>
+                <td><a [href]="'mailto:' + item.email">{{ item.email }}</a></td>
+                <td><span class="badge" [ngClass]="getLeadStatusClass(item.leadStatus)">{{ camelToWords(item.leadStatus) }}</span></td>
+                <td><span class="badge" [ngClass]="getMatchedViaClass(item.matchedVia)">{{ item.matchedVia }}</span></td>
+                <td class="center"><span class="meeting-count-badge">{{ item.meetingCount }}</span></td>
+                <td>{{ item.lastMeetingDate | date:'dd/MM/yyyy' }}</td>
+                <td><span class="days-pill" [ngClass]="getDaysPillClass(item.daysSinceMeeting, 14)">{{ item.elapsedDisplay }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="empty-state" *ngIf="!sectionLoading && sectionData.length === 0">
+          <i class="fas fa-inbox"></i>
+          <p>No unconverted leads found</p>
+        </div>
+
+        <div class="pagination" *ngIf="totalPages > 1">
+          <button class="page-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)"><i class="fas fa-chevron-left"></i></button>
+          <button *ngFor="let p of pages" class="page-btn" [class.active]="p === currentPage" (click)="onPageChange(p)">{{ p }}</button>
+          <button class="page-btn" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)"><i class="fas fa-chevron-right"></i></button>
+          <span class="page-info">{{ totalCount }} items</span>
+        </div>
       </div>
 
-      <!-- Pagination -->
-      <div class="pagination" *ngIf="totalPages > 1">
-        <button class="page-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
-          <i class="fas fa-chevron-left"></i>
-        </button>
-        <button *ngFor="let p of pages" class="page-btn" [class.active]="p === currentPage" (click)="onPageChange(p)">
-          {{ p }}
-        </button>
-        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)">
-          <i class="fas fa-chevron-right"></i>
-        </button>
-        <span class="page-info">{{ totalCount }} items</span>
+      <!-- Section 5: Customer No Quote -->
+      <div *ngIf="activeTab === 5">
+        <div class="search-bar">
+          <i class="fas fa-magnifying-glass"></i>
+          <input type="text" [(ngModel)]="searchTerm" placeholder="Search customers..." (keyup.enter)="onSearch()">
+          <button class="search-btn" (click)="onSearch()">Search</button>
+        </div>
+
+        <div class="loading-state" *ngIf="sectionLoading">
+          <div class="spinner"></div>
+          <span>Loading data...</span>
+        </div>
+
+        <div class="data-table-wrap" *ngIf="!sectionLoading && sectionData.length > 0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Customer Name</th>
+                <th>Original Lead</th>
+                <th>Contact</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Matched Via</th>
+                <th>Customer Since</th>
+                <th>Days Without Quote</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of sectionData; let i = index">
+                <td class="row-num">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td><a class="link" (click)="navigateToOrganization(item.CustomerMasterSid)">{{ item.CustomerName }}</a></td>
+                <td><a class="link" *ngIf="item.PreCustomerMasterSid" (click)="navigateToLead(item.PreCustomerMasterSid)">{{ item.preCustomerName }}</a><span *ngIf="!item.PreCustomerMasterSid">—</span></td>
+                <td>{{ item.contactPerson }}</td>
+                <td><a [href]="'tel:' + item.phone">{{ item.phone }}</a></td>
+                <td><a [href]="'mailto:' + item.email">{{ item.email }}</a></td>
+                <td><span class="badge" [ngClass]="getMatchedViaClass(item.matchedVia)">{{ item.matchedVia }}</span></td>
+                <td>{{ item.customerCreatedOn | date:'dd/MM/yyyy' }}</td>
+                <td><span class="days-pill" [ngClass]="getDaysPillClass(item.daysWithoutQuote, 30)">{{ item.waitingDisplay }}</span></td>
+                <td><button class="action-btn create" (click)="navigateToCreateQuote(item)">Create Quote</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="empty-state" *ngIf="!sectionLoading && sectionData.length === 0">
+          <i class="fas fa-inbox"></i>
+          <p>No customers without quotes found</p>
+        </div>
+
+        <div class="pagination" *ngIf="totalPages > 1">
+          <button class="page-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)"><i class="fas fa-chevron-left"></i></button>
+          <button *ngFor="let p of pages" class="page-btn" [class.active]="p === currentPage" (click)="onPageChange(p)">{{ p }}</button>
+          <button class="page-btn" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)"><i class="fas fa-chevron-right"></i></button>
+          <span class="page-info">{{ totalCount }} items</span>
+        </div>
       </div>
+
+      <!-- Section 6: Enquiry No Quotation -->
+      <div *ngIf="activeTab === 6">
+        <div class="search-bar">
+          <i class="fas fa-magnifying-glass"></i>
+          <input type="text" [(ngModel)]="searchTerm" placeholder="Search enquiries..." (keyup.enter)="onSearch()">
+          <button class="search-btn" (click)="onSearch()">Search</button>
+        </div>
+
+        <div class="loading-state" *ngIf="sectionLoading">
+          <div class="spinner"></div>
+          <span>Loading data...</span>
+        </div>
+
+        <div class="data-table-wrap" *ngIf="!sectionLoading && sectionData.length > 0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Enquiry Number</th>
+                <th>Enquiry date</th>
+                <th>Lead / Customer</th>
+                <th>Dept</th>
+                <th>POL</th>
+                <th>POD</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of sectionData; let i = index">
+                <td class="row-num">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td><a class="link" (click)="navigateToEnquiry(item.EnquiryHeaderSid)">{{ item.EnquiryNumber }}</a></td>
+                <td>{{ item.EnquiryDate | date:'dd/MM/yyyy' }}</td>
+                <td>{{ item.CustomerName || '—' }}</td>
+                <td>{{ item.departmentName || '—' }}</td>
+                <td>{{ item.polCode || '—' }}</td>
+                <td>{{ item.podCode || '—' }}</td>
+                <td><span class="badge" [ngClass]="getApprovalStatusClass(item.authorizerStatus)">{{ camelToWords(item.authorizerStatus) }}</span></td>
+                <td><button class="action-btn followup" (click)="convertEnquiryToQuote(item.EnquiryHeaderSid)">Convert</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="empty-state" *ngIf="!sectionLoading && sectionData.length === 0">
+          <i class="fas fa-inbox"></i>
+          <p>No enquiries without quotations found</p>
+        </div>
+
+        <div class="pagination" *ngIf="totalPages > 1">
+          <button class="page-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)"><i class="fas fa-chevron-left"></i></button>
+          <button *ngFor="let p of pages" class="page-btn" [class.active]="p === currentPage" (click)="onPageChange(p)">{{ p }}</button>
+          <button class="page-btn" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)"><i class="fas fa-chevron-right"></i></button>
+          <span class="page-info">{{ totalCount }} items</span>
+        </div>
+      </div>
+
+      <!-- Section 7: Quote Pending Approval -->
+      <div *ngIf="activeTab === 7">
+        <div class="search-bar">
+          <i class="fas fa-magnifying-glass"></i>
+          <input type="text" [(ngModel)]="searchTerm" placeholder="Search quotes..." (keyup.enter)="onSearch()">
+          <button class="search-btn" (click)="onSearch()">Search</button>
+        </div>
+
+        <div class="loading-state" *ngIf="sectionLoading">
+          <div class="spinner"></div>
+          <span>Loading data...</span>
+        </div>
+
+        <div class="data-table-wrap" *ngIf="!sectionLoading && sectionData.length > 0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Quote No</th>
+                <th>Date</th>
+                <th>Customer</th>
+                <th>Dept</th>
+                <th>POL</th>
+                <th>POD</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of sectionData; let i = index">
+                <td class="row-num">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td><a class="link" (click)="navigateToQuote(item.QuoteHeaderSid)">{{ item.QuoteNumber }}</a></td>
+                <td>{{ item.QuoteDate | date:'dd/MM/yyyy' }}</td>
+                <td>{{ getQuoteCustomerName(item) }}</td>
+                <td>{{ item.departmentName || '—' }}</td>
+                <td>{{ item.polCode || '—' }}</td>
+                <td>{{ item.podCode || '—' }}</td>
+                <td><span class="badge" [ngClass]="getApprovalStatusClass(item.authorizerStatus)">{{ camelToWords(item.authorizerStatus) }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="empty-state" *ngIf="!sectionLoading && sectionData.length === 0">
+          <i class="fas fa-inbox"></i>
+          <p>No pending quotes found</p>
+        </div>
+
+        <div class="pagination" *ngIf="totalPages > 1">
+          <button class="page-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)"><i class="fas fa-chevron-left"></i></button>
+          <button *ngFor="let p of pages" class="page-btn" [class.active]="p === currentPage" (click)="onPageChange(p)">{{ p }}</button>
+          <button class="page-btn" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)"><i class="fas fa-chevron-right"></i></button>
+          <span class="page-info">{{ totalCount }} items</span>
+        </div>
+      </div>
+
+      <!-- Section 8: Approved Quote No Booking -->
+      <div *ngIf="activeTab === 8">
+        <div class="search-bar">
+          <i class="fas fa-magnifying-glass"></i>
+          <input type="text" [(ngModel)]="searchTerm" placeholder="Search quotes..." (keyup.enter)="onSearch()">
+          <button class="search-btn" (click)="onSearch()">Search</button>
+        </div>
+
+        <div class="loading-state" *ngIf="sectionLoading">
+          <div class="spinner"></div>
+          <span>Loading data...</span>
+        </div>
+
+        <div class="data-table-wrap" *ngIf="!sectionLoading && sectionData.length > 0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Quote No</th>
+                <th>Date</th>
+                <th>Customer</th>
+                <th>Dept</th>
+                <th>POL</th>
+                <th>POD</th>
+                <th>Approved By</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of sectionData; let i = index">
+                <td class="row-num">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td><a class="link" (click)="navigateToQuote(item.QuoteHeaderSid)">{{ item.QuoteNumber }}</a></td>
+                <td>{{ item.QuoteDate | date:'dd/MM/yyyy' }}</td>
+                <td>{{ getQuoteCustomerName(item) }}</td>
+                <td>{{ item.departmentName || '—' }}</td>
+                <td>{{ item.polCode || '—' }}</td>
+                <td>{{ item.podCode || '—' }}</td>
+                <td>{{ item.approvedBy || '—' }}</td>
+                <td><button class="action-btn booking" (click)="convertQuoteToBooking(item)">Create Booking</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="empty-state" *ngIf="!sectionLoading && sectionData.length === 0">
+          <i class="fas fa-inbox"></i>
+          <p>No approved quotes without bookings found</p>
+        </div>
+
+        <div class="pagination" *ngIf="totalPages > 1">
+          <button class="page-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)"><i class="fas fa-chevron-left"></i></button>
+          <button *ngFor="let p of pages" class="page-btn" [class.active]="p === currentPage" (click)="onPageChange(p)">{{ p }}</button>
+          <button class="page-btn" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)"><i class="fas fa-chevron-right"></i></button>
+          <span class="page-info">{{ totalCount }} items</span>
+        </div>
       </div>
     </main>
   </div>

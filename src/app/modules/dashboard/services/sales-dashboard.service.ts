@@ -52,6 +52,23 @@ export class SalesDashboardService {
     );
   }
 
+  getSectionDataWithCompany(
+    companyMasterSid: number,
+    branchMasterSid: number,
+    sectionNumber: number,
+    filters: SalesDashboardFilters
+  ): Observable<{ data: unknown; status: boolean; message: string }> {
+    const params = this.buildParams({
+      ...filters,
+      companyMasterSid,
+      branchMasterSid,
+    });
+    return this.http.get<{ data: unknown; status: boolean; message: string }>(
+      `${this.baseUrl}/sales-dashboard/section/${sectionNumber}`,
+      { params }
+    );
+  }
+
   private buildParams(filters: SalesDashboardFilters & {
     companyMasterSid: number;
     branchMasterSid: number;

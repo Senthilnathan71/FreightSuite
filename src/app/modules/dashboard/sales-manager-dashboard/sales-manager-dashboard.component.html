@@ -147,7 +147,10 @@
           <app-sm-trend-chart [data]="weeklyTrend"></app-sm-trend-chart>
         </section>
         <section class="col-md-5">
-          <app-sm-top-performers [scoreboard]="scoreboard"></app-sm-top-performers>
+          <app-sm-top-performers 
+          [scoreboard]="scoreboard"
+          (performerClicked)="onScoreboardRowClicked($event)"
+          ></app-sm-top-performers>
         </section>
       </section>
 
