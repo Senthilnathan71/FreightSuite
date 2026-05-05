@@ -1,4 +1,4 @@
-import { Component, effect, OnInit, TemplateRef } from '@angular/core';
+import { Component, effect, HostListener, OnDestroy, OnInit, TemplateRef } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormArray, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NgbModalRef, NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbModal, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
@@ -12,6 +12,7 @@ import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-d
 import { CommonModule } from '@angular/common';
 import { FeatherModule } from 'angular-feather';
 import { Subject } from 'rxjs';
+import { debounceTime, takeUntil } from 'rxjs/operators';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from "src/app/component/searchable-dropdown/searchable-dropdown.component";
 import { CommonService } from 'src/app/common/common.service';
@@ -24,6 +25,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 @Component({
   selector: 'app-cargo-receipt-entry',
@@ -47,8 +49,10 @@ import { DocReferenceComponent } from '../../doc-reference/doc-reference.compone
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
   ],
 })
-export class CargoReceiptEntryComponent implements OnInit {
+export class CargoReceiptEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
       private destroy$ = new Subject<void>();
+  isDirty = false;
+  private initialFormValue: any = null;
 
   cargoForm!: FormGroup;
   bookingProductsForm!: FormGroup;
@@ -108,8 +112,11 @@ export class CargoReceiptEntryComponent implements OnInit {
       if (this.BookingHeaderSid) {
         this.isEditMode = true;
         this.loadBooking(this.BookingHeaderSid);
+      } else {
+        this.initialFormValue = this.cargoForm.getRawValue();
       }
     });
+    this.subscribeToFormChanges();
   }
 
   initForm() {
@@ -187,6 +194,9 @@ export class CargoReceiptEntryComponent implements OnInit {
             RecdPack: [+prod.RecdPack || 0, [Validators.required, Validators.pattern("^[0-9]*$")]],
           }));
         });
+
+        this.initialFormValue = this.cargoForm.getRawValue();
+        this.isDirty = false;
       },
       error: err => {
         console.error('Error loading booking:', err);
@@ -197,9 +207,28 @@ export class CargoReceiptEntryComponent implements OnInit {
 
 
   save() {
+    this.saveWithCallback();
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.saveWithCallback(resolve);
+    });
+  }
+
+  private saveWithCallback(resolve?: (value: boolean) => void): void {
+    const raw = this.cargoForm.getRawValue();
+    if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      this.cargoForm.markAsUntouched();
+      if (resolve) resolve(false);
+      return;
+    }
+
     if (this.cargoForm.invalid) {
       this.cargoForm.markAllAsTouched();
       this.appSettingService.showWarning('Please fill all required fields correctly.');
+      if (resolve) resolve(false);
       return;
     }
 
@@ -233,12 +262,16 @@ export class CargoReceiptEntryComponent implements OnInit {
         console.log('Response data:', resp?.data);
 
         if (resp && resp.status === true) {
+          this.initialFormValue = this.cargoForm.getRawValue();
+          this.isDirty = false;
           this.appSettingService.showSuccess('Cargo receipt saved successfully.');
           this.router.navigate(['/operation/cargo-receipt/list']);
+          if (resolve) resolve(true);
         } else {
           const errorMessage = resp?.message || 'Unknown error occurred';
           console.error('Error response:', resp);
           this.appSettingService.showError(errorMessage);
+          if (resolve) resolve(false);
         }
       },
       error: (err) => {
@@ -249,6 +282,7 @@ export class CargoReceiptEntryComponent implements OnInit {
 
         const errorMessage = err.error?.message || err.message || 'Something went wrong';
         this.appSettingService.showError(errorMessage);
+        if (resolve) resolve(false);
       },
     });
   }
@@ -286,6 +320,8 @@ export class CargoReceiptEntryComponent implements OnInit {
     // Reset any additional state variables if needed
     this.bookingData = null;
     this.BookingProductSid = null;
+    this.initialFormValue = this.cargoForm.getRawValue();
+    this.isDirty = false;
   }
 
 
@@ -311,6 +347,65 @@ export class CargoReceiptEntryComponent implements OnInit {
     return `${day}-${month}-${year}`; // 10-JAN-2025
   }
 
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  private subscribeToFormChanges(): void {
+    this.cargoForm.valueChanges
+      .pipe(takeUntil(this.destroy$), debounceTime(300))
+      .subscribe(() => {
+        this.isDirty = !this.deepEqual(this.initialFormValue, this.cargoForm.getRawValue());
+      });
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+
+    if (value instanceof Date) {
+      return value.toISOString().split('T')[0];
+    }
+
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+      return Number(value);
+    }
+
+    if (typeof value === 'number') {
+      return Number(value.toFixed(6));
+    }
+
+    if (Array.isArray(value)) {
+      return value.map(v => this.normalizeValue(v));
+    }
+
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
+  }
 
   ngOnDestroy(): void {
     this.dropdownStore.clearCache()

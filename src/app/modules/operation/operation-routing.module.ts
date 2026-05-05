@@ -266,6 +266,7 @@ export const OperationRoutes: Routes = [
       {
         path: 'vendor-credit-note/entry',
         component: VendorCreditNoteEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Vendor Credit Note',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Vendor Credit Note' }],
@@ -274,6 +275,7 @@ export const OperationRoutes: Routes = [
       {
         path: 'vendor-credit-note/entry/:id',
         component: VendorCreditNoteEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Vendor Credit Note',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Vendor Credit Note' }],
@@ -282,6 +284,7 @@ export const OperationRoutes: Routes = [
       {
         path: 'vendor-credit-note/view/:id',
         component: VendorCreditNoteEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Vendor Credit Note',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Vendor Credit Note' }],
@@ -291,6 +294,7 @@ export const OperationRoutes: Routes = [
         {
         path: 'cargo-receipt/entry',
         component: CargoReceiptEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Cargo Receipt',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Cargo Receipt' }],
@@ -307,6 +311,7 @@ export const OperationRoutes: Routes = [
       {
         path: 'cargo-receipt/entry/:BookingHeaderSid',
         component: CargoReceiptEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Cargo Receipt',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Cargo Receipt' }],
@@ -416,6 +421,7 @@ export const OperationRoutes: Routes = [
        {
         path: 'vendor-invoice/entry',
         component: VendorInvoiceEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Vendor Invoice',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Vendor Invoice' }],
@@ -424,6 +430,7 @@ export const OperationRoutes: Routes = [
       {
         path: 'vendor-invoice/entry/:id',
         component: VendorInvoiceEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Edit Vendor Invoice',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Vendor Invoice' }],
@@ -432,6 +439,7 @@ export const OperationRoutes: Routes = [
       {
         path: 'vendor-invoice/view/:id',
         component: VendorInvoiceEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'View Vendor Invoice',
           urls: [{ title: 'Operation', url: '/operation' }, { title: 'Vendor Invoice' }],
