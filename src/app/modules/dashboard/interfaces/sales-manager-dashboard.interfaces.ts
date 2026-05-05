@@ -150,7 +150,6 @@ export interface KpiCardConfig {
   sectionNumber: number;
   percentChange?: number;
   changeDirection?: 'up' | 'down' | 'flat';
-  progressPercent?: number;
   isCurrency?: boolean;
   isPrimary?: boolean;
 }

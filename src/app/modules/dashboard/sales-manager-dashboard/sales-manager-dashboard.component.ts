@@ -454,27 +454,27 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
       {
         key: 'totalLeads', label: 'Leads Created', icon: 'fas fa-funnel-dollar',
         colorClass: 'primary', value: k.leadsCreated.current, sectionNumber: 0,
-        isPrimary: true, percentChange: k.leadsCreated.percent, changeDirection: k.leadsCreated.direction, progressPercent: 75
+        isPrimary: true, percentChange: k.leadsCreated.percent, changeDirection: k.leadsCreated.direction
       },
       {
         key: 'meetings', label: 'Meeting Scheduled', icon: 'fas fa-calendar-check',
         colorClass: 'primary', value: k.meetingScheduled.current, sectionNumber: 2,
-        isPrimary: true, percentChange: k.meetingScheduled.percent , changeDirection: k.meetingScheduled.direction, progressPercent: 60
+        isPrimary: true, percentChange: k.meetingScheduled.percent , changeDirection: k.meetingScheduled.direction
       },
       {
         key: 'quotes', label: 'Quotes Created', icon: 'fas fa-file-invoice',
         colorClass: 'primary', value: k.quoteCreated.current, sectionNumber: 0,
-        isPrimary: true, percentChange: k.quoteCreated.percent , changeDirection: k.quoteCreated.direction , progressPercent: 45
+        isPrimary: true, percentChange: k.quoteCreated.percent , changeDirection: k.quoteCreated.direction 
       },
       {
         key: 'conversions', label: 'Lead to Customer Conversions', icon: 'fas fa-user-check',
         colorClass: 'primary', value: k.leadConvertedToCustomer.current , sectionNumber: 0,
-        isPrimary: true, percentChange: k.leadConvertedToCustomer.percent , changeDirection: k.leadConvertedToCustomer.direction , progressPercent: 30
+        isPrimary: true, percentChange: k.leadConvertedToCustomer.percent , changeDirection: k.leadConvertedToCustomer.direction 
       },
       {
         key: 'revenue', label: k.profitAtQuote.current === 0 ? 'No Profit / Loss' :(k.profitAtQuote.current > 0 ? 'Profit' : 'Loss'), icon: 'fas fa-dollar-sign',
         colorClass: 'primary', value: toNumber(k.profitAtQuote.current) , sectionNumber: 0,
-        isPrimary: true, isCurrency: true, percentChange: k.profitAtQuote.percent, changeDirection: k.profitAtQuote.direction, progressPercent: 82
+        isPrimary: true, isCurrency: true, percentChange: k.profitAtQuote.percent, changeDirection: k.profitAtQuote.direction
       },
     ];
 

@@ -2,7 +2,7 @@
   <div class="kpi-card" *ngFor="let card of cards"
        [class.primary-card]="card.isPrimary"
        [ngClass]="card.isPrimary ? '' : card.colorClass"
-       (click)="onClick(card)">
+      >
 
     <!-- Skeleton -->
     <div class="kpi-skeleton" *ngIf="loading">
@@ -28,10 +28,10 @@
       <!-- Label -->
       <div class="kpi-label">{{ card.label }}</div>
 
-      <!-- Progress bar (primary only) -->
+      <!-- Progress bar (primary only)
       <div class="kpi-progress" *ngIf="card.progressPercent != null">
         <div class="kpi-progress-fill" [style.width.%]="card.progressPercent"></div>
-      </div>
+      </div> -->
     </ng-container>
   </div>
 </div>
