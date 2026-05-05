@@ -160,6 +160,40 @@ export class VendorInvoicePrintComponent {
     return baseColumns;
   }
 
+  shouldShowVatAmountTotals(): boolean {
+    const cfg = this.getTaxDisplayConfig();
+    return this.currentCompanyCountryCode?.toLowerCase() === 'ae' && !!cfg?.showVAT;
+  }
+
+  shouldShowDetailedTaxAmountTotals(): boolean {
+    return this.shouldShowVatAmountTotals();
+  }
+
+  calculateBasePrintColspan(): number {
+    let baseColumns = 7;
+
+    if (this.currentCompanyCountryCode?.toLowerCase() !== 'ae') {
+      baseColumns += 1;
+    }
+
+    return baseColumns;
+  }
+
+  getPrintAmountTotal(fieldName: 'vatAmt' | 'LocalAmount'): string {
+    const total = (this.vendorInvoiceData?.voucherDetails || []).reduce(
+      (sum: number, detail: any) => sum + this.parseAmount(detail?.[fieldName]),
+      0
+    );
+
+    return total.toFixed(2);
+  }
+
+  private parseAmount(value: any): number {
+    if (value === null || value === undefined || value === '') return 0;
+    if (typeof value === 'number') return value;
+    return Number(String(value).replace(/,/g, '')) || 0;
+  }
+
   private getRawVendorData(): any {
     return this.sourceVendorInvoiceData || this.vendorInvoiceData;
   }

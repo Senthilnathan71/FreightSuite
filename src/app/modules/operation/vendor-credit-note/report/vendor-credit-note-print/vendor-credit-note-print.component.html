@@ -829,8 +829,41 @@
               </td>
             </tr>
 
+            <tr *ngIf="shouldShowVatAmountTotals()" style="font-weight: bolder">
+              <td [attr.colspan]="calculateBasePrintColspan() + 1" style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align: right;
+                      border-left: none;
+                    ">
+                <strong>Total</strong>
+              </td>
+              <td style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align: right;
+                    ">
+                <strong>{{ getPrintAmountTotal('vatAmt') }}</strong>
+              </td>
+              <td [style.border-right]="shouldShowForeignCurrencyColumn() ? '1px solid black' : 'none'" style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      text-align: right;
+                    ">
+                <strong>{{ shouldShowForeignCurrencyColumn() ? getPrintAmountTotal('LocalAmount') : vendorCreditNoteData?.totalPartyAmount }}</strong>
+              </td>
+              <td *ngIf="shouldShowForeignCurrencyColumn()" style="
+                      border: 1px solid black;
+                      padding: 2px 8px;
+                      border-right: none;
+                      text-align: right;
+                    ">
+                <strong>{{ vendorCreditNoteData?.totalPartyAmount }}</strong>
+              </td>
+            </tr>
+
             <!-- Total Row with dynamic colspan -->
-            <tr style="font-weight: bolder">
+            <tr *ngIf="!shouldShowDetailedTaxAmountTotals()" style="font-weight: bolder">
               <td [attr.colspan]="calculateTotalColspan() + (shouldShowForeignCurrencyColumn() ? 1 : 0)" style="
                       border: 1px solid black;
                       padding: 2px 8px;

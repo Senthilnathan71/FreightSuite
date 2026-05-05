@@ -2397,8 +2397,56 @@
                 </td>
               </tr>
 
+              <tr *ngIf="shouldShowVatAmountTotals(getTaxDisplayConfig())" style="font-weight: bolder">
+                <td
+                  [attr.colspan]="calculateBaseCreditNotePrintColspan() + 1"
+                  style="
+                    border: 1px solid black;
+                    padding: 2px 8px;
+                    text-align: right;
+                    border-left: none;
+                  "
+                >
+                  <strong>Total</strong>
+                </td>
+                <td
+                  style="
+                    border: 1px solid black;
+                    padding: 2px 8px;
+                    text-align: right;
+                  "
+                >
+                  <strong>{{ getCreditNotePrintAmountTotal('vatAmt') }}</strong>
+                </td>
+                <td
+                  [style.border-right]="
+                    shouldShowForeignCurrencyColumn()
+                      ? '1px solid black'
+                      : 'none'
+                  "
+                  style="
+                    border: 1px solid black;
+                    padding: 2px 8px;
+                    text-align: right;
+                  "
+                >
+                  <strong>{{ shouldShowForeignCurrencyColumn() ? getCreditNotePrintAmountTotal('LocalAmount') : creditNotePrintData?.totalPartyAmount }}</strong>
+                </td>
+                <td
+                  *ngIf="shouldShowForeignCurrencyColumn()"
+                  style="
+                    border: 1px solid black;
+                    padding: 2px 8px;
+                    border-right: none;
+                    text-align: right;
+                  "
+                >
+                  <strong>{{ creditNotePrintData?.totalPartyAmount }}</strong>
+                </td>
+              </tr>
+
               <!-- Total Row with dynamic colspan -->
-              <tr style="font-weight: bolder">
+              <tr *ngIf="!shouldShowDetailedTaxAmountTotals(getTaxDisplayConfig())" style="font-weight: bolder">
                 <td
                   [attr.colspan]="
                     calculateTotalColspan() +
