@@ -78,7 +78,7 @@ export function generateBookingDocument(
       buildBookingCargoDetails(data),
 
       // Cost/Revenue table
-      buildBookingRatesTable(data),
+      // buildBookingRatesTable(data),
 
       // Terms (if available)
       ...(data.terms && data.terms.length > 0 ? [
@@ -315,72 +315,72 @@ function buildBookingCargoDetails(data: BookingPdfData): any {
   };
 }
 
-function buildBookingRatesTable(data: BookingPdfData): any {
-  const rows = data.bookingRates || [];
-  if (!rows.length) {
-    return { text: '' };
-  }
+// function buildBookingRatesTable(data: BookingPdfData): any {
+//   const rows = data.bookingRates || [];
+//   if (!rows.length) {
+//     return { text: '' };
+//   }
 
-  const totals = rows.reduce(
-    (acc: { proRev: number; proCost: number; proGross: number; actRev: number; actCost: number; actGross: number }, item) => {
-      acc.proRev += Number(item.proRevenueAmount || 0);
-      acc.proCost += Number(item.proCostAmount || 0);
-      acc.proGross += Number(item.proGross || 0);
-      acc.actRev += Number(item.actualRevenueAmount || 0);
-      acc.actCost += Number(item.actualCostAmount || 0);
-      acc.actGross += Number(item.actualGross || 0);
-      return acc;
-    },
-    { proRev: 0, proCost: 0, proGross: 0, actRev: 0, actCost: 0, actGross: 0 }
-  );
+//   const totals = rows.reduce(
+//     (acc: { proRev: number; proCost: number; proGross: number; actRev: number; actCost: number; actGross: number }, item) => {
+//       acc.proRev += Number(item.proRevenueAmount || 0);
+//       acc.proCost += Number(item.proCostAmount || 0);
+//       acc.proGross += Number(item.proGross || 0);
+//       acc.actRev += Number(item.actualRevenueAmount || 0);
+//       acc.actCost += Number(item.actualCostAmount || 0);
+//       acc.actGross += Number(item.actualGross || 0);
+//       return acc;
+//     },
+//     { proRev: 0, proCost: 0, proGross: 0, actRev: 0, actCost: 0, actGross: 0 }
+//   );
 
-  return {
-    table: {
-      headerRows: 2,
-      widths: ['*', 70, 70, 70, 70, 70, 70],
-      body: [
-        [
-          { text: 'Charge', style: 'tableHeader', rowSpan: 2 },
-          { text: 'Provisional', style: 'tableHeader', colSpan: 3, alignment: 'center' },
-          {},
-          {},
-          { text: 'Actual', style: 'tableHeader', colSpan: 3, alignment: 'center' },
-          {},
-          {}
-        ],
-        [
-          {},
-          { text: 'Rev Amt', style: 'tableHeader' },
-          { text: 'Cost Amt', style: 'tableHeader' },
-          { text: 'GP', style: 'tableHeader' },
-          { text: 'Rev Amt', style: 'tableHeader' },
-          { text: 'Cost Amt', style: 'tableHeader' },
-          { text: 'GP', style: 'tableHeader' }
-        ],
-        ...rows.map((item) => ([
-          { text: item.chargeName || '', style: 'tableCell' },
-          { text: Number(item.proRevenueAmount || 0).toFixed(2), style: 'tableCell', alignment: 'right' },
-          { text: Number(item.proCostAmount || 0).toFixed(2), style: 'tableCell', alignment: 'right' },
-          { text: Number(item.proGross || 0).toFixed(2), style: 'tableCell', alignment: 'right' },
-          { text: Number(item.actualRevenueAmount || 0).toFixed(2), style: 'tableCell', alignment: 'right' },
-          { text: Number(item.actualCostAmount || 0).toFixed(2), style: 'tableCell', alignment: 'right' },
-          { text: Number(item.actualGross || 0).toFixed(2), style: 'tableCell', alignment: 'right' }
-        ])),
-        [
-          { text: 'Total', style: 'tableCellBold', alignment: 'right' },
-          { text: totals.proRev.toFixed(2), style: 'tableCellBold', alignment: 'right' },
-          { text: totals.proCost.toFixed(2), style: 'tableCellBold', alignment: 'right' },
-          { text: totals.proGross.toFixed(2), style: 'tableCellBold', alignment: 'right' },
-          { text: totals.actRev.toFixed(2), style: 'tableCellBold', alignment: 'right' },
-          { text: totals.actCost.toFixed(2), style: 'tableCellBold', alignment: 'right' },
-          { text: totals.actGross.toFixed(2), style: 'tableCellBold', alignment: 'right' }
-        ]
-      ]
-    },
-    layout: 'bordered',
-    margin: [0, 4, 0, 6]
-  };
-}
+//   return {
+//     table: {
+//       headerRows: 2,
+//       widths: ['*', 70, 70, 70, 70, 70, 70],
+//       body: [
+//         [
+//           { text: 'Charge', style: 'tableHeader', rowSpan: 2 },
+//           { text: 'Provisional', style: 'tableHeader', colSpan: 3, alignment: 'center' },
+//           {},
+//           {},
+//           { text: 'Actual', style: 'tableHeader', colSpan: 3, alignment: 'center' },
+//           {},
+//           {}
+//         ],
+//         [
+//           {},
+//           { text: 'Rev Amt', style: 'tableHeader' },
+//           { text: 'Cost Amt', style: 'tableHeader' },
+//           { text: 'GP', style: 'tableHeader' },
+//           { text: 'Rev Amt', style: 'tableHeader' },
+//           { text: 'Cost Amt', style: 'tableHeader' },
+//           { text: 'GP', style: 'tableHeader' }
+//         ],
+//         ...rows.map((item) => ([
+//           { text: item.chargeName || '', style: 'tableCell' },
+//           { text: Number(item.proRevenueAmount || 0).toFixed(2), style: 'tableCell', alignment: 'right' },
+//           { text: Number(item.proCostAmount || 0).toFixed(2), style: 'tableCell', alignment: 'right' },
+//           { text: Number(item.proGross || 0).toFixed(2), style: 'tableCell', alignment: 'right' },
+//           { text: Number(item.actualRevenueAmount || 0).toFixed(2), style: 'tableCell', alignment: 'right' },
+//           { text: Number(item.actualCostAmount || 0).toFixed(2), style: 'tableCell', alignment: 'right' },
+//           { text: Number(item.actualGross || 0).toFixed(2), style: 'tableCell', alignment: 'right' }
+//         ])),
+//         [
+//           { text: 'Total', style: 'tableCellBold', alignment: 'right' },
+//           { text: totals.proRev.toFixed(2), style: 'tableCellBold', alignment: 'right' },
+//           { text: totals.proCost.toFixed(2), style: 'tableCellBold', alignment: 'right' },
+//           { text: totals.proGross.toFixed(2), style: 'tableCellBold', alignment: 'right' },
+//           { text: totals.actRev.toFixed(2), style: 'tableCellBold', alignment: 'right' },
+//           { text: totals.actCost.toFixed(2), style: 'tableCellBold', alignment: 'right' },
+//           { text: totals.actGross.toFixed(2), style: 'tableCellBold', alignment: 'right' }
+//         ]
+//       ]
+//     },
+//     layout: 'bordered',
+//     margin: [0, 4, 0, 6]
+//   };
+// }
 
 function safeText(value: unknown): string {
   if (value === null || value === undefined) return '';
