@@ -84,7 +84,7 @@
                 <td><span class="badge" [ngClass]="getLeadStatusClass(item.leadStatus)">{{ camelToWords(item.leadStatus) }}</span></td>
                 <td><span class="source-tag">{{ item.leadFrom }}</span></td>
                 <td>{{ item.createdOn | date:'dd/MM/yyyy' }}</td>
-                <td><span class="days-pill" [ngClass]="getIdlePillClass(item)">{{ item.idleDisplay }}</span></td>
+                <td><span class="days-pill" [ngClass]="getIdlePillClass(item)">{{ item.createdOn | timeAgo }}</span></td>
                 <td><button class="action-btn schedule" (click)="navigateToCalendar(item)">Schedule</button></td>
               </tr>
             </tbody>
@@ -126,7 +126,7 @@
                 <th>L / C</th>
                 <th>Date</th>
                 <th>Type</th>
-                <th>Status</th>
+                <!-- <th>Status</th> -->
               </tr>
             </thead>
             <tbody>
@@ -136,7 +136,7 @@
                 <td><span class="badge" [ngClass]="item.LeadOrCustomer === 'L' ? 'lead-type' : 'customer-type'">{{ item.LeadOrCustomer === 'L' ? 'Lead' : 'Customer' }}</span></td>
                 <td><span class="days-pill" [ngClass]="getMeetingDateClass(item.meetingDate)">{{ formatMeetingDateTime(item.meetingDate) }}</span></td>
                 <td>{{ item.meetingType }}</td>
-                <td><span class="badge" [ngClass]="getMeetingStatusClass(item.meetingStatus)">{{ item.meetingStatus }}</span></td>
+                <!-- <td><span class="badge" [ngClass]="getMeetingStatusClass(item.meetingStatus)">{{ item.meetingStatus }}</span></td> -->
               </tr>
             </tbody>
           </table>
@@ -250,7 +250,7 @@
                 <td><span class="badge" [ngClass]="getMatchedViaClass(item.matchedVia)">{{ item.matchedVia }}</span></td>
                 <td class="center"><span class="meeting-count-badge">{{ item.meetingCount }}</span></td>
                 <td>{{ item.lastMeetingDate | date:'dd/MM/yyyy' }}</td>
-                <td><span class="days-pill" [ngClass]="getDaysPillClass(item.daysSinceMeeting, 14)">{{ item.elapsedDisplay }}</span></td>
+                <td><span class="days-pill" [ngClass]="getDaysPillClass(item.daysSinceMeeting, 14)">{{ item.lastMeetingDate | timeAgo }}</span></td>
               </tr>
             </tbody>
           </table>
@@ -308,7 +308,7 @@
                 <td><a [href]="'mailto:' + item.email">{{ item.email }}</a></td>
                 <td><span class="badge" [ngClass]="getMatchedViaClass(item.matchedVia)">{{ item.matchedVia }}</span></td>
                 <td>{{ item.customerCreatedOn | date:'dd/MM/yyyy' }}</td>
-                <td><span class="days-pill" [ngClass]="getDaysPillClass(item.daysWithoutQuote, 30)">{{ item.waitingDisplay }}</span></td>
+                <td><span class="days-pill" [ngClass]="getDaysPillClass(item.daysWithoutQuote, 30)">{{ item.customerCreatedOn | timeAgo }}</span></td>
                 <td><button class="action-btn create" (click)="navigateToCreateQuote(item)">Create Quote</button></td>
               </tr>
             </tbody>

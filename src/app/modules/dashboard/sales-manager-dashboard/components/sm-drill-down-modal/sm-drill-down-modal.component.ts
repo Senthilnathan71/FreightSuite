@@ -10,11 +10,18 @@ import { firstValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
 
 @Component({
   selector: 'app-sm-drill-down-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgbNavModule,NgxSpinnerModule],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    NgbNavModule,
+    NgxSpinnerModule,
+    TimeAgoPipe
+  ],
   templateUrl: './sm-drill-down-modal.component.html',
   styleUrls: ['./sm-drill-down-modal.component.scss']
 })
@@ -29,8 +36,8 @@ export class SmDrillDownModalComponent implements OnInit , OnChanges {
     { id: 2, label: 'Meeting Scheduled', icon: 'fas fa-calendar-check' },
     { id: 3, label: 'Follow-up Meetings', icon: 'fas fa-phone-alt' },
     { id: 4, label: 'Business not Converted', icon: 'fas fa-user-times' },
-    { id: 5, label: 'Enquiry not converted into Quotation', icon: 'fas fa-file-alt' },
-    { id: 6, label: 'Customer created but no Quote created', icon: 'fas fa-search-plus' },
+    { id: 5, label: 'Customer created but no Quote created', icon: 'fas fa-search-plus' },
+    { id: 6, label: 'Enquiry not converted into Quotation', icon: 'fas fa-file-alt' },
     { id: 7, label: 'Quotation waiting for approval', icon: 'fas fa-hourglass-half' },
     { id: 8, label: 'Quotation approved but no Booking', icon: 'fas fa-check-circle' },
   ];
