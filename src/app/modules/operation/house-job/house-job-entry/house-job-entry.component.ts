@@ -619,6 +619,7 @@ hblModalRef?: NgbModalRef;
   }
 
   private markExternalDirty(source: string = 'unknown'): void {
+    this.externalDirty = true;
     this.formSaved = false;
     this.recomputeDirtyState(source);
   }
@@ -1043,7 +1044,7 @@ private setupMBLDateListener(): void {
       isFromBooking: [data?.isFromBooking || false],
       CargoType: [data?.CargoType || 'General', Validators.required],
       ContainerType: [data?.ContainerType || null, isFclMode ? [Validators.required] : []],
-      NoofContainers: [data?.NoofContainers ?? '', this.isSurfaceCargoMode() ? [] : [Validators.required, Validators.min(1)]],
+      NoofContainers: [data?.NoofContainers ?? '', this.getNoofContainersValidators()],
       GrossWeight: [data?.GrossWeight ?? '', [Validators.required, Validators.min(0.001)]],
       NetWeight: [data?.NetWeight ?? ''],
       Volume: [data?.Volume ?? ''],
@@ -1078,6 +1079,16 @@ private setupMBLDateListener(): void {
   private shouldValidateHouseJobCargoGroup(cargoGroup: FormGroup): boolean {
     const cargoProducts = cargoGroup.get('bookingProducts') as FormArray | null;
     return !!(cargoGroup.dirty || cargoProducts?.dirty);
+  }
+
+  private getNoofContainersValidators(): ValidatorFn[] {
+    const departmentType = this.normalizePortText(
+      this.selectedDepartmentType || this.selectedDepartment?.departmentType
+    );
+    if (departmentType === 'AIR') {
+      return [];
+    }
+    return this.isSurfaceCargoMode() ? [] : [Validators.required, Validators.min(1)];
   }
 
   private calculateChargeableWeight(cargoGroup: FormGroup = this.cargoForm): void {
@@ -3024,10 +3035,12 @@ private applyExportToImportFieldLocks(): void {
       const fieldsToCheck = [
         'CargoType',
         'ContainerType',
-        'NoofContainers',
         'GrossWeight',
         'Volume'
       ];
+      if (this.getNoofContainersValidators().length) {
+        fieldsToCheck.push('NoofContainers');
+      }
 
       fieldsToCheck.forEach(fieldName => {
         const control = cargoGroup.get(fieldName);
@@ -3842,6 +3855,7 @@ shouldShowAirHousePrintOption(reportName: 'HAWB' | 'HAWB Draft'): boolean {
       const cargoGroup = cargoControl as FormGroup;
       const cargoValidatorMap: Record<string, any[]> = {
         CargoType: [Validators.required],
+        NoofContainers: this.getNoofContainersValidators(),
         GrossWeight: [Validators.required]
       };
 
@@ -6894,11 +6908,11 @@ calculateTotals(): any {
   };
 }
 
-  handleBOEChange(event: any) {
+handleBOEChange(event: any) {
 
   // You can process and save event data here
   if (!this.isPatching) {
-    this.recomputeDirtyState('BOE change');
+    this.markExternalDirty('BOE change');
   }
 }
 
@@ -6906,14 +6920,14 @@ handleVehicleChange(event: any) {
 
   // You can process and save event data here
   if (!this.isPatching) {
-    this.recomputeDirtyState('Vehicle change');
+    this.markExternalDirty('Vehicle change');
   }
 }
 handleCustomsChange(event: any) {
   
   // You can process and save event data here
   if (!this.isPatching) {
-    this.recomputeDirtyState('Customs change');
+    this.markExternalDirty('Customs change');
   }
 }
 

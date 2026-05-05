@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
@@ -18,6 +18,8 @@ import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPr
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { Subject, debounceTime, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-currency-exchange-entry',
@@ -39,7 +41,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
   ],
 })
-export class CurrencyExchangeEntryComponent implements OnInit {
+export class CurrencyExchangeEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   currencyExchangeForm!: FormGroup;
   isEditMode = false;
   filteredToCurrencies: any[] = []; 
@@ -59,6 +61,10 @@ export class CurrencyExchangeEntryComponent implements OnInit {
   currentCompany : any;
   currentBranch : any;
   MenuMasterSid: any;
+  isDirty: boolean = false;
+  isSaving: boolean = false;
+  private initialFormValue: any = null;
+  private destroy$ = new Subject<void>();
   constructor(
     private fb: FormBuilder,
     private accountService: AccountsService,
@@ -81,6 +87,10 @@ export class CurrencyExchangeEntryComponent implements OnInit {
     this.loadCompaniesAndBranches();
     this.checkEditMode();
     this.loadCurrencies();
+    if (!this.isEditMode) {
+      this.initialFormValue = this.currencyExchangeForm.getRawValue();
+      this.subscribeToFormChanges();
+    }
   }
 
   initForm() {
@@ -120,6 +130,12 @@ export class CurrencyExchangeEntryComponent implements OnInit {
       }
     });
   }
+
+  isFormDirty(): boolean {
+  if (!this.isEditMode) return false;
+
+  return this.isDirty;
+}
 
   loadCurrencies() {
     this.loading = true;
@@ -217,6 +233,8 @@ export class CurrencyExchangeEntryComponent implements OnInit {
         if (fromCurrency) {
           this.filterToCurrencies(fromCurrency);
         }
+        this.initialFormValue = this.currencyExchangeForm.getRawValue();
+        this.subscribeToFormChanges();
         this.loading = false;
       },
       error: (err) => {
@@ -227,14 +245,29 @@ export class CurrencyExchangeEntryComponent implements OnInit {
     });
   }
 
-  onSubmit() {
+  onSubmit(resolve?: (saved: boolean) => void) {
+    if (this.isSaving) {
+      if (resolve) resolve(false);
+      return;
+    }
+
+    const raw = this.currencyExchangeForm.getRawValue();
+    if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      this.currencyExchangeForm.markAsUntouched();
+      if (resolve) resolve(false);
+      return;
+    }
+
     if (this.currencyExchangeForm.invalid) {
       this.currencyExchangeForm.markAllAsTouched();
       this.appSettingService.showWarning('Please fill all required fields correctly.');
+      if (resolve) resolve(false);
       return;
     }
 
     this.loading = true;
+    this.isSaving = true;
     const formValue = this.currencyExchangeForm.getRawValue(); // Use getRawValue to get disabled control values
 
     const payload = {
@@ -255,10 +288,12 @@ export class CurrencyExchangeEntryComponent implements OnInit {
         next: (resp) => {
          
           this.handleSuccess(resp, 'Currency Exchange updated successfully!');
+          if (resolve) resolve(!!resp?.status);
            this.router.navigate(['accounts/currency-exchange/entry'],resp.data.CurrencyExchangeSid);
         },
         error: (err) => {
           this.handleError(err);
+          if (resolve) resolve(false);
         }
       });
     } else {
@@ -266,10 +301,12 @@ export class CurrencyExchangeEntryComponent implements OnInit {
         next: (resp) => {
           this.loadCurrencyExchangeData(resp.data.CurrencyExchangeSid);
           this.handleSuccess(resp, 'Currency Exchange created successfully!');
+          if (resolve) resolve(!!resp?.status);
            this.router.navigate(['accounts/currency-exchange/entry'],resp.data.CurrencyExchangeSid);
         },
         error: (err) => {
           this.handleError(err);
+          if (resolve) resolve(false);
         }
       });
     }
@@ -277,7 +314,10 @@ export class CurrencyExchangeEntryComponent implements OnInit {
 
   handleSuccess(resp: any, successMsg: string) {
     this.loading = false;
+    this.isSaving = false;
     if (resp.status) {
+      this.isDirty = false;
+      this.initialFormValue = this.currencyExchangeForm.getRawValue();
       this.appSettingService.showSuccess(resp.message);
       this.router.navigate(['accounts/currency-exchange/list']);
     } else {
@@ -287,6 +327,7 @@ export class CurrencyExchangeEntryComponent implements OnInit {
 
   handleError(err: any) {
     this.loading = false;
+    this.isSaving = false;
     console.error('Error:', err);
     this.appSettingService.showError(
       err.message ||
@@ -405,8 +446,76 @@ openFollowup() {
   
 }
  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.commonService.clearDocumentData()
  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
+
+  private subscribeToFormChanges() {
+    this.currencyExchangeForm.valueChanges
+      .pipe(takeUntil(this.destroy$), debounceTime(300))
+      .subscribe(() => {
+        this.isDirty = !this.deepEqual(
+          this.initialFormValue,
+          this.currencyExchangeForm.getRawValue()
+        );
+      });
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+
+    if (value instanceof Date) {
+      return value.toISOString().split('T')[0];
+    }
+
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+      return Number(value);
+    }
+
+    if (typeof value === 'number') {
+      return Number(value.toFixed(6));
+    }
+
+    if (Array.isArray(value)) {
+      return value.map(v => this.normalizeValue(v));
+    }
+
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
+  }
 
  nagivateback() {
     this.router.navigate(['accounts/currency-exchange/entry']);

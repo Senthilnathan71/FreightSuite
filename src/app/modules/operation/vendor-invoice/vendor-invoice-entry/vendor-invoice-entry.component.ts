@@ -718,6 +718,8 @@ export class VendorInvoiceEntryComponent implements OnInit {
   deepEqual(obj1: any, obj2: any): boolean {
     const normalizedObj1 = this.normalizeValue(obj1);
     const normalizedObj2 = this.normalizeValue(obj2);
+    console.log('Normalized obj1:', normalizedObj1);
+    console.log('Normalized obj2:', normalizedObj2);
     return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
   }
 
@@ -1171,7 +1173,10 @@ export class VendorInvoiceEntryComponent implements OnInit {
       PostedOn: data.PostDate ? new Date(data.PostDate) : null,
       BillNo: data.DocumentNumber,
       BillDate: data.DocumentDate ? new Date(data.DocumentDate) : null,
-      BillAmt: data.Amount || 0,
+      BillAmt: this.getFormattedAmount(
+        data.Amount || 0,
+        data.CurrencyMasterSid || this.vendorInvoiceForm.get('CurrencyMasterSid')?.getRawValue()
+      ),
       HouseJobSid: data.HouseJobSid,
     }, { emitEvent: false });
 
@@ -1569,23 +1574,30 @@ export class VendorInvoiceEntryComponent implements OnInit {
     this.updateInvoiceTypeRequired();
   }
 
-  updateBillAmount() {
-    const headerCurrency = this.vendorInvoiceForm.get('CurrencyMasterSid')?.getRawValue();
-    const totalBillAmount = toNumber(this.getPartyCurrDebitAmt()) - toNumber(this.getPartyCurrCreditAmt());
-    this.vendorInvoiceForm.get('BillAmt')?.setValue(
-      this.getFormattedAmount(totalBillAmount, headerCurrency)
-    );
-  }
-  calculateTotalBillAmount(): number {
-    const partyId = this.vendorInvoiceForm.get('PartyMasterSid')?.getRawValue();
-    return this.details.getRawValue().
-    filter(det => det.LedgerMasterSid !== partyId)
-    .reduce((sum, row: any) => {
-      if(row.DrCr === 'D'){
-        return sum + (Number(row.PartyAmount) || 0);
-      }
-      return sum - (Number(row.PartyAmount) || 0);
-    }, 0);
+  updateBillAmount(): void {
+    const formValue = this.vendorInvoiceForm.getRawValue();
+    const localCurrencySid = this.currentCompany?.CurrencyMasterSid;
+    const headerCurrencySid = formValue.CurrencyMasterSid || localCurrencySid;
+    const headerExchangeRate = toNumber(formValue.ExchangeRate) || 1;
+
+    let totalLocalAmountWithTax = 0;
+    for (const vd of this.details.getRawValue()) {
+      const localAmt = toNumber(vd.LocalAmount);
+      const tax1 = toNumber(vd.TaxAmount1);
+      const tax2 = toNumber(vd.TaxAmount2);
+      const rowTotal = localAmt + tax1 + tax2;
+      totalLocalAmountWithTax += vd.DrCr === 'D' ? rowTotal : -rowTotal;
+    }
+
+    const headerAmount =
+      localCurrencySid === headerCurrencySid
+        ? toNumber(this.getFormattedAmount(totalLocalAmountWithTax, headerCurrencySid))
+        : toNumber(
+            this.getFormattedAmount(totalLocalAmountWithTax / headerExchangeRate, headerCurrencySid)
+          );
+
+    const formattedBillAmount = this.getFormattedAmount(headerAmount, headerCurrencySid);
+    this.vendorInvoiceForm.get('BillAmt')?.setValue(formattedBillAmount, { emitEvent: false });
   }
 
   recalculateAllRows() {
@@ -2260,7 +2272,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
       };
     });
 
-    const totalBillAmount = toNumber(this.getPartyCurrDebitAmt()) - toNumber(this.getPartyCurrCreditAmt());
+    // const totalBillAmount = toNumber(this.getPartyCurrDebitAmt()) - toNumber(this.getPartyCurrCreditAmt());
 
     // Calculate header Amount (party currency) and LocalAmount (local currency)
     const localCurrencySid = this.currentCompany?.CurrencyMasterSid;
@@ -2315,7 +2327,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
       BillNo: formValue.BillNo,
       BillDate: formValue.BillDate ? new Date(formValue.BillDate) : null,
-      BillAmt: totalBillAmount,
+      // BillAmt: headerAmount,
       MBLNo: formValue.MBLNo,
       HBLNo: formValue.HBLNo,
 
@@ -2800,7 +2812,10 @@ export class VendorInvoiceEntryComponent implements OnInit {
     this.vendorInvoiceForm.patchValue({
       BillNo: extractedData.invoice_number || '',
       BillDate: billDate,
-      BillAmt: extractedData.grand_total || 0,
+      BillAmt: this.getFormattedAmount(
+        extractedData.grand_total || 0,
+        this.vendorInvoiceForm.get('CurrencyMasterSid')?.getRawValue()
+      ),
       PlaceOfSupply: extractedData.place_of_supply || '',
       Narration: extractedData.amount_in_words || '',
     });
@@ -3902,7 +3917,10 @@ Please configure the missing mappings and try again.`
       PostedOn: data.PostDate ? new Date(data.PostDate) : null,
       BillNo: data.DocumentNumber,
       BillDate: data.DocumentDate ? new Date(data.DocumentDate) : null,
-      BillAmt: data.Amount || 0,
+      BillAmt: this.getFormattedAmount(
+        data.Amount || 0,
+        data.CurrencyMasterSid || this.vendorInvoiceForm.get('CurrencyMasterSid')?.getRawValue()
+      ),
       HouseJobSid: data.HouseJobSid,
     });
 
