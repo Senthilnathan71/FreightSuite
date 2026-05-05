@@ -351,63 +351,47 @@
           <span>{{ !reportData?.summary?.difference ? 'Balanced' : 'Difference Found' }}</span>
         </div>
       </div>
-      <div class="card-body recon-summary-card__body">
-        <div class="row g-2">
-          <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="summary-box primary">
-              <span>Balance as per Books</span>
-              <strong>{{ reportData?.summary?.bookBalance | number:'1.3-3' }}</strong>
-            </div>
+      <div class="card-body recon-summary-card__body recon-summary-card__body--statement">
+        <div class="statement-list">
+          <div class="statement-row statement-row--books">
+            <span class="statement-row__label">Balance as per Books</span>
+            <strong class="statement-row__value">{{ reconciliationSummary?.bookBalance | number:'1.3-3' }}</strong>
           </div>
-          <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="summary-box info">
-              <span>Balance as per Bank</span>
-              <strong>{{ reportData?.summary?.bankStatementBalance | number:'1.3-3' }}</strong>
-            </div>
+          <div class="statement-row statement-row--issued">
+            <span class="statement-row__label">Add: Cheques issued but not presented</span>
+            <strong class="statement-row__value">{{ chequesIssuedButNotPresentedAmount | number:'1.3-3' }}</strong>
           </div>
-          <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="summary-box success">
-              <span>Add: Bank entries not in books</span>
-              <strong>{{ reportData?.summary?.addBankEntriesNotInBooks | number:'1.3-3' }}</strong>
-            </div>
+          <div class="statement-row statement-row--deposited">
+            <span class="statement-row__label">Less: Cheques deposited in bank but not cleared</span>
+            <strong class="statement-row__value">{{ chequesDepositedInBankButNotClearedAmount | number:'1.3-3' }}</strong>
           </div>
-          <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="summary-box warning">
-              <span>Less: Book entries not cleared</span>
-              <strong>{{ reportData?.summary?.lessBookEntriesNotClearedInBank | number:'1.3-3' }}</strong>
-            </div>
+          <div class="statement-row statement-row--bank">
+            <span class="statement-row__label">Add: Bank entries not in books</span>
+            <strong class="statement-row__value">{{ reconciliationSummary?.addBankEntriesNotInBooks | number:'1.3-3' }}</strong>
           </div>
-          <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="summary-box dark">
-              <span>Final Balance</span>
-              <strong>{{ reportData?.summary?.finalBalance | number:'1.3-3' }}</strong>
-            </div>
+          <div class="statement-row statement-row--less">
+            <span class="statement-row__label">Less: Book entries not cleared</span>
+            <strong class="statement-row__value">{{ reconciliationSummary?.lessBookEntriesNotClearedInBank | number:'1.3-3' }}</strong>
           </div>
-          <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="summary-box" [class.success]="!reportData?.summary?.difference"
-              [class.danger]="reportData?.summary?.difference">
-              <span>Difference</span>
-              <strong>{{ reportData?.summary?.difference | number:'1.3-3' }}</strong>
-            </div>
+          <div class="statement-row statement-row--final">
+            <span class="statement-row__label">Final Balance</span>
+            <strong class="statement-row__value">{{ reconciliationSummary?.finalBalance | number:'1.3-3' }}</strong>
           </div>
-          <div class="col-12">
-            <div class="summary-box light summary-box--counts">
-              <span>Counts</span>
-              <div class="summary-counts">
-                <div class="summary-counts__item">
-                  <small>Book</small>
-                  <strong>{{ reportData?.counts?.bookRows || 0 }}</strong>
-                </div>
-                <div class="summary-counts__item">
-                  <small>Bank</small>
-                  <strong>{{ reportData?.counts?.bankRows || 0 }}</strong>
-                </div>
-                <div class="summary-counts__item">
-                  <small>Unmatched Bank</small>
-                  <strong>{{ reportData?.counts?.unmatchedBankRows || 0 }}</strong>
-                </div>
-              </div>
-            </div>
+          <div class="statement-row statement-row--difference">
+            <span class="statement-row__label">Difference</span>
+            <strong class="statement-row__value">{{ reconciliationSummary?.difference | number:'1.3-3' }}</strong>
+          </div>
+        </div>
+
+        <div class="statement-counts">
+          <div class="statement-counts__title">Counts</div>
+          <div class="statement-counts__row">
+            <span>Book</span>
+            <strong>{{ reconciliationCounts?.bookRows || 0 }}</strong>
+          </div>
+          <div class="statement-counts__row">
+            <span>Bank</span>
+            <strong>{{ reconciliationCounts?.bankRows || 0 }}</strong>
           </div>
         </div>
       </div>

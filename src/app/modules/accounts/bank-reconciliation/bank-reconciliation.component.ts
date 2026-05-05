@@ -168,6 +168,24 @@ export class BankReconciliationComponent implements OnInit {
     return value !== null && value !== undefined && value !== '';
   }
 
+  get reconciliationSummary(): any {
+    return this.reportData?.summary || {};
+  }
+
+  get reconciliationCounts(): any {
+    return this.reportData?.counts || {};
+  }
+
+  get chequesIssuedButNotPresentedAmount(): number {
+    const rows = Array.isArray(this.reportData?.bookEntriesNotCleared) ? this.reportData.bookEntriesNotCleared : [];
+    return this.sumAmount(rows.filter((item: any) => this.normalizeDrCr(item?.DrCr) === 'C'));
+  }
+
+  get chequesDepositedInBankButNotClearedAmount(): number {
+    const rows = Array.isArray(this.reportData?.bookEntriesNotCleared) ? this.reportData.bookEntriesNotCleared : [];
+    return this.sumAmount(rows.filter((item: any) => this.normalizeDrCr(item?.DrCr) === 'D'));
+  }
+
   get selectedBankRowValue(): BankTransactionRow | null {
     if (this.selectedBankIndex === null) return null;
     const ctrl = this.bankTransactions.at(this.selectedBankIndex);
@@ -563,15 +581,12 @@ export class BankReconciliationComponent implements OnInit {
     }
 
     const clearanceDateValue = this.filterForm.get('ClearanceDate')?.value;
-    if (!clearanceDateValue) {
-      this.appSettings.showWarning('Please select a clearance date');
-      return;
-    }
+    const clearanceDate = clearanceDateValue ? this.toIsoDateString(clearanceDateValue) : null;
 
     const payload = {
       ...this.buildPayload(),
       VoucherHeaderSids: selectedRows.map((row) => row.VoucherHeaderSid),
-      ClearanceDate: this.toIsoDateString(clearanceDateValue),
+      ClearanceDate: clearanceDate,
       CreatedBy: this.userData?.userEmail || 'System',
     };
 
@@ -587,11 +602,13 @@ export class BankReconciliationComponent implements OnInit {
 
           const selectedIds = new Set(selectedRows.map((row) => row.VoucherHeaderSid));
           this.bookRows = this.bookRows.map((row) => selectedIds.has(row.VoucherHeaderSid)
-            ? { ...row, ClearanceDate: clearanceDateValue, status: 'Reconciled' }
+            ? { ...row, ClearanceDate: clearanceDateValue || null, status: clearanceDateValue ? 'Reconciled' : 'Unreconciled' }
             : row);
           this.selectedBookRowIds = new Set<number>();
           this.selectedBookRow = null;
-          this.appSettings.showSuccess(resp?.message || 'Clearance date updated successfully');
+          this.appSettings.showSuccess(
+            resp?.message || (clearanceDateValue ? 'Clearance date updated successfully' : 'Clearance date cleared successfully')
+          );
         },
         error: (error: any) => {
           console.error('Update clearance error', error);
@@ -802,9 +819,11 @@ export class BankReconciliationComponent implements OnInit {
     const ledgerName = this.getSelectedBankLedgerName();
     const ledgerCurrency = this.getSelectedBankLedgerCurrencyCode();
     const bankCurrencyHeader = ledgerCurrency ? `Amount(${ledgerCurrency})` : 'Amount';
-    const fromDate = this.formatDisplayDate(this.filterForm.get('FromDate')?.value);
-    const toDate = this.formatDisplayDate(this.filterForm.get('ToDate')?.value);
-    const asOnDate = this.formatDisplayDate(this.filterForm.get('ToDate')?.value);
+    const rawFromDate = this.filterForm.get('FromDate')?.value;
+    const rawToDate = this.filterForm.get('ToDate')?.value;
+    const fromDate = this.formatDisplayDate(rawFromDate);
+    const toDate = this.formatDisplayDate(rawToDate);
+    const asOnDate = this.formatDisplayDate(rawToDate);
     const generatedBy = this.userData?.userName || this.userData?.UserName || this.userData?.userEmail || 'System';
     const generatedOn = this.formatDisplayDateTime(new Date());
 
@@ -818,8 +837,12 @@ export class BankReconciliationComponent implements OnInit {
     const reconciledBookRows = periodBookRows.filter((item: any) => !!this.getRowClearanceDate(item));
     const unreconciledBookRows = periodBookRows.filter((item: any) => !this.getRowClearanceDate(item));
 
-    const creditBookEntries = bookEntries.filter((item: any) => this.normalizeDrCr(item?.DrCr) === 'C');
-    const debitBookEntries = bookEntries.filter((item: any) => this.normalizeDrCr(item?.DrCr) === 'D');
+    const creditBookEntries = bookEntries.filter((item: any) =>
+      this.normalizeDrCr(item?.DrCr) === 'C' && this.isWithinSelectedDateRange(item?.VoucherDate ?? item?.TransactionDate, rawFromDate, rawToDate)
+    );
+    const debitBookEntries = bookEntries.filter((item: any) =>
+      this.normalizeDrCr(item?.DrCr) === 'D' && this.isWithinSelectedDateRange(item?.VoucherDate ?? item?.TransactionDate, rawFromDate, rawToDate)
+    );
     const creditBankEntries = bankEntries.filter((item: any) => this.normalizeDrCr(item?.DrCr) === 'C');
     const debitBankEntries = bankEntries.filter((item: any) => this.normalizeDrCr(item?.DrCr) === 'D');
 
@@ -829,11 +852,35 @@ export class BankReconciliationComponent implements OnInit {
     const bankDebits = -this.sumAmount(debitBankEntries);
 
     const sections: string[] = [];
+    if (creditBookEntries.length) {
+      sections.push(
+        this.buildExcelBookStatusSection('Cheques issued but not presented', creditBookEntries, {
+          footerStatusLabel: 'Total',
+          signedLocalTotal: false,
+        })
+      );
+    }
+    if (debitBookEntries.length) {
+      sections.push(
+        this.buildExcelBookStatusSection('Cheques deposited in bank but not cleared', debitBookEntries, {
+          footerStatusLabel: 'Total',
+          signedLocalTotal: false,
+        })
+      );
+    }
     if (reconciledBookRows.length) {
-      sections.push(this.buildExcelBookStatusSection('Reconciled Transactions', reconciledBookRows));
+      sections.push(
+        this.buildExcelBookStatusSection('Reconciled Transactions', reconciledBookRows, {
+          footerStatusLabel: 'Reconciled',
+        })
+      );
     }
     if (unreconciledBookRows.length) {
-      sections.push(this.buildExcelBookStatusSection('Unreconciled Transactions', unreconciledBookRows));
+      sections.push(
+        this.buildExcelBookStatusSection('Unreconciled Transactions', unreconciledBookRows, {
+          footerStatusLabel: 'Unreconciled',
+        })
+      );
     }
 
     return `
@@ -943,8 +990,16 @@ export class BankReconciliationComponent implements OnInit {
     `;
   }
 
-  private buildExcelBookStatusSection(title: string, rows: any[]): string {
+  private buildExcelBookStatusSection(
+    title: string,
+    rows: any[],
+    options?: {
+      footerStatusLabel?: string;
+      signedLocalTotal?: boolean;
+    }
+  ): string {
     const sectionRows = Array.isArray(rows) ? rows : [];
+    const footerStatusLabel = options?.footerStatusLabel || (title.includes('Reconciled') ? 'Reconciled' : 'Unreconciled');
 
     const dataRows = sectionRows.map((row: any) => {
       const amount = this.getAbsoluteAmount(row?.Amount ?? row?.LocalAmount);
@@ -977,7 +1032,10 @@ export class BankReconciliationComponent implements OnInit {
 
     const totalAmount = this.sumAmount(sectionRows);
     const totalLocalAmount = sectionRows.reduce((sum, row) => {
-      const amount = this.toNumber(row?.LocalAmount ?? row?.Amount);
+      const amount = Math.abs(this.toNumber(row?.LocalAmount ?? row?.Amount));
+      if (options?.signedLocalTotal === false) {
+        return sum + amount;
+      }
       return sum + (this.normalizeDrCr(row?.DrCr) === 'C' ? -amount : amount);
     }, 0);
 
@@ -996,7 +1054,7 @@ export class BankReconciliationComponent implements OnInit {
         <td class="right">${this.formatAmount(totalAmount)}</td>
         <td></td>
         <td class="right">${sectionRows.length ? this.formatAmount(totalLocalAmount) : ''}</td>
-        <td class="left">${sectionRows.length ? this.escapeHtml(title.includes('Reconciled') ? 'Reconciled' : 'Unreconciled') : ''}</td>
+        <td class="left">${sectionRows.length ? this.escapeHtml(footerStatusLabel) : ''}</td>
         <td></td>
       </tr>
     `;
@@ -1064,6 +1122,22 @@ export class BankReconciliationComponent implements OnInit {
       row?.VoucherHeader?.clearingDate ??
       null
     );
+  }
+
+  private isWithinSelectedDateRange(value: any, fromValue: any, toValue: any): boolean {
+    const rowDate = this.toDateValue(value);
+    const fromDate = this.toDateValue(fromValue);
+    const toDate = this.toDateValue(toValue);
+
+    if (Number.isNaN(rowDate.getTime()) || Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
+      return true;
+    }
+
+    const rowTime = Date.UTC(rowDate.getFullYear(), rowDate.getMonth(), rowDate.getDate());
+    const fromTime = Date.UTC(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
+    const toTime = Date.UTC(toDate.getFullYear(), toDate.getMonth(), toDate.getDate());
+
+    return rowTime >= fromTime && rowTime <= toTime;
   }
 
   private getCurrentCompanyCurrencyCode(): string {
