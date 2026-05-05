@@ -606,6 +606,7 @@ function buildChargesTable(data: CreditNotePdfData): any {
   const localCurrency = data.localCurrency || 'AED';
   const creditCurr = data.credit?.currencyCode;
   const grandTotal = printData?.totalPartyAmount || data.totals?.grandTotal || 0;
+  const hasForeignCurrencyColumn = !!(creditCurr && creditCurr !== localCurrency);
 
   const displayDetails = voucherDetails.length > 0 ? voucherDetails : charges;
   if (!displayDetails.length) return { text: '' };
@@ -742,15 +743,9 @@ function buildChargesTable(data: CreditNotePdfData): any {
   });
 
   /* ---------------- TOTAL ROW ---------------- */
-  const totalRow: any[] = [];
-  const colCount = headerRow.length;
-
-  for (let i = 0; i < colCount - 2; i++) {
-    totalRow.push({ text: '', style: 'tableCellSmall' });
-  }
-
-  totalRow.push({ text: 'Total', style: 'tableCellBoldSmall', alignment: 'right' });
-  totalRow.push({ text: Number(grandTotal).toFixed(2), style: 'tableCellBoldSmall', alignment: 'right' });
+  const totalRow: any[] = taxConfig.showVAT
+    ? buildCreditNoteVatTotalRow(displayDetails, isIndiaCompany, hasForeignCurrencyColumn, grandTotal)
+    : buildDefaultCreditNoteTotalRow(headerRow.length, grandTotal);
 
   /* ---------------- WIDTHS (FIXED + SAFE) ---------------- */
   const widths: (number | string)[] = [
@@ -771,7 +766,7 @@ function buildChargesTable(data: CreditNotePdfData): any {
 
   widths.push(48); // Amt in Local Currency
 
-  if (creditCurr && creditCurr !== localCurrency) {
+  if (hasForeignCurrencyColumn) {
     widths.push(48); // Amt in Party Currency
   }
 
@@ -807,6 +802,72 @@ function buildChargesTable(data: CreditNotePdfData): any {
  */
 function buildTotalsSection(data: CreditNotePdfData): any {
   return { text: '' };
+}
+
+function buildDefaultCreditNoteTotalRow(colCount: number, grandTotal: any): any[] {
+  const totalRow: any[] = [];
+
+  for (let i = 0; i < colCount - 2; i++) {
+    totalRow.push({ text: '', style: 'tableCellSmall' });
+  }
+
+  totalRow.push({ text: 'Total', style: 'tableCellBoldSmall', alignment: 'right' });
+  totalRow.push({ text: formatNumberWithCommas(parsePdfNumber(grandTotal), 2), style: 'tableCellBoldSmall', alignment: 'right' });
+
+  return totalRow;
+}
+
+function buildCreditNoteVatTotalRow(
+  details: any[],
+  showHsnSac: boolean,
+  hasForeignCurrencyColumn: boolean,
+  grandTotal: any
+): any[] {
+  const baseColumns = 7 + (showHsnSac ? 1 : 0);
+  const totalRow: any[] = [];
+
+  for (let i = 0; i < baseColumns; i++) {
+    totalRow.push({ text: '', style: 'tableCellSmall' });
+  }
+
+  totalRow.push({ text: 'Total', style: 'tableCellBoldSmall', alignment: 'right', noWrap: true });
+  totalRow.push({
+    text: formatNumberWithCommas(sumPdfDetailAmount(details, 'vatAmt', 'vatAmount'), 2),
+    style: 'tableCellBoldSmall',
+    alignment: 'right',
+    noWrap: true
+  });
+  totalRow.push({
+    text: hasForeignCurrencyColumn
+      ? formatNumberWithCommas(sumPdfDetailAmount(details, 'LocalAmount', 'localAmount'), 2)
+      : formatNumberWithCommas(parsePdfNumber(grandTotal), 2),
+    style: 'tableCellBoldSmall',
+    alignment: 'right',
+    noWrap: true
+  });
+
+  if (hasForeignCurrencyColumn) {
+    totalRow.push({
+      text: formatNumberWithCommas(parsePdfNumber(grandTotal), 2),
+      style: 'tableCellBoldSmall',
+      alignment: 'right',
+      noWrap: true
+    });
+  }
+
+  return totalRow;
+}
+
+function sumPdfDetailAmount(details: any[], primaryField: string, fallbackField: string): number {
+  return (details || []).reduce((sum: number, detail: any) => {
+    return sum + parsePdfNumber(detail?.[primaryField] ?? detail?.[fallbackField]);
+  }, 0);
+}
+
+function parsePdfNumber(value: any): number {
+  if (value === null || value === undefined || value === '') return 0;
+  if (typeof value === 'number') return value;
+  return Number(String(value).replace(/,/g, '')) || 0;
 }
 
 /**

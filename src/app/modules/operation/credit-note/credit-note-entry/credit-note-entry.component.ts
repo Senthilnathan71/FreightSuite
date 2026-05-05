@@ -3781,6 +3781,44 @@ export class CreditNoteEntryComponent {
     return baseColumns;
   }
 
+  shouldShowVatAmountTotals(configOverride?: {
+    showVAT: boolean;
+  }): boolean {
+    const config = configOverride ?? this.getTaxDisplayConfig();
+    return (
+      this.currentCompanyCountryCode?.toLowerCase() === 'ae' &&
+      !!config?.showVAT
+    );
+  }
+
+  shouldShowDetailedTaxAmountTotals(configOverride?: {
+    showVAT: boolean;
+  }): boolean {
+    return this.shouldShowVatAmountTotals(configOverride);
+  }
+
+  getCreditNotePrintAmountTotal(fieldName: 'vatAmt' | 'LocalAmount'): string {
+    const total = (this.creditNotePrintData?.voucherDetails || []).reduce(
+      (sum: number, detail: any) => sum + toNumber(detail?.[fieldName]),
+      0,
+    );
+
+    return this.getFormattedAndPaddedAmount(
+      total,
+      this.currentCompany.CurrencyMasterSid,
+    );
+  }
+
+  calculateBaseCreditNotePrintColspan(): number {
+    let baseColumns = 7; // S.No, Particulars, Curr, No. of Unit, Rate, ROE, Taxable Amt
+
+    if (this.currentCompanyCountryCode?.toLowerCase() !== 'ae') {
+      baseColumns += 1; // HSN/SAC
+    }
+
+    return baseColumns;
+  }
+
   calculateTotalAmount(): number {
     return this.details.controls.reduce((sum, row: any) => {
       return sum + (Number(row.get('Amount')?.value) || 0);
