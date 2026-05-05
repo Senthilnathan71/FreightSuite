@@ -1008,7 +1008,7 @@
                    <div class="col-md-6">
                     <div class=" custom-form-group custom-form-group-select-date" >
                       <div class="input-group">
-                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="CutOffDate"
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="PortCutoffDate"
                           container="body" ngbDatepicker #d23="ngbDatepicker" 
                           (keydown.arrowDown)="d23.open()" (click)="d23.toggle()" />
                         <button class="btn bi bi-calendar3 px-0" (click)="d23.toggle()" type="button">
@@ -3645,7 +3645,6 @@
 
 <h5 style="
     font-weight:bolder;
-    padding-left: 30px;
     margin-top: 5px;
     margin-bottom: 5px;
 ">
@@ -3722,6 +3721,48 @@
       </table>
     </div>
 
+      <div style="width:100%; overflow-x:auto;margin-top:10px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="border:1px solid #000; padding:5px;font-weight: bolder;text-align: center;" rowspan="2"><strong>Charge</strong></th>
+            <th style="border:1px solid #000; padding:5px;font-weight: bolder;text-align: center;" colspan="3"><strong>Provisional</strong></th>
+            <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;" colspan="3"><strong>Actual</strong></th>
+          </tr>
+          <tr>
+            <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>Rev Local Amt</strong></th>
+            <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>Cost Local Amt</strong></th>
+            <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>GP</strong></th>
+            <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>Rev Local Amt</strong></th>
+            <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>Cost Local Amt</strong></th>
+            <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>GP</strong></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let item of getBookingCostRevenueRows()">
+            <td style="border:1px solid #000; padding:5px;">{{ getChargeDisplayName(item) }}</td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getProRevenueAmount(item) | number:'1.2-2' }}</td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getProCostAmount(item) | number:'1.2-2' }}</td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getProGross(item) | number:'1.2-2' }}</td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getActualRevenueAmount(item) | number:'1.2-2' }}</td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getActualCostAmount(item) | number:'1.2-2' }}</td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getActualGross(item) | number:'1.2-2' }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr style="font-weight:bolder;">
+            <td colspan="1" style="border:1px solid #000; padding:5px; text-align:right;"><strong>Total</strong></td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getBookingChargeTotals().proRev | number:'1.2-2' }}</td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getBookingChargeTotals().proCost | number:'1.2-2' }}</td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getBookingChargeTotals().proGp | number:'1.2-2' }}</td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getBookingChargeTotals().actRev | number:'1.2-2' }}</td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getBookingChargeTotals().actCost | number:'1.2-2' }}</td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getBookingChargeTotals().actGp | number:'1.2-2' }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
 
        <!-- Terms & Conditions -->
 <div style="

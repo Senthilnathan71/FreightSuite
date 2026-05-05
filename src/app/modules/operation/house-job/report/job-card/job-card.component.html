@@ -362,12 +362,21 @@
                 <table style="width:100%; border-collapse:collapse; border:1px solid black;">
                     <thead style="background-color:#f8f9fa;">
                         <tr>
-                            <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;">
+                            <th style="border:1px solid black; padding:2px 8px;font-weight: bolder;text-align: center;" rowspan="2">
                                 <strong>Charge</strong>
                             </th>
-                            <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
+                            <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;" rowspan="2">
                                 <strong>Unit</strong>
                             </th>
+                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;" colspan="5">
+                                <strong>Revenue</strong>
+                            </th>
+                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;" colspan="5">
+                                <strong>Cost</strong>
+                            </th>
+                        </tr>
+                        <tr>
+                            
                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
                                 <strong>Curr</strong>
                             </th>
@@ -375,26 +384,33 @@
                                 <strong>Ex.Rate</strong>
                             </th>
                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
-                                <strong>Sale/Unit</strong>
+                                <strong>Per Unit</strong>
                             </th>
                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
                                 <strong>Local
                                     Amt.</strong>
+                                     <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
+                                <strong>Act Local
+                                    Amt.</strong>
                             </th>
                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
-                                <strong>Cost
+                                <strong>
                                     Curr</strong>
                             </th>
                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
-                                <strong>Cost Ex
+                                <strong> Ex
                                     Rate</strong>
                             </th>
                             <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
-                                <strong>Cost/Unit</strong>
+                                <strong>Per Unit</strong>
                             </th>
                             <th
                                 style="border:1px solid black; padding:2px 8px; text-align:center; font-weight: bolder;">
-                                <strong>Cost Local
+                                <strong>Local
+                                    Amt.</strong>
+                            </th>
+                               <th style="border:1px solid black; padding:2px 8px; text-align:center;font-weight: bolder;">
+                                <strong>Act Local
                                     Amt.</strong>
                             </th>
                         </tr>
@@ -414,6 +430,9 @@
                                 item.RevenueRate | number:'1.2-2'}}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
                                 item.RevenueLocalAmount | number:'1.2-2' }}</td>
+                                 <td style="border:1px solid black; padding:2px 8px; text-align:right;">
+                                    {{ getActualRevenueLocalAmount(item) | number:'1.2-2' }}
+                                 </td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:center;">{{
                                 getCurrencyName(item.CostCurrencyMasterSid) }}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
@@ -422,6 +441,9 @@
                                 item.CostRate | number:'1.2-2'}}</td>
                             <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{
                                 item.CostLocalAmount | number:'1.2-2' }}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">
+                                {{ getActualCostLocalAmount(item) | number:'1.2-2' }}
+                            </td>
                         </tr>
                     </tbody>
                 </table>

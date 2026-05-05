@@ -211,7 +211,7 @@
                   <input type="text" min="0" formControlName="NoOfUnit" id="text-input"
                     class="custom-input-field sm"
                     (change)="calculateCostAmount(i); calculateRevenueAmount(i)"
-                    [disabled]="!canEditRate(i) || isFromQuotation(i)" DecimalPrecision [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="3">
+                    [disabled]="!canEditRate(i) || isFromQuotation(i)" DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="3">
                 </div>
               </td>
             </tr>

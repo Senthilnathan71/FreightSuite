@@ -256,7 +256,13 @@ getChargeName(ChargeMasterSid: number): string {
         totalPCurrGP: 0,
         totalLocalRevenue: 0,
         totalLocalExpense: 0,
-        totalLocalGP: 0
+        totalLocalGP: 0,
+        totalActualPCurrRevenue: 0,
+        totalActualPCurrExpense: 0,
+        totalActualPCurrGP: 0,
+        totalActualLocalRevenue: 0,
+        totalActualLocalExpense: 0,
+        totalActualLocalGP: 0
       };
     }
 
@@ -264,12 +270,20 @@ getChargeName(ChargeMasterSid: number): string {
     let totalPCurrExpense = 0;
     let totalLocalRevenue = 0;
     let totalLocalExpense = 0;
+    let totalActualPCurrRevenue = 0;
+    let totalActualPCurrExpense = 0;
+    let totalActualLocalRevenue = 0;
+    let totalActualLocalExpense = 0;
 
     this.housejobData.costRevenueCharges.forEach((chargeItem: any) => {
       totalPCurrRevenue += parseFloat(this.getPCurrRevenue(chargeItem)) || 0;
       totalPCurrExpense += parseFloat(this.getPCurrExpense(chargeItem)) || 0;
       totalLocalRevenue += parseFloat(this.getLocalRevenue(chargeItem)) || 0;
       totalLocalExpense += parseFloat(this.getLocalExpense(chargeItem)) || 0;
+      totalActualPCurrRevenue += parseFloat(this.getActualPCurrRevenue(chargeItem)) || 0;
+      totalActualPCurrExpense += parseFloat(this.getActualPCurrExpense(chargeItem)) || 0;
+      totalActualLocalRevenue += parseFloat(this.getActualLocalRevenue(chargeItem)) || 0;
+      totalActualLocalExpense += parseFloat(this.getActualLocalExpense(chargeItem)) || 0;
     });
 
     return {
@@ -278,7 +292,13 @@ getChargeName(ChargeMasterSid: number): string {
       totalPCurrGP: this.formatNumber(totalPCurrRevenue - totalPCurrExpense),
       totalLocalRevenue: this.formatNumber(totalLocalRevenue),
       totalLocalExpense: this.formatNumber(totalLocalExpense),
-      totalLocalGP: this.formatNumber(totalLocalRevenue - totalLocalExpense)
+      totalLocalGP: this.formatNumber(totalLocalRevenue - totalLocalExpense),
+      totalActualPCurrRevenue: this.formatNumber(totalActualPCurrRevenue),
+      totalActualPCurrExpense: this.formatNumber(totalActualPCurrExpense),
+      totalActualPCurrGP: this.formatNumber(totalActualPCurrRevenue - totalActualPCurrExpense),
+      totalActualLocalRevenue: this.formatNumber(totalActualLocalRevenue),
+      totalActualLocalExpense: this.formatNumber(totalActualLocalExpense),
+      totalActualLocalGP: this.formatNumber(totalActualLocalRevenue - totalActualLocalExpense)
     };
   }
 
@@ -332,6 +352,46 @@ getChargeName(ChargeMasterSid: number): string {
 
     // const usdAmount = localAmount / exchangeRate;
     return this.formatNumber(localAmount);
+  }
+
+  getActualPCurrRevenue(chargeData: any): string {
+    if (!this.hasRevenueVoucher(chargeData)) return '0.00';
+    return this.formatNumber(parseFloat(chargeData.RevenueAmount || '0'));
+  }
+
+  getActualPCurrExpense(chargeData: any): string {
+    if (!this.hasCostVoucher(chargeData)) return '0.00';
+    return this.formatNumber(parseFloat(chargeData.CostAmount || '0'));
+  }
+
+  getActualPCurrGP(chargeData: any): string {
+    const revenue = parseFloat(this.getActualPCurrRevenue(chargeData)) || 0;
+    const expense = parseFloat(this.getActualPCurrExpense(chargeData)) || 0;
+    return this.formatNumber(revenue - expense);
+  }
+
+  getActualLocalRevenue(chargeData: any): string {
+    if (!this.hasRevenueVoucher(chargeData)) return '0.00';
+    return this.formatNumber(parseFloat(chargeData.RevenueLocalAmount || '0'));
+  }
+
+  getActualLocalExpense(chargeData: any): string {
+    if (!this.hasCostVoucher(chargeData)) return '0.00';
+    return this.formatNumber(parseFloat(chargeData.CostLocalAmount || '0'));
+  }
+
+  getActualLocalGP(chargeData: any): string {
+    const revenue = parseFloat(this.getActualLocalRevenue(chargeData)) || 0;
+    const expense = parseFloat(this.getActualLocalExpense(chargeData)) || 0;
+    return this.formatNumber(revenue - expense);
+  }
+
+  private hasRevenueVoucher(chargeData: any): boolean {
+    return !!(chargeData?.RevenueVoucherHeaderSid || chargeData?.revenueVoucherHeader?.VoucherHeaderSid);
+  }
+
+  private hasCostVoucher(chargeData: any): boolean {
+    return !!(chargeData?.CostVoucherHeaderSid || chargeData?.costVoucherHeader?.VoucherHeaderSid);
   }
 
   private formatNumber(value: number): string {

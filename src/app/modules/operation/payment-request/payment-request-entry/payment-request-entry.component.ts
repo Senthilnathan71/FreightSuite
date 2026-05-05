@@ -70,6 +70,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
   isDirty = false;
   private initialFormValue: any = null;
   private destroy$ = new Subject<void>();
+  private dirtyTrackingSubscribed = false;
 
   currencyList: any[] = [];
   departmentList: any[] = [];
@@ -151,10 +152,9 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       } else {
         this.isEditMode = false;
         this.scheduleDirtyTrackingSnapshot();
+        this.subscribeToFormChanges();
       }
     });
-
-    this.subscribeToFormChanges();
   }
 
   ngOnDestroy(): void {
@@ -554,6 +554,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
         this.syncDetailPartyWithHeader();
         this.applyApprovalReadOnlyState(request.PaymentRequestStatus);
         this.scheduleDirtyTrackingSnapshot();
+        this.subscribeToFormChanges();
       },
       error: () => {
         this.loading = false;
@@ -597,6 +598,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     this.syncDetailPartyWithHeader();
     this.applyApprovalReadOnlyState('Pending');
     this.scheduleDirtyTrackingSnapshot();
+    this.subscribeToFormChanges();
   }
 
   private createDetailRow(data: any) {
@@ -949,6 +951,10 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
   }
 
   private subscribeToFormChanges(): void {
+    if (this.dirtyTrackingSubscribed) {
+      return;
+    }
+    this.dirtyTrackingSubscribed = true;
     this.form.valueChanges
       .pipe(takeUntil(this.destroy$), debounceTime(300))
       .subscribe(() => {

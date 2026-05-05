@@ -342,6 +342,60 @@ getGrandChargeColumnTotal(field: 'RevenueRate' | 'RevenueLocalAmount' | 'CostRat
   return this.getChargeColumnTotal([...masterCharges, ...houseCharges], field);
 }
 
+private getAllChargeRows(): any[] {
+  const masterCharges = Array.isArray(this.masterJobData?.costRevenueCharges)
+    ? this.masterJobData.costRevenueCharges
+    : [];
+  const houseCharges = Array.isArray(this.masterJobData?.houseJob)
+    ? this.masterJobData.houseJob.flatMap((house: any) =>
+        Array.isArray(house?.costRevenueCharges) ? house.costRevenueCharges : []
+      )
+    : [];
+  return [...masterCharges, ...houseCharges];
+}
+
+getGrandActualRevenueLocalTotal(): number {
+  return this.getAllChargeRows().reduce(
+    (sum, item) => sum + this.getActualRevenueLocalAmount(item),
+    0
+  );
+}
+
+getGrandActualCostLocalTotal(): number {
+  return this.getAllChargeRows().reduce(
+    (sum, item) => sum + this.getActualCostLocalAmount(item),
+    0
+  );
+}
+
+getActualRevenueLocalAmount(item: any): number {
+  const hasRevenueVoucher = !!(item?.RevenueVoucherHeaderSid || item?.revenueVoucherHeader?.VoucherHeaderSid);
+  if (!hasRevenueVoucher) return 0;
+
+  return Number(
+    item?.ActualRevenueLocalAmount ??
+    item?.RevenueActualLocalAmount ??
+    item?.ActRevenueLocalAmount ??
+    item?.ActLocalRevenueAmount ??
+    item?.RevenueLocalAmount ??
+    0
+  ) || 0;
+}
+
+getActualCostLocalAmount(item: any): number {
+  const hasCostVoucher = !!(item?.CostVoucherHeaderSid || item?.costVoucherHeader?.VoucherHeaderSid);
+  if (!hasCostVoucher) return 0;
+
+  return Number(
+    item?.ActualCostLocalAmount ??
+    item?.CostActualLocalAmount ??
+    item?.ActCostLocalAmount ??
+    item?.ActLocalCostAmount ??
+    item?.CostLocalAmount ??
+    0
+  ) || 0;
+}
+
 
 
   modalClose() {

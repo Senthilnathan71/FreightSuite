@@ -54,6 +54,7 @@ export const AccountRoutes: Routes = [
       {
         path: "currency-exchange/entry",
         component: CurrencyExchangeEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Add Currency Exchange",
           urls: [
@@ -65,6 +66,7 @@ export const AccountRoutes: Routes = [
       {
         path: "currency-exchange/entry/:id",
         component: CurrencyExchangeEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Edit Currency Exchange",
           urls: [
@@ -112,6 +114,7 @@ export const AccountRoutes: Routes = [
       {
         path: "chart-accounts/entry",
         component: ChartAccountEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Chart Accounts",
           urls: [
@@ -123,6 +126,7 @@ export const AccountRoutes: Routes = [
       {
         path: "chart-accounts/entry/:id",
         component: ChartAccountEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Chart Accounts",
           urls: [

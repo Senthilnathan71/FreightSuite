@@ -13,8 +13,8 @@ export function generateJobCardDocument(data: JobCardPdfData): any {
 
   return {
     pageSize: data.config?.pageSize || 'A4',
-    pageOrientation: 'portrait',
-    pageMargins: [15, 10, 15, 46],
+    pageOrientation: 'landscape',
+    pageMargins: [15, 108, 15, 46],
     background: (_: number, pageSize: any) => ({
       canvas: [{
         type: 'rect',
@@ -26,9 +26,14 @@ export function generateJobCardDocument(data: JobCardPdfData): any {
         lineColor: '#000'
       }]
     }),
+    header: () => ({
+      margin: [15, 14, 15, 0],
+      stack: [
+        buildHeader(data),
+        buildTitle(data)
+      ]
+    }),
     content: [
-      buildHeader(data),
-      buildTitle(data),
       buildPartySection(data),
       buildJobInfoSection(data, isSea),
       buildProductsTable(data, isSea),
@@ -212,7 +217,7 @@ function buildProductsTable(data: JobCardPdfData, isSea: boolean): any {
       ];
 
 const widths = isSea
-  ? ['*', 62, 44, 54, 52, 50, 50]
+  ? ['*', 62, 60, 54, 52, 50, 50]
   : ['*', 38, 38, 38, 50, 50, 54, 50, 54];
 
   const rows = data.products.map((item) => isSea
@@ -310,20 +315,38 @@ function buildProfitRow(item: JobCardProfitPdfRow): any[] {
 function buildCostRevenueTable(data: JobCardPdfData): any {
   return {
     table: {
-      headerRows: 1,
-      widths: ['*', 26, 30, 36, 40, 48, 34, 40, 38, 52],
+      headerRows: 2,
+      keepWithHeaderRows: 2,
+      dontBreakRows: true,
+      widths: ['*', 26, 30, 36, 40, 48, 52, 34, 40, 38, 52, 52],
       body: [
         [
-          { text: 'Charge', style: 'tableHeader' },
-          { text: 'Unit', style: 'tableHeader' },
+          { text: 'Charge', style: 'tableHeader', rowSpan: 2 },
+          { text: 'Unit', style: 'tableHeader', rowSpan: 2 },
+          { text: 'Revenue', style: 'tableHeader', colSpan: 5 },
+          {},
+          {},
+          {},
+          {},
+          { text: 'Cost', style: 'tableHeader', colSpan: 5 },
+          {},
+          {},
+          {},
+          {}
+        ],
+        [
+          {},
+          {},
           { text: 'Curr', style: 'tableHeader' },
           { text: 'Ex.Rate', style: 'tableHeader' },
-          { text: 'Sale/Unit', style: 'tableHeader' },
+          { text: 'Per Unit', style: 'tableHeader' },
           { text: 'Local Amt.', style: 'tableHeader' },
-          { text: 'Cost Curr', style: 'tableHeader' },
-          { text: 'Cost Ex Rate', style: 'tableHeader' },
-          { text: 'Cost/Unit', style: 'tableHeader' },
-          { text: 'Cost Local Amt.', style: 'tableHeader' }
+          { text: 'Act Local Amt.', style: 'tableHeader' },
+          { text: 'Curr', style: 'tableHeader' },
+          { text: 'Ex Rate', style: 'tableHeader' },
+          { text: 'Per Unit', style: 'tableHeader' },
+          { text: 'Local Amt.', style: 'tableHeader' },
+          { text: 'Act Local Amt.', style: 'tableHeader' }
         ],
         ...data.costRevenueCharges.map((item) => buildChargeDetailRow(item))
       ]
@@ -341,10 +364,12 @@ function buildChargeDetailRow(item: JobCardChargePdfRow): any[] {
     buildNumberCell(item.revenueExchangeRate, 3),
     buildNumberCell(item.revenueRate, 2),
     buildNumberCell(item.revenueLocalAmount, 2),
+    buildNumberCell(item.actualRevenueLocalAmount, 2),
     buildTextCell(item.costCurrency),
     buildNumberCell(item.costExchangeRate, 3),
     buildNumberCell(item.costRate, 2),
-    buildNumberCell(item.costLocalAmount, 2)
+    buildNumberCell(item.costLocalAmount, 2),
+    buildNumberCell(item.actualCostLocalAmount, 2)
   ];
 }
 
@@ -568,18 +593,45 @@ export function transformJobCardApiData(
     netWeight: Number(item?.NetWeight || 0)
   }));
 
-  const costRevenueCharges: JobCardChargePdfRow[] = charges.map((item: any) => ({
-    chargeName: getChargeName(item.ChargeMasterSid) || item.ChargeDescription || item.ChargeName || '',
-    unit: getUnitCode(item.ChargeUomSid),
-    revenueCurrency: getCurrencyName(item.RevenueCurrencyMasterSid || item.CostCurrencyMasterSid),
-    revenueExchangeRate: Number(item.RevenueExchangeRate || 0),
-    revenueRate: Number(item.RevenueRate || 0),
-    revenueLocalAmount: Number(item.RevenueLocalAmount || 0),
-    costCurrency: getCurrencyName(item.CostCurrencyMasterSid),
-    costExchangeRate: Number(item.CostExchangeRate || 0),
-    costRate: Number(item.CostRate || 0),
-    costLocalAmount: Number(item.CostLocalAmount || 0)
-  }));
+  const costRevenueCharges: JobCardChargePdfRow[] = charges.map((item: any) => {
+    const hasRevenueVoucher = !!(item?.RevenueVoucherHeaderSid || item?.revenueVoucherHeader?.VoucherHeaderSid);
+    const hasCostVoucher = !!(item?.CostVoucherHeaderSid || item?.costVoucherHeader?.VoucherHeaderSid);
+    const revenueLocalAmount = Number(item?.RevenueLocalAmount || 0);
+    const costLocalAmount = Number(item?.CostLocalAmount || 0);
+    const actualRevenueLocalAmount = hasRevenueVoucher
+      ? Number(
+        item?.ActualRevenueLocalAmount ??
+        item?.RevenueActualLocalAmount ??
+        item?.ActRevenueLocalAmount ??
+        item?.ActLocalRevenueAmount ??
+        revenueLocalAmount
+      )
+      : 0;
+    const actualCostLocalAmount = hasCostVoucher
+      ? Number(
+        item?.ActualCostLocalAmount ??
+        item?.CostActualLocalAmount ??
+        item?.ActCostLocalAmount ??
+        item?.ActLocalCostAmount ??
+        costLocalAmount
+      )
+      : 0;
+
+    return {
+      chargeName: getChargeName(item.ChargeMasterSid) || item.ChargeDescription || item.ChargeName || '',
+      unit: getUnitCode(item.ChargeUomSid),
+      revenueCurrency: getCurrencyName(item.RevenueCurrencyMasterSid || item.CostCurrencyMasterSid),
+      revenueExchangeRate: Number(item.RevenueExchangeRate || 0),
+      revenueRate: Number(item.RevenueRate || 0),
+      revenueLocalAmount,
+      actualRevenueLocalAmount,
+      costCurrency: getCurrencyName(item.CostCurrencyMasterSid),
+      costExchangeRate: Number(item.CostExchangeRate || 0),
+      costRate: Number(item.CostRate || 0),
+      costLocalAmount,
+      actualCostLocalAmount
+    };
+  });
 
   return {
     reportTitle: `Job Card / Job No - ${apiData?.masterJob?.MasterJobNumber || ''}`,

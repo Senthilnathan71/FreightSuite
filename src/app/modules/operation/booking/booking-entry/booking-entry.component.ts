@@ -922,7 +922,7 @@ subscribeToFormChanges() {
       VoyageNo: [ null],
       ETA: [null],
       ETD: [null],
-      CutOffDate: [{ value: null, disabled: true }],
+      PortCutoffDate: [null],
       POO: [null],
       POL: [null, [Validators.required]],
       POD: [null, [Validators.required]],
@@ -1789,7 +1789,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       VoyageNo: response.VoyageNo,
       ETA: response.ETA ? new Date(response.ETA) : null,
       ETD: response.ETD ? new Date(response.ETD) : null,
-      CutOffDate: response.CutOffDate ? new Date(response.CutOffDate) : null,
+      PortCutoffDate: response.PortCutoffDate ? new Date(response.PortCutoffDate) : null,
       POO: response.POO,
       POL: response.POL,
       POD: response.POD,
@@ -2347,7 +2347,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   };
   this.b['ETA']?.setValue(cleanDate(this.b['ETA']?.value));
   this.b['ETD']?.setValue(cleanDate(this.b['ETD']?.value));
-  this.b['CutOffDate']?.setValue(cleanDate(this.b['CutOffDate']?.value));
+  this.b['PortCutoffDate']?.setValue(cleanDate(this.b['PortCutoffDate']?.value));
   // Update the form state
   this.errorLogger();
   this.bookingForm.updateValueAndValidity();
@@ -2552,7 +2552,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       VoyageNo: bookingFormValue.VoyageNo || null,
       ETA: bookingFormValue.ETA ? new Date(bookingFormValue.ETA) : null,
       ETD: bookingFormValue.ETD ? new Date(bookingFormValue.ETD) : null,
-      CutOffDate: bookingFormValue.CutOffDate ? new Date(bookingFormValue.CutOffDate) : null, 
+      PortCutoffDate: bookingFormValue.PortCutoffDate ? new Date(bookingFormValue.PortCutoffDate) : null, 
       POO: bookingFormValue.POO || null,
       POL: bookingFormValue.POL,  
       POD: bookingFormValue.POD,
@@ -3006,7 +3006,7 @@ onCarrierChangeForAir(carrier: any): void {
       this.b['FPD'].setValue(null);
       this.b['ETA'].setValue('');
       this.b['ETD'].setValue('');
-      this.b['CutOffDate'].setValue('');
+      this.b['PortCutoffDate'].setValue('');
       this.b['MovementType'].setValue(null);
        this.b['JobType'].setValue('');
       this.updateCarrierValidation(null);
@@ -3532,7 +3532,7 @@ usesDimensionalCargoFields(): boolean {
     this.b['VoyageNo']?.setValue(null);
     this.b['ETA']?.setValue(null);
     this.b['ETD']?.setValue(null);
-    this.b['CutOffDate']?.setValue(null);
+    this.b['PortCutoffDate']?.setValue(null);
     if (!selectedPort) {
       this.refreshPortFilters();
       return;
@@ -3548,7 +3548,7 @@ usesDimensionalCargoFields(): boolean {
     this.b['VoyageNo']?.setValue(null);
     this.b['ETA']?.setValue(null);
     this.b['ETD']?.setValue(null);
-    this.b['CutOffDate']?.setValue(null);
+    this.b['PortCutoffDate']?.setValue(null);
     if (!selectedPort) {
       this.b['FPD']?.setValue(null);
       this.refreshPortFilters();
@@ -3753,7 +3753,7 @@ getVesselVoyBasedOnPorts() {
             ...vslVoy , 
             ETD : vslVoy.ETD ? new Date (vslVoy.ETD) : null,
             ETA : vslVoy.ETA ? new Date (vslVoy.ETA) : null,
-            CutOffDate: vslVoy.CutOffDate ? new Date (vslVoy.CutOffDate) : null,
+            PortCutoffDate: vslVoy.PortCutoffDate ? new Date (vslVoy.PortCutoffDate) : null,
         }));
         console.log('Header Vessel List updated:', this.headerVesselList.length, 'items');
         if (this.headerVesselList.length === 0 && !this.hasShownVesselWarning) {
@@ -5327,7 +5327,7 @@ deepEqual(obj1: any, obj2: any): boolean {
     CarrierMasterSid: null,
     ETD: selectedVoyage?.ETD ? new Date(selectedVoyage.ETD) : (this.b['ETD']?.value ? new Date(this.b['ETD']?.value) : null),
     ETA: selectedVoyage?.ETA ? new Date(selectedVoyage.ETA) : (this.b['ETA']?.value ? new Date(this.b['ETA']?.value) : null),
-    CutOffDate: selectedVoyage?.PortCutoff ? new Date(selectedVoyage.PortCutoff) : (this.b['CutOffDate']?.value ? new Date(this.b['CutOffDate']?.value): null),
+    PortCutoffDate: selectedVoyage?.PortCutoff ? new Date(selectedVoyage.PortCutoff) : (this.b['PortCutoffDate']?.value ? new Date(this.b['PortCutoffDate']?.value): null),
     shipmentList: shipmentList,
     screenName : this.selectedDepartmentType === "AIR" ? "Master Air Waybill" : "Master Job",
     sourceScreen: 'Booking'
@@ -6610,6 +6610,88 @@ exportARAPReport() {
 //     window.print();
 // }
 
+getBookingCostRevenueRows(): any[] {
+  const headerRates = Array.isArray(this.bookingHeader?.bookingRates) ? this.bookingHeader.bookingRates : [];
+  const dataRates = Array.isArray(this.bookingData?.bookingRates) ? this.bookingData.bookingRates : [];
+  const headerCharges = Array.isArray(this.bookingHeader?.costRevenueCharges) ? this.bookingHeader.costRevenueCharges : [];
+  const dataCharges = Array.isArray(this.bookingData?.costRevenueCharges) ? this.bookingData.costRevenueCharges : [];
+
+  if (headerRates.length) return headerRates;
+  if (dataRates.length) return dataRates;
+  if (headerCharges.length) return headerCharges;
+  return dataCharges;
+}
+
+getChargeUnitCode(chargeDataOrSid: any): string {
+  const sid = Number(
+    chargeDataOrSid?.ChargeUomSid ??
+    chargeDataOrSid
+  );
+
+  if (!sid) return '';
+
+  const uom = (this.uomList || []).find((item: any) => Number(item?.UOMMasterSid) === sid);
+  if (uom?.UOMCode || uom?.UOMName) {
+    return uom.UOMCode || uom.UOMName || '';
+  }
+
+  const pkgUom = (this.packageTypeList || []).find((item: any) => Number(item?.UOMMasterSid) === sid);
+  return pkgUom ? (pkgUom.UOMCode || pkgUom.UOMName || '') : '';
+}
+
+getChargeDisplayName(item: any): string {
+  return item?.ChargeDescription || item?.ChargeName || item?.chargeName || `Charge #${item?.ChargeMasterSid || ''}`;
+}
+
+getProRevenueAmount(item: any): number {
+  return Number(item?.RevenueLocalAmount) || 0;
+}
+
+getProCostAmount(item: any): number {
+  return Number(item?.CostLocalAmount) || 0;
+}
+
+getProGross(item: any): number {
+  return this.getProRevenueAmount(item) - this.getProCostAmount(item);
+}
+
+getActualRevenueAmount(item: any): number {
+  const hasRevenueVoucher = !!(item?.RevenueVoucherHeaderSid || item?.revenueVoucherHeader?.VoucherHeaderSid);
+  if (!hasRevenueVoucher) return 0;
+  return Number(
+    item?.RevenueLocalAmount ??
+    0
+  ) || 0;
+}
+
+getActualCostAmount(item: any): number {
+  const hasCostVoucher = !!(item?.CostVoucherHeaderSid || item?.costVoucherHeader?.VoucherHeaderSid);
+  if (!hasCostVoucher) return 0;
+  return Number(
+    item?.CostLocalAmount ??
+    0
+  ) || 0;
+}
+
+getActualGross(item: any): number {
+  return this.getActualRevenueAmount(item) - this.getActualCostAmount(item);
+}
+
+getBookingChargeTotals() {
+  const rows = this.getBookingCostRevenueRows();
+  return rows.reduce(
+    (acc: any, item: any) => {
+      acc.proRev += this.getProRevenueAmount(item);
+      acc.proCost += this.getProCostAmount(item);
+      acc.proGp += this.getProGross(item);
+      acc.actRev += this.getActualRevenueAmount(item);
+      acc.actCost += this.getActualCostAmount(item);
+      acc.actGp += this.getActualGross(item);
+      return acc;
+    },
+    { proRev: 0, proCost: 0, proGp: 0, actRev: 0, actCost: 0, actGp: 0 }
+  );
+}
 
 
 printDiv(divId: string): void {
@@ -7315,7 +7397,7 @@ private prepareCopiedBookingData(): any {
     VoyageMasterSid: null,
     ETA: null,
     ETD: null,
-    CutOffDate: null,
+    PortCutoffDate: null,
     BookingDateTime: new Date(),
     DoValid: null,
     QuotationHeaderSid: null,

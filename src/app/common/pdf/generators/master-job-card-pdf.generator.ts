@@ -10,7 +10,6 @@ import { getPdfStyles } from '../styles/pdf-styles';
 
 export function generateMasterJobCardDocument(data: MasterJobCardPdfData): any {
   const content: any[] = [
-    buildTitle(data),
     buildJobInfoSection(data)
   ];
 
@@ -29,7 +28,7 @@ export function generateMasterJobCardDocument(data: MasterJobCardPdfData): any {
   return {
     pageSize: data.config?.pageSize || 'A4',
     pageOrientation: 'landscape',
-    pageMargins: [15, 82, 15, 34],
+    pageMargins: [15, 100, 15, 34],
     background: (_: number, pageSize: any) => ({
       canvas: [{
         type: 'rect',
@@ -95,7 +94,8 @@ function buildHeader(data: MasterJobCardPdfData): any {
           paddingBottom: () => 0
         },
         margin: [0, 6, 0, 0]
-      }
+      },
+      buildTitle(data)
     ],
     margin: [15, 12, 15, 6]
   };
@@ -257,53 +257,87 @@ function buildCostRevenueLabel(): any {
 function buildCostRevenueTable(data: MasterJobCardPdfData): any {
   return {
     table: {
-      headerRows: 1,
-      widths: [120, '*', 28, 30, 34, 42, 48, 34, 42, 42, 52],
+      headerRows: 2,
+      widths: [120, '*', 28, 30, 34, 42, 48, 52, 34, 42, 42, 52, 52],
       body: [
         [
-          { text: 'Screen', style: 'tableHeader' },
-          { text: 'Charge', style: 'tableHeader' },
-          { text: 'Unit', style: 'tableHeader' },
+          { text: 'Screen', style: 'tableHeader', rowSpan: 2 },
+          { text: 'Charge', style: 'tableHeader', rowSpan: 2 },
+          { text: 'Unit', style: 'tableHeader', rowSpan: 2 },
+          { text: 'Revenue', style: 'tableHeader', colSpan: 5 },
+          {},
+          {},
+          {},
+          {},
+          { text: 'Cost', style: 'tableHeader', colSpan: 5 },
+          {},
+          {},
+          {},
+          {}
+        ],
+        [
+          {},
+          {},
+          {},
           { text: 'Curr', style: 'tableHeader' },
           { text: 'Ex.Rate', style: 'tableHeader' },
-          { text: 'Sale/Unit', style: 'tableHeader' },
+          { text: 'Per Unit', style: 'tableHeader' },
           { text: 'Local Amt.', style: 'tableHeader' },
-          { text: 'Cost Curr', style: 'tableHeader' },
-          { text: 'Cost Ex Rate', style: 'tableHeader' },
-          { text: 'Cost/Unit', style: 'tableHeader' },
-          { text: 'Cost Local Amt.', style: 'tableHeader' }
+          { text: 'Act Local Amt.', style: 'tableHeader' },
+          { text: 'Curr', style: 'tableHeader' },
+          { text: 'Ex Rate', style: 'tableHeader' },
+          { text: 'Per Unit', style: 'tableHeader' },
+          { text: 'Local Amt.', style: 'tableHeader' },
+          { text: 'Act Local Amt.', style: 'tableHeader' }
         ],
         ...data.chargeRows.map((item) => buildChargeRow(item)),
         [
           { text: 'Grand Total', colSpan: 5, style: 'grandTotalCell', alignment: 'right' }, {}, {}, {}, {},
           buildNumberCell(data.chargeTotals.totalRevenueRate, 2, true, true),
           buildNumberCell(data.chargeTotals.totalRevenueLocalAmount, 2, true, true),
+          buildNumberCell(data.chargeTotals.totalActualRevenueLocalAmount, 2, true, true),
           { text: '', style: 'grandTotalCell' },
           { text: '', style: 'grandTotalCell' },
           buildNumberCell(data.chargeTotals.totalCostRate, 2, true, true),
-          buildNumberCell(data.chargeTotals.totalCostLocalAmount, 2, true, true)
+          buildNumberCell(data.chargeTotals.totalCostLocalAmount, 2, true, true),
+          buildNumberCell(data.chargeTotals.totalActualCostLocalAmount, 2, true, true)
         ]
       ]
     },
-    layout: borderedLayout(),
+    layout: compactBorderedLayout(),
     margin: [0, 0, 0, 4]
   };
 }
 
 function buildChargeRow(item: MasterJobCardChargeRow): any[] {
   return [
-    buildTextCell(item.screen, true, true),
+    buildTextCell(item.screen, true, false),
     buildTextCell(item.chargeName),
     buildTextCell(item.unit, false, false, 'center'),
     buildTextCell(item.revenueCurrency, false, false, 'center'),
     buildNumberCell(item.revenueExchangeRate, 3),
     buildNumberCell(item.revenueRate, 2),
     buildNumberCell(item.revenueLocalAmount, 2),
+    buildNumberCell(item.actualRevenueLocalAmount, 2),
     buildTextCell(item.costCurrency, false, false, 'center'),
     buildNumberCell(item.costExchangeRate, 3),
     buildNumberCell(item.costRate, 2),
-    buildNumberCell(item.costLocalAmount, 2)
+    buildNumberCell(item.costLocalAmount, 2),
+    buildNumberCell(item.actualCostLocalAmount, 2)
   ];
+}
+
+function compactBorderedLayout(): any {
+  return {
+    hLineWidth: () => 1,
+    vLineWidth: () => 1,
+    hLineColor: () => '#000',
+    vLineColor: () => '#000',
+    paddingTop: () => 2,
+    paddingBottom: () => 2,
+    paddingLeft: () => 3,
+    paddingRight: () => 3
+  };
 }
 
 function buildRevenueExpenseSection(data: MasterJobCardPdfData): any {
@@ -510,32 +544,59 @@ export function transformMasterJobCardApiData(
   }));
 
   const buildChargeRows = (charges: any[], screen: string): MasterJobCardChargeRow[] =>
-    (charges || []).map((item: any) => ({
-      screen,
-      chargeName: getChargeName(item?.ChargeMasterSid),
-      unit: getUnitCode(item?.ChargeUomSid),
-      revenueCurrency: getCurrencyName(item?.RevenueCurrencyMasterSid || item?.CostCurrencyMasterSid),
-      revenueExchangeRate: Number(item?.RevenueExchangeRate || item?.CostExchangeRate || 0),
-      revenueRate: Number(item?.RevenueRate || 0),
-      revenueLocalAmount: Number(item?.RevenueLocalAmount || 0),
-      costCurrency: getCurrencyName(item?.CostCurrencyMasterSid),
-      costExchangeRate: Number(item?.CostExchangeRate || 0),
-      costRate: Number(item?.CostRate || 0),
-      costLocalAmount: Number(item?.CostLocalAmount || 0)
-    }));
+    (charges || []).map((item: any) => {
+      const hasRevenueVoucher = !!(item?.RevenueVoucherHeaderSid || item?.revenueVoucherHeader?.VoucherHeaderSid);
+      const hasCostVoucher = !!(item?.CostVoucherHeaderSid || item?.costVoucherHeader?.VoucherHeaderSid);
+      const revenueLocalAmount = Number(item?.RevenueLocalAmount || 0);
+      const costLocalAmount = Number(item?.CostLocalAmount || 0);
+      const actualRevenueLocalAmount = hasRevenueVoucher
+        ? Number(
+          item?.ActualRevenueLocalAmount ??
+          item?.RevenueActualLocalAmount ??
+          item?.ActRevenueLocalAmount ??
+          item?.ActLocalRevenueAmount ??
+          revenueLocalAmount
+        )
+        : 0;
+      const actualCostLocalAmount = hasCostVoucher
+        ? Number(
+          item?.ActualCostLocalAmount ??
+          item?.CostActualLocalAmount ??
+          item?.ActCostLocalAmount ??
+          item?.ActLocalCostAmount ??
+          costLocalAmount
+        )
+        : 0;
+
+      return {
+        screen,
+        chargeName: getChargeName(item?.ChargeMasterSid),
+        unit: getUnitCode(item?.ChargeUomSid),
+        revenueCurrency: getCurrencyName(item?.RevenueCurrencyMasterSid || item?.CostCurrencyMasterSid),
+        revenueExchangeRate: Number(item?.RevenueExchangeRate || item?.CostExchangeRate || 0),
+        revenueRate: Number(item?.RevenueRate || 0),
+        revenueLocalAmount,
+        actualRevenueLocalAmount,
+        costCurrency: getCurrencyName(item?.CostCurrencyMasterSid),
+        costExchangeRate: Number(item?.CostExchangeRate || 0),
+        costRate: Number(item?.CostRate || 0),
+        costLocalAmount,
+        actualCostLocalAmount
+      };
+    });
 
   const masterCharges = Array.isArray(apiData?.costRevenueCharges) ? apiData.costRevenueCharges : [];
   const houseCharges = Array.isArray(apiData?.houseJob)
     ? apiData.houseJob.flatMap((house: any) =>
         buildChargeRows(
           Array.isArray(house?.costRevenueCharges) ? house.costRevenueCharges : [],
-          `House Job - ${house?.HBLNo || house?.ShipmentNo || 'House Job'}`
+          `House - ${house?.HBLNo || house?.ShipmentNo || 'House Job'}`
         )
       )
     : [];
 
   const chargeRows: MasterJobCardChargeRow[] = [
-    ...buildChargeRows(masterCharges, 'Master Job'),
+    ...buildChargeRows(masterCharges, 'Master'),
     ...houseCharges
   ];
 
@@ -652,8 +713,10 @@ export function transformMasterJobCardApiData(
     chargeTotals: {
       totalRevenueRate: chargeRows.reduce((sum, item) => sum + Number(item.revenueRate || 0), 0),
       totalRevenueLocalAmount: chargeRows.reduce((sum, item) => sum + Number(item.revenueLocalAmount || 0), 0),
+      totalActualRevenueLocalAmount: chargeRows.reduce((sum, item) => sum + Number(item.actualRevenueLocalAmount || 0), 0),
       totalCostRate: chargeRows.reduce((sum, item) => sum + Number(item.costRate || 0), 0),
-      totalCostLocalAmount: chargeRows.reduce((sum, item) => sum + Number(item.costLocalAmount || 0), 0)
+      totalCostLocalAmount: chargeRows.reduce((sum, item) => sum + Number(item.costLocalAmount || 0), 0),
+      totalActualCostLocalAmount: chargeRows.reduce((sum, item) => sum + Number(item.actualCostLocalAmount || 0), 0)
     },
     revenueByParty,
     expenseByParty,
