@@ -145,10 +145,21 @@ export interface BookingPdfData extends PdfDocumentBase {
     fpd?: PdfPortInfo;
   };
   cargo: BookingCargoData[];
+  bookingRates?: BookingRateData[];
   products: BookingProductData[];
   terms?: PdfTermItem[];
   fclLcl: 'FCL' | 'LCL' | 'AIR';
   departmentName?: string;
+}
+
+export interface BookingRateData {
+  chargeName?: string;
+  proRevenueAmount?: number;
+  proCostAmount?: number;
+  proGross?: number;
+  actualRevenueAmount?: number;
+  actualCostAmount?: number;
+  actualGross?: number;
 }
 
 export interface BookingCargoData extends PdfCargoItem {
@@ -407,6 +418,12 @@ export interface ShipmentReportPdfData extends PdfDocumentBase {
     totalLocalRevenue: number;
     totalLocalExpense: number;
     totalLocalGP: number;
+    totalActualPCurrRevenue: number;
+    totalActualPCurrExpense: number;
+    totalActualPCurrGP: number;
+    totalActualLocalRevenue: number;
+    totalActualLocalExpense: number;
+    totalActualLocalGP: number;
   };
   revenueSummary: ShipmentPartyAmountRow[];
   expenseSummary: ShipmentPartyAmountRow[];
@@ -434,6 +451,12 @@ export interface ShipmentChargePdfRow {
   localRevenue?: number;
   localExpense?: number;
   localGP?: number;
+  actualPCurrRevenue?: number;
+  actualPCurrExpense?: number;
+  actualPCurrGP?: number;
+  actualLocalRevenue?: number;
+  actualLocalExpense?: number;
+  actualLocalGP?: number;
 }
 
 export interface ShipmentPartyAmountRow {
@@ -519,16 +542,19 @@ export interface JobCardProfitPdfRow {
 }
 
 export interface JobCardChargePdfRow {
+  screen?: string;
   chargeName?: string;
   unit?: string;
   revenueCurrency?: string;
   revenueExchangeRate?: number;
   revenueRate?: number;
   revenueLocalAmount?: number;
+  actualRevenueLocalAmount?: number;
   costCurrency?: string;
   costExchangeRate?: number;
   costRate?: number;
   costLocalAmount?: number;
+  actualCostLocalAmount?: number;
 }
 
 export interface JobCardPartyAmountRow {
@@ -586,8 +612,10 @@ export interface MasterJobCardPdfData extends PdfDocumentBase {
   chargeTotals: {
     totalRevenueRate: number;
     totalRevenueLocalAmount: number;
+    totalActualRevenueLocalAmount: number;
     totalCostRate: number;
     totalCostLocalAmount: number;
+    totalActualCostLocalAmount: number;
   };
   revenueByParty: MasterJobCardPartyAmountRow[];
   expenseByParty: MasterJobCardPartyAmountRow[];
@@ -619,10 +647,12 @@ export interface MasterJobCardChargeRow {
   revenueExchangeRate?: number;
   revenueRate?: number;
   revenueLocalAmount?: number;
+  actualRevenueLocalAmount?: number;
   costCurrency?: string;
   costExchangeRate?: number;
   costRate?: number;
   costLocalAmount?: number;
+  actualCostLocalAmount?: number;
 }
 
 export interface MasterJobCardPartyAmountRow {

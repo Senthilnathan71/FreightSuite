@@ -77,6 +77,9 @@ export function generateBookingDocument(
       // Cargo details table
       buildBookingCargoDetails(data),
 
+      // Cost/Revenue table
+      buildBookingRatesTable(data),
+
       // Terms (if available)
       ...(data.terms && data.terms.length > 0 ? [
         buildTermsSection(data.terms)
@@ -309,6 +312,73 @@ function buildBookingCargoDetails(data: BookingPdfData): any {
         margin: [0, 0, 0, 6]
       }
     ]
+  };
+}
+
+function buildBookingRatesTable(data: BookingPdfData): any {
+  const rows = data.bookingRates || [];
+  if (!rows.length) {
+    return { text: '' };
+  }
+
+  const totals = rows.reduce(
+    (acc: { proRev: number; proCost: number; proGross: number; actRev: number; actCost: number; actGross: number }, item) => {
+      acc.proRev += Number(item.proRevenueAmount || 0);
+      acc.proCost += Number(item.proCostAmount || 0);
+      acc.proGross += Number(item.proGross || 0);
+      acc.actRev += Number(item.actualRevenueAmount || 0);
+      acc.actCost += Number(item.actualCostAmount || 0);
+      acc.actGross += Number(item.actualGross || 0);
+      return acc;
+    },
+    { proRev: 0, proCost: 0, proGross: 0, actRev: 0, actCost: 0, actGross: 0 }
+  );
+
+  return {
+    table: {
+      headerRows: 2,
+      widths: ['*', 70, 70, 70, 70, 70, 70],
+      body: [
+        [
+          { text: 'Charge', style: 'tableHeader', rowSpan: 2 },
+          { text: 'Provisional', style: 'tableHeader', colSpan: 3, alignment: 'center' },
+          {},
+          {},
+          { text: 'Actual', style: 'tableHeader', colSpan: 3, alignment: 'center' },
+          {},
+          {}
+        ],
+        [
+          {},
+          { text: 'Rev Amt', style: 'tableHeader' },
+          { text: 'Cost Amt', style: 'tableHeader' },
+          { text: 'GP', style: 'tableHeader' },
+          { text: 'Rev Amt', style: 'tableHeader' },
+          { text: 'Cost Amt', style: 'tableHeader' },
+          { text: 'GP', style: 'tableHeader' }
+        ],
+        ...rows.map((item) => ([
+          { text: item.chargeName || '', style: 'tableCell' },
+          { text: Number(item.proRevenueAmount || 0).toFixed(2), style: 'tableCell', alignment: 'right' },
+          { text: Number(item.proCostAmount || 0).toFixed(2), style: 'tableCell', alignment: 'right' },
+          { text: Number(item.proGross || 0).toFixed(2), style: 'tableCell', alignment: 'right' },
+          { text: Number(item.actualRevenueAmount || 0).toFixed(2), style: 'tableCell', alignment: 'right' },
+          { text: Number(item.actualCostAmount || 0).toFixed(2), style: 'tableCell', alignment: 'right' },
+          { text: Number(item.actualGross || 0).toFixed(2), style: 'tableCell', alignment: 'right' }
+        ])),
+        [
+          { text: 'Total', style: 'tableCellBold', alignment: 'right' },
+          { text: totals.proRev.toFixed(2), style: 'tableCellBold', alignment: 'right' },
+          { text: totals.proCost.toFixed(2), style: 'tableCellBold', alignment: 'right' },
+          { text: totals.proGross.toFixed(2), style: 'tableCellBold', alignment: 'right' },
+          { text: totals.actRev.toFixed(2), style: 'tableCellBold', alignment: 'right' },
+          { text: totals.actCost.toFixed(2), style: 'tableCellBold', alignment: 'right' },
+          { text: totals.actGross.toFixed(2), style: 'tableCellBold', alignment: 'right' }
+        ]
+      ]
+    },
+    layout: 'bordered',
+    margin: [0, 4, 0, 6]
   };
 }
 
@@ -586,6 +656,7 @@ export function transformBookingApiData(
   const booking = apiData;
   const bookingCargo = booking.bookingCargo || [];
   const bookingProducts = booking.bookingProduct || [];
+  const bookingRates = booking.bookingRates || [];
   const bookingOthers = booking.bookingOthers?.[0] || {};
   const normalizedTerms = getUniqueTerms(booking.terms || []);
 
@@ -688,6 +759,34 @@ export function transformBookingApiData(
       chargeableWeight: cargo.ChargeableWeight || 0,
       shipmentTerms: cargo.ShipmentTerms || ''
     })),
+    bookingRates: bookingRates.map((rate: any) => {
+      const proRevenueAmount = Number(rate?.RevenueLocalAmount ?? 0);
+      const proCostAmount = Number(rate?.CostLocalAmount ?? 0);
+      const hasRevenueVoucher = !!(rate?.RevenueVoucherHeaderSid || rate?.revenueVoucherHeader?.VoucherHeaderSid);
+      const hasCostVoucher = !!(rate?.CostVoucherHeaderSid || rate?.costVoucherHeader?.VoucherHeaderSid);
+      const actualRevenueAmount = hasRevenueVoucher
+        ? Number(
+          rate?.RevenueLocalAmount ??
+          0
+        )
+        : 0;
+      const actualCostAmount = hasCostVoucher
+        ? Number(
+          rate?.CostLocalAmount ??
+          0
+        )
+        : 0;
+
+      return {
+        chargeName: rate?.ChargeDescription || rate?.ChargeName || rate?.ChargeMaster?.chargeName || '',
+        proRevenueAmount,
+        proCostAmount,
+        proGross: proRevenueAmount - proCostAmount,
+        actualRevenueAmount,
+        actualCostAmount,
+        actualGross: actualRevenueAmount - actualCostAmount
+      };
+    }),
     products: bookingProducts.map((product: any) => ({
       productName: product.ProductName || '',
       hsCode: product.HSCode || '',

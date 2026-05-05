@@ -12,8 +12,29 @@ export function generateShipmentReportDocument(data: ShipmentReportPdfData): any
 
   return {
     pageSize: data.config?.pageSize || 'A4',
-    pageOrientation: 'portrait',
-    pageMargins: [15, 10, 15, 36],
+    pageOrientation: 'landscape',
+    pageMargins: [15, 108, 15, 36],
+    header: (_currentPage: number, _pageCount: number, pageSize: any) => ({
+      margin: [15, 14, 15, 0],
+      stack: [
+        buildHeader(data),
+        {
+          canvas: [
+            {
+              type: 'line',
+              x1: 0,
+              y1: 0,
+              x2: pageSize.width - 30,
+              y2: 0,
+              lineWidth: 1,
+              lineColor: '#000'
+            }
+          ],
+          margin: [0, 2, 0, 2]
+        },
+        buildTitle(data)
+      ]
+    }),
     background: (_: number, pageSize: any) => ({
       canvas: [
         {
@@ -28,8 +49,6 @@ export function generateShipmentReportDocument(data: ShipmentReportPdfData): any
       ]
     }),
     content: [
-      buildHeader(data),
-      buildTitle(data),
       buildPartySection(data),
       buildShipmentInfoSection(data),
       buildProductsTable(data, showContainerColumns),
@@ -116,16 +135,11 @@ function buildHeaderLogo(logo: string | undefined, alignment: 'left' | 'center' 
 
 function buildTitle(data: ShipmentReportPdfData): any {
   return {
-    table: {
-      widths: ['*'],
-      body: [[{ text: data.reportTitle, bold: true, alignment: 'center', fontSize: 10, margin: [0, 4, 0, 4] }]]
-    },
-    layout: {
-      hLineWidth: (i: number) => (i === 0 ? 1 : 0),
-      vLineWidth: () => 0,
-      hLineColor: () => '#000'
-    },
-    margin: [0, 0, 0, 6]
+    text: data.reportTitle,
+    bold: true,
+    alignment: 'center',
+    fontSize: 10,
+    margin: [0, 2, 0, 4]
   };
 }
 
@@ -226,7 +240,7 @@ function buildKeyValueRow(label: string, value?: string): any {
 }
 
 function buildProductsTable(data: ShipmentReportPdfData, showContainerColumns: boolean): any {
-  const widths = showContainerColumns ? [60, 38, '*', 42, 48, 48, 48] : ['*', 50, 58, 58, 58];
+  const widths = showContainerColumns ? [60, 60, '*', 42, 48, 48, 48] : ['*', 50, 58, 58, 58];
   const headerRow = showContainerColumns
     ? [
         { text: 'Container No.', style: 'tableHeader' },
@@ -284,6 +298,8 @@ function buildProductsTable(data: ShipmentReportPdfData, showContainerColumns: b
   return {
     table: {
       headerRows: 1,
+      keepWithHeaderRows: 1,
+      dontBreakRows: true,
       widths,
       body: [headerRow, ...rows, footerRow]
     },
@@ -295,17 +311,40 @@ function buildProductsTable(data: ShipmentReportPdfData, showContainerColumns: b
 function buildChargesTable(data: ShipmentReportPdfData): any {
   return {
     table: {
-      headerRows: 1,
-      widths: ['*', 58, 58, 45, 68, 68, 50],
+      headerRows: 2,
+      keepWithHeaderRows: 2,
+      dontBreakRows: true,
+      widths: ['*', 50, 50, 45, 50, 50, 45, 50, 50, 45, 50, 50, 45],
       body: [
         [
-          { text: 'Charge', style: 'tableHeader' },
-          { text: 'P.Curr Revenue', style: 'tableHeader' },
-          { text: 'P.Curr Expense', style: 'tableHeader' },
-          { text: 'P.Curr GP', style: 'tableHeader' },
-          { text: 'Local P.Revenue', style: 'tableHeader' },
-          { text: 'Local P.Expense', style: 'tableHeader' },
-          { text: 'Local P.GP', style: 'tableHeader' }
+          { text: 'Charge', style: 'tableHeader', rowSpan: 2 },
+          { text: 'Provisional', style: 'tableHeader', colSpan: 6 },
+          {},
+          {},
+          {},
+          {},
+          {},
+          { text: 'Actual', style: 'tableHeader', colSpan: 6 },
+          {},
+          {},
+          {},
+          {},
+          {}
+        ],
+        [
+          {},
+          { text: 'Amt Rev', style: 'tableHeader' },
+          { text: 'Amt Cost', style: 'tableHeader' },
+          { text: 'Amt GP', style: 'tableHeader' },
+          { text: 'Local Rev', style: 'tableHeader' },
+          { text: 'Local Cost', style: 'tableHeader' },
+          { text: 'Local GP', style: 'tableHeader' },
+          { text: 'Amt Rev', style: 'tableHeader' },
+          { text: 'Amt Cost', style: 'tableHeader' },
+          { text: 'Amt GP', style: 'tableHeader' },
+          { text: 'Local Rev', style: 'tableHeader' },
+          { text: 'Local Cost', style: 'tableHeader' },
+          { text: 'Local GP', style: 'tableHeader' }
         ],
         ...data.charges.map((item) => buildChargeRow(item)),
         [
@@ -315,7 +354,13 @@ function buildChargesTable(data: ShipmentReportPdfData): any {
           buildNumberCell(data.chargeTotals.totalPCurrGP, 2, true),
           buildNumberCell(data.chargeTotals.totalLocalRevenue, 2, true),
           buildNumberCell(data.chargeTotals.totalLocalExpense, 2, true),
-          buildNumberCell(data.chargeTotals.totalLocalGP, 2, true)
+          buildNumberCell(data.chargeTotals.totalLocalGP, 2, true),
+          buildNumberCell(data.chargeTotals.totalActualPCurrRevenue, 2, true),
+          buildNumberCell(data.chargeTotals.totalActualPCurrExpense, 2, true),
+          buildNumberCell(data.chargeTotals.totalActualPCurrGP, 2, true),
+          buildNumberCell(data.chargeTotals.totalActualLocalRevenue, 2, true),
+          buildNumberCell(data.chargeTotals.totalActualLocalExpense, 2, true),
+          buildNumberCell(data.chargeTotals.totalActualLocalGP, 2, true)
         ]
       ]
     },
@@ -332,7 +377,13 @@ function buildChargeRow(item: ShipmentChargePdfRow): any[] {
     buildNumberCell(item.pCurrGP, 2),
     buildNumberCell(item.localRevenue, 2),
     buildNumberCell(item.localExpense, 2),
-    buildNumberCell(item.localGP, 2)
+    buildNumberCell(item.localGP, 2),
+    buildNumberCell(item.actualPCurrRevenue, 2),
+    buildNumberCell(item.actualPCurrExpense, 2),
+    buildNumberCell(item.actualPCurrGP, 2),
+    buildNumberCell(item.actualLocalRevenue, 2),
+    buildNumberCell(item.actualLocalExpense, 2),
+    buildNumberCell(item.actualLocalGP, 2)
   ];
 }
 
@@ -360,6 +411,8 @@ function buildPartyAmountTable(
       {
         table: {
           headerRows: 1,
+          keepWithHeaderRows: 1,
+          dontBreakRows: true,
           widths: ['*', 70],
           body: [
             [
@@ -378,7 +431,8 @@ function buildPartyAmountTable(
         },
         layout: borderedLayout()
       }
-    ]
+    ],
+    unbreakable: true
   };
 }
 
@@ -509,6 +563,38 @@ export function transformShipmentReportApiData(
     const pCurrExpense = Number(item.CostAmount || 0);
     const localRevenue = Number(item.RevenueLocalAmount || 0);
     const localExpense = Number(item.CostLocalAmount || 0);
+    const hasRevenueVoucher = !!(item?.RevenueVoucherHeaderSid || item?.revenueVoucherHeader?.VoucherHeaderSid);
+    const hasCostVoucher = !!(item?.CostVoucherHeaderSid || item?.costVoucherHeader?.VoucherHeaderSid);
+    const pickActual = (...values: any[]): number | null => {
+      for (const value of values) {
+        if (value !== undefined && value !== null && value !== '') {
+          const parsed = Number(value);
+          if (!Number.isNaN(parsed)) {
+            return parsed;
+          }
+        }
+      }
+      return null;
+    };
+
+    const actualPCurrRevenue = pickActual(
+      item?.ActualRevenueAmount,
+      item?.RevenueActualAmount,
+      item?.ActualRevenueRate
+    ) ?? (hasRevenueVoucher ? pCurrRevenue : 0);
+    const actualPCurrExpense = pickActual(
+      item?.ActualCostAmount,
+      item?.CostActualAmount,
+      item?.ActualCostRate
+    ) ?? (hasCostVoucher ? pCurrExpense : 0);
+    const actualLocalRevenue = pickActual(
+      item?.ActualRevenueLocalAmount,
+      item?.RevenueActualLocalAmount
+    ) ?? (hasRevenueVoucher ? localRevenue : 0);
+    const actualLocalExpense = pickActual(
+      item?.ActualCostLocalAmount,
+      item?.CostActualLocalAmount
+    ) ?? (hasCostVoucher ? localExpense : 0);
 
     return {
       chargeName: getChargeName(item.ChargeMasterSid),
@@ -517,7 +603,13 @@ export function transformShipmentReportApiData(
       pCurrGP: pCurrRevenue - pCurrExpense,
       localRevenue,
       localExpense,
-      localGP: localRevenue - localExpense
+      localGP: localRevenue - localExpense,
+      actualPCurrRevenue,
+      actualPCurrExpense,
+      actualPCurrGP: actualPCurrRevenue - actualPCurrExpense,
+      actualLocalRevenue,
+      actualLocalExpense,
+      actualLocalGP: actualLocalRevenue - actualLocalExpense
     };
   });
 
@@ -529,6 +621,12 @@ export function transformShipmentReportApiData(
       acc.totalLocalRevenue += Number(item.localRevenue || 0);
       acc.totalLocalExpense += Number(item.localExpense || 0);
       acc.totalLocalGP += Number(item.localGP || 0);
+      acc.totalActualPCurrRevenue += Number(item.actualPCurrRevenue || 0);
+      acc.totalActualPCurrExpense += Number(item.actualPCurrExpense || 0);
+      acc.totalActualPCurrGP += Number(item.actualPCurrGP || 0);
+      acc.totalActualLocalRevenue += Number(item.actualLocalRevenue || 0);
+      acc.totalActualLocalExpense += Number(item.actualLocalExpense || 0);
+      acc.totalActualLocalGP += Number(item.actualLocalGP || 0);
       return acc;
     },
     {
@@ -537,7 +635,13 @@ export function transformShipmentReportApiData(
       totalPCurrGP: 0,
       totalLocalRevenue: 0,
       totalLocalExpense: 0,
-      totalLocalGP: 0
+      totalLocalGP: 0,
+      totalActualPCurrRevenue: 0,
+      totalActualPCurrExpense: 0,
+      totalActualPCurrGP: 0,
+      totalActualLocalRevenue: 0,
+      totalActualLocalExpense: 0,
+      totalActualLocalGP: 0
     }
   );
 

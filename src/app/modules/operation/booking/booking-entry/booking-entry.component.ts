@@ -6610,6 +6610,88 @@ exportARAPReport() {
 //     window.print();
 // }
 
+getBookingCostRevenueRows(): any[] {
+  const headerRates = Array.isArray(this.bookingHeader?.bookingRates) ? this.bookingHeader.bookingRates : [];
+  const dataRates = Array.isArray(this.bookingData?.bookingRates) ? this.bookingData.bookingRates : [];
+  const headerCharges = Array.isArray(this.bookingHeader?.costRevenueCharges) ? this.bookingHeader.costRevenueCharges : [];
+  const dataCharges = Array.isArray(this.bookingData?.costRevenueCharges) ? this.bookingData.costRevenueCharges : [];
+
+  if (headerRates.length) return headerRates;
+  if (dataRates.length) return dataRates;
+  if (headerCharges.length) return headerCharges;
+  return dataCharges;
+}
+
+getChargeUnitCode(chargeDataOrSid: any): string {
+  const sid = Number(
+    chargeDataOrSid?.ChargeUomSid ??
+    chargeDataOrSid
+  );
+
+  if (!sid) return '';
+
+  const uom = (this.uomList || []).find((item: any) => Number(item?.UOMMasterSid) === sid);
+  if (uom?.UOMCode || uom?.UOMName) {
+    return uom.UOMCode || uom.UOMName || '';
+  }
+
+  const pkgUom = (this.packageTypeList || []).find((item: any) => Number(item?.UOMMasterSid) === sid);
+  return pkgUom ? (pkgUom.UOMCode || pkgUom.UOMName || '') : '';
+}
+
+getChargeDisplayName(item: any): string {
+  return item?.ChargeDescription || item?.ChargeName || item?.chargeName || `Charge #${item?.ChargeMasterSid || ''}`;
+}
+
+getProRevenueAmount(item: any): number {
+  return Number(item?.RevenueLocalAmount) || 0;
+}
+
+getProCostAmount(item: any): number {
+  return Number(item?.CostLocalAmount) || 0;
+}
+
+getProGross(item: any): number {
+  return this.getProRevenueAmount(item) - this.getProCostAmount(item);
+}
+
+getActualRevenueAmount(item: any): number {
+  const hasRevenueVoucher = !!(item?.RevenueVoucherHeaderSid || item?.revenueVoucherHeader?.VoucherHeaderSid);
+  if (!hasRevenueVoucher) return 0;
+  return Number(
+    item?.RevenueLocalAmount ??
+    0
+  ) || 0;
+}
+
+getActualCostAmount(item: any): number {
+  const hasCostVoucher = !!(item?.CostVoucherHeaderSid || item?.costVoucherHeader?.VoucherHeaderSid);
+  if (!hasCostVoucher) return 0;
+  return Number(
+    item?.CostLocalAmount ??
+    0
+  ) || 0;
+}
+
+getActualGross(item: any): number {
+  return this.getActualRevenueAmount(item) - this.getActualCostAmount(item);
+}
+
+getBookingChargeTotals() {
+  const rows = this.getBookingCostRevenueRows();
+  return rows.reduce(
+    (acc: any, item: any) => {
+      acc.proRev += this.getProRevenueAmount(item);
+      acc.proCost += this.getProCostAmount(item);
+      acc.proGp += this.getProGross(item);
+      acc.actRev += this.getActualRevenueAmount(item);
+      acc.actCost += this.getActualCostAmount(item);
+      acc.actGp += this.getActualGross(item);
+      return acc;
+    },
+    { proRev: 0, proCost: 0, proGp: 0, actRev: 0, actCost: 0, actGp: 0 }
+  );
+}
 
 
 printDiv(divId: string): void {
