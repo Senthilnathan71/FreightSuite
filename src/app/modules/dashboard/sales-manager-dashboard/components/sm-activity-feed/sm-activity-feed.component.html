@@ -1,8 +1,8 @@
 <div class="feed-card mb-0">
-  <div class="feed-header">
-    <span class="header-icon"><i class="fas fa-rss"></i></span>
+  <div class="feed-header d-flex align-items-center gap-2">
+    <span class="header-icon d-flex align-items-center justify-content-center"><i class="fas fa-rss"></i></span>
     <h3>Team Activity</h3>
-    <span class="live-indicator">
+    <span class="live-indicator d-flex align-items-center gap-1">
       <span class="live-dot"></span>
       LIVE
     </span>
@@ -18,7 +18,7 @@
       <p>No recent activity</p>
     </div>
 
-    <div class="feed-row" *ngFor="let item of items; let i = index"
+    <div class="feed-row d-flex align-items-center gap-2" *ngFor="let item of items; let i = index"
          [style.animation-delay]="i * 30 + 'ms'">
       <div class="row-indicator" [class]="getColorClass(item.activityType)"></div>
       <div class="row-icon" [class]="getColorClass(item.activityType)">

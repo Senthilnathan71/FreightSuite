@@ -20,8 +20,8 @@
 
 .ac-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
   flex: 1;
   min-height: 0;
 }
@@ -40,7 +40,7 @@
 .ac-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   flex: 1;
   min-height: 0;
 }
@@ -48,25 +48,28 @@
 .ac-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px;
+  gap: 12px;
+  padding: 12px 14px;
   border-radius: 10px;
   border: 1px solid $sm-border;
-  background: #fafbfc;
+  background: $sm-bg-body;
   transition: all 0.15s;
   cursor: pointer;
 
   &:hover {
-    background: $sm-primary-bg;
-    border-color: $sm-primary-light;
+    background: white;
+    border-color: $sm-primary;
   }
 }
 
 .ac-icon {
-  width: 32px; height: 32px;
-  border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 13px;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
   flex-shrink: 0;
 }
 
@@ -76,26 +79,28 @@
 }
 
 .ac-title {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: $sm-text-primary;
   line-height: 1.2;
 }
 
 .ac-subtitle {
-  font-size: 10px;
+  font-size: 11.5px;
   color: $sm-text-muted;
+  margin-top: 1px;
 }
 
 .ac-count {
-  font-size: 16px;
+  font-size: 22px;
   font-weight: 700;
   flex-shrink: 0;
   min-width: 30px;
   text-align: center;
+  letter-spacing: -0.5px;
 
   &.danger { color: $sm-danger; }
-  &.warning { color: #f59e0b; }
+  &.warning { color: $sm-accent-saffron; }
   &.info { color: $sm-primary; }
 }
 
@@ -110,7 +115,7 @@
 .ac-divider {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   margin: 10px 0 6px;
   font-size: 10px;
   font-weight: 600;
@@ -129,10 +134,10 @@
 .alert-count-badge {
   background: $sm-danger;
   color: #fff;
-  font-size: 9px;
-  font-weight: 600;
-  padding: 1px 5px;
-  border-radius: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
 }
 
 .ac-alerts-section {
@@ -143,7 +148,7 @@
 }
 
 .ac-panel--right .alerts-list {
-  max-height: 160px;
+  max-height: 200px;
   min-height: 160px;
 }
 
@@ -156,60 +161,120 @@
 }
 
 .section-header {
-  display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
 
   .section-icon {
-    width: 24px; height: 24px; border-radius: 6px;
-    display: flex; align-items: center; justify-content: center; font-size: 11px;
-    &.danger { background: #fef2f2; color: #dc2626; }
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    &.danger { background: $sm-danger-bg; color: $sm-danger; }
   }
 
   h3 { font-size: 13px; font-weight: 700; color: $sm-text-primary; margin: 0; flex: 1; }
 
   .badge {
-    background: #dc2626; color: #fff;
-    font-size: 9px; font-weight: 600;
-    padding: 1px 5px; border-radius: 6px;
+    background: $sm-danger;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 1px 5px;
+    border-radius: 6px;
   }
 }
 
 .alerts-list {
-  max-height: 160px; overflow-y: auto;
-  display: flex; flex-direction: column; gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   flex: 1;
   min-height: 0;
   scroll-behavior: auto;
+  padding-right: 6px;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-thumb { background: $sm-border; border-radius: 3px; }
 }
 
 .empty-state {
-  text-align: center; padding: 16px 6px; color: $sm-text-muted;
+  text-align: center;
+  padding: 16px 6px;
+  color: $sm-text-muted;
   i { font-size: 20px; margin-bottom: 4px; color: $sm-success; }
   p { margin: 0; font-size: 10px; }
 }
 
 .alert-item {
-  display: flex; gap: 6px; padding: 6px;
-  border-radius: 6px; border-left: 3px solid transparent;
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border-left: 3px solid transparent;
 
-  &.danger { background: #fef2f2; border-left-color: #dc2626; .alert-icon { color: #dc2626; } }
-  &.warning { background: #fffbeb; border-left-color: #f59e0b; .alert-icon { color: #f59e0b; } }
-  &.info { background: #eff6ff; border-left-color: #3b82f6; .alert-icon { color: #3b82f6; } }
+  &.danger {
+    background: $sm-danger-bg;
+    border-left-color: $sm-danger;
+    .alert-icon { color: $sm-danger; }
+  }
+  &.warning {
+    background: $sm-warn-bg;
+    border-left-color: $sm-warn;
+    .alert-icon { color: $sm-warn; }
+  }
+  &.info {
+    background: $sm-primary-bg;
+    border-left-color: $sm-primary;
+    .alert-icon { color: $sm-primary; }
+  }
 
-  .alert-icon { font-size: 12px; flex-shrink: 0; padding-top: 1px; }
+  .alert-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
   .alert-body { flex: 1; min-width: 0; }
-  .alert-header { display: flex; align-items: center; gap: 4px; margin-bottom: 1px; }
+
+  .alert-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 1px;
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+
   .alert-type { font-size: 10px; font-weight: 600; color: $sm-text-primary; }
 
   .severity-badge {
-    font-size: 8px; font-weight: 600; padding: 0px 4px;
-    border-radius: 3px; text-transform: uppercase;
-    &.danger { background: #fee2e2; color: #dc2626; }
-    &.warning { background: #fef3c7; color: #d97706; }
-    &.info { background: #dbeafe; color: #2563eb; }
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    padding: 1px 7px;
+    border-radius: 4px;
+    text-transform: uppercase;
+
+    &.danger { background: $sm-danger; color: white; }
+    &.warning { background: $sm-warn; color: white; }
+    &.info { background: $sm-primary; color: white; }
   }
 
-  .alert-person { font-size: 10px; font-weight: 500; color: $sm-text-primary; }
-  .alert-desc { font-size: 9px; color: $sm-text-muted; line-height: 1.2; }
+  .alert-person { font-size: 12px; color: $sm-text-secondary; margin-top: 1px; }
+  .alert-desc { font-size: 11.5px; color: $sm-text-muted; margin-top: 2px; }
   .alert-count { font-size: 9px; color: $sm-text-muted; margin-top: 1px; }
 }
 

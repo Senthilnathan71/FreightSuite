@@ -1,30 +1,27 @@
 <div class="sm-dashboard-v2">
   <div class="dashboard-shell">
     <section class="dashboard-hero">
-      <div class="hero-accent"></div>
-      <div class="hero-glow hero-glow--teal" aria-hidden="true"></div>
-      <div class="hero-glow hero-glow--blue" aria-hidden="true"></div>
       <div class="hero-motion" aria-hidden="true">
         <div class="flight-path">
           <i class="fas fa-plane"></i>
         </div>
       </div>
 
-      <div class="hero-top">
-        <div class="hero-identity">
-          <div class="hero-identity__eyebrow">
-            <span class="hero-badge">Sales Manager Dashboard</span>
+      <div class="hero-top d-flex align-items-center justify-content-between">
+        <div class="hero-identity flex-fill" style="min-width:0">
+          <div class="hero-identity__eyebrow d-flex align-items-center flex-wrap gap-2" style="margin-bottom:4px">
+            <span class="hero-badge d-inline-flex align-items-center">Sales Manager Dashboard</span>
           </div>
           <div class="hero-identity__title-row">
             <h1 class="hero-title">Performance &amp; Pipeline Control Center</h1>
           </div>
         </div>
 
-        <div class="hero-side">
-          <div class="hero-meta">
-            <div class="meta-chip">
-              <div class="meta-chip__icon"><i class="fas fa-users"></i></div>
-              <div class="meta-chip__body">
+        <div class="hero-side d-flex align-items-center flex-wrap justify-content-end gap-2">
+          <div class="hero-meta d-flex align-items-center gap-2" style="flex-shrink:0">
+            <div class="meta-chip d-flex align-items-center">
+              <div class="meta-chip__icon d-flex align-items-center justify-content-center rounded-circle"><i class="fas fa-users"></i></div>
+              <div class="meta-chip__body d-flex flex-column">
                 <span class="meta-chip__value">{{ salespersons.length }}</span>
                 <span class="meta-chip__label">Salesman Count</span>
               </div>
@@ -32,9 +29,9 @@
 
             <div class="meta-divider"></div>
 
-            <div class="meta-chip">
-              <div class="meta-chip__icon meta-chip__icon--clock"><i class="far fa-clock"></i></div>
-              <div class="meta-chip__body">
+            <div class="meta-chip d-flex align-items-center">
+              <div class="meta-chip__icon d-flex align-items-center justify-content-center rounded-circle"><i class="far fa-clock"></i></div>
+              <div class="meta-chip__body d-flex flex-column">
                 <span class="meta-chip__value">{{ lastUpdated ? (lastUpdated | date:'dd MMM yyyy, h:mm a') : '--' }}</span>
                 <span class="meta-chip__label">Last Sync</span>
               </div>
@@ -47,7 +44,7 @@
           </button>
 
           <button class="reset-dashboard-btn" type="button" (click)="resetFilters()">
-            <i class="fas fa-rotate-right"></i>
+            <i class="fas fa-sync-alt"></i>
             <span>Refresh</span>
           </button>
         </div>
@@ -143,45 +140,19 @@
           [isPrimaryRow]="true"
           (cardClicked)="onKpiCardClicked($event)">
         </app-sm-kpi-cards>
-
-        <!-- <div class="expand-toggle-row">
-          <button class="expand-toggle" (click)="showAllKpis = !showAllKpis">
-            <i class="fas" [ngClass]="showAllKpis ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-            {{ showAllKpis ? 'Hide detailed metrics' : 'Show all 8 metrics' }}
-          </button>
-        </div> -->
-
-        <!-- <app-sm-kpi-cards *ngIf="showAllKpis"
-          [cards]="secondaryKpiCards"
-          [loading]="countsLoading"
-          [isSecondaryRow]="true"
-          (cardClicked)="onKpiCardClicked($event)">
-        </app-sm-kpi-cards> -->
       </section>
 
       <section class="row">
         <section class="col-md-7">
-          <!-- <div class="section-heading">
-            <h2>12 week trendline</h2>
-          </div> -->
-      
           <app-sm-trend-chart [data]="weeklyTrend"></app-sm-trend-chart>
         </section>
         <section class="col-md-5">
-          <!-- <div class="section-heading">
-            <h2>Top performers and action center</h2>
-          </div> -->
           <app-sm-top-performers [scoreboard]="scoreboard"></app-sm-top-performers>
         </section>
       </section>
 
       <section class="dashboard-section">
-        <!-- <div class="section-heading">
-          <h2>Top performers and action center</h2>
-        </div> -->
-
         <div class="">
-          <!-- <app-sm-top-performers [scoreboard]="scoreboard"></app-sm-top-performers> -->
           <app-sm-alerts [alerts]="alerts" [loading]="alertsLoading"
                          [actionCenterItems]="actionCenterItems" [redesignMode]="true">
           </app-sm-alerts>
@@ -189,10 +160,6 @@
       </section>
 
       <section class="dashboard-section scoreboard-section" id="scoreboard-section">
-        <!-- <div class="section-heading">
-          <h2>Sales team overview</h2>
-        </div> -->
-
         <app-sm-scoreboard
           [rows]="scoreboard" [loading]="scoreboardLoading"
           (rowClicked)="onScoreboardRowClicked($event)"
@@ -202,10 +169,6 @@
 
       <ng-container *ngIf="!liteMode">
         <section class="dashboard-section">
-          <!-- <div class="section-heading">
-            <h2>Meetings board</h2>
-          </div> -->
-
           <app-sm-meetings-board
             [overdue]="meetingsBoard?.overdue || { items: [], totalCount: 0 }"
             [today]="meetingsBoard?.today || { items: [], totalCount: 0 }"
@@ -217,27 +180,11 @@
         </section>
 
         <section class="dashboard-section">
-          <!-- <div class="section-heading">
-            <h2>Response times and radar view</h2>
-          </div> -->
-
           <div class="row-2col">
             <app-sm-radar-chart [scoreboard]="scoreboard"></app-sm-radar-chart>
-            <!-- <app-sm-response-times [data]="responseTimes"></app-sm-response-times> -->
              <app-sm-activity-feed [items]="activityFeed" [loading]="activityLoading"></app-sm-activity-feed>
           </div>
         </section>
-
-        <!-- <section class="dashboard-section">
-          <div class="section-heading">
-            <h2>Aging and recent activity</h2>
-          </div>
-
-          <div class="row-2col">
-            <app-sm-aging-chart [data]="aging"></app-sm-aging-chart>
-            <app-sm-activity-feed [items]="activityFeed" [loading]="activityLoading"></app-sm-activity-feed>
-          </div>
-        </section> -->
       </ng-container>
     </div>
   </div>

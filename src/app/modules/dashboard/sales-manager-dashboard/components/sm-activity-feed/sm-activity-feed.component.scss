@@ -6,8 +6,8 @@
 }
 
 @keyframes livePulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(231, 111, 81, 0.6); }
+  70% { box-shadow: 0 0 0 6px rgba(231, 111, 81, 0); }
 }
 
 @keyframes shimmer {
@@ -36,17 +36,29 @@
 }
 
 .live-indicator {
-  display: inline-flex; align-items: center; gap: 3px;
-  font-size: 8px; font-weight: 800; color: $sm-success; letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: $sm-accent-coral;
 }
 
 .live-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: $sm-success; animation: livePulse 2s infinite;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: $sm-accent-coral;
+  animation: livePulse 1.6s infinite;
 }
 
 .feed-table {
-  max-height: 320px; overflow-y: auto; scrollbar-width: thin;
+  max-height: 260px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-thumb { background: $sm-border; border-radius: 3px; }
 }
 
 .empty-state {
@@ -56,45 +68,47 @@
 }
 
 .feed-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 5px 6px; border-radius: 6px;
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 4px; border-radius: 6px;
   animation: rowSlide 0.25s ease-out both;
   transition: background 0.1s;
+  font-size: 12px;
 
-  &:hover { background: $sm-primary-bg; }
-  & + .feed-row { border-top: 1px solid #f1f5f9; }
+  &:hover { background: $sm-primary-50; }
+  & + .feed-row { border-top: 1px solid $sm-border-2; }
 }
 
 .row-indicator {
   width: 2px; height: 20px; border-radius: 1px; flex-shrink: 0;
   &.meeting { background: $sm-primary; }
-  &.quote { background: #f59e0b; }
-  &.booking { background: $sm-success; }
-  &.default { background: #cbd5e1; }
+  &.quote { background: $sm-accent-saffron; }
+  &.booking { background: $sm-accent-mint; }
+  &.default { background: $sm-text-4; }
 }
 
 .row-icon {
-  width: 22px; height: 22px; border-radius: 6px;
+  width: 26px; height: 26px; border-radius: 7px;
   display: flex; align-items: center; justify-content: center;
   font-size: 10px; flex-shrink: 0;
   &.meeting { background: $sm-primary-bg; color: $sm-primary; }
-  &.quote { background: #fef3c7; color: #d97706; }
-  &.booking { background: #dcfce7; color: #15803d; }
-  &.default { background: #f1f5f9; color: #64748b; }
+  &.quote { background: $sm-warn-bg; color: $sm-warn; }
+  &.booking { background: $sm-success-bg; color: $sm-accent-mint; }
+  &.default { background: $sm-border-2; color: $sm-text-muted; }
 }
 
 .row-content {
   flex: 1; min-width: 0;
   display: flex; align-items: center; gap: 4px;
-  font-size: 11px; overflow: hidden; white-space: nowrap;
+  font-size: 12px; overflow: hidden; white-space: nowrap;
   .row-person { font-weight: 600; color: $sm-text-primary; }
-  .row-action { color: $sm-text-muted; flex-shrink: 0; }
+  .row-action { color: $sm-text-secondary; flex-shrink: 0; }
   .row-entity { color: $sm-primary; font-weight: 500; overflow: hidden; text-overflow: ellipsis; }
 }
 
 .row-time {
-  font-size: 9px; color: $sm-text-muted; font-weight: 500;
+  font-size: 10.5px; color: $sm-text-4; font-weight: 500;
   white-space: nowrap; flex-shrink: 0;
+  margin-left: auto;
 }
 
 .skeleton-loader { display: flex; flex-direction: column; gap: 4px; }

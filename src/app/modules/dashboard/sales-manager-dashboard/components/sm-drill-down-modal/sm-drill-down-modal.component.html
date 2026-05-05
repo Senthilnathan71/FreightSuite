@@ -1,8 +1,8 @@
 <div class="drill-down-modal">
   <!-- Header -->
   <div class="modal-header">
-    <div class="header-info">
-      <div class="avatar" [style.background]="salesperson.avatarColor">
+    <div class="header-info d-flex align-items-center gap-2">
+      <div class="avatar d-flex align-items-center justify-content-center flex-shrink-0" [style.background]="salesperson.avatarColor">
         {{ getInitials(salesperson.userName) }}
       </div>
       <div>
@@ -43,7 +43,6 @@
             <div class="mini-label">{{ card.label }}</div>
           </div>
         </div>
-        <p class="overview-hint">Click any card or section to drill into that data.</p>
       </div>
 
       <!-- Section Data Tab -->
@@ -56,7 +55,7 @@
       </div>
 
       <!-- Loading -->
-      <div class="loading-state" *ngIf="sectionLoading">
+      <div class="loading-state d-flex align-items-center justify-content-center gap-2" *ngIf="sectionLoading">
         <div class="spinner"></div>
         <span>Loading data...</span>
       </div>

@@ -1,9 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgbActiveModal, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { ScoreboardRow, SalesManagerFilters } from '../../../interfaces/sales-manager-dashboard.interfaces';
 import { SalesManagerDashboardService } from '../../../services/sales-manager-dashboard.service';
+import { SalesDashboardService } from '../../../services/sales-dashboard.service';
 
 @Component({
   selector: 'app-sm-drill-down-modal',
@@ -12,7 +13,7 @@ import { SalesManagerDashboardService } from '../../../services/sales-manager-da
   templateUrl: './sm-drill-down-modal.component.html',
   styleUrls: ['./sm-drill-down-modal.component.scss']
 })
-export class SmDrillDownModalComponent implements OnInit {
+export class SmDrillDownModalComponent implements OnInit , OnChanges {
   @Input() salesperson!: ScoreboardRow;
   @Input() filters: SalesManagerFilters = {};
 
@@ -38,11 +39,35 @@ export class SmDrillDownModalComponent implements OnInit {
 
   constructor(
     public activeModal: NgbActiveModal,
-    private service: SalesManagerDashboardService
+    private service: SalesManagerDashboardService,
+    private spService : SalesDashboardService
   ) {}
 
   ngOnInit() {
     // Start on overview
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['salesperson']) {
+      const prev = changes['salesperson'].previousValue;
+      const curr = changes['salesperson'].currentValue;
+
+      if (curr != null && curr !== prev) {
+        this.loadSalespersonData();
+      }
+    }
+    if (changes['filters']) {
+      const prev = changes['filters'].previousValue;
+      const curr = changes['filters'].currentValue;
+
+      if (curr != null && curr !== prev) {
+        this.loadSalespersonData();
+      }
+    }
+  }
+
+  loadSalespersonData() {
+    
   }
 
   onTabChange(tabId: number) {

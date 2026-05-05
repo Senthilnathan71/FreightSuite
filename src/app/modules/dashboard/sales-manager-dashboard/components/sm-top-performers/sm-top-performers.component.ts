@@ -40,10 +40,10 @@ export class SmTopPerformersComponent implements OnChanges {
 
   getRankColor(rank: number): string {
     switch (rank) {
-      case 1: return '#f59e0b';
-      case 2: return '#94a3b8';
-      case 3: return '#d97706';
-      default: return '#0f766e';
+      case 1: return '#E9B949';
+      case 2: return '#B7BFC7';
+      case 3: return '#CD7F32';
+      default: return '#0B6A7A';
     }
   }
 }

@@ -8,8 +8,7 @@ import * as FileSaver from 'file-saver';
   selector: 'app-sm-scoreboard',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './sm-scoreboard.component.html',
-  styleUrls: ['./sm-scoreboard.component.scss']
+  templateUrl: './sm-scoreboard.component.html'
 })
 export class SmScoreboardComponent {
   @Input() rows: ScoreboardRow[] = [];

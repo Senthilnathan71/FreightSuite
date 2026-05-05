@@ -1,6 +1,5 @@
 @import '../../sm-variables';
 
-
 .section-header {
   @include sm-section-title;
   h3 { font-size: 13px; font-weight: 700; color: $sm-text-primary; margin: 0; }
@@ -9,86 +8,98 @@
 .card {
   @include sm-card;
   padding: 10px !important;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .performers-grid {
+  flex: 1;
+  min-height: 75px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 12px;
+  margin-top: 12px;
 }
 
 .performer-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px 8px;
-  border-radius: 10px;
+  padding: 14px 12px 12px;
+  border-radius: 12px;
   border: 1px solid $sm-border;
-  background: #ffffff;
+  background: linear-gradient(180deg, #FBFDFE 0%, white 100%);
   transition: all 0.2s;
   text-align: center;
+  position: relative;
 
   &:hover {
-    border-color: $sm-primary-light;
-    background: $sm-primary-bg;
-    box-shadow: 0 2px 8px rgba(15, 118, 110, 0.08);
+    border-color: $sm-primary;
+    background: $sm-primary-50;
+    box-shadow: 0 2px 8px rgba(11, 106, 122, 0.08);
     cursor: pointer;
   }
 }
 
 .rank-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
   display: flex;
   align-items: center;
   gap: 3px;
   font-size: 10px;
   font-weight: 700;
-  margin-bottom: 6px;
+  color: $sm-text-muted;
 
   i { font-size: 11px; }
 }
 
 .performer-avatar {
-  width: 36px;
-  height: 36px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
   font-weight: 700;
-  font-size: 12px;
-  margin-bottom: 6px;
+  font-size: 18px;
+  margin-bottom: 8px;
+  position: relative;
 }
 
 .performer-info {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .performer-name {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   color: $sm-text-primary;
   line-height: 1.2;
 }
 
 .performer-email {
-  font-size: 9px;
+  font-size: 10.5px;
   color: $sm-text-muted;
+  margin-top: 2px;
 }
 
 .performer-stats {
   .stat-score {
-    font-size: 18px;
+    font-size: 22px;
     font-weight: 700;
-    color: $sm-primary;
+    color: $sm-text-primary;
     line-height: 1;
   }
   .stat-label {
-    font-size: 8px;
+    font-size: 9.5px;
     color: $sm-text-muted;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 1px;
+    letter-spacing: 0.8px;
+    margin-top: 2px;
   }
 }
 

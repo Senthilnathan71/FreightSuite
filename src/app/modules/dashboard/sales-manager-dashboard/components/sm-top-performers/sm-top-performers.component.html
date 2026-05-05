@@ -1,10 +1,10 @@
 <div class="card mb-0">
-  <div class="section-header">
-    <i class="fas fa-trophy" style="color:#f59e0b"></i>
+  <div class="section-header d-flex align-items-center gap-2">
+    <i class="fas fa-trophy" style="color:#E9B949"></i>
     <h3>Top Performers</h3>
   </div>
   <div class="performers-grid">
-    <div class="performer-card" *ngFor="let p of topPerformers">
+    <div class="performer-card d-flex align-items-center gap-2" *ngFor="let p of topPerformers">
       <div class="rank-badge" [style.color]="getRankColor(p.rank)">
         <i [class]="getRankIcon(p.rank)"></i>
         <span>#{{ p.rank }}</span>

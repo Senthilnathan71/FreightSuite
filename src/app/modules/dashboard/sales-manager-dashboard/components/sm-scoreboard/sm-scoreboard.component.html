@@ -1,8 +1,8 @@
-<div class="scoreboard-wrap">
-  <div class="scoreboard-header">
-    <div class="header-left">
-      <i class="fas fa-users" style="color:#0f766e"></i>
-      <h2>Sales Team Overview</h2>
+<div class="scoreboard-wrap overflow-hidden">
+  <div class="scoreboard-header d-flex align-items-center justify-content-between" style="padding:5px 14px">
+    <div class="header-left d-flex align-items-center gap-2">
+      <i class="fas fa-users" style="color:#0B6A7A"></i>
+      <h2 class="title-icon d-flex align-items-center justify-content-center flex-shrink-0">Sales Team Overview</h2>
       <span class="member-count" *ngIf="rows.length">{{ rows.length }} members</span>
     </div>
     <div class="header-actions">
@@ -31,28 +31,28 @@
       <tbody>
         <tr *ngFor="let row of sortedRows" (click)="onRowClick(row)">
           <td class="td-person">
-            <div class="sp-cell">
-              <div class="sp-avatar" [style.background]="row.avatarColor">{{ getInitials(row.userName) }}</div>
+            <div class="sp-cell d-flex align-items-center" style="gap:10px">
+              <div class="sp-avatar d-flex align-items-center justify-content-center rounded-circle" [style.background]="row.avatarColor">{{ getInitials(row.userName) }}</div>
               <div class="sp-info">
                 <div class="sp-name">{{ row.userName }}</div>
                 <div class="sp-email">{{ row.userEmail }}</div>
               </div>
             </div>
           </td>
-          <td><span class="cell-value" [ngClass]="getCellClass(row.s1)">{{ row.s1 }}</span></td>
-          <td><span class="cell-value info">{{ row.s2 }}</span></td>
-          <td><span class="cell-value" [ngClass]="getCellClass(row.s3)">{{ row.s3 }}</span></td>
-          <td><span class="cell-value" [ngClass]="getCellClass(row.s4)">{{ row.s4 }}</span></td>
-          <td><span class="cell-value" [ngClass]="getCellClass(row.s5)">{{ row.s5 }}</span></td>
-          <td><span class="cell-value" [ngClass]="getCellClass(row.s6)">{{ row.s6 }}</span></td>
-          <td><span class="cell-value" [ngClass]="getCellClass(row.s7)">{{ row.s7 }}</span></td>
-          <td><span class="cell-value" [ngClass]="getCellClass(row.s8)">{{ row.s8 }}</span></td>
+          <td><span class="cell-value d-inline-flex align-items-center justify-content-center" [ngClass]="getCellClass(row.s1)">{{ row.s1 }}</span></td>
+          <td><span class="cell-value d-inline-flex align-items-center justify-content-center info">{{ row.s2 }}</span></td>
+          <td><span class="cell-value d-inline-flex align-items-center justify-content-center" [ngClass]="getCellClass(row.s3)">{{ row.s3 }}</span></td>
+          <td><span class="cell-value d-inline-flex align-items-center justify-content-center" [ngClass]="getCellClass(row.s4)">{{ row.s4 }}</span></td>
+          <td><span class="cell-value d-inline-flex align-items-center justify-content-center" [ngClass]="getCellClass(row.s5)">{{ row.s5 }}</span></td>
+          <td><span class="cell-value d-inline-flex align-items-center justify-content-center" [ngClass]="getCellClass(row.s6)">{{ row.s6 }}</span></td>
+          <td><span class="cell-value d-inline-flex align-items-center justify-content-center" [ngClass]="getCellClass(row.s7)">{{ row.s7 }}</span></td>
+          <td><span class="cell-value d-inline-flex align-items-center justify-content-center" [ngClass]="getCellClass(row.s8)">{{ row.s8 }}</span></td>
           <td><strong>{{ row.total }}</strong></td>
-          <td class="td-actions">
-            <button class="action-btn view" (click)="onRowClick(row); $event.stopPropagation()" title="View Details">
+          <td class="td-actions d-flex align-items-center justify-content-center gap-1">
+            <button class="sb-icon-btn view d-inline-flex align-items-center justify-content-center" (click)="onRowClick(row); $event.stopPropagation()" title="View Details">
               <i class="fas fa-eye"></i>
             </button>
-            <button class="action-btn remind" (click)="onRemind($event, row)" title="Send Reminder">
+            <button class="sb-icon-btn remind d-inline-flex align-items-center justify-content-center" (click)="onRemind($event, row)" title="Send Reminder">
               <i class="fas fa-bell"></i>
             </button>
           </td>
@@ -60,8 +60,8 @@
         <!-- Team Total -->
         <tr class="total-row" *ngIf="rows.length">
           <td class="td-person">
-            <div class="sp-cell">
-              <div class="sp-avatar team-avatar"><i class="fas fa-users" style="font-size:12px"></i></div>
+            <div class="sp-cell d-flex align-items-center" style="gap:10px">
+              <div class="sp-avatar team-avatar d-flex align-items-center justify-content-center rounded-circle"><i class="fas fa-users" style="font-size:12px"></i></div>
               <div class="sp-info">
                 <div class="sp-name">TEAM TOTAL</div>
                 <div class="sp-email">{{ rows.length }} salespersons</div>

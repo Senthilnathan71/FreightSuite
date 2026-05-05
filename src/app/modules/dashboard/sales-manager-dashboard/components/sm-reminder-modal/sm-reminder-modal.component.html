@@ -8,8 +8,8 @@
 
   <div class="modal-body">
     <!-- Salesperson info -->
-    <div class="person-card">
-      <div class="person-avatar" [style.background]="salesperson.avatarColor">
+    <div class="person-card d-flex align-items-center gap-2">
+      <div class="person-avatar d-flex align-items-center justify-content-center flex-shrink-0" [style.background]="salesperson.avatarColor">
         {{ getInitials(salesperson.userName) }}
       </div>
       <div class="person-info">

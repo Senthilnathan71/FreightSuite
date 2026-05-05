@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -131,6 +131,13 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
     this.initContext();
     this.loadSalespersons();
     this.setPreset('month');
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (this.dateDropdownOpen && !(event.target as HTMLElement).closest('.custom-range-wrap')) {
+      this.dateDropdownOpen = false;
+    }
   }
 
   ngOnDestroy() {
@@ -312,6 +319,18 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
   // ─── DATA LOADING ──────────────────────────────────────────────
 
   private loadAllData() {
+    // I.4 — Clear stale data so all sections show loading/empty, not old data
+    this.weeklyTrend = [];
+    this.scoreboard = [];
+    this.alerts = [];
+    this.aging = [];
+    this.activityFeed = [];
+    this.meetingsBoard = null;
+    this.actionCenterItems = [];
+    this.primaryKpiCards = [];
+    this.secondaryKpiCards = [];
+    this.kpiCards = [];
+
     this.loadCounts();
     this.loadScoreboard();
     this.loadCharts();

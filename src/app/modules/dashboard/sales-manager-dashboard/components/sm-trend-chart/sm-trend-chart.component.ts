@@ -33,7 +33,7 @@ export class SmTrendChartComponent implements OnChanges {
         type: 'area', height: 280, toolbar: { show: false }, fontFamily: 'Inter, sans-serif',
         zoom: { enabled: false }
       },
-      colors: ['#0f766e', '#6366f1', '#f59e0b'],
+      colors: ['#2A9D8F', '#7B6CD9', '#E9B949'],
       stroke: { curve: 'smooth', width: 2 },
       fill: {
         type: 'gradient',
