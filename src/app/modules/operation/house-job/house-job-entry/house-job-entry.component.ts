@@ -6158,8 +6158,8 @@ ${this.userData['userName']}`;
 
         reportShipmentProfit() {
           const modalRef=this.modalService.open(ShipmentComponent,{
-             size: 'xl',
-        scrollable: true,
+          windowClass:"print-landscape",
+          scrollable: true,
           })
         modalRef.componentInstance.housejobData = this.housejobData || [];
         modalRef.componentInstance.chargeList = this.chargeList || [];
@@ -6197,7 +6197,7 @@ ${this.userData['userName']}`;
   }
      reportCommericalInvoice() {
       const modalRef=this.modalService.open(CommericalInvoiceComponent,{
-          windowClass:"print-landscape",
+        windowClass:"print-landscape",
         scrollable: true,
       })
        modalRef.componentInstance.housejobData = this.housejobData || [];
