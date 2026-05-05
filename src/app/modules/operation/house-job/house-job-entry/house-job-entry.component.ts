@@ -60,7 +60,7 @@ import { CFSOutturnComponent } from '../report/cfs-outturn/cfs-outturn.component
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 import { getDefaultTodayDate, getMaxDate,toNgbDateStruct, getMinDate, toNumber } from 'src/app/common/helper';
 import { PackingListComponent } from '../report/packing-list/packing-list.component';
-import { CreditValidationApiService } from '../../credit-request.service';
+import { CreditValidationApiService } from '../../services/credit-request.service';
 
 import { SailingConfimationComponent } from '../report/sailing-confimation/sailing-confimation.component';
 import { ExitFormComponent } from '../report/exit-form/exit-form.component';
@@ -1043,8 +1043,8 @@ private setupMBLDateListener(): void {
       isFromBooking: [data?.isFromBooking || false],
       CargoType: [data?.CargoType || 'General', Validators.required],
       ContainerType: [data?.ContainerType || null, isFclMode ? [Validators.required] : []],
-      NoofContainers: [data?.NoofContainers ?? ''],
-      GrossWeight: [data?.GrossWeight ?? '', Validators.required],
+      NoofContainers: [data?.NoofContainers ?? '', this.isSurfaceCargoMode() ? [] : [Validators.required, Validators.min(1)]],
+      GrossWeight: [data?.GrossWeight ?? '', [Validators.required, Validators.min(0.001)]],
       NetWeight: [data?.NetWeight ?? ''],
       Volume: [data?.Volume ?? ''],
       Volumetric: [data?.Volumetric ?? ''],
@@ -1073,6 +1073,11 @@ private setupMBLDateListener(): void {
     }
 
     return cargoGroup;
+  }
+
+  private shouldValidateHouseJobCargoGroup(cargoGroup: FormGroup): boolean {
+    const cargoProducts = cargoGroup.get('bookingProducts') as FormArray | null;
+    return !!(cargoGroup.dirty || cargoProducts?.dirty);
   }
 
   private calculateChargeableWeight(cargoGroup: FormGroup = this.cargoForm): void {
@@ -2998,9 +3003,12 @@ private applyExportToImportFieldLocks(): void {
   }
   private getFieldLabel(fieldName: string): string {
   const fieldLabels: { [key: string]: string } = {
+    'CargoType': 'Cargo Type',
+    'ContainerType': 'Container Type',
     'ProductName': 'Commodity',
     'ExternaPkg': 'External Pkg',
     'ExternlQty': 'No of Pkg',
+    'NoofContainers': 'No of Container',
     'GrossWeight': 'Gross Weight',
     'Volume': 'CBM',
     'UomMasterSid': 'UOM',
@@ -3008,6 +3016,40 @@ private applyExportToImportFieldLocks(): void {
   };
   return fieldLabels[fieldName] || fieldName;
 }
+
+  private getCargoValidationMessage(): string {
+    const errorMessages: string[] = [];
+
+    this.houseJobCargos.controls.forEach((cargoControl, cargoIndex) => {
+      const cargoGroup = cargoControl as FormGroup;
+      if (!this.shouldValidateHouseJobCargoGroup(cargoGroup)) {
+        return;
+      }
+
+      const fieldsToCheck = [
+        'CargoType',
+        'ContainerType',
+        'NoofContainers',
+        'GrossWeight',
+        'Volume'
+      ];
+
+      fieldsToCheck.forEach(fieldName => {
+        const control = cargoGroup.get(fieldName);
+        if (!control || !control.invalid) {
+          return;
+        }
+
+        if (control.hasError('required') || control.hasError('min')) {
+          errorMessages.push(`Cargo ${cargoIndex + 1}: ${this.getFieldLabel(fieldName)} is required`);
+        }
+      });
+    });
+
+    return errorMessages.length
+      ? errorMessages.join('\n')
+      : 'Please fill all required cargo fields correctly.';
+  }
 
   private getProductValidationMessage(): string {
     const hasNetWeightError = this.houseJobCargos.controls.some(cargoControl => {
@@ -3061,6 +3103,10 @@ private applyExportToImportFieldLocks(): void {
   }
 
   private getHouseJobFieldLabel(fieldName: string): string {
+    if (fieldName === 'HBLNo') {
+      return this.selectedCargoMode === 'AIR' ? 'HAWBL No' : 'HBL No';
+    }
+
     const fieldLabels: Record<string, string> = {
       DepartmentMasterSid: 'Department',
       CustomerMasterSid: 'Customer',
@@ -3075,7 +3121,6 @@ private applyExportToImportFieldLocks(): void {
       POD: 'POD',
       FPD: 'FPD',
       IncoTerms: 'Inco Terms',
-      HBLNo: 'HBL No',
       HBLDate: 'HBL Date',
       status: 'Status',
       HouseStatus: 'House Status',
@@ -3104,6 +3149,7 @@ private applyExportToImportFieldLocks(): void {
       return message;
     }
 
+    const hblLabel = this.selectedCargoMode === 'AIR' ? 'HAWBL No' : 'HBL No';
     const replacements: Array<[RegExp, string]> = [
       [/\bDepartmentMasterSid\b|\bDepartment Master Sid\b/gi, 'Department'],
       [/\bCustomerMasterSid\b|\bCustomer Master Sid\b/gi, 'Customer'],
@@ -3118,7 +3164,7 @@ private applyExportToImportFieldLocks(): void {
       [/\bDestinationAgent\b/gi, 'Destination Agent'],
       [/\bAgentName\b/gi, 'Agent Name'],
       [/\bIncoTerms\b/gi, 'Inco Terms'],
-      [/\bHBLNo\b/gi, 'HBL No'],
+      [/\bHBLNo\b/gi, hblLabel],
       [/\bHBLDate\b/gi, 'HBL Date'],
       [/\bHouseStatus\b/gi, 'House Status']
     ];
@@ -3139,6 +3185,19 @@ private applyExportToImportFieldLocks(): void {
     const message = this.formatHouseJobBackendMessage(
       extractBackendErrorMessage(error, fallback)
     );
+    const normalizedMessage = message.toLowerCase();
+    if (
+      normalizedMessage.includes('duplicate') ||
+      normalizedMessage.includes('already exists') ||
+      normalizedMessage.includes('hbl no') ||
+      normalizedMessage.includes('hawbl no')
+    ) {
+      const hblControl = this.houseJobForm.get('HBLNo');
+      if (hblControl) {
+        hblControl.markAsTouched();
+        hblControl.setErrors({ ...(hblControl.errors || {}), duplicate: true });
+      }
+    }
     this.appSettingService.showError(message);
   }
 
@@ -3256,45 +3315,49 @@ onCurrencyChange(event: any) {
     resolve?.(false);
     return;
   }
-  // In onSubmit() - Added this check:
-if (this.houseJobCargos.length > 0) {
-  let hasInvalidCargo = false;
+  // Validate cargo only after the user starts entering cargo data
+  if (this.houseJobCargos.length > 0) {
+    let hasInvalidCargo = false;
 
-  this.houseJobCargos.controls.forEach((cargoControl, cargoIndex) => {
-    const cargoGroup = cargoControl as FormGroup;
-    this.setOrResetWeightError(cargoGroup);
-    this.handleProductRelatedCalculation(cargoIndex);
+    this.houseJobCargos.controls.forEach((control, cargoIndex) => {
+      const cargoGroup = control as FormGroup;
+      if (!this.shouldValidateHouseJobCargoGroup(cargoGroup)) {
+        return;
+      }
 
-    if (cargoGroup.invalid) {
-      hasInvalidCargo = true;
-    }
+      this.setOrResetWeightError(cargoGroup);
+      this.handleProductRelatedCalculation(cargoIndex);
 
-    const productArray = cargoGroup.get('bookingProducts') as FormArray;
-    productArray.controls.forEach(control => {
-      this.setOrResetWeightError(control as FormGroup);
+      if (cargoGroup.invalid) {
+        hasInvalidCargo = true;
+      }
+
+      const productArray = cargoGroup.get('bookingProducts') as FormArray;
+      productArray.controls.forEach(control => {
+        this.setOrResetWeightError(control as FormGroup);
+      });
+
+      const hasInvalidProduct = productArray.controls.some(control => control.invalid);
+      if (hasInvalidProduct) {
+        hasInvalidCargo = true;
+        productArray.markAllAsTouched();
+      }
     });
 
-    const hasInvalidProduct = productArray.controls.some(control => control.invalid);
-    if (hasInvalidProduct) {
-      hasInvalidCargo = true;
-      productArray.markAllAsTouched();
+    if (hasInvalidCargo) {
+      this.houseJobCargos.markAllAsTouched();
+      this.logInvalidProductControls();
+      this.appSettingService.showWarning(this.getCargoValidationMessage());
+      this.selectedTab = 'Cargo';
+      resolve?.(false);
+      return;
     }
-  });
-
-  if (hasInvalidCargo) {
-    this.houseJobCargos.markAllAsTouched();
-    this.logInvalidProductControls();
-    this.appSettingService.showWarning(this.getProductValidationMessage());
-    this.selectedTab = 'Cargo';
-    resolve?.(false);
-    return;
+    if (!this.validateContainerCapacityRules()) {
+      this.selectedTab = 'Cargo';
+      resolve?.(false);
+      return;
+    }
   }
-  if (!this.validateContainerCapacityRules()) {
-    this.selectedTab = 'Cargo';
-    resolve?.(false);
-    return;
-  }
-}
 
     if (!this.validateContainerWeight()) {
       this.selectedTab = 'Cargo';
@@ -4862,20 +4925,21 @@ getVoyageTypeBasedOnDept(deptId: number) {
         return;
       }
 
-      targetCargo.get('NoOfPackage')?.enable(); targetCargo.get('NoOfPackage')?.setValue(0);
+      // Preserve manually entered cargo values when no products exist.
+      // The product grid should only drive totals when at least one product row is present.
+      targetCargo.get('NoOfPackage')?.enable();
       if (!this.isManualOverrideActive(targetCargo, 'GrossWeight')) {
-        targetCargo.get('GrossWeight')?.enable(); targetCargo.get('GrossWeight')?.setValue(0);
+        targetCargo.get('GrossWeight')?.enable();
       }
-      targetCargo.get('NetWeight')?.enable(); targetCargo.get('NetWeight')?.setValue(0);
+      targetCargo.get('NetWeight')?.enable();
       if (!this.isManualOverrideActive(targetCargo, 'Volume')) {
-        targetCargo.get('Volume')?.enable(); targetCargo.get('Volume')?.setValue(0);
+        targetCargo.get('Volume')?.enable();
       }
       if (!this.isManualOverrideActive(targetCargo, 'Volumetric')) {
-        targetCargo.get('Volumetric')?.enable(); targetCargo.get('Volumetric')?.setValue(0);
+        targetCargo.get('Volumetric')?.enable();
       }
       targetCargo.get('ChargeableWeight')?.enable();
       if (!this.isManualOverrideActive(targetCargo, 'ChargeableWeight')) {
-        targetCargo.get('ChargeableWeight')?.setValue(0);
         this.calculateChargeableWeight(targetCargo);
       }
       return;

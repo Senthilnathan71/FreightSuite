@@ -26,7 +26,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DocumentVendorInvoiceEntryComponent } from '../document-vendorinvoice/document-vendorinvoice.component';
-import { ExtractedInvoice } from '../../ocr.service';
+import { ExtractedInvoice } from '../../services/ocr.service';
 import { CommonService } from 'src/app/common/common.service';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { MasterService } from 'src/app/modules/master/master.service';
@@ -795,7 +795,13 @@ export class VendorInvoiceEntryComponent implements OnInit {
         }
         forkJoin(otherSource).subscribe({
           next: ({ currencies, uom, departments, masterJobs, hssac }: any) => {
-            this.currencyList = currencies.data || [];
+            const rawCurrencies: any[] = Array.isArray(currencies)
+        ? currencies
+        : currencies?.data || [];
+      this.currencyList = rawCurrencies.map((c: any) => ({
+        ...c,
+        countryName: c?.countryMaster?.countryName || ''
+      }));
             this.currencyConfigService.initializeConfigurations(this.currencyList);
             this.numberToWords.initializeCurrencies(this.currencyList);
             this.uomList = uom.data || [];

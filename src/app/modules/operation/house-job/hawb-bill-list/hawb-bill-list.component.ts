@@ -83,14 +83,14 @@ export class HawbBillListComponent extends BaseListComponent implements OnInit {
     enabled: true,
     label: 'POL',
     options: [],
-    bindLabel: 'displayName',
+    bindLabel: 'PortName',
     bindValue: 'PortCode'
   };
   podFilterConfig: DropdownFilterConfig = {
     enabled: true,
     label: 'POD',
     options: [],
-    bindLabel: 'displayName',
+    bindLabel: 'PortName',
     bindValue: 'PortCode'
   };
   private allPorts: any[] = [];

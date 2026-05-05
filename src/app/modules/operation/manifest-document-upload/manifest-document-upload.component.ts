@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } fr
 import { CommonModule } from '@angular/common';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subscription } from 'rxjs';
-import { ManifestService, ManifestData, UploadProgress } from '../manifest.service';
+import { ManifestService, ManifestData, UploadProgress } from '../services/manifest.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 

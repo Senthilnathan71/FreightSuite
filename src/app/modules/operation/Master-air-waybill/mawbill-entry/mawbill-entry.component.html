@@ -387,10 +387,10 @@
                                                 <!-- Error message for validation -->
                                                 <div class="error-message" *ngIf="masterJobForm.get('MBLNo')?.touched && masterJobForm.get('MBLNo')?.invalid">
                                                     <span *ngIf="masterJobForm.get('MBLNo')?.hasError('required')">
-                                                        MAWB is required
+                                                        MAWB No is required
                                                     </span>
                                                     <span *ngIf="masterJobForm.get('MBLNo')?.hasError('duplicate')">
-                                                        MAWB already exists
+                                                        MAWB No already exists
                                                     </span>
                                                 </div>
                                             </div>

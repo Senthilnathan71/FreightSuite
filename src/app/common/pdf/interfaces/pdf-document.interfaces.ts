@@ -1096,6 +1096,7 @@ export interface PaymentPdfData extends PdfDocumentBase {
     voucherNumber?: string;
     voucherDate?: Date | string;
     paidTo?: string;
+    partyAddress?: string;
     paidFrom?: string;
     currencyCode?: string;
     exchangeRate?: number;

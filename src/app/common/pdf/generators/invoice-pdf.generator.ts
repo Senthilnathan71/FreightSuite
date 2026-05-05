@@ -604,6 +604,9 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
       showVAT: false
     };
     const isIndiaInvoice = !taxConfig.showVAT;
+    const companyCountry = getNormalizedCompanyCountry(data);
+    const isIndiaCompany = companyCountry ? companyCountry === 'in' || companyCountry === 'india' : isIndiaInvoice;
+    const isDubaiCompany = ['ae', 'uae', 'dubai', 'unitedarabemirates'].includes(companyCountry);
     const showHsnSac = isIndiaInvoice;
 
     const localCurrency = data.localCurrency || 'AED';
@@ -611,6 +614,19 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
     const grandTotal = printData?.totalPartyAmount || data.totals?.grandTotal || 0;
 
     const displayDetails = voucherDetails.length > 0 ? voucherDetails : charges;
+
+    const softenLongTokens = (value: any): string => {
+      const input = String(value || '');
+      if (!input) return '';
+
+      // Let pdfMake wrap after common separators and inside very long unbroken tokens.
+      const withBreakableSeparators = input
+        .replace(/,/g, ',\u200B')
+        .replace(/\//g, '/\u200B')
+        .replace(/-/g, '-\u200B');
+
+      return withBreakableSeparators.replace(/([^\s\u200B]{14})(?=[^\s\u200B])/g, '$1\u200B');
+    };
     if (!displayDetails.length) return { text: '' };
     const compactBorderedLayout = {
       hLineWidth: () => 1,
@@ -638,7 +654,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
 
     /* ---------------- HEADER ---------------- */
     const headerRow: any[] = [
-      { text: 'S.No.', style: 'tableHeaderSmall', alignment: 'center' },
+      { text: 'S.No.', style: 'tableHeaderSmall', alignment: 'center', noWrap: true },
       { text: 'Particulars', style: 'tableHeaderSmall',alignment:'center'},
       ...(showHsnSac ? [{ text: 'HSN/SAC', style: 'tableHeaderSmall', alignment: 'center' }] : []),
       { text: 'Curr.', style: 'tableHeaderSmall', alignment: 'center' },
@@ -678,7 +694,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
 
     if (taxConfig.showVAT) {
       headerRow.push(
-        { text: 'VAT %', style: 'tableHeaderSmall', alignment: 'right' },
+        { text: 'VAT %', style: 'tableHeaderSmall', alignment: 'right', noWrap: true },
         { text: 'VAT Amt', style: 'tableHeaderSmall', alignment: 'right' }
       );
     }
@@ -701,7 +717,12 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
     const dataRows = displayDetails.map((detail: any, index: number) => {
       const row: any[] = [
         { text: detail.Sno || index + 1, style: 'tableCellSmall', alignment: 'center' },
-        { text: detail.ChargeDescription || detail.chargeName || '', style: 'tableCellSmall' , noWrap : false},
+        {
+          text: softenLongTokens(detail.ChargeDescription || detail.chargeName || ''),
+          style: 'tableCellSmall',
+          noWrap: false,
+          lineHeight: 1.1
+        },
         ...(showHsnSac ? [{ text: detail.HSSACCode || detail.hsnSacCode || '', style: 'tableCellSmall', alignment: 'center' }] : []),
         { text: detail.CurrencyCode || detail.currencyCode || '', style: 'tableCellSmall', alignment: 'center' },
         { text: detail.NumberOfUnit || formatNumberWithCommas(detail.qty, 3), style: 'tableCellSmall', alignment: 'right' },
@@ -763,49 +784,46 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
     });
 
     /* ---------------- TOTAL ROW ---------------- */
-    const totalRow: any[] = [];
-    const colCount = headerRow.length;
-
-    for (let i = 0; i < colCount - 2; i++) {
-      totalRow.push({ text: '', style: 'tableCellSmall' });
-    }
-
-    totalRow.push({ text: 'Total', style: 'tableCellBoldSmall', alignment: 'right' });
-    totalRow.push({ text: Number(grandTotal).toFixed(2), style: 'tableCellBoldSmall', alignment: 'right' });
+    const hasForeignCurrencyColumn = !!(invoiceCurr && invoiceCurr !== localCurrency);
+    const totalRow: any[] = isIndiaCompany && taxConfig.showCGST && taxConfig.showSGST
+      ? buildIndiaGstTotalRow(displayDetails, showHsnSac, hasForeignCurrencyColumn, grandTotal)
+      : (isDubaiCompany && taxConfig.showVAT)
+        ? buildVatTotalRow(displayDetails, showHsnSac, hasForeignCurrencyColumn, grandTotal)
+        : buildDefaultInvoiceTotalRow(headerRow.length, grandTotal);
 
     /* ---------------- WIDTHS (FIXED + SAFE) ---------------- */
     const widths: (number | string)[] = compactMode
       ? [
-          16,    // S.No
+          20,    // S.No
           '*',   // Particulars
-          ...(showHsnSac ? [32] : []),
-          20,    // Curr
-          34,    // Qty
-          32,    // Rate
-          34,    // ROE
-          42     // Taxable
+          ...(showHsnSac ? [30] : []),
+          19,    // Curr
+          32,    // Qty
+          30,    // Rate
+          32,    // ROE
+          40     // Taxable
         ]
       : [
-          18,    // S.No
+          16,    // S.No
           '*',   // Particulars
-          ...(showHsnSac ? [36] : []),
-          22,    // Curr
-          40,    // Qty
-          36,    // Rate
-          36,    // ROE
-          46     // Taxable
+          ...(showHsnSac ? [34] : []),
+          21,    // Curr
+          36,    // Qty
+          34,    // Rate
+          34,    // ROE
+          44     // Taxable
         ];
 
-    if (taxConfig.showCGST) widths.push(...(compactMode ? [20, 30] : [24, 38]));
-    if (taxConfig.showSGST) widths.push(...(compactMode ? [20, 30] : [24, 38]));
-    if (taxConfig.showUGST) widths.push(...(compactMode ? [20, 30] : [24, 38]));
-    if (taxConfig.showIGST) widths.push(...(compactMode ? [20, 30] : [24, 38]));
-    if (taxConfig.showVAT)  widths.push(...(compactMode ? [20, 30] : [24, 38]));
+    if (taxConfig.showCGST) widths.push(...(compactMode ? [18, 28] : [22, 34]));
+    if (taxConfig.showSGST) widths.push(...(compactMode ? [18, 28] : [22, 34]));
+    if (taxConfig.showUGST) widths.push(...(compactMode ? [18, 28] : [22, 34]));
+    if (taxConfig.showIGST) widths.push(...(compactMode ? [18, 28] : [22, 34]));
+    if (taxConfig.showVAT)  widths.push(...(compactMode ? [24, 26] : [28, 32]));
 
-    widths.push(compactMode ? 38 : 48); // Amt in Local Currency
+    widths.push(compactMode ? 36 : 44); // Amt in Local Currency
 
     if (invoiceCurr && invoiceCurr !== localCurrency) {
-      widths.push(compactMode ? 38 : 48); // Amt in Party Currency
+      widths.push(compactMode ? 36 : 44); // Amt in Party Currency
     }
 
     /* ---------------- RETURN ---------------- */
@@ -816,7 +834,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
         body: [headerRow, ...dataRows, totalRow]
       },
       layout: compactMode ? compactBorderedLayout : PDF_TABLE_LAYOUTS.bordered,
-      margin: [-10, 0, -10, 2],
+      margin: [0, 0, 0, 2],
       fontSize: compactMode ? 6.5 : undefined
     };
   }
@@ -827,6 +845,98 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
    */
   function buildTotalsSection(data: InvoicePdfData): any {
     return { text: '' };
+  }
+
+  function getNormalizedCompanyCountry(data: InvoicePdfData): string {
+    return String(
+      data.company?.countryCode ||
+      data.branch?.countryCode ||
+      (data.company as any)?.country ||
+      (data.branch as any)?.country ||
+      ''
+    )
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z]/g, '');
+  }
+
+  function buildDefaultInvoiceTotalRow(colCount: number, grandTotal: any): any[] {
+    const totalRow: any[] = [];
+
+    for (let i = 0; i < colCount - 2; i++) {
+      totalRow.push({ text: '', style: 'tableCellSmall' });
+    }
+
+    totalRow.push({ text: 'Total', style: 'tableCellBoldSmall', alignment: 'right' });
+    totalRow.push({ text: formatNumberWithCommas(parsePdfNumber(grandTotal), 2), style: 'tableCellBoldSmall', alignment: 'right' });
+
+    return totalRow;
+  }
+
+  function buildIndiaGstTotalRow(details: any[], showHsnSac: boolean, hasForeignCurrencyColumn: boolean, grandTotal: any): any[] {
+    const baseColumns = 7 + (showHsnSac ? 1 : 0);
+    const totalRow: any[] = [];
+
+    for (let i = 0; i < baseColumns; i++) {
+      totalRow.push({ text: '', style: 'tableCellSmall' });
+    }
+
+    totalRow.push({ text: 'Total', style: 'tableCellBoldSmall', alignment: 'right', noWrap: true });
+    totalRow.push({ text: formatNumberWithCommas(sumPdfDetailAmount(details, 'cgstAmt', 'cgstAmount'), 2), style: 'tableCellBoldSmall', alignment: 'right', noWrap: true });
+    totalRow.push({ text: '', style: 'tableCellSmall' });
+    totalRow.push({ text: formatNumberWithCommas(sumPdfDetailAmount(details, 'sgstAmt', 'sgstAmount'), 2), style: 'tableCellBoldSmall', alignment: 'right', noWrap: true });
+    totalRow.push({
+      text: hasForeignCurrencyColumn
+        ? formatNumberWithCommas(sumPdfDetailAmount(details, 'LocalAmount', 'localAmount'), 2)
+        : formatNumberWithCommas(parsePdfNumber(grandTotal), 2),
+      style: 'tableCellBoldSmall',
+      alignment: 'right',
+      noWrap: true
+    });
+
+    if (hasForeignCurrencyColumn) {
+      totalRow.push({ text: formatNumberWithCommas(parsePdfNumber(grandTotal), 2), style: 'tableCellBoldSmall', alignment: 'right', noWrap: true });
+    }
+
+    return totalRow;
+  }
+
+  function buildVatTotalRow(details: any[], showHsnSac: boolean, hasForeignCurrencyColumn: boolean, grandTotal: any): any[] {
+    const baseColumns = 7 + (showHsnSac ? 1 : 0);
+    const totalRow: any[] = [];
+
+    for (let i = 0; i < baseColumns; i++) {
+      totalRow.push({ text: '', style: 'tableCellSmall' });
+    }
+
+    totalRow.push({ text: 'Total', style: 'tableCellBoldSmall', alignment: 'right', noWrap: true });
+    totalRow.push({ text: formatNumberWithCommas(sumPdfDetailAmount(details, 'vatAmt', 'vatAmount'), 2), style: 'tableCellBoldSmall', alignment: 'right', noWrap: true });
+    totalRow.push({
+      text: hasForeignCurrencyColumn
+        ? formatNumberWithCommas(sumPdfDetailAmount(details, 'LocalAmount', 'localAmount'), 2)
+        : formatNumberWithCommas(parsePdfNumber(grandTotal), 2),
+      style: 'tableCellBoldSmall',
+      alignment: 'right',
+      noWrap: true
+    });
+
+    if (hasForeignCurrencyColumn) {
+      totalRow.push({ text: formatNumberWithCommas(parsePdfNumber(grandTotal), 2), style: 'tableCellBoldSmall', alignment: 'right', noWrap: true });
+    }
+
+    return totalRow;
+  }
+
+  function sumPdfDetailAmount(details: any[], primaryField: string, fallbackField: string): number {
+    return (details || []).reduce((sum: number, detail: any) => {
+      return sum + parsePdfNumber(detail?.[primaryField] ?? detail?.[fallbackField]);
+    }, 0);
+  }
+
+  function parsePdfNumber(value: any): number {
+    if (value === null || value === undefined || value === '') return 0;
+    if (typeof value === 'number') return value;
+    return Number(String(value).replace(/,/g, '')) || 0;
   }
 
   /**
@@ -1103,9 +1213,7 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
     widths.push(BANK_COLUMN_WIDTH);
   }
 
-  return [
-    buildSectionTitle('Bank Details', { margin: [0, 10, 0, 3] }),  // Reduced margin
-    {
+  const bankTable = {
       table: {
         headerRows: 1,
         widths: widths,
@@ -1124,6 +1232,15 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
       },
       margin: [0, 0, 0, 5],  // Reduced bottom margin from 10 to 5
       style: { noWrap: false }
+    };
+
+  return [
+    {
+      stack: [
+        buildSectionTitle('Bank Details', { margin: [0, 10, 0, 3] }),  // Reduced margin
+        bankTable
+      ],
+      unbreakable: true
     }
   ];
 }
@@ -1329,6 +1446,8 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
         addressLine1: company?.addressLine1 || company?.Address || '',
         addressLine2: company?.addressLine2 || '',
         city: company?.City || '',
+        countryCode: company?.countryMaster?.countryCode || company?.countryCode || '',
+        country: company?.countryMaster?.countryName || company?.countryName || '',
         postalCode: company?.postal_code || company?.ZipCode || '',
         phoneNumber: company?.phoneNumber || company?.Phone || ''
       },
@@ -1337,6 +1456,8 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
         addressLine1: branch?.addressLine1 || '',
         addressLine2: branch?.addressLine2 || '',
         cityName: branch?.cityMaster?.cityName || '',
+        countryCode: branch?.countryMaster?.countryCode || branch?.countryCode || company?.countryMaster?.countryCode || company?.countryCode || '',
+        country: branch?.countryMaster?.countryName || branch?.countryName || company?.countryMaster?.countryName || company?.countryName || '',
         postalCode: branch?.postalCode || '',
         phoneNumber: branch?.phoneNumber || '',
         cityMaster: branch?.cityMaster

@@ -996,76 +996,11 @@ processProductUpload(payload: any): Observable<any> {
 
   // ----- Invoice Operations ----- //
 
-  createInvoice(payload: any) {
-    return this.http.post<{ data: any }>('invoice/create', payload).pipe(
-      map((resp) => {
-        return resp;
-      })
-    );
-  }
 
-  getAllInvoices() {
-    return this.http.get<{ data: any[] }>('invoice').pipe(
-      map((resp) => {
-        let response = resp.data;
-        return response;
-      })
-    )
-  }
 
   getAllMasterJobContainers(MasterJobSid: number, containerType?: number | null) {
     const query = containerType ? `?ContainerType=${containerType}` : '';
     return this.http.get<{ data: any[] }>(`house-job/fetch-containers/${MasterJobSid}${query}`).pipe(
-      map((resp) => {
-        return resp;
-      })
-    );
-  }
-
-
-  getInvoiceById(VoucherHeaderSid: number) {
-    return this.http.get<{ data: any }>(`invoice/fetch/${VoucherHeaderSid}`).pipe(
-      map((resp) => {
-        return resp;
-      })
-    );
-  }
-
-  updateInvoiceById(VoucherHeaderSid: number, payload: any) {
-    return this.http.patch<{ data: any }>(`invoice/update/${VoucherHeaderSid}`, payload).pipe(
-      map((resp) => {
-        return resp;
-      })
-    );
-  }
-
-  deleteInvoiceById(VoucherHeaderSid: number) {
-    return this.http.delete<{ data: any }>(`invoice/deleteVoucher/${VoucherHeaderSid}`).pipe(
-      map((resp) => {
-        return resp;
-      })
-    );
-  }
-
-  searchInvoices(payload: any) {
-    return this.http.post<{ data: any }>('invoice/search-list', payload).pipe(
-      map((resp) => {
-        let response = resp;
-        return response;
-      })
-    );
-  }
-
-  getUninvoicedRevenueCharges(payload: any) {
-    return this.http.post<{ status: boolean; data: any[] }>('invoice/uninvoiced-charges', payload).pipe(
-      map((resp) => {
-        return resp;
-      })
-    );
-  }
-
-  sendInvoiceEmail(payload: any) {
-    return this.http.post<{ status: boolean; message: string; data: any }>('invoice/send-email', payload).pipe(
       map((resp) => {
         return resp;
       })

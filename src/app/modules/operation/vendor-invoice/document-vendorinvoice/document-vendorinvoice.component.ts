@@ -1,7 +1,7 @@
 import { Component, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { OcrService, OcrExtractResponse, ExtractedInvoice } from '../../ocr.service';
+import { OcrService, OcrExtractResponse, ExtractedInvoice } from '../../services/ocr.service';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({

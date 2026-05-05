@@ -840,7 +840,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       masterJobForm: this.masterJobForm?.getRawValue(),
       masterJobContainers: this.masterJobContainers?.getRawValue?.() || [],
       connectionResult: this.connectionResult || [],
-      masterJobRateArr: this.masterJobRateArr || [],
+      masterJobRateArr: this.rateResult || [],
       followUpData: this.followUpData || [],
       edocData: this.edocData || [],
       emailData: this.emailData || [],
@@ -1199,6 +1199,35 @@ onETDDateSelect(): void {
     };
   }
 
+  private normalizeContainerNumberValue(value: any): string {
+    return String(value ?? '').trim().toUpperCase();
+  }
+
+  private hasDuplicateContainerNumber(containerNumber: any, excludeIndex: number | null = null): boolean {
+    const normalizedContainerNumber = this.normalizeContainerNumberValue(containerNumber);
+    if (!normalizedContainerNumber) {
+      return false;
+    }
+
+    return this.masterJobContainers.controls.some((control, index) => {
+      if (excludeIndex !== null && index === excludeIndex) {
+        return false;
+      }
+
+      return this.normalizeContainerNumberValue(control.get('ContainerNumber')?.value) === normalizedContainerNumber;
+    });
+  }
+
+  private setContainerDuplicateError(): void {
+    const containerControl = this.containerFormGroup.get('ContainerNumber');
+    if (!containerControl) {
+      return;
+    }
+
+    this.setControlError(containerControl, 'duplicate', true);
+    containerControl.markAsTouched();
+  }
+
   validateContainerNumber(containerNumber: string): { isValid: boolean, checkDigit?: number } {
     if (!containerNumber || containerNumber.length !== 11) {
       return { isValid: false };
@@ -1316,6 +1345,7 @@ onETDDateSelect(): void {
     const input = event.target.value;
     // Auto-convert to uppercase as user types
     const upperValue = input.toUpperCase();
+    this.clearControlError(this.containerFormGroup.get('ContainerNumber'), 'duplicate');
     if (input !== upperValue) {
       event.target.value = upperValue;
       this.containerFormGroup.get('ContainerNumber')?.setValue(upperValue);
@@ -1606,7 +1636,7 @@ onETDDateSelect(): void {
       DestinationAgentAddress: data.DestinationAgentAddress,
       MBLNo: data.MBLNo,
       MBLDate: data.MBLDate ? new Date(data.MBLDate) : null,
-      BLReleaseType: data.BLReleaseType,
+      BLReleaseType: data.BLReleaseType || 'Original',
       NoofOriginal: data.NoofOriginal,
       OriginAgent: data.OriginAgent,
       POO: findPortSidByCode(data.POO),
@@ -3129,12 +3159,15 @@ onETDDateSelect(): void {
   }
 
   private getControlLabel(controlName: string): string {
+    if (controlName === 'MBLNo') {
+      return this.selectedDepartment?.departmentType?.toUpperCase() === 'AIR' ? 'MAWB No' : 'MBL No';
+    }
+
     const controlLabelMap: { [key: string]: string } = {
       DepartmentMasterSid: 'Department',
       MasterJobNumber: 'Master Job Number',
       MasterJobDate: 'Master Job Date',
       FreightPPCC: 'Freight PP/CC',
-      MBLNo: 'MBL No',
       MBLDate: 'MBL Date',
       NoofOriginal: 'No Of Original',
       POL: 'POL',
@@ -3192,6 +3225,11 @@ onETDDateSelect(): void {
       return;
     }
 
+    if (invalidControl.hasError('duplicate')) {
+      this.toastr.error(`${label} already exists`);
+      return;
+    }
+
     this.toastr.error(`${label} is invalid. Please correct it.`);
   }
 
@@ -3208,7 +3246,31 @@ onETDDateSelect(): void {
   }
 
   private showBackendError(source: any, fallbackMessage: string): void {
-    this.toastr.error(extractBackendErrorMessage(source, fallbackMessage));
+    const backendMessage = extractBackendErrorMessage(source, fallbackMessage);
+
+    const normalizedMessage = backendMessage.toLowerCase();
+    if (
+      normalizedMessage.includes('duplicate') ||
+      (normalizedMessage.includes('already exists') && (normalizedMessage.includes('mbl') || normalizedMessage.includes('mawb')))
+    ) {
+      const mblControl = this.masterJobForm.get('MBLNo');
+      if (mblControl) {
+        mblControl.enable({ emitEvent: false });
+        mblControl.setErrors({ ...(mblControl.errors || {}), duplicate: true });
+        mblControl.markAsTouched();
+      }
+    }
+
+    if (normalizedMessage.includes('container no already exists') || (normalizedMessage.includes('duplicate') && normalizedMessage.includes('container'))) {
+      const containerControl = this.containerFormGroup?.get('ContainerNumber');
+      if (containerControl) {
+        containerControl.enable({ emitEvent: false });
+        containerControl.setErrors({ ...(containerControl.errors || {}), duplicate: true });
+        containerControl.markAsTouched();
+      }
+    }
+
+    this.toastr.error(backendMessage);
   }
 
   private mergeValidationError(controlName: string, errorKey: string): void {
@@ -3245,6 +3307,12 @@ onETDDateSelect(): void {
     }
     if (this.containerFormGroup.valid) {
       const containerData = this.containerFormGroup.value;
+      const editingIndex = this.isEditContainer ? this.editingContainerIndex : null;
+      if (this.hasDuplicateContainerNumber(containerData.ContainerNumber, editingIndex)) {
+        this.setContainerDuplicateError();
+        this.toastr.error('Container No already exists');
+        return;
+      }
       if (this.selectedFCLLCL === 'FCL') {
         const currentContainerCount = this.masterJobContainers.length;
         const totalAllowedContainers = this.getTotalAllowedContainers();
@@ -3411,6 +3479,7 @@ onETDDateSelect(): void {
         IsHaz: false
       });
     }
+    this.clearControlError(this.containerFormGroup.get('ContainerNumber'), 'duplicate');
 
     if (this.isExportToImportCompleted) {
       this.containerFormGroup.disable({ emitEvent: false });
@@ -3668,7 +3737,7 @@ onETDDateSelect(): void {
   }
 
   handleRateChange(allRates: any[]) {
-    if (allRates && allRates.length > 0) {
+    if (Array.isArray(allRates)) {
       this.rateResult = [...allRates];
       this.markAsDirty();
     }

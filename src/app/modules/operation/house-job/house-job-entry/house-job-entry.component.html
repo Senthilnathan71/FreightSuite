@@ -240,6 +240,10 @@
          class="invalid-feedback d-block">
       HBL Number is required for Import
     </div>
+    <div *ngIf="b['HBLNo'].hasError('duplicate') && (b['HBLNo'].dirty || b['HBLNo'].touched)"
+         class="invalid-feedback d-block">
+      {{selectedCargoMode === 'AIR' ? 'HAWBL No' : 'HBL No'}} already exists
+    </div>
   </div>
 </div>
 
@@ -1641,6 +1645,16 @@
                     <div class="custom-form-group">
                       <input type="text" class="custom-input-field sm" [onlyNumbers] formControlName="NoofContainers">
                       <label class="input-label">No of Container<span class="text-danger">*</span></label>
+                      @if ((cargo.get('NoofContainers')?.touched || cargo.get('NoofContainers')?.dirty) &&
+                      cargo.get('NoofContainers')?.invalid) {
+                      <div class="error-message">
+                        @if (cargo.get('NoofContainers')?.hasError('required')) {
+                        <span>Required</span>
+                        } @else if (cargo.get('NoofContainers')?.hasError('min')) {
+                        <span>No of Container is required</span>
+                        }
+                      </div>
+                      }
                     </div>
                   </aside>    
                   }
@@ -1651,6 +1665,16 @@
                         DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="decimalAfterPrecision"
                         max="9999999.999">
                       <label class="input-label">Gross Weight <span class="text-danger">*</span></label>
+                      @if ((cargo.get('GrossWeight')?.touched || cargo.get('GrossWeight')?.dirty) &&
+                      cargo.get('GrossWeight')?.invalid) {
+                      <div class="error-message">
+                        @if (cargo.get('GrossWeight')?.hasError('required')) {
+                        <span>Required</span>
+                        } @else if (cargo.get('GrossWeight')?.hasError('min')) {
+                        <span>Gross Weight is required</span>
+                        }
+                      </div>
+                      }
                     </div>
                   </aside>
                   <aside class="col-md-2">

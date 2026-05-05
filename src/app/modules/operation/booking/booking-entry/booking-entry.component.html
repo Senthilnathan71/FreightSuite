@@ -189,11 +189,14 @@
   </div>
 </div>
         <div class="smart-field-group">
-          <div class="custom-form-group">
+          <div class="custom-form-group"
+            [class.cursor-pointer]="canNavigateFromHBLNo()"
+            (click)="canNavigateFromHBLNo() && navigateFromHBLNo()">
             <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
             [style]="b['HBLNo']?.value ? 
         'color: red !important;' : 
         ''"
+              [style.pointer-events]="canNavigateFromHBLNo() ? 'none' : 'auto'"
               formControlName="HBLNo">
             <label for="text-input" [ngClass]="{
               'input-label': true,
@@ -719,8 +722,12 @@
 
 
                   <aside class="col-md-6">
-                    <div class="custom-form-group">
+                    <div class="custom-form-group"
+                      [class.cursor-pointer]="canNavigateFromMBLNo()"
+                      (click)="canNavigateFromMBLNo() && navigateFromMBLNo()">
                       <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                        [style.color]="canNavigateFromMBLNo() && b['MBLNo']?.value ? '#0d6efd' : null"
+                        [style.pointer-events]="canNavigateFromMBLNo() ? 'none' : 'auto'"
                         formControlName="MBLNo">
                       <label for="text-input" [ngClass]="{
                         'input-label': true,

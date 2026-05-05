@@ -368,8 +368,8 @@ function buildTermsSection(data: QuotationPdfData): any {
 
   return {
     stack: [
-      { text: 'Terms and Conditions', bold: true, margin: [10, 10, 0, 2] },
-      { ul: termValues, fontSize: 8, margin: [12, 0, 0, 10] }
+      { text: 'Terms and Conditions', bold: true, fontSize: 12, margin: [10, 10, 0, 2] },
+      { ul: termValues, fontSize: 9, margin: [12, 0, 0, 10], lineHeight: 1.4 }
     ]
   };
 }

@@ -347,7 +347,8 @@
     <div class="custom-form-group " style="margin-top: 7px;">
         <input type="text" formControlName="MBLNo" class="custom-input-field sm"
             maxlength="20" placeholder="">
-        <label class="input-label">MBL NO 
+        <label class="input-label">
+            {{ selectedDepartment?.departmentType?.toUpperCase() === 'AIR' ? 'MAWB No' : 'MBL NO' }}
             @if(!selectedDepartment?.departmentName?.toLowerCase().includes('export')) {
                 <span class="text-danger">*</span>
             }
@@ -360,6 +361,9 @@
             }
             @else if(masterJobForm.get('MBLNo')?.hasError('maxlength')){
             <span>Max 20 chars</span>
+            }
+            @else if(masterJobForm.get('MBLNo')?.hasError('duplicate')){
+            <span>{{ selectedDepartment?.departmentType?.toUpperCase() === 'AIR' ? 'MAWB No' : 'MBL No' }} already exists</span>
             }
         </div>
         }
@@ -2905,6 +2909,9 @@
       </span>
       <span *ngIf="containerFormGroup.get('ContainerNumber')?.hasError('invalidContainerNumber')">
         Invalid container number 
+      </span>
+      <span *ngIf="containerFormGroup.get('ContainerNumber')?.hasError('duplicate')">
+        Container No already exists
       </span>
     </div>
     

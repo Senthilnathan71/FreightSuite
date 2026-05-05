@@ -70,7 +70,7 @@ import { HostListener } from '@angular/core';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { th } from 'date-fns/locale';
 import * as JsBarcode from 'jsbarcode';
-import { CreditValidationApiService } from '../../credit-request.service';
+import { CreditValidationApiService } from '../../services/credit-request.service';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 type Html2PdfOptions = {
@@ -1358,8 +1358,11 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       Volume: volume,
       NetWeight: netWeight,
       ExternlQty: qty
-    }, { emitEvent: false });
+      }, { emitEvent: false });
   }
+
+  // Keep BookingStatus aligned with cargo receipt dates while editing.
+  this.syncBookingStatusFromCargoDates();
 });
 
     return productForm;
@@ -2770,9 +2773,13 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     isValid = false;
   }
 
-  // Validate Cargo Form / Cargo Groups
+  // Validate Cargo Form / Cargo Groups only after the user starts using cargo
   if (this.bookingCargo.length > 0) {
-    this.bookingCargo.controls.forEach((cargoGroup: FormGroup, cargoIndex: number) => {
+    this.bookingCargo.controls.forEach((control, cargoIndex: number) => {
+      const cargoGroup = control as FormGroup;
+      if (!this.shouldValidateBookingCargoGroup(cargoGroup)) {
+        return;
+      }
       if (cargoGroup.invalid) {
         cargoGroup.markAllAsTouched();
         setFirstInvalidTab('Cargo');
@@ -2817,7 +2824,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         }
       });
     });
-  } else if (this.cargoForm.invalid) {
+  } else if (this.bookingCargo.length === 0 && this.cargoForm.invalid) {
     this.cargoForm.markAllAsTouched();
     setFirstInvalidTab('Cargo');
 
@@ -5207,8 +5214,18 @@ deepEqual(obj1: any, obj2: any): boolean {
  * - If no products have a Cargo Received Date and the current status is 'Cargo Received',
  *   it reverts the status back to 'Booking'.
  */
-  private updateBookingStatusOnCargoDate(): void {
-    // Check if any product in the FormArray has a value for CargoRecDate
+  private getAllBookingProductsForStatusCheck(): FormGroup[] {
+    const topLevelProducts = this.bookingProducts?.controls ?? [];
+    const nestedCargoProducts = this.bookingCargo?.controls.flatMap((cargoGroup: AbstractControl) => {
+      const products = cargoGroup.get('bookingProducts') as FormArray | null;
+      return products?.controls ?? [];
+    }) ?? [];
+
+    return [...topLevelProducts, ...nestedCargoProducts] as FormGroup[];
+  }
+
+  private syncBookingStatusFromCargoDates(): void {
+    // Cargo-received status only applies to SEA + LCL + Export bookings.
     const isLCLExport = this.selectedDepartmentType === "SEA" 
       && this.selectedDepartment?.FCLLCL === 'LCL' 
       && this.selectedDepartment?.ExportImport === "Export";
@@ -5217,14 +5234,15 @@ deepEqual(obj1: any, obj2: any): boolean {
       return;
     }
 
-    const atLeastOneHasDate = this.bookingProducts.controls.some(
-      (product) => !!product.get('CargoRecDate')?.value
-    );
-    console.log("atLeastOneHasDate", atLeastOneHasDate);
     const bookingStatusControl = this.b['BookingStatus'];
     if (!bookingStatusControl) {
       return;
     }
+
+    const atLeastOneHasDate = this.getAllBookingProductsForStatusCheck().some(
+      (product) => !!product.get('CargoRecDate')?.value
+    );
+    console.log("atLeastOneHasDate", atLeastOneHasDate);
 
     const currentStatus = bookingStatusControl.value;
     console.log("currentStatus", currentStatus);
@@ -5235,6 +5253,10 @@ deepEqual(obj1: any, obj2: any): boolean {
       bookingStatusControl.setValue('Booked');
     }
     this.bookingForm.updateValueAndValidity();
+  }
+
+  private updateBookingStatusOnCargoDate(): void {
+    this.syncBookingStatusFromCargoDates();
   }
 
     getDestinationAgent(DestinationAgent: number) {
@@ -5392,6 +5414,11 @@ deepEqual(obj1: any, obj2: any): boolean {
     });
 
     return cargoGroup;
+  }
+
+  private shouldValidateBookingCargoGroup(cargoGroup: FormGroup): boolean {
+    const cargoProducts = cargoGroup.get('bookingProducts') as FormArray | null;
+    return !!(cargoGroup.dirty || cargoProducts?.dirty);
   }
 
   private createCargoProductGroup(data?: any, isPatching: boolean = false): FormGroup {
@@ -7162,6 +7189,75 @@ isHBLNoValid(): boolean {
       );
       this.b['status']?.setValue('Active');
     }
+  }
+
+  private getDepartmentTypeForNavigation(): string {
+    return String(
+      this.selectedDepartmentType ??
+      this.bookingData?.departmentMaster?.departmentType ??
+      this.bookingHeader?.departmentMaster?.departmentType ??
+      ''
+    ).toUpperCase();
+  }
+
+  canNavigateFromHBLNo(): boolean {
+    const houseJobSid =
+      this.bookingData?.HouseJobSid ??
+      this.bookingHeader?.HouseJobSid ??
+      this.bookingData?.houseJob?.HouseJobSid ??
+      this.b?.['HouseJobSid']?.getRawValue();
+    return !!houseJobSid;
+  }
+
+  canNavigateFromMBLNo(): boolean {
+    const masterJobSid =
+      this.bookingData?.MasterNoSid ??
+      this.bookingHeader?.MasterNoSid ??
+      this.bookingData?.houseJob?.masterJob?.MasterJobSid ??
+      this.bookingHeader?.houseJob?.masterJob?.MasterJobSid;
+    return !!masterJobSid;
+  }
+
+  navigateFromHBLNo(): void {
+    const houseJobSid =
+      this.bookingData?.HouseJobSid ??
+      this.bookingHeader?.HouseJobSid ??
+      this.bookingData?.houseJob?.HouseJobSid ??
+      this.b?.['HouseJobSid']?.getRawValue();
+
+    if (!houseJobSid) {
+      this.appSettingService.showWarning('House Job not available');
+      return;
+    }
+
+    const departmentType = this.getDepartmentTypeForNavigation();
+    if (departmentType === 'AIR') {
+      this.router.navigate(['/operation/hawb-bill/entry', houseJobSid]);
+      return;
+    }
+
+    this.router.navigate(['/operation/house-job/entry', houseJobSid]);
+  }
+
+  navigateFromMBLNo(): void {
+    const masterJobSid =
+      this.bookingData?.MasterNoSid ??
+      this.bookingHeader?.MasterNoSid ??
+      this.bookingData?.houseJob?.masterJob?.MasterJobSid ??
+      this.bookingHeader?.houseJob?.masterJob?.MasterJobSid;
+
+    if (!masterJobSid) {
+      this.appSettingService.showWarning('Master Job not available');
+      return;
+    }
+
+    const departmentType = this.getDepartmentTypeForNavigation();
+    if (departmentType === 'AIR') {
+      this.router.navigate(['/operation/mawbill/entry', masterJobSid]);
+      return;
+    }
+
+    this.router.navigate(['/operation/master-job/entry', masterJobSid]);
   }
 
   /**

@@ -329,3 +329,16 @@
         </div>
     </form>
 </ng-template>
+<ng-template #customerCreatedModal let-modal>
+  <div class="modal-header bg-info text-white">
+    <h4 class="modal-title">Success!</h4>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeCustomerCreatedModal()"></button>
+  </div>
+  <div class="modal-body text-center py-4">
+    <p class="h5">Customer created successfully. Please Click go to Customer to update the customer details.</p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-light" (click)="closeCustomerCreatedModal()">Close</button>
+    <button type="button" class="btn btn-primary" (click)="navigateToCreatedCustomer()">Go to Customer</button>
+  </div>
+</ng-template>

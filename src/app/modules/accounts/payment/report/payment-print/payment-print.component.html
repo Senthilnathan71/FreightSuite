@@ -43,15 +43,23 @@
             <div style="flex:0 0 50%; max-width:50%;">
                 <div style="display:flex;padding-top: 10px;">
                     <div style="width:120px; white-space:nowrap;font-weight: bolder;"><strong>Payment No.</strong></div>
-                    <div>: {{paymentDataPrint?.VoucherNumber}}</div>
+                    <div style="width:12px;">:</div>
+                    <div style="flex:1;">{{paymentDataPrint?.VoucherNumber}}</div>
                 </div>
                   <div style="display:flex;">
                     <div style="width:120px; white-space:nowrap;font-weight: bolder;"><strong>Paid From</strong></div>
-                    <div>: {{getLedgerName(paymentDataPrint?.BankCOA)}}</div>
+                    <div style="width:12px;">:</div>
+                    <div style="flex:1;">{{getLedgerName(paymentDataPrint?.BankCOA)}}</div>
                 </div>
                 <div style="display:flex;">
                     <div style="width:120px; white-space:nowrap;font-weight: bolder;"><strong>Paid To</strong></div>
-                    <div>: {{ getPaidToDisplay() }}</div>
+                    <div style="width:12px;">:</div>
+                    <div style="flex:1;">{{ getPaidToDisplay() }}</div>
+                </div>
+                <div style="display:flex; align-items:flex-start;" *ngIf="getHeaderAddressDisplay()">
+                    <!-- <div style="width:120px; white-space:nowrap;font-weight: bolder;"><strong>Address</strong></div> -->
+                    <div style="width:12px;"></div>
+                    <div style="flex:1; max-width:500px; line-height:1.35; overflow-wrap:break-word;">{{ getHeaderAddressDisplay() }}</div>
                 </div>
             </div>
 
@@ -59,11 +67,13 @@
             <div style="flex:0 0 50%; max-width:50%;">
                 <div style="display:flex;padding-top: 10px;">
                     <div style="width:120px; white-space:nowrap;font-weight: bolder;"><strong>Payment Date</strong></div>
-                    <div>: {{paymentDataPrint?.VoucherDate | formatDate}}</div>
+                    <div style="width:12px;">:</div>
+                    <div style="flex:1;">{{paymentDataPrint?.VoucherDate | formatDate}}</div>
                 </div>
                 <div style="display:flex;">
                     <div style="width:120px; white-space:nowrap;font-weight: bolder;"><strong>Currency</strong></div>
-                    <div>: {{paymentDataPrint?.CurrencyCode}}</div>
+                    <div style="width:12px;">:</div>
+                    <div style="flex:1;">{{paymentDataPrint?.CurrencyCode}}</div>
                 </div>
             </div>
         </div>

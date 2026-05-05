@@ -111,20 +111,20 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
       bindLabel: 'departmentName',
       bindValue: 'DepartmentMasterSid'
     };
-    polFilterConfig: DropdownFilterConfig = {
-      enabled: true,
-      label: 'POL',
-      options: [],
-      bindLabel: 'displayName',
-      bindValue: 'PortCode'
-    };
-    podFilterConfig: DropdownFilterConfig = {
-      enabled: true,
-      label: 'POD',
-      options: [],
-      bindLabel: 'displayName',
-      bindValue: 'PortCode'
-    };
+  polFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'POL',
+    options: [],
+    bindLabel: 'PortName',
+    bindValue: 'PortCode'
+  };
+  podFilterConfig: DropdownFilterConfig = {
+    enabled: true,
+    label: 'POD',
+    options: [],
+    bindLabel: 'PortName',
+    bindValue: 'PortCode'
+  };
     private allPorts: any[] = [];
     currentFilters: AdvancedFilterValues = {};
 

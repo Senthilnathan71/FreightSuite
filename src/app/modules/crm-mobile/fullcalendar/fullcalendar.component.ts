@@ -53,6 +53,7 @@ const colors: any = {
   styleUrls: ['./fullcalendar.component.scss'],
 })
 export class FullcalendarComponent implements OnInit, AfterViewInit {
+  @ViewChild('customerCreatedModal', { static: true }) customerCreatedModal!: TemplateRef<any>;
   @ViewChild('modalContent', { static: true }) modalContent!: TemplateRef<any>;
   @ViewChild('modalContentAdd', { static: true })
   modalContentAdd!: TemplateRef<any>;
@@ -165,6 +166,7 @@ export class FullcalendarComponent implements OnInit, AfterViewInit {
   currentCompany: any;
   currentBranch: any;
   leadList: any[] = [];
+  createdCustomerId: number | null = null;
 
   private pendingScheduleLead: any = null;
 
@@ -710,7 +712,24 @@ this.refresh.next();
   this.leadService.createPreCustomerMeeting(payload).subscribe(
     resp => {
       if (resp.data && resp.status) {
-        this.modalService.openSuccessModal(resp.message);
+        const meetingData = payload;
+        const isLeadConfirmedMeeting =
+          !!meetingData &&
+          meetingData.meetingStatus?.toLowerCase() === 'confirmed' &&
+          meetingData.LeadOrCustomer === 'L' &&
+          !!meetingData.PreCustomerMasterSid;
+        const createdCustomerId = this.extractCreatedCustomerId(resp);
+
+        if (isLeadConfirmedMeeting && createdCustomerId) {
+          this.createdCustomerId = createdCustomerId;
+          this.modal.open(this.customerCreatedModal, {
+            size: 'lg',
+            backdrop: 'static',
+            centered: true
+          });
+        } else {
+          this.modalService.openSuccessModal(resp.message);
+        }
         this.btnDisable = false;
         this.meetingForm.patchValue(resp.data);
         this.modalRef.close();
@@ -921,6 +940,28 @@ convertUTCToLocal(utcDate: string | null): Date | null {
   canUpdate():boolean{
     console.log("Can Update",this.mps.can('update'));
     return !this.mps.can('update');
+  }
+
+  private extractCreatedCustomerId(resp: any): number | null {
+    const candidate =
+      resp?.data?.createdCustomer?.CustomerMasterSid ??
+      resp?.data?.CustomerMasterSid ??
+      resp?.data?.customerMaster?.CustomerMasterSid ??
+      null;
+
+    const numericId = Number(candidate);
+    return Number.isFinite(numericId) && numericId > 0 ? numericId : null;
+  }
+
+  navigateToCreatedCustomer(): void {
+    if (!this.createdCustomerId) return;
+    this.router.navigate(['master/organization/entry', this.createdCustomerId]);
+    this.closeCustomerCreatedModal();
+  }
+
+  closeCustomerCreatedModal(): void {
+    this.createdCustomerId = null;
+    this.modal.dismissAll();
   }
 
 

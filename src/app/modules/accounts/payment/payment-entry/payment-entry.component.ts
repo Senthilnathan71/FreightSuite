@@ -3729,16 +3729,26 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
    * Used with [decimalDigitsAfter] directive
    * Example: getAmountDecimalPlaces('USD') returns 2
    */
-  public getAmountDecimalPlaces(CurrencyMasterSid: number): number {
-    const currency = this.currencyList.find(
-      (currency) => currency.CurrencyMasterSid === CurrencyMasterSid
-    );
-    if (currency) {
-      const config = this.currencyConfigService.getCurrencyConfig(
-        currency.currencyCode
-      );
-      return config?.amountDecimal;
+  public getAmountDecimalPlaces(currency: string | number): number {
+    if (!currency) {
+      return 4;
     }
+
+    let currencyCode: string | undefined;
+    if (typeof currency === 'number' || !isNaN(Number(currency))) {
+      const currencyMasterSid = Number(currency);
+      currencyCode = this.currencyList.find(
+        (item) => item.CurrencyMasterSid === currencyMasterSid
+      )?.currencyCode;
+    } else {
+      currencyCode = currency;
+    }
+
+    if (currencyCode) {
+      const config = this.currencyConfigService.getCurrencyConfig(currencyCode);
+      return config?.amountDecimal ?? 4;
+    }
+
     return 4;
   }
 
