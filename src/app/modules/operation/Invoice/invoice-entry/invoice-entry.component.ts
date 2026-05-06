@@ -3212,6 +3212,20 @@ isSeaDepartment(): boolean {
     });
   }
 
+  getBankCurrencyCode(bankDetail: any): string {
+    const bankCurrencySid = Number(bankDetail?.CurrencyMasterSid || bankDetail?.currencyMasterSid || 0);
+    const bankCurrency = bankCurrencySid
+      ? this.currencyList?.find((currency: any) => Number(currency?.CurrencyMasterSid) === bankCurrencySid)
+      : null;
+
+    return bankDetail?.CurrencyCode ||
+      bankDetail?.currencyCode ||
+      bankDetail?.currencyMaster?.currencyCode ||
+      bankCurrency?.currencyCode ||
+      this.invoiceData?.CurrencyCode ||
+      '';
+  }
+
   private async loadPrintAllBankConfig(): Promise<void> {
     const companyId = this.currentCompany?.CompanyMasterSid;
     if (!companyId) {

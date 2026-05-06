@@ -917,6 +917,7 @@ export interface InvoiceBankDetail {
   iban?: string;
   bankAddress?: string;
   beneficiaryName?: string;
+  currencyCode?: string;
 }
 export interface InvoiceChargeData extends PdfChargeItem {
   sno?: number;
