@@ -142,7 +142,7 @@
         <a class="text-info ps-2 w-2 h-2" (click)="showInfo()">
           <i class="fas fs-6 fa-info-circle"></i>
         </a>
-        <button type="button" class="btn-close btn-close-white" (click)="close()"></button>
+        <button type="button" class="btn-close btn-close-white" (click)="closeUpdateMeetingModal()"></button>
       </div>
 
       <form [formGroup]="meetingForm">
@@ -339,7 +339,7 @@
     <ng-template #modalContentAddForm let-close="close">
       <div class="modal-header p-2 bg-info">
         <h5 class="modal-title text-white">Add Meeting</h5>
-        <button type="button" class="btn-close btn-close-white" (click)="close()"></button>
+        <button type="button" class="btn-close btn-close-white" (click)="closeAddMeetingModal()"></button>
       </div>
 
       <form [formGroup]="meetingForm">

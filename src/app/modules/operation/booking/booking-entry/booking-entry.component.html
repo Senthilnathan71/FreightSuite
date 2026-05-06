@@ -97,12 +97,12 @@
 </div>
       <div class="action-group primary">
   <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
-          [ngClass]="{ 'btn-info': !isFormDirty(), 'btn-warning': isFormDirty() }"
+          [ngClass]="{'btn-info': !hasUnsavedChanges(), 'btn-warning': hasUnsavedChanges()}"
           (click)="onSubmit()"  
           [disabled]="(!mps.can('update') && isEditMode) || isSaving || !isHBLNoValid()|| (isEditMode && isSuspended)" >
     <i class="fas fa-save me-1"></i>
     <span>{{ isSaving ? "Saving..." : "Save" }}</span> 
-    <span *ngIf="isFormDirty()"
+    <span *ngIf="hasUnsavedChanges()"
           class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
           title="You have unsaved changes">
       <span class="visually-hidden">unsaved changes</span>
@@ -1461,6 +1461,11 @@
                                   <i class="fas fa-list text-primary"></i>
                                 </button>
                               </div>
+                              @if (shouldShowProductFieldError(product, 'ProductName')) {
+                                <div class="error-message mt-1">
+                                  {{ getProductFieldErrorMessage(product, 'ProductName') }}
+                                </div>
+                              }
                             </div>
                           </td>
                           <td>
@@ -1481,28 +1486,85 @@
                               [displayFields]="uomLookupConfig.displayFields" [displayLabels]="uomLookupConfig.displayLabels"
                               [labelFields]="uomLookupConfig.labelFields" [bindValue]="'UOMMasterSid'" style="padding:0;">
                             </dofi-searchable-dropdown>
+                            @if (shouldShowProductFieldError(product, 'ExternaPkg')) {
+                              <div class="error-message mt-1">
+                                {{ getProductFieldErrorMessage(product, 'ExternaPkg') }}
+                              </div>
+                            }
                           </td>
                           <td>
                             <input type="text" formControlName="ExternlQty" class="custom-input-field sm" [onlyNumbers] >
+                            @if (shouldShowProductFieldError(product, 'ExternlQty')) {
+                              <div class="error-message mt-1">
+                                {{ getProductFieldErrorMessage(product, 'ExternlQty') }}
+                              </div>
+                            }
                           </td>
                           @if(usesDimensionalCargoFields()){
                             <td>
                               <ng-select [items]="measurementUnitList" bindLabel="name" bindValue="id" formControlName="UomMasterSid"
                                 class="ng-select" placeholder="" appendTo="body">
                               </ng-select>
+                              @if (shouldShowProductFieldError(product, 'UomMasterSid')) {
+                                <div class="error-message mt-1">
+                                  {{ getProductFieldErrorMessage(product, 'UomMasterSid') }}
+                                </div>
+                              }
                             </td>
                             <td><input type="text" formControlName="Length" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
                             <td><input type="text" formControlName="Width" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
                             <td><input type="text" formControlName="Height" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
-                            <td><input type="text" formControlName="Volumetric" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
-                            <td><input type="text" formControlName="Volume" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
-                            <td><input type="text" formControlName="GrossWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3" ></td>
-                            <td><input type="text" formControlName="NetWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
+                            <td><input type="text" formControlName="Volumetric" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
+                            <td>
+                              <input type="text" formControlName="Volume" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
+                              @if (shouldShowProductFieldError(product, 'Volume')) {
+                                <div class="error-message mt-1">
+                                  {{ getProductFieldErrorMessage(product, 'Volume') }}
+                                </div>
+                              }
+                            </td>
+                            <td>
+                              <input type="text" formControlName="GrossWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3" >
+                              @if (shouldShowProductFieldError(product, 'GrossWeight')) {
+                                <div class="error-message mt-1">
+                                  {{ getProductFieldErrorMessage(product, 'GrossWeight') }}
+                                </div>
+                              }
+                            </td>
+                            <td>
+                              <input type="text" formControlName="NetWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
+                              @if (shouldShowProductFieldError(product, 'NetWeight')) {
+                                <div class="error-message mt-1">
+                                  {{ getProductFieldErrorMessage(product, 'NetWeight') }}
+                                </div>
+                              }
+                            </td>
                           }
                           @if(selectedFCLLCL === 'FCL' || isSurfaceCargoMode()){
-                            <td><input type="text" formControlName="GrossWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"  DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
-                            <td><input type="text" formControlName="NetWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"  DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
-                            <td><input type="text" formControlName="Volume" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"  DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
+                            <td>
+                              <input type="text" formControlName="GrossWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"  DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
+                              @if (shouldShowProductFieldError(product, 'GrossWeight')) {
+                                <div class="error-message mt-1">
+                                  {{ getProductFieldErrorMessage(product, 'GrossWeight') }}
+                                </div>
+                              }
+                            </td>
+                            <td>
+                              <input type="text" formControlName="NetWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"  DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
+                              @if (shouldShowProductFieldError(product, 'NetWeight')) {
+                                <div class="error-message mt-1">
+                                  {{ getProductFieldErrorMessage(product, 'NetWeight') }}
+                                </div>
+                              }
+                            </td>
+                            <td>
+                              <input type="text" formControlName="Volume" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
+                              @if (shouldShowProductFieldError(product, 'Volume')) {
+                                <div class="error-message mt-1">
+                                  {{ getProductFieldErrorMessage(product, 'Volume') }}
+                                </div>
+                              }
+                            </td>
                           }
                           <td>
                             <div class="d-flex align-items-center" style="margin-top: 4px;">
@@ -1521,9 +1583,28 @@
                             <ng-select [items]="imcoList" bindLabel="ImcoName" bindValue="ImcoName" formControlName="ImcoClass"
                               class="ng-select" placeholder="" appendTo="body" (change)="onImcoChange(productIndex,$event,cargoIndex)">
                             </ng-select>
+                            @if (shouldShowProductFieldError(product, 'ImcoClass')) {
+                              <div class="error-message mt-1">
+                                {{ getProductFieldErrorMessage(product, 'ImcoClass') }}
+                              </div>
+                            }
                           </td>
-                          <td><input type="text" formControlName="UnNo" class="custom-input-field sm"></td>
-                          <td><input type="text" formControlName="PkgGroup" class="custom-input-field sm"></td>
+                          <td>
+                            <input type="text" formControlName="UnNo" class="custom-input-field sm">
+                            @if (shouldShowProductFieldError(product, 'UnNo')) {
+                              <div class="error-message mt-1">
+                                {{ getProductFieldErrorMessage(product, 'UnNo') }}
+                              </div>
+                            }
+                          </td>
+                          <td>
+                            <input type="text" formControlName="PkgGroup" class="custom-input-field sm">
+                            @if (shouldShowProductFieldError(product, 'PkgGroup')) {
+                              <div class="error-message mt-1">
+                                {{ getProductFieldErrorMessage(product, 'PkgGroup') }}
+                              </div>
+                            }
+                          </td>
                         </tr>
                       } @else {
                         <tr>
@@ -3721,7 +3802,7 @@
       </table>
     </div>
 
-      <div style="width:100%; overflow-x:auto;margin-top:10px;">
+      <!-- <div style="width:100%; overflow-x:auto;margin-top:10px;">
       <table style="width:100%; border-collapse:collapse;">
         <thead>
           <tr>
@@ -3762,7 +3843,7 @@
           </tr>
         </tfoot>
       </table>
-    </div>
+    </div> -->
 
        <!-- Terms & Conditions -->
 <div style="

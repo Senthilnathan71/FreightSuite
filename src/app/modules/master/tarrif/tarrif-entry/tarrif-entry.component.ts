@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef, Input } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, TemplateRef, Input } from '@angular/core';
 import { NgbAlertModule, NgbCalendar, NgbDate, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbNavModule, NgbPaginationModule, NgbPopoverModule, NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
@@ -9,7 +9,7 @@ import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLengt
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { Port } from 'src/app/modules/crm-mobile/Interfaces/port.interface';
-import { catchError, forkJoin, of } from 'rxjs';
+import { catchError, forkJoin, of, Subject, debounceTime, takeUntil } from 'rxjs';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -36,6 +36,7 @@ import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/
 import { getDefaultTodayDate } from 'src/app/common/helper';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 @Component({
   selector: 'app-tarrif-entry',
@@ -72,7 +73,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
   ],
 })
-export class TarrifEntryComponent implements OnInit {
+export class TarrifEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   private readonly containerRequiredUomCodes = new Set(['CON', '20F', '40F', '45F']);
   selectedDepartment: any;
   selectedDepartmentType: string = '';
@@ -145,6 +146,10 @@ filteredFDC: any[] = [];
   TandCList: any;
   chargeTaxes: any[] = [];
   btnDisable: boolean = true;
+  isDirty: boolean = false;
+  isSaving: boolean = false;
+  private initialFormValue: any = null;
+  private destroy$ = new Subject<void>();
 
   editingDetailIndex: number | null = null;
   // Status-only edit flags
@@ -207,6 +212,8 @@ get currencyList(): any[] {
   this.MenuMasterSid = sessionStorage.getItem('currentMenuId');
 
   this.initHeaderForm();
+  this.initialFormValue = this.tariffHeaderForm.getRawValue();
+  this.subscribeToFormChanges();
 
   const historyState = history?.state;
   const copiedTariffData = historyState?.copiedTariffData;
@@ -611,6 +618,10 @@ this.tariffDetailsForm.get('detailContainerType')?.valueChanges.subscribe(() => 
       this.setHeaderControlsReadOnly(true);
       this.tariffHeaderForm.get('status')?.enable({ emitEvent: false });
       this.btnDisable = false;
+      this.initialFormValue = this.tariffHeaderForm.getRawValue();
+      this.isDirty = false;
+      this.tariffHeaderForm.markAsPristine();
+      this.tariffHeaderForm.markAsUntouched();
     },
     (error) => {
       this.appSettingServ.showError('Error Loading Tariff', error);
@@ -980,16 +991,36 @@ private shouldUseAllPortOptions(): boolean {
     this.tariffDetailsForm.get('detailstatus')?.enable({ emitEvent: false });
   }
 
-  onSave() {
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSave(resolve);
+    });
+  }
+
+  onSave(resolve?: (value: boolean) => void) {
+  if (this.isSaving) {
+    if (resolve) resolve(false);
+    return;
+  }
+
+  if (this.isEditMode && this.hasNoChangesToSave()) {
+    this.appSettingServ.showWarning('No changes to save');
+    this.tariffHeaderForm.markAsUntouched();
+    if (resolve) resolve(false);
+    return;
+  }
+
   if (this.tariffHeaderForm.invalid) {
     this.tariffHeaderForm.markAllAsTouched();
     this.tariffHeaderForm.updateValueAndValidity();
     this.appSettingServ.showWarning('Please fill all required fields correctly');
+    if (resolve) resolve(false);
     return;
   }
 
   if (!this.isEditMode && this.tariffDetails.length === 0) {
     this.appSettingServ.showWarning('Please add at least one tariff detail');
+    if (resolve) resolve(false);
     return;
   }
 
@@ -997,46 +1028,66 @@ private shouldUseAllPortOptions(): boolean {
   const payload = this.coerceIntoRequiredFormat(formValue);
 
   if (this.isEditMode) {
+    this.isSaving = true;
     this.masterServ.updateTariffById(this.TariffHeaderSid as number, payload).subscribe({
       next: (resp: any) => {
+        this.isSaving = false;
         if (resp.status) {
           this.appSettingService.showSuccess(resp.message);
           this.isStatusEditable = false;
           this.setHeaderControlsReadOnly(true);
           this.loadTariff(this.TariffHeaderSid as number);
           this.btnDisable = true;
+          if (resolve) resolve(true);
         } else {
           this.appSettingServ.showError(resp.message || 'Error updating tariff');
+          if (resolve) resolve(false);
         }
       },
       error: (error) => {
+        this.isSaving = false;
         console.error('Error updating tariff: ', error);
         this.appSettingServ.showError('Error updating tariff');
+        if (resolve) resolve(false);
       }
     });
     return;
   }
 
+  this.isSaving = true;
   this.masterServ.createTariff(payload).subscribe({
     next: (resp: any) => {
+      this.isSaving = false;
       if (resp.status) {
         this.appSettingService.showSuccess(resp.message);
         const tariffId = resp?.data?.TariffHeaderSid;
         if (tariffId) {
           this.route.navigate(['master/tarrif/entry', tariffId]);
         }
+        if (resolve) resolve(true);
       } else {
         this.appSettingServ.showError(resp.message);
+        if (resolve) resolve(false);
       }
     },
     error: (error) => {
+      this.isSaving = false;
       console.error('Error creating tariff : ', error);
       this.appSettingServ.showError('Error creating tariff');
+      if (resolve) resolve(false);
     }
   });
 }
 
   fullOnSaveFlow() {
+  if (this.isSaving) return;
+
+  if (this.isEditMode && this.hasNoChangesToSave()) {
+    this.appSettingServ.showWarning('No changes to save');
+    this.tariffHeaderForm.markAsUntouched();
+    return;
+  }
+
   if (this.tariffHeaderForm.invalid) {
     this.tariffHeaderForm.markAllAsTouched();
     this.tariffHeaderForm.updateValueAndValidity();
@@ -1053,8 +1104,10 @@ private shouldUseAllPortOptions(): boolean {
   const payload = this.coerceIntoRequiredFormat(formValue);
 
   if (this.isEditMode) {
+    this.isSaving = true;
     this.masterServ.updateTariffById(this.TariffHeaderSid as number, payload).subscribe(
       (resp: any) => {
+        this.isSaving = false;
         if (resp.status) {
           this.appSettingService.showSuccess(resp.message);
           this.loadTariff(this.TariffHeaderSid as number);
@@ -1063,13 +1116,16 @@ private shouldUseAllPortOptions(): boolean {
         }
       },
       (error) => {
+        this.isSaving = false;
         console.error('Error loading Tariff : ', error);
         this.appSettingServ.showError('Error updating tariff');
       }
     );
   } else {
+    this.isSaving = true;
     this.masterServ.createTariff(payload).subscribe(
       (resp: any) => {
+        this.isSaving = false;
         if (resp.status) {
           this.appSettingService.showSuccess(resp.message);
           const tariffId = resp?.data?.TariffHeaderSid;
@@ -1081,6 +1137,7 @@ private shouldUseAllPortOptions(): boolean {
         }
       },
       (error) => {
+        this.isSaving = false;
         console.error('Error loading Tariff : ', error);
         this.appSettingServ.showError('Error creating tariff');
       }
@@ -1598,6 +1655,8 @@ handlePODChange(selectedPort: any): void {
   this.tariffHeaderForm.markAsUntouched();
   this.tariffHeaderForm.markAsPristine();
   this.tariffHeaderForm.updateValueAndValidity();
+  this.initialFormValue = this.tariffHeaderForm.getRawValue();
+  this.isDirty = false;
 
   this.tariffData = null;
   this.tariffDetailData = null;
@@ -1783,11 +1842,6 @@ openDocRef() {
   // Optionally, pass the quotation HTML content ID for PDF generation
   modalRef.componentInstance.pdfContentId = 'quotationContent';
   }
- ngOnDestroy(): void {
-    this.commonService.clearDocumentData()
- }  
-  
-
   setChargeDetails(charge?: any) {
   if (!charge) {
     this.tariffDetailsForm.get('detailDescription')?.setValue('');
@@ -2057,6 +2111,57 @@ private patchCopiedTariff(data: any): void {
   this.tariffHeaderForm.get('PODTerminal')?.disable({ emitEvent: false });
   this.tariffHeaderForm.get('status')?.enable({ emitEvent: false });
   this.btnDisable = false;
+  this.initialFormValue = this.tariffHeaderForm.getRawValue();
+  this.isDirty = false;
+}
+
+@HostListener('window:beforeunload', ['$event'])
+unloadNotification($event: BeforeUnloadEvent): void {
+  if (this.hasUnsavedChanges()) {
+    $event.preventDefault();
+    $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+  }
+}
+
+hasUnsavedChanges(): boolean {
+  return this.isDirty;
+}
+
+private subscribeToFormChanges(): void {
+  this.tariffHeaderForm.valueChanges
+    .pipe(takeUntil(this.destroy$), debounceTime(300))
+    .subscribe(() => {
+      this.isDirty = !this.deepEqual(this.initialFormValue, this.tariffHeaderForm.getRawValue());
+    });
+}
+
+private hasNoChangesToSave(): boolean {
+  const raw = this.tariffHeaderForm.getRawValue();
+  return this.deepEqual(raw, this.initialFormValue) && !this.isDirty;
+}
+
+private normalizeValue(value: any): any {
+  if (value === null || value === undefined) return null;
+  if (value instanceof Date) return value.toISOString().split('T')[0];
+  if (Array.isArray(value)) return value.map(item => this.normalizeValue(item));
+  if (typeof value === 'object') {
+    return Object.keys(value).reduce((result: any, key: string) => {
+      result[key] = this.normalizeValue(value[key]);
+      return result;
+    }, {});
+  }
+  if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) return Number(value);
+  return value;
+}
+
+private deepEqual(obj1: any, obj2: any): boolean {
+  return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+}
+
+ngOnDestroy(): void {
+  this.destroy$.next();
+  this.destroy$.complete();
+  this.commonService.clearDocumentData();
 }
 
   

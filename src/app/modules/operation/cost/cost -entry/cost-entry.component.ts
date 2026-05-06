@@ -869,6 +869,7 @@ createRateFormGroup(data?: any): FormGroup {
     CostVoucherTypeSid: [data?.CostVoucherTypeMasterSid ?? null],
     CostVoucherHeader: [data?.costVoucherHeader || data?.CostVoucherHeader || null],  // Store voucher header object for display
     CostVoucherType: [data?.costVoucherTypeMaster || data?.CostVoucherType || null],  // Store voucher type object for display
+    voucherDetail: [data?.voucherDetail || data?.VoucherDetail || data?.voucherDetails || []],
     
     
     status : ['Active'],
@@ -1476,6 +1477,7 @@ createRateFormGroup(data?: any): FormGroup {
       console.log(item);
       const costAmt = parseFloat(item.CostLocalAmount || 0);
       const revenueAmt = parseFloat(item.RevenueLocalAmount || 0);
+      const actualAmounts = this.getActualAmountsFromVoucherDetails(item);
       const chargeName = item.ChargeName || this.getChargeName(item.ChargeMasterSid) || "Unknown";
       const sourceType = item.ProfitSourceType || 'House';
 
@@ -1489,10 +1491,16 @@ createRateFormGroup(data?: any): FormGroup {
           sourceType,
           totalSales: 0,
           totalCost: 0,
+          actualTotalSales: 0,
+          actualTotalCost: 0,
           profit: 0,
-          profitPercent: "0%"
+          profitPercent: "0%",
+          actualProfit: 0,
+          actualProfitPercent: "0%"
         };
         this.profitSummary.push(existing);
+      } else if (existing.sourceType !== sourceType) {
+        existing.sourceType = 'Mixed';
       }
 
       // if (item.CostRevenue === "Cost") {
@@ -1502,11 +1510,15 @@ createRateFormGroup(data?: any): FormGroup {
       // if (item.CostRevenue === "Revenue") {
         existing.totalSales += item.RevenueDrCr === "C" ? revenueAmt : -revenueAmt;
       // }
+      existing.actualTotalSales += actualAmounts.revenue;
+      existing.actualTotalCost += actualAmounts.cost;
     });
 
     this.profitSummary.forEach(p => {
       let profit: number;
       let profitPercent: number;
+      let actualProfit: number;
+      let actualProfitPercent: number;
 
       if (p.totalSales > p.totalCost) {
         profit = p.totalSales - p.totalCost;
@@ -1516,13 +1528,51 @@ createRateFormGroup(data?: any): FormGroup {
         profitPercent = p.totalCost !== 0 ? (profit / p.totalCost) * 100 : 0;
       }
 
+      if (p.actualTotalSales > p.actualTotalCost) {
+        actualProfit = p.actualTotalSales - p.actualTotalCost;
+        actualProfitPercent = p.actualTotalSales !== 0 ? (actualProfit / p.actualTotalSales) * 100 : 0;
+      } else {
+        actualProfit = -(p.actualTotalCost - p.actualTotalSales);
+        actualProfitPercent = p.actualTotalCost !== 0 ? (actualProfit / p.actualTotalCost) * 100 : 0;
+      }
+
       p.profit = profit.toFixed(this.digitsAfterDecimal);
       p.profitPercent = profitPercent.toFixed(this.digitsAfterDecimal) + "%";
       p.totalSales = p.totalSales.toFixed(this.digitsAfterDecimal);
       p.totalCost = p.totalCost.toFixed(this.digitsAfterDecimal);
+      p.actualProfit = actualProfit.toFixed(this.digitsAfterDecimal);
+      p.actualProfitPercent = actualProfitPercent.toFixed(this.digitsAfterDecimal) + "%";
+      p.actualTotalSales = p.actualTotalSales.toFixed(this.digitsAfterDecimal);
+      p.actualTotalCost = p.actualTotalCost.toFixed(this.digitsAfterDecimal);
     });
 
     console.log(this.profitSummary);
+  }
+
+  private getActualAmountsFromVoucherDetails(item: any): { revenue: number; cost: number } {
+    const voucherDetails =
+      item?.voucherDetail || item?.VoucherDetail || item?.VoucherDetails;
+    if (!Array.isArray(voucherDetails)) {
+      return { revenue: 0, cost: 0 };
+    }
+
+    return voucherDetails.reduce(
+      (totals: { revenue: number; cost: number }, detail: any) => {
+        const docType = (
+          detail?.VoucherHeader?.voucherTypeMaster?.DocumentTypeCode
+        ).toUpperCase();
+        const amount = parseFloat(detail?.LocalAmount || detail?.localAmount || 0) || 0;
+
+        if (docType === 'INV') {
+          totals.revenue += amount;
+        } else if (docType === 'VIN') {
+          totals.cost += amount;
+        }
+
+        return totals;
+      },
+      { revenue: 0, cost: 0 }
+    );
   }
 
   private loadProfitView() {
@@ -1750,6 +1800,18 @@ createRateFormGroup(data?: any): FormGroup {
     } else {
       return totalProfit / totalCost * 100;
     }
+  }
+
+  calculateActualTotalProfitPercent(): number {
+    const totalSales = this.calculateTotal('actualTotalSales');
+    const totalCost = this.calculateTotal('actualTotalCost');
+    const totalProfit = this.calculateTotal('actualProfit');
+
+    if (totalSales > totalCost) {
+      return totalSales !== 0 ? (totalProfit / totalSales) * 100 : 0;
+    }
+
+    return totalCost !== 0 ? (totalProfit / totalCost) * 100 : 0;
   }
 
   getTotalProfitPercent(): string {
@@ -2172,19 +2234,29 @@ createRateFormGroup(data?: any): FormGroup {
 
   reportProfitSummary(): void {
     const formattedData = this.profitSummary.map(row => ({
+      Type: row.sourceType || '',
       ChargeName: row.chargeName || '',
       TotalSales: parseFloat(row.totalSales) || 0,
       TotalCost: parseFloat(row.totalCost) || 0,
       Profit: parseFloat(row.profit) || 0,
-      ProfitPercent: row.profitPercent || '0%'
+      ProfitPercent: row.profitPercent || '0%',
+      ActualTotalSales: parseFloat(row.actualTotalSales) || 0,
+      ActualTotalCost: parseFloat(row.actualTotalCost) || 0,
+      ActualProfit: parseFloat(row.actualProfit) || 0,
+      ActualProfitPercent: row.actualProfitPercent || '0%'
     }));
 
     const totalRow = {
+      Type: '-',
       ChargeName: 'Total',
       TotalSales: this.calculateTotal('totalSales'),
       TotalCost: this.calculateTotal('totalCost'),
       Profit: this.calculateTotal('profit'),
-      ProfitPercent: `${this.calculateTotalProfitPercent().toFixed(this.digitsAfterDecimal)}%`
+      ProfitPercent: `${this.calculateTotalProfitPercent().toFixed(this.digitsAfterDecimal)}%`,
+      ActualTotalSales: this.calculateTotal('actualTotalSales'),
+      ActualTotalCost: this.calculateTotal('actualTotalCost'),
+      ActualProfit: this.calculateTotal('actualProfit'),
+      ActualProfitPercent: `${this.calculateActualTotalProfitPercent().toFixed(this.digitsAfterDecimal)}%`
     };
 
     formattedData.push(totalRow);
@@ -2194,11 +2266,16 @@ createRateFormGroup(data?: any): FormGroup {
     this.excelExportService.exportAsExcel({
       data: formattedData,
       headers: [
+        { key: 'Type', label: 'Type' },
         { key: 'ChargeName', label: 'Charge Name' },
-        { key: 'TotalSales', label: 'Total Sales' },
-        { key: 'TotalCost', label: 'Total Cost' },
-        { key: 'Profit', label: 'Profit' },
-        { key: 'ProfitPercent', label: 'Profit %' }
+        { key: 'TotalSales', label: 'P.Revenue Amt' },
+        { key: 'TotalCost', label: 'P.Cost Amt' },
+        { key: 'Profit', label: 'P.Profit' },
+        { key: 'ProfitPercent', label: 'P.Profit %' },
+        { key: 'ActualTotalSales', label: 'A.Revenue Amt' },
+        { key: 'ActualTotalCost', label: 'A.Cost Amt' },
+        { key: 'ActualProfit', label: 'A.Profit' },
+        { key: 'ActualProfitPercent', label: 'A.Profit %' }
       ],
       fileName: 'Profit-Summary-Report',
       title: companyName

@@ -22,6 +22,8 @@
             <th>BOE Date</th>
             <th>BOE Value</th>
             <th>Invoice Amount</th>
+            <th>Gross Weight</th>
+            <th>Volume</th>
             <th>Transaction Type</th>
             <th>Amount</th>
             <th colspan="2" class="text-center" style="border-left: 1px solid white; border-right: 1px solid white;">
@@ -34,7 +36,7 @@
           </tr>
 
           <tr class="subheader">
-            <th colspan="9"></th>
+            <th colspan="11"></th>
             <th style="border-left: 1px solid white;">Process Date</th>
             <th style="border-right: 1px solid white;">Recv'd Date</th>
             <th>Ack. No</th>
@@ -70,7 +72,6 @@
 
             <!-- BOE No -->
             <td>
-              
               <input formControlName="BOENo" class="custom-input-field sm"  [textWithNumbers]="20"
                      style="width:120px; height:22px; padding:2px 4px; font-size:12px;"
                       />
@@ -101,17 +102,34 @@
 
             <!-- Invoice No -->
             <td>
-              <input formControlName="BOEInvoiceValue" class="custom-input-field sm"
-              DecimalPrecision [DecimalPrecisionBefore]="12" [DecimalPrecisionAfter]="3"
-                     style="width:130px; height:22px; padding:2px 4px; font-size:12px;"
-                     />
+              <input formControlName="BOEInvoiceValue" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="12"
+                [DecimalPrecisionAfter]="3" style="width:130px; height:22px; padding:2px 4px; font-size:12px;" />
+            </td>
+
+            <!-- Gross Weight -->
+            <td>
+              <input formControlName="GrossWeight" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="12"
+                [DecimalPrecisionAfter]="3" style="width:110px; height:22px; padding:2px 4px; font-size:12px;" />
+            </td>
+
+            <!-- Volume -->
+            <td>
+              <input formControlName="Volume" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="12"
+                [DecimalPrecisionAfter]="3" style="width:110px; height:22px; padding:2px 4px; font-size:12px;" />
             </td>
 
             <!-- Transaction Type -->
             <td>
-              <input formControlName="TransactionType" class="custom-input-field sm" [textWithNumbers]="20"
-                     style="width:130px; height:22px; padding:2px 4px; font-size:12px;"
-                      />
+              <dofi-searchable-dropdown
+                [items]="transactionTypeOptions"
+                formControlName="TransactionType"
+                placeholder=""
+                [displayFields]="transactionTypeLookupConfig.displayFields"
+                [displayLabels]="transactionTypeLookupConfig.displayLabels"
+                [labelFields]="transactionTypeLookupConfig.labelFields"
+                bindValue="declarationType"
+                [style]="'width:200px; height:22px; font-size:12px;'">
+              </dofi-searchable-dropdown>
             </td>
 
             <!-- Amount -->
@@ -178,9 +196,15 @@
 
             <!-- Ack Status -->
             <td>
-              <input formControlName="AckStatus" class="custom-input-field sm" [textWithNumbers]="10"
-                     style="width:120px; height:22px; padding:2px 4px; font-size:12px;"
-                      />
+              <ng-select
+                formControlName="AckStatus"
+                [items]="ackStatusOptions"
+                [clearable]="false"
+                placeholder=""
+                appendTo="body"
+                class="custom-input-field sm"
+                style="width:120px; height:22px; font-size:12px;">
+              </ng-select>
             </td>
 
             <!-- Note -->
@@ -193,7 +217,7 @@
 
           <!-- Empty State -->
           <tr *ngIf="boeFormArray.length === 0">
-            <td colspan="14" class="text-center py-1">No BOE Records Found</td>
+            <td colspan="17" class="text-center py-1">No BOE Records Found</td>
           </tr>
         </tbody>
       </table>

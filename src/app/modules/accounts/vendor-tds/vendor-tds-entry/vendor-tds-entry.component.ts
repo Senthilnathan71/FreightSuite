@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, TemplateRef } from '@angular/core';
+import { Component, HostListener, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -7,7 +7,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { AccountsService } from '../../accounts.service';
-import { forkJoin, Subject } from 'rxjs';
+import { debounceTime, forkJoin, Subject, takeUntil } from 'rxjs';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
@@ -24,6 +24,7 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 @Component({
   selector: 'app-vendor-tds-entry',
@@ -47,7 +48,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
   ],
 })
-export class VendorTdsEntryComponent {
+export class VendorTdsEntryComponent implements HasUnsavedChanges {
     private destroy$ = new Subject<void>();
   
 
@@ -73,6 +74,9 @@ export class VendorTdsEntryComponent {
   MenuMasterSid: any;
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
+  isDirty: boolean = false;
+  isSaving: boolean = false;
+  private initialFormValue: any = null;
 
 
   constructor(
@@ -113,6 +117,12 @@ export class VendorTdsEntryComponent {
     if (!this.isEditMode) {
       this.minEffectiveFromDate = this.toNgbDateStruct(this.todayDate);
     }
+
+    setTimeout(() => {
+      this.initialFormValue = this.supplierTDSForm.getRawValue();
+      this.supplierTDSForm.markAsPristine();
+      this.subscribeToFormChanges();
+    }, 0);
   }
 
 
@@ -212,6 +222,11 @@ export class VendorTdsEntryComponent {
             EffectiveTo: [new Date(response.EffectiveTo)],
           }));
           this.handleLedgerChange(response.customerMaster);
+          setTimeout(() => {
+            this.initialFormValue = this.supplierTDSForm.getRawValue();
+            this.isDirty = false;
+            this.supplierTDSForm.markAsPristine();
+          }, 0);
         } else {
           this.appSettingService.showError('Error loading supplier TDS');
           console.error('Error loading supplier TDS', resp.message);
@@ -223,14 +238,30 @@ export class VendorTdsEntryComponent {
     });
   }
 
-  onSubmit() {
+
+  onSubmit(resolve?: (value: boolean) => void) {
     console.log("Submit triggered")
+    if (this.isSaving) {
+      if (resolve) resolve(false);
+      return;
+    }
+
+    const raw = this.supplierTDSForm.getRawValue();
+    if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      this.supplierTDSForm.markAsUntouched();
+      if (resolve) resolve(false);
+      return;
+    }
+
     if (this.supplierTDSForm.invalid) {
       this.supplierTDSForm.markAllAsTouched();
       this.supplierTDSForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all the required fields correctly.');
+      if (resolve) resolve(false);
       return;
     }
+    this.isSaving = true;
     this.supplierTDSForm.get('CompanyType').enable();
     const formValue = this.supplierTDSForm.value;
     const currUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
@@ -262,29 +293,96 @@ export class VendorTdsEntryComponent {
     if (this.isEditMode) {
       this.accountService.updateSupplierTDSById(this.SupplierTdsMappingSid, payload).subscribe({
         next: (resp: any) => {
+          this.isSaving = false;
           if (resp.status) {
             this.appSettingService.showSuccess(resp.message)
+            this.isDirty = false;
+            this.initialFormValue = this.supplierTDSForm.getRawValue();
+            this.supplierTDSForm.markAsPristine();
             this.router.navigate(['/accounts/supplier-tds/entry'],resp.data.SupplierTdsMappingSid);
+            if (resolve) resolve(true);
           } else {
            this.appSettingService.showError(resp.message);
             console.error(resp.message);
+            if (resolve) resolve(false);
           }
         },
+        error: () => {
+          this.isSaving = false;
+          if (resolve) resolve(false);
+        }
       });
     } else {
       this.accountService.createSupplierTDS(payload).subscribe({
         next: (resp: any) => {
+          this.isSaving = false;
           if (resp.status) {
             this.loadSupplierTDS[(resp.data.SupplierTdsMappingSid)];
             this.appSettingService.showSuccess(resp.message);
+            this.isDirty = false;
+            this.initialFormValue = this.supplierTDSForm.getRawValue();
+            this.supplierTDSForm.markAsPristine();
             this.router.navigate(['/accounts/supplier-tds/entry'],resp.data.SupplierTdsMappingSid);
+            if (resolve) resolve(true);
           } else {
             this.appSettingService.showError(resp.message);
             console.error(resp.message);
+            if (resolve) resolve(false);
           }
         },
+        error: () => {
+          this.isSaving = false;
+          if (resolve) resolve(false);
+        }
       });
     }
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return !!this.supplierTDSForm && (this.isDirty || this.supplierTDSForm.dirty);
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
+
+  subscribeToFormChanges() {
+    this.supplierTDSForm.valueChanges
+      .pipe(debounceTime(300), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.isDirty = !this.deepEqual(this.initialFormValue, this.supplierTDSForm.getRawValue());
+      });
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString().split('T')[0];
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) return Number(value);
+    if (typeof value === 'number') return Number(value.toFixed(6));
+    if (Array.isArray(value)) return value.map(v => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value).sort().reduce((acc: any, key) => {
+        acc[key] = this.normalizeValue(value[key]);
+        return acc;
+      }, {});
+    }
+    return value;
+  }
+
+  deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
   }
 
 
@@ -420,7 +518,7 @@ openAuditLogs(modal: TemplateRef<any>) {
   }
 
   navigateBack() {
-    history.back();
+    this.router.navigate(['/accounts/supplier-tds/list']);
   }
 
   showInfo() {
@@ -554,6 +652,9 @@ openAuditLogs(modal: TemplateRef<any>) {
 
   // Clear form validation states
   this.supplierTDSForm.markAsUntouched();
+  this.supplierTDSForm.markAsPristine();
+  this.initialFormValue = this.supplierTDSForm.getRawValue();
+  this.isDirty = false;
   this.supplierTDSForm.updateValueAndValidity();
 
   // Reset delete toggler if active

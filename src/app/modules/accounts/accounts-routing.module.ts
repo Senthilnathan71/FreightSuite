@@ -149,6 +149,7 @@ export const AccountRoutes: Routes = [
       {
         path: "supplier-tds/entry",
         component: VendorTdsEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Supplier TDS Mapping",
           urls: [
@@ -160,6 +161,7 @@ export const AccountRoutes: Routes = [
       {
         path: "supplier-tds/entry/:id",
         component: VendorTdsEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Supplier TDS Mapping",
           urls: [
@@ -171,6 +173,7 @@ export const AccountRoutes: Routes = [
       {
         path: "ledger-mapping/list",
         component: LedgerMappingComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Ledger Mapping",
           urls: [
@@ -391,6 +394,7 @@ export const AccountRoutes: Routes = [
          {
         path: "voucher-matching/entry",
         component:VoucherMatchingEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Voucher-Matching",
           urls: [
@@ -403,6 +407,7 @@ export const AccountRoutes: Routes = [
       {
         path: "voucher-matching/entry/:VoucherMatchingHeaderSid",
         component: VoucherMatchingEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Voucher-Matching",
           urls: [
@@ -416,6 +421,7 @@ export const AccountRoutes: Routes = [
       {
         path: "voucher-matching/view/:VoucherMatchingHeaderSid",
         component: VoucherMatchingViewComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "View Voucher Matching",
           urls: [

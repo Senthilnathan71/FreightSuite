@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit, TemplateRef, Input } from '@angular/core';
+import { Component, ViewChild, OnInit, TemplateRef, Input, HostListener, OnDestroy } from '@angular/core';
 import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
@@ -7,7 +7,7 @@ import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } fr
 import { CommonModule } from '@angular/common';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { catchError, forkJoin, of, tap } from 'rxjs';
+import { catchError, debounceTime, forkJoin, of, Subject, takeUntil, tap } from 'rxjs';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { CurrencyConfigurationService } from 'src/app/core/services/currency-config.service';
@@ -28,6 +28,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { CommonService } from 'src/app/common/common.service';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 @Component({
   selector: 'app-standard-charge-entry',
@@ -50,7 +51,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
   ],
 })
-export class StandardChargeEntryComponent implements OnInit {
+export class StandardChargeEntryComponent implements OnInit,OnDestroy, HasUnsavedChanges {
 
   @ViewChild('departmentLookup') departmentLookup!: SearchableDropdown;
   @ViewChild('chargeLookup') chargeLookup!: SearchableDropdown;
@@ -107,6 +108,11 @@ export class StandardChargeEntryComponent implements OnInit {
   get currencyList(): any[] {
     return this._currencyList;
   }
+
+  private initialFormValue: any = null;
+  private destroy$ = new Subject<void>();
+  isDirty: boolean = false;
+  isSaving: boolean = false;
   constructor(
     private fb: FormBuilder,
     private appSettingsService: AppSettingsService,
@@ -128,6 +134,12 @@ export class StandardChargeEntryComponent implements OnInit {
 
   ngOnInit(): void {
     this.initForm();
+     setTimeout(() => {
+      this.initialFormValue = this.getNormalizedFormValue();
+    });
+    
+    // Subscribe to form changes
+    this.subscribeToFormChanges();
     const today = new Date();
 
     this.minValidFrom = {
@@ -146,6 +158,11 @@ export class StandardChargeEntryComponent implements OnInit {
             this.isEditMode = true;
             this.StdRateHeaderSid = +id;
             this.loadStandardChargeById(this.StdRateHeaderSid);
+          } else {
+            // For create mode, set initial value after form is ready
+            setTimeout(() => {
+              this.initialFormValue = this.getNormalizedFormValue();
+            });
           }
         });
       }
@@ -242,9 +259,111 @@ export class StandardChargeEntryComponent implements OnInit {
     return this.standardChargeForm.get('StdTariffDetails') as FormArray;
   }
 
-  addRow() { this.StdTariffDetails.push(this.createChargeRow()); setTimeout(() => this.updateChargeStatusLock()); }
-  removeRow(index: number) { if (this.StdTariffDetails.length > 1) this.StdTariffDetails.removeAt(index); }
+  addRow() { this.StdTariffDetails.push(this.createChargeRow()); setTimeout(() => this.updateChargeStatusLock());this.isDirty = true; }
+  removeRow(index: number) { if (this.StdTariffDetails.length > 1) this.StdTariffDetails.removeAt(index); this.isDirty = true;}
 
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    const currentSnapshot = this.getNormalizedFormValue();
+    this.isDirty = !this.deepEqual(this.initialFormValue, currentSnapshot);
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
+
+  private getNormalizedFormValue(): any {
+    const rawValue = this.standardChargeForm?.getRawValue();
+    if (!rawValue) return null;
+    
+    // Deep clone and normalize for comparison
+    const normalized = JSON.parse(JSON.stringify(rawValue));
+    
+    // Normalize dates in StdTariffDetails
+    if (normalized.StdTariffDetails && Array.isArray(normalized.StdTariffDetails)) {
+      normalized.StdTariffDetails = normalized.StdTariffDetails.map((detail: any) => {
+        const normalizedDetail = { ...detail };
+        
+        // Convert date strings to comparable format
+        if (normalizedDetail.ValidFrom && typeof normalizedDetail.ValidFrom === 'object') {
+          normalizedDetail.ValidFrom = this.dateStructToString(normalizedDetail.ValidFrom);
+        }
+        if (normalizedDetail.ValidTo && typeof normalizedDetail.ValidTo === 'object') {
+          normalizedDetail.ValidTo = this.dateStructToString(normalizedDetail.ValidTo);
+        }
+        
+        return normalizedDetail;
+      });
+    }
+    
+    return normalized;
+  }
+
+    private dateStructToString(dateStruct: NgbDateStruct): string {
+    if (!dateStruct) return '';
+    return `${dateStruct.year}-${dateStruct.month}-${dateStruct.day}`;
+  }
+
+  // Subscribe to form changes to track dirtiness
+  private subscribeToFormChanges(): void {
+    if (!this.standardChargeForm) return;
+    
+    this.standardChargeForm.valueChanges
+      .pipe(takeUntil(this.destroy$), debounceTime(300))
+      .subscribe(() => {
+        this.isDirty = !this.deepEqual(this.initialFormValue, this.getNormalizedFormValue());
+      });
+  }
+
+   private deepEqual(obj1: any, obj2: any): boolean {
+    if (obj1 === obj2) return true;
+    if (!obj1 || !obj2) return false;
+    
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString().split('T')[0];
+    if (Array.isArray(value)) return value.map(item => this.normalizeValue(item));
+    if (typeof value === 'object') {
+      // Handle NgbDateStruct
+      if ('year' in value && 'month' in value && 'day' in value) {
+        return `${value.year}-${value.month}-${value.day}`;
+      }
+      return Object.keys(value).reduce((result: any, key: string) => {
+        result[key] = this.normalizeValue(value[key]);
+        return result;
+      }, {});
+    }
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) return Number(value);
+    return value;
+  }
+
+    private hasNoChangesToSave(): boolean {
+    const currentValue = this.getNormalizedFormValue();
+    return this.deepEqual(currentValue, this.initialFormValue) && !this.isDirty;
+  }
+
+  // Update initial form value after save/load
+  private updateInitialFormValue(): void {
+    setTimeout(() => {
+      this.initialFormValue = this.getNormalizedFormValue();
+      this.isDirty = false;
+      this.standardChargeForm.markAsPristine();
+      this.standardChargeForm.markAsUntouched();
+    });
+  }
 
   loadStandardChargeById(id: number) {
     this.spinner.show();
@@ -304,6 +423,7 @@ export class StandardChargeEntryComponent implements OnInit {
             this.updateChargeStatusLock();
           });
         });
+        this.updateInitialFormValue();
         this.spinner.hide();
       },
       error: err => console.error('Failed to load standard charge:', err)
@@ -398,14 +518,27 @@ export class StandardChargeEntryComponent implements OnInit {
     console.log(this.filteredChargeList,"Filter Charge List")
   }
 
-  onSubmit() {
+  onSubmit(resolve?: (value: boolean) => void) {
+    if (this.isEditMode && this.hasNoChangesToSave()) {
+      this.appSettingService.showWarning('No changes to save');
+      this.standardChargeForm.markAsUntouched();
+      if (resolve) resolve(false);
+      return;
+    }
+    
+    if (this.isSaving) {
+      if (resolve) resolve(false);
+      return;
+    }
     if (this.standardChargeForm.invalid) {
       this.appSettingService.showWarning("Please fill all the required fields correctly");
       this.standardChargeForm.markAllAsTouched();
       this.standardChargeForm.updateValueAndValidity();
+      if (resolve) resolve(false);
       return;
     }
 
+    this.isSaving = true;
     const formValue = this.standardChargeForm.getRawValue();
     const mappedDetails = formValue.StdTariffDetails.map((row: any) => {
       const selectedCharge = this.charge.find(
@@ -442,6 +575,7 @@ export class StandardChargeEntryComponent implements OnInit {
 
     operation.subscribe({
       next: (res: any) => {
+        this.isSaving = false;
         if (res.status) {
           if (this.isEditMode) {
             this.loadStandardChargeById(this.StdRateHeaderSid);
@@ -450,11 +584,18 @@ export class StandardChargeEntryComponent implements OnInit {
             this.appSettingService.showSuccess("Standard-Charge is created successfully");
             this.router.navigate(['/master/standard-charge/entry']);
           }
+          this.updateInitialFormValue();
+          if (resolve) resolve(true);
         } else {
           this.appSettingService.showError(res.message);
+          if (resolve) resolve(false);
         }
       },
-      error: err => console.error('Error saving standard charge:', err)
+      error: err => {
+        this.isSaving = false;
+        console.error('Error saving standard charge:', err);
+        if (resolve) resolve(false);
+      }
     });
   }
 
@@ -466,6 +607,7 @@ export class StandardChargeEntryComponent implements OnInit {
       this.standardChargeForm.reset({ Status: 'A' });
       this.StdTariffDetails.clear();
       this.StdTariffDetails.push(this.createChargeRow());
+      this.updateInitialFormValue();
     }
   }
 
@@ -671,6 +813,11 @@ export class StandardChargeEntryComponent implements OnInit {
       this.StdTariffDetails.removeAt(index);
       this.StdTariffDetails.updateValueAndValidity();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
 }

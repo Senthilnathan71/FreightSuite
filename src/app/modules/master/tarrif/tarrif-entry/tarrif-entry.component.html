@@ -45,10 +45,25 @@
                             <span>Copy</span>
                         </button>
 
-                    <button appPreventMultiClick type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="onSave()"
+                    <!-- <button appPreventMultiClick type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="onSave()"
                         [disabled]="(!mps.can('update') && isEditMode) || btnDisable">
                         <i class="fas fa-save me-1"></i> Save
-                    </button>
+                    </button> -->
+
+                    <div class="action-group primary">
+  <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
+          [ngClass]="{'btn-info': !hasUnsavedChanges(), 'btn-warning': hasUnsavedChanges()}"
+          (click)="onSave()"  
+          [disabled]="(!mps.can('update') && isEditMode) || btnDisable" >
+    <i class="fas fa-save me-1"></i>
+    <span>{{ isSaving ? "Saving..." : "Save" }}</span> 
+    <span *ngIf="hasUnsavedChanges()"
+          class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+          title="You have unsaved changes">
+      <span class="visually-hidden">unsaved changes</span>
+    </span>
+  </button>
+</div>
                    
 
                  <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">

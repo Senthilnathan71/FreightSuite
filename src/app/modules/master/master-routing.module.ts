@@ -89,6 +89,7 @@ import { StandardChargeEntryComponent } from './standard-charge/standard-charge-
 import { PrintMasterListComponent } from './print-master/print-master-list/print-master-list.component';
 import { PreCustomerEventListComponent } from './pre-customer-event/pre-customer-event-list/pre-customer-event-list.component';
 import { PreCustomerEventEntryComponent } from './pre-customer-event/pre-customer-event-entry/pre-customer-event-entry.component';
+import { UnsavedChangesGuard } from 'src/app/core/guards/unsaved-changes.guard';
 
 export const MasterRoutes: Routes = [
   {
@@ -371,6 +372,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'tarrif/entry',
         component: TarrifEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Add Tarrif',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Tarrif' }],
@@ -379,6 +381,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'tarrif/entry/:id',
         component: TarrifEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Edit Tarrif',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Edit Tarrif' }],
@@ -420,6 +423,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'company/entry',
         component: CompanyEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Company',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Company' }],
@@ -428,6 +432,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'company/entry/:id',
         component: CompanyEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Edit Company',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Company' }],
@@ -532,6 +537,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'organization/entry',
         component: OrganizationEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Organization',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Organization' }],
@@ -540,6 +546,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'organization/entry/:id',
         component: OrganizationEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Organization',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Organization' }],
@@ -1008,6 +1015,7 @@ export const MasterRoutes: Routes = [
   {
     path: 'doctype/entry',
     component: DoctypeComponent,
+    canDeactivate: [UnsavedChangesGuard],
     data: {
       title: 'Document Type',
       urls: [
@@ -1019,6 +1027,7 @@ export const MasterRoutes: Routes = [
   {
     path: 'doctype/entry/:id',
     component: DoctypeComponent,
+    canDeactivate: [UnsavedChangesGuard],
     data: {
       title: 'Document Type',
       urls: [
@@ -1324,6 +1333,7 @@ export const MasterRoutes: Routes = [
     {
     path: 'standard-charge/entry',
     component: StandardChargeEntryComponent,
+    canDeactivate: [UnsavedChangesGuard],
     data: {
       title: 'Standard Charge',
       urls: [
@@ -1335,6 +1345,7 @@ export const MasterRoutes: Routes = [
     {
     path: 'standard-charge/entry/:id',
     component: StandardChargeEntryComponent,
+    canDeactivate: [UnsavedChangesGuard],
     data: {
       title: 'Standard Charge',
       urls: [

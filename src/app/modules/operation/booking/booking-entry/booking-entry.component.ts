@@ -165,6 +165,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   isSaving : boolean = false;
   lastCreditValidationMessage: string = '';
   isDirty: boolean = false;
+  private hasSubscribedToFormChanges: boolean = false;
   private initialFormValue: any = null;
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
@@ -343,9 +344,12 @@ export class BookingEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   productForm !: FormGroup;
   croForm !: FormGroup;
   countryOfCompany: string;
+  private readonly productCalculationOverrides = new WeakMap<FormGroup, { volumeManual: boolean; volumetricManual: boolean }>();
   private readonly productValidationConfig: ValidationMessageConfig = {
     labels: {
       ProductName: 'Commodity',
+      ShippingBillNo: 'Shipping Bill No',
+      ShippingBillDate: 'Shipping Bill Date',
       ExternaPkg: 'External Package',
       ExternlQty: 'External Quantity',
       GrossWeight: 'Gross Weight',
@@ -353,6 +357,13 @@ export class BookingEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
       Volume: 'CBM',
       Volumetric: 'Volumetric Weight',
       UomMasterSid: 'UOM',
+      CargoRecDate: 'Cargo Received Date',
+      Length: 'Length',
+      Width: 'Width',
+      Height: 'Height',
+      ImcoClass: 'Imco Class',
+      UnNo: 'UN No',
+      PkgGroup: 'Pkg Group',
     },
     messages: {
       required: (label: string) => `${label} is required.`,
@@ -676,6 +687,8 @@ get visibleTabs() {
       this.loadCargoLookups();
       this.loadProductLookups();
       this.loadOtherLookups();
+      this.captureInitialFormState();
+      this.subscribeToFormChanges();
 
       this.bookingForm.get('IncoTerms')?.valueChanges.subscribe((incoTerm) => {
         this.autoSetFreightTerms(incoTerm);
@@ -785,6 +798,11 @@ async saveChanges(): Promise<boolean> {
 }
 
 subscribeToFormChanges() {
+  if (this.hasSubscribedToFormChanges) {
+    return;
+  }
+  this.hasSubscribedToFormChanges = true;
+
   // Subscribe to booking form changes
   this.bookingForm.valueChanges
     .pipe(takeUntil(this.destroy$), debounceTime(300))
@@ -845,8 +863,6 @@ subscribeToFormChanges() {
 
 
   isFormDirty(): boolean {
-  if (!this.isEditMode) return false;
-
   return this.isDirty;
 }
   /**
@@ -1115,14 +1131,18 @@ private calculateCBM() {
     return;
   }
 
+  if (this.isProductFieldManuallyManaged(this.productForm, 'Volume')) {
+    return;
+  }
+
   const externlQty = this.parseFloatSafe(this.productForm.get('ExternlQty')?.value);
   const length = this.parseFloatSafe(this.productForm.get('Length')?.value);
   const width = this.parseFloatSafe(this.productForm.get('Width')?.value);
   const height = this.parseFloatSafe(this.productForm.get('Height')?.value);
   const uomMasterSid = this.productForm.get('UomMasterSid')?.value;
   
-  // Calculate immediately if we have at least some values
-  if (externlQty >= 0 && length >= 0 && width >= 0 && height >= 0 && uomMasterSid) {
+  // Calculate only when the full dimensional inputs are present.
+  if (externlQty > 0 && length > 0 && width > 0 && height > 0 && uomMasterSid) {
     // const cbm = this.volumetricAndCbmCalculationService.calculateCBM(externlQty, length, width, height, uomMasterSid);
     let cbm = this.volumetricAndCbmCalculationService.calculateCBM(
       externlQty, length, width, height, uomMasterSid, this.digitsAfterDecimal
@@ -1149,14 +1169,17 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
      if (this.isPatching) {
       return;
     }
+    if (this.isProductFieldManuallyManaged(productForm, 'Volumetric')) {
+      return;
+    }
     const externlQty = Number(productForm.get('ExternlQty')?.value) || 0;
     const length = Number(productForm.get('Length')?.value) || 0;
     const width = Number(productForm.get('Width')?.value) || 0;
     const height = Number(productForm.get('Height')?.value) || 0;
     const uomMasterSid = productForm.get('UomMasterSid')?.value;
     
-    // Calculate if we have at least one dimension and quantity
-    if (externlQty > 0 && (length > 0 || width > 0 || height > 0) && uomMasterSid) {
+    // Calculate only when the full dimensional set is available.
+    if (externlQty > 0 && length > 0 && width > 0 && height > 0 && uomMasterSid) {
       let volumetric = this.volumetricAndCbmCalculationService.calculateVolumetric(
         externlQty, length, width, height, uomMasterSid, 
         this.selectedFCLLCL as 'LCL' | 'AIR', 
@@ -1384,10 +1407,39 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       if (this.isPatching) {
         return;
       }
+      if (field === 'Volume' || field === 'Volumetric') {
+        this.markProductFieldManualOverride(productForm, field as 'Volume' | 'Volumetric');
+      }
       const targetCargoIndex = this.getCargoIndexForProductForm(productForm);
       this.handleProductRelatedCalculation(targetCargoIndex);
     });
   });
+}
+
+private getProductCalculationOverrideState(productForm: FormGroup): { volumeManual: boolean; volumetricManual: boolean } {
+  let state = this.productCalculationOverrides.get(productForm);
+  if (!state) {
+    state = { volumeManual: false, volumetricManual: false };
+    this.productCalculationOverrides.set(productForm, state);
+  }
+  return state;
+}
+
+private markProductFieldManualOverride(productForm: FormGroup, field: 'Volume' | 'Volumetric'): void {
+  const state = this.getProductCalculationOverrideState(productForm);
+  const value = productForm.get(field)?.value;
+  const isManual = value !== null && value !== undefined && value !== '';
+
+  if (field === 'Volume') {
+    state.volumeManual = isManual;
+  } else {
+    state.volumetricManual = isManual;
+  }
+}
+
+private isProductFieldManuallyManaged(productForm: FormGroup, field: 'Volume' | 'Volumetric'): boolean {
+  const state = this.getProductCalculationOverrideState(productForm);
+  return field === 'Volume' ? state.volumeManual : state.volumetricManual;
 }
 
 private resolvePackageTypeSid(value: any): number | null {
@@ -1455,6 +1507,8 @@ private calculateProductFormCBMAndVolumetric(productForm: FormGroup) {
   if (!this.usesDimensionalCargoFields()) {
     return;
   }
+  const volumeManuallyManaged = this.isProductFieldManuallyManaged(productForm, 'Volume');
+  const volumetricManuallyManaged = this.isProductFieldManuallyManaged(productForm, 'Volumetric');
   const externlQty = this.parseFloatSafe(productForm.get('ExternlQty')?.value);
   const length = this.parseFloatSafe(productForm.get('Length')?.value);
   const width = this.parseFloatSafe(productForm.get('Width')?.value);
@@ -1462,7 +1516,7 @@ private calculateProductFormCBMAndVolumetric(productForm: FormGroup) {
   const uomMasterSid = productForm.get('UomMasterSid')?.value;
 
   // Calculate both CBM and Volumetric when UOM or dimensions change
-  if (externlQty >= 0 && length >= 0 && width >= 0 && height >= 0 && uomMasterSid) {
+  if (externlQty > 0 && length > 0 && width > 0 && height > 0 && uomMasterSid) {
     const { cbm, volumetric } = this.volumetricAndCbmCalculationService.calculateCBMAndVolumetric(
       externlQty, length, width, height, uomMasterSid,
       this.selectedFCLLCL as 'LCL' | 'AIR',
@@ -1470,16 +1524,24 @@ private calculateProductFormCBMAndVolumetric(productForm: FormGroup) {
     );
     
     // Update both fields
-    productForm.get('Volume')?.setValue(cbm > 0 ? cbm : '', { emitEvent: false });
-    productForm.get('Volumetric')?.setValue(volumetric > 0 ? volumetric : '', { emitEvent: false });
+    if (!volumeManuallyManaged) {
+      productForm.get('Volume')?.setValue(cbm > 0 ? cbm : '', { emitEvent: false });
+    }
+    if (!volumetricManuallyManaged) {
+      productForm.get('Volumetric')?.setValue(volumetric > 0 ? volumetric : '', { emitEvent: false });
+    }
     
      // Update the cargo row that owns this product.
      setTimeout(() => {
       this.handleProductRelatedCalculation(this.getCargoIndexForProductForm(productForm));
      }, 100);
   } else {
-    productForm.get('Volume')?.setValue('', { emitEvent: false });
-    productForm.get('Volumetric')?.setValue('', { emitEvent: false });
+    if (!volumeManuallyManaged) {
+      productForm.get('Volume')?.setValue('', { emitEvent: false });
+    }
+    if (!volumetricManuallyManaged) {
+      productForm.get('Volumetric')?.setValue('', { emitEvent: false });
+    }
   }
 }
 
@@ -1538,6 +1600,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     const formGroup = this.createBookingProductGroup();
     formGroup.get('UomMasterSid')?.setValue(2, { emitEvent: true });
     this.bookingProducts.push(formGroup);
+    this.bookingProducts.updateValueAndValidity({ emitEvent: false });
   }
 
   createBookingConnectionGroup(data?: any): FormGroup {
@@ -1696,6 +1759,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     this.destroy$.next();
     this.destroy$.complete();
     this.destroy$ = new Subject<void>();
+    this.hasSubscribedToFormChanges = false;
     this.operationService.getBookingById(BookingHeaderSid).subscribe(
       (resp: any) => {
         if (resp.status) {
@@ -2793,22 +2857,24 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         isValid = false;
       }
 
+      const cargoProducts = cargoGroup.get('bookingProducts') as FormArray;
       const grossWeight = Number(cargoGroup.get('GrossWeight')?.value) || 0;
       const volume = Number(cargoGroup.get('Volume')?.value) || 0;
-      if (grossWeight <= 0) {
-        errorMessages.push(`Cargo ${cargoIndex + 1}: Gross Weight is required`);
-        cargoGroup.get('GrossWeight')?.setErrors({ min: true });
-        setFirstInvalidTab('Cargo');
-        isValid = false;
-      }
-      if (volume <= 0 && cargoGroup.get('Volume')) {
-        errorMessages.push(`Cargo ${cargoIndex + 1}: CBM is required`);
-        cargoGroup.get('Volume')?.setErrors({ min: true });
-        setFirstInvalidTab('Cargo');
-        isValid = false;
+      if (cargoProducts.length === 0) {
+        if (grossWeight <= 0) {
+          errorMessages.push(`Cargo ${cargoIndex + 1}: Gross Weight is required`);
+          cargoGroup.get('GrossWeight')?.setErrors({ min: true });
+          setFirstInvalidTab('Cargo');
+          isValid = false;
+        }
+        if (volume <= 0 && cargoGroup.get('Volume')) {
+          errorMessages.push(`Cargo ${cargoIndex + 1}: CBM is required`);
+          cargoGroup.get('Volume')?.setErrors({ min: true });
+          setFirstInvalidTab('Cargo');
+          isValid = false;
+        }
       }
 
-      const cargoProducts = cargoGroup.get('bookingProducts') as FormArray;
       cargoProducts.controls.forEach((productGroup: FormGroup, productIndex: number) => {
         if (productGroup.invalid) {
           productGroup.markAllAsTouched();
@@ -2876,6 +2942,12 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
               } else {
                 errorMessages.push(`Product ${index + 1}: ${this.getFieldLabel(key)} is required`);
               }
+            } else if (control.errors['min']) {
+              errorMessages.push(`Product ${index + 1}: ${this.getFieldLabel(key)} must be greater than 0`);
+            } else if (control.errors['grossLessThanNet']) {
+              errorMessages.push(`Product ${index + 1}: Gross Weight cannot be less than Net Weight`);
+            } else if (control.errors['netGreaterThanGross']) {
+              errorMessages.push(`Product ${index + 1}: Net Weight cannot be greater than Gross Weight`);
             }
           }
         });
@@ -2890,35 +2962,6 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         isValid = false;
       }
 
-      // ADD THIS: Check if weight fields are 0 (which shouldn't be allowed)
-      const grossWeight = Number(productGroup.get('GrossWeight')?.value) || 0;
-      const volume = Number(productGroup.get('Volume')?.value) || 0;
-
-      // For LCL and AIR: GrossWeight and NetWeight must be greater than 0
-      if (this.selectedFCLLCL === 'LCL' || this.selectedFCLLCL === 'AIR') {
-        if (grossWeight <= 0) {
-          errorMessages.push(`Product ${index + 1}: Gross Weight is required`);
-          productGroup.get('GrossWeight')?.setErrors({ min: true });
-          setFirstInvalidTab('Cargo');
-          isValid = false;
-        }
-      }
-
-      // For FCL: GrossWeight, NetWeight, and Volume must be greater than 0
-      if (this.selectedFCLLCL === 'FCL') {
-        if (grossWeight <= 0) {
-          errorMessages.push(`Product ${index + 1}: Gross Weight is required`);
-          productGroup.get('GrossWeight')?.setErrors({ min: true });
-          setFirstInvalidTab('Cargo');
-          isValid = false;
-        }
-        if (volume <= 0) {
-          errorMessages.push(`Product ${index + 1}: CBM is required`);
-          productGroup.get('Volume')?.setErrors({ min: true });
-          setFirstInvalidTab('Cargo');
-          isValid = false;
-        }
-      }
     });
   }
 
@@ -5139,7 +5182,7 @@ getFormattedPort(code: string): string {
   private captureInitialFormState(): void {
     // Use a small timeout to ensure the form values are fully settled after patching.
     setTimeout(() => {
-      this.initialFormValue = JSON.stringify(this.getCurrentFormState());
+      this.initialFormValue = this.getCurrentFormState();
     }, 500);
   }
 
@@ -5202,8 +5245,6 @@ getFormattedPort(code: string): string {
 deepEqual(obj1: any, obj2: any): boolean {
   const normalizedObj1 = this.normalizeValue(obj1);
   const normalizedObj2 = this.normalizeValue(obj2);
-  console.log(normalizedObj1,'obj1');
-  console.log(normalizedObj2,'obj2');
   return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
 }
 
@@ -5418,7 +5459,7 @@ deepEqual(obj1: any, obj2: any): boolean {
 
   private shouldValidateBookingCargoGroup(cargoGroup: FormGroup): boolean {
     const cargoProducts = cargoGroup.get('bookingProducts') as FormArray | null;
-    return !!(cargoGroup.dirty || cargoProducts?.dirty);
+    return !!(cargoGroup.dirty || cargoProducts?.dirty || (cargoProducts?.length ?? 0) > 0);
   }
 
   private createCargoProductGroup(data?: any, isPatching: boolean = false): FormGroup {
@@ -5463,6 +5504,9 @@ deepEqual(obj1: any, obj2: any): boolean {
     this.cargoForm = cargoGroup;
     const products = cargoGroup.get('bookingProducts') as FormArray;
     products.push(this.createCargoProductGroup(data, true));
+    products.markAsDirty();
+    cargoGroup.markAsDirty();
+    cargoGroup.updateValueAndValidity({ emitEvent: false });
     this.handleProductRelatedCalculation(cargoIndex);
   }
 
@@ -7062,10 +7106,23 @@ getFieldLabel(fieldName: string): string {
     'IncoTerms': 'INCO Terms',
     
     // Cargo Form Fields
+    'ProductName': 'Commodity',
+    'ShippingBillNo': 'Shipping Bill No',
+    'ShippingBillDate': 'Shipping Bill Date',
     'ExternaPkg': 'External Package',
     'ExternlQty': 'External Quantity',
     'GrossWeight': 'Gross Weight',
+    'NetWeight': 'Net Weight',
+    'Volume': 'CBM',
     'Volumetric': 'Volumetric Weight',
+    'UomMasterSid': 'UOM',
+    'CargoRecDate': 'Cargo Received Date',
+    'Length': 'Length',
+    'Width': 'Width',
+    'Height': 'Height',
+    'ImcoClass': 'Imco Class',
+    'UnNo': 'UN No',
+    'PkgGroup': 'Pkg Group',
     
     // CRO Form Fields
     'ReleaseOrderDate': 'Release Order Date',
@@ -7088,6 +7145,47 @@ private getProductValidationMessage(): string {
   }
 
   return 'Please fill all required product fields correctly.';
+}
+
+public shouldShowProductFieldError(product: AbstractControl | null, fieldName: string): boolean {
+  const control = product?.get(fieldName);
+  return !!control && control.invalid && (control.touched || control.dirty);
+}
+
+public getProductFieldErrorMessage(product: AbstractControl | null, fieldName: string): string {
+  const control = product?.get(fieldName);
+
+  if (!control || !control.errors) {
+    return '';
+  }
+
+  const label = this.getFieldLabel(fieldName);
+
+  if (control.errors['required']) {
+    return `${label} is required`;
+  }
+
+  if (control.errors['min']) {
+    return `${label} must be greater than 0`;
+  }
+
+  if (control.errors['max']) {
+    return `${label} is too large`;
+  }
+
+  if (control.errors['decimalPrecision']) {
+    return `${label} has invalid decimal precision`;
+  }
+
+  if (control.errors['grossLessThanNet']) {
+    return 'Gross Weight cannot be less than Net Weight';
+  }
+
+  if (control.errors['netGreaterThanGross']) {
+    return 'Net Weight cannot be greater than Gross Weight';
+  }
+
+  return `${label} is invalid`;
 }
 
 get isTranshipmentMode(): boolean {
