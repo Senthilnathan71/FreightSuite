@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
@@ -11,7 +11,7 @@ import { ActivityFeedItem } from '../../../interfaces/sales-manager-dashboard.in
   imports: [CommonModule, TimeAgoPipe],
   templateUrl: './sm-activity-feed.component.html'
 })
-export class SmActivityFeedComponent {
+export class SmActivityFeedComponent implements OnInit , OnDestroy {
   @Input() items: ActivityFeedItem[] = [];
   @Input() loading = false;
   @Output() activityClicked = new EventEmitter<ActivityFeedItem>();
@@ -21,7 +21,21 @@ export class SmActivityFeedComponent {
   refreshing = false;
   lastUpdated: Date | null = null;
 
+  intervalId: any;
+
   constructor(private router: Router,private cdr: ChangeDetectorRef) {}
+
+  ngOnInit(): void {
+    this.intervalId = setInterval(() => {
+      this.cdr.detectChanges();
+    }, 60000);
+  }
+7
+  ngOnDestroy() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+    }
+  }
 
   getIcon(type: string): string {
     switch (type) {
