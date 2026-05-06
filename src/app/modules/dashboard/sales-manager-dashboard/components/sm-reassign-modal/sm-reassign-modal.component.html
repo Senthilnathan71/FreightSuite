@@ -1,6 +1,6 @@
 <div class="modal-content" style="overflow: hidden; border: none;">
   <!-- Modal Header -->
-  <div class="modal-header" style="background: linear-gradient(135deg, #05608D 0%, #044a6c 100%); border: none; padding: 20px 24px;">
+  <div class="modal-header" style="background: linear-gradient(135deg, #05608D 0%, #044a6c 100%); border: none; padding: 10px 14px;">
     <div class="d-flex align-items-center gap-2">
       <div class="d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: rgba(255,255,255,0.2); border-radius: 10px;">
         <i class="fas fa-exchange-alt text-white"></i>
@@ -11,19 +11,19 @@
   </div>
 
   <!-- Modal Body -->
-  <div class="modal-body p-4" style="max-height: 60vh; overflow-y: auto;">
+  <div class="modal-body p-2" style="max-height: 60vh; overflow-y: auto;">
     
     <!-- Meeting Information Card -->
     <div class="card mb-4" style="border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc;">
-      <div class="card-body p-3">
+      <div class="card-body px-3 py-2">
         <!-- Lead / Customer -->
         <div class="d-flex align-items-start gap-3 py-2" style="border-bottom: 1px solid #e2e8f0;">
           <div class="d-flex align-items-center gap-2" style="width: 140px;">
             <i class="fas fa-building" style="color: #64748b; font-size: 12px; width: 16px;"></i>
-            <span style="font-size: 12px; font-weight: 500; color: #64748b;">Lead / Customer</span>
+            <span style="font-size: 12px; font-weight: 600; color: #64748b;">Lead / Customer</span>
           </div>
           <div class="flex-fill">
-            <span style="font-size: 13px; font-weight: 500; color: #1e293b;">
+            <span style="font-size: 13px; font-weight: 600; color: #1e293b;">
               {{ meeting.preCustomerName || meeting.customerName || meeting.name || '—' }}
             </span>
           </div>
@@ -33,10 +33,10 @@
         <div class="d-flex align-items-start gap-3 py-2" style="border-bottom: 1px solid #e2e8f0;">
           <div class="d-flex align-items-center gap-2" style="width: 140px;">
             <i class="fas fa-calendar-alt" style="color: #64748b; font-size: 12px; width: 16px;"></i>
-            <span style="font-size: 12px; font-weight: 500; color: #64748b;">Meeting Date</span>
+            <span style="font-size: 12px; font-weight: 600; color: #64748b;">Meeting Date</span>
           </div>
           <div class="flex-fill">
-            <span style="font-size: 13px; font-weight: 500; color: #1e293b;">
+            <span style="font-size: 13px; font-weight: 600; color: #1e293b;">
               {{ (meeting.meetingDate | date:'dd MMM yyyy, h:mm a') || '—' }}
             </span>
           </div>
@@ -46,7 +46,7 @@
         <div class="d-flex align-items-start gap-3 py-2" style="border-bottom: 1px solid #e2e8f0;">
           <div class="d-flex align-items-center gap-2" style="width: 140px;">
             <i class="fas fa-tag" style="color: #64748b; font-size: 12px; width: 16px;"></i>
-            <span style="font-size: 12px; font-weight: 500; color: #64748b;">Meeting Type</span>
+            <span style="font-size: 12px; font-weight: 600; color: #64748b;">Meeting Type</span>
           </div>
           <div class="flex-fill">
             <span class="badge" [ngClass]="meeting.meetingType === 'Visit' ? 'bg-primary' : 'bg-warning'" 
@@ -60,7 +60,7 @@
         <div class="d-flex align-items-start gap-3 py-2">
           <div class="d-flex align-items-center gap-2" style="width: 140px;">
             <i class="fas fa-user" style="color: #64748b; font-size: 12px; width: 16px;"></i>
-            <span style="font-size: 12px; font-weight: 500; color: #64748b;">Current Assignee</span>
+            <span style="font-size: 12px; font-weight: 600; color: #64748b;">Current Assignee</span>
           </div>
           <div class="flex-fill">
             <div class="d-flex align-items-center gap-2">
@@ -106,7 +106,7 @@
         
         <div style="max-height: 280px; overflow-y: auto;">
           <div *ngFor="let sp of filteredSalespersons" 
-               class="d-flex align-items-center gap-3 p-3 border-bottom cursor-pointer"
+               class="d-flex align-items-center gap-3 p-3  cursor-pointer"
                [class.bg-light]="selectedSalespersonId === sp.UserMasterSid"
                (click)="selectSalesperson(sp.UserMasterSid)"
                style="transition: all 0.2s ease; cursor: pointer; border-color: #e2e8f0 !important;">
@@ -146,13 +146,12 @@
   </div>
 
   <!-- Modal Footer -->
-  <div class="modal-footer d-flex align-items-center justify-content-end gap-2 p-4" style="background: #f8fafc; border-top: 1px solid #e2e8f0;">
-    <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss()" style="padding: 8px 20px; font-size: 13px; font-weight: 500; border-radius: 8px;">
+  <div class="modal-footer d-flex align-items-center justify-content-end gap-2 p-0" style="background: #f8fafc; border-top: 1px solid #e2e8f0;">
+    <button type="button" class="btn btn-outline-secondary btn-sm" (click)="activeModal.dismiss()">
       <i class="fas fa-times me-1"></i> Cancel
     </button>
-    <button type="button" class="btn" [disabled]="!isValid || isSubmitting" 
+    <button type="button" class="btn btn-sm btn-info" [disabled]="!isValid || isSubmitting" 
             (click)="onSubmit()"
-            style="padding: 8px 20px; font-size: 13px; font-weight: 600; border-radius: 8px; background: #05608D; color: white; border: none;"
             [style.opacity]="!isValid || isSubmitting ? '0.5' : '1'"
             [style.cursor]="!isValid || isSubmitting ? 'not-allowed' : 'pointer'">
       <i class="fas fa-exchange-alt me-1"></i> {{ isSubmitting ? 'Reassigning...' : 'Reassign Lead' }}

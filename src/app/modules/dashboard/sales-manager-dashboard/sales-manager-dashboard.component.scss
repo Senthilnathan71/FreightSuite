@@ -83,6 +83,21 @@
   }
 }
 
+.flight-path--reverse {
+  top: 68px;
+  left: auto;
+  right: -120px;
+  transform: rotate(-10deg) scaleX(-1);
+  animation: heroFlightReverse 15s ease-in-out infinite;
+  color: rgba(255, 255, 255, 0.48);
+
+  &::before {
+    right: auto;
+    left: 58px;
+    background: linear-gradient(270deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.02));
+  }
+}
+
 @keyframes heroFlight {
   0% {
     transform: translateX(0) translateY(10px) rotate(9deg) scale(0.88);
@@ -96,6 +111,23 @@
   }
   100% {
     transform: translateX(calc(100vw + 210px)) translateY(8px) rotate(9deg) scale(0.92);
+    opacity: 0;
+  }
+}
+
+@keyframes heroFlightReverse {
+  0% {
+    transform: translateX(0) translateY(-8px) rotate(-10deg) scaleX(-1) scale(0.92);
+    opacity: 0;
+  }
+  8%, 88% {
+    opacity: 0.95;
+  }
+  48% {
+    transform: translateX(-48vw) translateY(10px) rotate(-10deg) scaleX(-1) scale(1);
+  }
+  100% {
+    transform: translateX(calc(-100vw - 220px)) translateY(-6px) rotate(-10deg) scaleX(-1) scale(0.9);
     opacity: 0;
   }
 }
@@ -437,7 +469,7 @@
 
 // ── Dashboard section wrapper ──
 .dashboard-section {
-  background: linear-gradient(180deg, #FBFEFF 0%, #F4FAFB 100%);
+  background: #ffffff;
   border: 1px solid $sm-border;
   border-radius: 14px;
   padding: 12px 14px; // I.3 — reduced padding

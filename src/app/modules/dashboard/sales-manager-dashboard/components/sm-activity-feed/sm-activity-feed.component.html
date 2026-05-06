@@ -1,4 +1,4 @@
-<div class="card h-100 border-0 shadow-sm" style="background: white; border-radius: 16px;">
+<div class="card h-100" style="background: white; border-radius: 16px;">
   <div class="card-body p-0 d-flex flex-column" style="height: 100%;">
     
     <!-- Header with Refresh Button -->
@@ -52,7 +52,7 @@
 
       <!-- Activity Rows -->
       <div *ngFor="let item of items; let i = index" 
-           class="d-flex align-items-center gap-2 p-2 rounded-2 mb-1"
+           class="d-flex align-items-center gap-2 px-2 py-1 rounded-2 mb-1"
            [style.transition]="'all 0.2s ease'"
            [style.cursor]="'pointer'"
            [style.backgroundColor]="hoveredItem === item ? '#f8fafc' : 'transparent'"
@@ -78,7 +78,7 @@
           <span class="fw-semibold" style="color: #0f172a; font-size: 12px;">{{ item.salesperson }}</span>
           <span class="small" style="color: #475569; font-size: 11px;">{{ getTypeLabel(item.activityType) }}</span>
           <span class="fw-medium text-truncate" 
-                style="color: #05608D; font-size: 12px; max-width: 140px; text-decoration: underline; text-decoration-style: dotted;">
+                style="color: #05608D; font-size: 12px; max-width: 140px; text-decoration: underline;">
             {{ item.entityName }}
           </span>
         </div>
