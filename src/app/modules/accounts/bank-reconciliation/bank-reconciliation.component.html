@@ -14,26 +14,13 @@
       <div class="card-body">
       
         <form [formGroup]="filterForm" class="row">
-          <div class="col-md-2">
+          <div class="col-md-3">
             <div class="custom-form-group custom-form-group-select"
               [class.filled]="!!filterForm.get('BankCOAMasterSid')?.value">
               <ng-select [items]="bankLedgers" bindLabel="LedgerName" bindValue="COAMasterSid"
                 formControlName="BankCOAMasterSid" placeholder="" [clearable]="true" appendTo="body" class="ng-select">
               </ng-select>
               <label class="input-label">Bank Ledger <span class="text-danger">*</span></label>
-            </div>
-          </div>
-
-          <div class="col-md-2">
-            <div class="custom-form-group custom-form-group-select-date">
-              <div class="input-group">
-                <input class="form-control" placeholder="dd-mm-yyyy" name="fromDate" formControlName="FromDate"
-                  ngbDatepicker #fromDatePicker="ngbDatepicker" (click)="fromDatePicker.toggle()" container="body" />
-                <button class="btn bi bi-calendar3 px-0" (click)="fromDatePicker.toggle()" type="button">
-                  <i-feather name="calendar" class="feather-sm"></i-feather>
-                </button>
-              </div>
-              <label class="input-label">From Date <span class="text-danger">*</span></label>
             </div>
           </div>
 
@@ -50,7 +37,7 @@
             </div>
           </div>
 
-          <div class="col-md-2">
+          <div class="col-md-3">
             <div class="custom-form-group" [class.filled]="isBankStatementBalanceFilled()">
               <input
                 type="text"
@@ -366,12 +353,12 @@
             <strong class="statement-row__value">{{ chequesDepositedInBankButNotClearedAmount | number:'1.3-3' }}</strong>
           </div>
           <div class="statement-row statement-row--bank">
-            <span class="statement-row__label">Add: Bank entries not in books</span>
-            <strong class="statement-row__value">{{ reconciliationSummary?.addBankEntriesNotInBooks | number:'1.3-3' }}</strong>
+            <span class="statement-row__label">Add: Credits by Bank :</span>
+            <strong class="statement-row__value">{{ creditsByBankAmount | number:'1.3-3' }}</strong>
           </div>
           <div class="statement-row statement-row--less">
-            <span class="statement-row__label">Less: Book entries not cleared</span>
-            <strong class="statement-row__value">{{ reconciliationSummary?.lessBookEntriesNotClearedInBank | number:'1.3-3' }}</strong>
+            <span class="statement-row__label">Less: Debits by Bank :</span>
+            <strong class="statement-row__value">{{ debitsByBankAmount | number:'1.3-3' }}</strong>
           </div>
           <div class="statement-row statement-row--final">
             <span class="statement-row__label">Final Balance</span>

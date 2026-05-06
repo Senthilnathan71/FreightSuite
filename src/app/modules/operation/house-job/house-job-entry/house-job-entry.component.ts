@@ -555,21 +555,21 @@ hblModalRef?: NgbModalRef;
   hasUnsavedChanges(): boolean {
     const currentSnapshot = this.buildCurrentStateSnapshot();
     if (this.initialStateSnapshot && this.isDirty) {
-      console.log('[HouseJob dirty source]', {
-        changedSections: {
-          houseJobForm: !this.deepEqual(this.initialStateSnapshot.houseJobForm, currentSnapshot.houseJobForm),
-          cargoForm: !this.deepEqual(this.initialStateSnapshot.cargoForm, currentSnapshot.cargoForm),
-          otherForm: !this.deepEqual(this.initialStateSnapshot.otherForm, currentSnapshot.otherForm),
-          proxyForm: !this.deepEqual(this.initialStateSnapshot.proxyForm, currentSnapshot.proxyForm),
-          detailForm: !this.deepEqual(this.initialStateSnapshot.detailForm, currentSnapshot.detailForm),
-          bookingProducts: !this.deepEqual(this.initialStateSnapshot.bookingProducts, currentSnapshot.bookingProducts),
-          connectionResult: !this.deepEqual(this.initialStateSnapshot.connectionResult, currentSnapshot.connectionResult),
-          rateResult: !this.deepEqual(this.initialStateSnapshot.rateResult, currentSnapshot.rateResult),
-          milestoneResult: !this.deepEqual(this.initialStateSnapshot.milestoneResult, currentSnapshot.milestoneResult),
-          selectedDepartmentType: this.initialStateSnapshot.selectedDepartmentType !== currentSnapshot.selectedDepartmentType,
-          selectedFCLLCL: this.initialStateSnapshot.selectedFCLLCL !== currentSnapshot.selectedFCLLCL,
-        },
-      });
+      // console.log('[HouseJob dirty source]', {
+      //   changedSections: {
+      //     houseJobForm: !this.deepEqual(this.initialStateSnapshot.houseJobForm, currentSnapshot.houseJobForm),
+      //     cargoForm: !this.deepEqual(this.initialStateSnapshot.cargoForm, currentSnapshot.cargoForm),
+      //     otherForm: !this.deepEqual(this.initialStateSnapshot.otherForm, currentSnapshot.otherForm),
+      //     proxyForm: !this.deepEqual(this.initialStateSnapshot.proxyForm, currentSnapshot.proxyForm),
+      //     detailForm: !this.deepEqual(this.initialStateSnapshot.detailForm, currentSnapshot.detailForm),
+      //     bookingProducts: !this.deepEqual(this.initialStateSnapshot.bookingProducts, currentSnapshot.bookingProducts),
+      //     connectionResult: !this.deepEqual(this.initialStateSnapshot.connectionResult, currentSnapshot.connectionResult),
+      //     rateResult: !this.deepEqual(this.initialStateSnapshot.rateResult, currentSnapshot.rateResult),
+      //     milestoneResult: !this.deepEqual(this.initialStateSnapshot.milestoneResult, currentSnapshot.milestoneResult),
+      //     selectedDepartmentType: this.initialStateSnapshot.selectedDepartmentType !== currentSnapshot.selectedDepartmentType,
+      //     selectedFCLLCL: this.initialStateSnapshot.selectedFCLLCL !== currentSnapshot.selectedFCLLCL,
+      //   },
+      // });
     }
     // console.log('[HouseJob dirty check]', {
     //   isDirty: this.isDirty,
@@ -1078,17 +1078,11 @@ private setupMBLDateListener(): void {
 
   private shouldValidateHouseJobCargoGroup(cargoGroup: FormGroup): boolean {
     const cargoProducts = cargoGroup.get('bookingProducts') as FormArray | null;
-    return !!(cargoGroup.dirty || cargoProducts?.dirty);
+    return !!(cargoGroup.dirty || cargoProducts?.dirty || (cargoProducts?.length ?? 0) > 0);
   }
 
   private getNoofContainersValidators(): ValidatorFn[] {
-    const departmentType = this.normalizePortText(
-      this.selectedDepartmentType || this.selectedDepartment?.departmentType
-    );
-    if (departmentType === 'AIR') {
-      return [];
-    }
-    return this.isSurfaceCargoMode() ? [] : [Validators.required, Validators.min(1)];
+    return this.selectedFCLLCL === 'FCL' ? [Validators.required, Validators.min(1)] : [];
   }
 
   private calculateChargeableWeight(cargoGroup: FormGroup = this.cargoForm): void {
@@ -1701,10 +1695,10 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       ShippingBillDate: [data?.ShippingBillDate ? new Date(data?.ShippingBillDate) : null],
       ExternaPkg: [data?.ExternaPkg || null, [Validators.required]],
       ExternlQty: [data?.ExternlQty || '', [Validators.required]],
-      GrossWeight: [Number(data?.GrossWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required,Validators.min(0.001)]],
+      GrossWeight: [Number(data?.GrossWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.required, Validators.min(0.001)]],
       NetWeight: [Number(data?.NetWeight || '').toFixed(this.digitsAfterDecimal) || '', [Validators.min(0)]],
-      Volume: [Number(data?.Volume || '').toFixed(this.digitsAfterDecimal) || '', this.isSurfaceCargoMode() ? [] : [Validators.required,Validators.min(0.001)]],
-      Volumetric: [data?.Volumetric|| '',isAirOrLCL ? [Validators.required, Validators.min(0.001)] : []],
+      Volume: [Number(data?.Volume || '').toFixed(this.digitsAfterDecimal) || '', this.isSurfaceCargoMode() ? [] : [Validators.required, Validators.min(0.001)]],
+      Volumetric: [data?.Volumetric || '', isAirOrLCL ? [Validators.required, Validators.min(0.001)] : []],
       isGrossWeightManualOverride: [data?.isGrossWeightManualOverride ?? false],
       isVolumeManualOverride: [data?.isVolumeManualOverride ?? false],
       isVolumetricManualOverride: [data?.isVolumetricManualOverride ?? false],
@@ -2951,34 +2945,15 @@ private applyExportToImportFieldLocks(): void {
       this.appSettingService.showInfo('Product editing is locked for export-to-import linked house jobs.');
       return;
     }
-    const grossWeight = this.productForm.get('GrossWeight')?.value;
-  const netWeight = this.productForm.get('NetWeight')?.value;
-  this.setOrResetWeightError(this.productForm);
-  
-  if (grossWeight && netWeight && parseFloat(grossWeight) < parseFloat(netWeight)) {
-    this.appSettingService.showWarning('Net Weight cannot be greater than Gross Weight');
-    return;
-  }
+    this.setOrResetWeightError(this.productForm);
 
-    if (!grossWeight || parseFloat(grossWeight) === 0) {
-    this.appSettingService.showWarning('Gross Weight cannot be zero. Please enter a valid Gross Weight.');
-    return;
-  }
-    if(this.productForm.invalid){
+    if (this.productForm.invalid) {
       this.productForm.markAllAsTouched();
       this.productForm.updateValueAndValidity();
-      // Get all invalid fields for better error message
-   const invalidFields = Object.keys(this.productForm.controls)
-      .filter(key => this.productForm.get(key)?.invalid)
-      .map(key => this.getFieldLabel(key));
-    
-    if (invalidFields.length > 0) {
-      this.appSettingService.showWarning(`Please fill all required fields: ${invalidFields.join(', ')}`);
-    } else {
-      this.appSettingService.showWarning('Please fill all the required fields correctly.');
-    }
+      this.appSettingService.showWarning(this.getProductValidationMessage());
       return;
     }
+
     const pendingProductValue = this.productForm.getRawValue();
     const activeCargoIndex = this.houseJobCargoActiveIndex >= 0 ? this.houseJobCargoActiveIndex : 0;
     const capacityOk = this.validateContainerCapacityRules({
@@ -3007,7 +2982,7 @@ private applyExportToImportFieldLocks(): void {
     this.updateProductPagination();
     this.modalService.dismissAll();
   }
-  private getFieldLabel(fieldName: string): string {
+  public getFieldLabel(fieldName: string): string {
   const fieldLabels: { [key: string]: string } = {
     'CargoType': 'Cargo Type',
     'ContainerType': 'Container Type',
@@ -3016,12 +2991,113 @@ private applyExportToImportFieldLocks(): void {
     'ExternlQty': 'No of Pkg',
     'NoofContainers': 'No of Container',
     'GrossWeight': 'Gross Weight',
+    'NetWeight': 'Net Weight',
     'Volume': 'CBM',
     'UomMasterSid': 'UOM',
-    'Volumetric': 'Volumetric'
+    'Volumetric': 'Volumetric',
+    'Length': 'Length',
+    'Width': 'Width',
+    'Height': 'Height'
   };
   return fieldLabels[fieldName] || fieldName;
 }
+
+  public shouldShowProductFieldError(product: AbstractControl | null, fieldName: string): boolean {
+    const control = product?.get(fieldName);
+    return !!control && control.invalid && (control.touched || control.dirty);
+  }
+
+  public getProductFieldErrorMessage(product: AbstractControl | null, fieldName: string): string {
+    const control = product?.get(fieldName);
+
+    if (!control || !control.errors) {
+      return '';
+    }
+
+    const productFieldLabels: Record<string, string> = {
+      ProductName: 'Commodity',
+      ExternaPkg: 'Extl Pkg',
+      ExternlQty: 'No.of Pkg',
+      GrossWeight: 'Gross Wgt',
+      NetWeight: 'Net Wgt',
+      Volume: 'CBM',
+      Volumetric: 'Volumetric',
+      UomMasterSid: 'UOM',
+      ShippingBillNo: 'Shipping Bill No',
+      ShippingBillDate: 'Shipping Bill Date',
+      Length: 'Length',
+      Width: 'Width',
+      Height: 'Height'
+    };
+    const label = productFieldLabels[fieldName] || this.getFieldLabel(fieldName);
+
+    if (control.errors['required']) {
+      return `${label} is required`;
+    }
+
+    if (control.errors['min']) {
+      return `${label} must be greater than 0`;
+    }
+
+    if (control.errors['max']) {
+      return `${label} is too large`;
+    }
+
+    if (control.errors['decimalPrecision']) {
+      return `${label} has invalid decimal precision`;
+    }
+
+    if (control.errors['grossLessThanNet']) {
+      return 'Gross Wgt cannot be less than Net Wgt';
+    }
+
+    if (control.errors['netGreaterThanGross']) {
+      return 'Net Wgt cannot be greater than Gross Wgt';
+    }
+
+    return `${label} is invalid`;
+  }
+
+  public shouldShowCargoFieldError(cargo: AbstractControl | null, fieldName: string): boolean {
+    const control = cargo?.get(fieldName);
+    return !!control && control.invalid && (control.touched || control.dirty);
+  }
+
+  public getCargoFieldErrorMessage(cargo: AbstractControl | null, fieldName: string): string {
+    const control = cargo?.get(fieldName);
+
+    if (!control || !control.errors) {
+      return '';
+    }
+
+    const label = this.getFieldLabel(fieldName);
+
+    if (control.errors['required']) {
+      return `${label} is required`;
+    }
+
+    if (control.errors['min']) {
+      return `${label} must be greater than 0`;
+    }
+
+    if (control.errors['max']) {
+      return `${label} is too large`;
+    }
+
+    if (control.errors['decimalPrecision']) {
+      return `${label} has invalid decimal precision`;
+    }
+
+    if (control.errors['grossLessThanNet']) {
+      return 'Gross Weight cannot be less than Net Weight';
+    }
+
+    if (control.errors['netGreaterThanGross']) {
+      return 'Net Weight cannot be greater than Gross Weight';
+    }
+
+    return `${label} is invalid`;
+  }
 
   private getCargoValidationMessage(): string {
     const errorMessages: string[] = [];
@@ -3048,8 +3124,9 @@ private applyExportToImportFieldLocks(): void {
           return;
         }
 
-        if (control.hasError('required') || control.hasError('min')) {
-          errorMessages.push(`Cargo ${cargoIndex + 1}: ${this.getFieldLabel(fieldName)} is required`);
+        const fieldMessage = this.getCargoFieldErrorMessage(cargoGroup, fieldName);
+        if (fieldMessage) {
+          errorMessages.push(`Cargo ${cargoIndex + 1}: ${fieldMessage}`);
         }
       });
     });
@@ -3060,22 +3137,57 @@ private applyExportToImportFieldLocks(): void {
   }
 
   private getProductValidationMessage(): string {
-    const hasNetWeightError = this.houseJobCargos.controls.some(cargoControl => {
+    const errorMessages: string[] = [];
+
+    const collectProductErrors = (productGroup: FormGroup, productIndex: number, cargoIndex: number = -1) => {
+      Object.keys(productGroup.controls).forEach((fieldName) => {
+        const control = productGroup.get(fieldName);
+        if (!control || !control.invalid) {
+          return;
+        }
+
+        if (!control.hasError('required') &&
+            !control.hasError('min') &&
+            !control.hasError('grossLessThanNet') &&
+            !control.hasError('netGreaterThanGross')) {
+          return;
+        }
+
+        const message = this.getProductFieldErrorMessage(productGroup, fieldName);
+        if (!message) {
+          return;
+        }
+
+        const prefix = cargoIndex >= 0
+          ? `Cargo ${cargoIndex + 1}, Product ${productIndex + 1}: `
+          : `Product ${productIndex + 1}: `;
+        errorMessages.push(`${prefix}${message}`);
+      });
+    };
+
+    this.houseJobCargos.controls.forEach((cargoControl, cargoIndex) => {
       const cargoGroup = cargoControl as FormGroup;
       const productArray = cargoGroup.get('bookingProducts') as FormArray;
-      return productArray.controls.some(control => {
-        const productGroup = control as FormGroup;
-        return productGroup.get('NetWeight')?.hasError('netGreaterThanGross')
-          || productGroup.get('GrossWeight')?.hasError('grossLessThanNet');
+      productArray.controls.forEach((control, productIndex) => {
+        collectProductErrors(control as FormGroup, productIndex, cargoIndex);
       });
-    }) || this.bookingProducts.controls.some(control => {
-      const productGroup = control as FormGroup;
-      return productGroup.get('NetWeight')?.hasError('netGreaterThanGross')
-        || productGroup.get('GrossWeight')?.hasError('grossLessThanNet');
     });
 
-    if (hasNetWeightError) {
-      return 'Net Weight cannot be greater than Gross Weight';
+    this.bookingProducts.controls.forEach((control, productIndex) => {
+      collectProductErrors(control as FormGroup, productIndex);
+    });
+
+    const netWeightMessage = errorMessages.find(message =>
+      message.includes('Gross Wgt cannot be less than Net Wgt') ||
+      message.includes('Net Wgt cannot be greater than Gross Wgt')
+    );
+
+    if (netWeightMessage) {
+      return netWeightMessage.replace(/^Cargo \d+, Product \d+: /, '');
+    }
+
+    if (errorMessages.length > 0) {
+      return errorMessages.join('\n');
     }
 
     return 'Please fill all required product fields correctly.';
@@ -3324,8 +3436,8 @@ onCurrencyChange(event: any) {
     return;
   }
   // Validate cargo only after the user starts entering cargo data
-  if (this.houseJobCargos.length > 0) {
-    let hasInvalidCargo = false;
+    if (this.houseJobCargos.length > 0) {
+      let hasInvalidCargo = false;
 
     this.houseJobCargos.controls.forEach((control, cargoIndex) => {
       const cargoGroup = control as FormGroup;
@@ -3352,9 +3464,17 @@ onCurrencyChange(event: any) {
       }
     });
 
+    const productValidationMessage = this.getProductValidationMessage();
+    if (productValidationMessage !== 'Please fill all required product fields correctly.') {
+      this.logInvalidProductControls();
+      this.appSettingService.showWarning(productValidationMessage);
+      this.selectedTab = 'Cargo';
+      resolve?.(false);
+      return;
+    }
+
     if (hasInvalidCargo) {
       this.houseJobCargos.markAllAsTouched();
-      this.logInvalidProductControls();
       this.appSettingService.showWarning(this.getCargoValidationMessage());
       this.selectedTab = 'Cargo';
       resolve?.(false);
@@ -4775,10 +4895,15 @@ getVoyageTypeBasedOnDept(deptId: number) {
 
   //  Product Form Related Functions
 
-  handleProductChange(product: any, productIndex: number, cargoIndex: number = -1) {
-   const productGroup = cargoIndex >= 0
-    ? this.houseJobCargoProducts(cargoIndex).at(productIndex) as FormGroup
-    : this.bookingProducts.at(productIndex) as FormGroup;
+  handleProductChange(product: any, productIndex?: number, cargoIndex: number = -1) {
+   const productGroup = typeof productIndex === 'number'
+     ? (cargoIndex >= 0
+       ? this.houseJobCargoProducts(cargoIndex).at(productIndex) as FormGroup
+       : this.bookingProducts.at(productIndex) as FormGroup)
+     : this.productForm;
+    if (!productGroup) {
+      return;
+    }
     if (!product) {
       productGroup.patchValue({
         IsHaz: false,
@@ -5021,7 +5146,15 @@ getVoyageTypeBasedOnDept(deptId: number) {
     this.houseJobCargoActiveIndex = cargoIndex;
     this.cargoForm = cargoGroup;
     const products = cargoGroup.get('bookingProducts') as FormArray;
-    products.push(this.createBookingProductGroup(data, true));
+    const productGroup = this.createBookingProductGroup(data, true);
+    products.push(productGroup);
+    products.markAsDirty();
+    products.markAllAsTouched();
+    products.updateValueAndValidity({ emitEvent: false });
+    cargoGroup.markAsDirty();
+    cargoGroup.markAllAsTouched();
+    productGroup.markAllAsTouched();
+    productGroup.updateValueAndValidity({ emitEvent: false });
     this.handleProductRelatedCalculation(cargoIndex);
   }
 

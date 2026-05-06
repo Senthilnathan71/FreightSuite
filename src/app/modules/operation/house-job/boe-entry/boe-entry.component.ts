@@ -97,6 +97,51 @@ export class BoeEntryComponent implements OnInit, OnChanges {
   currentBranch: any;
   userData: any;
   digitsAfterDecimal = 3;
+  transactionTypeOptions = [
+    { regimeType: 'Import', declarationType: 'Import to Local from ROW' },
+    { regimeType: 'Import', declarationType: 'Import to Local from FZ' },
+    { regimeType: 'Import', declarationType: 'Import to Local from CW' },
+    { regimeType: 'Import', declarationType: 'Import Statistical Declaration' },
+    { regimeType: 'Import', declarationType: 'Import for Re Exports to Local from ROW' },
+    { regimeType: 'Import', declarationType: 'Import for Re Exports to Local from FZ' },
+    { regimeType: 'Import', declarationType: 'Import for Re Exports to Local from CW' },
+    { regimeType: 'Import', declarationType: 'Import to CW from ROW' },
+    { regimeType: 'Import', declarationType: 'Import to CW from FZ' },
+    { regimeType: 'Import', declarationType: 'Import to CW from Local(after temporary admission)' },
+    { regimeType: 'Import', declarationType: 'Courier Import' },
+    { regimeType: 'Import', declarationType: 'Import to Local After Temporary Admission' },
+    { regimeType: 'Import', declarationType: 'Goods Consumption within FZ' },
+    { regimeType: 'Export', declarationType: 'Export from Local to ROW' },
+    { regimeType: 'Export', declarationType: 'Export from Local to FZ' },
+    { regimeType: 'Export', declarationType: 'Export Statistical Declaration' },
+    { regimeType: 'Export', declarationType: 'Temporary Export from Local to ROW' },
+    { regimeType: 'Export', declarationType: 'Temporary Export from Local to FZ' },
+    { regimeType: 'Export', declarationType: 'Export from CW to ROW' },
+    { regimeType: 'Export', declarationType: 'Export from CW to FZ' },
+    { regimeType: 'Export', declarationType: 'Re Export to ROW (after import for re export)' },
+    { regimeType: 'Export', declarationType: 'Re Export to FZ (after import for Re Export)' },
+    { regimeType: 'Export', declarationType: 'Return to FZ after Temporary Admission' },
+    { regimeType: 'Export', declarationType: 'Return to ROW after Temporary Admission' },
+    { regimeType: 'Export', declarationType: 'Courier Export' },
+    { regimeType: 'Transit', declarationType: 'Transit (ROW to ROW)' },
+    { regimeType: 'Transit', declarationType: 'FZ Transit in' },
+    { regimeType: 'Transit', declarationType: 'FZ Transit Out' },
+    { regimeType: 'Transit', declarationType: 'FZ Transit in from GCC and other Emirates FZ and GCC Local Market' },
+    { regimeType: 'Transit', declarationType: 'FZ Transit Between Dubai Based FZ' },
+    { regimeType: 'Transit', declarationType: 'Courier Transit' },
+    { regimeType: 'Temporary Admission', declarationType: 'Temporary Admission from ROW to Local' },
+    { regimeType: 'Temporary Admission', declarationType: 'Temporary Admission from FZ to Local' },
+    { regimeType: 'Temporary Admission', declarationType: 'Temporary Admission from CW to Local' },
+    { regimeType: 'Transfer', declarationType: 'Transfer of Cargo by Dubai based CW' },
+    { regimeType: 'Transfer', declarationType: 'Transfer within a FZ' }
+  ];
+
+  transactionTypeLookupConfig = {
+    displayFields: ['regimeType', 'declarationType'],
+    displayLabels: ['Regime Type', 'Declaration Type'],
+    labelFields: [ 'declarationType']
+  };
+  ackStatusOptions = ['Create', 'Approved', 'Rejected'];
 
   constructor(
     private fb: FormBuilder,
@@ -174,7 +219,9 @@ export class BoeEntryComponent implements OnInit, OnChanges {
       BOEDate: [data?.BOEDate ? this.formatDate(data.BOEDate) : ''],
       BOEValue: [data?.BOEValue || null],
       BOEInvoiceValue: [data?.BOEInvoiceValue || ''],
-      TransactionType: [data?.TransactionType || ''],
+      GrossWeight: [data?.GrossWeight || null],
+      Volume: [data?.Volume || null],
+      TransactionType: [data?.TransactionType || null],
       Amount: [data?.Amount || null],
       ProcessDate: [data?.ProcessDate ? this.formatDate(data.ProcessDate) : ''],
       ReceivedDate: [data?.ReceivedDate ? this.formatDate(data.ReceivedDate) : ''],
