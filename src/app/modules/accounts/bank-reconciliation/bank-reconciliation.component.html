@@ -353,12 +353,12 @@
             <strong class="statement-row__value">{{ chequesDepositedInBankButNotClearedAmount | number:'1.3-3' }}</strong>
           </div>
           <div class="statement-row statement-row--bank">
-            <span class="statement-row__label">Add: Bank entries not in books</span>
-            <strong class="statement-row__value">{{ reconciliationSummary?.addBankEntriesNotInBooks | number:'1.3-3' }}</strong>
+            <span class="statement-row__label">Add: Credits by Bank :</span>
+            <strong class="statement-row__value">{{ creditsByBankAmount | number:'1.3-3' }}</strong>
           </div>
           <div class="statement-row statement-row--less">
-            <span class="statement-row__label">Less: Book entries not cleared</span>
-            <strong class="statement-row__value">{{ reconciliationSummary?.lessBookEntriesNotClearedInBank | number:'1.3-3' }}</strong>
+            <span class="statement-row__label">Less: Debits by Bank :</span>
+            <strong class="statement-row__value">{{ debitsByBankAmount | number:'1.3-3' }}</strong>
           </div>
           <div class="statement-row statement-row--final">
             <span class="statement-row__label">Final Balance</span>

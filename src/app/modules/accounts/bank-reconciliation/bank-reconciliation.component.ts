@@ -185,6 +185,16 @@ export class BankReconciliationComponent implements OnInit {
     return this.sumAmount(rows.filter((item: any) => this.normalizeDrCr(item?.DrCr) === 'D'));
   }
 
+  get creditsByBankAmount(): number {
+    const rows = Array.isArray(this.reportData?.bankEntriesNotInBooks) ? this.reportData.bankEntriesNotInBooks : [];
+    return this.sumAmount(rows.filter((item: any) => this.normalizeDrCr(item?.DrCr) === 'C'));
+  }
+
+  get debitsByBankAmount(): number {
+    const rows = Array.isArray(this.reportData?.bankEntriesNotInBooks) ? this.reportData.bankEntriesNotInBooks : [];
+    return this.sumAmount(rows.filter((item: any) => this.normalizeDrCr(item?.DrCr) === 'D'));
+  }
+
   get selectedBankRowValue(): BankTransactionRow | null {
     if (this.selectedBankIndex === null) return null;
     const ctrl = this.bankTransactions.at(this.selectedBankIndex);
@@ -900,14 +910,14 @@ export class BankReconciliationComponent implements OnInit {
               ${this.buildExcelAmountCell(bookChequesDeposited)}
             </tr>
             <tr>
-              <td class="left">Add: Credits by bank :</td>
+              <td class="left">Add: Credits by Bank :</td>
               <td></td>
               ${this.buildExcelAmountCell(creditBankEntries.length ? bankCredits : '0.000')}
             </tr>
             <tr>
               <td class="left">Less: Debits by Bank :</td>
               <td></td>
-              ${this.buildExcelAmountCell(debitBankEntries.length && Math.abs(bankDebits) > 0 ? bankDebits : '-0.000')}
+              ${this.buildExcelAmountCell(debitBankEntries.length && Math.abs(bankDebits) > 0 ? bankDebits : '0.000')}
             </tr>
             <tr>
               <td class="left">Balance as per Bank statement :</td>
