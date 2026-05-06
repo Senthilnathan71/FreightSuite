@@ -26,6 +26,7 @@ import { DateTimePickerComponent } from 'src/app/component/datetimepicker/dateti
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
 
 
 const colors: any = {
@@ -167,6 +168,9 @@ export class FullcalendarComponent implements OnInit, AfterViewInit {
   currentBranch: any;
   leadList: any[] = [];
   createdCustomerId: number | null = null;
+  isMeetingDirty: boolean = false;
+  isMeetingSaving: boolean = false;
+  private initialMeetingFormValue: any = null;
 
   private pendingScheduleLead: any = null;
 
@@ -278,7 +282,12 @@ export class FullcalendarComponent implements OnInit, AfterViewInit {
     }
     // this.modal.open(this.modalContent, { size: 'lg' });
     // this.modal.open(this.modalContentAdd, { size: 'lg' })
-    this.modalRef = this.modal.open(this.modalContentAdd, { size: 'lg' });
+    this.modalRef = this.modal.open(this.modalContentAdd, {
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false,
+      beforeDismiss: () => this.canCloseMeetingModal()
+    });
     // Ensure edit mode patches values and disables fields
     this.meetingForm.get('customerName').disable();
     // this.meetingForm.get('meetingDate').disable();
@@ -329,7 +338,13 @@ export class FullcalendarComponent implements OnInit, AfterViewInit {
     this.meetingForm.patchValue({ followUp: false });
 
     // Open new meeting modal
-    this.modalAddFormRef = this.modal.open(this.modalContentAddForm, { size: 'lg' });
+    this.setMeetingFormInitialValue();
+    this.modalAddFormRef = this.modal.open(this.modalContentAddForm, {
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false,
+      beforeDismiss: () => this.canCloseMeetingModal()
+    });
 
     // Ensure form fields are enabled for new entry
     this.meetingForm.get('customerName').enable();
@@ -433,6 +448,14 @@ export class FullcalendarComponent implements OnInit, AfterViewInit {
   this.meetingForm.get('LeadOrCustomer')?.setValue(
     this.meetingForm.get('LeadOrCustomer')?.value
   );
+
+  this.meetingForm.valueChanges.subscribe(() => {
+    if (this.initialMeetingFormValue === null) return;
+    this.isMeetingDirty = !this.deepEqual(
+      this.initialMeetingFormValue,
+      this.meetingForm.getRawValue()
+    );
+  });
 }
   private meetingNoteValidator(control: AbstractControl) {
   if (!control.parent) return null;
@@ -609,6 +632,11 @@ this.refresh.next();
 
 
   onAddMeeting() {
+      if (this.isMeetingSaving) return;
+      if (!this.isMeetingDirty) {
+    this.appSettingService.showWarning('No changes to save.');
+    return;
+  }
       if (this.meetingForm.invalid) {
     // Mark all fields as touched to show validation errors
     this.meetingForm.markAllAsTouched();  
@@ -646,23 +674,33 @@ this.refresh.next();
         if (resp.data && resp.status) {
           this.modalService.openSuccessModal(resp.message);
           this.btnDisable = false;
+          this.isMeetingSaving = false;
           this.meetingForm.patchValue(resp.data);
+          this.setMeetingFormInitialValue();
           this.modalAddFormRef.close();
           this.refreshComponent();
         } else {
           this.btnDisable = false;
+          this.isMeetingSaving = false;
           this.modalService.openErrorModal(resp.message);
         }
       },
       error => {
         this.btnDisable = false;
+        this.isMeetingSaving = false;
         this.modalService.openErrorModal('Error creating meeting: ' + error.message);
       }
     );
+    this.isMeetingSaving = true;
     this.btnDisable = false;
   }
   // Handle Form Submission
   onEditMeeting() {
+  if (this.isMeetingSaving) return;
+  if (!this.isMeetingDirty) {
+    this.appSettingService.showWarning('No changes to save.');
+    return;
+  }
   this.updateFollowUpValidators();
   
   if (this.meetingForm.invalid) {
@@ -731,19 +769,24 @@ this.refresh.next();
           this.modalService.openSuccessModal(resp.message);
         }
         this.btnDisable = false;
+        this.isMeetingSaving = false;
         this.meetingForm.patchValue(resp.data);
+        this.setMeetingFormInitialValue();
         this.modalRef.close();
         this.refreshComponent();
       } else {
         this.btnDisable = false;
+        this.isMeetingSaving = false;
         this.modalService.openErrorModal(resp.message);
       }
     },
     error => {
       this.btnDisable = false;
+      this.isMeetingSaving = false;
       this.modalService.openErrorModal('Error updating meeting: ' + error.message);
     }
   );
+  this.isMeetingSaving = true;
 }
   refreshComponent() {
     this.getMeetingDates()
@@ -830,11 +873,63 @@ this.meetingForm.get('CustomerMasterSid')?.updateValueAndValidity();
           this.meetingForm.controls['leadAssignTo'].setValue(selectedPerson?.UserMasterSid || '', {
             emitEvent: false,
           });
+          this.setMeetingFormInitialValue();
           this.cdr.detectChanges(); // Ensure Angular detects the change
         });
 
       }
     });
+  }
+
+  private setMeetingFormInitialValue(): void {
+    this.initialMeetingFormValue = this.meetingForm.getRawValue();
+    this.isMeetingDirty = false;
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString();
+    if (Array.isArray(value)) return value.map((v) => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
+
+  canCloseMeetingModal(): boolean | Promise<boolean> {
+    if (this.isMeetingSaving) return false;
+    if (!this.isMeetingDirty) return true;
+
+    const modalRef = this.modal.open(UnsavedChangesDialogComponent, {
+      centered: true,
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    return modalRef.result
+      .then((action: UnsavedChangesAction) => action === 'discard')
+      .catch(() => false);
+  }
+
+  async closeAddMeetingModal(): Promise<void> {
+    const canClose = await Promise.resolve(this.canCloseMeetingModal());
+    if (!canClose) return;
+    this.modalAddFormRef?.close();
+  }
+
+  async closeUpdateMeetingModal(): Promise<void> {
+    const canClose = await Promise.resolve(this.canCloseMeetingModal());
+    if (!canClose) return;
+    this.modalRef?.close();
   }
 
 

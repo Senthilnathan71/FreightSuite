@@ -3,6 +3,7 @@ import {
   ChangeDetectorRef,
   ChangeDetectionStrategy,
   Component,
+  HostListener,
   TemplateRef,
   ViewChild,
   OnInit,
@@ -70,6 +71,7 @@ import * as XLSX from 'xlsx';
 import { SearchableDropdownModal } from 'src/app/component/searchable-dropdown/searchable-dropdown-modal.component';
 import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/dial-code-dropdown.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 
 @Component({
@@ -107,7 +109,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
     UpperCasePipe
   ],
 })
-export class OrganizationEntryComponent implements OnInit, OnDestroy {
+export class OrganizationEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   
   constructor(
     private fb: FormBuilder,
@@ -141,6 +143,10 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy {
         })
   }
   private destroy$ = new Subject<void>();
+  isDirty: boolean = false;
+  isSaving: boolean = false;
+  private initialFormValue: any = null;
+  private isUnsavedTrackingInitialized = false;
   // Existing properties
   page = 1;
   pageSize = 5;
@@ -702,10 +708,76 @@ this.mps.init().subscribe();
       this.getStatesByCountryId(); // Load states when country changes
     });
 
+    setTimeout(() => {
+      this.initializeUnsavedChangesTracking();
+    }, 0);
+  }
 
-   
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
 
-    
+  hasUnsavedChanges(): boolean {
+    const currentSnapshot = this.buildUnsavedSnapshot();
+    this.isDirty = !this.deepEqual(this.initialFormValue, currentSnapshot);
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return this.onSubmit();
+  }
+
+  private initializeUnsavedChangesTracking(): void {
+    if (!this.customerForm || this.isUnsavedTrackingInitialized) return;
+    this.isUnsavedTrackingInitialized = true;
+    this.initialFormValue = this.buildUnsavedSnapshot();
+    this.isDirty = false;
+    this.customerForm.valueChanges
+      .pipe(debounceTime(300), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.isDirty = !this.deepEqual(this.initialFormValue, this.buildUnsavedSnapshot());
+      });
+    this.branchFormArray.valueChanges
+      .pipe(debounceTime(300), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.isDirty = !this.deepEqual(this.initialFormValue, this.buildUnsavedSnapshot());
+      });
+  }
+
+  private resetUnsavedState(): void {
+    if (!this.customerForm) return;
+    this.initialFormValue = this.buildUnsavedSnapshot();
+    this.isDirty = false;
+  }
+
+  private buildUnsavedSnapshot(): any {
+    return {
+      customerForm: this.customerForm?.getRawValue() ?? null,
+      branchFormArray: this.branchFormArray?.getRawValue?.() ?? []
+    };
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString().split('T')[0];
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) return Number(value);
+    if (typeof value === 'number') return Number(value.toFixed(6));
+    if (Array.isArray(value)) return value.map(v => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value).sort().reduce((acc: any, key) => {
+        acc[key] = this.normalizeValue(value[key]);
+        return acc;
+      }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(a: any, b: any): boolean {
+    return JSON.stringify(this.normalizeValue(a)) === JSON.stringify(this.normalizeValue(b));
   }
 
   // initializeBranchFormArray(): void {
@@ -1249,9 +1321,11 @@ clearCustomerSearch(): void {
     // Fallback: Load customer data again if needed
     this.loadCustomerData(this.CustomerMasterSid);
   }
-  private populateBranchFormArray(branches: any[]): void {
-  // Clear existing form array
-  this.branchFormArray = this.fb.array([]);
+private populateBranchFormArray(branches: any[]): void {
+  // Clear existing form array without replacing reference
+  while (this.branchFormArray.length > 0) {
+    this.branchFormArray.removeAt(0);
+  }
    this.getStatesByCountryId();
 
   // Populate form array with branch data
@@ -2182,6 +2256,7 @@ loadCustomerData(customerId: number) {
       
       // Load all data from the single API response
       this.loadAllCustomerDataFromResponse(customerData);
+      setTimeout(() => this.resetUnsavedState(), 0);
     },
     (error) => {
       this.appSettingService.showError('Error loading customer data.');
@@ -2834,7 +2909,8 @@ getTaxIdName(): string {
   // Add other template-referenced methods
   // Add this method to your OrganizationEntryComponent class
   // Replace your existing onSubmit method with this comprehensive version
- async onSubmit() {
+ async onSubmit(): Promise<boolean> {
+    if (this.isSaving) return false;
     this.customerForm.markAllAsTouched();
   
   // Check if the form is valid
@@ -2847,15 +2923,22 @@ getTaxIdName(): string {
       this.appSettingService.showError('Please fill all required fields');
     }
     this.btnDisable = false;
-    return;
+    return false;
   }
   const validation = this.validateAllForms();
   if (!validation.isValid) {
     this.appSettingService.showError(validation.errorMessage);
-    return;
+    return false;
+  }
+
+  if (this.isEditMode && this.deepEqual(this.buildUnsavedSnapshot(), this.initialFormValue) && !this.isDirty) {
+    this.appSettingService.showWarning('No changes to save');
+    this.customerForm.markAsUntouched();
+    return false;
   }
   
   this.btnDisable = true;
+  this.isSaving = true;
 
   try {
     if (this.isEditMode && this.CustomerMasterSid) {
@@ -2870,10 +2953,13 @@ getTaxIdName(): string {
       const createPayload = this.prepareCreatePayload();
       await this.createCustomerWithAllData(createPayload);
     }
+    this.resetUnsavedState();
+    return true;
   } catch (error) {
     console.error('Error saving customer:', error);
-  
+    return false;
   } finally {
+    this.isSaving = false;
     this.btnDisable = false;
   }
 }

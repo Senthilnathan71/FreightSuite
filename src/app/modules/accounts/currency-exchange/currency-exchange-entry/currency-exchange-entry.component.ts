@@ -131,11 +131,6 @@ export class CurrencyExchangeEntryComponent implements OnInit, OnDestroy, HasUns
     });
   }
 
-  isFormDirty(): boolean {
-  if (!this.isEditMode) return false;
-
-  return this.isDirty;
-}
 
   loadCurrencies() {
     this.loading = true;

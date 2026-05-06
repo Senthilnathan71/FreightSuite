@@ -558,6 +558,7 @@ export const OperationRoutes: Routes = [
       {
         path: "voucher-correction/entry",
         component: VoucherCorrectionEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Voucher-Correction",
           urls: [
@@ -569,6 +570,7 @@ export const OperationRoutes: Routes = [
       {
         path: "voucher-correction/entry/:id",
         component: VoucherCorrectionEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Voucher-Correction",
           urls: [

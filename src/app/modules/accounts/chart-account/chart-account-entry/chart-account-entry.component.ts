@@ -276,12 +276,6 @@ export class ChartAccountEntryComponent implements OnInit, OnDestroy, HasUnsaved
     this.subgroupList = [];
   }
 
-  isFormDirty(): boolean {
-  if (!this.isEditMode) return false;
-
-  return this.isDirty;
-}
-
   loadGroupsByCategory(category: string) {
     if (!category || !this.currentCompany?.CompanyMasterSid) return;
 

@@ -1,16 +1,18 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, output } from '@angular/core';
+import { Component, HostListener, OnInit, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NgbPagination, NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbPagination, NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { authService } from 'src/app/modules/authentication/auth.service';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { forkJoin } from 'rxjs';
+import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
 
 @Component({
   selector: 'app-ledger-mapping',
@@ -28,7 +30,7 @@ import { forkJoin } from 'rxjs';
   templateUrl: './ledger-mapping.component.html',
   styleUrl: './ledger-mapping.component.scss'
 })
-export class LedgerMappingComponent implements OnInit {
+export class LedgerMappingComponent implements OnInit, HasUnsavedChanges {
   
   // Tab management
   selectedTab: string = 'Party';
@@ -80,7 +82,8 @@ export class LedgerMappingComponent implements OnInit {
     private appSettingService: AppSettingsService,
     private userService: authService,
     private excelReportService: ExcelExportService,
-    private spinner: NgxSpinnerService
+    private spinner: NgxSpinnerService,
+    private modalService: NgbModal
   ) {}
 
   ngOnInit(): void {
@@ -162,6 +165,38 @@ export class LedgerMappingComponent implements OnInit {
 
   // Tab management
   selectTab(tab: string): void {
+    if (tab === this.selectedTab) return;
+
+    if (!this.hasChanges()) {
+      this.applyTabSelection(tab);
+      return;
+    }
+
+    const modalRef = this.modalService.open(UnsavedChangesDialogComponent, {
+      centered: true,
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    modalRef.result
+      .then(async (action: UnsavedChangesAction) => {
+        if (action === 'save') {
+          const saved = await this.saveChanges();
+          if (!saved) return;
+          this.applyTabSelection(tab);
+          return;
+        }
+
+        if (action === 'discard') {
+          this.applyTabSelection(tab);
+        }
+      })
+      .catch(() => {
+        // modal dismissed - keep current tab
+      });
+  }
+
+  private applyTabSelection(tab: string): void {
     this.selectedTab = tab;
     this.page = 1;
     this.filterValue = '';
@@ -404,56 +439,86 @@ export class LedgerMappingComponent implements OnInit {
     item.hasChanges = true;
   }
 
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.hasPendingChanges();
+  }
+
   // Save methods
-  saveChanges(): void {
-    let itemsToUpdate: any[] = [];
-    
-    switch (this.selectedTab) {
-      case 'Party':
-        itemsToUpdate = this.partyData.filter(item => item.hasChanges);
-        break;
-      case 'Charge':
-        itemsToUpdate = this.chargeData.filter(item => item.hasChanges);
-        break;
-      case 'Tax':
-        itemsToUpdate = this.taxData.filter(item => item.hasChanges);
-        break;
-    }
-
-    if (itemsToUpdate.length === 0) {
-      this.appSettingService.showInfo('No changes to save');
-      return;
-    }
-
-    this.isSaving = true;
-    this.spinner.show();
-    const activeCompanyId = this.currentCompany?.CompanyMasterSid;
-    const updates = itemsToUpdate.map(item => ({
-       CompanyMasterSid: activeCompanyId,
-      SubledgerMasterSid: item.SubledgerMasterSid,
-      AccrualCOAMasterSid: this.extractCOAId(item.AccrualCOAMasterSid),
-      DrCOAMasterSid: this.extractCOAId(item.DrCOAMasterSid),
-      CrCOAMasterSid: this.extractCOAId(item.CrCOAMasterSid),
-      Status: typeof item.Status === 'object' ? item.Status.id : item.Status, 
-      UpdatedBy: this.userData?.userEmail || 'system'
-    }));
-
-    this.masterService.bulkUpdateSubledgerMaster(updates).subscribe({
-      next: (res: any) => {
-        this.spinner.hide();
-        this.isSaving = false;
-        this.appSettingService.showSuccess('Changes saved successfully');
-        
-        itemsToUpdate.forEach(item => item.hasChanges = false);
-        this.loadData();
-      },
-      error: (err) => {
-        this.spinner.hide();
-        this.isSaving = false;
-        console.error('Error saving changes:', err);
-        this.appSettingService.showError('Failed to save changes');
+  saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (this.isSaving) {
+        resolve(false);
+        return;
       }
+
+      let itemsToUpdate: any[] = [];
+
+      switch (this.selectedTab) {
+        case 'Party':
+          itemsToUpdate = this.partyData.filter(item => item.hasChanges);
+          break;
+        case 'Charge':
+          itemsToUpdate = this.chargeData.filter(item => item.hasChanges);
+          break;
+        case 'Tax':
+          itemsToUpdate = this.taxData.filter(item => item.hasChanges);
+          break;
+      }
+
+      if (itemsToUpdate.length === 0) {
+        this.appSettingService.showInfo('No changes to save');
+        resolve(true);
+        return;
+      }
+
+      this.isSaving = true;
+      this.spinner.show();
+      const activeCompanyId = this.currentCompany?.CompanyMasterSid;
+      const updates = itemsToUpdate.map(item => ({
+        CompanyMasterSid: activeCompanyId,
+        SubledgerMasterSid: item.SubledgerMasterSid,
+        AccrualCOAMasterSid: this.extractCOAId(item.AccrualCOAMasterSid),
+        DrCOAMasterSid: this.extractCOAId(item.DrCOAMasterSid),
+        CrCOAMasterSid: this.extractCOAId(item.CrCOAMasterSid),
+        Status: typeof item.Status === 'object' ? item.Status.id : item.Status,
+        UpdatedBy: this.userData?.userEmail || 'system'
+      }));
+
+      this.masterService.bulkUpdateSubledgerMaster(updates).subscribe({
+        next: () => {
+          this.spinner.hide();
+          this.isSaving = false;
+          this.appSettingService.showSuccess('Changes saved successfully');
+
+          itemsToUpdate.forEach(item => item.hasChanges = false);
+          this.loadData();
+          resolve(true);
+        },
+        error: (err) => {
+          this.spinner.hide();
+          this.isSaving = false;
+          console.error('Error saving changes:', err);
+          this.appSettingService.showError('Failed to save changes');
+          resolve(false);
+        }
+      });
     });
+  }
+
+  private hasPendingChanges(): boolean {
+    return (
+      this.partyData.some(item => item.hasChanges) ||
+      this.chargeData.some(item => item.hasChanges) ||
+      this.taxData.some(item => item.hasChanges)
+    );
   }
 
   // Reset page
