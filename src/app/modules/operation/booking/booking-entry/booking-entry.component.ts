@@ -165,6 +165,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   isSaving : boolean = false;
   lastCreditValidationMessage: string = '';
   isDirty: boolean = false;
+  private hasSubscribedToFormChanges: boolean = false;
   private initialFormValue: any = null;
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
@@ -686,6 +687,8 @@ get visibleTabs() {
       this.loadCargoLookups();
       this.loadProductLookups();
       this.loadOtherLookups();
+      this.captureInitialFormState();
+      this.subscribeToFormChanges();
 
       this.bookingForm.get('IncoTerms')?.valueChanges.subscribe((incoTerm) => {
         this.autoSetFreightTerms(incoTerm);
@@ -795,6 +798,11 @@ async saveChanges(): Promise<boolean> {
 }
 
 subscribeToFormChanges() {
+  if (this.hasSubscribedToFormChanges) {
+    return;
+  }
+  this.hasSubscribedToFormChanges = true;
+
   // Subscribe to booking form changes
   this.bookingForm.valueChanges
     .pipe(takeUntil(this.destroy$), debounceTime(300))
@@ -855,8 +863,6 @@ subscribeToFormChanges() {
 
 
   isFormDirty(): boolean {
-  if (!this.isEditMode) return false;
-
   return this.isDirty;
 }
   /**
@@ -1753,6 +1759,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     this.destroy$.next();
     this.destroy$.complete();
     this.destroy$ = new Subject<void>();
+    this.hasSubscribedToFormChanges = false;
     this.operationService.getBookingById(BookingHeaderSid).subscribe(
       (resp: any) => {
         if (resp.status) {
@@ -5175,7 +5182,7 @@ getFormattedPort(code: string): string {
   private captureInitialFormState(): void {
     // Use a small timeout to ensure the form values are fully settled after patching.
     setTimeout(() => {
-      this.initialFormValue = JSON.stringify(this.getCurrentFormState());
+      this.initialFormValue = this.getCurrentFormState();
     }, 500);
   }
 
@@ -5238,8 +5245,6 @@ getFormattedPort(code: string): string {
 deepEqual(obj1: any, obj2: any): boolean {
   const normalizedObj1 = this.normalizeValue(obj1);
   const normalizedObj2 = this.normalizeValue(obj2);
-  console.log(normalizedObj1,'obj1');
-  console.log(normalizedObj2,'obj2');
   return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
 }
 

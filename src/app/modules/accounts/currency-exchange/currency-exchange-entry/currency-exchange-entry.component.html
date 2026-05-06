@@ -43,12 +43,12 @@
           </button> -->
           <div class="action-group primary">
   <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
-          [ngClass]="{ 'btn-info': !isFormDirty(), 'btn-warning': isFormDirty() }"
+          [ngClass]="{'btn-info': !hasUnsavedChanges(), 'btn-warning': hasUnsavedChanges()}"
           (click)="onSubmit()"  
           [disabled]="(!mps.can('update') && isEditMode)" >
     <i class="fas fa-save me-1"></i>
     <span>{{ isSaving ? "Saving..." : "Save" }}</span> 
-    <span *ngIf="isFormDirty()"
+    <span *ngIf="hasUnsavedChanges()"
           class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
           title="You have unsaved changes">
       <span class="visually-hidden">unsaved changes</span>

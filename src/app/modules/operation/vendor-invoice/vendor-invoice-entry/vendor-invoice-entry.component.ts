@@ -718,8 +718,6 @@ export class VendorInvoiceEntryComponent implements OnInit {
   deepEqual(obj1: any, obj2: any): boolean {
     const normalizedObj1 = this.normalizeValue(obj1);
     const normalizedObj2 = this.normalizeValue(obj2);
-    console.log('Normalized obj1:', normalizedObj1);
-    console.log('Normalized obj2:', normalizedObj2);
     return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
   }
 

@@ -36,6 +36,7 @@ import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/compone
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
 @Component({
   selector: 'app-cost-center',
   standalone: true,
@@ -95,6 +96,9 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
   permissions: string[] = [];
   currentMenuPermissions: any = {};
   MenuMasterSid:any
+  isCostCenterDirty: boolean = false;
+  isCostCenterSaving: boolean = false;
+  private initialCostCenterFormValue: any = null;
   // Company
   currentCompany: any;
   currentBranch: any;
@@ -531,6 +535,14 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
       Remarks: [''],
       Status: [{ value: 'A', disabled: false }, Validators.required]
     });
+
+    this.costCenterForm.valueChanges.subscribe(() => {
+      if (!this.initialCostCenterFormValue) return;
+      this.isCostCenterDirty = !this.deepEqual(
+        this.initialCostCenterFormValue,
+        this.costCenterForm.getRawValue()
+      );
+    });
   }
   //  resetForm(): void {
   //   this.costCenterForm.get('Status')?.disable();
@@ -568,18 +580,32 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
   openModal(content: any): void {
     this.isEditMode = false;
     this.resetForm();
-    this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+    this.setCostCenterFormInitialValue();
+    this.modalRef = this.modalService.open(content, {
+      centered: true,
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false,
+      beforeDismiss: () => this.canCloseCostCenterModal()
+    });
   }
 
   openEditModal(content: any, id: number): void {
     this.isEditMode = true;
     this.CostCenterMasterSid = id;
     this.getCostCenterById(id).add(() => {
-      this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+      this.setCostCenterFormInitialValue();
+      this.modalRef = this.modalService.open(content, {
+        centered: true,
+        size: 'lg',
+        backdrop: 'static',
+        keyboard: false,
+        beforeDismiss: () => this.canCloseCostCenterModal()
+      });
     });
   }
 
- editCostCenter(id: number, content: TemplateRef<any>) {
+  editCostCenter(id: number, content: TemplateRef<any>) {
   // 1. STATE SETUP
   this.isEditMode = true;
   this.CostCenterMasterSid = id;
@@ -592,7 +618,8 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
     centered: true, 
     size: 'lg', 
     backdrop: 'static',
-    keyboard: false // Prevents closing via ESC while loading
+    keyboard: false, // Prevents closing via ESC while loading
+    beforeDismiss: () => this.canCloseCostCenterModal()
   });
 
   // 3. DISABLE FORM (Read-Only Mode)
@@ -620,6 +647,7 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
 
       // 5. UNLOCK UI
       this.costCenterForm.enable();
+      this.setCostCenterFormInitialValue();
     },
     error: (err) => {
       // 6. ROLLBACK
@@ -696,6 +724,7 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
           Remarks: costCenter.Remarks,
           Status: costCenter.Status === 'A' ? 'Active' : 'Suspended'
         });
+        this.setCostCenterFormInitialValue();
       },
       (error) => {
         this.appSettingService.showError('Error  loading');
@@ -704,6 +733,7 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
   }
 
   onSubmit() {
+    if (this.isCostCenterSaving) return;
     if (this.costCenterForm.get('Status')?.disabled) {
       this.costCenterForm.get('Status')?.enable();
     }
@@ -712,8 +742,14 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
       this.costCenterForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all required fields correctly.');
       return;
+    }
+
+    if (!this.isCostCenterDirty) {
+      this.appSettingService.showWarning('No changes to save.');
+      return;
     } else {
       this.btnDisable = true;
+      this.isCostCenterSaving = true;
       let CreatedBy = { CreatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       let UpdatedBy = { UpdatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       const formValue = this.costCenterForm.value;
@@ -736,15 +772,18 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
             console.log(resp.message);
             if (resp.Status || resp.status) {
               this.appSettingService.showSuccess(resp.message || 'Saved Successfully!');
+              this.setCostCenterFormInitialValue();
               this.closeModal();
               this.searchCostCenter();
             } else {
               this.appSettingService.showError(resp.message);
             }
-            this.btnDisable = false; 
+            this.btnDisable = false;
+            this.isCostCenterSaving = false;
           },
           (error) => {
-            this.btnDisable = false; 
+            this.btnDisable = false;
+            this.isCostCenterSaving = false;
             this.errorMessage = error.message;
             console.error('Error loading:', error);
           }
@@ -753,9 +792,11 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
         this.masterService.createCostCenter(payload).subscribe(
           (resp: any) => {
             this.btnDisable = false;
+            this.isCostCenterSaving = false;
             console.log(resp);
             if (resp.Status || resp.status) {
               this.appSettingService.showSuccess(resp.message || 'Saved Successfully!');
+              this.setCostCenterFormInitialValue();
               this.closeModal();
               this.searchCostCenter();
             } else {
@@ -764,6 +805,7 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
           },
           (error) => {
             this.btnDisable = false;
+            this.isCostCenterSaving = false;
             this.errorMessage = error.message;
             console.error('Error loading:', error);
           }
@@ -962,4 +1004,49 @@ export class CostCenterComponent extends BaseListComponent implements OnInit {
 OnDestroy(): void {
     this.commonService.clearDocumentData()
 }
+
+  private setCostCenterFormInitialValue(): void {
+    this.initialCostCenterFormValue = this.costCenterForm.getRawValue();
+    this.isCostCenterDirty = false;
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString();
+    if (Array.isArray(value)) return value.map((v) => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
+
+  canCloseCostCenterModal(): boolean | Promise<boolean> {
+    if (this.isCostCenterSaving) return false;
+    if (!this.isCostCenterDirty) return true;
+
+    const modalRef = this.modalService.open(UnsavedChangesDialogComponent, {
+      centered: true,
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    return modalRef.result
+      .then((action: UnsavedChangesAction) => action === 'discard')
+      .catch(() => false);
+  }
+
+  async closeCostCenterModal(): Promise<void> {
+    const canClose = await Promise.resolve(this.canCloseCostCenterModal());
+    if (!canClose) return;
+    this.modalRef?.close();
+  }
 }

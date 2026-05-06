@@ -40,6 +40,7 @@ import {
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
 
 @Component({
   selector: 'app-meeting-update-list',
@@ -108,6 +109,9 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
   userData: any;
   originalMeetingDate: string;
   private pendingViewMeetingSid: number | null = null;
+  isMeetingDirty: boolean = false;
+  isMeetingSaving: boolean = false;
+  private initialMeetingFormValue: any = null;
 
   // For mobile view data
   filteredMeetings: any[] = [];
@@ -747,6 +751,14 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
     this.meetingForm.get('meetingStatus').valueChanges.subscribe(() => {
       this.meetingForm.get('meetingNote').updateValueAndValidity();
     });
+
+    this.meetingForm.valueChanges.subscribe(() => {
+      if (this.initialMeetingFormValue === null) return;
+      this.isMeetingDirty = !this.deepEqual(
+        this.initialMeetingFormValue,
+        this.meetingForm.getRawValue()
+      );
+    });
   }
 
   private meetingNoteValidator(control: AbstractControl) {
@@ -860,7 +872,13 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
     //   });
     // }
     this.loadMeetingData(meeting.PreCustomerMeetingSid);
-    this.modalRef = this.modalService.open(content, { size: 'lg', centered: true, backdrop: 'static' });
+    this.modalRef = this.modalService.open(content, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static',
+      keyboard: false,
+      beforeDismiss: () => this.canCloseMeetingModal()
+    });
   }
 
   loadMeetingData(meetingId: number) {
@@ -902,6 +920,7 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
         if (meeting.meetingStatus === 'confirmed') {
           this.meetingForm.controls['meetingStatus'].disable();
         }
+        this.setMeetingFormInitialValue();
         this.spinner.hide();
       }
     );
@@ -933,6 +952,11 @@ private handleMeetingDateChange(newDate: string): void {
   }
 
   onUpdateMeeting() {
+     if (this.isMeetingSaving) return;
+     if (!this.isMeetingDirty) {
+      this.appSettingService.showWarning('No changes to save.');
+      return;
+    }
      const currentMeetingDate = this.meetingForm.get('meetingDate')?.value;
      if (this.originalMeetingDate && currentMeetingDate !== this.originalMeetingDate) {
     // Validate remarks if date changed
@@ -961,6 +985,7 @@ private handleMeetingDateChange(newDate: string): void {
     }
 
     this.btnDisable = true;
+    this.isMeetingSaving = true;
 
     const payload = {
       PreCustomerMeetingSid: this.selectedMeeting.PreCustomerMeetingSid,
@@ -1012,15 +1037,19 @@ private handleMeetingDateChange(newDate: string): void {
           }
           
           this.btnDisable = false;
+          this.isMeetingSaving = false;
+          this.setMeetingFormInitialValue();
           this.modalRef.close();
           this.searchMeetings();
         } else {
           this.btnDisable = false;
+          this.isMeetingSaving = false;
           this.commonModalService.openErrorModal(resp.message);
         }
       },
       error => {
         this.btnDisable = false;
+        this.isMeetingSaving = false;
         this.commonModalService.openErrorModal("Failed to update meeting. Please try again.");
       }
     );
@@ -1072,10 +1101,11 @@ private handleMeetingDateChange(newDate: string): void {
       control?.markAsUntouched();
       control?.setErrors(null);
     });
-     this.meetingForm.get('remarks')?.clearValidators();
+    this.meetingForm.get('remarks')?.clearValidators();
   this.meetingForm.get('remarks')?.updateValueAndValidity();
 
     this.btnDisable = false;
+    this.setMeetingFormInitialValue();
   }
 
   toggleFollowUp(event: Event): void {
@@ -1256,6 +1286,51 @@ private extractCreatedCustomerId(resp: any): number | null {
   closeCustomerCreatedModal(): void {
     this.createdCustomerId = null;
     this.modalService.dismissAll();
+  }
+
+  private setMeetingFormInitialValue(): void {
+    this.initialMeetingFormValue = this.meetingForm.getRawValue();
+    this.isMeetingDirty = false;
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString();
+    if (Array.isArray(value)) return value.map((v) => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
+
+  canCloseMeetingModal(): boolean | Promise<boolean> {
+    if (this.isMeetingSaving) return false;
+    if (!this.isMeetingDirty) return true;
+
+    const modalRef = this.modalService.open(UnsavedChangesDialogComponent, {
+      centered: true,
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    return modalRef.result
+      .then((action: UnsavedChangesAction) => action === 'discard')
+      .catch(() => false);
+  }
+
+  async closeUpdateMeetingModal(): Promise<void> {
+    const canClose = await Promise.resolve(this.canCloseMeetingModal());
+    if (!canClose) return;
+    this.modalRef?.close();
   }
 
 }

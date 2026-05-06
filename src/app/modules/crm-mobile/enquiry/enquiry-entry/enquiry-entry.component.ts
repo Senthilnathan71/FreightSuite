@@ -1,6 +1,6 @@
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, effect, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
+import { ChangeDetectorRef, Component, effect, HostListener, OnDestroy, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { AppService } from 'src/app/service/app.service';
 
@@ -28,7 +28,7 @@ import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { LeadService } from '../../Services/lead.service';
 import { EmailValidators } from 'src/app/core/ValidationFn/email.validators';
-import { catchError, forkJoin, of, Subject, Subscription, tap } from 'rxjs';
+import { catchError, forkJoin, of, Subject, Subscription, takeUntil, tap } from 'rxjs';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
@@ -66,6 +66,7 @@ import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/mul
 import { type } from 'os';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 import { OperationService } from 'src/app/modules/operation/operation.service';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 @Component({
   selector: 'app-enquiry-entry',
   standalone: true,
@@ -100,7 +101,7 @@ import { OperationService } from 'src/app/modules/operation/operation.service';
 })
 
 
-export class EnquiryEntryComponent implements OnInit {
+export class EnquiryEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   @ViewChild('enquiryPrint') enquiryPrint!: TemplateRef<any>;
   @ViewChild('emailModal') emailModalRef: any;
   private destroy$ = new Subject<void>();
@@ -172,6 +173,9 @@ export class EnquiryEntryComponent implements OnInit {
   permissions: any[] = [];
   currentMenuPermissions = {}
   isPatching = false;
+  isDirty: boolean = false;
+  isSaving: boolean = false;
+  private initialFormValue: any = null;
   actionMenuItems: DropdownMenuItem[] = [];
   departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
@@ -448,6 +452,25 @@ export class EnquiryEntryComponent implements OnInit {
     });
     this.checkAuthorisedPerson(this.userData?.UserMasterSid);
     this.subscribeToLeadCustomerToggle();
+    this.subscribeToFormChanges();
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
   }
 
   initializeActionMenu(): void {
@@ -612,6 +635,7 @@ export class EnquiryEntryComponent implements OnInit {
       }
     )
   }
+
 
   // loadAllLookups() {
   //   const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
@@ -1560,6 +1584,7 @@ private parseFloatSafe(value: any): number {
         this.enquiryData = resp.data;
         this.patchValues(resp.data);
         this.rateRequestData = resp.data;
+        this.resetUnsavedState();
         if (this.isEditMode && resp.data.status === 'S') {
         this.rateRequestForm.disable();
         this.enquiryOtherForm.disable();
@@ -1812,8 +1837,17 @@ private parseFloatSafe(value: any): number {
 }
 
 
-  onSubmit() {
+  onSubmit(resolve?: (saved: boolean) => void) {
     errorLogger(this.rateRequestForm.value);
+    const currentValue = this.getCurrentFormState();
+    if (this.deepEqual(currentValue, this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      this.rateRequestForm.markAsUntouched();
+      this.enquiryOtherForm.markAsUntouched();
+      if (resolve) resolve(false);
+      return;
+    }
+
     if (this.hasInvalidExcept('routes', this.rateRequestForm)) {
       this.rateRequestForm.markAllAsTouched();
       this.rateRequestForm.updateValueAndValidity();
@@ -1870,6 +1904,7 @@ private parseFloatSafe(value: any): number {
   }
 
     this.btnDisable = true;
+    this.isSaving = true;
     const formRawValue = this.rateRequestForm.getRawValue();
     const otherFormValue = this.enquiryOtherForm.getRawValue();
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
@@ -1922,8 +1957,11 @@ private parseFloatSafe(value: any): number {
             this.rateRequestForm.markAsUntouched();
             this.enquiryOtherForm.markAsPristine();
             this.enquiryOtherForm.markAsUntouched();
+            this.resetUnsavedState();
             this.modalService.openSuccessModal('Enquiry Updated Successfully');
             this.btnDisable = false;
+            this.isSaving = false;
+            if (resolve) resolve(true);
             this.loadEnquiry(this.EnquiryHeaderSid);
             this.emailTriggerService.triggerEmails({
               companyId: this.currentCompany?.CompanyMasterSid,
@@ -1945,6 +1983,8 @@ private parseFloatSafe(value: any): number {
             });
           } else {
             this.modalService.openErrorModal('Enquiry Update Failed');
+            this.isSaving = false;
+            if (resolve) resolve(false);
           }
         });
     } else {
@@ -1978,8 +2018,11 @@ private parseFloatSafe(value: any): number {
           this.rateRequestForm.markAsUntouched();
           this.enquiryOtherForm.markAsPristine();
           this.enquiryOtherForm.markAsUntouched();
+          this.resetUnsavedState();
           this.modalService.openSuccessModal('Enquiry Created Successfully');
           this.btnDisable = false;
+          this.isSaving = false;
+          if (resolve) resolve(true);
           this.EnquiryHeaderSid = resp?.data?.enquiryHeader?.EnquiryHeaderSid;
           if (this.EnquiryHeaderSid) {
             this.router.navigate(['crm/enquiry/entry', this.EnquiryHeaderSid]);
@@ -2004,10 +2047,80 @@ private parseFloatSafe(value: any): number {
           });
         } else {
           this.modalService.openErrorModal('Enquiry Creation Failed');
+          this.isSaving = false;
+          if (resolve) resolve(false);
         }
       });
     }
     this.btnDisable = false;
+  }
+
+  private subscribeToFormChanges(): void {
+    this.rateRequestForm.valueChanges
+      .pipe(takeUntil(this.destroy$), debounceTime(300))
+      .subscribe(() => this.updateDirtyState());
+
+    this.enquiryOtherForm.valueChanges
+      .pipe(takeUntil(this.destroy$), debounceTime(300))
+      .subscribe(() => this.updateDirtyState());
+
+    this.resetUnsavedState();
+  }
+
+  private updateDirtyState(): void {
+    if (this.isPatching || this.isSaving || !this.initialFormValue) {
+      return;
+    }
+    this.isDirty = !this.deepEqual(this.initialFormValue, this.getCurrentFormState());
+  }
+
+  private resetUnsavedState(): void {
+    this.initialFormValue = this.getCurrentFormState();
+    this.isDirty = false;
+  }
+
+  private getCurrentFormState(): any {
+    return {
+      rateRequestForm: this.rateRequestForm?.getRawValue(),
+      enquiryOtherForm: this.enquiryOtherForm?.getRawValue(),
+    };
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) {
+      return null;
+    }
+
+    if (value instanceof Date) {
+      return value.toISOString().split('T')[0];
+    }
+
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+      return Number(value);
+    }
+
+    if (typeof value === 'number') {
+      return Number(value.toFixed(6));
+    }
+
+    if (Array.isArray(value)) {
+      return value.map((v) => this.normalizeValue(v));
+    }
+
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
   }
 
   hasInvalidExcept(controlName: string, formGroup: FormGroup): boolean {

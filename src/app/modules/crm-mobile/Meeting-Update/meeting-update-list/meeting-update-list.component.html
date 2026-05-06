@@ -114,7 +114,7 @@
 </ng-template>
 
 <!-- Update Meeting Modal -->
-<ng-template #modalContentAdd let-close="close">
+<ng-template #modalContentAdd>
     <div class="modal-header p-2 bg-info">
         <h5 class="modal-title text-white">Update Meeting</h5>
         <a class="text-white ps-2 cursor-pointer" (click)="showInfo()">
@@ -142,7 +142,7 @@
               class="fas fa-paperclip me-1"></i>Document reference</button>
                 </div>
             </div>
-            <button type="button" class="btn-close btn-close-white" (click)="close()"></button>
+            <button type="button" class="btn-close btn-close-white" (click)="closeUpdateMeetingModal()"></button>
         </div>
     </div>
 
@@ -316,7 +316,7 @@
             </section>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary btn-sm" (click)="modalRef.dismiss()">Cancel</button>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="closeUpdateMeetingModal()">Cancel</button>
             <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                 (click)="resetForm()">
                 <i class="fas fa-sync-alt me-1"></i>
