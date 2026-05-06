@@ -1,35 +1,101 @@
-<div class="feed-card mb-0">
-  <div class="feed-header d-flex align-items-center gap-2">
-    <span class="header-icon d-flex align-items-center justify-content-center"><i class="fas fa-rss"></i></span>
-    <h3>Team Activity</h3>
-    <span class="live-indicator d-flex align-items-center gap-1">
-      <span class="live-dot"></span>
-      LIVE
-    </span>
-  </div>
-
-  <div class="skeleton-loader" *ngIf="loading">
-    <div class="skeleton-row" *ngFor="let i of [1,2,3,4,5]"></div>
-  </div>
-
-  <div class="feed-table" *ngIf="!loading">
-    <div class="empty-state" *ngIf="items.length === 0">
-      <i class="fas fa-inbox"></i>
-      <p>No recent activity</p>
+<div class="card h-100 border-0 shadow-sm" style="background: white; border-radius: 16px;">
+  <div class="card-body p-0 d-flex flex-column" style="height: 100%;">
+    
+    <!-- Header with Refresh Button -->
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <div class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-2" 
+           style="width: 28px; height: 28px; background: #eef2ff; color: #4f46e5;">
+        <i class="fas fa-rss" style="font-size: 12px;"></i>
+      </div>
+      <h6 class="fw-semibold flex-grow-1 m-0" style="color: #0f172a; font-size: 13px;">Team Activity</h6>
+      
+      <!-- Last Refreshed Time -->
+      <div class="small text-muted" style="font-size: 10px; color: #94a3b8;">
+        <ng-container *ngIf="lastUpdated; else neverRefreshed">
+          Updated {{ lastUpdated | timeAgo }}
+        </ng-container>
+        <ng-template #neverRefreshed>
+          Not refreshed yet
+        </ng-template>
+      </div>
+      
+      <!-- Refresh Button -->
+      <button class="btn btn-sm p-1 rounded-circle d-flex align-items-center justify-content-center" 
+              style="width: 28px; height: 28px; background: transparent; border: none; transition: all 0.2s ease;"
+              [style.opacity]="refreshing ? '0.6' : '1'"
+              [style.cursor]="refreshing ? 'not-allowed' : 'pointer'"
+              (click)="!refreshing && onRefresh()"
+              [disabled]="refreshing"
+              title="Refresh activity feed">
+        <i class="fas fa-sync-alt" 
+           [style.fontSize]="'12px'"
+           [style.color]="'#64748b'"
+           [style.animation]="refreshing ? 'spin 0.8s linear infinite' : 'none'"></i>
+      </button>
     </div>
 
-    <div class="feed-row d-flex align-items-center gap-2" *ngFor="let item of items; let i = index"
-         [style.animation-delay]="i * 30 + 'ms'">
-      <div class="row-indicator" [class]="getColorClass(item.activityType)"></div>
-      <div class="row-icon" [class]="getColorClass(item.activityType)">
-        <i [class]="getIcon(item.activityType)"></i>
+    <!-- Skeleton Loader -->
+    <div *ngIf="loading && !refreshing" class="d-flex flex-column gap-2">
+      <div *ngFor="let i of [1,2,3,4,5]" 
+           class="rounded-2"
+           style="height: 44px; background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%;"></div>
+    </div>
+
+    <!-- Activity Feed Content -->
+    <div *ngIf="!loading || refreshing" class="d-flex flex-column" style="max-height: 320px; overflow-y: auto; overflow-x: hidden;">
+      
+      <!-- Empty State -->
+      <div *ngIf="items.length === 0 && !loading" class="text-center py-4">
+        <i class="fas fa-inbox d-block mb-2" style="font-size: 24px; color: #cbd5e1;"></i>
+        <p class="small text-muted m-0">No recent activity</p>
       </div>
-      <div class="row-content">
-        <span class="row-person">{{ item.salesperson }}</span>
-        <span class="row-action">{{ getTypeLabel(item.activityType) }}</span>
-        <span class="row-entity">{{ item.entityName }}</span>
+
+      <!-- Activity Rows -->
+      <div *ngFor="let item of items; let i = index" 
+           class="d-flex align-items-center gap-2 p-2 rounded-2 mb-1"
+           [style.transition]="'all 0.2s ease'"
+           [style.cursor]="'pointer'"
+           [style.backgroundColor]="hoveredItem === item ? '#f8fafc' : 'transparent'"
+           (mouseenter)="hoveredItem = item"
+           (mouseleave)="hoveredItem = null"
+           (click)="onActivityClick(item)">
+        
+        <!-- Left Indicator Bar -->
+        <div class="flex-shrink-0 rounded-1" 
+             style="width: 3px; height: 20px;"
+             [style.backgroundColor]="getColorCode(item.activityType)"></div>
+        
+        <!-- Icon Circle -->
+        <div class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-2" 
+             style="width: 28px; height: 28px;"
+             [style.backgroundColor]="getIconBgColor(item.activityType)"
+             [style.color]="getIconColor(item.activityType)">
+          <i [class]="getIcon(item.activityType)" style="font-size: 11px;"></i>
+        </div>
+        
+        <!-- Content -->
+        <div class="flex-grow-1 d-flex align-items-center gap-1 flex-wrap" style="min-width: 0;">
+          <span class="fw-semibold" style="color: #0f172a; font-size: 12px;">{{ item.salesperson }}</span>
+          <span class="small" style="color: #475569; font-size: 11px;">{{ getTypeLabel(item.activityType) }}</span>
+          <span class="fw-medium text-truncate" 
+                style="color: #05608D; font-size: 12px; max-width: 140px; text-decoration: underline; text-decoration-style: dotted;">
+            {{ item.entityName }}
+          </span>
+        </div>
+        
+        <!-- Time -->
+        <div class="flex-shrink-0" style="font-size: 10px; color: #94a3b8; white-space: nowrap;">
+          {{ item.activityDate | timeAgo }}
+        </div>
       </div>
-      <div class="row-time">{{ item.activityDate | timeAgo }}</div>
     </div>
   </div>
 </div>
+
+<!-- Add spin animation inline -->
+<style>
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+</style>

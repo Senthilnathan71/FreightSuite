@@ -191,7 +191,13 @@
         <section class="dashboard-section">
           <div class="row-2col">
             <app-sm-radar-chart [scoreboard]="scoreboard"></app-sm-radar-chart>
-             <app-sm-activity-feed [items]="activityFeed" [loading]="activityLoading"></app-sm-activity-feed>
+            <app-sm-activity-feed 
+              #activityFeedComp
+              [items]="activityFeed" 
+              [loading]="activityLoading"
+              (activityClicked)="onActivityClicked($event)"
+              (refreshClicked)="onActivityFeedRefresh()">
+            </app-sm-activity-feed>
           </div>
         </section>
       </ng-container>

@@ -105,6 +105,7 @@ export interface ResponseTimeMetric {
 }
 
 export interface ActivityFeedItem {
+  sid: number;
   activityType: 'meeting_completed' | 'quote_created' | 'booking_created';
   activityDate: string;
   salesperson: string;

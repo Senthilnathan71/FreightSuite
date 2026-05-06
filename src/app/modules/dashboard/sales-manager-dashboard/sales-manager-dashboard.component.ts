@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -81,6 +81,8 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
   companyMasterSid = 0;
   branchMasterSid = 0;
   userId = 0;
+
+   @ViewChild(SmActivityFeedComponent) activityFeedComponent!: SmActivityFeedComponent;
 
   // Filter state
   currentFilters: SalesManagerFilters = {};
@@ -516,15 +518,32 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  onActivityClicked(item: any): void {
+    // You can add any parent-level logic here
+    // The navigation is already handled in the child component
+    console.log('Activity clicked:', item);
+  }
+
+  onActivityFeedRefresh(): void {
+    this.loadActivityFeed();
+  }
+
   private loadActivityFeed() {
     this.activityLoading = true;
     this.service.getActivityFeed(this.currentFilters).subscribe({
       next: (resp) => {
         this.activityFeed = resp.data || [];
         this.activityLoading = false;
+
+        if (this.activityFeedComponent) {
+          this.activityFeedComponent.setDataLoaded();
+        }
       },
       error: () => {
         this.activityLoading = false;
+        if (this.activityFeedComponent) {
+          this.activityFeedComponent.setDataLoaded();
+        }
       },
     });
 
