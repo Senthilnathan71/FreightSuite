@@ -409,7 +409,7 @@
                 <th>Dept</th>
                 <th>POL</th>
                 <th>POD</th>
-                <th>Status</th>
+                <!-- <th>Status</th> -->
               </tr>
             </thead>
             <tbody>
@@ -421,7 +421,7 @@
                 <td>{{ item.departmentName || '—' }}</td>
                 <td>{{ item.polCode || '—' }}</td>
                 <td>{{ item.podCode || '—' }}</td>
-                <td><span class="badge" [ngClass]="getApprovalStatusClass(item.authorizerStatus)">{{ camelToWords(item.authorizerStatus) }}</span></td>
+                <!-- <td><span class="badge" [ngClass]="getApprovalStatusClass(item.authorizerStatus)">{{ camelToWords(item.authorizerStatus) }}</span></td> -->
               </tr>
             </tbody>
           </table>

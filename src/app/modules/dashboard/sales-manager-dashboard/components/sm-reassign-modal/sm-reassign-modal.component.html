@@ -1,44 +1,161 @@
-<div class="reassign-modal">
-  <div class="modal-header">
-    <h5 class="modal-title">
-      <i class="fas fa-exchange-alt"></i> Reassign Lead
-    </h5>
-    <button type="button" class="btn-close" (click)="activeModal.dismiss()"></button>
+<div class="modal-content" style="overflow: hidden; border: none;">
+  <!-- Modal Header -->
+  <div class="modal-header" style="background: linear-gradient(135deg, #05608D 0%, #044a6c 100%); border: none; padding: 20px 24px;">
+    <div class="d-flex align-items-center gap-2">
+      <div class="d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; background: rgba(255,255,255,0.2); border-radius: 10px;">
+        <i class="fas fa-exchange-alt text-white"></i>
+      </div>
+      <h5 class="modal-title text-white fw-semibold m-0">Reassign Lead / Meeting</h5>
+    </div>
+    <button type="button" class="btn-close bg-white" (click)="activeModal.dismiss()" style="opacity: 0.8;"></button>
   </div>
 
-  <div class="modal-body">
-    <!-- Lead info -->
-    <div class="info-card" *ngIf="meeting">
-      <div class="info-row">
-        <span class="info-label">Lead / Customer</span>
-        <span class="info-value">{{ meeting.preCustomerName || meeting.companyName || '—' }}</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Meeting Type</span>
-        <span class="info-value">{{ meeting.meetingType || '—' }}</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Current Assignee</span>
-        <span class="info-value current-assignee">{{ currentAssignee || '—' }}</span>
+  <!-- Modal Body -->
+  <div class="modal-body p-4" style="max-height: 60vh; overflow-y: auto;">
+    
+    <!-- Meeting Information Card -->
+    <div class="card mb-4" style="border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc;">
+      <div class="card-body p-3">
+        <!-- Lead / Customer -->
+        <div class="d-flex align-items-start gap-3 py-2" style="border-bottom: 1px solid #e2e8f0;">
+          <div class="d-flex align-items-center gap-2" style="width: 140px;">
+            <i class="fas fa-building" style="color: #64748b; font-size: 12px; width: 16px;"></i>
+            <span style="font-size: 12px; font-weight: 500; color: #64748b;">Lead / Customer</span>
+          </div>
+          <div class="flex-fill">
+            <span style="font-size: 13px; font-weight: 500; color: #1e293b;">
+              {{ meeting.preCustomerName || meeting.customerName || meeting.name || '—' }}
+            </span>
+          </div>
+        </div>
+        
+        <!-- Meeting Date -->
+        <div class="d-flex align-items-start gap-3 py-2" style="border-bottom: 1px solid #e2e8f0;">
+          <div class="d-flex align-items-center gap-2" style="width: 140px;">
+            <i class="fas fa-calendar-alt" style="color: #64748b; font-size: 12px; width: 16px;"></i>
+            <span style="font-size: 12px; font-weight: 500; color: #64748b;">Meeting Date</span>
+          </div>
+          <div class="flex-fill">
+            <span style="font-size: 13px; font-weight: 500; color: #1e293b;">
+              {{ (meeting.meetingDate | date:'dd MMM yyyy, h:mm a') || '—' }}
+            </span>
+          </div>
+        </div>
+        
+        <!-- Meeting Type -->
+        <div class="d-flex align-items-start gap-3 py-2" style="border-bottom: 1px solid #e2e8f0;">
+          <div class="d-flex align-items-center gap-2" style="width: 140px;">
+            <i class="fas fa-tag" style="color: #64748b; font-size: 12px; width: 16px;"></i>
+            <span style="font-size: 12px; font-weight: 500; color: #64748b;">Meeting Type</span>
+          </div>
+          <div class="flex-fill">
+            <span class="badge" [ngClass]="meeting.meetingType === 'Visit' ? 'bg-primary' : 'bg-warning'" 
+                  style="font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 20px;">
+              {{ meeting.meetingType || '—' }}
+            </span>
+          </div>
+        </div>
+        
+        <!-- Current Assignee -->
+        <div class="d-flex align-items-start gap-3 py-2">
+          <div class="d-flex align-items-center gap-2" style="width: 140px;">
+            <i class="fas fa-user" style="color: #64748b; font-size: 12px; width: 16px;"></i>
+            <span style="font-size: 12px; font-weight: 500; color: #64748b;">Current Assignee</span>
+          </div>
+          <div class="flex-fill">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fas fa-user-circle" style="color: #f59e0b; font-size: 14px;"></i>
+              <span style="font-size: 13px; font-weight: 500; color: #f59e0b;">{{ currentAssignee || '—' }}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- New salesperson -->
-    <div class="form-group">
-      <label class="form-label">Reassign To <span class="required">*</span></label>
-      <select class="form-select" [(ngModel)]="selectedSalespersonId">
-        <option [ngValue]="null" disabled>Select a salesperson...</option>
-        <option *ngFor="let sp of salespersons" [ngValue]="sp.UserMasterSid">
-          {{ sp.userName }} ({{ sp.userEmail }})
-        </option>
-      </select>
+    <!-- Reassign Section -->
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <i class="fas fa-user-plus" style="color: #05608D; font-size: 14px;"></i>
+        <span class="fw-semibold" style="color: #1e293b; font-size: 14px;">Reassign To</span>
+        <span class="ms-auto" style="font-size: 10px; font-weight: 600; padding: 2px 8px; background: #fee2e2; color: #dc2626; border-radius: 12px;">Required</span>
+      </div>
+      
+      <!-- Search Input -->
+      <div class="position-relative mb-3">
+        <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3" style="font-size: 12px; color: #94a3b8;"></i>
+        <input 
+          type="text" 
+          class="form-control form-control-sm"
+          placeholder="Search salesperson by name or email..."
+          [(ngModel)]="searchTerm"
+          (input)="filterSalespersons()"
+          style="padding: 8px 12px 8px 36px; font-size: 13px; border-radius: 10px; border-color: #e2e8f0;"
+        />
+        <button *ngIf="searchTerm" class="position-absolute top-50 end-0 translate-middle-y me-2 btn btn-link p-0 text-decoration-none" 
+                (click)="clearSearch()" style="color: #94a3b8;">
+          <i class="fas fa-times-circle"></i>
+        </button>
+      </div>
+      
+      <!-- Salesperson List -->
+      <div class="border rounded-3" style="border-color: #e2e8f0 !important; overflow: hidden;">
+        <div class="d-flex justify-content-between align-items-center px-3 py-2" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+          <span class="small fw-semibold" style="color: #1e293b;">Available Salespersons</span>
+          <span class="small" style="color: #64748b;">{{ filteredSalespersons.length }} found</span>
+        </div>
+        
+        <div style="max-height: 280px; overflow-y: auto;">
+          <div *ngFor="let sp of filteredSalespersons" 
+               class="d-flex align-items-center gap-3 p-3 border-bottom cursor-pointer"
+               [class.bg-light]="selectedSalespersonId === sp.UserMasterSid"
+               (click)="selectSalesperson(sp.UserMasterSid)"
+               style="transition: all 0.2s ease; cursor: pointer; border-color: #e2e8f0 !important;">
+            
+            <!-- Avatar -->
+            <div class="d-flex align-items-center justify-content-center rounded-3 flex-shrink-0"
+                 [style.backgroundColor]="sp.avatarColor || '#05608D'"
+                 style="width: 40px; height: 40px; font-size: 14px; font-weight: 600; color: white;">
+              {{ sp.userName?.charAt(0) || '?' }}
+            </div>
+            
+            <!-- Info -->
+            <div class="flex-grow-1">
+              <div class="fw-semibold" style="font-size: 14px; color: #1e293b;">{{ sp.userName }}</div>
+              <div class="small" style="font-size: 11px; color: #64748b;">{{ sp.userEmail }}</div>
+            </div>
+            
+            <!-- Radio -->
+            <div class="flex-shrink-0">
+              <div class="rounded-circle border d-flex align-items-center justify-content-center"
+                   [class.border-primary]="selectedSalespersonId === sp.UserMasterSid"
+                   style="width: 20px; height: 20px; border-width: 2px; transition: all 0.2s ease;">
+                <i *ngIf="selectedSalespersonId === sp.UserMasterSid" class="fas fa-check-circle text-primary" style="font-size: 14px;"></i>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Empty State -->
+          <div *ngIf="filteredSalespersons.length === 0" class="text-center py-5 px-4">
+            <i class="fas fa-users-slash d-block mb-2" style="font-size: 36px; color: #cbd5e1;"></i>
+            <span class="d-block fw-semibold mb-1" style="font-size: 14px; color: #1e293b;">No other salespersons available</span>
+            <small class="d-block" style="font-size: 11px; color: #64748b;">All team members are already assigned to this lead</small>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="modal-footer">
-    <button class="btn btn-outline" (click)="activeModal.dismiss()">Cancel</button>
-    <button class="btn btn-primary" [disabled]="!isValid" (click)="onSubmit()">
-      <i class="fas fa-check"></i> Reassign
+  <!-- Modal Footer -->
+  <div class="modal-footer d-flex align-items-center justify-content-end gap-2 p-4" style="background: #f8fafc; border-top: 1px solid #e2e8f0;">
+    <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss()" style="padding: 8px 20px; font-size: 13px; font-weight: 500; border-radius: 8px;">
+      <i class="fas fa-times me-1"></i> Cancel
+    </button>
+    <button type="button" class="btn" [disabled]="!isValid || isSubmitting" 
+            (click)="onSubmit()"
+            style="padding: 8px 20px; font-size: 13px; font-weight: 600; border-radius: 8px; background: #05608D; color: white; border: none;"
+            [style.opacity]="!isValid || isSubmitting ? '0.5' : '1'"
+            [style.cursor]="!isValid || isSubmitting ? 'not-allowed' : 'pointer'">
+      <i class="fas fa-exchange-alt me-1"></i> {{ isSubmitting ? 'Reassigning...' : 'Reassign Lead' }}
     </button>
   </div>
 </div>

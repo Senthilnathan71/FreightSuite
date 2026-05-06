@@ -11,58 +11,164 @@
       <span><i class="fas fa-exclamation-triangle"></i> Overdue</span>
       <span class="count">{{ overdue.totalCount }}</span>
     </div>
-    <div class="col-body">
-      <div class="meeting-item" *ngFor="let m of overdue.items" (click)="onMeetingClick(m)">
-        <div class="mi-top">
-          <span class="mi-name">{{ m.preCustomerName || m.customerName || m.name || '—' }}</span>
-          <span class="mi-type">{{ m.meetingType }}</span>
-        </div>
-        <div class="mi-meta">
-          <span><i class="far fa-calendar"></i> {{ formatDate(m.meetingDate) }}</span>
-          <span><i class="far fa-user"></i> {{ m.salespersonName }}</span>
+    <div class="col-body" (scroll)="onScroll($event, 'overdue')">
+      <div class="meeting-items-container">
+        <div class="meeting-item" *ngFor="let m of overdue.items">
+          <!-- Main click area for navigation -->
+          <div class="meeting-content" (click)="onMeetingClick(m)">
+            <!-- Customer/Lead Name -->
+            <div class="mi-name">{{ m.preCustomerName || m.customerName || m.name || '—' }}</div>
+
+            <!-- Meeting Details Row -->
+            <div class="mi-details">
+              <span class="mi-date">
+                <i class="far fa-calendar-alt"></i> {{ formatDate(m.meetingDate) }}
+              </span>
+              <span class="mi-salesperson">
+                <i class="far fa-user"></i> {{ m.salespersonName }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Action Buttons Container -->
+          <div class="meeting-actions">
+            <!-- Meeting Type Badge -->
+            <span class="meeting-type-badge" [class.visit]="m.meetingType === 'Visit'"
+              [class.call]="m.meetingType === 'Call'">
+              {{ m.meetingType || 'Meeting' }}
+            </span>
+            <!-- Reassign Button -->
+            <button class="action-btn reassign-btn" (click)="onReassign($event, m)"
+              title="Reassign to another salesperson">
+              <i class="fas fa-exchange-alt"></i>
+            </button>
+
+          </div>
         </div>
       </div>
-      <div class="empty-col" *ngIf="!overdue.items?.length && !loading">No overdue meetings</div>
+
+      <div class="infinite-scroll-trigger" *ngIf="hasMoreItems('overdue') && !isBucketLoading('overdue')"></div>
+
+      <div class="loading-more" *ngIf="isBucketLoading('overdue') && overdue.items?.length > 0">
+        <div class="loader-wrapper">
+          <div class="loader-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <span class="loader-text">Loading more meetings...</span>
+        </div>
+      </div>
+
+      <div class="no-more-data" *ngIf="!hasMoreItems('overdue') && overdue.items?.length > 0">
+        <div class="end-message">
+          <i class="fas fa-check-circle"></i>
+          <span>You've seen all {{ overdue.totalCount }} meetings</span>
+        </div>
+      </div>
+
+      <div class="empty-col" *ngIf="!overdue.items?.length && !isBucketLoading('overdue')">
+        <i class="fas fa-calendar-check"></i>
+        <span>No overdue meetings</span>
+      </div>
     </div>
   </div>
+
   <!-- Today -->
   <div class="meeting-col today">
     <div class="col-header">
       <span><i class="fas fa-sun"></i> Today</span>
       <span class="count">{{ today.totalCount }}</span>
     </div>
-    <div class="col-body">
-      <div class="meeting-item" *ngFor="let m of today.items" (click)="onMeetingClick(m)">
-        <div class="mi-top">
-          <span class="mi-name">{{ m.preCustomerName || m.customerName || m.name || '—' }}</span>
-          <span class="mi-type">{{ m.meetingType }}</span>
-        </div>
-        <div class="mi-meta">
-          <span><i class="far fa-clock"></i> {{ formatTime(m.meetingDate) }}</span>
-          <span><i class="far fa-user"></i> {{ m.salespersonName }}</span>
+    <div class="col-body" (scroll)="onScroll($event, 'today')">
+      <div class="meeting-items-container">
+        <div class="meeting-item" *ngFor="let m of today.items">
+          <div class="meeting-content" (click)="onMeetingClick(m)">
+            <div class="mi-name">{{ m.preCustomerName || m.customerName || m.name || '—' }}</div>
+            <div class="mi-details">
+              <span class="mi-date">
+                <i class="far fa-clock"></i> {{ formatTime(m.meetingDate) }}
+              </span>
+              <span class="mi-salesperson">
+                <i class="far fa-user"></i> {{ m.salespersonName }}
+              </span>
+            </div>
+          </div>
+          <div class="meeting-actions">
+            <span class="meeting-type-badge" [class.visit]="m.meetingType === 'Visit'"
+              [class.call]="m.meetingType === 'Call'">
+              {{ m.meetingType || 'Meeting' }}
+            </span>
+            <button class="action-btn reassign-btn" (click)="onReassign($event, m)" title="Reassign">
+              <i class="fas fa-exchange-alt"></i>
+            </button>
+          </div>
         </div>
       </div>
-      <div class="empty-col" *ngIf="!today.items?.length && !loading">No meetings today</div>
+
+      <div class="infinite-scroll-trigger" *ngIf="hasMoreItems('today') && !isBucketLoading('today')"></div>
+      <div class="loading-more" *ngIf="isBucketLoading('today') && today.items?.length > 0">
+        <div class="loader-wrapper">
+          <div class="loader-dots"><span></span><span></span><span></span></div>
+          <span class="loader-text">Loading more meetings...</span>
+        </div>
+      </div>
+      <div class="no-more-data" *ngIf="!hasMoreItems('today') && today.items?.length > 0">
+        <div class="end-message"><i class="fas fa-check-circle"></i><span>All {{ today.totalCount }} meetings
+            loaded</span></div>
+      </div>
+      <div class="empty-col" *ngIf="!today.items?.length && !isBucketLoading('today')">
+        <i class="fas fa-sun"></i><span>No meetings scheduled for today</span>
+      </div>
     </div>
   </div>
+
   <!-- Upcoming -->
   <div class="meeting-col future">
     <div class="col-header">
       <span><i class="fas fa-calendar-plus"></i> Upcoming</span>
       <span class="count">{{ upcoming.totalCount }}</span>
     </div>
-    <div class="col-body">
-      <div class="meeting-item" *ngFor="let m of upcoming.items" (click)="onMeetingClick(m)">
-        <div class="mi-top">
-          <span class="mi-name">{{ m.preCustomerName || m.customerName || m.name || '—' }}</span>
-          <span class="mi-type">{{ m.meetingType }}</span>
-        </div>
-        <div class="mi-meta">
-          <span><i class="far fa-calendar"></i> {{ formatDate(m.meetingDate) }}</span>
-          <span><i class="far fa-user"></i> {{ m.salespersonName }}</span>
+    <div class="col-body" (scroll)="onScroll($event, 'future')">
+      <div class="meeting-items-container">
+        <div class="meeting-item" *ngFor="let m of upcoming.items">
+          <div class="meeting-content" (click)="onMeetingClick(m)">
+            <div class="mi-name">{{ m.preCustomerName || m.customerName || m.name || '—' }}</div>
+            <div class="mi-details">
+              <span class="mi-date">
+                <i class="far fa-calendar-alt"></i> {{ formatDate(m.meetingDate) }}
+              </span>
+              <span class="mi-salesperson">
+                <i class="far fa-user"></i> {{ m.salespersonName }}
+              </span>
+            </div>
+          </div>
+          <div class="meeting-actions">
+            <span class="meeting-type-badge" [class.visit]="m.meetingType === 'Visit'"
+              [class.call]="m.meetingType === 'Call'">
+              {{ m.meetingType || 'Meeting' }}
+            </span>
+            <button class="action-btn reassign-btn" (click)="onReassign($event, m)" title="Reassign">
+              <i class="fas fa-exchange-alt"></i>
+            </button>
+          </div>
         </div>
       </div>
-      <div class="empty-col" *ngIf="!upcoming.items?.length && !loading">No upcoming meetings</div>
+
+      <div class="infinite-scroll-trigger" *ngIf="hasMoreItems('future') && !isBucketLoading('future')"></div>
+      <div class="loading-more" *ngIf="isBucketLoading('future') && upcoming.items?.length > 0">
+        <div class="loader-wrapper">
+          <div class="loader-dots"><span></span><span></span><span></span></div>
+          <span class="loader-text">Loading more meetings...</span>
+        </div>
+      </div>
+      <div class="no-more-data" *ngIf="!hasMoreItems('future') && upcoming.items?.length > 0">
+        <div class="end-message"><i class="fas fa-check-circle"></i><span>All {{ upcoming.totalCount }} upcoming
+            meetings loaded</span></div>
+      </div>
+      <div class="empty-col" *ngIf="!upcoming.items?.length && !isBucketLoading('future')">
+        <i class="fas fa-calendar-week"></i><span>No upcoming meetings scheduled</span>
+      </div>
     </div>
   </div>
 </div>

@@ -1275,7 +1275,7 @@
                   <th>Dept</th>
                   <th>POL</th>
                   <th>POD</th>
-                  <th>Status</th>
+                  <!-- <th>Status</th> -->
                   <!-- <th></th> -->
                 </tr>
               </thead>
@@ -1299,13 +1299,13 @@
                   <td>{{ quote.departmentName || "—" }}</td>
                   <td>{{ quote.polCode || "—" }}</td>
                   <td>{{ quote.podCode || "—" }}</td>
-                  <td>
+                  <!-- <td>
                     <span
                       class="badge"
                       [ngClass]="getApprovalStatusClass(quote.authorizerStatus)"
                       >{{ camelToWords(quote.authorizerStatus) }}</span
                     >
-                  </td>
+                  </td> -->
                   <!-- <td>
                     <button
                       class="action-btn followup"

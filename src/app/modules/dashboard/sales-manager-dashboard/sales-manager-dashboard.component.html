@@ -171,16 +171,22 @@
       </section>
 
       <ng-container *ngIf="!liteMode">
-        <section class="dashboard-section">
-          <app-sm-meetings-board
-            [overdue]="meetingsBoard?.overdue || { items: [], totalCount: 0 }"
-            [today]="meetingsBoard?.today || { items: [], totalCount: 0 }"
-            [upcoming]="meetingsBoard?.upcoming || { items: [], totalCount: 0 }"
-            [loading]="meetingsBoardLoading"
-            (meetingClicked)="onMeetingClicked($event)"
-            (reassignClicked)="openReassignModal($event)">
-          </app-sm-meetings-board>
-        </section>
+      <section class="dashboard-section">
+        <app-sm-meetings-board
+          [overdue]="meetingsBoardForTemplate.overdue"
+          [today]="meetingsBoardForTemplate.today"
+          [upcoming]="meetingsBoardForTemplate.upcoming"
+          [overdueLoading]="meetingStates.overdue.loading"
+          [todayLoading]="meetingStates.today.loading"
+          [upcomingLoading]="meetingStates.future.loading"
+          [overdueHasMore]="meetingStates.overdue.hasMore"
+          [todayHasMore]="meetingStates.today.hasMore"
+          [upcomingHasMore]="meetingStates.future.hasMore"
+          (meetingClicked)="onMeetingClicked($event)"
+          (reassignClicked)="openReassignModal($event)"
+          (scrollReached)="onMeetingScrollReached($event)">
+        </app-sm-meetings-board>
+      </section>
 
         <section class="dashboard-section">
           <div class="row-2col">

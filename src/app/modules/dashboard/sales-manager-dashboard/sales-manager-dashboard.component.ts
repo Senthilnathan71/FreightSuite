@@ -47,6 +47,7 @@ import { SmDrillDownModalComponent } from './components/sm-drill-down-modal/sm-d
 import { SmReassignModalComponent } from './components/sm-reassign-modal/sm-reassign-modal.component';
 import { SmCreateMeetingModalComponent } from './components/sm-create-meeting-modal/sm-create-meeting-modal.component';
 import { SmReminderModalComponent } from './components/sm-reminder-modal/sm-reminder-modal.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-sales-manager-dashboard',
@@ -90,6 +91,40 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
   selectedSalespersonId: number | null = null;
   readonly maxDateTo: NgbDateStruct = toNgbDateStruct(new Date())!;
 
+  private readonly pageSize = 10;
+  private readonly scrollThreshold = 96
+
+  meetingStates: Record<'overdue' | 'today' | 'future', {
+    items: any[];
+    page: number;
+    totalCount: number;
+    hasMore: boolean;
+    loading: boolean;
+    initialized: boolean;
+  }> = {
+      overdue: { items: [], page: 1, totalCount: 0, hasMore: true, loading: false, initialized: false },
+      today: { items: [], page: 1, totalCount: 0, hasMore: true, loading: false, initialized: false },
+      future: { items: [], page: 1, totalCount: 0, hasMore: true, loading: false, initialized: false }
+    };
+
+  // Replace meetingsBoard binding with computed values
+  get meetingsBoardForTemplate() {
+    return {
+      overdue: {
+        items: this.meetingStates.overdue.items,
+        totalCount: this.meetingStates.overdue.totalCount
+      },
+      today: {
+        items: this.meetingStates.today.items,
+        totalCount: this.meetingStates.today.totalCount
+      },
+      upcoming: {
+        items: this.meetingStates.future.items,
+        totalCount: this.meetingStates.future.totalCount
+      }
+    };
+  }
+
   // V2 UI state
   dateDropdownOpen = false;
   liteMode = false;
@@ -118,6 +153,7 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
     private appSettings: AppSettingsService,
     private service: SalesManagerDashboardService,
     private modalService: NgbModal,
+    private router : Router
   ) {}
 
   ngOnInit() {
@@ -314,10 +350,16 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
     this.scoreboard = [];
     this.alerts = [];
     this.activityFeed = [];
-    this.meetingsBoard = null;
     this.actionCenterItems = [];
     this.primaryKpiCards = [];
     this.kpiCards = [];
+
+    // Reset meeting states
+    this.meetingStates = {
+      overdue: { items: [], page: 1, totalCount: 0, hasMore: true, loading: false, initialized: false },
+      today: { items: [], page: 1, totalCount: 0, hasMore: true, loading: false, initialized: false },
+      future: { items: [], page: 1, totalCount: 0, hasMore: true, loading: false, initialized: false }
+    };
 
     this.loadCounts();
     this.loadScoreboard();
@@ -371,17 +413,92 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  private loadMeetingsBoard() {
-    this.meetingsBoardLoading = true;
-    this.service.getMeetingsBoard(this.currentFilters).subscribe({
-      next: (resp) => {
-        this.meetingsBoard = resp.data;
-        this.meetingsBoardLoading = false;
-      },
-      error: () => {
-        this.meetingsBoardLoading = false;
-      },
-    });
+  // Handle scroll events from child component
+  onMeetingScrollReached(bucket: 'overdue' | 'today' | 'future') {
+    this.loadMeetingsBoard(false, bucket);
+  }
+
+  private loadMeetingsBoard(reset = false, bucket?: 'overdue' | 'today' | 'future') {
+    if (bucket) {
+      const state = this.meetingStates[bucket];
+      if (state.loading || (!reset && !state.hasMore)) {
+        return;
+      }
+
+      const nextPage = reset ? 1 : state.page + 1;
+      state.loading = true;
+
+      this.service.getMeetingsBoard({
+        ...this.currentFilters,
+        page: nextPage,
+        pageSize: this.pageSize,
+        bucket: bucket
+      }).subscribe({
+        next: (resp) => {
+          const data = resp.data as any;
+          const bucketData = data[bucket];
+
+          if (reset) {
+            state.items = bucketData.items;
+          } else {
+            state.items = [...state.items, ...bucketData.items];
+          }
+          state.page = bucketData.page;
+          state.totalCount = bucketData.totalCount;
+          state.hasMore = bucketData.hasMore;
+          state.loading = false;
+          state.initialized = true;
+        },
+        error: () => {
+          state.loading = false;
+        }
+      });
+    } else {
+      // Initial load for all buckets (reset)
+      Object.keys(this.meetingStates).forEach(key => {
+        this.meetingStates[key as keyof typeof this.meetingStates] = {
+          items: [], page: 1, totalCount: 0, hasMore: true, loading: false, initialized: false
+        };
+      });
+
+      this.meetingsBoardLoading = true;
+
+      this.service.getMeetingsBoard({
+        ...this.currentFilters,
+        page: 1,
+        pageSize: this.pageSize
+      }).subscribe({
+        next: (resp) => {
+          const data = resp.data;
+
+          // Update overdue
+          this.meetingStates.overdue.items = data.overdue.items;
+          this.meetingStates.overdue.page = data.overdue.page;
+          this.meetingStates.overdue.totalCount = data.overdue.totalCount;
+          this.meetingStates.overdue.hasMore = data.overdue.hasMore;
+          this.meetingStates.overdue.initialized = true;
+
+          // Update today
+          this.meetingStates.today.items = data.today.items;
+          this.meetingStates.today.page = data.today.page;
+          this.meetingStates.today.totalCount = data.today.totalCount;
+          this.meetingStates.today.hasMore = data.today.hasMore;
+          this.meetingStates.today.initialized = true;
+
+          // Update future
+          this.meetingStates.future.items = data.upcoming.items;
+          this.meetingStates.future.page = data.upcoming.page;
+          this.meetingStates.future.totalCount = data.upcoming.totalCount;
+          this.meetingStates.future.hasMore = data.upcoming.hasMore;
+          this.meetingStates.future.initialized = true;
+
+          this.meetingsBoardLoading = false;
+        },
+        error: () => {
+          this.meetingsBoardLoading = false;
+        }
+      });
+    }
   }
 
   private loadAlertsAndAging() {
@@ -474,20 +591,21 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
     const c = this.counts.counts;
     this.actionCenterItems = [
       {
-        key: 'noFollowUp', title: 'Leads Without Follow-Up',
-        subtitle: 'Needs immediate attention',
-        count: c.followUpsPending, icon: 'fas fa-phone-slash', colorClass: 'warning'
-      },
-      {
-        key: 'quotesPending', title: 'Quotes Pending Approval',
-        subtitle: 'Awaiting manager review',
-        count: c.quotesNotApproved, icon: 'fas fa-hourglass-half', colorClass: 'info'
-      },
-      {
         key: 'overduesMeetings', title: 'Overdue Meetings',
         subtitle: 'Past scheduled date',
         count: c.meetingsOverdue, icon: 'fas fa-calendar-times', colorClass: 'danger'
       },
+      {
+        key: 'noFollowUp', title: 'Leads With Follow-Up Pending',
+        subtitle: 'Needs immediate attention',
+        count: c.followUpsPending, icon: 'fas fa-phone-slash', colorClass: 'warning'
+      },
+      {
+        key: 'quotesPending', title: 'Quotes waiting for approval',
+        subtitle: 'Awaiting manager review',
+        count: c.quotesNotApproved, icon: 'fas fa-hourglass-half', colorClass: 'info'
+      },
+      
     ];
   }
 
@@ -539,7 +657,9 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
   // ─── MEETINGS BOARD ACTIONS ────────────────────────────────────
 
   onMeetingClicked(meeting: any) {
-    this.openReassignModal(meeting);
+    this.router.navigate(['/crm/meeting-update'], {
+      state: { viewMeetingSid: meeting.PreCustomerMeetingSid }
+    });
   }
 
   // ─── MODAL HELPERS ─────────────────────────────────────────────
@@ -565,6 +685,7 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
               next: (resp) => {
                 if (resp.status) {
                   this.appSettings.showSuccess('Lead reassigned successfully');
+                  this.refreshMeetingBucketAfterReassign(meeting);
                   this.loadMeetingsBoard();
                   this.loadScoreboard();
                 } else {
@@ -577,6 +698,26 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
       },
       () => {},
     );
+  }
+
+  private refreshMeetingBucketAfterReassign(meeting: any) {
+    // Determine bucket based on meeting date
+    const meetingDate = new Date(meeting.meetingDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let bucket: 'overdue' | 'today' | 'future';
+
+    if (meetingDate < today) {
+      bucket = 'overdue';
+    } else if (meetingDate.toDateString() === today.toDateString()) {
+      bucket = 'today';
+    } else {
+      bucket = 'future';
+    }
+
+    // Refresh just this bucket
+    this.loadMeetingsBoard(true, bucket);
   }
 
   openCreateMeetingModal(lead?: any) {
