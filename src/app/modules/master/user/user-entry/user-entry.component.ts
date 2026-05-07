@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, TemplateRef } from '@angular/core';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -9,7 +9,7 @@ import {
   NgbModal,
   NgbModalRef,
 } from '@ng-bootstrap/ng-bootstrap';
-import { forkJoin, Subject } from 'rxjs';
+import { debounceTime, forkJoin, Subject, takeUntil } from 'rxjs';
 import {
   AbstractControl,
   FormArray,
@@ -49,6 +49,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/dial-code-dropdown.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 @Component({
   selector: 'app-user-entry',
@@ -70,8 +71,12 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
   templateUrl: './user-entry.component.html',
   styleUrl: './user-entry.component.scss',
 })
-export class UserEntryComponent implements OnInit {
+export class UserEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   private destroy$ = new Subject<void>();
+  private initialFormValue: any = null;
+  isDirty = false;
+  isSaving = false;
+  private formChangesSubscribed = false;
 
   UserMasterSid: number;
   isEditMode: boolean;
@@ -165,6 +170,7 @@ export class UserEntryComponent implements OnInit {
     });
     this.userForm.get('DefaultDept').disable();
     this.handleLoginUserToggle();
+    this.subscribeToFormChanges();
   }
 
   handleLoginUserToggle() {
@@ -530,6 +536,7 @@ export class UserEntryComponent implements OnInit {
               Validators.required,
               PasswordValidators.validate(),
             ]);
+          this.captureInitialFormState();
         }
       });
     });
@@ -641,6 +648,7 @@ export class UserEntryComponent implements OnInit {
               );
             });
           });
+          this.captureInitialFormState();
 
         } else {
           this.appSettingService.showError('Error Loading User Data');
@@ -653,13 +661,28 @@ export class UserEntryComponent implements OnInit {
     );
   }
 
-  onSubmit() {
+  onSubmit(resolve?: (saved: boolean) => void) {
+    if (this.isSaving) {
+      resolve?.(false);
+      return;
+    }
+    this.isSaving = true;
     console.log(this.userForm.value);
     if (this.userForm.invalid) {
 	  this.errorLogger(this.userForm);
       this.userForm.markAllAsTouched();
       this.userForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all the required fields');
+      this.isSaving = false;
+      resolve?.(false);
+      return;
+    }
+
+    const raw = this.userForm.getRawValue();
+    if (this.isEditMode && this.initialFormValue && this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      this.isSaving = false;
+      resolve?.(false);
       return;
     }
 
@@ -736,14 +759,22 @@ export class UserEntryComponent implements OnInit {
           (resp: any) => {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
+              this.isDirty = false;
+              this.captureInitialFormState();
+              this.isSaving = false;
+              resolve?.(true);
               this.router.navigate(['master/user/list']);
             } else {
               this.appSettingService.showError(resp.message);
+              this.isSaving = false;
+              resolve?.(false);
             }
           },
           (error) => {
             this.appSettingService.showError('Error Updating User');
             console.error('Error Updating User', error);
+            this.isSaving = false;
+            resolve?.(false);
           }
         );
     } else {
@@ -751,14 +782,22 @@ export class UserEntryComponent implements OnInit {
         (resp: any) => {
           if (resp.status) {
             this.appSettingService.showSuccess(resp.message);
+            this.isDirty = false;
+            this.captureInitialFormState();
+            this.isSaving = false;
+            resolve?.(true);
             this.router.navigate(['master/user/list']);
           } else {
             this.appSettingService.showError(resp.message);
+            this.isSaving = false;
+            resolve?.(false);
           }
         },
         (error) => {
           this.appSettingService.showError('Error Creating User');
           console.error('Error Creating User', error);
+          this.isSaving = false;
+          resolve?.(false);
         }
       );
     }
@@ -969,10 +1008,82 @@ export class UserEntryComponent implements OnInit {
     // Reset form validation
     this.userForm.markAsUntouched();
     this.userForm.updateValueAndValidity();
+    this.captureInitialFormState();
 
     // Clear any loaded user data for new entries
     this.userData = null;
     this.UserMasterSid = null;
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
+
+  private subscribeToFormChanges(): void {
+    if (this.formChangesSubscribed) {
+      return;
+    }
+    this.formChangesSubscribed = true;
+    this.userForm.valueChanges
+      .pipe(debounceTime(300), takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (!this.initialFormValue) {
+          return;
+        }
+        this.isDirty = !this.deepEqual(this.initialFormValue, this.userForm.getRawValue());
+      });
+  }
+
+  private captureInitialFormState(): void {
+    this.initialFormValue = this.userForm.getRawValue();
+    this.isDirty = false;
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) {
+      return null;
+    }
+    if (value instanceof Date) {
+      return value.toISOString().split('T')[0];
+    }
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+      return Number(value);
+    }
+    if (typeof value === 'number') {
+      return Number(value.toFixed(6));
+    }
+    if (Array.isArray(value)) {
+      return value.map((v) => this.normalizeValue(v));
+    }
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
   }
 
   private parsePhone(rawValue: any): { phoneCode: string; phoneNumber: string } {
