@@ -5338,6 +5338,137 @@ export class CreditNoteEntryComponent {
     return '-';
   }
 
+  getMasterJobNumber(jobSid: number): string {
+    const job = this.masterJobList.find((j: any) => j.MasterJobSid === jobSid);
+    return job?.MasterJobNumber || job?.displayLabel || '-';
+  }
+
+  getHouseJobNumberByRow(detailIndex: number): string {
+    const row = this.details.at(detailIndex) as FormGroup;
+    const houseJobSid = Number(row?.get('HouseJobSid')?.value || 0);
+    if (!houseJobSid) {
+      return '-';
+    }
+
+    const matchedHouseJob = (this.houseJobList[detailIndex] || []).find(
+      (job: any) => Number(job?.HouseJobSid) === houseJobSid
+    );
+
+    return matchedHouseJob?.HBLNo || matchedHouseJob?.HouseJobNumber || '-';
+  }
+
+  navigateToDetailMasterJob(detailIndex: number): void {
+    const row = this.details.at(detailIndex) as FormGroup;
+    const masterJobSid = Number(row?.get('MasterJobSid')?.value || 0);
+    if (!masterJobSid) {
+      this.appSettingService.showWarning('Master Job not available');
+      return;
+    }
+
+    const detailContext = this.getDetailNavigationContext(detailIndex, row);
+    if (detailContext.isAgentHouseJob && detailContext.houseJobSid) {
+      this.router.navigate(['/operation/agent-master-air-waybill/entry', detailContext.houseJobSid]);
+      return;
+    }
+
+    if (detailContext.isServiceJob && detailContext.houseJobSid) {
+      this.router.navigate(['/operation/service-job/entry', detailContext.houseJobSid]);
+      return;
+    }
+
+    if (detailContext.departmentType === 'AIR') {
+      this.router.navigate(['/operation/mawbill/entry', masterJobSid]);
+      return;
+    }
+
+    this.router.navigate(['/operation/master-job/entry', masterJobSid]);
+  }
+
+  navigateToDetailHouseJob(detailIndex: number): void {
+    const row = this.details.at(detailIndex) as FormGroup;
+    const houseJobSid = Number(row?.get('HouseJobSid')?.value || 0);
+    if (!houseJobSid) {
+      this.appSettingService.showWarning('House Job not available');
+      return;
+    }
+
+    const detailContext = this.getDetailNavigationContext(detailIndex, row);
+    if (detailContext.isAgentHouseJob) {
+      this.router.navigate(['/operation/agent-master-air-waybill/entry', houseJobSid]);
+      return;
+    }
+
+    if (detailContext.isServiceJob) {
+      this.router.navigate(['/operation/service-job/entry', houseJobSid]);
+      return;
+    }
+
+    if (detailContext.departmentType === 'AIR') {
+      this.router.navigate(['/operation/hawb-bill/entry', houseJobSid]);
+      return;
+    }
+
+    this.router.navigate(['/operation/house-job/entry', houseJobSid]);
+  }
+
+  navigateToReversalInvoice(): void {
+    const reversalVoucherSid = Number(
+      this.creditNoteForm.get('ReversalVoucher')?.getRawValue() || 0
+    );
+
+    if (!reversalVoucherSid) {
+      this.appSettingService.showWarning('Invoice not available');
+      return;
+    }
+
+    this.router.navigate(['/operation/invoice/entry', reversalVoucherSid]);
+  }
+
+  private getDetailNavigationContext(detailIndex: number, row: FormGroup): {
+    departmentType: string;
+    houseJobSid: number;
+    isAgentHouseJob: boolean;
+    isServiceJob: boolean;
+  } {
+    const houseJobSid = Number(row?.get('HouseJobSid')?.value || 0);
+    const matchedHouseJob = (this.houseJobList[detailIndex] || []).find(
+      (job: any) => Number(job?.HouseJobSid) === houseJobSid
+    );
+
+    const jobType = String(
+      matchedHouseJob?.JobType ??
+      this.creditNoteData?.houseJob?.JobType ??
+      ''
+    ).trim();
+    const isAgentHouseJob = jobType === 'Agent';
+
+    const detailServiceFlag = String(row?.get('IsServiceJob')?.value ?? '').trim().toUpperCase();
+    const houseServiceFlag = String(matchedHouseJob?.IsServiceJob ?? '').trim().toUpperCase();
+    const creditNoteServiceFlag = String(this.creditNoteData?.IsServiceJob ?? '').trim().toUpperCase();
+    const creditNoteHouseServiceFlag = String(this.creditNoteData?.houseJob?.IsServiceJob ?? '').trim().toUpperCase();
+    const isServiceJob =
+      detailServiceFlag === 'Y' ||
+      houseServiceFlag === 'Y' ||
+      creditNoteServiceFlag === 'Y' ||
+      creditNoteHouseServiceFlag === 'Y';
+
+    return {
+      departmentType: this.getDetailDepartmentType(row),
+      houseJobSid,
+      isAgentHouseJob,
+      isServiceJob,
+    };
+  }
+
+  private getDetailDepartmentType(row: FormGroup): string {
+    const departmentMasterSid = Number(row?.get('DepartmentMasterSid')?.value || 0);
+    const department = this.departmentList.find(
+      (d: any) => Number(d?.DepartmentMasterSid) === departmentMasterSid
+    );
+
+    return String(department?.departmentType || '').trim().toUpperCase();
+  }
+
   // Print Modal Methods
   async openPrintModal() {
     if (!this.headerId) {
