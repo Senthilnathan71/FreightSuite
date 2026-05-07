@@ -82,6 +82,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const userProfile = this.appSettings.getDecryptedUserProfile();
     const salespersonFlag = String(userProfile?.isSalesperson || '').toUpperCase();
 
+    if (userProfile?.userType?.code === 'salesManager') {
+      this.router.navigate(['/dashboard/sales-manager']);
+      return;
+    }
+
     if (salespersonFlag === '1' || salespersonFlag === 'Y') {
       this.router.navigate(['/dashboard/sales']);
       return;

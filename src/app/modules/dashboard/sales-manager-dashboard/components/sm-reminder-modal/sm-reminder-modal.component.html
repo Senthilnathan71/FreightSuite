@@ -1,0 +1,49 @@
+<div class="reminder-modal">
+  <div class="modal-header">
+    <h5 class="modal-title">
+      <i class="fas fa-bell"></i> Send Reminder
+    </h5>
+    <button type="button" class="btn-close" (click)="activeModal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body">
+    <!-- Salesperson info -->
+    <div class="person-card d-flex align-items-center gap-2">
+      <div class="person-avatar d-flex align-items-center justify-content-center flex-shrink-0" [style.background]="salesperson.avatarColor">
+        {{ getInitials(salesperson.userName) }}
+      </div>
+      <div class="person-info">
+        <div class="person-name">{{ salesperson.userName }}</div>
+        <div class="person-email">{{ salesperson.userEmail }}</div>
+      </div>
+    </div>
+
+    <!-- Reminder type -->
+    <div class="form-group">
+      <label class="form-label">Reminder Type</label>
+      <div class="type-cards">
+        <div *ngFor="let rt of reminderTypes"
+             class="type-card" [class.active]="reminderType === rt.value"
+             (click)="reminderType = rt.value">
+          <i [class]="rt.icon"></i>
+          <div class="type-card-label">{{ rt.label }}</div>
+          <div class="type-card-desc">{{ rt.desc }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom message -->
+    <div class="form-group">
+      <label class="form-label">Custom Message <span class="optional">(optional)</span></label>
+      <textarea class="form-textarea" rows="3" [(ngModel)]="customMessage"
+                placeholder="Add a personal note to the reminder email..."></textarea>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-outline" (click)="activeModal.dismiss()">Cancel</button>
+    <button class="btn btn-primary" (click)="onSubmit()">
+      <i class="fas fa-paper-plane"></i> Send Reminder
+    </button>
+  </div>
+</div>

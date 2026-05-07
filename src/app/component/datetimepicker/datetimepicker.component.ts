@@ -69,6 +69,8 @@ export class DateTimePickerComponent
 
   @Input()
   disabled = false;
+  @Input()
+  inputReadonly = false;
 
   showTimePickerToggle = false;
 

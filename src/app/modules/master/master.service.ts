@@ -2490,6 +2490,16 @@ getFieldConfiguration() {
       })
     );
   }
+
+  getReportingUsers(payload:any){
+    return this.http.post<{ data: any[] }>('ff-user/fetch-by-usertype',payload).pipe(
+      map((resp) => {
+        let response = resp;
+        return response;
+      })
+    );
+  }
+
   getAllDoc(CompanyMasterSid: number) {
     return this.http.post<{ data: any[] }>('ff-user/docs', {CompanyMasterSid}).pipe(
       map((resp) => {

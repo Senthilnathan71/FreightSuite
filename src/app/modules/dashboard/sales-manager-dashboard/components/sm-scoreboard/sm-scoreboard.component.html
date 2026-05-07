@@ -1,0 +1,97 @@
+<div class="scoreboard-wrap overflow-hidden">
+  <div class="scoreboard-header d-flex align-items-center justify-content-between" style="padding:5px 14px">
+    <div class="header-left d-flex align-items-center gap-2">
+      <i class="fas fa-users" style="color:#0B6A7A"></i>
+      <h2 style="
+          font-size: 13px;
+          font-weight: 700;
+          color: #0F2A33;
+          margin: 0;
+          line-height: 1.2;
+          display: flex;
+          align-items: center;
+          white-space: nowrap;
+        ">
+        Sales Team Overview
+      </h2>
+      <span class="member-count" *ngIf="rows.length">{{ rows.length }} members</span>
+    </div>
+    <div class="header-actions">
+      <button class="download-btn" (click)="downloadExcel()" *ngIf="rows.length" title="Download as Excel">
+        <i class="fas fa-download"></i> Excel
+      </button>
+    </div>
+  </div>
+  <div style="overflow-x:auto">
+    <table class="scoreboard-table">
+      <thead>
+        <tr>
+          <th (click)="sort('userName')"><div class="th-sub">Salesperson <i [class]="getSortIcon('userName')"></i></div></th>
+          <th (click)="sort('s1')"><div class="th-sub">Lead with<br>No Meeting <i [class]="getSortIcon('s1')"></i></div></th>
+          <th (click)="sort('s2')"><div class="th-sub">Meeting<br>Scheduled <i [class]="getSortIcon('s2')"></i></div></th>
+          <th (click)="sort('s3')"><div class="th-sub">Follow-ups<br>Pending <i [class]="getSortIcon('s3')"></i></div></th>
+          <th (click)="sort('s4')"><div class="th-sub">Business not<br>Converted <i [class]="getSortIcon('s4')"></i></div></th>
+          <th (click)="sort('s5')"><div class="th-sub">Customer Created<br>No Quote or Bkg.<i [class]="getSortIcon('s5')"></i></div></th>
+          <th (click)="sort('s6')"><div class="th-sub">Enquiry not turned<br>into Quotation <i [class]="getSortIcon('s6')"></i></div></th>
+          <th (click)="sort('s7')"><div class="th-sub">Quotation created<br>not yet approved <i [class]="getSortIcon('s7')"></i></div></th>
+          <th (click)="sort('s8')"><div class="th-sub">Approved Quote not<br>turned into Booking <i [class]="getSortIcon('s8')"></i></div></th>
+          <th (click)="sort('total')">Total <i [class]="getSortIcon('total')"></i></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of sortedRows" (click)="onRowClick(row)">
+          <td class="td-person">
+            <div class="sp-cell d-flex align-items-center" style="gap:10px">
+              <div class="sp-avatar d-flex align-items-center justify-content-center rounded-circle" [style.background]="row.avatarColor">{{ getInitials(row.userName) }}</div>
+              <div class="sp-info">
+                <div class="sp-name">{{ row.userName }}</div>
+                <div class="sp-email">{{ row.userEmail }}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="cell-value d-inline-flex align-items-center justify-content-center" [ngClass]="getCellClass(row.s1)">{{ row.s1 }}</span></td>
+          <td><span class="cell-value d-inline-flex align-items-center justify-content-center info">{{ row.s2 }}</span></td>
+          <td><span class="cell-value d-inline-flex align-items-center justify-content-center" [ngClass]="getCellClass(row.s3)">{{ row.s3 }}</span></td>
+          <td><span class="cell-value d-inline-flex align-items-center justify-content-center" [ngClass]="getCellClass(row.s4)">{{ row.s4 }}</span></td>
+          <td><span class="cell-value d-inline-flex align-items-center justify-content-center" [ngClass]="getCellClass(row.s5)">{{ row.s5 }}</span></td>
+          <td><span class="cell-value d-inline-flex align-items-center justify-content-center" [ngClass]="getCellClass(row.s6)">{{ row.s6 }}</span></td>
+          <td><span class="cell-value d-inline-flex align-items-center justify-content-center" [ngClass]="getCellClass(row.s7)">{{ row.s7 }}</span></td>
+          <td><span class="cell-value d-inline-flex align-items-center justify-content-center" [ngClass]="getCellClass(row.s8)">{{ row.s8 }}</span></td>
+          <td><strong>{{ row.total }}</strong></td>
+          <td class="td-actions d-flex align-items-center justify-content-center gap-1">
+            <button class="sb-icon-btn view d-inline-flex align-items-center justify-content-center" (click)="onRowClick(row); $event.stopPropagation()" title="View Details">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="sb-icon-btn remind d-inline-flex align-items-center justify-content-center" (click)="onRemind($event, row)" title="Send Reminder">
+              <i class="fas fa-bell"></i>
+            </button>
+          </td>
+        </tr>
+        <!-- Team Total -->
+        <tr class="total-row" *ngIf="rows.length">
+          <td class="td-person">
+            <div class="sp-cell d-flex align-items-center" style="gap:10px">
+              <div class="sp-avatar team-avatar d-flex align-items-center justify-content-center rounded-circle"><i class="fas fa-users" style="font-size:12px"></i></div>
+              <div class="sp-info">
+                <div class="sp-name">TEAM TOTAL</div>
+                <div class="sp-email">{{ rows.length }} salespersons</div>
+              </div>
+            </div>
+          </td>
+          <td><strong class="total-val">{{ teamTotal.s1 }}</strong></td>
+          <td><strong class="total-val">{{ teamTotal.s2 }}</strong></td>
+          <td><strong class="total-val">{{ teamTotal.s3 }}</strong></td>
+          <td><strong class="total-val">{{ teamTotal.s4 }}</strong></td>
+          <td><strong class="total-val">{{ teamTotal.s5 }}</strong></td>
+          <td><strong class="total-val">{{ teamTotal.s6 }}</strong></td>
+          <td><strong class="total-val">{{ teamTotal.s7 }}</strong></td>
+          <td><strong class="total-val">{{ teamTotal.s8 }}</strong></td>
+          <!-- <td></td> -->
+          <td><strong class="total-val">{{ teamTotal.total }}</strong></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

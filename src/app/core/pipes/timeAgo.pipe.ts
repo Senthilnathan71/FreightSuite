@@ -1,8 +1,14 @@
 import { Pipe, PipeTransform } from "@angular/core";
 
-@Pipe({ name: 'timeAgo',standalone : true })
+@Pipe({ name: 'timeAgo',standalone : true , pure : false })
 export class TimeAgoPipe implements PipeTransform {
-  transform(date: Date): string {
+  transform(date: Date | string): string {
+    if (!date) return '';
+
+    if(typeof date === 'string'){
+      date = new Date(date);
+    }
+
     const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
     
     if (seconds < 60) return "Just now";
