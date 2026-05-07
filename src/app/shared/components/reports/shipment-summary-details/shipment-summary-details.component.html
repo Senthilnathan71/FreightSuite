@@ -137,7 +137,10 @@
                         <th class="bg-transparent text-light text-center">Shipping Bill No</th>
                         <th class="bg-transparent text-light text-center">Export Broker</th>
                         <th class="bg-transparent text-light text-center">External Note</th>
-
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">P.Revenue Local Amt</th>
+                        <th class="bg-transparent text-light" style="white-space: nowrap;">P.Cost Local Amt</th>
+                        <th class="bg-transparent text-light text-center" style="white-space: nowrap;">GP</th>
+                        <th class="bg-transparent text-light text-center" style="white-space: nowrap;">Profit %</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -242,6 +245,10 @@
                         <td>{{item.shippingBillNo}}</td>
                         <td></td>
                         <td>{{item.addtionalRemarks}}</td>
+                        <td class="text-end">{{ getProRevenueLocalAmt(item) | number:'1.3-3' }}</td>
+                        <td class="text-end">{{ getProCostLocalAmt(item) | number:'1.3-3' }}</td>
+                        <td class="text-end">{{ getGp(item) | number:'1.3-3' }}</td>                        
+                        <td class="text-end">{{ getProfitPercent(item) }}</td>
                     </tr>
                      <tr *ngIf="!fullData?.data || fullData.data.length === 0">
                         <td colspan="89" class="text-center fw-bold py-1">

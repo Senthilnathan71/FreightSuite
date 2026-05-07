@@ -1546,15 +1546,14 @@ createRateFormGroup(data?: any): FormGroup {
 
     return voucherDetails.reduce(
       (totals: { revenue: number; cost: number }, detail: any) => {
-        const docType = (
-          detail?.VoucherHeader?.voucherTypeMaster?.DocumentTypeCode
-        ).toUpperCase();
+        const costRevenue = (detail?.CostRevenue || detail?.costRevenue || '').toString().toUpperCase();
+        const drCr = (detail?.DrCr || detail?.drCr || '').toString().toUpperCase();
         const amount = parseFloat(detail?.LocalAmount || detail?.localAmount || 0) || 0;
 
-        if (docType === 'INV') {
-          totals.revenue += amount;
-        } else if (docType === 'VIN') {
-          totals.cost += amount;
+        if (costRevenue === 'REVENUE') {
+          totals.revenue += drCr === 'C' ? amount : -amount;
+        } else if (costRevenue === 'COST') {
+          totals.cost += drCr === 'D' ? amount : -amount;
         }
 
         return totals;
