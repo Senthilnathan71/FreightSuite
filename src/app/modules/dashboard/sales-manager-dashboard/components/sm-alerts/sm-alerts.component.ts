@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AtRiskAlert, ActionCenterItem } from '../../../interfaces/sales-manager-dashboard.interfaces';
 
@@ -14,6 +14,7 @@ export class SmAlertsComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() loading = false;
   @Input() actionCenterItems: ActionCenterItem[] = [];
   @Input() redesignMode = false;
+  @Output() alertClicked = new EventEmitter<AtRiskAlert>();
   renderedAlerts: AtRiskAlert[] = [];
 
   @ViewChild('scrollContainer')
@@ -90,7 +91,7 @@ export class SmAlertsComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   private updateRenderedAlerts() {
-    this.renderedAlerts = [...this.alerts];
+    this.renderedAlerts = Array.isArray(this.alerts) ? [...this.alerts] : [];
   }
 
   get shouldDuplicateAlerts(): boolean {
@@ -99,6 +100,11 @@ export class SmAlertsComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   trackAlert(index: number): number {
     return index;
+  }
+
+  onAlertClick(alert: AtRiskAlert): void {
+    this.stopAutoScroll();
+    this.alertClicked.emit(alert);
   }
 
   getIcon(alertType: string): string {

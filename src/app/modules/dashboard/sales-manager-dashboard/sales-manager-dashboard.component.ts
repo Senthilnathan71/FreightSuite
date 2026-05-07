@@ -47,6 +47,7 @@ import { SmDrillDownModalComponent } from './components/sm-drill-down-modal/sm-d
 import { SmReassignModalComponent } from './components/sm-reassign-modal/sm-reassign-modal.component';
 import { SmCreateMeetingModalComponent } from './components/sm-create-meeting-modal/sm-create-meeting-modal.component';
 import { SmReminderModalComponent } from './components/sm-reminder-modal/sm-reminder-modal.component';
+import { SmAlertDrillDownModalComponent } from './components/sm-alert-drill-down-modal/sm-alert-drill-down-modal.component';
 import { Router } from '@angular/router';
 
 @Component({
@@ -510,7 +511,7 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
       alerts: this.service.getAlerts(this.currentFilters),
     }).subscribe({
       next: (results) => {
-        this.alerts = results.alerts.data || [];
+        this.alerts = Array.isArray(results.alerts.data) ? results.alerts.data : [];
         this.alertsLoading = false;
       },
       error: () => {
@@ -675,6 +676,19 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
   }
 
   // ─── MEETINGS BOARD ACTIONS ────────────────────────────────────
+
+  onAlertClicked(alert: AtRiskAlert) {
+    if (!alert || alert.alertType === 'overload') {
+      return;
+    }
+
+    const modalRef = this.modalService.open(SmAlertDrillDownModalComponent, {
+      size: 'xl',
+      centered: true,
+    });
+    modalRef.componentInstance.alert = alert;
+    modalRef.componentInstance.filters = this.currentFilters;
+  }
 
   onMeetingClicked(meeting: any) {
     this.router.navigate(['/crm/meeting-update'], {

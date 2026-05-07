@@ -10,6 +10,8 @@ import {
   ActivityFeedItem,
   AtRiskAlert,
   MeetingsBoardData,
+  SalesManagerAlertDrillDownFilters,
+  PagedResult,
 } from '../interfaces/sales-manager-dashboard.interfaces';
 
 interface ApiResponse<T> {
@@ -54,6 +56,12 @@ export class SalesManagerDashboardService {
 
   getAlerts(filters: SalesManagerFilters): Observable<ApiResponse<AtRiskAlert[]>> {
     return this.http.get<ApiResponse<AtRiskAlert[]>>(`${this.baseUrl}/alerts`, { params: this.buildParams(filters) });
+  }
+
+  getAlertDrillDown(filters: SalesManagerAlertDrillDownFilters): Observable<ApiResponse<PagedResult<any>>> {
+    return this.http.get<ApiResponse<PagedResult<any>>>(`${this.baseUrl}/alert-drill-down`, {
+      params: this.buildParams(filters),
+    });
   }
 
   getMeetingsBoard(filters: SalesManagerFilters): Observable<ApiResponse<MeetingsBoardData>> {

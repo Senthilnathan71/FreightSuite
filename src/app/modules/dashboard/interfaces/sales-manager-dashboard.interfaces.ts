@@ -117,8 +117,14 @@ export interface AtRiskAlert {
   alertType: 'idle_leads' | 'overdue_meetings' | 'stale_followups' | 'unconverted_hightouch' | 'overload';
   severity: 'danger' | 'warning' | 'info';
   salesperson: string;
+  salespersonId?: number | null;
+  salespersonEmail?: string | null;
   count: number;
   description: string;
+}
+
+export interface SalesManagerAlertDrillDownFilters extends SalesManagerFilters {
+  alertType: 'idle_leads' | 'overdue_meetings' | 'stale_followups' | 'unconverted_hightouch';
 }
 
 export interface AgingRow {

@@ -160,7 +160,8 @@
       <section class="dashboard-section">
         <div class="">
           <app-sm-alerts [alerts]="alerts" [loading]="alertsLoading"
-                         [actionCenterItems]="actionCenterItems" [redesignMode]="true">
+                         [actionCenterItems]="actionCenterItems" [redesignMode]="true"
+                         (alertClicked)="onAlertClicked($event)">
           </app-sm-alerts>
         </div>
       </section>
