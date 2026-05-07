@@ -6094,8 +6094,8 @@ ${this.userData['userName']}`;
 
   // Add handler for Edoc data changes
   handleEdocChange(event: any) {
-    this.edocData = event.dataItems || [];   
-    this.currentEdocFormValue = event.formData; 
+    this.edocData = event.dataItems || this.edocData || [];
+    this.currentEdocFormValue = event.formData || this.currentEdocFormValue;
     
   }
 

@@ -641,6 +641,7 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentCompany?.BranchMasterSid,
   };
+  this.currentMenuId = this.mps.getMenuId() || Number(sessionStorage.getItem('currentMenuId'));
   this.loadTermsAndConditionsConfig();
   this.initBookingForm();
   this.initCargoForm();
@@ -648,7 +649,9 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
   this.initDetailsForm();
   this.setupMBLDateListener();
   this.spinner.show();
-  this.mps.init().subscribe();
+   this.mps.init().subscribe(() => {
+    this.currentMenuId = this.currentMenuId || this.mps.getMenuId() || Number(sessionStorage.getItem('currentMenuId'));
+  });
   
 
     this.loadHeaderMandatoryParts().subscribe(() => {
@@ -4309,7 +4312,11 @@ ${this.userData['userName']}`;
       size: 'lg', 
       centered: true, 
       backdrop: 'static' 
-    })
+    });
+    modalRef.componentInstance.companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    modalRef.componentInstance.branchMasterSid = this.currentBranch?.BranchMasterSid;
+    modalRef.componentInstance.menuMasterSid = this.currentMenuId || this.bookingData?.MenuMasterSid || Number(sessionStorage.getItem('currentMenuId'));
+    modalRef.componentInstance.documentSid = this.HouseJobSid || this.bookingData?.HouseJobSid;
   }
 
   openDocRef() {
@@ -4631,8 +4638,8 @@ ${this.userData['userName']}`;
 
   // Add handler for Edoc data changes
   handleEdocChange(event: any) {
-    this.edocData = event.dataItems || [];   
-    this.currentEdocFormValue = event.formData; 
+    this.edocData = event.dataItems || this.edocData || [];
+    this.currentEdocFormValue = event.formData || this.currentEdocFormValue;
     
   }
 
