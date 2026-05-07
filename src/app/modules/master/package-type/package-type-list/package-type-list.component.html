@@ -200,7 +200,7 @@
         </div>
 
                 <button type="button" class="btn-close btn-close-white" aria-label="Close"
-                    (click)="modal.dismiss()"></button>
+                    (click)="closePackageTypeModal()"></button>
             </div>
         </div>
 
@@ -293,7 +293,7 @@
                   (click)="openAuditLogs(auditLogModal)">
             <i class="fas fa-history me-1"></i>Logs
           </button>
-          <button type="button" class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="modal.dismiss()">Cancel</button>
+          <button type="button" class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="closePackageTypeModal()">Cancel</button>
           <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="resetForm()">
             <i class="fas fa-sync-alt me-1"></i>

@@ -35,6 +35,7 @@ import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/compone
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
 @Component({
   selector: 'app-chargegroup',
   standalone: true,
@@ -101,6 +102,9 @@ export class ChargegroupComponent extends BaseListComponent implements OnInit {
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
   tableConfig: TableConfig ;
+  isChargeGroupDirty: boolean = false;
+  isChargeGroupSaving: boolean = false;
+  private initialChargeGroupFormValue: any = null;
 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
@@ -538,6 +542,14 @@ viewZone(id: number, content?: TemplateRef<any>) {
       Remarks: ['',],
       status: [{ value: 'Active', disabled: false }, Validators.required]
     });
+
+    this.chargeGroupForm.valueChanges.subscribe(() => {
+      if (!this.initialChargeGroupFormValue) return;
+      this.isChargeGroupDirty = !this.deepEqual(
+        this.initialChargeGroupFormValue,
+        this.chargeGroupForm.getRawValue()
+      );
+    });
   }
 
   // resetForm(): void {
@@ -575,7 +587,14 @@ viewZone(id: number, content?: TemplateRef<any>) {
   openModal(content: any): void {
     this.isEditMode = false;
     this.resetForm();
-    this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+    this.setChargeGroupFormInitialValue();
+    this.modalRef = this.modalService.open(content, {
+      centered: true,
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false,
+      beforeDismiss: () => this.canCloseChargeGroupModal()
+    });
   }
   trackByIndex(index: number, item: any): number {
     return index;
@@ -596,7 +615,8 @@ editChargeGroup(id: number, content: TemplateRef<any>) {
     centered: true, 
     size: 'lg', 
     backdrop: 'static',
-    keyboard: false 
+    keyboard: false,
+    beforeDismiss: () => this.canCloseChargeGroupModal()
   });
 
   // 3. DISABLE FORM (Read-Only Mode)
@@ -628,6 +648,7 @@ editChargeGroup(id: number, content: TemplateRef<any>) {
         // 5. UNLOCK UI (Success State)
         // Data is ready. Allow user interaction.
         this.chargeGroupForm.enable();
+        this.setChargeGroupFormInitialValue();
       },
       error: (err) => {
         // 6. ROLLBACK (Failure State)
@@ -692,6 +713,7 @@ editChargeGroup(id: number, content: TemplateRef<any>) {
   closeModal(): void {
     if (this.modalRef) {
       this.modalRef.close();
+      this.modalRef = null!;
     }
   }
 
@@ -718,6 +740,7 @@ editChargeGroup(id: number, content: TemplateRef<any>) {
   // }
 
   onSubmit() {
+    if (this.isChargeGroupSaving) return;
     if (this.chargeGroupForm.get('status')?.disabled) {
       this.chargeGroupForm.get('status')?.enable();
     }
@@ -728,7 +751,13 @@ editChargeGroup(id: number, content: TemplateRef<any>) {
       return;
     }
 
+    if (!this.isChargeGroupDirty) {
+      this.appSettingService.showWarning('No changes to save.');
+      return;
+    }
+
     this.btnDisable = true;
+    this.isChargeGroupSaving = true;
     const formValue = this.chargeGroupForm.value;
     const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
 
@@ -746,8 +775,10 @@ editChargeGroup(id: number, content: TemplateRef<any>) {
     operation.subscribe({
       next: (resp: any) => {
         this.btnDisable = false;
+        this.isChargeGroupSaving = false;
         if (resp.status) {
           this.appSettingService.showSuccess(resp.message);
+          this.setChargeGroupFormInitialValue();
           this.closeModal();
           // this.loadChargeGroups();
           this.searchChargeGroup();
@@ -757,6 +788,7 @@ editChargeGroup(id: number, content: TemplateRef<any>) {
       },
       error: (err) => {
         this.btnDisable = false;
+        this.isChargeGroupSaving = false;
         this.errorMessage = err.message;
         console.error('Error:', err);
         this.appSettingService.showError('Operation failed');
@@ -916,5 +948,50 @@ editChargeGroup(id: number, content: TemplateRef<any>) {
   OnDestroy(): void {
     this.commonService.clearDocumentData()
  }
+
+  private setChargeGroupFormInitialValue(): void {
+    this.initialChargeGroupFormValue = this.chargeGroupForm.getRawValue();
+    this.isChargeGroupDirty = false;
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString();
+    if (Array.isArray(value)) return value.map((v) => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
+
+  canCloseChargeGroupModal(): boolean | Promise<boolean> {
+    if (this.isChargeGroupSaving) return false;
+    if (!this.isChargeGroupDirty) return true;
+
+    const modalRef = this.modalService.open(UnsavedChangesDialogComponent, {
+      centered: true,
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    return modalRef.result
+      .then((action: UnsavedChangesAction) => action === 'discard')
+      .catch(() => false);
+  }
+
+  async closeChargeGroupModal(): Promise<void> {
+    const canClose = await Promise.resolve(this.canCloseChargeGroupModal());
+    if (!canClose) return;
+    this.modalRef?.close();
+  }
 }
 

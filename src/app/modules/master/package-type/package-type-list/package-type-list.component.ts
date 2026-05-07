@@ -34,6 +34,7 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
 @Component({
   selector: 'app-package-type-list',
   standalone: true,
@@ -91,6 +92,9 @@ export class PackageTypeListComponent extends BaseListComponent implements OnIni
   currentCompany: any;
   currentBranch: any;
   MenuMasterSid: any;
+  isPackageTypeDirty: boolean = false;
+  isPackageTypeSaving: boolean = false;
+  private initialPackageTypeFormValue: any = null;
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
@@ -497,6 +501,13 @@ export class PackageTypeListComponent extends BaseListComponent implements OnIni
       CompanyMasterSid: [this.currentCompany?.CompanyMasterSid]
     });
 
+    this.packageTypeForm.valueChanges.subscribe(() => {
+      if (!this.initialPackageTypeFormValue) return;
+      this.isPackageTypeDirty = !this.deepEqual(
+        this.initialPackageTypeFormValue,
+        this.packageTypeForm.getRawValue()
+      );
+    });
   }
 
   // resetForm(): void {
@@ -539,7 +550,14 @@ export class PackageTypeListComponent extends BaseListComponent implements OnIni
   openModal(content: any): void {
     this.isEditMode = false;
     this.resetForm();
-    this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+    this.setPackageTypeFormInitialValue();
+    this.modalRef = this.modalService.open(content, {
+      centered: true,
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false,
+      beforeDismiss: () => this.canClosePackageTypeModal()
+    });
   }
 
   editPackageType(id: number, content: any) {
@@ -556,7 +574,14 @@ export class PackageTypeListComponent extends BaseListComponent implements OnIni
           status: response.status === 'A' ? 'Active' : 'Suspended',
           CompanyMasterSid: response.CompanyMasterSid
         });
-        this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+        this.setPackageTypeFormInitialValue();
+        this.modalRef = this.modalService.open(content, {
+          centered: true,
+          size: 'lg',
+          backdrop: 'static',
+          keyboard: false,
+          beforeDismiss: () => this.canClosePackageTypeModal()
+        });
         this.spinner.hide();
       },
       error: (err) => {
@@ -573,6 +598,7 @@ export class PackageTypeListComponent extends BaseListComponent implements OnIni
   }
 
   onSubmit() {
+    if (this.isPackageTypeSaving) return;
     if (this.packageTypeForm.get('status')?.disabled) {
       this.packageTypeForm.get('status')?.enable();
     }
@@ -581,7 +607,13 @@ export class PackageTypeListComponent extends BaseListComponent implements OnIni
       this.packageTypeForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all required fields correctly.');
       return;
+    }
+    if (!this.isPackageTypeDirty) {
+      this.appSettingService.showWarning('No changes to save.');
+      return;
     } else {
+      this.btnDisable = true;
+      this.isPackageTypeSaving = true;
       let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
       let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       const formValue = this.packageTypeForm.value;
@@ -601,14 +633,19 @@ export class PackageTypeListComponent extends BaseListComponent implements OnIni
           (resp: any) => {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
+              this.setPackageTypeFormInitialValue();
               this.closeModal();
               this.search();
               // this.loadPackageTypes();
             } else {
               this.appSettingService.showError(resp.message);
             }
+            this.btnDisable = false;
+            this.isPackageTypeSaving = false;
           },
           (error) => {
+            this.btnDisable = false;
+            this.isPackageTypeSaving = false;
             this.errorMessage = error.message;
             console.error('Error loading:', error);
           }
@@ -618,6 +655,7 @@ export class PackageTypeListComponent extends BaseListComponent implements OnIni
           (resp: any) => {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
+              this.setPackageTypeFormInitialValue();
               this.closeModal();
               this.search();
               // this.loadPackageTypes();
@@ -625,8 +663,12 @@ export class PackageTypeListComponent extends BaseListComponent implements OnIni
             } else {
               this.appSettingService.showError(resp.message);
             }
+            this.btnDisable = false;
+            this.isPackageTypeSaving = false;
           },
           (error) => {
+            this.btnDisable = false;
+            this.isPackageTypeSaving = false;
             this.errorMessage = error.message;
             console.error('Error loading:', error);
           }
@@ -926,5 +968,50 @@ export class PackageTypeListComponent extends BaseListComponent implements OnIni
       },
       error: err => console.error('Error fetching audit logs:', err)
     });
+  }
+
+  private setPackageTypeFormInitialValue(): void {
+    this.initialPackageTypeFormValue = this.packageTypeForm.getRawValue();
+    this.isPackageTypeDirty = false;
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString();
+    if (Array.isArray(value)) return value.map((v) => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
+
+  canClosePackageTypeModal(): boolean | Promise<boolean> {
+    if (this.isPackageTypeSaving) return false;
+    if (!this.isPackageTypeDirty) return true;
+
+    const modalRef = this.modalService.open(UnsavedChangesDialogComponent, {
+      centered: true,
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    return modalRef.result
+      .then((action: UnsavedChangesAction) => action === 'discard')
+      .catch(() => false);
+  }
+
+  async closePackageTypeModal(): Promise<void> {
+    const canClose = await Promise.resolve(this.canClosePackageTypeModal());
+    if (!canClose) return;
+    this.modalRef?.close();
   }
 }

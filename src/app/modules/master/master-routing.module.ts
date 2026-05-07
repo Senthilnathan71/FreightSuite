@@ -118,6 +118,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'department/entry',
         component: DepartmentEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Add Department',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Department' }],
@@ -126,6 +127,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'department/entry/:id',
         component: DepartmentEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Edit Department',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Department' }],
@@ -166,6 +168,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'currency/entry',
         component: CurrencyEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Currency - Add',
           urls: [
@@ -177,6 +180,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'currency/entry/:id',
         component: CurrencyEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Currency - Edit',
           urls: [
@@ -188,6 +192,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'port-master/view',
         component: PostMasterViewComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Port Master',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Port Master' }],
@@ -196,6 +201,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'port-master/view/:id',
         component: PostMasterViewComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Port Master',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Port Master' }],
@@ -226,6 +232,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'uom-master/view',
         component: UOMViewComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'UOM Master Entry',
           urls: [
@@ -237,6 +244,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'uom-master/view/:id',
         component: UOMViewComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'UOM Master Edit',
           urls: [
@@ -259,6 +267,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'country/entry',
         component: CountryEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Country',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Country Add' }],
@@ -267,6 +276,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'country/entry/:id',
         component: CountryEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Country',
           urls: [
@@ -292,6 +302,7 @@ export const MasterRoutes: Routes = [
           {
             path: 'entry',
             component: StateEntryComponent,
+            canDeactivate: [UnsavedChangesGuard],
             data: {
               title: 'State',
               urls: [
@@ -303,6 +314,7 @@ export const MasterRoutes: Routes = [
           {
             path: 'entry/:id',
             component: StateEntryComponent,
+            canDeactivate: [UnsavedChangesGuard],
             data: {
               title: 'State',
               urls: [
@@ -324,6 +336,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'unit/entry',
         component: UnitEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Unit',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Unit Add' }],
@@ -332,6 +345,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'unit/entry/:id',
         component: UnitEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Unit',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Unit Edit' }],
@@ -348,6 +362,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'vessel/entry',
         component: VesselEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Add Vessel',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Vessel Add' }],
@@ -356,6 +371,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'vessel/entry/:id',
         component: VesselEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Edit Vessel',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Vessel Add' }],
@@ -486,6 +502,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'container-type/entry',
         component: ContainerTypeEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Container Type',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Container Type' }],
@@ -494,6 +511,7 @@ export const MasterRoutes: Routes = [
       {
         path: "container-type/entry/:id",
         component: ContainerTypeEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Edit Conatiner Type",
           urls: [
@@ -512,6 +530,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'milestone/entry',
         component: MilestoneEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Milestone',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Milestone' }],
@@ -520,6 +539,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'milestone/entry/:id',
         component: MilestoneEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Milestone',
           urls: [{ title: 'Master', url: '/master' }, { title: 'Milestone' }],
@@ -604,6 +624,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'charge/entry',
         component: ChargeEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Charge',
           urls: [{ title: 'Master', url: '/master' },
@@ -613,6 +634,7 @@ export const MasterRoutes: Routes = [
       {
         path: "charge/entry/:id",
         component: ChargeEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Edit Charge",
           urls: [
@@ -635,6 +657,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'terms-condition/entry',
         component: TermsConditionEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Terms and Condition',
           urls: [
@@ -646,6 +669,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'terms-condition/entry/:id',
         component: TermsConditionEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Terms and Condition',
           urls: [
@@ -771,6 +795,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'tds-set/entry',
         component: TdsSetEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'TDS Set',
           urls: [
@@ -782,6 +807,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'tds-set/entry/:id',
         component: TdsSetEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'TDS Set',
           urls: [
@@ -804,6 +830,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'imco/entry',
         component: ImcoEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'IMCO',
           urls: [
@@ -815,6 +842,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'imco/entry/:id',
         component: ImcoEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'IMCO',
           urls: [
@@ -848,6 +876,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'product/entry',
         component: ProductEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Product',
           urls: [
@@ -859,6 +888,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'product/entry/:id',
         component: ProductEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Product',
           urls: [
@@ -881,6 +911,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'sailing-schedule/entry',
         component: SailingScheduleEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Sailing Schedule',
           urls: [
@@ -892,6 +923,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'sailing-schedule/entry/:id',
         component: SailingScheduleEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'Sailing Schedule',
           urls: [
@@ -914,6 +946,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'user/entry',
         component: UserEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'User',
           urls: [
@@ -925,6 +958,7 @@ export const MasterRoutes: Routes = [
       {
         path: 'user/entry/:id',
         component: UserEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: 'User',
           urls: [
@@ -960,6 +994,7 @@ export const MasterRoutes: Routes = [
   {
     path: 'authorization/entry',
     component: AuthorityEntryComponent,
+    canDeactivate: [UnsavedChangesGuard],
     data: {
       title: 'Authorization',
       urls: [
@@ -971,6 +1006,7 @@ export const MasterRoutes: Routes = [
   {
     path: 'authorization/entry/:id',
     component: AuthorityEntryComponent,
+    canDeactivate: [UnsavedChangesGuard],
     data: {
       title: 'Authorization',
       urls: [
@@ -993,6 +1029,7 @@ export const MasterRoutes: Routes = [
   {
     path: 'year/entry',
     component: YearEntryComponent,
+    canDeactivate: [UnsavedChangesGuard],
     data: {
       title: 'Year',
       urls: [
@@ -1004,6 +1041,7 @@ export const MasterRoutes: Routes = [
   {
     path: 'year/entry/:YearMasterSid',
     component: YearEntryComponent,
+    canDeactivate: [UnsavedChangesGuard],
     data: {
       title: 'Year',
       urls: [
@@ -1061,6 +1099,7 @@ export const MasterRoutes: Routes = [
   {
     path: 'hawbstock/entry',
     component: HawbStockEntryComponent,
+    canDeactivate: [UnsavedChangesGuard],
     data: {
       title: 'Hawb stock',
       urls: [
@@ -1072,6 +1111,7 @@ export const MasterRoutes: Routes = [
   {
     path: 'hawbstock/entry/:id',
     component: HawbStockEntryComponent,
+    canDeactivate: [UnsavedChangesGuard],
     data: {
       title: 'Hawb stock',
       urls: [
@@ -1167,6 +1207,7 @@ export const MasterRoutes: Routes = [
         {
           path: 'container-activity/entry',
           component: ContainerActivityEntryComponent,
+          canDeactivate:[UnsavedChangesGuard],
           data: {
             title: 'Container Activity',
             urls: [{ title: 'Master', url: '/master' }, { title: 'Container Activity' }],
@@ -1175,6 +1216,7 @@ export const MasterRoutes: Routes = [
          {
     path: 'container-activity/entry/:id',
     component: ContainerActivityEntryComponent,
+    canDeactivate:[UnsavedChangesGuard],
     data: {
       title: 'Container Activity',
       urls: [
@@ -1209,6 +1251,7 @@ export const MasterRoutes: Routes = [
   {
     path: 'report-master/entry',
     component: ReportMasterEntryComponent,
+    canDeactivate: [UnsavedChangesGuard],
     data: {
       title: 'Report Master',
       urls: [
@@ -1220,6 +1263,7 @@ export const MasterRoutes: Routes = [
     {
     path: 'report-master/entry/:id',
     component: ReportMasterEntryComponent,
+    canDeactivate: [UnsavedChangesGuard],
     data: {
       title: 'Report Master',
       urls: [
@@ -1254,6 +1298,7 @@ export const MasterRoutes: Routes = [
   {
     path: 'mawb-stock/entry',
     component: MawbStockComponent,
+    canDeactivate: [UnsavedChangesGuard],
     data: {
       title: 'Mawb-Stock',
       urls: [
@@ -1266,6 +1311,7 @@ export const MasterRoutes: Routes = [
   {
     path: 'mawb-stock/entry/:id',
     component: MawbStockComponent,
+    canDeactivate: [UnsavedChangesGuard],
     data: {
       title: 'Mawb stock',
       urls: [
@@ -1275,9 +1321,10 @@ export const MasterRoutes: Routes = [
     }
   },
 
-    {
+  {
     path: 'network/entry',
     component: NetworkEntryComponent,
+    canDeactivate: [UnsavedChangesGuard],
     data: {
       title: 'Network',
       urls: [
@@ -1286,9 +1333,10 @@ export const MasterRoutes: Routes = [
       ]
     }
   },
-      {
+  {
     path: 'tax-group/entry',
     component: TaxGroupComponent,
+    canDeactivate: [UnsavedChangesGuard],
     data: {
       title: 'Tax Group',
       urls: [

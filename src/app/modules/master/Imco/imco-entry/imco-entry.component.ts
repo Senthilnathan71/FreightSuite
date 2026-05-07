@@ -1,4 +1,4 @@
-import { Component, OnInit ,TemplateRef} from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit ,TemplateRef} from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
@@ -21,6 +21,8 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { Subject, debounceTime, takeUntil } from 'rxjs';
 
 @Component({
     selector: 'app-imco-entry',
@@ -29,7 +31,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
     templateUrl: './imco-entry.component.html',
     styleUrl: './imco-entry.component.scss'
 })
-export class ImcoEntryComponent implements OnInit {
+export class ImcoEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
 
     ImcoMasterSid: number;
     isEditMode: boolean;
@@ -56,6 +58,10 @@ export class ImcoEntryComponent implements OnInit {
     currentMenuPermissions: any = {};
     auditLogs: any[] = []; // Stores audit logs
     auditLogModalRef!: NgbModalRef;
+    isDirty: boolean = false;
+    isSaving: boolean = false;
+    private initialFormValue: any = null;
+    private destroy$ = new Subject<void>();
     constructor(
         private masterService: MasterService,
         private fb: FormBuilder,
@@ -73,6 +79,7 @@ export class ImcoEntryComponent implements OnInit {
       this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
       this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');  
         this.initImcoForm();
+        this.subscribeToFormChanges();
         this.mps.init().subscribe();
         this.currRoute.paramMap.subscribe(
             (param) => {
@@ -80,6 +87,9 @@ export class ImcoEntryComponent implements OnInit {
                 if (this.ImcoMasterSid) {
                     this.isEditMode = true;
                     this.loadImco(this.ImcoMasterSid);
+                } else {
+                    this.initialFormValue = this.ImcoForm.getRawValue();
+                    this.isDirty = false;
                 }
             }
         )
@@ -94,6 +104,57 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
 			this.userData = userProfile;
     
 		}
+    }
+
+    @HostListener('window:beforeunload', ['$event'])
+    unloadNotification($event: BeforeUnloadEvent): void {
+      if (this.hasUnsavedChanges()) {
+        $event.preventDefault();
+        $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+      }
+    }
+
+    hasUnsavedChanges(): boolean {
+      return this.isDirty;
+    }
+
+    async saveChanges(): Promise<boolean> {
+      return new Promise((resolve) => {
+        this.onSubmit(resolve);
+      });
+    }
+
+    private subscribeToFormChanges(): void {
+      this.ImcoForm.valueChanges
+        .pipe(takeUntil(this.destroy$), debounceTime(300))
+        .subscribe(() => {
+          if (this.initialFormValue === null) return;
+          this.isDirty = !this.deepEqual(this.initialFormValue, this.ImcoForm.getRawValue());
+        });
+    }
+
+    private normalizeValue(value: any): any {
+      if (value === null || value === undefined) return null;
+      if (typeof value === 'string') {
+        const trimmed = value.trim();
+        if (trimmed !== '' && !isNaN(+trimmed)) return Number(trimmed);
+        return trimmed;
+      }
+      if (typeof value === 'number') return Number(value.toFixed(6));
+      if (Array.isArray(value)) return value.map(v => this.normalizeValue(v));
+      if (typeof value === 'object') {
+        return Object.keys(value)
+          .sort()
+          .reduce((acc: any, key: string) => {
+            acc[key] = this.normalizeValue(value[key]);
+            return acc;
+          }, {});
+      }
+      return value;
+    }
+
+    private deepEqual(obj1: any, obj2: any): boolean {
+      return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
     }
 
       
@@ -118,13 +179,24 @@ hasAnyDropdownPermission(): boolean {
         });
     }
 
-    onSubmit() {
+    onSubmit(resolve?: (saved: boolean) => void) {
+        if (this.isSaving) return;
         if (this.ImcoForm.invalid) {
             this.ImcoForm.markAllAsTouched();
             this.ImcoForm.updateValueAndValidity();
-            this.appSettingService.showWarning('Please fill all the required fields')
+            this.appSettingService.showWarning('Please fill all the required fields');
+            if (resolve) resolve(false);
             return;
         } else {
+            const raw = this.ImcoForm.getRawValue();
+            if (this.isEditMode && this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+                this.appSettingService.showWarning('No changes to save');
+                this.ImcoForm.markAsUntouched();
+                if (resolve) resolve(false);
+                return;
+            }
+
+            this.isSaving = true;
             const formValue = this.ImcoForm.value;
             const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
             const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
@@ -139,32 +211,43 @@ hasAnyDropdownPermission(): boolean {
             if (this.isEditMode) {
                 this.masterService.updateIMCOById(this.ImcoMasterSid, payload).subscribe(
                     (resp: any) => {
+                        this.isSaving = false;
                         if (resp.status) {
                             this.appSettingService.showSuccess(resp.message);
-
+                            this.isDirty = false;
+                            this.initialFormValue = raw;
+                            if (resolve) resolve(true);
                             this.route.navigate(['/master/imco/list']);
                         } else {
                             this.appSettingService.showError(resp.message);
-
+                            if (resolve) resolve(false);
                         }
                     },
                     (error) => {
+                        this.isSaving = false;
                         console.error('Error Updating Imco', error);
+                        if (resolve) resolve(false);
                     }
                 )
             } else {
                 this.masterService.createNewIMCO(payload).subscribe(
                     (resp: any) => {
+                        this.isSaving = false;
                         if (resp.status) {
                             this.appSettingService.showSuccess(resp.message);
+                            this.isDirty = false;
+                            this.initialFormValue = this.ImcoForm.getRawValue();
+                            if (resolve) resolve(true);
                             this.route.navigate(['/master/imco/list']);
                         } else {
                             this.appSettingService.showError(resp.message);
-
+                            if (resolve) resolve(false);
                         }
                     },
                     (error) => {
+                        this.isSaving = false;
                         console.error('Error Creating Imco', error);
+                        if (resolve) resolve(false);
                     }
                 )
             }
@@ -180,7 +263,9 @@ hasAnyDropdownPermission(): boolean {
                     this.ImcoForm.patchValue({
                         ...resp.data,
                         status: resp.data.status === 'A' ? 'Active' : 'Suspended',
-                    })
+                    });
+                    this.initialFormValue = this.ImcoForm.getRawValue();
+                    this.isDirty = false;
                 }
             },
             (error) => {
@@ -343,6 +428,8 @@ openDocRef() {
   modalRef.componentInstance.pdfContentId = 'quotationContent';
   }
  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.commonService.clearDocumentData()
  }
 

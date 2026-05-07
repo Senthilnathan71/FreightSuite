@@ -1,9 +1,9 @@
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { forkJoin } from 'rxjs';
+import { debounceTime, forkJoin, Subject, takeUntil } from 'rxjs';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MasterService } from '../../master.service';
@@ -21,6 +21,7 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 @Component({
 	selector: 'app-doctype',
@@ -39,7 +40,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
 	styleUrl: './doctype.component.scss'
 })
 
-export class DoctypeComponent implements OnInit {
+export class DoctypeComponent implements OnInit, OnDestroy, HasUnsavedChanges {
 
 	VoucherTypeMasterSid: number;
 	isEditMode: boolean;
@@ -100,6 +101,10 @@ currentBranch: any;
 	menuList : any[];
 	auditLogs: any[] = []; // Stores audit logs
 	  auditLogModalRef!: NgbModalRef;
+	isDirty: boolean = false;
+	isSaving: boolean = false;
+	private initialFormValue: any = null;
+	private destroy$ = new Subject<void>();
 
 	constructor(
 		private appSettingService: AppSettingsService,
@@ -117,6 +122,8 @@ currentBranch: any;
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
 	this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
 		this.initDocumentForm();
+		this.initialFormValue = this.documentForm.getRawValue();
+		this.subscribeToFormChanges();
 		this.mps.init().subscribe();
 		this.loadAllFields();
 		this.currentRoute.paramMap.subscribe(
@@ -266,7 +273,7 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 						MonthFlag: data.MonthFlag === 'Y',
 						YearFlag: data.YearFlag === 'Y',
 						status: data.status === 'A' ? 'Active' : 'Suspended',
-					})
+					}, { emitEvent: false })
 					 if (data) {
                     // Trigger the COA selection change to load subledgers
                     this.onCOASelected(data);
@@ -277,7 +284,8 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
                     setTimeout(() => {
                         this.documentForm.patchValue({
                             Subledger: data.Subledger
-                        });
+                        }, { emitEvent: false });
+						this.syncInitialFormState();
                     }, 300);
                 }
 					this.getBranchesByCompanyId({CompanyMasterSid : data.CompanyMasterSid})
@@ -334,17 +342,26 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 	}
 
 	onSubmit() {
+		this.saveChanges();
+	}
+
+	saveChanges(): Promise<boolean> {
+		if (this.isSaving) return Promise.resolve(false);
 		if (this.documentForm.invalid) {
 			this.documentForm.markAllAsTouched();
 			this.documentForm.updateValueAndValidity();
 			this.appSettingService.showWarning('Please fill all the required fields');
-			return;
+			return Promise.resolve(false);
+		}
+		if (this.hasNoChangesToSave()) {
+			this.appSettingService.showWarning('No changes to save');
+			return Promise.resolve(false);
 		}
 
 		const flagError = this.validateFlagCombination();
 		if (flagError) {
 			this.appSettingService.showWarning(flagError);
-			return;
+			return Promise.resolve(false);
 		}
 
 		 const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
@@ -368,41 +385,57 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
 			...(this.isEditMode ? { updatedBy: currentUserEmail } : { createdBy: currentUserEmail })
 		}
 
+		this.isSaving = true;
 		if (this.isEditMode) {
-			this.masterService.updateDocTypeById(this.VoucherTypeMasterSid, payload).subscribe(
-				(resp: any) => {
-					if (resp.status) {
-						this.appSettingService.showSuccess(resp.message);
-
-						this.router.navigate(['master/doctype/list'])
-					} else {
-						this.appSettingService.showError(resp.message);
-
+			return new Promise<boolean>((resolve) => {
+				this.masterService.updateDocTypeById(this.VoucherTypeMasterSid, payload).subscribe(
+					(resp: any) => {
+						if (resp.status) {
+							this.appSettingService.showSuccess(resp.message);
+							this.afterSuccessfulSave();
+							resolve(true);
+						} else {
+							this.appSettingService.showError(resp.message);
+							this.isSaving = false;
+							resolve(false);
+						}
+					},
+					(error) => {
+						this.isSaving = false;
+						this.appSettingService.showError('Error Updating Document Type');
+						console.error('Error Updating Document Type', error);
+						resolve(false);
 					}
-				},
-				(error) => {
-					this.appSettingService.showError('Error Updating Document Type');
-					console.error('Error Updating Document Type', error);
-				}
-			)
+				);
+			});
 		} else {
-			this.masterService.createNewDocType(payload).subscribe(
-				(resp: any) => {
-					if (resp.status) {
-						this.appSettingService.showSuccess(resp.message);
-						this.router.navigate(['master/doctype/list'])
-					} else {
-						this.appSettingService.showError(resp.message);
-
+			return new Promise<boolean>((resolve) => {
+				this.masterService.createNewDocType(payload).subscribe(
+					(resp: any) => {
+						if (resp.status) {
+							this.appSettingService.showSuccess(resp.message);
+							this.afterSuccessfulSave();
+							const createdId = resp?.data?.VoucherTypeMasterSid;
+							if (createdId) {
+								this.VoucherTypeMasterSid = createdId;
+								this.isEditMode = true;
+							}
+							resolve(true);
+						} else {
+							this.appSettingService.showError(resp.message);
+							this.isSaving = false;
+							resolve(false);
+						}
+					},
+					(error) => {
+						this.isSaving = false;
+						this.appSettingService.showError('Error Creating Document Type');
+						console.error('Error Creating Document Type', error);
+						resolve(false);
 					}
-				},
-				(error) => {
-					this.appSettingService.showError('Error Creating Document Type');
-					console.error('Error Creating Document Type', error);
-				}
-			)
+				);
+			});
 		}
-
 	}
 
 
@@ -443,13 +476,16 @@ const COAMasterSid=COA?.COAMasterSid || COA?.COALedger
   this.documentForm.get('CompanyValue')?.disable();
   this.documentForm.get('BranchValue')?.disable();
   this.documentForm.get('DocumentValue')?.disable();
+	this.initialFormValue = this.documentForm.getRawValue();
+	this.documentForm.markAsPristine();
+	this.isDirty = false;
 
   // If you want to keep any other UI state (like loaded COA/subledger lists), leave them untouched.
 }
 
 
 	navigateBack() {
-		history.back()
+		this.router.navigate(['master/doctype/list']);
 	}
 
 	showInfo() {
@@ -623,10 +659,65 @@ openDocRef() {
     modalRef.componentInstance.DocumentSid = this.VoucherTypeMasterSid;
   }
  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.commonService.clearDocumentData()
  }
  navigateToCreateDocType() {
     this.router.navigate(['master/doctype/entry'])
   }
+
+	@HostListener('window:beforeunload', ['$event'])
+	unloadNotification($event: BeforeUnloadEvent): void {
+		if (this.hasUnsavedChanges()) {
+			$event.preventDefault();
+			$event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+		}
+	}
+
+	hasUnsavedChanges(): boolean {
+		return this.isDirty;
+	}
+
+	private afterSuccessfulSave(): void {
+		this.syncInitialFormState();
+		this.isSaving = false;
+	}
+
+	private subscribeToFormChanges(): void {
+		this.documentForm.valueChanges
+			.pipe(takeUntil(this.destroy$), debounceTime(300))
+			.subscribe(() => {
+				this.isDirty = !this.deepEqual(this.initialFormValue, this.documentForm.getRawValue());
+			});
+	}
+
+	private hasNoChangesToSave(): boolean {
+		return this.deepEqual(this.documentForm.getRawValue(), this.initialFormValue);
+	}
+
+	private syncInitialFormState(): void {
+		this.initialFormValue = this.documentForm.getRawValue();
+		this.documentForm.markAsPristine();
+		this.isDirty = false;
+	}
+
+	private normalizeValue(value: any): any {
+		if (value === null || value === undefined) return null;
+		if (value instanceof Date) return value.toISOString().split('T')[0];
+		if (Array.isArray(value)) return value.map(item => this.normalizeValue(item));
+		if (typeof value === 'object') {
+			return Object.keys(value).reduce((result: any, key: string) => {
+				result[key] = this.normalizeValue(value[key]);
+				return result;
+			}, {});
+		}
+		if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) return Number(value);
+		return value;
+	}
+
+	private deepEqual(obj1: any, obj2: any): boolean {
+		return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+	}
 
 }

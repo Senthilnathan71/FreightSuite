@@ -247,9 +247,12 @@ get currencyList(): any[] {
     this.TariffHeaderSid = Number(param.get('id'));
     if (this.TariffHeaderSid) {
       this.isEditMode = true;
+      this.isCopiedTariffMode = false;
+      this.pendingCopiedTariffData = null;
       this.minEffectiveDate = undefined as any;
       this.loadTariff(this.TariffHeaderSid);
     } else {
+      this.isEditMode = false;
       this.minEffectiveDate = this.toNgbDateStruct(this.todayDate);
     }
   });
@@ -1060,6 +1063,9 @@ private shouldUseAllPortOptions(): boolean {
       this.isSaving = false;
       if (resp.status) {
         this.appSettingService.showSuccess(resp.message);
+        this.resetDirtyTrackingAfterSave();
+        this.isCopiedTariffMode = false;
+        this.pendingCopiedTariffData = null;
         const tariffId = resp?.data?.TariffHeaderSid;
         if (tariffId) {
           this.route.navigate(['master/tarrif/entry', tariffId]);
@@ -1077,6 +1083,13 @@ private shouldUseAllPortOptions(): boolean {
       if (resolve) resolve(false);
     }
   });
+}
+
+private resetDirtyTrackingAfterSave(): void {
+  this.initialFormValue = this.tariffHeaderForm.getRawValue();
+  this.isDirty = false;
+  this.tariffHeaderForm.markAsPristine();
+  this.tariffHeaderForm.markAsUntouched();
 }
 
   fullOnSaveFlow() {
@@ -1158,8 +1171,9 @@ private shouldUseAllPortOptions(): boolean {
   const payload = {
     TariffDetailSid: this.TariffDetailSid || null,
     IsSlabApplicable: formValue.detailisSlabApplicable ? 'Y' : 'N',
-    SlabFrom: formValue.detailisSlabApplicable ? formValue.detailSlabFrom : null,
-    SlabTo: formValue.detailisSlabApplicable ? formValue.detailSlabTo : null,
+    // Keep non-slab values aligned with FormArray shape to avoid false dirty state
+    SlabFrom: formValue.detailisSlabApplicable ? formValue.detailSlabFrom : '',
+    SlabTo: formValue.detailisSlabApplicable ? formValue.detailSlabTo : '',
     EffectiveDate: formValue.detailEffectiveDate,
     ExpiredOn: formValue.detailExpiredOn,
     ChargeCode: formValue.detailChargeCode,

@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit,TemplateRef } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit,TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal, NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule ,NgbModalRef, NgbDropdownModule} from '@ng-bootstrap/ng-bootstrap';
@@ -20,6 +20,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { getDefaultTodayDate } from 'src/app/common/helper';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 @Component({
    selector: 'app-hawb-stock-entry',
@@ -40,7 +41,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
   ],
 })
-export class HawbStockEntryComponent implements OnInit {
+export class HawbStockEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   hawbForm!: FormGroup;
   isEditMode = false;
   HawbStockSid: number | null = null;
@@ -68,6 +69,9 @@ export class HawbStockEntryComponent implements OnInit {
   currentCompany: any;
   currentBranch:any;
   MenuMasterSid: any;
+  isDirty: boolean = false;
+  isSaving: boolean = false;
+  private initialFormValue: any = null;
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
@@ -94,6 +98,8 @@ export class HawbStockEntryComponent implements OnInit {
     }
   });
     this.initForm();
+    this.initialFormValue = this.hawbForm.getRawValue();
+    this.subscribeToFormChanges();
     this.loadUserData();
     this.loadCustomers();
     this.mps.init().subscribe();
@@ -238,6 +244,10 @@ generateAWB(): void {
 			  BranchMasterSid : this.currentBranch?. BranchMasterSid,
       });
       this.hawstockData = hawbData;
+      this.initialFormValue = this.hawbForm.getRawValue();
+      this.isDirty = false;
+      this.hawbForm.markAsPristine();
+      this.hawbForm.markAsUntouched();
     },
     error => {
       this.appSettingsService.showError('Error loading HAWB data.');
@@ -259,50 +269,79 @@ generateAWB(): void {
     };
   }
 
-  onSubmit(): void {
-     if (this.btnDisable) return; 
+  onSubmit(resolve?: (value: boolean) => void): void {
+     if (this.btnDisable) {
+      if (resolve) resolve(false);
+      return;
+    }
+    if (this.isSaving) {
+      if (resolve) resolve(false);
+      return;
+    }
     if (this.hawbForm.invalid) {
       this.hawbForm.markAllAsTouched();
       this.appSettingsService.showWarning('Please fill all required fields correctly.');
+      if (resolve) resolve(false);
       return;
     }
+
+    const raw = this.hawbForm.getRawValue();
+    if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+      this.appSettingsService.showWarning('No changes to save');
+      this.hawbForm.markAsUntouched();
+      if (resolve) resolve(false);
+      return;
+    }
+
     this.btnDisable = true; 
+    this.isSaving = true;
 
     const payload = this.preparePayload();
     
     if (this.isEditMode && this.HawbStockSid) {
       this.masterService.updateHawbStockById(this.HawbStockSid, payload).subscribe(
         (resp: any) => {
-          this.handleResponse(resp);
+          this.handleResponse(resp, resolve);
         },
         (error: any) => {
-          this.handleError(error);
+          this.handleError(error, resolve);
         }
       );
     } else {
       this.masterService.createNewHawbStock(payload).subscribe(
         (resp: any) => {
-          this.handleResponse(resp);
+          this.handleResponse(resp, resolve);
         },
         (error: any) => {
-          this.handleError(error);
+          this.handleError(error, resolve);
         }
       );
     }
   }
 
-  handleResponse(resp: any): void {
+  handleResponse(resp: any, resolve?: (value: boolean) => void): void {
     if (resp.status) {
+      this.initialFormValue = this.hawbForm.getRawValue();
+      this.isDirty = false;
+      this.hawbForm.markAsPristine();
+      this.hawbForm.markAsUntouched();
       this.appSettingsService.showSuccess(resp.message);
+      if (resolve) resolve(true);
       this.router.navigate(['master/hawbstock/list']);
     } else {
       this.appSettingsService.showError(resp.message);
+      if (resolve) resolve(false);
     }
+    this.btnDisable = false;
+    this.isSaving = false;
   }
 
-  handleError(error: any): void {
+  handleError(error: any, resolve?: (value: boolean) => void): void {
     this.appSettingsService.showError(error.message);
     console.error('Error:', error);
+    this.btnDisable = false;
+    this.isSaving = false;
+    if (resolve) resolve(false);
   }
 
   showInfo(): void {
@@ -506,6 +545,69 @@ openAuditLogs(modal: TemplateRef<any>) {
 }
  navigateToCreateGeneration() {
     this.router.navigate(['master/hawbstock/entry'])
+  }
+
+  private subscribeToFormChanges(): void {
+    this.hawbForm.valueChanges.subscribe(() => {
+      this.isDirty = !this.deepEqual(this.initialFormValue, this.hawbForm.getRawValue());
+    });
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString().split('T')[0];
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+      return Number(value);
+    }
+    if (typeof value === 'number') return Number(value.toFixed(6));
+    if (Array.isArray(value)) return value.map(v => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    if (this.hawbForm.invalid) {
+      this.hawbForm.markAllAsTouched();
+      this.appSettingsService.showWarning('Please fill all required fields correctly.');
+      return false;
+    }
+
+    const raw = this.hawbForm.getRawValue();
+    if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+      this.appSettingsService.showWarning('No changes to save');
+      return false;
+    }
+
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.isSaving = false;
   }
 
 }

@@ -39,6 +39,7 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
 @Component({
   selector: 'app-city',
   standalone: true,
@@ -102,6 +103,9 @@ export class CityComponent extends BaseListComponent implements OnInit {
   allCities: any[] = [];
   permissions: string[] = [];
   currentMenuPermissions: any = {};
+  isCityDirty: boolean = false;
+  isCitySaving: boolean = false;
+  private initialCityFormValue: any = null;
   // Company
   currentCompany: any;
   currentBranch: any;
@@ -582,6 +586,14 @@ private initializeTableConfig() {
       CountryMasterSid: ['', [Validators.required]], // Dropdown
       status: [{ value: 'Active', disabled: false }, Validators.required],
     });
+
+    this.cityForm.valueChanges.subscribe(() => {
+      if (!this.initialCityFormValue) return;
+      this.isCityDirty = !this.deepEqual(
+        this.initialCityFormValue,
+        this.cityForm.getRawValue()
+      );
+    });
   }
 
   // resetForm(): void {
@@ -621,14 +633,28 @@ private initializeTableConfig() {
   openModal(content: any): void {
     this.isEditMode = false;
     this.resetForm();
-    this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+    this.setCityFormInitialValue();
+    this.modalRef = this.modalService.open(content, {
+      centered: true,
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false,
+      beforeDismiss: () => this.canCloseCityModal()
+    });
   }
 
   openEditModal(content: any, id: number): void {
     this.isEditMode = true;
     this.CityMasterSid = id;
     this.getCityById(id).add(() => {
-      this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+      this.setCityFormInitialValue();
+      this.modalRef = this.modalService.open(content, {
+        centered: true,
+        size: 'lg',
+        backdrop: 'static',
+        keyboard: false,
+        beforeDismiss: () => this.canCloseCityModal()
+      });
     });
   }
 
@@ -647,7 +673,8 @@ private initializeTableConfig() {
     centered: true, 
     size: 'lg', 
     backdrop: 'static', 
-    keyboard: false 
+    keyboard: false,
+    beforeDismiss: () => this.canCloseCityModal()
   });
 
   // 3. DISABLE FORM (Read-Only Mode)
@@ -679,6 +706,7 @@ private initializeTableConfig() {
       
       // 5. UNLOCK UI
       this.cityForm.enable();
+      this.setCityFormInitialValue();
     },
     error: (err) => {
       // 6. ROLLBACK (Failure State)
@@ -790,6 +818,7 @@ private initializeTableConfig() {
           StateMasterSid: Number(city.StateMasterSid),
           status: city.status === 'A' ? 'Active' : 'Suspended'
         });
+        this.setCityFormInitialValue();
       },
       (error) => {
         this.appSettingService.showError('Error loading');
@@ -798,7 +827,7 @@ private initializeTableConfig() {
   }
 
   onSubmit() {
-    if (this.btnDisable) return;
+    if (this.isCitySaving) return;
     if (this.cityForm.get('status')?.disabled) {
       this.cityForm.get('status')?.enable();
     }
@@ -807,8 +836,14 @@ private initializeTableConfig() {
       this.cityForm.updateValueAndValidity(); // Ensure validation is refreshed
       this.appSettingService.showWarning('Please fill all required fields correctly.')
       return;
+    }
+
+    if (!this.isCityDirty) {
+      this.appSettingService.showWarning('No changes to save.');
+      return;
     } else {
       this.btnDisable = true;
+      this.isCitySaving = true;
       let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
       let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       const formValue = this.cityForm.getRawValue(); // Use getRawValue() to get disabled values too
@@ -834,17 +869,20 @@ private initializeTableConfig() {
           (resp: any) => {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
+              this.setCityFormInitialValue();
               this.closeModal();             // <-- Close the modal here
               this.router.navigate(['master/city']);
             } else {
               this.appSettingService.showError(resp.message);
             }
             this.btnDisable = false;
+            this.isCitySaving = false;
           },
           (error) => {
             this.errorMessage = error.message;
             console.error('Error loading country:', error);
             this.btnDisable = false;
+            this.isCitySaving = false;
           }
         );
       } else {
@@ -852,17 +890,20 @@ private initializeTableConfig() {
           (resp: any) => {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
+              this.setCityFormInitialValue();
               this.closeModal();
               this.router.navigate(['master/city']);
             } else {
               this.appSettingService.showError(resp.message);
             }
             this.btnDisable = false;
+            this.isCitySaving = false;
           },
           (error) => {
             this.errorMessage = error.message;
             console.error('Error loading country:', error);
             this.btnDisable = false;
+            this.isCitySaving = false;
           }
         );
       }
@@ -1108,6 +1149,51 @@ private initializeTableConfig() {
 OnDestroy(): void {
     this.commonService.clearDocumentData()
  }
+
+  private setCityFormInitialValue(): void {
+    this.initialCityFormValue = this.cityForm.getRawValue();
+    this.isCityDirty = false;
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString();
+    if (Array.isArray(value)) return value.map((v) => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
+
+  canCloseCityModal(): boolean | Promise<boolean> {
+    if (this.isCitySaving) return false;
+    if (!this.isCityDirty) return true;
+
+    const modalRef = this.modalService.open(UnsavedChangesDialogComponent, {
+      centered: true,
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    return modalRef.result
+      .then((action: UnsavedChangesAction) => action === 'discard')
+      .catch(() => false);
+  }
+
+  async closeCityModal(): Promise<void> {
+    const canClose = await Promise.resolve(this.canCloseCityModal());
+    if (!canClose) return;
+    this.modalRef?.close();
+  }
 
   openFollowup() {
      if (!this.cityData) return;

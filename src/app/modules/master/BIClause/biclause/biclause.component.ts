@@ -38,6 +38,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
 
 
 @Component({
@@ -81,6 +82,9 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
   loading = false;
   btnDisable = false;
   isEditMode = false;
+  isBiclauseDirty: boolean = false;
+  isBiclauseSaving: boolean = false;
+  private initialBiclauseFormValue: any = null;
   isLogLoading: boolean = false;
   currentClauseId: number | null = null;
   userData: any;
@@ -130,6 +134,7 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
   TandCList: any[] = [];
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
+  modalRef!: NgbModalRef;
 
   constructor(
     public mps: MenuPermissionService,
@@ -492,6 +497,14 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
       DefaultClause: [false],
       status: [{ value: 'A', disabled: false }, Validators.required]
     });
+
+    this.biclauseForm.valueChanges.subscribe(() => {
+      if (!this.initialBiclauseFormValue) return;
+      this.isBiclauseDirty = !this.deepEqual(
+        this.initialBiclauseFormValue,
+        this.biclauseForm.getRawValue()
+      );
+    });
   }
 
   loadAllFields() {
@@ -528,18 +541,27 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
     } else {
       this.biclauseForm.get('status')?.disable();
       this.biclauseForm.reset({
+        DepartmentMasterSid: null,
         ClauseDescription: '',
         Keyword: '',
         Sortorder: '',
-        DefaultClause: '',
+        DefaultClause: false,
         status: 'A'
       });
     }
 
-    this.modalService.open(content, { centered: true, size: 'lg' });
+    this.setBiclauseFormInitialValue();
+    this.modalRef = this.modalService.open(content, {
+      centered: true,
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false,
+      beforeDismiss: () => this.canCloseBiclauseModal()
+    });
   }
 
   onSubmit(): void {
+    if (this.isBiclauseSaving) return;
     if (this.biclauseForm.get('status')?.disabled) {
       this.biclauseForm.get('status')?.enable();
     }
@@ -547,8 +569,13 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
       this.appSettingService.showWarning('Please fill all required fields correctly.');
       return;
     }
+    if (!this.isBiclauseDirty) {
+      this.appSettingService.showWarning('No changes to save.');
+      return;
+    }
 
     this.btnDisable = true;
+    this.isBiclauseSaving = true;
     const formValue = this.biclauseForm.value;
     const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
 
@@ -569,21 +596,20 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
     operation.subscribe({
       next: (response: any) => {
         this.btnDisable = false;
+        this.isBiclauseSaving = false;
 
         if (response.status) {
-
           this.appSettingService.showSuccess(response.message);
-        }
-        else {
+          this.setBiclauseFormInitialValue();
+          this.closeModal();
+          this.loadAllClauses();
+        } else {
           this.appSettingService.showError(response.message);
         }
-
-
-        this.modalService.dismissAll();
-        this.loadAllClauses();
       },
       error: (err) => {
         this.btnDisable = false;
+        this.isBiclauseSaving = false;
         if (err.error?.message) {
           this.appSettingService.showError(err.error.message);
         } else {
@@ -677,6 +703,7 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
         });
         this.biclauseForm.get('status')?.enable();
       }
+      this.setBiclauseFormInitialValue();
       return;
     }
 
@@ -700,6 +727,7 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
     // Clear any stored data
     this.blclauseData = null;
     this.currentClauseId = null;
+    this.setBiclauseFormInitialValue();
   }
 
   getStatusClass(status: string): string {
@@ -802,6 +830,58 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
   }
 
       this.commonService.documentData.set(data)
+  }
+
+  closeModal(): void {
+    if (this.modalRef && typeof this.modalRef.close === 'function') {
+      this.modalRef.close();
+      this.modalRef = null!;
+    }
+  }
+
+  private setBiclauseFormInitialValue(): void {
+    this.initialBiclauseFormValue = this.biclauseForm.getRawValue();
+    this.isBiclauseDirty = false;
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString();
+    if (Array.isArray(value)) return value.map((v) => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
+
+  canCloseBiclauseModal(): boolean | Promise<boolean> {
+    if (this.isBiclauseSaving) return false;
+    if (!this.isBiclauseDirty) return true;
+
+    const modalRef = this.modalService.open(UnsavedChangesDialogComponent, {
+      centered: true,
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    return modalRef.result
+      .then((action: UnsavedChangesAction) => action === 'discard')
+      .catch(() => false);
+  }
+
+  async closeBiclauseModal(): Promise<void> {
+    const canClose = await Promise.resolve(this.canCloseBiclauseModal());
+    if (!canClose) return;
+    this.modalRef?.close();
   }
 
 OnDestroy(): void {

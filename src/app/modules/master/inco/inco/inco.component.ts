@@ -36,6 +36,7 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
 @Component({
   selector: 'app-inco',
   standalone: true,
@@ -97,6 +98,9 @@ export class IncoComponent extends BaseListComponent implements OnInit {
   MenuMasterSid: any;
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
+  isIncoDirty: boolean = false;
+  isIncoSaving: boolean = false;
+  private initialIncoFormValue: any = null;
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
   }
@@ -553,6 +557,14 @@ export class IncoComponent extends BaseListComponent implements OnInit {
       IncoDescription: [''],
       Status: [{ value: 'A', disabled: false }, Validators.required]
     });
+
+    this.incoForm.valueChanges.subscribe(() => {
+      if (!this.initialIncoFormValue) return;
+      this.isIncoDirty = !this.deepEqual(
+        this.initialIncoFormValue,
+        this.incoForm.getRawValue()
+      );
+    });
   }
   //  resetForm(): void {
   //   this.incoForm.get('Status')?.disable();
@@ -595,14 +607,28 @@ export class IncoComponent extends BaseListComponent implements OnInit {
   openModal(content: any): void {
     this.isEditMode = false;
     this.resetForm();
-    this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+    this.setIncoFormInitialValue();
+    this.modalRef = this.modalService.open(content, {
+      centered: true,
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false,
+      beforeDismiss: () => this.canCloseIncoModal()
+    });
   }
 
   openEditModal(content: any, id: number): void {
     this.isEditMode = true;
     this.IncoMasterSid = id;
     this.getIncoById(id).add(() => {
-      this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+      this.setIncoFormInitialValue();
+      this.modalRef = this.modalService.open(content, {
+        centered: true,
+        size: 'lg',
+        backdrop: 'static',
+        keyboard: false,
+        beforeDismiss: () => this.canCloseIncoModal()
+      });
     });
   }
 
@@ -618,7 +644,8 @@ export class IncoComponent extends BaseListComponent implements OnInit {
     centered: true, 
     size: 'lg', 
     backdrop: 'static',
-    keyboard: false 
+    keyboard: false,
+    beforeDismiss: () => this.canCloseIncoModal()
   });
 
   // 3. DISABLE FORM
@@ -649,6 +676,7 @@ export class IncoComponent extends BaseListComponent implements OnInit {
 
       // 5. UNLOCK UI
       this.incoForm.enable();
+      this.setIncoFormInitialValue();
     },
     error: (err) => {
       // 6. ROLLBACK
@@ -682,6 +710,7 @@ export class IncoComponent extends BaseListComponent implements OnInit {
           IncoDescription: inco.IncoDescription,
           Status: inco.Status === 'A' ? 'Active' : 'Suspended'
         });
+        this.setIncoFormInitialValue();
       },
       (error) => {
         this.appSettingService.showError('Error  loading');
@@ -690,6 +719,7 @@ export class IncoComponent extends BaseListComponent implements OnInit {
   }
 
   onSubmit() {
+    if (this.isIncoSaving) return;
     if (this.incoForm.get('Status')?.disabled) {
       this.incoForm.get('Status')?.enable();
     }
@@ -698,7 +728,13 @@ export class IncoComponent extends BaseListComponent implements OnInit {
       this.incoForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all required fields correctly.');
       return;
+    }
+    if (!this.isIncoDirty) {
+      this.appSettingService.showWarning('No changes to save.');
+      return;
     } else {
+      this.btnDisable = true;
+      this.isIncoSaving = true;
       let CreatedBy = { CreatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       let UpdatedBy = { UpdatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       const formValue = this.incoForm.value;
@@ -719,16 +755,21 @@ export class IncoComponent extends BaseListComponent implements OnInit {
         this.masterService.editInco(this.IncoMasterSid, payload).subscribe(
           (resp: any) => {
             console.log(resp.message);
-            if (resp.Status) {
+            if (resp.Status || resp.status) {
+              this.appSettingService.showSuccess(resp.message || 'Saved Successfully!');
+              this.setIncoFormInitialValue();
               this.closeModal();
               this.router.navigate(['master/inco']);
-              // this.loadIncos();
               this.searchInco();
             } else {
-              this.appSettingService.showSuccess(resp.message);
+              this.appSettingService.showError(resp.message);
             }
+            this.btnDisable = false;
+            this.isIncoSaving = false;
           },
           (error) => {
+            this.btnDisable = false;
+            this.isIncoSaving = false;
             this.errorMessage = error.message;
             console.error('Error loading:', error);
           }
@@ -736,16 +777,22 @@ export class IncoComponent extends BaseListComponent implements OnInit {
       } else {
         this.masterService.createInco(payload).subscribe(
           (resp: any) => {
+            this.btnDisable = false;
+            this.isIncoSaving = false;
             console.log(resp);
-            if (resp.Status) {
+            if (resp.Status || resp.status) {
+              this.appSettingService.showSuccess(resp.message || 'Saved Successfully!');
+              this.setIncoFormInitialValue();
               this.closeModal();
               this.router.navigate(['master/inco']);
-               this.searchInco();
+              this.searchInco();
             } else {
-              this.appSettingService.showSuccess(resp.message);
+              this.appSettingService.showError(resp.message);
             }
           },
           (error) => {
+            this.btnDisable = false;
+            this.isIncoSaving = false;
             this.errorMessage = error.message;
             console.error('Error loading:', error);
           }
@@ -767,6 +814,7 @@ export class IncoComponent extends BaseListComponent implements OnInit {
           Status: data.Status === 'A' ? 'Active' : 'Suspended'
         },
         );
+        this.setIncoFormInitialValue();
       },
       (error) => {
         this.appSettingService.showError('Error loading data.');
@@ -1030,5 +1078,50 @@ openDocRef() {
         console.error('Error fetching audit logs:', err);
       }
     });
+  }
+
+  private setIncoFormInitialValue(): void {
+    this.initialIncoFormValue = this.incoForm.getRawValue();
+    this.isIncoDirty = false;
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString();
+    if (Array.isArray(value)) return value.map((v) => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
+
+  canCloseIncoModal(): boolean | Promise<boolean> {
+    if (this.isIncoSaving) return false;
+    if (!this.isIncoDirty) return true;
+
+    const modalRef = this.modalService.open(UnsavedChangesDialogComponent, {
+      centered: true,
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    return modalRef.result
+      .then((action: UnsavedChangesAction) => action === 'discard')
+      .catch(() => false);
+  }
+
+  async closeIncoModal(): Promise<void> {
+    const canClose = await Promise.resolve(this.canCloseIncoModal());
+    if (!canClose) return;
+    this.modalRef?.close();
   }
 }

@@ -1,4 +1,4 @@
-import { Component, effect, TemplateRef } from '@angular/core';
+import { Component, effect, HostListener, OnDestroy, OnInit, TemplateRef } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { FormsModule, FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { NgSelectConfig, NgSelectModule } from '@ng-select/ng-select';
@@ -13,7 +13,7 @@ import { MasterService } from '../../master.service';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
-import { forkJoin, Subject } from 'rxjs';
+import { debounceTime, forkJoin, Subject, takeUntil } from 'rxjs';
 import { NgbDropdownModule, NgbModal ,NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
@@ -31,6 +31,7 @@ import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { City } from 'src/app/modules/crm-mobile/Interfaces/city.interface';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 
 
@@ -55,8 +56,11 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
   templateUrl: './post-master-view.component.html',
   styleUrl: './post-master-view.component.scss'
 })
-export class PostMasterViewComponent {
+export class PostMasterViewComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   private destroy$ = new Subject<void>();
+  isDirty: boolean = false;
+  isSaving: boolean = false;
+  private initialFormValue: any = null;
   portForm!: FormGroup;
   isEditMode = false;
   btnDisable: boolean = true;
@@ -116,6 +120,8 @@ export class PostMasterViewComponent {
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
 	this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
     this.initPortForm();
+    this.initialFormValue = this.portForm.getRawValue();
+    this.subscribeToFormChanges();
       this.portForm.get('PortType')?.valueChanges.subscribe(type => {
     this.setPortCodeValidation(type);
   });
@@ -201,6 +207,10 @@ hasAnyDropdownPermission(): boolean {
         
         console.log(this.portForm.value);
         this.setPortCodeValidation(resp.PortType?.toString());
+        this.initialFormValue = this.portForm.getRawValue();
+        this.isDirty = false;
+        this.portForm.markAsPristine();
+        this.portForm.markAsUntouched();
       },
       (error) => {
         this.errorMessage = error.message;
@@ -384,6 +394,8 @@ hasAnyDropdownPermission(): boolean {
   // Reset form validation state
   this.portForm.markAsUntouched();
   this.portForm.markAsPristine();
+  this.initialFormValue = this.portForm.getRawValue();
+  this.isDirty = false;
 
   // Clear port data reference
   this.portData = null;
@@ -394,7 +406,12 @@ hasAnyDropdownPermission(): boolean {
   }
 
   // Handle Form Submission
-  onSubmit() {
+  onSubmit(resolve?: (saved: boolean) => void) {
+    if (this.isSaving) {
+      if (resolve) resolve(false);
+      return;
+    }
+    this.isSaving = true;
       const portType = this.portForm.get('PortType')?.value;
   const portCode = this.portForm.get('PortCode')?.value?.trim();
 
@@ -403,14 +420,26 @@ hasAnyDropdownPermission(): boolean {
     this.appSettingService.showWarning(
       'Air Port Code must be exactly 3 characters.'
     );
+    this.isSaving = false;
+    if (resolve) resolve(false);
     return; 
   }
     if (this.portForm.invalid) {
       this.portForm.markAllAsTouched(); // Force validation messages to show
       this.portForm.updateValueAndValidity(); // Ensure validation is refreshed
       this.appSettingService.showWarning('Please fill all required fields correctly.')
+      this.isSaving = false;
+      if (resolve) resolve(false);
       return;
     } else {
+      const raw = this.portForm.getRawValue();
+      if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+        this.appSettingService.showWarning('No changes to save');
+        this.portForm.markAsUntouched();
+        this.isSaving = false;
+        if (resolve) resolve(false);
+        return;
+      }
 
       let formValue = this.portForm.value;
 
@@ -441,16 +470,24 @@ hasAnyDropdownPermission(): boolean {
             console.log(resp);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
+              this.isDirty = false;
+              this.initialFormValue = this.portForm.getRawValue();
+              this.isSaving = false;
+              if (resolve) resolve(true);
 
               this.router.navigate(['master/port-master/list']);
 
             } else {
               this.appSettingService.showError(resp.message);
+              this.isSaving = false;
+              if (resolve) resolve(false);
             }
 
           },
           (error) => {
             this.errorMessage = error.message;
+            this.isSaving = false;
+            if (resolve) resolve(false);
             console.error('Error loading ports:', error);
           }
         );
@@ -461,16 +498,24 @@ hasAnyDropdownPermission(): boolean {
             console.log(resp);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
+              this.isDirty = false;
+              this.initialFormValue = this.portForm.getRawValue();
+              this.isSaving = false;
+              if (resolve) resolve(true);
 
               this.router.navigate(['master/port-master/list']);
 
             } else {
               this.appSettingService.showError(resp.message);
+              this.isSaving = false;
+              if (resolve) resolve(false);
             }
 
           },
           (error) => {
             this.errorMessage = error.message;
+            this.isSaving = false;
+            if (resolve) resolve(false);
             console.error('Error loading ports:', error);
           }
         );
@@ -478,6 +523,55 @@ hasAnyDropdownPermission(): boolean {
 
 
     }
+  }
+
+  private subscribeToFormChanges(): void {
+    this.portForm.valueChanges
+      .pipe(takeUntil(this.destroy$), debounceTime(300))
+      .subscribe(() => {
+        this.isDirty = !this.deepEqual(this.initialFormValue, this.portForm.getRawValue());
+      });
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString().split('T')[0];
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) return Number(value);
+    if (typeof value === 'number') return Number(value.toFixed(6));
+    if (Array.isArray(value)) return value.map(v => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
   }
 
   // handlePortCodeSubmit(port:Port){
