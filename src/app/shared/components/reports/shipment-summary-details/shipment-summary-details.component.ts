@@ -49,6 +49,13 @@ export class ShipmentSummaryDetailsComponent {
   get bucketLabels(): any {
     return this.fullData?.bucketLabels || [];
   }
+
+  private profitMetricsCache = new WeakMap<any, {
+    revenueLocalAmt: number;
+    costLocalAmt: number;
+    gp: number;
+    profitPercent: number;
+  }>();
   
 getFilteredCustomerType(customerType: string[]): string {
   if (!customerType || !Array.isArray(customerType)) return '';
@@ -128,7 +135,11 @@ getFilteredCustomerType(customerType: string[]): string {
       { key: 'mastercreatedBy', label: 'Job Created By' },
 
       { key: 'shippingBillNo', label: 'Shipping Bill No' },
-      { key: 'addtionalRemarks', label: 'External Note' }
+      { key: 'addtionalRemarks', label: 'External Note' },
+      { key: 'proRevenueLocalAmt', label: 'P.Revenue Local Amt' },
+      { key: 'proCostLocalAmt', label: 'P.Cost Local Amt' },
+      { key: 'gp', label: 'GP' },
+      { key: 'profitPercent', label: 'Profit %' }
     ];
 
     const columnWidths = tableHeaders.map(() => 18);
@@ -140,6 +151,18 @@ getFilteredCustomerType(customerType: string[]): string {
       const cells: ExcelCell[] = tableHeaders.map(header => {
 
         let value = item?.[header.key];
+        if (header.key === 'proRevenueLocalAmt') {
+          value = this.getProRevenueLocalAmt(item);
+        }
+        if (header.key === 'proCostLocalAmt') {
+          value = this.getProCostLocalAmt(item);
+        }
+        if (header.key === 'gp') {
+          value = this.getGp(item);
+        }
+        if (header.key === 'profitPercent') {
+          value = this.getProfitPercent(item);
+        }
 
         if (header.key === 'customerType') {
           value = this.getFilteredCustomerType(item.customerType);
@@ -235,6 +258,80 @@ getFilteredCustomerType(customerType: string[]): string {
     } catch {
       return String(date);
     }
+  }
+
+  private calculateProfitMetrics(item: any): {
+    revenueLocalAmt: number;
+    costLocalAmt: number;
+    gp: number;
+    profitPercent: number;
+  } {
+    const cached = this.profitMetricsCache.get(item);
+    if (cached) {
+      return cached;
+    }
+
+    const details = Array.isArray(item?.costRevenueDetails) ? item.costRevenueDetails : [];
+    const grouped = new Map<string, { revenue: number; cost: number }>();
+
+    details.forEach((row: any) => {
+      const charge = String(row?.Charge || '').trim().toLowerCase();
+      const key = charge || '__unknown__';
+      const existing = grouped.get(key) || { revenue: 0, cost: 0 };
+
+      const revenue = Number(row?.RevenueLocalAmt || 0);
+      const cost = Number(row?.CostLocalAmt || 0);
+      const revenueSigned = String(row?.RevenueDrCr || 'C').toUpperCase() === 'C' ? revenue : -revenue;
+      const costSigned = String(row?.CostDrCr || 'D').toUpperCase() === 'D' ? cost : -cost;
+
+      existing.revenue += revenueSigned;
+      existing.cost += costSigned;
+      grouped.set(key, existing);
+    });
+
+    let totalRevenue = 0;
+    let totalCost = 0;
+    grouped.forEach((value) => {
+      totalRevenue += value.revenue;
+      totalCost += value.cost;
+    });
+
+    let gp = 0;
+    let profitPercent = 0;
+
+    if (totalRevenue > totalCost) {
+      gp = totalRevenue - totalCost;
+      profitPercent = totalRevenue !== 0 ? (gp / totalRevenue) * 100 : 0;
+    } else {
+      gp = -(totalCost - totalRevenue);
+      profitPercent = totalCost !== 0 ? (gp / totalCost) * 100 : 0;
+    }
+
+    const result = {
+      revenueLocalAmt: totalRevenue,
+      costLocalAmt: totalCost,
+      gp,
+      profitPercent
+    };
+
+    this.profitMetricsCache.set(item, result);
+    return result;
+  }
+
+  getProRevenueLocalAmt(item: any): number {
+    return this.calculateProfitMetrics(item).revenueLocalAmt;
+  }
+
+  getProCostLocalAmt(item: any): number {
+    return this.calculateProfitMetrics(item).costLocalAmt;
+  }
+
+  getGp(item: any): number {
+    return this.calculateProfitMetrics(item).gp;
+  }
+
+  getProfitPercent(item: any): string {
+    return `${this.calculateProfitMetrics(item).profitPercent.toFixed(3)}%`;
   }
 
 }
