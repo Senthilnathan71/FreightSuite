@@ -438,7 +438,8 @@ export class SalesManagerDashboardComponent implements OnInit, OnDestroy {
       }).subscribe({
         next: (resp) => {
           const data = resp.data as any;
-          const bucketData = data[bucket];
+          const bucketKey = bucket === 'future' ? 'upcoming' : bucket;
+          const bucketData = data[bucketKey];
 
           if (reset) {
             state.items = bucketData.items;

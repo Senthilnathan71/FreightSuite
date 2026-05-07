@@ -165,7 +165,6 @@ export class UserEntryComponent implements OnInit {
     });
     this.userForm.get('DefaultDept').disable();
     this.handleLoginUserToggle();
-    this.setupFormListeners();
   }
 
   handleLoginUserToggle() {
@@ -468,92 +467,35 @@ export class UserEntryComponent implements OnInit {
     this.userCompanyMaster.updateValueAndValidity();
   }
 
-  setupFormListeners() {
-    // Watch for salesperson toggle changes
-    this.userForm.get('isSalesperson')?.valueChanges.subscribe(() => {
-      this.fetchReportingManagers();
-    });
-
-    // Watch for user type changes
-    this.userForm.get('userTypeId')?.valueChanges.subscribe(() => {
-      this.fetchReportingManagers();
-    });
-  }
-
-  fetchReportingManagers() {
+  loadReportingUsers() {
     const companyMasterSid = this.currentCompany?.CompanyMasterSid;
-    const branchMasterSid = this.currentBranch?.BranchMasterSid;
-    const userTypeId = this.userForm.get('userTypeId')?.value;
-    const isSalesperson = this.userForm.get('isSalesperson')?.value;
-
-    // Clear existing value
-    this.userForm.get('DeptHead')?.setValue(null);
     this.reportingManagersList = [];
 
-    let userTypeCode = '';
-
-    // Get UserTypeCode from selected userTypeId
-    if (userTypeId) {
-      const selectedType = this.userTypeList.find(t => t.UserTypeSid === userTypeId);
-      userTypeCode = selectedType?.code || '';
+    if (!companyMasterSid) {
+      return;
     }
 
-    // Determine DeptHead type based on conditions
-    let deptHeadType = '';
+    const payload = {
+      CompanyMasterSid: companyMasterSid,
+    };
 
-    if (isSalesperson) {
-      // Salesman -> Need Sales Manager
-      deptHeadType = 'salesManager';
-    } else {
-      // Non-salesman -> Based on UserType
-      switch (userTypeCode) {
-        case 'user':
-        case 'teamLead':
-          deptHeadType = 'manager';
-          break;
-        case 'manager':
-          deptHeadType = 'management';
-          break;
-        case 'csPerson':
-          deptHeadType = 'csManager';
-          break;
-        case 'opsPerson':
-          deptHeadType = 'opsManager';
-          break;
-        case 'docPerson':
-          deptHeadType = 'docManager';
-          break;
-        case 'accounts':
-          deptHeadType = 'accountsManager';
-          break;
-        default:
-          deptHeadType = 'management';
-          break;
-      }
-    }
-
-    if (deptHeadType) {
-      const payload = {
-        CompanyMasterSid: companyMasterSid,
-        UserType : deptHeadType
-      };
-
-      this.masterService.getFFUserByUserType(payload).subscribe({
-        next: (resp: any) => {
-          this.reportingManagersList = resp.data || [];
-          // Filter out current user in edit mode
-          if (this.isEditMode && this.UserMasterSid) {
-            this.reportingManagersList = this.reportingManagersList.filter(
-              (mgr: any) => mgr.UserMasterSid !== this.UserMasterSid
-            );
-          }
-        },
-        error: (error) => {
-          console.error('Error fetching reporting managers:', error);
-          this.reportingManagersList = [];
+    this.masterService.getReportingUsers(payload).subscribe({
+      next: (resp: any) => {
+        this.reportingManagersList = (resp.data || []).map((user: any) => ({
+          ...user,
+          userTypeName: user.userType?.name || user.userType?.code || '',
+        }));
+        if (this.isEditMode && this.UserMasterSid) {
+          this.reportingManagersList = this.reportingManagersList.filter(
+            (mgr: any) => mgr.UserMasterSid !== this.UserMasterSid
+          );
         }
-      });
-    }
+      },
+      error: (error) => {
+        console.error('Error fetching reporting users:', error);
+        this.reportingManagersList = [];
+      }
+    });
   }
 
   // loads all lookups
@@ -578,8 +520,10 @@ export class UserEntryComponent implements OnInit {
         this.UserMasterSid = +param.get('id');
         if (this.UserMasterSid) {
           this.isEditMode = true;
+          this.loadReportingUsers();
           this.loadUserData(this.UserMasterSid);
         } else {
+          this.loadReportingUsers();
           this.userForm
             .get('userPassword')
             ?.setValidators([
@@ -616,7 +560,8 @@ export class UserEntryComponent implements OnInit {
             companies: allCompanyIds,
             department: d.department ?? [],
             CountryMasterSid: d.CountryMasterSid,
-            status: d.status === 'A' ? 'Active' : 'Suspended'
+            status: d.status === 'A' ? 'Active' : 'Suspended',
+            DeptHead: d.DeptHead || null
           });
           this.setDefaultDept();
 
@@ -696,13 +641,6 @@ export class UserEntryComponent implements OnInit {
               );
             });
           });
-
-          setTimeout(() => {
-            this.fetchReportingManagers();
-            this.userForm.patchValue({
-              DeptHead: d.DeptHead || null
-            });
-          }, 500);
 
         } else {
           this.appSettingService.showError('Error Loading User Data');

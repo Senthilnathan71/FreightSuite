@@ -368,19 +368,18 @@
           <!-- Reporting To Field -->
         <aside class="col-md-4">
           <div class="custom-form-group custom-form-group-select" [class.filled]="!!userForm.get('DeptHead')?.value">
-            <ng-select 
+            <dofi-searchable-dropdown
               formControlName="DeptHead" 
               [items]="reportingManagersList" 
-              bindLabel="userName" 
-              bindValue="UserMasterSid" 
-              [clearable]="true" 
-              [disabled]="reportingManagersList.length === 0"
+              [bindLabel]="'userName'" 
+              [bindValue]="'UserMasterSid'" 
+              [displayFields]="['userName', 'userEmail', 'userTypeName']"
+              [displayLabels]="['User Name', 'Email', 'User Type']"
+              [labelFields]="['userName']"
+              [clearable]="true"
+              [readonly]="reportingManagersList.length === 0"
             >
-              <ng-template ng-option-tmp let-item="item">
-                <span>{{ item.userName }}</span>
-                <small class="text-muted d-block">{{ item.userEmail }}</small>
-              </ng-template>
-            </ng-select>
+            </dofi-searchable-dropdown>
             <label for="" class="input-label">
               Reporting To <span class="text-danger"></span>
             </label>

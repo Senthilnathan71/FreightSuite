@@ -2491,7 +2491,7 @@ getFieldConfiguration() {
     );
   }
 
-  getFFUserByUserType(payload:any){
+  getReportingUsers(payload:any){
     return this.http.post<{ data: any[] }>('ff-user/fetch-by-usertype',payload).pipe(
       map((resp) => {
         let response = resp;
