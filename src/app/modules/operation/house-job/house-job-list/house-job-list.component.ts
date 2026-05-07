@@ -456,9 +456,8 @@ export class HouseJobListComponent extends BaseListComponent implements OnInit {
     }));
 
     const responseTotal = Number(response?.data?.totalCount || 0);
-    this.totalLengthOfCollection = this.hasAdvancedFilterValues()
-      ? filteredItems.length
-      : responseTotal || rawItems.length || 0;
+    this.totalLengthOfCollection =
+  response?.data?.totalCount || rawItems.length || 0;
     this.applySorting();
     this.updateHeaderActionState();
   }

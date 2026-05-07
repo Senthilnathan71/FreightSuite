@@ -457,7 +457,7 @@
                       <label for="text-input" class="input-label">Customer <span class="text-danger">*</span></label>
                       @if(houseJobForm.get('CustomerMasterSid')?.touched &&
                       houseJobForm.get('CustomerMasterSid')?.invalid){
-                      <div class="error-message">
+                      <div class="error-message" style="position: static; display: block; margin-top: 4px; text-align: right;">
                         @if(houseJobForm.get('CustomerMasterSid')?.hasError('required')){
                         <span>Required</span>
                         }
@@ -517,7 +517,7 @@
     </div>
     <label for="text-input" class="input-label">Shipper Name <span class="text-danger">*</span></label>
     @if(houseJobForm.get('ShipperName')?.touched && houseJobForm.get('ShipperName')?.invalid){
-    <div class="error-message">
+    <div class="error-message" style="position: static; display: block; margin-top: 4px; text-align: right;">
       @if(houseJobForm.get('ShipperName')?.hasError('required')){
       <span>Required</span>
       }
@@ -579,7 +579,7 @@
     </div>
     <label for="text-input" class="input-label">Consignee Name <span class="text-danger">*</span></label>
     @if(houseJobForm.get('ConsigneeName')?.touched && houseJobForm.get('ConsigneeName')?.invalid){
-    <div class="error-message">
+    <div class="error-message" style="position: static; display: block; margin-top: 4px; text-align: right;">
       @if(houseJobForm.get('ConsigneeName')?.hasError('required')){
       <span>Required</span>
       }
@@ -1653,14 +1653,14 @@
                   </aside>    
                   }
                   <aside class="col-md-2">
-                    <div class="custom-form-group">
+                    <div class="custom-form-group cargo-gross-weight-group">
                       <input type="text" class="form-control custom-input-field sm" formControlName="GrossWeight"
                         (input)="onCargoManualFieldInput($any(cargo), 'GrossWeight')"
                         DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="decimalAfterPrecision"
                         max="9999999.999">
                       <label class="input-label">Gross Weight <span class="text-danger">*</span></label>
                       @if (shouldShowCargoFieldError(cargo, 'GrossWeight')) {
-                      <div class="error-message">
+                      <div class="error-message cargo-error-message" role="alert">
                         <span>{{ getCargoFieldErrorMessage(cargo, 'GrossWeight') }}</span>
                       </div>
                       }
@@ -1852,7 +1852,7 @@
                                 <button class="btn btn-link p-0 ms-1"
                                   (click)="toggleProductInputType($any(product), 'ProductName', 'isProductFreeText', $event)"
                                   ngbTooltip="Switch to text input" type="button">
-                                  <i class="fas fa-pen text-primary"></i>
+                                  <i class="fas fa-exchange-alt"></i>
                                 </button>
                               </div>
                               <div class="d-flex align-items-center" *ngIf="product.get('isProductFreeText')?.value">
