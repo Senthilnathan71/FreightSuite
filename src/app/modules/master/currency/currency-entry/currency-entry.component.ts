@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
@@ -13,7 +13,8 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { AuthorityEntryComponent } from '../../authority/authority-entry/authority-entry.component';
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { forkJoin } from 'rxjs';
+import { debounceTime, forkJoin, Subject, takeUntil } from 'rxjs';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
@@ -40,7 +41,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
   templateUrl: './currency-entry.component.html',
   styleUrls: ['./currency-entry.component.scss']
 })
-export class CurrencyEntryComponent implements OnInit {
+export class CurrencyEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   currencyForm: FormGroup;
   isEditMode = false;
   btnDisable = false;
@@ -62,6 +63,11 @@ export class CurrencyEntryComponent implements OnInit {
   TandCList: any;
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
+  isDirty = false;
+  isSaving = false;
+  private initialFormValue: any = null;
+  private destroy$ = new Subject<void>();
+  private formChangesSubscribed = false;
   // currencylookupCofig ={
   //   displayFields : ['countryCode', 'countryName'],
   //   displayLabels : ['Code', 'Name'],
@@ -105,11 +111,15 @@ export class CurrencyEntryComponent implements OnInit {
     //   }
     // )
     const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
+    if(userProfile){
 			this.userData = userProfile;
      
 		}
     this.loadlookup();
+    if (!this.isEditMode) {
+      this.initialFormValue = this.currencyForm.getRawValue();
+      this.subscribeToFormChanges();
+    }
   }
 
   
@@ -235,6 +245,9 @@ loadlookup(){
           RoundOf: currency.RoundOf,
           status: currency.status
         });
+        this.initialFormValue = this.currencyForm.getRawValue();
+        this.isDirty = false;
+        this.subscribeToFormChanges();
         this.loading = false;
       },
       error: (err) => {
@@ -309,12 +322,33 @@ openAuditLogs(modal: TemplateRef<any>) {
   });
 }
 
-  onSubmit() {
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
+
+  onSubmit(resolve?: (value: boolean) => void) {
+    if (this.isSaving) {
+      if (resolve) resolve(false);
+      return;
+    }
+
+    const raw = this.currencyForm.getRawValue();
+    if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      this.currencyForm.markAsUntouched();
+      if (resolve) resolve(false);
+      return;
+    }
+
     if (this.currencyForm.invalid) {
       this.markFormGroupTouched(this.currencyForm);
+      if (resolve) resolve(false);
       return;
     }
   
+    this.isSaving = true;
     this.btnDisable = true;
     this.loading = true;
 
@@ -346,12 +380,16 @@ openAuditLogs(modal: TemplateRef<any>) {
       next: (resp) => {
         this.loading = false;
         this.btnDisable = false;
+        this.isSaving = false;
       if (resp.status) {
-        
+        this.isDirty = false;
+        this.initialFormValue = this.currencyForm.getRawValue();
         this.appSettingService.showSuccess(resp.message);
+        if (resolve) resolve(true);
       } 
 else {
         this.appSettingService.showError(resp.message);
+        if (resolve) resolve(false);
       }
 
         this.router.navigate(['/master/currency/list']);
@@ -360,11 +398,13 @@ else {
         console.error(err);
         this.loading = false;
         this.btnDisable = false;
+        this.isSaving = false;
         if (err.status === 400 && err.error.message.includes('already exists')) {
           this.appSettingService.showError(err.error.message);
         } else {
           this.appSettingService.showError('Failed to process currency. Please try again.');
-        }      
+        }
+        if (resolve) resolve(false);
       }
     });
   }
@@ -490,10 +530,76 @@ openDocRef() {
     modalRef.componentInstance.DocumentSid = this.currencyID;
   }
  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.commonService.clearDocumentData()
  }
 
 navigateToCreateCurrency() {
     this.router.navigate(['master/currency/entry']);
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue =
+        'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  private subscribeToFormChanges() {
+    if (this.formChangesSubscribed) return;
+    this.formChangesSubscribed = true;
+    this.currencyForm.valueChanges
+      .pipe(takeUntil(this.destroy$), debounceTime(300))
+      .subscribe(() => {
+        this.isDirty = !this.deepEqual(
+          this.initialFormValue,
+          this.currencyForm.getRawValue()
+        );
+      });
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+
+    if (value instanceof Date) {
+      return value.toISOString().split('T')[0];
+    }
+
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+      return Number(value);
+    }
+
+    if (typeof value === 'number') {
+      return Number(value.toFixed(6));
+    }
+
+    if (Array.isArray(value)) {
+      return value.map((v) => this.normalizeValue(v));
+    }
+
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return (
+      JSON.stringify(this.normalizeValue(obj1)) ===
+      JSON.stringify(this.normalizeValue(obj2))
+    );
   }
 }

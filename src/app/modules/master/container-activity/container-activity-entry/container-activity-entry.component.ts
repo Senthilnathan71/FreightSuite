@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, TemplateRef } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FeatherModule } from 'angular-feather';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -19,6 +19,8 @@ import { AuthorityLogComponent } from 'src/app/component/authority-log/authority
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { Subject, debounceTime, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-container-activity-entry',
@@ -38,7 +40,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
   templateUrl: './container-activity-entry.component.html',
   styleUrl: './container-activity-entry.component.scss'
 })
-export class ContainerActivityEntryComponent implements OnInit {
+export class ContainerActivityEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
 
   containerActivityForm!: FormGroup;
   isEditMode = false;
@@ -58,6 +60,9 @@ MenuMasterSid: any;
   // Track original values for comparison
   originalFormValues: any;
   originalNextActivities: any[] = [];
+  isDirty: boolean = false;
+  isSaving: boolean = false;
+  private destroy$ = new Subject<void>();
   
   statusList = [
     { id: 'A', name: 'Active' },
@@ -104,8 +109,10 @@ MenuMasterSid: any;
   ngOnInit(): void {
     this.getAllCompanies();
     this.loadContainerActivities();
-     this.mps.init().subscribe();
+    this.mps.init().subscribe();
     this.initForm();
+    this.subscribeToFormChanges();
+    this.captureInitialState();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
 	this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
@@ -197,6 +204,7 @@ MenuMasterSid: any;
             this.nextActivities = [];
             this.originalNextActivities = [];
           }
+          this.captureInitialState();
         } else {
           this.errorMessage = resp.message;
           this.appSettingService.showError(resp.message);
@@ -248,16 +256,8 @@ MenuMasterSid: any;
 
   // Check if form has changes
   hasFormChanges(): boolean {
-    if (!this.isEditMode) return true; // Always enable for new entries
-    
-    // Check if form values have changed
-    const currentValues = this.containerActivityForm.value;
-    const hasFormValueChanges = JSON.stringify(currentValues) !== JSON.stringify(this.originalFormValues);
-    
-    // Check if activity mapping has changed
-    const hasActivityChanges = this.hasActivityMappingChanged();
-    
-    return hasFormValueChanges || hasActivityChanges;
+    if (!this.isEditMode) return true;
+    return this.isDirty;
   }
 
   // Check if activity mapping has changed
@@ -329,7 +329,7 @@ MenuMasterSid: any;
     }
   }
 
-  onSubmit() {
+  onSubmit(resolve?: (saved: boolean) => void) {
     // Enable status temporarily for validation
     if (this.containerActivityForm.get('Status')?.disabled) {
       this.containerActivityForm.get('Status')?.enable();
@@ -344,10 +344,23 @@ MenuMasterSid: any;
       if (!this.isEditMode) {
         this.containerActivityForm.get('Status')?.disable();
       }
+      if (resolve) resolve(false);
       return;
     }
-    
+
+    if (this.isSaving) {
+      if (resolve) resolve(false);
+      return;
+    }
+
+    if (this.isEditMode && !this.hasFormChanges()) {
+      this.appSettingService.showWarning('No changes to save');
+      if (resolve) resolve(false);
+      return;
+    }
+
     this.btnDisable = true;
+    this.isSaving = true;
     const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
     const formValue = this.containerActivityForm.value;
     const processedValue = {
@@ -385,42 +398,53 @@ MenuMasterSid: any;
       this.masterService.updateContainerActivityById(this.ContainerActivityMasterSid, payload).subscribe(
         (resp: any) => {
           this.btnDisable = false;
+          this.isSaving = false;
           this.debugResponse(resp, 'updateContainerActivityById');
           
           if (resp.status) {
-            
+            this.captureInitialState();
             this.appSettingService.showSuccess(resp.message);
             this.router.navigate(['master/container-activity/entry',resp.data.ContainerActivityMasterSid]);
+            if (resolve) resolve(true);
           } else {
             this.appSettingService.showError(resp.message);
+            if (resolve) resolve(false);
           }
         },
         (error) => {
           this.btnDisable = false;
+          this.isSaving = false;
           this.errorMessage = error.message;
           this.appSettingService.showError('Error updating container activity');
           console.error('Error updating container activity:', error);
+          if (resolve) resolve(false);
         }
       );
     } else {
       this.masterService.createNewContainerActivity(payload).subscribe(
         (resp: any) => {
           this.btnDisable = false;
+          this.isSaving = false;
           this.debugResponse(resp, 'createNewContainerActivity');
           
           if (resp.status) {
             this.loadContainerActivityData(resp.data.ContainerActivityMasterSid);
+            this.captureInitialState();
             this.appSettingService.showSuccess(resp.message);
             this.router.navigate(['master/container-activity/entry',resp.data.ContainerActivityMasterSid]);
+            if (resolve) resolve(true);
           } else {
             this.appSettingService.showError(resp.message);
+            if (resolve) resolve(false);
           }
         },
         (error) => {
           this.btnDisable = false;
+          this.isSaving = false;
           this.errorMessage = error.message;
           this.appSettingService.showError('Error creating container activity');
           console.error('Error creating container activity:', error);
+          if (resolve) resolve(false);
         }
       );
     }
@@ -466,6 +490,7 @@ MenuMasterSid: any;
     });
     
     this.selectedAvailableActivities.clear();
+    this.updateDirtyState();
   }
 
   moveSelectedToAvailable(): void {
@@ -482,6 +507,7 @@ MenuMasterSid: any;
     });
     
     this.selectedNextActivities.clear();
+    this.updateDirtyState();
   }
 
   moveActivityToNext(activity: any): void {
@@ -490,6 +516,7 @@ MenuMasterSid: any;
       a.ContainerActivityMasterSid !== activity.ContainerActivityMasterSid && 
       a.ActivityCode !== activity.ActivityCode
     );
+    this.updateDirtyState();
   }
 
   moveActivityToAvailable(activity: any): void {
@@ -498,6 +525,7 @@ MenuMasterSid: any;
       a.ContainerActivityMasterSid !== activity.ContainerActivityMasterSid && 
       a.ActivityCode !== activity.ActivityCode
     );
+    this.updateDirtyState();
   }
 
   // openAuditLogs(modal: TemplateRef<any>) {
@@ -670,7 +698,81 @@ MenuMasterSid: any;
     modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
     modalRef.componentInstance.DocumentSid = this.ContainerActivityMasterSid;
   }
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
+
+  private subscribeToFormChanges(): void {
+    this.containerActivityForm.valueChanges
+      .pipe(takeUntil(this.destroy$), debounceTime(300))
+      .subscribe(() => {
+        this.updateDirtyState();
+      });
+  }
+
+  private captureInitialState(): void {
+    this.originalFormValues = this.containerActivityForm.getRawValue();
+    this.originalNextActivities = this.serializeActivities(this.nextActivities);
+    this.isDirty = false;
+  }
+
+  private updateDirtyState(): void {
+    const formChanged = !this.deepEqual(
+      this.containerActivityForm.getRawValue(),
+      this.originalFormValues
+    );
+    const activitiesChanged = !this.deepEqual(
+      this.serializeActivities(this.nextActivities),
+      this.originalNextActivities
+    );
+    this.isDirty = formChanged || activitiesChanged;
+  }
+
+  private serializeActivities(activities: any[]): any[] {
+    return (activities || []).map((a: any) => ({
+      ActivityCode: a.ActivityCode,
+      ContainerActivityMasterSid: a.ContainerActivityMasterSid
+    }));
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString();
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) return Number(value);
+    if (typeof value === 'number') return Number(value.toFixed(6));
+    if (Array.isArray(value)) return value.map(v => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
+
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.commonService.clearDocumentData()
  }
   // Debug method to check API responses

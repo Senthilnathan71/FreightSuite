@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, NgZone, OnInit, TemplateRef } from '@angular/core';
+import { Component, HostListener, NgZone, OnDestroy, OnInit, TemplateRef } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FeatherModule } from 'angular-feather';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -23,6 +23,8 @@ import { CommonEntryHeaderComponent } from 'src/app/shared/components/common-ent
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { Subject, debounceTime, finalize, takeUntil } from 'rxjs';
 
 interface IWindow extends Window {
   webkitSpeechRecognition: any;
@@ -48,7 +50,7 @@ interface IWindow extends Window {
   templateUrl: './container-type-entry.component.html',
   styleUrl: './container-type-entry.component.scss'
 })
-export class ContainerTypeEntryComponent {
+export class ContainerTypeEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
 
   containertypeForm!: FormGroup;
   isEditMode = false;
@@ -109,6 +111,10 @@ noOfTeuOptions = [
   recognition: any;
   isListening = false;
   activeControl: string | null = null;
+  isDirty: boolean = false;
+  isSaving: boolean = false;
+  private initialFormValue: any = null;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
@@ -209,6 +215,8 @@ noOfTeuOptions = [
     this.getAllCompanies()
     this.loadContainerTypes();
     this.initForm();
+    this.subscribeToFormChanges();
+    this.captureInitialState();
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
 	  this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
@@ -220,6 +228,7 @@ noOfTeuOptions = [
       }else {
         // Disable status field for create mode
         this.containertypeForm.get('status')?.disable();
+        this.captureInitialState();
       }
     });
 
@@ -314,7 +323,18 @@ resetForm(): void {
     this.containertypeForm.get('status')?.disable();
   }
 
-  onSubmit() {
+  onSubmit(resolve?: (saved: boolean) => void) {
+  if (this.isSaving) {
+    resolve?.(false);
+    return;
+  }
+
+  if (this.initialFormValue && this.deepEqual(this.containertypeForm.getRawValue(), this.initialFormValue) && !this.isDirty) {
+    this.appSettingService.showWarning('No changes to save');
+    resolve?.(false);
+    return;
+  }
+
   if (this.containertypeForm.get('status')?.disabled) {
     this.containertypeForm.get('status')?.enable();
   }
@@ -322,6 +342,7 @@ resetForm(): void {
     this.containertypeForm.markAllAsTouched();
     this.containertypeForm.updateValueAndValidity();
     this.appSettingService.showWarning('Please fill all required fields correctly.');
+    resolve?.(false);
     return;
   } else {
     let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail']};
@@ -357,41 +378,67 @@ resetForm(): void {
 
     console.log('payload', payload);
 
+    this.isSaving = true;
     if (this.isEditMode) {
-      this.masterService.editContainerTypeById(this.ContainerTypeMasterSid, payload).subscribe(
+      this.masterService.editContainerTypeById(this.ContainerTypeMasterSid, payload)
+      .pipe(finalize(() => { this.isSaving = false; }))
+      .subscribe(
         (resp: any) => {
-          console.log(resp.message);
-          if(resp.status) {
-            this.appSettingService.showSuccess('ContainerType is successfully updated');
-            this.router.navigate(['master/container-type/entry',resp.data.ContainerTypeMasterSid]);
-            if (this.ContainerTypeMasterSid) {
-          this.loadContainerData(this.ContainerTypeMasterSid);
-        }
-          } else {
-            this.appSettingService.showError(resp.message);
+          try {
+            console.log(resp.message);
+            if(resp.status) {
+              this.captureInitialState();
+              this.containertypeForm.markAsPristine();
+              this.containertypeForm.markAsUntouched();
+              this.appSettingService.showSuccess('ContainerType is successfully updated');
+              this.router.navigate(['master/container-type/entry',resp.data.ContainerTypeMasterSid]);
+              if (this.ContainerTypeMasterSid) {
+                this.loadContainerData(this.ContainerTypeMasterSid);
+              }
+              resolve?.(true);
+            } else {
+              this.appSettingService.showError(resp.message);
+              resolve?.(false);
+            }
+          } catch (e) {
+            console.error('Post-save handling error:', e);
+            resolve?.(false);
           }
         },
         (error) => {
           this.errorMessage = error.message;
           console.error('Error loading:', error);
+          resolve?.(false);
         }
       );
     } else {
-      this.masterService.addNewContainerType(payload).subscribe(
+      this.masterService.addNewContainerType(payload)
+      .pipe(finalize(() => { this.isSaving = false; }))
+      .subscribe(
         (resp: any) => {
-          console.log(resp);
-          if (resp.status) {
-            
-            this.loadContainerData(resp.data.ContainerTypeMasterSid);
-            this.appSettingService.showSuccess('New ContainerType is successfully created');
-            this.router.navigate(['master/container-type/entry',resp.data.ContainerTypeMasterSid]);
-          } else {
-            this.appSettingService.showError(resp.message);
+          try {
+            console.log(resp);
+            if (resp.status) {
+              this.captureInitialState();
+              this.containertypeForm.markAsPristine();
+              this.containertypeForm.markAsUntouched();
+              this.appSettingService.showSuccess('New ContainerType is successfully created');
+              this.router.navigate(['master/container-type/entry',resp.data.ContainerTypeMasterSid]);
+              this.loadContainerData(resp.data.ContainerTypeMasterSid);
+              resolve?.(true);
+            } else {
+              this.appSettingService.showError(resp.message);
+              resolve?.(false);
+            }
+          } catch (e) {
+            console.error('Post-save handling error:', e);
+            resolve?.(false);
           }
         },
         (error) => {
           this.errorMessage = error.message;
           console.error('Error loading:', error);
+          resolve?.(false);
         }
       );
     }
@@ -421,6 +468,7 @@ resetForm(): void {
       console.log('Patch Data:', patchData); // Debug log
       
       this.containertypeForm.patchValue(patchData);
+      this.captureInitialState();
     },
     (error) => {
       this.appSettingService.showError('Error loading container data.');
@@ -501,6 +549,7 @@ openAuditLogs(modal: TemplateRef<any>) {
   // If editing an existing record, reload it from server to restore original values
   if (this.isEditMode && this.ContainerTypeMasterSid) {
     this.loadContainerData(this.ContainerTypeMasterSid);
+    this.captureInitialState();
     return;
   }
 
@@ -531,6 +580,7 @@ openAuditLogs(modal: TemplateRef<any>) {
 
   // reset button state if you use it
   this.btnDisable = false;
+  this.captureInitialState();
 }
 
 
@@ -623,8 +673,65 @@ openDocRef() {
     modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
     modalRef.componentInstance.DocumentSid = this.ContainerTypeMasterSid;
   }
-ngOnDestroy(): void {
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
+
+  private subscribeToFormChanges(): void {
+    this.containertypeForm.valueChanges
+      .pipe(takeUntil(this.destroy$), debounceTime(300))
+      .subscribe(() => {
+        this.isDirty = !this.deepEqual(
+          this.initialFormValue,
+          this.containertypeForm.getRawValue()
+        );
+      });
+  }
+
+  private captureInitialState(): void {
+    this.initialFormValue = this.containertypeForm.getRawValue();
+    this.isDirty = false;
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString();
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) return Number(value);
+    if (typeof value === 'number') return Number(value.toFixed(6));
+    if (Array.isArray(value)) return value.map((v) => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.commonService.clearDocumentData()
- }
+  }
 }
 

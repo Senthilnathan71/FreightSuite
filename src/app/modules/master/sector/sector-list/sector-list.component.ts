@@ -35,6 +35,7 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
 @Component({
   selector: 'app-sector',
   standalone: true,
@@ -105,6 +106,9 @@ export class SectorComponent extends BaseListComponent implements OnInit {
   MenuMasterSid: any;
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
+  isSectorDirty: boolean = false;
+  isSectorSaving: boolean = false;
+  private initialSectorFormValue: any = null;
   
 
   tableLoading = false;
@@ -549,6 +553,14 @@ export class SectorComponent extends BaseListComponent implements OnInit {
         this.sectorForm.get('RegionCode')?.setValue(null);
       }
     });
+
+    this.sectorForm.valueChanges.subscribe(() => {
+      if (!this.initialSectorFormValue) return;
+      this.isSectorDirty = !this.deepEqual(
+        this.initialSectorFormValue,
+        this.sectorForm.getRawValue()
+      );
+    });
   }
 
   private alphaNumericValidator(): ValidatorFn {
@@ -593,7 +605,14 @@ export class SectorComponent extends BaseListComponent implements OnInit {
     this.isEditMode = false;
     this.resetForm();
     this.sectorForm.get('status')?.disable();
-    this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+    this.setSectorFormInitialValue();
+    this.modalRef = this.modalService.open(content, {
+      centered: true,
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false,
+      beforeDismiss: () => this.canCloseSectorModal()
+    });
   }
 
   editSector(id: number, content: TemplateRef<any>) {
@@ -608,7 +627,8 @@ export class SectorComponent extends BaseListComponent implements OnInit {
     centered: true, 
     size: 'lg', 
     backdrop: 'static',
-    keyboard: false 
+    keyboard: false,
+    beforeDismiss: () => this.canCloseSectorModal()
   });
 
   // 3. DISABLE FORM
@@ -637,6 +657,7 @@ export class SectorComponent extends BaseListComponent implements OnInit {
 
       // 5. ENABLE FORM
       this.sectorForm.enable();
+      this.setSectorFormInitialValue();
 
       // Optional: Re-disable unique ID field if it shouldn't be editable
       // this.sectorForm.get('sectorCode')?.disable(); 
@@ -653,8 +674,9 @@ export class SectorComponent extends BaseListComponent implements OnInit {
 
 
   closeModal(): void {
-    if (this.modalRef) {
+    if (this.modalRef && typeof this.modalRef.close === 'function') {
       this.modalRef.close();
+      this.modalRef = null!;
     }
   }
 
@@ -673,12 +695,23 @@ export class SectorComponent extends BaseListComponent implements OnInit {
   }
 
   onSubmit() {
+    if (this.isSectorSaving) return;
+    if (this.sectorForm.get('status')?.disabled) {
+      this.sectorForm.get('status')?.enable();
+    }
     if (this.sectorForm.invalid) {
       this.sectorForm.markAllAsTouched();
       this.sectorForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all required fields correctly.');
       return;
+    }
+
+    if (!this.isSectorDirty) {
+      this.appSettingService.showWarning('No changes to save.');
+      return;
     } else {
+      this.btnDisable = true;
+      this.isSectorSaving = true;
       let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
       let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       const formValue = this.sectorForm.value;
@@ -701,14 +734,19 @@ export class SectorComponent extends BaseListComponent implements OnInit {
             console.log(resp.message);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
+              this.setSectorFormInitialValue();
               this.closeModal();
               // this.loadSectors();
               this.searchSector();
             } else {
               this.appSettingService.showError(resp.message);
             }
+            this.btnDisable = false;
+            this.isSectorSaving = false;
           },
           (error) => {
+            this.btnDisable = false;
+            this.isSectorSaving = false;
             this.errorMessage = error.message;
             console.error('Error loading:', error);
           }
@@ -719,14 +757,19 @@ export class SectorComponent extends BaseListComponent implements OnInit {
             console.log(resp);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
+              this.setSectorFormInitialValue();
               this.closeModal();
               // this.loadSectors();
               this.searchSector();
             } else {
               this.appSettingService.showError(resp.message);
             }
+            this.btnDisable = false;
+            this.isSectorSaving = false;
           },
           (error) => {
+            this.btnDisable = false;
+            this.isSectorSaving = false;
             this.errorMessage = error.message;
             console.error('Error loading:', error);
           }
@@ -836,6 +879,51 @@ export class SectorComponent extends BaseListComponent implements OnInit {
 
     // Clear any stored data
     this.sectorData = null;
+  }
+
+  private setSectorFormInitialValue(): void {
+    this.initialSectorFormValue = this.sectorForm.getRawValue();
+    this.isSectorDirty = false;
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString();
+    if (Array.isArray(value)) return value.map((v) => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
+
+  canCloseSectorModal(): boolean | Promise<boolean> {
+    if (this.isSectorSaving) return false;
+    if (!this.isSectorDirty) return true;
+
+    const modalRef = this.modalService.open(UnsavedChangesDialogComponent, {
+      centered: true,
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    return modalRef.result
+      .then((action: UnsavedChangesAction) => action === 'discard')
+      .catch(() => false);
+  }
+
+  async closeSectorModal(): Promise<void> {
+    const canClose = await Promise.resolve(this.canCloseSectorModal());
+    if (!canClose) return;
+    this.modalRef?.close();
   }
 
   // report(): void {

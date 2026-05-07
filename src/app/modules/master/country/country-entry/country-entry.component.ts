@@ -1,4 +1,4 @@
-import { Component, effect, OnInit, TemplateRef } from '@angular/core';
+import { Component, effect, HostListener, OnDestroy, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidatorFn } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
@@ -23,6 +23,8 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { Subject, debounceTime, takeUntil } from 'rxjs';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 @Component({
   selector: 'app-country-entry',
@@ -40,7 +42,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
   templateUrl: './country-entry.component.html',
   styleUrls: ['./country-entry.component.scss']
 })
-export class CountryEntryComponent implements OnInit {
+export class CountryEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   countryForm: FormGroup;
   isEditMode = false;
   btnDisable = false;
@@ -54,6 +56,10 @@ export class CountryEntryComponent implements OnInit {
   currentCompany: any;
   currentBranch: any; 
   MenuMasterSid: any;
+  isDirty: boolean = false;
+  isSaving: boolean = false;
+  private initialFormValue: any = null;
+  private destroy$ = new Subject<void>();
 
   statusMap: { [key: string]: string } = {
     A: 'Active',
@@ -127,6 +133,8 @@ export class CountryEntryComponent implements OnInit {
       this.userData = userProfile;
     
     }
+    this.initialFormValue = this.countryForm.getRawValue();
+    this.subscribeToFormChanges();
   }
 
  
@@ -190,6 +198,10 @@ export class CountryEntryComponent implements OnInit {
           status: country.status || 'A'
         });
         this.countryForm.get('status')?.enable();
+        this.countryForm.markAsPristine();
+        this.countryForm.markAsUntouched();
+        this.initialFormValue = this.countryForm.getRawValue();
+        this.isDirty = false;
       },
       error: (err) => {
         console.error('Error loading country:', err);
@@ -198,16 +210,26 @@ export class CountryEntryComponent implements OnInit {
     });
   }
 
-  onSubmit() {
+  onSubmit(resolve?: (value: boolean) => void) {
     if (this.countryForm.invalid) {
       this.markFormGroupTouched(this.countryForm);
       this.appSettingService.showWarning('Please fill all required fields correctly.');
+      if (resolve) resolve(false);
       return;
     }
 
+    const raw = this.countryForm.getRawValue();
+    if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      this.countryForm.markAsUntouched();
+      if (resolve) resolve(false);
+      return;
+    }
+
+    this.isSaving = true;
     this.btnDisable = true;
 
-    const formValue = this.countryForm.value;
+    const formValue = raw;
     const createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
     const updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
 
@@ -225,18 +247,27 @@ export class CountryEntryComponent implements OnInit {
 
     operation.subscribe({
       next: (resp: any) => {
+        this.isSaving = false;
         this.btnDisable = false;
         if (resp.status) {
           this.appSettingService.showSuccess(resp.message);
+          this.initialFormValue = this.countryForm.getRawValue();
+          this.isDirty = false;
+          this.countryForm.markAsPristine();
+          this.countryForm.markAsUntouched();
+          if (resolve) resolve(true);
         } else {
           this.appSettingService.showError(resp.message);
+          if (resolve) resolve(false);
         }
       },
       error: (err) => {
+        this.isSaving = false;
         this.btnDisable = false;
         const errorMessage = err.error?.message ||
           `Error ${this.isEditMode ? 'updating' : 'creating'} country`;
         this.appSettingService.showError(errorMessage);
+        if (resolve) resolve(false);
       }
     });
   }
@@ -318,6 +349,10 @@ export class CountryEntryComponent implements OnInit {
         status: 'A'
       });
       this.countryForm.get('status')?.disable();
+      this.initialFormValue = this.countryForm.getRawValue();
+      this.isDirty = false;
+      this.countryForm.markAsPristine();
+      this.countryForm.markAsUntouched();
     }
   }
 
@@ -419,7 +454,58 @@ openDocRef() {
     modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
     modalRef.componentInstance.DocumentSid = this.countryId;
   }
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
+
+  private subscribeToFormChanges(): void {
+    this.countryForm.valueChanges
+      .pipe(takeUntil(this.destroy$), debounceTime(300))
+      .subscribe(() => {
+        this.isDirty = !this.deepEqual(this.initialFormValue, this.countryForm.getRawValue());
+      });
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString().split('T')[0];
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) return Number(value);
+    if (typeof value === 'number') return Number(value.toFixed(6));
+    if (Array.isArray(value)) return value.map(v => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
+  }
+
  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.commonService.clearDocumentData()
 }
 

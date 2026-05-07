@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, TemplateRef } from '@angular/core';
+import { Component, HostListener, OnDestroy, TemplateRef } from '@angular/core';
 import { FormBuilder,FormGroup,Validators,ReactiveFormsModule, FormsModule, ValidationErrors, AbstractControl, ValidatorFn,} from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
@@ -25,6 +25,8 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { getDefaultTodayDate } from 'src/app/common/helper';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { debounceTime, Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-year-entry',
@@ -50,7 +52,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
       { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
     ],
 })
-export class YearEntryComponent {
+export class YearEntryComponent implements HasUnsavedChanges, OnDestroy {
   yearForm!: FormGroup;
   isEditMode = false; // Flag for edit mode
   errorMessage: string = '';  // To store any error messages
@@ -74,6 +76,10 @@ export class YearEntryComponent {
   currentCompany: any;
   currentBranch: any;
   isCreatingPeriods = false;
+  isDirty: boolean = false;
+  isSaving: boolean = false;
+  private initialFormValue: any = null;
+  private destroy$ = new Subject<void>();
 
   auditLogs: any[] = []; // Stores audit logs
     auditLogModalRef!: NgbModalRef;
@@ -102,9 +108,13 @@ export class YearEntryComponent {
     this.getAllCompanies();
     this.loadYear();
     this.initForm();
-      this.yearForm.valueChanges.subscribe(() => {
-    this.btnDisable = !this.yearForm.valid;
-  });
+    this.initialFormValue = this.yearForm.getRawValue();
+    this.subscribeToFormChanges();
+    this.yearForm.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.btnDisable = !this.yearForm.valid;
+      });
     this.route.paramMap.subscribe(params => {
       this.YearMasterSid = +params.get('YearMasterSid');
       if(this.YearMasterSid){
@@ -198,9 +208,24 @@ calculateEndDate(startDate: any): any {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid ?? null,
       status: 'Active'
     });
+    this.initialFormValue = this.yearForm.getRawValue();
+    this.isDirty = false;
+    this.yearForm.markAsPristine();
   }
 
-  onSubmit() {
+  onSubmit(resolve?: (value: boolean) => void) {
+    if (this.isSaving) {
+      if (resolve) resolve(false);
+      return;
+    }
+
+    if (this.deepEqual(this.yearForm.getRawValue(), this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      this.yearForm.markAsUntouched();
+      if (resolve) resolve(false);
+      return;
+    }
+
     if (this.yearForm.get('status')?.disabled) {
       this.yearForm.get('status')?.enable();
     }
@@ -208,6 +233,7 @@ calculateEndDate(startDate: any): any {
       this.yearForm.markAllAsTouched();
       this.yearForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all required fields correctly.');
+      if (resolve) resolve(false);
       return;
     } else {
       let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail']};
@@ -234,37 +260,54 @@ calculateEndDate(startDate: any): any {
       };
 
       console.log('payload', payload);
+      this.isSaving = true;
 
       if (this.isEditMode) {
         this.masterService.updateYearById(this.YearMasterSid, payload).subscribe(
           (resp: any) => {
+            this.isSaving = false;
             console.log(resp.message);
             if(resp.status) {
+              this.isDirty = false;
+              this.initialFormValue = this.yearForm.getRawValue();
+              this.yearForm.markAsPristine();
               this.appSettingService.showSuccess(resp.message|| 'Saved Successfully!');
               this.router.navigate(['master/year/list']);
+              if (resolve) resolve(true);
             } else {
               this.appSettingService.showError(resp.message);
+              if (resolve) resolve(false);
             }
           },
           (error) => {
+            this.isSaving = false;
             this.errorMessage = error.message;
             console.error('Error loading:', error);
+            if (resolve) resolve(false);
           }
         );
       } else {
         this.masterService.createNewYear(payload).subscribe(
           (resp: any) => {
+            this.isSaving = false;
             console.log(resp);
             if (resp.status) {
+              this.isDirty = false;
+              this.initialFormValue = this.yearForm.getRawValue();
+              this.yearForm.markAsPristine();
               this.appSettingService.showSuccess(resp.message);
               this.router.navigate(['master/year/list']);
+              if (resolve) resolve(true);
             } else {
               this.appSettingService.showError(resp.message);
+              if (resolve) resolve(false);
             }
           },
           (error) => {
+            this.isSaving = false;
             this.errorMessage = error.message;
             console.error('Error loading:', error);
+            if (resolve) resolve(false);
           }
         );
       }
@@ -360,6 +403,9 @@ calculateEndDate(startDate: any): any {
       );
       this.yearForm.get('CompanyMasterSid')?.disable();
       this.yearData = data;
+      this.initialFormValue = this.yearForm.getRawValue();
+      this.isDirty = false;
+      this.yearForm.markAsPristine();
       },
       (error) => {
         this.appSettingService.showError('Error loading year data.');
@@ -541,10 +587,6 @@ calculateEndDate(startDate: any): any {
     modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
     modalRef.componentInstance.DocumentSid = this.YearMasterSid;
   }
-  ngOnDestroy(): void {
-    this.commonService.clearDocumentData()
- }
-
   reset() {
   // If editing, reload the original record from server to restore original values
   if (this.isEditMode && this.YearMasterSid) {
@@ -578,6 +620,9 @@ calculateEndDate(startDate: any): any {
 
   // Disable save button until form becomes valid again
   this.btnDisable = true;
+  this.initialFormValue = this.yearForm.getRawValue();
+  this.isDirty = false;
+  this.yearForm.markAsPristine();
 }
 dateRangeValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
   const startDate = control.get('StartDate')?.value;
@@ -599,4 +644,57 @@ dateRangeValidator: ValidatorFn = (control: AbstractControl): ValidationErrors |
 nagivateTocreateYear() {
     this.router.navigate(['master/year/entry'])
   }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return !!this.yearForm && this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
+
+  private subscribeToFormChanges(): void {
+    this.yearForm.valueChanges
+      .pipe(debounceTime(300), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.isDirty = !this.deepEqual(this.initialFormValue, this.yearForm.getRawValue());
+      });
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString().split('T')[0];
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) return Number(value);
+    if (typeof value === 'number') return Number(value.toFixed(6));
+    if (Array.isArray(value)) return value.map(v => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value).sort().reduce((acc: any, key) => {
+        acc[key] = this.normalizeValue(value[key]);
+        return acc;
+      }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.commonService.clearDocumentData();
+ }
 }

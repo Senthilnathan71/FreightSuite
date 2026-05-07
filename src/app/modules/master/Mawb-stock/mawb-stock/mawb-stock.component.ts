@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -18,9 +18,10 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { getDefaultTodayDate } from 'src/app/common/helper';
-import { catchError, of } from 'rxjs';
+import { catchError, debounceTime, of, Subject, takeUntil } from 'rxjs';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 @Component({
   selector: 'app-mawb-stock',
   standalone: true,
@@ -39,7 +40,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
       { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
     ],
 })
-export class MawbStockComponent implements OnInit{
+export class MawbStockComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   mawbForm!: FormGroup;
     isEditMode = false;
     MawbStockSid: number | null = null;
@@ -72,6 +73,10 @@ export class MawbStockComponent implements OnInit{
     currentBranch:any;
     MenuMasterSid: any;
     private readonly duplicatePrefixMessage = 'Airline No already exists for this company and branch.';
+    isDirty: boolean = false;
+    isSaving: boolean = false;
+    private initialFormValue: any = null;
+    private destroy$ = new Subject<void>();
   constructor(  
     private fb: FormBuilder,
       private masterService: MasterService,
@@ -99,6 +104,8 @@ export class MawbStockComponent implements OnInit{
       }
     });
       this.initForm();
+      this.initialFormValue = this.mawbForm.getRawValue();
+      this.subscribeToFormChanges();
       this.loadUserData();
     this.loadCustomersByType();
     
@@ -124,6 +131,76 @@ export class MawbStockComponent implements OnInit{
       }
     });
     }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
+
+  private subscribeToFormChanges(): void {
+    this.mawbForm.valueChanges
+      .pipe(takeUntil(this.destroy$), debounceTime(300))
+      .subscribe(() => {
+        this.isDirty = !this.deepEqual(this.initialFormValue, this.mawbForm.getRawValue());
+      });
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) {
+      return null;
+    }
+
+    if (value instanceof Date) {
+      return value.toISOString().split('T')[0];
+    }
+
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+      return Number(value);
+    }
+
+    if (typeof value === 'number') {
+      return Number(value.toFixed(6));
+    }
+
+    if (Array.isArray(value)) {
+      return value.map(v => this.normalizeValue(v));
+    }
+
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
+  }
   loadCustomersByType(): void {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     
@@ -414,6 +491,8 @@ updateSaveButtonState(): void {
 
       this.originalStockStatus = mawbData.StockStatus;
       this.mawstockData = mawbData;
+      this.initialFormValue = this.mawbForm.getRawValue();
+      this.isDirty = false;
       this.updateSaveButtonState();
     },
     error => {
@@ -436,13 +515,30 @@ updateSaveButtonState(): void {
       };
     }
   
-    onSubmit(): void {
-       if (this.btnDisable) return; 
+    onSubmit(resolve?: (saved: boolean) => void): void {
+      const raw = this.mawbForm.getRawValue();
+      if (this.isEditMode && this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+        this.appSettingsService.showWarning('No changes to save');
+        this.mawbForm.markAsUntouched();
+        resolve?.(false);
+        return;
+      }
+
+       if (this.btnDisable) {
+        resolve?.(false);
+        return;
+       }
       if (this.mawbForm.invalid) {
         this.mawbForm.markAllAsTouched();
         this.appSettingsService.showWarning('Please fill all required fields correctly.');
+        resolve?.(false);
         return;
       }
+      if (this.isSaving) {
+        resolve?.(false);
+        return;
+      }
+      this.isSaving = true;
       this.btnDisable = true; 
   
       const payload = this.preparePayload();
@@ -450,40 +546,47 @@ updateSaveButtonState(): void {
       if (this.isEditMode && this.MawbStockSid) {
         this.masterService.updateMawbStockById(this.MawbStockSid, payload).subscribe(
           (resp: any) => {
-            this.handleResponse(resp);
+            this.handleResponse(resp, resolve);
           },
           (error: any) => {
-            this.handleError(error);
+            this.handleError(error, resolve);
           }
         );
       } else {
         this.masterService.createNewMawbStock(payload).subscribe(
           (resp: any) => {
-            this.handleResponse(resp);
+            this.handleResponse(resp, resolve);
           },
           (error: any) => {
-            this.handleError(error);
+            this.handleError(error, resolve);
           }
         );
       }
     }
   
-    handleResponse(resp: any): void {
+    handleResponse(resp: any, resolve?: (saved: boolean) => void): void {
+      this.isSaving = false;
       if (resp.status) {
+        this.isDirty = false;
+        this.initialFormValue = this.mawbForm.getRawValue();
         this.appSettingsService.showSuccess(resp.message);
+        resolve?.(true);
         this.router.navigate(['master/mawb-stock/list']);
       } else {
         this.applyServerValidation(resp.message);
         this.appSettingsService.showError(resp.message);
         this.btnDisable = false;
+        resolve?.(false);
       }
     }
   
-    handleError(error: any): void {
+    handleError(error: any, resolve?: (saved: boolean) => void): void {
+      this.isSaving = false;
       const message = error?.error?.message || error?.message || 'Something went wrong.';
       this.applyServerValidation(message);
       this.appSettingsService.showError(message);
       this.btnDisable = false;
+      resolve?.(false);
       console.error('Error:', error);
     }
 
@@ -538,6 +641,8 @@ updateSaveButtonState(): void {
           ReceivedDate: this.todayDate,
          
         });
+        this.initialFormValue = this.mawbForm.getRawValue();
+        this.isDirty = false;
        
       }
     }

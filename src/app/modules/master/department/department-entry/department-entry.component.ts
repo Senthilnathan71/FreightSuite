@@ -1,4 +1,4 @@
-import { Component, NgZone, TemplateRef } from '@angular/core';
+import { Component, HostListener, NgZone, OnDestroy, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
@@ -21,6 +21,7 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { forkJoin } from 'rxjs';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 interface IWindow extends Window {
   webkitSpeechRecognition: any;
 }
@@ -42,7 +43,7 @@ interface IWindow extends Window {
   templateUrl: './department-entry.component.html',
   styleUrl: './department-entry.component.scss'
 })
-export class DepartmentEntryComponent {
+export class DepartmentEntryComponent implements HasUnsavedChanges, OnDestroy {
   departmentForm!: FormGroup;
   isEditMode = false; // Flag for edit mode
   errorMessage: string = '';  // To store any error messages
@@ -70,6 +71,9 @@ export class DepartmentEntryComponent {
   MenuMasterSid: any;
   costCOAOptions: any[] = [];
   revenueCOAOptions: any[] = [];
+  isDirty: boolean = false;
+  isSaving: boolean = false;
+  private initialFormValue: any = null;
 
   constructor(
     private fb: FormBuilder,
@@ -222,6 +226,8 @@ export class DepartmentEntryComponent {
        this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
        this.mps.init().subscribe();
     this.initForm();
+    this.initialFormValue = this.departmentForm.getRawValue();
+    this.subscribeToFormChanges();
     this.getAllDivisions();
     this.loadAllCOAOptions();
     // Subscribe to route params and load lead if ID exists
@@ -287,16 +293,26 @@ hasAnyDropdownPermission(): boolean {
     });
   }
 
-  onSubmit() {
+  onSubmit(resolve?: (value: boolean) => void) {
 
   if (this.departmentForm.invalid) {
     this.departmentForm.markAllAsTouched();
     this.departmentForm.updateValueAndValidity();
     this.appSettingService.showWarning('Please fill all required fields correctly.');
+    if (resolve) resolve(false);
+    return;
+  }
+
+  const raw = this.departmentForm.getRawValue();
+  if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+    this.appSettingService.showWarning('No changes to save');
+    this.departmentForm.markAsUntouched();
+    if (resolve) resolve(false);
     return;
   }
 
   this.btnDisable = true;
+  this.isSaving = true;
 
   const userEmail = this.appSettingService.userSettingSource.value['userEmail'];
   const formValue = this.departmentForm.value;
@@ -333,19 +349,28 @@ hasAnyDropdownPermission(): boolean {
             
           );
         }
+        this.initialFormValue = this.departmentForm.getRawValue();
+        this.isDirty = false;
+        this.departmentForm.markAsPristine();
+        this.departmentForm.markAsUntouched();
+        if (resolve) resolve(true);
 
       } else {
         this.appSettingService.showError(resp.message);
         this.btnDisable = false;
+        if (resolve) resolve(false);
       }
     },
     error: (error) => {
       this.errorMessage = error.message;
       console.error(error);
       this.btnDisable = false;
+      this.isSaving = false;
+      if (resolve) resolve(false);
     },
     complete: () => {
       this.btnDisable = false;
+      this.isSaving = false;
     }
   });
 }
@@ -356,8 +381,6 @@ hasAnyDropdownPermission(): boolean {
     S: 'Suspended',
     
   };
-  lo
-
   getAllDivisions(){
      const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     this.masterService.getAllDivisions(CompanyMasterSid).subscribe(
@@ -377,11 +400,78 @@ hasAnyDropdownPermission(): boolean {
           Status: deptData.Status === 'A' ? 'Active' : 'Suspended'
         },
         );
+        this.initialFormValue = this.departmentForm.getRawValue();
+        this.isDirty = false;
+        this.departmentForm.markAsPristine();
+        this.departmentForm.markAsUntouched();
       },
       (error) => {
         this.appSettingService.showError('Error loading lead data.');
       }
     );
+  }
+
+  private subscribeToFormChanges() {
+    this.departmentForm.valueChanges.subscribe(() => {
+      this.isDirty = !this.deepEqual(
+        this.initialFormValue,
+        this.departmentForm.getRawValue()
+      );
+    });
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString().split('T')[0];
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+      return Number(value);
+    }
+    if (typeof value === 'number') return Number(value.toFixed(6));
+    if (Array.isArray(value)) return value.map(v => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    if (this.departmentForm.invalid) {
+      this.departmentForm.markAllAsTouched();
+      this.departmentForm.updateValueAndValidity();
+      this.appSettingService.showWarning('Please fill all required fields correctly.');
+      return false;
+    }
+
+    const raw = this.departmentForm.getRawValue();
+    if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      return false;
+    }
+
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
   }
 
 //  openAuditLogs(modal: TemplateRef<any>) {

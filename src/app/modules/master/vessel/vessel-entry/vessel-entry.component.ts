@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, TemplateRef } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -21,6 +21,8 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
     selector: 'app-vessel-entry',
@@ -39,7 +41,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
     templateUrl: './vessel-entry.component.html',
     styleUrl: './vessel-entry.component.scss'
 })
-export class VesselEntryComponent implements OnInit {
+export class VesselEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
 
     vesselForm !: FormGroup;
     VesselMasterSid: number;
@@ -58,6 +60,10 @@ export class VesselEntryComponent implements OnInit {
     TandCList: any;
     auditLogs: any[] = []; // Stores audit logs
     auditLogModalRef!: NgbModalRef;
+    isDirty: boolean = false;
+    isSaving: boolean = false;
+    private initialFormValue: any = null;
+    private destroy$ = new Subject<void>();
     constructor(
          public mps : MenuPermissionService, 
         private masterServ: MasterService,
@@ -77,6 +83,8 @@ export class VesselEntryComponent implements OnInit {
         this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
         this.mps.init().subscribe();
         this.initForm();
+        this.subscribeToFormChanges();
+        this.initialFormValue = this.vesselForm.getRawValue();
 
         this.currRoute.paramMap.subscribe(
             (param) => {
@@ -136,7 +144,9 @@ export class VesselEntryComponent implements OnInit {
                 this.vesselForm.patchValue({
                     ...vesselData,
                     status: vesselData.status === 'A' ? "Active" : "Suspended"
-                })
+                });
+                this.initialFormValue = this.vesselForm.getRawValue();
+                this.isDirty = false;
             },
             (error) => {
                 this.appSettingService.showError(`Error Loading Vessel `, error)
@@ -148,44 +158,71 @@ export class VesselEntryComponent implements OnInit {
         history.back();
     }
 
-    onSave() {
+    onSave(resolve?: (value: boolean) => void) {
+        if (this.isSaving) {
+            resolve?.(false);
+            return;
+        }
+
+        const raw = this.vesselForm.getRawValue();
+        if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+            this.appSettingService.showWarning('No changes to save');
+            this.vesselForm.markAsUntouched();
+            resolve?.(false);
+            return;
+        }
+
         if (this.vesselForm.invalid) {
             this.vesselForm.markAllAsTouched();
             this.vesselForm.updateValueAndValidity();
             this.appSettingService.showWarning('Please fill out all the required fields');
+            resolve?.(false);
             return;
         } else {
             const formValue = this.vesselForm.value;
             const payload = this.coerceIntoRequiredFormat(formValue);
+            this.isSaving = true;
 
 
             if (this.isEditMode) {
                 this.masterServ.updateVesselById(this.VesselMasterSid, payload).subscribe(
                     (resp: any) => {
+                        this.isSaving = false;
                         if (resp.status) {
                             this.appSettingService.showSuccess(resp.message);
-
+                            this.isDirty = false;
+                            this.initialFormValue = this.vesselForm.getRawValue();
+                            resolve?.(true);
                             this.route.navigate(['/master/vessel/list']);
                         } else {
+                            resolve?.(false);
                             this.appSettingService.showError(resp.message)
                         }
                     },
                     (error) => {
+                        this.isSaving = false;
+                        resolve?.(false);
                         console.error('Error updating Vessel', error);
                     }
                 )
             } else {
                 this.masterServ.createVessel(payload).subscribe(
                     (resp: any) => {
+                        this.isSaving = false;
                         if (resp.status) {
                             this.appSettingService.showSuccess(resp.message);
-
+                            this.isDirty = false;
+                            this.initialFormValue = this.vesselForm.getRawValue();
+                            resolve?.(true);
                             this.route.navigate(['/master/vessel/list']);
                         } else {
+                            resolve?.(false);
                             this.appSettingService.showError(resp.message)
                         }
                     },
                     (error) => {
+                        this.isSaving = false;
+                        resolve?.(false);
                         console.error('Error Creating Vessel', error);
                     }
                 )
@@ -307,7 +344,9 @@ openDocRef() {
     modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
     modalRef.componentInstance.DocumentSid = this.VesselMasterSid;
   }
- ngOnDestroy(): void {
+ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.commonService.clearDocumentData()
  }
 
@@ -345,6 +384,8 @@ reset() {
 
   // Reset any additional state variables if needed
   this.vesselData = null;
+  this.initialFormValue = this.vesselForm.getRawValue();
+  this.isDirty = false;
 }
 //  openAuditLogs(modal: TemplateRef<any>) {
 //   if (!this.VesselMasterSid) return;
@@ -420,6 +461,67 @@ openAuditLogs(modal: TemplateRef<any>) {
 }
 navigateToCreateVessel() {
     this.route.navigate(['master/vessel/entry'])
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSave(resolve);
+    });
+  }
+
+  private subscribeToFormChanges(): void {
+    this.vesselForm.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.isDirty = !this.deepEqual(this.initialFormValue, this.vesselForm.getRawValue());
+      });
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) {
+      return null;
+    }
+
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+      return Number(value);
+    }
+
+    if (typeof value === 'number') {
+      return Number(value.toFixed(6));
+    }
+
+    if (Array.isArray(value)) {
+      return value.map((v) => this.normalizeValue(v));
+    }
+
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
   }
 
 }

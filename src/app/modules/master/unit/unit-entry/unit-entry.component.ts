@@ -1,9 +1,10 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, TemplateRef } from '@angular/core';
+import { Component, HostListener, OnDestroy, TemplateRef } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { FormsModule, FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { NgSelectConfig, NgSelectModule } from '@ng-select/ng-select';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+import { debounceTime, Subject, takeUntil } from 'rxjs';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from '../../master.service';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
@@ -21,6 +22,7 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 
 @Component({
@@ -41,10 +43,14 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
   templateUrl: './unit-entry.component.html',
   styleUrls: ['./unit-entry.component.scss']
 })
-export class UnitEntryComponent {
+export class UnitEntryComponent implements HasUnsavedChanges, OnDestroy {
   unitForm: FormGroup;
   isEditMode = false;
   btnDisable = false;
+  isDirty = false;
+  isSaving = false;
+  private initialFormValue: any = null;
+  private destroy$ = new Subject<void>();
   containerTypes: ContainerType[] = [];
   idParam: number;
   errorMessage: string;
@@ -116,6 +122,7 @@ export class UnitEntryComponent {
     this.btnDisable = status !== 'VALID';
   });
 
+    this.subscribeToFormChanges();
     this.route.paramMap.subscribe(params => {
       this.idParam = Number(params.get('id'));
       if (this.idParam) {
@@ -124,6 +131,7 @@ export class UnitEntryComponent {
         this.unitForm.get('status')?.enable();
       } else {
         this.unitForm.get('status')?.disable();
+        this.captureInitialFormValue();
       }
     });
   }
@@ -174,6 +182,7 @@ hasAnyDropdownPermission(): boolean {
           status: unit.status,
           Remarks: unit.Remarks
         });
+        this.captureInitialFormValue();
       },
       error: (error) => {
         this.errorMessage = error.message;
@@ -225,10 +234,72 @@ hasAnyDropdownPermission(): boolean {
     this.router.navigate(['master/unit/list']);
   }
 
-  onSubmit() {
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
+
+  private subscribeToFormChanges(): void {
+    this.unitForm.valueChanges
+      .pipe(takeUntil(this.destroy$), debounceTime(300))
+      .subscribe(() => {
+        if (!this.initialFormValue) return;
+        this.isDirty = !this.deepEqual(this.initialFormValue, this.unitForm.getRawValue());
+      });
+  }
+
+  private captureInitialFormValue(): void {
+    this.initialFormValue = this.unitForm.getRawValue();
+    this.isDirty = false;
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString().split('T')[0];
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) return Number(value);
+    if (typeof value === 'number') return Number(value.toFixed(6));
+    if (Array.isArray(value)) return value.map((v) => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
+
+  onSubmit(resolve?: (value: boolean) => void) {
+    const raw = this.unitForm.getRawValue();
+    if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      this.unitForm.markAsUntouched();
+      if (resolve) resolve(false);
+      return;
+    }
+
     if (this.unitForm.invalid) {
       this.unitForm.markAllAsTouched();
       this.appSettingService.showWarning('Please fill all required fields correctly.');
+      if (resolve) resolve(false);
       return;
     }
 
@@ -252,20 +323,28 @@ hasAnyDropdownPermission(): boolean {
       : this.masterService.createUnit(payload);
 
     this.btnDisable = true;
+    this.isSaving = true;
     apiCall.subscribe({
       next: (resp: any) => {
         this.btnDisable = false;
+        this.isSaving = false;
         if (resp.status) {
+          this.isDirty = false;
+          this.captureInitialFormValue();
           this.appSettingService.showSuccess(resp.message);
+          if (resolve) resolve(true);
           this.router.navigate(['master/unit/list']);
         } else {
+          if (resolve) resolve(false);
           this.appSettingService.showError(resp.message);
         }
       },
       error: (error) => {
         this.btnDisable = false;
+        this.isSaving = false;
         this.errorMessage = error.message;
         this.appSettingService.showError('Operation failed');
+        if (resolve) resolve(false);
       }
     });
   }
@@ -357,6 +436,8 @@ openDocRef() {
     modalRef.componentInstance.DocumentSid = this.idParam;
   }
  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.commonService.clearDocumentData()
  }
 //  openAuditLogs(modal: TemplateRef<any>) {

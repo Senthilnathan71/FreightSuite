@@ -1,7 +1,7 @@
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { Observable } from 'rxjs';
@@ -17,6 +17,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { PrintMasterService } from '../print-master.service';
 import { SettingsService } from 'src/app/modules/settings/settings.service';
+import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
 
 @Component({
     selector: 'app-print-master-list',
@@ -39,8 +40,11 @@ export class PrintMasterListComponent extends BaseListComponent implements OnIni
     form!: FormGroup;
     isEditMode = false;
     isSaving = false;
+    isDirty = false;
     currentRecord: any = null;
     menuList: any[] = [];
+    modalRef!: NgbModalRef;
+    private initialFormValue: any = null;
 
     readonly printMailOptions = [
         { value: 'Print', label: 'Print' },
@@ -120,6 +124,11 @@ export class PrintMasterListComponent extends BaseListComponent implements OnIni
             PrintMail: [null, Validators.required],
             Status: ['A']
         });
+
+        this.form.valueChanges.subscribe(() => {
+            if (!this.initialFormValue) return;
+            this.isDirty = !this.deepEqual(this.initialFormValue, this.form.getRawValue());
+        });
     }
 
     private loadMenuList(): void {
@@ -155,7 +164,14 @@ export class PrintMasterListComponent extends BaseListComponent implements OnIni
             this.form.get('Status')?.disable();
         }
 
-        this.modalService.open(this.content, { centered: true, size: 'md', backdrop: 'static' });
+        this.setInitialFormValue();
+        this.modalRef = this.modalService.open(this.content, {
+            centered: true,
+            size: 'md',
+            backdrop: 'static',
+            keyboard: false,
+            beforeDismiss: () => this.canCloseModal()
+        });
     }
 
     showInfo(): void {
@@ -167,9 +183,14 @@ export class PrintMasterListComponent extends BaseListComponent implements OnIni
     }
 
     onSave(modal: any): void {
+        if (this.isSaving) return;
         if (this.form.invalid) {
             this.form.markAllAsTouched();
             this.appSettingService.showWarning('Please fill all required fields.');
+            return;
+        }
+        if (!this.isDirty) {
+            this.appSettingService.showWarning('No changes to save.');
             return;
         }
 
@@ -189,6 +210,7 @@ export class PrintMasterListComponent extends BaseListComponent implements OnIni
                     this.isSaving = false;
                     if (resp.status) {
                         this.appSettingService.showSuccess(resp.message || 'Updated successfully.');
+                        this.setInitialFormValue();
                         modal.close();
                         this.search();
                     } else {
@@ -212,6 +234,7 @@ export class PrintMasterListComponent extends BaseListComponent implements OnIni
                     this.isSaving = false;
                     if (resp.status) {
                         this.appSettingService.showSuccess(resp.message || 'Created successfully.');
+                        this.setInitialFormValue();
                         modal.close();
                         this.search();
                     } else {
@@ -337,5 +360,44 @@ export class PrintMasterListComponent extends BaseListComponent implements OnIni
 
     override trackBy(_index: number, item: any): number {
         return item.PrintMasterSid;
+    }
+
+    private setInitialFormValue(): void {
+        this.initialFormValue = this.form.getRawValue();
+        this.isDirty = false;
+    }
+
+    private normalizeValue(value: any): any {
+        if (value === null || value === undefined) return null;
+        if (value instanceof Date) return value.toISOString();
+        if (Array.isArray(value)) return value.map((v) => this.normalizeValue(v));
+        if (typeof value === 'object') {
+            return Object.keys(value)
+                .sort()
+                .reduce((acc: any, key) => {
+                    acc[key] = this.normalizeValue(value[key]);
+                    return acc;
+                }, {});
+        }
+        return value;
+    }
+
+    private deepEqual(obj1: any, obj2: any): boolean {
+        return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+    }
+
+    canCloseModal(): boolean | Promise<boolean> {
+        if (this.isSaving) return false;
+        if (!this.isDirty) return true;
+
+        const unsavedModalRef = this.modalService.open(UnsavedChangesDialogComponent, {
+            centered: true,
+            backdrop: 'static',
+            keyboard: false
+        });
+
+        return unsavedModalRef.result
+            .then((action: UnsavedChangesAction) => action === 'discard')
+            .catch(() => false);
     }
 }

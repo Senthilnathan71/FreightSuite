@@ -55,6 +55,7 @@ import { Country } from 'src/app/modules/crm-mobile/Interfaces/country.interface
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DocReferenceComponent } from '../../operation/doc-reference/doc-reference.component';
+import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
 @Component({
   selector: 'app-tax-group-list',
   standalone: true,
@@ -137,6 +138,9 @@ export class TaxMasterComponent extends BaseListComponent implements OnInit {
   currentBranch: any;
   tableConfig: TableConfig;
   taxGroupResults: any[] = [];
+  isTaxMasterDirty: boolean = false;
+  isTaxMasterSaving: boolean = false;
+  private initialTaxMasterFormValue: any = null;
   taxCategoryOptions = [
     { id: 1, name: 'Inter' },
     { id: 2, name: 'Intra' }
@@ -189,7 +193,6 @@ export class TaxMasterComponent extends BaseListComponent implements OnInit {
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.MenuMasterSid = sessionStorage.getItem('currentMenuId');
     this.initForm();
-    this.taxGroupForm.valueChanges.subscribe(() => { });
     // this.loadTaxGroups();
     super.ngOnInit();
     this.initializeTableConfig();
@@ -504,6 +507,14 @@ viewTax(content: any, row: any) {
       CountryMasterSid: ['', Validators.required],
       InvoiceType: [null],
     });
+
+    this.taxGroupForm.valueChanges.subscribe(() => {
+      if (!this.initialTaxMasterFormValue) return;
+      this.isTaxMasterDirty = !this.deepEqual(
+        this.initialTaxMasterFormValue,
+        this.taxGroupForm.getRawValue()
+      );
+    });
   }
 
   
@@ -560,10 +571,13 @@ viewTax(content: any, row: any) {
   openModal(content: any): void {
     this.resetForm();
     this.isEditMode = false;
+    this.setTaxMasterFormInitialValue();
     this.modalRef = this.modalService.open(content, {
       centered: true,
       size: 'lg',
       backdrop: 'static',
+      keyboard: false,
+      beforeDismiss: () => this.canCloseTaxMasterModal()
     });
   }
 
@@ -591,11 +605,14 @@ viewTax(content: any, row: any) {
         next: (taxGroup: any) => {
           this.taxGroupData = taxGroup;
           this.patchTaxForm(taxGroup);
+          this.setTaxMasterFormInitialValue();
 
           this.modalRef = this.modalService.open(content, {
             centered: true,
             size: 'lg',
             backdrop: 'static',
+            keyboard: false,
+            beforeDismiss: () => this.canCloseTaxMasterModal()
           });
         },
         error: () => {
@@ -620,6 +637,7 @@ viewTax(content: any, row: any) {
   }
 
   onSubmit(): void {
+    if (this.isTaxMasterSaving) return;
     if (this.taxGroupForm.get('Status')?.disabled) {
       this.taxGroupForm.get('Status')?.enable();
     }
@@ -631,6 +649,13 @@ viewTax(content: any, row: any) {
       );
       return;
     }
+    if (!this.isTaxMasterDirty) {
+      this.appSettingService.showWarning('No changes to save.');
+      return;
+    }
+
+    this.isTaxMasterSaving = true;
+
     const formValue = this.taxGroupForm.value;
     const CreatedBy = {
       CreatedBy: this.appSettingService.userSettingSource.value['userEmail'],
@@ -660,12 +685,16 @@ viewTax(content: any, row: any) {
         (res: any) => {
           if (res.status) {
             this.appSettingService.showSuccess(res.message);
+            this.setTaxMasterFormInitialValue();
             this.closeModal();
+            this.searchTaxGroup();
           } else {
             this.appSettingService.showError(res.message);
           }
+          this.isTaxMasterSaving = false;
         },
         (error) => {
+          this.isTaxMasterSaving = false;
           this.errorMessage = error.message;
           console.error('Update failed:', error);
         }
@@ -675,12 +704,16 @@ viewTax(content: any, row: any) {
         (res: any) => {
           if (res.status) {
             this.appSettingService.showSuccess(res.message);
+            this.setTaxMasterFormInitialValue();
             this.closeModal();
+            this.searchTaxGroup();
           } else {
             this.appSettingService.showError(res.message);
           }
+          this.isTaxMasterSaving = false;
         },
         (error) => {
+          this.isTaxMasterSaving = false;
           this.errorMessage = error.message;
           console.error('Creation failed:', error);
         }
@@ -711,6 +744,45 @@ viewTax(content: any, row: any) {
     if (this.modalRef && typeof this.modalRef.close === 'function') {
       this.modalRef.close();
     }
+  }
+
+  private setTaxMasterFormInitialValue(): void {
+    this.initialTaxMasterFormValue = this.taxGroupForm.getRawValue();
+    this.isTaxMasterDirty = false;
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString();
+    if (Array.isArray(value)) return value.map((v) => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
+
+  canCloseTaxMasterModal(): boolean | Promise<boolean> {
+    if (this.isTaxMasterSaving) return false;
+    if (!this.isTaxMasterDirty) return true;
+
+    const modalRef = this.modalService.open(UnsavedChangesDialogComponent, {
+      centered: true,
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    return modalRef.result
+      .then((action: UnsavedChangesAction) => action === 'discard')
+      .catch(() => false);
   }
 
 

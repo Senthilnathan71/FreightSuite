@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
@@ -11,6 +11,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { MatDialog } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 interface TaxGroup {
   TaxGroupMasterSid?: number;
@@ -35,7 +36,7 @@ interface TaxGroup {
   templateUrl: './tax-group.component.html',
   styles: ``
 })
-export class TaxGroupComponent implements OnInit {
+export class TaxGroupComponent implements OnInit, HasUnsavedChanges {
 
   statusOptions = [
     { id: 'A', name: 'Active' },
@@ -226,116 +227,132 @@ export class TaxGroupComponent implements OnInit {
   }
 
   // Save method following ledger mapping pattern
-  saveChanges(): void {
-    const itemsToSave = this.taxGroups.filter(item => item.hasChanges);
+  saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (this.isSaving) {
+        resolve(false);
+        return;
+      }
 
-    if (itemsToSave.length === 0) {
-      this.appSettingService.showInfo('No changes to save');
-      return;
-    }
+      const itemsToSave = this.taxGroups.filter(item => item.hasChanges);
 
-    this.isSaving = true;
-    this.spinner.show();
+      if (itemsToSave.length === 0) {
+        this.appSettingService.showInfo('No changes to save');
+        resolve(true);
+        return;
+      }
 
-    // Separate new records and updates
-    const newTaxGroups = itemsToSave.filter(group => !group.TaxGroupMasterSid);
-    const updatedTaxGroups = itemsToSave.filter(group => group.TaxGroupMasterSid);
+      this.isSaving = true;
+      this.spinner.show();
 
-    let completedOperations = 0;
-    const totalOperations = newTaxGroups.length + updatedTaxGroups.length;
-    let hasError = false;
+      // Separate new records and updates
+      const newTaxGroups = itemsToSave.filter(group => !group.TaxGroupMasterSid);
+      const updatedTaxGroups = itemsToSave.filter(group => group.TaxGroupMasterSid);
 
-    // Validate all groups before saving
-    const invalidGroups = itemsToSave.filter(group =>
-      !group.name || group.name.trim() === '' || group.taxPercent === null
-    );
+      let completedOperations = 0;
+      const totalOperations = newTaxGroups.length + updatedTaxGroups.length;
+      let hasError = false;
 
-    if (invalidGroups.length > 0) {
-      this.isSaving = false;
-      this.spinner.hide();
-      this.appSettingService.showWarning('Please fill all tax groups with name and tax percentage');
-      return;
-    }
+      // Validate all groups before saving
+      const invalidGroups = itemsToSave.filter(group =>
+        !group.name || group.name.trim() === '' || group.taxPercent === null
+      );
 
-    const invalidTaxPercent = itemsToSave.find(group =>
-      group.taxPercent! < 0 || group.taxPercent! > 100
-    );
+      if (invalidGroups.length > 0) {
+        this.isSaving = false;
+        this.spinner.hide();
+        this.appSettingService.showWarning('Please fill all tax groups with name and tax percentage');
+        resolve(false);
+        return;
+      }
 
-    if (invalidTaxPercent) {
-      this.isSaving = false;
-      this.spinner.hide();
-      this.appSettingService.showWarning('Tax percentage must be between 0 and 100');
-      return;
-    }
+      const invalidTaxPercent = itemsToSave.find(group =>
+        group.taxPercent! < 0 || group.taxPercent! > 100
+      );
 
-    // Create new tax groups
-    newTaxGroups.forEach(group => {
-      const payload = {
-        TaxGroup: group.name.trim(),
-        TaxRate: group.taxPercent,
-        Status: group.status,
-        CreatedBy: this.userData?.userEmail || this.appSettingService.userSettingSource.value['userEmail'] || 'system'
-      };
+      if (invalidTaxPercent) {
+        this.isSaving = false;
+        this.spinner.hide();
+        this.appSettingService.showWarning('Tax percentage must be between 0 and 100');
+        resolve(false);
+        return;
+      }
 
-      this.masterService.createNewTaxGroup(payload).subscribe({
-        next: (response: any) => {
-          completedOperations++;
-          if (response.status) {
-            console.log('Tax group created successfully:', response);
-          } else {
+      // Create new tax groups
+      newTaxGroups.forEach(group => {
+        const payload = {
+          TaxGroup: group.name.trim(),
+          TaxRate: group.taxPercent,
+          Status: group.status,
+          CreatedBy: this.userData?.userEmail || this.appSettingService.userSettingSource.value['userEmail'] || 'system'
+        };
+
+        this.masterService.createNewTaxGroup(payload).subscribe({
+          next: (response: any) => {
+            completedOperations++;
+            if (response.status) {
+              console.log('Tax group created successfully:', response);
+            } else {
+              hasError = true;
+              this.appSettingService.showError(`Error creating tax group "${group.name}": ${response.message}`);
+            }
+            this.checkSaveCompletion(completedOperations, totalOperations, hasError, resolve);
+          },
+          error: (error) => {
+            completedOperations++;
             hasError = true;
-            this.appSettingService.showError(`Error creating tax group "${group.name}": ${response.message}`);
+            console.error('Error creating tax group:', error);
+            this.appSettingService.showError(`Error creating tax group "${group.name}"`);
+            this.checkSaveCompletion(completedOperations, totalOperations, hasError, resolve);
           }
-          this.checkSaveCompletion(completedOperations, totalOperations, hasError);
-        },
-        error: (error) => {
-          completedOperations++;
-          hasError = true;
-          console.error('Error creating tax group:', error);
-          this.appSettingService.showError(`Error creating tax group "${group.name}"`);
-          this.checkSaveCompletion(completedOperations, totalOperations, hasError);
-        }
+        });
       });
-    });
 
-    // Update existing tax groups
-    updatedTaxGroups.forEach(group => {
-      const payload = {
-        TaxGroup: group.name.trim(),
-        TaxRate: group.taxPercent,
-        Status: group.status,
-        UpdatedBy: this.userData?.userEmail || this.appSettingService.userSettingSource.value['userEmail'] || 'system'
-      };
+      // Update existing tax groups
+      updatedTaxGroups.forEach(group => {
+        const payload = {
+          TaxGroup: group.name.trim(),
+          TaxRate: group.taxPercent,
+          Status: group.status,
+          UpdatedBy: this.userData?.userEmail || this.appSettingService.userSettingSource.value['userEmail'] || 'system'
+        };
 
-      this.masterService.updateTaxGroupById(group.TaxGroupMasterSid!, payload).subscribe({
-        next: (response: any) => {
-          completedOperations++;
-          if (response.status) {
-            console.log('Tax group updated successfully:', response);
-          } else {
+        this.masterService.updateTaxGroupById(group.TaxGroupMasterSid!, payload).subscribe({
+          next: (response: any) => {
+            completedOperations++;
+            if (response.status) {
+              console.log('Tax group updated successfully:', response);
+            } else {
+              hasError = true;
+              this.appSettingService.showError(`Error updating tax group "${group.name}": ${response.message}`);
+            }
+            this.checkSaveCompletion(completedOperations, totalOperations, hasError, resolve);
+          },
+          error: (error) => {
+            completedOperations++;
             hasError = true;
-            this.appSettingService.showError(`Error updating tax group "${group.name}": ${response.message}`);
+            console.error('Error updating tax group:', error);
+            this.appSettingService.showError(`Error updating tax group "${group.name}"`);
+            this.checkSaveCompletion(completedOperations, totalOperations, hasError, resolve);
           }
-          this.checkSaveCompletion(completedOperations, totalOperations, hasError);
-        },
-        error: (error) => {
-          completedOperations++;
-          hasError = true;
-          console.error('Error updating tax group:', error);
-          this.appSettingService.showError(`Error updating tax group "${group.name}"`);
-          this.checkSaveCompletion(completedOperations, totalOperations, hasError);
-        }
+        });
       });
-    });
 
-    // If no operations to perform
-    if (totalOperations === 0) {
-      this.isSaving = false;
-      this.spinner.hide();
-    }
+      // If no operations to perform
+      if (totalOperations === 0) {
+        this.isSaving = false;
+        this.spinner.hide();
+        resolve(true);
+      }
+    });
   }
 
-  private checkSaveCompletion(completed: number, total: number, hasError: boolean) {
+  private checkSaveCompletion(
+    completed: number,
+    total: number,
+    hasError: boolean,
+    resolve: (value: boolean) => void
+  ) {
     if (completed === total) {
       this.isSaving = false;
       this.spinner.hide();
@@ -345,13 +362,29 @@ export class TaxGroupComponent implements OnInit {
         // Clear changes flag and reload data
         this.taxGroups.forEach(item => item.hasChanges = false);
         this.loadTaxGroups();
+        resolve(true);
+        return;
       }
+
+      resolve(false);
     }
   }
 
   // Check if there are any changes (for button disable state)
   hasChanges(): boolean {
     return this.taxGroups.some(item => item.hasChanges);
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.hasChanges();
   }
 
   report() {

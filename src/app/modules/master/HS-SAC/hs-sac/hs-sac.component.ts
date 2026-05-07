@@ -42,6 +42,7 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
 @Component({
   selector: 'app-hs-sac',
   standalone: true,
@@ -105,6 +106,9 @@ export class HSSACComponent extends BaseListComponent implements OnInit {
   currentMenuId: number;
   TandCList: any;
   isLogLoading: boolean = false;
+  isHssacDirty: boolean = false;
+  isHssacSaving: boolean = false;
+  private initialHssacFormValue: any = null;
 
   loading = true;
   // Alias for compatibility with existing template
@@ -547,6 +551,13 @@ hasAnyDropdownPermission(): boolean {
     this.hssacForm.get('TaxType').valueChanges.subscribe(value => {
       this.onTaxTypeChange(value);
     });
+    this.hssacForm.valueChanges.subscribe(() => {
+      if (!this.initialHssacFormValue) return;
+      this.isHssacDirty = !this.deepEqual(
+        this.initialHssacFormValue,
+        this.hssacForm.getRawValue()
+      );
+    });
   }
 
 
@@ -639,7 +650,14 @@ hasAnyDropdownPermission(): boolean {
   openModal(content: any): void {
     this.isEditMode = false;
     this.resetForm();
-    this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+    this.setHssacFormInitialValue();
+    this.modalRef = this.modalService.open(content, {
+      centered: true,
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false,
+      beforeDismiss: () => this.canCloseHssacModal()
+    });
   }
 
   openEditModal(content: any, id: number): void {
@@ -661,7 +679,8 @@ editHssac(id: number, content: TemplateRef<any>) {
     centered: true, 
     size: 'lg', 
     backdrop: 'static',
-    keyboard: false 
+    keyboard: false,
+    beforeDismiss: () => this.canCloseHssacModal()
   });
 
   // 3. DISABLE FORM
@@ -694,6 +713,7 @@ editHssac(id: number, content: TemplateRef<any>) {
 
       // 5. UNLOCK UI
       this.hssacForm.enable();
+      this.setHssacFormInitialValue();
     },
     error: (err) => {
       // 6. ROLLBACK
@@ -730,6 +750,7 @@ editHssac(id: number, content: TemplateRef<any>) {
           Remarks: hssac.Remarks,
           status: hssac.status === 'A' ? 'Active' : 'Suspended'
         });
+        this.setHssacFormInitialValue();
       },
       (error) => {
         this.appSettingService.showError('Error loading');
@@ -738,6 +759,7 @@ editHssac(id: number, content: TemplateRef<any>) {
   }
 
   onSubmit() {
+    if (this.isHssacSaving) return;
     if (this.btnDisable) return;
     if (this.hssacForm.get('status')?.disabled) {
       this.hssacForm.get('status')?.enable();
@@ -747,8 +769,14 @@ editHssac(id: number, content: TemplateRef<any>) {
       this.hssacForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all required fields correctly.');
       return;
+    }
+
+    if (!this.isHssacDirty) {
+      this.appSettingService.showWarning('No changes to save.');
+      return;
     } else {
       this.btnDisable = true;
+      this.isHssacSaving = true;
       let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
       let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       const formValue = this.hssacForm.value;
@@ -775,6 +803,7 @@ editHssac(id: number, content: TemplateRef<any>) {
             console.log(resp.message);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message|| 'Saved Successfully!');
+              this.setHssacFormInitialValue();
               this.closeModal();
               this.router.navigate(['master/hs-sac']);
               this.loadHssacs()
@@ -782,11 +811,13 @@ editHssac(id: number, content: TemplateRef<any>) {
               this.appSettingService.showError(resp.message);
             }
             this.btnDisable = false;
+            this.isHssacSaving = false;
           },
           (error) => {
             this.errorMessage = error.message;
             console.error('Error loading:', error);
             this.btnDisable = false;
+            this.isHssacSaving = false;
           }
         );
       } else {
@@ -795,6 +826,7 @@ editHssac(id: number, content: TemplateRef<any>) {
             console.log(resp);
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
+              this.setHssacFormInitialValue();
               this.closeModal();
               this.router.navigate(['master/hs-sac']);
               this.loadHssacs()
@@ -802,11 +834,13 @@ editHssac(id: number, content: TemplateRef<any>) {
               this.appSettingService.showError(resp.message);
             }
             this.btnDisable = false;
+            this.isHssacSaving = false;
           },
           (error) => {
             this.errorMessage = error.message;
             console.error('Error loading:', error);
             this.btnDisable = false;
+            this.isHssacSaving = false;
           }
         );
       }
@@ -826,6 +860,7 @@ editHssac(id: number, content: TemplateRef<any>) {
           status: data.status === 'A' ? 'Active' : 'Suspended'
         },
         );
+        this.setHssacFormInitialValue();
       },
       (error) => {
         this.appSettingService.showError('Error loading data.');
@@ -1033,5 +1068,44 @@ editHssac(id: number, content: TemplateRef<any>) {
         console.error('Error fetching audit logs:', err)
       }
     });
+  }
+
+  private setHssacFormInitialValue(): void {
+    this.initialHssacFormValue = this.hssacForm.getRawValue();
+    this.isHssacDirty = false;
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString();
+    if (Array.isArray(value)) return value.map((v) => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
+
+  canCloseHssacModal(): boolean | Promise<boolean> {
+    if (this.isHssacSaving) return false;
+    if (!this.isHssacDirty) return true;
+
+    const modalRef = this.modalService.open(UnsavedChangesDialogComponent, {
+      centered: true,
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    return modalRef.result
+      .then((action: UnsavedChangesAction) => action === 'discard')
+      .catch(() => false);
   }
 }
