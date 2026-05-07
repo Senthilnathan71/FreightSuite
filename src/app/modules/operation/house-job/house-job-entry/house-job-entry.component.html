@@ -3367,7 +3367,12 @@
 
     <div class="workspace-content" *ngIf="selectedTab === 'Edoc'">
       <app-edoc [dataItems]="edocData" screenName="houseJob" [resetTrigger]="edocResetTrigger"
-        [formData]="currentEdocFormValue" (dataEmitter)="handleEdocChange($event)">
+        [formData]="currentEdocFormValue"
+        [companyMasterSid]="currentCompany?.CompanyMasterSid"
+        [branchMasterSid]="currentBranch?.BranchMasterSid"
+        [menuMasterSid]="currentMenuId"
+        [documentSid]="HouseJobSid || housejobData?.HouseJobSid"
+        (dataEmitter)="handleEdocChange($event)">
       </app-edoc>
     </div>
   </div>
