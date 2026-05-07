@@ -276,16 +276,27 @@
               <aside class="col-md-3">
                 <div class="d-flex align-items-end gap-1">
                   <div class="custom-form-group w-100">
-                    <input
-                      type="text"
-                      id="ReversalVoucherNumber"
-                      formControlName="ReversalVoucherNumber"
-                      class="custom-input-field sm"
-                      [readonly]="
-                        isEditMode ||
-                        creditNoteForm.get('ReversalVoucher')?.value
-                      "
-                    />
+                    @if ((isEditMode || isViewMode) && creditNoteForm.get('ReversalVoucher')?.value) {
+                      <a
+                        id="ReversalVoucherNumber"
+                        class="custom-input-field sm d-flex align-items-center text-primary text-decoration-underline cursor-pointer"
+                        (click)="navigateToReversalInvoice()"
+                        title="Open Invoice"
+                      >
+                        {{ creditNoteForm.get('ReversalVoucherNumber')?.getRawValue() }}
+                      </a>
+                    } @else {
+                      <input
+                        type="text"
+                        id="ReversalVoucherNumber"
+                        formControlName="ReversalVoucherNumber"
+                        class="custom-input-field sm"
+                        [readonly]="
+                          isEditMode ||
+                          creditNoteForm.get('ReversalVoucher')?.value
+                        "
+                      />
+                    }
                     <label for="ReversalVoucherNumber" class="input-label">
                       Invoice No. <span class="text-danger">*</span>
                     </label>
@@ -1113,6 +1124,15 @@
 
                           <!-- MasterJobSid column -->
                           <td style="min-width: 200px">
+                            @if (isEditMode) {
+                            <a
+                              class="text-decoration-underline"
+                              style="cursor: pointer"
+                              (click)="navigateToDetailMasterJob(i)"
+                            >
+                              {{ getMasterJobNumber(row.get('MasterJobSid')?.value) }}
+                            </a>
+                            } @else {
                             <dofi-searchable-dropdown
                               [items]="masterJobList"
                               formControlName="MasterJobSid"
@@ -1131,10 +1151,20 @@
                               appendTo="body"
                             >
                             </dofi-searchable-dropdown>
+                            }
                           </td>
 
                           <!-- HouseJobSid -->
                           <td style="min-width: 200px">
+                            @if (isEditMode) {
+                            <a
+                              class="text-decoration-underline"
+                              style="cursor: pointer"
+                              (click)="navigateToDetailHouseJob(i)"
+                            >
+                              {{ getHouseJobNumberByRow(i) }}
+                            </a>
+                            } @else {
                             <ng-select
                               [items]="houseJobList[i] || []"
                               bindLabel="HBLNo"
@@ -1157,6 +1187,7 @@
                                 {{ item.HBLNo }}
                               </ng-template>
                             </ng-select>
+                            }
                           </td>
                           <!-- Department Column -->
                           <td style="min-width: 200px">
