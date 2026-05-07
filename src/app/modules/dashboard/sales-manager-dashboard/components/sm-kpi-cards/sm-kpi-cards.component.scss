@@ -40,7 +40,7 @@
   min-height: 120px;
   padding: 10px 12px 10px;
   display: grid;
-  grid-template-rows: 36px 26px minmax(26px, 1fr) 6px;
+  grid-template-rows: 38px 34px minmax(26px, 1fr) 6px;
   align-content: start;
   border: 1px solid $sm-border;
   border-radius: 12px;
@@ -111,7 +111,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 0;
+  margin-bottom: 4px;
 }
 
 .kpi-icon {
@@ -166,6 +166,7 @@
   position: relative;
   z-index: 1;
   align-self: end;
+  margin-top: 0;
   font-size: 26px;
   font-weight: 700;
   line-height: 1;
