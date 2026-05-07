@@ -165,6 +165,7 @@ export class BookingEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   isSaving : boolean = false;
   lastCreditValidationMessage: string = '';
   isDirty: boolean = false;
+  private hasSubscribedToFormChanges: boolean = false;
   private initialFormValue: any = null;
   showPrintLogo: boolean = false;
   showPdfLogo: boolean = true;
@@ -343,9 +344,12 @@ export class BookingEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   productForm !: FormGroup;
   croForm !: FormGroup;
   countryOfCompany: string;
+  private readonly productCalculationOverrides = new WeakMap<FormGroup, { volumeManual: boolean; volumetricManual: boolean }>();
   private readonly productValidationConfig: ValidationMessageConfig = {
     labels: {
       ProductName: 'Commodity',
+      ShippingBillNo: 'Shipping Bill No',
+      ShippingBillDate: 'Shipping Bill Date',
       ExternaPkg: 'External Package',
       ExternlQty: 'External Quantity',
       GrossWeight: 'Gross Weight',
@@ -353,6 +357,13 @@ export class BookingEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
       Volume: 'CBM',
       Volumetric: 'Volumetric Weight',
       UomMasterSid: 'UOM',
+      CargoRecDate: 'Cargo Received Date',
+      Length: 'Length',
+      Width: 'Width',
+      Height: 'Height',
+      ImcoClass: 'Imco Class',
+      UnNo: 'UN No',
+      PkgGroup: 'Pkg Group',
     },
     messages: {
       required: (label: string) => `${label} is required.`,
@@ -676,6 +687,8 @@ get visibleTabs() {
       this.loadCargoLookups();
       this.loadProductLookups();
       this.loadOtherLookups();
+      this.captureInitialFormState();
+      this.subscribeToFormChanges();
 
       this.bookingForm.get('IncoTerms')?.valueChanges.subscribe((incoTerm) => {
         this.autoSetFreightTerms(incoTerm);
@@ -785,6 +798,11 @@ async saveChanges(): Promise<boolean> {
 }
 
 subscribeToFormChanges() {
+  if (this.hasSubscribedToFormChanges) {
+    return;
+  }
+  this.hasSubscribedToFormChanges = true;
+
   // Subscribe to booking form changes
   this.bookingForm.valueChanges
     .pipe(takeUntil(this.destroy$), debounceTime(300))
@@ -845,8 +863,6 @@ subscribeToFormChanges() {
 
 
   isFormDirty(): boolean {
-  if (!this.isEditMode) return false;
-
   return this.isDirty;
 }
   /**
@@ -922,7 +938,7 @@ subscribeToFormChanges() {
       VoyageNo: [ null],
       ETA: [null],
       ETD: [null],
-      CutOffDate: [{ value: null, disabled: true }],
+      PortCutoffDate: [null],
       POO: [null],
       POL: [null, [Validators.required]],
       POD: [null, [Validators.required]],
@@ -1115,14 +1131,18 @@ private calculateCBM() {
     return;
   }
 
+  if (this.isProductFieldManuallyManaged(this.productForm, 'Volume')) {
+    return;
+  }
+
   const externlQty = this.parseFloatSafe(this.productForm.get('ExternlQty')?.value);
   const length = this.parseFloatSafe(this.productForm.get('Length')?.value);
   const width = this.parseFloatSafe(this.productForm.get('Width')?.value);
   const height = this.parseFloatSafe(this.productForm.get('Height')?.value);
   const uomMasterSid = this.productForm.get('UomMasterSid')?.value;
   
-  // Calculate immediately if we have at least some values
-  if (externlQty >= 0 && length >= 0 && width >= 0 && height >= 0 && uomMasterSid) {
+  // Calculate only when the full dimensional inputs are present.
+  if (externlQty > 0 && length > 0 && width > 0 && height > 0 && uomMasterSid) {
     // const cbm = this.volumetricAndCbmCalculationService.calculateCBM(externlQty, length, width, height, uomMasterSid);
     let cbm = this.volumetricAndCbmCalculationService.calculateCBM(
       externlQty, length, width, height, uomMasterSid, this.digitsAfterDecimal
@@ -1149,14 +1169,17 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
      if (this.isPatching) {
       return;
     }
+    if (this.isProductFieldManuallyManaged(productForm, 'Volumetric')) {
+      return;
+    }
     const externlQty = Number(productForm.get('ExternlQty')?.value) || 0;
     const length = Number(productForm.get('Length')?.value) || 0;
     const width = Number(productForm.get('Width')?.value) || 0;
     const height = Number(productForm.get('Height')?.value) || 0;
     const uomMasterSid = productForm.get('UomMasterSid')?.value;
     
-    // Calculate if we have at least one dimension and quantity
-    if (externlQty > 0 && (length > 0 || width > 0 || height > 0) && uomMasterSid) {
+    // Calculate only when the full dimensional set is available.
+    if (externlQty > 0 && length > 0 && width > 0 && height > 0 && uomMasterSid) {
       let volumetric = this.volumetricAndCbmCalculationService.calculateVolumetric(
         externlQty, length, width, height, uomMasterSid, 
         this.selectedFCLLCL as 'LCL' | 'AIR', 
@@ -1384,10 +1407,39 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       if (this.isPatching) {
         return;
       }
+      if (field === 'Volume' || field === 'Volumetric') {
+        this.markProductFieldManualOverride(productForm, field as 'Volume' | 'Volumetric');
+      }
       const targetCargoIndex = this.getCargoIndexForProductForm(productForm);
       this.handleProductRelatedCalculation(targetCargoIndex);
     });
   });
+}
+
+private getProductCalculationOverrideState(productForm: FormGroup): { volumeManual: boolean; volumetricManual: boolean } {
+  let state = this.productCalculationOverrides.get(productForm);
+  if (!state) {
+    state = { volumeManual: false, volumetricManual: false };
+    this.productCalculationOverrides.set(productForm, state);
+  }
+  return state;
+}
+
+private markProductFieldManualOverride(productForm: FormGroup, field: 'Volume' | 'Volumetric'): void {
+  const state = this.getProductCalculationOverrideState(productForm);
+  const value = productForm.get(field)?.value;
+  const isManual = value !== null && value !== undefined && value !== '';
+
+  if (field === 'Volume') {
+    state.volumeManual = isManual;
+  } else {
+    state.volumetricManual = isManual;
+  }
+}
+
+private isProductFieldManuallyManaged(productForm: FormGroup, field: 'Volume' | 'Volumetric'): boolean {
+  const state = this.getProductCalculationOverrideState(productForm);
+  return field === 'Volume' ? state.volumeManual : state.volumetricManual;
 }
 
 private resolvePackageTypeSid(value: any): number | null {
@@ -1455,6 +1507,8 @@ private calculateProductFormCBMAndVolumetric(productForm: FormGroup) {
   if (!this.usesDimensionalCargoFields()) {
     return;
   }
+  const volumeManuallyManaged = this.isProductFieldManuallyManaged(productForm, 'Volume');
+  const volumetricManuallyManaged = this.isProductFieldManuallyManaged(productForm, 'Volumetric');
   const externlQty = this.parseFloatSafe(productForm.get('ExternlQty')?.value);
   const length = this.parseFloatSafe(productForm.get('Length')?.value);
   const width = this.parseFloatSafe(productForm.get('Width')?.value);
@@ -1462,7 +1516,7 @@ private calculateProductFormCBMAndVolumetric(productForm: FormGroup) {
   const uomMasterSid = productForm.get('UomMasterSid')?.value;
 
   // Calculate both CBM and Volumetric when UOM or dimensions change
-  if (externlQty >= 0 && length >= 0 && width >= 0 && height >= 0 && uomMasterSid) {
+  if (externlQty > 0 && length > 0 && width > 0 && height > 0 && uomMasterSid) {
     const { cbm, volumetric } = this.volumetricAndCbmCalculationService.calculateCBMAndVolumetric(
       externlQty, length, width, height, uomMasterSid,
       this.selectedFCLLCL as 'LCL' | 'AIR',
@@ -1470,16 +1524,24 @@ private calculateProductFormCBMAndVolumetric(productForm: FormGroup) {
     );
     
     // Update both fields
-    productForm.get('Volume')?.setValue(cbm > 0 ? cbm : '', { emitEvent: false });
-    productForm.get('Volumetric')?.setValue(volumetric > 0 ? volumetric : '', { emitEvent: false });
+    if (!volumeManuallyManaged) {
+      productForm.get('Volume')?.setValue(cbm > 0 ? cbm : '', { emitEvent: false });
+    }
+    if (!volumetricManuallyManaged) {
+      productForm.get('Volumetric')?.setValue(volumetric > 0 ? volumetric : '', { emitEvent: false });
+    }
     
      // Update the cargo row that owns this product.
      setTimeout(() => {
       this.handleProductRelatedCalculation(this.getCargoIndexForProductForm(productForm));
      }, 100);
   } else {
-    productForm.get('Volume')?.setValue('', { emitEvent: false });
-    productForm.get('Volumetric')?.setValue('', { emitEvent: false });
+    if (!volumeManuallyManaged) {
+      productForm.get('Volume')?.setValue('', { emitEvent: false });
+    }
+    if (!volumetricManuallyManaged) {
+      productForm.get('Volumetric')?.setValue('', { emitEvent: false });
+    }
   }
 }
 
@@ -1538,6 +1600,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     const formGroup = this.createBookingProductGroup();
     formGroup.get('UomMasterSid')?.setValue(2, { emitEvent: true });
     this.bookingProducts.push(formGroup);
+    this.bookingProducts.updateValueAndValidity({ emitEvent: false });
   }
 
   createBookingConnectionGroup(data?: any): FormGroup {
@@ -1696,6 +1759,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     this.destroy$.next();
     this.destroy$.complete();
     this.destroy$ = new Subject<void>();
+    this.hasSubscribedToFormChanges = false;
     this.operationService.getBookingById(BookingHeaderSid).subscribe(
       (resp: any) => {
         if (resp.status) {
@@ -1789,7 +1853,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       VoyageNo: response.VoyageNo,
       ETA: response.ETA ? new Date(response.ETA) : null,
       ETD: response.ETD ? new Date(response.ETD) : null,
-      CutOffDate: response.CutOffDate ? new Date(response.CutOffDate) : null,
+      PortCutoffDate: response.PortCutoffDate ? new Date(response.PortCutoffDate) : null,
       POO: response.POO,
       POL: response.POL,
       POD: response.POD,
@@ -2347,7 +2411,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   };
   this.b['ETA']?.setValue(cleanDate(this.b['ETA']?.value));
   this.b['ETD']?.setValue(cleanDate(this.b['ETD']?.value));
-  this.b['CutOffDate']?.setValue(cleanDate(this.b['CutOffDate']?.value));
+  this.b['PortCutoffDate']?.setValue(cleanDate(this.b['PortCutoffDate']?.value));
   // Update the form state
   this.errorLogger();
   this.bookingForm.updateValueAndValidity();
@@ -2552,7 +2616,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       VoyageNo: bookingFormValue.VoyageNo || null,
       ETA: bookingFormValue.ETA ? new Date(bookingFormValue.ETA) : null,
       ETD: bookingFormValue.ETD ? new Date(bookingFormValue.ETD) : null,
-      CutOffDate: bookingFormValue.CutOffDate ? new Date(bookingFormValue.CutOffDate) : null, 
+      PortCutoffDate: bookingFormValue.PortCutoffDate ? new Date(bookingFormValue.PortCutoffDate) : null, 
       POO: bookingFormValue.POO || null,
       POL: bookingFormValue.POL,  
       POD: bookingFormValue.POD,
@@ -2793,22 +2857,24 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         isValid = false;
       }
 
+      const cargoProducts = cargoGroup.get('bookingProducts') as FormArray;
       const grossWeight = Number(cargoGroup.get('GrossWeight')?.value) || 0;
       const volume = Number(cargoGroup.get('Volume')?.value) || 0;
-      if (grossWeight <= 0) {
-        errorMessages.push(`Cargo ${cargoIndex + 1}: Gross Weight is required`);
-        cargoGroup.get('GrossWeight')?.setErrors({ min: true });
-        setFirstInvalidTab('Cargo');
-        isValid = false;
-      }
-      if (volume <= 0 && cargoGroup.get('Volume')) {
-        errorMessages.push(`Cargo ${cargoIndex + 1}: CBM is required`);
-        cargoGroup.get('Volume')?.setErrors({ min: true });
-        setFirstInvalidTab('Cargo');
-        isValid = false;
+      if (cargoProducts.length === 0) {
+        if (grossWeight <= 0) {
+          errorMessages.push(`Cargo ${cargoIndex + 1}: Gross Weight is required`);
+          cargoGroup.get('GrossWeight')?.setErrors({ min: true });
+          setFirstInvalidTab('Cargo');
+          isValid = false;
+        }
+        if (volume <= 0 && cargoGroup.get('Volume')) {
+          errorMessages.push(`Cargo ${cargoIndex + 1}: CBM is required`);
+          cargoGroup.get('Volume')?.setErrors({ min: true });
+          setFirstInvalidTab('Cargo');
+          isValid = false;
+        }
       }
 
-      const cargoProducts = cargoGroup.get('bookingProducts') as FormArray;
       cargoProducts.controls.forEach((productGroup: FormGroup, productIndex: number) => {
         if (productGroup.invalid) {
           productGroup.markAllAsTouched();
@@ -2876,6 +2942,12 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
               } else {
                 errorMessages.push(`Product ${index + 1}: ${this.getFieldLabel(key)} is required`);
               }
+            } else if (control.errors['min']) {
+              errorMessages.push(`Product ${index + 1}: ${this.getFieldLabel(key)} must be greater than 0`);
+            } else if (control.errors['grossLessThanNet']) {
+              errorMessages.push(`Product ${index + 1}: Gross Weight cannot be less than Net Weight`);
+            } else if (control.errors['netGreaterThanGross']) {
+              errorMessages.push(`Product ${index + 1}: Net Weight cannot be greater than Gross Weight`);
             }
           }
         });
@@ -2890,35 +2962,6 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
         isValid = false;
       }
 
-      // ADD THIS: Check if weight fields are 0 (which shouldn't be allowed)
-      const grossWeight = Number(productGroup.get('GrossWeight')?.value) || 0;
-      const volume = Number(productGroup.get('Volume')?.value) || 0;
-
-      // For LCL and AIR: GrossWeight and NetWeight must be greater than 0
-      if (this.selectedFCLLCL === 'LCL' || this.selectedFCLLCL === 'AIR') {
-        if (grossWeight <= 0) {
-          errorMessages.push(`Product ${index + 1}: Gross Weight is required`);
-          productGroup.get('GrossWeight')?.setErrors({ min: true });
-          setFirstInvalidTab('Cargo');
-          isValid = false;
-        }
-      }
-
-      // For FCL: GrossWeight, NetWeight, and Volume must be greater than 0
-      if (this.selectedFCLLCL === 'FCL') {
-        if (grossWeight <= 0) {
-          errorMessages.push(`Product ${index + 1}: Gross Weight is required`);
-          productGroup.get('GrossWeight')?.setErrors({ min: true });
-          setFirstInvalidTab('Cargo');
-          isValid = false;
-        }
-        if (volume <= 0) {
-          errorMessages.push(`Product ${index + 1}: CBM is required`);
-          productGroup.get('Volume')?.setErrors({ min: true });
-          setFirstInvalidTab('Cargo');
-          isValid = false;
-        }
-      }
     });
   }
 
@@ -3006,7 +3049,7 @@ onCarrierChangeForAir(carrier: any): void {
       this.b['FPD'].setValue(null);
       this.b['ETA'].setValue('');
       this.b['ETD'].setValue('');
-      this.b['CutOffDate'].setValue('');
+      this.b['PortCutoffDate'].setValue('');
       this.b['MovementType'].setValue(null);
        this.b['JobType'].setValue('');
       this.updateCarrierValidation(null);
@@ -3532,7 +3575,7 @@ usesDimensionalCargoFields(): boolean {
     this.b['VoyageNo']?.setValue(null);
     this.b['ETA']?.setValue(null);
     this.b['ETD']?.setValue(null);
-    this.b['CutOffDate']?.setValue(null);
+    this.b['PortCutoffDate']?.setValue(null);
     if (!selectedPort) {
       this.refreshPortFilters();
       return;
@@ -3548,7 +3591,7 @@ usesDimensionalCargoFields(): boolean {
     this.b['VoyageNo']?.setValue(null);
     this.b['ETA']?.setValue(null);
     this.b['ETD']?.setValue(null);
-    this.b['CutOffDate']?.setValue(null);
+    this.b['PortCutoffDate']?.setValue(null);
     if (!selectedPort) {
       this.b['FPD']?.setValue(null);
       this.refreshPortFilters();
@@ -3753,7 +3796,7 @@ getVesselVoyBasedOnPorts() {
             ...vslVoy , 
             ETD : vslVoy.ETD ? new Date (vslVoy.ETD) : null,
             ETA : vslVoy.ETA ? new Date (vslVoy.ETA) : null,
-            CutOffDate: vslVoy.CutOffDate ? new Date (vslVoy.CutOffDate) : null,
+            PortCutoffDate: vslVoy.PortCutoffDate ? new Date (vslVoy.PortCutoffDate) : null,
         }));
         console.log('Header Vessel List updated:', this.headerVesselList.length, 'items');
         if (this.headerVesselList.length === 0 && !this.hasShownVesselWarning) {
@@ -5139,7 +5182,7 @@ getFormattedPort(code: string): string {
   private captureInitialFormState(): void {
     // Use a small timeout to ensure the form values are fully settled after patching.
     setTimeout(() => {
-      this.initialFormValue = JSON.stringify(this.getCurrentFormState());
+      this.initialFormValue = this.getCurrentFormState();
     }, 500);
   }
 
@@ -5202,8 +5245,6 @@ getFormattedPort(code: string): string {
 deepEqual(obj1: any, obj2: any): boolean {
   const normalizedObj1 = this.normalizeValue(obj1);
   const normalizedObj2 = this.normalizeValue(obj2);
-  console.log(normalizedObj1,'obj1');
-  console.log(normalizedObj2,'obj2');
   return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
 }
 
@@ -5327,7 +5368,7 @@ deepEqual(obj1: any, obj2: any): boolean {
     CarrierMasterSid: null,
     ETD: selectedVoyage?.ETD ? new Date(selectedVoyage.ETD) : (this.b['ETD']?.value ? new Date(this.b['ETD']?.value) : null),
     ETA: selectedVoyage?.ETA ? new Date(selectedVoyage.ETA) : (this.b['ETA']?.value ? new Date(this.b['ETA']?.value) : null),
-    CutOffDate: selectedVoyage?.PortCutoff ? new Date(selectedVoyage.PortCutoff) : (this.b['CutOffDate']?.value ? new Date(this.b['CutOffDate']?.value): null),
+    PortCutoffDate: selectedVoyage?.PortCutoff ? new Date(selectedVoyage.PortCutoff) : (this.b['PortCutoffDate']?.value ? new Date(this.b['PortCutoffDate']?.value): null),
     shipmentList: shipmentList,
     screenName : this.selectedDepartmentType === "AIR" ? "Master Air Waybill" : "Master Job",
     sourceScreen: 'Booking'
@@ -5418,7 +5459,7 @@ deepEqual(obj1: any, obj2: any): boolean {
 
   private shouldValidateBookingCargoGroup(cargoGroup: FormGroup): boolean {
     const cargoProducts = cargoGroup.get('bookingProducts') as FormArray | null;
-    return !!(cargoGroup.dirty || cargoProducts?.dirty);
+    return !!(cargoGroup.dirty || cargoProducts?.dirty || (cargoProducts?.length ?? 0) > 0);
   }
 
   private createCargoProductGroup(data?: any, isPatching: boolean = false): FormGroup {
@@ -5463,6 +5504,9 @@ deepEqual(obj1: any, obj2: any): boolean {
     this.cargoForm = cargoGroup;
     const products = cargoGroup.get('bookingProducts') as FormArray;
     products.push(this.createCargoProductGroup(data, true));
+    products.markAsDirty();
+    cargoGroup.markAsDirty();
+    cargoGroup.updateValueAndValidity({ emitEvent: false });
     this.handleProductRelatedCalculation(cargoIndex);
   }
 
@@ -6610,6 +6654,88 @@ exportARAPReport() {
 //     window.print();
 // }
 
+getBookingCostRevenueRows(): any[] {
+  const headerRates = Array.isArray(this.bookingHeader?.bookingRates) ? this.bookingHeader.bookingRates : [];
+  const dataRates = Array.isArray(this.bookingData?.bookingRates) ? this.bookingData.bookingRates : [];
+  const headerCharges = Array.isArray(this.bookingHeader?.costRevenueCharges) ? this.bookingHeader.costRevenueCharges : [];
+  const dataCharges = Array.isArray(this.bookingData?.costRevenueCharges) ? this.bookingData.costRevenueCharges : [];
+
+  if (headerRates.length) return headerRates;
+  if (dataRates.length) return dataRates;
+  if (headerCharges.length) return headerCharges;
+  return dataCharges;
+}
+
+getChargeUnitCode(chargeDataOrSid: any): string {
+  const sid = Number(
+    chargeDataOrSid?.ChargeUomSid ??
+    chargeDataOrSid
+  );
+
+  if (!sid) return '';
+
+  const uom = (this.uomList || []).find((item: any) => Number(item?.UOMMasterSid) === sid);
+  if (uom?.UOMCode || uom?.UOMName) {
+    return uom.UOMCode || uom.UOMName || '';
+  }
+
+  const pkgUom = (this.packageTypeList || []).find((item: any) => Number(item?.UOMMasterSid) === sid);
+  return pkgUom ? (pkgUom.UOMCode || pkgUom.UOMName || '') : '';
+}
+
+getChargeDisplayName(item: any): string {
+  return item?.ChargeDescription || item?.ChargeName || item?.chargeName || `Charge #${item?.ChargeMasterSid || ''}`;
+}
+
+getProRevenueAmount(item: any): number {
+  return Number(item?.RevenueLocalAmount) || 0;
+}
+
+getProCostAmount(item: any): number {
+  return Number(item?.CostLocalAmount) || 0;
+}
+
+getProGross(item: any): number {
+  return this.getProRevenueAmount(item) - this.getProCostAmount(item);
+}
+
+getActualRevenueAmount(item: any): number {
+  const hasRevenueVoucher = !!(item?.RevenueVoucherHeaderSid || item?.revenueVoucherHeader?.VoucherHeaderSid);
+  if (!hasRevenueVoucher) return 0;
+  return Number(
+    item?.RevenueLocalAmount ??
+    0
+  ) || 0;
+}
+
+getActualCostAmount(item: any): number {
+  const hasCostVoucher = !!(item?.CostVoucherHeaderSid || item?.costVoucherHeader?.VoucherHeaderSid);
+  if (!hasCostVoucher) return 0;
+  return Number(
+    item?.CostLocalAmount ??
+    0
+  ) || 0;
+}
+
+getActualGross(item: any): number {
+  return this.getActualRevenueAmount(item) - this.getActualCostAmount(item);
+}
+
+getBookingChargeTotals() {
+  const rows = this.getBookingCostRevenueRows();
+  return rows.reduce(
+    (acc: any, item: any) => {
+      acc.proRev += this.getProRevenueAmount(item);
+      acc.proCost += this.getProCostAmount(item);
+      acc.proGp += this.getProGross(item);
+      acc.actRev += this.getActualRevenueAmount(item);
+      acc.actCost += this.getActualCostAmount(item);
+      acc.actGp += this.getActualGross(item);
+      return acc;
+    },
+    { proRev: 0, proCost: 0, proGp: 0, actRev: 0, actCost: 0, actGp: 0 }
+  );
+}
 
 
 printDiv(divId: string): void {
@@ -6980,10 +7106,23 @@ getFieldLabel(fieldName: string): string {
     'IncoTerms': 'INCO Terms',
     
     // Cargo Form Fields
+    'ProductName': 'Commodity',
+    'ShippingBillNo': 'Shipping Bill No',
+    'ShippingBillDate': 'Shipping Bill Date',
     'ExternaPkg': 'External Package',
     'ExternlQty': 'External Quantity',
     'GrossWeight': 'Gross Weight',
+    'NetWeight': 'Net Weight',
+    'Volume': 'CBM',
     'Volumetric': 'Volumetric Weight',
+    'UomMasterSid': 'UOM',
+    'CargoRecDate': 'Cargo Received Date',
+    'Length': 'Length',
+    'Width': 'Width',
+    'Height': 'Height',
+    'ImcoClass': 'Imco Class',
+    'UnNo': 'UN No',
+    'PkgGroup': 'Pkg Group',
     
     // CRO Form Fields
     'ReleaseOrderDate': 'Release Order Date',
@@ -7006,6 +7145,47 @@ private getProductValidationMessage(): string {
   }
 
   return 'Please fill all required product fields correctly.';
+}
+
+public shouldShowProductFieldError(product: AbstractControl | null, fieldName: string): boolean {
+  const control = product?.get(fieldName);
+  return !!control && control.invalid && (control.touched || control.dirty);
+}
+
+public getProductFieldErrorMessage(product: AbstractControl | null, fieldName: string): string {
+  const control = product?.get(fieldName);
+
+  if (!control || !control.errors) {
+    return '';
+  }
+
+  const label = this.getFieldLabel(fieldName);
+
+  if (control.errors['required']) {
+    return `${label} is required`;
+  }
+
+  if (control.errors['min']) {
+    return `${label} must be greater than 0`;
+  }
+
+  if (control.errors['max']) {
+    return `${label} is too large`;
+  }
+
+  if (control.errors['decimalPrecision']) {
+    return `${label} has invalid decimal precision`;
+  }
+
+  if (control.errors['grossLessThanNet']) {
+    return 'Gross Weight cannot be less than Net Weight';
+  }
+
+  if (control.errors['netGreaterThanGross']) {
+    return 'Net Weight cannot be greater than Gross Weight';
+  }
+
+  return `${label} is invalid`;
 }
 
 get isTranshipmentMode(): boolean {
@@ -7315,7 +7495,7 @@ private prepareCopiedBookingData(): any {
     VoyageMasterSid: null,
     ETA: null,
     ETD: null,
-    CutOffDate: null,
+    PortCutoffDate: null,
     BookingDateTime: new Date(),
     DoValid: null,
     QuotationHeaderSid: null,

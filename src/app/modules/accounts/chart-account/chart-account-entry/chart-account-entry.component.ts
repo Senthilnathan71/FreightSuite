@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, TemplateRef, OnInit } from '@angular/core';
+import { Component, HostListener, TemplateRef, OnDestroy, OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -19,11 +19,13 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { AccountsService } from '../../accounts.service';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { errorLogger } from 'src/app/common/helper';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 @Component({
   selector: 'app-chart-account-entry',
@@ -32,7 +34,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
   templateUrl: './chart-account-entry.component.html',
   styleUrl: './chart-account-entry.component.scss',
 })
-export class ChartAccountEntryComponent implements OnInit {
+export class ChartAccountEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   chartForm!: FormGroup;
   chartData: any;
   isSubledgerRequired: boolean = false;
@@ -109,6 +111,10 @@ export class ChartAccountEntryComponent implements OnInit {
 
   auditLogs: any[] = [];
   auditLogModalRef!: NgbModalRef;
+  isDirty: boolean = false;
+  isSaving: boolean = false;
+  private initialFormValue: any = null;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private masterServ: MasterService,
@@ -149,6 +155,12 @@ export class ChartAccountEntryComponent implements OnInit {
     if (!this.isEditMode) {
       this.minEffectiveFromDate = this.toNgbDateStruct(this.todayDate);
     }
+
+    setTimeout(() => {
+      this.initialFormValue = this.chartForm.getRawValue();
+      this.isDirty = false;
+      this.subscribeToFormChanges();
+    }, 0);
   }
 
   initForm() {
@@ -363,6 +375,10 @@ export class ChartAccountEntryComponent implements OnInit {
           if (this.isEditMode && data.HSNRequire === 'Y') {
             this.chartForm.get('HSNRequire')?.disable({ emitEvent: false });
           }
+
+          this.initialFormValue = this.chartForm.getRawValue();
+          this.isDirty = false;
+          this.chartForm.markAsUntouched();
         }, 100);
       },
       (error) => {
@@ -371,15 +387,24 @@ export class ChartAccountEntryComponent implements OnInit {
     );
   }
 
-  onSubmit(): void {
+  onSubmit(resolve?: (saved: boolean) => void): void {
+    const raw = this.chartForm.getRawValue();
+    if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      this.chartForm.markAsUntouched();
+      if (resolve) resolve(false);
+      return;
+    }
+
     if (this.chartForm.invalid) {
         errorLogger(this.chartForm);
         this.chartForm.markAllAsTouched();
         this.appSettingService.showWarning('Please fill out all required fields correctly.');
+        if (resolve) resolve(false);
         return;
     }
 
-    const formValue = this.chartForm.getRawValue();
+    const formValue = raw;
     const mappedStatus = formValue.Status === 'Active' || formValue.Status === 'A' ? 'A' : 'S';
     const currentuseremail = this.appSettingService.userSettingSource.value['userEmail'];
 
@@ -395,10 +420,14 @@ export class ChartAccountEntryComponent implements OnInit {
     };
 
     if (this.isEditMode) {
+        this.isSaving = true;
         this.masterServ.updateCoaById(this.chartMasterSid, payload).subscribe(
             (resp: any) => {
+                this.isSaving = false;
                 if (resp.status) {
                     this.appSettingService.showSuccess("Chart Account Updated Successfully");
+                    this.isDirty = false;
+                    this.initialFormValue = this.chartForm.getRawValue();
                     const id = resp.data?.COAMasterSid;
                     if (id) {
                         this.route.navigate(['/accounts/chart-accounts/entry', id]);
@@ -409,12 +438,14 @@ export class ChartAccountEntryComponent implements OnInit {
                     }
 
                   //  this.route.navigate(['/accounts/chart-accounts/entry']);
-                    
+                    if (resolve) resolve(true);
                 } else {
                     this.appSettingService.showError(resp.message);
+                    if (resolve) resolve(false);
                 }
             },
             (error) => {
+                this.isSaving = false;
                 console.error('Error updating Chart Account', error);
                 // Show specific error message for linked records
                 if (error.error && error.error.message) {
@@ -422,13 +453,18 @@ export class ChartAccountEntryComponent implements OnInit {
                 } else {
                     this.appSettingService.showError('Error updating Chart Account');
                 }
+                if (resolve) resolve(false);
             }
         );
     } else {
+        this.isSaving = true;
         this.masterServ.createNewCoa(payload).subscribe(
             (resp: any) => {
+                this.isSaving = false;
                 if (resp.status) {
                     this.appSettingService.showSuccess(resp.message);
+                    this.isDirty = false;
+                    this.initialFormValue = this.chartForm.getRawValue();
                     const id = resp.data?.COAMasterSid;
                     if (id) {
                         this.route.navigate(['/accounts/chart-accounts/entry', id]);
@@ -440,17 +476,71 @@ export class ChartAccountEntryComponent implements OnInit {
 
                     
                     this.resetFormForNewEntry();
+                    if (resolve) resolve(true);
                 } else {
                     this.appSettingService.showError(resp.message);
+                    if (resolve) resolve(false);
                 }
             },
             (error) => {
+                this.isSaving = false;
                 console.error('Error creating Chart Account', error);
                 this.appSettingService.showError('Error creating Chart Account');
+                if (resolve) resolve(false);
             }
         );
     }
 }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
+
+  subscribeToFormChanges() {
+    this.chartForm.valueChanges
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.isDirty = !this.deepEqual(
+          this.initialFormValue,
+          this.chartForm.getRawValue()
+        );
+      });
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString().split('T')[0];
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) return Number(value);
+    if (typeof value === 'number') return Number(value.toFixed(6));
+    if (Array.isArray(value)) return value.map(v => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value).sort().reduce((acc: any, key) => {
+        acc[key] = this.normalizeValue(value[key]);
+        return acc;
+      }, {});
+    }
+    return value;
+  }
+
+  deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
+  }
 
   resetFormForNewEntry() {
     this.isEditMode = false;
@@ -633,6 +723,8 @@ openFollowup() {
   
 }
  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.commonService.clearDocumentData()
  }
 
@@ -675,6 +767,9 @@ openFollowup() {
     ledgerControl?.updateValueAndValidity();
 
     this.minEffectiveFromDate = this.toNgbDateStruct(this.todayDate);
+    this.initialFormValue = this.chartForm.getRawValue();
+    this.isDirty = false;
+    this.chartForm.markAsUntouched();
   }
 
   nagivateback() {

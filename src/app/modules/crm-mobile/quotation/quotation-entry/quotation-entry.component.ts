@@ -2,7 +2,7 @@
 
 
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, effect, ElementRef, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
+import { ChangeDetectorRef, Component, effect, ElementRef, HostListener, OnDestroy, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
 import {
   NgbAccordionModule,
   NgbCalendar,
@@ -69,6 +69,7 @@ import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log
 import { VoiceRecognitionService } from '../../enquiry/voice-recognition.service';
 import { VoiceParserService } from '../../enquiry/voice-parser.service';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -127,7 +128,7 @@ type Html2PdfOptions = {
   ],
 })
 
-export class QuotationEntryComponent implements OnInit {
+export class QuotationEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
 
   private subscription = new Subscription()
 
@@ -211,6 +212,9 @@ export class QuotationEntryComponent implements OnInit {
    showPrintLogo: boolean = false;
     showPdfLogo: boolean = true;
     isSaving: boolean = false;
+    isDirty: boolean = false;
+    isPatching: boolean = false;
+    private initialFormValue: any = null;
     isTermsAndConditionsEnabled: boolean = true;
     printTermsList: any[] = [];
 
@@ -469,6 +473,7 @@ dataFromEnqPage:any;
     );
 
     this.initQuotationForm(!hasSeedData);
+    this.subscribeToFormChanges();
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
       this.userData = userProfile;
@@ -548,6 +553,28 @@ dataFromEnqPage:any;
     
   }
 
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    if (!this.initialFormValue) {
+      return false;
+    }
+    this.isDirty = !this.deepEqual(this.initialFormValue, this.getCurrentFormState());
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
+
   private applyQuotationDisableRules(data: any): void {
   if (!this.isEditMode || !data) return;
 
@@ -601,6 +628,7 @@ dataFromEnqPage:any;
   }
 
   patchEnqPageValues(enqData: any): void {
+    this.isPatching = true;
     this.enquiryNumber = enqData?.EnquiryNumber;
     this.quoteRoutes.clear();
 
@@ -650,6 +678,8 @@ dataFromEnqPage:any;
     if (!routes.length) {
       this.quoteRoutes.updateValueAndValidity({ emitEvent: false });
       this.cdr.detectChanges();
+      this.isPatching = false;
+      this.resetUnsavedState();
       return;
     }
 
@@ -761,9 +791,12 @@ dataFromEnqPage:any;
 
     this.quoteRoutes.updateValueAndValidity({ emitEvent: false });
     this.cdr.detectChanges();
+    this.isPatching = false;
+    this.resetUnsavedState();
   }
 
   patchDashboardValues(data: any): void {
+    this.isPatching = true;
     this.quotationForm.patchValue(
       {
         LeadOrCustomer: true,
@@ -825,6 +858,8 @@ dataFromEnqPage:any;
           }
         });
     }
+    this.isPatching = false;
+    this.resetUnsavedState();
   }
 
     loadCityName(): void {
@@ -2270,6 +2305,7 @@ isRateLockDisabled(): boolean {
   }
 
   patchValues(response: any) {
+    this.isPatching = true;
     const parsedContact = this.parsePhone(response.ContactNumber);
     
     const selectedDept = this.departments.find(dept => dept.DepartmentMasterSid === response.DepartmentMasterSid);
@@ -2497,6 +2533,8 @@ isRateLockDisabled(): boolean {
 
 
     this.bookingCreatedAgainstThisQuotation = this.selectedItem.BookingHeaderSid;
+    this.isPatching = false;
+    this.resetUnsavedState();
   }
 
   private applyEditModeFieldLocks(): void {
@@ -2515,16 +2553,27 @@ isRateLockDisabled(): boolean {
     });
   }
 
-  onSubmit() {
+
+  onSubmit(resolve?: (saved: boolean) => void) {
      if (this.isSaving) {
+    if (resolve) resolve(false);
     return;
   }
+
+  const canLoginUserAuthorize = this.authorizerDetails.canAuthorize;
+  const hasApprovalAction = canLoginUserAuthorize && !!this.approvalDropdownValue;
+  if (this.isEditMode && !this.hasUnsavedChanges() && !hasApprovalAction) {
+    this.appSettingService.showWarning("No changes to save");
+    if (resolve) resolve(false);
+    return;
+  }
+
   this.isSaving = true;
 
-    const canLoginUserAuthorize = this.authorizerDetails.canAuthorize;
     if(canLoginUserAuthorize && !this.approvalDropdownValue){
       this.appSettingService.showWarning("Please select approval status");
       this.isSaving = false;
+      if (resolve) resolve(false);
       return;
     }
     let hasCarrierValidationErrors = false;
@@ -2555,6 +2604,7 @@ isRateLockDisabled(): boolean {
   if (hasCarrierValidationErrors) {
     this.selectedTab1 = 'Route Details';
     this.isSaving = false;
+    if (resolve) resolve(false);
     return;
   }
     if (this.hasInvalidRouteDetails()) {
@@ -2563,6 +2613,7 @@ isRateLockDisabled(): boolean {
       this.quoteRoutes.updateValueAndValidity();
       this.selectedTab1 = 'Route Details';
       this.isSaving = false;
+      if (resolve) resolve(false);
       return;
     }
 
@@ -2581,6 +2632,7 @@ isRateLockDisabled(): boolean {
       this.quotationForm.updateValueAndValidity();
       this.selectedTab1 = 'Quotation';
       this.isSaving = false;
+      if (resolve) resolve(false);
       return;
     }
 
@@ -2773,6 +2825,7 @@ isRateLockDisabled(): boolean {
           if (resp.status) {
             this.quotationForm.markAsPristine();
             this.quotationForm.markAsUntouched();
+            this.resetUnsavedState();
                       setTimeout(() => {
             disabledFieldsByRoute.forEach((disabledFields, routeIndex) => {
               if (disabledFields && disabledFields.length > 0) {
@@ -2822,10 +2875,16 @@ isRateLockDisabled(): boolean {
             // else {
             //   this.loadQuotation(this.QuoteHeaderSid);
             // }
+            if (resolve) resolve(true);
           } else {
             this.appSettingService.showError(resp.message);
+            if (resolve) resolve(false);
 
           }
+        },
+        () => {
+          this.isSaving = false;
+          if (resolve) resolve(false);
         }
       )
     } else {
@@ -2836,6 +2895,7 @@ isRateLockDisabled(): boolean {
           if (resp.status) {
             this.quotationForm.markAsPristine();
             this.quotationForm.markAsUntouched();
+            this.resetUnsavedState();
             this.appSettingService.showSuccess("Quotation Created Successfully");
             this.emailTriggerService.triggerEmails({
               companyId: this.currentCompany?.CompanyMasterSid,
@@ -2861,9 +2921,15 @@ isRateLockDisabled(): boolean {
             if(id){
               this.router.navigate(['crm/quotation/entry',id])
             }
+            if (resolve) resolve(true);
           } else {
             this.modalService.openErrorModal("Quotation Creation Failed");
+            if (resolve) resolve(false);
           }
+        },
+        () => {
+          this.isSaving = false;
+          if (resolve) resolve(false);
         }
       )
     }
@@ -6722,6 +6788,85 @@ getContainerTypeName(containerCode: string): string {
 
   }
 
+
+  private subscribeToFormChanges(): void {
+    this.subscription.add(
+      this.quotationForm.valueChanges
+        .pipe(debounceTime(300))
+        .subscribe(() => this.updateDirtyState())
+    );
+
+    this.resetUnsavedState();
+  }
+
+  private updateDirtyState(): void {
+    if (this.isPatching || this.isSaving || !this.initialFormValue) {
+      return;
+    }
+    this.isDirty = !this.deepEqual(this.initialFormValue, this.getCurrentFormState());
+  }
+
+  private resetUnsavedState(): void {
+    this.initialFormValue = this.getCurrentFormState();
+    this.isDirty = false;
+  }
+
+  private getCurrentFormState(): any {
+    return {
+      quotationForm: this.quotationForm?.getRawValue(),
+    };
+  }
+
+  private normalizeValue(value: any): any {
+
+  // Treat "", null, undefined as same
+  if (value === "" || value === null || value === undefined) {
+    return null;
+  }
+
+  // Normalize numbers: treat "0" and 0 same
+  if (typeof value === 'string' && !isNaN(Number(value))) {
+    value = Number(value);
+  }
+
+  // OPTIONAL: Treat null and 0 as same (enable only if business allows)
+  if (value === 0) {
+    return null;
+  }
+
+  // Trim strings (avoid "Dubhai " vs "Dubhai")
+  if (typeof value === 'string') {
+    return value.trim();
+  }
+
+  // Handle Date
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  // Handle Array
+  if (Array.isArray(value)) {
+    return value.map(v => this.normalizeValue(v));
+  }
+
+  // Handle Object
+  if (typeof value === 'object') {
+    const normalizedObj: any = {};
+    Object.keys(value)
+      .sort() // ensure consistent key order
+      .forEach(key => {
+        normalizedObj[key] = this.normalizeValue(value[key]);
+      });
+    return normalizedObj;
+  }
+
+  return value;
+}
+
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
 
   ngOnDestroy(): void {
     this.commonService.clearDocumentData()

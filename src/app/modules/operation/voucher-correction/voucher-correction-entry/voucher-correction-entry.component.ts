@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -25,12 +25,13 @@ import { CurrencyFormatService } from 'src/app/core/services/currency-format.ser
 import { toNgbDateStruct, getDefaultTodayDate, toNumber } from 'src/app/common/helper';
 import { consistentExchangeRatesValidator } from 'src/app/core/ValidationFn/exRateConsistency.validators';
 import { greaterThanZero } from 'src/app/core/ValidationFn/greaterThanZero.validators';
-import { forkJoin, catchError, of } from 'rxjs';
+import { Subject, debounceTime, forkJoin, catchError, of, takeUntil } from 'rxjs';
 import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { AccountsService } from 'src/app/modules/accounts/accounts.service';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { ReceiptService } from 'src/app/modules/accounts/services/receipt.service';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 @Component({
   selector: 'app-voucher-correction-entry',
@@ -59,7 +60,7 @@ import { ReceiptService } from 'src/app/modules/accounts/services/receipt.servic
     CustomDatePipe,
   ]
 })
-export class VoucherCorrectionEntryComponent implements OnInit {
+export class VoucherCorrectionEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   userData: any;
   selectedDocumentType: string = '';
   currUserEmail: string | null = null;
@@ -116,6 +117,10 @@ export class VoucherCorrectionEntryComponent implements OnInit {
   costCenterList: any[] = [];
   profitCenterList: any[] = [];
   isSaving: boolean = false;
+  isDirty: boolean = false;
+  private initialFormValue: any = null;
+  private destroy$ = new Subject<void>();
+  private isFormChangeSubscribed = false;
   uomList: any[] = [];
   paymentModes: { value: string; label: string }[] = [];
   departmentList: any[] = [];
@@ -270,9 +275,66 @@ export class VoucherCorrectionEntryComponent implements OnInit {
       if (id) {
         this.headerId = Number(id);
         this.loadVoucherById(this.headerId);
+      } else {
+        this.initialFormValue = this.voucherForm.getRawValue();
+        this.subscribeToFormChanges();
       }
     });
   }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
+
+  subscribeToFormChanges() {
+    if (this.isFormChangeSubscribed) return;
+    this.isFormChangeSubscribed = true;
+    this.voucherForm.valueChanges
+      .pipe(takeUntil(this.destroy$), debounceTime(300))
+      .subscribe(() => {
+        this.isDirty = !this.deepEqual(
+          this.initialFormValue,
+          this.voucherForm.getRawValue()
+        );
+      });
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString().split('T')[0];
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) return Number(value);
+    if (typeof value === 'number') return Number(value.toFixed(6));
+    if (Array.isArray(value)) return value.map(v => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value).sort().reduce((acc: any, key) => {
+        acc[key] = this.normalizeValue(value[key]);
+        return acc;
+      }, {});
+    }
+    return value;
+  }
+
+  deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
+  }
+
+
 
   isFieldInvalid(fieldName: string): boolean {
     const field = this.voucherForm.get(fieldName);
@@ -434,6 +496,9 @@ export class VoucherCorrectionEntryComponent implements OnInit {
           this.updateReceiptBankValidators();
           this.voucherForm.markAsUntouched();
           this.patchValues(this.voucherData);
+          this.initialFormValue = this.voucherForm.getRawValue();
+          this.isDirty = false;
+          this.subscribeToFormChanges();
         } else {
           this.spinner.hide();
           this.appSettingService.showError(resp.message);
@@ -598,7 +663,7 @@ export class VoucherCorrectionEntryComponent implements OnInit {
     return group;
   }
 
-  onSubmit() {
+  onSubmit(resolve?: (value: boolean) => void) {
     const raw = this.voucherForm.getRawValue();
     const fy = this.appSettingService.getCurrentFinancialYear();
     if (fy) {
@@ -609,6 +674,7 @@ export class VoucherCorrectionEntryComponent implements OnInit {
         this.appSettingService.showWarning(
           `Voucher date must be within the financial year (${fy.YearName})`
         );
+        if (resolve) resolve(false);
         return;
       }
     }
@@ -627,14 +693,23 @@ export class VoucherCorrectionEntryComponent implements OnInit {
             month: 'long',
           })} ${originalDate.getFullYear()}`
         );
+        if (resolve) resolve(false);
         return;
       }
+    }
+
+    if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      this.voucherForm.markAsUntouched();
+      if (resolve) resolve(false);
+      return;
     }
 
     if (this.voucherForm.invalid) {
       this.voucherForm.markAllAsTouched();
       this.voucherForm.updateValueAndValidity();
       this.appSettingService.showError('Please fill all the required fields.');
+      if (resolve) resolve(false);
       return;
     }
     const YearMasterSid = Number(localStorage.getItem('current-year-id'));
@@ -680,19 +755,28 @@ export class VoucherCorrectionEntryComponent implements OnInit {
         next: async (resp: any) => {
           this.isSaving = false;
           if (resp.status) {
+            this.isDirty = false;
+            if (resolve) resolve(true);
             this.loadVoucherById(this.headerId);
           } else {
             this.appSettingService.showError(resp.message);
+            if (resolve) resolve(false);
             this.spinner.hide();
           }
         },
         error: (error) => {
           this.appSettingService.showError('Failed to update invoice');
           this.isSaving = false;
+          if (resolve) resolve(false);
           this.spinner.hide();
         }
       })
+      return;
     }
+
+    this.isSaving = false;
+    this.spinner.hide();
+    if (resolve) resolve(false);
   }
 
   goBack() {
@@ -937,5 +1021,10 @@ get isJobBasedVendorInvoice(): boolean {
 
   return !!masterJobSid || !!houseJobSid;
 }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
 }

@@ -1,5 +1,11 @@
 $primary-blue: #05608d;
+$primary-blue-dark: #044a6d;
 $primary-blue-light: #0778b8;
+$border-radius-lg: 12px;
+
+@mixin gradient-primary {
+  background: linear-gradient(135deg, $primary-blue 0%, $primary-blue-light 100%);
+}
 
 .user-activity-config-page {
   padding: 1rem;
@@ -8,19 +14,95 @@ $primary-blue-light: #0778b8;
 }
 
 .page-header {
+  @include gradient-primary;
+  border-radius: $border-radius-lg;
+  padding: 4px;
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 70%
+    );
+    border-radius: 50%;
+    transform: translate(30%, -30%);
+  }
+
   .page-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #212529;
+    position: relative;
+    z-index: 1;
+    color: #fff;
+    // font-size: 1.25rem;
+    font-weight: 700;
     margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+
+    i {
+      opacity: 0.95;
+    }
+  }
+
+  .header-action {
+    position: relative;
+    z-index: 1;
+    border-color: rgba(255, 255, 255, 0.65);
+    color: #fff;
+
+    &:hover,
+    &:focus {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: #fff;
+      color: #fff;
+    }
   }
 }
 
 .branch-selector {
   .card {
-    border: 1px solid #dee2e6;
+    border: 1px solid #b8d7e7;
+    border-left: 4px solid $primary-blue;
     border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+    background: #f4fbff;
+    box-shadow: 0 2px 8px rgba(5, 96, 141, 0.12);
+  }
+
+  .card-body {
+    padding: 0.55rem 0.75rem;
+  }
+
+  .form-label {
+    color: $primary-blue-dark;
+    font-size: 0.9rem;
+  }
+
+  .btn-info {
+    min-width: 150px;
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(5, 96, 141, 0.18);
+  }
+
+  ng-select {
+    ::ng-deep {
+      .ng-select-container {
+        min-height: 32px;
+        border-color: #b8c8d8;
+        background: #fff;
+      }
+
+      &.ng-select-focused .ng-select-container {
+        border-color: $primary-blue;
+        box-shadow: 0 0 0 0.15rem rgba(5, 96, 141, 0.12);
+      }
+    }
   }
 }
 
@@ -32,22 +114,32 @@ $primary-blue-light: #0778b8;
     overflow: hidden;
   }
 
+  thead {
+    display: table-header-group;
+  }
+
   .table-header {
-    background: linear-gradient(135deg, $primary-blue 0%, $primary-blue-light 100%);
+    background: $primary-blue;
 
     th {
-      color: #fff;
+      background: $primary-blue;
+      color: #fff !important;
       font-weight: 600;
       font-size: 0.8rem;
-      text-transform: uppercase;
+      // text-transform: uppercase;
       letter-spacing: 0.5px;
-      padding: 0.75rem 1rem;
+      // padding: 0.75rem 1rem;
       border: none;
+      line-height: 1.2;
       white-space: nowrap;
+      vertical-align: middle;
     }
   }
 
   .table {
+    table-layout: fixed;
+    width: 100%;
+
     tbody tr {
       transition: background-color 0.2s ease;
 
@@ -60,7 +152,7 @@ $primary-blue-light: #0778b8;
       }
 
       td {
-        padding: 0.6rem 1rem;
+        // padding: 0.6rem 0.75rem;
         vertical-align: middle;
         font-size: 0.875rem;
         border-bottom: 1px solid #e9ecef;
@@ -69,19 +161,19 @@ $primary-blue-light: #0778b8;
   }
 
   .col-code {
-    width: 20%;
+    width: 170px;
   }
 
   .col-name {
-    width: 30%;
+    width: 38%;
   }
 
   .col-user {
-    width: 35%;
+    width: auto;
   }
 
   .col-status {
-    width: 15%;
+    width: 150px;
   }
 
   .activity-code {
@@ -98,7 +190,48 @@ $primary-blue-light: #0778b8;
     color: $primary-blue;
   }
 
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    min-width: 88px;
+    max-width: 100%;
+    height: 24px;
+    padding: 0 0.6rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    border: 1px solid transparent;
+
+    i {
+      font-size: 0.68rem;
+    }
+  }
+
+  .status-configured {
+    background: #e7f8ee;
+    border-color: #8be0a8;
+    color: #15803d;
+  }
+
+  .status-modified {
+    background: #fff6db;
+    border-color: #f5c84b;
+    color: #8a5a00;
+  }
+
+  .status-not-set {
+    background: #eef1f4;
+    border-color: #c8d0d8;
+    color: #5f6b77;
+  }
+
   .user-select-sm {
+    width: 100%;
+
     ::ng-deep {
       .ng-select-container {
         min-height: 32px !important;

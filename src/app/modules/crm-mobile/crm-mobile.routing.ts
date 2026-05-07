@@ -10,6 +10,7 @@ import { MeetingUpdateListComponent } from './Meeting-Update/meeting-update-list
 import { EnquiryEntryComponent } from './enquiry/enquiry-entry/enquiry-entry.component';
 import { EnquiryListComponent } from './enquiry/enquiry-list/enquiry-list.component';
 import { QuotationEntryComponent } from './quotation/quotation-entry/quotation-entry.component';
+import { UnsavedChangesGuard } from 'src/app/core/guards/unsaved-changes.guard';
 
 
 export const CrmMobileRoutes: Routes = [
@@ -35,6 +36,7 @@ export const CrmMobileRoutes: Routes = [
             {
                 path: 'lead/entry',
                 component: LeadComponent,
+                canDeactivate: [UnsavedChangesGuard],
                 data: {
                     title: 'Lead',
                     backOption: [
@@ -49,6 +51,7 @@ export const CrmMobileRoutes: Routes = [
             {
                 path: 'lead/entry/:id',
                 component: LeadComponent,
+                canDeactivate: [UnsavedChangesGuard],
                 data: {
                     title: 'Lead',
                     backOption: [
@@ -78,6 +81,7 @@ export const CrmMobileRoutes: Routes = [
             {
                 path: 'enquiry/entry',
                 component: EnquiryEntryComponent,
+                canDeactivate: [UnsavedChangesGuard],
                 data: {
                     title: 'Enquiry',
                     backOption: [
@@ -91,6 +95,7 @@ export const CrmMobileRoutes: Routes = [
             }, {
                 path: 'enquiry/entry/:id',
                 component: EnquiryEntryComponent,
+                canDeactivate: [UnsavedChangesGuard],
                 data: {
                     title: 'Enquiry',
                     backOption: [
@@ -123,6 +128,7 @@ export const CrmMobileRoutes: Routes = [
              {
                 path: 'quotation/entry',
                 component: QuotationEntryComponent,
+                canDeactivate: [UnsavedChangesGuard],
                 data: {
                     title: 'Quotation',
                     backOption: [
@@ -137,6 +143,7 @@ export const CrmMobileRoutes: Routes = [
              {
                 path: 'quotation/entry/:id',
                 component: QuotationEntryComponent,
+                canDeactivate: [UnsavedChangesGuard],
                 data: {
                     title: 'Quotation',
                     backOption: [
@@ -210,6 +217,7 @@ export const CrmMobileRoutes: Routes = [
             {
                 path: "lead-schedule-meeting/:PreCustomerMasterSid",
                 component: MeetingComponent,
+                canDeactivate: [UnsavedChangesGuard],
                 data: {
                     title: "Opportunity",
                     backOption: [

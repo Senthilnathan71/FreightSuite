@@ -78,9 +78,9 @@
           configuredMargins[0] ?? 20,
           Math.max(configuredMargins[1] ?? dynamicTopMargin, dynamicTopMargin),
           configuredMargins[2] ?? 20,
-          configuredMargins[3] ?? 8
+          Math.max(configuredMargins[3] ?? 42, 42)
         ]
-      : [20, dynamicTopMargin, 20, 30];
+      : [20, dynamicTopMargin, 20, 42];
 
     return {
       pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
@@ -141,7 +141,7 @@
 
   function buildInvoiceFooter(data: InvoicePdfData, currentPage: number, pageCount: number): any {
     return {
-      margin: [24, 0, 24, 0],
+      margin: [24, 22, 24, 0],
       columns: [
         { text: `Printed By : ${data.userData?.userName || ''}`, alignment: 'left', width: '25%', fontSize: 7, noWrap: true },
         {
@@ -666,14 +666,14 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
 
     if (taxConfig.showCGST) {
       headerRow.push(
-        { text: 'CGST %', style: 'tableHeaderSmall', alignment: 'right' },
+        { text: 'CGST %', style: 'tableHeaderSmall', alignment: 'right', noWrap: true },
         { text: 'CGST Amt', style: 'tableHeaderSmall', alignment: 'right' }
       );
     }
 
     if (taxConfig.showSGST) {
       headerRow.push(
-        { text: 'SGST %', style: 'tableHeaderSmall', alignment: 'right' },
+        { text: 'SGST %', style: 'tableHeaderSmall', alignment: 'right', noWrap: true },
         { text: 'SGST Amt', style: 'tableHeaderSmall', alignment: 'right' }
       );
     }
@@ -725,58 +725,60 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
         },
         ...(showHsnSac ? [{ text: detail.HSSACCode || detail.hsnSacCode || '', style: 'tableCellSmall', alignment: 'center' }] : []),
         { text: detail.CurrencyCode || detail.currencyCode || '', style: 'tableCellSmall', alignment: 'center' },
-        { text: detail.NumberOfUnit || formatNumberWithCommas(detail.qty, 3), style: 'tableCellSmall', alignment: 'right' },
-        { text: detail.Rate || formatNumberWithCommas(detail.rate, 3), style: 'tableCellSmall', alignment: 'right' },
-        { text: detail.ExchangeRate || formatNumberWithCommas(detail.roe || 1, 4), style: 'tableCellSmall', alignment: 'right' },
-        { text: detail.TaxableAmount || formatNumberWithCommas(detail.taxableAmount || detail.amount, 2), style: 'tableCellSmall', alignment: 'right' }
+        { text: detail.NumberOfUnit || formatNumberWithCommas(detail.qty, 3), style: 'tableCellSmall', alignment: 'right', noWrap: true },
+        { text: detail.Rate || formatNumberWithCommas(detail.rate, 3), style: 'tableCellSmall', alignment: 'right', noWrap: true },
+        { text: detail.ExchangeRate || formatNumberWithCommas(detail.roe || 1, 4), style: 'tableCellSmall', alignment: 'right', noWrap: true },
+        { text: detail.TaxableAmount || formatNumberWithCommas(detail.taxableAmount || detail.amount, 2), style: 'tableCellSmall', alignment: 'right', noWrap: true }
       ];
 
       if (taxConfig.showCGST) {
         row.push(
-          { text: detail.cgstRate || formatNumberWithCommas(detail.cgstPercent, 2), style: 'tableCellSmall', alignment: 'right' },
-          { text: detail.cgstAmt || formatNumberWithCommas(detail.cgstAmount, 2), style: 'tableCellSmall', alignment: 'right' }
+          { text: detail.cgstRate || formatNumberWithCommas(detail.cgstPercent, 2), style: 'tableCellSmall', alignment: 'right', noWrap: true },
+          { text: detail.cgstAmt || formatNumberWithCommas(detail.cgstAmount, 2), style: 'tableCellSmall', alignment: 'right', noWrap: true }
         );
       }
 
       if (taxConfig.showSGST) {
         row.push(
-          { text: detail.sgstRate || formatNumberWithCommas(detail.sgstPercent, 2), style: 'tableCellSmall', alignment: 'right' },
-          { text: detail.sgstAmt || formatNumberWithCommas(detail.sgstAmount, 2), style: 'tableCellSmall', alignment: 'right' }
+          { text: detail.sgstRate || formatNumberWithCommas(detail.sgstPercent, 2), style: 'tableCellSmall', alignment: 'right', noWrap: true },
+          { text: detail.sgstAmt || formatNumberWithCommas(detail.sgstAmount, 2), style: 'tableCellSmall', alignment: 'right', noWrap: true }
         );
       }
 
       if (taxConfig.showUGST) {
         row.push(
-          { text: detail.ugstRate || formatNumberWithCommas(detail.ugstPercent, 2), style: 'tableCellSmall', alignment: 'right' },
-          { text: detail.ugstAmt || formatNumberWithCommas(detail.ugstAmount, 2), style: 'tableCellSmall', alignment: 'right' }
+          { text: detail.ugstRate || formatNumberWithCommas(detail.ugstPercent, 2), style: 'tableCellSmall', alignment: 'right', noWrap: true },
+          { text: detail.ugstAmt || formatNumberWithCommas(detail.ugstAmount, 2), style: 'tableCellSmall', alignment: 'right', noWrap: true }
         );
       }
 
       if (taxConfig.showIGST) {
         row.push(
-          { text: detail.igstRate || formatNumberWithCommas(detail.igstPercent, 2), style: 'tableCellSmall', alignment: 'right' },
-          { text: detail.igstAmt || formatNumberWithCommas(detail.igstAmount, 2), style: 'tableCellSmall', alignment: 'right' }
+          { text: detail.igstRate || formatNumberWithCommas(detail.igstPercent, 2), style: 'tableCellSmall', alignment: 'right', noWrap: true },
+          { text: detail.igstAmt || formatNumberWithCommas(detail.igstAmount, 2), style: 'tableCellSmall', alignment: 'right', noWrap: true }
         );
       }
 
       if (taxConfig.showVAT) {
         row.push(
-          { text: detail.vatRate || formatNumberWithCommas(detail.vatPercent, 2), style: 'tableCellSmall', alignment: 'right' },
-          { text: detail.vatAmt || formatNumberWithCommas(detail.vatAmount, 2), style: 'tableCellSmall', alignment: 'right' }
+          { text: detail.vatRate || formatNumberWithCommas(detail.vatPercent, 2), style: 'tableCellSmall', alignment: 'right', noWrap: true },
+          { text: detail.vatAmt || formatNumberWithCommas(detail.vatAmount, 2), style: 'tableCellSmall', alignment: 'right', noWrap: true }
         );
       }
 
       row.push({
         text: detail.LocalAmount || formatNumberWithCommas(detail.localAmount, 2),
         style: 'tableCellSmall',
-        alignment: 'right'
+        alignment: 'right',
+        noWrap: true
       });
 
       if (invoiceCurr && invoiceCurr !== localCurrency) {
         row.push({
           text: detail.PartyAmount || formatNumberWithCommas(detail.partyAmount, 2),
           style: 'tableCellSmall',
-          alignment: 'right'
+          alignment: 'right',
+          noWrap: true
         });
       }
 
@@ -794,14 +796,14 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
     /* ---------------- WIDTHS (FIXED + SAFE) ---------------- */
     const widths: (number | string)[] = compactMode
       ? [
-          20,    // S.No
-          '*',   // Particulars
-          ...(showHsnSac ? [30] : []),
-          19,    // Curr
-          32,    // Qty
-          30,    // Rate
+          18,    // S.No
+          hasForeignCurrencyColumn ? 60 : 78, // Particulars
+          ...(showHsnSac ? [36] : []),
+          21,    // Curr
+          50,    // Qty
+          29,    // Rate
           32,    // ROE
-          40     // Taxable
+          51     // Taxable
         ]
       : [
           16,    // S.No
@@ -814,16 +816,17 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
           44     // Taxable
         ];
 
-    if (taxConfig.showCGST) widths.push(...(compactMode ? [18, 28] : [22, 34]));
-    if (taxConfig.showSGST) widths.push(...(compactMode ? [18, 28] : [22, 34]));
-    if (taxConfig.showUGST) widths.push(...(compactMode ? [18, 28] : [22, 34]));
-    if (taxConfig.showIGST) widths.push(...(compactMode ? [18, 28] : [22, 34]));
+    const taxAmountColumnWidth = hasForeignCurrencyColumn ? 36 : 40;
+    if (taxConfig.showCGST) widths.push(...(compactMode ? [30, taxAmountColumnWidth] : [28, 34]));
+    if (taxConfig.showSGST) widths.push(...(compactMode ? [30, taxAmountColumnWidth] : [28, 34]));
+    if (taxConfig.showUGST) widths.push(...(compactMode ? [20, taxAmountColumnWidth] : [22, 34]));
+    if (taxConfig.showIGST) widths.push(...(compactMode ? [20, taxAmountColumnWidth] : [22, 34]));
     if (taxConfig.showVAT)  widths.push(...(compactMode ? [24, 26] : [28, 32]));
 
-    widths.push(compactMode ? 36 : 44); // Amt in Local Currency
+    widths.push(compactMode ? (hasForeignCurrencyColumn ? 38 : 43) : 44); // Amt in Local Currency
 
     if (invoiceCurr && invoiceCurr !== localCurrency) {
-      widths.push(compactMode ? 36 : 44); // Amt in Party Currency
+      widths.push(compactMode ? 38 : 44); // Amt in Party Currency
     }
 
     /* ---------------- RETURN ---------------- */
@@ -1042,29 +1045,38 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
   const bankDetails = data.bankDetails || [];
   const isVATMode = data.isVATMode !== false;
 
-  // Get just the currency code (e.g., USD, AED)
-  const invoiceCurrency = data.invoice?.currencyCode || '';
-  const localCurrency = data.localCurrency || '';
-  const currencyCode = invoiceCurrency || localCurrency;
-
   if (bankDetails.length === 0) return [];
 
+  const getBankValue = (bank: any, ...keys: string[]): string => {
+    for (const key of keys) {
+      const value = bank?.[key];
+      if (value !== undefined && value !== null && String(value).trim() !== '') {
+        return String(value);
+      }
+    }
+    return '';
+  };
+
+  const getBankCurrencyCode = (bank: any): string =>
+    getBankValue(bank, 'CurrencyCode', 'currencyCode', 'bankCurrencyCode') ||
+    data.invoice?.currencyCode ||
+    data.localCurrency ||
+    '';
+
   // Filter valid banks with at least one field populated
-  const validBanks = bankDetails.filter(bank => 
-    bank.beneficiaryName || 
-    bank.accountNo || 
-    bank.bankName || 
-    bank.iban || 
-    bank.ifscCode || 
-    bank.swiftCode ||
-    bank.bankAddress || 
-    bank.branchName
+  const validBanks = bankDetails.filter((bank: any) =>
+    getBankValue(bank, 'BeneficiaryName', 'beneficiaryName', 'AccountName', 'accountName') ||
+    getBankValue(bank, 'BankAccountNo', 'accountNo') ||
+    getBankValue(bank, 'BankName', 'bankName') ||
+    getBankValue(bank, 'IFSCCode', 'ifscCode', 'IBAN', 'iban') ||
+    getBankValue(bank, 'BankCode', 'swiftCode') ||
+    getBankValue(bank, 'BankAddress', 'bankAddress', 'Address', 'address') ||
+    getBankValue(bank, 'BranchName', 'branchName')
   );
 
   if (validBanks.length === 0) return [];
 
-  // Limit to maximum 3 banks to prevent overflow
-  const banksToDisplay = validBanks.slice(0, 3);
+  const banksToDisplay = validBanks;
 
   // Create header row
   const headers = [
@@ -1073,6 +1085,7 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
 
   // Add bank columns dynamically
   for (let i = 0; i < banksToDisplay.length; i++) {
+    const currencyCode = getBankCurrencyCode(banksToDisplay[i]);
     if (currencyCode) {
       headers.push({ 
         text: `Bank (${currencyCode})`, 
@@ -1099,7 +1112,7 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
   }];
   for (let i = 0; i < banksToDisplay.length; i++) {
     beneficiaryRow.push({ 
-      text: banksToDisplay[i].beneficiaryName || '', 
+      text: getBankValue(banksToDisplay[i], 'BeneficiaryName', 'beneficiaryName', 'AccountName', 'accountName'),
       alignment: 'left',
       noWrap: false,
       fontSize: 8  // Reduced font size
@@ -1116,7 +1129,7 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
   }];
   for (let i = 0; i < banksToDisplay.length; i++) {
     accountRow.push({ 
-      text: banksToDisplay[i].accountNo || '', 
+      text: getBankValue(banksToDisplay[i], 'BankAccountNo', 'accountNo'),
       alignment: 'left',
       noWrap: false,
       fontSize: 8
@@ -1126,7 +1139,7 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
 
   // IBAN/IFSC row
   const ibanRow: any[] = [{ 
-    text: isVATMode ? 'IBAN' : 'IFSC Code', 
+    text: isVATMode ? 'IBAN' : 'IFSC',
     style: 'labelBold', 
     alignment: 'left',
     fontSize: 8
@@ -1134,14 +1147,14 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
   for (let i = 0; i < banksToDisplay.length; i++) {
     if (isVATMode) {
       ibanRow.push({ 
-        text: banksToDisplay[i].iban || '', 
+        text: getBankValue(banksToDisplay[i], 'IFSCCode', 'iban', 'IBAN', 'ifscCode'),
         alignment: 'left',
         noWrap: false,
         fontSize: 8
       });
     } else {
       ibanRow.push({ 
-        text: banksToDisplay[i].ifscCode || '', 
+        text: getBankValue(banksToDisplay[i], 'IFSCCode', 'ifscCode'),
         alignment: 'left',
         noWrap: false,
         fontSize: 8
@@ -1159,7 +1172,7 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
   }];
   for (let i = 0; i < banksToDisplay.length; i++) {
     swiftRow.push({ 
-      text: banksToDisplay[i].swiftCode || '', 
+      text: getBankValue(banksToDisplay[i], 'BankCode', 'swiftCode'),
       alignment: 'left',
       noWrap: false,
       fontSize: 8
@@ -1176,7 +1189,7 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
   }];
   for (let i = 0; i < banksToDisplay.length; i++) {
     bankNameRow.push({ 
-      text: banksToDisplay[i].bankName || '', 
+      text: getBankValue(banksToDisplay[i], 'BankName', 'bankName'),
       alignment: 'left',
       noWrap: false,
       fontSize: 8
@@ -1193,7 +1206,7 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
   }];
   for (let i = 0; i < banksToDisplay.length; i++) {
     branchRow.push({ 
-      text: banksToDisplay[i].bankAddress || banksToDisplay[i].branchName || '', 
+      text: getBankValue(banksToDisplay[i], 'BankAddress', 'bankAddress', 'Address', 'address', 'BranchName', 'branchName'),
       alignment: 'left',
       noWrap: false,
       lineHeight: 1.1,  // Reduced from 1.2
@@ -1203,14 +1216,15 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
   rows.push(branchRow);
 
   // Calculate column widths dynamically based on number of banks
-  const TOTAL_WIDTH = 500; // Total available width (accounting for page margins)
   const DETAILS_COLUMN_WIDTH = 110;
-  const REMAINING_WIDTH = TOTAL_WIDTH - DETAILS_COLUMN_WIDTH;
-  const BANK_COLUMN_WIDTH = REMAINING_WIDTH / 3;
-  
   const widths: (number | string)[] = [DETAILS_COLUMN_WIDTH];
-  for (let i = 0; i < banksToDisplay.length; i++) {
-    widths.push(BANK_COLUMN_WIDTH);
+
+  if (banksToDisplay.length === 1) {
+    widths.push('auto');
+  } else {
+    for (let i = 0; i < banksToDisplay.length; i++) {
+      widths.push('*');
+    }
   }
 
   const bankTable = {
@@ -1263,10 +1277,10 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
         { text: 'Terms and Conditions', style: 'sectionTitle', margin: [0, 10, 0, 5] },
         {
           ul: termsList,
-          margin: [0, 0, 0, 10]
+          margin: [0, 0, 0, 6]
         }
       ],
-      margin: [0, 0, 0, 15]
+      margin: [0, 0, 0, 8]
     };
   }
 
@@ -1432,7 +1446,14 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
       swiftCode: bank.BankCode || bank.swiftCode || '',
       iban: bank.IFSCCode || bank.IBAN || bank.iban || '',
       bankAddress: bank.BankAddress || bank.bankAddress || bank.Address || bank.address || '',
-      beneficiaryName: bank.BeneficiaryName || bank.beneficiaryName || bank.AccountName || bank.accountName || ''
+      beneficiaryName: bank.BeneficiaryName || bank.beneficiaryName || bank.AccountName || bank.accountName || '',
+      currencyCode: bank.CurrencyCode ||
+        bank.currencyCode ||
+        bank.currencyMaster?.currencyCode ||
+        lookups?.currencyMaster?.find((currency: any) =>
+          Number(currency?.CurrencyMasterSid) === Number(bank.CurrencyMasterSid || bank.currencyMasterSid)
+        )?.currencyCode ||
+        ''
     }));
 
     const terms: PdfTermItem[] = (options?.terms || []).map((term: any) => ({

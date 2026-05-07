@@ -272,6 +272,8 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   TandCFetched : boolean = false;
   TandCList: any[] = [];
   isTermsAndConditionsEnabled: boolean = true;
+  isPrintAllBankEnabled: boolean = false;
+  private isPrintAllBankConfigLoaded: boolean = false;
   isBankFetched : boolean = false;
   bankDetails: any;
   emailForm!: FormGroup;
@@ -361,7 +363,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       this.currentBranchState = this.appSettingService.getCurrentBranchState();
       this.currentBranchCity = this.appSettingService.getCurrentBranchCity();
       const currentFinancialYear =
-      this.appSettingService.getCurrentFinancialYear();
+        this.appSettingService.getCurrentFinancialYear();
 
       if (currentFinancialYear) {
         this.fyMinDate = toNgbDateStruct(currentFinancialYear.StartDate);
@@ -404,6 +406,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       this.currentBranch = null;
     }
     this.loadTermsAndConditionsConfig();
+    this.loadPrintAllBankConfig();
     this.checkVoucherPostingMechanism();
     this.initForm();
     this.loadVoucherPeriods();
@@ -3166,9 +3169,13 @@ isSeaDepartment(): boolean {
 
   async getAndStoreBankDetails(): Promise<void> {
     try {
+      if (!this.isPrintAllBankConfigLoaded) {
+        await this.loadPrintAllBankConfig();
+      }
+
       const resp: any = await firstValueFrom(this.getBankDetails());
       this.isBankFetched = true;
-      this.bankDetails = resp?.status && resp.data ? resp.data : [];
+      this.bankDetails = this.filterPrintableBankDetails(resp ?? []);
 
     } catch (err) {
       console.error('Error fetching bank details', err);
@@ -3176,13 +3183,69 @@ isSeaDepartment(): boolean {
     }
   }
 
-  getBankDetails() : Observable<any> {
-    const partyCurrencyId = this.invoiceForm.get('CurrencyMasterSid')?.getRawValue();
-    const payload = {
-      CurrencyMasterSid : partyCurrencyId,
-      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+  getBankDetails(): Observable<any[]> {
+    return this.masterService.getAllBranchBanks();
+  }
+
+  private filterPrintableBankDetails(bankDetails: any[]): any[] {
+    if (!Array.isArray(bankDetails)) {
+      return [];
     }
-    return this.operationService.getBankDetails(payload);
+
+    const branchSid = Number(this.currentBranch?.BranchMasterSid || 0);
+    const partyCurrencyId = Number(this.invoiceForm.get('CurrencyMasterSid')?.getRawValue() || 0);
+
+    return bankDetails.filter((bankDetail: any) => {
+      const bankBranchSid = Number(bankDetail?.BranchMasterSid || 0);
+      const bankCurrencySid = Number(bankDetail?.CurrencyMasterSid || 0);
+      const printOnInvoice = bankDetail?.PrintOnInvoice ?? bankDetail?.printOnInvoice;
+
+      if (branchSid && bankBranchSid !== branchSid) {
+        return false;
+      }
+
+      if (!this.isPrintAllBankEnabled && partyCurrencyId && bankCurrencySid !== partyCurrencyId) {
+        return false;
+      }
+
+      return this.parseConfigBoolean(printOnInvoice, false);
+    });
+  }
+
+  getBankCurrencyCode(bankDetail: any): string {
+    const bankCurrencySid = Number(bankDetail?.CurrencyMasterSid || bankDetail?.currencyMasterSid || 0);
+    const bankCurrency = bankCurrencySid
+      ? this.currencyList?.find((currency: any) => Number(currency?.CurrencyMasterSid) === bankCurrencySid)
+      : null;
+
+    return bankDetail?.CurrencyCode ||
+      bankDetail?.currencyCode ||
+      bankDetail?.currencyMaster?.currencyCode ||
+      bankCurrency?.currencyCode ||
+      this.invoiceData?.CurrencyCode ||
+      '';
+  }
+
+  private async loadPrintAllBankConfig(): Promise<void> {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+      this.isPrintAllBankEnabled = false;
+      this.isPrintAllBankConfigLoaded = true;
+      return;
+    }
+
+    try {
+      const resp: any = await firstValueFrom(
+        this.masterService.getConfigurationValue(companyId, 'Printallbank')
+      );
+      const rawValue = resp?.ConfigurationValue ?? resp?.value ?? resp;
+      this.isPrintAllBankEnabled = this.parseConfigBoolean(rawValue, false);
+    } catch (error) {
+      console.warn('Could not load Printallbank configuration:', error);
+      this.isPrintAllBankEnabled = false;
+    } finally {
+      this.isPrintAllBankConfigLoaded = true;
+    }
   }
 
 

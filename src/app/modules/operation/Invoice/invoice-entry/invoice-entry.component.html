@@ -920,7 +920,7 @@
                                   formControlName="NumberOfUnit"
                                   (input)="onDetailChange(i, 'NumberOfUnit')"
                                   DecimalPrecision
-                                  [DecimalPrecisionBefore]="4"
+                                  [DecimalPrecisionBefore]="6"
                                   [DecimalPrecisionAfter]="3"
                                 />
                                 <!-- <span *ngIf="hasDetailSid(i)" style="font-weight: 600; color: black;">{{ row.get('NumberOfUnit')?.value | numberFormat }}</span> -->
@@ -2556,7 +2556,7 @@
               </th>
               <th *ngFor="let bankDetail of bankDetails; let i = index"
                 style="padding:0px 6px;color:#000;border-color:#000; text-align: start;border: 0.5px solid #000;">
-                <strong>Bank ({{ invoiceData?.CurrencyCode }})</strong>
+                <strong>Bank ({{ getBankCurrencyCode(bankDetail) }})</strong>
               </th>
             </tr>
           </thead>

@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, effect, OnInit, TemplateRef } from '@angular/core';
+import { Component, effect, HostListener, OnDestroy, OnInit, TemplateRef } from '@angular/core';
 import { NgbAccordionModule, NgbDropdownModule, NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidatorFn, ValidationErrors } from '@angular/forms';
 import { LeadService } from '../Services/lead.service';
@@ -12,7 +12,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { forkJoin, Subject } from 'rxjs';
+import { debounceTime, forkJoin, Subject, takeUntil } from 'rxjs';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { OnlyTextDirective } from 'src/app/core/Directives/onlyStringOfLength';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
@@ -35,6 +35,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { FollowUpComponent } from '../../settings/follow-up/follow-up/follow-up.component';
 import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/dial-code-dropdown.component';
 import { DocReferenceComponent } from '../../operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 
 @Component({
@@ -64,8 +65,11 @@ import { DocReferenceComponent } from '../../operation/doc-reference/doc-referen
   templateUrl: './lead.component.html',
   styleUrl: './lead.component.scss'
 })
-export class LeadComponent implements OnInit {
+export class LeadComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   private destroy$ = new Subject<void>();
+  isDirty: boolean = false;
+  isSaving: boolean = false;
+  private initialFormValue: any = null;
   leadForm!: FormGroup;
   isEditMode = false; // Flag for edit mode
   citys: City[] = [];        // Array to store the leads
@@ -213,6 +217,10 @@ MenuMasterSid:any
           this.updatePhoneCodeByCountry(currentCompanyInfo?.CountryMasterSid, true);
           this.filterStateByCountryId({ CountryMasterSid: currentCompanyInfo?.CountryMasterSid })
         }
+        setTimeout(() => {
+          this.initialFormValue = this.leadForm.getRawValue();
+          this.isDirty = false;
+        }, 0);
       }
 
       
@@ -236,7 +244,11 @@ MenuMasterSid:any
   );
 });
 
+    this.subscribeToFormChanges();
+
   }
+
+  
 
   // // Method to load the city data
   // loadCity(): void {
@@ -324,14 +336,29 @@ languagePrefValidator(): ValidatorFn {
 
 
   // Handle Form Submission
-  onSubmit() {
+  onSubmit(resolve?: (value: boolean) => void) {
+    if (this.isSaving) {
+      if (resolve) resolve(false);
+      return;
+    }
+
+    const raw = this.leadForm.getRawValue();
+    if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      this.leadForm.markAsUntouched();
+      if (resolve) resolve(false);
+      return;
+    }
+
     if (this.leadForm.invalid) {
       this.leadForm.markAllAsTouched(); // Force validation messages to show
       this.leadForm.updateValueAndValidity(); // Ensure validation is refreshed
       this.appSettingService.showWarning('Please fill all required fields correctly.')
+      if (resolve) resolve(false);
       return;
     }
 
+    this.isSaving = true;
     this.btnDisable = true;
     const userEmail = this.userData['userEmail'];
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
@@ -354,31 +381,50 @@ languagePrefValidator(): ValidatorFn {
     if (this.isEditMode) {
       this.leadService.updateLeadById(this.PreCustomerMasterSid, payload).subscribe(
         (resp: any) => {
+          this.isSaving = false;
+          this.btnDisable = false;
           if (resp.status) {
+            this.isDirty = false;
+            this.initialFormValue = this.leadForm.getRawValue();
             this.appSettingService.showSuccess(resp.message || 'Lead Updated Successfully');
+            if (resolve) resolve(true);
             this.router.navigate(['crm/lead/list']);
           } else {
+            if (resolve) resolve(false);
             this.appSettingService.showError(resp.message || 'Internal Server Error');
           }
         },
         (error) => {
+          this.isSaving = false;
+          this.btnDisable = false;
+          if (resolve) resolve(false);
           console.error('leadUpdate', error)
         }
       )
     } else {
       this.leadService.createNewLead(payload).subscribe(
         (resp: any) => {
+          this.isSaving = false;
+          this.btnDisable = false;
           if (resp.status) {
+            this.isDirty = false;
+            this.initialFormValue = this.leadForm.getRawValue();
             this.appSettingService.showSuccess(resp.message || 'Lead Created Successfully');
             this.PreCustomerMasterSid = resp.data?.PreCustomerMasterSid;
             if(this.PreCustomerMasterSid){
+            if (resolve) resolve(true);
             this.router.navigate(['crm/lead/entry', this.PreCustomerMasterSid]);
             }
+            if (!this.PreCustomerMasterSid && resolve) resolve(true);
           } else {
+            if (resolve) resolve(false);
             this.appSettingService.showError(resp.message || "Internal Server Error");
           }
         },
         (error) => {
+          this.isSaving = false;
+          this.btnDisable = false;
+          if (resolve) resolve(false);
           console.error('leadCreate', error)
         }
       )
@@ -496,6 +542,10 @@ else {
       },
     { emitEvent: false }
   );
+      setTimeout(() => {
+        this.initialFormValue = this.leadForm.getRawValue();
+        this.isDirty = false;
+      }, 0);
 
     },
     (error) => {
@@ -937,5 +987,54 @@ openDocRef() {
     this.destroy$.next();
     this.destroy$.complete();
   } 
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
+
+  private subscribeToFormChanges(): void {
+    this.leadForm.valueChanges
+      .pipe(takeUntil(this.destroy$), debounceTime(300))
+      .subscribe(() => {
+        this.isDirty = !this.deepEqual(
+          this.initialFormValue,
+          this.leadForm.getRawValue()
+        );
+      });
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString().split('T')[0];
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) return Number(value);
+    if (typeof value === 'string') return value.trim();
+    if (Array.isArray(value)) return value.map(item => this.normalizeValue(item));
+    if (typeof value === 'object') {
+      const normalizedObj: any = {};
+      Object.keys(value).sort().forEach((key) => {
+        normalizedObj[key] = this.normalizeValue(value[key]);
+      });
+      return normalizedObj;
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
 
 }

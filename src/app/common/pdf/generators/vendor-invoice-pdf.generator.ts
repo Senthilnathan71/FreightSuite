@@ -676,6 +676,7 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
   const localCurrency = data.localCurrency || 'AED';
   const invoiceCurr = data.invoice?.currencyCode;
   const grandTotal = printData?.totalPartyAmount || data.totals?.grandTotal || 0;
+  const hasForeignCurrencyColumn = !!(invoiceCurr && invoiceCurr !== localCurrency);
 
   const displayDetails = voucherDetails.length > 0 ? voucherDetails : charges;
   if (!displayDetails.length) return { text: '' };
@@ -739,7 +740,7 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
       alignment: 'right'
     });
 
-    if (invoiceCurr && invoiceCurr !== localCurrency) {
+    if (hasForeignCurrencyColumn) {
       headerRow.push({
         text: `Amt In ${invoiceCurr}`,
         style: 'tableHeaderSmall',
@@ -885,7 +886,7 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
         alignment: 'right'
       });
 
-      if (invoiceCurr && invoiceCurr !== localCurrency) {
+      if (hasForeignCurrencyColumn) {
         row.push({
           text: firstFilled(
             detail.PartyAmount,
@@ -900,15 +901,9 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
       return row;
     });
 
-    const totalRow: any[] = [];
-    const colCount = headerRow.length;
-
-    for (let i = 0; i < colCount - 2; i++) {
-      totalRow.push({ text: '', style: 'tableCellSmall' });
-    }
-
-    totalRow.push({ text: 'Total', style: 'tableCellBoldSmall', alignment: 'right' });
-    totalRow.push({ text: Number(grandTotal).toFixed(2), style: 'tableCellBoldSmall', alignment: 'right' });
+    const totalRow: any[] = showVATColumns
+      ? buildVendorInvoiceVatTotalRow(displayDetails, isIndiaCompany, hasForeignCurrencyColumn, grandTotal)
+      : buildDefaultVendorInvoiceTotalRow(headerRow.length, grandTotal);
 
     const widths: (number | string)[] = [
       18,
@@ -928,7 +923,7 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
 
     widths.push(48);
 
-    if (invoiceCurr && invoiceCurr !== localCurrency) {
+    if (hasForeignCurrencyColumn) {
       widths.push(48);
     }
 
@@ -960,6 +955,72 @@ function buildInvoiceInfo(data: VendorInvoicePdfData): any {
    */
   function buildTotalsSection(data: VendorInvoicePdfData): any {
     return { text: '' };
+  }
+
+  function buildDefaultVendorInvoiceTotalRow(colCount: number, grandTotal: any): any[] {
+    const totalRow: any[] = [];
+
+    for (let i = 0; i < colCount - 2; i++) {
+      totalRow.push({ text: '', style: 'tableCellSmall' });
+    }
+
+    totalRow.push({ text: 'Total', style: 'tableCellBoldSmall', alignment: 'right' });
+    totalRow.push({ text: formatNumberWithCommas(parsePdfNumber(grandTotal), 2), style: 'tableCellBoldSmall', alignment: 'right' });
+
+    return totalRow;
+  }
+
+  function buildVendorInvoiceVatTotalRow(
+    details: any[],
+    showHsnSac: boolean,
+    hasForeignCurrencyColumn: boolean,
+    grandTotal: any
+  ): any[] {
+    const baseColumns = 7 + (showHsnSac ? 1 : 0);
+    const totalRow: any[] = [];
+
+    for (let i = 0; i < baseColumns; i++) {
+      totalRow.push({ text: '', style: 'tableCellSmall' });
+    }
+
+    totalRow.push({ text: 'Total', style: 'tableCellBoldSmall', alignment: 'right', noWrap: true });
+    totalRow.push({
+      text: formatNumberWithCommas(sumPdfDetailAmount(details, 'vatAmt', 'vatAmount'), 2),
+      style: 'tableCellBoldSmall',
+      alignment: 'right',
+      noWrap: true
+    });
+    totalRow.push({
+      text: hasForeignCurrencyColumn
+        ? formatNumberWithCommas(sumPdfDetailAmount(details, 'LocalAmount', 'localAmount'), 2)
+        : formatNumberWithCommas(parsePdfNumber(grandTotal), 2),
+      style: 'tableCellBoldSmall',
+      alignment: 'right',
+      noWrap: true
+    });
+
+    if (hasForeignCurrencyColumn) {
+      totalRow.push({
+        text: formatNumberWithCommas(parsePdfNumber(grandTotal), 2),
+        style: 'tableCellBoldSmall',
+        alignment: 'right',
+        noWrap: true
+      });
+    }
+
+    return totalRow;
+  }
+
+  function sumPdfDetailAmount(details: any[], primaryField: string, fallbackField: string): number {
+    return (details || []).reduce((sum: number, detail: any) => {
+      return sum + parsePdfNumber(detail?.[primaryField] ?? detail?.[fallbackField]);
+    }, 0);
+  }
+
+  function parsePdfNumber(value: any): number {
+    if (value === null || value === undefined || value === '') return 0;
+    if (typeof value === 'number') return value;
+    return Number(String(value).replace(/,/g, '')) || 0;
   }
 
   /**

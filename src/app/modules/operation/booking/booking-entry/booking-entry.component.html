@@ -97,12 +97,12 @@
 </div>
       <div class="action-group primary">
   <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
-          [ngClass]="{ 'btn-info': !isFormDirty(), 'btn-warning': isFormDirty() }"
+          [ngClass]="{'btn-info': !hasUnsavedChanges(), 'btn-warning': hasUnsavedChanges()}"
           (click)="onSubmit()"  
           [disabled]="(!mps.can('update') && isEditMode) || isSaving || !isHBLNoValid()|| (isEditMode && isSuspended)" >
     <i class="fas fa-save me-1"></i>
     <span>{{ isSaving ? "Saving..." : "Save" }}</span> 
-    <span *ngIf="isFormDirty()"
+    <span *ngIf="hasUnsavedChanges()"
           class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
           title="You have unsaved changes">
       <span class="visually-hidden">unsaved changes</span>
@@ -1008,7 +1008,7 @@
                    <div class="col-md-6">
                     <div class=" custom-form-group custom-form-group-select-date" >
                       <div class="input-group">
-                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="CutOffDate"
+                        <input class="form-control" placeholder="dd-mm-yyyy" name="dp" formControlName="PortCutoffDate"
                           container="body" ngbDatepicker #d23="ngbDatepicker" 
                           (keydown.arrowDown)="d23.open()" (click)="d23.toggle()" />
                         <button class="btn bi bi-calendar3 px-0" (click)="d23.toggle()" type="button">
@@ -1461,6 +1461,11 @@
                                   <i class="fas fa-list text-primary"></i>
                                 </button>
                               </div>
+                              @if (shouldShowProductFieldError(product, 'ProductName')) {
+                                <div class="error-message mt-1">
+                                  {{ getProductFieldErrorMessage(product, 'ProductName') }}
+                                </div>
+                              }
                             </div>
                           </td>
                           <td>
@@ -1481,28 +1486,85 @@
                               [displayFields]="uomLookupConfig.displayFields" [displayLabels]="uomLookupConfig.displayLabels"
                               [labelFields]="uomLookupConfig.labelFields" [bindValue]="'UOMMasterSid'" style="padding:0;">
                             </dofi-searchable-dropdown>
+                            @if (shouldShowProductFieldError(product, 'ExternaPkg')) {
+                              <div class="error-message mt-1">
+                                {{ getProductFieldErrorMessage(product, 'ExternaPkg') }}
+                              </div>
+                            }
                           </td>
                           <td>
                             <input type="text" formControlName="ExternlQty" class="custom-input-field sm" [onlyNumbers] >
+                            @if (shouldShowProductFieldError(product, 'ExternlQty')) {
+                              <div class="error-message mt-1">
+                                {{ getProductFieldErrorMessage(product, 'ExternlQty') }}
+                              </div>
+                            }
                           </td>
                           @if(usesDimensionalCargoFields()){
                             <td>
                               <ng-select [items]="measurementUnitList" bindLabel="name" bindValue="id" formControlName="UomMasterSid"
                                 class="ng-select" placeholder="" appendTo="body">
                               </ng-select>
+                              @if (shouldShowProductFieldError(product, 'UomMasterSid')) {
+                                <div class="error-message mt-1">
+                                  {{ getProductFieldErrorMessage(product, 'UomMasterSid') }}
+                                </div>
+                              }
                             </td>
                             <td><input type="text" formControlName="Length" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
                             <td><input type="text" formControlName="Width" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
                             <td><input type="text" formControlName="Height" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
-                            <td><input type="text" formControlName="Volumetric" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
-                            <td><input type="text" formControlName="Volume" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
-                            <td><input type="text" formControlName="GrossWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3" ></td>
-                            <td><input type="text" formControlName="NetWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
+                            <td><input type="text" formControlName="Volumetric" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
+                            <td>
+                              <input type="text" formControlName="Volume" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
+                              @if (shouldShowProductFieldError(product, 'Volume')) {
+                                <div class="error-message mt-1">
+                                  {{ getProductFieldErrorMessage(product, 'Volume') }}
+                                </div>
+                              }
+                            </td>
+                            <td>
+                              <input type="text" formControlName="GrossWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3" >
+                              @if (shouldShowProductFieldError(product, 'GrossWeight')) {
+                                <div class="error-message mt-1">
+                                  {{ getProductFieldErrorMessage(product, 'GrossWeight') }}
+                                </div>
+                              }
+                            </td>
+                            <td>
+                              <input type="text" formControlName="NetWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
+                              @if (shouldShowProductFieldError(product, 'NetWeight')) {
+                                <div class="error-message mt-1">
+                                  {{ getProductFieldErrorMessage(product, 'NetWeight') }}
+                                </div>
+                              }
+                            </td>
                           }
                           @if(selectedFCLLCL === 'FCL' || isSurfaceCargoMode()){
-                            <td><input type="text" formControlName="GrossWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"  DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
-                            <td><input type="text" formControlName="NetWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"  DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
-                            <td><input type="text" formControlName="Volume" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"  DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
+                            <td>
+                              <input type="text" formControlName="GrossWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"  DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
+                              @if (shouldShowProductFieldError(product, 'GrossWeight')) {
+                                <div class="error-message mt-1">
+                                  {{ getProductFieldErrorMessage(product, 'GrossWeight') }}
+                                </div>
+                              }
+                            </td>
+                            <td>
+                              <input type="text" formControlName="NetWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"  DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
+                              @if (shouldShowProductFieldError(product, 'NetWeight')) {
+                                <div class="error-message mt-1">
+                                  {{ getProductFieldErrorMessage(product, 'NetWeight') }}
+                                </div>
+                              }
+                            </td>
+                            <td>
+                              <input type="text" formControlName="Volume" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
+                              @if (shouldShowProductFieldError(product, 'Volume')) {
+                                <div class="error-message mt-1">
+                                  {{ getProductFieldErrorMessage(product, 'Volume') }}
+                                </div>
+                              }
+                            </td>
                           }
                           <td>
                             <div class="d-flex align-items-center" style="margin-top: 4px;">
@@ -1521,9 +1583,28 @@
                             <ng-select [items]="imcoList" bindLabel="ImcoName" bindValue="ImcoName" formControlName="ImcoClass"
                               class="ng-select" placeholder="" appendTo="body" (change)="onImcoChange(productIndex,$event,cargoIndex)">
                             </ng-select>
+                            @if (shouldShowProductFieldError(product, 'ImcoClass')) {
+                              <div class="error-message mt-1">
+                                {{ getProductFieldErrorMessage(product, 'ImcoClass') }}
+                              </div>
+                            }
                           </td>
-                          <td><input type="text" formControlName="UnNo" class="custom-input-field sm"></td>
-                          <td><input type="text" formControlName="PkgGroup" class="custom-input-field sm"></td>
+                          <td>
+                            <input type="text" formControlName="UnNo" class="custom-input-field sm">
+                            @if (shouldShowProductFieldError(product, 'UnNo')) {
+                              <div class="error-message mt-1">
+                                {{ getProductFieldErrorMessage(product, 'UnNo') }}
+                              </div>
+                            }
+                          </td>
+                          <td>
+                            <input type="text" formControlName="PkgGroup" class="custom-input-field sm">
+                            @if (shouldShowProductFieldError(product, 'PkgGroup')) {
+                              <div class="error-message mt-1">
+                                {{ getProductFieldErrorMessage(product, 'PkgGroup') }}
+                              </div>
+                            }
+                          </td>
                         </tr>
                       } @else {
                         <tr>
@@ -3645,7 +3726,6 @@
 
 <h5 style="
     font-weight:bolder;
-    padding-left: 30px;
     margin-top: 5px;
     margin-bottom: 5px;
 ">
@@ -3722,6 +3802,48 @@
       </table>
     </div>
 
+      <!-- <div style="width:100%; overflow-x:auto;margin-top:10px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="border:1px solid #000; padding:5px;font-weight: bolder;text-align: center;" rowspan="2"><strong>Charge</strong></th>
+            <th style="border:1px solid #000; padding:5px;font-weight: bolder;text-align: center;" colspan="3"><strong>Provisional</strong></th>
+            <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;" colspan="3"><strong>Actual</strong></th>
+          </tr>
+          <tr>
+            <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>Rev Local Amt</strong></th>
+            <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>Cost Local Amt</strong></th>
+            <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>GP</strong></th>
+            <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>Rev Local Amt</strong></th>
+            <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>Cost Local Amt</strong></th>
+            <th style="border:1px solid #000; padding:5px; text-align:center;font-weight: bolder;"><strong>GP</strong></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let item of getBookingCostRevenueRows()">
+            <td style="border:1px solid #000; padding:5px;">{{ getChargeDisplayName(item) }}</td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getProRevenueAmount(item) | number:'1.2-2' }}</td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getProCostAmount(item) | number:'1.2-2' }}</td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getProGross(item) | number:'1.2-2' }}</td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getActualRevenueAmount(item) | number:'1.2-2' }}</td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getActualCostAmount(item) | number:'1.2-2' }}</td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getActualGross(item) | number:'1.2-2' }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr style="font-weight:bolder;">
+            <td colspan="1" style="border:1px solid #000; padding:5px; text-align:right;"><strong>Total</strong></td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getBookingChargeTotals().proRev | number:'1.2-2' }}</td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getBookingChargeTotals().proCost | number:'1.2-2' }}</td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getBookingChargeTotals().proGp | number:'1.2-2' }}</td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getBookingChargeTotals().actRev | number:'1.2-2' }}</td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getBookingChargeTotals().actCost | number:'1.2-2' }}</td>
+            <td style="border:1px solid #000; padding:5px; text-align:right;">{{ getBookingChargeTotals().actGp | number:'1.2-2' }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div> -->
 
        <!-- Terms & Conditions -->
 <div style="

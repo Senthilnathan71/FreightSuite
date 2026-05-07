@@ -4748,7 +4748,7 @@ onETDDateSelect(): void {
 
   reportjobCard() {
     const modalRef = this.modalService.open(JobCardComponent, {
-      size: 'xl',
+      windowClass:'print-landscape',
       scrollable: true,
     });
     modalRef.componentInstance.masterJobData = this.masterJobData;

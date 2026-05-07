@@ -54,6 +54,7 @@ export const AccountRoutes: Routes = [
       {
         path: "currency-exchange/entry",
         component: CurrencyExchangeEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Add Currency Exchange",
           urls: [
@@ -65,6 +66,7 @@ export const AccountRoutes: Routes = [
       {
         path: "currency-exchange/entry/:id",
         component: CurrencyExchangeEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Edit Currency Exchange",
           urls: [
@@ -112,6 +114,7 @@ export const AccountRoutes: Routes = [
       {
         path: "chart-accounts/entry",
         component: ChartAccountEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Chart Accounts",
           urls: [
@@ -123,6 +126,7 @@ export const AccountRoutes: Routes = [
       {
         path: "chart-accounts/entry/:id",
         component: ChartAccountEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Chart Accounts",
           urls: [
@@ -145,6 +149,7 @@ export const AccountRoutes: Routes = [
       {
         path: "supplier-tds/entry",
         component: VendorTdsEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Supplier TDS Mapping",
           urls: [
@@ -156,6 +161,7 @@ export const AccountRoutes: Routes = [
       {
         path: "supplier-tds/entry/:id",
         component: VendorTdsEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Supplier TDS Mapping",
           urls: [
@@ -167,6 +173,7 @@ export const AccountRoutes: Routes = [
       {
         path: "ledger-mapping/list",
         component: LedgerMappingComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Ledger Mapping",
           urls: [
@@ -387,6 +394,7 @@ export const AccountRoutes: Routes = [
          {
         path: "voucher-matching/entry",
         component:VoucherMatchingEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Voucher-Matching",
           urls: [
@@ -399,6 +407,7 @@ export const AccountRoutes: Routes = [
       {
         path: "voucher-matching/entry/:VoucherMatchingHeaderSid",
         component: VoucherMatchingEntryComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "Voucher-Matching",
           urls: [
@@ -412,6 +421,7 @@ export const AccountRoutes: Routes = [
       {
         path: "voucher-matching/view/:VoucherMatchingHeaderSid",
         component: VoucherMatchingViewComponent,
+        canDeactivate: [UnsavedChangesGuard],
         data: {
           title: "View Voucher Matching",
           urls: [

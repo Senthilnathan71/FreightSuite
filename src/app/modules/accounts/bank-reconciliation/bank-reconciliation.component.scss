@@ -515,6 +515,110 @@
   padding: 12px;
 }
 
+.recon-summary-card__body--statement {
+  padding: 18px 20px 22px;
+}
+
+.statement-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.statement-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  font-size: 14px;
+  line-height: 1.35;
+  color: #0f172a;
+  padding: 4px 0;
+}
+
+.statement-row__label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.statement-row__value {
+  flex: 0 0 160px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.statement-row--total .statement-row__value,
+.statement-row--difference .statement-row__value {
+  font-weight: 700;
+}
+
+.statement-row--books .statement-row__label,
+.statement-row--books .statement-row__value {
+  color: #1d4ed8;
+}
+
+.statement-row--issued .statement-row__label,
+.statement-row--issued .statement-row__value {
+  color: #0f766e;
+}
+
+.statement-row--deposited .statement-row__label,
+.statement-row--deposited .statement-row__value {
+  color: #b45309;
+}
+
+.statement-row--bank .statement-row__label,
+.statement-row--bank .statement-row__value {
+  color: #15803d;
+}
+
+.statement-row--less .statement-row__label,
+.statement-row--less .statement-row__value {
+  color: #a16207;
+}
+
+.statement-row--final .statement-row__label,
+.statement-row--final .statement-row__value {
+  color: #334155;
+}
+
+.statement-row--difference .statement-row__label,
+.statement-row--difference .statement-row__value {
+  color: #dc2626;
+}
+
+.statement-counts {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.statement-counts__title {
+  min-width: 52px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.statement-counts__row {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.statement-counts__row strong {
+  min-width: 42px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 .selected-strip {
   border: 1px dashed #93c5fd;
   background: linear-gradient(135deg, #eff6ff, #ffffff);

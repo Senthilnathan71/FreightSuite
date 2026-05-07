@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, effect, OnInit, TemplateRef } from '@angular/core';
+import { ChangeDetectorRef, Component, effect, HostListener, OnDestroy, OnInit, TemplateRef } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { NgbAccordionModule, NgbAlertModule, NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -36,6 +36,7 @@ import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/
 import { LogoService } from 'src/app/core/services/logo.service';
 import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/dial-code-dropdown.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 @Component({
 	selector: 'app-company-entry',
@@ -64,8 +65,12 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
 	templateUrl: './company-entry.component.html',
 	styleUrl: './company-entry.component.scss'
 })
-export class CompanyEntryComponent implements OnInit {
-	private destroy$ = new Subject<void>();
+export class CompanyEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
+private destroy$ = new Subject<void>();
+isDirty: boolean = false;
+isSaving: boolean = false;
+private initialFormValue: any = null;
+private _isInitialLoad = false;
 	active = 1;
 	active2 = 1;
 	modeOfStatus = [
@@ -198,6 +203,8 @@ reportLogoRemoved: boolean = false;
 	ngOnInit(): void {
 		this.mps.init().subscribe();
 		this.initCompanyForm();
+		this.subscribeToFormChanges();
+		this.initialFormValue = this.getComparableFormValue();
 		this.loadAllFields();
 		this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
 		const storedCompany = localStorage.getItem('selected-company');
@@ -293,6 +300,7 @@ onCompanyLogoChange(event: Event) {
     const reader = new FileReader();
     reader.onload = (e: any) => {
       this.companyLogoPreview = e.target.result;
+      this.isDirty = true;
       this.cdRef.detectChanges();
     };
     reader.readAsDataURL(this.companyLogo);
@@ -309,6 +317,7 @@ onReportLogoChange(event: Event) {
     const reader = new FileReader();
     reader.onload = (e: any) => {
       this.reportLogoPreview = e.target.result;
+      this.isDirty = true;
       this.cdRef.detectChanges();
     };
     reader.readAsDataURL(this.reportLogo);
@@ -354,6 +363,7 @@ clearCompanyLogo() {
     this.companyLogoRemoved = true;
   }
   this.existingCompanyLogo = null;
+  this.isDirty = true;
 }
 
 clearReportLogo() {
@@ -365,7 +375,66 @@ clearReportLogo() {
     this.reportLogoRemoved = true;
   }
   this.existingReportLogo = null;
+  this.isDirty = true;
 }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.submitCompanyForm(resolve);
+    });
+  }
+
+  private subscribeToFormChanges(): void {
+    this.companyForm.valueChanges.subscribe(() => {
+      if (this._isInitialLoad) return;
+      this.isDirty = !this.deepEqual(this.initialFormValue, this.getComparableFormValue());
+    });
+  }
+
+  private getComparableFormValue(): any {
+    return {
+      ...this.companyForm.getRawValue(),
+      companyLogoRemoved: this.companyLogoRemoved,
+      reportLogoRemoved: this.reportLogoRemoved,
+      hasNewCompanyLogo: !!this.companyLogo,
+      hasNewReportLogo: !!this.reportLogo
+    };
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString().split('T')[0];
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) return Number(value);
+    if (typeof value === 'number') return Number(value.toFixed(6));
+    if (Array.isArray(value)) return value.map((v) => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
+  }
 
 	// FORM INITIALIZATION
 
@@ -596,6 +665,7 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 		this.masterService.getCompanyById(this.CompanyMasterSid).subscribe(
     (resp) => {
       if (resp) {
+        this._isInitialLoad = true;
         this.companyData = resp;
 		const parsedCompanyPhone = this.parsePhone(resp.phoneNumber || '');
 		if (resp.CountryMasterSid) {
@@ -705,9 +775,13 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 					});
 					this.onBranchesUpdated();
 					this.isCompanyDataLoaded = true;
+          this.initialFormValue = this.getComparableFormValue();
+          this.isDirty = false;
+          this._isInitialLoad = false;
 				}
 			},
 			(error) => {
+        this._isInitialLoad = false;
 				this.appSettingService.showWarning('Error loading company.');
 			}
 		);
@@ -991,7 +1065,11 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
 		this.bankModalRef.close();
 	}
 
-	submitCompanyForm() {
+	submitCompanyForm(resolve?: (value: boolean) => void) {
+		if (this.isSaving) {
+      if (resolve) resolve(false);
+      return;
+    }
 		    if (this.isUaeCountry()) {
     const trn = this.companyForm.get('Pan')?.value || '';
     const panControl = this.companyForm.get('Pan');
@@ -1007,6 +1085,7 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
           message: 'TRN must be exactly 15 digits starting with 1-9'
         });
         panControl?.markAsTouched();
+        if (resolve) resolve(false);
         return; // Stop here, don't save
       }
     }
@@ -1015,17 +1094,26 @@ trnValidator(control: AbstractControl): ValidationErrors | null {
       panControl?.setErrors(null);
     }
   }
+
+    if (this.deepEqual(this.getComparableFormValue(), this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      this.companyForm.markAsUntouched();
+      if (resolve) resolve(false);
+      return;
+    }
 		console.log(this.companyForm.value);
 		if (this.companyForm.invalid) {
 			this.companyForm.markAllAsTouched();
 			this.companyForm.updateValueAndValidity();
 			this.appSettingService.showWarning('Please fill all required fields correctly');
+      if (resolve) resolve(false);
 			return;
 		}
 
 
 		if (this.branches.length === 0) {
 			this.appSettingService.showWarning('Company must have atleast one branch.');
+      if (resolve) resolve(false);
 			return;
 		}
 
@@ -1118,8 +1206,10 @@ if (this.reportLogo) {
 }
 
 		if (this.isEditMode) {
+      this.isSaving = true;
 			this.masterService.updateCompanyById(this.CompanyMasterSid, formData).subscribe(
 				(resp: any) => {
+          this.isSaving = false;
 					if (resp.status) {
 						this.appSettingService.showSuccess(resp.message);
 
@@ -1129,18 +1219,26 @@ if (this.reportLogo) {
 							this.CompanyMasterSid = companyId
 							this.loadCompanyData();
 						}
+            this.initialFormValue = this.getComparableFormValue();
+            this.isDirty = false;
+            if (resolve) resolve(true);
 					} else {
 						this.appSettingService.showError(resp.message);
+            if (resolve) resolve(false);
 					}
 				},
 				(error) => {
+          this.isSaving = false;
 					console.error('Error updating company:', error);
 					this.appSettingService.showError('Error updating company.');
+          if (resolve) resolve(false);
 				}
 			);
 		} else {
+      this.isSaving = true;
 			this.masterService.createCompany(formData).subscribe(
 				(resp: any) => {
+          this.isSaving = false;
 					if (resp.status) {
 						this.appSettingService.showSuccess('Company created successfully.');
 						const companyId = resp.data.company?.CompanyMasterSid
@@ -1150,13 +1248,19 @@ if (this.reportLogo) {
 							console.log(companyId);
 							this.route.navigate(['master/company/entry', companyId]);
 						}
+            this.initialFormValue = this.getComparableFormValue();
+            this.isDirty = false;
+            if (resolve) resolve(true);
 					} else {
 						this.appSettingService.showError(resp.message);
+            if (resolve) resolve(false);
 					}
 				},
 				(error) => {
+          this.isSaving = false;
 					console.error('Error creating Company:', error);
 					this.appSettingService.showError('Error creating company.');
+          if (resolve) resolve(false);
 				}
 			);
 		}

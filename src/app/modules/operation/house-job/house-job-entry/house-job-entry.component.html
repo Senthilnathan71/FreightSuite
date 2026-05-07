@@ -1645,14 +1645,9 @@
                     <div class="custom-form-group">
                       <input type="text" class="custom-input-field sm" [onlyNumbers] formControlName="NoofContainers">
                       <label class="input-label">No of Container<span class="text-danger">*</span></label>
-                      @if ((cargo.get('NoofContainers')?.touched || cargo.get('NoofContainers')?.dirty) &&
-                      cargo.get('NoofContainers')?.invalid) {
+                      @if (shouldShowCargoFieldError(cargo, 'NoofContainers')) {
                       <div class="error-message">
-                        @if (cargo.get('NoofContainers')?.hasError('required')) {
-                        <span>Required</span>
-                        } @else if (cargo.get('NoofContainers')?.hasError('min')) {
-                        <span>No of Container is required</span>
-                        }
+                        <span>{{ getCargoFieldErrorMessage(cargo, 'NoofContainers') }}</span>
                       </div>
                       }
                     </div>
@@ -1665,14 +1660,9 @@
                         DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="decimalAfterPrecision"
                         max="9999999.999">
                       <label class="input-label">Gross Weight <span class="text-danger">*</span></label>
-                      @if ((cargo.get('GrossWeight')?.touched || cargo.get('GrossWeight')?.dirty) &&
-                      cargo.get('GrossWeight')?.invalid) {
+                      @if (shouldShowCargoFieldError(cargo, 'GrossWeight')) {
                       <div class="error-message">
-                        @if (cargo.get('GrossWeight')?.hasError('required')) {
-                        <span>Required</span>
-                        } @else if (cargo.get('GrossWeight')?.hasError('min')) {
-                        <span>Gross Weight is required</span>
-                        }
+                        <span>{{ getCargoFieldErrorMessage(cargo, 'GrossWeight') }}</span>
                       </div>
                       }
                     </div>
@@ -2438,12 +2428,9 @@
                           <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
                         </button>
                       </div>
-                      @if(product.get('ProductName')?.invalid && (product.get('ProductName')?.touched ||
-                      product.get('ProductName')?.dirty)){
+                      @if (shouldShowProductFieldError(product, 'ProductName')) {
                       <div class="error-message mt-1">
-                        @if(product.get('ProductName')?.hasError('required')){
-                        <span class="text-danger small">Commodity is required</span>
-                        }
+                        <span class="text-danger small">{{ getProductFieldErrorMessage(product, 'ProductName') }}</span>
                       </div>
                       }
                     </div>
@@ -2470,12 +2457,9 @@
                       [displayFields]="uomLookupConfig.displayFields" [displayLabels]="uomLookupConfig.displayLabels"
                       [labelFields]="uomLookupConfig.labelFields" [bindValue]="'UOMCode'" style="padding:0;">
                     </dofi-searchable-dropdown>
-                    @if(product.get('ExternaPkg')?.invalid && (product.get('ExternaPkg')?.touched ||
-                    product.get('ExternaPkg')?.dirty)){
+                    @if (shouldShowProductFieldError(product, 'ExternaPkg')) {
                     <div class="error-message mt-1">
-                      @if(product.get('ExternaPkg')?.hasError('required')){
-                      <span class="text-danger small">External Package is required</span>
-                      }
+                      <span class="text-danger small">{{ getProductFieldErrorMessage(product, 'ExternaPkg') }}</span>
                     </div>
                     }
                   </td>
@@ -2483,15 +2467,9 @@
                     <input type="text" id="text-input" formControlName="ExternlQty" [onlyNumbers]=5 placeholder=""
                       (input)="handleProductRelatedCalculation()" class="custom-input-field sm text-end"
                       [class.is-invalid]="product.get('ExternlQty')?.invalid && (product.get('ExternlQty')?.touched || product.get('ExternlQty')?.dirty)">
-                    @if(product.get('ExternlQty')?.invalid && (product.get('ExternlQty')?.touched ||
-                    product.get('ExternlQty')?.dirty)){
+                    @if (shouldShowProductFieldError(product, 'ExternlQty')) {
                     <div class="invalid-feedback d-block">
-                      @if(product.get('ExternlQty')?.hasError('required')){
-                      <span>No of Pkg is required</span>
-                      }
-                      @if(product.get('ExternlQty')?.hasError('min')){
-                      <span>Value must be greater than 0</span>
-                      }
+                      <span>{{ getProductFieldErrorMessage(product, 'ExternlQty') }}</span>
                     </div>
                     }
                   </td>
@@ -2499,10 +2477,9 @@
                   <td>
                     <ng-select class="ng-select" formControlName="UomMasterSid" [items]="measurementUnitList" bindLabel="name"
                       bindValue="id" appendTo="body"></ng-select>
-                    @if(product.get('UomMasterSid')?.invalid && (product.get('UomMasterSid')?.touched ||
-                    product.get('UomMasterSid')?.dirty)){
+                    @if (shouldShowProductFieldError(product, 'UomMasterSid')) {
                     <div class="invalid-feedback d-block">
-                      UOM is required
+                      <span>{{ getProductFieldErrorMessage(product, 'UomMasterSid') }}</span>
                     </div>
                     }
                   </td>
@@ -2526,15 +2503,9 @@
                       [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
                       (input)="handleProductRelatedCalculation()" class="custom-input-field sm text-end"
                       [class.is-invalid]="product.get('Volumetric')?.invalid && (product.get('Volumetric')?.touched || product.get('Volumetric')?.dirty)">
-                    @if(product.get('Volumetric')?.invalid && (product.get('Volumetric')?.touched ||
-                    product.get('Volumetric')?.dirty)){
+                    @if (shouldShowProductFieldError(product, 'Volumetric')) {
                     <div class="invalid-feedback d-block">
-                      @if(product.get('Volumetric')?.hasError('required')){
-                      <span>Volumetric is required</span>
-                      }
-                      @if(product.get('Volumetric')?.hasError('min')){
-                      <span>Value must be greater than 0</span>
-                      }
+                      <span>{{ getProductFieldErrorMessage(product, 'Volumetric') }}</span>
                     </div>
                     }
                   </td>
@@ -2543,14 +2514,9 @@
                       [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
                       (input)="handleProductRelatedCalculation()" class="custom-input-field sm text-end"
                       [class.is-invalid]="product.get('Volume')?.invalid && (product.get('Volume')?.touched || product.get('Volume')?.dirty)">
-                    @if(product.get('Volume')?.invalid && (product.get('Volume')?.touched || product.get('Volume')?.dirty)){
+                    @if (shouldShowProductFieldError(product, 'Volume')) {
                     <div class="invalid-feedback d-block">
-                      @if(product.get('Volume')?.hasError('required')){
-                      <span>Volume is required</span>
-                      }
-                      @if(product.get('Volume')?.hasError('min')){
-                      <span>Value must be greater than 0</span>
-                      }
+                      <span>{{ getProductFieldErrorMessage(product, 'Volume') }}</span>
                     </div>
                     }
                   </td>
@@ -2560,15 +2526,9 @@
                       [DecimalPrecisionAfter]="digitsAfterDecimal" (input)="handleProductRelatedCalculation()" placeholder=""
                       class="custom-input-field sm text-end"
                       [class.is-invalid]="product.get('GrossWeight')?.invalid && (product.get('GrossWeight')?.touched || product.get('GrossWeight')?.dirty)">
-                    @if(product.get('GrossWeight')?.invalid && (product.get('GrossWeight')?.touched ||
-                    product.get('GrossWeight')?.dirty)){
+                    @if (shouldShowProductFieldError(product, 'GrossWeight')) {
                     <div class="invalid-feedback d-block">
-                      @if(product.get('GrossWeight')?.hasError('required')){
-                      <span>Gross Weight is required</span>
-                      }
-                      @if(product.get('GrossWeight')?.hasError('min')){
-                      <span>Gross Weight must be greater than 0</span>
-                      }
+                      <span>{{ getProductFieldErrorMessage(product, 'GrossWeight') }}</span>
                     </div>
                     }
               
@@ -2597,14 +2557,9 @@
                       [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
                       (input)="handleProductRelatedCalculation()" class="custom-input-field sm text-end"
                       [class.is-invalid]="product.get('Volume')?.invalid && (product.get('Volume')?.touched || product.get('Volume')?.dirty)">
-                    @if(product.get('Volume')?.invalid && (product.get('Volume')?.touched || product.get('Volume')?.dirty)){
+                    @if (shouldShowProductFieldError(product, 'Volume')) {
                     <div class="invalid-feedback d-block">
-                      @if(product.get('Volume')?.hasError('required')){
-                      <span>Volume is required</span>
-                      }
-                      @if(product.get('Volume')?.hasError('min')){
-                      <span>Value must be greater than 0</span>
-                      }
+                      <span>{{ getProductFieldErrorMessage(product, 'Volume') }}</span>
                     </div>
                     }
                   </td>
@@ -3437,7 +3392,7 @@
 </div>
 
 
-<!-- <ng-template #productModal let-modal>
+<ng-template #productModal let-modal>
   <div class="modal-header modalHeaderpart">
     <h5 class="modal-title text-white">Add Product</h5>
     <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
@@ -3451,6 +3406,11 @@
             placeholder="" (change)="handleProductChange($event)">
           </ng-select>
           <label for="" class="input-label">Commodity <span class="text-danger">*</span></label>
+          @if (shouldShowProductFieldError(productForm, 'ProductName')) {
+          <div class="error-message">
+            <span>{{ getProductFieldErrorMessage(productForm, 'ProductName') }}</span>
+          </div>
+          }
         </div>
       </aside>
       <aside class="col-md-4">
@@ -3517,8 +3477,9 @@
             formControlName="ExternaPkg">
           </ng-select>
           <label for="text-input" class="input-label">External Pkg <span class="text-danger">*</span></label>
-          @if(productForm.get('ExternaPkg')?.touched && productForm.get('ExternaPkg')?.invalid){
+          @if (shouldShowProductFieldError(productForm, 'ExternaPkg')) {
           <div class="error-message">
+            <span>{{ getProductFieldErrorMessage(productForm, 'ExternaPkg') }}</span>
           </div>
           }
         </div>
@@ -3527,11 +3488,9 @@
         <div class="custom-form-group">
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="ExternlQty" [onlyNumbers]>
           <label for="text-input" class="input-label">No. of Pkg <span class="text-danger">*</span></label>
-          @if(productForm.get('ExternlQty')?.touched && productForm.get('ExternlQty')?.invalid){
+          @if (shouldShowProductFieldError(productForm, 'ExternlQty')) {
           <div class="error-message">
-            @if(productForm.get('ExternlQty')?.hasError('required')){
-            <span>Required</span>
-            }
+            <span>{{ getProductFieldErrorMessage(productForm, 'ExternlQty') }}</span>
           </div>
           }
         </div>
@@ -3544,6 +3503,11 @@
             placeholder="">
           </ng-select>
           <label for="text-input" class="input-label">Uom <span class="text-danger">*</span></label>
+          @if (shouldShowProductFieldError(productForm, 'UomMasterSid')) {
+          <div class="error-message">
+            <span>{{ getProductFieldErrorMessage(productForm, 'UomMasterSid') }}</span>
+          </div>
+          }
         </div>
       </aside>
       <aside class="col-md-4">
@@ -3574,6 +3538,11 @@
             DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
             max="9999999.999">
           <label for="text-input" class="input-label">Volumetric <span class="text-danger">*</span></label>
+          @if (shouldShowProductFieldError(productForm, 'Volumetric')) {
+          <div class="error-message">
+            <span>{{ getProductFieldErrorMessage(productForm, 'Volumetric') }}</span>
+          </div>
+          }
         </div>
       </aside>
       }
@@ -3584,6 +3553,11 @@
             DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="digitsAfterDecimal"
             max="9999999.999">
           <label for="text-input" class="input-label">Volume <span class="text-danger">*</span></label>
+          @if (shouldShowProductFieldError(productForm, 'Volume')) {
+          <div class="error-message">
+            <span>{{ getProductFieldErrorMessage(productForm, 'Volume') }}</span>
+          </div>
+          }
         </div>
       </aside>
       <aside class="col-md-4">
@@ -3592,18 +3566,9 @@
             (input)="onProductManualFieldInput(productForm, 'GrossWeight')"
             DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3" max="9999999.999">
           <label for="text-input" class="input-label">Gross Weight <span class="text-danger">*</span></label>
-    @if ((productForm.get('GrossWeight')?.touched || productForm.get('GrossWeight')?.dirty) &&
-    productForm.get('GrossWeight')?.invalid) {
+    @if (shouldShowProductFieldError(productForm, 'GrossWeight')) {
     <div class="error-message">
-      @if (productForm.get('GrossWeight')?.errors?.['required']) {
-      <span>Required</span>
-      } @else if (productForm.get('GrossWeight')?.errors?.['max']) {
-      <span>Gross Weight cannot exceed 9,999,999.999</span>
-      } @else if (productForm.get('GrossWeight')?.errors?.['decimalPrecision']) {
-      <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
-      } @else if (productForm.get('GrossWeight')?.errors?.['grossLessThanNet']) {
-      <span>Gross Weight cannot be less than Net Weight</span>
-      }
+      <span>{{ getProductFieldErrorMessage(productForm, 'GrossWeight') }}</span>
     </div>
     }
         </div>
@@ -3613,18 +3578,9 @@
           <input type="text" id="text-input" placeholder="" class="custom-input-field sm" formControlName="NetWeight"
             DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="3" max="9999999.999">
           <label for="text-input" class="input-label">Net Wt <span class="text-danger"></span></label>
-    @if ((productForm.get('NetWeight')?.touched || productForm.get('NetWeight')?.dirty) &&
-    productForm.get('NetWeight')?.invalid) {
+    @if (shouldShowProductFieldError(productForm, 'NetWeight')) {
     <div class="error-message">
-      @if (productForm.get('NetWeight')?.errors?.['required']) {
-      <span>Required</span>
-      } @else if (productForm.get('NetWeight')?.errors?.['max']) {
-      <span>Net Wt cannot exceed 9,999,999.999</span>
-      } @else if (productForm.get('NetWeight')?.errors?.['decimalPrecision']) {
-      <small>Allowed: 7 Digits before and 3 digits after decimal point</small>
-      } @else if (productForm.get('NetWeight')?.errors?.['netGreaterThanGross']) {
-      <span>Net Weight cannot be greater than Gross Weight</span>
-      }
+      <span>{{ getProductFieldErrorMessage(productForm, 'NetWeight') }}</span>
     </div>
     }
         </div>
@@ -3759,7 +3715,7 @@
     <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss()">Cancel</button>
     <button type="button" class="btn btn-info btn-sm" (click)="onProductSubmit()">Add</button>
   </div>
-</ng-template> -->
+</ng-template>
 
 <!-- @if(isEditMode){
 <div class="col-12 mt-3">

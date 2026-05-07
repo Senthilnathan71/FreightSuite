@@ -3662,7 +3662,7 @@ handleEdocChange(event: any) {
       windowClass: 'custom-modal-size'
     });
     modalRef.componentInstance.screenName = 'Master Air Waybill';
-    const value = this.masterJobForm.value;
+    const value = this.masterJobForm.getRawValue();
     modalRef.componentInstance.masterJobFormValue = {
       DepartmentMasterSid : value.DepartmentMasterSid,
       POL : this.getPortCode(value.POL),
@@ -3689,8 +3689,8 @@ handleEdocChange(event: any) {
   }
 
   hasEveryRequiredFieldsFilled(requiredFields:string[],group: FormGroup): boolean {
-    const formValue = group.value;
-    return requiredFields.every(field => formValue[field] !== null && formValue[field] !== undefined && group.get(field)?.valid);
+    const formValue = group.getRawValue();
+    return requiredFields.every(field => formValue[field] !== null && formValue[field] !== undefined);
   }
 
   getPortCode(portSid:number){

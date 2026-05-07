@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { FeatherModule } from 'angular-feather';
@@ -13,6 +13,8 @@ import { DateTimeModel } from 'src/app/component/datetimepicker/datetime.model';
 import { DateTimePickerComponent } from 'src/app/component/datetimepicker/datetimepicker.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-meeting',
@@ -30,7 +32,7 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
   templateUrl: './meeting.component.html',
   styleUrl: './meeting.component.scss'
 })
-export class MeetingComponent {
+export class MeetingComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   @ViewChild(DateTimePickerComponent) dateTimePicker!: DateTimePickerComponent;
   meetingForm: FormGroup;
   errorMessage: string = '';  // To store any error messages
@@ -46,6 +48,10 @@ export class MeetingComponent {
   userData: any;
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
+  isDirty: boolean = false;
+  isSaving: boolean = false;
+  private initialFormValue: any = null;
+  private destroy$ = new Subject<void>();
   selectedTime = '10 min';
   userLookupConfig = DROPDOWN_CONFIGS.USER;
   meetingDurations = [
@@ -76,6 +82,8 @@ export class MeetingComponent {
     this.userData = this.appSettingService.getDecryptedUserProfile();
 
     this.initForm();
+    this.initialFormValue = this.meetingForm.getRawValue();
+    this.subscribeToFormChanges();
     this.route.paramMap.subscribe(params => {
       this.PreCustomerMasterSid = +params.get('PreCustomerMasterSid');
       if (this.PreCustomerMasterSid) {
@@ -143,6 +151,15 @@ changeTime(time: string) {
 
   // Handle Form Submission
   onSubmit() {
+    if (this.isSaving) return;
+
+    const raw = this.meetingForm.getRawValue();
+    if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      this.meetingForm.markAsUntouched();
+      return;
+    }
+
     this.meetingForm.get('customerName')?.enable();
     this.meetingForm.get('contactPerson')?.enable();
     this.meetingForm.get('phone')?.enable();
@@ -169,24 +186,33 @@ changeTime(time: string) {
       status: this.meetingForm.get('status')?.value === "Active" ? "A" : "D"
     };
     this.btnDisable = true;
+    this.isSaving = true;
     console.log(payload, "PAYLOAD")
-    this.leadService.createPreCustomerMeeting(payload).subscribe(
-      resp => {
+    this.leadService.createPreCustomerMeeting(payload).subscribe({
+      next: (resp: any) => {
         if (resp.data && resp.status) {
           // this.appSettingService.showSuccess(resp.message);
           this.modalService.openSuccessModal(resp.message);
           this.btnDisable = false;
+          this.isSaving = false;
           this.meetingForm.patchValue(resp.data);
+          this.initialFormValue = this.meetingForm.getRawValue();
+          this.isDirty = false;
           this.router.navigate([`/crm/lead-schedule-pending`]);
 
         } else {
           // this.appSettingService.showError(resp.message);
           this.modalService.openErrorModal(resp.message);
+          this.isSaving = false;
+          this.btnDisable = false;
         }
+      },
+      error: () => {
+        this.isSaving = false;
+        this.btnDisable = false;
       }
-    )
+    })
     console.log('Creating Lead:', payload);
-    this.btnDisable = false;
   }
 
 
@@ -205,6 +231,8 @@ changeTime(time: string) {
             phone: this.lead.phone || '',
             status: this.lead.status || '',
           });
+          this.initialFormValue = this.meetingForm.getRawValue();
+          this.isDirty = false;
         }
         // this.meetingForm.patchValue(leadData);
       }
@@ -262,7 +290,134 @@ changeTime(time: string) {
   }
 
   goBack() {
-    history.back()
+    this.router.navigate(['/crm/lead-schedule-pending']);
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    const hasChanges = !this.deepEqual(this.initialFormValue, this.meetingForm?.getRawValue());
+    this.isDirty = hasChanges;
+    return hasChanges;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (this.isSaving) {
+        resolve(false);
+        return;
+      }
+
+      const raw = this.meetingForm.getRawValue();
+      if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+        this.appSettingService.showWarning('No changes to save');
+        this.meetingForm.markAsUntouched();
+        resolve(true);
+        return;
+      }
+
+      if (this.meetingForm.invalid) {
+        this.meetingForm.markAllAsTouched();
+        this.appSettingService.showError('Please fill all the required fields.');
+        resolve(false);
+        return;
+      }
+
+      this.meetingForm.get('customerName')?.enable();
+      this.meetingForm.get('contactPerson')?.enable();
+      this.meetingForm.get('phone')?.enable();
+      this.meetingForm.get('status')?.enable();
+
+      const meetingDateStr = this.meetingForm.value.meetingDate;
+      const meetingDate = meetingDateStr;
+      const timeDropdown = this.meetingForm.value.meetingDuration;
+      const payload = {
+        ...this.meetingForm.value,
+        meetingDuration: timeDropdown,
+        meetingDate: meetingDate,
+        CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+        BranchMasterSid: this.currentBranch?.BranchMasterSid,
+        createdBy: this.userData?.userEmail,
+        LeadOrCustomer: 'L',
+        PreCustomerMasterSid: this.PreCustomerMasterSid,
+        status: this.meetingForm.get('status')?.value === "Active" ? "A" : "D"
+      };
+
+      this.btnDisable = true;
+      this.isSaving = true;
+      this.leadService.createPreCustomerMeeting(payload).subscribe({
+        next: (resp: any) => {
+          this.isSaving = false;
+          this.btnDisable = false;
+          if (resp.data && resp.status) {
+            this.isDirty = false;
+            this.meetingForm.patchValue(resp.data);
+            this.initialFormValue = this.meetingForm.getRawValue();
+            resolve(true);
+          } else {
+            this.modalService.openErrorModal(resp.message);
+            resolve(false);
+          }
+        },
+        error: () => {
+          this.isSaving = false;
+          this.btnDisable = false;
+          resolve(false);
+        }
+      });
+    });
+  }
+
+  private subscribeToFormChanges(): void {
+    this.meetingForm.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.isDirty = !this.deepEqual(this.initialFormValue, this.meetingForm.getRawValue());
+      });
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) {
+      return null;
+    }
+    if (value instanceof Date) {
+      return value.toISOString().split('T')[0];
+    }
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+      return Number(value);
+    }
+    if (typeof value === 'number') {
+      return Number(value.toFixed(6));
+    }
+    if (Array.isArray(value)) {
+      return value.map((v) => this.normalizeValue(v));
+    }
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
 
@@ -294,6 +449,4 @@ changeTime(time: string) {
     });
   }
 
-
 }
-

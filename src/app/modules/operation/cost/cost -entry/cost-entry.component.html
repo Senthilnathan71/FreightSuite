@@ -211,7 +211,7 @@
                   <input type="text" min="0" formControlName="NoOfUnit" id="text-input"
                     class="custom-input-field sm"
                     (change)="calculateCostAmount(i); calculateRevenueAmount(i)"
-                    [disabled]="!canEditRate(i) || isFromQuotation(i)" DecimalPrecision [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="3">
+                    [disabled]="!canEditRate(i) || isFromQuotation(i)" DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="3">
                 </div>
               </td>
             </tr>
@@ -683,10 +683,14 @@
           <tr>
             <th>Type</th>
             <th>Charge</th>
-            <th>Revenue Amt</th>
-            <th>Cost Amt</th>
-            <th>Profit</th>
-            <th>Profit %</th>
+            <th>P.Revenue Amt</th>
+            <th>P.Cost Amt</th>
+            <th>P.Profit</th>
+            <th>P.Profit %</th>
+            <th>A.Revenue Amt</th>
+            <th>A.Cost Amt</th>
+            <th>A.Profit</th>
+            <th>A.Profit %</th>
           </tr>
         </thead>
         <tbody>
@@ -717,16 +721,24 @@
             <td>{{ row.totalCost }}</td>
             <td>{{ row.profit }}</td>
             <td>{{ row.profitPercent }}</td>
+            <td>{{ row.actualTotalSales }}</td>
+            <td>{{ row.actualTotalCost }}</td>
+            <td>{{ row.actualProfit }}</td>
+            <td>{{ row.actualProfitPercent }}</td>
           </tr>
 
           <!-- Total row with computed values -->
           <tr class="table-row table-total" style="font-weight: bold;">
             <td>-</td>
             <td  style="font-weight: bolder;" >Total</td>
-            <td  style="font-weight: bolder;">{{ calculateTotal('totalSales') | number:'1.2-2' }}</td>
-            <td  style="font-weight: bolder;">{{ calculateTotal('totalCost') | number:'1.2-2' }}</td>
-            <td  style="font-weight: bolder;">{{ calculateTotal('profit') | number:'1.2-2' }}</td>
-            <td  style="font-weight: bolder;">{{ calculateTotalProfitPercent() | number:'1.2-2' }}%</td>
+            <td  style="font-weight: bolder;">{{ calculateTotal('totalSales') | number:'1.3-3' }}</td>
+            <td  style="font-weight: bolder;">{{ calculateTotal('totalCost') | number:'1.3-3' }}</td>
+            <td  style="font-weight: bolder;">{{ calculateTotal('profit') | number:'1.3-3' }}</td>
+            <td  style="font-weight: bolder;">{{ calculateTotalProfitPercent() | number:'1.3-3' }}%</td>
+            <td  style="font-weight: bolder;">{{ calculateTotal('actualTotalSales') | number:'1.3-3' }}</td>
+            <td  style="font-weight: bolder;">{{ calculateTotal('actualTotalCost') | number:'1.3-3' }}</td>
+            <td  style="font-weight: bolder;">{{ calculateTotal('actualProfit') | number:'1.3-3' }}</td>
+            <td  style="font-weight: bolder;">{{ calculateActualTotalProfitPercent() | number:'1.3-3' }}%</td>
           </tr>
         </tbody>
 
