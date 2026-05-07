@@ -1,0 +1,487 @@
+import { InvoicePdfData } from '../interfaces/pdf-document.interfaces';
+import { PdfTermItem } from '../interfaces/pdf-base.interface';
+import { buildSectionTitle } from '../builders/pdf-section.builder';
+import { PDF_DEFAULT_CONFIG, PDF_TABLE_LAYOUTS, getPdfStyles } from '../styles/pdf-styles';
+import { formatDate, formatNumberWithCommas, joinNonEmpty } from '../helpers/pdf-formatters';
+
+const LOGO_HEIGHT_PT = 82.5;
+
+export function generateProformaInvoiceDocument(data: InvoicePdfData): any {
+  const printData = (data as any).invoicePrintData || {};
+  const isIndiaInvoice = !(data.taxDisplayConfig as any)?.showVAT;
+  const topMargin = 190 + (isIndiaInvoice && printData.GSTCode ? 12 : 0);
+
+  return {
+    pageSize: data.config?.pageSize || PDF_DEFAULT_CONFIG.pageSize,
+    pageOrientation: data.config?.pageOrientation || PDF_DEFAULT_CONFIG.pageOrientation,
+    pageMargins: data.config?.pageMargins || [20, topMargin, 20, 42],
+    background: (_currentPage: number, pageSize: any) => ({
+      canvas: [
+        { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.8 },
+        { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 },
+        { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.8 },
+        { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 }
+      ]
+    }),
+    header: () => ({
+      stack: [
+        buildHeader(data),
+        buildTitle(data),
+        buildBillingInfo(data)
+      ],
+      margin: [20, 10, 20, 0]
+    }),
+    content: [
+      buildShipmentDetails(data),
+      buildChargesTable(data),
+      buildAmountInWords(data),
+      buildLabeledText('Remarks', data.invoice?.remarks || ''),
+      ...(data.invoice?.containerNumber ? [buildLabeledText('Container No / Type', data.invoice.containerNumber)] : []),
+      ...buildBankDetails(data),
+      ...buildTerms(data),
+      buildSignatory(data)
+    ],
+    footer: (currentPage: number, pageCount: number) => buildFooter(data, currentPage, pageCount),
+    styles: getPdfStyles(),
+    defaultStyle: PDF_DEFAULT_CONFIG.defaultStyle
+  };
+}
+
+function buildHeader(data: InvoicePdfData): any {
+  const company = data.company || {} as any;
+  const branch = data.branch || {} as any;
+  const printData = (data as any).invoicePrintData || {};
+  const isIndiaInvoice = !(data.taxDisplayConfig as any)?.showVAT;
+
+  const companyStack: any[] = [];
+
+  if (company.companyName) {
+    companyStack.push({
+      text: company.companyName,
+      style: 'companyName',
+      alignment: 'right',
+      margin: [0, 0, 0, 6]
+    });
+  }
+
+  const addressLine1 = branch.addressLine1 || company.addressLine1;
+  if (addressLine1) {
+    companyStack.push({
+      text: addressLine1,
+      style: 'addressText',
+      alignment: 'right',
+      margin: [0, 0, 0, 6]
+    });
+  }
+
+  const cityName = branch.cityMaster?.cityName || branch.cityName || company.city || branch.branchName;
+  const addressLine2 = branch.addressLine2 || company.addressLine2;
+  const cityCountry = joinNonEmpty([addressLine2, cityName], ', ');
+  if (cityCountry) {
+    companyStack.push({
+      text: cityCountry,  
+      style: 'addressText',
+      alignment: 'right',
+      margin: [0, 0, 0, 6]
+    });
+  }
+
+  const postalCode = branch.postalCode || company.postalCode;
+  if (postalCode) {
+    companyStack.push({
+      text: `Postal Code : ${postalCode}`,
+      style: 'addressText',
+      alignment: 'right',
+      margin: [0, 0, 0, 6]
+    });
+  }
+
+  const phone = branch.phoneNumber || company.phoneNumber;
+  if (phone) {
+    companyStack.push({
+      text: `Phone No : ${phone}`,
+      style: 'addressText',
+      alignment: 'right',
+      margin: [0, 0, 0, 6]
+    });
+  }
+
+  const registrationNo = printData.GSTCode || data.companyVatNo || data.companyPan || data.companyGstCode || '';
+  if (registrationNo) {
+    companyStack.push({
+      text: `${isIndiaInvoice ? 'GST No' : 'VAT No'} : ${registrationNo}`,
+      style: 'addressText',
+      alignment: 'right'
+    });
+  }
+
+  return {
+    stack: [
+      {
+        table: {
+          widths: ['auto', '*', 10],
+          body: [[
+            data.logo ? { image: data.logo, height: LOGO_HEIGHT_PT, alignment: 'left' } : { text: '', width: 1 },
+            { stack: companyStack },
+            { text: '' }
+          ]]
+        },
+        layout: 'noBorders',
+        margin: [0, 5, 0, 3]
+      },
+      horizontalLine(1.5, [0, 0, 0, 6])
+    ]
+  };
+}
+
+function buildTitle(data: InvoicePdfData): any {
+  const printData = (data as any).invoicePrintData || {};
+  const isIndiaInvoice = !(data.taxDisplayConfig as any)?.showVAT;
+
+  return {
+    stack: [
+      { text: data.invoiceTitle || printData.invoiceTitle || 'PROFORMA INVOICE', alignment: 'center', bold: true, fontSize: 14, margin: [0, 4, 0, 2] },
+      ...(isIndiaInvoice && printData.GSTCode ? [{
+        text: [{ text: 'GST Code : ', bold: true }, { text: printData.GSTCode }],
+        alignment: 'center',
+        fontSize: 9,
+        margin: [0, 0, 0, 2]
+      }] : [])
+    ]
+  };
+}
+
+function buildBillingInfo(data: InvoicePdfData): any {
+  const invoice = data.invoice || {};
+  const printData = (data as any).invoicePrintData || {};
+  const isIndiaInvoice = !(data.taxDisplayConfig as any)?.showVAT;
+  const billedToName = printData.BilledTo || '';
+  const billedToAddress = printData.BillingAddress || '';
+
+  const leftStack: any[] = [
+    { text: 'BILLED TO', style: 'labelBold', fontSize: 10, margin: [0, 0, 0, 3] },
+    { text: billedToName, fontSize: 10, margin: [30, 0, 0, billedToAddress ? 3 : 8] },
+    ...(billedToAddress ? [{ text: billedToAddress, fontSize: 10, margin: [30, 0, 0, 8] }] : []),
+    ...(isIndiaInvoice ? [labelRow('PAN', printData.PAN || data.companyPan || '', 28)] : [])
+  ];
+
+  const rightStack = [
+    labelRow(isIndiaInvoice ? 'GST No.' : 'VAT No.', printData.GST_VAT || invoice.customerGstVat || '', 180, [0, 0, 0, 0])
+  ];
+
+  return {
+    table: {
+      widths: ['50%', '50%'],
+      body: [[
+        { stack: leftStack },
+        { stack: rightStack }
+      ]]
+    },
+    layout: {
+      hLineWidth: (i: number) => i === 1 ? 1 : 0,
+      vLineWidth: () => 0,
+      hLineColor: () => '#000',
+      paddingLeft: () => 20,
+      paddingRight: () => 20,
+      paddingTop: () => 8,
+      paddingBottom: () => 18
+    },
+    margin: [-10, 0, -10, 4]
+  };
+}
+
+function buildShipmentDetails(data: InvoicePdfData): any {
+  const invoice = data.invoice || {};
+  const printData = (data as any).invoicePrintData || {};
+  const isSeaMode = data.isSeaMode !== false;
+
+  const leftItems = [
+    ['Shipper', printData.ShipperName || invoice.shipperName],
+    ['Consignee / Notify', printData.ConsigneeName || invoice.consigneeName],
+    [isSeaMode ? 'Vessel Name' : 'Flight Name', printData.Vessel || invoice.vesselName],
+    [isSeaMode ? 'Voyage No.' : 'Flight No.', printData.VoyageNo || invoice.voyageNo],
+    ['Ref No.', printData.DocumentNumber || invoice.shipperRefNo],
+    ['Loading Port', printData.POL || invoice.loadingPort || invoice.pol],
+    ['Final Destination', printData.FPD || invoice.finalDestination || invoice.fpd],
+    ['ETD', printData.ETD ? formatDate(printData.ETD) : formatDate(invoice.etd)],
+    ['ETA', printData.ETA ? formatDate(printData.ETA) : formatDate(invoice.eta)]
+  ];
+
+  const rightItems = [
+    ...(printData.IsServiceJob !== 'Y' && printData.JobType !== 'Agent' ? [[isSeaMode ? 'HBL' : 'HAWB', printData.HBLNo || invoice.hblNo]] : []),
+    ...(printData.IsServiceJob !== 'Y' ? [[isSeaMode ? 'MBL' : 'MAWB', printData.MBLNo || invoice.mblNo]] : []),
+    ['Job No.', printData.MasterJobNumber || invoice.jobNo],
+    ['Freight Terms', printData.FreightTerms || invoice.freightTerms],
+    ['Booking No.', printData.BookingNumber || invoice.bookingNo],
+    ['Invoice Due Date', printData.InvoiceDueDate ? formatDate(printData.InvoiceDueDate) : formatDate(invoice.invoiceDueDate)],
+    ['Currency / Ex-Rate', printData.CurrExRate || '']
+  ];
+
+  const rightStack = rightItems.map(([label, value]) => labelRow(label, value || '', 88, [0, 2, 0, 2]));
+  rightStack.push(buildCargoTable(data));
+
+  return {
+    table: {
+      widths: ['50%', '50%'],
+      body: [[
+        { stack: leftItems.map(([label, value]) => labelRow(label, value || '', 88, [10, 2, 0, 3])), margin: [5, 2, 5, 2] },
+        { stack: rightStack, margin: [5, 2, 5, 2] }
+      ]]
+    },
+    layout: 'noBorders'
+  };
+}
+
+function buildCargoTable(data: InvoicePdfData): any {
+  const printData = (data as any).invoicePrintData || {};
+  const cargo = data.cargoDetails || {};
+  const isSeaMode = data.isSeaMode !== false;
+
+  return {
+    table: {
+      headerRows: 1,
+      widths: [30, '*', 55, 55],
+      body: [
+        [
+          { text: 'Pkg', style: 'tableHeader', alignment: 'center' },
+          { text: 'Commodity Desc', style: 'tableHeader', alignment: 'center' },
+          { text: 'Gross Wt.', style: 'tableHeader', alignment: 'center' },
+          { text: isSeaMode ? 'CBM' : 'Charge Wt.', style: 'tableHeader', alignment: 'center' }
+        ],
+        [
+          { text: String(printData.pkg || cargo.packages || ''), alignment: 'center' },
+          { text: printData.desc || cargo.commodityDesc || '' },
+          { text: formatNumberWithCommas(printData.grosswt || cargo.grossWeight || 0, 3), alignment: 'right' },
+          { text: formatNumberWithCommas(isSeaMode ? (printData.cbm || cargo.cbm || 0) : (printData.ChargeableWeight || cargo.chargeableWeight || 0), 3), alignment: 'right' }
+        ]
+      ]
+    },
+    layout: PDF_TABLE_LAYOUTS.bordered,
+    margin: [0, 4, 0, 0]
+  };
+}
+
+function buildChargesTable(data: InvoicePdfData): any {
+  const printData = (data as any).invoicePrintData || {};
+  const details = printData.voucherDetails || [];
+  if (!details.length) return { text: '' };
+
+  const taxConfig = (data.taxDisplayConfig as any) || {};
+  const invoiceCurrency = printData.CurrencyCode || data.invoice?.currencyCode || '';
+  const localCurrency = data.localCurrency || invoiceCurrency;
+  const showForeign = !!invoiceCurrency && invoiceCurrency !== localCurrency;
+  const showHsnSac = !taxConfig.showVAT;
+
+  const header: any[] = [
+    tableHeader('S.No.'), tableHeader('Particulars'),
+    ...(showHsnSac ? [tableHeader('HSN/SAC')] : []),
+    tableHeader('Curr.'), tableHeader('No. of Unit'), tableHeader('Rate'), tableHeader('ROE'), tableHeader('Taxable Amt')
+  ];
+
+  addTaxHeaders(header, taxConfig);
+  header.push(tableHeader(`Amt In ${localCurrency || invoiceCurrency}`));
+  if (showForeign) header.push(tableHeader(`Amt In ${invoiceCurrency}`));
+
+  const rows = details.map((detail: any, index: number) => {
+    const row: any[] = [
+      tableCell(detail.Sno || index + 1, 'center'),
+      tableCell(softenLongTokens(detail.ChargeDescription || ''), 'left'),
+      ...(showHsnSac ? [tableCell(detail.HSSACCode || '', 'center')] : []),
+      tableCell(detail.CurrencyCode || '', 'center'),
+      tableCell(detail.NumberOfUnit || '', 'right'),
+      tableCell(detail.Rate || '', 'right'),
+      tableCell(detail.ExchangeRate || '', 'right'),
+      tableCell(detail.TaxableAmount || detail.LocalAmount || '', 'right')
+    ];
+
+    addTaxCells(row, detail, taxConfig);
+    row.push(tableCell(detail.LocalAmount || '', 'right'));
+    if (showForeign) row.push(tableCell(detail.PartyAmount || '', 'right'));
+    return row;
+  });
+
+  const totalRow = buildTotalRow(header.length, printData.totalPartyAmount || data.totals?.grandTotal || 0);
+
+  return {
+    table: {
+      headerRows: 1,
+      widths: buildChargeWidths(taxConfig, showHsnSac, showForeign),
+      body: [header, ...rows, totalRow]
+    },
+    layout: PDF_TABLE_LAYOUTS.bordered,
+    margin: [0, 0, 0, 2]
+  };
+}
+
+function buildAmountInWords(data: InvoicePdfData): any {
+  const printData = (data as any).invoicePrintData || {};
+  const amount = printData.AmountInWords || data.amountInWords || '';
+  return buildLabeledText('Amount In Words', amount ? `${amount} (VAT Not Included)` : '', 88);
+}
+
+function buildBankDetails(data: InvoicePdfData): any[] {
+  const banks = data.bankDetails || [];
+  if (!banks.length) return [];
+
+  const rows: any[] = [
+    [{ text: 'Details', style: 'tableHeader', alignment: 'center' }, ...banks.map((bank: any, index) => ({ text: `Bank (${bank.CurrencyCode || bank.currencyCode || data.invoice?.currencyCode || index + 1})`, style: 'tableHeader', alignment: 'center' }))],
+    bankRow('Beneficiary Name', banks, 'BeneficiaryName', 'beneficiaryName'),
+    bankRow('Account No.', banks, 'BankAccountNo', 'accountNo'),
+    bankRow(data.isVATMode ? 'IBAN' : 'IFSC', banks, 'IFSCCode', 'ifscCode', 'iban'),
+    bankRow('Swift Code', banks, 'BankCode', 'swiftCode'),
+    bankRow('Bank Name', banks, 'BankName', 'bankName'),
+    bankRow('Branch', banks, 'BankAddress', 'bankAddress', 'branchName')
+  ];
+
+  return [{
+    stack: [
+      buildSectionTitle('Bank Details', { margin: [0, 10, 0, 3] }),
+      {
+        table: { headerRows: 1, widths: [110, ...banks.map(() => '*')], body: rows, dontBreakRows: true },
+        layout: PDF_TABLE_LAYOUTS.bordered,
+        margin: [0, 0, 0, 5]
+      }
+    ],
+    unbreakable: true
+  }];
+}
+
+function buildTerms(data: InvoicePdfData): any[] {
+  const companyMasterSid = Number((data.company as any)?.CompanyMasterSid || 0);
+  const terms: PdfTermItem[] = companyMasterSid === 13
+    ? [
+        { content: 'If any discrepancy is noticed in the invoice, kindly inform us in writing within 7 days, otherwise the above amount will be considered as correct.' },
+        { content: 'Please mention our invoice number(s) on your remittance instructions.' }
+      ]
+    : (data.terms || []).filter((term: any) => !!String(term?.content || '').trim());
+
+  return terms.length ? [{
+    stack: [
+      { text: 'Terms and Conditions', style: 'sectionTitle', margin: [0, 10, 0, 5] },
+      { ul: terms.map(term => term.content), margin: [0, 0, 0, 6] }
+    ],
+    margin: [0, 0, 0, 8]
+  }] : [];
+}
+
+function buildSignatory(data: InvoicePdfData): any {
+  return {
+    stack: [
+      { text: data.company?.companyName ? `For ${data.company.companyName}` : '', alignment: 'right', margin: [0, 0, 0, 2] },
+      { text: 'Authorised Signatory', alignment: 'right', style: 'labelBold' }
+    ]
+  };
+}
+
+function buildFooter(data: InvoicePdfData, currentPage: number, pageCount: number): any {
+  return {
+    margin: [24, 22, 24, 0],
+    columns: [
+      { text: `Printed By : ${data.userData?.userName || ''}`, alignment: 'left', width: '25%', fontSize: 7, noWrap: true },
+      { text: 'This document is computer-generated and does not require a signature.', alignment: 'center', width: '*', fontSize: 7, noWrap: true },
+      { text: `Printed On : ${formatDate(new Date())}  Page: ${currentPage} of ${pageCount}`, alignment: 'right', width: '30%', fontSize: 7, noWrap: true }
+    ]
+  };
+}
+
+function labelRow(label: string, value: any, labelWidth = 88, margin: number[] = [0, 0, 0, 5]): any {
+  return {
+    columns: [
+      { text: label, width: labelWidth, style: 'labelBold' },
+      { text: ':', width: 6 },
+      { text: value || '', width: '*' }
+    ],
+    margin
+  };
+}
+
+function buildLabeledText(label: string, value: string, labelWidth = 88): any {
+  return {
+    margin: [0, 2, 0, 2],
+    columns: [
+      { width: labelWidth, text: label, style: 'labelBold' },
+      { width: 6, text: ':' },
+      { width: '*', text: value || '' }
+    ]
+  };
+}
+
+function horizontalLine(lineWidth: number, margin: number[]): any {
+  return {
+    canvas: [{ type: 'line', x1: -10, y1: 0, x2: 565, y2: 0, lineWidth }],
+    margin
+  };
+}
+
+function tableHeader(text: string): any {
+  return { text, style: 'tableHeaderSmall', alignment: 'center' };
+}
+
+function tableCell(text: any, alignment: 'left' | 'center' | 'right'): any {
+  return { text: text ?? '', style: 'tableCellSmall', alignment, noWrap: alignment !== 'left' };
+}
+
+function addTaxHeaders(header: any[], taxConfig: any): void {
+  if (taxConfig.showCGST) header.push(tableHeader('CGST %'), tableHeader('CGST Amt'));
+  if (taxConfig.showSGST) header.push(tableHeader('SGST %'), tableHeader('SGST Amt'));
+  if (taxConfig.showUGST) header.push(tableHeader('UGST %'), tableHeader('UGST Amt'));
+  if (taxConfig.showIGST) header.push(tableHeader('IGST %'), tableHeader('IGST Amt'));
+  if (taxConfig.showVAT) header.push(tableHeader('VAT %'), tableHeader('VAT Amt'));
+}
+
+function addTaxCells(row: any[], detail: any, taxConfig: any): void {
+  if (taxConfig.showCGST) row.push(tableCell(detail.cgstRate || '', 'right'), tableCell(detail.cgstAmt || '', 'right'));
+  if (taxConfig.showSGST) row.push(tableCell(detail.sgstRate || '', 'right'), tableCell(detail.sgstAmt || '', 'right'));
+  if (taxConfig.showUGST) row.push(tableCell(detail.ugstRate || '', 'right'), tableCell(detail.ugstAmt || '', 'right'));
+  if (taxConfig.showIGST) row.push(tableCell(detail.igstRate || '', 'right'), tableCell(detail.igstAmt || '', 'right'));
+  if (taxConfig.showVAT) row.push(tableCell(detail.vatRate || '', 'right'), tableCell(detail.vatAmt || '', 'right'));
+}
+
+function buildChargeWidths(taxConfig: any, showHsnSac: boolean, showForeign: boolean): (number | string)[] {
+  const widths: (number | string)[] = [24, '*', ...(showHsnSac ? [34] : []), 28, 44, 42, 42, 56];
+  if (taxConfig.showCGST) widths.push(32, 42);
+  if (taxConfig.showSGST) widths.push(32, 42);
+  if (taxConfig.showUGST) widths.push(28, 42);
+  if (taxConfig.showIGST) widths.push(28, 42);
+  if (taxConfig.showVAT) widths.push(34, 44);
+  widths.push(56);
+  if (showForeign) widths.push(56);
+  return widths;
+}
+
+function buildTotalRow(colCount: number, total: any): any[] {
+  const row: any[] = [];
+  for (let i = 0; i < colCount - 2; i++) row.push({ text: '', style: 'tableCellSmall' });
+  row.push({ text: 'Total', style: 'tableCellBoldSmall', alignment: 'right', noWrap: true });
+  row.push({ text: formatNumberWithCommas(parseNumber(total), 2), style: 'tableCellBoldSmall', alignment: 'right', noWrap: true });
+  return row;
+}
+
+function bankRow(label: string, banks: any[], ...keys: string[]): any[] {
+  return [
+    { text: label, style: 'labelBold', fontSize: 8 },
+    ...banks.map(bank => ({ text: firstValue(bank, keys), fontSize: 8 }))
+  ];
+}
+
+function firstValue(source: any, keys: string[]): string {
+  for (const key of keys) {
+    if (source?.[key] !== undefined && source?.[key] !== null && String(source[key]).trim() !== '') {
+      return String(source[key]);
+    }
+  }
+  return '';
+}
+
+function parseNumber(value: any): number {
+  if (value === null || value === undefined || value === '') return 0;
+  return Number(String(value).replace(/,/g, '')) || 0;
+}
+
+function softenLongTokens(value: any): string {
+  return String(value || '')
+    .replace(/,/g, ',\u200B')
+    .replace(/\//g, '/\u200B')
+    .replace(/-/g, '-\u200B')
+    .replace(/([^\s\u200B]{14})(?=[^\s\u200B])/g, '$1\u200B');
+}
