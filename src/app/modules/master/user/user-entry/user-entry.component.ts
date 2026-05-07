@@ -85,6 +85,7 @@ export class UserEntryComponent implements OnInit {
   menuList: any[];
   roleList: any[] = [];
   countryList: any[];
+  reportingManagersList: any[] = [];
   passwordView: boolean;
 
   permissions: string[] = [];
@@ -132,7 +133,6 @@ export class UserEntryComponent implements OnInit {
     this.userData = this.appSettingService.getDecryptedUserProfile();
     this.MenuMasterSid = this.mps.getMenuId();
     this.mps.init().subscribe();
-
     this.initUserForm();
     this.loadAllFields();
   }
@@ -148,6 +148,7 @@ export class UserEntryComponent implements OnInit {
       designation: ['', [Validators.required]],
       department: [[], [Validators.required]],
       DefaultDept: [''],
+      DeptHead : [null],
       isSalesperson: [false],
       isLoginUser: [true],
       userTypeId: [, [Validators.required]],
@@ -164,6 +165,7 @@ export class UserEntryComponent implements OnInit {
     });
     this.userForm.get('DefaultDept').disable();
     this.handleLoginUserToggle();
+    this.setupFormListeners();
   }
 
   handleLoginUserToggle() {
@@ -466,6 +468,94 @@ export class UserEntryComponent implements OnInit {
     this.userCompanyMaster.updateValueAndValidity();
   }
 
+  setupFormListeners() {
+    // Watch for salesperson toggle changes
+    this.userForm.get('isSalesperson')?.valueChanges.subscribe(() => {
+      this.fetchReportingManagers();
+    });
+
+    // Watch for user type changes
+    this.userForm.get('userTypeId')?.valueChanges.subscribe(() => {
+      this.fetchReportingManagers();
+    });
+  }
+
+  fetchReportingManagers() {
+    const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    const branchMasterSid = this.currentBranch?.BranchMasterSid;
+    const userTypeId = this.userForm.get('userTypeId')?.value;
+    const isSalesperson = this.userForm.get('isSalesperson')?.value;
+
+    // Clear existing value
+    this.userForm.get('DeptHead')?.setValue(null);
+    this.reportingManagersList = [];
+
+    let userTypeCode = '';
+
+    // Get UserTypeCode from selected userTypeId
+    if (userTypeId) {
+      const selectedType = this.userTypeList.find(t => t.UserTypeSid === userTypeId);
+      userTypeCode = selectedType?.code || '';
+    }
+
+    // Determine DeptHead type based on conditions
+    let deptHeadType = '';
+
+    if (isSalesperson) {
+      // Salesman -> Need Sales Manager
+      deptHeadType = 'salesManager';
+    } else {
+      // Non-salesman -> Based on UserType
+      switch (userTypeCode) {
+        case 'user':
+        case 'teamLead':
+          deptHeadType = 'manager';
+          break;
+        case 'manager':
+          deptHeadType = 'management';
+          break;
+        case 'csPerson':
+          deptHeadType = 'csManager';
+          break;
+        case 'opsPerson':
+          deptHeadType = 'opsManager';
+          break;
+        case 'docPerson':
+          deptHeadType = 'docManager';
+          break;
+        case 'accounts':
+          deptHeadType = 'accountsManager';
+          break;
+        default:
+          deptHeadType = 'management';
+          break;
+      }
+    }
+
+    if (deptHeadType) {
+      const payload = {
+        CompanyMasterSid: companyMasterSid,
+        UserType : deptHeadType
+      };
+
+      this.masterService.getFFUserByUserType(payload).subscribe({
+        next: (resp: any) => {
+          this.reportingManagersList = resp.data || [];
+          // Filter out current user in edit mode
+          if (this.isEditMode && this.UserMasterSid) {
+            this.reportingManagersList = this.reportingManagersList.filter(
+              (mgr: any) => mgr.UserMasterSid !== this.UserMasterSid
+            );
+          }
+        },
+        error: (error) => {
+          console.error('Error fetching reporting managers:', error);
+          this.reportingManagersList = [];
+        }
+      });
+    }
+  }
+
   // loads all lookups
   loadAllFields() {
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
@@ -607,6 +697,13 @@ export class UserEntryComponent implements OnInit {
             });
           });
 
+          setTimeout(() => {
+            this.fetchReportingManagers();
+            this.userForm.patchValue({
+              DeptHead: d.DeptHead || null
+            });
+          }, 500);
+
         } else {
           this.appSettingService.showError('Error Loading User Data');
         }
@@ -676,6 +773,7 @@ export class UserEntryComponent implements OnInit {
       designation: formValue.designation,
       department: formValue.department,
       DefaultDept: formValue.DefaultDept,
+      DeptHead : formValue.DeptHead,
       isSalesperson: formValue.isSalesperson ? '1' : '0',
       userTypeId: formValue.userTypeId,
       contactNumber: this.withDialCode(formValue.contactNumber, formValue.contactNumberCode)|| null,
