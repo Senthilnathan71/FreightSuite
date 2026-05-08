@@ -68,6 +68,7 @@ import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { MAWBComponent } from '../../Master-air-waybill/report/mawb/mawb.component';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
+import { PerformaInvoiceComponent } from '../../house-job/report/performa-invoice/performa-invoice.component';
 
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
@@ -4968,6 +4969,27 @@ ${this.userData['userName']}`;
           modalRef.componentInstance.portList = this.portList || [];
         }
       
+        //  Performa Invoice 
+
+         reportPerformaInvoice() {
+              const modalRef = this.modalService.open(PerformaInvoiceComponent, {
+                size: 'xl',
+                scrollable: true,
+              });
+              // modalRef.componentInstance.masterJobData = this.masterJobData;
+              modalRef.componentInstance.housejobData = this.housejobData || [];
+              // modalRef.componentInstance.masterJobContainers = this.masterJobContainers.getRawValue() || [];
+              modalRef.componentInstance.masterJobContainers = this.housejobData?.containers || [];
+              modalRef.componentInstance.packageTypeList = this.packageTypeList;
+              modalRef.componentInstance.TandCList = this.TandCList || [];
+              modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || 'LCL';
+              modalRef.componentInstance.portList = this.portList || [];
+              modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+              modalRef.componentInstance.houseMenuMasterSid = this.currentMenuId;
+              modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+              modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+            }
+            
         // Exit form
 
          reportExitForm() {

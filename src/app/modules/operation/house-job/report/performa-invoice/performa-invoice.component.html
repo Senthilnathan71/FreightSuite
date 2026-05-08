@@ -191,17 +191,17 @@
             <div style="width: 15px;text-align: center;">:</div>
             <div style="flex: 1;line-height: 1.4;">{{ invoicePrintData?.FPD }}</div>
           </div>
-          <div style="display: flex">
-            <div style="width: 165px; font-weight: bolder"><strong>ETD</strong></div>
-            <div>: {{ invoicePrintData?.ETD | formatDate }}</div>
-          </div>
-          <div style="display: flex">
-            <div style="width: 165px; font-weight: bolder"><strong>ETA</strong></div>
-            <div>: {{ invoicePrintData?.ETA | formatDate }}</div>
-          </div>
         </div>
 
         <div style="flex: 0 0 50%; max-width: 50%; font-size: 16px">
+           <div style="display: flex">
+            <div style="width: 180px; font-weight: bolder"><strong>ETD</strong></div>
+            <div>: {{ invoicePrintData?.ETD | formatDate }}</div>
+          </div>
+          <div style="display: flex">
+            <div style="width: 180px; font-weight: bolder"><strong>ETA</strong></div>
+            <div>: {{ invoicePrintData?.ETA | formatDate }}</div>
+          </div>
           <div style="display: flex" *ngIf="invoicePrintData?.IsServiceJob !== 'Y' && invoicePrintData?.JobType !== 'Agent'">
             <div style="width: 180px; font-weight: bolder"><strong>{{ isSeaDepartment() ? 'HBL' : 'HAWB' }}</strong></div>
             <div>: {{ invoicePrintData?.HBLNo }}</div>
@@ -222,14 +222,14 @@
             <div style="width: 180px; font-weight: bolder"><strong>Booking No.</strong></div>
             <div>: {{ invoicePrintData?.BookingNumber }}</div>
           </div>
-          <div style="display: flex">
+          <!-- <div style="display: flex">
             <div style="width: 180px; font-weight: bolder"><strong>Invoice Due Date</strong></div>
             <div>: {{ invoicePrintData?.InvoiceDueDate | formatDate }}</div>
-          </div>
-          <div style="display: flex">
+          </div> -->
+          <!-- <div style="display: flex">
             <div style="width: 180px; font-weight: bolder"><strong>Currency / Ex-Rate</strong></div>
             <div>: {{ invoicePrintData?.CurrExRate }}</div>
-          </div>
+          </div> -->
 
           <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
             <thead>
@@ -281,11 +281,11 @@
                 <th style="border: 1px solid black; padding: 2px 8px; text-align:center; font-weight: bolder;"><strong>IGST %</strong></th>
                 <th style="border: 1px solid black; padding: 2px 8px; text-align:center; font-weight: bolder;"><strong>IGST Amt.</strong></th>
               </ng-container>
-              <th [style.border-right]="shouldShowForeignCurrencyColumn() ? '1px solid black' : 'none'" style="border: 1px solid black; padding: 2px 8px; text-align:center;">
-                <strong>Amt In {{ currentCompanyCurrency?.code }}</strong>
+              <th style="border: 1px solid black; padding: 2px 8px; text-align:center;">
+                <strong>Amt</strong>
               </th>
-              <th *ngIf="shouldShowForeignCurrencyColumn()" style="border: 1px solid black; padding: 2px 8px; text-align:center; border-right: none;">
-                <strong>Amt In {{ invoicePrintData?.CurrencyCode }}</strong>
+              <th style="border: 1px solid black; padding: 2px 8px; text-align:center; border-right: none;">
+                <strong>Local Amt</strong>
               </th>
             </tr>
           </thead>
@@ -315,20 +315,23 @@
                 <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">{{ detail.igstRate }}</td>
                 <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">{{ detail.igstAmt }}</td>
               </ng-container>
-              <td [style.border-right]="shouldShowForeignCurrencyColumn() ? '1px solid black' : 'none'" style="border: 1px solid black; padding: 2px 8px; text-align: right;">{{ detail?.LocalAmount }}</td>
-              <td *ngIf="shouldShowForeignCurrencyColumn()" style="border: 1px solid black; padding: 2px 8px; border-right: none; text-align: right;">{{ detail?.PartyAmount }}</td>
+              <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">{{ detail?.PartyAmount }}</td>
+              <td style="border: 1px solid black; padding: 2px 8px; border-right: none; text-align: right;">{{ detail?.LocalAmount }}</td>
             </tr>
             <tr *ngIf="!invoicePrintData?.voucherDetails?.length">
-              <td [attr.colspan]="calculateTotalColspan(printTaxDisplayConfig) + (shouldShowForeignCurrencyColumn() ? 1 : 0) + 1" style="border: 1px solid black; padding: 8px; border-left: none; border-right: none; text-align: center;">
+              <td [attr.colspan]="calculateTotalColspan(printTaxDisplayConfig) + 2" style="border: 1px solid black; padding: 8px; border-left: none; border-right: none; text-align: center;">
                 No charges available
               </td>
             </tr>
             <tr style="font-weight: bolder">
-              <td [attr.colspan]="calculateTotalColspan(printTaxDisplayConfig) + (shouldShowForeignCurrencyColumn() ? 1 : 0)" style="border: 1px solid black; padding: 2px 8px; text-align: right; border-left: none;">
+              <td [attr.colspan]="calculateTotalColspan(printTaxDisplayConfig)" style="border: 1px solid black; padding: 2px 8px; border-left: none;">
+                &nbsp;
+              </td>
+              <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">
                 <strong>Total</strong>
               </td>
               <td style="border: 1px solid black; padding: 2px 8px; border-right: none; text-align: right;">
-                <strong>{{ invoicePrintData?.totalPartyAmount }}</strong>
+                <strong>{{ getInvoicePrintAmountTotal('LocalAmount') }}</strong>
               </td>
             </tr>
           </tbody>

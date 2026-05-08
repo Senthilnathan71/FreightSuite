@@ -386,6 +386,34 @@ export class PerformaInvoiceComponent implements OnInit {
 
   private buildProformaPdfData(): InvoicePdfData {
     const printData = this.invoicePrintData || {};
+    const house = this.housejobData || {};
+    const billingAddress =
+      printData.BillingAddress ||
+      printData.CustomerAddress ||
+      printData.CustomerAddress1 ||
+      printData.Address ||
+      house.CustomerAddress ||
+      house.CustomerAddress1 ||
+      house.Address ||
+      house.customerAddress ||
+      house.customerBranch?.Address ||
+      house.customerBranch?.CustomerAddress1 ||
+      house.customerBranch?.address ||
+      house.customerBranch?.addressLine1 ||
+      house.customerMaster?.Address ||
+      house.customerMaster?.CustomerAddress1 ||
+      house.customerMaster?.address ||
+      house.customerMaster?.addressLine1 ||
+      this.findFirstAddressValue(house, [
+        'BillingAddress',
+        'CustomerAddress',
+        'CustomerAddress1',
+        'Address',
+        'address',
+        'addressLine1',
+      ]) ||
+      house.ConsigneeAddress ||
+      '';
     const localCurrency = this.currentCompanyCurrency?.code || this.currentCompany?.CurrencyCode || '';
     const partyTotal = this.parseAmount(printData.totalPartyAmount);
     const localTotal = this.getVoucherLocalTotal(printData.voucherDetails || []);
@@ -427,7 +455,10 @@ export class PerformaInvoiceComponent implements OnInit {
         invoiceDate: printData.InvoiceDate || new Date(),
         dueDate: printData.InvoiceDueDate || '',
         customerName: printData.BilledTo || '',
-        customerAddress: printData.BillingAddress || '',
+        customerAddress: billingAddress,
+        billingAddress,
+        BillingAddress: billingAddress,
+        CustomerAddress: billingAddress,
         customerGstVat: printData.GST_VAT || '',
         jobNo: printData.MasterJobNumber || '',
         hblNo: printData.HBLNo || '',
@@ -484,12 +515,43 @@ export class PerformaInvoiceComponent implements OnInit {
         ...printData,
         invoiceTitle: printData.invoiceTitle || 'PROFORMA INVOICE',
         BilledTo: printData.BilledTo || '',
-        BillingAddress: printData.BillingAddress || ''
-      }
+        BillingAddress: billingAddress,
+        CustomerAddress: billingAddress,
+        CustomerAddress1: billingAddress,
+        Address: billingAddress,
+        billingAddress,
+        customerAddress: billingAddress
+      },
+      BillingAddress: billingAddress,
+      CustomerAddress: billingAddress,
+      CustomerAddress1: billingAddress,
+      Address: billingAddress,
+      billingAddress,
+      customerAddress: billingAddress
     };
 
     pdfData.company.CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     return pdfData as InvoicePdfData;
+  }
+
+  private findFirstAddressValue(source: any, keys: string[], depth = 0): string {
+    if (!source || typeof source !== 'object' || depth > 4) return '';
+
+    for (const key of keys) {
+      const value = source?.[key];
+      if (typeof value === 'string' && value.trim()) {
+        return value.trim();
+      }
+    }
+
+    for (const value of Object.values(source)) {
+      if (value && typeof value === 'object') {
+        const found = this.findFirstAddressValue(value, keys, depth + 1);
+        if (found) return found;
+      }
+    }
+
+    return '';
   }
 
   private getCompanyRegistrationNo(): string {

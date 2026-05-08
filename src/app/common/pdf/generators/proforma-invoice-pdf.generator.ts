@@ -32,6 +32,7 @@ export function generateProformaInvoiceDocument(data: InvoicePdfData): any {
       margin: [20, 10, 20, 0]
     }),
     content: [
+      horizontalLine(1, [0, 0, 0, 4]),
       buildShipmentDetails(data),
       buildChargesTable(data),
       buildAmountInWords(data),
@@ -155,13 +156,53 @@ function buildBillingInfo(data: InvoicePdfData): any {
   const invoice = data.invoice || {};
   const printData = (data as any).invoicePrintData || {};
   const isIndiaInvoice = !(data.taxDisplayConfig as any)?.showVAT;
-  const billedToName = printData.BilledTo || '';
-  const billedToAddress = printData.BillingAddress || '';
+  const billedToName =
+    printData.BilledTo ||
+    printData.CustomerName ||
+    invoice.customerName ||
+    (invoice as any).BilledTo ||
+    (invoice as any).CustomerName ||
+    '';
+  const billedToAddress =
+    printData.BillingAddress ||
+    printData.CustomerAddress ||
+    printData.CustomerAddress1 ||
+    printData.Address ||
+    printData.billingAddress ||
+    printData.customerAddress ||
+    printData.address ||
+    printData.addressLine1 ||
+    invoice.customerAddress ||
+    (invoice as any).CustomerAddress1 ||
+    (invoice as any).Address ||
+    (invoice as any).billingAddress ||
+    (invoice as any).BillingAddress ||
+    (invoice as any).CustomerAddress ||
+    (invoice as any).address ||
+    (invoice as any).addressLine1 ||
+    (data as any).BillingAddress ||
+    (data as any).CustomerAddress ||
+    (data as any).CustomerAddress1 ||
+    (data as any).Address ||
+    (data as any).billingAddress ||
+    (data as any).customerAddress ||
+    (data as any).address ||
+    (data as any).addressLine1 ||
+    findFirstAddressValue(data, [
+      'BillingAddress',
+      'CustomerAddress',
+      'CustomerAddress1',
+      'Address',
+      'address',
+      'addressLine1',
+    ]) ||
+    '';
+
 
   const leftStack: any[] = [
     { text: 'BILLED TO', style: 'labelBold', fontSize: 10, margin: [0, 0, 0, 3] },
-    { text: billedToName, fontSize: 10, margin: [30, 0, 0, billedToAddress ? 3 : 8] },
-    ...(billedToAddress ? [{ text: billedToAddress, fontSize: 10, margin: [30, 0, 0, 8] }] : []),
+    { text: billedToName, fontSize: 10, margin: [0, 0, 0, 3] },
+    ...(billedToAddress ? [{ text: billedToAddress, fontSize: 10, margin: [0, 0, 0, 3] }] : []),
     ...(isIndiaInvoice ? [labelRow('PAN', printData.PAN || data.companyPan || '', 28)] : [])
   ];
 
@@ -170,23 +211,17 @@ function buildBillingInfo(data: InvoicePdfData): any {
   ];
 
   return {
-    table: {
-      widths: ['50%', '50%'],
-      body: [[
-        { stack: leftStack },
-        { stack: rightStack }
-      ]]
-    },
-    layout: {
-      hLineWidth: (i: number) => i === 1 ? 1 : 0,
-      vLineWidth: () => 0,
-      hLineColor: () => '#000',
-      paddingLeft: () => 20,
-      paddingRight: () => 20,
-      paddingTop: () => 8,
-      paddingBottom: () => 18
-    },
-    margin: [-10, 0, -10, 4]
+    stack: [
+      {
+        columns: [
+          { width: '50%', stack: leftStack },
+          { width: '50%', stack: rightStack }
+        ],
+        columnGap: 0,
+        margin: [20, 14, 20, 34]
+      },
+    ],
+    margin: [-10, 0, -10, 0]
   };
 }
 
@@ -202,19 +237,17 @@ function buildShipmentDetails(data: InvoicePdfData): any {
     [isSeaMode ? 'Voyage No.' : 'Flight No.', printData.VoyageNo || invoice.voyageNo],
     ['Ref No.', printData.DocumentNumber || invoice.shipperRefNo],
     ['Loading Port', printData.POL || invoice.loadingPort || invoice.pol],
-    ['Final Destination', printData.FPD || invoice.finalDestination || invoice.fpd],
-    ['ETD', printData.ETD ? formatDate(printData.ETD) : formatDate(invoice.etd)],
-    ['ETA', printData.ETA ? formatDate(printData.ETA) : formatDate(invoice.eta)]
+    ['Final Destination', printData.FPD || invoice.finalDestination || invoice.fpd]
   ];
 
   const rightItems = [
+    ['ETD', printData.ETD ? formatDate(printData.ETD) : formatDate(invoice.etd)],
+    ['ETA', printData.ETA ? formatDate(printData.ETA) : formatDate(invoice.eta)],
     ...(printData.IsServiceJob !== 'Y' && printData.JobType !== 'Agent' ? [[isSeaMode ? 'HBL' : 'HAWB', printData.HBLNo || invoice.hblNo]] : []),
     ...(printData.IsServiceJob !== 'Y' ? [[isSeaMode ? 'MBL' : 'MAWB', printData.MBLNo || invoice.mblNo]] : []),
     ['Job No.', printData.MasterJobNumber || invoice.jobNo],
     ['Freight Terms', printData.FreightTerms || invoice.freightTerms],
-    ['Booking No.', printData.BookingNumber || invoice.bookingNo],
-    ['Invoice Due Date', printData.InvoiceDueDate ? formatDate(printData.InvoiceDueDate) : formatDate(invoice.invoiceDueDate)],
-    ['Currency / Ex-Rate', printData.CurrExRate || '']
+    ['Booking No.', printData.BookingNumber || invoice.bookingNo]
   ];
 
   const rightStack = rightItems.map(([label, value]) => labelRow(label, value || '', 88, [0, 2, 0, 2]));
@@ -266,46 +299,35 @@ function buildChargesTable(data: InvoicePdfData): any {
   const details = printData.voucherDetails || [];
   if (!details.length) return { text: '' };
 
-  const taxConfig = (data.taxDisplayConfig as any) || {};
-  const invoiceCurrency = printData.CurrencyCode || data.invoice?.currencyCode || '';
-  const localCurrency = data.localCurrency || invoiceCurrency;
-  const showForeign = !!invoiceCurrency && invoiceCurrency !== localCurrency;
-  const showHsnSac = !taxConfig.showVAT;
-
   const header: any[] = [
     tableHeader('S.No.'), tableHeader('Particulars'),
-    ...(showHsnSac ? [tableHeader('HSN/SAC')] : []),
-    tableHeader('Curr.'), tableHeader('No. of Unit'), tableHeader('Rate'), tableHeader('ROE'), tableHeader('Taxable Amt')
+    tableHeader('Curr.'), tableHeader('No. of Unit'), tableHeader('Rate'), tableHeader('ROE')
   ];
 
-  addTaxHeaders(header, taxConfig);
-  header.push(tableHeader(`Amt In ${localCurrency || invoiceCurrency}`));
-  if (showForeign) header.push(tableHeader(`Amt In ${invoiceCurrency}`));
+  header.push(tableHeader('Amt'), tableHeader('Local Amt'));
 
   const rows = details.map((detail: any, index: number) => {
     const row: any[] = [
       tableCell(detail.Sno || index + 1, 'center'),
       tableCell(softenLongTokens(detail.ChargeDescription || ''), 'left'),
-      ...(showHsnSac ? [tableCell(detail.HSSACCode || '', 'center')] : []),
       tableCell(detail.CurrencyCode || '', 'center'),
       tableCell(detail.NumberOfUnit || '', 'right'),
       tableCell(detail.Rate || '', 'right'),
-      tableCell(detail.ExchangeRate || '', 'right'),
-      tableCell(detail.TaxableAmount || detail.LocalAmount || '', 'right')
+      tableCell(detail.ExchangeRate || '', 'right')
     ];
 
-    addTaxCells(row, detail, taxConfig);
+    row.push(tableCell(detail.PartyAmount || '', 'right'));
     row.push(tableCell(detail.LocalAmount || '', 'right'));
-    if (showForeign) row.push(tableCell(detail.PartyAmount || '', 'right'));
     return row;
   });
 
-  const totalRow = buildTotalRow(header.length, printData.totalPartyAmount || data.totals?.grandTotal || 0);
+  const localTotal = details.reduce((sum: number, detail: any) => sum + parseNumber(detail.LocalAmount), 0);
+  const totalRow = buildTotalRow(header.length, localTotal);
 
   return {
     table: {
       headerRows: 1,
-      widths: buildChargeWidths(taxConfig, showHsnSac, showForeign),
+      widths: buildChargeWidths(),
       body: [header, ...rows, totalRow]
     },
     layout: PDF_TABLE_LAYOUTS.bordered,
@@ -316,7 +338,10 @@ function buildChargesTable(data: InvoicePdfData): any {
 function buildAmountInWords(data: InvoicePdfData): any {
   const printData = (data as any).invoicePrintData || {};
   const amount = printData.AmountInWords || data.amountInWords || '';
-  return buildLabeledText('Amount In Words', amount ? `${amount} (VAT Not Included)` : '', 88);
+  const amountText = amount
+    ? [{ text: amount }, { text: ' (VAT Not Included)', bold: true }]
+    : '';
+  return buildLabeledText('Amount In Words', amountText, 88);
 }
 
 function buildBankDetails(data: InvoicePdfData): any[] {
@@ -395,7 +420,7 @@ function labelRow(label: string, value: any, labelWidth = 88, margin: number[] =
   };
 }
 
-function buildLabeledText(label: string, value: string, labelWidth = 88): any {
+function buildLabeledText(label: string, value: any, labelWidth = 88): any {
   return {
     margin: [0, 2, 0, 2],
     columns: [
@@ -421,39 +446,15 @@ function tableCell(text: any, alignment: 'left' | 'center' | 'right'): any {
   return { text: text ?? '', style: 'tableCellSmall', alignment, noWrap: alignment !== 'left' };
 }
 
-function addTaxHeaders(header: any[], taxConfig: any): void {
-  if (taxConfig.showCGST) header.push(tableHeader('CGST %'), tableHeader('CGST Amt'));
-  if (taxConfig.showSGST) header.push(tableHeader('SGST %'), tableHeader('SGST Amt'));
-  if (taxConfig.showUGST) header.push(tableHeader('UGST %'), tableHeader('UGST Amt'));
-  if (taxConfig.showIGST) header.push(tableHeader('IGST %'), tableHeader('IGST Amt'));
-  if (taxConfig.showVAT) header.push(tableHeader('VAT %'), tableHeader('VAT Amt'));
-}
-
-function addTaxCells(row: any[], detail: any, taxConfig: any): void {
-  if (taxConfig.showCGST) row.push(tableCell(detail.cgstRate || '', 'right'), tableCell(detail.cgstAmt || '', 'right'));
-  if (taxConfig.showSGST) row.push(tableCell(detail.sgstRate || '', 'right'), tableCell(detail.sgstAmt || '', 'right'));
-  if (taxConfig.showUGST) row.push(tableCell(detail.ugstRate || '', 'right'), tableCell(detail.ugstAmt || '', 'right'));
-  if (taxConfig.showIGST) row.push(tableCell(detail.igstRate || '', 'right'), tableCell(detail.igstAmt || '', 'right'));
-  if (taxConfig.showVAT) row.push(tableCell(detail.vatRate || '', 'right'), tableCell(detail.vatAmt || '', 'right'));
-}
-
-function buildChargeWidths(taxConfig: any, showHsnSac: boolean, showForeign: boolean): (number | string)[] {
-  const widths: (number | string)[] = [24, '*', ...(showHsnSac ? [34] : []), 28, 44, 42, 42, 56];
-  if (taxConfig.showCGST) widths.push(32, 42);
-  if (taxConfig.showSGST) widths.push(32, 42);
-  if (taxConfig.showUGST) widths.push(28, 42);
-  if (taxConfig.showIGST) widths.push(28, 42);
-  if (taxConfig.showVAT) widths.push(34, 44);
-  widths.push(56);
-  if (showForeign) widths.push(56);
-  return widths;
+function buildChargeWidths(): (number | string)[] {
+  return [30, '*', 36, 68, 52, 58, 88, 96];
 }
 
 function buildTotalRow(colCount: number, total: any): any[] {
   const row: any[] = [];
   for (let i = 0; i < colCount - 2; i++) row.push({ text: '', style: 'tableCellSmall' });
-  row.push({ text: 'Total', style: 'tableCellBoldSmall', alignment: 'right', noWrap: true });
-  row.push({ text: formatNumberWithCommas(parseNumber(total), 2), style: 'tableCellBoldSmall', alignment: 'right', noWrap: true });
+  row.push({ text: 'Total', style: 'tableCellBoldSmall', bold: true, alignment: 'right', noWrap: true });
+  row.push({ text: formatNumberWithCommas(parseNumber(total), 2), style: 'tableCellBoldSmall', bold: true, alignment: 'right', noWrap: true });
   return row;
 }
 
@@ -470,6 +471,26 @@ function firstValue(source: any, keys: string[]): string {
       return String(source[key]);
     }
   }
+  return '';
+}
+
+function findFirstAddressValue(source: any, keys: string[], depth = 0): string {
+  if (!source || typeof source !== 'object' || depth > 4) return '';
+
+  for (const key of keys) {
+    const value = source?.[key];
+    if (typeof value === 'string' && value.trim()) {
+      return value.trim();
+    }
+  }
+
+  for (const value of Object.values(source)) {
+    if (value && typeof value === 'object') {
+      const found = findFirstAddressValue(value, keys, depth + 1);
+      if (found) return found;
+    }
+  }
+
   return '';
 }
 
