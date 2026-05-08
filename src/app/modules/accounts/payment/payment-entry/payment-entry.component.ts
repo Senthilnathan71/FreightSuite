@@ -1640,6 +1640,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
             MasterJobSid: request.MasterJobSid || null,
             CostRevenue: 'Cost',
             PartyAmount: detail.CostAmount || 0,
+            CostRevenueChargesSid: detail.sourceCostRevenueCharge?.CostRevenueChargesSid || null,
+            BookingRatesSid: detail.sourceCostRevenueCharge?.BookingRatesSid || null,
           }, false);
         });
       },
@@ -1930,6 +1932,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       VoucherHeader: [data?.VoucherHeader || null],
       voucherTransaction: [data?.voucherTransaction || null],
       yearMaster: [data?.yearMaster || null],
+      CostRevenueChargesSid: [data?.CostRevenueChargesSid || null],
+      BookingRatesSid: [data?.BookingRatesSid || null],
     });
 
     detailItem.get('CurrencyMasterSid')?.valueChanges.subscribe((val) => {
