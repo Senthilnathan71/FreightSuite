@@ -25,6 +25,7 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 @Component({
   selector: 'app-vendor-tds-entry',
@@ -103,9 +104,11 @@ export class VendorTdsEntryComponent implements HasUnsavedChanges {
         this.SupplierTdsMappingSid = +param.get('id');
         if (this.SupplierTdsMappingSid) {
           this.isEditMode = true;
+          this.supplierTDSForm.get('CustomerMasterSid')?.disable();
           this.minEffectiveFromDate = undefined;
           this.loadSupplierTDS();
         } else {
+          this.supplierTDSForm.get('CustomerMasterSid')?.enable();
           this.addTDSDetail();
         }
       }
@@ -386,42 +389,19 @@ export class VendorTdsEntryComponent implements HasUnsavedChanges {
   }
 
 
-openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.SupplierTdsMappingSid) return;
-
-  this.accountService.getAuditLogsSupplierTDSMapping(
-    'SupplierTdsMapping',
-    this.SupplierTdsMappingSid.toString()
-  ).subscribe({
-    next: (logs: any[]) => {
-      const ignoredFields = ['UpdatedOn', 'UpdatedBy']; // ✅ add more if needed later
-
-      const formatFields = (val: any) => {
-        if (!val) return [];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        if (Object.keys(obj).length === 0) return [];
-        return Object.entries(obj)
-          .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-          .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-      };
-
-      this.auditLogs = logs
-        .map(log => ({
-          ...log,
-          oldValDisplay: formatFields(log.oldVal),
-          newValDisplay: formatFields(log.newVal),
-        }))
-        .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
-
-      this.auditLogModalRef = this.modalService.open(modal, {
-        centered: true,
-        scrollable: true,
-        windowClass: 'audit-log-modal'
-      });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+openAuditLogs() {
+        if (!this.SupplierTdsMappingSid) return;
+        const modalRef = this.modalService.open(AuditLogComponent, {
+          centered: true,
+          scrollable: true,
+          size: 'xl',
+          windowClass: 'audit-log-modal'
+        });
+        modalRef.componentInstance.title = 'Supplier Tds Mapping Logs';
+        modalRef.componentInstance.tableName = 'SupplierTdsMapping';
+        modalRef.componentInstance.recordId = this.SupplierTdsMappingSid.toString();
+        modalRef.componentInstance.screenName = 'SupplierTdsMapping';
+      }
 
 
   handleLedgerChange(ledger: any) {

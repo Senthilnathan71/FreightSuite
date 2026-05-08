@@ -20,6 +20,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 @Component({
   selector: 'app-currency-exchange-entry',
@@ -313,7 +314,7 @@ export class CurrencyExchangeEntryComponent implements OnInit, OnDestroy, HasUns
     if (resp.status) {
       this.isDirty = false;
       this.initialFormValue = this.currencyExchangeForm.getRawValue();
-      this.appSettingService.showSuccess(resp.message);
+      this.appSettingService.showSuccess("Currency Exchange saved successfully!");
       this.router.navigate(['accounts/currency-exchange/list']);
     } else {
       this.appSettingService.showError(resp.message );
@@ -515,4 +516,18 @@ openFollowup() {
  nagivateback() {
     this.router.navigate(['accounts/currency-exchange/entry']);
   }
+
+  openAuditLogs() {
+        if (!this.CurrencyExchangeSid) return;
+        const modalRef = this.modalService.open(AuditLogComponent, {
+          centered: true,
+          scrollable: true,
+          size: 'xl',
+          windowClass: 'audit-log-modal'
+        });
+        modalRef.componentInstance.title = 'Currency Exchange Logs';
+        modalRef.componentInstance.tableName = 'CurrencyExchange';
+        modalRef.componentInstance.recordId = this.CurrencyExchangeSid.toString();
+        modalRef.componentInstance.screenName = 'CurrencyExchange';
+      }
 }

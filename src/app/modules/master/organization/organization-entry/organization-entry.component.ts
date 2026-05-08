@@ -3542,6 +3542,7 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
           this.CustomerMasterSid = resp.data.CustomerMasterSid;
           this.isCustomerSaved = true;
           this.showAdditionalTabs = true;
+          this.resetUnsavedState();
           
           this.appSettingService.showSuccess('Customer created successfully');
           this.router.navigate([`master/organization/entry/${this.CustomerMasterSid}`]);
@@ -3578,6 +3579,7 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
     this.masterService.updateCustomerById(this.CustomerMasterSid, payload).subscribe({
       next: (resp: any) => {
         if (resp.status) {
+          this.resetUnsavedState();
           this.appSettingService.showSuccess('Customer updated successfully');
           
           // Reload all data to reflect changes

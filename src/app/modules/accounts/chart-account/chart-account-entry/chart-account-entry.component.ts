@@ -26,6 +26,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { errorLogger } from 'src/app/common/helper';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 @Component({
   selector: 'app-chart-account-entry',
@@ -591,42 +592,19 @@ export class ChartAccountEntryComponent implements OnInit, OnDestroy, HasUnsaved
     };
   }
 
-  openAuditLogs(modal: TemplateRef<any>) {
-    if (!this.chartMasterSid) return;
-
-    this.masterServ.getAuditLogsCOA(
-      'COAMaster',
-      this.chartMasterSid.toString()
-    ).subscribe({
-      next: (logs: any[]) => {
-        const ignoredFields = ['UpdatedOn', 'UpdatedBy'];
-
-        const formatFields = (val: any) => {
-          if (!val) return [];
-          const obj = typeof val === 'string' ? JSON.parse(val) : val;
-          if (Object.keys(obj).length === 0) return [];
-          return Object.entries(obj)
-            .filter(([key]) => !ignoredFields.includes(key))
-            .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-        };
-
-        this.auditLogs = logs
-          .map(log => ({
-            ...log,
-            oldValDisplay: formatFields(log.oldVal),
-            newValDisplay: formatFields(log.newVal),
-          }))
-          .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
-
-        this.auditLogModalRef = this.modalService.open(modal, {
+  openAuditLogs() {
+        if (!this.chartMasterSid) return;
+        const modalRef = this.modalService.open(AuditLogComponent, {
           centered: true,
           scrollable: true,
+          size: 'xl',
           windowClass: 'audit-log-modal'
         });
-      },
-      error: err => console.error('Error fetching audit logs:', err)
-    });
-  }
+        modalRef.componentInstance.title = 'Chart Of Accounts Logs';
+        modalRef.componentInstance.tableName = 'COAMaster';
+        modalRef.componentInstance.recordId = this.chartMasterSid.toString();
+        modalRef.componentInstance.screenName = 'ChartOfAccounts';
+      }
 
   showInfo() {
     if (!this.chartData) return;
