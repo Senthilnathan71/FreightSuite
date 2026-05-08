@@ -388,7 +388,7 @@
 </div>
 
   <!-- Modern Navigation Pills -->
-  <div class="nav-pills-container" style="
+  <div class="nav-pills-container mb-0" style="
   background:#ebedef;
 ">
     <div class="nav-pills">
@@ -1593,7 +1593,7 @@
 
 
     <div class="workspace-content" *ngIf="selectedTab === 'Cargo'">
-      <div class="d-flex justify-content-end align-items-center gap-2 px-3 mb-2">
+      <div class="d-flex justify-content-end align-items-center gap-2 px-3">
         <button class="btn btn-sm btn-info" type="button" (click)="addHouseJobCargo(undefined, false)"
           *ngIf="selectedFCLLCL === 'FCL'" [disabled]="(isEditMode && isExportToImportLinked) || (isEditMode && isSuspended)">
           <i class="fas fa-plus me-1"></i> Add Cargo
@@ -1783,14 +1783,14 @@
                   </aside>
                 </div>
 
-                <div class="d-flex justify-content-end mt-2">
+                <div class="d-flex justify-content-end">
                   <button class="btn btn-sm btn-info" type="button" (click)="addHouseJobCargoProduct(cargoIndex)"
                     [disabled]="(isEditMode && isExportToImportLinked) || (isEditMode && isSuspended)">
                     <i class="fas fa-plus me-1"></i> Add Product
                   </button>
                 </div>
 
-                <div class="table-responsive table-borderless1 mt-2" formArrayName="bookingProducts" style="overflow-y: hidden;">
+                <div class="table-responsive table-borderless1 mt-1" formArrayName="bookingProducts" style="overflow-y: hidden;">
                   <table class="table table-hover align-middle no-wrap table-sm mb-0">
                     <thead>
                       <tr class="bg-info text-center">
