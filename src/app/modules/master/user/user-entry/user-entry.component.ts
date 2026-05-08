@@ -491,11 +491,11 @@ export class UserEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges 
           ...user,
           userTypeName: user.userType?.name || user.userType?.code || '',
         }));
-        if (this.isEditMode && this.UserMasterSid) {
-          this.reportingManagersList = this.reportingManagersList.filter(
-            (mgr: any) => mgr.UserMasterSid !== this.UserMasterSid
-          );
-        }
+        // if (this.isEditMode && this.UserMasterSid) {
+        //   this.reportingManagersList = this.reportingManagersList.filter(
+        //     (mgr: any) => mgr.UserMasterSid !== this.UserMasterSid
+        //   );
+        // }
       },
       error: (error) => {
         console.error('Error fetching reporting users:', error);

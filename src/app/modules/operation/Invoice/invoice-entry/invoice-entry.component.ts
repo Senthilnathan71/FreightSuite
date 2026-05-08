@@ -666,6 +666,95 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     return value;
   }
 
+  private showBlockedAction(reason: string, resolve?: (value: boolean) => void): boolean {
+    if (!reason) return false;
+    this.appSettingService.showWarning(reason);
+    if (resolve) resolve(false);
+    return true;
+  }
+
+  private getInvoiceStateBlockedReason(action: string): string {
+    if (this.invoiceData?.PostStatus === 'P') return `This invoice is already posted and cannot ${action}.`;
+    if (this.invoiceData?.Status !== 'A') return `Inactive invoice cannot ${action}.`;
+    if (this.isReadOnly) return `This invoice cannot ${action} in its current status.`;
+    return '';
+  }
+
+  private getSaveBlockedReason(): string {
+    if (this.isSaving) return 'Invoice is already saving. Please wait.';
+    const stateReason = this.getInvoiceStateBlockedReason('be saved');
+    if (stateReason) return stateReason;
+    if (this.isEditMode && !this.mps.can('update')) return 'You do not have permission to update this invoice.';
+    return '';
+  }
+
+  private getPostBlockedReason(): string {
+    if (this.isSaving) return 'Invoice is currently saving. Please wait.';
+    if (this.isPosted) return 'This invoice is already posted.';
+    if (!this.headerId) return 'Please save the invoice before posting.';
+    if (this.invoiceData?.Status !== 'A') return 'Inactive invoice cannot be posted.';
+    if (this.isReadOnly) return 'This invoice cannot be posted in its current status.';
+    if (!this.mps.can('post')) return 'You do not have permission to post this invoice.';
+    if (this.invoiceForm.invalid) return 'Please fill all required fields before posting.';
+    if (this.isDirty) return 'Please save the draft before posting.';
+    return '';
+  }
+
+  private getResetBlockedReason(): string {
+    const stateReason = this.getInvoiceStateBlockedReason('be reset');
+    if (stateReason) return stateReason;
+    return '';
+  }
+
+  private getPrintBlockedReason(): string {
+    if (!this.invoiceData || !this.headerId) return 'Please save the invoice before printing.';
+    if (this.invoiceData?.Status !== 'A') return 'Inactive invoice cannot be printed.';
+    return '';
+  }
+
+  private getSendMailBlockedReason(): string {
+    if (!this.invoiceData || !this.headerId) return 'Please save the invoice before sending email.';
+    if (this.invoiceData?.Status !== 'A') return 'Inactive invoice cannot be sent by email.';
+    return '';
+  }
+
+  private getUninvoicedChargesBlockedReason(): string {
+    const stateReason = this.getInvoiceStateBlockedReason('have unbilled charges added');
+    if (stateReason) return stateReason;
+    return '';
+  }
+
+  private getDetailMutationBlockedReason(): string {
+    const stateReason = this.getInvoiceStateBlockedReason('have details changed');
+    if (stateReason) return stateReason;
+    return '';
+  }
+
+  private getChargeSelectionBlockedReason(charge: any): string {
+    if (this.hasVoucherGenerated(charge)) return 'This charge is already invoiced and cannot be selected.';
+    return '';
+  }
+
+  private getAddSelectedUninvoicedChargesBlockedReason(): string {
+    if (this.selectedUninvoicedCharges.size === 0) return 'Please select at least one charge.';
+    return '';
+  }
+
+  private getEmailSubmitBlockedReason(): string {
+    if (this.emailForm?.invalid) return 'Please fill all required email fields correctly.';
+    return '';
+  }
+
+  getAutoPostBlockedReason(): string {
+    if (this.isSaving) return 'Invoice is currently saving. Please wait.';
+    if (this.isPosted) return 'This invoice is already posted.';
+    return 'Posting is handled automatically. Use Save to save and post this invoice.';
+  }
+
+  showAutoPostBlockedReason(): void {
+    this.showBlockedAction(this.getAutoPostBlockedReason());
+  }
+
 
   deepEqual(obj1: any, obj2: any): boolean {
     const normalizedObj1 = this.normalizeValue(obj1);
@@ -1627,6 +1716,8 @@ isSeaDepartment(): boolean {
   }
 
   addDetailRow() {
+    if (this.showBlockedAction(this.getDetailMutationBlockedReason())) return;
+
     const missingErrors: string[] = [];
 
     const currency = this.invoiceForm.get('CurrencyCode')?.value;
@@ -1734,6 +1825,8 @@ isSeaDepartment(): boolean {
     return department?.departmentName || '-';
   }
   removeDetailRow(index: number) {
+    if (this.showBlockedAction(this.getDetailMutationBlockedReason())) return;
+
     if (this.details.length > index) this.details.removeAt(index);
     if (this._originalHSSACValues.length > index) this._originalHSSACValues.splice(index, 1);
     this.invoiceForm.updateValueAndValidity();
@@ -2194,6 +2287,8 @@ isSeaDepartment(): boolean {
     resolve?: (value:boolean) => void,
     isPostingTrue?: boolean
   ) {
+    if (this.showBlockedAction(this.getSaveBlockedReason(), resolve)) return;
+
     // Validate voucher date is within financial year
     const fy = this.appSettingService.getCurrentFinancialYear();
     if (fy) {
@@ -2519,7 +2614,8 @@ isSeaDepartment(): boolean {
   }
 
   async postVoucher(notFromSubmit: boolean = false) : Promise<void> {
-    if (this.isSaving) return;
+    if (this.showBlockedAction(this.getPostBlockedReason())) return;
+
     this.applyVoucherDateConstraints();
     if (this.voucherConstraints.isClosed) {
       if (this.voucherConstraints.errorMessage) this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
@@ -2619,6 +2715,8 @@ isSeaDepartment(): boolean {
   }
 
   onReset() {
+    if (this.showBlockedAction(this.getResetBlockedReason())) return;
+
     this.invoiceForm.reset({ status: 'A' });
   }
 
@@ -2843,10 +2941,7 @@ isSeaDepartment(): boolean {
 
   // Print Modal Methods
   async openPrintModal() {
-    if (!this.headerId) {
-      this.appSettingService.showWarning('Please save the invoice first.');
-      return;
-    }
+    if (this.showBlockedAction(this.getPrintBlockedReason())) return;
 
     this.spinner.show();
 
@@ -2865,6 +2960,8 @@ isSeaDepartment(): boolean {
 
 
   async openEmailModal(): Promise<void> {
+    if (this.showBlockedAction(this.getSendMailBlockedReason())) return;
+
     this.spinner.show();
 
     try {
@@ -3031,11 +3128,10 @@ isSeaDepartment(): boolean {
   }
 
   async sendInvoiceEmail() {
-    if (this.emailForm.invalid) {
+    const blockedReason = this.getEmailSubmitBlockedReason();
+    if (blockedReason) {
       this.emailForm.markAllAsTouched();
-      this.appSettingService.showWarning(
-        'Please fill all required email fields correctly.'
-      );
+      this.showBlockedAction(blockedReason);
       return;
     }
 
@@ -4544,6 +4640,8 @@ isSeaDepartment(): boolean {
 
 
 openUninvoicedChargesModal() {
+  if (this.showBlockedAction(this.getUninvoicedChargesBlockedReason())) return;
+
   const isBooking = !!(this.invoiceData?.BookingHeaderSid && this.invoiceData?.BookingHeader)
     && !this.invoiceData?.HouseJobSid
     && !this.invoiceData?.MasterJobSid;
@@ -4669,6 +4767,8 @@ private getUninvoicedChargeKey(charge: any): string | null {
 }
 
 toggleChargeSelection(charge: any) {
+  if (this.showBlockedAction(this.getChargeSelectionBlockedReason(charge))) return;
+
   const key = this.getUninvoicedChargeKey(charge);
   if (!key) return;
 
@@ -4685,6 +4785,7 @@ isChargeSelected(charge: any): boolean {
 }
 selectAllUninvoicedCharges() {
   this.uninvoicedChargesList.forEach(charge => {
+    if (this.hasVoucherGenerated(charge)) return;
     const key = this.getUninvoicedChargeKey(charge);
     if (key) this.selectedUninvoicedCharges.add(key);
   });
@@ -4694,10 +4795,7 @@ deselectAllUninvoicedCharges() {
 }
 
 addSelectedUninvoicedCharges() {
-  if (this.selectedUninvoicedCharges.size === 0) {
-    this.appSettingService.showWarning('Please select at least one charge');
-    return;
-  }
+  if (this.showBlockedAction(this.getAddSelectedUninvoicedChargesBlockedReason())) return;
 
   const selectedCharges = this.uninvoicedChargesList.filter(
     charge => {

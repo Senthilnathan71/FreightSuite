@@ -124,6 +124,7 @@ export class SmDrillDownModalComponent implements OnInit , OnChanges , OnDestroy
       page: this.currentPage,
       pageSize: this.pageSize,
       search: this.searchTerm || undefined,
+      meetingDateFilter: sectionNumber === 2 ? 'range' : undefined,
     };
 
     if (sectionNumber === 2) {
