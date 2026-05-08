@@ -371,11 +371,21 @@ getChargeName(ChargeMasterSid: number): string {
   }
 
   getActualLocalRevenue(chargeData: any): string {
+    const actuals = this.getActualAmountsFromVoucherDetails(chargeData);
+    if (actuals.revenue !== 0) {
+      return this.formatNumber(actuals.revenue);
+    }
+
     if (!this.hasRevenueVoucher(chargeData)) return '0.00';
     return this.formatNumber(parseFloat(chargeData.RevenueLocalAmount || '0'));
   }
 
   getActualLocalExpense(chargeData: any): string {
+    const actuals = this.getActualAmountsFromVoucherDetails(chargeData);
+    if (actuals.cost !== 0) {
+      return this.formatNumber(actuals.cost);
+    }
+
     if (!this.hasCostVoucher(chargeData)) return '0.00';
     return this.formatNumber(parseFloat(chargeData.CostLocalAmount || '0'));
   }
@@ -392,6 +402,31 @@ getChargeName(ChargeMasterSid: number): string {
 
   private hasCostVoucher(chargeData: any): boolean {
     return !!(chargeData?.CostVoucherHeaderSid || chargeData?.costVoucherHeader?.VoucherHeaderSid);
+  }
+
+  private getActualAmountsFromVoucherDetails(item: any): { revenue: number; cost: number } {
+    const voucherDetails =
+      item?.voucherDetail || item?.VoucherDetail || item?.VoucherDetails;
+    if (!Array.isArray(voucherDetails)) {
+      return { revenue: 0, cost: 0 };
+    }
+
+    return voucherDetails.reduce(
+      (totals: { revenue: number; cost: number }, detail: any) => {
+        const costRevenue = (detail?.CostRevenue || detail?.costRevenue || '').toString().toUpperCase();
+        const drCr = (detail?.DrCr || detail?.drCr || '').toString().toUpperCase();
+        const amount = parseFloat(detail?.LocalAmount || detail?.localAmount || 0) || 0;
+
+        if (costRevenue === 'REVENUE') {
+          totals.revenue += drCr === 'C' ? amount : -amount;
+        } else if (costRevenue === 'COST') {
+          totals.cost += drCr === 'D' ? amount : -amount;
+        }
+
+        return totals;
+      },
+      { revenue: 0, cost: 0 }
+    );
   }
 
   private formatNumber(value: number): string {

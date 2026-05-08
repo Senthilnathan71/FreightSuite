@@ -4,7 +4,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ComplexReportExportConfig, ExcelCell, ExcelHeader, ExcelRow } from 'src/app/shared/excel-report-service';
 import { ReportRegistryService } from 'src/app/shared/services/report-registry.service';
-import { REPORT_DATA } from 'src/app/shared/services/report.service';
+import { REPORT_DATA, ReportCard, ReportService } from 'src/app/shared/services/report.service';
 import { PrintHeaderComponent } from '../../print-header/print-header.component';
 import { PrintFooterComponent } from '../../print-footer/print-footer.component';
 
@@ -29,7 +29,8 @@ export class AgeingReportComponent implements OnInit{
   constructor(
     @Inject(REPORT_DATA) public data: any,
     private appSettingsService : AppSettingsService,
-    private reportRegistryService : ReportRegistryService
+    private reportRegistryService : ReportRegistryService,
+    private reportService: ReportService
   ) { 
     console.log('Ageing Report Data:', this.data);
   }
@@ -64,6 +65,92 @@ export class AgeingReportComponent implements OnInit{
 
   trackBySubledger(index: number, sub: any): number {
     return sub.SubledgerMasterSid;
+  }
+
+  private resolveSubledgerIdFromName(subledgerName: string): number {
+    if (!subledgerName) return 0;
+    const key = String(subledgerName).trim().toLowerCase();
+
+    for (const group of this.ageingResults || []) {
+      for (const row of group?.subledgers || []) {
+        const rowName = String(row?.SubledgerName || '').trim().toLowerCase();
+        if (rowName !== key) continue;
+
+        const sid = Number(
+          row?.SubledgerMasterSid
+          ?? row?.subledgerMasterSid
+          ?? row?.SubLedgerMasterSid
+          ?? row?.subLedgerMasterSid
+          ?? row?.SubledgerSid
+          ?? row?.subledgerSid
+          ?? 0
+        );
+        if (sid) return sid;
+      }
+    }
+    return 0;
+  }
+
+  async openOutstandingReportForParty(sub: any): Promise<void> {
+    let subledgerMasterSid = Number(
+      sub?.SubledgerMasterSid
+      ?? sub?.subledgerMasterSid
+      ?? sub?.SubLedgerMasterSid
+      ?? sub?.subLedgerMasterSid
+      ?? sub?.SubledgerSid
+      ?? sub?.subledgerSid
+      ?? sub?.CustomerMasterSid
+      ?? sub?.customerMasterSid
+      ?? 0
+    );
+
+    if (!subledgerMasterSid) {
+      subledgerMasterSid = this.resolveSubledgerIdFromName(sub?.SubledgerName);
+    }
+
+    if (!subledgerMasterSid) {
+      this.appSettingsService.showError('Unable to open Outstanding: Subledger ID not found for selected party.');
+      return;
+    }
+
+    const branchFromParams =
+      this.params?.Branch
+      ?? this.params?.Branches
+      ?? this.params?.BranchMasterSids
+      ?? (this.params?.BranchMasterSid ? [this.params.BranchMasterSid] : []);
+
+    const payload: any = {
+      // Match backend DTO exactly
+      ToDate: this.params?.ToDate || this.fullData?.concludedUpto,
+      Ledger: this.params?.Ledger ?? this.params?.LedgerMasterSid ?? this.fullData?.LedgerMasterSid,
+      Branch: Array.isArray(branchFromParams) ? branchFromParams : [branchFromParams],
+      Subledger: subledgerMasterSid,
+      companyId: this.params?.companyId ?? this.currentCompany?.CompanyMasterSid,
+
+      // Optional display/context values
+      LedgerName: this.fullData?.LedgerName,
+      SubledgerName: sub?.SubledgerName || ''
+    };
+
+    // Remove undefined/null/empty-string fields (except numeric 0 when intentionally used)
+    Object.keys(payload).forEach((key) => {
+      if (payload[key] === undefined || payload[key] === null || payload[key] === '') {
+        delete payload[key];
+      }
+    });
+
+    const outstandingReportCard: ReportCard = {
+      ReportMasterSid: 0,
+      ReportName: 'outstanding-report',
+      ReportDisplayName: 'Outstanding Report',
+      ReportMenuSid: 0,
+      ReportFormat: 'PDF',
+      ReportType: 'REPORT',
+      Orientation: 'P',
+      ReportMasterDetail: []
+    };
+
+    await this.reportService.openReportModal(outstandingReportCard, undefined, payload);
   }
 
   /**

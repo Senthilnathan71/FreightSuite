@@ -369,6 +369,11 @@ getGrandActualCostLocalTotal(): number {
 }
 
 getActualRevenueLocalAmount(item: any): number {
+  const voucherActuals = this.getActualAmountsFromVoucherDetails(item);
+  if (voucherActuals.revenue !== 0) {
+    return voucherActuals.revenue;
+  }
+
   const hasRevenueVoucher = !!(item?.RevenueVoucherHeaderSid || item?.revenueVoucherHeader?.VoucherHeaderSid);
   if (!hasRevenueVoucher) return 0;
 
@@ -383,6 +388,11 @@ getActualRevenueLocalAmount(item: any): number {
 }
 
 getActualCostLocalAmount(item: any): number {
+  const voucherActuals = this.getActualAmountsFromVoucherDetails(item);
+  if (voucherActuals.cost !== 0) {
+    return voucherActuals.cost;
+  }
+
   const hasCostVoucher = !!(item?.CostVoucherHeaderSid || item?.costVoucherHeader?.VoucherHeaderSid);
   if (!hasCostVoucher) return 0;
 
@@ -394,6 +404,31 @@ getActualCostLocalAmount(item: any): number {
     item?.CostLocalAmount ??
     0
   ) || 0;
+}
+
+private getActualAmountsFromVoucherDetails(item: any): { revenue: number; cost: number } {
+  const voucherDetails =
+    item?.voucherDetail || item?.VoucherDetail || item?.VoucherDetails;
+  if (!Array.isArray(voucherDetails)) {
+    return { revenue: 0, cost: 0 };
+  }
+
+  return voucherDetails.reduce(
+    (totals: { revenue: number; cost: number }, detail: any) => {
+      const costRevenue = (detail?.CostRevenue || detail?.costRevenue || '').toString().toUpperCase();
+      const drCr = (detail?.DrCr || detail?.drCr || '').toString().toUpperCase();
+      const amount = parseFloat(detail?.LocalAmount || detail?.localAmount || 0) || 0;
+
+      if (costRevenue === 'REVENUE') {
+        totals.revenue += drCr === 'C' ? amount : -amount;
+      } else if (costRevenue === 'COST') {
+        totals.cost += drCr === 'D' ? amount : -amount;
+      }
+
+      return totals;
+    },
+    { revenue: 0, cost: 0 }
+  );
 }
 
 
