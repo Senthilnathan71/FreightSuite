@@ -2682,7 +2682,7 @@
                             (change)="loadBookingARAPData()" style="width: 150px;">
                         <option value="all">All Vouchers</option>
                         <option value="INV">Revenue</option>
-                        <option value="VINV">Cost</option>
+                        <option value="VIN">Cost</option>
                     </select>
                     
                      <select class="form-select form-select-sm" [(ngModel)]="arapFilter.status" 
@@ -2767,13 +2767,13 @@
                       <td></td>
                       <td></td>
                       <td></td>
-                    
+                       <td></td>
                         <td><strong>Totals:</strong></td>
-                        <td class=" fw-bold">
-                            {{getTotalAmount()}}
-                        </td>
-                        <td class="fw-bold">
-                            {{getTotalLocalAmount()}}
+                        <!-- <td class="fw-bold ">
+                            {{ getTotalAmount() | number:'1.2-2' }}
+                        </td> -->
+                        <td class="fw-bold ">
+                            {{ getTotalLocalAmount() | number:'1.2-2' }}
                         </td>
                         <td colspan="2"></td>
                     </tr>

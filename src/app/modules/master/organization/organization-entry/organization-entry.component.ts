@@ -1705,8 +1705,8 @@ private populateBranchFormArray(branches: any[]): void {
       cusSalesteam: this.fb.array([]),
       customerEmails: this.fb.array([]), 
       customerLogins: this.fb.array([]), 
-      AirlineNumber: ['',[Validators.pattern(/^[0-9]{3}$/)]],
-      AirlineCode: ['']
+      AirlineNumber: [null,[Validators.pattern(/^[0-9]{3}$/)]],
+      AirlineCode: [null]
     });
  this.setupPanValidation();
   }
@@ -2230,8 +2230,8 @@ loadCustomerData(customerId: number) {
         PanAvailable: panAvailable,
         PanType: customerData.PanType || '',
         CustomerType: customerType,
-        AirlineNumber: customerData.AirlineNumber || '',
-        AirlineCode: customerData.AirlineCode || '',
+        AirlineNumber: customerData.AirlineNumber || null,
+        AirlineCode: customerData.AirlineCode || null,
         PanName: customerData.PanName || ''
       },{ emitEvent: false });
 
@@ -2251,11 +2251,12 @@ loadCustomerData(customerId: number) {
         })
         .map(type => type.name);
 
-      // FIX: Set isAirlineSelected based on loaded data
-      this.isAirlineSelected = this.selectedStatus.includes('Air Line');
-      
-      // Load all data from the single API response
-      this.loadAllCustomerDataFromResponse(customerData);
+       // FIX: Set isAirlineSelected based on loaded data
+       this.isAirlineSelected = this.selectedStatus.includes('Air Line');
+       this.updateAirlineFieldValidation();
+       
+       // Load all data from the single API response
+       this.loadAllCustomerDataFromResponse(customerData);
       setTimeout(() => this.resetUnsavedState(), 0);
     },
     (error) => {
