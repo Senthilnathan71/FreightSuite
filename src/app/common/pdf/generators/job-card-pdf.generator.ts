@@ -313,6 +313,22 @@ function buildProfitRow(item: JobCardProfitPdfRow): any[] {
 }
 
 function buildCostRevenueTable(data: JobCardPdfData): any {
+  const totals = data.costRevenueCharges.reduce(
+    (acc, item) => {
+      acc.revenueLocalAmount += Number(item.revenueLocalAmount || 0);
+      acc.actualRevenueLocalAmount += Number(item.actualRevenueLocalAmount || 0);
+      acc.costLocalAmount += Number(item.costLocalAmount || 0);
+      acc.actualCostLocalAmount += Number(item.actualCostLocalAmount || 0);
+      return acc;
+    },
+    {
+      revenueLocalAmount: 0,
+      actualRevenueLocalAmount: 0,
+      costLocalAmount: 0,
+      actualCostLocalAmount: 0
+    }
+  );
+
   return {
     table: {
       headerRows: 2,
@@ -348,7 +364,21 @@ function buildCostRevenueTable(data: JobCardPdfData): any {
           { text: 'Local Amt.', style: 'tableHeader' },
           { text: 'Act Local Amt.', style: 'tableHeader' }
         ],
-        ...data.costRevenueCharges.map((item) => buildChargeDetailRow(item))
+        ...data.costRevenueCharges.map((item) => buildChargeDetailRow(item)),
+        [
+          { text: 'TOTAL', style: 'tableCellBold', alignment: 'right', colSpan: 5 },
+          {},
+          {},
+          {},
+          {},
+          buildNumberCell(totals.revenueLocalAmount, 2, true),
+          buildNumberCell(totals.actualRevenueLocalAmount, 2, true),
+          {},
+          {},
+          {},
+          buildNumberCell(totals.costLocalAmount, 2, true),
+          buildNumberCell(totals.actualCostLocalAmount, 2, true)
+        ]
       ]
     },
     layout: borderedLayout(),
@@ -594,28 +624,33 @@ export function transformJobCardApiData(
   }));
 
   const costRevenueCharges: JobCardChargePdfRow[] = charges.map((item: any) => {
+    const voucherActuals = getActualAmountsFromVoucherDetails(item);
     const hasRevenueVoucher = !!(item?.RevenueVoucherHeaderSid || item?.revenueVoucherHeader?.VoucherHeaderSid);
     const hasCostVoucher = !!(item?.CostVoucherHeaderSid || item?.costVoucherHeader?.VoucherHeaderSid);
     const revenueLocalAmount = Number(item?.RevenueLocalAmount || 0);
     const costLocalAmount = Number(item?.CostLocalAmount || 0);
-    const actualRevenueLocalAmount = hasRevenueVoucher
-      ? Number(
-        item?.ActualRevenueLocalAmount ??
-        item?.RevenueActualLocalAmount ??
-        item?.ActRevenueLocalAmount ??
-        item?.ActLocalRevenueAmount ??
-        revenueLocalAmount
-      )
-      : 0;
-    const actualCostLocalAmount = hasCostVoucher
-      ? Number(
-        item?.ActualCostLocalAmount ??
-        item?.CostActualLocalAmount ??
-        item?.ActCostLocalAmount ??
-        item?.ActLocalCostAmount ??
-        costLocalAmount
-      )
-      : 0;
+    const actualRevenueLocalAmount = voucherActuals.revenue !== 0
+      ? voucherActuals.revenue
+      : (hasRevenueVoucher
+        ? Number(
+          item?.ActualRevenueLocalAmount ??
+          item?.RevenueActualLocalAmount ??
+          item?.ActRevenueLocalAmount ??
+          item?.ActLocalRevenueAmount ??
+          revenueLocalAmount
+        )
+        : 0);
+    const actualCostLocalAmount = voucherActuals.cost !== 0
+      ? voucherActuals.cost
+      : (hasCostVoucher
+        ? Number(
+          item?.ActualCostLocalAmount ??
+          item?.CostActualLocalAmount ??
+          item?.ActCostLocalAmount ??
+          item?.ActLocalCostAmount ??
+          costLocalAmount
+        )
+        : 0);
 
     return {
       chargeName: getChargeName(item.ChargeMasterSid) || item.ChargeDescription || item.ChargeName || '',
@@ -742,4 +777,28 @@ function groupPartyAmounts(charges: any[], customerKey: string, amountKey: strin
   });
 
   return Array.from(grouped.entries()).map(([party, amount]) => ({ party, amount }));
+}
+
+function getActualAmountsFromVoucherDetails(item: any): { revenue: number; cost: number } {
+  const voucherDetails = item?.voucherDetail || item?.VoucherDetail || item?.VoucherDetails;
+  if (!Array.isArray(voucherDetails)) {
+    return { revenue: 0, cost: 0 };
+  }
+
+  return voucherDetails.reduce(
+    (totals: { revenue: number; cost: number }, detail: any) => {
+      const costRevenue = (detail?.CostRevenue || detail?.costRevenue || '').toString().toUpperCase();
+      const drCr = (detail?.DrCr || detail?.drCr || '').toString().toUpperCase();
+      const amount = parseFloat(detail?.LocalAmount || detail?.localAmount || 0) || 0;
+
+      if (costRevenue === 'REVENUE') {
+        totals.revenue += drCr === 'C' ? amount : -amount;
+      } else if (costRevenue === 'COST') {
+        totals.cost += drCr === 'D' ? amount : -amount;
+      }
+
+      return totals;
+    },
+    { revenue: 0, cost: 0 }
+  );
 }

@@ -214,19 +214,19 @@
           <thead style="background-color: #f8f9fa;">
             <tr>
               <th style="border: 1px solid black; text-align: center;" rowspan="2"><strong>Charge</strong></th>
-              <th style="border: 1px solid black; text-align: center;" colspan="6"><strong>Provisional</strong></th>
-              <th style="border: 1px solid black; text-align: center;" colspan="6"><strong>Actual</strong></th>
+              <th style="border: 1px solid black; text-align: center;" colspan="3"><strong>Provisional</strong></th>
+              <th style="border: 1px solid black; text-align: center;" colspan="3"><strong>Actual</strong></th>
             </tr>
             <tr>
-              <th style="border: 1px solid black; text-align: center;"><strong>Amt Rev</strong></th>
+              <!-- <th style="border: 1px solid black; text-align: center;"><strong>Amt Rev</strong></th>
               <th style="border: 1px solid black; text-align: center;"><strong>Amt Cost</strong></th>
-              <th style="border: 1px solid black; text-align: center;"><strong>Amt GP</strong></th>
+              <th style="border: 1px solid black; text-align: center;"><strong>Amt GP</strong></th> -->
               <th style="border: 1px solid black; text-align: center;"><strong>Local Rev</strong></th>
               <th style="border: 1px solid black; text-align: center;"><strong>Local Cost</strong></th>
               <th style="border: 1px solid black; text-align: center;"><strong>Local GP</strong></th>
-              <th style="border: 1px solid black; text-align: center;"><strong>Amt Rev</strong></th>
+              <!-- <th style="border: 1px solid black; text-align: center;"><strong>Amt Rev</strong></th>
               <th style="border: 1px solid black; text-align: center;"><strong>Amt Cost</strong></th>
-              <th style="border: 1px solid black; text-align: center;"><strong>Amt GP</strong></th>
+              <th style="border: 1px solid black; text-align: center;"><strong>Amt GP</strong></th> -->
               <th style="border: 1px solid black; text-align: center;"><strong>Local Rev</strong></th>
               <th style="border: 1px solid black; text-align: center;"><strong>Local Cost</strong></th>
               <th style="border: 1px solid black; text-align: center;"><strong>Local GP</strong></th>
@@ -236,15 +236,15 @@
             <tr *ngFor="let chargeItem of housejobData?.costRevenueCharges">
               <td style="border: 1px solid black; text-align: left;">{{ getChargeName(chargeItem?.ChargeMasterSid) }}
               </td>
-              <td style="border: 1px solid black; text-align: right;">{{ getPCurrRevenue(chargeItem) }}</td>
+              <!-- <td style="border: 1px solid black; text-align: right;">{{ getPCurrRevenue(chargeItem) }}</td>
               <td style="border: 1px solid black; text-align: right;">{{ getPCurrExpense(chargeItem) }}</td>
-              <td style="border: 1px solid black; text-align: right;">{{ getPCurrGP(chargeItem) }}</td>
+              <td style="border: 1px solid black; text-align: right;">{{ getPCurrGP(chargeItem) }}</td> -->
               <td style="border: 1px solid black; text-align: right;">{{ getLocalRevenue(chargeItem) }}</td>
               <td style="border: 1px solid black; text-align: right;">{{ getLocalExpense(chargeItem) }}</td>
               <td style="border: 1px solid black; text-align: right;">{{ getLocalGP(chargeItem) }}</td>
-              <td style="border: 1px solid black; text-align: right;">{{ getActualPCurrRevenue(chargeItem) }}</td>
+              <!-- <td style="border: 1px solid black; text-align: right;">{{ getActualPCurrRevenue(chargeItem) }}</td>
               <td style="border: 1px solid black; text-align: right;">{{ getActualPCurrExpense(chargeItem) }}</td>
-              <td style="border: 1px solid black; text-align: right;">{{ getActualPCurrGP(chargeItem) }}</td>
+              <td style="border: 1px solid black; text-align: right;">{{ getActualPCurrGP(chargeItem) }}</td> -->
               <td style="border: 1px solid black; text-align: right;">{{ getActualLocalRevenue(chargeItem) }}</td>
               <td style="border: 1px solid black; text-align: right;">{{ getActualLocalExpense(chargeItem) }}</td>
               <td style="border: 1px solid black; text-align: right;">{{ getActualLocalGP(chargeItem) }}</td>
@@ -253,15 +253,15 @@
           <tfoot>
             <tr style="font-weight: bold;">
               <td style="border: 1px solid black; text-align: right;">Total</td>
-              <td style="border: 1px solid black; text-align: right;">{{ calculateTotals().totalPCurrRevenue }}</td>
+              <!-- <td style="border: 1px solid black; text-align: right;">{{ calculateTotals().totalPCurrRevenue }}</td>
               <td style="border: 1px solid black; text-align: right;">{{ calculateTotals().totalPCurrExpense }}</td>
-              <td style="border: 1px solid black; text-align: right;">{{ calculateTotals().totalPCurrGP }}</td>
+              <td style="border: 1px solid black; text-align: right;">{{ calculateTotals().totalPCurrGP }}</td> -->
               <td style="border: 1px solid black; text-align: right;">{{ calculateTotals().totalLocalRevenue }}</td>
               <td style="border: 1px solid black; text-align: right;">{{ calculateTotals().totalLocalExpense }}</td>
               <td style="border: 1px solid black; text-align: right;">{{ calculateTotals().totalLocalGP }}</td>
-              <td style="border: 1px solid black; text-align: right;">{{ calculateTotals().totalActualPCurrRevenue }}</td>
+              <!-- <td style="border: 1px solid black; text-align: right;">{{ calculateTotals().totalActualPCurrRevenue }}</td>
               <td style="border: 1px solid black; text-align: right;">{{ calculateTotals().totalActualPCurrExpense }}</td>
-              <td style="border: 1px solid black; text-align: right;">{{ calculateTotals().totalActualPCurrGP }}</td>
+              <td style="border: 1px solid black; text-align: right;">{{ calculateTotals().totalActualPCurrGP }}</td> -->
               <td style="border: 1px solid black; text-align: right;">{{ calculateTotals().totalActualLocalRevenue }}</td>
               <td style="border: 1px solid black; text-align: right;">{{ calculateTotals().totalActualLocalExpense }}</td>
               <td style="border: 1px solid black; text-align: right;">{{ calculateTotals().totalActualLocalGP }}</td>

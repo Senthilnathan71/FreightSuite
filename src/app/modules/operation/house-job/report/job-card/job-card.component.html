@@ -446,6 +446,18 @@
                             </td>
                         </tr>
                     </tbody>
+                    <tfoot>
+                        <tr style="font-weight: bolder;">
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;" colspan="5">Total</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ totalRevenueLocalAmount | number:'1.2-2' }}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ totalActualRevenueLocalAmount | number:'1.2-2' }}</td>
+                            <td style="border:1px solid black; padding:2px 8px;"></td>
+                            <td style="border:1px solid black; padding:2px 8px;"></td>
+                            <td style="border:1px solid black; padding:2px 8px;"></td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ totalCostLocalAmount | number:'1.2-2' }}</td>
+                            <td style="border:1px solid black; padding:2px 8px; text-align:right;">{{ totalActualCostLocalAmount | number:'1.2-2' }}</td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
 
