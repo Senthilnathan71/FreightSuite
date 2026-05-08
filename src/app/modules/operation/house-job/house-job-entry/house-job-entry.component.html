@@ -3153,19 +3153,20 @@
         <div class="table-toolbar">
             <div class="toolbar-left">
                 <div class="filter-controls d-flex gap-2 align-items-center">
-                    <select class="form-select form-select-sm"  [(ngModel)]="arapFilter.status"
-  [ngModelOptions]="{ standalone: true }"
-                            (change)="loadMasterJobARAPData()" style="width: 150px;">
-                       <option value="all">All Vouchers</option>
-                        <option value="INV">Revenue</option>
-                        <option value="VINV">Cost</option>
-                    </select>
-                    
                     <select class="form-select form-select-sm" [(ngModel)]="arapFilter.voucherType"
-  [ngModelOptions]="{ standalone: true }"
-                            (change)="loadMasterJobARAPData()" style="width: 150px;">
-                         <option value="P">Posted</option>
-                                <option value="U">Unposted</option>
+                        [ngModelOptions]="{ standalone: true }" (change)="loadMasterJobARAPData()"
+                        style="width: 150px;">
+                        <option value="all">All Vouchers</option>
+                        <option value="INV">Revenue</option>
+                        <option value="VIN">Cost</option>
+                    </select>
+
+                    <select class="form-select form-select-sm" [(ngModel)]="arapFilter.status"
+                        [ngModelOptions]="{ standalone: true }" (change)="loadMasterJobARAPData()"
+                        style="width: 150px;">
+                        <option value="all">All Status</option>
+                        <option value="P">Posted</option>
+                        <option value="U">Unposted</option>
                     </select>
                 </div>
             </div>
@@ -3243,13 +3244,13 @@
                       <td></td>
                       <td></td>
                       <td></td>
-                    
+                    <td></td>
                         <td><strong>Total :</strong></td>
-                        <td class=" fw-bold ps-1">
+                        <!-- <td class=" fw-bold ps-1">
                             {{getTotalAmount()}}
-                        </td>
+                        </td> -->
                         <td class="fw-bold ps-1">
-                            {{getTotalLocalAmount()}}
+                            {{ getTotalLocalAmount() | number:'1.2-2' }}
                         </td>
                         <td colspan="2"></td>
                     </tr>

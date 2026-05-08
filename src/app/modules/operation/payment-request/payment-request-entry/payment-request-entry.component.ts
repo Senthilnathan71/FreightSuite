@@ -542,6 +542,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
         (request.paymentRequestDetails || []).forEach((item: any) => {
           this.detailItems.push(this.createDetailRow({
             ...item,
+            PaymentRequestDtlSid: item?.PaymentRequestDtlSid || null,
             SourceCostRevenueChargeSid:
               item?.SourceCostRevenueChargeSid ||
               item?.sourceCostRevenueCharge?.CostRevenueChargesSid ||
@@ -586,10 +587,11 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       Status: 'A',
     });
 
-      detailRows.forEach((item: any) => {
+    detailRows.forEach((item: any) => {
       this.detailItems.push(
         this.createDetailRow({
           ...item,
+          PaymentRequestDtlSid: item?.PaymentRequestDtlSid || null,
           Selected: item.Selected !== false,
         }),
       );
@@ -603,6 +605,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
 
   private createDetailRow(data: any) {
     return this.fb.group({
+      PaymentRequestDtlSid: [data?.PaymentRequestDtlSid || null],
       Selected: [data?.Selected ?? true],
       ChargeMasterSid: [data?.ChargeMasterSid || null],
       ChargeDescription: [data?.ChargeDescription || ''],

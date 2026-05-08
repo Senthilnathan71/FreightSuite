@@ -5172,7 +5172,7 @@ onETDDateSelect(): void {
   openVoucherDetails(voucherHeaderSid: number, documentTypeCode: string) {
     if (documentTypeCode === 'INV') {
       this.router.navigate(['operation/invoice/entry/', voucherHeaderSid]);
-    } else if (documentTypeCode === 'VINV') {
+    } else if (documentTypeCode === 'VIN' || documentTypeCode === 'VINV') {
       this.router.navigate(['operation/vendor-invoice/entry/', voucherHeaderSid]);
     }
   }
@@ -5185,9 +5185,16 @@ onETDDateSelect(): void {
 
     // Filter by voucher type
     if (this.arapFilter.voucherType !== 'all') {
-      filtered = filtered.filter(item =>
-        item.DocumentTypeCode === this.arapFilter.voucherType
-      );
+       const selectedVoucherType = String(this.arapFilter.voucherType).toUpperCase();
+        filtered = filtered.filter(item => {
+            const documentTypeCode = String(item.DocumentTypeCode || '').toUpperCase();
+
+            if (selectedVoucherType === 'VIN') {
+                return documentTypeCode === 'VIN' || documentTypeCode === 'VINV';
+            }
+
+            return documentTypeCode === selectedVoucherType;
+        });
     }
 
     // Filter by status - Corrected: use PostStatus field
