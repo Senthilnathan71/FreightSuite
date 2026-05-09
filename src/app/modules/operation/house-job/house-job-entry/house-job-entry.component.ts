@@ -2126,7 +2126,8 @@ get isSuspended() : boolean {
   }
 
   get isJobClosed(): boolean {
-    return this.housejobData?.masterJob?.JobStatus === 'Closed';
+    const status = this.housejobData?.masterJob?.JobStatus;
+    return status === 'Closed' || status === 'Job Closed';
   }
 
   loadOtherLookups() {
@@ -2225,7 +2226,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
     this.isExportToImportLinked = response?.masterJob?.others?.[0]?.ExportToImport === 'Y';
     const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
     const shouldDisableForms = (this.isEditMode && response.status !== 'A')
-      || (this.isEditMode && response?.masterJob?.JobStatus === 'Closed');
+      || (this.isEditMode && (response?.masterJob?.JobStatus === 'Closed' || response?.masterJob?.JobStatus === 'Job Closed'));
     this.selectedDepartment = selectedDepartment;
     this.selectedDepartmentType = selectedDepartment?.departmentType?.toUpperCase() || '';
     this.filterTabs();

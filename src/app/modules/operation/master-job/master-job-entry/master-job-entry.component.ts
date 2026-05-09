@@ -299,6 +299,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     { id: 'Job Generated', name: 'Job Generated' },
     { id: 'Open', name: 'Open' },
     { id: 'Closed', name: 'Closed' },
+    { id: 'Job Closed', name: 'Job Closed' },
     { id: 'Sailed', name: 'Sailed' },
     { id: 'Operation Closed', name: 'Operation Closed' },
     { id: 'Documentation Closed', name: 'Documentation Closed' }
@@ -514,7 +515,8 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   }
 
   get isJobClosed(): boolean {
-    return this.masterJobData?.JobStatus === 'Closed';
+    const status = this.masterJobData?.JobStatus;
+    return status === 'Closed' || status === 'Job Closed';
   }
 
   private parseConfigBoolean(value: any, defaultValue: boolean): boolean {
