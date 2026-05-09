@@ -229,6 +229,10 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   };
   paymentRequestSid: number | null = null;
   private isPatching = false;
+  private isPrefilling = false;
+  private prMasterJobSid: number | null = null;
+  private prHouseJobSid: number | null = null;
+  private prDepartmentMasterSid: number | null = null;
 
   paymentValidationConfig: ValidationMessageConfig = {
   labels: {
@@ -1172,6 +1176,19 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       return;
     }
 
+    for (const rawRow of (this.paymentForm.getRawValue().detailItems || [])) {
+      const coa = this.coaList?.find((c: any) => c.COAMasterSid === rawRow.COAMasterSid);
+      if (coa?.LedgerType === 'Cost' && !rawRow.MasterJobSid && !rawRow.HouseJobSid) {
+        this.appSettingService.showError(
+          `Charge "${rawRow.ChargeDescription || rawRow.COAMasterSid}" has Ledger Type "Cost" — Master Job or House Job is required.`
+        );
+        this.isSaving = false;
+        this.spinner.hide();
+        if (resolve) resolve(false);
+        return;
+      }
+    }
+
     // Enhanced exchange rate validation - checks all three error types
     if (this.paymentForm.errors) {
       const hasExchangeRateError =
@@ -1329,6 +1346,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       updatedBy: currentUserEmail
     }));
 
+    const bankRow = detailItems.find((d: any) => d.COAMasterSid === formValue.BankCOA);
+
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
@@ -1355,8 +1374,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       CurrencyMasterSid: formValue.CurrencyMasterSid,
       CurrencyCode: formValue.CurrencyCode,
       ExchangeRate: formValue.ExchangeRate,
-      Amount: 0,
-      LocalAmount: 0,
+      Amount: bankRow?.Amount ?? 0,
+      LocalAmount: bankRow?.LocalAmount ?? 0,
       NetAmount: 0,
       TaxType:
         this.currentCompanyCountryCode === 'in' ? 'GST' : 'VAT',
@@ -1374,6 +1393,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       }),
       voucherMatching: voucherMatching,
       PaymentRequestSid: this.paymentRequestSid,
+      MasterJobSid: this.prMasterJobSid ?? null,
+      HouseJobSid: this.prHouseJobSid ?? null,
+      DepartmentMasterSid: this.prDepartmentMasterSid ?? null,
       ...(this.isEditMode
         ? {
             UpdatedBy: currentUserEmail,
@@ -1586,6 +1608,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         }
 
         const request = resp.data;
+        this.prMasterJobSid = request.MasterJobSid ?? null;
+        this.prHouseJobSid = request.HouseJobSid ?? null;
+        this.prDepartmentMasterSid = request.DepartmentMasterSid ?? null;
         if (request?.PaymentRequestStatus !== 'Approved') {
           this.appSettingService.showWarning('Payment voucher can be created only for approved payment request');
           return;
@@ -1597,14 +1622,39 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         }
 
         const firstDetail = request?.paymentRequestDetails?.[0];
-        const firstSource = firstDetail?.sourceCostRevenueCharge;
-        const party = this.partyList.find((item) => item.CustomerBranchSid === firstSource?.CostAgentBranchSid);
+
+        // Block patchCurrencyExchangeRate so onPartyChange's async rate fetch
+        // does not overwrite the exchange rate we set from the saved payment request.
+        this.isPrefilling = true;
+
+        // Find party using CostAgentBranchSid directly on the detail (not via relation)
+        const party = this.partyList.find(
+          (item) => item.CustomerBranchSid === firstDetail?.CostAgentBranchSid
+        );
 
         if (party) {
           await this.onPartyChange(party, true);
         }
 
+        // Validate party resolved with ledger mapping — block save if missing
+        if (!this.paymentForm.get('PartyMasterSid')?.value || !this.paymentForm.get('COAMasterSid')?.value) {
+          this.isPrefilling = false;
+          this.appSettingService.showError(
+            'Party not found or not mapped to a ledger. Cannot create payment.'
+          );
+          return;
+        }
+
+        // Pre-fill search card party so user can click Get OS manually later
+        this.selectedPartyItemForSearch = party ?? null;
+        this.searchOutstandingForm.get('LedgerMasterSid')?.setValue(
+          this.paymentForm.get('PartyMasterSid')?.value ?? null
+        );
+        // Do NOT call searchOutstanding() here
+
         const currencySid = firstDetail?.CostCurrencyMasterSid || this.r['CurrencyMasterSid']?.value;
+        const exchangeRate = firstDetail?.CostExchangeRate || 1;
+
         this.paymentForm.patchValue({
           VoucherDate: this.toInputDate(request.PaymentRequestDate),
           CashOrBank: request.CashBank === 'Cash' ? 'C' : 'B',
@@ -1613,17 +1663,37 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           Remarks: request.Remarks || '',
         });
         this.setCurrencyCode(currencySid);
-        this.handleHeaderExchangeRate(currencySid);
 
-        if (this.bankTypedLedgers?.length) {
-          this.paymentForm.get('BankCOA')?.setValue(this.bankTypedLedgers[0]?.COAMasterSid);
+        // Set exchange rate directly from saved payment request — no async API call.
+        const exCtrl = this.paymentForm.get('ExchangeRate');
+        const currCtrl = this.paymentForm.get('CurrencyMasterSid');
+        exCtrl?.setValue(this.getFormattedAndPaddedExchangeRate(exchangeRate, currencySid));
+        if (currencySid === this.currentCompany?.CurrencyMasterSid) {
+          exCtrl?.disable({ emitEvent: false });
+          currCtrl?.disable({ emitEvent: false });
+        } else {
+          exCtrl?.enable({ emitEvent: false });
+          currCtrl?.enable({ emitEvent: false });
         }
+        // Sync the auto-inserted party row's exchange rate to the header
+        this.checkAndUpdateForAllPartyDetail();
+        this.recalculateAllMatchingPartyAmounts();
+
+        // Release the guard before adding charge detail rows
+        this.isPrefilling = false;
+
+        // Build master/house job display objects from PR header relations
+        const prMasterJobObj: any = request.masterJob
+          ? { ...request.masterJob }
+          : (request.MasterJobSid ? { MasterJobSid: request.MasterJobSid, MasterJobNumber: String(request.MasterJobSid) } : null);
+        const prHouseJobObj: any = request.houseJob
+          ? { ...request.houseJob }
+          : (request.HouseJobSid ? { HouseJobSid: request.HouseJobSid, HBLNo: String(request.HouseJobSid) } : null);
 
         (request.paymentRequestDetails || []).forEach((detail: any) => {
-          const source = detail.sourceCostRevenueCharge;
           this.addDetailRow({
-            COAMasterSid: source?.ChargeCOAMasterSid || null,
-            LedgerMasterSid: source?.ChargeSubledgerMasterSid || null,
+            COAMasterSid: detail.COAMasterSid || null,
+            LedgerMasterSid: detail.LedgerMasterSid || null,
             DrCr: 'D',
             CurrencyMasterSid: detail.CostCurrencyMasterSid,
             CurrencyCode: detail.currency?.currencyCode || '',
@@ -1640,10 +1710,47 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
             MasterJobSid: request.MasterJobSid || null,
             CostRevenue: 'Cost',
             PartyAmount: detail.CostAmount || 0,
-            CostRevenueChargesSid: detail.sourceCostRevenueCharge?.CostRevenueChargesSid || null,
-            BookingRatesSid: detail.sourceCostRevenueCharge?.BookingRatesSid || null,
+            CostRevenueChargesSid: detail.CostRevenueChargesSid || null,
+            BookingRatesSid: detail.BookingRatesSid || null,
+            PaymentRequestDtlSid: detail.PaymentRequestDtlSid ?? null,
           }, false);
+          const rowIndex = this.detailItems.length - 1;
+
+          if (detail.COAMasterSid) {
+            this.handleCOAChange(
+              {
+                COAMasterSid: detail.COAMasterSid,
+                SubledgerName: detail.LedgerMasterSid != null ? 'Y' : 'N',
+              },
+              rowIndex,
+              true,
+            );
+          }
+
+          // Load charge list for department.
+          // Do NOT call filterDetailsWithDept — it resets job state for the row.
+          const deptSid = detail.DepartmentMasterSid || request.DepartmentMasterSid;
+          if (deptSid) {
+            const dept = this.deptList?.find((d: any) => d.DepartmentMasterSid === deptSid);
+            if (dept) this.filterChargeByDeptForARow(dept, rowIndex);
+          }
+
+          // Seed masterJobList so ng-select shows the label immediately (before API resolves)
+          if (prMasterJobObj) {
+            this.masterJobList[rowIndex] = [prMasterJobObj];
+            this.detailItems.at(rowIndex)?.get('masterJob')?.setValue(prMasterJobObj, { emitEvent: false });
+            // onMasterJobChange sets up house job loading and disables dept field
+            this.onMasterJobChange(rowIndex, prMasterJobObj);
+          }
+
+          // Seed houseJobList after onMasterJobChange clears it (its API call is still pending)
+          if (prHouseJobObj) {
+            this.houseJobList[rowIndex] = [prHouseJobObj];
+            this.detailItems.at(rowIndex)?.get('houseJob')?.setValue(prHouseJobObj, { emitEvent: false });
+          }
         });
+
+
       },
     });
   }
@@ -1871,6 +1978,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const detailItem = this.fb.group({
       // Primary & audit fields
       VoucherDetailSid: [data?.VoucherDetailSid || 0],
+      PaymentRequestDtlSid: [data?.PaymentRequestDtlSid ?? null],
       VoucherHeaderSid: [data?.VoucherHeaderSid || null],
       Sno: [data?.Sno || 1],
       Status: [data?.Status || 'A'],
@@ -3160,10 +3268,12 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   /**
-   * Check if a detail row deletion is blocked (auto-inserted party/bank row).
+   * Check if a detail row deletion is blocked (auto-inserted party/bank row, or PR-originated row).
    */
   isDeleteBlocked(index: number): boolean {
-    return this.isAutoPartyRow(index) || this.isAutoBankRow(index);
+    return this.isAutoPartyRow(index)
+        || this.isAutoBankRow(index)
+        || !!this.detailItems.at(index)?.get('PaymentRequestDtlSid')?.value;
   }
 
   isSyTypeRow(index: number): boolean {
@@ -3184,6 +3294,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     }
     if (this.isAutoBankRow(index)) {
       return 'Clear the Bank/Cash field to remove this row';
+    }
+    if (this.detailItems.at(index)?.get('PaymentRequestDtlSid')?.value) {
+      return 'Row originates from a Payment Request and cannot be deleted';
     }
     return '';
   }
@@ -3342,6 +3455,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   patchCurrencyExchangeRate() {
+    if (this.isPrefilling) return;
     const currencySid = this.paymentForm.get('CurrencyMasterSid')?.value;
     const companyCurrency = this.currentCompany?.CurrencyMasterSid;
 

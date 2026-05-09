@@ -3138,7 +3138,8 @@ createRateFormGroup(data?: any): FormGroup {
           HouseNo: this.parentFormValue?.HBLNo || this.parentFormValue?.HouseNo || '',
           detailItems: pendingCharges.map((rate: any) => ({
             Selected: true,
-            SourceCostRevenueChargeSid: rate.CostRevenueChargesSid || rate.RateSid || null,
+            BookingRatesSid:       this.isBooking ? (rate.RateSid ?? null) : null,
+            CostRevenueChargesSid: !this.isBooking ? (rate.CostRevenueChargesSid ?? rate.RateSid ?? null) : null,
             ChargeMasterSid: rate.ChargeMasterSid,
             ChargeDescription: rate.ChargeDescription || rate.chargeMaster?.chargeName || '',
             CostChargeUomSid: rate.CostChargeUomSid,

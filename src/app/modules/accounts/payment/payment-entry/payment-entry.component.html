@@ -920,6 +920,8 @@
               <th class="bg-transparent text-light" style="font-size: 14px">
                 Profit Center
               </th>
+              <th class="bg-transparent text-light" style="font-size: 14px">Master Job</th>
+              <th class="bg-transparent text-light" style="font-size: 14px">House Job</th>
               <!-- <th class="bg-transparent text-light" style="font-size: 14px">
                 Charge
               </th> -->
@@ -1125,6 +1127,47 @@
                     formControlName="ProfitCenter"
                     appendTo="body"
                   ></ng-select>
+                </td>
+                <td class="dofi-min-w-100">
+                  @if(!isPosted && !(d.get('VoucherDetailSid')?.value > 0 && d.get('MasterJobSid')?.value)){
+                    <ng-select
+                      [items]="masterJobList[i]"
+                      bindLabel="MasterJobNumber"
+                      bindValue="MasterJobSid"
+                      formControlName="MasterJobSid"
+                      (change)="onMasterJobChange(i, $event)"
+                      (scrollToEnd)="onMasterJobScrollToEnd(i)"
+                      [typeahead]="masterJobTypeahead$[i]"
+                      [loading]="masterJobLoading[i]"
+                      appendTo="body"
+                    ></ng-select>
+                  }
+                  @if(d.get('VoucherDetailSid')?.value > 0 && d.get('MasterJobSid')?.value){
+                    <a
+                      [routerLink]="['/operation/master-job/entry', d.get('MasterJobSid')?.value]"
+                      class="text-info text-decoration-underline small d-block"
+                    >{{ d.get('masterJob')?.value?.MasterJobNumber || d.get('MasterJobSid')?.value }}</a>
+                  }
+                </td>
+                <td class="dofi-min-w-100">
+                  @if(!isPosted && !(d.get('VoucherDetailSid')?.value > 0 && d.get('HouseJobSid')?.value)){
+                    <ng-select
+                      [items]="houseJobList[i]"
+                      bindLabel="HBLNo"
+                      bindValue="HouseJobSid"
+                      formControlName="HouseJobSid"
+                      (scrollToEnd)="onHouseJobScrollToEnd(i)"
+                      [typeahead]="houseJobTypeahead$[i]"
+                      [loading]="houseJobLoading[i]"
+                      appendTo="body"
+                    ></ng-select>
+                  }
+                  @if(d.get('VoucherDetailSid')?.value > 0 && d.get('HouseJobSid')?.value){
+                    <a
+                      [routerLink]="['/operation/house-job/entry', d.get('HouseJobSid')?.value]"
+                      class="text-info text-decoration-underline small d-block"
+                    >{{ d.get('houseJob')?.value?.HBLNo || d.get('HouseJobSid')?.value }}</a>
+                  }
                 </td>
                 <!-- <td class="dofi-min-w-100">
                   <ng-select

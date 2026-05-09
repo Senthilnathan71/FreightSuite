@@ -11,7 +11,7 @@ import {
 } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { NgSelectComponent } from '@ng-select/ng-select';
-import { Subject, forkJoin } from 'rxjs';
+import { Subject, firstValueFrom, forkJoin } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
@@ -146,6 +146,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     const preview = window.history.state?.paymentRequestPreview;
     if (preview?.detailItems?.length) {
       this.applyPreview(preview);
+      window.history.replaceState({}, document.title, window.location.href);
     }
 
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
@@ -220,6 +221,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     const preview = window.history.state?.paymentRequestPreview;
     if (preview?.detailItems?.length) {
       this.applyPreview(preview);
+      window.history.replaceState({}, document.title, window.location.href);
     }
     this.scheduleDirtyTrackingSnapshot();
   }
@@ -633,6 +635,10 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
         data?.CostRevenueChargeSid ||
         null,
       ],
+      COAMasterSid:          [data?.COAMasterSid ?? null],
+      LedgerMasterSid:       [data?.LedgerMasterSid ?? null],
+      BookingRatesSid:       [data?.BookingRatesSid ?? null],
+      CostRevenueChargesSid: [data?.CostRevenueChargesSid ?? null],
     });
   }
 
@@ -886,7 +892,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     });
   }
 
-  private saveWithCallback(resolve?: (value: boolean) => void): void {
+  private async saveWithCallback(resolve?: (value: boolean) => void): Promise<void> {
     if (this.isReadOnly) {
       this.appSettingsService.showWarning('Approved payment request cannot be modified');
       if (resolve) resolve(false);
@@ -913,6 +919,41 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       this.form.markAsUntouched();
       if (resolve) resolve(false);
       return;
+    }
+
+    // Fetch COA/Ledger for selected rows that are missing them
+    for (const row of this.detailItems.controls) {
+      if (!row.get('Selected')?.value) continue;
+      if (row.get('COAMasterSid')?.value && row.get('LedgerMasterSid')?.value) continue;
+      const chargeSid = row.get('ChargeMasterSid')?.value;
+      if (!chargeSid) continue;
+      try {
+        const ledgerResp = await firstValueFrom(
+          this.operationService.getLedgerDetails({
+            DepartmentMasterSid: this.form.get('DepartmentMasterSid')?.value,
+            CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+            SubledgerMappingSid: chargeSid,
+            LedgerType: 'Charge',
+            DrCr: 'Dr',
+          })
+        );
+        if (ledgerResp?.status && ledgerResp.data) {
+          row.patchValue({
+            COAMasterSid:    ledgerResp.data.COAMasterSid ?? null,
+            LedgerMasterSid: ledgerResp.data.SubledgerMasterSid ?? null,
+          });
+        } else {
+          const chargeDesc = row.get('ChargeDescription')?.value || `Charge ${chargeSid}`;
+          this.appSettingsService.showError(`Subledger not mapped for charge "${chargeDesc}". Please configure subledger mapping.`);
+          if (resolve) resolve(false);
+          return;
+        }
+      } catch {
+        const chargeDesc = row.get('ChargeDescription')?.value || `Charge ${chargeSid}`;
+        this.appSettingsService.showError(`Failed to fetch ledger for charge "${chargeDesc}". Please try again.`);
+        if (resolve) resolve(false);
+        return;
+      }
     }
 
     this.saving = true;
