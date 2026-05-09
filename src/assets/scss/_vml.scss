@@ -287,14 +287,12 @@
 }
 
 .custom-accordion-organization {
-
   .accordion-item {
     border-radius: 6px;
     margin-bottom: 8px;
     overflow: hidden;
   }
 
-  /* Accordion Button */
   .accordion-button {
     background: linear-gradient(to left, #05608d 0%, #116897 100%) !important;
     color: #ffffff;
@@ -320,6 +318,48 @@
     border: 2px solid #ced4da;
   }
 
+}
+
+.custom-accordion-quotation {
+  width: 100%;
+
+  .accordion-item {
+    border: 1px solid #c9d4de;
+    border-radius: 8px;
+    // margin-bottom: 8px;
+    overflow: hidden;
+    background-color: #fff;
+  }
+
+  .accordion-button {
+    background: linear-gradient(90deg, #0b5f89 0%, #0e6c98 100%) !important;
+    color: #ffffff;
+    border: 0;
+    border-radius: 0;
+    width: 100%;
+    // min-height: 38px;
+    padding: 5px 12px;
+    text-align: left;
+    box-shadow: none;
+  }
+
+  .accordion-button::after,
+  .accordion-button:not(.collapsed)::after {
+    filter: brightness(0) invert(1);
+    background-size: 14px;
+    width: 14px;
+    height: 14px;
+    margin-right: 34px;
+  }
+
+  .accordion-button:focus {
+    box-shadow: none;
+  }
+
+  .accordion-body {
+    border-top: 1px solid #d9e1e8;
+    padding: 8px 10px;
+  }
 }
 
 // ========================================================================
