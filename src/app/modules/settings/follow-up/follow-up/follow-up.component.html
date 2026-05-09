@@ -15,7 +15,8 @@
                             Close
                         </button>
                         <button type="button" class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="resetform()">
+                            (click)="resetform()"
+                            [disabled]="isFormDisabled">
                             <i class="fas fa-sync-alt me-1"></i>
                             Reset
                         </button>

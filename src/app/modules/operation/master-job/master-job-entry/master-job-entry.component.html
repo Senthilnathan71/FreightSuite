@@ -1722,7 +1722,7 @@
                                             placeholder=""
                                             [ngModelOptions]="{ standalone: true }"
                                             (ngModelChange)="onTransferCompanyChange($event)"
-                                            [readonly]="isExportToImportCompleted"
+                                            [readonly]="isExportToImportCompleted || isJobClosed"
                                             [clearable]="false">
                                         </dofi-searchable-dropdown>
                                         <label class="input-label">Destination Company</label>
@@ -1740,7 +1740,7 @@
                                             bindValue="BranchMasterSid"
                                             placeholder=""
                                             [ngModelOptions]="{ standalone: true }"
-                                            [readonly]="isExportToImportCompleted"
+                                            [readonly]="isExportToImportCompleted || isJobClosed"
                                             [clearable]="false">
                                         </dofi-searchable-dropdown>
                                         <label class="input-label">Destination Branch</label>
@@ -1750,7 +1750,7 @@
                                     <button
                                         class="btn btn-info btn-sm"
                                         (click)="pullMasterJobToImportBranch()"
-                                        [disabled]="masterJobForm.dirty || isPullingToImportBranch || !selectedTransferCompanySid || !selectedTransferBranchSid || isExportToImportCompleted">
+                                        [disabled]="masterJobForm.dirty || isPullingToImportBranch || !selectedTransferCompanySid || !selectedTransferBranchSid || isExportToImportCompleted || isJobClosed">
                                         <i class="fas fa-download me-1"></i>
                                         <span>{{ isPullingToImportBranch ? 'Pulling...' : (isExportToImportCompleted ? 'Pull To Import Successful' : 'Create Import') }}</span>
                                     </button>

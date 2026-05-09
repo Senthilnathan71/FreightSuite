@@ -1789,7 +1789,7 @@
 
                 <div class="d-flex justify-content-end">
                   <button class="btn btn-sm btn-info" type="button" (click)="addHouseJobCargoProduct(cargoIndex)"
-                    [disabled]="(isEditMode && isExportToImportLinked) || (isEditMode && isSuspended)">
+                    [disabled]="(isEditMode && isExportToImportLinked) || (isEditMode && (isSuspended || isJobClosed))">
                     <i class="fas fa-plus me-1"></i> Add Product
                   </button>
                 </div>
@@ -2256,7 +2256,7 @@
           </div>
 
           <div class="toolbar-right">
-            <button class="table-action-btn primary" (click)="addProduct()" [disabled]="isExportToImportLinked">
+            <button class="table-action-btn primary" (click)="addProduct()" [disabled]="isExportToImportLinked || isJobClosed">
               <i class="fas fa-plus"></i> Add Product
             </button>
             <button class="table-action-btn export" (click)="reportProducts()">
@@ -3274,6 +3274,7 @@
         [branchMasterSid]="currentBranch?.BranchMasterSid"
         [menuMasterSid]="currentMenuId"
         [documentSid]="HouseJobSid || housejobData?.HouseJobSid"
+        [isFormDisabled]="isFormDisabled"
         (dataEmitter)="handleEdocChange($event)">
       </app-edoc>
     </div>
