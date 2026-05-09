@@ -92,8 +92,18 @@ export class AuditLogComponent implements OnInit {
           ]);
 
           allKeys.forEach((field) => {
-            const oldVal = this.normalize(oldObj[field]);
-            const newVal = this.normalize(newObj[field]);
+            let oldVal = this.normalize(oldObj[field]);
+            let newVal = this.normalize(newObj[field]);
+
+            if (field === 'meetingDate' || field === 'followUpDate') {
+              oldVal = oldObj[field]
+                ? new Date(oldObj[field]).toLocaleString()
+                : '-';
+
+              newVal = newObj[field]
+                ? new Date(newObj[field]).toLocaleString()
+                : '-';
+            }
 
             if (oldVal !== newVal) {
               if (groupedLogs[groupKey].isActionOnly) {
@@ -129,18 +139,18 @@ export class AuditLogComponent implements OnInit {
   }
 
   getOperationClass(operation: string): string {
-  const value = (operation || '').toUpperCase();
+    const value = (operation || '').toUpperCase();
 
-  switch (value) {
-    case 'UPDATE':
-      return 'audit-badge-update';
-    case 'CREATE':
-    case 'INSERT':
-      return 'audit-badge-create';
-    case 'DELETE':
-      return 'audit-badge-delete';
-    default:
-      return 'audit-badge-default';
+    switch (value) {
+      case 'UPDATE':
+        return 'audit-badge-update';
+      case 'CREATE':
+      case 'INSERT':
+        return 'audit-badge-create';
+      case 'DELETE':
+        return 'audit-badge-delete';
+      default:
+        return 'audit-badge-default';
+    }
   }
-}
 }
