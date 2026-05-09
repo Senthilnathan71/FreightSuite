@@ -482,7 +482,7 @@
 
         </div>
         <div class="col-12" formArrayName="quoteRoutes">
-          <div ngbAccordion #acc="ngbAccordion" [closeOthers]="true" class="custom-accordion">
+          <div ngbAccordion #acc="ngbAccordion" [closeOthers]="true" class="custom-accordion-quotation">
             <div ngbAccordionItem *ngFor="let route of quoteRoutes.controls;let routeIndex = index"
  [attr.data-route-index]="routeIndex"
               [formGroupName]="routeIndex" [ngbAccordionItem]="'route-' + routeIndex" class="mb-1"
@@ -511,7 +511,7 @@
          class="d-inline-block me-1" 
          (click)="$event.stopPropagation()">
       <button type="button" 
-              class="btn btn-sm btn-light-secondary text-light has-arrow" 
+              class="btn btn-sm btn-light-secondary text-light has-arrow ms-2" 
               ngbDropdownToggle
               style="background: rgba(255,255,255,0.15); border: none; color: white;">
         <i class="fas fa-ellipsis-v"></i>
@@ -1084,7 +1084,7 @@
                       </div>-->
 
                       @if(isFclQuotationSegment(route)){
-                      <div class="d-flex justify-content-end px-1 mt-2">
+                      <div class="d-flex justify-content-end pr-2">
                         <button class="btn btn-info btn-sm dofi-min-w-100 dofi-max-w-100" type="button"
                           (click)="addQuoteCargo(routeIndex)"
                           [disabled]="isRouteApproved(routeIndex) || disableAllModification || isBookingLockedForRoute(routeIndex) || (isEditMode && isSuspended)">
@@ -1092,13 +1092,13 @@
                         </button>
                       </div>
 
-                      <div formArrayName="quoteCargo" class="px-1 mt-2">
-                        <div ngbAccordion [closeOthers]="true" class="custom-accordion">
+                      <div formArrayName="quoteCargo" class="px-2">
+                        <div ngbAccordion [closeOthers]="true" class="custom-accordion-quotation">
                           <div ngbAccordionItem *ngFor="let cargo of quoteCargo(routeIndex).controls; let cargoIndex = index"
                             [formGroupName]="cargoIndex"  [attr.data-cargo-index]="cargoIndex"[ngbAccordionItem]="'cargo-' + routeIndex + '-' + cargoIndex"
-                            [collapsed]="cargoIndex !== 0" class="mb-2">
+                            [collapsed]="cargoIndex !== 0" class="">
                           <h2 ngbAccordionHeader>
-                            <button ngbAccordionButton class="d-flex justify-content-between align-items-center w-100">
+                            <button ngbAccordionButton class="d-flex justify-content-between align-items-center w-100 p-2">
                           
                               <!-- LEFT -->
                               <div class="d-flex align-items-center gap-2">
@@ -1106,13 +1106,18 @@
                                   Cargo {{ cargoIndex + 1 }}
                                 </span>
                           
-                                <span class="small text-light">
-                                   {{ getContainerTypeName(cargo.get('ContainerType')?.value) }} | Qty: {{ cargo.get('Qty')?.value || 0 }}
-                                </span>
+                                <div class="d-flex align-items-center gap-1 small">
+                                  <span class="badge rounded-pill text-bg-light text-dark">
+                                    {{ getContainerTypeName(cargo.get('ContainerType')?.value) || 'Container Type' }}
+                                  </span>
+                                  <span class="badge rounded-pill text-bg-secondary text-white">
+                                    Qty : {{ cargo.get('Qty')?.value || 0 }}
+                                  </span>
+                                </div>
                               </div>
                           
                               <!-- RIGHT (DELETE BUTTON) -->
-                              <button class="btn btn-sm waves-effect waves-light text-light" type="button" *ngIf="quoteCargo(routeIndex).length > 1"
+                              <button class="btn btn-sm waves-effect waves-light text-light py-0" type="button" *ngIf="quoteCargo(routeIndex).length > 1"
                                 (click)="deleteQuoteCargo(routeIndex, cargoIndex, cargo.value.QuoteCargoSid); $event.stopPropagation()"
                                 [disabled]=" cargo.get('isFromEnquiry')?.value || isRouteApproved(routeIndex) || disableAllModification || isBookingLockedForRoute(routeIndex) || (isEditMode && isSuspended)">
                                 <i class="fas fa-trash text-danger me-1"></i>
@@ -1121,7 +1126,7 @@
                             </button>
                           </h2>
                             <div ngbAccordionCollapse>
-                              <div class="p-2 border rounded">
+                              <div class="p-2  rounded">
                                 <div class="row compact-form">
                                   <aside class="col-md-2">
                                     <div class="custom-form-group custom-form-group-select"
@@ -1197,7 +1202,7 @@
                                   </aside>
                                 </div>
 
-                                <div class="d-flex justify-content-end gap-2 mt-2">
+                                <div class="d-flex justify-content-end gap-2">
                                   <button class="btn btn-sm btn-info" type="button"
                                     (click)="addQuoteProduct(routeIndex, undefined, cargoIndex)"
                                     [disabled]="isRouteApproved(routeIndex) || disableAllModification || isBookingLockedForRoute(routeIndex) || (isEditMode && isSuspended)">
@@ -1205,12 +1210,12 @@
                                   </button>
                                 </div>
 
-                                <div class="table-responsive mt-2" formArrayName="quoteProducts">
-                                  <table class="table table-hover align-middle no-wrap table-bordered table-sm mb-1">
+                                <div class="table-responsive mt-1 table-borderless" formArrayName="quoteProducts">
+                                  <table class="table table-hover align-middle no-wrap  table-sm mb-1">
                                     <thead>
                                       <tr class="bg-info text-center">
                                         <th class="bg-transparent text-light" scope="col"
-                                          *ngIf="quoteProducts(routeIndex, cargoIndex).length > 1">Action</th>
+                                          *ngIf="quoteProducts(routeIndex, cargoIndex).length > 1"></th>
                                         <th class="bg-transparent text-light dofi-min-w-150" scope="col">Commodity</th>
                                         <th class="bg-transparent text-light dofi-min-w-150" scope="col">External Pkg</th>
                                         <th class="bg-transparent text-light dofi-min-w-150" scope="col">No of Pkg</th>
@@ -1232,10 +1237,10 @@
                                         [formGroupName]="productIndex"
  [formGroupName]="productIndex">
                                         <td *ngIf="quoteProducts(routeIndex, cargoIndex).length > 1">
-                                          <button class="btn btn-link text-danger"
+                                          <button class="btn btn-link text-danger py-0"
                                             (click)="deleteQuoteProduct(routeIndex,productIndex,product.value.QuoteProductSid,cargoIndex)"
                                             [disabled]="isRouteApproved(routeIndex) || disableAllModification || isBookingLockedForRoute(routeIndex)">
-                                            <i class="fas fa-trash text-center"></i>
+                                            <i class="fas fa-trash text-center fs-2"></i>
                                           </button>
                                         </td>
                                         <td>
@@ -1308,12 +1313,12 @@
              [formControl]="$any(quotationForm.get('RateLock'))"
             [disabled]="isRateLockDisabled()"
       (change)="onRateLockChange()">
-      <label class="form-check-label" for="rateLock" style="margin-left: 5px;">
+      <label class="form-check-label" for="rateLock">
         Rate Lock
       </label>
       <i 
       *ngIf="!canUserLockRates" 
-      class="fas fa-info-circle text-muted"
+      class="fas fa-info-circle text-muted ms-1"
       [ngbTooltip]="'You do not have permission to lock rates'"
       placement="top"
     ></i>
@@ -1326,7 +1331,7 @@
                             </button>
                           </div>
                         </div>
-                        <div ngbAccordion #acc1="ngbAccordion" [closeOthers]="true" class="custom-accordion">
+                        <div ngbAccordion #acc1="ngbAccordion" [closeOthers]="true" class="custom-accordion-quotation">
                           <div ngbAccordionItem
                             *ngFor="let carrier of quoteCarriers(routeIndex).controls;let carrierIndex = index"
                             [formGroupName]="carrierIndex" [ngbAccordionItem]="'carrier-' + carrierIndex" class="mb-1"
@@ -1467,7 +1472,7 @@
                                     </div>
                                     <div class="col-md-3">
                                       <aside class="col-md-12 d-flex justify-content-end">
-                                        <div class="d-flex align-items-center px-0 py-1">
+                                        <div class="d-flex align-items-center px-0 py-2">
                                           <!-- <h5 class="card-title text-info ms-1">Charge Details</h5> -->
                                         
                                           
@@ -2020,7 +2025,7 @@
 
       </div>
       <div class="col-12" formArrayName="quoteRoutes">
-        <div ngbAccordion #acc="ngbAccordion" [closeOthers]="true" class="custom-accordion">
+        <div ngbAccordion #acc="ngbAccordion" [closeOthers]="true" class="custom-accordion-quotation">
           <div ngbAccordionItem *ngFor="let route of quoteRoutes.controls;let routeIndex = index"
             [formGroupName]="routeIndex" [ngbAccordionItem]="'route-' + routeIndex" class="mb-1"
             [collapsed]="routeIndex !== 0">
@@ -2474,7 +2479,7 @@
                         <div class="col-12">
 
                         </div>
-                        <div ngbAccordion #acc1="ngbAccordion" [closeOthers]="true" class="custom-accordion">
+                        <div ngbAccordion #acc1="ngbAccordion" [closeOthers]="true" class="custom-accordion-quotation">
                           <div ngbAccordionItem
                             *ngFor="let carrier of quoteCarriers(routeIndex).controls;let carrierIndex = index"
                             [formGroupName]="carrierIndex" [ngbAccordionItem]="'carrier-' + carrierIndex" class="mb-1"
