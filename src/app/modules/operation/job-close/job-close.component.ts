@@ -128,7 +128,15 @@ export class JobCloseComponent implements OnInit {
   }
 
   get allJobMilestonesPassed(): boolean {
-    return this.milestoneChecks.jobClose?.filter((m: any) => !m.nonBlocking).every((m: any) => m.passed) ?? false;
+    return this.milestoneChecks.jobClose?.every((m: any) => m.passed) ?? false;
+  }
+
+  get canSave(): boolean {
+    return this.allDocMilestonesPassed
+        && this.allOpsMilestonesPassed
+        && this.allAccMilestonesPassed
+        && this.allJobMilestonesPassed
+        && this.hasChanges;
   }
 
   private tryClose(
@@ -204,10 +212,7 @@ export class JobCloseComponent implements OnInit {
 
   onJobCloseChange(): void {
     if (this.jobCloseCheck) {
-      const blockingMilestones = this.milestoneChecks.jobClose?.filter(
-        (m: any) => !m.nonBlocking
-      ) || [];
-      this.tryClose('Job Closer', blockingMilestones,
+      this.tryClose('Job Closer', this.milestoneChecks.jobClose,
         () => {
           this.closureStatus.JobCloseStatus = 'Closed';
           this.closureStatus.JobClosedDate = new Date().toISOString();
