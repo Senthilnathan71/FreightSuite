@@ -27,6 +27,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
+import { AuditLogComponent } from '../../operation/audit-log/audit-log.component';
 
 
 const colors: any = {
@@ -979,6 +980,20 @@ convertUTCToLocal(utcDate: string | null): Date | null {
     modalRef.componentInstance.idLabel = 'Meeting Id';
     modalRef.componentInstance.idValue = this.calendarEventData?.PreCustomerMeetingSid;
   }
+
+  openAuditLogs() {
+        if (!this.calendarEventData?.PreCustomerMeetingSid) return;
+        const modalRef = this.modal.open(AuditLogComponent, {
+          centered: true,
+          scrollable: true,
+          size: 'xl',
+          windowClass: 'audit-log-modal'
+        });
+        modalRef.componentInstance.title = 'Meeting Logs';
+        modalRef.componentInstance.tableName = 'PreCustomerMeeting';
+        modalRef.componentInstance.recordId = this.calendarEventData?.PreCustomerMeetingSid.toString();
+        modalRef.componentInstance.screenName = 'Meeting';
+      }
 
   // openTandC() {
   //   this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));

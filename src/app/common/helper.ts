@@ -131,7 +131,8 @@ export enum LeadStatus {
   QuotationConfirmed = 'QuotationConfirmed',
   ContractSigned = 'ContractSigned',
   DealWon = 'DealWon',
-  DealLost = 'DealLost'
+  DealLost = 'DealLost',
+  CustomerCreated = 'CustomerCreated'
 }
 
 
@@ -146,7 +147,8 @@ export const LeadStatusLabels: Record<LeadStatus, string> = {
   [LeadStatus.QuotationConfirmed]: 'Quotation Confirmed',
   [LeadStatus.ContractSigned]: 'Contract Signed',
   [LeadStatus.DealWon]: 'Deal Won',
-  [LeadStatus.DealLost]: 'Deal Lost'
+  [LeadStatus.DealLost]: 'Deal Lost',
+  [LeadStatus.CustomerCreated]: 'Customer Created'
 };
 
 export enum AuthorizationStatus {
