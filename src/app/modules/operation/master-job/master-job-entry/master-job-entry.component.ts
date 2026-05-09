@@ -258,12 +258,6 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   currentDate = new Date();
   masterJobData: any;
   isTranshipment: boolean = false
-  arapData: any[] = [];
-  arapLoading = false;
-  arapFilter = {
-    voucherType: 'all',
-    status: 'all' // 'all', 'unpaid', 'partial', 'paid'
-  };
   currentMenuId: any;
   selectedTransferCompanySid: number | null = null;
   selectedTransferBranchSid: number | null = null;
@@ -1521,8 +1515,7 @@ onETDDateSelect(): void {
       MasterJobSid: masterJobSid
     }
     forkJoin({
-      masterJob: this.operationService.getMasterJobById(payload),
-      arapData: this.operationService.getMasterJobARAPData(masterJobSid)
+      masterJob: this.operationService.getMasterJobById(payload)
     }).subscribe({
       next: (responses: any) => {
         // Handle master job data
@@ -1549,33 +1542,6 @@ onETDDateSelect(): void {
             setTimeout(() => this.resetDirtyState(), 0);
           });
           this.loadLinkedMasterJobNumber(data?.others?.[0]?.ImportMasterJobSid || null);
-        }
-
-        // Handle AR/AP data - Ensure it's always an array
-        if (responses.arapData) {
-          // Check if the response is an object with data property
-          let arapResponse = responses.arapData;
-
-          // If it has a data property, use that
-          if (arapResponse.data !== undefined) {
-            this.arapData = Array.isArray(arapResponse.data) ? arapResponse.data : [];
-          }
-          // If it's directly an array
-          else if (Array.isArray(arapResponse)) {
-            this.arapData = arapResponse;
-          }
-          // If it's an object with status property
-          else if (arapResponse.status && arapResponse.data) {
-            this.arapData = Array.isArray(arapResponse.data) ? arapResponse.data : [];
-          }
-          // Default to empty array
-          else {
-            this.arapData = [];
-          }
-
-
-        } else {
-          this.arapData = [];
         }
 
         this.isLoading = false;
@@ -5115,145 +5081,6 @@ onETDDateSelect(): void {
       }
     });
   }
-  loadMasterJobARAPData() {
-    if (!this.masterJobSid) {
-      this.arapData = [];
-      return;
-    }
-
-    this.arapLoading = true;
-    this.operationService.getMasterJobARAPData(this.masterJobSid).subscribe({
-      next: (response: any) => {
-        if (response.status) {
-          let rawData = response.data || response;
-          // Format the data for display
-          rawData = rawData.map(item => ({
-            ...item,
-            DocumentTypeCode: item.DocumentTypeCode,
-            VoucherNumber: item.VoucherNumber,
-            VoucherDate: item.VoucherDate,
-            VoucherHeaderSid: item.VoucherHeaderSid,
-            Amount: Number(item.Amount) || 0,
-            CurrencyCode: item.CurrencyCode,
-            LocalAmount: Number(item.LocalAmount) || 0,
-            HBLNo: item.HBLNo || '-',
-            PostStatus: item.PostStatus || 'U' // Ensure PostStatus exists
-          }));
-
-          // Apply filters
-          this.arapData = this.applyFilters(rawData);
-        } else {
-          this.arapData = [];
-        }
-        this.arapLoading = false;
-      },
-      error: (error) => {
-        console.error('Error loading AR/AP data:', error);
-        this.arapData = [];
-        this.arapLoading = false;
-        this.appSettingService.showError('Failed to load AR/AP data');
-      }
-    });
-  }
-
-  getTotalAmount(): number {
-    return this.arapData.reduce(
-      (sum, item) => sum + Number(item.Amount || 0),
-      0
-    );
-  }
-
-  getTotalLocalAmount(): number {
-    return this.arapData.reduce(
-      (sum, item) => sum + Number(item.LocalAmount || 0),
-      0
-    );
-  }
-
-
-
-
-
-
-  openVoucherDetails(voucherHeaderSid: number, documentTypeCode: string) {
-    if (documentTypeCode === 'INV') {
-      this.router.navigate(['operation/invoice/entry/', voucherHeaderSid]);
-    } else if (documentTypeCode === 'VIN' || documentTypeCode === 'VINV') {
-      this.router.navigate(['operation/vendor-invoice/entry/', voucherHeaderSid]);
-    }
-  }
-  getFilteredCount(): number {
-    return this.arapData.length;
-  }
-
-  private applyFilters(data: any[]): any[] {
-    let filtered = [...data];
-
-    // Filter by voucher type
-    if (this.arapFilter.voucherType !== 'all') {
-       const selectedVoucherType = String(this.arapFilter.voucherType).toUpperCase();
-        filtered = filtered.filter(item => {
-            const documentTypeCode = String(item.DocumentTypeCode || '').toUpperCase();
-
-            if (selectedVoucherType === 'VIN') {
-                return documentTypeCode === 'VIN' || documentTypeCode === 'VINV';
-            }
-
-            return documentTypeCode === selectedVoucherType;
-        });
-    }
-
-    // Filter by status - Corrected: use PostStatus field
-    if (this.arapFilter.status !== 'all') {
-      filtered = filtered.filter(item =>
-        item.PostStatus === this.arapFilter.status
-      );
-    }
-
-    return filtered;
-  }
-
-
-  exportARAPReport() {
-    if (this.arapData.length === 0) {
-      this.appSettingService.showWarning('No data to export');
-      return;
-    }
-
-    const dataForExport = this.arapData.map(item => ({
-      'Voucher No': item.VoucherNumber,
-      'Document Type': item.DocumentTypeCode,
-      'Date': this.datePipe.transform(item.VoucherDate),
-      'Currency': item.CurrencyCode,
-      'Amount': item.Amount,
-      'Local Amount': item.LocalAmount,
-      // 'HBL No': item.HBLNo || '',
-      'Post Status': item.PostStatus
-    }));
-
-    this.exportExcelService.exportAsExcel({
-      data: dataForExport,
-      headers: [
-        { key: 'Voucher No', label: 'Voucher No' },
-        { key: 'Document Type', label: 'Document Type' },
-        { key: 'Date', label: 'Date' },
-        { key: 'Currency', label: 'Currency' },
-        { key: 'Amount', label: 'Amount' },
-        { key: 'Local Amount', label: 'Local Amount' },
-        // { key: 'HBL No', label: 'HBL No' },
-        { key: 'Post Status', label: 'Post Status' }
-      ],
-      fileName: `ARAP-Report-MasterJob-${this.masterJobData?.MasterJobNumber || 'Unknown'}`,
-      title: 'AR/AP Report'
-    });
-  }
-
-
-  // printARAPReport() {
-  //   // Implement print functionality
-  //   window.print();
-  // }
-
   bookingCreateInMasterJob() {
     const bookingPayload = {
       houses: this.loadedHouses,

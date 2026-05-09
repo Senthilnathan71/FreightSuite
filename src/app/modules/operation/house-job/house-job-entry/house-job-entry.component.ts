@@ -417,11 +417,7 @@ isExportToImportLinked: boolean = false;
   milestoneResult: any[] =[];
   private milestoneSyncInitialized = false;
   arapData: any[] = [];
- arapLoading = false;
- arapFilter = {
-  voucherType: 'all', 
-  status: 'all' // 'all', 'unpaid', 'partial', 'paid'
-};
+  arapLoading = false;
   today : any;
   minDate : any;
   minDODate : any;
@@ -2168,8 +2164,6 @@ get isSuspended() : boolean {
           this.loadAllMasterJobContainers();
           this.bookingData = resp.data;
           this.housejobData = resp.data;
-          this.loadMasterJobARAPData();
-         
           this.minDate = undefined;
           const HBLDate = this.housejobData?.HBLDate ? new Date(this.housejobData?.HBLDate) : undefined;
           this.minDODate = HBLDate ? this.toNgbDateStruct(HBLDate) : undefined;
@@ -7180,141 +7174,6 @@ loadMasterJobDataForHouseJob(masterJobParams: any): void {
 
 // Add a class property to store master job data
 storedMasterJobData: any;
-loadMasterJobARAPData() {
-    if (!this.HouseJobSid) {
-        this.arapData = [];
-        return;
-    }
-
-    this.arapLoading = true;
-    this.operationService.getHouseJobARAPData(this.HouseJobSid).subscribe({
-        next: (response: any) => {
-            if (response.status) {
-                let rawData = response.data || response;
-                // Format the data for display
-                rawData = rawData.map(item => ({
-                    ...item,
-                    DocumentTypeCode: item.DocumentTypeCode,
-                    VoucherNumber: item.VoucherNumber,
-                    VoucherDate: item.VoucherDate,
-                    VoucherHeaderSid: item.VoucherHeaderSid,
-                    Amount: Number(item.Amount) || 0,
-                    CurrencyCode: item.CurrencyCode,
-                    LocalAmount: Number(item.LocalAmount) || 0,
-                    HBLNo: item.HBLNo || '-',
-                    PostStatus: item.PostStatus || 'U' // Ensure PostStatus exists
-                }));
-                
-                // Apply filters
-                this.arapData = this.applyFilters(rawData);
-            } else {
-                this.arapData = [];
-            }
-            this.arapLoading = false;
-        },
-        error: (error) => {
-            console.error('Error loading AR/AP data:', error);
-            this.arapData = [];
-            this.arapLoading = false;
-            this.appSettingService.showError('Failed to load AR/AP data');
-        }
-    });
-}
-
-
-
-getARAPTotalAmount(): number {
-    return this.arapData.reduce(
-    (sum, item) => sum + Number(item.Amount || 0),
-    0
-  );
-}
-
-getARAPTotalLocalAmount(): number {
-    return this.arapData.reduce(
-    (sum, item) => sum + Number(item.LocalAmount || 0),
-    0
-  );
-}
-
-
-
-openVoucherDetails(voucherHeaderSid: number, documentTypeCode: string) {
-    if (documentTypeCode === 'INV') {
-        this.router.navigate(['operation/invoice/entry/', voucherHeaderSid]);
-    } else if (documentTypeCode === 'VIN' || documentTypeCode === 'VINV') {
-        this.router.navigate(['operation/vendor-invoice/entry/', voucherHeaderSid]);
-    }
-}
-
-getFilteredCount(): number {
-    return this.arapData.length;
-}
-
-private applyFilters(data: any[]): any[] {
-    let filtered = [...data];
-    
-    // Filter by voucher type
-    if (this.arapFilter.voucherType !== 'all') {
-        const selectedVoucherType = String(this.arapFilter.voucherType).toUpperCase();
-        filtered = filtered.filter(item => {
-            const documentTypeCode = String(item.DocumentTypeCode || '').toUpperCase();
-
-            if (selectedVoucherType === 'VIN') {
-                return documentTypeCode === 'VIN' || documentTypeCode === 'VINV';
-            }
-
-            return documentTypeCode === selectedVoucherType;
-        });
-    }
-    
-    // Filter by status - Corrected: use PostStatus field
-    if (this.arapFilter.status !== 'all') {
-        filtered = filtered.filter(item => 
-            item.PostStatus === this.arapFilter.status
-        );
-    }
-    
-    return filtered;
-}
- exportARAPReport() {
-    if (this.arapData.length === 0) {
-        this.appSettingService.showWarning('No data to export');
-        return;
-    }
-
-    const dataForExport = this.arapData.map(item => ({
-        'Voucher No': item.VoucherNumber,
-        'Document Type': item.DocumentTypeCode,
-        'Date': this.datePipe.transform(item.VoucherDate),
-        'Currency': item.CurrencyCode,
-        'Amount': item.Amount,
-        'Local Amount': item.LocalAmount,
-        // 'HBL No': item.HBLNo || '',
-        'Post Status': item.PostStatus
-    }));
-
-    this.exportExcelService.exportAsExcel({
-        data: dataForExport,
-        headers: [
-            { key: 'Voucher No', label: 'Voucher No' },
-            { key: 'Document Type', label: 'Document Type' },
-            { key: 'Date', label: 'Date' },
-            { key: 'Currency', label: 'Currency' },
-            { key: 'Amount', label: 'Amount' },
-            { key: 'Local Amount', label: 'Local Amount' },
-            // { key: 'HBL No', label: 'HBL No' },
-            { key: 'Post Status', label: 'Post Status' }
-        ],
-        fileName: `ARAP-Report-HouseJob-${this.housejobData?.HBLNo || 'Unknown'}`,
-        title: 'AR/AP Report'
-    });
-}
-
-printARAPReport() {
-    // Implement print functionality
-    window.print();
-}
 prepopulateFromMasterJob(masterJobData: any): void {
   
   
