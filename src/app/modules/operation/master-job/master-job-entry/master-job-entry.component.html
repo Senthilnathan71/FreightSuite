@@ -1808,123 +1808,14 @@
             </app-follow-up>
         </div>
 
-   <div class="workspace-content" *ngIf="selectedTab === 'AR/AP'">
-    <div class="modern-table-container">
-        <div class="table-toolbar">
-            <div class="toolbar-left">
-                <div class="filter-controls d-flex gap-2 align-items-center compact-form">
-                    <div class="custom-form-group custom-form-group-select">
-                        <ng-select class="ng-select" [(ngModel)]="arapFilter.voucherType" 
-                            (change)="loadMasterJobARAPData()" style="width: 150px;">
-                        <ng-option value="all">All Vouchers</ng-option>
-                        <ng-option value="INV">Revenue</ng-option>
-                        <ng-option value="VIN">Cost</ng-option>
-                    </ng-select>
-                    </div>
-                    
-                     <div class="custom-form-group custom-form-group-select">
-                    <ng-select class="ng-select" [(ngModel)]="arapFilter.status" 
-                            (change)="loadMasterJobARAPData()" style="width: 120px;">
-                        <ng-option value="all">All Status</ng-option>
-                                <ng-option value="P">Posted</ng-option>
-                                <ng-option value="U">Unposted</ng-option>
-                    </ng-select>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="toolbar-right">
-                <button class="table-action-btn export" (click)="exportARAPReport()" [disabled]="arapData.length === 0">
-                    <i class="fas fa-download"></i> Export
-                </button>
-                <!-- <button class="table-action-btn print" (click)="printARAPReport()" [disabled]="arapData.length === 0">
-                    <i class="fas fa-print"></i> Print
-                </button> -->
-                <button class="table-action-btn refresh" (click)="loadMasterJobARAPData()">
-                    <i class="fas fa-sync-alt"></i> Refresh
-                </button>
-            </div>
+        <div class="workspace-content" *ngIf="selectedTab === 'AR/AP'">
+            <app-ar-ap
+                [mode]="'master-job'"
+                [documentId]="masterJobSid"
+                emptyDescription="No accounting records found for this master job."
+                exportFileName="ARAP-Report-MasterJob">
+            </app-ar-ap>
         </div>
-        
-        @if(arapLoading) {
-        <div class="text-center py-5">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2">Loading AR/AP data...</p>
-        </div>
-        } @else if(arapData.length === 0) {
-        <div class="empty-state">
-            <div class="empty-icon">
-                <i class="fas fa-file-invoice-dollar"></i>
-            </div>
-            <h3 class="empty-title">No AR/AP Records</h3>
-            <p class="empty-description">No accounting records found for this master job.</p>
-        </div>
-        } @else {
-        <div class="modern-table-wrapper">
-            <table class="modern-table">
-                <thead>
-                    <tr>
-                        <th>Voucher No</th>
-                        <th>Type</th>
-                        <th>Date</th>
-                        <th>Currency</th>
-                        <th>Amount</th>
-                        <th>Local Amount</th>
-                        <!-- <th>HBL No</th> -->
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for(item of arapData; track item.VoucherHeaderSid) {
-                    <tr>
-                            <td>
-                                <a href="javascript:void(0)" (click)="openVoucherDetails(item.VoucherHeaderSid, item.DocumentTypeCode)"  
-                                   class="text-decoration-none">
-                                    {{item.VoucherNumber}}
-                                </a>
-                            </td>
-                            <td>{{item.DocumentTypeCode}}</td>
-                            <td>{{item.VoucherDate | date:'dd/MM/yyyy'}}</td>
-                            <td>{{item.CurrencyCode}}</td>
-                            <td >{{item.Amount | number:'1.2-2'}}</td>
-                            <td >{{item.LocalAmount | number:'1.2-2'}}</td>
-                            <!-- <td>{{item.HBLNo || '-'}}</td> -->
-                            <td>
-                                @if(item.PostStatus === 'P') {
-                                <span class="badge bg-success">Posted</span>
-                                } @else {
-                                <span class="badge bg-warning">Unposted</span>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-                 <tfoot *ngIf="arapData.length > 0">
-                    <tr class="table-footer fs-3">
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                        <td><strong>Total :</strong></td>
-                        
-                        <!-- <td class=" fw-bold ps-1">
-                             {{ getTotalAmount() | number:'1.2-2' }}
-                        </td> -->
-                        <td class="fw-bold ps-1">
-                             {{ getTotalLocalAmount() | number:'1.2-2' }}
-                        </td>
-                        <td colspan="2"></td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-        
-        
-        }
-    </div>
-</div>
 
         <div class="workspace-content" [hidden]="selectedTab !== 'Customs'">
             <app-customs
@@ -3170,4 +3061,5 @@
 <ng-template #pdfContent let-modal>
 
 </ng-template>
+
 

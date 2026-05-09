@@ -3149,120 +3149,16 @@
         [shipmentNo]="bookingHeader?.ShipmentNo" (dataEmitter)="handleMilestoneChange($event)"></app-milestone>
     </div>
 
-   <div class="workspace-content" *ngIf="selectedTab === 'AR/AP'">
-    <div class="modern-table-container">
-        <div class="table-toolbar">
-            <div class="toolbar-left">
-                <div class="filter-controls d-flex gap-2 align-items-center">
-                    <select class="form-select form-select-sm" [(ngModel)]="arapFilter.voucherType"
-                        [ngModelOptions]="{ standalone: true }" (change)="loadMasterJobARAPData()"
-                        style="width: 150px;">
-                        <option value="all">All Vouchers</option>
-                        <option value="INV">Revenue</option>
-                        <option value="VIN">Cost</option>
-                    </select>
-
-                    <select class="form-select form-select-sm" [(ngModel)]="arapFilter.status"
-                        [ngModelOptions]="{ standalone: true }" (change)="loadMasterJobARAPData()"
-                        style="width: 150px;">
-                        <option value="all">All Status</option>
-                        <option value="P">Posted</option>
-                        <option value="U">Unposted</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="toolbar-right">
-                <button class="table-action-btn export" (click)="exportARAPReport()" [disabled]="arapData.length === 0">
-                    <i class="fas fa-download"></i> Export
-                </button>
-                <!-- <button class="table-action-btn print" (click)="printARAPReport()" [disabled]="arapData.length === 0">
-                    <i class="fas fa-print"></i> Print
-                </button> -->
-                <button class="table-action-btn refresh" (click)="loadMasterJobARAPData()">
-                    <i class="fas fa-sync-alt"></i> Refresh
-                </button>
-            </div>
-        </div>
-        
-        @if(arapLoading) {
-        <div class="text-center py-5">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2">Loading AR/AP data...</p>
-        </div>
-        } @else if(arapData.length === 0) {
-        <div class="empty-state">
-            <div class="empty-icon">
-                <i class="fas fa-file-invoice-dollar"></i>
-            </div>
-            <h3 class="empty-title">No AR/AP Records</h3>
-            <p class="empty-description">No accounting records found for this house job.</p>
-        </div>
-        } @else {
-        <div class="modern-table-wrapper">
-            <table class="modern-table">
-                <thead>
-                    <tr>
-                        <th>Voucher No</th>
-                        <th>Type</th>
-                        <th>Date</th>
-                        <th>Currency</th>
-                        <th>Amount</th>
-                        <th>Local Amount</th>
-                        <!-- <th>HBL No</th> -->
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for(item of arapData; track item.VoucherHeaderSid) {
-                    <tr>
-                            <td>
-                                <a href="javascript:void(0)" (click)="openVoucherDetails(item.VoucherHeaderSid, item.DocumentTypeCode)"  
-                                   class="text-decoration-none">
-                                    {{item.VoucherNumber}}
-                                </a>
-                            </td>
-                            <td>{{item.DocumentTypeCode}}</td>
-                            <td>{{item.VoucherDate | date:'dd/MM/yyyy'}}</td>
-                            <td>{{item.CurrencyCode}}</td>
-                            <td >{{item.Amount | number:'1.2-2'}}</td>
-                            <td >{{item.LocalAmount | number:'1.2-2'}}</td>
-                            <!-- <td>{{item.HBLNo || '-'}}</td> -->
-                            <td>
-                                @if(item.PostStatus === 'P') {
-                                <span class="badge bg-success">Posted</span>
-                                } @else {
-                                <span class="badge bg-warning">Unposted</span>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-                 <tfoot *ngIf="arapData.length > 0">
-                    <tr class="table-footer fs-3">
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                    <td></td>
-                        <td><strong>Total :</strong></td>
-                        <!-- <td class=" fw-bold ps-1">
-                            {{getTotalAmount()}}
-                        </td> -->
-                        <td class="fw-bold ps-1">
-                            {{ getTotalLocalAmount() | number:'1.2-2' }}
-                        </td>
-                        <td colspan="2"></td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-        
-       
-        }
+    <div class="workspace-content" [hidden]="selectedTab !== 'AR/AP'">
+      <app-ar-ap
+        [mode]="'house-job'"
+        [documentId]="HouseJobSid"
+        emptyDescription="No accounting records found for this house job."
+        exportFileName="ARAP-Report-HouseJob"
+        (dataChange)="arapData = $event"
+        (loadingChange)="arapLoading = $event">
+      </app-ar-ap>
     </div>
-</div>
 
     <div class="workspace-content" *ngIf="selectedTab === 'Follow Up'">
       <app-follow-up screenName="houseJob" [documentSid]="documentSid" [parentMailbodyTemplate]="parentMailbody"
@@ -6545,3 +6441,4 @@
 </div>
 <div class="modal-backdrop fade" [class.show]="showCreditValidationModal"
      *ngIf="showCreditValidationModal"></div>
+

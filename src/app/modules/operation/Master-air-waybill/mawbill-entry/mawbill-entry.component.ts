@@ -245,13 +245,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   page = 1;
   pageSize = 5;
   totalLengthOfAttachedBookings : number = 0;
-  arapData: any[] = [];
   TandCList: any[] = [];
-  arapLoading = false;
-  arapFilter = {
-    voucherType: 'all',
-    status: 'all' // 'all', 'unpaid', 'partial', 'paid'
-  };
   currentMenuId: any;
   masterJobData:any;
   selectedReport: 'MAWB' | 'MAWBDraft' = 'MAWB';
@@ -1366,8 +1360,7 @@ loadMawbStock(data: any): void {
         MasterJobSid : masterJobSid
       }
     forkJoin({
-      masterJob: this.operationService.getMasterJobById(payload),
-      arapData: this.operationService.getMasterJobARAPData(masterJobSid)
+      masterJob: this.operationService.getMasterJobById(payload)
     }).subscribe({
       next: (response: any) => {
         if (response.masterJob.status && response.masterJob.data) {
@@ -1405,41 +1398,6 @@ loadMawbStock(data: any): void {
         }, 1000);
         }
         console.log("loadMasterStock", response);
-        // Handle AR/AP data - Ensure it's always an array
-        if (response.arapData) {
-          // Check if the response is an object with data property
-          let arapResponse = response.arapData;
-
-          // If it has a data property, use that
-          if (arapResponse.data !== undefined) {
-            this.arapData = Array.isArray(arapResponse.data) ? arapResponse.data : [];
-          }
-          // If it's directly an array
-          else if (Array.isArray(arapResponse)) {
-            this.arapData = arapResponse;
-          }
-          // If it's an object with status property
-          else if (arapResponse.status && arapResponse.data) {
-            this.arapData = Array.isArray(arapResponse.data) ? arapResponse.data : [];
-          }
-          // Default to empty array
-          else {
-            this.arapData = [];
-          }
-
-          // Format the data for display (only if we have data)
-          if (this.arapData.length > 0) {
-            this.arapData = this.arapData.map(item => ({
-              ...item,
-              voucherType: this.getVoucherType(item.DocumentTypeCode),
-              status: this.getPaymentStatus(item),
-              amountFormatted: this.formatCurrency(item.Amount, item.CurrencyCode),
-              localAmountFormatted: this.formatCurrency(item.LocalAmount, 'USD')
-            }));
-          }
-        } else {
-          this.arapData = [];
-        }
           this.resetDirtyState();
           this.logMawbDebug('loadMasterJobData:afterReset', {
             isDirty: this.isDirty,
@@ -3794,189 +3752,6 @@ onYardChange(selectedYard: any): void {
         <p>${this.userData['userName']}</p>
       </div>
     `;
-  }
-
-  loadMasterJobARAPData() {
-    if (!this.masterJobSid) {
-      this.arapData = [];
-      return;
-    }
-
-    this.arapLoading = true;
-    this.operationService.getMasterJobARAPData(this.masterJobSid).subscribe({
-      next: (response: any) => {
-        let dataArray = [];
-
-        // Handle different response formats
-        if (Array.isArray(response)) {
-          dataArray = response;
-        } else if (response && response.data && Array.isArray(response.data)) {
-          dataArray = response.data;
-        } else if (response && Array.isArray(response)) {
-          dataArray = response;
-        } else if (response && response.status && response.data) {
-          dataArray = Array.isArray(response.data) ? response.data : [];
-        }
-
-        this.arapData = dataArray.map(item => ({
-          ...item,
-          voucherType: this.getVoucherType(item.DocumentTypeCode),
-          status: this.getPaymentStatus(item),
-          amountFormatted: this.formatCurrency(item.Amount, item.CurrencyCode),
-          localAmountFormatted: this.formatCurrency(item.LocalAmount, 'USD')
-        }));
-
-        this.arapLoading = false;
-      },
-      error: (error) => {
-        console.error('Error loading AR/AP data:', error);
-        this.arapData = [];
-        this.arapLoading = false;
-        this.appSettingsService.showError('Failed to load AR/AP data');
-      }
-    });
-  }
-
-  private getVoucherType(documentTypeCode: string): string {
-    const typeMap: { [key: string]: string } = {
-      'INV': 'Invoice',
-      'PAY': 'Payment',
-      'CRN': 'Credit Note',
-      'DRN': 'Debit Note',
-      'REC': 'Receipt',
-    };
-    return typeMap[documentTypeCode] || documentTypeCode;
-  }
-
-  private getPaymentStatus(voucher: any): string {
-    // You might need to fetch actual payment status from your payment tables
-    // This is a simplified version
-    if (voucher.Amount === voucher.LocalAmount) {
-      return 'Paid';
-    } else if (voucher.LocalAmount > 0 && voucher.LocalAmount < voucher.Amount) {
-      return 'Partial';
-    }
-    return 'Unpaid';
-  }
-
-  private formatCurrency(amount: number, currencyCode: string): string {
-    try {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: currencyCode || 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(amount || 0);
-    } catch (error) {
-      return `${currencyCode || ''} ${(amount || 0).toFixed(2)}`;
-    }
-  }
-
-  getTotalAmount(): string {
-    const total = this.arapData.reduce((sum, item) => sum + (item.Amount || 0), 0);
-    if (this.arapData.length > 0) {
-      const currency = this.arapData[0].CurrencyCode;
-      return this.formatCurrency(total, currency);
-    }
-    return '0.00';
-  }
-
-  getTotalLocalAmount(): string {
-    const total = this.arapData.reduce((sum, item) => sum + (item.LocalAmount || 0), 0);
-    return this.formatCurrency(total, 'USD');
-  }
-
-  getCountByStatus(status: string): number {
-    return this.arapData.filter(item => item.status === status).length;
-  }
-
-  openVoucherDetails(voucherHeaderSid: number) {
-    // Navigate to voucher details page
-    this.router.navigate(['operation/invoice/entry/', voucherHeaderSid]);
-  }
-
-  exportARAPReport() {
-    const dataForExport = this.arapData.map(item => ({
-      'Voucher No': item.VoucherNumber,
-      'Date': this.datePipe.transform(item.VoucherDate),
-      'Type': item.voucherType,
-      'Currency': item.CurrencyCode,
-      'Amount': item.Amount,
-      'Local Amount': item.LocalAmount,
-      'HBL No': item.HBLNo || '',
-      'Status': item.status
-    }));
-
-    this.exportExcelService.exportAsExcel({
-      data: dataForExport,
-      headers: [
-        { key: 'Voucher No', label: 'Voucher No' },
-        { key: 'Date', label: 'Date' },
-        { key: 'Type', label: 'Type' },
-        { key: 'Currency', label: 'Currency' },
-        { key: 'Amount', label: 'Amount' },
-        { key: 'Local Amount', label: 'Local Amount' },
-        { key: 'HBL No', label: 'HBL No' },
-        { key: 'Status', label: 'Status' }
-      ],
-      fileName: `ARAP-Report-MasterJob-${this.masterAirWayData?.MasterJobNumber || 'Unknown'}`,
-      title: 'AR/AP Report'
-    });
-  }
-
-  printARAPReport() {
-    const printSection = document.getElementById('arap-print-section');
-    if (!printSection) {
-      this.appSettingsService.showWarning('AR/AP table not found for printing');
-      return;
-    }
-
-    const printWindow = window.open('', '_blank', 'width=1200,height=800');
-    if (!printWindow) {
-      this.appSettingsService.showWarning('Unable to open print window. Please allow popups.');
-      return;
-    }
-
-    const reportTitle = `AR/AP Report - ${this.masterAirWayData?.MasterJobNumber || ''}`;
-    const printDate = this.datePipe.transform(new Date(), 'dd-MM-yyyy HH:mm') || '';
-
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>${reportTitle}</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 16px; color: #1f2937; }
-            .print-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-            .print-title { font-size: 18px; font-weight: 700; margin: 0; }
-            .print-meta { font-size: 12px; color: #6b7280; }
-            .modern-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-            .modern-table th, .modern-table td { border: 1px solid #d1d5db; padding: 8px; }
-            .modern-table th { background: #f3f4f6; text-align: left; }
-            .modern-table .text-end { text-align: right; }
-            .modern-table tfoot td { font-weight: 700; background: #f9fafb; }
-            .voucher-link { color: #111827; text-decoration: none; pointer-events: none; }
-            .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; color: #111827; background: #e5e7eb; }
-            .status-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; }
-            .status-unpaid { background: #fee2e2; color: #991b1b; }
-            .status-partial { background: #fef3c7; color: #92400e; }
-            .status-paid { background: #dcfce7; color: #166534; }
-            @media print { body { margin: 0; } }
-          </style>
-        </head>
-        <body>
-          <div class="print-header">
-            <h1 class="print-title">${reportTitle}</h1>
-            <div class="print-meta">Printed: ${printDate}</div>
-          </div>
-          ${printSection.outerHTML}
-        </body>
-      </html>
-    `);
-
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
-    printWindow.close();
   }
 
     // Print
