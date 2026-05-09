@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
@@ -22,6 +22,8 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { debounceTime, Subject, takeUntil } from 'rxjs';
 
 @Component({
     selector: 'app-product-entry',
@@ -30,7 +32,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
     templateUrl: './product-entry.component.html',
     styleUrl: './product-entry.component.scss',
 })
-export class ProductEntryComponent implements OnInit{
+export class ProductEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges{
 
     productForm !:FormGroup;
     isEditMode : boolean;
@@ -70,6 +72,10 @@ export class ProductEntryComponent implements OnInit{
     MenuMasterSid: any;
     HSSACLookupConfig = DROPDOWN_CONFIGS.HSSAC;
     uomLookupConfig = DROPDOWN_CONFIGS.UOM;
+    isDirty: boolean = false;
+    isSaving: boolean = false;
+    private initialFormValue: any = null;
+    private destroy$ = new Subject<void>();
     constructor(
         public mps : MenuPermissionService, 
         private masterService:MasterService,
@@ -88,6 +94,8 @@ export class ProductEntryComponent implements OnInit{
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
         this.initProductForm();
+        this.initialFormValue = this.productForm.getRawValue();
+        this.subscribeToFormChanges();
         this.getAllUom();
         this.getAllHSN();
         this.currentRoute.paramMap.subscribe(
@@ -110,6 +118,53 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
 			this.userData = userProfile;
     
 		}
+    }
+
+    @HostListener('window:beforeunload', ['$event'])
+    unloadNotification($event: BeforeUnloadEvent): void {
+      if (this.hasUnsavedChanges()) {
+        $event.preventDefault();
+        $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+      }
+    }
+
+    hasUnsavedChanges(): boolean {
+      return this.isDirty;
+    }
+
+    async saveChanges(): Promise<boolean> {
+      return new Promise((resolve) => {
+        this.onSubmit(resolve);
+      });
+    }
+
+    private subscribeToFormChanges(): void {
+      this.productForm.valueChanges
+        .pipe(takeUntil(this.destroy$), debounceTime(300))
+        .subscribe(() => {
+          this.isDirty = !this.deepEqual(this.initialFormValue, this.productForm.getRawValue());
+        });
+    }
+
+    private normalizeValue(value: any): any {
+      if (value === null || value === undefined) return null;
+      if (value instanceof Date) return value.toISOString().split('T')[0];
+      if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) return Number(value);
+      if (typeof value === 'number') return Number(value.toFixed(6));
+      if (Array.isArray(value)) return value.map((v) => this.normalizeValue(v));
+      if (typeof value === 'object') {
+        return Object.keys(value).sort().reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+      }
+      return value;
+    }
+
+    private deepEqual(obj1: any, obj2: any): boolean {
+      const normalizedObj1 = this.normalizeValue(obj1);
+      const normalizedObj2 = this.normalizeValue(obj2);
+      return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
     }
 
    
@@ -149,7 +204,10 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
                 this.productForm.patchValue({
                     ...resp.data,
                     status : resp.data.status === 'A' ? 'Active' : 'Suspended'
-                })
+                });
+                this.initialFormValue = this.productForm.getRawValue();
+                this.isDirty = false;
+                this.productForm.markAsPristine();
             },
             (error)=>{
                 console.error('Error Loading Product',error);
@@ -171,62 +229,84 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
 
     
 
-    onSubmit(){
+    onSubmit(resolve?: (value: boolean) => void){
         if(this.productForm.invalid){
             this.productForm.markAllAsTouched();
             this.productForm.updateValueAndValidity();
             this.appSettingService.showWarning('Please fill all the required fields');
+            if (resolve) resolve(false);
             return;
         }
-        else {
-            const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
-            const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
-            const formValue = this.productForm.value;
-            const payload = this.isEditMode ? {
-                ...formValue,
-                UNNo : parseInt(formValue.UNNo),
-                status : formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
-                updatedBy:updatedBy
-            } : {
-                ...formValue,
-                UNNo : parseInt(formValue.UNNo),
-                status : formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
-                createdBy:createdBy,
-               
-            }
-            if(this.isEditMode){
-                this.masterService.updateProductById(this.ProductMasterSId,payload).subscribe(
-                    (resp:any)=>{
-                        if(resp.status){
-                            this.appSettingService.showSuccess(resp.message);
 
-                            this.route.navigate(['master/product/list']);
-                        } else {
-                            this.appSettingService.showError(resp.message);
+        const raw = this.productForm.getRawValue();
+        if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+            this.appSettingService.showWarning('No changes to save');
+            if (resolve) resolve(false);
+            return;
+        }
+        if (this.isSaving) {
+            if (resolve) resolve(false);
+            return;
+        }
 
-                        }
-                    },
-                    (error)=>{
-                        console.error('Error Updating Product',error);
+        this.isSaving = true;
+        const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
+        const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
+        const formValue = raw;
+        const payload = this.isEditMode ? {
+            ...formValue,
+            UNNo : parseInt(formValue.UNNo),
+            status : formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
+            updatedBy:updatedBy
+        } : {
+            ...formValue,
+            UNNo : parseInt(formValue.UNNo),
+            status : formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
+            createdBy:createdBy,
+           
+        }
+        if(this.isEditMode){
+            this.masterService.updateProductById(this.ProductMasterSId,payload).subscribe(
+                (resp:any)=>{
+                    this.isSaving = false;
+                    if(resp.status){
+                        this.appSettingService.showSuccess(resp.message);
+                        this.isDirty = false;
+                        this.initialFormValue = this.productForm.getRawValue();
+                        if (resolve) resolve(true);
+                        this.route.navigate(['master/product/list']);
+                    } else {
+                        this.appSettingService.showError(resp.message);
+                        if (resolve) resolve(false);
                     }
-                )
-            } else {
-                this.masterService.createNewProduct(payload).subscribe(
-                    (resp:any)=>{
-                        if(resp.status){
-                            this.appSettingService.showSuccess(resp.message);
-
-                            this.route.navigate(['master/product/list']);
-                        } else {
-                            this.appSettingService.showError(resp.message);
-
-                        }
-                    },
-                    (error)=>{
-                        console.error('Error Creating Product',error);
+                },
+                (error)=>{
+                    this.isSaving = false;
+                    console.error('Error Updating Product',error);
+                    if (resolve) resolve(false);
+                }
+            )
+        } else {
+            this.masterService.createNewProduct(payload).subscribe(
+                (resp:any)=>{
+                    this.isSaving = false;
+                    if(resp.status){
+                        this.appSettingService.showSuccess(resp.message);
+                        this.isDirty = false;
+                        this.initialFormValue = this.productForm.getRawValue();
+                        if (resolve) resolve(true);
+                        this.route.navigate(['master/product/list']);
+                    } else {
+                        this.appSettingService.showError(resp.message);
+                        if (resolve) resolve(false);
                     }
-                )
-            }
+                },
+                (error)=>{
+                    this.isSaving = false;
+                    console.error('Error Creating Product',error);
+                    if (resolve) resolve(false);
+                }
+            )
         }
     }
 
@@ -266,6 +346,8 @@ const userProfile = this.appSettingService.getDecryptedUserProfile();
   this.productForm.markAsUntouched();
   this.productForm.markAsPristine();
   this.productForm.updateValueAndValidity();
+  this.initialFormValue = this.productForm.getRawValue();
+  this.isDirty = false;
 
   // Reset any additional component state if needed
   this.productData = null;
@@ -374,6 +456,8 @@ openDocRef() {
     modalRef.componentInstance.DocumentSid = this.ProductMasterSId;
   }
  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.commonService.clearDocumentData()
  }
 

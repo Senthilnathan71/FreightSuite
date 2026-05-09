@@ -775,12 +775,6 @@ createRateFormGroup(data?: any): FormGroup {
   const isFromQuotation = !!data?.QuoteChargeSid
     || ((this.screenName === 'House Job' || this.screenName === 'House Air Waybill') && !!data?.BookingRateSid);
 
-  // Revenue/Cost-specific fields are only locked when the respective side actually carries a value.
-  // If RevenueLocalAmount or CostLocalAmount is null/0, leave those fields editable even when
-  // the row originates from a Quotation → Booking → HouseJob/HouseAirWaybill flow.
-  const isRevenueFromQuotation = isFromQuotation && !!Number(data?.RevenueLocalAmount);
-  const isCostFromQuotation    = isFromQuotation && !!Number(data?.CostLocalAmount);
-
   const form = this.fb.group({
     /** This one holds BookingRateSid or CostRevenueChargesSid */
     RateSid: [data?.RateSid ?? null],
@@ -793,59 +787,55 @@ createRateFormGroup(data?: any): FormGroup {
     BranchMasterSid: [data?.BranchMasterSid ?? null],
     
     SerialNumber: [data?.SerialNumber ?? ''],
-    ChargeMasterSid: [
-      { value: data?.ChargeMasterSid ?? null, disabled: isFromQuotation }
-    ],
-    ChargeDescription: [
-      { value: data?.ChargeDescription ?? null, disabled: isFromQuotation }
-    ],
+    ChargeMasterSid: [data?.ChargeMasterSid ?? null],
+    ChargeDescription: [data?.ChargeDescription ?? null],
 
     ChargeUomSid: [
-      { value: (data?.ChargeUomSid || data?.RevenueChargeUomSid || data?.CostChargeUomSid) ?? null, disabled: isFromQuotation },
+      (data?.ChargeUomSid || data?.RevenueChargeUomSid || data?.CostChargeUomSid) ?? null,
       [Validators.required]
     ],
     RevenueChargeUomSid: [
-      { value: (data?.RevenueChargeUomSid || data?.ChargeUomSid) ?? null, disabled: isRevenueFromQuotation },
+      (data?.RevenueChargeUomSid || data?.ChargeUomSid) ?? null,
       [Validators.required]
     ],
     CostChargeUomSid: [(data?.CostChargeUomSid || data?.ChargeUomSid) ?? null , [Validators.required]],
 
     NoOfUnit: [
-      { value: (data?.NoOfUnit || data?.RevenueNumberOfUnit || data?.CostNumberOfUnit) ?? '', disabled: isFromQuotation },
+      (data?.NoOfUnit || data?.RevenueNumberOfUnit || data?.CostNumberOfUnit) ?? '',
       [ Validators.required , greaterThanZero()]
     ],
     RevenueNumberOfUnit: [
-      { value: (data?.RevenueNumberOfUnit || data?.NoOfUnit) ?? '', disabled: isRevenueFromQuotation }
+      (data?.RevenueNumberOfUnit || data?.NoOfUnit) ?? ''
     ],
     CostNumberOfUnit: [(data?.CostNumberOfUnit || data?.NoOfUnit) ?? ''],
     
     // Revenue Fields (disabled only when from quotation AND revenue side has a value)
     RevenueCurrencyMasterSid: [
-      { value: data?.RevenueCurrencyMasterSid ?? null, disabled: isRevenueFromQuotation }
+      data?.RevenueCurrencyMasterSid ?? null
     ],
     RevenueExchangeRate: [
-      { value: data?.RevenueExchangeRate != null ? Number(data.RevenueExchangeRate) : '', disabled: isRevenueFromQuotation }
+      data?.RevenueExchangeRate != null ? Number(data.RevenueExchangeRate) : ''
     ],
     RevenueRate: [
-      { value: data?.RevenueRate != null ? Number(data.RevenueRate) : '', disabled: isRevenueFromQuotation }
+      data?.RevenueRate != null ? Number(data.RevenueRate) : ''
     ],
     RevenueAmount: [
-      { value: data?.RevenueAmount != null ? Number(data.RevenueAmount) : '', disabled: isRevenueFromQuotation }
+      data?.RevenueAmount != null ? Number(data.RevenueAmount) : ''
     ],
     RevenueLocalAmount: [
-      { value: data?.RevenueLocalAmount != null ? Number(data.RevenueLocalAmount) : '', disabled: isRevenueFromQuotation }
+      data?.RevenueLocalAmount != null ? Number(data.RevenueLocalAmount) : ''
     ],
     RevenueDrCr: [
-      { value: data?.RevenueDrCr ?? 'C', disabled: isRevenueFromQuotation }
+      data?.RevenueDrCr ?? 'C'
     ],
     RevenueCustomerMasterSid: [
-      { value: data?.RevenueCustomerMasterSid ?? null, disabled: isRevenueFromQuotation && data.RevenueCustomerMasterSid != null }
+      data?.RevenueCustomerMasterSid ?? null
     ],
     RevenueCustomerBranchSid: [
-      { value: data?.RevenueCustomerBranchSid ?? null, disabled: isRevenueFromQuotation && data.RevenueCustomerBranchSid != null }
+      data?.RevenueCustomerBranchSid ?? null
     ],
     RevenuePrepaidCollect: [
-      { value: data?.RevenuePrepaidCollect ?? "Prepaid", disabled: isRevenueFromQuotation }
+      data?.RevenuePrepaidCollect ?? "Prepaid"
     ],
     RevenueVoucherHeaderSid: [data?.RevenueVoucherHeaderSid ?? null],
     RevenueVoucherTypeSid: [data?.RevenueVoucherTypeMasterSid ?? null],
@@ -854,15 +844,15 @@ createRateFormGroup(data?: any): FormGroup {
 
 
     // Cost Related Fields (disabled when from quotation AND cost side has a value)
-    CostCurrencyMasterSid: [{ value: data?.CostCurrencyMasterSid ?? null, disabled: isCostFromQuotation }],
-    CostExchangeRate: [{ value: data?.CostExchangeRate != null ? Number(data.CostExchangeRate) : '', disabled: isCostFromQuotation }],
-    CostRate: [{ value: data?.CostRate != null ? Number(data.CostRate) : '', disabled: isCostFromQuotation }],
-    CostAmount: [{ value: data?.CostAmount != null ? Number(data.CostAmount) : '', disabled: isCostFromQuotation }],
-    CostLocalAmount: [{ value: data?.CostLocalAmount != null ? Number(data.CostLocalAmount).toFixed(this.digitsAfterDecimal) : '', disabled: isCostFromQuotation }],
-    CostDrCr: [{ value: data?.CostDrCr ?? 'D', disabled: isCostFromQuotation }],
-    CostAgentMasterSid: [{ value: data?.CostAgentMasterSid ?? null, disabled: isCostFromQuotation && data.CostAgentMasterSid != null }],
-    CostAgentBranchSid: [{ value: data?.CostAgentBranchSid ?? null, disabled: isCostFromQuotation && data.CostAgentBranchSid != null }],
-    CostPrepaidCollect: [{ value: data?.CostPrepaidCollect ?? "Prepaid", disabled: isCostFromQuotation }],
+    CostCurrencyMasterSid: [data?.CostCurrencyMasterSid ?? null],
+    CostExchangeRate: [data?.CostExchangeRate != null ? Number(data.CostExchangeRate) : ''],
+    CostRate: [data?.CostRate != null ? Number(data.CostRate) : ''],
+    CostAmount: [data?.CostAmount != null ? Number(data.CostAmount) : ''],
+    CostLocalAmount: [data?.CostLocalAmount != null ? Number(data.CostLocalAmount).toFixed(this.digitsAfterDecimal) : ''],
+    CostDrCr: [data?.CostDrCr ?? 'D'],
+    CostAgentMasterSid: [data?.CostAgentMasterSid ?? null],
+    CostAgentBranchSid: [data?.CostAgentBranchSid ?? null],
+    CostPrepaidCollect: [data?.CostPrepaidCollect ?? "Prepaid"],
     CostVoucherHeaderSid: [data?.CostVoucherHeaderSid ?? null],
     PaymentRequestSid: [data?.PaymentRequestSid ?? null],
     PaymentRequestNumber: [data?.PaymentRequestNumber ?? ''],
@@ -883,8 +873,6 @@ createRateFormGroup(data?: any): FormGroup {
     _costVoucherHeaderSid: [data?.CostVoucherHeaderSid ?? null], // Store actual IDs separately for validation
     _revenueVoucherHeaderSid: [data?.RevenueVoucherHeaderSid ?? null] ,// Store actual IDs separately for validation
     isFromQuotation: [isFromQuotation],
-    isRevenueFromQuotation: [isRevenueFromQuotation],
-    isCostFromQuotation: [isCostFromQuotation]
   });
   form.get('NoOfUnit')?.valueChanges.subscribe((value) => {
     form.get('RevenueNumberOfUnit')?.setValue(value);
@@ -1558,15 +1546,14 @@ createRateFormGroup(data?: any): FormGroup {
 
     return voucherDetails.reduce(
       (totals: { revenue: number; cost: number }, detail: any) => {
-        const docType = (
-          detail?.VoucherHeader?.voucherTypeMaster?.DocumentTypeCode
-        ).toUpperCase();
+        const costRevenue = (detail?.CostRevenue || detail?.costRevenue || '').toString().toUpperCase();
+        const drCr = (detail?.DrCr || detail?.drCr || '').toString().toUpperCase();
         const amount = parseFloat(detail?.LocalAmount || detail?.localAmount || 0) || 0;
 
-        if (docType === 'INV') {
-          totals.revenue += amount;
-        } else if (docType === 'VIN') {
-          totals.cost += amount;
+        if (costRevenue === 'REVENUE') {
+          totals.revenue += drCr === 'C' ? amount : -amount;
+        } else if (costRevenue === 'COST') {
+          totals.cost += drCr === 'D' ? amount : -amount;
         }
 
         return totals;
@@ -4488,22 +4475,6 @@ isHBLNoValid(): boolean {
 
     return true;
 }
-isFromQuotation(index: number): boolean {
-  const formGroup = this.rateFormArray.at(index) as FormGroup;
-  return !!formGroup.get('isFromQuotation')?.value;
-}
-
-isRevenueFromQuotation(index: number): boolean {
-  const formGroup = this.rateFormArray.at(index) as FormGroup;
-  return !!formGroup.get('isRevenueFromQuotation')?.value;
-}
-
-isCostFromQuotation(index: number): boolean {
-  const formGroup = this.rateFormArray.at(index) as FormGroup;
-  return !!formGroup.get('isCostFromQuotation')?.value;
-}
-
-
   //!SECTION - 8 : Standard Charge Related
 
   getStdChargeModal() {

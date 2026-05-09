@@ -314,34 +314,22 @@ function buildChargesTable(data: ShipmentReportPdfData): any {
       headerRows: 2,
       keepWithHeaderRows: 2,
       dontBreakRows: true,
-      widths: ['*', 50, 50, 45, 50, 50, 45, 50, 50, 45, 50, 50, 45],
+      widths: ['*', 60, 60, 55, 60, 60, 55],
       body: [
         [
           { text: 'Charge', style: 'tableHeader', rowSpan: 2 },
-          { text: 'Provisional', style: 'tableHeader', colSpan: 6 },
+          { text: 'Provisional', style: 'tableHeader', colSpan: 3 },
           {},
           {},
+          { text: 'Actual', style: 'tableHeader', colSpan: 3 },
           {},
           {},
-          {},
-          { text: 'Actual', style: 'tableHeader', colSpan: 6 },
-          {},
-          {},
-          {},
-          {},
-          {}
         ],
         [
           {},
-          { text: 'Amt Rev', style: 'tableHeader' },
-          { text: 'Amt Cost', style: 'tableHeader' },
-          { text: 'Amt GP', style: 'tableHeader' },
           { text: 'Local Rev', style: 'tableHeader' },
           { text: 'Local Cost', style: 'tableHeader' },
           { text: 'Local GP', style: 'tableHeader' },
-          { text: 'Amt Rev', style: 'tableHeader' },
-          { text: 'Amt Cost', style: 'tableHeader' },
-          { text: 'Amt GP', style: 'tableHeader' },
           { text: 'Local Rev', style: 'tableHeader' },
           { text: 'Local Cost', style: 'tableHeader' },
           { text: 'Local GP', style: 'tableHeader' }
@@ -349,15 +337,9 @@ function buildChargesTable(data: ShipmentReportPdfData): any {
         ...data.charges.map((item) => buildChargeRow(item)),
         [
           { text: 'Total', style: 'tableCellBold', alignment: 'right' },
-          buildNumberCell(data.chargeTotals.totalPCurrRevenue, 2, true),
-          buildNumberCell(data.chargeTotals.totalPCurrExpense, 2, true),
-          buildNumberCell(data.chargeTotals.totalPCurrGP, 2, true),
           buildNumberCell(data.chargeTotals.totalLocalRevenue, 2, true),
           buildNumberCell(data.chargeTotals.totalLocalExpense, 2, true),
           buildNumberCell(data.chargeTotals.totalLocalGP, 2, true),
-          buildNumberCell(data.chargeTotals.totalActualPCurrRevenue, 2, true),
-          buildNumberCell(data.chargeTotals.totalActualPCurrExpense, 2, true),
-          buildNumberCell(data.chargeTotals.totalActualPCurrGP, 2, true),
           buildNumberCell(data.chargeTotals.totalActualLocalRevenue, 2, true),
           buildNumberCell(data.chargeTotals.totalActualLocalExpense, 2, true),
           buildNumberCell(data.chargeTotals.totalActualLocalGP, 2, true)
@@ -372,15 +354,9 @@ function buildChargesTable(data: ShipmentReportPdfData): any {
 function buildChargeRow(item: ShipmentChargePdfRow): any[] {
   return [
     buildTextCell(item.chargeName),
-    buildNumberCell(item.pCurrRevenue, 2),
-    buildNumberCell(item.pCurrExpense, 2),
-    buildNumberCell(item.pCurrGP, 2),
     buildNumberCell(item.localRevenue, 2),
     buildNumberCell(item.localExpense, 2),
     buildNumberCell(item.localGP, 2),
-    buildNumberCell(item.actualPCurrRevenue, 2),
-    buildNumberCell(item.actualPCurrExpense, 2),
-    buildNumberCell(item.actualPCurrGP, 2),
     buildNumberCell(item.actualLocalRevenue, 2),
     buildNumberCell(item.actualLocalExpense, 2),
     buildNumberCell(item.actualLocalGP, 2)
@@ -559,6 +535,7 @@ export function transformShipmentReportApiData(
   };
 
   const chargeRows: ShipmentChargePdfRow[] = costRevenueCharges.map((item: any) => {
+    const voucherActuals = getActualAmountsFromVoucherDetails(item);
     const pCurrRevenue = Number(item.RevenueAmount || 0);
     const pCurrExpense = Number(item.CostAmount || 0);
     const localRevenue = Number(item.RevenueLocalAmount || 0);
@@ -587,14 +564,18 @@ export function transformShipmentReportApiData(
       item?.CostActualAmount,
       item?.ActualCostRate
     ) ?? (hasCostVoucher ? pCurrExpense : 0);
-    const actualLocalRevenue = pickActual(
-      item?.ActualRevenueLocalAmount,
-      item?.RevenueActualLocalAmount
-    ) ?? (hasRevenueVoucher ? localRevenue : 0);
-    const actualLocalExpense = pickActual(
-      item?.ActualCostLocalAmount,
-      item?.CostActualLocalAmount
-    ) ?? (hasCostVoucher ? localExpense : 0);
+    const actualLocalRevenue = voucherActuals.revenue !== 0
+      ? voucherActuals.revenue
+      : (pickActual(
+        item?.ActualRevenueLocalAmount,
+        item?.RevenueActualLocalAmount
+      ) ?? (hasRevenueVoucher ? localRevenue : 0));
+    const actualLocalExpense = voucherActuals.cost !== 0
+      ? voucherActuals.cost
+      : (pickActual(
+        item?.ActualCostLocalAmount,
+        item?.CostActualLocalAmount
+      ) ?? (hasCostVoucher ? localExpense : 0));
 
     return {
       chargeName: getChargeName(item.ChargeMasterSid),
@@ -748,4 +729,29 @@ export function transformShipmentReportApiData(
       totalExpense: expenseSummary.reduce((sum, item) => sum + Number(item.amount || 0), 0)
     }
   };
+}
+
+function getActualAmountsFromVoucherDetails(item: any): { revenue: number; cost: number } {
+  const voucherDetails =
+    item?.voucherDetail || item?.VoucherDetail || item?.VoucherDetails;
+  if (!Array.isArray(voucherDetails)) {
+    return { revenue: 0, cost: 0 };
+  }
+
+  return voucherDetails.reduce(
+    (totals: { revenue: number; cost: number }, detail: any) => {
+      const costRevenue = (detail?.CostRevenue || detail?.costRevenue || '').toString().toUpperCase();
+      const drCr = (detail?.DrCr || detail?.drCr || '').toString().toUpperCase();
+      const amount = parseFloat(detail?.LocalAmount || detail?.localAmount || 0) || 0;
+
+      if (costRevenue === 'REVENUE') {
+        totals.revenue += drCr === 'C' ? amount : -amount;
+      } else if (costRevenue === 'COST') {
+        totals.cost += drCr === 'D' ? amount : -amount;
+      }
+
+      return totals;
+    },
+    { revenue: 0, cost: 0 }
+  );
 }

@@ -42,6 +42,7 @@
             <th class="bg-transparent text-light">On Acc Curr</th>
             <th class="bg-transparent text-light">Credit Days</th>
             <th class="bg-transparent text-light">Credit Limit</th>
+            <th class="bg-transparent text-light text-center">O/S</th>
           </tr>
         </thead>
 
@@ -53,7 +54,7 @@
             <!-- Currency Header Row -->
              @if(params?.CurrencyWise){
             <tr class="fw-bold">
-              <td colspan="16">
+              <td [attr.colspan]="bucketLabels.length + 8">
                 Curr : {{ group.CurrencyCode }}
               </td>
             </tr>
@@ -75,6 +76,15 @@
                 <td class="text-end">{{sub.totalOnAccountCreditCurr | number:'1.2-2'}}</td>
                 <td class="text-end">{{ sub.CreditDays }}</td>
                 <td class="text-end">{{sub.CreditLimit}}</td>
+                <td class="text-center">
+                  <button
+                    type="button"
+                    class="btn btn-sm py-0 px-1"
+                    title="Open Outstanding Report"
+                    (click)="openOutstandingReportForParty(sub)">
+                    <i class="fas fa-file-invoice-dollar text-info"></i>
+                  </button>
+                </td>
               </tr>
 
             }
@@ -94,6 +104,7 @@
               <!-- <td></td> -->
               <td class="text-end">{{group.totalOnAccountCreditCurr | number:'1.2-2'}}</td>
               <td></td>
+              <td></td>
               <!-- <td class="text-end">0</td>
               <td></td> -->
             </tr>
@@ -104,7 +115,7 @@
                 Grand Total
             </td>
             <td class="fw-bold text-end">{{fullData?.grandTotalLocal | number:'1.2-2'}}</td>
-            <td colspan="14"></td>
+            <td [attr.colspan]="bucketLabels.length + 6"></td>
           </tr>
         </tbody>
       </table>

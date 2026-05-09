@@ -90,6 +90,7 @@
             </button> -->
             }
             <button *ngIf="mps.canPrint('Proof of Delivery','Print')" class="text-dark" ngbDropdownItem (click)="reportProofofDelivery()">Proof of Delivery</button>
+            <button class="text-dark" ngbDropdownItem (click)="reportPerformaInvoice()">Proforma Invoice</button>  
           </div>
         </div>
       </div>
@@ -2934,7 +2935,12 @@
 
         <div class="workspace-content" *ngIf="selectedTab === 'Edoc'">
           <app-edoc [dataItems]="edocData" screenName="houseJob" [resetTrigger]="edocResetTrigger"
-            [formData]="currentEdocFormValue" (dataEmitter)="handleEdocChange($event)">
+             [formData]="currentEdocFormValue"
+        [companyMasterSid]="currentCompany?.CompanyMasterSid"
+        [branchMasterSid]="currentBranch?.BranchMasterSid"
+        [menuMasterSid]="currentMenuId"
+        [documentSid]="HouseJobSid || housejobData?.HouseJobSid"
+        (dataEmitter)="handleEdocChange($event)">
           </app-edoc>
         </div>
       </div>

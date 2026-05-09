@@ -1,10 +1,11 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, TemplateRef } from '@angular/core';
+import { Component, HostListener, OnDestroy, TemplateRef } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { FormsModule, FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { NgSelectConfig, NgSelectModule } from '@ng-select/ng-select';
 import { RouterModule } from '@angular/router';
 import { ActivatedRoute, Router } from '@angular/router';
+import { debounceTime, Subject, takeUntil } from 'rxjs';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MasterService } from '../../master.service';
 import { NgbDropdownModule, NgbModal,NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -19,6 +20,7 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 @Component({
   selector: 'app-uom-view',
@@ -37,11 +39,15 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
   templateUrl: './uom-view.component.html',
   styleUrl: './uom-view.component.scss'
 })
-export class UOMViewComponent {
+export class UOMViewComponent implements HasUnsavedChanges, OnDestroy {
   uomForm!: FormGroup;
   isEditMode = false;
   selectedShipmentType: number;
   btnDisable: boolean = true;
+  isDirty = false;
+  isSaving = false;
+  private initialFormValue: any = null;
+  private destroy$ = new Subject<void>();
   uomData: any;
   permissions: string[] = [];
   currentMenuPermissions: any = {};
@@ -112,6 +118,7 @@ statusOptions = [
   this.uomForm.statusChanges.subscribe(status => {
     this.btnDisable = status !== 'VALID';
   });
+  this.subscribeToFormChanges();
 
     
   // Enable status control when in edit mode
@@ -119,15 +126,17 @@ statusOptions = [
     this.uomForm.get('status')?.enable();
   }
 
-  this.route.paramMap.subscribe(params => {
-    this.idParam = Number(params.get('id'));
-    if (this.idParam) {
-      this.isEditMode = true;
-      this.loadUom(this.idParam);
-      // Enable status control when in edit mode
-      this.uomForm.get('status')?.enable();
-    }
-  });
+    this.route.paramMap.subscribe(params => {
+      this.idParam = Number(params.get('id'));
+      if (this.idParam) {
+        this.isEditMode = true;
+        this.loadUom(this.idParam);
+        // Enable status control when in edit mode
+        this.uomForm.get('status')?.enable();
+      } else {
+        this.captureInitialFormValue();
+      }
+    });
 
     // this.appSettingService.getUser().subscribe((user) => {
     //   if (user) {
@@ -167,6 +176,7 @@ statusOptions = [
       });
       // Enable status control when in edit mode
       this.uomForm.get('status')?.enable();
+      this.captureInitialFormValue();
     },
     (error) => {
       this.errorMessage = error.message;
@@ -207,18 +217,81 @@ statusOptions = [
 
   // Reset any additional state variables if needed
   this.uomData = null;
+  this.captureInitialFormValue();
 }
 
   goBack() {
     history.back()
   }
 
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
+
+  private subscribeToFormChanges(): void {
+    this.uomForm.valueChanges
+      .pipe(takeUntil(this.destroy$), debounceTime(300))
+      .subscribe(() => {
+        if (!this.initialFormValue) return;
+        this.isDirty = !this.deepEqual(this.initialFormValue, this.uomForm.getRawValue());
+      });
+  }
+
+  private captureInitialFormValue(): void {
+    this.initialFormValue = this.uomForm.getRawValue();
+    this.isDirty = false;
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString().split('T')[0];
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) return Number(value);
+    if (typeof value === 'number') return Number(value.toFixed(6));
+    if (Array.isArray(value)) return value.map((v) => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
+
   // Handle Form Submission
-  onSubmit() {
+  onSubmit(resolve?: (value: boolean) => void) {
+    const raw = this.uomForm.getRawValue();
+    if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      this.uomForm.markAsUntouched();
+      if (resolve) resolve(false);
+      return;
+    }
+
     if (this.uomForm.invalid) {
       this.uomForm.markAllAsTouched(); // Force validation messages to show
       this.uomForm.updateValueAndValidity(); // Ensure validation is refreshed
       this.appSettingService.showWarning('Please fill all required fields correctly.')
+      if (resolve) resolve(false);
       return;
     } else {
       let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
@@ -239,41 +312,53 @@ statusOptions = [
     console.log('payload', payload);
 
       if (this.isEditMode) {
+        this.isSaving = true;
         this.masterService.updateUomById(this.idParam, payload).subscribe(
           (resp: any) => {
-
+            this.isSaving = false;
             console.log(resp.message);
             if (resp.status) {
+              this.captureInitialFormValue();
               this.appSettingService.showSuccess(resp.message);
+              if (resolve) resolve(true);
               this.router.navigate(['master/uom-master/list']);
 
             } else {
+              if (resolve) resolve(false);
               this.appSettingService.showError(resp.message);
             }
 
           },
           (error) => {
+            this.isSaving = false;
             this.errorMessage = error.message;
             console.error('Error loading uom:', error);
+            if (resolve) resolve(false);
           }
         );
       } else {
+        this.isSaving = true;
         this.masterService.createUom(payload).subscribe(
           (resp: any) => {
-
+            this.isSaving = false;
             console.log(resp);
             if (resp.status) {
+              this.captureInitialFormValue();
               this.appSettingService.showSuccess(resp.message);
+              if (resolve) resolve(true);
               this.router.navigate(['master/uom-master/list']);
 
             } else {
+              if (resolve) resolve(false);
               this.appSettingService.showError(resp.message);
             }
 
           },
           (error) => {
+            this.isSaving = false;
             this.errorMessage = error.message;
             console.error('Error loading uom:', error);
+            if (resolve) resolve(false);
           }
         );
       }
@@ -366,6 +451,8 @@ openDocRef() {
     modalRef.componentInstance.DocumentSid = this.idParam;
   }
  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.commonService.clearDocumentData()
  }
 

@@ -1818,7 +1818,7 @@
                             (change)="loadMasterJobARAPData()" style="width: 150px;">
                         <ng-option value="all">All Vouchers</ng-option>
                         <ng-option value="INV">Revenue</ng-option>
-                        <ng-option value="VINV">Cost</ng-option>
+                        <ng-option value="VIN">Cost</ng-option>
                     </ng-select>
                     </div>
                     
@@ -1906,13 +1906,14 @@
                       <td></td>
                       <td></td>
                       <td></td>
-                    
+                      <td></td>
                         <td><strong>Total :</strong></td>
-                        <td class=" fw-bold ps-1">
-                            {{getTotalAmount()}}
-                        </td>
+                        
+                        <!-- <td class=" fw-bold ps-1">
+                             {{ getTotalAmount() | number:'1.2-2' }}
+                        </td> -->
                         <td class="fw-bold ps-1">
-                            {{getTotalLocalAmount()}}
+                             {{ getTotalLocalAmount() | number:'1.2-2' }}
                         </td>
                         <td colspan="2"></td>
                     </tr>
@@ -3084,7 +3085,7 @@
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary btn-sm" (click)="modal.dismiss(); ">Cancel</button>
             <button type="button" class="btn btn-info btn-sm" (click)="onContainerSubmit()"
-                [disabled]="containerFormGroup.invalid"> {{ isEditContainer ? 'Edit' : 'Add' }}</button>
+                [disabled]="containerFormGroup.invalid"> {{ isEditContainer ? 'Save' : 'Add' }}</button>
         </div>
     </ng-template>
 

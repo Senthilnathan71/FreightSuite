@@ -36,6 +36,7 @@ import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/compone
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
 @Component({
   selector: 'app-profit-center',
   standalone: true,
@@ -90,6 +91,9 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
   permissions: string[] = [];
   currentMenuPermissions: any = {};
   MenuMasterSid:any;
+  isProfitCenterDirty: boolean = false;
+  isProfitCenterSaving: boolean = false;
+  private initialProfitCenterFormValue: any = null;
   // Company
   currentCompany: any;
   currentBranch: any;
@@ -506,6 +510,14 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
       Remarks: [''],
       Status: [{ value: 'A', disabled: false }, Validators.required]
     });
+
+    this.profitCenterForm.valueChanges.subscribe(() => {
+      if (!this.initialProfitCenterFormValue) return;
+      this.isProfitCenterDirty = !this.deepEqual(
+        this.initialProfitCenterFormValue,
+        this.profitCenterForm.getRawValue()
+      );
+    });
   }
   // resetForm(): void {
   //  this.profitCenterForm.get('Status')?.disable();
@@ -543,14 +555,28 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
   openModal(content: any): void {
     this.isEditMode = false;
     this.resetForm();
-    this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+    this.setProfitCenterFormInitialValue();
+    this.modalRef = this.modalService.open(content, {
+      centered: true,
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false,
+      beforeDismiss: () => this.canCloseProfitCenterModal()
+    });
   }
 
   openEditModal(content: any, id: number): void {
     this.isEditMode = true;
     this.ProfitCenterMasterSid = id;
     this.getProfitCenterById(id).add(() => {
-      this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+      this.setProfitCenterFormInitialValue();
+      this.modalRef = this.modalService.open(content, {
+        centered: true,
+        size: 'lg',
+        backdrop: 'static',
+        keyboard: false,
+        beforeDismiss: () => this.canCloseProfitCenterModal()
+      });
     });
   }
 
@@ -566,7 +592,8 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
     centered: true, 
     size: 'lg', 
     backdrop: 'static',
-    keyboard: false 
+    keyboard: false,
+    beforeDismiss: () => this.canCloseProfitCenterModal()
   });
 
   // 3. DISABLE FORM
@@ -594,6 +621,7 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
 
       // 5. UNLOCK UI
       this.profitCenterForm.enable();
+      this.setProfitCenterFormInitialValue();
     },
     error: (err) => {
       // 6. ROLLBACK
@@ -665,12 +693,13 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
     return this.masterService.getProfitCenterById(id).pipe(take(1)).subscribe(
       (profitCenter: any) => {
         console.log('Profit-Center from backend:', profitCenter);
-        this.profitCenterForm.patchValue({
+      this.profitCenterForm.patchValue({
           ProfitCenterCode: profitCenter.ProfitCenterCode,
           ProfitCenterName: profitCenter.ProfitCenterName,
           Remarks: profitCenter.Remarks,
           Status: profitCenter.Status === 'A' ? 'Active' : 'Suspended'
         });
+        this.setProfitCenterFormInitialValue();
       },
       (error) => {
         this.appSettingService.showError('Error  loading');
@@ -679,6 +708,7 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
   }
 
  onSubmit() {
+    if (this.isProfitCenterSaving) return;
     if (this.profitCenterForm.get('Status')?.disabled) {
       this.profitCenterForm.get('Status')?.enable();
     }
@@ -687,8 +717,14 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
       this.profitCenterForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all required fields correctly.');
       return;
+    }
+
+    if (!this.isProfitCenterDirty) {
+      this.appSettingService.showWarning('No changes to save.');
+      return;
     } else {
       this.btnDisable = true;
+      this.isProfitCenterSaving = true;
       let CreatedBy = { CreatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       let UpdatedBy = { UpdatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       const formValue = this.profitCenterForm.value;
@@ -712,17 +748,19 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
            
             if (resp.Status || resp.status) {
               this.appSettingService.showSuccess(resp.message || 'Saved Successfully!');
+              this.setProfitCenterFormInitialValue();
               this.closeModal();
-              
               this.searchProfitCenter();
               
             } else {
               this.appSettingService.showError(resp.message);
             }
             this.btnDisable = false;
+            this.isProfitCenterSaving = false;
           },
           (error) => {
             this.btnDisable = false; 
+            this.isProfitCenterSaving = false;
             this.errorMessage = error.message;
             console.error('Error loading:', error);
           }
@@ -731,9 +769,11 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
         this.masterService.createProfitCenter(payload).subscribe(
           (resp: any) => {
             this.btnDisable = false;
+            this.isProfitCenterSaving = false;
             console.log(resp);
             if (resp.Status || resp.status) {
               this.appSettingService.showSuccess(resp.message || 'Saved Successfully!');
+              this.setProfitCenterFormInitialValue();
               this.closeModal();
               this.searchProfitCenter();
             } else {
@@ -742,6 +782,7 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
           },
           (error) => {
             this.btnDisable = false;
+            this.isProfitCenterSaving = false;
             this.errorMessage = error.message;
             console.error('Error loading:', error);
           }
@@ -959,5 +1000,50 @@ export class ProfitCenterComponent extends BaseListComponent implements OnInit {
 
   clearFilterValue() {
     this.filterValue = '';
+  }
+
+  private setProfitCenterFormInitialValue(): void {
+    this.initialProfitCenterFormValue = this.profitCenterForm.getRawValue();
+    this.isProfitCenterDirty = false;
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString();
+    if (Array.isArray(value)) return value.map((v) => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
+
+  canCloseProfitCenterModal(): boolean | Promise<boolean> {
+    if (this.isProfitCenterSaving) return false;
+    if (!this.isProfitCenterDirty) return true;
+
+    const modalRef = this.modalService.open(UnsavedChangesDialogComponent, {
+      centered: true,
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    return modalRef.result
+      .then((action: UnsavedChangesAction) => action === 'discard')
+      .catch(() => false);
+  }
+
+  async closeProfitCenterModal(): Promise<void> {
+    const canClose = await Promise.resolve(this.canCloseProfitCenterModal());
+    if (!canClose) return;
+    this.modalRef?.close();
   }
 }

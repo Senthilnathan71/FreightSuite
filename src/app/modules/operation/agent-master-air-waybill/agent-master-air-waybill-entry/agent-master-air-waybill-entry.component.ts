@@ -68,6 +68,7 @@ import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { MAWBComponent } from '../../Master-air-waybill/report/mawb/mawb.component';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
+import { PerformaInvoiceComponent } from '../../house-job/report/performa-invoice/performa-invoice.component';
 
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
@@ -641,6 +642,7 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
     CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
     BranchMasterSid: this.currentCompany?.BranchMasterSid,
   };
+  this.currentMenuId = this.mps.getMenuId() || Number(sessionStorage.getItem('currentMenuId'));
   this.loadTermsAndConditionsConfig();
   this.initBookingForm();
   this.initCargoForm();
@@ -648,7 +650,9 @@ selectedReport: 'HBL' | 'HBLDraft' = 'HBL';
   this.initDetailsForm();
   this.setupMBLDateListener();
   this.spinner.show();
-  this.mps.init().subscribe();
+   this.mps.init().subscribe(() => {
+    this.currentMenuId = this.currentMenuId || this.mps.getMenuId() || Number(sessionStorage.getItem('currentMenuId'));
+  });
   
 
     this.loadHeaderMandatoryParts().subscribe(() => {
@@ -4309,7 +4313,11 @@ ${this.userData['userName']}`;
       size: 'lg', 
       centered: true, 
       backdrop: 'static' 
-    })
+    });
+    modalRef.componentInstance.companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    modalRef.componentInstance.branchMasterSid = this.currentBranch?.BranchMasterSid;
+    modalRef.componentInstance.menuMasterSid = this.currentMenuId || this.bookingData?.MenuMasterSid || Number(sessionStorage.getItem('currentMenuId'));
+    modalRef.componentInstance.documentSid = this.HouseJobSid || this.bookingData?.HouseJobSid;
   }
 
   openDocRef() {
@@ -4631,8 +4639,8 @@ ${this.userData['userName']}`;
 
   // Add handler for Edoc data changes
   handleEdocChange(event: any) {
-    this.edocData = event.dataItems || [];   
-    this.currentEdocFormValue = event.formData; 
+    this.edocData = event.dataItems || this.edocData || [];
+    this.currentEdocFormValue = event.formData || this.currentEdocFormValue;
     
   }
 
@@ -4961,6 +4969,27 @@ ${this.userData['userName']}`;
           modalRef.componentInstance.portList = this.portList || [];
         }
       
+        //  Performa Invoice 
+
+         reportPerformaInvoice() {
+              const modalRef = this.modalService.open(PerformaInvoiceComponent, {
+                size: 'xl',
+                scrollable: true,
+              });
+              // modalRef.componentInstance.masterJobData = this.masterJobData;
+              modalRef.componentInstance.housejobData = this.housejobData || [];
+              // modalRef.componentInstance.masterJobContainers = this.masterJobContainers.getRawValue() || [];
+              modalRef.componentInstance.masterJobContainers = this.housejobData?.containers || [];
+              modalRef.componentInstance.packageTypeList = this.packageTypeList;
+              modalRef.componentInstance.TandCList = this.TandCList || [];
+              modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || 'LCL';
+              modalRef.componentInstance.portList = this.portList || [];
+              modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+              modalRef.componentInstance.houseMenuMasterSid = this.currentMenuId;
+              modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+              modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+            }
+            
         // Exit form
 
          reportExitForm() {

@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
@@ -13,6 +13,8 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { finalize } from 'rxjs/operators';
+import { debounceTime, Subject, takeUntil } from 'rxjs';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 @Component({
   selector: 'app-report-master-entry',
@@ -21,10 +23,14 @@ import { finalize } from 'rxjs/operators';
   templateUrl: './report-master-entry.component.html',
   styleUrls: ['./report-master-entry.component.scss']
 })
-export class ReportMasterEntryComponent implements OnInit {
+export class ReportMasterEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   reportForm!: FormGroup;
   isEditMode: boolean = false;
   isSaving: boolean = false;
+  isDirty: boolean = false;
+  private initialFormValue: any = null;
+  private isFormInitializing = false;
+  private destroy$ = new Subject<void>();
   ReportMasterSid!: number;
   currentCompany: any;
   reportData: any;
@@ -70,6 +76,7 @@ export class ReportMasterEntryComponent implements OnInit {
   ngOnInit(): void {
     this.currentCompany = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
     this.initForm();
+    this.subscribeToFormChanges();
     this.menuDropdown();
 
     this.route.paramMap.subscribe(params => {
@@ -78,8 +85,81 @@ export class ReportMasterEntryComponent implements OnInit {
         this.ReportMasterSid = +id;
         this.isEditMode = true;
         this.loadReportData();
+      } else {
+        this.initialFormValue = this.reportForm.getRawValue();
+        this.isDirty = false;
       }
     });
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
+
+  private subscribeToFormChanges(): void {
+    this.reportForm.valueChanges
+      .pipe(takeUntil(this.destroy$), debounceTime(300))
+      .subscribe(() => {
+        if (this.isFormInitializing) {
+          return;
+        }
+
+        this.isDirty = !this.deepEqual(
+          this.initialFormValue,
+          this.reportForm.getRawValue()
+        );
+      });
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) {
+      return null;
+    }
+
+    if (value instanceof Date) {
+      return value.toISOString().split('T')[0];
+    }
+
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+      return Number(value);
+    }
+
+    if (typeof value === 'number') {
+      return Number(value.toFixed(6));
+    }
+
+    if (Array.isArray(value)) {
+      return value.map((v) => this.normalizeValue(v));
+    }
+
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+
+    return value;
+  }
+
+  private deepEqual(a: any, b: any): boolean {
+    return JSON.stringify(this.normalizeValue(a)) === JSON.stringify(this.normalizeValue(b));
   }
 
   initForm() {
@@ -147,6 +227,7 @@ export class ReportMasterEntryComponent implements OnInit {
   }
 
   loadReportData() {
+    this.isFormInitializing = true;
     this.masterService.getReportMasterById(this.ReportMasterSid).subscribe({
       next: (resp: any) => {
         this.reportData = resp.data;
@@ -172,31 +253,47 @@ export class ReportMasterEntryComponent implements OnInit {
                 this.parameters.push(this.createParameterGroup(param));
               });
             }
+
+            this.initialFormValue = this.reportForm.getRawValue();
+            this.isDirty = false;
+            this.isFormInitializing = false;
           },
           error: (error) => {
+            this.isFormInitializing = false;
             this.appSettingsService.showError(this.getErrorMessage(error, 'Failed to load parameters'));
           }
         });
       },
       error: (error) => {
+        this.isFormInitializing = false;
         this.appSettingsService.showError(this.getErrorMessage(error, 'Failed to load report data'));
       }
     });
   }
 
-  onSubmit() {
+  onSubmit(resolve?: (value: boolean) => void) {
     if (this.isSaving) {
+      if (resolve) resolve(false);
       return;
     }
 
     if (this.reportForm.invalid) {
       this.reportForm.markAllAsTouched();
       this.appSettingsService.showWarning('Please fill all required fields.');
+      if (resolve) resolve(false);
       return;
     }
-    const formValue = this.reportForm.value;
+
+    const raw = this.reportForm.getRawValue();
+    if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+      this.appSettingsService.showWarning('No changes to save');
+      this.reportForm.markAsUntouched();
+      if (resolve) resolve(false);
+      return;
+    }
+
     const currentUser = this.appSettingsService.userSettingSource.value?.userEmail;
-    const reportDetails = (formValue.parameters || []).map((detail: any) => ({
+    const reportDetails = (raw.parameters || []).map((detail: any) => ({
       ReportMasterDetailSid: detail.ReportMasterDetailSid || null,
       ParameterName: (detail.ParameterName || '').trim(),
       ParameterFieldType: detail.ParameterFieldType || null,
@@ -206,13 +303,13 @@ export class ReportMasterEntryComponent implements OnInit {
     }));
 
     const payload = {
-      ReportName: formValue.reportName,
-      ReportDisplayName: formValue.displayName,
-      ReportMenuSid: formValue.reportMenuId,
-      ReportFormat: formValue.reportFormatId,
-      ReportType: formValue.reportType,
-      ReportExcludedCompany: formValue.excludedCompanyIds
-        ? formValue.excludedCompanyIds.split(',').map((id: string) => parseInt(id.trim()))
+      ReportName: raw.reportName,
+      ReportDisplayName: raw.displayName,
+      ReportMenuSid: raw.reportMenuId,
+      ReportFormat: raw.reportFormatId,
+      ReportType: raw.reportType,
+      ReportExcludedCompany: raw.excludedCompanyIds
+        ? raw.excludedCompanyIds.split(',').map((id: string) => parseInt(id.trim()))
         : null,
       CreatedBy: currentUser,
       UpdatedBy: currentUser,
@@ -227,34 +324,44 @@ export class ReportMasterEntryComponent implements OnInit {
       this.masterService.updateReportById(this.ReportMasterSid, payload)
         .pipe(finalize(() => this.isSaving = false))
         .subscribe({
-        next: (resp: any) => {
-          if (resp.status) {
-            this.appSettingsService.showSuccess(resp.message);
-            this.router.navigate(['/master/report-master/list']);
-          } else {
-            this.appSettingsService.showError(resp.message);
+          next: (resp: any) => {
+            if (resp.status) {
+              this.isDirty = false;
+              this.initialFormValue = this.reportForm.getRawValue();
+              this.appSettingsService.showSuccess(resp.message);
+              if (resolve) resolve(true);
+              this.router.navigate(['/master/report-master/list']);
+            } else {
+              if (resolve) resolve(false);
+              this.appSettingsService.showError(resp.message);
+            }
+          },
+          error: (error) => {
+            if (resolve) resolve(false);
+            this.appSettingsService.showError(this.getErrorMessage(error, 'Update failed'));
           }
-        },
-        error: (error) => {
-          this.appSettingsService.showError(this.getErrorMessage(error, 'Update failed'));
-        }
-      });
+        });
     } else {
       this.masterService.createReportMaster(payload)
         .pipe(finalize(() => this.isSaving = false))
         .subscribe({
-        next: (resp: any) => {
-          if (resp.status) {
-            this.appSettingsService.showSuccess(resp.message);
-            this.router.navigate(['/master/report-master/list']);
-          } else {
-            this.appSettingsService.showError(resp.message);
+          next: (resp: any) => {
+            if (resp.status) {
+              this.isDirty = false;
+              this.initialFormValue = this.reportForm.getRawValue();
+              this.appSettingsService.showSuccess(resp.message);
+              if (resolve) resolve(true);
+              this.router.navigate(['/master/report-master/list']);
+            } else {
+              if (resolve) resolve(false);
+              this.appSettingsService.showError(resp.message);
+            }
+          },
+          error: (error) => {
+            if (resolve) resolve(false);
+            this.appSettingsService.showError(this.getErrorMessage(error, 'Creation failed'));
           }
-        },
-        error: (error) => {
-          this.appSettingsService.showError(this.getErrorMessage(error, 'Creation failed'));
-        }
-      });
+        });
     }
   }
 
@@ -263,6 +370,8 @@ export class ReportMasterEntryComponent implements OnInit {
       this.loadReportData();
     } else {
       this.reportForm.reset();
+      this.initialFormValue = this.reportForm.getRawValue();
+      this.isDirty = false;
     }
   }
 
@@ -361,5 +470,10 @@ export class ReportMasterEntryComponent implements OnInit {
       },
       error: err => console.error('Error fetching audit logs:', err)
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

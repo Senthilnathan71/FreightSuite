@@ -45,6 +45,10 @@ export class EdocComponent implements OnInit, OnDestroy {
   @Input() dataItems: any[] = [];
   @Input() resetTrigger: boolean = false;
   @Input() formData: any = null;
+  @Input() companyMasterSid: number | string | null = null;
+  @Input() branchMasterSid: number | string | null = null;
+  @Input() menuMasterSid: number | string | null = null;
+  @Input() documentSid: number | string | null = null;
   @Output() dataEmitter = new EventEmitter<any>();
   attachDocumentSid: any
   previewFileType: any
@@ -96,13 +100,11 @@ export class EdocComponent implements OnInit, OnDestroy {
     console.log('📋 Received screenName:', this.screenName);
     console.log('📋 Received formData:', this.formData);
     console.log('📋 Received dataItems:', this.dataItems);
-    this.componentData = this.commonService.documentData()
-    console.log(this.componentData, ' this.componentData')
+    this.componentData = this.resolveDocumentContext();
+    console.log('📋 Resolved Edoc context:', this.componentData);
     this.initEdocForm()
     if (this.formData) {
-      this.edocform.patchValue({
-        AttachDocmentNo: this.formData.AttachDocmentNo || ''
-      });
+      this.edocform.patchValue(this.formData);
     }
     this.loadEdocData()
   }
@@ -123,10 +125,10 @@ export class EdocComponent implements OnInit, OnDestroy {
       Public: ['N'],
       sentEmail: ['N'],
       FollowupStatus: [Status.Active],                       // ✅ Default "A"
-      CompanyMasterSid: Number(this.componentData.CompanyMasterSid),
-      BranchMasterSid: Number(this.componentData.BranchMasterSid),
-      MenuMasterSid: Number(this.componentData.MenuMasterSid),
-      DocumentSid: Number(this.componentData.DocumentSid)
+      CompanyMasterSid: this.toNumberOrNull(this.componentData.CompanyMasterSid),
+      BranchMasterSid: this.toNumberOrNull(this.componentData.BranchMasterSid),
+      MenuMasterSid: this.toNumberOrNull(this.componentData.MenuMasterSid),
+      DocumentSid: this.toNumberOrNull(this.componentData.DocumentSid)
     });
     this.edocform.get('FollowupRequired')?.valueChanges.subscribe((isChecked) => {
       const dateCtrl = this.edocform.get('FollowupDate');
@@ -182,7 +184,15 @@ export class EdocComponent implements OnInit, OnDestroy {
 
 
   onSubmit() {
-    const formValue = this.edocform.value;
+    const formSnapshot = { ...this.edocform.getRawValue() };
+    const formValue = { ...formSnapshot };
+    console.log('📤 Edoc save payload:', {
+      screenName: this.screenName,
+      context: this.componentData,
+      formValue,
+      attachDocumentSid: this.attachDocumentSid,
+      selectedFiles: this.selectedFiles?.map(file => file.name)
+    });
 
     // ✅ CREATE mode (new record)
     if (!this.attachDocumentSid) {
@@ -235,11 +245,13 @@ export class EdocComponent implements OnInit, OnDestroy {
             const createdFiles = res?.createdFiles || res?.data?.createdFiles || [];
             const firstFile = createdFiles[0];
             this.dataEmitter.emit({
+              dataItems: this.existingFiles,
+              formData: { ...formSnapshot },
               attachDocumentSid: firstFile?.AttachDocumentSid || this.attachDocumentSid,
               fileName: firstFile?.FileName
             });
-            this.closeTemplate()
-            this.resetForm();
+            this.selectedFiles = [];
+            this.loadEdocData();
           } else {
             this.appSettingService.showError(res.message || 'Edoc update failed');
             this.closeTemplate()
@@ -259,11 +271,13 @@ export class EdocComponent implements OnInit, OnDestroy {
             const createdFiles = res?.createdFiles || res?.data?.createdFiles || [];
             const firstFile = createdFiles[0];
             this.dataEmitter.emit({
+              dataItems: this.existingFiles,
+              formData: { ...formSnapshot },
               attachDocumentSid: firstFile?.AttachDocumentSid,
               fileName: firstFile?.FileName
             });
-            this.closeTemplate()
-            this.resetForm();
+            this.selectedFiles = [];
+            this.loadEdocData();
           } else {
             this.appSettingService.showError(res.message || 'Edoc creation failed');
             this.closeTemplate()
@@ -275,6 +289,24 @@ export class EdocComponent implements OnInit, OnDestroy {
         }
       );
     }
+  }
+
+  private resolveDocumentContext() {
+    const sharedContext = this.commonService.documentData() as any;
+    return {
+      CompanyMasterSid: this.companyMasterSid ?? sharedContext?.CompanyMasterSid ?? null,
+      BranchMasterSid: this.branchMasterSid ?? sharedContext?.BranchMasterSid ?? null,
+      MenuMasterSid: this.menuMasterSid ?? sharedContext?.MenuMasterSid ?? null,
+      DocumentSid: this.documentSid ?? sharedContext?.DocumentSid ?? null
+    };
+  }
+
+  private toNumberOrNull(value: any): number | null {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
   }
 
 

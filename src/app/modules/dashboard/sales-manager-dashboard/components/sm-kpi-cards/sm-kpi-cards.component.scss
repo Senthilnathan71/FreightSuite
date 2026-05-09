@@ -1,0 +1,310 @@
+@import '../../sm-variables';
+
+@keyframes kpiFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.primary-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.secondary-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.kpi-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 120px;
+  padding: 10px 12px 10px;
+  display: grid;
+  grid-template-rows: 38px 34px minmax(26px, 1fr) 6px;
+  align-content: start;
+  border: 1px solid $sm-border;
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  transition:
+    transform 0.24s ease,
+    box-shadow 0.24s ease,
+    border-color 0.24s ease;
+  animation: kpiFadeIn 0.32s ease-out both;
+
+  @for $i from 1 through 8 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.04}s;
+    }
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--kpi-color, $sm-primary);
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: $sm-primary;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+}
+
+// Primary KPI cards — each gets a unique accent color
+.primary-card {
+  &:nth-child(1) {
+    --kpi-color: #{$sm-accent-mint};
+    .kpi-icon { background: $sm-success-bg; color: $sm-accent-mint; }
+    .kpi-progress-fill { background: $sm-accent-mint; }
+  }
+  &:nth-child(2) {
+    --kpi-color: #{$sm-accent-lavender};
+    .kpi-icon { background: #EFEDFC; color: $sm-accent-lavender; }
+    .kpi-progress-fill { background: $sm-accent-lavender; }
+  }
+  &:nth-child(3) {
+    --kpi-color: #{$sm-primary};
+    .kpi-icon { background: $sm-primary-bg; color: $sm-primary; }
+    .kpi-progress-fill { background: $sm-primary; }
+  }
+  &:nth-child(4) {
+    --kpi-color: #{$sm-accent-coral};
+    .kpi-icon { background: #FCE9E2; color: $sm-accent-coral; }
+    .kpi-progress-fill { background: $sm-accent-coral; }
+  }
+  &:nth-child(5) {
+    --kpi-color: #{$sm-accent-saffron};
+    .kpi-icon { background: #FCF4DC; color: $sm-accent-saffron; }
+    .kpi-progress-fill { background: $sm-accent-saffron; }
+  }
+}
+
+.kpi-top-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.kpi-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  background: var(--kpi-bg, $sm-primary-bg);
+  color: var(--kpi-color, $sm-primary);
+
+  &.primary-icon {
+    background: $sm-primary-bg;
+    color: $sm-primary;
+  }
+}
+
+.change-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+
+  i {
+    font-size: 8px;
+  }
+
+  &.change-up {
+    background: $sm-success-bg;
+    color: $sm-success;
+  }
+
+  &.change-down {
+    background: $sm-danger-bg;
+    color: $sm-danger;
+  }
+
+  &.change-flat {
+    background: #f1f5f9;
+    color: $sm-text-muted;
+  }
+}
+
+.kpi-value {
+  position: relative;
+  z-index: 1;
+  align-self: end;
+  margin-top: 0;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.5px;
+  color: $sm-text-primary;
+
+  &.primary-value {
+    color: $sm-text-primary;
+  }
+}
+
+.kpi-label {
+  position: relative;
+  z-index: 1;
+  margin-top: 6px;
+  min-height: 26px;
+  font-size: 10.5px;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: $sm-text-muted;
+}
+
+.kpi-progress {
+  position: relative;
+  z-index: 1;
+  height: 4px;
+  margin-top: 8px;
+  align-self: end;
+  border-radius: 2px;
+  overflow: hidden;
+  background: $sm-border-2;
+}
+
+.kpi-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--kpi-color, $sm-primary);
+  transition: width 0.4s ease;
+}
+
+// Secondary KPI color classes
+.leads {
+  --kpi-color: #{$sm-accent-lavender};
+  .kpi-icon { background: #EFEDFC; color: $sm-accent-lavender; }
+}
+
+.meetings {
+  --kpi-color: #{$sm-primary};
+  .kpi-icon { background: $sm-primary-bg; color: $sm-primary; }
+}
+
+.followups {
+  --kpi-color: #{$sm-accent-saffron};
+  .kpi-icon { background: #FCF4DC; color: $sm-accent-saffron; }
+}
+
+.unconverted {
+  --kpi-color: #{$sm-accent-coral};
+  .kpi-icon { background: #FCE9E2; color: $sm-accent-coral; }
+}
+
+.no-quote {
+  --kpi-color: #{$sm-accent-rose};
+  .kpi-icon { background: #FCE4EC; color: $sm-accent-rose; }
+}
+
+.enquiry {
+  --kpi-color: #{$sm-accent-sky};
+  .kpi-icon { background: #E0F0FA; color: $sm-accent-sky; }
+}
+
+.pending {
+  --kpi-color: #{$sm-warn};
+  .kpi-icon { background: $sm-warn-bg; color: $sm-warn; }
+}
+
+.approved {
+  --kpi-color: #{$sm-accent-mint};
+  .kpi-icon { background: $sm-success-bg; color: $sm-accent-mint; }
+}
+
+.kpi-skeleton {
+  position: relative;
+  z-index: 1;
+  animation: pulse 1.5s infinite;
+}
+
+.skeleton-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: $sm-border-2;
+  margin-bottom: 18px;
+}
+
+.skeleton-value {
+  width: 74px;
+  height: 28px;
+  border-radius: 8px;
+  background: $sm-border-2;
+  margin-bottom: 8px;
+}
+
+.skeleton-label {
+  width: 96px;
+  height: 11px;
+  border-radius: 6px;
+  background: $sm-border-2;
+}
+
+@media (max-width: 1280px) {
+  .primary-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .secondary-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .primary-grid,
+  .secondary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .kpi-card {
+    min-height: 138px;
+    padding: 12px;
+  }
+}
+
+@media (max-width: 576px) {
+  .kpi-grid,
+  .primary-grid,
+  .secondary-grid {
+    grid-template-columns: 1fr;
+  }
+}

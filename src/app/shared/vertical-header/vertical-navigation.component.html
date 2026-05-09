@@ -507,13 +507,16 @@
     <!-- ============================================================== -->
     <!-- Comment -->
     <!-- ============================================================== -->
-    <li class="nav-item dropdown" ngbDropdown placement="bottom-end">
+    <li class="nav-item dropdown" ngbDropdown #notifyDropdown="ngbDropdown" placement="bottom-end" autoClose="outside">
       <a ngbDropdownToggle class="nav-link dropdown-toggle waves-effect waves-dark position-relative" href="javascript:void(0)"
-        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+        [ngbTooltip]="notifications.length > 0
+          ? notifications.length + ' event' + (notifications.length === 1 ? '' : 's') + ' in next 24 hours'
+          : 'No upcoming events'"
+        placement="bottom">
         <i-feather name="bell"></i-feather>
         @if (notifications.length > 0) {
-          <span class="badge bg-danger rounded-pill position-absolute top-0 start-100 translate-middle"
-                style="font-size:10px;">{{ notifications.length }}</span>
+          <span class="bell-badge pulse">{{ notifications.length }}</span>
         }
       </a>
       <div class="dropdown-menu mailbox dropdown-menu-end dropdown-menu-animate-up" ngbDropdownMenu>
@@ -522,19 +525,32 @@
         </span>
         <ul class="list-style-none">
           <li>
-            <div class="drop-title bg-primary text-white">
-              <h4 class="mb-0 mt-1">{{ notifications.length }} New</h4>
-              <span class="font-light">Event Notifications</span>
+            <div class="drop-title bg-primary text-white d-flex justify-content-between align-items-center">
+              <div>
+                <h4 class="mb-0 mt-1">{{ notifications.length }} New</h4>
+                <span class="font-light">Event Notifications</span>
+              </div>
+              <i-feather name="refresh-cw"
+                class="bell-refresh-btn"
+                [class.spinning]="notificationsLoading"
+                (click)="refreshNotifications($event)"
+                [ngbTooltip]="'Refresh now'"
+                placement="left">
+              </i-feather>
             </div>
           </li>
           <li>
-            <ng-scrollbar class="message-center notifications">
+            <div class="bell-notification-list">
               @if (notifications.length === 0) {
-                <div class="p-3 text-muted text-center fs-2">No upcoming events</div>
+                <div class="p-3 text-muted text-center fs-2">
+                  <i-feather name="bell-off" class="feather-sm mb-1 d-block mx-auto"></i-feather>
+                  No upcoming events
+                </div>
               }
               @for(notification of notifications; track notification.PreCustomerEventSid){
               <a class="message-item border-bottom d-block text-decoration-none cursor-pointer"
-                 [routerLink]="['/master/pre-customer-event/entry', notification.PreCustomerEventSid]">
+                 [routerLink]="['/master/pre-customer-event/entry', notification.PreCustomerEventSid]"
+                 (click)="notifyDropdown.close()">
                 <span class="btn btn-circle rounded-circle {{ notification.btn }}">
                   <i class="{{ notification.icon }}"></i>
                 </span>
@@ -545,11 +561,17 @@
                 </span>
               </a>
               }
-
-            </ng-scrollbar>
+            </div>
           </li>
+          @if (notificationsLastUpdated) {
+            <li class="px-3 py-1 text-muted fs-2 text-end border-top">
+              Updated {{ notificationsLastUpdated | timeAgo }}
+            </li>
+          }
           <li class="border-top p-3 d-grid">
-            <button class="btn btn-info" [routerLink]="['/master/pre-customer-event/list']">View all events</button>
+            <button class="btn btn-info"
+                    [routerLink]="['/master/pre-customer-event/list']"
+                    (click)="notifyDropdown.close()">View all events</button>
           </li>
         </ul>
       </div>

@@ -36,6 +36,7 @@ import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/compone
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
 @Component({
   selector: 'app-zone',
   standalone: true,
@@ -104,6 +105,9 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
   MenuMasterSid: any;
   auditLogs: any[] = []; // Stores audit logs
   auditLogModalRef!: NgbModalRef;
+  isZoneDirty: boolean = false;
+  isZoneSaving: boolean = false;
+  private initialZoneFormValue: any = null;
   constructor(
     private modalService: NgbModal,
     private fb: FormBuilder,
@@ -539,6 +543,14 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
       ZoneName: ['', [Validators.required]],
       status: [{ value: 'Active', disabled: false }, Validators.required],
     });
+
+    this.zoneForm.valueChanges.subscribe(() => {
+      if (!this.initialZoneFormValue) return;
+      this.isZoneDirty = !this.deepEqual(
+        this.initialZoneFormValue,
+        this.zoneForm.getRawValue()
+      );
+    });
   }
 
   //  resetForm(): void {
@@ -577,7 +589,14 @@ export class ZoneComponent extends BaseListComponent implements OnInit {
   openModal(content: any): void {
     this.isEditMode = false;
     this.resetForm();
-    this.modalRef = this.modalService.open(content, { centered: true, size: 'lg', backdrop: 'static' });
+    this.setZoneFormInitialValue();
+    this.modalRef = this.modalService.open(content, {
+      centered: true,
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false,
+      beforeDismiss: () => this.canCloseZoneModal()
+    });
   }
 
 openEditModal(content: TemplateRef<any>, id: number): void {
@@ -592,7 +611,8 @@ openEditModal(content: TemplateRef<any>, id: number): void {
     centered: true, 
     size: 'lg', 
     backdrop: 'static',
-    keyboard: false 
+    keyboard: false,
+    beforeDismiss: () => this.canCloseZoneModal()
   });
 
   // 3. DISABLE FORM (Block input during fetch)
@@ -614,12 +634,12 @@ openEditModal(content: TemplateRef<any>, id: number): void {
       this.zoneForm.patchValue({
         ZoneCode: data.ZoneCode,
         ZoneName: data.ZoneName,
-        Remarks: data.Remarks || '',
-        Status: data.Status === 'A' ? 'Active' : 'Suspended'
+        status: data.status === 'A' ? 'Active' : 'Suspended'
       });
 
       // 5. ENABLE FORM (Only on success)
       this.zoneForm.enable();
+      this.setZoneFormInitialValue();
       
       // Optional: Keep ID field disabled if it's not editable
       // this.zoneForm.get('ZoneCode')?.disable(); 
@@ -658,7 +678,7 @@ openEditModal(content: TemplateRef<any>, id: number): void {
   }
 
   onSubmit() {
-    if (this.btnDisable) return;
+    if (this.isZoneSaving) return;
     if (this.zoneForm.get('status')?.disabled) {
       this.zoneForm.get('status')?.enable();
     }
@@ -667,8 +687,14 @@ openEditModal(content: TemplateRef<any>, id: number): void {
       this.zoneForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all required fields correctly.');
       return;
+    }
+
+    if (!this.isZoneDirty) {
+      this.appSettingService.showWarning('No changes to save.');
+      return;
     } else {
       this.btnDisable = true;
+      this.isZoneSaving = true;
       let createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
       let updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
       const formValue = this.zoneForm.value;
@@ -690,6 +716,7 @@ openEditModal(content: TemplateRef<any>, id: number): void {
           (resp: any) => {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
+              this.setZoneFormInitialValue();
               this.closeModal();
               // this.loadZones();
               this.searchZone();
@@ -698,11 +725,13 @@ openEditModal(content: TemplateRef<any>, id: number): void {
               this.appSettingService.showError(resp.message);
             }
             this.btnDisable = false;
+            this.isZoneSaving = false;
           },
           (error) => {
             this.errorMessage = error.message;
             console.error('Update Zone Error:', error);
             this.btnDisable = false;
+            this.isZoneSaving = false;
           }
         );
       } else {
@@ -710,6 +739,7 @@ openEditModal(content: TemplateRef<any>, id: number): void {
           (resp: any) => {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
+              this.setZoneFormInitialValue();
               this.closeModal();
               // this.loadZones();
               this.searchZone();
@@ -718,11 +748,13 @@ openEditModal(content: TemplateRef<any>, id: number): void {
               this.appSettingService.showError(resp.message);
             }
             this.btnDisable = false;
+            this.isZoneSaving = false;
           },
           (error) => {
             this.errorMessage = error.message;
             console.error('Create Zone Error:', error);
             this.btnDisable = false;
+            this.isZoneSaving = false;
           }
         );
       }
@@ -972,4 +1004,49 @@ error: err => {
         console.error('Error fetching audit logs:', err);
       }  });
 }
+
+  private setZoneFormInitialValue(): void {
+    this.initialZoneFormValue = this.zoneForm.getRawValue();
+    this.isZoneDirty = false;
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString();
+    if (Array.isArray(value)) return value.map((v) => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
+
+  canCloseZoneModal(): boolean | Promise<boolean> {
+    if (this.isZoneSaving) return false;
+    if (!this.isZoneDirty) return true;
+
+    const modalRef = this.modalService.open(UnsavedChangesDialogComponent, {
+      centered: true,
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    return modalRef.result
+      .then((action: UnsavedChangesAction) => action === 'discard')
+      .catch(() => false);
+  }
+
+  async closeZoneModal(): Promise<void> {
+    const canClose = await Promise.resolve(this.canCloseZoneModal());
+    if (!canClose) return;
+    this.modalRef?.close();
+  }
 }

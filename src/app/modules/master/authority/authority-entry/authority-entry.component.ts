@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, TemplateRef } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgbActiveModal, NgbDropdownModule, NgbModal, NgbModalModule, NgbModalRef, NgbModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -8,7 +8,7 @@ import { MasterService } from '../../master.service';
 import { SettingsService } from 'src/app/modules/settings/settings.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { Subject, forkJoin, takeUntil } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { DetailsComponent } from 'src/app/component/details/details.component';
@@ -23,6 +23,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { Search } from 'angular-feather/icons';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 @Component({
   selector: 'app-authority-entry',
@@ -44,7 +45,7 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
   templateUrl: './authority-entry.component.html',
   styleUrls: ['./authority-entry.component.scss']
 })
-export class AuthorityEntryComponent implements OnInit {
+export class AuthorityEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   active = 1;
   modeOfStatus = [
     { id: 'Active', name: 'Active' },
@@ -75,6 +76,9 @@ export class AuthorityEntryComponent implements OnInit {
   TandCList: any[] = [];
   currentMenuId: any;
   isSaving = false;
+  isDirty: boolean = false;
+  private initialFormValue: any = null;
+  private destroy$ = new Subject<void>();
   currentDetailIndex : number;
   userData : any;
   currentCompany : any
@@ -100,6 +104,7 @@ auditLogs: any[] = []; // Stores audit logs
 
   ngOnInit(): void {
     this.initAuthorityForm();
+    this.subscribeToFormChanges();
     
     this.userData = this.appSettingService.getDecryptedUserProfile();
 
@@ -120,6 +125,7 @@ auditLogs: any[] = []; // Stores audit logs
         this.loadAuthorityData();
       } else {
         this.addAuthDetail();
+        this.setInitialFormSnapshot();
       }
     });
   }
@@ -259,6 +265,7 @@ auditLogs: any[] = []; // Stores audit logs
             status: data.status === 'A' ? 'Active' : 'Suspended',
             Remarks: data.Remarks
           })
+          this.authDetails.clear();
           authDetailsArr.forEach(detail => {
             let data = {
               AuthorityDetailSid : detail.AuthorityDetailSid,
@@ -272,6 +279,7 @@ auditLogs: any[] = []; // Stores audit logs
             this.authDetails.push(formGroupWithData);
           })
           this.updateFilteredAuthorisers();
+          this.setInitialFormSnapshot();
         } else {
           this.appSettingService.showError("Error fetching authority");
           console.error(resp.message);
@@ -285,19 +293,32 @@ auditLogs: any[] = []; // Stores audit logs
 
 
 
-  submitAuthorityForm() {
+  submitAuthorityForm(resolve?: (value: boolean) => void) {
+    if (this.isSaving) {
+      resolve?.(false);
+      return;
+    }
+
+    const raw = this.authorityForm.getRawValue();
+    if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      this.authorityForm.markAsUntouched();
+      resolve?.(false);
+      return;
+    }
     
     if (this.authorityForm.invalid) {
       this.authorityForm.markAllAsTouched();
       this.authorityForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all required fields correctly');
+      resolve?.(false);
       return;
     }
 
 
     const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
-    const formValue = this.authorityForm.value;
+    const formValue = this.authorityForm.getRawValue();
     const length = this.authDetails.length - 1;
     const detailPayload = this.authDetails.value.map((detail,index) => {
       return {
@@ -322,32 +343,46 @@ auditLogs: any[] = []; // Stores audit logs
     };
     
     if(this.isEditMode) {
+      this.isSaving = true;
       this.masterService.updateAuthorityById(this.AuthorityMasterSid,payload).subscribe({
         next :(resp:any)=>{
+          this.isSaving = false;
           if(resp.status) {
             this.appSettingService.showSuccess(resp.message);
+            this.setInitialFormSnapshot();
+            resolve?.(true);
             this.route.navigate(['master/authorization/list'])
           } else {
             this.appSettingService.showError(resp.message);
+            resolve?.(false);
             console.error(resp.message);
           }
         },
         error :(error:any) => {
+          this.isSaving = false;
+          resolve?.(false);
           console.error(error);
         }
       })
     } else {
+      this.isSaving = true;
       this.masterService.createAuthority(payload).subscribe({
         next :(resp:any)=>{
+          this.isSaving = false;
           if(resp.status) {
            this.appSettingService.showSuccess(resp.message);
+            this.setInitialFormSnapshot();
+            resolve?.(true);
             this.route.navigate(['master/authorization/list'])
           } else {
             this.appSettingService.showError(resp.message);
+            resolve?.(false);
             console.error(resp.message);
           }
         },
         error :(error:any) => {
+          this.isSaving = false;
+          resolve?.(false);
           console.error(error);
         }
       })
@@ -535,6 +570,7 @@ openAuditLogs(modal: TemplateRef<any>) {
   
   this.addAuthDetail();
   this.updateFilteredAuthorisers();
+  this.setInitialFormSnapshot();
 }
 
   showAuthorityInfo() {
@@ -618,4 +654,76 @@ openAuditLogs(modal: TemplateRef<any>) {
  
        this.commonService.documentData.set(data)
    }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.submitAuthorityForm(resolve);
+    });
+  }
+
+  private subscribeToFormChanges(): void {
+    this.authorityForm.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (!this.initialFormValue) return;
+        this.isDirty = !this.deepEqual(this.initialFormValue, this.authorityForm.getRawValue());
+      });
+  }
+
+  private setInitialFormSnapshot(): void {
+    this.initialFormValue = this.authorityForm.getRawValue();
+    this.isDirty = false;
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) {
+      return null;
+    }
+
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+      return Number(value);
+    }
+
+    if (typeof value === 'number') {
+      return Number(value.toFixed(6));
+    }
+
+    if (Array.isArray(value)) {
+      return value.map((v) => this.normalizeValue(v));
+    }
+
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 }

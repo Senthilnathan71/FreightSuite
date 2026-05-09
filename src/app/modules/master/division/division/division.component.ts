@@ -48,6 +48,7 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
 @Component({
   selector: 'app-division',
   standalone: true,
@@ -106,6 +107,9 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
   permissions: string[] = [];
   currentMenuPermissions: any = {};
   MenuMasterSid: any;
+  isDivisionDirty: boolean = false;
+  isDivisionSaving: boolean = false;
+  private initialDivisionFormValue: any = null;
   // Company
   currentCompany: any;
   currentBranch: any;
@@ -531,6 +535,14 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
       Remarks: [''],
       status: [{ value: 'Active', disabled: false }, Validators.required],
     });
+
+    this.divisionForm.valueChanges.subscribe(() => {
+      if (!this.initialDivisionFormValue) return;
+      this.isDivisionDirty = !this.deepEqual(
+        this.initialDivisionFormValue,
+        this.divisionForm.getRawValue()
+      );
+    });
   }
 
   // resetForm(): void {
@@ -571,10 +583,13 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
   openModal(content: any): void {
     this.isEditMode = false;
     this.resetForm();
+    this.setDivisionFormInitialValue();
     this.modalRef = this.modalService.open(content, {
       centered: true,
       size: 'lg',
       backdrop: 'static',
+      keyboard: false,
+      beforeDismiss: () => this.canCloseDivisionModal()
     });
   }
 
@@ -582,10 +597,13 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
     this.isEditMode = true;
     this.DivisionMasterSid = DivisionMasterSid;
     this.getDivisionById(DivisionMasterSid).add(() => {
+      this.setDivisionFormInitialValue();
       this.modalRef = this.modalService.open(content, {
         centered: true,
         size: 'lg',
         backdrop: 'static',
+        keyboard: false,
+        beforeDismiss: () => this.canCloseDivisionModal()
       });
     });
     
@@ -594,12 +612,20 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
   updateDivisionById(DivisionMasterSid: number, content: any) {
     this.isEditMode = true;
     this.DivisionMasterSid = DivisionMasterSid;
+    this.divisionForm.reset();
+    this.modalRef = this.modalService.open(content, {
+      centered: true,
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false,
+      beforeDismiss: () => this.canCloseDivisionModal()
+    });
+    this.divisionForm.disable();
     this.masterService
       .getDivisionById(DivisionMasterSid)
       .pipe(take(1))
       .subscribe({
         next: (division: any) => {
-          this.divisionForm.get('status')?.enable();
           this.divisionData = division;
           this.divisionForm.patchValue({
             DivisionName: division.DivisionName,
@@ -607,13 +633,11 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
             Remarks: division.Remarks,
             status: division.status === 'A' ? 'Active' : 'Suspended',
           });
-          this.modalRef = this.modalService.open(content, {
-            centered: true,
-            size: 'lg',
-            backdrop: 'static',
-          });
+          this.divisionForm.enable();
+          this.setDivisionFormInitialValue();
         },
         error: (err) => {
+          this.closeModal();
           console.error('Error fetching', err);
           this.appSettingService.showError('Error fetching data for editing');
         },
@@ -682,9 +706,12 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
       error: err => console.error('Error fetching audit logs:', err)
     });
   }
-  closeModal(): void {
-    if (this.modalRef) {
+  async closeModal(): Promise<void> {
+    const canClose = await Promise.resolve(this.canCloseDivisionModal());
+    if (!canClose) return;
+    if (this.modalRef && typeof this.modalRef.close === 'function') {
       this.modalRef.close();
+      this.modalRef = null!;
     }
   }
 
@@ -703,6 +730,7 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
             Remarks: division.Remarks,
             status: division.status === 'A' ? 'Active' : 'Suspended',
           });
+          this.setDivisionFormInitialValue();
         },
         (error) => {
           this.appSettingService.showError('Error loading');
@@ -711,7 +739,7 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
   }
 
   onSubmit() {
-    if (this.btnDisable) return;
+    if (this.isDivisionSaving) return;
     if (this.divisionForm.get('status')?.disabled) {
       this.divisionForm.get('status')?.enable();
     }
@@ -722,8 +750,14 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
         'Please fill all required fields correctly.'
       );
       return;
+    }
+
+    if (!this.isDivisionDirty) {
+      this.appSettingService.showWarning('No changes to save.');
+      return;
     } else {
       this.btnDisable = true;
+      this.isDivisionSaving = true;
       let createdBy = {
         createdBy: this.appSettingService.userSettingSource.value['userEmail'],
       };
@@ -755,6 +789,7 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
             (resp: any) => {
               if (resp.status) {
                 this.appSettingService.showSuccess(resp.message);
+                this.setDivisionFormInitialValue();
                 this.closeModal();
                 this.router.navigate(['master/division']);
                 // this.loadDivisions();
@@ -763,11 +798,13 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
                 this.appSettingService.showError(resp.message);
               }
               this.btnDisable = false;
+              this.isDivisionSaving = false;
             },
             (error) => {
               this.errorMessage = error.message;
               console.error('Update Division Error:', error);
               this.btnDisable = false;
+              this.isDivisionSaving = false;
             }
           );
       } else {
@@ -775,6 +812,7 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
           (resp: any) => {
             if (resp.status) {
               this.appSettingService.showSuccess(resp.message);
+              this.setDivisionFormInitialValue();
               this.closeModal();
               this.router.navigate(['master/division']);
               // this.loadDivisions();
@@ -783,11 +821,13 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
               this.appSettingService.showError(resp.message);
             }
             this.btnDisable = false;
+            this.isDivisionSaving = false;
           },
           (error) => {
             this.errorMessage = error.message;
             console.error('Create Division Error:', error);
             this.btnDisable = false;
+            this.isDivisionSaving = false;
           }
         );
       }
@@ -1057,5 +1097,48 @@ export class DivisionComponent extends BaseListComponent implements OnInit {
 
   clearFilterValue() {
     this.filterValue = '';
+  }
+
+  private setDivisionFormInitialValue(): void {
+    this.initialDivisionFormValue = this.divisionForm.getRawValue();
+    this.isDivisionDirty = false;
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString();
+    if (Array.isArray(value)) return value.map((v) => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+  }
+
+  canCloseDivisionModal(): boolean | Promise<boolean> {
+    if (this.isDivisionSaving) return false;
+    if (!this.isDivisionDirty) return true;
+
+    const modalRef = this.modalService.open(UnsavedChangesDialogComponent, {
+      centered: true,
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    return modalRef.result
+      .then((action: UnsavedChangesAction) => action === 'discard')
+      .catch(() => false);
+  }
+
+  async closeDivisionModal(): Promise<void> {
+    await this.closeModal();
   }
 }

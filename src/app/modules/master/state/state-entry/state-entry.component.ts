@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidatorFn } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
@@ -18,13 +18,14 @@ import { AuthorityEntryComponent } from '../../authority/authority-entry/authori
 import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
-import { Subject } from 'rxjs';
+import { debounceTime, Subject, takeUntil } from 'rxjs';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 @Component({
   selector: 'app-state-entry',
@@ -42,7 +43,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
   templateUrl: './state-entry.component.html',
   styleUrls: ['./state-entry.component.scss']
 })
-export class StateEntryComponent implements OnInit {
+export class StateEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
     private destroy$ = new Subject<void>();
 
   stateForm: FormGroup;
@@ -73,6 +74,9 @@ export class StateEntryComponent implements OnInit {
   currentCompany: any;
   currentBranch: any;
   MenuMasterSid: any;
+  isDirty: boolean = false;
+  isSaving: boolean = false;
+  private initialFormValue: any = null;
 
 
   constructor(
@@ -104,6 +108,9 @@ export class StateEntryComponent implements OnInit {
         this.getStateById(this.stateId);
         // Enable status control when in edit mode
         this.stateForm.get('status')?.enable();
+      } else {
+        this.initialFormValue = this.stateForm.getRawValue();
+        this.isDirty = false;
       }
     });
   });
@@ -116,10 +123,77 @@ export class StateEntryComponent implements OnInit {
     // });
     this.mps.init().subscribe();
     const userProfile = this.appSettingService.getDecryptedUserProfile();
-		if(userProfile){
+    if(userProfile){
 			this.userData = userProfile;
      
 		}
+    this.subscribeToFormChanges();
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
+
+  private subscribeToFormChanges() {
+    this.stateForm.valueChanges
+      .pipe(takeUntil(this.destroy$), debounceTime(300))
+      .subscribe(() => {
+        this.isDirty = !this.deepEqual(
+          this.initialFormValue,
+          this.stateForm.getRawValue()
+        );
+      });
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) {
+      return null;
+    }
+
+    if (value instanceof Date) {
+      return value.toISOString().split('T')[0];
+    }
+
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+      return Number(value);
+    }
+
+    if (typeof value === 'number') {
+      return Number(value.toFixed(6));
+    }
+
+    if (Array.isArray(value)) {
+      return value.map((v) => this.normalizeValue(v));
+    }
+
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+
+    return value;
+  }
+
+  private deepEqual(a: any, b: any): boolean {
+    return JSON.stringify(this.normalizeValue(a)) === JSON.stringify(this.normalizeValue(b));
   }
 
   hasAnyDropdownPermission(): boolean {
@@ -281,10 +355,12 @@ export class StateEntryComponent implements OnInit {
           IsUnionTerritory: state.IsUnionTerritory === 'Y' ? true: false,
         });
         setTimeout(() => {
-        this.stateForm.patchValue({
-          ZoneMasterSid: state.ZoneMasterSid
+          this.stateForm.patchValue({
+            ZoneMasterSid: state.ZoneMasterSid
+          });
+          this.initialFormValue = this.stateForm.getRawValue();
+          this.isDirty = false;
         });
-      });
         // Enable status control when in edit mode
         this.stateForm.get('status')?.enable();
       },
@@ -334,16 +410,26 @@ openAuditLogs(modal: TemplateRef<any>) {
   });
 }
 
-  onSubmit() {
+  onSubmit(resolve?: (value: boolean) => void) {
     if (this.stateForm.invalid) {
       this.markFormGroupTouched(this.stateForm);
       this.appSettingService.showWarning('Please fill all required fields correctly.');
+      if (resolve) resolve(false);
       return;
     }
-  
+
+    const raw = this.stateForm.getRawValue();
+    if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      this.stateForm.markAsUntouched();
+      if (resolve) resolve(false);
+      return;
+    }
+
+    this.isSaving = true;
     this.btnDisable = true;
     
-    const formValue = this.stateForm.value;
+    const formValue = raw;
     const createdBy = { createdBy: this.appSettingService.userSettingSource.value['userEmail'] };
     const updatedBy = { updatedBy: this.appSettingService.userSettingSource.value['userEmail'] };
     
@@ -363,18 +449,25 @@ openAuditLogs(modal: TemplateRef<any>) {
     operation.subscribe({
       next: (resp: any) => {
         this.btnDisable = false;
+        this.isSaving = false;
         const message = resp.message;        
         if (resp.status) {
+          this.isDirty = false;
+          this.initialFormValue = this.stateForm.getRawValue();
           this.appSettingService.showSuccess(message);
+          if (resolve) resolve(true);
           this.router.navigate(['/master/state/list']);
         } else {
+          if (resolve) resolve(false);
           this.appSettingService.showError(message );
         }
       },
       error: (err) => {
         this.btnDisable = false;
+        this.isSaving = false;
         const errorMessage = err.error?.message || 
           `Error ${this.isEditMode ? 'updating' : 'creating'} state`;
+        if (resolve) resolve(false);
         this.appSettingService.showError(errorMessage);
       }
     });
@@ -397,6 +490,8 @@ openAuditLogs(modal: TemplateRef<any>) {
       });
       // Disable status control when not in edit mode
       this.stateForm.get('status')?.disable();
+      this.initialFormValue = this.stateForm.getRawValue();
+      this.isDirty = false;
     }
   }
 

@@ -13,6 +13,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { forkJoin } from 'rxjs';
 import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 @Component({
   selector: 'app-ledger-mapping',
@@ -705,5 +706,21 @@ export class LedgerMappingComponent implements OnInit, HasUnsavedChanges {
 
   trackBy(index: number, item: any): number {
     return item.SubledgerMasterSid || index;
+  }
+
+  openAuditLogs(subledgerMasterSid: number): void {
+    if (!subledgerMasterSid) return;
+
+    const modalRef = this.modalService.open(AuditLogComponent, {
+      centered: true,
+      scrollable: true,
+      size: 'xl',
+      windowClass: 'audit-log-modal'
+    });
+
+    modalRef.componentInstance.title = 'Subledger Mapping Logs';
+    modalRef.componentInstance.tableName = 'SubledgerMaster';
+    modalRef.componentInstance.recordId = subledgerMasterSid.toString();
+    modalRef.componentInstance.screenName = 'SubledgerMapping';
   }
 }

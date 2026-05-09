@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, effect, OnInit, TemplateRef } from '@angular/core';
+import { ChangeDetectorRef, Component, effect, HostListener, OnDestroy, OnInit, TemplateRef } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
@@ -7,7 +7,7 @@ import { MasterService } from '../../master.service';
 import { NgbCalendar, NgbDate, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { MatDialog } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { forkJoin, Subject } from 'rxjs';
+import { debounceTime, forkJoin, Subject, takeUntil } from 'rxjs';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { CommonModule, DatePipe, UpperCasePipe } from '@angular/common';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
@@ -29,6 +29,7 @@ import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 @Component({
     selector: 'app-sailing-schedule-entry',
@@ -59,7 +60,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
         { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
     ],
 })
-export class SailingScheduleEntryComponent implements OnInit {
+export class SailingScheduleEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
     private destroy$ = new Subject<void>();
     // Header-only form and state
     scheduleForm !: FormGroup;
@@ -94,6 +95,9 @@ export class SailingScheduleEntryComponent implements OnInit {
     currentCompany: any;
     currentBranch: any;
     currentMenuId: number;
+    isDirty: boolean = false;
+    isSaving: boolean = false;
+    private initialFormValue: any = null;
 
     // validation helpers
     formErrors: any = {};
@@ -145,6 +149,8 @@ export class SailingScheduleEntryComponent implements OnInit {
         }
         this.mps.init().subscribe();
         this.initScheduleForm();
+        this.initialFormValue = this.scheduleForm.getRawValue();
+        this.subscribeToFormChanges();
         this.loadAllFields();
 
         // Listen for VoyageType changes -> apply port filters
@@ -445,16 +451,28 @@ private patchFormData(scheduleData: any) {
 
     // Force change detection
     this.cdr.detectChanges();
+    setTimeout(() => {
+        this.initialFormValue = this.scheduleForm.getRawValue();
+        this.isDirty = false;
+    }, 0);
 }
 
     // ------- Save / Update header only -------
-    onSubmit(){
+    onSubmit(resolve?: (saved: boolean) => void){
         this.formErrors = {};
+
+        if(!this.hasUnsavedChanges()){
+            this.appSettingService.showWarning('No changes to save');
+            this.scheduleForm.markAsUntouched();
+            if (resolve) resolve(false);
+            return;
+        }
 
         if(this.scheduleForm.invalid){
             this.scheduleForm.markAllAsTouched();
             this.scheduleForm.updateValueAndValidity();
             this.appSettingService.showWarning('Please fill all the required fields');
+            if (resolve) resolve(false);
             return;
         }
 
@@ -463,6 +481,7 @@ private patchFormData(scheduleData: any) {
         const etaVal = this.scheduleForm.get('ETA')?.value;
         if (etdVal && etaVal && new Date(etdVal) >= new Date(etaVal)) {
             this.appSettingService.showError('ETD must be less than ETA.');
+            if (resolve) resolve(false);
             return;
         }
 
@@ -492,34 +511,49 @@ private patchFormData(scheduleData: any) {
         };
 
         if(this.isEditMode && this.VoyageMasterHeaderSid){
+            this.isSaving = true;
             this.masterService.updateSailingScheduleById(this.VoyageMasterHeaderSid,payload).subscribe(
                 (resp:any)=>{
+                    this.isSaving = false;
                     if(resp.status){
                         this.appSettingService.showSuccess("Sailing Schedule saved successfully");
+                        this.isDirty = false;
                         this.loadScheduleData();
+                        if (resolve) resolve(true);
                     } else {
                         this.appSettingService.showError(resp.message || 'Error updating sailing schedule');
+                        if (resolve) resolve(false);
                     }
                 },
                 (error)=>{
+                    this.isSaving = false;
                     console.error('Error Updating Sailing Schedule',error);
+                    if (resolve) resolve(false);
                 }
             );
         } else {
+            this.isSaving = true;
             this.masterService.createNewSailingSchedule(payload).subscribe(
                 (resp:any)=>{
+                    this.isSaving = false;
                     if(resp.status){
                         this.appSettingService.showSuccess('New SailingSchedule is successfully created');
+                        this.isDirty = false;
+                        this.initialFormValue = this.scheduleForm.getRawValue();
                         const sailId = resp.data?.VoyageMasterHeaderSid;
                         if(sailId){
                             this.route.navigate(['master/sailing-schedule/entry',sailId]);
                         }
+                        if (resolve) resolve(true);
                     } else {
                         this.appSettingService.showError(resp.message || 'Error creating sailing schedule');
+                        if (resolve) resolve(false);
                     }
                 },
                 (error)=>{
+                    this.isSaving = false;
                     console.error('Error Creating Sailing Schedule',error);
+                    if (resolve) resolve(false);
                 }
             );
         }
@@ -720,6 +754,72 @@ private patchFormData(scheduleData: any) {
     this.dropdownStore.clearCache()
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+      if (this.hasUnsavedChanges()) {
+          $event.preventDefault();
+          $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+      }
+  }
+
+  hasUnsavedChanges(): boolean {
+      if (!this.scheduleForm || !this.initialFormValue) {
+          return this.isDirty;
+      }
+      return !this.deepEqual(this.initialFormValue, this.scheduleForm.getRawValue());
+  }
+
+  async saveChanges(): Promise<boolean> {
+      return new Promise((resolve) => {
+          this.onSubmit(resolve);
+      });
+  }
+
+  private subscribeToFormChanges(): void {
+      this.scheduleForm.valueChanges.pipe(takeUntil(this.destroy$), debounceTime(300)).subscribe(() => {
+          this.isDirty = !this.deepEqual(this.initialFormValue, this.scheduleForm.getRawValue());
+      });
+  }
+
+  private normalizeValue(value: any): any {
+      if (value === null || value === undefined) {
+          return null;
+      }
+
+      if (value instanceof Date) {
+          return value.toISOString().split('T')[0];
+      }
+
+      if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
+          return Number(value);
+      }
+
+      if (typeof value === 'number') {
+          return Number(value.toFixed(6));
+      }
+
+      if (Array.isArray(value)) {
+          return value.map((v) => this.normalizeValue(v));
+      }
+
+      if (typeof value === 'object') {
+          return Object.keys(value)
+              .sort()
+              .reduce((acc: any, key) => {
+                  acc[key] = this.normalizeValue(value[key]);
+                  return acc;
+              }, {});
+      }
+
+      return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+      const normalizedObj1 = this.normalizeValue(obj1);
+      const normalizedObj2 = this.normalizeValue(obj2);
+      return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
   }
   navigateToCreate() {
     this.route.navigate(['/master/sailing-schedule/entry']);

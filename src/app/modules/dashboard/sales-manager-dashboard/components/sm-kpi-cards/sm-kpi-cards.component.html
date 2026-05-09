@@ -1,0 +1,37 @@
+<div class="kpi-grid" >
+  <div class="kpi-card" *ngFor="let card of cards"
+       [class.primary-card]="card.isPrimary"
+       [ngClass]="card.isPrimary ? '' : card.colorClass"
+      >
+
+    <!-- Skeleton -->
+    <div class="kpi-skeleton" *ngIf="loading">
+      <div class="skeleton-icon"></div>
+      <div class="skeleton-value"></div>
+      <div class="skeleton-label"></div>
+    </div>
+
+    <!-- Content -->
+    <ng-container *ngIf="!loading">
+      <!-- Top row: icon + change pill -->
+      <div class="kpi-top-row d-flex align-items-start justify-content-between">
+        <div class="kpi-icon d-flex align-items-center justify-content-center" [class.primary-icon]="card.isPrimary"><i [class]="card.icon"></i></div>
+        <span class="change-pill d-inline-flex align-items-center" *ngIf="card.percentChange != null" [ngClass]="getChangeClass(card)">
+          <i [class]="getChangeIcon(card)"></i>
+          {{ card.percentChange }}%
+        </span>
+      </div>
+
+      <!-- Value -->
+      <div class="kpi-value" [class.primary-value]="card.isPrimary">{{ formatValue(card, getAnimatedValue(card)) }}</div>
+
+      <!-- Label -->
+      <div class="kpi-label">{{ card.label }}</div>
+
+      <!-- Progress bar (primary only)
+      <div class="kpi-progress" *ngIf="card.progressPercent != null">
+        <div class="kpi-progress-fill" [style.width.%]="card.progressPercent"></div>
+      </div> -->
+    </ng-container>
+  </div>
+</div>

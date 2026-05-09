@@ -1,0 +1,63 @@
+// ── Sales Manager Dashboard — Design Tokens ──
+// Petrol-teal palette (design refresh)
+$sm-primary: #0B6A7A;
+$sm-primary-600: #0A5C6B;
+$sm-primary-700: #074C58;
+$sm-primary-light: #2A9D8F;
+$sm-primary-bg: #E0F2F4;
+$sm-primary-50: #F1F9FA;
+
+// Accent palette
+$sm-accent-coral: #E76F51;
+$sm-accent-saffron: #E9B949;
+$sm-accent-mint: #2A9D8F;
+$sm-accent-lavender: #7B6CD9;
+$sm-accent-rose: #D9476C;
+$sm-accent-sky: #4A90C2;
+
+// Status
+$sm-success: #2A9D8F;
+$sm-success-bg: #E5F5F2;
+$sm-danger: #DC3545;
+$sm-danger-bg: #FDEEF0;
+$sm-warn: #C99514;
+$sm-warn-bg: #FFF8E5;
+
+// Surface
+$sm-bg-body: #F4F7FA;
+$sm-bg-card: #FFFFFF;
+$sm-border: #E5ECF2;
+$sm-border-2: #EDF1F5;
+
+// Text
+$sm-text-primary: #0F2A33;
+$sm-text-secondary: #4A5C66;
+$sm-text-muted: #7A8A93;
+$sm-text-4: #A5B1B8;
+$sm-text-black : #333;
+$sm-radius-card: 14px;
+
+$sm-shadow-card: 0 1px 2px rgba(11, 42, 51, 0.04);
+$sm-shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+// Chart palette
+$sm-chart-colors: #2A9D8F, #7B6CD9, #E9B949, #E76F51, #4A90C2, #D9476C;
+
+// ── Mixins ──
+@mixin sm-card {
+  background: $sm-bg-card;
+  border-radius: $sm-radius-card;
+  border: 1px solid $sm-border;
+  box-shadow: $sm-shadow-card;
+  padding: 14px;
+}
+
+@mixin sm-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: $sm-text-primary;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}

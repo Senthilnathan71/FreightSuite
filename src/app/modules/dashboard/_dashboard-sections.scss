@@ -1,0 +1,225 @@
+// ── Shared Dashboard Section Styles ───────────────────────────────────────────
+// Non-Bootstrap styles shared between sales-dashboard and
+// sales-manager-dashboard (tables, badges, pills, action buttons, board).
+// Import this partial in component SCSS files that render section tables.
+
+// Design tokens — use !default so importing files can override before this import.
+$brand:       #05608D !default;
+$brand-light: #0891b2 !default;
+$brand-dark:  #044a6c !default;
+
+$color-amber:  #f59e0b !default;
+$color-purple: #8b5cf6 !default;
+$color-orange: #f97316 !default;
+$color-green:  #16a34a !default;
+$color-red:    #ef4444 !default;
+$color-cyan:   #06b6d4 !default;
+$color-pink:   #ec4899 !default;
+
+$bg-card:     #ffffff !default;
+$bg-card-alt: #f8fafc !default;
+$border-main: #e2e8f0 !default;
+$border-light: #f1f5f9 !default;
+$text-primary:   #0f172a !default;
+$text-secondary: #475569 !default;
+$text-muted:     #94a3b8 !default;
+
+// ── Table helpers ──────────────────────────────────────────────────────────────
+
+.row-num {
+  color: $text-muted;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.link {
+  color: $brand;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  &:hover { text-decoration: underline; }
+}
+
+.empty-state {
+  text-align: center;
+  color: $text-muted;
+  padding: 20px 12px !important;
+  font-style: italic;
+}
+
+.note-cell {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.center { text-align: center; }
+
+// ── Badges ─────────────────────────────────────────────────────────────────────
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 10px;
+  font-weight: 700;
+  gap: 4px;
+  letter-spacing: 0.3px;
+
+  &::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &.discovery   { background: rgba(#64748b, 0.1);       color: #64748b;      border: 1px solid rgba(#64748b, 0.15);      &::before { background: #94a3b8; } }
+  &.qualify     { background: rgba($brand, 0.1);         color: $brand;       border: 1px solid rgba($brand, 0.15);       &::before { background: $brand; } }
+  &.m-scheduled { background: rgba($color-amber, 0.1);  color: #d97706;      border: 1px solid rgba($color-amber, 0.15); &::before { background: $color-amber; } }
+  &.m-completed { background: rgba($color-purple, 0.1); color: #7c3aed;      border: 1px solid rgba($color-purple, 0.15);&::before { background: $color-purple; } }
+  &.pending     { background: rgba($color-amber, 0.1);  color: #d97706;      border: 1px solid rgba($color-amber, 0.15); &::before { background: $color-amber; } }
+  &.approved    { background: rgba($color-green, 0.1);  color: $color-green; border: 1px solid rgba($color-green, 0.15); &::before { background: $color-green; } }
+  &.waiting     { background: rgba(#6366f1, 0.1);       color: #6366f1;      border: 1px solid rgba(#6366f1, 0.15);      &::before { background: #6366f1; } }
+  &.overdue     { background: rgba($color-red, 0.1);    color: #dc2626;      border: 1px solid rgba($color-red, 0.15);   &::before { background: $color-red; } }
+  &.b-today     { background: rgba($color-amber, 0.1);  color: #d97706;      border: 1px solid rgba($color-amber, 0.15); &::before { background: $color-amber; } }
+  &.upcoming    { background: rgba($color-green, 0.1);  color: $color-green; border: 1px solid rgba($color-green, 0.15); &::before { background: $color-green; } }
+  &.created-by  { background: rgba($brand, 0.1);        color: $brand;       border: 1px solid rgba($brand, 0.15);       &::before { background: $brand; } }
+  &.assigned-to { background: rgba($color-purple, 0.1); color: #7c3aed;      border: 1px solid rgba($color-purple, 0.15);&::before { background: $color-purple; } }
+  &.both-match  { background: rgba($color-green, 0.1);  color: $color-green; border: 1px solid rgba($color-green, 0.15); &::before { background: $color-green; } }
+  &.lead-type     { background: rgba($color-amber, 0.1); color: #d97706;      border: 1px solid rgba($color-amber, 0.15); &::before { background: $color-amber; } }
+  &.customer-type { background: rgba($color-green, 0.1); color: $color-green; border: 1px solid rgba($color-green, 0.15); &::before { background: $color-green; } }
+}
+
+// ── Days pill ──────────────────────────────────────────────────────────────────
+
+.days-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+
+  &.danger  { background: rgba($color-red,   0.08); color: #dc2626; }
+  &.warning { background: rgba($color-amber, 0.08); color: #d97706; }
+  &.ok      { background: rgba($color-green, 0.08); color: $color-green; }
+}
+
+// ── Source tag ─────────────────────────────────────────────────────────────────
+
+.source-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  background: rgba($brand, 0.06);
+  color: $text-secondary;
+  border: 1px solid $border-main;
+}
+
+// ── Meeting count badge ────────────────────────────────────────────────────────
+
+.meeting-count-badge {
+  background: rgba($color-purple, 0.1);
+  color: #7c3aed;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 11px;
+}
+
+// ── Action buttons ─────────────────────────────────────────────────────────────
+
+.action-btn {
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: none;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  &.schedule { background: linear-gradient(135deg, $brand, $brand-light);      color: #fff; }
+  &.complete { background: linear-gradient(135deg, $color-purple, #a78bfa);    color: #fff; }
+  &.convert  { background: linear-gradient(135deg, $color-green,  #4ade80);    color: #fff; }
+  &.followup { background: linear-gradient(135deg, $color-amber,  #fbbf24);    color: #1a1a2e; }
+  &.create   { background: linear-gradient(135deg, $color-cyan,   #22d3ee);    color: #1a1a2e; }
+  &.booking  { background: linear-gradient(135deg, $color-pink,   #f472b6);    color: #fff; }
+
+  &:hover { opacity: 0.9; transform: translateY(-1px); }
+}
+
+// ── Meeting board ──────────────────────────────────────────────────────────────
+
+.meeting-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 10px 12px;
+}
+
+.board-column {
+  border: 1px solid $border-main;
+  border-radius: 10px;
+  background: $bg-card;
+  overflow: hidden;
+}
+
+.board-column-header {
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  &.bh-overdue { background: rgba($color-red,   0.08); color: #dc2626;      border-bottom: 2px solid $color-red; }
+  &.bh-today   { background: rgba($color-amber, 0.08); color: #d97706;      border-bottom: 2px solid $color-amber; }
+  &.bh-future  { background: rgba($color-green, 0.08); color: $color-green; border-bottom: 2px solid $color-green; }
+}
+
+.board-count {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+
+  &.bc-red   { background: rgba($color-red,   0.15); }
+  &.bc-amber { background: rgba($color-amber, 0.15); }
+  &.bc-green { background: rgba($color-green, 0.15); }
+}
+
+.board-column table {
+  th {
+    background: $bg-card-alt;
+    font-size: 10px;
+    padding: 8px 10px;
+    color: $text-secondary;
+  }
+
+  td {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+}
+
+// ── Clickable rows ─────────────────────────────────────────────────────────────
+
+.clickable-row {
+  cursor: pointer;
+
+  &:hover td {
+    background: rgba($brand, 0.06);
+  }
+}

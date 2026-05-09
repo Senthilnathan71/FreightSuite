@@ -44,6 +44,7 @@ import { generateMasterJobDocument, transformMasterJobApiData } from './generato
 import { generateGenericReportDocument, GenericReportPdfData } from './generators/generic-report-pdf.generator';
 import { ComplexReportExportConfig } from 'src/app/shared/excel-report-service';
 import { generateInvoiceDocument, transformInvoiceApiData } from './generators/invoice-pdf.generator';
+import { generateProformaInvoiceDocument } from './generators/proforma-invoice-pdf.generator';
 import {
   generateVendorInvoiceDocument,
   transformVendorInvoiceApiData
@@ -546,6 +547,15 @@ export class PdfMakeService {
   }
 
   /**
+   * Generate and download Proforma Invoice PDF using the invoice layout.
+   */
+  generateProformaInvoice(data: InvoicePdfData): void {
+    const docDefinition = generateProformaInvoiceDocument(data);
+    const filename = `Proforma_Invoice_${data.invoice?.invoiceNo || 'Draft'}.pdf`;
+    this.download(docDefinition, filename);
+  }
+
+  /**
    * Get Invoice PDF as Blob
    */
   async generateInvoiceBlob(data: InvoicePdfData): Promise<Blob> {
@@ -554,6 +564,19 @@ export class PdfMakeService {
       return this.getBlob(docDefinition);
     } catch (error) {
       console.error('Invoice PDF Generation Error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get Proforma Invoice PDF as Blob using the invoice layout.
+   */
+  async generateProformaInvoiceBlob(data: InvoicePdfData): Promise<Blob> {
+    try {
+      const docDefinition = generateProformaInvoiceDocument(data);
+      return this.getBlob(docDefinition);
+    } catch (error) {
+      console.error('Proforma Invoice PDF Generation Error:', error);
       throw error;
     }
   }

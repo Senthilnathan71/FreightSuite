@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, HostListener, OnInit, TemplateRef } from '@angular/core';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
@@ -6,7 +6,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule, NgbModal, NgbModalRef, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { catchError, forkJoin, of, Subject } from 'rxjs';
+import { catchError, debounceTime, forkJoin, of, Subject, takeUntil } from 'rxjs';
 import { DetailsComponent } from 'src/app/component/details/details.component';
 import { TermsAndConditionsComponent } from 'src/app/component/terms&conditions/terms&conditions.component';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
@@ -31,6 +31,7 @@ import { OperationService } from 'src/app/modules/operation/operation.service';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 @Component({
     selector: 'app-tds-set-entry',
@@ -58,7 +59,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
         { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
     ],
 })
-export class TdsSetEntryComponent implements OnInit {
+export class TdsSetEntryComponent implements OnInit, HasUnsavedChanges {
       private destroy$ = new Subject<void>();
 
 
@@ -119,6 +120,9 @@ export class TdsSetEntryComponent implements OnInit {
     userData: any;
     currentCompany: any;
     currentBranch: any;
+    isDirty: boolean = false;
+    isSaving: boolean = false;
+    private initialFormValue: any = null;
     countryLookupConfig = DROPDOWN_CONFIGS.COUNTRY;
     customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
 
@@ -159,6 +163,8 @@ export class TdsSetEntryComponent implements OnInit {
        this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
        this.MenuMasterSid =  sessionStorage.getItem('currentMenuId');
         this.initTdsForm();
+        this.initialFormValue = this.tdsForm.getRawValue();
+        this.subscribeToFormChanges();
         // this.appSettingService.getUser().subscribe(
         //     (res) => {
         //         this.userData = res;
@@ -209,6 +215,9 @@ export class TdsSetEntryComponent implements OnInit {
                         EffectiveFrom: new Date(this.tdsData.EffectiveFrom),
                         status: this.tdsData.status === 'A' ? 'Active' : 'Suspended'
                     })
+                    this.initialFormValue = this.tdsForm.getRawValue();
+                    this.isDirty = false;
+                    this.tdsForm.markAsPristine();
                 } else {
                     this.appSettingService.showError('Error loading TDS set.')
                     console.error(resp.message);
@@ -217,16 +226,31 @@ export class TdsSetEntryComponent implements OnInit {
         )
     }
 
-    onSubmit() {
+    onSubmit(resolve?: (value: boolean) => void) {
+        if (this.isSaving) {
+            if (resolve) resolve(false);
+            return;
+        }
+
+        const raw = this.tdsForm.getRawValue();
+        if (this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+            this.appSettingService.showWarning('No changes to save');
+            this.tdsForm.markAsUntouched();
+            if (resolve) resolve(false);
+            return;
+        }
+
         if (this.tdsForm.invalid) {
             this.tdsForm.markAllAsTouched();
             this.tdsForm.updateValueAndValidity();
             this.appSettingService.showWarning('Please fill all the required fields correctly.');
+            if (resolve) resolve(false);
             return;
         }
 
         const formValue = this.tdsForm.value;
         const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
+        this.isSaving = true;
 
         const payload = {
             ...formValue,
@@ -237,19 +261,27 @@ export class TdsSetEntryComponent implements OnInit {
         if (this.isEditMode) {
             this.masterService.updateTdsById(this.TDSSetHeaderSid, payload).subscribe(
                 (resp: any) => {
+                    this.isSaving = false;
                     if (resp.status) {
                        this.appSettingService.showSuccess(resp.message);
 
                         this.loadTDS(this.TDSSetHeaderSid);
+                        if (resolve) resolve(true);
                     } else {
                         this.appSettingService.showError(resp.message);
                         console.error(resp.message);
+                        if (resolve) resolve(false);
                     }
+                },
+                () => {
+                    this.isSaving = false;
+                    if (resolve) resolve(false);
                 }
             )
         } else {
             this.masterService.createNewTds(payload).subscribe(
                 (resp: any) => {
+                    this.isSaving = false;
                     if (resp.status) {
                         this.appSettingService.showSuccess(resp.message);
 
@@ -257,14 +289,67 @@ export class TdsSetEntryComponent implements OnInit {
                         if (tdsId) {
                             this.router.navigate(['/master/tds-set/entry', tdsId]);
                         }
+                        if (resolve) resolve(true);
                     } else {
                         this.appSettingService.showError(resp.message);
                         console.error(resp.message);
+                        if (resolve) resolve(false);
                     }
+                },
+                () => {
+                    this.isSaving = false;
+                    if (resolve) resolve(false);
                 }
             )
         }
 
+    }
+
+    @HostListener('window:beforeunload', ['$event'])
+    unloadNotification($event: BeforeUnloadEvent): void {
+        if (this.hasUnsavedChanges()) {
+            $event.preventDefault();
+            $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        }
+    }
+
+    hasUnsavedChanges(): boolean {
+        return !!this.tdsForm && this.isDirty;
+    }
+
+    async saveChanges(): Promise<boolean> {
+        return new Promise((resolve) => {
+            this.onSubmit(resolve);
+        });
+    }
+
+    private subscribeToFormChanges(): void {
+        this.tdsForm.valueChanges
+            .pipe(debounceTime(300), takeUntil(this.destroy$))
+            .subscribe(() => {
+                this.isDirty = !this.deepEqual(this.initialFormValue, this.tdsForm.getRawValue());
+            });
+    }
+
+    private normalizeValue(value: any): any {
+        if (value === null || value === undefined) return null;
+        if (value instanceof Date) return value.toISOString().split('T')[0];
+        if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) return Number(value);
+        if (typeof value === 'number') return Number(value.toFixed(6));
+        if (Array.isArray(value)) return value.map(v => this.normalizeValue(v));
+        if (typeof value === 'object') {
+            return Object.keys(value).sort().reduce((acc: any, key) => {
+                acc[key] = this.normalizeValue(value[key]);
+                return acc;
+            }, {});
+        }
+        return value;
+    }
+
+    private deepEqual(obj1: any, obj2: any): boolean {
+        const normalizedObj1 = this.normalizeValue(obj1);
+        const normalizedObj2 = this.normalizeValue(obj2);
+        return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
     }
 
     loadTDSDetailsByHeader(TDSSetHeaderSid) {
@@ -668,6 +753,9 @@ openAuditLogs(modal: TemplateRef<any>) {
   this.TDSSetHeaderSid = null;
   this.TDSSetRateSid = null;
   this.TDSExemptionSid = null;
+  this.initialFormValue = this.tdsForm.getRawValue();
+  this.isDirty = false;
+  this.tdsForm.markAsPristine();
 }
 
 

@@ -45,7 +45,53 @@ interface messages {
   selector: 'app-vertical-navigation',
   standalone: true,
   imports: [NgbDropdownModule, RouterModule, FeatherModule, NgScrollbarModule, CommonModule, NgbAccordionModule, NgbCarouselModule, NgbModule, TimeAgoPipe, FormsModule, ReactiveFormsModule, NgbTooltipModule],
-  templateUrl: './vertical-navigation.component.html'
+  templateUrl: './vertical-navigation.component.html',
+  styles: [`
+    .bell-badge {
+      position: absolute;
+      top: -2px;
+      right: -4px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 18px;
+      text-align: center;
+      color: #fff;
+      background: #e53935;
+      border-radius: 9px;
+      box-shadow: 0 0 0 2px #fff;
+    }
+    .bell-badge.pulse {
+      animation: bell-pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes bell-pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 2px #fff, 0 0 0 0 rgba(229, 57, 53, 0.6); }
+      50% { transform: scale(1.12); box-shadow: 0 0 0 2px #fff, 0 0 0 6px rgba(229, 57, 53, 0); }
+    }
+    .bell-refresh-btn {
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.85);
+      transition: color 0.15s ease, transform 0.4s ease;
+    }
+    .bell-refresh-btn:hover { color: #fff; }
+    .bell-refresh-btn.spinning { animation: bell-spin 0.7s linear infinite; }
+    @keyframes bell-spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .bell-notification-list {
+      max-height: 320px;
+      overflow-y: auto;
+    }
+    .bell-notification-list .message-item {
+      transition: background 0.15s ease;
+    }
+    .bell-notification-list .message-item:hover {
+      background: rgba(0, 123, 255, 0.05);
+    }
+  `]
 })
 export class VerticalNavigationComponent implements OnInit, AfterViewInit {
   recentList: any[] = [];
@@ -121,7 +167,7 @@ ngOnInit(): void {
   this.getMenusFromSideBar();
 
   this.loadEventNotifications();
-  interval(5 * 60 * 1000)
+  interval(60 * 1000)
     .pipe(takeUntil(this.unsubscribe$))
     .subscribe(() => this.loadEventNotifications());
 
@@ -862,20 +908,33 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
 
   // ------------ END OF RECENT ACTIVITY RELATED FUNCTION ----------------- \\
 
-  // Live event notifications (creator OR event leader, EventDate today/tomorrow)
+  // Live event notifications (creator OR event leader, next 24 hours)
   notifications: notifications[] = [];
+  notificationsLoading = false;
+  notificationsLastUpdated: Date | null = null;
 
   loadEventNotifications(): void {
+    this.notificationsLoading = true;
     this.masterService.getPreCustomerEventNotifications().subscribe({
       next: (resp: any) => {
         if (resp?.status && Array.isArray(resp.data)) {
           this.notifications = resp.data;
         }
+        this.notificationsLastUpdated = new Date();
+        this.notificationsLoading = false;
       },
       error: () => {
-        // silent — bell stays empty if endpoint fails
+        this.notificationsLoading = false;
       },
     });
+  }
+
+  refreshNotifications(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    this.loadEventNotifications();
   }
 
   // This is for Mymessages

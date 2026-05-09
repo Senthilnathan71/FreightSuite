@@ -666,7 +666,7 @@ dataFromEnqPage:any;
     }
 
     headerFields.forEach(field => {
-      if (enqData?.[field] !== null && enqData?.[field] !== undefined) {
+      if (enqData?.[field]) {
         this.quotationForm.get(field)?.disable({ emitEvent: false });
       }
     });

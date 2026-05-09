@@ -29,6 +29,8 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { PrintFooterComponent } from 'src/app/shared/components/print-footer/print-footer.component';
 import { PrintHeaderComponent } from 'src/app/shared/components/print-header/print-header.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { AuditLogComponent } from '../../audit-log/audit-log.component';
+import { DetailsComponent } from 'src/app/component/details/details.component';
 
 @Component({
   selector: 'app-payment-request-entry',
@@ -78,6 +80,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
   chargeList: any[] = [];
   uomList: any[] = [];
   paymentRequestPrintData: any = null;
+  paymentRequestData: any = null;
 
   CurrencyLookupConfig = DROPDOWN_CONFIGS.CURRENCY;
   CustomerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
@@ -119,7 +122,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       DepartmentMasterSid: [{ value: null, disabled: true }, Validators.required],
       Party: [null, Validators.required],
       PayableTo: ['', Validators.required],
-      CurrencyMasterSid: [null, Validators.required],
+      CurrencyMasterSid: [{ value: null, disabled: true }, Validators.required],
       BookingSid: [null],
       BookingNo: [{ value: '', disabled: true }],
       MasterJobSid: [null],
@@ -234,6 +237,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     } else {
       this.form.enable({ emitEvent: false });
       this.form.get('DepartmentMasterSid')?.disable({ emitEvent: false });
+      this.form.get('CurrencyMasterSid')?.disable({ emitEvent: false });
       this.form.get('BookingNo')?.disable({ emitEvent: false });
       this.form.get('MasterJobNo')?.disable({ emitEvent: false });
       this.form.get('HouseNo')?.disable({ emitEvent: false });
@@ -514,6 +518,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
         }
 
         const request = resp.data;
+        this.paymentRequestData = request;
         this.form.patchValue({
           PaymentRequestSid: request.PaymentRequestSid,
           PaymentRequestNumber: request.PaymentRequestNumber,
@@ -542,6 +547,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
         (request.paymentRequestDetails || []).forEach((item: any) => {
           this.detailItems.push(this.createDetailRow({
             ...item,
+            PaymentRequestDtlSid: item?.PaymentRequestDtlSid || null,
             SourceCostRevenueChargeSid:
               item?.SourceCostRevenueChargeSid ||
               item?.sourceCostRevenueCharge?.CostRevenueChargesSid ||
@@ -586,10 +592,11 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       Status: 'A',
     });
 
-      detailRows.forEach((item: any) => {
+    detailRows.forEach((item: any) => {
       this.detailItems.push(
         this.createDetailRow({
           ...item,
+          PaymentRequestDtlSid: item?.PaymentRequestDtlSid || null,
           Selected: item.Selected !== false,
         }),
       );
@@ -603,6 +610,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
 
   private createDetailRow(data: any) {
     return this.fb.group({
+      PaymentRequestDtlSid: [data?.PaymentRequestDtlSid || null],
       Selected: [data?.Selected ?? true],
       ChargeMasterSid: [data?.ChargeMasterSid || null],
       ChargeDescription: [data?.ChargeDescription || ''],
@@ -908,12 +916,12 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     }
 
     this.saving = true;
+    const userEmail = this.userData?.userEmail;
     const payload = {
       ...raw,
+      ...(this.isEditMode ? { UpdatedBy: userEmail } : { CreatedBy: userEmail }),
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
-      CreatedBy: this.userData?.userEmail,
-      UpdatedBy: this.userData?.userEmail,
       detailItems: this.detailItems.getRawValue(),
     };
 
@@ -1023,5 +1031,30 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
   }
 
 
+  openAuditLogs() {
+        if (!this.form.get('PaymentRequestSid')?.value) return;
+        const modalRef = this.modalService.open(AuditLogComponent, {
+          centered: true,
+          scrollable: true,
+          size: 'xl',
+          windowClass: 'audit-log-modal'
+        });
+        modalRef.componentInstance.title = 'Payment Request Logs';
+        modalRef.componentInstance.tableName = 'PaymentRequest';
+        modalRef.componentInstance.recordId = this.form.get('PaymentRequestSid')?.value.toString();
+        modalRef.componentInstance.screenName = 'PaymentRequest';
+      }
+
+      showInfo() {
+          if (!this.paymentRequestData) return;
+          const modalRef = this.modalService.open(DetailsComponent, {
+            size: 'lg',
+            centered: true,
+            backdrop: 'static',
+          });
+          modalRef.componentInstance.item = this.paymentRequestData;
+          modalRef.componentInstance.idLabel = 'Payment Request Id';
+          modalRef.componentInstance.idValue = this.form.get('PaymentRequestSid')?.value;
+        }
 
 }

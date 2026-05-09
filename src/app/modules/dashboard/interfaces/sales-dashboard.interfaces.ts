@@ -9,6 +9,7 @@ export interface SalesDashboardFilters {
   pageSize?: number;
   search?: string;
   bucket?: MeetingBucket;
+  meetingDateFilter?: 'none' | 'range';
 }
 
 export interface SalesDashboardCounts {

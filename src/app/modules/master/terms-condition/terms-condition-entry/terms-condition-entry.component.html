@@ -17,7 +17,7 @@
             </div>
             <div class="col-md-8 pb-1">
                 <div
-                    class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+                    class="row flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                    
                     <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"  (click)="navigateBack()">
                         <i class="fas fa-chevron-left me-1"></i>
@@ -30,11 +30,23 @@
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                     </button>
-                    <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" [disabled]="(!mps.can('update') && isEditMode)"
+                    <!-- <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onSubmit()" [disabled]="(!mps.can('update') && isEditMode)"
                         >
                         <i class="fas fa-save me-1"></i>
                         {{isSaving ? 'Saving...' : (isEditMode ? 'Update' : 'Save') }}
-                    </button>
+                    </button> -->
+  <button class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
+          [ngClass]="{'btn-info': !hasUnsavedChanges(), 'btn-warning': hasUnsavedChanges()}"
+          (click)="onSubmit()"  
+          [disabled]="(!mps.can('update') && isEditMode)" >
+    <i class="fas fa-save me-1"></i>
+    <span>{{ isSaving ? "Saving..." : "Save" }}</span> 
+    <span *ngIf="hasUnsavedChanges()"
+          class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+          title="You have unsaved changes">
+      <span class="visually-hidden">unsaved changes</span>
+    </span>
+  </button>
                 </div>
             </div>
         </div>

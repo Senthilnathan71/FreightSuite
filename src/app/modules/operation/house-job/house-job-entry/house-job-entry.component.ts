@@ -71,6 +71,7 @@ import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
+import { PerformaInvoiceComponent } from '../report/performa-invoice/performa-invoice.component';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -6099,8 +6100,8 @@ ${this.userData['userName']}`;
 
   // Add handler for Edoc data changes
   handleEdocChange(event: any) {
-    this.edocData = event.dataItems || [];   
-    this.currentEdocFormValue = event.formData; 
+    this.edocData = event.dataItems || this.edocData || [];
+    this.currentEdocFormValue = event.formData || this.currentEdocFormValue;
     
   }
 
@@ -6626,7 +6627,28 @@ ${this.userData['userName']}`;
       modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || 'LCL';
       modalRef.componentInstance.portList = this.portList || [];
       modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+      modalRef.componentInstance.currencyList = this.currencyList || [];
       modalRef.componentInstance.houseMenuMasterSid = this.currentMenuId;
+    }
+
+
+    reportPerformaInvoice() {
+      const modalRef = this.modalService.open(PerformaInvoiceComponent, {
+        size: 'xl',
+        scrollable: true,
+      });
+      // modalRef.componentInstance.masterJobData = this.masterJobData;
+      modalRef.componentInstance.housejobData = this.housejobData || [];
+      // modalRef.componentInstance.masterJobContainers = this.masterJobContainers.getRawValue() || [];
+      modalRef.componentInstance.masterJobContainers = this.housejobData?.containers || [];
+      modalRef.componentInstance.packageTypeList = this.packageTypeList;
+      modalRef.componentInstance.TandCList = this.TandCList || [];
+      modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || 'LCL';
+      modalRef.componentInstance.portList = this.portList || [];
+      modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+      modalRef.componentInstance.houseMenuMasterSid = this.currentMenuId;
+      modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+      modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
     }
 
       reportMilestoneSummary() {
@@ -7219,7 +7241,7 @@ getARAPTotalLocalAmount(): number {
 openVoucherDetails(voucherHeaderSid: number, documentTypeCode: string) {
     if (documentTypeCode === 'INV') {
         this.router.navigate(['operation/invoice/entry/', voucherHeaderSid]);
-    } else if (documentTypeCode === 'VINV') {
+    } else if (documentTypeCode === 'VIN' || documentTypeCode === 'VINV') {
         this.router.navigate(['operation/vendor-invoice/entry/', voucherHeaderSid]);
     }
 }
@@ -7233,9 +7255,16 @@ private applyFilters(data: any[]): any[] {
     
     // Filter by voucher type
     if (this.arapFilter.voucherType !== 'all') {
-        filtered = filtered.filter(item => 
-            item.DocumentTypeCode === this.arapFilter.voucherType
-        );
+        const selectedVoucherType = String(this.arapFilter.voucherType).toUpperCase();
+        filtered = filtered.filter(item => {
+            const documentTypeCode = String(item.DocumentTypeCode || '').toUpperCase();
+
+            if (selectedVoucherType === 'VIN') {
+                return documentTypeCode === 'VIN' || documentTypeCode === 'VINV';
+            }
+
+            return documentTypeCode === selectedVoucherType;
+        });
     }
     
     // Filter by status - Corrected: use PostStatus field

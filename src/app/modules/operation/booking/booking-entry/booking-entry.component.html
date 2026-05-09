@@ -1237,7 +1237,7 @@
     </div>
 
     <div class="workspace-content" *ngIf="selectedTab === 'Cargo'">
-      <div class="d-flex justify-content-end align-items-center gap-2 px-3 mb-2">
+      <div class="d-flex justify-content-end align-items-center gap-2 px-3">
         <button class="btn btn-sm btn-info" type="button" (click)="addBookingCargo()"
           [disabled]="selectedFCLLCL !== 'FCL' || (isEditMode && isSuspended) || hasHouseJobCreated">
           <i class="fas fa-plus me-1"></i> Add Cargo
@@ -1387,14 +1387,14 @@
                   </aside>
                 </div>
 
-                <div class="d-flex justify-content-end mt-2">
+                <div class="d-flex justify-content-end">
                   <button class="btn btn-sm btn-info" type="button" (click)="addBookingCargoProduct(cargoIndex)"
                     [disabled]="(isEditMode && isSuspended) || hasHouseJobCreated">
                     <i class="fas fa-plus me-1"></i> Add Product
                   </button>
                 </div>
 
-                <div class="table-responsive table-borderless1 mt-2" formArrayName="bookingProducts" style="overflow-y: hidden;">
+                <div class="table-responsive table-borderless1 mt-1" formArrayName="bookingProducts" style="overflow-y: hidden;">
                   <table class="table table-hover align-middle no-wrap table-sm mb-0">
                     <thead>
                       <tr class="bg-info text-center">
@@ -2682,7 +2682,7 @@
                             (change)="loadBookingARAPData()" style="width: 150px;">
                         <option value="all">All Vouchers</option>
                         <option value="INV">Revenue</option>
-                        <option value="VINV">Cost</option>
+                        <option value="VIN">Cost</option>
                     </select>
                     
                      <select class="form-select form-select-sm" [(ngModel)]="arapFilter.status" 
@@ -2767,13 +2767,13 @@
                       <td></td>
                       <td></td>
                       <td></td>
-                    
+                       <td></td>
                         <td><strong>Totals:</strong></td>
-                        <td class=" fw-bold">
-                            {{getTotalAmount()}}
-                        </td>
-                        <td class="fw-bold">
-                            {{getTotalLocalAmount()}}
+                        <!-- <td class="fw-bold ">
+                            {{ getTotalAmount() | number:'1.2-2' }}
+                        </td> -->
+                        <td class="fw-bold ">
+                            {{ getTotalLocalAmount() | number:'1.2-2' }}
                         </td>
                         <td colspan="2"></td>
                     </tr>

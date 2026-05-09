@@ -1,4 +1,4 @@
-import { Component, OnInit,TemplateRef } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit,TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidatorFn } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
@@ -21,6 +21,8 @@ import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { debounceTime, Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-milestone-entry',
@@ -39,7 +41,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
   templateUrl: './milestone-entry.component.html',
   styleUrls: ['./milestone-entry.component.scss']
 })
-export class MilestoneEntryComponent implements OnInit {
+export class MilestoneEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   milestoneForm: FormGroup;
   isEditMode = false;
   btnDisable = false;
@@ -69,6 +71,10 @@ export class MilestoneEntryComponent implements OnInit {
   currentBranch:any;
   MenuMasterSid: any;
   departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
+  isDirty: boolean = false;
+  isSaving: boolean = false;
+  private initialFormValue: any = null;
+  private destroy$ = new Subject<void>();
   constructor(
     private fb: FormBuilder,
     private masterService: MasterService,
@@ -97,6 +103,8 @@ export class MilestoneEntryComponent implements OnInit {
 			this.userData = userProfile;
 		}
     this.mps.init().subscribe();
+    this.initialFormValue = this.milestoneForm.getRawValue();
+    this.subscribeToFormChanges();
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.milestoneId = +params['id'];
@@ -105,6 +113,60 @@ export class MilestoneEntryComponent implements OnInit {
         this.milestoneForm.get('status')?.enable();
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
+
+  private subscribeToFormChanges(): void {
+    this.milestoneForm.valueChanges
+      .pipe(takeUntil(this.destroy$), debounceTime(300))
+      .subscribe(() => {
+        this.isDirty = !this.deepEqual(this.initialFormValue, this.milestoneForm.getRawValue());
+      });
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString().split('T')[0];
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) return Number(value);
+    if (typeof value === 'number') return Number(value.toFixed(6));
+    if (Array.isArray(value)) return value.map(v => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value)
+        .sort()
+        .reduce((acc: any, key) => {
+          acc[key] = this.normalizeValue(value[key]);
+          return acc;
+        }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
   }
 
 
@@ -176,6 +238,8 @@ hasAnyDropdownPermission(): boolean {
           Remarks: milestone.Remarks || ''
         });
         this.milestoneForm.get('status')?.enable();
+        this.initialFormValue = this.milestoneForm.getRawValue();
+        this.isDirty = false;
       },
       error: (err) => {
         console.error('Error loading milestone:', err);
@@ -184,13 +248,28 @@ hasAnyDropdownPermission(): boolean {
     });
   }
 
-  onSubmit() {
+  onSubmit(resolve?: (saved: boolean) => void) {
+    const raw = this.milestoneForm.getRawValue();
+    if (this.isEditMode && this.deepEqual(raw, this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      this.milestoneForm.markAsUntouched();
+      resolve?.(false);
+      return;
+    }
+
+    if (this.isSaving) {
+      resolve?.(false);
+      return;
+    }
+
     if (this.milestoneForm.invalid) {
       this.markFormGroupTouched(this.milestoneForm);
       this.appSettingService.showWarning('Please fill all required fields correctly.');
+      resolve?.(false);
       return;
     }
   
+    this.isSaving = true;
     this.btnDisable = true;
     
     const formValue = this.milestoneForm.value;
@@ -212,24 +291,31 @@ hasAnyDropdownPermission(): boolean {
   
     operation.subscribe({
       next: (resp: any) => {
+        this.isSaving = false;
         this.btnDisable = false;
         const message = resp.message || 
           (this.isEditMode ? 'Milestone updated successfully!' : 'Milestone created successfully!');
         
         if (resp.status) {
+          this.isDirty = false;
+          this.initialFormValue = this.milestoneForm.getRawValue();
           this.appSettingService.showSuccess(message);
+          resolve?.(true);
           this.router.navigate(['/master/milestone/list']);
         } else {
           this.appSettingService.showError(resp.message || 'Operation failed');
+          resolve?.(false);
         }
       },
       error: (err) => {
   console.error('Error:', err);
+  this.isSaving = false;
   this.btnDisable = false;
   const errorMessage = err.error?.message || 
     err.message || 
     `Error ${this.isEditMode ? 'updating' : 'creating'} milestone`;
   this.appSettingService.showError(errorMessage);
+  resolve?.(false);
 }
     });
   }
@@ -250,6 +336,8 @@ hasAnyDropdownPermission(): boolean {
         Remarks: ''
       });
       this.milestoneForm.get('status')?.disable();
+      this.initialFormValue = this.milestoneForm.getRawValue();
+      this.isDirty = false;
     }
   }
 

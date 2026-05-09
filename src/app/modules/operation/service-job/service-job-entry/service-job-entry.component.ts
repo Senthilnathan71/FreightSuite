@@ -53,6 +53,7 @@ import { JobCardComponent } from '../../house-job/report/job-card/job-card.compo
 import { ProofOfDeliveryComponent } from '../../house-job/report/proof-of-delivery/proof-of-delivery.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
+import { PerformaInvoiceComponent } from '../../house-job/report/performa-invoice/performa-invoice.component';
 
 
 
@@ -1792,6 +1793,25 @@ openDocRef() {
     modalRef.componentInstance.houseMenuMasterSid =
       this.currentMenuId || Number(sessionStorage.getItem('currentMenuId'));
   }
+
+   reportPerformaInvoice() {
+                const modalRef = this.modalService.open(PerformaInvoiceComponent, {
+                  size: 'xl',
+                  scrollable: true,
+                });
+                // modalRef.componentInstance.masterJobData = this.masterJobData;
+                modalRef.componentInstance.housejobData = this.serviceJobData || [];
+                // modalRef.componentInstance.masterJobContainers = this.masterJobContainers.getRawValue() || [];
+                modalRef.componentInstance.masterJobContainers = this.serviceJobData?.containers || [];
+                // modalRef.componentInstance.packageTypeList = this.packageTypeList;
+                modalRef.componentInstance.TandCList = this.TandCList || [];
+                modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL || 'LCL';
+                modalRef.componentInstance.portList = this.portList || [];
+                modalRef.componentInstance.containerTypeList = this.containerTypeList || [];
+                modalRef.componentInstance.houseMenuMasterSid = this.currentMenuId;
+                modalRef.componentInstance.CompanyMasterSid = this.currentCompany.CompanyMasterSid;
+                modalRef.componentInstance.BranchMasterSid = this.currentBranch.BranchMasterSid;
+              }
 
 
   async sendEmail() {

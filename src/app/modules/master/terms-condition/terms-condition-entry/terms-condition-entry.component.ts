@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { FeatherModule } from 'angular-feather';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -21,6 +21,7 @@ import { OperationService } from 'src/app/modules/operation/operation.service';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { SearchableDropdownModal } from 'src/app/component/searchable-dropdown/searchable-dropdown-modal.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 @Component({
     selector: 'app-terms-condition-entry',
@@ -42,7 +43,7 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
     templateUrl: './terms-condition-entry.component.html',
     styleUrl: './terms-condition-entry.component.scss'
 })
-export class TermsConditionEntryComponent implements OnInit {
+export class TermsConditionEntryComponent implements OnInit, HasUnsavedChanges {
 
     TermsAndConditionsMasterSid: number;
     departmentOnTermsId: number;
@@ -50,6 +51,7 @@ export class TermsConditionEntryComponent implements OnInit {
     isEditMode: boolean = false;
     isModalEditMode: boolean = false;
     isSaving: boolean = false;
+    isDirty: boolean = false;
     isDetailSaving: boolean = false;
     termsAndConditionForm !: FormGroup;
     termsAndConditionDetailForm !: FormGroup;
@@ -79,6 +81,8 @@ export class TermsConditionEntryComponent implements OnInit {
     showDetailSection: boolean = false;
     pendingDetailEditIndex: number | null = null;
     pendingDepartmentSid: number | null = null;
+    private initialStateSnapshot = '';
+    private suppressDirtyCheck = false;
 
     portLookupConfig = DROPDOWN_CONFIGS.PORT
     constructor(
@@ -126,6 +130,8 @@ export class TermsConditionEntryComponent implements OnInit {
                 }
             }
         )
+        this.subscribeToFormChanges();
+        this.captureInitialState();
     }
 
     initTandCForm() {
@@ -299,16 +305,26 @@ export class TermsConditionEntryComponent implements OnInit {
         return [value];
     }
 
-    onSubmit() {
-        if (this.isSaving) return;
+    onSubmit(resolve?: (value: boolean) => void) {
+        if (this.isSaving) {
+            if (resolve) resolve(false);
+            return;
+        }
+        if (!this.hasUnsavedChanges()) {
+            this.appSettingService.showWarning('No changes to save');
+            if (resolve) resolve(true);
+            return;
+        }
         if (this.termsAndConditionForm.invalid) {
             this.termsAndConditionForm.markAllAsTouched();
             this.termsAndConditionForm.updateValueAndValidity();
             this.appSettingService.showWarning('Please fill all the required fields');
+            if (resolve) resolve(false);
             return;
         }
         if (!this.TandCDetail || this.TandCDetail.length === 0) {
             this.appSettingService.showWarning('Please add at least one Terms and Conditions detail row');
+            if (resolve) resolve(false);
             return;
         }
         this.isSaving = true;
@@ -342,15 +358,19 @@ export class TermsConditionEntryComponent implements OnInit {
                 (resp: any) => {
                     if (resp.status) {
                         this.appSettingService.showSuccess('Terms and Conditions updated successfully');
+                        this.isDirty = false;
                         this.loadTermsAndConditions();
+                        if (resolve) resolve(true);
                     } else {
                         const backendMessage = resp?.message;
                         this.appSettingService.showError(backendMessage)
+                        if (resolve) resolve(false);
                     }
                     this.isSaving = false;
                 },
                 (error) => {
                     this.isSaving = false;
+                    if (resolve) resolve(false);
                     console.error('Error Updating Terms and Conditions', error);
                 }
             )
@@ -359,6 +379,8 @@ export class TermsConditionEntryComponent implements OnInit {
                 (resp: any) => {
                     if (resp.status) {
                         const createdId = resp?.data?.tandCData?.TermsAndConditionsMasterSid;
+                        this.isDirty = false;
+                        this.captureInitialState();
                         if (createdId) {
                             this.appSettingService.showSuccess('New Terms and Conditions created successfully');
                             this.route.navigate(['master/terms-condition/entry', createdId]);
@@ -366,9 +388,11 @@ export class TermsConditionEntryComponent implements OnInit {
                             this.appSettingService.showSuccess('New Terms and Conditions created successfully');
                             this.route.navigate(['master/terms-condition/list']);
                         }
+                        if (resolve) resolve(true);
                     } else {
                         const backendMessage = resp?.message;
                         this.appSettingService.showError(backendMessage)
+                        if (resolve) resolve(false);
                     }
                     this.isSaving = false;
                 },
@@ -376,6 +400,7 @@ export class TermsConditionEntryComponent implements OnInit {
                     this.isSaving = false;
                     const backendMessage = error?.error?.message || error?.error?.response?.message || error?.message;
                     this.appSettingService.showError(backendMessage)
+                    if (resolve) resolve(false);
                     console.error('Error Creating Terms and Conditions', error)
                 }
             )
@@ -415,6 +440,7 @@ export class TermsConditionEntryComponent implements OnInit {
         this.totalAmountOfCollections = this.TandCDetailLength;
         this.updatePaginationData();
         this.closeDetailSection();
+        this.evaluateDirtyState();
     }
 
     startNewDetail() {
@@ -464,6 +490,7 @@ export class TermsConditionEntryComponent implements OnInit {
             this.TandCDetailLength = this.TandCDetail.length;
             this.totalAmountOfCollections = this.TandCDetailLength;
             this.updatePaginationData();
+            this.evaluateDirtyState();
             return;
         }
         const modalRef = this.dialog.open(DeleteWarningComponent);
@@ -494,6 +521,7 @@ export class TermsConditionEntryComponent implements OnInit {
                 if (resp.status) {
                     const response = resp.data;
                     this.tandCHeaderData = response;
+                    this.suppressDirtyCheck = true;
 
                     const departmentId =
                         response.departments[0]?.departmentId ||
@@ -518,6 +546,7 @@ export class TermsConditionEntryComponent implements OnInit {
 
                     this.departmentOnTermsId =
                         response.departments[0]?.DepartmentOnTermSid;
+                    this.suppressDirtyCheck = false;
 
                     this.loadTandCDetails();
                 }
@@ -534,6 +563,7 @@ export class TermsConditionEntryComponent implements OnInit {
                     this.TandCDetailLength = this.TandCDetail.length;
                     this.totalAmountOfCollections = this.TandCDetailLength;
                     this.updatePaginationData();
+                    this.captureInitialState();
                 } else {
                     this.appSettingService.showError('Error Loading Terms and Conditions Details')
                 }
@@ -622,6 +652,7 @@ export class TermsConditionEntryComponent implements OnInit {
         // Clear header data references
         this.tandCHeaderData = null;
         this.tandCDetailData = null;
+        this.captureInitialState();
 
     }
 
@@ -672,5 +703,60 @@ get selectedMenuCode(): string {
 get showExtraFields(): boolean {
     return this.allowedMenuCodesForExtraFields.includes(this.selectedMenuCode);
 }
+
+    @HostListener('window:beforeunload', ['$event'])
+    unloadNotification($event: BeforeUnloadEvent): void {
+        if (this.hasUnsavedChanges()) {
+            $event.preventDefault();
+            $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        }
+    }
+
+    hasUnsavedChanges(): boolean {
+        return this.isDirty;
+    }
+
+    async saveChanges(): Promise<boolean> {
+        return new Promise((resolve) => {
+            this.onSubmit(resolve);
+        });
+    }
+
+    private subscribeToFormChanges(): void {
+        this.termsAndConditionForm.valueChanges.subscribe(() => {
+            if (this.suppressDirtyCheck) return;
+            this.evaluateDirtyState();
+        });
+    }
+
+    private evaluateDirtyState(): void {
+        this.isDirty = this.initialStateSnapshot !== this.buildCurrentStateSnapshot();
+    }
+
+    private captureInitialState(): void {
+        this.initialStateSnapshot = this.buildCurrentStateSnapshot();
+        this.isDirty = false;
+    }
+
+    private buildCurrentStateSnapshot(): string {
+        return JSON.stringify({
+            form: this.normalizeValue(this.termsAndConditionForm?.getRawValue?.() || {}),
+            details: this.normalizeValue(this.buildTermsDetailPayload())
+        });
+    }
+
+    private normalizeValue(value: any): any {
+        if (value === null || value === undefined) return null;
+        if (typeof value === 'string') return value.trim();
+        if (typeof value === 'number') return Number(value);
+        if (Array.isArray(value)) return value.map((item) => this.normalizeValue(item));
+        if (typeof value === 'object') {
+            return Object.keys(value).sort().reduce((acc: any, key: string) => {
+                acc[key] = this.normalizeValue(value[key]);
+                return acc;
+            }, {});
+        }
+        return value;
+    }
 
 }

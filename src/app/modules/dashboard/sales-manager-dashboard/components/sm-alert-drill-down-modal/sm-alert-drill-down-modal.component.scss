@@ -1,0 +1,244 @@
+.sm-alert-modal {
+  --sm-primary: #0b6a7a;
+  --sm-primary-soft: #e9f6f8;
+  --sm-border: #dbe7ff;
+  --sm-text: #0f172a;
+  --sm-muted: #64748b;
+
+  color: var(--sm-text);
+
+  .modal-header {
+    padding-bottom: 0.25rem !important;
+  }
+
+  .modal-head-shell {
+    // background:
+    //   radial-gradient(420px 130px at 95% -10%, rgba(11, 106, 122, 0.1), transparent 60%),
+    //   linear-gradient(135deg, #f8fbff 0%, #eef5ff 100%);
+    border: 1px solid var(--sm-border);
+    // box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  }
+
+  .modal-head-row {
+    align-items: flex-start !important;
+  }
+
+  .modal-head-left {
+    align-items: flex-start !important;
+  }
+
+  .head-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+      font-size: 20px;
+      line-height: 1;
+    }
+  }
+
+  .modal-title {
+    font-size: 1.1rem;
+    letter-spacing: -0.01em;
+  }
+
+  .btn-close {
+    opacity: 0.7;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+
+    &:hover {
+      opacity: 1;
+      transform: scale(1.06);
+      color: red !important;
+    }
+  }
+
+  .kpi-icon {
+    width: 42px;
+    height: 42px;
+    align-items: center !important;
+    justify-content: center !important;
+
+    i {
+      font-size: 16px;
+      line-height: 1;
+    }
+  }
+
+  .matched-card-body {
+    min-height: 74px;
+  }
+
+  .card {
+    border-radius: 14px;
+    border: 1px solid #edf2fa !important;
+    // box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  .input-group-text,
+  .form-control,
+  .btn {
+    min-height: 34px;
+    height: 34px;
+  }
+
+  .card-body.p-2.p-md-3 {
+    padding: 0.5rem 0.75rem !important;
+  }
+
+  .input-group-text {
+    border-color: #d8e3f5;
+    color: var(--sm-muted);
+  }
+
+  .form-control {
+    border-color: #d8e3f5;
+    font-size: 0.88rem;
+    font-weight: 500;
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+
+    &:focus {
+      border-color: #99b7eb;
+      box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.12);
+    }
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #0b6a7a, #0f7f8f);
+    border-color: #0b6a7a;
+    font-weight: 600;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
+
+  .table-wrap {
+    max-height: 60vh;
+  }
+
+  .sticky-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  table.table {
+    margin-bottom: 0;
+
+    th {
+      font-size: 11px;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+      font-weight: 700;
+      color: #ffffff !important;
+      border-bottom-width: 1px;
+      background: #0b6a7a !important;
+    }
+
+    td {
+      font-size: 13px;
+      vertical-align: middle;
+      border-color: #edf2fa;
+      color: #333;
+      font-weight: 600;
+      padding:  4px !important;
+    }
+
+    tbody tr:hover {
+      background: #f8fbff;
+    }
+
+    tbody tr td:first-child {
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  .badge {
+    font-weight: 600;
+  }
+
+  .meeting-type-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
+    padding: 3px 12px;
+    border-radius: 10px;
+    border: 2px solid #c7d0e0;
+    background: #f3f6fb;
+    color: #3f4855;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+
+  .btn-group .btn {
+    min-height: 36px;
+    border-radius: 10px !important;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .btn-group .btn + .btn {
+    margin-left: 6px;
+  }
+
+  .btn-outline-primary {
+    border-color: #c2d7f8;
+    color: #245f9c;
+  }
+
+  .btn-dark {
+    background: #0f172a;
+    border-color: #0f172a;
+  }
+
+  @media (max-width: 768px) {
+    .modal-title {
+      font-size: 1rem;
+    }
+
+    .table-wrap {
+      max-height: 52vh;
+    }
+
+    table.table {
+      th,
+      td {
+        font-size: 12px;
+      }
+    }
+  }
+}
+.sm-alert-modal {
+  .meeting-type-badge {
+    &.type-phone {
+      background: #eef4ff;
+      border-color: #bdd1ff;
+      color: #1d4ed8;
+    }
+
+    &.type-visit {
+      background: #ecfdf3;
+      border-color: #b7f0cf;
+      color: #15803d;
+    }
+
+    &.type-emeeting {
+      background: #fff7ed;
+      border-color: #fed7aa;
+      color: #c2410c;
+    }
+
+    &.type-default {
+      background: #f3f6fb;
+      border-color: #c7d0e0;
+      color: #3f4855;
+    }
+  }
+}

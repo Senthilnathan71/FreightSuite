@@ -1,0 +1,72 @@
+<div class="card h-100" style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 12px; display: flex; flex-direction: column;">
+  
+  <!-- Header -->
+  <div class="d-flex align-items-center gap-2 mb-2">
+    <div class="d-flex align-items-center justify-content-center flex-shrink-0" 
+         style="width: 28px; height: 28px; background: #eef2ff; border-radius: 8px; color: #4f46e5;">
+      <i class="fas fa-chart-line" style="font-size: 12px;"></i>
+    </div>
+    <div class="fw-semibold" style="color: #0f172a; font-size: 13px;">Salesperson Comparison</div>
+  </div>
+
+  <!-- Selectors -->
+  <div *ngIf="scoreboard.length >= 2" class="d-flex align-items-center gap-2">
+    <!-- First Dropdown -->
+    <select [(ngModel)]="person1Id" (ngModelChange)="onPerson1Change()" 
+            class="form-select form-select-sm"
+            style="font-size: 12px; border-radius: 8px; border-color: #e2e8f0; background: white;">
+      <option *ngFor="let sp of scoreboard" [ngValue]="sp.UserMasterSid">
+        {{ sp.userName }}
+      </option>
+    </select>
+    
+    <span class="d-flex align-items-center justify-content-center fw-bold" 
+          style="font-size: 11px; color: #64748b; background: #f1f5f9; padding: 4px 12px; border-radius: 999px;">
+      VS
+    </span>
+    
+    <!-- Second Dropdown - Filtered -->
+    <select [(ngModel)]="person2Id" (ngModelChange)="onSelectionChange()" 
+            class="form-select form-select-sm"
+            style="font-size: 12px; border-radius: 8px; border-color: #e2e8f0; background: white;">
+      <option *ngFor="let sp of getFilteredSalespersons()" [ngValue]="sp.UserMasterSid">
+        {{ sp.userName }}
+      </option>
+    </select>
+  </div>
+
+  <!-- Legend -->
+  <!-- <div *ngIf="person1Id && person2Id && scoreboard.length >= 2" class="d-flex justify-content-center gap-4 mb-2">
+    <div class="d-flex align-items-center gap-1">
+      <div class="rounded-circle" style="width: 10px; height: 10px; background-color: #DC2626;"></div>
+      <span style="font-size: 11px; font-weight: 500; color: #334155;">{{ getPerson1Name() }}</span>
+    </div>
+    <div class="d-flex align-items-center gap-1">
+      <div class="rounded-circle" style="width: 10px; height: 10px; background-color: #3B82F6;"></div>
+      <span style="font-size: 11px; font-weight: 500; color: #334155;">{{ getPerson2Name() }}</span>
+    </div>
+  </div> -->
+
+  <!-- Chart -->
+  <div *ngIf="person1Id && person2Id && scoreboard.length >= 2" style="height: 350px; width: 100%; position: relative;">
+    <apx-chart
+      [series]="chartOptions.series"
+      [chart]="chartOptions.chart"
+      [colors]="chartOptions.colors"
+      [xaxis]="chartOptions.xaxis"
+      [yaxis]="chartOptions.yaxis"
+      [stroke]="chartOptions.stroke"
+      [fill]="chartOptions.fill"
+      [markers]="chartOptions.markers"
+      [legend]="chartOptions.legend"
+      [tooltip]="chartOptions.tooltip"
+      [plotOptions]="chartOptions.plotOptions"
+    ></apx-chart>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="scoreboard.length < 2" class="text-center py-4">
+    <i class="fas fa-chart-line d-block mb-2" style="font-size: 36px; color: #cbd5e1;"></i>
+    <span style="font-size: 12px; color: #64748b;">Need at least 2 salespersons for comparison</span>
+  </div>
+</div>

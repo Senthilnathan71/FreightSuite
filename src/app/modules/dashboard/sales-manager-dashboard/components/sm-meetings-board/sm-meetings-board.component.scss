@@ -1,0 +1,334 @@
+@import '../../sm-variables';
+
+.board-header { margin-bottom: 6px; }
+.section-title {
+  @include sm-section-title;
+}
+.title-icon {
+  width: 24px; height: 24px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center; font-size: 11px;
+}
+.meeting-board {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 14px;
+}
+@media (max-width: 900px) { .meeting-board { grid-template-columns: 1fr; } }
+
+.meeting-col {
+  background: white;
+  border: 1px solid $sm-border;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.meeting-col .col-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+  border-bottom: 1px solid $sm-border-2;
+  font-size: 13.5px;
+  font-weight: 700;
+  .count {
+    font-size: 18px;
+    font-weight: 700;
+  }
+}
+
+.meeting-col.overdue {
+  border-top: 3px solid $sm-danger;
+  .col-header {
+    background: $sm-danger-bg;
+    color: $sm-danger;
+  }
+}
+
+.meeting-col.today {
+  border-top: 3px solid $sm-warn;
+  .col-header {
+    background: $sm-warn-bg;
+    color: $sm-warn;
+  }
+}
+
+.meeting-col.future {
+  border-top: 3px solid $sm-primary;
+  .col-header {
+    background: $sm-primary-bg;
+    color: $sm-primary;
+  }
+}
+
+// ========== VISIBLE SCROLLBAR ==========
+.col-body {
+  display: flex;
+  flex-direction: column;
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+    margin: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+    
+    &:hover {
+      background: #a8a8a8;
+    }
+  }
+  
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+// ========== MEETING ITEM ==========
+.meeting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 14px;
+  border-bottom: 1px solid $sm-border-2;
+  transition: all 0.2s ease;
+  position: relative;
+
+  &:last-child { border-bottom: none; }
+  
+  &:hover { 
+    background: $sm-primary-50;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: $sm-primary;
+      border-radius: 0 2px 2px 0;
+    }
+  }
+}
+
+// Clickable content area
+.meeting-content {
+  flex: 1;
+  cursor: pointer;
+  min-width: 0;
+}
+
+// Customer/Lead Name
+.mi-name {
+  // font-size: 14px;
+  font-weight: 600;
+  color: $sm-text-primary;
+  margin-bottom: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Meeting details row
+.mi-details {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 11px;
+  color: $sm-text-muted;
+  
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  i {
+    font-size: 10px;
+    opacity: 0.7;
+  }
+}
+
+// Actions container
+.meeting-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+// Reassign button
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $sm-text-muted;
+  
+  i {
+    font-size: 14px;
+  }
+  
+  &:hover {
+    background: white;
+    transform: scale(1.05);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.reassign-btn {
+  &:hover {
+    color: $sm-warn;
+    background: $sm-warn-bg;
+  }
+}
+
+// Meeting type badge
+.meeting-type-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  
+  &.visit {
+    background: $sm-primary-bg;
+    color: $sm-primary;
+  }
+  
+  &.call {
+    background: $sm-warn-bg;
+    color: $sm-warn;
+  }
+}
+
+// ========== LOADING AND EMPTY STATES ==========
+.infinite-scroll-trigger {
+  height: 10px;
+  width: 100%;
+  opacity: 0;
+}
+
+.loading-more {
+  padding: 16px;
+  border-top: 1px solid $sm-border-2;
+  animation: slideUp 0.3s ease-out;
+}
+
+.loader-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.loader-dots {
+  display: flex;
+  gap: 6px;
+  
+  span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: $sm-primary;
+    animation: bounce 1.4s infinite ease-in-out both;
+    
+    &:nth-child(1) { animation-delay: -0.32s; }
+    &:nth-child(2) { animation-delay: -0.16s; }
+  }
+}
+
+.loader-text {
+  font-size: 11px;
+  color: $sm-text-muted;
+  font-weight: 500;
+}
+
+.no-more-data {
+  padding: 20px;
+  text-align: center;
+  border-top: 1px solid $sm-border-2;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.end-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 11px;
+  color: $sm-text-muted;
+  
+  i {
+    font-size: 14px;
+    color: $sm-success;
+  }
+}
+
+.empty-col {
+  text-align: center;
+  padding: 40px 20px;
+  color: $sm-text-muted;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  
+  i {
+    font-size: 24px;
+    opacity: 0.5;
+  }
+}
+
+// ========== ANIMATIONS ==========
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes bounce {
+  0%, 80%, 100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

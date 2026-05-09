@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
@@ -16,6 +16,7 @@ import { EdocComponent } from 'src/app/modules/settings/edoc/edoc/edoc.component
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
 import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/multiselect-dropdown.component';
 import { forkJoin } from 'rxjs';
+import { debounceTime, Subject, takeUntil } from 'rxjs';
 import { AuthorityLogComponent } from 'src/app/component/authority-log/authority-log.component';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
@@ -24,6 +25,7 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { CommonService } from 'src/app/common/common.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 
 @Component({
   selector: 'app-charge-entry',
@@ -49,7 +51,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
     DatePipe
   ],
 })
-export class ChargeEntryComponent implements OnInit {
+export class ChargeEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges {
   tab = [
   { name: "Tax"},
   { name: "TDS Details"}
@@ -96,6 +98,10 @@ selectedTab = this.tab[0].name;
   ];
   currentCompany: any;
   currentBranch: any;
+  isDirty: boolean = false;
+  isSaving: boolean = false;
+  private initialFormValue: any = null;
+  private destroy$ = new Subject<void>();
 
   // GST and TDS lists
   auditLogs: any[] = [];
@@ -147,6 +153,8 @@ selectedTab = this.tab[0].name;
     }
 
     this.loadLookupData();
+    this.initialFormValue = this.chargeForm.getRawValue();
+    this.subscribeToFormChanges();
   }
 
   initForms() {
@@ -333,6 +341,9 @@ selectedTab = this.tab[0].name;
       }
 
       this.loading = false;
+      this.initialFormValue = this.chargeForm.getRawValue();
+      this.isDirty = false;
+      this.chargeForm.markAsPristine();
     },
     error: (err) => {
       console.error('Error loading charge:', err);
@@ -408,18 +419,31 @@ onUOMChange() {
 }
 
 
-  onSubmit() {
+  onSubmit(resolve?: (value: boolean) => void) {
+    if (this.isSaving) {
+      if (resolve) resolve(false);
+      return;
+    }
       if (!this.validateUOMDepartmentCompatibility()) {
+    if (resolve) resolve(false);
     return;
   }
+    if (this.deepEqual(this.chargeForm.getRawValue(), this.initialFormValue) && !this.isDirty) {
+      this.appSettingService.showWarning('No changes to save');
+      this.chargeForm.markAsUntouched();
+      if (resolve) resolve(false);
+      return;
+    }
     if (this.chargeForm.invalid) {
         this.markFormGroupTouched(this.chargeForm);
+        if (resolve) resolve(false);
         return;
     }
 
     // Check if at least one GST record exists
     if (this.chargeTaxMasters.controls.length === 0) {
         this.appSettingService.showError('Please add at least one GST record before saving');
+        if (resolve) resolve(false);
         return;
     }
 
@@ -431,6 +455,7 @@ onUOMChange() {
 
     this.btnDisable = true;
     this.loading = true;
+    this.isSaving = true;
 
     const currentUserEmail = this.appSettingService.userSettingSource.value['userEmail'];
     const statusValue = this.chargeForm.get('Status')?.value ?? 'A';
@@ -476,10 +501,16 @@ onUOMChange() {
         next: (resp) => {
             this.loading = false;
             this.btnDisable = false;
+            this.isSaving = false;
             if (resp.status) {
+                this.isDirty = false;
+                this.initialFormValue = this.chargeForm.getRawValue();
+                this.chargeForm.markAsPristine();
                 this.appSettingService.showSuccess(resp.message);
+                if (resolve) resolve(true);
             } else {
                 this.appSettingService.showError(resp.message);
+                if (resolve) resolve(false);
             }
 
             if (!this.isEditMode && resp.data?.charge?.ChargeMasterSid) {
@@ -490,6 +521,7 @@ onUOMChange() {
             console.error(err);
             this.loading = false;
             this.btnDisable = false;
+            this.isSaving = false;
             
             if (err.status === 400) {
                 // Handle duplicate errors
@@ -505,6 +537,7 @@ onUOMChange() {
             } else {
                 this.appSettingService.showError('Failed to process charge. Please try again.');
             }
+            if (resolve) resolve(false);
         }
     });
   }
@@ -611,6 +644,9 @@ onUOMChange() {
       // Add empty rows for GST and TDS
       this.addGstRow();
       this.addTdsRow();
+      this.initialFormValue = this.chargeForm.getRawValue();
+      this.isDirty = false;
+      this.chargeForm.markAsPristine();
     }
   }
 
@@ -704,6 +740,8 @@ onUOMChange() {
     modalRef.componentInstance.DocumentSid = this.chargeData?.ChargeMasterSid;
   }
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.commonService.clearDocumentData()
  }
 
@@ -792,5 +830,52 @@ private fromNgbDateStructToIso(n: any): string | null {
 }
 navigateToCreateCharge() {
     this.router.navigate(['master/charge/entry']);
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      $event.preventDefault();
+      $event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return !!this.chargeForm && this.isDirty;
+  }
+
+  async saveChanges(): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.onSubmit(resolve);
+    });
+  }
+
+  private subscribeToFormChanges(): void {
+    this.chargeForm.valueChanges
+      .pipe(debounceTime(300), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.isDirty = !this.deepEqual(this.initialFormValue, this.chargeForm.getRawValue());
+      });
+  }
+
+  private normalizeValue(value: any): any {
+    if (value === null || value === undefined) return null;
+    if (value instanceof Date) return value.toISOString().split('T')[0];
+    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) return Number(value);
+    if (typeof value === 'number') return Number(value.toFixed(6));
+    if (Array.isArray(value)) return value.map(v => this.normalizeValue(v));
+    if (typeof value === 'object') {
+      return Object.keys(value).sort().reduce((acc: any, key) => {
+        acc[key] = this.normalizeValue(value[key]);
+        return acc;
+      }, {});
+    }
+    return value;
+  }
+
+  private deepEqual(obj1: any, obj2: any): boolean {
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
   }
 }
