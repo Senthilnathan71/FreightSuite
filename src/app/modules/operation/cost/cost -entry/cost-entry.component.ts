@@ -1447,15 +1447,67 @@ createRateFormGroup(data?: any): FormGroup {
 
 
   calculateProfit() {
+    const currentSourceType = this.getCurrentProfitSourceType();
     const rateFormValue = (this.rateFormArray.getRawValue() || []).map((row: any) => ({
       ...row,
-      ProfitSourceType: 'House'
+      ProfitSourceType: row?.ProfitSourceType || currentSourceType
     }));
     const data = this.shouldUseProratedProfitRows()
       ? [...rateFormValue, ...this.mapProratedChargesForProfit()]
       : [...rateFormValue];
 
     this.calculateProfitFromRows(data);
+  }
+
+  private getCurrentProfitSourceType(): 'House' | 'Master' | 'Booking' | 'Service' {
+    switch (this.screenName) {
+      case 'Booking':
+        return 'Booking';
+      case 'Master Job':
+      case 'Master Air Waybill':
+      case 'Agent Master Air Waybill':
+        return 'Master';
+      case 'Service Job':
+        return 'Service';
+      case 'House Job':
+      case 'House Air Waybill':
+      default:
+        return 'House';
+    }
+  }
+
+  getSourceTypeLabel(sourceType: string): string {
+    const normalized = (sourceType || '').trim().toLowerCase();
+
+    if (normalized.includes('house')) return 'House';
+    if (normalized.includes('master')) return 'Master';
+    if (normalized.includes('booking')) return 'Booking';
+    if (normalized.includes('service')) return 'Service';
+    if (normalized.includes('prorate')) return 'Prorate';
+    if (normalized.includes('mixed')) return 'Mixed';
+
+    return sourceType ? sourceType.trim() : '-';
+  }
+
+  getSourceTypeButtonColor(sourceType: string): string {
+    const label = this.getSourceTypeLabel(sourceType);
+
+    switch (label) {
+      case 'House':
+        return '#2563eb';
+      case 'Master':
+        return '#0ea5e9';
+      case 'Booking':
+        return '#7c3aed';
+      case 'Service':
+        return '#ea580c';
+      case 'Prorate':
+        return '#16a34a';
+      case 'Mixed':
+        return '#6b7280';
+      default:
+        return '#2563eb';
+    }
   }
 
   private calculateProfitFromRows(data: any[]) {
@@ -1467,7 +1519,7 @@ createRateFormGroup(data?: any): FormGroup {
       const revenueAmt = parseFloat(item.RevenueLocalAmount || 0);
       const actualAmounts = this.getActualAmountsFromVoucherDetails(item);
       const chargeName = item.ChargeName || this.getChargeName(item.ChargeMasterSid) || "Unknown";
-      const sourceType = item.ProfitSourceType || 'House';
+      const sourceType = item.ProfitSourceType || this.getCurrentProfitSourceType();
 
       let existing = this.profitSummary.find(
         p => p.chargeName === chargeName && p.sourceType === sourceType
@@ -2221,7 +2273,7 @@ createRateFormGroup(data?: any): FormGroup {
 
   reportProfitSummary(): void {
     const formattedData = this.profitSummary.map(row => ({
-      Type: row.sourceType || '',
+      Type: this.getSourceTypeLabel(row.sourceType),
       ChargeName: row.chargeName || '',
       TotalSales: parseFloat(row.totalSales) || 0,
       TotalCost: parseFloat(row.totalCost) || 0,
