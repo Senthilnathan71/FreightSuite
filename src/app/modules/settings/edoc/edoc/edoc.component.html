@@ -18,7 +18,8 @@
                         </button>
 
                         <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="resetForm()">
+                            (click)="resetForm()"
+                            [disabled]="isFormDisabled">
                             <i class="fas fa-sync-alt me-1"></i>
                             Reset
                         </button>
@@ -83,14 +84,15 @@
 
                             <aside class="col-md-12">
                                 <div class="custom-form-group mt-0">
-                                    <!-- File input -->
-                                    <input type="file" id="file-input" multiple class="custom-input-field sm"
+                                    <!-- File input (hidden when form is locked) -->
+                                    <input *ngIf="!isFormDisabled"
+                                        type="file" id="file-input" multiple class="custom-input-field sm"
                                         (change)="onFileSelect($event)"
                                         accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.jpg,.jpeg,.png">
 
                                     <!-- Error if no files -->
                                     <div class="error-message"
-                                        *ngIf="!selectedFiles?.length && !existingFiles?.length && edocform.touched">
+                                        *ngIf="!isFormDisabled && !selectedFiles?.length && !existingFiles?.length && edocform.touched">
                                         File is required
                                     </div>
 

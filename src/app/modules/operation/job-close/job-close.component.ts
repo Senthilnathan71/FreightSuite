@@ -139,6 +139,13 @@ export class JobCloseComponent implements OnInit {
         && this.hasChanges;
   }
 
+  get allClosersClosed(): boolean {
+    return this.closureStatus.DocCloseStatus === 'Closed'
+        && this.closureStatus.OpsCloseStatus === 'Closed'
+        && this.closureStatus.AccCloseStatus === 'Closed'
+        && this.closureStatus.JobCloseStatus === 'Closed';
+  }
+
   private tryClose(
     closerName: string,
     milestones: { label: string; failedLabel: string; passed: boolean }[],
@@ -285,6 +292,35 @@ export class JobCloseComponent implements OnInit {
         this.spinner.hide('jobCloseSpinner');
         this.appSettingService.showError('Error saving Job Close status');
         console.error('Error saving job close status', err);
+      }
+    });
+  }
+
+  onReopen(): void {
+    if (!this.masterJobSid) return;
+    if (!confirm('Reopen this job? All four closures will be reset to Open and you will be able to edit the job again.')) {
+      return;
+    }
+    this.spinner.show('jobCloseSpinner');
+    const payload = {
+      MasterJobSid: this.masterJobSid,
+      ReopenBy: this.userData?.email || this.userData?.userName || '',
+      ReopenReason: 'Reopened from Job Close screen',
+    };
+    this.operationService.reopenJobClose(payload).subscribe({
+      next: (resp: any) => {
+        this.spinner.hide('jobCloseSpinner');
+        if (resp.status !== false) {
+          this.appSettingService.showSuccess('Job reopened successfully');
+          this.loadJobCloseDetail();
+        } else {
+          this.appSettingService.showError(resp.message || 'Failed to reopen job');
+        }
+      },
+      error: (err) => {
+        this.spinner.hide('jobCloseSpinner');
+        this.appSettingService.showError('Error reopening job');
+        console.error('Error reopening job', err);
       }
     });
   }

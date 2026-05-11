@@ -1,40 +1,108 @@
-<div class="col-12 p-0">
-    <div class="table-responsive table-borderless">
-        <table class="table table-hover align-middle no-wrap  table-sm mb-1">
-            <thead>
-                <tr class="bg-info">
-                    <th class="bg-transparent text-light">Type</th>
-                    <th class="bg-transparent text-light">Voucher No</th>
-                    <th class="bg-transparent text-light">Date</th>
-                    <th class="bg-transparent text-light" width="6%"> Master/Shipment No</th>
-                    <th class="bg-transparent text-light"width="15%">Billing</th>
-                    <th class="bg-transparent text-light" width="8%">Amount</th>
-                    <th class="bg-transparent text-light" width="8%">Local Amount</th>
-                    <th class="bg-transparent text-light" width="5%">Print</th>
-                    <!-- <th class="bg-transparent text-light">View</th> -->
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">1</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">OMR</td>
-                    <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                        <div class="text-center">
-                            <i class=" cursor-pointer fa fa-print text-info pe-4"></i>
-                        </div>
-                    </td>
-                    <!-- <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                        <div class="text-center">
-                            <i-feather name="eye" class="cursor-pointer feather-sm text-info "></i-feather>
-                        </div>
-                    </td> -->
-                </tr>
-            </tbody>
-        </table>
+<div class="modern-table-container">
+  <div class="table-toolbar">
+    <div class="toolbar-left">
+      <div class="filter-controls d-flex gap-2 align-items-center compact-form">
+        <div class="custom-form-group custom-form-group-select">
+          <ng-select class="ng-select" [(ngModel)]="arapFilter.voucherType" (change)="onFilterChange()"
+            style="width: 150px;" [clearable]="false">
+            <ng-option value="all">All Vouchers</ng-option>
+            <ng-option value="REVENUE">Revenue</ng-option>
+            <ng-option value="COST">Cost</ng-option>
+          </ng-select>
+        </div>
+
+        <div class="custom-form-group custom-form-group-select">
+          <ng-select class="ng-select" [(ngModel)]="arapFilter.status" (change)="onFilterChange()"
+            style="width: 130px;" [clearable]="false">
+            <ng-option value="all">All Status</ng-option>
+            <ng-option value="P">Posted</ng-option>
+            <ng-option value="U">Unposted</ng-option>
+          </ng-select>
+        </div>
+      </div>
     </div>
+
+    <div class="toolbar-right">
+      <button class="table-action-btn export" (click)="exportARAPReport()" [disabled]="filteredData.length === 0">
+        <i class="fas fa-download"></i> Export
+      </button>
+      <button *ngIf="showPrint" class="table-action-btn print" (click)="printARAPReport()"
+        [disabled]="filteredData.length === 0">
+        <i class="fas fa-print"></i> Print
+      </button>
+      <button class="table-action-btn refresh" (click)="loadARAPData()">
+        <i class="fas fa-sync-alt"></i> Refresh
+      </button>
+    </div>
+  </div>
+
+  @if(arapLoading) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2">Loading AR/AP data...</p>
+  </div>
+  } @else if(filteredData.length === 0) {
+  <div class="empty-state">
+    <div class="empty-icon">
+      <i class="fas fa-file-invoice-dollar"></i>
+    </div>
+    <h3 class="empty-title">No AR/AP Records</h3>
+    <p class="empty-description">{{ emptyDescription }}</p>
+  </div>
+  } @else {
+  <div class="modern-table-wrapper" id="arap-print-section">
+    <table class="modern-table">
+      <thead>
+        <tr>
+          <th>Voucher No</th>
+          <th>Type</th>
+          <th>Date</th>
+          <th>Currency</th>
+          <th>R Amount</th>
+          <th>RL Amount</th>
+          <th>C Amount</th>
+          <th>CL Amount</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for(item of filteredData; track item.VoucherHeaderSid) {
+        <tr>
+          <td>
+            <a href="javascript:void(0)" (click)="openVoucherDetails(item)" class="text-decoration-none">
+              {{ item.VoucherNumber }}
+            </a>
+          </td>
+          <td>{{ item.DocumentTypeCode }}</td>
+          <td>{{ item.VoucherDate | date:'dd/MM/yyyy' }}</td>
+          <td>{{ item.CurrencyCode }}</td>
+          <td>{{ getRevenueAmount(item) !== null ? (getRevenueAmount(item) | number:'1.2-2') : '' }}</td>
+          <td>{{ getRevenueLocalAmount(item) !== null ? (getRevenueLocalAmount(item) | number:'1.2-2') : '' }}</td>
+          <td>{{ getCostAmount(item) !== null ? (getCostAmount(item) | number:'1.2-2') : '' }}</td>
+          <td>{{ getCostLocalAmount(item) !== null ? (getCostLocalAmount(item) | number:'1.2-2') : '' }}</td>
+          <td>
+            @if(item.PostStatus === 'P') {
+            <span class="badge bg-success">Posted</span>
+            } @else {
+            <span class="badge bg-warning">Unposted</span>
+            }
+          </td>
+        </tr>
+        }
+      </tbody>
+      <tfoot>
+        <tr class="table-footer">
+          <td colspan="4"><strong>Total Local :</strong></td>
+          <td></td>
+          <td class="fw-bold">{{ totals.revenueLocalAmount | number:'1.2-2' }}</td>
+          <td></td>
+          <td class="fw-bold">{{ totals.costLocalAmount | number:'1.2-2' }}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  }
 </div>

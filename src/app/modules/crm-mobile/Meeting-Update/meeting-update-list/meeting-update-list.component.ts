@@ -41,6 +41,7 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 @Component({
   selector: 'app-meeting-update-list',
@@ -1137,12 +1138,26 @@ private handleMeetingDateChange(newDate: string): void {
 
   // Other existing methods...
   showInfo() {
-    if (!this.meetingData) return;
+    if (!this.selectedMeeting.PreCustomerMeetingSid) return;
     const modalRef = this.modalService.open(DetailsComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.item = this.meetingData;
     modalRef.componentInstance.idLabel = 'Meeting Id';
-    modalRef.componentInstance.idValue = this.meetingData?.PreCustomerMeetingSid;
+    modalRef.componentInstance.idValue = this.selectedMeeting?.PreCustomerMeetingSid;
   }
+
+  openAuditLogs() {
+          if (!this.selectedMeeting.PreCustomerMeetingSid) return;
+          const modalRef = this.modalService.open(AuditLogComponent, {
+            centered: true,
+            scrollable: true,
+            size: 'xl',
+            windowClass: 'audit-log-modal'
+          });
+          modalRef.componentInstance.title = 'Meeting Logs';
+          modalRef.componentInstance.tableName = 'PreCustomerMeeting';
+          modalRef.componentInstance.recordId = this.selectedMeeting.PreCustomerMeetingSid.toString();
+          modalRef.componentInstance.screenName = 'Meeting';
+        }
 
   // openTandC() {
   //   this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));

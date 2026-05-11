@@ -1594,7 +1594,7 @@
 
 
     <div class="workspace-content" *ngIf="selectedTab === 'Cargo'">
-      <div class="d-flex justify-content-end align-items-center gap-2 px-3">
+      <div class="d-flex justify-content-end align-items-center gap-2 pe-2">
         <button class="btn btn-sm btn-info" type="button" (click)="addHouseJobCargo(undefined, false)"
           *ngIf="selectedFCLLCL === 'FCL'" [disabled]="(isEditMode && isExportToImportLinked) || (isEditMode && (isSuspended || isJobClosed))">
           <i class="fas fa-plus me-1"></i> Add Cargo
@@ -1602,15 +1602,18 @@
       </div>
 
       <div class="col-12 px-1" [formGroup]="detailForm">
-        <div formArrayName="houseJobCargo" ngbAccordion [closeOthers]="true" class="custom-accordion">
+        <div formArrayName="houseJobCargo" ngbAccordion [closeOthers]="true" class="custom-accordion-quotation">
           <div ngbAccordionItem *ngFor="let cargo of houseJobCargos.controls; let cargoIndex = index"
-            [formGroupName]="cargoIndex" [ngbAccordionItem]="'cargo-' + cargoIndex" class="mb-2"
+            [formGroupName]="cargoIndex" [ngbAccordionItem]="'cargo-' + cargoIndex" class="mb-1"
             [collapsed]="!isCargoExpanded(cargoIndex)">
             <h2 ngbAccordionHeader>
-              <button ngbAccordionButton class="d-flex justify-content-between align-items-center w-100 position-relative"
+              <button ngbAccordionButton class="d-flex justify-content-between align-items-center w-100 position-relative py-0"
                 (click)="toggleCargoExpansion(cargoIndex)">
                 <h6 class="fw-semibold my-1 text-light">
-                  Cargo {{ cargoIndex + 1 }} - {{ cargo.get('CargoType')?.value || 'General' }}
+                  Cargo {{ cargoIndex + 1 }}
+                  <span class="badge rounded-pill text-bg-light text-dark ms-1">
+                    {{ cargo.get('CargoType')?.value || 'General' }}
+                  </span>
                 </h6>
                 <button type="button" class="btn btn-sm text-light" *ngIf="houseJobCargos.length > 1"
                   [disabled]="isFormDisabled || isCargoFromBooking(cargoIndex)"
@@ -1621,7 +1624,7 @@
             </h2>
 
             <div ngbAccordionCollapse [id]="'cargo-' + cargoIndex">
-              <div class="px-2 py-2">
+              <div class="px-2 py-1">
                 <div class="row compact-form">
                   <aside class="col-md-2">
                     <div class="custom-form-group custom-form-group-select" [class.filled]="!!cargo.get('CargoType')?.value">
@@ -1655,7 +1658,7 @@
                   </aside>    
                   }
                   <aside class="col-md-2">
-                    <div class="custom-form-group cargo-gross-weight-group">
+                    <div class="custom-form-group">
                       <input type="text" class="form-control custom-input-field sm" formControlName="GrossWeight"
                         (input)="onCargoManualFieldInput($any(cargo), 'GrossWeight')"
                         DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="decimalAfterPrecision"
@@ -1766,19 +1769,19 @@
                   }
                   <aside class="col-md-2">
                     <div class="custom-form-group">
-                      <input type="text" class="custom-input-field sm" formControlName="CommodityDescription">
+                      <input type="text" class="custom-input-field sm" formControlName="CommodityDescription" placeholder="">
                       <label class="input-label">Good Description</label>
                     </div>
                   </aside>
                   <aside class="col-md-2">
                     <div class="custom-form-group">
-                      <input type="text" class="custom-input-field sm" formControlName="MarksAndNumber">
+                      <input type="text" class="custom-input-field sm" formControlName="MarksAndNumber" placeholder="">
                       <label class="input-label">Marks And Number</label>
                     </div>
                   </aside>
                   <aside class="col-md-2" *ngIf="selectedDepartment?.ExportImport !== 'Export'">
                     <div class="custom-form-group">
-                      <input type="text" class="custom-input-field sm" formControlName="LandedMarksandNumber">
+                      <input type="text" class="custom-input-field sm" formControlName="LandedMarksandNumber" placeholder="">
                       <label class="input-label">Landed Marks And No</label>
                     </div>
                   </aside>
@@ -1786,7 +1789,7 @@
 
                 <div class="d-flex justify-content-end">
                   <button class="btn btn-sm btn-info" type="button" (click)="addHouseJobCargoProduct(cargoIndex)"
-                    [disabled]="(isEditMode && isExportToImportLinked) || (isEditMode && isSuspended)">
+                    [disabled]="(isEditMode && isExportToImportLinked) || (isEditMode && (isSuspended || isJobClosed))">
                     <i class="fas fa-plus me-1"></i> Add Product
                   </button>
                 </div>
@@ -1915,7 +1918,7 @@
                             <td><input type="text" formControlName="Volume" class="custom-input-field sm" (input)="onProductManualFieldInput($any(product), 'Volume', cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
                           }
                           <td>
-                            <div class="d-flex align-items-center" style="margin-top: 4px;">
+                            <div class="d-flex align-items-center" >
                               <input class="form-control" placeholder="" name="dp" ngbDatepicker #dp1="ngbDatepicker"
                                 (click)="dp1.toggle()" formControlName="CargoRecDate" (keydown.arrowDown)="dp1.open()"
                                 [maxDate]="today" container="body" readonly />
@@ -1944,7 +1947,7 @@
                             </td>
                           }
                           <td>
-                            <div class="d-flex align-items-center" style="margin-top: 4px;">
+                            <div class="d-flex align-items-center" >
                               <input class="form-control" placeholder="" name="dp" ngbDatepicker #dpDelivery="ngbDatepicker"
                                 (click)="dpDelivery.toggle()" formControlName="DeliveryDate" (keydown.arrowDown)="dpDelivery.open()"
                                 [minDate]="!isEditMode ? today : null" container="body" readonly />
@@ -2253,7 +2256,7 @@
           </div>
 
           <div class="toolbar-right">
-            <button class="table-action-btn primary" (click)="addProduct()" [disabled]="isExportToImportLinked">
+            <button class="table-action-btn primary" (click)="addProduct()" [disabled]="isExportToImportLinked || isJobClosed">
               <i class="fas fa-plus"></i> Add Product
             </button>
             <button class="table-action-btn export" (click)="reportProducts()">
@@ -3149,120 +3152,16 @@
         [shipmentNo]="bookingHeader?.ShipmentNo" (dataEmitter)="handleMilestoneChange($event)"></app-milestone>
     </div>
 
-   <div class="workspace-content" *ngIf="selectedTab === 'AR/AP'">
-    <div class="modern-table-container">
-        <div class="table-toolbar">
-            <div class="toolbar-left">
-                <div class="filter-controls d-flex gap-2 align-items-center">
-                    <select class="form-select form-select-sm" [(ngModel)]="arapFilter.voucherType"
-                        [ngModelOptions]="{ standalone: true }" (change)="loadMasterJobARAPData()"
-                        style="width: 150px;">
-                        <option value="all">All Vouchers</option>
-                        <option value="INV">Revenue</option>
-                        <option value="VIN">Cost</option>
-                    </select>
-
-                    <select class="form-select form-select-sm" [(ngModel)]="arapFilter.status"
-                        [ngModelOptions]="{ standalone: true }" (change)="loadMasterJobARAPData()"
-                        style="width: 150px;">
-                        <option value="all">All Status</option>
-                        <option value="P">Posted</option>
-                        <option value="U">Unposted</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="toolbar-right">
-                <button class="table-action-btn export" (click)="exportARAPReport()" [disabled]="arapData.length === 0">
-                    <i class="fas fa-download"></i> Export
-                </button>
-                <!-- <button class="table-action-btn print" (click)="printARAPReport()" [disabled]="arapData.length === 0">
-                    <i class="fas fa-print"></i> Print
-                </button> -->
-                <button class="table-action-btn refresh" (click)="loadMasterJobARAPData()">
-                    <i class="fas fa-sync-alt"></i> Refresh
-                </button>
-            </div>
-        </div>
-        
-        @if(arapLoading) {
-        <div class="text-center py-5">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2">Loading AR/AP data...</p>
-        </div>
-        } @else if(arapData.length === 0) {
-        <div class="empty-state">
-            <div class="empty-icon">
-                <i class="fas fa-file-invoice-dollar"></i>
-            </div>
-            <h3 class="empty-title">No AR/AP Records</h3>
-            <p class="empty-description">No accounting records found for this house job.</p>
-        </div>
-        } @else {
-        <div class="modern-table-wrapper">
-            <table class="modern-table">
-                <thead>
-                    <tr>
-                        <th>Voucher No</th>
-                        <th>Type</th>
-                        <th>Date</th>
-                        <th>Currency</th>
-                        <th>Amount</th>
-                        <th>Local Amount</th>
-                        <!-- <th>HBL No</th> -->
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for(item of arapData; track item.VoucherHeaderSid) {
-                    <tr>
-                            <td>
-                                <a href="javascript:void(0)" (click)="openVoucherDetails(item.VoucherHeaderSid, item.DocumentTypeCode)"  
-                                   class="text-decoration-none">
-                                    {{item.VoucherNumber}}
-                                </a>
-                            </td>
-                            <td>{{item.DocumentTypeCode}}</td>
-                            <td>{{item.VoucherDate | date:'dd/MM/yyyy'}}</td>
-                            <td>{{item.CurrencyCode}}</td>
-                            <td >{{item.Amount | number:'1.2-2'}}</td>
-                            <td >{{item.LocalAmount | number:'1.2-2'}}</td>
-                            <!-- <td>{{item.HBLNo || '-'}}</td> -->
-                            <td>
-                                @if(item.PostStatus === 'P') {
-                                <span class="badge bg-success">Posted</span>
-                                } @else {
-                                <span class="badge bg-warning">Unposted</span>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-                 <tfoot *ngIf="arapData.length > 0">
-                    <tr class="table-footer fs-3">
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                    <td></td>
-                        <td><strong>Total :</strong></td>
-                        <!-- <td class=" fw-bold ps-1">
-                            {{getTotalAmount()}}
-                        </td> -->
-                        <td class="fw-bold ps-1">
-                            {{ getTotalLocalAmount() | number:'1.2-2' }}
-                        </td>
-                        <td colspan="2"></td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-        
-       
-        }
+    <div class="workspace-content" [hidden]="selectedTab !== 'AR/AP'">
+      <app-ar-ap
+        [mode]="'house-job'"
+        [documentId]="HouseJobSid"
+        emptyDescription="No accounting records found for this house job."
+        exportFileName="ARAP-Report-HouseJob"
+        (dataChange)="arapData = $event"
+        (loadingChange)="arapLoading = $event">
+      </app-ar-ap>
     </div>
-</div>
 
     <div class="workspace-content" *ngIf="selectedTab === 'Follow Up'">
       <app-follow-up screenName="houseJob" [documentSid]="documentSid" [parentMailbodyTemplate]="parentMailbody"
@@ -3375,6 +3274,7 @@
         [branchMasterSid]="currentBranch?.BranchMasterSid"
         [menuMasterSid]="currentMenuId"
         [documentSid]="HouseJobSid || housejobData?.HouseJobSid"
+        [isFormDisabled]="isFormDisabled"
         (dataEmitter)="handleEdocChange($event)">
       </app-edoc>
     </div>
@@ -6545,3 +6445,4 @@
 </div>
 <div class="modal-backdrop fade" [class.show]="showCreditValidationModal"
      *ngIf="showCreditValidationModal"></div>
+
