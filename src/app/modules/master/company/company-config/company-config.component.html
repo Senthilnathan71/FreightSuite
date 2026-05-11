@@ -1,222 +1,342 @@
-<!-- Header Bar -->
-<nav class="navbar navbar-light bg-light border-bottom px-2">
-  <div class="container-fluid d-flex justify-content-between">
-    <div class="d-flex align-items-center flex-wrap gap-5">
-      <div class="d-flex align-items-center gap-2">
-        <div class="brand-icon">
-          <i class="fas fa-cogs"></i>
-        </div>
-        <h5 class="mb-0 pe-5 border-end text-info">Company Configuration</h5>
+<div class="company-config-shell">
+  <div class="hero-bar">
+    <div class="hero-copy">
+      <div class="hero-icon">
+        <i class="fas fa-cogs"></i>
       </div>
-      <div class="pe-5 d-flex gap-2">
-        <strong>Company:</strong>
-        <span class="badge text-bg-secondary">{{ companyName || 'N/A' }}</span>
+      <div>
+        <div class="hero-kicker">Master Setup</div>
+        <h1>Company Configuration</h1>
+        <p>
+          Configure reusable company-specific settings with multi-company create support and safe duplicate validation.
+        </p>
       </div>
     </div>
-    <button type="button"
-            class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-            (click)="goBackToCompany()">
-      <i class="fas fa-chevron-left me-1"></i>
-      Back
-    </button>
+
+    <div class="hero-meta">
+      <div class="meta-chip">
+        <span class="meta-label">Company</span>
+        <span class="meta-value">{{ selectedCompanyLabel }}</span>
+      </div>
+      <div class="meta-chip" *ngIf="companyId">
+        <span class="meta-label">Mode</span>
+        <span class="meta-value">Edit</span>
+      </div>
+      <button
+        type="button"
+        class="btn btn-light-secondary btn-sm"
+        (click)="goBackToCompany()">
+        <i class="fas fa-chevron-left me-1"></i>
+        Back
+      </button>
+    </div>
   </div>
-</nav>
 
-<!-- Main Content -->
-<div class="container-fluid">
-  <div class="row">
-    <div class="col-12">
+  <div *ngIf="isLoading" class="loading-panel">
+    <div class="spinner-border text-info" role="status"></div>
+    <p class="mt-3 mb-0">Loading configuration workspace...</p>
+  </div>
 
-      <!-- Loading State -->
-      <div *ngIf="isLoading" class="text-center py-5">
-        <div class="spinner-border text-info" role="status">
-          <span class="visually-hidden">Loading...</span>
+  <div *ngIf="!isLoading" class="workspace-grid">
+    <section class="surface-card">
+      <div class="surface-card__header">
+        <div>
+          <h2>Create Configuration</h2>
+          <p>Choose the config master, set the value, and apply it to one or more companies.</p>
         </div>
-        <p class="mt-2">Loading configuration...</p>
+        <button
+          type="button"
+          class="btn btn-outline-secondary btn-sm"
+          (click)="toggleManualConfigNameMode()">
+          <i class="fas fa-exchange-alt me-1"></i>
+          {{ manualConfigNameMode ? 'Use Dropdown' : 'Manual Name' }}
+        </button>
       </div>
 
-      <!-- Configuration Content -->
-      <div *ngIf="!isLoading">
-
-        <!-- Main Configuration Card -->
-        <div class="card">
-          <div class="card-header">
-            <!-- Tab Navigation -->
-            <nav>
-              <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs card-header-tabs">
-                <li [ngbNavItem]="'general-settings'">
-                  <button ngbNavLink>
-                    <i class="fas fa-sliders-h me-2"></i>
-                    General Settings
+      <form [formGroup]="newConfigForm" class="builder-form">
+        <div class="builder-grid">
+          <div class="field-block" *ngIf="!isTemporaryMode">
+            <label class="field-label">Company</label>
+            <ng-select
+              class="modern-select"
+              formControlName="CompanyMasterSids"
+              [items]="eligibleCompanyOptions"
+              [multiple]="true"
+              [closeOnSelect]="false"
+              [searchable]="true"
+              [clearable]="true"
+          
+              bindLabel="companyName"
+              bindValue="CompanyMasterSid"
+              placeholder="Select companies"
+              appendTo="body"
+              (change)="onCompanySelectionChange($event)">
+              <ng-template ng-header-tmp>
+                <div class="select-all-row" *ngIf="!companyMultiSelectDisabled">
+                  <button type="button" class="btn btn-link btn-sm p-0" (click)="toggleSelectAllCompanies()">
+                    <i class="fas fa-check-double me-1"></i>
+                    {{ (newConfigForm.get('CompanyMasterSids')?.value || []).length === eligibleCompanyOptions.length ? 'Unselect All' : 'Select All' }}
                   </button>
-                  <ng-template ngbNavContent>
-                    <!-- General Settings Content -->
-                    <div class="row">
-                      <div class="col-lg-12">
-                        <form [formGroup]="configForm">
-
-                          <!-- Add New Configuration -->
-                          <div class="card mb-3">
-                            <div class="card-body">
-                              <div class="row g-2 align-items-end" [formGroup]="newConfigForm">
-                                <div class="col-md-3">
-                                  <label class="form-label">Config Name</label>
-                                 <input type="text" class="form-control" formControlName="ConfigurationName" placeholder="e.g., MawbStockAllocation">
-                                </div>
-                                <div class="col-md-3">
-                                  <label class="form-label">Display Name</label>
-                                  <input type="text" class="form-control" formControlName="DisplayName" placeholder="Optional">
-                                </div>
-                                <div class="col-md-2">
-                                  <label class="form-label">Type</label>
-                                  <select class="form-select" formControlName="Type">
-                                    <option *ngFor="let type of availableTypes" [value]="type">{{ type }}</option>
-                                  </select>
-                                </div>
-                                <div class="col-md-3">
-                                  <label class="form-label">Default Value</label>
-                                  <input type="text" class="form-control" formControlName="Value" placeholder="Optional">
-                                </div>
-                                <div class="col-md-1 d-grid">
-                                  <button type="button" class="btn btn-info btn-sm" (click)="addConfigRow()">
-                                    Add
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          <!-- Configuration Table Structure -->
-                          <div class="table-responsive">
-                            <table class="table table-bordered table-hover">
-                              <thead class="table-light">
-                                <tr>
-                                  <th width="40%">Configuration Name</th>
-                                  <th width="50%">Configuration Value</th>
-                                  
-                                  
-                                </tr>
-                              </thead>
-                              <tbody formArrayName="configurations">
-                                <tr *ngFor="let config of configurations.controls; let i = index" 
-                                    [formGroupName]="i" class="align-middle">
-                                  
-                                  <!-- Configuration Name Column -->
-                                  <td>
-                                    <div class="fw-bold">{{ config.get('DisplayName')?.value }}</div>
-                                   
-                                    <!-- Hidden fields -->
-                                    <input type="hidden" formControlName="ConfigurationName">
-                                    <input type="hidden" formControlName="DisplayName">
-                                    <input type="hidden" formControlName="Type">
-                                  </td>
-                                  
-                                  <!-- Configuration Value Column -->
-                                  <td>
-                                    <!-- Boolean Type -->
-                                    <div *ngIf="config.get('Type')?.value === 'boolean'" class="mb-3">
-                                      <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" 
-                                               formControlName="Value" id="{{'config-' + i}}">
-                                        <label class="form-check-label" [for]="'config-' + i">
-                                          <strong>{{ config.get('Value')?.value ? 'Yes' : 'No' }}</strong>
-                                        </label>
-                                      </div>
-                                    </div>
-
-                                    <!-- Number Type -->
-                                    <div *ngIf="config.get('Type')?.value === 'number'" class="mb-3">
-                                      <input type="number" class="form-control" 
-                                             [id]="'config-number-' + i"
-                                             formControlName="Value"
-                                             [class.is-invalid]="isConfigInvalid(i)"
-                                             placeholder="Enter value">
-                                      <div *ngIf="isConfigInvalid(i)" class="invalid-feedback">
-                                        {{ getConfigError(i) }}
-                                      </div>
-                                    </div>
-
-                                    <!-- Email Array Type -->
-                                    <div *ngIf="config.get('Type')?.value === 'email-array'" class="mb-3">
-                                      <textarea class="form-control" 
-                                                [id]="'config-email-' + i"
-                                                formControlName="Value"
-                                                [class.is-invalid]="isConfigInvalid(i)"
-                                                rows="3"
-                                                placeholder="Enter email addresses separated by commas"></textarea>
-                                      <div *ngIf="isConfigInvalid(i)" class="invalid-feedback">
-                                        {{ getConfigError(i) }}
-                                      </div>
-                                     
-                                    </div>
-
-                                    <!-- String Type -->
-                                    <div *ngIf="config.get('Type')?.value === 'string'" class="mb-3">
-                                      <input type="text" class="form-control" 
-                                             [id]="'config-string-' + i"
-                                             formControlName="Value"
-                                             [class.is-invalid]="isConfigInvalid(i)"
-                                             placeholder="Enter value">
-                                      <div *ngIf="isConfigInvalid(i)" class="invalid-feedback">
-                                        {{ getConfigError(i) }}
-                                      </div>
-                                    </div>
-                                    
-                                   
-                                     
-                                  </td>
-                                  
-                                 
-                                 
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-
-                        </form>
-                      </div>
-                    </div>
-                  </ng-template>
-                </li>
-              </ul>
-            </nav>
-          </div>
-
-          <div class="card-body p-0">
-            <div [ngbNavOutlet]="nav" class="p-4"></div>
-          </div>
-
-          <!-- Card Footer with Action Buttons -->
-          <div class="card-footer">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <button type="button"
-                        class="btn btn-light-secondary btn-sm dofi-min-w-100 dofi-max-w-100 me-2"
-                        (click)="resetConfiguration()">
-                  <i class="fas fa-sync-alt me-1"></i>
-                  Reset to Defaults
-                </button>
-              </div>
-              <div class="d-flex gap-2">
-                <button type="button"
-                        class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="goBackToCompany()">
-                  <i class="fas fa-times me-1"></i>
-                  Cancel
-                </button>
-                <button type="button"
-                        class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-                        (click)="saveConfiguration()"
-                        [disabled]="isSaving || configForm.invalid">
-                  <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                  <i *ngIf="!isSaving" class="fas fa-save me-1"></i>
-                  {{ isSaving ? 'Saving...' : 'Save All' }}
-                </button>
-              </div>
+                </div>
+              </ng-template>
+              <ng-template ng-option-tmp let-item="item">
+                <div class="company-option">
+                  <strong>{{ item.companyName }}</strong>
+                  <small *ngIf="item.companyCode">Code: {{ item.companyCode }}</small>
+                </div>
+              </ng-template>
+              <ng-template ng-multi-label-tmp let-items="items">
+                <div class="chip" *ngFor="let item of items.slice(0, 3)">
+                  {{ item.companyName }}
+                </div>
+                <div class="chip chip--muted" *ngIf="items.length > 3">+{{ items.length - 3 }} more</div>
+              </ng-template>
+            </ng-select>
+            <div class="field-hint" *ngIf="companyMultiSelectDisabled">
+              This company is locked from the parent company screen.
             </div>
           </div>
+
+          <div class="field-block">
+            <label class="field-label">Configuration Name</label>
+            <div class="swap-field">
+              <div class="swap-field__control" *ngIf="!manualConfigNameMode; else manualNameTpl">
+                <ng-select
+                  class="modern-select"
+                  formControlName="ConfigurationName"
+                  [items]="configTemplates"
+                  bindLabel="configurationName"
+                  bindValue="configurationName"
+                  [searchable]="true"
+                  [clearable]="true"
+                  placeholder="Select configuration"
+                  appendTo="body"
+                  (change)="onConfigurationNameChanged($event)">
+                  <ng-template ng-option-tmp let-item="item">
+                    <div class="template-option">
+                      <strong>{{ item.displayName }}</strong>
+                      <small>{{ item.configurationName }}</small>
+                      <span class="type-pill">{{ item.configType }}</span>
+                    </div>
+                  </ng-template>
+                </ng-select>
+              </div>
+
+              <button
+                type="button"
+                class="swap-btn"
+                ngbTooltip="Switch to manual name entry"
+                (click)="toggleManualConfigNameMode()">
+                <i class="fas fa-exchange-alt"></i>
+              </button>
+            </div>
+
+            <ng-template #manualNameTpl>
+              <div class="swap-field__control">
+                <input
+                  type="text"
+                  class="form-control modern-input"
+                  formControlName="ConfigurationName"
+                  placeholder="Type configuration name"
+                  (input)="onManualConfigNameInput()">
+              </div>
+            </ng-template>
+          </div>
+
+          <div class="field-block">
+            <label class="field-label">Display Name</label>
+            <input
+              type="text"
+              class="form-control modern-input"
+              formControlName="DisplayName"
+              placeholder="Human readable label">
+          </div>
+
+          <div class="field-block">
+            <label class="field-label">Config Type</label>
+            <ng-select
+              class="modern-select"
+              formControlName="ConfigType"
+              [items]="availableTypes"
+              bindLabel="label"
+              bindValue="value"
+              [clearable]="false"
+              placeholder="Select type"
+              appendTo="body">
+            </ng-select>
+          </div>
+
+          <div class="field-block field-block--full">
+            <label class="field-label">Configuration Value</label>
+
+            <div *ngIf="newConfigForm.get('ConfigType')?.value === 'boolean'" class="boolean-field">
+              <div class="form-check form-switch">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  formControlName="ConfigurationValue"
+                  id="new-config-boolean">
+                <label class="form-check-label" for="new-config-boolean">
+                  <strong>{{ newConfigForm.get('ConfigurationValue')?.value ? 'Yes' : 'No' }}</strong>
+                </label>
+              </div>
+            </div>
+
+            <textarea
+              *ngIf="newConfigForm.get('ConfigType')?.value === 'email-array'"
+              class="form-control modern-input modern-textarea"
+              rows="3"
+              formControlName="ConfigurationValue"
+              placeholder="Enter email addresses separated by commas"></textarea>
+
+            <input
+              *ngIf="newConfigForm.get('ConfigType')?.value === 'number'"
+              type="number"
+              class="form-control modern-input"
+              formControlName="ConfigurationValue"
+              placeholder="Enter number">
+
+            <input
+              *ngIf="newConfigForm.get('ConfigType')?.value === 'string'"
+              type="text"
+              class="form-control modern-input"
+              formControlName="ConfigurationValue"
+              placeholder="Enter value">
+          </div>
+        </div>
+
+        <div class="builder-footer">
+          <div class="builder-note">
+            <i class="fas fa-circle-info me-1"></i>
+            If a configuration already exists for a company, that company is removed from the create list.
+          </div>
+
+          <button
+            type="button"
+            class="btn btn-info btn-sm"
+            (click)="addConfigRow()"
+            [disabled]="createButtonDisabled">
+            <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!isSaving" class="fas fa-plus me-1"></i>
+            {{ isSaving ? 'Creating...' : 'Add Configuration' }}
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section class="surface-card">
+      <div class="surface-card__header surface-card__header--tight">
+        <div>
+          <h2>Existing Configurations</h2>
+          <p>Review and update current values for the selected company.</p>
+        </div>
+        <div class="header-actions">
+          <span class="count-pill">{{ configurations.length }} items</span>
+          <button type="button" class="btn btn-light-secondary btn-sm" (click)="resetConfiguration()">
+            <i class="fas fa-rotate-right me-1"></i>
+            Reload
+          </button>
+          <button
+            type="button"
+            class="btn btn-info btn-sm"
+            (click)="saveConfiguration()"
+            [disabled]="isSaving || configForm.invalid">
+            <i class="fas fa-save me-1"></i>
+            Save All
+          </button>
         </div>
       </div>
-    </div>
+
+      <form [formGroup]="configForm" class="table-form">
+        <div class="table-responsive modern-table-wrap" *ngIf="configurations.length > 0; else emptyConfigs">
+          <table class="table modern-table align-middle">
+            <thead>
+              <tr>
+                <th>Configuration</th>
+                <th>Display Name</th>
+                <th style="width: 160px;">Type</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody formArrayName="configurations">
+              <tr *ngFor="let config of configurations.controls; let i = index" [formGroupName]="i">
+                <td>
+                  <div class="row-title">
+                    <strong>{{ config.get('ConfigurationName')?.value }}</strong>
+                    <small *ngIf="config.get('CompanyConfigurationSid')?.value">
+                      SID: {{ config.get('CompanyConfigurationSid')?.value }}
+                    </small>
+                  </div>
+                </td>
+
+                <td>
+                  <input type="text" class="form-control modern-input modern-input--sm" formControlName="DisplayName">
+                </td>
+
+                <td>
+                  <ng-select
+                    class="modern-select modern-select--sm"
+                    formControlName="ConfigType"
+                    [items]="availableTypes"
+                    bindLabel="label"
+                    bindValue="value"
+                    [clearable]="false"
+                    placeholder="Type"
+                    appendTo="body">
+                  </ng-select>
+                </td>
+
+                <td>
+                  <div *ngIf="config.get('ConfigType')?.value === 'boolean'" class="boolean-field">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" formControlName="ConfigurationValue" [id]="'cfg-' + i">
+                      <label class="form-check-label" [for]="'cfg-' + i">
+                        {{ config.get('ConfigurationValue')?.value ? 'Yes' : 'No' }}
+                      </label>
+                    </div>
+                  </div>
+
+                  <textarea
+                    *ngIf="config.get('ConfigType')?.value === 'email-array'"
+                    class="form-control modern-input modern-textarea"
+                    rows="3"
+                    formControlName="ConfigurationValue"
+                    [class.is-invalid]="isConfigInvalid(i)"
+                    placeholder="Comma separated email addresses"></textarea>
+
+                  <input
+                    *ngIf="config.get('ConfigType')?.value === 'number'"
+                    type="number"
+                    class="form-control modern-input"
+                    formControlName="ConfigurationValue"
+                    [class.is-invalid]="isConfigInvalid(i)"
+                    placeholder="Enter number">
+
+                  <input
+                    *ngIf="config.get('ConfigType')?.value === 'string'"
+                    type="text"
+                    class="form-control modern-input"
+                    formControlName="ConfigurationValue"
+                    [class.is-invalid]="isConfigInvalid(i)"
+                    placeholder="Enter value">
+
+                  <div *ngIf="isConfigInvalid(i)" class="invalid-feedback d-block">
+                    {{ getConfigError(i) }}
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <ng-template #emptyConfigs>
+          <div class="empty-state">
+            <i class="fas fa-box-open"></i>
+            <h3>No configurations found</h3>
+            <p>Add your first configuration using the form above.</p>
+          </div>
+        </ng-template>
+      </form>
+    </section>
   </div>
 </div>

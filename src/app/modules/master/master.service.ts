@@ -4466,6 +4466,17 @@ getAuditLogsNetwork(tableName: string, recordId?: string) {
     );
   }
 
+  getEligibleCompaniesForConfiguration(configurationName: string) {
+    return this.http.get<{ data: any }>(
+      `company-config/eligible-companies/${encodeURIComponent(configurationName)}`
+    ).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
   // Standard Charge
    getAllStdCharges() {
     return this.http.get<{ data: any[] }>('standard-charge', {  }).pipe(
