@@ -393,9 +393,11 @@ dataFromEnqPage:any;
     productMode: false
   };
 
-  private getApprovalUrl(quoteHeaderSid: number | null | undefined): string {
+  private getApprovalUrl(_quoteHeaderSid?: number | null): string {
     const baseUrl = (window.location.origin || '').replace(/\/$/, '');
-    return `${baseUrl}/crm/quotation/entry/${quoteHeaderSid}`;
+    // The literal placeholder is replaced by the backend with the real public token
+    // when the email is dispatched. See ff-quotation/send/email.
+    return `${baseUrl}/public/quotation/{{APPROVAL_TOKEN}}`;
   }
 
   private getApprovalLinkText(quoteHeaderSid: number | null | undefined): string {
@@ -6231,7 +6233,7 @@ enableCarrierFields(routeIndex: number, carrierIndex: number): void {
 Please find enclosed the quotation as requested.
 Kindly review the details at your convenience.
 Looking forward to your feedback and the opportunity to work together.
-Approval Hyperlink: <a href="${this.getApprovalUrl(this.QuoteHeaderSid)}" target="_blank" style="color:#0b6aa1;font-weight:600;">Click here to approve</a>
+Approval Hyperlink: <a href="${this.getApprovalUrl(this.QuoteHeaderSid)}" target="_blank" rel="noopener noreferrer" style="color:#0b6aa1;font-weight:600;">Click here to approve</a>
 Best Regards,
 ${this.userData['userEmail']}`;
       const mailHtml = this.emailTriggerService.buildCommonTemplate(

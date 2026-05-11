@@ -1,0 +1,197 @@
+<div class="pq-page">
+  <header class="pq-header">
+    <h1>Quotation Approval</h1>
+  </header>
+
+  <main class="pq-main">
+    <ng-container [ngSwitch]="state">
+      <section *ngSwitchCase="'loading'" class="pq-card pq-loading">
+        <p>Loading quotation&hellip;</p>
+      </section>
+
+      <section *ngSwitchCase="'error'" class="pq-card pq-error">
+        <ng-container [ngSwitch]="errorCode">
+          <ng-container *ngSwitchCase="'EXPIRED'">
+            <h2>This link has expired</h2>
+            <p>The link you used is no longer valid. Please contact your sales representative to request a new one.</p>
+          </ng-container>
+          <ng-container *ngSwitchCase="'ALREADY_USED'">
+            <h2>Your decision has already been recorded</h2>
+            <p>Thank you. If you need to revise your response, please contact your sales representative.</p>
+          </ng-container>
+          <ng-container *ngSwitchDefault>
+            <h2>This link is not valid</h2>
+            <p>The link could not be verified. Please contact your sales representative for assistance.</p>
+          </ng-container>
+        </ng-container>
+      </section>
+
+      <ng-container *ngSwitchCase="'submitted'">
+        <section class="pq-card pq-success">
+          <h2>Thank you &mdash; your response has been recorded.</h2>
+          <p>The following decisions were submitted:</p>
+          <ul class="pq-summary-list">
+            <li *ngFor="let d of submittedDecisions">
+              <strong>{{ d.carrier.carrierName }}</strong>:
+              {{ d.status }} by {{ d.approvedBy }}
+              <span *ngIf="d.remarks"> &mdash; "{{ d.remarks }}"</span>
+            </li>
+          </ul>
+        </section>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'ready'">
+        <section class="pq-card pq-summary" *ngIf="data">
+          <h2>Quotation Summary</h2>
+          <dl class="pq-meta">
+            <dt>Quotation No.</dt>
+            <dd>{{ data.quoteNumber || '-' }}</dd>
+            <dt>Quotation Date</dt>
+            <dd>{{ data.quoteDate | date:'mediumDate' }}</dd>
+            <dt>Customer</dt>
+            <dd>{{ data.customerName }}</dd>
+            <dt *ngIf="data.validFrom || data.validTo">Validity</dt>
+            <dd *ngIf="data.validFrom || data.validTo">
+              {{ data.validFrom | date:'mediumDate' }} &mdash; {{ data.validTo | date:'mediumDate' }}
+            </dd>
+          </dl>
+
+          <h3>Route</h3>
+          <table class="pq-table" *ngIf="data.routes.length">
+            <thead>
+              <tr>
+                <th>POR</th>
+                <th>POL</th>
+                <th>POD</th>
+                <th>FDP</th>
+                <th>Transit Days</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of data.routes">
+                <td>{{ r.por?.PortName || r.por?.PortCode || '-' }}</td>
+                <td>{{ r.pol?.PortName || r.pol?.PortCode || '-' }}</td>
+                <td>{{ r.pod?.PortName || r.pod?.PortCode || '-' }}</td>
+                <td>{{ r.fdp?.PortName || r.fdp?.PortCode || '-' }}</td>
+                <td>{{ r.transitDays ?? '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Cargo</h3>
+          <table class="pq-table" *ngIf="data.cargo.length; else noCargo">
+            <thead>
+              <tr>
+                <th>Cargo Type</th>
+                <th>Container</th>
+                <th>Qty</th>
+                <th>Gross Weight</th>
+                <th>Net Weight</th>
+                <th>CBM</th>
+                <th>Shipment Terms</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of data.cargo">
+                <td>{{ c.cargoType || '-' }}</td>
+                <td>{{ c.containerType || '-' }}</td>
+                <td>{{ c.qty ?? '-' }}</td>
+                <td>{{ c.grossWeight ?? '-' }}</td>
+                <td>{{ c.netWeight ?? '-' }}</td>
+                <td>{{ c.cbm ?? '-' }}</td>
+                <td>{{ c.shipmentTerms || '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <ng-template #noCargo><p class="pq-muted">No cargo recorded.</p></ng-template>
+        </section>
+
+        <section class="pq-card pq-decisions" *ngIf="data">
+          <h2>Carriers &mdash; Your Decision</h2>
+          <p class="pq-muted">Choose Approved or Rejected for each carrier you'd like to act on, then submit. Carriers left blank will not be changed.</p>
+
+          <div class="pq-carrier" *ngFor="let d of drafts; let i = index">
+            <header class="pq-carrier-header">
+              <h3>{{ d.carrier.carrierName || 'Carrier ' + (i + 1) }}</h3>
+              <span class="pq-status-tag" *ngIf="d.carrier.approvalStatus">
+                Current: {{ d.carrier.approvalStatus }}
+              </span>
+              <span class="pq-transit" *ngIf="d.carrier.transitTime">
+                Transit: {{ d.carrier.transitTime }}
+              </span>
+            </header>
+
+            <table class="pq-table" *ngIf="d.carrier.charges.length">
+              <thead>
+                <tr>
+                  <th>Charge</th>
+                  <th>Qty</th>
+                  <th>Rate</th>
+                  <th>Amount</th>
+                  <th>Currency</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let ch of d.carrier.charges">
+                  <td>{{ ch.chargeName }}</td>
+                  <td>{{ ch.qty ?? '-' }}</td>
+                  <td>{{ ch.rate ?? '-' }}</td>
+                  <td>{{ ch.amount ?? '-' }}</td>
+                  <td>{{ ch.currency || '-' }}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="pq-decision-row">
+              <label>
+                <span>Decision</span>
+                <select [(ngModel)]="d.status" name="status-{{ i }}">
+                  <option value="">(no decision)</option>
+                  <option value="Approved">Approved</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
+              </label>
+              <label>
+                <span>Authorized By <small *ngIf="d.status">(required)</small></span>
+                <input
+                  type="text"
+                  maxlength="20"
+                  [(ngModel)]="d.approvedBy"
+                  [disabled]="!d.status"
+                  name="approvedBy-{{ i }}"
+                  placeholder="Your name"
+                />
+              </label>
+              <label class="pq-remarks">
+                <span>Remarks <small>(optional)</small></span>
+                <textarea
+                  maxlength="100"
+                  [(ngModel)]="d.remarks"
+                  [disabled]="!d.status"
+                  name="remarks-{{ i }}"
+                ></textarea>
+              </label>
+            </div>
+          </div>
+
+          <div class="pq-submit-row">
+            <button
+              type="button"
+              class="pq-submit-btn"
+              [disabled]="!canSubmit"
+              (click)="submit()"
+            >
+              {{ isSubmitting ? 'Submitting&hellip;' : 'Submit Decisions' }}
+            </button>
+            <p *ngIf="!hasAnyDecision" class="pq-hint">Choose at least one carrier decision to enable Submit.</p>
+            <p *ngIf="submitError" class="pq-error-inline">{{ submitError }}</p>
+          </div>
+        </section>
+      </ng-container>
+    </ng-container>
+  </main>
+
+  <footer class="pq-footer">
+    <small>This page is for customer approval only. If you did not request this link, please ignore this page.</small>
+  </footer>
+</div>

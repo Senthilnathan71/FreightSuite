@@ -84,6 +84,13 @@ export const Approutes: Routes = [
     component: ShipmentInstructionComponent
   },
   {
+    path: 'public/quotation/:token',
+    loadComponent: () =>
+      import('./modules/public-quotation/public-quotation-approval.component').then(
+        m => m.PublicQuotationApprovalComponent
+      )
+  },
+  {
     path: '**',
     redirectTo: '/starter'
   }
