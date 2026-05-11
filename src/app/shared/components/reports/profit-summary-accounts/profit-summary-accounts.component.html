@@ -59,9 +59,11 @@
                         <th class="bg-transparent text-light text-center">P.Sale</th>
                         <th class="bg-transparent text-light text-center">P.Cost</th>
                         <th class="bg-transparent text-light text-center">P.GP</th>
+                        <th class="bg-transparent text-light text-center">P.Profit %</th>
                         <th class="bg-transparent text-light text-center">A.Sale</th>
                         <th class="bg-transparent text-light text-center">A.Cost</th>
                         <th class="bg-transparent text-light text-center">A.GP</th>
+                        <th class="bg-transparent text-light text-center">A.Profit %</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -86,9 +88,11 @@
                             <td class="text-end">{{ item.costRevenues.masterCrSummary.pSale | number:'1.2-2' }}</td>
                             <td class="text-end">{{ item.costRevenues.masterCrSummary.pCost | number:'1.2-2' }}</td>
                             <td class="text-end">{{ item.costRevenues.masterCrSummary.pGp | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ item.costRevenues.masterCrSummary.pGpPercent | number:'1.2-2' }}</td>
                             <td class="text-end">{{ item.costRevenues.masterCrSummary.aSale | number:'1.2-2' }}</td>
                             <td class="text-end">{{ item.costRevenues.masterCrSummary.aCost | number:'1.2-2' }}</td>
                             <td class="text-end">{{ item.costRevenues.masterCrSummary.aGp | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ item.costRevenues.masterCrSummary.aGpPercent | number:'1.2-2' }}</td>
                         </tr>
                         <tr *ngFor="let hj of item.houseWithCR" style="white-space: nowrap;">
                             <td></td>
@@ -110,9 +114,11 @@
                             <td class="text-end">{{ hj.costRevenues.houseCrSummary.pSale | number:'1.2-2' }}</td>
                             <td class="text-end">{{ hj.costRevenues.houseCrSummary.pCost | number:'1.2-2' }}</td>
                             <td class="text-end">{{ hj.costRevenues.houseCrSummary.pGp | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ hj.costRevenues.houseCrSummary.pGpPercent | number:'1.2-2' }}</td>
                             <td class="text-end">{{ hj.costRevenues.houseCrSummary.aSale | number:'1.2-2' }}</td>
                             <td class="text-end">{{ hj.costRevenues.houseCrSummary.aCost | number:'1.2-2' }}</td>
                             <td class="text-end">{{ hj.costRevenues.houseCrSummary.aGp | number:'1.2-2' }}</td>
+                            <td class="text-end">{{ hj.costRevenues.houseCrSummary.aGpPercent | number:'1.2-2' }}</td>
                         </tr>
                         <!-- <tr style="font-weight: 700; background: #e9ecef;">
                             <td colspan="21" class="text-end">TOTAL</td>
@@ -142,6 +148,9 @@
                             {{ getGrandTotal('pGp') | number:'1.2-2' }}
                         </td>
                         <td class="text-end">
+                            {{ getGrandProfitPercent('P') | number:'1.2-2' }}
+                        </td>
+                        <td class="text-end">
                             {{ getGrandTotal('aSale') | number:'1.2-2' }}
                         </td>
                         <td class="text-end">
@@ -149,6 +158,9 @@
                         </td>
                         <td class="text-end">
                             {{ getGrandTotal('aGp') | number:'1.2-2' }}
+                        </td>
+                        <td class="text-end">
+                            {{ getGrandProfitPercent('A') | number:'1.2-2' }}
                         </td>
                     </tr>
                 </tbody>
