@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-import { NgbPaginationModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbPaginationModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { MasterService } from '../../master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
@@ -12,6 +12,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 interface TaxGroup {
   TaxGroupMasterSid?: number;
@@ -67,7 +68,8 @@ export class TaxGroupComponent implements OnInit, HasUnsavedChanges {
     private appSettingService: AppSettingsService,
     private excelReportService: ExcelExportService,
     private dialog: MatDialog,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private modalService: NgbModal
   ) { }
 
   ngOnInit(): void {
@@ -500,4 +502,20 @@ export class TaxGroupComponent implements OnInit, HasUnsavedChanges {
     }
     return this.sortDirection === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
   }
+
+  openAuditLogs(taxGroupSid: number): void {
+          if (!taxGroupSid) return;
+      
+          const modalRef = this.modalService.open(AuditLogComponent, {
+            centered: true,
+            scrollable: true,
+            size: 'xl',
+            windowClass: 'audit-log-modal'
+          });
+      
+          modalRef.componentInstance.title = 'Tax-Group Logs';
+          modalRef.componentInstance.tableName = 'TaxGroup';
+          modalRef.componentInstance.recordId = taxGroupSid.toString();
+          modalRef.componentInstance.screenName = 'TaxGroup';
+        }
 }

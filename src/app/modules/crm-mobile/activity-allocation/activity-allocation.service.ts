@@ -11,7 +11,8 @@ export type Stage =
   | 'Quotation'
   | 'Booking'
   | 'LoadPlan'
-  | 'MasterJob';
+  | 'MasterJob'
+  | 'HouseJob';
 export type WorkStatus = 'Pending' | 'Processed';
 
 export interface ResourceSummaryRow {
@@ -22,6 +23,7 @@ export interface ResourceSummaryRow {
   bookingCount: number;
   loadPlanCount: number;
   masterJobCount: number;
+  houseJobCount: number;
 }
 
 export interface WorkloadRow {

@@ -22,6 +22,7 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { SearchableDropdownModal } from 'src/app/component/searchable-dropdown/searchable-dropdown-modal.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 @Component({
     selector: 'app-terms-condition-entry',
@@ -330,7 +331,7 @@ export class TermsConditionEntryComponent implements OnInit, HasUnsavedChanges {
         this.isSaving = true;
         const createdBy = this.appSettingService.userSettingSource.value['userEmail'];
         const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
-        const formValue = this.termsAndConditionForm.value;
+        const formValue = this.termsAndConditionForm.getRawValue();
         const { departmentId, ...rest } = formValue;
         const masterFormValue = {
             ...rest,
@@ -549,6 +550,10 @@ export class TermsConditionEntryComponent implements OnInit, HasUnsavedChanges {
                     this.suppressDirtyCheck = false;
 
                     this.loadTandCDetails();
+                    if (this.isEditMode) {
+                    ['MenuMasterSid', 'BranchMasterSid', 'departmentId', 'Carrier', 'POL', 'POD']
+                        .forEach(ctrl => this.termsAndConditionForm.get(ctrl)?.disable({ emitEvent: false }));
+                }
                 }
             }
         );
@@ -758,5 +763,19 @@ get showExtraFields(): boolean {
         }
         return value;
     }
+
+    openAuditLogs() {
+          if (!this.TermsAndConditionsMasterSid) return;
+          const modalRef = this.modalService.open(AuditLogComponent, {
+            centered: true,
+            scrollable: true,
+            size: 'xl',
+            windowClass: 'audit-log-modal'
+          });
+          modalRef.componentInstance.title = 'Terms And Condition Logs';
+          modalRef.componentInstance.tableName = 'TermsAndConditionsMaster';
+          modalRef.componentInstance.recordId = this.TermsAndConditionsMasterSid.toString();
+          modalRef.componentInstance.screenName = 'Terms';
+        }
 
 }

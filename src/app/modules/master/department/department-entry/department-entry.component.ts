@@ -22,6 +22,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { forkJoin } from 'rxjs';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 interface IWindow extends Window {
   webkitSpeechRecognition: any;
 }
@@ -474,78 +475,19 @@ hasAnyDropdownPermission(): boolean {
     });
   }
 
-//  openAuditLogs(modal: TemplateRef<any>) {
-//    if (!this.DepartmentMasterSid) return;
- 
-//    this.masterService.getAuditLogs('DepartmentMaster', this.DepartmentMasterSid.toString()).subscribe({
-//      next: (logs: any[]) => {
-//        const formatFields = (val: any) => {
-//          if (!val) return [];
-//          const obj = typeof val === 'string' ? JSON.parse(val) : val;
-//          if (Object.keys(obj).length === 0) return [];
-//          return Object.entries(obj).map(
-//            ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-//          );
-//        };
- 
-//        // ✅ Filter out rows where both old & new values are empty (no change)
-//        this.auditLogs = logs
-//          .map(log => ({
-//            ...log,
-//            oldValDisplay: formatFields(log.oldVal),
-//            newValDisplay: formatFields(log.newVal),
-//          }))
-//          .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
- 
-//        this.auditLogModalRef = this.modalService.open(modal, {
-//          centered: true,
-//          scrollable: true,
-//          windowClass: 'audit-log-modal'
-//        });
-//      },
-//      error: err => console.error('Error fetching audit logs:', err)
-//    });
-//  }
-
-openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.DepartmentMasterSid) return;
-
-  this.masterService.getAuditLogs(
-    'DepartmentMaster',
-    this.DepartmentMasterSid.toString()
-  ).subscribe({
-    next: (logs: any[]) => {
-      const ignoredFields = ['updatedOn','updatedBy']; // ✅ add more if needed later
-
-      const formatFields = (val: any) => {
-        if (!val) return [];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        if (Object.keys(obj).length === 0) return [];
-        return Object.entries(obj)
-          .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-          .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-      };
-
-      this.auditLogs = logs
-        .map(log => ({
-          ...log,
-          oldValDisplay: formatFields(log.oldVal),
-          newValDisplay: formatFields(log.newVal),
-        }))
-        .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
-
-      this.auditLogModalRef = this.modalService.open(modal, {
-        centered: true,
-        scrollable: true,
-        windowClass: 'audit-log-modal'
-      });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
-
-
-
+  openAuditLogs() {
+    if (!this.departmentData?.DepartmentMasterSid) return;
+    const modalRef = this.modalService.open(AuditLogComponent, {
+      centered: true,
+      scrollable: true,
+      size: 'xl',
+      windowClass: 'audit-log-modal'
+    });
+    modalRef.componentInstance.title = 'Department Logs';
+    modalRef.componentInstance.tableName = 'DepartmentMaster';
+    modalRef.componentInstance.recordId = this.departmentData?.DepartmentMasterSid.toString();
+    modalRef.componentInstance.screenName = 'Department';
+  }
   reset() {
   // If we're editing, reload original record from server to restore original values
   if (this.isEditMode && this.DepartmentMasterSid) {

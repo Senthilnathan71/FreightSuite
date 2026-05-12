@@ -56,6 +56,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DocReferenceComponent } from '../../operation/doc-reference/doc-reference.component';
 import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
+import { AuditLogComponent } from '../../operation/audit-log/audit-log.component';
 @Component({
   selector: 'app-tax-group-list',
   standalone: true,
@@ -878,4 +879,18 @@ viewTax(content: any, row: any) {
     modalRef.componentInstance.MenuMasterSid = Number(this.MenuMasterSid);  
     modalRef.componentInstance.DocumentSid = this.taxGroupData?.TaxMasterSid;
   }
+
+  openAuditLogs() {
+        if (!this.taxGroupData?.TaxMasterSid) return;
+        const modalRef = this.modalService.open(AuditLogComponent, {
+          centered: true,
+          scrollable: true,
+          size: 'xl',
+          windowClass: 'audit-log-modal'
+        });
+        modalRef.componentInstance.title = 'Tax Logs';
+        modalRef.componentInstance.tableName = 'TaxMaster';
+        modalRef.componentInstance.recordId = this.taxGroupData?.TaxMasterSid.toString();
+        modalRef.componentInstance.screenName = 'Tax';
+      }
 }

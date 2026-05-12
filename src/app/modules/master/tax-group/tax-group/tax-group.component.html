@@ -97,7 +97,7 @@
                   </div>
                 </div>
               </th>
-              <th class="bg-transparent text-light" width="25%" style="border-top-right-radius: 10px;">
+              <th class="bg-transparent text-light" width="25%">
                 <div class="d-flex align-items-center justify-content-between">
                   <div>Status</div>
                   <div>
@@ -106,6 +106,9 @@
                   </div>
                 </div>
               </th>
+              <th class="bg-transparent text-light text-center" style="border-top-right-radius: 10px;">
+                                    Action
+                                </th>
             </tr>
           </thead>
 
@@ -131,6 +134,14 @@
                   (ngModelChange)="onStatusChange(group, $event)" placeholder="" appendTo="body">
                 </ng-select>
               </td>
+              <td class="text-center" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-info"
+                                            (click)="openAuditLogs(group.TaxGroupMasterSid!)">
+                                            <i class="fas fa-history me-1"></i>
+                                        Logs
+                                    </button>
+                                </td>
             </tr>
           </tbody>
         </table>
