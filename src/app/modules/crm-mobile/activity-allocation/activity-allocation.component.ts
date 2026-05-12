@@ -25,6 +25,7 @@ type SummarySortColumn =
   | 'bookingCount'
   | 'loadPlanCount'
   | 'masterJobCount'
+  | 'houseJobCount'
   | 'jobCount'
   | 'blCount'
   | 'siCount'
@@ -255,7 +256,8 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
         (r.quotationCount || 0) +
         (r.bookingCount || 0) +
         (r.loadPlanCount || 0) +
-        (r.masterJobCount || 0),
+        (r.masterJobCount || 0) +
+        (r.houseJobCount || 0),
       0,
     );
   }
@@ -400,7 +402,8 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
       (row.quotationCount || 0) +
       (row.bookingCount || 0) +
       (row.loadPlanCount || 0) +
-      (row.masterJobCount || 0)
+      (row.masterJobCount || 0) +
+      (row.houseJobCount || 0)
     );
   }
 
@@ -438,6 +441,7 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
         r.bookingCount,
         r.loadPlanCount,
         r.masterJobCount,
+        r.houseJobCount
       ];
       return values.map(v => String(v ?? '').toLowerCase()).some(v => v.includes(search));
     });
@@ -544,6 +548,7 @@ export class ActivityAllocationComponent implements OnInit, OnDestroy {
     else if (row.bookingCount > 0) stage = 'Booking';
     else if (row.loadPlanCount > 0) stage = 'LoadPlan';
     else if (row.masterJobCount > 0) stage = 'MasterJob';
+    else if (row.houseJobCount > 0) stage = 'HouseJob';
 
     this.openWorkload(stage, row);
   }

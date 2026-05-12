@@ -209,6 +209,7 @@ export class MawbStockAllocationComponent implements OnInit {
     if (!selectedStocks.length) return;
 
     const customerId = this.allocationForm.get('customerId')?.value;
+    const useremail = this.appSettingService.userSettingSource.value['userEmail'];
     if (!customerId) {
       this.allocationForm.get('customerId')?.markAsTouched();
       this.appSettingService.showWarning('Select Customer');
@@ -219,7 +220,8 @@ export class MawbStockAllocationComponent implements OnInit {
     const payload: any = {
       companyId: this.currentCompany.CompanyMasterSid,
       branchId: this.currentBranch.BranchMasterSid,
-      customerId: customerId
+      customerId: customerId,
+      useremail: useremail
     };
 
     if (this.mode === 'allocate') {

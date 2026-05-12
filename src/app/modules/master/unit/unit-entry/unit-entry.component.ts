@@ -23,6 +23,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 
 @Component({
@@ -440,33 +441,7 @@ openDocRef() {
     this.destroy$.complete();
     this.commonService.clearDocumentData()
  }
-//  openAuditLogs(modal: TemplateRef<any>) {
-//   if (!this.idParam) return;
 
-//   this.masterService.getAuditLogs('UnitMaster', this.idParam.toString()).subscribe({
-//     next: (logs: any[]) => {
-//       const formatFields = (val: any) => {
-//         if (!val) return ['NA'];
-//         const obj = typeof val === 'string' ? JSON.parse(val) : val;
-//         delete obj.updatedOn; // Remove updatedOn field
-//         // If no fields exist after deleting updatedOn
-//         if (Object.keys(obj).length === 0) return ['NA'];
-//         return Object.entries(obj).map(
-//           ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-//         );
-//       };
-
-//       this.auditLogs = logs.map(log => ({
-//         ...log,
-//         oldValDisplay: formatFields(log.oldVal),
-//         newValDisplay: formatFields(log.newVal)
-//       }));
-
-//       this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
-//     },
-//     error: err => console.error('Error fetching audit logs:', err)
-//   });
-// }
 
    openFollowup(){
         const modalRef = this.modalService.open(FollowUpComponent,{
@@ -476,42 +451,19 @@ openDocRef() {
         })
     }
 
-openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.idParam) return;
-
-  this.masterService.getAuditLogs(
-    'UnitMaster',
-    this.idParam.toString()
-  ).subscribe({
-    next: (logs: any[]) => {
-      const ignoredFields = ['updatedOn','updatedBy']; // ✅ add more if needed later
-
-      const formatFields = (val: any) => {
-        if (!val) return [];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        if (Object.keys(obj).length === 0) return [];
-        return Object.entries(obj)
-          .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-          .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-      };
-
-      this.auditLogs = logs
-        .map(log => ({
-          ...log,
-          oldValDisplay: formatFields(log.oldVal),
-          newValDisplay: formatFields(log.newVal),
-        }))
-        .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
-
-      this.auditLogModalRef = this.modalService.open(modal, {
+openAuditLogs() {
+      if (!this.unitData?.UnitMasterSid) return;
+      const modalRef = this.modalService.open(AuditLogComponent, {
         centered: true,
         scrollable: true,
+        size: 'xl',
         windowClass: 'audit-log-modal'
       });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+      modalRef.componentInstance.title = 'Unit Logs';
+      modalRef.componentInstance.tableName = 'UnitMaster';
+      modalRef.componentInstance.recordId = this.unitData?.UnitMasterSid.toString();
+      modalRef.componentInstance.screenName = 'Unit';
+    }
  navigateToCreateUnit() {
     this.router.navigate(['master/unit/entry']);
   }

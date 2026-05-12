@@ -16,6 +16,8 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { DeleteWarningComponent } from 'src/app/modules/crm-mobile/delete-warning.component';
 import { MatDialog } from '@angular/material/dialog';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 @Component({
   selector: 'app-network-entry',
   standalone: true,
@@ -42,7 +44,8 @@ export class NetworkEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
     private fb: FormBuilder,
     private masterService: MasterService,
     private appSettingsService: AppSettingsService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private modalService: NgbModal
   ) {
     this.networkForm = this.fb.group({
       networks: this.fb.array([]),
@@ -277,4 +280,20 @@ delete(index: number) {
       return item.NetworkMasterSid || index;
 
     }
+
+    openAuditLogs(networkMasterSid: number): void {
+        if (!networkMasterSid) return;
+    
+        const modalRef = this.modalService.open(AuditLogComponent, {
+          centered: true,
+          scrollable: true,
+          size: 'xl',
+          windowClass: 'audit-log-modal'
+        });
+    
+        modalRef.componentInstance.title = 'Network Logs';
+        modalRef.componentInstance.tableName = 'NetworkMaster';
+        modalRef.componentInstance.recordId = networkMasterSid.toString();
+        modalRef.componentInstance.screenName = 'Network';
+      }
 }

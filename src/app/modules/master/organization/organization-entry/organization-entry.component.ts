@@ -72,6 +72,7 @@ import { SearchableDropdownModal } from 'src/app/component/searchable-dropdown/s
 import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/dial-code-dropdown.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 
 @Component({
@@ -1158,10 +1159,11 @@ clearCustomerSearch(): void {
   const branch = this.branches.at(branchIndex);
   const branchSid = branch.get('CustomerBranchSid')?.value;
   const branchId = 'branch-' + branchIndex;
+  const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
 
   if (branchSid) {
     if (confirm('Are you sure you want to delete this branch?')) {
-      this.masterService.deleteCustomerBranchById(branchSid).subscribe({
+      this.masterService.deleteCustomerBranchById(branchSid,updatedBy).subscribe({
         next: (resp: any) => {
           this.appSettingService.showSuccess('Branch deleted successfully');
           this.branches.removeAt(branchIndex);
@@ -1217,10 +1219,11 @@ clearCustomerSearch(): void {
   removeContact(branchIndex: number, contactIndex: number) {
     const contact = this.getContacts(branchIndex).at(contactIndex);
     const contactSid = contact.get('CusBranchContactSid')?.value;
+    const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
 
     if (contactSid) {
       if (confirm('Are you sure you want to delete this contact?')) {
-        this.masterService.deleteCustomerBranchContactById(contactSid).subscribe({
+        this.masterService.deleteCustomerBranchContactById(contactSid,updatedBy).subscribe({
           next: (resp: any) => {
             this.appSettingService.showSuccess('Contact deleted successfully');
             this.getContacts(branchIndex).removeAt(contactIndex);
@@ -1239,10 +1242,11 @@ clearCustomerSearch(): void {
   removeEmail(branchIndex: number, emailIndex: number) {
     const email = this.getEmails(branchIndex).at(emailIndex);
     const emailSid = email.get('CustomerBrEmailSid')?.value;
+    const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
 
     if (emailSid) {
       if (confirm('Are you sure you want to delete this email?')) {
-        this.masterService.deleteCustomerBranchEmailById(emailSid).subscribe({
+        this.masterService.deleteCustomerBranchEmailById(emailSid,updatedBy).subscribe({
           next: (resp: any) => {
             this.appSettingService.showSuccess('Email deleted successfully');
             this.getEmails(branchIndex).removeAt(emailIndex);
@@ -1260,10 +1264,11 @@ clearCustomerSearch(): void {
   removeLogin(branchIndex: number, loginIndex: number) {
     const login = this.getLogins(branchIndex).at(loginIndex);
     const loginSid = login.get('CustomerLoginSid')?.value;
+    const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
 
     if (loginSid) {
       if (confirm('Are you sure you want to delete this login?')) {
-        this.masterService.deleteCustomerLoginById(loginSid).subscribe({
+        this.masterService.deleteCustomerLoginById(loginSid,updatedBy).subscribe({
           next: (resp: any) => {
             this.appSettingService.showSuccess('Login deleted successfully');
             this.getLogins(branchIndex).removeAt(loginIndex);
@@ -2560,7 +2565,8 @@ loadCustomerSalesTeamData() {
   }
 
   deleteSalesman(CustomerSalesSid: number) {
-    this.masterService.deleteSalesteamById(CustomerSalesSid).subscribe(
+    const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
+    this.masterService.deleteSalesteamById(CustomerSalesSid,updatedBy).subscribe(
       (resp: any) => {
         if (resp.status) {
           this.appSettingService.showSuccess('Salesman Deleted Successfully')
@@ -2586,8 +2592,9 @@ loadCustomerSalesTeamData() {
 
   deleteCustomerMilestone(CustomerMilestoneSid: number, index: number) {
     const actualIndex = this.getActualIndex(index);
+    const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
     if (CustomerMilestoneSid) {
-      this.masterService.deleteCustomerMilestoneById(CustomerMilestoneSid).subscribe(
+      this.masterService.deleteCustomerMilestoneById(CustomerMilestoneSid,updatedBy).subscribe(
         (resp: any) => {
           if (resp.status) {
             this.appSettingService.showSuccess('Customer Milestone Deleted Successfully.')
@@ -2702,10 +2709,11 @@ loadCustomerSalesTeamData() {
   removeCustomerEmail(index: number) {
     const email = this.customerEmails.at(index);
     const emailSid = email.get('CustomerBrEmailSid')?.value;
+    const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
 
     if (emailSid) {
       if (confirm('Are you sure you want to delete this email?')) {
-        this.masterService.deleteCustomerBranchEmailById(emailSid).subscribe({
+        this.masterService.deleteCustomerBranchEmailById(emailSid,updatedBy).subscribe({
           next: (resp: any) => {
             if (resp.status) {
               this.customerEmails.removeAt(index);
@@ -2787,10 +2795,11 @@ loadCustomerSalesTeamData() {
   removeCustomerLogin(index: number) {
     const login = this.customerLogins.at(index);
     const loginSid = login.get('CustomerLoginSid')?.value;
+    const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
 
     if (loginSid) {
       if (confirm('Are you sure you want to delete this login?')) {
-        this.masterService.deleteCustomerLoginById(loginSid).subscribe({
+        this.masterService.deleteCustomerLoginById(loginSid,updatedBy).subscribe({
           next: (resp: any) => {
             if (resp.status) {
               this.customerLogins.removeAt(index);
@@ -2884,9 +2893,10 @@ getTaxIdName(): string {
 }
 
   deleteSalesTeam(customerSalesSid: number, index: number) {
+    const updatedBy = this.appSettingService.userSettingSource.value['userEmail'];
     const actualIndex = this.getActualSalesTeamIndex(index);
     if (customerSalesSid) {
-      this.masterService.deleteSalesteamById(customerSalesSid).subscribe((resp: any) => {
+      this.masterService.deleteSalesteamById(customerSalesSid,updatedBy).subscribe((resp: any) => {
         if (resp.status) {
           this.appSettingService.showSuccess('Sales Team Deleted Successfully.');
           this.cusSalesteam.removeAt(actualIndex);
@@ -3681,47 +3691,19 @@ private extractApiErrorMessage(error: any, fallbackMessage: string): string {
    this.router.navigate(['master/organization/list']);
   }
 
-  openAuditLogs(modal: TemplateRef<any>) {
-    if (!this.CustomerMasterSid) return;
-     if (this.isLogLoading) return; 
-     this.isLogLoading = true;
-
-    this.masterService.getAuditLogsCustomer(
-      'CustomerMaster',
-      this.CustomerMasterSid.toString()
-    ).subscribe({
-      next: (logs: any[]) => {
-        this.isLogLoading = false;
-        const ignoredFields = ['updatedOn', 'updatedBy']; // ✅ add more if needed later
-
-        const formatFields = (val: any) => {
-          if (!val) return [];
-          const obj = typeof val === 'string' ? JSON.parse(val) : val;
-          if (Object.keys(obj).length === 0) return [];
-          return Object.entries(obj)
-            .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-            .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-        };
-
-        this.auditLogs = logs
-          .map(log => ({
-            ...log,
-            oldValDisplay: formatFields(log.oldVal),
-            newValDisplay: formatFields(log.newVal),
-          }))
-          .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
-
-        this.auditLogModalRef = this.modalService.open(modal, {
-          centered: true,
-          scrollable: true,
-          windowClass: 'audit-log-modal'
-        });
-      },
-      error: err => {
-        this.isLogLoading = false;
-        console.error('Error fetching audit logs:', err)}
-    });
-  }
+  openAuditLogs() {
+      if (!this.customerData?.CustomerMasterSid) return;
+      const modalRef = this.modalService.open(AuditLogComponent, {
+        centered: true,
+        scrollable: true,
+        size: 'xl',
+        windowClass: 'audit-log-modal'
+      });
+      modalRef.componentInstance.title = 'Organization Logs';
+      modalRef.componentInstance.tableName = 'CustomerMaster';
+      modalRef.componentInstance.recordId = this.customerData?.CustomerMasterSid.toString();
+      modalRef.componentInstance.screenName = 'Organization';
+    }
 
 
   showCustomerInfo() {

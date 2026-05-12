@@ -29,6 +29,7 @@ import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/
 import { CommonService } from 'src/app/common/common.service';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 @Component({
   selector: 'app-standard-charge-entry',
@@ -415,7 +416,9 @@ export class StandardChargeEntryComponent implements OnInit,OnDestroy, HasUnsave
             fg.get('CostAmount')?.disable();
             fg.get('CostCurrency').disable();
             fg.get('UomSid').disable();
-            // fg.get('CargoType').disable();
+            if (row.StdTariffDetailSid) {
+              fg.get('CargoType')?.disable();
+            }
             fg.get('ChargeMasterSid').disable();
           }
           this.StdTariffDetails.push(fg);
@@ -727,42 +730,19 @@ export class StandardChargeEntryComponent implements OnInit,OnDestroy, HasUnsave
     modalRef.componentInstance.pdfContentId = 'quotationContent';
   }
 
-  openAuditLogs(modal: TemplateRef<any>) {
-    if (!this.StdRateHeaderSid) return;
-
-    this.masterService.getAuditLogs(
-      'StdRateHeader',
-      this.StdRateHeaderSid.toString()
-    ).subscribe({
-      next: (logs: any[]) => {
-        const ignoredFields = ['updatedOn', 'updatedBy']; // ✅ add more if needed later
-
-        const formatFields = (val: any) => {
-          if (!val) return [];
-          const obj = typeof val === 'string' ? JSON.parse(val) : val;
-          if (Object.keys(obj).length === 0) return [];
-          return Object.entries(obj)
-            .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-            .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-        };
-
-        this.auditLogs = logs
-          .map(log => ({
-            ...log,
-            oldValDisplay: formatFields(log.oldVal),
-            newValDisplay: formatFields(log.newVal),
-          }))
-          .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
-
-        this.auditLogModalRef = this.modalService.open(modal, {
+  openAuditLogs() {
+        if (!this.standardChargeData?.StdRateHeaderSid) return;
+        const modalRef = this.modalService.open(AuditLogComponent, {
           centered: true,
           scrollable: true,
+          size: 'xl',
           windowClass: 'audit-log-modal'
         });
-      },
-      error: err => console.error('Error fetching audit logs:', err)
-    });
-  }
+        modalRef.componentInstance.title = 'Standard Charge Logs';
+        modalRef.componentInstance.tableName = 'StdRateHeader';
+        modalRef.componentInstance.recordId = this.standardChargeData?.StdRateHeaderSid.toString();
+        modalRef.componentInstance.screenName = 'StdCharge';
+      }
 
   public getAmountDecimalPlaces(CurrencyMasterSid: number): number {
     const currency = this.currencyList.find(currency => currency.CurrencyMasterSid === CurrencyMasterSid);

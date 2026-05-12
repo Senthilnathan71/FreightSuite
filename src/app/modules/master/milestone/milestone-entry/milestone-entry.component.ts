@@ -23,6 +23,7 @@ import { MultiSelectComponent } from 'src/app/component/multiselect-dropdown/mul
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { debounceTime, Subject, takeUntil } from 'rxjs';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 @Component({
   selector: 'app-milestone-entry',
@@ -470,70 +471,19 @@ openDocRef() {
   modalRef.componentInstance.pdfContentId = 'quotationContent';
   }
 
-
-//  openAuditLogs(modal: TemplateRef<any>) {
-//   if (!this.milestoneId) return;
-
-//   this.masterService.getAuditLogs('MilestoneMaster', this.milestoneId.toString()).subscribe({
-//     next: (logs: any[]) => {
-//       const formatFields = (val: any) => {
-//         if (!val) return ['NA'];
-//         const obj = typeof val === 'string' ? JSON.parse(val) : val;
-//         delete obj.updatedOn; // Remove updatedOn field
-//         // If no fields exist after deleting updatedOn
-//         if (Object.keys(obj).length === 0) return ['NA'];
-//         return Object.entries(obj).map(
-//           ([key, value]) => `${key}: ${value !== null && value !== undefined ? value : 'NA'}`
-//         );
-//       };
-
-//       this.auditLogs = logs.map(log => ({
-//         ...log,
-//         oldValDisplay: formatFields(log.oldVal),
-//         newValDisplay: formatFields(log.newVal)
-//       }));
-
-//       this.auditLogModalRef = this.modalService.open(modal, { centered: true, scrollable: true, windowClass: 'audit-log-modal' });
-//     },
-//     error: err => console.error('Error fetching audit logs:', err)
-//   });
-// }
-openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.milestoneId) return;
-
-  this.masterService.getAuditLogs(
-    'MilestoneMaster',
-    this.milestoneId.toString()
-  ).subscribe({
-    next: (logs: any[]) => {
-      const ignoredFields = ['updatedOn','updatedBy']; // ✅ add more if needed later
-
-      const formatFields = (val: any) => {
-        if (!val) return [];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        if (Object.keys(obj).length === 0) return [];
-        return Object.entries(obj)
-          .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-          .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-      };
-
-      this.auditLogs = logs
-        .map(log => ({
-          ...log,
-          oldValDisplay: formatFields(log.oldVal),
-          newValDisplay: formatFields(log.newVal),
-        }))
-        .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
-
-      this.auditLogModalRef = this.modalService.open(modal, {
-        centered: true,
-        scrollable: true,
-        windowClass: 'audit-log-modal'
-      });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+openAuditLogs() {
+    if (!this.milestoneData?.MilestoneMasterSid) return;
+    const modalRef = this.modalService.open(AuditLogComponent, {
+      centered: true,
+      scrollable: true,
+      size: 'xl',
+      windowClass: 'audit-log-modal'
+    });
+    modalRef.componentInstance.title = 'Milestone Logs';
+    modalRef.componentInstance.tableName = 'MilestoneMaster';
+    modalRef.componentInstance.recordId = this.milestoneData?.MilestoneMasterSid.toString();
+    modalRef.componentInstance.screenName = 'Milestone';
+  }
 navigateToCreateMilestone() {
     this.router.navigate(['master/milestone/entry']);
   }
