@@ -24,6 +24,12 @@
             <i class="fas fs-6 fa-info-circle"></i>
           </a>
         }
+        @if(isEditMode && form.get('VoucherSid')?.value){
+          <a [routerLink]="['/accounts/payment/entry', form.get('VoucherSid')?.value]"
+             class="voucher-number-link ms-2" title="View Payment">
+            <i class="fas fa-external-link-alt me-1"></i>{{ paymentVoucherNumber || 'Payment' }}
+          </a>
+        }
         </div>
       </div>
 
@@ -278,7 +284,7 @@
                 </div>
               </aside>
 
-              <aside class="col-md-3">
+<aside class="col-md-3" style="display: none;">
                 <div class="custom-form-group">
                   <input
                     type="text"
@@ -300,8 +306,6 @@
                   <label class="input-label">Job No.</label>
                 </div>
               </aside>
-
-        
 
               <aside class="col-md-3">
                 <div class="custom-form-group">

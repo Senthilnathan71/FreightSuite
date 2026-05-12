@@ -59,6 +59,7 @@
             @if(searchOutstandingForm.get('SearchType')?.value === 'Party') {
             <div class="col-md-5">
               <dofi-searchable-dropdown
+                formControlName="LedgerMasterSid"
                 [items]="partyList"
                 placeholder="Select Party"
                 [displayFields]="CustomerLookupConfig.displayFields"
@@ -821,6 +822,13 @@
           {{ voucherMatchingInfo?.VoucherMatchingNo || "" }}
         </a>
         }
+        @if(isFromPaymentRequest && paymentForm.get('ReversalVoucher')?.getRawValue()){
+        <a [routerLink]="['/operation/payment-request/entry', paymentForm.get('ReversalVoucher')?.getRawValue()]"
+           class="voucher-number-link" title="View Payment Request">
+          <i class="fas fa-external-link-alt me-1"></i>
+          {{ prPaymentRequestNumber || paymentForm.get('ReversalVoucher')?.getRawValue() }}
+        </a>
+        }
       </div>
 
       <!-- Totals / Warning (right aligned) -->
@@ -920,6 +928,8 @@
               <th class="bg-transparent text-light" style="font-size: 14px">
                 Profit Center
               </th>
+              <th class="bg-transparent text-light" style="font-size: 14px">Master Job</th>
+              <th class="bg-transparent text-light" style="font-size: 14px">House Job</th>
               <!-- <th class="bg-transparent text-light" style="font-size: 14px">
                 Charge
               </th> -->
@@ -958,15 +968,19 @@
                   </span>
                 </td>
                 <td class="dofi-min-w-150">
-                  <ng-select
+                  <dofi-searchable-dropdown
                     [items]="filteredCoaList[i]"
+                    formControlName="COAMasterSid"
+                    placeholder=""
+                    [displayFields]="COALookupConfig.displayFields"
+                    [displayLabels]="COALookupConfig.displayLabels"
+                    [labelFields]="COALookupConfig.labelFields"
                     bindLabel="LedgerName"
                     bindValue="COAMasterSid"
-                    formControlName="COAMasterSid"
                     appendTo="body"
-                    (change)="handleCOAChange($event, i)"
+                    (itemSelected)="handleCOAChange($event, i)"
                   >
-                  </ng-select>
+                  </dofi-searchable-dropdown>
                 </td>
                 <td class="dofi-min-w-150">
                   <ng-select
@@ -1125,6 +1139,47 @@
                     formControlName="ProfitCenter"
                     appendTo="body"
                   ></ng-select>
+                </td>
+                <td class="dofi-min-w-100">
+                  @if(!isPosted && !((d.get('VoucherDetailSid')?.value > 0 || d.get('SourceDetailSid')?.value) && d.get('MasterJobSid')?.value)){
+                    <ng-select
+                      [items]="masterJobList[i]"
+                      bindLabel="MasterJobNumber"
+                      bindValue="MasterJobSid"
+                      formControlName="MasterJobSid"
+                      (change)="onMasterJobChange(i, $event)"
+                      (scrollToEnd)="onMasterJobScrollToEnd(i)"
+                      [typeahead]="masterJobTypeahead$[i]"
+                      [loading]="masterJobLoading[i]"
+                      appendTo="body"
+                    ></ng-select>
+                  }
+                  @if((d.get('VoucherDetailSid')?.value > 0 || d.get('SourceDetailSid')?.value) && d.get('MasterJobSid')?.value){
+                    <a
+                      [routerLink]="['/operation/master-job/entry', d.get('MasterJobSid')?.value]"
+                      class="voucher-number-link"
+                    >{{ d.get('masterJob')?.value?.MasterJobNumber || d.get('masterJob')?.value?.MBLNo || d.get('MasterJobSid')?.value }}</a>
+                  }
+                </td>
+                <td class="dofi-min-w-100">
+                  @if(!isPosted && !((d.get('VoucherDetailSid')?.value > 0 || d.get('SourceDetailSid')?.value) && d.get('HouseJobSid')?.value)){
+                    <ng-select
+                      [items]="houseJobList[i]"
+                      bindLabel="HBLNo"
+                      bindValue="HouseJobSid"
+                      formControlName="HouseJobSid"
+                      (scrollToEnd)="onHouseJobScrollToEnd(i)"
+                      [typeahead]="houseJobTypeahead$[i]"
+                      [loading]="houseJobLoading[i]"
+                      appendTo="body"
+                    ></ng-select>
+                  }
+                  @if((d.get('VoucherDetailSid')?.value > 0 || d.get('SourceDetailSid')?.value) && d.get('HouseJobSid')?.value){
+                    <a
+                      [routerLink]="['/operation/house-job/entry', d.get('HouseJobSid')?.value]"
+                      class="voucher-number-link"
+                    >{{ d.get('houseJob')?.value?.HBLNo || d.get('HouseJobSid')?.value }}</a>
+                  }
                 </td>
                 <!-- <td class="dofi-min-w-100">
                   <ng-select
