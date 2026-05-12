@@ -829,7 +829,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         .getAllCoaWithLedgerCategory({
           LedgerCategory: 'Ledger',
           CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
-          filterNonJob: true,
+          filterNonJob: false,
           VoucherType: 'PMT',
         })
         .pipe(catchError((err) => of([]))),
@@ -866,6 +866,19 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         // Re-evaluate HSSAC enabled state for all rows now that coaList is loaded
         for (let i = 0; i < this.detailItems.length; i++) {
           this.updateHSSACEnabledState(i);
+          // For PR rows: coaList arrival may have just enabled HSSAC — load charge-specific list
+          if (this.isFromPaymentRequest && this.isHSSACEnabledForRow(i)) {
+            const row = this.detailItems.at(i) as FormGroup;
+            const chargeSid = row.get('ChargeMasterSid')?.getRawValue();
+            if (chargeSid) {
+              if (this.hssacListForRow[i]?.length > 0 && !row.get('HSSACMasterSid')?.value) {
+                row.patchValue({ HSSACMasterSid: this.hssacListForRow[i][0].HSSACMasterSid }, { emitEvent: false });
+                this.recalcPaymentTaxForRow(i);
+              } else if (!this.hssacListForRow[i]?.length) {
+                this.loadHSSACForCharge(i, chargeSid);
+              }
+            }
+          }
         }
       }
     );
@@ -1751,6 +1764,11 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
             if (dept) this.filterChargeByDeptForARow(dept, rowIndex);
           }
 
+          // Load charge-specific HSSAC list for tax calculation
+          if (detail.ChargeMasterSid) {
+            this.loadHSSACForCharge(rowIndex, detail.ChargeMasterSid);
+          }
+
           // Seed masterJobList so ng-select shows the label immediately (before API resolves)
           if (prMasterJobObj) {
             this.masterJobList[rowIndex] = [prMasterJobObj];
@@ -1772,7 +1790,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           'CurrencyMasterSid', 'CurrencyCode', 'ExchangeRate',
           'NumberOfUnit', 'Rate',
           'DepartmentMasterSid', 'ChargeMasterSid', 'ChargeDescription', 'ChargeUOMSid',
-          'HSSACMasterSid', 'HouseJobSid', 'MasterJobSid',
+          'HouseJobSid', 'MasterJobSid',
         ];
         this.detailItems.controls.forEach((ctrl) => {
           prLockedFields.forEach(field => (ctrl as FormGroup).get(field)?.disable({ emitEvent: false }));
@@ -1977,12 +1995,18 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         'CurrencyMasterSid', 'CurrencyCode', 'ExchangeRate',
         'NumberOfUnit', 'Rate',
         'DepartmentMasterSid', 'ChargeMasterSid', 'ChargeDescription', 'ChargeUOMSid',
-        'HSSACMasterSid', 'HouseJobSid', 'MasterJobSid',
+        'HouseJobSid', 'MasterJobSid',
       ];
       this.detailItems.controls.forEach((ctrl) => {
         prLockedFields.forEach(f => (ctrl as FormGroup).get(f)?.disable({ emitEvent: false }));
       });
       this.searchOutstandingForm.get('LedgerMasterSid')?.disable({ emitEvent: false });
+
+      // Load charge-specific HSSAC lists for PR rows in edit mode
+      this.detailItems.controls.forEach((ctrl, i) => {
+        const chargeSid = (ctrl as FormGroup).get('ChargeMasterSid')?.getRawValue();
+        if (chargeSid) this.loadHSSACForCharge(i, chargeSid);
+      });
     }
 
     // const voucherMatchingHeader = response.voucherMatchingHeader || [];
@@ -4335,12 +4359,44 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         if (res.status) {
           const hssacItems = (res.data || []).filter((h: any) => h.HSSACMasterSid);
           this.hssacListForRow[index] = hssacItems;
-          if (hssacItems.length > 0 && !isPatching) {
+          if (hssacItems.length > 0 && (!isPatching || (this.isFromPaymentRequest && !this.isPatching))) {
             (this.detailItems.at(index) as FormGroup).patchValue(
               { HSSACMasterSid: hssacItems[0].HSSACMasterSid },
               { emitEvent: false }
             );
             this.recalcPaymentTaxForRow(index);
+          }
+        } else {
+          this.hssacListForRow[index] = [];
+        }
+      },
+      error: () => {
+        this.hssacListForRow[index] = [];
+      }
+    });
+  }
+
+  /**
+   * Load HSSAC list for a row by ChargeMasterSid directly.
+   * Used when PR rows have vendor/party subledgers (not type 'Charge'),
+   * so loadHSSACForSubledger() cannot resolve the charge's HSSAC.
+   */
+  loadHSSACForCharge(index: number, chargeMasterSid: number): void {
+    this.operationService.getChargeTaxForChargeId(chargeMasterSid).subscribe({
+      next: (res: any) => {
+        if (res.status) {
+          const hssacItems = (res.data || []).filter((h: any) => h.HSSACMasterSid);
+          this.hssacListForRow[index] = hssacItems;
+          if (hssacItems.length > 0 && this.isHSSACEnabledForRow(index)) {
+            const row = this.detailItems.at(index) as FormGroup;
+            const currentHssac = row.get('HSSACMasterSid')?.value;
+            if (!currentHssac) {
+              row.patchValue(
+                { HSSACMasterSid: hssacItems[0].HSSACMasterSid },
+                { emitEvent: false }
+              );
+              this.recalcPaymentTaxForRow(index);
+            }
           }
         } else {
           this.hssacListForRow[index] = [];
