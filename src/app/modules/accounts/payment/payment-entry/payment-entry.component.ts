@@ -228,11 +228,15 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     VoucherMatchingNo: string;
   };
   paymentRequestSid: number | null = null;
+  isFromPaymentRequest: boolean = false;
+  prPaymentRequestNumber: string = '';
+  prPaymentRequestSid: number | null = null;
   private isPatching = false;
   private isPrefilling = false;
   private prMasterJobSid: number | null = null;
   private prHouseJobSid: number | null = null;
   private prDepartmentMasterSid: number | null = null;
+  private prBookingHeaderSid: number | null = null;
 
   paymentValidationConfig: ValidationMessageConfig = {
   labels: {
@@ -672,6 +676,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
       InvoiceType: ['REG'],
       PlaceOfSupply: [''],
+      ReversalVoucher: [null],
 
       // Form arrays
       detailItems: this.fb.array([]), // charge detail formArray
@@ -1366,7 +1371,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       BankCOA: formValue.BankCOA,
       BankPartyName: formValue.BankPartyName,
       GST_VAT: formValue.GST_VAT,
-      ReversalVoucher: formValue.ReversalVoucher,
+      ReversalVoucher: this.isFromPaymentRequest
+        ? (this.paymentRequestSid ?? formValue.ReversalVoucher)
+        : formValue.ReversalVoucher,
       TaxNumber: formValue.TaxNumber,
       InvoiceType : formValue.InvoiceType || 'REG',
       GSTType: this.currentCompanyCountryCode !== 'in' ? 'VAT' : (formValue.GSTType || ''),
@@ -1395,6 +1402,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       PaymentRequestSid: this.paymentRequestSid,
       MasterJobSid: this.prMasterJobSid ?? null,
       HouseJobSid: this.prHouseJobSid ?? null,
+      BookingHeaderSid: this.prBookingHeaderSid ?? null,
       DepartmentMasterSid: this.prDepartmentMasterSid ?? null,
       ...(this.isEditMode
         ? {
@@ -1611,6 +1619,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         this.prMasterJobSid = request.MasterJobSid ?? null;
         this.prHouseJobSid = request.HouseJobSid ?? null;
         this.prDepartmentMasterSid = request.DepartmentMasterSid ?? null;
+        this.prBookingHeaderSid = request.BookingSid ?? null;
         if (request?.PaymentRequestStatus !== 'Approved') {
           this.appSettingService.showWarning('Payment voucher can be created only for approved payment request');
           return;
@@ -1623,18 +1632,24 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
         const firstDetail = request?.paymentRequestDetails?.[0];
 
-        // Block patchCurrencyExchangeRate so onPartyChange's async rate fetch
-        // does not overwrite the exchange rate we set from the saved payment request.
-        this.isPrefilling = true;
-
-        // Find party using CostAgentBranchSid directly on the detail (not via relation)
+        // Check party exists before any form patching
         const party = this.partyList.find(
           (item) => item.CustomerBranchSid === firstDetail?.CostAgentBranchSid
         );
-
-        if (party) {
-          await this.onPartyChange(party, true);
+        if (!party) {
+          this.appSettingService.showError(
+            'Party for this payment request is not found in the system. Cannot create payment.'
+          );
+          return;
         }
+
+        // Block patchCurrencyExchangeRate so onPartyChange's async rate fetch
+        // does not overwrite the exchange rate we set from the saved payment request.
+        this.isFromPaymentRequest = true;
+        this.prPaymentRequestSid = paymentRequestSid;
+        this.isPrefilling = true;
+
+        await this.onPartyChange(party, true);
 
         // Validate party resolved with ledger mapping — block save if missing
         if (!this.paymentForm.get('PartyMasterSid')?.value || !this.paymentForm.get('COAMasterSid')?.value) {
@@ -1646,10 +1661,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         }
 
         // Pre-fill search card party so user can click Get OS manually later
-        this.selectedPartyItemForSearch = party ?? null;
-        this.searchOutstandingForm.get('LedgerMasterSid')?.setValue(
-          this.paymentForm.get('PartyMasterSid')?.value ?? null
-        );
+        this.searchOutstandingForm.get('LedgerMasterSid')?.setValue(party.SubledgerMasterSid ?? null);
+        this.searchOutstandingForm.get('LedgerMasterSid')?.disable({ emitEvent: false });
+        this.paymentForm.get('PartyMasterSid')?.disable({ emitEvent: false });
         // Do NOT call searchOutstanding() here
 
         const currencySid = firstDetail?.CostCurrencyMasterSid || this.r['CurrencyMasterSid']?.value;
@@ -1675,6 +1689,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           exCtrl?.enable({ emitEvent: false });
           currCtrl?.enable({ emitEvent: false });
         }
+        // Lock fields derived from payment request
+        this.paymentForm.get('CashOrBank')?.disable({ emitEvent: false });
         // Sync the auto-inserted party row's exchange rate to the header
         this.checkAndUpdateForAllPartyDetail();
         this.recalculateAllMatchingPartyAmounts();
@@ -1694,7 +1710,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           this.addDetailRow({
             COAMasterSid: detail.COAMasterSid || null,
             LedgerMasterSid: detail.LedgerMasterSid || null,
-            DrCr: 'D',
+            DrCr: detail.DrCr || 'D',
             CurrencyMasterSid: detail.CostCurrencyMasterSid,
             CurrencyCode: detail.currency?.currencyCode || '',
             ExchangeRate: detail.CostExchangeRate || 1,
@@ -1712,7 +1728,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
             PartyAmount: detail.CostAmount || 0,
             CostRevenueChargesSid: detail.CostRevenueChargesSid || null,
             BookingRatesSid: detail.BookingRatesSid || null,
-            PaymentRequestDtlSid: detail.PaymentRequestDtlSid ?? null,
+            SourceDetailSid: detail.PaymentRequestDtlSid ?? null,
           }, false);
           const rowIndex = this.detailItems.length - 1;
 
@@ -1750,6 +1766,17 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           }
         });
 
+        // Lock all prefilled detail fields — only Amount and LocalAmount remain editable
+        const prLockedFields = [
+          'COAMasterSid', 'LedgerMasterSid', 'DrCr',
+          'CurrencyMasterSid', 'CurrencyCode', 'ExchangeRate',
+          'NumberOfUnit', 'Rate',
+          'DepartmentMasterSid', 'ChargeMasterSid', 'ChargeDescription', 'ChargeUOMSid',
+          'HSSACMasterSid', 'HouseJobSid', 'MasterJobSid',
+        ];
+        this.detailItems.controls.forEach((ctrl) => {
+          prLockedFields.forEach(field => (ctrl as FormGroup).get(field)?.disable({ emitEvent: false }));
+        });
 
       },
     });
@@ -1768,6 +1795,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       voucherMatchings,
       ...headerInfo
     } = response;
+    this.isFromPaymentRequest = !!(headerInfo.ReversalVoucher || headerInfo.PaymentRequestSid);
     this.paymentForm.patchValue(
       {
         VoucherNumber: headerInfo.VoucherNumber,
@@ -1792,9 +1820,19 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         InstrumentDate: headerInfo.InstrumentDate,
         ClearanceDate: headerInfo.ClearanceDate,
         InvoiceType: headerInfo.InvoiceType || '',
+        ReversalVoucher: headerInfo.ReversalVoucher ?? null,
       },
       { emitEvent: false }
     );
+    const prSid = headerInfo.ReversalVoucher || headerInfo.PaymentRequestSid;
+    if (prSid) {
+      this.prPaymentRequestSid = prSid;
+      this.operationService.getPaymentRequestById(prSid)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({ next: (r: any) => {
+          if (r?.data) this.prPaymentRequestNumber = r.data.PaymentRequestNumber || '';
+        }});
+    }
 
     // Update tax service with party context from edit load
     const loadedParty = this.partyList?.find(
@@ -1854,6 +1892,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     detailItems.forEach((d, index) => {
       const detailRecord = {
         VoucherDetailSid: d.VoucherDetailSid,
+        SourceDetailSid: d.SourceDetailSid ?? d.PaymentRequestDtlSid ?? null,
         VoucherHeaderSid: d.VoucherHeaderSid,
         Sno: index + 1,
         Status: String(d.Status).charAt(0),
@@ -1889,6 +1928,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         Remarks: d.Remarks,
         PartyAmount: d.PartyAmount,
         IsAutoGenerated: d.IsAutoGenerated || 'N',
+        CostRevenueChargesSid: d.CostRevenueChargesSid || null,
+        masterJob: d.masterJob || null,
+        houseJob: d.houseJob || null,
       };
 
       this.addDetailRow(detailRecord, false);
@@ -1904,9 +1946,16 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         (dep) => dep.DepartmentMasterSid === d.DepartmentMasterSid
       );
       this.filterDetailsWithDept(dept, index);
-      this.onMasterJobChange(index, {
-        MasterJobSid: d.MasterJobSid,
-      });
+      const masterJobObj = d.masterJob || { MasterJobSid: d.MasterJobSid };
+      if (d.MasterJobSid && d.masterJob) {
+        this.masterJobList[index] = [d.masterJob];
+      }
+      this.onMasterJobChange(index, masterJobObj);
+      // Re-seed houseJobList and houseJob control after onMasterJobChange clears them
+      if (d.HouseJobSid && d.houseJob) {
+        this.houseJobList[index] = [d.houseJob];
+        this.detailItems.at(index)?.get('houseJob')?.setValue(d.houseJob, { emitEvent: false });
+      }
     });
 
     // Update filtered COA list based on loaded data
@@ -1919,6 +1968,21 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           this.detailItems.at(i).get(field)?.disable({ emitEvent: false });
         });
       }
+    }
+
+    // Lock charge detail fields for Payment Request payments in edit mode
+    if (this.isFromPaymentRequest) {
+      const prLockedFields = [
+        'COAMasterSid', 'LedgerMasterSid', 'DrCr',
+        'CurrencyMasterSid', 'CurrencyCode', 'ExchangeRate',
+        'NumberOfUnit', 'Rate',
+        'DepartmentMasterSid', 'ChargeMasterSid', 'ChargeDescription', 'ChargeUOMSid',
+        'HSSACMasterSid', 'HouseJobSid', 'MasterJobSid',
+      ];
+      this.detailItems.controls.forEach((ctrl) => {
+        prLockedFields.forEach(f => (ctrl as FormGroup).get(f)?.disable({ emitEvent: false }));
+      });
+      this.searchOutstandingForm.get('LedgerMasterSid')?.disable({ emitEvent: false });
     }
 
     // const voucherMatchingHeader = response.voucherMatchingHeader || [];
@@ -1978,7 +2042,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const detailItem = this.fb.group({
       // Primary & audit fields
       VoucherDetailSid: [data?.VoucherDetailSid || 0],
-      PaymentRequestDtlSid: [data?.PaymentRequestDtlSid ?? null],
+      SourceDetailSid: [data?.SourceDetailSid ?? data?.PaymentRequestDtlSid ?? null],
       VoucherHeaderSid: [data?.VoucherHeaderSid || null],
       Sno: [data?.Sno || 1],
       Status: [data?.Status || 'A'],
@@ -2120,9 +2184,10 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       detail.get('CurrencyCode')?.disable({ emitEvent: false });
       detail.get('ExchangeRate')?.disable({ emitEvent: false });
     } else {
-      // For auto party/bank rows, keep currency fields disabled
+      // For auto party/bank rows or PR-prefilled rows, keep currency fields disabled
       const isLockedRow = this.isAutoPartyRow(detailIndex) || this.isAutoBankRow(detailIndex);
-      if (!isLockedRow) {
+      const isPRRow = !!detail.get('SourceDetailSid')?.value;
+      if (!isLockedRow && !isPRRow) {
         detail.get('CurrencyMasterSid')?.enable({ emitEvent: false });
         detail.get('CurrencyCode')?.enable({ emitEvent: false });
         detail.get('ExchangeRate')?.enable({ emitEvent: false });
@@ -3273,7 +3338,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   isDeleteBlocked(index: number): boolean {
     return this.isAutoPartyRow(index)
         || this.isAutoBankRow(index)
-        || !!this.detailItems.at(index)?.get('PaymentRequestDtlSid')?.value;
+        || !!this.detailItems.at(index)?.get('SourceDetailSid')?.value;
   }
 
   isSyTypeRow(index: number): boolean {
@@ -3295,7 +3360,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     if (this.isAutoBankRow(index)) {
       return 'Clear the Bank/Cash field to remove this row';
     }
-    if (this.detailItems.at(index)?.get('PaymentRequestDtlSid')?.value) {
+    if (this.detailItems.at(index)?.get('SourceDetailSid')?.value) {
       return 'Row originates from a Payment Request and cannot be deleted';
     }
     return '';

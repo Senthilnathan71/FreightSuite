@@ -2846,10 +2846,6 @@ createRateFormGroup(data?: any): FormGroup {
   }
 
   getCostDocumentTypeDisplay(row: AbstractControl): string {
-    if (row.get('PaymentRequestSid')?.value) {
-      return 'PRQ';
-    }
-
     return String(row.get('CostVoucherType')?.value?.DocumentTypeCode || '');
   }
 

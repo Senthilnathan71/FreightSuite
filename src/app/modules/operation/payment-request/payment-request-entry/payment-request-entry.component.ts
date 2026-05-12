@@ -66,6 +66,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
   isEditMode = false;
   isViewMode = false;
   isReadOnly = false;
+  paymentVoucherNumber: string = '';
   loading = false;
   saving = false;
   lookupsLoaded = false;
@@ -132,6 +133,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       Remarks: [''],
       PaymentRequestStatus: ['Pending', Validators.required],
       Status: ['A', Validators.required],
+      VoucherSid: [{ value: null, disabled: true }],
       detailItems: this.fb.array([]),
     });
   }
@@ -538,7 +540,9 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
           Remarks: request.Remarks || '',
           PaymentRequestStatus: request.PaymentRequestStatus,
           Status: request.Status,
+          VoucherSid: request.VoucherSid ?? null,
         });
+        this.paymentVoucherNumber = request.VoucherNumber || '';
 
         const firstCurrency = request.paymentRequestDetails?.[0]?.CostCurrencyMasterSid;
         if (firstCurrency) {
@@ -976,11 +980,26 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
         if (resp.status) {
           this.isDirty = false;
           this.appSettingsService.showSuccess(resp.message);
+          if (raw.Status === 'S' && this.isEditMode) {
+            const prSid = resp.data?.PaymentRequestSid || resp.data?.PaymentRequestHeader?.PaymentRequestSid || this.form.get('PaymentRequestSid')?.value;
+            const chargeIds = this.detailItems.getRawValue()
+              .map((d: any) => d.SourceCostRevenueChargeSid)
+              .filter(Boolean);
+            if (prSid && chargeIds.length) {
+              this.operationService.suspendPaymentRequestCharges({
+                PaymentRequestSid: prSid,
+                chargeIds,
+              }).subscribe();
+            }
+          }
           const id = resp.data?.PaymentRequestSid || resp.data?.PaymentRequestHeader?.PaymentRequestSid;
           if (id) {
-            this.form.patchValue({ PaymentRequestSid: id }, { emitEvent: false });
-            this.scheduleDirtyTrackingSnapshot();
-            this.router.navigate(['/operation/payment-request/entry', id]);
+            if (this.isEditMode) {
+              this.loadRequest(id);
+            } else {
+              this.form.patchValue({ PaymentRequestSid: id }, { emitEvent: false });
+              this.router.navigate(['/operation/payment-request/entry', id]);
+            }
           } else {
             this.scheduleDirtyTrackingSnapshot();
             this.goBack();

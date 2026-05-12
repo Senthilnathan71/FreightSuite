@@ -2,6 +2,24 @@
   --vml: true;
 }
 
+// Voucher/Job number link — used in cost-entry, payment-entry, and similar entry tables
+.voucher-number-link {
+  color: #0649d4;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: underline;
+  display: inline-block;
+  padding: 4px 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    color: #0338a6;
+    text-decoration: underline;
+    background-color: rgba(6, 73, 212, 0.08);
+  }
+}
+
 // Invoice type info icon — used in invoice-entry, vendor-invoice-entry, cost-entry, credit-note-entry, vendor-credit-note-entry
 .ivt-pulse-icon {
   font-size: 15px;
