@@ -203,7 +203,7 @@
                 <div class="input-group">
                   <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker #d2="ngbDatepicker"
                     (click)="d2.toggle()" formControlName="QuoteDate" (keydown.arrowDown)="d2.open()" />
-                  <button class="btn " (click)="d2.toggle()" type="button"> <i-feather name="calendar"
+                  <button class="btn px-0" (click)="d2.toggle()" type="button"> <i-feather name="calendar"
                       class="feather-sm"></i-feather></button>
                 </div>
                 <label for="effectiveDate" class="input-label">Quote Date</label>
@@ -495,7 +495,9 @@
 
                   <button class="btn btn-sm waves-effect waves-light text-light"
                     (click)="removeRoute(routeIndex,route.value.QuoteRouteSid)"
-                    [disabled]="f['EnquirySid'].value || disableAllModification || doesBookingExistForRoute(route.value?.QuoteRouteSid) || isRouteApproved(routeIndex)">
+                    [disabled]="f['EnquirySid'].value || disableAllModification || doesBookingExistForRoute(route.value?.QuoteRouteSid) || isRouteApproved(routeIndex)"
+                    [style.border]="(f['EnquirySid'].value || disableAllModification || doesBookingExistForRoute(route.value?.QuoteRouteSid) || isRouteApproved(routeIndex)) ? 'none' : null"
+                    [style.box-shadow]="(f['EnquirySid'].value || disableAllModification || doesBookingExistForRoute(route.value?.QuoteRouteSid) || isRouteApproved(routeIndex)) ? 'none' : null">
                     <i class="fas fa-trash text-danger me-1"></i>
                   </button>
                   }
@@ -664,7 +666,7 @@
                               #d3="ngbDatepicker" (click)="d3.toggle()" formControlName="effDate"
                               [minDate]="route.get('QuoteRouteSid')?.value ? toNgbDateStruct(null) : toNgbDateStruct(todayDate)"
                               (keydown.arrowDown)="d3.open()" />
-                            <button class="btn" (click)="d3.toggle()" type="button"> <i-feather name="calendar"
+                            <button class="btn px-0" (click)="d3.toggle()" type="button"> <i-feather name="calendar"
                                 class="feather-sm"></i-feather></button>
                           </div>
                           <label for="effectiveDate" class="input-label">Eff Date <span
@@ -686,7 +688,7 @@
                             <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
                               #d4="ngbDatepicker" (click)="d4.toggle()" formControlName="expDate"
                               [minDate]="toNgbDateStruct(route.get('effDate').value)" (keydown.arrowDown)="d4.open()" />
-                            <button class="btn" (click)="d4.toggle()" type="button"> <i-feather name="calendar"
+                            <button class="btn px-0" (click)="d4.toggle()" type="button"> <i-feather name="calendar"
                                 class="feather-sm"></i-feather></button>
                           </div>
                           <label for="effectiveDate" class="input-label">Exp Date <span
@@ -865,46 +867,36 @@
                       </ng-container>
 
                       
-                     <aside class="col-md-2">
+                     <aside class="col-md-4" [ngClass]="isFclQuotationSegment(route) ? 'order-md-12 ms-md-auto' : ''">
   <div class="custom-form-group mt-md-2">
-    <!-- Make the booking number clickable -->
-    <div *ngIf="getBookingNumber(route.value?.QuoteRouteSid)">
-      <a href="javascript:void(0)" 
-         class="booking-link"
-         (click)="viewBooking(getBookingHeader(route.value?.QuoteRouteSid))"
-         [title]="'View Booking: ' + getBookingNumber(route.value?.QuoteRouteSid)">
-        {{ getBookingNumber(route.value?.QuoteRouteSid) }}
-      </a>
+    <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+      <div *ngIf="getBookingNumber(route.value?.QuoteRouteSid)">
+        <a href="javascript:void(0)"
+           class="booking-link fw-bold"
+           (click)="viewBooking(getBookingHeader(route.value?.QuoteRouteSid))"
+           [title]="'View Booking: ' + getBookingNumber(route.value?.QuoteRouteSid)">
+          {{ getBookingNumber(route.value?.QuoteRouteSid) }}
+        </a>
+      </div>
+
+      <div *ngIf="isEditMode && isRouteApproved(routeIndex)">
+        <button class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120"
+                (click)="goForBookingCreationForRoute(routeIndex, route.value?.QuoteRouteSid)"
+                [disabled]="!isContractValid() || !isQuotationSavedAfterApproval(routeIndex) || quotationForm.get('status')?.getRawValue() === 'Suspended'|| (!isContract && doesBookingExistForRoute(route.value?.QuoteRouteSid))">
+          @if(doesBookingExistForRoute(route.value?.QuoteRouteSid) && quotationForm.get('IsContract')?.value) {
+            <i class="fas fa-plus me-1"></i> Create Booking
+          }
+          @else if(doesBookingExistForRoute(route.value?.QuoteRouteSid) && !quotationForm.get('IsContract')?.value) {
+            Booking Created
+          }
+          @else {
+            <i class="fas fa-plus me-1"></i> Create Booking
+          }
+        </button>
+      </div>
     </div>
-   
-  
   </div>
 </aside>
-                      
-<div class="row">
-  <div class="col-md-12">
-    <div class="d-flex justify-content-end"
-         *ngIf="isEditMode && isRouteApproved(routeIndex)">
-
-      <button class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120" 
-              (click)="goForBookingCreationForRoute(routeIndex, route.value?.QuoteRouteSid)"
-              [disabled]="!isContractValid() || !isQuotationSavedAfterApproval(routeIndex) || quotationForm.get('status')?.getRawValue() === 'Suspended'|| (!isContract && doesBookingExistForRoute(route.value?.QuoteRouteSid))">
-
-        @if(doesBookingExistForRoute(route.value?.QuoteRouteSid) && quotationForm.get('IsContract')?.value) {
-          <i class="fas fa-plus me-1"></i> Create Booking
-        }
-        @else if(doesBookingExistForRoute(route.value?.QuoteRouteSid) && !quotationForm.get('IsContract')?.value) {
-          Booking Created
-        }
-        @else {
-          <i class="fas fa-plus me-1"></i> Create Booking
-        }
-
-      </button>
-
-    </div>
-  </div>
-</div>
 
 
                      <!-- <div class="col-12 px-2">
