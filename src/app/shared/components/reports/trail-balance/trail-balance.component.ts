@@ -343,21 +343,12 @@ export class TrailBalanceComponent {
 
     for (const group of this.groupedData || []) {
 
-      let lastLedger = '';
-
       for (const item of group.items || []) {
-
-        const isNewLedger = item.LedgerName !== lastLedger;
-
-        if (isNewLedger) {
-          lastLedger = item.LedgerName;
-        }
-
         const cells: ExcelCell[] = [
-          { value: isNewLedger ? item.LedgerType || '' : '' },
-          { value: isNewLedger ? item.GroupName || '' : '' },
-          { value: isNewLedger ? item.SubGroupName || '' : '' },
-          { value: isNewLedger ? item.LedgerName || '' : '' },
+          { value: item.LedgerType || '' },
+          { value: item.GroupName || '' },
+          { value: item.SubGroupName || ''  }, 
+          { value: item.LedgerName || ''  },
           ...(showSubledger ? [{ value: item.SubledgerName || '' }] : []),
           { value: this.formatNumber(item.OpeningDebit) },
           { value: this.formatNumber(item.OpeningCredit) },

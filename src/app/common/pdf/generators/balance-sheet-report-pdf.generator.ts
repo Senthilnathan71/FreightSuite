@@ -28,7 +28,7 @@ export function transformBalanceSheetReportData(
 ): BalanceSheetReportPdfData {
   const fullData = rawData || {};
   const processedFunds = processFunds(fullData?.data || []);
-  const retainedEarning = (fullData?.incomeTotal || 0) - (fullData?.expenseTotal || 0);
+  const retainedEarning = resolveRetainedEarning(fullData);
   const sourceOfFundsCategories = processedFunds.filter(cat => cat.category !== 'Asset');
   const assetCategories = processedFunds.filter(cat => cat.category === 'Asset');
   const totalSourceOfFunds = retainedEarning + sourceOfFundsCategories.reduce((sum, cat) => sum + (cat.categoryTotal || 0), 0);
@@ -50,6 +50,21 @@ export function transformBalanceSheetReportData(
     totalSourceOfFunds,
     totalApplicationOfFunds
   };
+}
+
+function resolveRetainedEarning(fullData: any): number {
+  const retained = fullData?.retained;
+
+  if (typeof retained === 'number') {
+    return Number(retained) || 0;
+  }
+
+  if (retained && typeof retained === 'object') {
+    const retainedValue = retained?.netProfit ?? retained?.amount ?? retained?.value;
+    return Number(retainedValue) || 0;
+  }
+
+  return (fullData?.incomeTotal || 0) - (fullData?.expenseTotal || 0);
 }
 
 export function generateBalanceSheetReportDocument(data: BalanceSheetReportPdfData): any {

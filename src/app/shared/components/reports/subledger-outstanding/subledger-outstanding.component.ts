@@ -95,6 +95,39 @@ export class SubledgerOutstandingComponent {
   get ledgerWiseData(): any[] {
     return this.fullData?.ledgerWiseData || [];
   }
+
+  get currencyWiseMergedSummary(): any[] {
+    const map = new Map<string, any>();
+
+    (this.ledgerWiseData || []).forEach((ledger: any) => {
+      (ledger?.currencyWiseSummary || []).forEach((cur: any) => {
+        const code = (cur?.currencyCode || '').trim();
+        if (!code) return;
+
+        if (!map.has(code)) {
+          map.set(code, {
+            currencyCode: code,
+            totalOutstanding: 0,
+            bucket_0_30: 0,
+            bucket_31_60: 0,
+            bucket_61_90: 0,
+            bucket_91_120: 0,
+            bucket_121_above: 0,
+          });
+        }
+
+        const row = map.get(code);
+        row.totalOutstanding += Number(cur?.totalOutstanding || 0);
+        row.bucket_0_30 += Number(cur?.bucket_0_30 || 0);
+        row.bucket_31_60 += Number(cur?.bucket_31_60 || 0);
+        row.bucket_61_90 += Number(cur?.bucket_61_90 || 0);
+        row.bucket_91_120 += Number(cur?.bucket_91_120 || 0);
+        row.bucket_121_above += Number(cur?.bucket_121_above || 0);
+      });
+    });
+
+    return Array.from(map.values()).sort((a, b) => a.currencyCode.localeCompare(b.currencyCode));
+  }
   
     getBucketTotal(transactions: any[], from: number, to: number): number {
       if (!transactions) return 0;
@@ -161,6 +194,102 @@ export class SubledgerOutstandingComponent {
     });
 
     return total;
+  }
+
+  getNetProfit(transactions: any[]): number {
+    if (!transactions || !transactions.length) return 0;
+
+    let drTotal = 0;
+    let crTotal = 0;
+
+    transactions.forEach((item) => {
+      const rawAmount = Number(item?.outstandingLocalAmount ?? item?.signedOutstandingLocal ?? 0) || 0;
+      const amount = Math.abs(rawAmount);
+      const drCr = String(item?.drCr || '').trim().toUpperCase();
+      const isDebit = drCr === 'D' || drCr === 'DR' || drCr.startsWith('DEB');
+      const isCredit = drCr === 'C' || drCr === 'CR' || drCr.startsWith('CRE');
+
+      if (isDebit) {
+        drTotal += amount;
+      } else if (isCredit) {
+        crTotal += amount;
+      } else {
+        // Fallback when Dr/Cr text is missing/invalid: infer from sign.
+        if (rawAmount < 0) crTotal += amount;
+        else drTotal += amount;
+      }
+    });
+
+    // Rule: netProfit = abs(Dr) - abs(Cr)
+    return drTotal - crTotal;
+  }
+
+  getOverallNetProfit(ledgers: any[]): number {
+    if (!ledgers || !ledgers.length) return 0;
+    return ledgers.reduce((sum, ledger) => {
+      return sum + this.getNetProfit(ledger?.transactions || []);
+    }, 0);
+  }
+
+  getOverallLocalTotal(ledgers: any[]): number {
+    if (!ledgers || !ledgers.length) return 0;
+    return ledgers.reduce((sum, ledger) => {
+      return sum + this.getLocalTotal(ledger?.transactions || [], ledger?.ledgerType);
+    }, 0);
+  }
+
+  getOverallSignedTotal(ledgers: any[]): number {
+    if (!ledgers || !ledgers.length) return 0;
+    return ledgers.reduce((sum, ledger) => {
+      return sum + this.getSignedTotal(ledger?.transactions || [], ledger?.ledgerType);
+    }, 0);
+  }
+
+  getOverallCumulativeTotal(ledgers: any[]): number {
+    if (!ledgers || !ledgers.length) return 0;
+    return ledgers.reduce((sum, ledger) => {
+      const txns = ledger?.transactions || [];
+      const last = txns.length ? Number(txns[txns.length - 1]?.cumulativeOutstanding || 0) : 0;
+      return sum + last;
+    }, 0);
+  }
+
+  getOverallNetProfitLocal(ledgers: any[]): number {
+    return this.getNetFromLedgerTotals(ledgers, 'local');
+  }
+
+  getOverallNetProfitOutstandingLocal(ledgers: any[]): number {
+    return this.getNetFromLedgerTotals(ledgers, 'outstanding');
+  }
+
+  getOverallNetProfitCumulative(ledgers: any[]): number {
+    return this.getNetFromLedgerTotals(ledgers, 'cumulative');
+  }
+
+  // Calculate NET PROFIT only from each ledger TOTAL row values.
+  // (No per-transaction Dr/Cr parsing.)
+  private getNetFromLedgerTotals(ledgers: any[], mode: 'local' | 'outstanding' | 'cumulative'): number {
+    if (!ledgers || !ledgers.length) return 0;
+
+    return ledgers.reduce((sum, ledger) => {
+      const transactions = ledger?.transactions || [];
+      const signedTotal = this.getSignedTotal(transactions, ledger?.ledgerType);
+      const sign = signedTotal < 0 ? -1 : 1;
+
+      let base = 0;
+      if (mode === 'local') {
+        base = Math.abs(this.getLocalTotal(transactions, ledger?.ledgerType));
+      } else if (mode === 'outstanding') {
+        base = Math.abs(this.getSignedTotal(transactions, ledger?.ledgerType));
+      } else {
+        const lastCumulative = transactions.length
+          ? Number(transactions[transactions.length - 1]?.cumulativeOutstanding || 0)
+          : 0;
+        base = Math.abs(lastCumulative);
+      }
+
+      return sum + (sign * base);
+    }, 0);
   }
   
   
@@ -310,6 +439,20 @@ export class SubledgerOutstandingComponent {
           });
         }
       });
+
+      if (ledgers.length > 0) {
+        rows.push({
+          cells: [
+            { value: 'NET PROFIT :', colspan: 7, alignment: { horizontal: 'right' } },
+            { value: this.formatNumber(this.getOverallNetProfitLocal(ledgers)) },
+            { value: '' },
+            { value: this.formatNumber(this.getOverallNetProfitOutstandingLocal(ledgers)) },
+            { value: this.formatNumber(this.getOverallNetProfitCumulative(ledgers)) },
+            { value: '' }
+          ],
+          style: 'grandTotal'
+        });
+      }
   
       return {
         fileName: 'Subledger-Outstanding-Report',
@@ -339,28 +482,18 @@ export class SubledgerOutstandingComponent {
             '91 - 120 Days',
             '121+ Days'
           ],
-
-          rows: ledgers.flatMap((ledger: any) => {
-            const ledgerHeaderRow: ExcelRow = {
-              cells: [{ value: ledger?.ledgerName || '-', colspan: 7 }],
-              style: 'section'
-            };
-
-            const currencyRows: ExcelRow[] = (ledger?.currencyWiseSummary || []).map((cur: any) => ({
-              cells: [
-                { value: cur.currencyCode || '' },
-                { value: this.formatNumber(cur.totalOutstanding || 0) },
-                { value: this.formatNumber(cur.bucket_0_30 || 0) },
-                { value: this.formatNumber(cur.bucket_31_60 || 0) },
-                { value: this.formatNumber(cur.bucket_61_90 || 0) },
-                { value: this.formatNumber(cur.bucket_91_120 || 0) },
-                { value: this.formatNumber(cur.bucket_121_above || 0) }
-              ],
-              style: 'data'
-            }));
-
-            return [ledgerHeaderRow, ...currencyRows];
-          }),
+          rows: this.currencyWiseMergedSummary.map((cur: any) => ({
+            cells: [
+              { value: cur.currencyCode || '' },
+              { value: this.formatNumber(cur.totalOutstanding || 0) },
+              { value: this.formatNumber(cur.bucket_0_30 || 0) },
+              { value: this.formatNumber(cur.bucket_31_60 || 0) },
+              { value: this.formatNumber(cur.bucket_61_90 || 0) },
+              { value: this.formatNumber(cur.bucket_91_120 || 0) },
+              { value: this.formatNumber(cur.bucket_121_above || 0) }
+            ],
+            style: 'data'
+          })),
 
           columnWidths: [12, 18, 14, 14, 14, 14, 14]
         },
