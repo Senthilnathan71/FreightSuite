@@ -1220,7 +1220,6 @@ formatContainerNumber(): void {
     masterJobContainers: containers
   };
 
-  console.log('Generate Job Payload:', payload);
 
   this.operationService.createMasterJob(payload).subscribe({
     next: (resp: any) => {

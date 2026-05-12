@@ -625,7 +625,6 @@ get visibleTabs() {
     }
 
     this.getCurrentCompanyBranches();
-    console.log('Current company branches:', this.currentCompanyBranches);
 
 
     this.spinner.show();
@@ -633,7 +632,6 @@ get visibleTabs() {
       this.loadHeaderLookups().subscribe();
       
       if (isCopiedBooking && copiedBookingData) {
-      console.log('Copying booking data:', copiedBookingData);
       
       // Clear navigation state to prevent re-patching on refresh
       history.replaceState({}, '', location.pathname);
@@ -871,13 +869,11 @@ subscribeToFormChanges() {
 
     this.masterService.getCityById(this.currentBranch?.CityMasterSid).subscribe({
       next: (response: any) => {
-        console.log("City API response:", response);
 
         if (response) {
           const ourCity = response;
 
           this.currentBranchCityName = ourCity ? ourCity.cityName : '';
-          console.log("Final City Name:", this.currentBranchCityName);
         }
 
         this.spinner.hide();
@@ -1070,7 +1066,6 @@ subscribeToFormChanges() {
  private calculateChargeableWeight(cargoGroup: FormGroup = this.cargoForm): void {
   // During patching, don't recalculate - use the patched value
   if (this.isPatching) {
-    console.log('Skipping chargeable weight calculation during patching');
     return;
   }
   
@@ -1796,7 +1791,6 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   
   patchValues(response: any) {
   this.isPatching = true;
-  console.log(response);
   try {
     this.bookingHeader = response;
     const barcodeData = `${response.BookingNo}`;
@@ -2115,7 +2109,6 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     // Reset isPatching after ALL patching is complete
     setTimeout(() => {
       this.isPatching = false;
-      console.log('✅ isPatching reset to false - calculations now enabled');
       
       // NOW trigger calculations AFTER patching is complete
       if(!this.isEditMode){
@@ -2284,21 +2277,18 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   }
 
   handleConnectionChange(allConnections: any[]) {
-    console.log(allConnections);
     if (allConnections.length > 0) {
       this.connectionResult = [...allConnections];
     }
   }
 
   handleRateChange(allRates: any[]) {
-    console.log(allRates);
     if (allRates.length > 0) {
       this.rateResult = [...allRates];
     }
   }
 
   handleMilestoneChange(allmilestones: any[]) {
-    console.log(allmilestones);
     if (allmilestones.length !== 0) {
       this.milestoneResult = [...allmilestones];
       if (this.followupModalRef) {
@@ -2324,13 +2314,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   }
 
   public errorLogger(): void {
-    console.log('Form Status:', this.bookingForm.status);
-    console.log('Form Value', this.bookingForm.value);
     if (this.bookingForm.invalid) {
       const invalid = this.findInvalidControlsRecursive(this.bookingForm);
-      console.log('Invalid controls:', invalid);
     } else {
-      console.log('No invalid controls found.');
     }
   }
 
@@ -2377,7 +2363,6 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       }
 
     }
-    console.log('Submit triggered', this.bookingForm.value);
     if (this.isEditMode) {
       const currentFormState = this.getCurrentFormState();
       
@@ -2406,7 +2391,6 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   this.errorLogger();
   this.bookingForm.updateValueAndValidity();
        if (!this.validateAllForms()) {
-        console.log("STOP 2 - validateAllForms failed");
       this.isSaving = false;
       if (resolve) resolve(false);
     return;
@@ -2437,7 +2421,6 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       this.bookingForm.markAllAsTouched();
       this.bookingForm.updateValueAndValidity();
       this.appSettingService.showWarning('Please fill all required fields correctly.');
-      console.log("STOP 3 - bookingForm invalid");
       this.isSaving = false;
       if (resolve) resolve(false);
       return;
@@ -2447,7 +2430,6 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     this.croForm.markAllAsTouched();
     this.croForm.updateValueAndValidity();
     this.appSettingService.showWarning('Please fill all required fields in CRO tab correctly.');
-    console.log("STOP 4 - CRO form invalid");
     this.isSaving = false;
     if (resolve) resolve(false);
     return;
@@ -2482,9 +2464,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     //   console.warn('Rate validation failed — submission stopped');
     //   return;
     // }
-    console.log('Before',this.b['BookingStatus']?.getRawValue());
     this.updateBookingStatusOnCargoDate();
-    console.log('After',this.b['BookingStatus']?.getRawValue());
     const bookingFormValue = this.bookingForm.getRawValue();
     const cargoFormValue = this.cargoForm.getRawValue();
     const otherFormValue = this.otherForm.getRawValue();
@@ -2570,7 +2550,6 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
    
   const QuoteRouteSid = bookingFormValue.QuoteRouteSid || this.dataFromQuotation?.QuoteRouteSid;
   
-  console.log('QuoteRouteSid for payload:', QuoteRouteSid);
 
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -2675,8 +2654,6 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       milestones: this.milestoneResult,
       ...(this.isEditMode ? { updatedBy: currUserEmail } : { createdBy: currUserEmail })
     };
-    console.log("rateResult:", this.rateResult);
-    console.log('Submitted payload:', payload);
 
     const duplicateCheckingPayload = {
       CompanyMasterSid: payload.CompanyMasterSid,
@@ -3006,7 +2983,6 @@ onCarrierChangeForAir(carrier: any): void {
       this.bookingForm.get('VesselName')?.setValue(matchingAirline.CustomerName);
     } else {
       // If no exact match found, you might want to clear or show a message
-      console.log('No matching airline found for AirlineCode:', carrier.AirlineCode);
       this.bookingForm.get('VesselName')?.setValue(null);
     }
   } else {
@@ -3383,7 +3359,6 @@ usesDimensionalCargoFields(): boolean {
 
 
   onCustomerChange(customer: any) {
-  console.log(customer);
   
   // Check if department is selected
   if (!this.selectedDepartment) {
@@ -3451,7 +3426,6 @@ usesDimensionalCargoFields(): boolean {
     }
 
     const exportImportType = this.selectedDepartment.ExportImport;
-    console.log(exportImportType);
     if (exportImportType === "Export") {
       // Handle Export logic
       const CustomerBranchSid = this.b['CustomerBranchSid']?.value;
@@ -3603,7 +3577,6 @@ usesDimensionalCargoFields(): boolean {
 onVesselChange(vessel: any) {
   
   if(!vessel){
-    console.log('No voyage selected, clearing all voyage-related fields');
     this.voyageList = [];
     this.bookingForm.get('VoyageNo')?.setValue(null);
     this.bookingForm.get('ETA')?.setValue(null);
@@ -3747,40 +3720,25 @@ this.bookingForm.patchValue({
   }
 
 getVesselVoyBasedOnPorts() {
-  console.log('=== getVesselVoyBasedOnPorts START ===');
   
   const POL = this.b['POL']?.value;
   const POD = this.b['POD']?.value;
   const voyageType = this.getVoyageTypeBasedOnDept(this.selectedDepartment?.DepartmentMasterSid);
   
-  console.log('POL code:', POL);
-  console.log('POD code:', POD);
-  console.log('Voyage type:', voyageType);
-  console.log('Port List:', this.portList);
-  
   const POLSid = (this.portList.find(port => port.PortCode === POL)?.PortMasterSid);
   const PODSid = (this.portList.find(port => port.PortCode === POD)?.PortMasterSid);
-  
-  console.log('POLSid found:', POLSid, 'for POL:', POL);
-  console.log('PODSid found:', PODSid, 'for POD:', POD);
   
   this.hasShownVesselWarning = false;
   
   if (!POLSid || !PODSid || !voyageType) {
-    console.log('Missing required data - returning early:');
-    console.log('- POLSid exists?:', !!POLSid);
-    console.log('- PODSid exists?:', !!PODSid);
-    console.log('- voyageType exists?:', !!voyageType);
-    console.log('=== getVesselVoyBasedOnPorts END (early return) ===');
+  
     return;
   }
   
   const payload = { POL: POLSid, POD: PODSid, segment: voyageType };
-  console.log('Calling API with payload:', payload);
   
   this.operationService.getVesselVoyageBasedOnPorts(payload).subscribe(
     (resp: any) => {
-      console.log('API Response:', resp);
       if (resp.status) {
         this.headerVesselList = resp.data.map(vslVoy =>({
             ...vslVoy , 
@@ -3788,16 +3746,12 @@ getVesselVoyBasedOnPorts() {
             ETA : vslVoy.ETA ? new Date (vslVoy.ETA) : null,
             PortCutoffDate: vslVoy.PortCutoffDate ? new Date (vslVoy.PortCutoffDate) : null,
         }));
-        console.log('Header Vessel List updated:', this.headerVesselList.length, 'items');
         if (this.headerVesselList.length === 0 && !this.hasShownVesselWarning) {
           this.hasShownVesselWarning = true;
-          console.log('No vessels found for route');
         }
       } else {
-        console.log('API error:', resp);
         this.appSettingService.showError("Error loading Vessel");
       }
-      console.log('=== getVesselVoyBasedOnPorts END (API complete) ===');
     }
   );
 }
@@ -3913,7 +3867,6 @@ getVesselVoyBasedOnPorts() {
   }
 
   onImcoChange(productIndex: number, item: any, cargoIndex: number = -1) {
-    console.log(item);
     const productForm = cargoIndex < 0
       ? this.bookingProducts.at(productIndex) as FormGroup
       : this.bookingCargoProducts(cargoIndex).at(productIndex) as FormGroup;
@@ -3947,7 +3900,6 @@ getVesselVoyBasedOnPorts() {
       ? this.bookingProducts.at(productIndex)
       : this.bookingCargoProducts(cargoIndex).at(productIndex);
     const isHaz = productGroup.get('IsHaz')?.value;
-    console.log(isHaz);
     if (isHaz) {
       productGroup.get('ImcoClass')?.enable();
       productGroup.get('PkgGroup')?.enable();
@@ -4018,7 +3970,6 @@ getVesselVoyBasedOnPorts() {
 
   handleProductRelatedCalculation(cargoIndex: number = -1) {
   if (this.isPatching) {
-    console.log('Skipping product related calculation during patching');
     return; // Skip ALL changes during patching
   }
   
@@ -4124,11 +4075,7 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
   handleCFSOrYard() {
     const stuffingAt = this.cargoForm.get('StuffingAt')?.value;
 
-    console.log('handleCFSOrYard called:', {
-      selectedDepartment: this.selectedDepartment,
-      stuffingAt: stuffingAt,
-      selectedFCLLCL: this.selectedFCLLCL
-    });
+    
 
     if (!this.selectedDepartment) {
       this.YardCFSLabel = "CFS";
@@ -4142,7 +4089,6 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
     const isLCL = this.selectedFCLLCL === "LCL";
     const isAIR = this.selectedFCLLCL === "AIR";
 
-    console.log('Business rules:', { isFCL, isExport, isLCL, isAIR });
 
     // Determine Yard/CFS type based on business rules
     this.o['YardCFS']?.reset();
@@ -4163,11 +4109,7 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
 
     }
 
-    console.log('Final Yard/CFS settings:', {
-      label: this.YardCFSLabel,
-      type: this.currentYardCFSType
-    });
-
+  
 
   }
 
@@ -4607,7 +4549,6 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
     MenuMasterSid: this.MenuMasterSid,
     DocumentSid: this.BookingHeaderSid
   }
-  console.log(this.MenuMasterSid)
       this.commonService.documentData.set(data)
 }
 
@@ -4650,7 +4591,6 @@ openDocRef() {
     this.initializeMilestoneContentForFollowup();
 
     this.followupModalRef.componentInstance.reloadMilestone.subscribe(() => {
-      console.log("Reloading milestone...");
       this.milestoneComponent.loadShipmentMilestones(this.bookingData?.ShipmentNo);
     });
 
@@ -4676,17 +4616,17 @@ openDocRef() {
     const allMilestones = this.milestoneComponent.allMilestones || [];
     const cfuMilestoneId = allMilestones.find(m => m.MilestoneCode === "CFU")?.MilestoneMasterSid;
     const existingMilestone = this.milestoneResult.find(m => m.MilestoneMasterSid === cfuMilestoneId);
-    console.log("AutoInsert Or Not", {
-      ImportOrExport: this.selectedDepartment?.ExportImport,
-      validDepartment,
-      currentJobType,
-      validJobType,
-      allMilestones,
-      tabValue: this.milestoneResult,
-      existingMilestone,
-      validMilestone: existingMilestone ? false : true,
-      finalDecision: validDepartment && validJobType && !existingMilestone
-    })
+    // console.log("AutoInsert Or Not", {
+    //   ImportOrExport: this.selectedDepartment?.ExportImport,
+    //   validDepartment,
+    //   currentJobType,
+    //   validJobType,
+    //   allMilestones,
+    //   tabValue: this.milestoneResult,
+    //   existingMilestone,
+    //   validMilestone: existingMilestone ? false : true,
+    //   finalDecision: validDepartment && validJobType && !existingMilestone
+    // })
 
     this.followupModalRef.componentInstance.autoInsertMilestone = validDepartment && validJobType && !existingMilestone;
 
@@ -4701,7 +4641,6 @@ openDocRef() {
       createdBy: this.userData?.userEmail,
       Remarks: `Cargo Followup has been sent on ${(new Date().toISOString()).split('T')[0]}`
     };
-    console.log("Milestone Payload", milestonePayload);
     this.followupModalRef.componentInstance.milestonePayload = milestonePayload;
   }
  
@@ -4756,14 +4695,12 @@ openDocRef() {
 
 
   onFileProcessed(result: any) {
-    console.log('File processed:', result);
 
     // Check if we have multi-sheet booking data
     if (result.type === 'excel' && result.isMultiSheetStructure && result.dataType === 'bookings') {
       this.parsedBookings = result.data[0];
       this.showParsedData = true;
 
-      console.log('Parsed multi-sheet booking data:', this.parsedBookings);
       this.patchValues(this.parsedBookings);
     } else {
       this.appSettingService.showWarning('No booking structure found in file');
@@ -5273,10 +5210,8 @@ deepEqual(obj1: any, obj2: any): boolean {
     const atLeastOneHasDate = this.getAllBookingProductsForStatusCheck().some(
       (product) => !!product.get('CargoRecDate')?.value
     );
-    console.log("atLeastOneHasDate", atLeastOneHasDate);
 
     const currentStatus = bookingStatusControl.value;
-    console.log("currentStatus", currentStatus);
     if (atLeastOneHasDate && (currentStatus === 'Booked')) {
       bookingStatusControl.setValue('Cargo Received');
     } else if (!atLeastOneHasDate && currentStatus === 'Cargo Received') {
@@ -5371,7 +5306,6 @@ deepEqual(obj1: any, obj2: any): boolean {
     return;
   }
 
-  console.log('Generate Job Payload:', payload);
   this.isSaving = true;
   this.spinner.show();
   this.operationService.createMasterJob(payload).subscribe({

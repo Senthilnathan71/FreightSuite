@@ -2375,7 +2375,6 @@ private parseFloatSafe(value: any): number {
     };
     this.leadService.clearQuotationData();
     this.leadService.setQuotationData(enqData);
-    console.log(this.leadService.getQuotationData());
     this.router.navigate(['crm/quotation/entry']);
   }
 
@@ -3793,7 +3792,6 @@ private getRequiredCargoFields(): string[] {
     this.currentCargoFieldIndex = s.cargoFieldIndex;
     this.isCargoVoiceMode = s.isCargoMode;
 
-    console.log('▶️ Voice resumed:', s);
 
     if (this.isCargoVoiceMode) {
       this.focusCargoField();

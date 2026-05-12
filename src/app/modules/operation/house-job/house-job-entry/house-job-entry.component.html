@@ -976,6 +976,16 @@
                         bindLabel="PortName" bindValue="PortCode" (itemSelected)="handleFPODChange($event)">
                       </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">FDC <span class="text-danger"></span></label>
+                      @if(houseJobForm.get('FPD')?.touched && houseJobForm.get('FPD')?.invalid){
+                      <div class="error-message">
+                        @if(houseJobForm.get('FPD')?.hasError('requiredForTranshipment')){
+                        <span>Required for Transhipment</span>
+                        }
+                        @if(houseJobForm.get('FPD')?.hasError('sameAsPOD')){
+                        <span>POD and FDC must be different</span>
+                        }
+                      </div>
+                      }
                     </div>
                   </aside>
 
