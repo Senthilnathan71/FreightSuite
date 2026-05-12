@@ -151,6 +151,17 @@ export class BalanceSheetReportComponent {
   }
 
   get retainedEarning(): number {
+    const retained = this.data?.retained;
+
+    if (typeof retained === 'number') {
+      return Number(retained) || 0;
+    }
+
+    if (retained && typeof retained === 'object') {
+      const retainedValue = retained?.netProfit ?? retained?.amount ?? retained?.value;
+      return Number(retainedValue) || 0;
+    }
+
     return (this.data?.incomeTotal || 0) - (this.data?.expenseTotal || 0);
   }
 
