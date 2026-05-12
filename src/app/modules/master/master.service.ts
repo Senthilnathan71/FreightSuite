@@ -4400,7 +4400,7 @@ getAuditLogsNetwork(tableName: string, recordId?: string) {
   getAllCompanyConfigsByCompanyId(companyId: number) {
     return this.http.get<{ data: any }>(`company-config/company/${companyId}`).pipe(
       map((resp) => {
-        let response = resp;
+        let response = resp.data;
         return response;
       })
     );

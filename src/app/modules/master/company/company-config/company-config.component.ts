@@ -7,6 +7,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { catchError, forkJoin, of } from 'rxjs';
 
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { MasterService } from '../../master.service';
 
 type ConfigType = 'string' | 'number' | 'boolean' | 'email-array';
@@ -33,7 +34,7 @@ interface ConfigTemplate {
 }
 
 const CONFIG_TEMPLATES: ConfigTemplate[] = [
-  { configurationName: 'QuoteRateLockUsers', displayName: 'Quote Rate Lock Users', configType: 'email-array' },
+  { configurationName: 'QuoteRateLockUser', displayName: 'Quote Rate Lock Users', configType: 'email-array' },
   { configurationName: 'CustomerNameUpdateUsers', displayName: 'Customer Name Update Users', configType: 'email-array' },
   { configurationName: 'ExchangeJVCOA', displayName: 'Exchange JV COA', configType: 'number' },
   { configurationName: 'SaveAsFilePath', displayName: 'Save As File Path', configType: 'boolean' },
@@ -41,7 +42,9 @@ const CONFIG_TEMPLATES: ConfigTemplate[] = [
   { configurationName: 'TermsandConditions', displayName: 'Terms and Conditions', configType: 'boolean' },
   { configurationName: 'CreditRequestChecking', displayName: 'Credit Request Checking', configType: 'boolean' },
   { configurationName: 'ExportToImportCompanyMasterSid', displayName: 'Export To Import Companies', configType: 'string' },
-  { configurationName: 'OSandStatementShowBankDetails', displayName: 'OS and Statement Show Bank Details', configType: 'boolean' }
+  { configurationName: 'OSandStatementShowBankDetails', displayName: 'OS and Statement Show Bank Details', configType: 'boolean' },
+  { configurationName: 'Printallbank', displayName: 'Print All Bank', configType: 'boolean' },
+  { configurationName: 'DisableRateUpdateBack', displayName: 'Disable Rate Update Back', configType: 'boolean' },
 ];
 
 @Component({
@@ -53,7 +56,8 @@ const CONFIG_TEMPLATES: ConfigTemplate[] = [
     ReactiveFormsModule,
     NgbNavModule,
     NgbTooltipModule,
-    NgSelectModule
+    NgSelectModule,
+    SearchableDropdown
   ],
   templateUrl: './company-config.component.html',
   styleUrl: './company-config.component.scss'
@@ -120,17 +124,17 @@ export class CompanyConfigComponent implements OnInit {
     const companyControl = this.newConfigForm.get('CompanyMasterSids');
     if (!companyControl) return;
 
-    if (this.companyId) {
-      companyControl.clearValidators();
-      companyControl.setValue([this.companyId], { emitEvent: false });
-      companyControl.disable({ emitEvent: false });
-    } else if (this.isTemporaryMode) {
+    if (this.isTemporaryMode) {
       companyControl.clearValidators();
       companyControl.setValue([], { emitEvent: false });
       companyControl.disable({ emitEvent: false });
     } else {
       companyControl.setValidators([Validators.required]);
       companyControl.enable({ emitEvent: false });
+    }
+
+    if (this.companyId && !this.isTemporaryMode && !companyControl.value?.length) {
+      companyControl.setValue([this.companyId], { emitEvent: false });
     }
 
     companyControl.updateValueAndValidity({ emitEvent: false });
@@ -155,7 +159,7 @@ export class CompanyConfigComponent implements OnInit {
   }
 
   get companyMultiSelectDisabled(): boolean {
-    return this.isEditMode || this.isTemporaryMode;
+    return this.isTemporaryMode;
   }
 
   get createButtonDisabled(): boolean {
@@ -181,8 +185,11 @@ export class CompanyConfigComponent implements OnInit {
         : of([])
     }).subscribe({
       next: ({ companies, configs }) => {
-        this.companyOptions = Array.isArray(companies)
-          ? companies
+        const companyList = this.unwrapResponseArray(companies);
+        const configList = this.unwrapResponseArray(configs);
+
+        this.companyOptions = companyList.length
+          ? companyList
             .filter((company: any) => company?.status === 'A' || company?.Status === 'A' || company?.status === undefined)
             .map((company: any) => ({
               CompanyMasterSid: Number(company.CompanyMasterSid),
@@ -196,15 +203,13 @@ export class CompanyConfigComponent implements OnInit {
           this.companyName = current?.companyName || this.companyName;
         }
 
-        this.currentConfigs = Array.isArray(configs)
-          ? configs.map((config: any) => this.normalizeConfigRow(config))
-          : [];
+        this.currentConfigs = configList.map((config: any) => this.normalizeConfigRow(config));
 
         this.initializeConfigurations();
 
         if (this.companyId) {
           this.newConfigForm.patchValue({ CompanyMasterSids: [this.companyId] }, { emitEvent: false });
-          this.newConfigForm.get('CompanyMasterSids')?.disable({ emitEvent: false });
+          this.newConfigForm.get('CompanyMasterSids')?.enable({ emitEvent: false });
         }
 
         this.isLoading = false;
@@ -229,13 +234,20 @@ export class CompanyConfigComponent implements OnInit {
     });
   }
 
+  private unwrapResponseArray(response: any): any[] {
+    if (Array.isArray(response)) return response;
+    if (Array.isArray(response?.data)) return response.data;
+    if (Array.isArray(response?.data?.data)) return response.data.data;
+    return [];
+  }
+
   private buildConfigRow(config: CompanyConfigRow): FormGroup {
     const configType = this.normalizeConfigType(config.ConfigType || this.inferTypeFromValue(config.ConfigurationValue));
     const value = this.normalizeValueForForm(config.ConfigurationValue, configType);
 
     const row = this.fb.group({
       CompanyConfigurationSid: [config.CompanyConfigurationSid || null],
-      CompanyMasterSid: [{ value: config.CompanyMasterSid}],
+      CompanyMasterSid: [{ value: config.CompanyMasterSid, disabled: true }],
       ConfigurationName: [{ value: config.ConfigurationName, disabled: true }],
       DisplayName: [config.DisplayName || this.formatLabel(config.ConfigurationName)],
       ConfigType: [configType, Validators.required],
@@ -338,8 +350,9 @@ export class CompanyConfigComponent implements OnInit {
     this.masterService.getEligibleCompaniesForConfiguration(configName).pipe(
       catchError(() => of([]))
     ).subscribe((companies: any) => {
-      const eligible = Array.isArray(companies)
-        ? companies.map((company: any) => ({
+      const companyList = this.unwrapResponseArray(companies);
+      const eligible = companyList.length
+        ? companyList.map((company: any) => ({
             CompanyMasterSid: Number(company.CompanyMasterSid),
             companyName: company.companyName || company.CompanyName || '',
             companyCode: company.companyCode || company.CompanyCode || null
@@ -453,10 +466,6 @@ export class CompanyConfigComponent implements OnInit {
       return false;
     }
 
-    if (this.companyId) {
-      return selectedIds.includes(this.companyId) && this.eligibleCompanyOptions.some(option => option.CompanyMasterSid === this.companyId);
-    }
-
     return selectedIds.every((id: number) => this.eligibleCompanyOptions.some(option => option.CompanyMasterSid === Number(id)));
   }
 
@@ -505,7 +514,7 @@ export class CompanyConfigComponent implements OnInit {
     }
 
     this.masterService.getAllCompanyConfigsByCompanyId(this.companyId).pipe(catchError(() => of([]))).subscribe((configs: any) => {
-      this.currentConfigs = Array.isArray(configs) ? configs.map((config: any) => this.normalizeConfigRow(config)) : [];
+      this.currentConfigs = this.unwrapResponseArray(configs).map((config: any) => this.normalizeConfigRow(config));
       this.initializeConfigurations();
       this.refreshEligibleCompanies();
     });
@@ -526,9 +535,7 @@ export class CompanyConfigComponent implements OnInit {
   }
 
   private buildCreatePayload(): any {
-    const rawCompanyIds = this.companyId
-      ? [this.companyId]
-      : (this.newConfigForm.get('CompanyMasterSids')?.value || []);
+    const rawCompanyIds = this.newConfigForm.get('CompanyMasterSids')?.value || [];
 
     const selectedCompanyIds = Array.isArray(rawCompanyIds)
       ? rawCompanyIds.map((item: any) => Number(item?.CompanyMasterSid ?? item)).filter((id: number) => Number.isInteger(id) && id > 0)
@@ -721,7 +728,7 @@ export class CompanyConfigComponent implements OnInit {
       .trim();
   }
 
-  private getCompanyLabel(companyId: number): string {
+  getCompanyLabel(companyId: number): string {
     const company = this.companyOptions.find(option => option.CompanyMasterSid === companyId);
     return company?.companyName || String(companyId);
   }

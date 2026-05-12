@@ -7,9 +7,6 @@
       <div>
         <div class="hero-kicker">Master Setup</div>
         <h1>Company Configuration</h1>
-        <p>
-          Configure reusable company-specific settings with multi-company create support and safe duplicate validation.
-        </p>
       </div>
     </div>
 
@@ -18,10 +15,7 @@
         <span class="meta-label">Company</span>
         <span class="meta-value">{{ selectedCompanyLabel }}</span>
       </div>
-      <div class="meta-chip" *ngIf="companyId">
-        <span class="meta-label">Mode</span>
-        <span class="meta-value">Edit</span>
-      </div>
+     
       <button
         type="button"
         class="btn btn-light-secondary btn-sm"
@@ -42,7 +36,6 @@
       <div class="surface-card__header">
         <div>
           <h2>Create Configuration</h2>
-          <p>Choose the config master, set the value, and apply it to one or more companies.</p>
         </div>
         <button
           type="button"
@@ -55,71 +48,23 @@
 
       <form [formGroup]="newConfigForm" class="builder-form">
         <div class="builder-grid">
-          <div class="field-block" *ngIf="!isTemporaryMode">
-            <label class="field-label">Company</label>
-            <ng-select
-              class="modern-select"
-              formControlName="CompanyMasterSids"
-              [items]="eligibleCompanyOptions"
-              [multiple]="true"
-              [closeOnSelect]="false"
-              [searchable]="true"
-              [clearable]="true"
-          
-              bindLabel="companyName"
-              bindValue="CompanyMasterSid"
-              placeholder="Select companies"
-              appendTo="body"
-              (change)="onCompanySelectionChange($event)">
-              <ng-template ng-header-tmp>
-                <div class="select-all-row" *ngIf="!companyMultiSelectDisabled">
-                  <button type="button" class="btn btn-link btn-sm p-0" (click)="toggleSelectAllCompanies()">
-                    <i class="fas fa-check-double me-1"></i>
-                    {{ (newConfigForm.get('CompanyMasterSids')?.value || []).length === eligibleCompanyOptions.length ? 'Unselect All' : 'Select All' }}
-                  </button>
-                </div>
-              </ng-template>
-              <ng-template ng-option-tmp let-item="item">
-                <div class="company-option">
-                  <strong>{{ item.companyName }}</strong>
-                  <small *ngIf="item.companyCode">Code: {{ item.companyCode }}</small>
-                </div>
-              </ng-template>
-              <ng-template ng-multi-label-tmp let-items="items">
-                <div class="chip" *ngFor="let item of items.slice(0, 3)">
-                  {{ item.companyName }}
-                </div>
-                <div class="chip chip--muted" *ngIf="items.length > 3">+{{ items.length - 3 }} more</div>
-              </ng-template>
-            </ng-select>
-            <div class="field-hint" *ngIf="companyMultiSelectDisabled">
-              This company is locked from the parent company screen.
-            </div>
-          </div>
-
-          <div class="field-block">
+          <div class="field-block field-block--config-name">
             <label class="field-label">Configuration Name</label>
             <div class="swap-field">
               <div class="swap-field__control" *ngIf="!manualConfigNameMode; else manualNameTpl">
-                <ng-select
-                  class="modern-select"
+                <dofi-searchable-dropdown
+                  class="modern-search-dropdown"
                   formControlName="ConfigurationName"
                   [items]="configTemplates"
-                  bindLabel="configurationName"
-                  bindValue="configurationName"
-                  [searchable]="true"
+                  [bindLabel]="'configurationName'"
+                  [bindValue]="'configurationName'"
+                  [labelFields]="['configurationName']"
+                  [displayFields]="['configurationName', 'displayName', 'configType']"
+                  [displayLabels]="['Config Name', 'Display Name', 'Type']"
                   [clearable]="true"
-                  placeholder="Select configuration"
-                  appendTo="body"
-                  (change)="onConfigurationNameChanged($event)">
-                  <ng-template ng-option-tmp let-item="item">
-                    <div class="template-option">
-                      <strong>{{ item.displayName }}</strong>
-                      <small>{{ item.configurationName }}</small>
-                      <span class="type-pill">{{ item.configType }}</span>
-                    </div>
-                  </ng-template>
-                </ng-select>
+                  [placeholder]="'Select configuration'"
+                  (itemSelected)="onConfigurationNameChanged($event)">
+                </dofi-searchable-dropdown>
               </div>
 
               <button
@@ -143,16 +88,16 @@
             </ng-template>
           </div>
 
-          <div class="field-block">
+          <div class="field-block field-block--display">
             <label class="field-label">Display Name</label>
             <input
               type="text"
               class="form-control modern-input"
               formControlName="DisplayName"
-              placeholder="Human readable label">
+              placeholder="">
           </div>
 
-          <div class="field-block">
+          <div class="field-block field-block--type">
             <label class="field-label">Config Type</label>
             <ng-select
               class="modern-select"
@@ -166,7 +111,7 @@
             </ng-select>
           </div>
 
-          <div class="field-block field-block--full">
+          <div class="field-block field-block--value">
             <label class="field-label">Configuration Value</label>
 
             <div *ngIf="newConfigForm.get('ConfigType')?.value === 'boolean'" class="boolean-field">
@@ -203,6 +148,50 @@
               formControlName="ConfigurationValue"
               placeholder="Enter value">
           </div>
+
+          <div class="field-block field-block--company" *ngIf="!isTemporaryMode">
+            <label class="field-label">Company</label>
+            <ng-select
+              class="modern-select"
+              formControlName="CompanyMasterSids"
+              [items]="eligibleCompanyOptions"
+              [multiple]="true"
+              [closeOnSelect]="false"
+              [searchable]="true"
+              [clearable]="true"
+              bindLabel="companyName"
+              bindValue="CompanyMasterSid"
+              placeholder="Select companies"
+              appendTo="body"
+              (change)="onCompanySelectionChange($event)">
+              <ng-template ng-header-tmp>
+                <div class="select-all-row" *ngIf="!companyMultiSelectDisabled">
+                  <button type="button" class="btn btn-link btn-sm p-0" (click)="toggleSelectAllCompanies()">
+                    <i class="fas fa-check-double me-1"></i>
+                    {{ (newConfigForm.get('CompanyMasterSids')?.value || []).length === eligibleCompanyOptions.length ? 'Unselect All' : 'Select All' }}
+                  </button>
+                </div>
+              </ng-template>
+              <ng-template ng-option-tmp let-item="item">
+                <div class="company-option">
+                  <strong>{{ item.companyName }}</strong>
+                  <small *ngIf="item.companyCode">Code: {{ item.companyCode }}</small>
+                </div>
+              </ng-template>
+              <ng-template ng-multi-label-tmp let-items="items">
+                <div class="chip" *ngFor="let item of items.slice(0, 1)">
+                  {{ item.companyName }}
+                </div>
+                <div class="chip chip--muted" *ngIf="items.length > 1">+{{ items.length - 1 }}</div>
+              </ng-template>
+            </ng-select>
+            <div class="field-hint field-hint--compact" *ngIf="companyMultiSelectDisabled">
+              This company is locked from the parent company screen.
+            </div>
+            <div class="field-hint field-hint--compact" *ngIf="!companyMultiSelectDisabled && companyId">
+              Current company is selected by default.
+            </div>
+          </div>
         </div>
 
         <div class="builder-footer">
@@ -228,7 +217,7 @@
       <div class="surface-card__header surface-card__header--tight">
         <div>
           <h2>Existing Configurations</h2>
-          <p>Review and update current values for the selected company.</p>
+          <p>Review and update current values.</p>
         </div>
         <div class="header-actions">
           <span class="count-pill">{{ configurations.length }} items</span>
@@ -253,25 +242,23 @@
             <thead>
               <tr>
                 <th>Configuration</th>
-                <th>Display Name</th>
+                <!-- <th>Display Name</th> -->
                 <th style="width: 160px;">Type</th>
-                <th>Value</th>
+                <th>Configuration Value</th>
               </tr>
             </thead>
             <tbody formArrayName="configurations">
               <tr *ngFor="let config of configurations.controls; let i = index" [formGroupName]="i">
                 <td>
                   <div class="row-title">
-                    <strong>{{ config.get('ConfigurationName')?.value }}</strong>
-                    <small *ngIf="config.get('CompanyConfigurationSid')?.value">
-                      SID: {{ config.get('CompanyConfigurationSid')?.value }}
-                    </small>
+                    <strong>{{ config.get('DisplayName')?.value || config.get('ConfigurationName')?.value }}</strong>
+                    <small>{{ config.get('ConfigurationName')?.value }}</small>
                   </div>
                 </td>
-
+<!-- 
                 <td>
                   <input type="text" class="form-control modern-input modern-input--sm" formControlName="DisplayName">
-                </td>
+                </td> -->
 
                 <td>
                   <ng-select
