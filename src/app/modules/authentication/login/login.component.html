@@ -9,7 +9,7 @@
             <img src="assets/logo/login_pic.png" alt="Blufin - The Complete Forwarders Suite" />
         </section>
 
-        <section class="auth-box login-panel mb-0">
+        <section class="auth-box login-panel mb-5">
             <div id="loginform" class="login-panel-content" [ngClass]="{'d-none': recoverform}">
                 <div class="brand-lockup text-center mb-2">
                     <span class="brand-mark">
@@ -19,24 +19,26 @@
                 </div>
 
                 <form class="login-form" id="loginform" [formGroup]="loginform">
-                    <div class="input-group login-input">
-                        <span class="input-group-text" id="basic-addon1"><i class="ti-email"></i></span>
+                    <div class="custom-form-group login-field login-icon-field">
+                        <span class="login-field-icon" id="basic-addon1"><i class="ti-email"></i></span>
                         <input type="text" formControlName="email" id="email" class="form-control"
-                            placeholder="Email Address" aria-label="Email Address" aria-describedby="basic-addon1"
+                            placeholder="" aria-label="Email Address" aria-describedby="basic-addon1"
                             [ngClass]="{'is-invalid':
                                 loginform.controls['email'].invalid &&
                                 (loginform.controls['email'].touched || loginform.controls['email'].dirty)}">
+                        <label for="email" class="input-label">Email Address</label>
                     </div>
 
-                    <div class="input-group login-input">
-                        <span class="input-group-text"><i class="ti-lock"></i></span>
-                        <input type="password" formControlName="password" class="form-control" placeholder="Password"
+                    <div class="custom-form-group login-field login-icon-field login-password-field">
+                        <span class="login-field-icon"><i class="ti-lock"></i></span>
+                        <input type="password" formControlName="password" class="form-control" placeholder=""
                             [ngClass]="{
                                 'is-invalid':
                                 loginform.controls['password'].invalid &&
                                 (loginform.controls['password'].touched || loginform.controls['password'].dirty)
                             }" #passwordInput />
-                        <span class="input-group-text password-toggle" (mousedown)="togglePassword(passwordInput)"
+                        <label class="input-label">Password</label>
+                        <span class="password-toggle" (mousedown)="togglePassword(passwordInput)"
                             (mouseup)="resetPassword(passwordInput)" (mouseleave)="resetPassword(passwordInput)">
                             @if(!passwordView){
                             <i-feather class="feather-sm" name="eye"></i-feather>
@@ -46,13 +48,25 @@
                         </span>
                     </div>
 
-                    <div class="input-group mb-2">
-                        <span class="input-group-text"><i class="ti-calendar"></i></span>
-                        <select formControlName="yearMasterSid" class="form-select"
+                    <div class="custom-form-group custom-form-group-select login-field login-icon-field login-year-field mb-2"
+                        [class.filled]="!!loginform.get('yearMasterSid')?.value">
+                        <span class="login-field-icon"><i class="ti-calendar"></i></span>
+                        <ng-select
+                            class="login-year-select flex-fill"
+                            formControlName="yearMasterSid"
+                            [items]="financialYears"
+                            bindLabel="YearName"
+                            bindValue="YearMasterSid"
+                            placeholder=""
+                            dropdownPosition="bottom"
+                            appendTo="body"
+                            dropdownPanelClass="login-year-dropdown-panel"
+                            [clearable]="false"
+                            [virtualScroll]="false"
+                            [searchable]="false"
                             [ngClass]="{'is-invalid': loginform.controls['yearMasterSid'].invalid && (loginform.controls['yearMasterSid'].touched || loginform.controls['yearMasterSid'].dirty)}">
-                            <option value="" disabled>Select Financial Year</option>
-                            <option *ngFor="let year of financialYears" [value]="year.YearMasterSid">{{ year.YearName }}</option>
-                        </select>
+                        </ng-select>
+                        <label class="input-label">Financial Year</label>
                     </div>
 
                     <div class="login-options">
@@ -80,9 +94,10 @@
                 </div>
 
                 <form class="login-form" [formGroup]="forgotPasswordForm">
-                    <div class="input-group login-input">
-                        <span class="input-group-text"><i class="ti-email"></i></span>
-                        <input class="form-control" type="email" required="" placeholder="Email Address" formControlName="email">
+                    <div class="custom-form-group login-field login-icon-field">
+                        <span class="login-field-icon"><i class="ti-email"></i></span>
+                        <input class="form-control" type="email" required="" placeholder="" formControlName="email">
+                        <label class="input-label">Email Address</label>
                     </div>
 
                     <div class="recover-actions">
