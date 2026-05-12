@@ -118,74 +118,133 @@ import { NgSelectModule } from '@ng-select/ng-select';
     .login-form {
       display: flex;
       flex-direction: column;
-      gap: 13px;
+      gap: 16px;
     }
 
-    .login-input {
-      height: 42px;
-      border-radius: 6px;
-      background: #ededf1;
-      overflow: hidden;
-      box-shadow: inset 0 1px 2px rgba(20, 26, 34, 0.04);
+    .login-field {
+      position: relative;
+      margin: 0;
     }
 
-    .login-input .input-group-text,
-    .login-input .form-control,
-    .login-input .form-select {
+    .login-icon-field .form-control,
+    .login-icon-field .ng-select-container {
       height: 42px;
-      border: 0;
-      background: #ededf1;
-      color: #6f747c;
+      min-height: 42px;
+      border-radius: 0;
+      border-top: 0;
+      border-left: 0;
+      border-right: 0;
+      border-bottom: 1px solid #d3d9e4;
+      background: #ffffff;
+      color: #111827;
       box-shadow: none;
+      font-size: 14px;
+      font-weight: 600;
     }
 
-    .login-input .input-group-text {
-      width: 48px;
-      justify-content: center;
-      padding: 0;
+    .login-icon-field .form-control {
+      padding: 13px 38px 3px 38px;
+    }
+
+    .login-field-icon {
+      position: absolute;
+      left: 0;
+      top: 19px;
+      transform: translateY(-50%);
+      width: 28px;
       color: #6e737b;
       font-size: 18px;
+      line-height: 1;
+      text-align: center;
+      z-index: 2;
     }
 
-    .login-input .password-toggle {
-      width: 42px;
+    .login-password-field .form-control {
+      padding-right: 42px;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 0;
+      top: 19px;
+      transform: translateY(-50%);
+      width: 32px;
+      color: #6e737b;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
     }
 
-    .login-input .form-control,
-    .login-input .form-select {
-      padding-left: 0;
-      font-size: 14px;
+    .login-field .input-label {
+      position: absolute;
+      left: 38px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #05608d;
+      background: #ffffff;
+      padding: 0 3px;
+      font-size: 13px;
+      font-weight: 600;
+      pointer-events: none;
+      transition: 0.2s ease;
+      z-index: 3;
+    }
+
+    .login-field:focus-within .input-label,
+    .login-field .form-control:not(:placeholder-shown) + .input-label,
+    .login-field.filled .input-label {
+      top: 0;
+      left: 34px;
+      transform: none;
+      font-size: 12px;
     }
 
     .login-year-select {
+      position: relative;
+      z-index: 1;
       min-width: 0;
       height: 42px;
       font-size: 14px;
     }
 
+    .login-year-field .login-field-icon,
+    .login-year-field .input-label {
+      z-index: 6;
+    }
+
     :host ::ng-deep .login-year-select.ng-select-single .ng-select-container {
+      position: relative;
+      z-index: 1;
       height: 42px;
       min-height: 42px;
-      border: 0;
       border-radius: 0;
-      background: #ededf1;
+      border-top: 0;
+      border-left: 0;
+      border-right: 0;
+      border-bottom: 1px solid #d3d9e4;
+      background: #ffffff;
       box-shadow: none;
     }
 
+    :host ::ng-deep .login-year-select.ng-select-opened > .ng-select-container {
+      z-index: 1;
+    }
+
     :host ::ng-deep .login-year-select .ng-select-container .ng-value-container {
-      padding-left: 0;
+      padding: 13px 34px 3px 38px;
     }
 
     :host ::ng-deep .login-year-select .ng-select-container .ng-value-container .ng-placeholder,
     :host ::ng-deep .login-year-select .ng-select-container .ng-value-container .ng-value {
-      color: #6f747c;
+      color: #111827;
       font-size: 14px;
-      font-weight: 400;
+      font-weight: 600;
     }
 
     :host ::ng-deep .login-year-select .ng-arrow-wrapper {
-      padding-right: 14px;
+      padding-right: 0;
     }
 
     :host ::ng-deep .login-year-select.ng-select-focused:not(.ng-select-opened) > .ng-select-container {
@@ -193,19 +252,31 @@ import { NgSelectModule } from '@ng-select/ng-select';
       box-shadow: none;
     }
 
-    .login-input .form-control::placeholder {
-      color: #80848b;
-      opacity: 1;
+    ::ng-deep .login-year-dropdown-panel {
+      width: 330px;
+      max-width: calc(100vw - 24px);
+      margin-left: -88px;
+      box-sizing: border-box;
+      overflow-x: hidden;
     }
 
-    .login-input .form-control:focus,
-    .login-input .form-select:focus {
-      background: #ededf1;
+    ::ng-deep .login-year-dropdown-panel .ng-dropdown-panel-items,
+    ::ng-deep .login-year-dropdown-panel .scroll-host {
+      max-height: 156px;
+      overflow-x: hidden;
     }
 
-    .login-input:focus-within {
-      outline: 2px solid rgba(15, 88, 156, 0.16);
-      background: #f2f3f7;
+    ::ng-deep .login-year-dropdown-panel .ng-option {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .login-icon-field .form-control:focus,
+    :host ::ng-deep .login-year-select.ng-select-focused > .ng-select-container {
+      border-bottom-color: #05608d;
+      box-shadow: 0 2px 0 rgba(5, 96, 141, 0.18);
+      background: #ffffff;
     }
 
     .login-options {
@@ -230,13 +301,20 @@ import { NgSelectModule } from '@ng-select/ng-select';
       width: 18px;
       height: 18px;
       margin: 0;
-      border: 0;
-      background-color: #ececf2;
-      box-shadow: none;
+      border: 1.5px solid #8d96a3;
+      background-color: #ffffff;
+      box-shadow: inset 0 1px 2px rgba(20, 26, 34, 0.08);
     }
 
     .login-options .form-check-input:checked {
       background-color: #155ea2;
+      border-color: #155ea2;
+      box-shadow: none;
+    }
+
+    .login-options .form-check-input:focus {
+      border-color: #155ea2;
+      box-shadow: 0 0 0 3px rgba(21, 94, 162, 0.16);
     }
 
     .login-options .form-check-label {
@@ -467,19 +545,14 @@ export class LoginComponent implements OnInit {
     this.masterService.getYearMasterByUserId(email).subscribe((resp: any) => {
       if (resp.status && resp.data) {
         this.financialYears = resp.data;
-        // if there's only one financial year, pre-select it.
-        if (this.financialYears.length === 1) {
-            this.loginform.get('yearMasterSid')?.setValue(this.financialYears[0].YearMasterSid);
-        }
-        const storedYearId = localStorage.getItem('current-year-id');
-        const storedIdExistInResponse = this.financialYears.find(fy => fy.YearMasterSid === +storedYearId);
-        if (storedYearId && storedIdExistInResponse) {
-          this.loginform.get('yearMasterSid')?.setValue(+storedYearId);
-        } else {
-          const currentYear = this.financialYears.find(fy => fy.CurrentYear === 'Y');
-          if (currentYear) {
-            this.loginform.get('yearMasterSid')?.setValue(currentYear.YearMasterSid);
-          }
+        const defaultYear = this.financialYears.find((fy: any) =>
+          String(fy.YearName).replace(/\s+/g, '').toUpperCase() === 'FY2026'
+        );
+        const currentYear = this.financialYears.find((fy: any) => fy.CurrentYear === 'Y');
+        const selectedYear = defaultYear || currentYear || this.financialYears[0];
+
+        if (selectedYear) {
+          this.loginform.get('yearMasterSid')?.setValue(selectedYear.YearMasterSid);
         }
       } else {
         this.financialYears = [];
