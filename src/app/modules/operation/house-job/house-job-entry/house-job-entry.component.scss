@@ -1,0 +1,16 @@
+.cargo-form-fields {
+  .custom-form-group {
+    margin-bottom: 1rem;
+  }
+
+  .error-message {
+    top: 100%;
+    bottom: auto;
+    left: 0;
+    right: 0;
+    line-height: 1;
+    text-align: right;
+    pointer-events: none;
+    white-space: normal;
+  }
+}
