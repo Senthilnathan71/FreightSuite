@@ -50,6 +50,7 @@ import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/
 import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/dial-code-dropdown.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 @Component({
   selector: 'app-user-entry',
@@ -1251,44 +1252,19 @@ export class UserEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges 
     modalRef.componentInstance.pdfContentId = 'quotationContent';
   }
 
-  openAuditLogs(modal: TemplateRef<any>) {
-    if (!this.UserMasterSid) return;
-
-    this.masterService
-      .getAuditLogsFfUser('UserMaster', this.UserMasterSid.toString())
-      .subscribe({
-        next: (logs: any[]) => {
-          const ignoredFields = ['UpdatedOn', 'UpdatedBy']; // ✅ add more if needed later
-
-          const formatFields = (val: any) => {
-            if (!val) return [];
-            const obj = typeof val === 'string' ? JSON.parse(val) : val;
-            if (Object.keys(obj).length === 0) return [];
-            return Object.entries(obj)
-              .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-              .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-          };
-
-          this.auditLogs = logs
-            .map((log) => ({
-              ...log,
-              oldValDisplay: formatFields(log.oldVal),
-              newValDisplay: formatFields(log.newVal),
-            }))
-            .filter(
-              (log) =>
-                log.oldValDisplay.length > 0 || log.newValDisplay.length > 0
-            );
-
-          this.auditLogModalRef = this.modalService.open(modal, {
-            centered: true,
-            scrollable: true,
-            windowClass: 'audit-log-modal',
-          });
-        },
-        error: (err) => console.error('Error fetching audit logs:', err),
-      });
-  }
+  openAuditLogs() {
+        if (!this.userData?.UserMasterSid) return;
+        const modalRef = this.modalService.open(AuditLogComponent, {
+          centered: true,
+          scrollable: true,
+          size: 'xl',
+          windowClass: 'audit-log-modal'
+        });
+        modalRef.componentInstance.title = 'User Logs';
+        modalRef.componentInstance.tableName = 'UserMaster';
+        modalRef.componentInstance.recordId = this.userData?.UserMasterSid.toString();
+        modalRef.componentInstance.screenName = 'User';
+      }
 }
 // constructRoleForm(data?: any) {
 // 	if (data) {
