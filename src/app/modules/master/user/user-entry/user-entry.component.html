@@ -521,6 +521,42 @@
               ></label>
             </div>
           </aside>
+
+          <aside class="col-md-4">
+            <div class="custom-form-group">
+              <input
+                type="datetime-local"
+                placeholder=""
+                class="custom-input-field sm"
+                formControlName="AttemptDateTime"
+              />
+              <label
+                class="input-label"
+                [ngClass]="{
+                  'bg-transparent': !userForm.get('AttemptDateTime')?.value
+                }"
+                >Login Lock Time (UTC) <span class="text-danger"></span
+              ></label>
+              <div class="d-flex align-items-center justify-content-between gap-2 mt-1">
+                <small
+                  [ngClass]="{
+                    'text-danger': !!userForm.get('AttemptDateTime')?.value,
+                    'text-success': !userForm.get('AttemptDateTime')?.value
+                  }"
+                >
+                  {{ getLoginLockStatus() }}
+                </small>
+                <button
+                  type="button"
+                  class="btn btn-light-secondary btn-sm"
+                  *ngIf="userForm.get('AttemptDateTime')?.value"
+                  (click)="clearAttemptDateTime()"
+                >
+                  <i class="fas fa-unlock me-1"></i>Clear
+                </button>
+              </div>
+            </div>
+          </aside>
           }
           <aside class="col-md-4 mt-1 mt-md-2">
             <div class="form-check">

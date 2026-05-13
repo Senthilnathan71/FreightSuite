@@ -18,6 +18,7 @@ export interface FfUser {
     // "deletedAt"?: Date,
     "updatedBy"?: string,
     "status"?: string,
+    "AttemptDateTime"?: Date | string | null,
     "CountryMasterSid": number,
     "LoginSid"?: number,
     "userTypeId": number,
