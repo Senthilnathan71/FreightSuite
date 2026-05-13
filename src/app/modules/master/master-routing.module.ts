@@ -1229,10 +1229,10 @@ export const MasterRoutes: Routes = [
     path: 'user-activity-configuration',
     component: UserActivityConfigurationComponent,
     data: {
-      title: 'User Activity Configuration',
+      title: 'Resource Allocation',
       urls: [
         { title: 'Master', url: '/master' },
-        { title: 'User Activity Configuration' },
+        { title: 'Resource Allocation' },
       ],
     },
   },

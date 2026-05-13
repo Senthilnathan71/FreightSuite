@@ -197,8 +197,8 @@ export const SettingsRoutes: Routes = [
                 path: 'activity-allocation',
                 component: ActivityAllocationComponent,
                 data: {
-                    title: 'Activity Allocation',
-                    urls: [{ title: 'Settings', url: '/settings' }, { title: 'Activity Allocation' }],
+                    title: 'Resource Allocation Summary',
+                    urls: [{ title: 'Settings', url: '/settings' }, { title: 'Resource Allocation Summary' }],
                 },
             },
             {
