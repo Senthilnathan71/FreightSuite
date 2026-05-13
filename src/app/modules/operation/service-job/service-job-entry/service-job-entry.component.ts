@@ -244,7 +244,8 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
   tabs = [
     // { name: 'Shipment', icon: 'fas fa-ship' },
     { name: 'Cargo', icon: 'fas fa-boxes' },
-    { name: 'Rate', icon: 'fas fa-rupee-sign' }
+    { name: 'Rate', icon: 'fas fa-rupee-sign' },
+    { name: 'Milestone', icon: 'fas fa-flag-checkered' }
   ];
   // Mail content
   departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;

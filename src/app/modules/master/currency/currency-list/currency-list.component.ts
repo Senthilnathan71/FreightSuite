@@ -296,7 +296,8 @@ export class CurrencyListComponent extends BaseListComponent implements OnInit {
         sortable: true,
         filterable: true,
         visible: true,
-        dataType: 'string'
+        dataType: 'string',
+        cellClass: 'text-end'
       },
       {
         key: 'RoundOf',
@@ -304,7 +305,8 @@ export class CurrencyListComponent extends BaseListComponent implements OnInit {
         sortable: true,
         filterable: true,
         visible: true,
-        dataType: 'string'
+        dataType: 'string',
+        cellClass: 'text-end'
       },
       {
         key: 'status',

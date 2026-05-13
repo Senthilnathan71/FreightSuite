@@ -534,7 +534,7 @@
         </button>
       </div>
       <div class="col-md-12">
-        <div class="row compact-form px-md-5" [formGroup]="cargoForm">
+        <div class="row compact-form service-job-cargo-form px-md-5" [formGroup]="cargoForm">
           <aside class="col-md-2">
             <div class="custom-form-group custom-form-group-select"
               [class.filled]="!!cargoForm.get('CargoType')?.value">
@@ -748,6 +748,15 @@
       <app-cost-entry #costEntryComponent [screenName]="selectedDepartmentType === 'AIR' ? 'House Air Waybill' : 'House Job'" [currencyList]="currencyList" [dataItems]="serviceJobRateArr"
         [resetTrigger]="resetTriggerRate" [formData]="currentFormValue" (dataEmitter)="handleRateChange($event)" [isFormDisabled]="isFormDisabled"
         (reloadParent)="loadServiceJobById($event)"></app-cost-entry>
+    </div>
+
+    <!-- Milestone Tab -->
+    <div class="workspace-content" [hidden]="selectedTab !== 'Milestone'">
+      <app-milestone
+        screenName="Service Job"
+        [isFormDisabled]="isFormDisabled"
+        [shipmentNo]="serviceJobForm.get('ShipmentNo')?.value || serviceJobData?.ShipmentNo">
+      </app-milestone>
     </div>
 
     <!-- Other Tabs -->

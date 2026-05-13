@@ -113,7 +113,7 @@
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end"
                                 formControlName="TransactionLimit" DecimalPrecision [DecimalPrecisionBefore]="9"
                                 [DecimalPrecisionAfter]="3">
                             <label for="text-input" class="input-label">Transaction Limit <span
@@ -134,7 +134,7 @@
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end" 
                                 formControlName="AnnualLimit" DecimalPrecision [DecimalPrecisionBefore]="9"
                                 [DecimalPrecisionAfter]="3">
                             <label for="text-input" class="input-label">Annual Limit <span
@@ -155,7 +155,7 @@
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end"
                                 formControlName="TDSsetTransactionLimit" DecimalPrecision [DecimalPrecisionBefore]="9"
                                 [DecimalPrecisionAfter]="3">
                             <label for="text-input" class="input-label">TDS Set Transaction Limit <span
@@ -177,7 +177,7 @@
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end"
                                 formControlName="TDSSetAnnualLimit" DecimalPrecision [DecimalPrecisionBefore]="9"
                                 [DecimalPrecisionAfter]="3">
                             <label for="text-input" class="input-label">TDS Set Annual Limit <span
@@ -402,7 +402,7 @@
                             <div class="text-truncate">{{item.ITSectionCode}}</div>
                         </td>
                         <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                            <div class="text-truncate">{{item.TDSAmount}}</div>
+                            <div class="text-truncate text-end">{{item.TDSAmount}}</div>
                         </td>
                         <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                             <div class="text-truncate">{{item.TDSRate}}</div>

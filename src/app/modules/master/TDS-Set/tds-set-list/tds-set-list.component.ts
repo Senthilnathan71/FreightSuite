@@ -291,7 +291,8 @@ export class TdsSetListComponent extends BaseListComponent implements OnInit {
                 sortable: true,
                 filterable: true,
                 visible: true,
-                dataType: 'string'
+                dataType: 'string',
+                cellClass: 'text-end',
             },
             {
                 key: 'AnnualLimit',
@@ -299,7 +300,8 @@ export class TdsSetListComponent extends BaseListComponent implements OnInit {
                 sortable: true,
                 filterable: true,
                 visible: true,
-                dataType: 'string'
+                dataType: 'string',
+                cellClass: 'text-end'
             },
             {
                 key: 'status',
