@@ -880,6 +880,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
             }
           }
         }
+        // coaList + hssacList are now available — refresh labels for rows already patched
+        // (handles the race where forkJoin arrives after the 1000ms patchValues timer)
+        this.refreshTaxLabelCache();
       }
     );
   }
@@ -4365,6 +4368,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
               { emitEvent: false }
             );
             this.recalcPaymentTaxForRow(index);
+          } else if (this.isPosted || isPatching) {
+            // For posted/edit records refresh the label cache now that HSSAC data has arrived
+            this.refreshTaxLabelCache();
           }
         } else {
           this.hssacListForRow[index] = [];
@@ -4396,7 +4402,12 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
                 { emitEvent: false }
               );
               this.recalcPaymentTaxForRow(index);
+            } else if (this.isPosted || currentHssac) {
+              // currentHssac already set means edit/view mode — refresh labels
+              this.refreshTaxLabelCache();
             }
+          } else if (this.isPosted) {
+            this.refreshTaxLabelCache();
           }
         } else {
           this.hssacListForRow[index] = [];
