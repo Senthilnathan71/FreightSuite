@@ -4585,8 +4585,8 @@ getAuditLogsNetwork(tableName: string, recordId?: string) {
     );
   }
 
-  getPreCustomerEventNotifications() {
-    return this.http.get('pre-customer-event-master/notifications').pipe(
+  getPreCustomerEventNotifications(CompanyMasterSid:number) {
+    return this.http.post<{ data: any[] }>('pre-customer-event-master/notifications',{CompanyMasterSid}).pipe(
       map((res: any) => res)
     );
   }

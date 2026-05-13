@@ -914,8 +914,10 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
   notificationsLastUpdated: Date | null = null;
 
   loadEventNotifications(): void {
+    const currentCompany =this.appSettingsService.decrypt(localStorage.getItem('selected-company'))
+    const companyMastersID = currentCompany?.CompanyMasterSid;
     this.notificationsLoading = true;
-    this.masterService.getPreCustomerEventNotifications().subscribe({
+    this.masterService.getPreCustomerEventNotifications(companyMastersID).subscribe({
       next: (resp: any) => {
         if (resp?.status && Array.isArray(resp.data)) {
           this.notifications = resp.data;
