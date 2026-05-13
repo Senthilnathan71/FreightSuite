@@ -56,15 +56,15 @@
     <table class="modern-table">
       <thead>
         <tr>
-          <th>Voucher No</th>
+          <th width="10%">Voucher No</th>
           <th>Type</th>
           <th>Date</th>
-          <th>Currency</th>
-          <th>R Amount</th>
-          <th>RL Amount</th>
-          <th>C Amount</th>
-          <th>CL Amount</th>
-          <th>Status</th>
+          <th>Curr.</th>
+          <th class="amount-cell">Rev Amt</th>
+          <th class="amount-cell">Rev Local</th>
+          <th class="amount-cell">Cost Amt</th>
+          <th class="amount-cell">Cost Local</th>
+          <th class="status-cell">Status</th>
         </tr>
       </thead>
       <tbody>
@@ -78,11 +78,11 @@
           <td>{{ item.DocumentTypeCode }}</td>
           <td>{{ item.VoucherDate | date:'dd/MM/yyyy' }}</td>
           <td>{{ item.CurrencyCode }}</td>
-          <td>{{ getRevenueAmount(item) !== null ? (getRevenueAmount(item) | number:'1.2-2') : '' }}</td>
-          <td>{{ getRevenueLocalAmount(item) !== null ? (getRevenueLocalAmount(item) | number:'1.2-2') : '' }}</td>
-          <td>{{ getCostAmount(item) !== null ? (getCostAmount(item) | number:'1.2-2') : '' }}</td>
-          <td>{{ getCostLocalAmount(item) !== null ? (getCostLocalAmount(item) | number:'1.2-2') : '' }}</td>
-          <td>
+          <td class="amount-cell">{{ getRevenueAmount(item) !== null ? (getRevenueAmount(item) | number:'1.2-2') : '' }}</td>
+          <td class="amount-cell">{{ getRevenueLocalAmount(item) !== null ? (getRevenueLocalAmount(item) | number:'1.2-2') : '' }}</td>
+          <td class="amount-cell">{{ getCostAmount(item) !== null ? (getCostAmount(item) | number:'1.2-2') : '' }}</td>
+          <td class="amount-cell">{{ getCostLocalAmount(item) !== null ? (getCostLocalAmount(item) | number:'1.2-2') : '' }}</td>
+          <td class="status-cell">
             @if(item.PostStatus === 'P') {
             <span class="badge bg-success">Posted</span>
             } @else {
@@ -93,12 +93,12 @@
         }
       </tbody>
       <tfoot>
-        <tr class="table-footer">
-          <td colspan="4"><strong>Total Local :</strong></td>
+        <tr class="table-footer border-top">
+          <td colspan="4"></td>
+          <td class="total-label"><strong>Total Local :</strong></td>
+          <td class="amount-cell fw-bold">{{ totals.revenueLocalAmount | number:'1.2-2' }}</td>
           <td></td>
-          <td class="fw-bold">{{ totals.revenueLocalAmount | number:'1.2-2' }}</td>
-          <td></td>
-          <td class="fw-bold">{{ totals.costLocalAmount | number:'1.2-2' }}</td>
+          <td class="amount-cell fw-bold">{{ totals.costLocalAmount | number:'1.2-2' }}</td>
           <td></td>
         </tr>
       </tfoot>

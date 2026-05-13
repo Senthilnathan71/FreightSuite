@@ -177,6 +177,22 @@ MenuMasterSid:any
     })
   }
 
+  get canCreate(): boolean {
+    return this.mps.can('insert');
+  }
+
+  get canSave(): boolean {
+    return !this.isEditMode || this.mps.can('update');
+  }
+
+  canAccessAction(action: string): boolean {
+    return this.mps.has(action);
+  }
+
+  showActionMenu(): boolean {
+    return this.isEditMode && this.mps.hasAtLeastOne();
+  }
+
   ngOnInit(): void {
 
     const currentCompanyInfo = this.appSettingService.getCurrentCompanyInfo();
@@ -339,6 +355,12 @@ languagePrefValidator(): ValidatorFn {
   // Handle Form Submission
   onSubmit(resolve?: (value: boolean) => void) {
     if (this.isSaving) {
+      if (resolve) resolve(false);
+      return;
+    }
+
+    if (!this.canSave) {
+      this.appSettingService.showWarning('You do not have permission to save this lead.');
       if (resolve) resolve(false);
       return;
     }
@@ -865,6 +887,10 @@ onStateChange(selectedState: any) {
 
   openEmail() {
     if (!this.leadData) return;
+    if (!this.canAccessAction('email')) {
+      this.appSettingService.showWarning('You do not have permission to access Email.');
+      return;
+    }
     const modalRef = this.modalService.open(EmailEntryComponent, {
       size: 'lg',
       centered: true,
@@ -873,6 +899,10 @@ onStateChange(selectedState: any) {
   }
 
   openAuthority() {
+    if (!this.canAccessAction('authority')) {
+      this.appSettingService.showWarning('You do not have permission to access Authority.');
+      return;
+    }
     const MenuMasterSid = sessionStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
     const modalRef = this.modalService.open(AuthorityLogComponent, {
@@ -890,7 +920,7 @@ openEDoc() {
   if (!this.leadData) return;
 
   // Permission check before opening modal
-  if (!this.mps.has('edoc')) {
+  if (!this.canAccessAction('edoc')) {
     this.appSettingService.showWarning('You do not have permission to access Edoc.');
     return;
   }
@@ -928,6 +958,10 @@ openEDoc() {
 }
 
 openDocRef() {
+    if (!this.canAccessAction('document_reference')) {
+      this.appSettingService.showWarning('You do not have permission to access Document reference.');
+      return;
+    }
     const modalRef = this.modalService.open(DocReferenceComponent, {
       size: 'lg',
       centered: true,
@@ -940,10 +974,19 @@ openDocRef() {
     modalRef.componentInstance.DocumentSid = this.PreCustomerMasterSid;
   }
  createNew() {
+    if (!this.canCreate) {
+      this.appSettingService.showWarning('You do not have permission to create a new lead');
+      return;
+    }
+
     this.router.navigate(['crm/lead/entry'])
   }
   openFollowup() {
     if (!this.leadData) return;
+    if (!this.canAccessAction('follow_up')) {
+      this.appSettingService.showWarning('You do not have permission to access Followup.');
+      return;
+    }
     const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.documentSid = this.leadData?.PreCustomerMasterSid;
     modalRef.componentInstance.parentSubject = `__SUBJECT__ for Customer"${this.leadData.preCustomerName}"`;

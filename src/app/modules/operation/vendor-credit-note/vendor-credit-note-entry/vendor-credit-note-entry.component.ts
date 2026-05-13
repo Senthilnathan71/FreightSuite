@@ -981,6 +981,7 @@ export class VendorCreditNoteEntryComponent {
       IRNStatus: header.IRNStatus || '',
       State: header.State || '',
       DepartmentMasterSid: header.DepartmentMasterSid || null,
+      MasterJobSid: header.MasterJobSid || null,
       HouseNumber: header.HouseNumber || '',
       MasterNumber: header.MasterNumber || '',
       HouseJobSid: header.HouseJobSid || null,
