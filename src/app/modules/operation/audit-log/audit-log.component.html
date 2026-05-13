@@ -27,7 +27,7 @@
         <div class="audit-log-top">
           <div>
             <div class="audit-user">{{ log.changedBy || '-' }}</div>
-            <div class="audit-time">{{ log.changedAt | date:'dd-MM-yyyy hh:mm a' }}</div>
+            <div class="audit-time">{{ formatAuditDate(log.changedAt) }}</div>
           </div>
 
           <span class="audit-badge" [ngClass]="getOperationClass(log.operation)">
