@@ -1094,7 +1094,7 @@
             white-space: nowrap;
           "
         >
-          Container No.
+          No. of Containers
         </th>
       </tr>
     </thead>
@@ -1240,8 +1240,9 @@
             font-weight: 600;
             color: #374151;
           "
+          [title]="getContainerTooltip(house.cargo)"
         >
-          {{ house.cargo?.noOfContainers || 0 }}
+          {{ getTotalContainerCount(house.cargo) }}
         </td>
 
       </tr>

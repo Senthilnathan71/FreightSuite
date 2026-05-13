@@ -281,4 +281,23 @@ export class ProRateComponent implements OnInit {
   private syncProrateVisibility(): void {
     this.showProratedCharges = this.masterJob?.JobtoSubjob === 'Y';
   }
+
+  getTotalContainerCount(cargo: any): number {
+    if (!cargo) return 0;
+    const counts = cargo.containerTypeCounts || {};
+    return (counts['20ft'] || 0) + (counts['40ft'] || 0) + (counts['45ft'] || 0);
+  }
+
+  getContainerTooltip(cargo: any): string {
+    if (!cargo || !cargo.containerNumbers || cargo.containerNumbers.length === 0) {
+      return 'No containers';
+    }
+    const counts = cargo.containerTypeCounts || {};
+    const parts: string[] = [];
+    if (counts['20ft']) parts.push(`${counts['20ft']} x 20ft`);
+    if (counts['40ft']) parts.push(`${counts['40ft']} x 40ft`);
+    if (counts['45ft']) parts.push(`${counts['45ft']} x 45ft`);
+    const containers = cargo.containerNumbers.join(', ');
+    return `${parts.join(', ')}\nContainers: ${containers}`;
+  }
 }
