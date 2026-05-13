@@ -137,8 +137,8 @@ export const MasterRoutes: Routes = [
         path: 'pre-customer-event/list',
         component: PreCustomerEventListComponent,
         data: {
-          title: 'Pre-Customer Events',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Pre-Customer Events' }],
+          title: 'Events',
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Events' }],
         },
       },
       {
@@ -146,7 +146,7 @@ export const MasterRoutes: Routes = [
         component: PreCustomerEventEntryComponent,
         data: {
           title: 'Add Event',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Pre-Customer Events' }],
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Events' }],
         },
       },
       {
@@ -154,7 +154,7 @@ export const MasterRoutes: Routes = [
         component: PreCustomerEventEntryComponent,
         data: {
           title: 'Edit Event',
-          urls: [{ title: 'Master', url: '/master' }, { title: 'Pre-Customer Events' }],
+          urls: [{ title: 'Master', url: '/master' }, { title: 'Events' }],
         },
       },
       {
@@ -1229,10 +1229,10 @@ export const MasterRoutes: Routes = [
     path: 'user-activity-configuration',
     component: UserActivityConfigurationComponent,
     data: {
-      title: 'User Activity Configuration',
+      title: 'Resource Allocation',
       urls: [
         { title: 'Master', url: '/master' },
-        { title: 'User Activity Configuration' },
+        { title: 'Resource Allocation' },
       ],
     },
   },

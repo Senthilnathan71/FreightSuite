@@ -102,7 +102,6 @@ export class PreCustomerEventListComponent extends BaseListComponent implements 
       page: Number(this.page),
       pageSize: Number(this.pageSize),
       activeCompanyId: this.currentCompany?.CompanyMasterSid,
-      activeBranchId: this.currentBranch?.BranchMasterSid,
       sortColumn: this.sortColumn,
       sortDirection: this.sortDirection,
     };

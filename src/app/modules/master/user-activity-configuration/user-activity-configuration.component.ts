@@ -49,6 +49,9 @@ export class UserActivityConfigurationComponent implements OnInit, OnDestroy {
   users: UserOption[] = [];
   menus: MenuOption[] = [];
 
+  currentCompany: any;
+  currentBranch: any;
+
   configRows: UserMenuConfigRow[] = [];
   isLoading = false;
   isSaving = false;
@@ -60,9 +63,11 @@ export class UserActivityConfigurationComponent implements OnInit, OnDestroy {
     private settingsService: SettingsService,
     private appSettingService: AppSettingsService,
     private router: Router,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
     this.loadBranches();
     this.loadUsers();
     this.loadMenus();
@@ -73,31 +78,53 @@ export class UserActivityConfigurationComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  // private loadBranches(): void {
+  //   const branchInfo = this.appSettingService.getCurrentBranchInfo();
+  //   if (branchInfo) {
+  //     this.branches = [
+  //       {
+  //         BranchMasterSid: branchInfo.BranchMasterSid,
+  //         BranchName: branchInfo.branchName || branchInfo.branchCode || 'Current Branch',
+  //       },
+  //     ];
+  //     this.selectedBranchSid = branchInfo.BranchMasterSid;
+  //   }
+  // }
+
   private loadBranches(): void {
-    const branchInfo = this.appSettingService.getCurrentBranchInfo();
-    if (branchInfo) {
-      this.branches = [
-        {
-          BranchMasterSid: branchInfo.BranchMasterSid,
-          BranchName: branchInfo.branchName || branchInfo.branchCode || 'Current Branch',
-        },
-      ];
-      this.selectedBranchSid = branchInfo.BranchMasterSid;
-    }
+    const companyMastersID = this.currentCompany?.CompanyMasterSid;
+    this.masterService.getCurrentBranch(companyMastersID).pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (resp: any) => {
+        this.branches = Array.isArray(resp) ? resp : [];
+        const currentBranchSid = Number(this.currentBranch?.BranchMasterSid || this.currentBranch?.branchMasterSid);
+        if (currentBranchSid) {
+          const matchedBranch = this.branches.find(
+            (b) => Number(b.BranchMasterSid) === currentBranchSid
+          );
+          this.selectedBranchSid = matchedBranch?.BranchMasterSid ?? null;
+        }
+        if (!this.selectedBranchSid && this.branches.length > 0) {
+          this.selectedBranchSid = this.branches[0].BranchMasterSid;
+        }
+        this.loadConfig();
+      }
+    })
   }
 
   private loadUsers(): void {
+    const companyMastersID = this.currentCompany?.CompanyMasterSid;
     this.masterService
-      .getAllFfUser()
+      .getAllSalesmans(companyMastersID)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (resp: any) => {
           const list = resp?.data || resp || [];
           this.users = Array.isArray(list)
             ? list.map((u: any) => ({
-                UserMasterSid: u.UserMasterSid,
-                userName: u.userName,
-              }))
+              UserMasterSid: u.UserMasterSid,
+              userName: u.userName,
+            }))
             : [];
         },
         error: () => {
@@ -115,10 +142,10 @@ export class UserActivityConfigurationComponent implements OnInit, OnDestroy {
         next: (list: any[]) => {
           this.menus = Array.isArray(list)
             ? list.map((m: any) => ({
-                MenuMasterSid: m.MenuMasterSid,
-                MenuCode: m.MenuCode,
-                MenuName: m.MenuName,
-              }))
+              MenuMasterSid: m.MenuMasterSid,
+              MenuCode: m.MenuCode,
+              MenuName: m.MenuName,
+            }))
             : [];
           this.loadConfig();
         },
