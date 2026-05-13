@@ -326,7 +326,7 @@
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="SubUnitIn" formControlName="SubUnitIn"
-                                    class="custom-input-field sm" placeholder="" pattern="[1-9][0-9]{0,2}" [textWithNumbers]="30"
+                                    class="custom-input-field sm text-end" placeholder="" pattern="[1-9][0-9]{0,2}" [textWithNumbers]="30"
                                     [class.is-invalid]="currencyForm.get('SubUnitIn')?.invalid && (currencyForm.get('SubUnitIn')?.touched || currencyForm.get('SubUnitIn')?.dirty)" />
                                 <label for="SubUnitIn" class="input-label">Sub Unit In</label>
 
@@ -374,7 +374,7 @@
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="RoundOf" formControlName="RoundOf" placeholder=""[textWithNumbers]="100"
-                                    class="custom-input-field sm"
+                                    class="custom-input-field sm text-end"
                                     [class.is-invalid]="currencyForm.get('RoundOf')?.invalid && (currencyForm.get('RoundOf')?.touched || currencyForm.get('RoundOf')?.dirty)" />
                                 <label for="RoundOf" class="input-label">Round Off</label>
                                 <div *ngIf="(currencyForm.get('RoundOf')?.touched || currencyForm.get('RoundOf')?.dirty) && currencyForm.get('RoundOf')?.invalid"
@@ -414,7 +414,7 @@
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="amountDecimal" formControlName="amountDecimal" placeholder=""[textWithNumbers]="50"
-                                    class="custom-input-field sm"
+                                    class="custom-input-field sm text-end"
                                     [class.is-invalid]="currencyForm.get('amountDecimal')?.invalid && (currencyForm.get('amountDecimal')?.touched || currencyForm.get('amountDecimal')?.dirty)" />
                                 <label for="amountDecimal" class="input-label">
                                     Amount Decimal <span class="text-danger">*</span>
@@ -465,7 +465,7 @@
                         <aside class="col-md-4">
                             <div class="custom-form-group">
                                 <input type="text" id="exchangeDecimal" formControlName="exchangeDecimal" [textWithNumbers]="50"
-                                    placeholder="" class="custom-input-field sm" [class.is-invalid]="
+                                    placeholder="" class="custom-input-field sm text-end" [class.is-invalid]="
         currencyForm.get('exchangeDecimal')?.invalid &&
         (currencyForm.get('exchangeDecimal')?.touched || currencyForm.get('exchangeDecimal')?.dirty)
       " />
