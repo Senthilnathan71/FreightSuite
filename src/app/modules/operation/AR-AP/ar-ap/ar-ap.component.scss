@@ -101,6 +101,14 @@
       font-size: 0.8rem;
       color: white;
       white-space: nowrap;
+
+      &.amount-cell {
+        text-align: right;
+      }
+
+      &.status-cell {
+        text-align: center;
+      }
     }
   }
 
@@ -115,11 +123,38 @@
     }
 
     td {
-      padding: 6px;
+      padding: 4px;
+      color: #333;
+      white-space: nowrap;  
+      vertical-align: middle;
+      font-size: 12px;
+      font-weight: 600;
+
+      &.amount-cell {
+        text-align: right;
+      }
+
+      &.status-cell {
+        text-align: center;
+      }
+    }
+  }
+
+  tfoot {
+    td {
+      padding: 4px 6px;
       color: #374151;
-        white-space: nowrap;  
+      white-space: nowrap;
       vertical-align: middle;
       font-size: 0.8rem;
+
+      &.amount-cell {
+        text-align: right;
+      }
+
+      &.total-label {
+        text-align: right;
+      }
     }
   }
 }
