@@ -4591,6 +4591,25 @@ getAuditLogsNetwork(tableName: string, recordId?: string) {
     );
   }
 
+  downloadChargeTemplate(CompanyMasterSid: number): Observable<Blob> {
+  return this.http.get(`charge/template`, {
+    params: { CompanyMasterSid: String(CompanyMasterSid) },
+    responseType: 'blob'
+  });
+}
+
+parseChargeExcel(formData: FormData): Observable<any> {
+  return this.http.post(`charge/bulk-upload/parse`, formData);
+}
+
+saveChargeExcel(payload: {
+  validRows: any[];
+  CompanyMasterSid: number;
+  createdBy: string;
+}): Observable<any> {
+  return this.http.post(`charge/bulk-upload/save`, payload);
+}
+
 }
 
 
