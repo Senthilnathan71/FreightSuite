@@ -20,6 +20,8 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+
 @Component({
   selector: 'app-vendor-tds-list',
   standalone: true,
@@ -33,7 +35,8 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
     NgxSpinnerModule,
     CommonPaginationComponent,
     ReusableTableComponent,
-      PageHeaderComponent,
+    PageHeaderComponent,
+    ElementStateGuardDirective
   ],
   templateUrl: './vendor-tds-list.component.html',
   styleUrl: './vendor-tds-list.component.scss'

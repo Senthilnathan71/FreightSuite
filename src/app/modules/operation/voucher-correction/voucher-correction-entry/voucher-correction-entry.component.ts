@@ -32,6 +32,8 @@ import { AccountsService } from 'src/app/modules/accounts/accounts.service';
 import { DropdownStore } from 'src/app/shared/dropdown/dropdown.store';
 import { ReceiptService } from 'src/app/modules/accounts/services/receipt.service';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
   selector: 'app-voucher-correction-entry',
@@ -50,7 +52,9 @@ import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.i
     NgbDropdownModule,
     PreventMultiClickDirective,
     DecimalPrecisionDirective,
-    RouterModule
+    RouterModule,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './voucher-correction-entry.component.html',
   styleUrl: './voucher-correction-entry.component.scss',

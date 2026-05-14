@@ -27,6 +27,7 @@ import { ReceiptService } from '../../services/receipt.service';
 import { ReceiptFilter, ReceiptListItem } from '../../models/receipt.model';
 import { AccountsService } from '../../accounts.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import {
   AdvancedFilterValues,
   DateRangeConfig,
@@ -138,6 +139,7 @@ export class ReceiptListComponent extends BaseListComponent implements OnInit {
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
     private datePipe: CustomDatePipe,
+    private voucherActionGuard: VoucherActionGuardService,
   ) {
     super(paginationService);
   }
@@ -546,6 +548,17 @@ private formatAmount(amount: number | string): string {
   }
 
   reverseReceipt(row: any) {
+    const blockedReason = this.voucherActionGuard.getReverseBlockedReason({
+      documentName: 'Receipt',
+      headerId: row?.VoucherHeaderSid,
+      status: row?.Status,
+      postStatus: row?.PostStatus,
+      canUpdate: this.mps.can('update'),
+      blockedByCondition: row?.Status !== 'Active' || row?.PostStatus !== 'Posted',
+      blockedConditionReason: 'Only posted active receipts can be reversed.'
+    });
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     // TODO: Implement receipt reversal
     if (confirm(`Are you sure you want to reverse receipt ${row.VoucherNumber}?`)) {
       this.receiptService.reverseReceipt(row.VoucherHeaderSid, {
@@ -678,6 +691,15 @@ private formatAmount(amount: number | string): string {
   }
 
   deleteReceipt(receipt: any) {
+    const blockedReason = this.voucherActionGuard.getDeleteBlockedReason({
+      documentName: 'Receipt',
+      status: receipt?.Status,
+      postStatus: receipt?.PostStatus,
+      canDelete: this.mps.can('delete'),
+      blockedByCondition: receipt?.Status !== 'Active' || receipt?.PostStatus !== 'Unposted'
+    });
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
@@ -708,6 +730,12 @@ private formatAmount(amount: number | string): string {
   }
 
   navigateToAddNewReceipt() {
+    const blockedReason = this.voucherActionGuard.getInsertBlockedReason({
+      documentName: 'Receipt',
+      canInsert: this.mps.can('insert')
+    });
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     this.router.navigate(['accounts/receipt/entry']);
   }
 

@@ -27,6 +27,8 @@ import {
   DateTypeConfig,
   DropdownFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+
 @Component({
   selector: 'app-currency-exchange-list',
   standalone: true,
@@ -41,7 +43,8 @@ import {
     NgxSpinnerModule,
     CommonPaginationComponent,
     ReusableTableComponent,
-     PageHeaderComponent,
+    PageHeaderComponent,
+    ElementStateGuardDirective
   ],
   providers: [CustomDatePipe],
   templateUrl: './currency-exchange-list.component.html',

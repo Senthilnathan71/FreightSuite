@@ -23,6 +23,8 @@ import {
   AdvancedFilterValues,
   DropdownFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+
 @Component({
   selector: 'app-chart-account-list',
   standalone: true,
@@ -36,7 +38,8 @@ import {
     ReactiveFormsModule,
     NgxSpinnerModule,
     ReusableTableComponent,
-     PageHeaderComponent,
+    PageHeaderComponent,
+    ElementStateGuardDirective
   ],
   templateUrl: './chart-account-list.component.html',
   styleUrl: './chart-account-list.component.scss'

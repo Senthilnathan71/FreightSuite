@@ -31,6 +31,7 @@ import {
   DropdownFilterConfig,
   PartyFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
+import { VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 
 @Component({
   selector: 'app-credit-note-list',
@@ -140,7 +141,8 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
     private datePipe: CustomDatePipe,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private voucherActionGuard: VoucherActionGuardService
   ) {
     super(paginationService);
   }
@@ -775,6 +777,15 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
   }
 
   deleteCreditNote(id: any) {
+      const blockedReason = this.voucherActionGuard.getDeleteBlockedReason({
+        documentName: 'Credit Note',
+        status: id?.Status,
+        postStatus: id?.PostStatus,
+        canDelete: this.mps.can('delete'),
+        blockedByCondition: id?.Status !== 'Active' || id?.PostStatus !== 'Unposted',
+      });
+      if (this.voucherActionGuard.block(blockedReason)) return;
+
       const dialogRef = this.dialog.open(DeleteWarningComponent);
       dialogRef.afterClosed().subscribe(result => {
         if (result === true) {
@@ -804,6 +815,12 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
       });
     }
     navigateToAddNewCreditNote() {
+    const blockedReason = this.voucherActionGuard.getInsertBlockedReason({
+      documentName: 'Credit Note',
+      canInsert: this.mps.can('insert'),
+    });
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     this.router.navigate(['operation/credit-note/entry']);
   }
   formatDate(date: any): string {

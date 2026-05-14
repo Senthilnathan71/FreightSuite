@@ -85,6 +85,9 @@ import { ToastrService } from 'ngx-toastr';
 import { PdfMakeService } from 'src/app/common/pdf';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
+import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 interface NgbDateStructLike {
   day: number;
@@ -119,6 +122,8 @@ interface rateComparison {
     SearchableDropdown,
     NgbDropdownModule,
     DecimalPrecisionDirective,
+    ElementStateGuardDirective,
+    FormStateGuardDirective,
   ],
   templateUrl: './credit-note-entry.component.html',
   styleUrl: './credit-note-entry.component.scss',
@@ -354,7 +359,26 @@ export class CreditNoteEntryComponent {
     private pdfMakeService: PdfMakeService,
     public taxCalculationService: TaxCalculationService,
     private emailTriggerService: EmailTriggerService,
+    private voucherActionGuard: VoucherActionGuardService,
   ) {}
+
+  private getActionGuardContext(): VoucherActionGuardContext {
+    return {
+      documentName: 'Credit Note',
+      isSaving: this.isSaving,
+      isEditMode: this.isEditMode,
+      isReadOnly: this.isReadOnly,
+      isPosted: this.isPosted,
+      isDirty: this.isDirty,
+      headerId: this.headerId,
+      formInvalid: this.creditNoteForm?.invalid,
+      status: this.creditNoteData?.Status ?? this.creditNoteForm?.get('Status')?.value,
+      postStatus: this.creditNoteData?.PostStatus ?? this.creditNoteForm?.get('PostStatus')?.value,
+      canInsert: this.mps.can('insert'),
+      canUpdate: this.mps.can('update'),
+      canPost: this.mps.can('post'),
+    };
+  }
   ngOnInit(): void {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) {
@@ -1888,6 +1912,9 @@ export class CreditNoteEntryComponent {
   }
 
   addDetailRow() {
+    const blockedReason = this.voucherActionGuard.getDetailMutationBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     const missingErrors: string[] = [];
 
     const currency = this.creditNoteForm.get('CurrencyCode')?.value;
@@ -2024,6 +2051,9 @@ export class CreditNoteEntryComponent {
   }
 
   removeDetailRow(index: number) {
+    const blockedReason = this.voucherActionGuard.getDetailMutationBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     if (this.details.length > index) this.details.removeAt(index);
     this.creditNoteForm.updateValueAndValidity();
     this.recalculateAllRows();
@@ -2315,6 +2345,9 @@ export class CreditNoteEntryComponent {
   }
 
   onSubmit(resolve?: (value: boolean) => void, isPostingTrue?: boolean) {
+    const blockedReason = this.voucherActionGuard.getSaveBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason, resolve)) return;
+
     // Validate voucher date is within financial year
     const fy = this.appSettingService.getCurrentFinancialYear();
     if (fy) {
@@ -2551,7 +2584,9 @@ export class CreditNoteEntryComponent {
   }
 
   async postVoucher(notFromSubmit: boolean = false): Promise<void> {
-    if (this.isSaving) return;
+    const blockedReason = this.voucherActionGuard.getPostBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     this.applyVoucherDateConstraints();
     if (this.voucherConstraints.isClosed) {
       if (this.voucherConstraints.errorMessage) this.appSettingService.showWarning(this.voucherConstraints.errorMessage);

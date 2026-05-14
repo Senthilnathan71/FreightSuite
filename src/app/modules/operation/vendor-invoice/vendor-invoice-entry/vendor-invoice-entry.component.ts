@@ -52,6 +52,9 @@ import { offset } from '@popperjs/core';
 import { AppliedTaxMode, TaxCalculationService } from '../../services/tax-calculation.service';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
+import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -73,7 +76,9 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     RouterModule,
     NgbDropdownModule,
     DecimalPrecisionDirective,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './vendor-invoice-entry.component.html',
   styleUrls: ['./vendor-invoice-entry.component.scss'],
@@ -340,7 +345,27 @@ export class VendorInvoiceEntryComponent implements OnInit {
     private numberToWords: NumberToWordsService,
     public taxCalculationService: TaxCalculationService,
     private emailTriggerService: EmailTriggerService,
+    private voucherActionGuard: VoucherActionGuardService,
   ) { }
+
+  private getActionGuardContext(): VoucherActionGuardContext {
+    return {
+      documentName: 'Vendor Invoice',
+      isSaving: this.isSaving,
+      isPosting: this.isPosting,
+      isEditMode: this.isEditMode,
+      isReadOnly: this.isReadOnly,
+      isPosted: this.isPosted,
+      isDirty: this.isDirty,
+      headerId: this.headerId,
+      formInvalid: this.vendorInvoiceForm?.invalid,
+      status: this.vendorInvoiceData?.Status ?? this.vendorInvoiceForm?.get('Status')?.value,
+      postStatus: this.vendorInvoiceData?.PostStatus ?? this.vendorInvoiceForm?.get('PostStatus')?.value,
+      canInsert: this.mps.can('insert'),
+      canUpdate: this.mps.can('update'),
+      canPost: this.mps.can('post'),
+    };
+  }
 
   sendManualMail(): void {
     this.emailTriggerService.triggerManualEmails({
@@ -1092,13 +1117,20 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
           this.vendorInvoiceForm.markAllAsTouched();
           this._isInitialLoad = true;
-          this.patchValues(this.vendorInvoiceData);
-          this.applyVoucherDateConstraints();
-          this.restrictDatePickerToVoucherMonth(this.vendorInvoiceData.VoucherDate);
-          this.vendorInvoiceForm.get('PartyName')?.disable();
-          this.vendorInvoiceForm.get('CustomerBranchSid')?.disable();
-          this.vendorInvoiceForm.get('CurrencyMasterSid')?.disable();
-          this.vendorInvoiceForm.get('CurrencyCode')?.disable();
+          try {
+            this.patchValues(this.vendorInvoiceData);
+            this.applyVoucherDateConstraints();
+            this.restrictDatePickerToVoucherMonth(this.vendorInvoiceData.VoucherDate);
+            this.vendorInvoiceForm.get('PartyName')?.disable();
+            this.vendorInvoiceForm.get('CustomerBranchSid')?.disable();
+            this.vendorInvoiceForm.get('CurrencyMasterSid')?.disable();
+            this.vendorInvoiceForm.get('CurrencyCode')?.disable();
+          } catch (err) {
+            this.spinner.hide();
+            console.error('Error preparing Vendor Invoice edit form:', err);
+            this.appSettingService.showError('Error loading Vendor Invoice');
+            return;
+          }
           if (this.isReadOnly) {
             this.details.disable({ emitEvent: false });
             this.isDirty = false;
@@ -1106,6 +1138,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
             this.vendorInvoiceForm.disable();
             this.destroy$.next();
             this.destroy$.complete();
+            this.spinner.hide();
             return;
           }
           setTimeout(() => {
@@ -1115,6 +1148,7 @@ export class VendorInvoiceEntryComponent implements OnInit {
             this.subscribeToFormChanges();
             this.subscribeToValueChanges();
           }, 0);
+          this.spinner.hide();
           // unsaved changes related
         } else {
           this.spinner.hide();
@@ -1326,6 +1360,9 @@ export class VendorInvoiceEntryComponent implements OnInit {
 
   
   addDetailRow() {
+    const blockedReason = this.voucherActionGuard.getDetailMutationBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     const missingErrors: string[] = [];
 
     const currency = this.vendorInvoiceForm.get('CurrencyCode')?.value;
@@ -1437,6 +1474,9 @@ export class VendorInvoiceEntryComponent implements OnInit {
   }
 
   removeDetailRow(index: number) {
+    const blockedReason = this.voucherActionGuard.getDetailMutationBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     if (this.details.length > index) this.details.removeAt(index);
     if (this._originalHSSACValues.length > index) this._originalHSSACValues.splice(index, 1);
     this.vendorInvoiceForm.updateValueAndValidity();
@@ -1760,6 +1800,9 @@ export class VendorInvoiceEntryComponent implements OnInit {
     resolve?: (value:boolean) => void,
     isPostingTrue ?: boolean
   ) {
+    const blockedReason = this.voucherActionGuard.getSaveBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason, resolve)) return;
+
     // Validate voucher date is within financial year
     const fy = this.appSettingService.getCurrentFinancialYear();
     if (fy) {
@@ -1965,7 +2008,9 @@ export class VendorInvoiceEntryComponent implements OnInit {
   }
 
   async postVoucher(notFromSubmit: boolean = false) : Promise<void> {
-    if (this.isPosting) return;
+    const blockedReason = this.voucherActionGuard.getPostBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     this.applyVoucherDateConstraints();
     if (this.voucherConstraints.isClosed) {
       if (this.voucherConstraints.errorMessage) this.appSettingService.showWarning(this.voucherConstraints.errorMessage);

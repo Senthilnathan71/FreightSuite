@@ -34,6 +34,9 @@ import { LogoService } from 'src/app/core/services/logo.service';
 import { ToastrService } from 'ngx-toastr';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
@@ -51,7 +54,9 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     NumberFormatPipe,
     CustomDatePipe,
     SearchableDropdown,
-    NgbDropdownModule
+    NgbDropdownModule,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './reverse-voucher-entry.component.html',
   styleUrl: './reverse-voucher-entry.component.scss',
@@ -152,6 +157,23 @@ export class ReverseVoucherEntryComponent {
   get f(): { [key: string]: AbstractControl } {
     return this.reverseVoucherForm.controls;
   }
+  private getActionGuardContext(): VoucherActionGuardContext {
+    return {
+      documentName: 'Reverse Voucher',
+      isSaving: this.isSaving,
+      isEditMode: this.isEditMode,
+      isReadOnly: this.isReadOnly,
+      isPosted: this.isPosted,
+      isDirty: this.isDirty,
+      headerId: this.headerId,
+      formInvalid: this.reverseVoucherForm?.invalid,
+      status: this.reverseVoucherForm?.get('Status')?.value ?? this.reverseVoucherData?.Status,
+      postStatus: this.reverseVoucherForm?.get('PostStatus')?.value ?? this.reverseVoucherData?.PostStatus,
+      canInsert: this.mps.can('insert'),
+      canUpdate: this.mps.can('update'),
+      canPost: this.mps.can('post')
+    };
+  }
   get details(): FormArray {
     return this.reverseVoucherForm.get('voucherDetails') as FormArray;
   }
@@ -189,6 +211,7 @@ export class ReverseVoucherEntryComponent {
     public logoService: LogoService,
     private datePipe: CustomDatePipe,
     private toastr: ToastrService,
+    private voucherActionGuard: VoucherActionGuardService,
   ) { }
 
 
@@ -718,6 +741,9 @@ export class ReverseVoucherEntryComponent {
   }
 
   onFinalSave() {
+    const blockedReason = this.voucherActionGuard.getPostBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     this.applyVoucherDateConstraints();
     if (this.voucherConstraints.isClosed) {
       if (this.voucherConstraints.errorMessage) this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
@@ -779,6 +805,16 @@ export class ReverseVoucherEntryComponent {
 
   private async postVoucher(voucherHeaderSid: number) {
     try {
+      const blockedReason = this.voucherActionGuard.getPostBlockedReason({
+        ...this.getActionGuardContext(),
+        headerId: voucherHeaderSid,
+        isDirty: false
+      });
+      if (this.voucherActionGuard.block(blockedReason)) {
+        this.spinner.hide();
+        return;
+      }
+
       const currentCompany = this.currentCompany;
       const currentBranch = this.currentBranch;
       const currentFinancialYear = Number(localStorage.getItem('current-year-id'));
@@ -1627,6 +1663,9 @@ export class ReverseVoucherEntryComponent {
   }
 
   onSubmit(resolve?: (value: boolean) => void, isPostingTrue?: boolean) {
+    const blockedReason = this.voucherActionGuard.getSaveBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason, resolve)) return;
+
     // Validate voucher date is within financial year
     const fy = this.appSettingService.getCurrentFinancialYear();
     if (fy) {

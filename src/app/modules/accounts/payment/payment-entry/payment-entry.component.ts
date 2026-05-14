@@ -87,6 +87,9 @@ import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log
 import { OperationService } from 'src/app/modules/operation/operation.service';
 import { TaxCalculationService } from 'src/app/modules/operation/services/tax-calculation.service';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 /**
  * Payment Entry Component
@@ -115,7 +118,9 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
     OnlyNumbersDirective,
     NgxSpinnerModule,
     RouterModule,
-    NgbTooltipModule
+    NgbTooltipModule,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './payment-entry.component.html',
   styleUrl: './payment-entry.component.scss',
@@ -402,8 +407,27 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     private cdr: ChangeDetectorRef,
     private masterService: MasterService,
     private operationService: OperationService,
-    private taxCalculationService: TaxCalculationService
+    private taxCalculationService: TaxCalculationService,
+    private voucherActionGuard: VoucherActionGuardService
   ) {}
+
+  private getActionGuardContext(): VoucherActionGuardContext {
+    return {
+      documentName: 'Payment',
+      isSaving: this.isSaving,
+      isEditMode: this.isEditMode,
+      isReadOnly: this.isReadOnly,
+      isPosted: this.isPosted,
+      isDirty: this.isDirty,
+      headerId: this.headerId,
+      formInvalid: this.paymentForm?.invalid,
+      status: this.paymentData?.Status,
+      postStatus: this.paymentData?.PostStatus,
+      canInsert: this.mps.can('insert'),
+      canUpdate: this.mps.can('update'),
+      canPost: this.mps.can('post'),
+    };
+  }
 
   ngOnInit(): void {
     this.userData = this.appSettingService.getDecryptedUserProfile();
@@ -1145,6 +1169,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   onSubmit(resolve?: (value: boolean) => void, isPostingTrue?: boolean) {
+    const blockedReason = this.voucherActionGuard.getSaveBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason, resolve)) return;
+
     // Validate voucher date is within financial year
     const fy = this.appSettingService.getCurrentFinancialYear();
     if (fy) {
@@ -1497,7 +1524,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   async postVoucher(notFromSubmit: boolean = false) {
-    if (this.isSaving) return;
+    const blockedReason = this.voucherActionGuard.getPostBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     this.applyVoucherDateConstraints();
     if (this.voucherConstraints.isClosed) {
       if (this.voucherConstraints.errorMessage) this.appSettingService.showWarning(this.voucherConstraints.errorMessage);
@@ -2152,6 +2181,11 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   addDetailRow(data?: any, syncExRate: boolean = true) {
+    if (!data) {
+      const blockedReason = this.voucherActionGuard.getDetailMutationBlockedReason(this.getActionGuardContext());
+      if (this.voucherActionGuard.block(blockedReason)) return;
+    }
+
     const newRow = this.constructDetailItems(data);
     this.detailItems.push(newRow);
 
@@ -2224,6 +2258,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   }
 
   removeDetail(detailIndex: number, VoucherDetailSid?: number) {
+    const blockedReason = this.voucherActionGuard.getDetailMutationBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     // Remove from form array only — the backend soft-deletes orphaned rows on save
     (this.detailItems as FormArray).removeAt(detailIndex);
     this.filteredCoaList.splice(detailIndex, 1);
@@ -3222,6 +3259,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
    * Remove voucher matching row
    */
   removeVoucher(index: number): void {
+    const blockedReason = this.voucherActionGuard.getDetailMutationBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     this.detailItems.removeAt(index);
     this.recalculateTotalAmount();
   }
@@ -3430,6 +3470,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
    * Add inter-branch row
    */
   addInterBranch(): void {
+    const blockedReason = this.voucherActionGuard.getDetailMutationBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     this.interBranches.push(
       this.fb.group({
         BranchMasterSid: [null, Validators.required],
@@ -3445,6 +3488,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
    * Remove inter-branch row
    */
   removeInterBranch(index: number): void {
+    const blockedReason = this.voucherActionGuard.getDetailMutationBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     this.interBranches.removeAt(index);
   }
 

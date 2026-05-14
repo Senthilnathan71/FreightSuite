@@ -42,6 +42,9 @@ import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log
 import { SearchableDropdown } from "src/app/component/searchable-dropdown/searchable-dropdown.component";
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 interface NgbDateStructLike { day: number; month: number; year: number; }
 
 @Component({
@@ -55,7 +58,9 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     NgSelectModule,
     NgbDropdownModule,
     DecimalPrecisionDirective,
-    SearchableDropdown
+    SearchableDropdown,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
 ],
   templateUrl: './journal-voucher-entry.component.html',
   styles: [``],
@@ -199,7 +204,26 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
     private voucherPeriodService: VoucherPeriodValidationService,
     private toastr: ToastrService,
     private commonModalService: ModalService,
+    private voucherActionGuard: VoucherActionGuardService,
   ) { }
+
+  private getActionGuardContext(): VoucherActionGuardContext {
+    return {
+      documentName: 'Journal Voucher',
+      isSaving: this.isSaving,
+      isEditMode: this.editMode,
+      isReadOnly: this.isReadOnly,
+      isPosted: this.isPosted,
+      isDirty: this.isDirty,
+      headerId: this.voucherHeaderSid,
+      formInvalid: this.form?.invalid,
+      status: this.voucherData?.Status ?? this.form?.get('Status')?.value,
+      postStatus: this.voucherData?.PostStatus ?? this.form?.get('postStatus')?.value,
+      canInsert: this.mps.can('insert'),
+      canUpdate: this.mps.can('update'),
+      canPost: this.mps.can('post'),
+    };
+  }
 
   ngOnInit(): void {
     const currentFinancialYear =
@@ -295,6 +319,9 @@ private subscribeToFormChanges() {
 }
 
 private saveDraftWithCallback(resolve?: (value: boolean) => void) {
+  const blockedReason = this.voucherActionGuard.getSaveBlockedReason(this.getActionGuardContext());
+  if (this.voucherActionGuard.block(blockedReason, resolve)) return;
+
   const fy = this.appSettingService.getCurrentFinancialYear();
   if (fy) {
     const voucherDate = new Date(this.form.getRawValue().voucherDate);
@@ -1529,6 +1556,9 @@ private deepEqual(obj1: any, obj2: any): boolean {
   }
 
   addDetailLine(): void {
+    const blockedReason = this.voucherActionGuard.getDetailMutationBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     const detailGroup = this.createDetailGroup();
     const headerNarration = this.form.get('narration')?.value;
   if (headerNarration) {
@@ -2377,6 +2407,9 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
   }
 
   deleteDetailLine(index: number): void {
+    const blockedReason = this.voucherActionGuard.getDetailMutationBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     if (this.details.length > 1) {
        this.manuallyEditedNarrationRows.delete(index);
     
@@ -2464,6 +2497,9 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
 
   // NEW: Final Save with Posting functionality
   onFinalSave(): void {
+    const blockedReason = this.voucherActionGuard.getPostBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     // Re-validate voucher date constraints at save time (edit mode may have stale state)
     this.applyVoucherDateConstraints();
     // Block save if voucher period grace days exceeded or module closed
@@ -2557,6 +2593,17 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
 
   // NEW: Post Voucher method (similar to vendor invoice)
   private async postVoucher(voucherHeaderSid: number): Promise<void> {
+    const blockedReason = this.voucherActionGuard.getPostBlockedReason({
+      ...this.getActionGuardContext(),
+      headerId: voucherHeaderSid,
+      isDirty: false,
+    });
+    if (this.voucherActionGuard.block(blockedReason)) {
+      this.isSaving = false;
+      this.spinner.hide();
+      return;
+    }
+
     try {
       this.spinner.show();
 
@@ -2618,6 +2665,9 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
   // Existing saveDraft method (for draft saving)
   saveDraft(resolve?: (value: boolean) => void, isPostingTrue?: boolean) {
     console.log("saveDraft")
+  const blockedReason = this.voucherActionGuard.getSaveBlockedReason(this.getActionGuardContext());
+  if (this.voucherActionGuard.block(blockedReason, resolve)) return;
+
   // Re-validate voucher date constraints at save time (edit mode may have stale state)
   this.applyVoucherDateConstraints();
   // Block save if voucher period grace days exceeded or module closed

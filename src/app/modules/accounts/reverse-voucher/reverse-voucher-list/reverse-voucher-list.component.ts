@@ -24,6 +24,7 @@ import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pag
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { AccountsService } from '../../accounts.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import {
   AdvancedFilterValues,
   DateRangeConfig,
@@ -137,7 +138,8 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
         private spinner: NgxSpinnerService,
         paginationService: PaginationService,
         private datePipe: CustomDatePipe,
-        public mps: MenuPermissionService
+        public mps: MenuPermissionService,
+        private voucherActionGuard: VoucherActionGuardService
       ) {
         super(paginationService);
       }
@@ -473,6 +475,12 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
       }
     
       onCreate() {
+        const blockedReason = this.voucherActionGuard.getInsertBlockedReason({
+          documentName: 'Reverse Voucher',
+          canInsert: this.mps.can('insert')
+        });
+        if (this.voucherActionGuard.block(blockedReason)) return;
+
         this.router.navigate(['/accounts/reverse-voucher/entry']);
       }
     
@@ -542,6 +550,15 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
       }
     
       deleteReverseVoucher(ReverseVoucher: any) {
+        const blockedReason = this.voucherActionGuard.getDeleteBlockedReason({
+          documentName: 'Reverse Voucher',
+          status: ReverseVoucher?.Status,
+          postStatus: ReverseVoucher?.PostStatus,
+          canDelete: this.mps.can('delete'),
+          blockedByCondition: ReverseVoucher?.Status !== 'Active' || ReverseVoucher?.PostStatus !== 'U'
+        });
+        if (this.voucherActionGuard.block(blockedReason)) return;
+
         const dialogRef = this.dialog.open(DeleteWarningComponent);
     
         dialogRef.afterClosed().subscribe(result => {
