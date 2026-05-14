@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { FeatherModule } from 'angular-feather';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { MatDialog } from '@angular/material/dialog';
 import { forkJoin, Observable } from 'rxjs';
 
@@ -21,6 +21,7 @@ import { TableConfig, TableEventData, TableSortConfig, TableFilter, TableColumn 
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { ChargeImportModalComponent } from './charge-upload.component';
 
 @Component({
   selector: 'app-charge-list',
@@ -56,6 +57,7 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
   uoms: any[] = [];
   tdsSets: any[] = [];
   hssacList: any[] = [];
+  departmentOptions: any[] = [];
 
   tableLoading = false;
   headerActions: HeaderAction[] = [];
@@ -81,6 +83,7 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
     public mps : MenuPermissionService,
+    private modalService: NgbModal
   ) {
     super(paginationService);
   }
@@ -106,10 +109,11 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
     const uom$ = this.masterService.getAllUom();
     const hssac$ = this.masterService.getAllHssac();
     const tds$ = this.masterService.getAllTds(companyId);
+    const department$ = this.masterService.getAllDepartments(companyId);
 
     // show spinner until lookups are ready
     this.spinner.show();
-    forkJoin([uom$, hssac$, tds$]).subscribe({
+    forkJoin([uom$, hssac$, tds$, department$]).subscribe({
       next: ([uomRes, hssacRes, tdsRes]: any) => {
         // normalize results (some APIs return { data: [...] } others direct array)
         this.uoms = (uomRes && uomRes.data) ? uomRes.data : (uomRes || []);
@@ -206,6 +210,25 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
         disabled : !this.mps.can('insert')
       },
       {
+        label:    'XL Upload',
+        icon:     'fas fa-file-excel',
+        action:   'excel-dropdown',
+        cssClass: 'dofi-min-w-130',
+        tooltip: 'Import charges from Excel template. Download the template, fill in your data, and upload to create multiple charges at once.',
+        children: [
+          {
+            label: 'Download Template',
+            icon: 'fas fa-download',
+            action: 'download-template'
+          },
+          {
+            label: 'Upload Excel',
+            icon: 'fas fa-file-upload',
+            action: 'upload-file'
+          }
+        ]
+      },
+      {
         label: 'Report',
         icon: 'fas fa-file-alt',
         action: 'report',
@@ -253,6 +276,12 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
       case 'create':
         this.navigateToCreateCharge();
         break;
+      case 'download-template':
+        this.downloadTemplate();
+        break;
+      case 'upload-file':
+        this.openImportModal();
+        break;
       case 'report':
         this.report();
         break;
@@ -263,6 +292,57 @@ export class ChargeListComponent extends BaseListComponent implements OnInit {
         console.warn(`Unknown action: ${action}`);
     }
   }
+
+  openImportModal() {
+    const modalRef = this.modalService.open(ChargeImportModalComponent, {
+      size:     'lg',
+      centered: true,
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    // Pass context needed for validations and API calls
+    modalRef.componentInstance.currentCompany    = this.currentCompany;
+    modalRef.componentInstance.currentBranch     = this.currentBranch;
+    modalRef.componentInstance.userData          = this.userData;
+    modalRef.componentInstance.departmentOptions = this.departmentOptions;
+    modalRef.componentInstance.uomOptions        = this.uoms;
+
+    modalRef.closed.subscribe((imported: boolean) => {
+      if (imported) {
+        this.appSettingService.showSuccess('Charges imported successfully!');
+        this.loadCharges();   // refresh list
+      }
+    });
+  }
+
+  downloadTemplate(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+      this.appSettingService.showError('Company is not selected');
+      return;
+    }
+
+    this.spinner.show();
+    this.masterService.downloadChargeTemplate(companyId).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'Charge_Upload_Template.xlsx';
+        link.click();
+        window.URL.revokeObjectURL(url);
+        this.spinner.hide();
+        this.appSettingService.showSuccess('Template downloaded successfully');
+      },
+      error: (error) => {
+        console.error('Error downloading template:', error);
+        this.spinner.hide();
+        this.appSettingService.showError('Error downloading template');
+      }
+    });
+  }
+
   private updateHeaderActionState(): void {
     this.headerActions = this.headerActions.map(action => {
       if (action.action === 'report') {
