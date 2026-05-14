@@ -432,7 +432,7 @@
                                         <aside class="col-md-6">
                                             <div class="custom-form-group mt-md-1">
                                                 <input type="number" formControlName="NoofOriginal"
-                                                    class="custom-input-field sm" min="0">
+                                                    class="custom-input-field sm text-end" min="0">
                                                 <label class="input-label">No of Original <span
                                                         class="text-danger">*</span></label>
                                                 @if(masterJobForm.get('NoofOriginal')?.touched &&
@@ -638,7 +638,7 @@
                                         <aside class="col-md-4 ">
                                             <div class="custom-form-group">
                                                 <input type="text" id="voyage-input" placeholder=""
-                                                    class="custom-input-field sm" formControlName="VoyageNo" [readonly]="isExportToImportCompleted">
+                                                    class="custom-input-field sm text-end" formControlName="VoyageNo" [readonly]="isExportToImportCompleted">
                                                 <label for="text-input" class="input-label">Flight Number<span
                                                         class="text-danger"></span></label>
 
@@ -860,7 +860,7 @@
                                 <div class="row compact-form" [formGroup]="masterJobForm">
                                     <aside class="col-md-2">
                                         <div class="custom-form-group">
-                                            <input type="number" formControlName="NoOfPkg" class="custom-input-field sm"
+                                            <input type="number" formControlName="NoOfPkg" class="custom-input-field sm text-end"
                                                 min="0">
                                             <label class="input-label">Total Pkg</label>
                                         </div>
@@ -877,7 +877,7 @@
                                     <aside class="col-md-2">
                                         <div class="custom-form-group">
                                             <input type="number" formControlName="GrossWeight"
-                                                class="custom-input-field sm" DecimalPrecision
+                                                class="custom-input-field sm text-end" DecimalPrecision
                                                 [DecimalPrecisionBefore]="10"
                                                 [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999"
                                                 step="0.001" min="0">
@@ -887,7 +887,7 @@
                                     <aside class="col-md-2">
                                         <div class="custom-form-group">
                                             <input type="number" formControlName="NetWeight"
-                                                class="custom-input-field sm" DecimalPrecision
+                                                class="custom-input-field sm text-end" DecimalPrecision
                                                 [DecimalPrecisionBefore]="10"
                                                 [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999"
                                                 step="0.001" min="0">
@@ -897,7 +897,7 @@
                                     <aside class="col-md-2">
                                         <div class="custom-form-group">
                                             <input type="number" formControlName="ChargeableWeight"
-                                                class="custom-input-field sm" step="0.001" min="0">
+                                                class="custom-input-field sm text-end" step="0.001" min="0">
                                             <label class="input-label">Chargeable Weight</label>
                                         </div>
                                     </aside>
@@ -905,7 +905,7 @@
                                         <div class="custom-form-group">
                                             <input type="number" formControlName="Volume" DecimalPrecision
                                                 [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="3"
-                                                max="999999.999" class="custom-input-field sm" step="0.001" min="0">
+                                                max="999999.999" class="custom-input-field sm text-end" step="0.001" min="0">
                                             <label class="input-label">Volume (CBM)</label>
                                         </div>
                                     </aside>
@@ -1289,7 +1289,7 @@
 
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select-date">
-                            <input type="number" formControlName="SellExchangeRate" class="custom-input-field sm"
+                            <input type="number" formControlName="SellExchangeRate" class="custom-input-field sm text-end"
                                 step="0.0001" min="0">
                             <label class="input-label">Sell Exchange Rate</label>
                         </div>
@@ -1297,7 +1297,7 @@
 
                     <aside class="col-md-3">
                         <div class="custom-form-group custom-form-group-select-date mt-1">
-                            <input type="number" formControlName="AgentExchangeRate" class="custom-input-field sm"
+                            <input type="number" formControlName="AgentExchangeRate" class="custom-input-field sm text-end"
                                 step="0.0001" min="0">
                             <label class="input-label">Agent Exchange Rate</label>
                         </div>

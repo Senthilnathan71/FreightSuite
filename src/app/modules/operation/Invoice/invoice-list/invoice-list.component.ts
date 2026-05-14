@@ -374,6 +374,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         visible: true,
         dataType: 'number',
         width: '120px',
+        cellClass: 'text-end'
       },
         {
         key: 'MasterNumber',

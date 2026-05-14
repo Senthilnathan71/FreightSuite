@@ -159,6 +159,14 @@
   }
 }
 
+.arap-table {
+  tbody td,
+  tbody td a,
+  tfoot td {
+    font-size: 0.9rem;
+  }
+}
+
 .actions-cell {
   .action-buttons {
     display: flex;

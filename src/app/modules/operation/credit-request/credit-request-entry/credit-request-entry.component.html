@@ -248,7 +248,7 @@
                           <aside class="col">
                             <div class="custom-form-group"
                               [class.filled]="credit.get('CreditDays')?.value !== null && credit.get('CreditDays')?.value !== ''">
-                              <input type="number" formControlName="CreditDays" class="custom-input-field sm" min="0"
+                              <input type="number" formControlName="CreditDays" class="custom-input-field sm text-end" min="0"
                                 placeholder="" [disabled]="isApprovedRow(credit)" />
                               <label class="input-label">Credit Days <span class="text-danger">*</span></label>
                             </div>
@@ -258,7 +258,7 @@
                           <aside class="col">
                             <div class="custom-form-group"
                               [class.filled]="credit.get('CreditLimit')?.value !== null && credit.get('CreditLimit')?.value !== ''">
-                              <input type="number" formControlName="CreditLimit" class="custom-input-field sm" min="0"
+                              <input type="number" formControlName="CreditLimit" class="custom-input-field sm text-end" min="0"
                                 step="0.01" placeholder="" [disabled]="isApprovedRow(credit)" />
                               <label class="input-label">Credit Limit <span class="text-danger">*</span></label>
                             </div>
@@ -268,7 +268,7 @@
                           <aside class="col">
                             <div class="custom-form-group"
                               [class.filled]="credit.get('PublishedDays')?.value !== null && credit.get('PublishedDays')?.value !== ''">
-                              <input type="number" formControlName="PublishedDays" class="custom-input-field sm" min="0"
+                              <input type="number" formControlName="PublishedDays" class="custom-input-field sm text-end" min="0"
                                 placeholder="" [disabled]="isApprovedRow(credit)" />
                               <label class="input-label">Published Days</label>
                             </div>
@@ -281,7 +281,7 @@
                           <aside class="col">
                             <div class="custom-form-group"
                               [class.filled]="credit.get('PublishedLimit')?.value !== null && credit.get('PublishedLimit')?.value !== ''">
-                              <input type="number" formControlName="PublishedLimit" class="custom-input-field sm"
+                              <input type="number" formControlName="PublishedLimit" class="custom-input-field sm text-end"
                                 min="0" step="0.01" placeholder="" [disabled]="isApprovedRow(credit)" />
                               <label class="input-label">Published Limit</label>
                             </div>

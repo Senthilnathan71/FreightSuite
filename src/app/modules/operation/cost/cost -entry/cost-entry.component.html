@@ -206,10 +206,10 @@
 
                 </div>
               </td>
-              <td>
+              <td class="text-end">
                 <div class="custom-form-group ">
                   <input type="text" min="0" formControlName="NoOfUnit" id="text-input"
-                    class="custom-input-field sm"
+                    class="custom-input-field sm text-end"
                     (change)="calculateCostAmount(i); calculateRevenueAmount(i)"
                     [disabled]="!canEditRate(i)" DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="3">
                 </div>
@@ -274,7 +274,7 @@
                   </div>
                 </td>
               
-                <td>
+                <td class="text-end">
                   <div class="custom-form-group dofi-min-w-60">
                     <input type="text" id="text-input" formControlName="RevenueExchangeRate" class="custom-input-field sm text-end"
                       (change)="calculateRevenueLocalAmount(i)" [disabled]="!canEditRate(i)" DecimalPrecision
@@ -282,14 +282,14 @@
                       [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)">
                   </div>
                 </td>
-                <td>
+                <td class="text-end">
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
                     <input type="text" id="text-input" formControlName="RevenueRate" class="custom-input-field sm text-end"
                       (change)="calculateRevenueAmount(i)" [disabled]="!canEditRate(i)" DecimalPrecision [DecimalPrecisionBefore]="6"
                       [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)">
                   </div>
                 </td>
-                <td>
+                <td class="text-end">
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" formControlName="RevenueAmount" class="custom-input-field sm text-end"
                       (change)="calculateRevenueLocalAmount(i)" [disabled]="!canEditRate(i)" DecimalPrecision
@@ -298,7 +298,7 @@
                   </div>
                 </td>
               
-                <td>
+                <td class="text-end">
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" class="custom-input-field sm text-end"
                       [value]="row.get('RevenueLocalAmount')?.value" DecimalPrecision [DecimalPrecisionBefore]="9"

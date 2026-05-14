@@ -506,6 +506,7 @@ this.initializeTableConfig();
         filterable: true,
         visible: true,
         dataType: 'string',
+        cellClass: 'text-end'
       },
       {
         key: 'NoOfContainers',
@@ -513,7 +514,8 @@ this.initializeTableConfig();
         sortable: true,
         filterable: true,
         visible: true,
-        dataType: 'string'
+        dataType: 'string',
+        cellClass: 'text-end'
       },
       {
         key: 'JobStatus',
