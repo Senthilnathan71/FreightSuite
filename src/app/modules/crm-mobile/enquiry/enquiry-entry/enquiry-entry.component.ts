@@ -67,6 +67,8 @@ import { type } from 'os';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 import { OperationService } from 'src/app/modules/operation/operation.service';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 @Component({
   selector: 'app-enquiry-entry',
   standalone: true,
@@ -89,7 +91,9 @@ import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.i
     PrintFooterComponent,
     PrintHeaderComponent,
     DialCodeDropdownComponent,
-    MultiSelectComponent
+    MultiSelectComponent,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './enquiry-entry.component.html',
   styleUrl: './enquiry-entry.component.scss',

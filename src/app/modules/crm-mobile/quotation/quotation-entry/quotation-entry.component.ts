@@ -70,6 +70,8 @@ import { VoiceRecognitionService } from '../../enquiry/voice-recognition.service
 import { VoiceParserService } from '../../enquiry/voice-parser.service';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -117,6 +119,8 @@ type Html2PdfOptions = {
     PrintHeaderComponent,
     DialCodeDropdownComponent,
     RouterModule,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
     // MultiColumnComboboxComponent
   ],
   templateUrl: './quotation-entry.component.html',
