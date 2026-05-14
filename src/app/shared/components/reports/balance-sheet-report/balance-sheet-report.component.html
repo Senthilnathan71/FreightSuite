@@ -138,7 +138,7 @@
 
                                         <td>{{ item.ledgerName }}</td>
                                         <td style="text-align:right;">
-                                            {{ item.LocalAmt | number:'1.2-2' }}
+                                            {{ getAssetDisplayAmount(item.LocalAmt) | number:'1.2-2' }}
                                         </td>
                                     </tr>
 
@@ -147,7 +147,7 @@
                                             Category Total
                                         </td>
                                         <td style="font-weight:700; text-align:right;">
-                                            {{ cat.categoryTotal | number:'1.2-2' }}
+                                            {{ getAssetDisplayAmount(cat.categoryTotal) | number:'1.2-2' }}
                                         </td>
                                     </tr>
                                 </ng-container>
@@ -155,7 +155,7 @@
                             <tfoot>
                                 <tr style="background:#e9ecef; font-weight:700;">
                                     <td colspan="3" style="text-align:right;">Total Application of Funds</td>
-                                    <td style="text-align:right;">{{ totalApplicationOfFunds | number:'1.2-2' }}</td>
+                                    <td style="text-align:right;">{{ displayTotalApplicationOfFunds | number:'1.2-2' }}</td>
                                 </tr>
                             </tfoot>
                         </table>
