@@ -30,6 +30,7 @@ import {
   DropdownFilterConfig,
   PartyFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 @Component({
   selector: 'app-enquiry-list',
   standalone: true,
@@ -45,6 +46,7 @@ import {
     NgxSpinnerModule,
     ReusableTableComponent,
     PageHeaderComponent,
+    ElementStateGuardDirective
   ],
   providers: [CustomDatePipe],
   templateUrl: './enquiry-list.component.html',

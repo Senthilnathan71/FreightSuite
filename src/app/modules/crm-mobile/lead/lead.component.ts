@@ -37,6 +37,8 @@ import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/
 import { DocReferenceComponent } from '../../operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { AuditLogComponent } from '../../operation/audit-log/audit-log.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 
 @Component({
@@ -60,7 +62,9 @@ import { AuditLogComponent } from '../../operation/audit-log/audit-log.component
     EdocComponent,
     SearchableDropdown,
     OnlyNumbersDirective,
-    DialCodeDropdownComponent
+    DialCodeDropdownComponent,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
     // NgxIntlTelInputModule
   ],
   templateUrl: './lead.component.html',
