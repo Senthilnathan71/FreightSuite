@@ -31,6 +31,8 @@ import { PrintHeaderComponent } from 'src/app/shared/components/print-header/pri
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
   selector: 'app-payment-request-entry',
@@ -48,7 +50,9 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
     DecimalPrecisionDirective,
     PrintHeaderComponent,
     PrintFooterComponent,
-    CustomDatePipe
+    CustomDatePipe,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './payment-request-entry.component.html',
   providers: [
