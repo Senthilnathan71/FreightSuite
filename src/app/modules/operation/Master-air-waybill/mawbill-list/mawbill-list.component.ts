@@ -402,7 +402,8 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
         sortable: true,
         filterable: true,
         visible: true,
-        dataType: 'string'
+        dataType: 'string',
+        cellClass: 'text-end'
       },
 
       {
@@ -445,6 +446,7 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
         filterable: true,
         visible: true,
         dataType: 'string',
+        cellClass: 'text-end'
       },
       {
         key: 'Status',

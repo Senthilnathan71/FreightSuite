@@ -180,7 +180,8 @@ export class PaymentRequestListComponent extends BaseListComponent implements On
           visible: true,
           width: '150px',
           template: 'status',
-          dataType: 'string'
+          dataType: 'string',
+          cellClass: 'text-center'
         },
         {
           key: 'Status',

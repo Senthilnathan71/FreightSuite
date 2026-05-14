@@ -407,7 +407,7 @@
                                     <aside class="col-md-6">
                                         <div class="custom-form-group mt-1">
                                             <input type="number" formControlName="NoofOriginal"
-                                                class="custom-input-field sm" min="0">
+                                                class="custom-input-field sm text-end" min="0">
                                             <label class="input-label">No of Original <span
                                                     class="text-danger">*</span></label>
                                             @if(masterJobForm.get('NoofOriginal')?.touched &&
@@ -874,7 +874,7 @@
                                 <div class="row compact-form" [formGroup]="masterJobForm">
                                     <aside class="col-md-2">
                                         <div class="custom-form-group">
-                                            <input type="number" formControlName="NoOfPkg" class="custom-input-field sm" 
+                                            <input type="number" formControlName="NoOfPkg" class="custom-input-field sm text-end" 
                                                 min="0" [onlyNumbers]="20" >   
                                             <label class="input-label">Total Pkg</label>
                                         </div>
@@ -891,7 +891,7 @@
                                     <aside class="col-md-2">
                                         <div class="custom-form-group">
                                             <input type="text" formControlName="GrossWeight"
-                                                class="custom-input-field sm"  DecimalPrecision [DecimalPrecisionBefore]="10"
+                                                class="custom-input-field sm text-end"  DecimalPrecision [DecimalPrecisionBefore]="10"
                 [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999"step="0.001" min="0" readonly>
                                             <label class="input-label">Gross Weight</label>
                                         </div>
@@ -899,7 +899,7 @@
                                     <aside class="col-md-2 ">
                                         <div class="custom-form-group">
                                             <input type="text" formControlName="NetWeight"
-                                                class="custom-input-field sm"   DecimalPrecision [DecimalPrecisionBefore]="10"
+                                                class="custom-input-field sm text-end"   DecimalPrecision [DecimalPrecisionBefore]="10"
                 [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999" step="0.001" min="0" readonly>
                                             <label class="input-label">Net Weight</label>
                                         </div>
@@ -907,7 +907,7 @@
                                     <aside class="col-md-2 ">
                                         <div class="custom-form-group">
                                             <input type="text" formControlName="ChargeableWeight"
-                                                class="custom-input-field sm"  DecimalPrecision [DecimalPrecisionBefore]="10"
+                                                class="custom-input-field sm text-end"  DecimalPrecision [DecimalPrecisionBefore]="10"
                 [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999" step="0.001" min="0" readonly>
                                             <label class="input-label">Chargeable Weight</label>
                                         </div>
@@ -915,7 +915,7 @@
                                     <aside class="col-md-2 ">
                                         <div class="custom-form-group">
                                             <input type="text" formControlName="Volume"   DecimalPrecision [DecimalPrecisionBefore]="8"
-                [DecimalPrecisionAfter]="3" max="999999.999" class="custom-input-field sm"
+                [DecimalPrecisionAfter]="3" max="999999.999" class="custom-input-field sm text-end"
                                                 step="0.001" min="0" readonly>
                                             <label class="input-label"  >Volume (CBM)</label>
                                         </div>
@@ -951,8 +951,8 @@
                                 <th width="3%"></th>
                                 <th>Booking No</th>
                                 <!-- <th>Booking Date</th> -->
-                                <th>Dept</th>
-                                <th>HBL No</th>
+                                <th class="text-center">Dept</th>
+                                <th class="text-center">HBL No</th>
                                 <th>Customer</th>
                                 <!-- <th>Customer Address</th> -->
                                 <th>Vessel</th>
@@ -1032,9 +1032,9 @@
                                     }
                                 </td>
                                 <td>{{shipment.JobType}}</td>
-                                <td>{{ getHouseJobGrossWeightFromMaster(shipment) }}</td>
-                                <td>{{ getHouseJobVolumeFromMaster(shipment) }}</td>
-                                <td>{{ getHouseJobTotalPackagesFromMaster(shipment) }}</td>
+                                <td class="text-end">{{ getHouseJobGrossWeightFromMaster(shipment) }}</td>
+                                <td class="text-end">{{ getHouseJobVolumeFromMaster(shipment) }}</td>
+                                <td class="text-end">{{ getHouseJobTotalPackagesFromMaster(shipment) }}</td>
                                 <td>{{shipment.HouseStatus }}</td>
                                  <td>
                             <!-- Updated invoice status check -->
@@ -1246,11 +1246,11 @@
                                     <td>{{ container.value.HsCode }}</td>
                                     <td>{{ container.value.CommodityDescription }}</td>
                                     <td>{{ getPackageTypeName(container.value.PkgType) }}</td>
-                                    <td>{{ container.value.NoOfPkg }}</td>
-                                    <td>{{ container.value.GrossWeight }}</td>
-                                    <td>{{ container.value.NetWeight }}</td>
-                                    <td>{{ container.value.ChargeableWeight }}</td>
-                                    <td>{{ container.value.Volume }}</td>
+                                    <td class="text-end">{{ container.value.NoOfPkg }}</td>
+                                    <td class="text-end">{{ container.value.GrossWeight }}</td>
+                                    <td class="text-end">{{ container.value.NetWeight }}</td>
+                                    <td class="text-end">{{ container.value.ChargeableWeight }}</td>
+                                    <td class="text-end">{{ container.value.Volume }}</td>
                                     <td>{{ container.value.IsSoc ? 'Yes' : 'No' }}</td>
                                     <td>{{ container.value.IsHaz ? 'Yes' : 'No' }}</td>
                                 </tr>

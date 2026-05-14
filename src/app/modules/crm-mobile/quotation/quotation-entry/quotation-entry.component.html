@@ -641,7 +641,7 @@
 
                       <aside class="col-md-2">
                         <div class="custom-form-group">
-                          <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                          <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end"
                             formControlName="POLFreeDays" DecimalPrecision [DecimalPrecisionBefore]="2"
                             [DecimalPrecisionAfter]="0">
                           <label for="text-input" class="input-label">POL Free Days <span
@@ -650,7 +650,7 @@
                       </aside>
                       <aside class="col-md-2">
                         <div class="custom-form-group">
-                          <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                          <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end"
                             formControlName="PODFreeDays" DecimalPrecision [DecimalPrecisionBefore]="2"
                             [DecimalPrecisionAfter]="0">
                           <label for="text-input" class="input-label">POD Free Days <span
@@ -706,7 +706,7 @@
                       </div>
                       <aside class="col-md-2" *ngIf="isFclQuotationSegment(route)">
                         <div class="custom-form-group">
-                          <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                          <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end"
                             formControlName="TransitDays" DecimalPrecision [DecimalPrecisionBefore]="3"
                             [DecimalPrecisionAfter]="0">
                           <label for="text-input" class="input-label">Transit <span class="text-danger"></span></label>
@@ -851,7 +851,7 @@
 
                         <aside class="col-md-2" *ngIf="isFclQuotationSegment(route)">
                           <div class="custom-form-group mt-md-1">
-                            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                            <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm text-end"
                               formControlName="Qty" [onlyNumbers]>
                             <label for="text-input" class="input-label">No of Container <span class="text-danger">{{
                                 isRequiredInQuoteRoute(routeIndex,'Qty') ? '*' : '' }}</span></label>
@@ -1152,7 +1152,7 @@
                                   </aside>
                                   <aside class="col-md-2">
                                     <div class="custom-form-group">
-                                      <input type="text" class="custom-input-field sm" formControlName="Qty" [onlyNumbers]>
+                                      <input type="text" class="custom-input-field sm text-end" formControlName="Qty" [onlyNumbers]>
                                       <label class="input-label">No of Container <span class="text-danger">*</span></label>
                                       @if(cargo.get('Qty')?.invalid && cargo.get('Qty')?.touched){
                                       <div class="error-message">
@@ -1165,21 +1165,21 @@
                                   </aside>
                                   <aside class="col-md-2">
                                     <div class="custom-form-group">
-                                      <input type="text" class="custom-input-field sm" formControlName="GrossWeight"
+                                      <input type="text" class="custom-input-field sm text-end" formControlName="GrossWeight"
                                         DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
                                       <label class="input-label">Gross Weight <span class="text-danger">*</span></label>
                                     </div>
                                   </aside>
                                   <aside class="col-md-1">
                                     <div class="custom-form-group">
-                                      <input type="text" class="custom-input-field sm" formControlName="NetWeight"
+                                      <input type="text" class="custom-input-field sm text-end" formControlName="NetWeight"
                                         DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
                                       <label class="input-label">Net Weight <span class="text-danger">*</span></label>
                                     </div>
                                   </aside>
                                   <aside class="col-md-1">
                                     <div class="custom-form-group">
-                                      <input type="text" class="custom-input-field sm" formControlName="Volume"
+                                      <input type="text" class="custom-input-field sm text-end" formControlName="Volume"
                                         DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
                                       <label class="input-label">CBM</label>
                                     </div>
@@ -1251,16 +1251,16 @@
                                           </dofi-searchable-dropdown>
                                         </td>
                                         <td>
-                                          <input type="text" formControlName="ExternalQty" class="custom-input-field sm" [onlyNumbers]>
+                                          <input type="text" formControlName="ExternalQty" class="custom-input-field sm text-end" [onlyNumbers]>
                                         </td>
                                         <td>
-                                          <input type="text" formControlName="GrossWeight" class="custom-input-field sm"   DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
+                                          <input type="text" formControlName="GrossWeight" class="custom-input-field sm text-end"   DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
                                         </td>
                                         <td>
-                                          <input type="text" formControlName="NetWeight" class="custom-input-field sm"   DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
+                                          <input type="text" formControlName="NetWeight" class="custom-input-field sm text-end"   DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
                                         </td>
                                         <td>
-                                          <input type="text" formControlName="Volume" class="custom-input-field sm"
+                                          <input type="text" formControlName="Volume" class="custom-input-field sm text-end"
                                             (input)="logProduct(routeIndex,productIndex,cargoIndex)"   DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
                                         </td>
                                         <td>
@@ -2233,7 +2233,7 @@
                           <aside class="col-md-3"
                             *ngIf="isLclStyleQuotationSegment(route) || isAirQuotationSegment(route)">
                             <div class="custom-form-group">
-                              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm text-end"
                                 formControlName="GrossWeight">
                               <label for="text-input" class="input-label">Gross Weight <span class="text-danger">{{
                                   isRequiredInQuoteRoute(routeIndex,'GrossWeight') ? '*' : '' }}</span></label>
@@ -2241,7 +2241,7 @@
                           </aside>
                           <aside class="col-md-3" *ngIf="isLclStyleQuotationSegment(route)">
                             <div class="custom-form-group">
-                              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm text-end"
                                 formControlName="NetWeight">
                               <label for="text-input" class="input-label">Net Weight <span class="text-danger"></span></label>
                             </div>
@@ -2249,7 +2249,7 @@
 
                           <aside class="col-md-3" *ngIf="isFclQuotationSegment(route)">
                             <div class="custom-form-group">
-                              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm text-end"
                                 formControlName="Volume" [onlyNumbers]>
                               <label for="text-input" class="input-label">CBM <span class="text-danger">{{
                                   isRequiredInQuoteRoute(routeIndex,'Volume') ? '*' : '' }}</span></label>
@@ -2265,7 +2265,7 @@
 
                           <aside class="col-md-3" *ngIf="isAirQuotationSegment(route)">
                             <div class="custom-form-group">
-                              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm text-end"
                                 formControlName="ChargeableWeight" [onlyNumbers]>
                               <label for="text-input" class="input-label">Chargeable Weight <span class="text-danger">{{
                                   isRequiredInQuoteRoute(routeIndex,'ChargeableWeight') ? '*' : '' }}</span></label>
@@ -2299,7 +2299,7 @@
 
                           <aside class="col-md-3" *ngIf="isFclQuotationSegment(route)">
                             <div class="custom-form-group">
-                              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm text-end"
                                 formControlName="Qty" [onlyNumbers]>
                               <label for="text-input" class="input-label">No of Container <span class="text-danger">{{
                                   isRequiredInQuoteRoute(routeIndex,'Qty') ? '*' : '' }}</span></label>
@@ -2398,19 +2398,19 @@
                                 </td>
                                 <td>
                                   <input type="text" id="text-input" formControlName="ExternalQty" placeholder=""
-                                    class="custom-input-field sm">
+                                    class="custom-input-field sm text-end">
                                 </td>
                                 <td>
                                   <input type="text" id="text-input" formControlName="GrossWeight" placeholder=""
-                                    class="custom-input-field sm">
+                                    class="custom-input-field sm text-end">
                                 </td>
                                 <td>
                                   <input type="text" id="text-input" formControlName="NetWeight" placeholder=""
-                                    class="custom-input-field sm">
+                                    class="custom-input-field sm text-end">
                                 </td>
                                 <td>
                                   <input type="text" id="text-input" formControlName="Volume" placeholder=""
-                                    class="custom-input-field sm" (input)="logProduct(routeIndex,productIndex)">
+                                    class="custom-input-field sm text-end" (input)="logProduct(routeIndex,productIndex)">
                                 </td>
                                 }
 
@@ -2443,15 +2443,15 @@
                                 @if(isAirQuotationSegment(route)){
                                 <td>
                                   <input type="text" id="text-input" formControlName="Length" placeholder=""
-                                    class="custom-input-field sm">
+                                    class="custom-input-field sm text-end">
                                 </td>
                                 <td>
                                   <input type="text" id="text-input" formControlName="Width" placeholder=""
-                                    class="custom-input-field sm">
+                                    class="custom-input-field sm text-end">
                                 </td>
                                 <td>
                                   <input type="text" id="text-input" formControlName="Height" placeholder=""
-                                    class="custom-input-field sm">
+                                    class="custom-input-field sm text-end">
                                 </td>
                                 <td>
                                   <ng-select class="ng-select" formControlName="ProductUnit"

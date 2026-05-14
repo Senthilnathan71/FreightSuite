@@ -366,7 +366,7 @@
                 <div class="custom-form-group">
                   <input
                     type="text"
-                    class="custom-input-field sm"
+                    class="custom-input-field sm text-end"
                     formControlName="GST_VAT"
                     id="GSTNo"
                     placeholder=""
@@ -464,7 +464,7 @@
 </aside> -->
               <!-- 5. Ref No (DocumentNumber) -->
               <aside class="col-md-3">
-                <div class="custom-form-group">
+                <div class="custom-form-group text-end">
                   <input
                     type="text"
                     class="custom-input-field sm"
@@ -544,7 +544,7 @@
                 <div class="custom-form-group">
                   <input
                     type="text"
-                    class="custom-input-field sm"
+                    class="custom-input-field sm text-end"
                     formControlName="ExchangeRate"
                     (input)="recalculateAllRows()"
                     placeholder=""
@@ -917,7 +917,7 @@
                               <td class="text-center">
                                 <input
                                   type="text"
-                                  class="custom-input-field sm"
+                                  class="custom-input-field sm text-end"
                                   formControlName="NumberOfUnit"
                                   (input)="onDetailChange(i, 'NumberOfUnit')"
                                   DecimalPrecision
@@ -970,7 +970,7 @@
                               <td class="text-center">
                                 <input
                                   type="text"
-                                  class="custom-input-field sm"
+                                  class="custom-input-field sm text-end"
                                   formControlName="ExchangeRate"
                                   (input)="onDetailChange(i, 'ExchangeRate')"
                                   DecimalPrecision
@@ -988,7 +988,7 @@
                               <td class="text-center">
                                 <input
                                   type="text"
-                                  class="custom-input-field sm"
+                                  class="custom-input-field sm text-end"
                                   formControlName="Rate"
                                   (input)="onDetailChange(i, 'Rate')"
                                   DecimalPrecision
@@ -1005,7 +1005,7 @@
                               
 
                               <!-- Amount -->
-                              <td class="text-center pt-1">
+                              <td class="text-end pt-1">
                                 <span style="font-weight: 600; color: black">{{
                                   getFormattedAmount(
                                     row.get("Amount")?.value,
@@ -1015,7 +1015,7 @@
                               </td>
 
                               <!-- Taxable Amount -->
-                              <td class="text-center pt-1">
+                              <td class="text-end pt-1">
                                 <span style="font-weight: 600; color: black">{{
                                   getFormattedAmount(
                                     row.get("TaxableAmount")?.value,
@@ -1031,7 +1031,7 @@
                                 <!-- CGST Rate + Amount -->
                                 <ng-container *ngIf="taxCfg.showCGST">
                                   <td class="text-center">
-                                    <div class="input-group input-group-sm">
+                                    <div class="input-group input-group-sm text-end">
                                       <div class="d-flex">
                                         <input type="text" class="custom-input-field sm" formControlName="TaxPercentage1"
                                           (input)="onDetailChange(i, 'TaxPercentage1')" />
@@ -1039,7 +1039,7 @@
                                       </div>
                                     </div>
                                   </td>
-                                  <td class="text-center pt-1">
+                                  <td class="text-end pt-1">
                                     <span style="font-weight: 600; color: black">{{
                                       getFormattedAmount(row.get("TaxAmount1")?.value, currentCompany.CurrencyMasterSid)
                                     }}</span>
@@ -1090,7 +1090,7 @@
                                       </div>
                                     </div>
                                   </td>
-                                  <td class="text-center pt-1">
+                                  <td class="text-end pt-1">
                                     <span style="font-weight: 600; color: black">{{
                                       getFormattedAmount(row.get("TaxAmount1")?.value, currentCompany.CurrencyMasterSid)
                                     }}</span>
@@ -1107,7 +1107,7 @@
                                       </div>
                                     </div>
                                   </td>
-                                  <td class="text-center pt-1">
+                                  <td class="text-end pt-1">
                                     <span style="font-weight: 600; color: black">{{
                                       getFormattedAmount(row.get("TaxAmount1")?.value, currentCompany.CurrencyMasterSid)
                                     }}</span>
@@ -1116,7 +1116,7 @@
                               </ng-container>
 
                               <!-- Local Amount -->
-                              <td class="text-center pt-1">
+                              <td class="text-end pt-1">
                                 <span style="font-weight: 600; color: black">
                                   {{
                                     getFormattedAmount(
@@ -1128,7 +1128,7 @@
                               </td>
 
                               <!-- Party Amount -->
-                              <td class="text-center pt-1">
+                              <td class="text-end pt-1">
                                 <span style="font-weight: 600; color: black">
                                   {{
                                     getFormattedAmount(
