@@ -115,6 +115,7 @@ isLoadingCities = false;
 
   readonly EARLY_STATUSES = ['Discovery', 'Qualify'];
   readonly LOCK_AFTER_STATUS = 'Meeting Scheduled';
+  readonly EDITABLE_LEAD_STATUSES = ['Discovery', 'Qualify'];
 
 
 
@@ -259,6 +260,7 @@ MenuMasterSid:any
     checked ? 'Qualify' : 'Discovery',
     { emitEvent: false }
   );
+  this.applyLeadStatusFieldLock(checked ? 'Qualify' : 'Discovery');
 });
 
     this.subscribeToFormChanges();
@@ -510,6 +512,23 @@ languagePrefValidator(): ValidatorFn {
 
 
   filteredStatuses: string[] = [];
+  private applyLeadStatusFieldLock(status: string): void {
+    const isEditable = this.EDITABLE_LEAD_STATUSES.includes(status);
+    const leadStatusControl = this.leadForm.get('leadStatus');
+
+    if (isEditable) {
+      this.leadForm.enable({ emitEvent: false });
+      if (this.isEditMode) {
+        leadStatusControl?.enable({ emitEvent: false });
+      } else {
+        leadStatusControl?.disable({ emitEvent: false });
+      }
+      return;
+    }
+
+    this.leadForm.disable({ emitEvent: false });
+  }
+
   // Fetch lead data and patch the form
   loadLeadData(leadId: number) {
   this.leadService.getLeadById(leadId).subscribe(
@@ -552,6 +571,7 @@ else {
       },
     { emitEvent: false }
   );
+      this.applyLeadStatusFieldLock(apiLeadStatus);
       setTimeout(() => {
         this.initialFormValue = this.leadForm.getRawValue();
         this.isDirty = false;
