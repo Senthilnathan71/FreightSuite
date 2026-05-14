@@ -443,7 +443,7 @@ export class SubledgerOutstandingComponent {
       if (ledgers.length > 0) {
         rows.push({
           cells: [
-            { value: 'NET PROFIT :', colspan: 7, alignment: { horizontal: 'right' } },
+            { value: 'NET OS :', colspan: 7, alignment: { horizontal: 'right' } },
             { value: this.formatNumber(this.getOverallNetProfitLocal(ledgers)) },
             { value: '' },
             { value: this.formatNumber(this.getOverallNetProfitOutstandingLocal(ledgers)) },

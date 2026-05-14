@@ -181,6 +181,18 @@ export class BalanceSheetReportComponent {
     return this.assetCategories.reduce((sum, cat) => sum + (cat.categoryTotal || 0), 0);
   }
 
+  get displayTotalApplicationOfFunds(): number {
+    return this.flipSign(this.totalApplicationOfFunds);
+  }
+
+  getAssetDisplayAmount(value: any): number {
+    return this.flipSign(value);
+  }
+
+  private flipSign(value: any): number {
+    return -1 * (Number(value) || 0);
+  }
+
   getExcelData(): ComplexReportExportConfig {
     const tableHeaders: ExcelHeader[] = [
       { key: 'LGroup', label: '' },
@@ -208,9 +220,10 @@ export class BalanceSheetReportComponent {
     const leftRows: ExcelRow[] = [];
     const rightRows: ExcelRow[] = [];
 
-    const pushPanelCategoryRows = (target: ExcelRow[], cat: any): void => {
+    const pushPanelCategoryRows = (target: ExcelRow[], cat: any, flipAssetSign = false): void => {
       target.push({ cells: [{ value: cat.category, colspan: 4 }], style: 'section' });
       (cat.items || []).forEach((item: any) => {
+        const amountValue = flipAssetSign ? this.getAssetDisplayAmount(item.LocalAmt) : item.LocalAmt;
         target.push({
           cells: [
             item.showGroup
@@ -228,16 +241,20 @@ export class BalanceSheetReportComponent {
                 }
               : { value: '' },
             { value: item.ledgerName || '' },
-            { value: this.formatNumber(item.LocalAmt), alignment: { horizontal: 'right' } }
+            { value: this.formatNumber(amountValue), alignment: { horizontal: 'right' } }
           ],
           style: 'data'
         });
       });
 
+      const categoryTotalValue = flipAssetSign
+        ? this.getAssetDisplayAmount(cat.categoryTotal)
+        : cat.categoryTotal;
+
       target.push({
         cells: [
           { value: 'Category Total', colspan: 3, alignment: { horizontal: 'right' } },
-          { value: this.formatNumber(cat.categoryTotal), alignment: { horizontal: 'right' } }
+          { value: this.formatNumber(categoryTotalValue), alignment: { horizontal: 'right' } }
         ],
         style: 'total'
       });
@@ -251,7 +268,7 @@ export class BalanceSheetReportComponent {
       cells: [
         { value: 'Reserve & Surplus' },
         { value: 'Retained Earning' },
-        { value: '{{retainedEarningLabel}}' },
+        { value: this.retainedEarningLabel },
         { value: this.formatNumber(retainedEarning), alignment: { horizontal: 'right' } }
       ],
       style: 'data'
@@ -273,7 +290,7 @@ export class BalanceSheetReportComponent {
     rightRows.push({ cells: [{ value: 'Asset', colspan: 4 }], style: 'section' });
     rightRows.push({ cells: panelHeaderCells, style: 'header' });
     assetCategories.forEach(cat => {
-      pushPanelCategoryRows(rightRows, cat);
+      pushPanelCategoryRows(rightRows, cat, true);
     });
 
     leftRows.push({
@@ -287,7 +304,7 @@ export class BalanceSheetReportComponent {
     rightRows.push({
       cells: [
         { value: 'Total Application of Funds', colspan: 3, alignment: { horizontal: 'right' } },
-        { value: this.formatNumber(this.totalApplicationOfFunds), alignment: { horizontal: 'right' } }
+        { value: this.formatNumber(this.displayTotalApplicationOfFunds), alignment: { horizontal: 'right' } }
       ],
       style: 'grandTotal'
     });
