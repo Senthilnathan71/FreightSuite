@@ -953,6 +953,7 @@ openEDoc() {
     size: 'xl',
     centered: true,
     backdrop: 'static',
+        windowClass: 'full-screen-modal' // ✅ custom class
 
   });
 

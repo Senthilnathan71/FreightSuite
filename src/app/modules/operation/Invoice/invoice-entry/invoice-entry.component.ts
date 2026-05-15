@@ -2978,20 +2978,11 @@ isSeaDepartment(): boolean {
       const documentName = 'Invoice';
       const voucherNumber = this.invoiceForm.get('VoucherNumber')?.value || this.invoiceData?.VoucherNumber || this.invoiceData?.InvoiceNo || '';
       const documentDate = this.formatEmailDate(this.invoiceForm.get('VoucherDate')?.value || this.invoiceData?.VoucherDate);
-      const recipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
+      const toEmail = await this.emailTriggerService.resolveCustomerBranchEmailsByMenu({
         customerBranchSid: this.getCustomerBranchSidForEmail(),
         customerMasterSid: this.getCustomerMasterSidForEmail(),
         menuMasterSid: this.getCurrentMenuMasterSidForEmail()
       });
-      const toEmail = recipients.toEmail;
-      const ccEmail = Array.from(
-        new Set(
-          [
-            ...(recipients.ccEmail || []),
-            this.userData?.userEmail || ''
-          ].map((email: string) => (email || '').trim()).filter((email: string) => !!email)
-        )
-      );
 
       if (toEmail.length === 0) {
         this.appSettingService.showError('No email found in customer branch email.');
@@ -3010,35 +3001,15 @@ isSeaDepartment(): boolean {
         introLine: `Please find attached the ${documentName} for your reference.`,
         followupLine: 'Kindly review the attached details at your convenience.'
       });
-      const menuMasterSid = this.getCurrentMenuMasterSidForEmail();
-      const mailConfig = await this.emailTriggerService.resolveMailForMenu({
-        companyId: this.currentCompany?.CompanyMasterSid,
-        menuMasterSid,
-        action: this.headerId ? 'UPDATE' : 'CREATE',
-        customerBranchSid: this.getCustomerBranchSidForEmail(),
-        fallbackToEmail: toEmail.join(','),
-        context: {
-          documentName,
-          documentNoLabel: 'Invoice No.',
-          documentNo: voucherNumber,
-          date: documentDate,
-          VoucherNumber: voucherNumber,
-          VoucherDate: documentDate,
-          POL: this.invoicePrintData?.POL || this.invoiceData?.POL || '',
-          POD: this.invoicePrintData?.POD || this.invoiceData?.POD || '',
-          FPD: this.invoicePrintData?.FPD || this.invoiceData?.FPD || ''
-        }
-      });
-      const resolvedBody = (mailConfig?.body || '').trim() || emailContent.body;
 
       const file = new File([blob], `Invoice_${voucherNumber || 'Report'}.pdf`, { type: 'application/pdf' });
       const emailRef = this.modalService.open(EmailEntryComponent, { size: 'lg' });
       emailRef.componentInstance.setContent = {
         EmailTo: toEmail,
-        EmailCC: ccEmail,
+        EmailCC: this.userData?.userEmail ? [this.userData.userEmail] : [],
         EmailBCC: [],
         Subject: emailContent.subject,
-        Mailbody: resolvedBody,
+        Mailbody: emailContent.body,
         context: {
           documentName,
           documentNoLabel: 'Invoice No',
