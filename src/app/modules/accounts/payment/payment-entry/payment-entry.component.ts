@@ -1213,7 +1213,11 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
     this.isSaving = true;
     const formValue = raw;
-    const detailItems = this.detailItems.getRawValue();
+    const detailItems = this.detailItems.getRawValue().map((item: any) => (
+      this.isFromPaymentRequest && item.SourceDetailSid
+        ? { ...item, PartyAmount: 0 }
+        : item
+    ));
 
     if (this.detailItems.length === 0) {
       this.appSettingService.showError(
@@ -1339,8 +1343,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     }
 
     const matchingAmt = this.getTotalMatchPartyAmt();
-    const partyAmt = partyDetail.PartyAmount;
-    if (toNumber(matchingAmt) > toNumber(partyAmt)) {
+    const partyAmt = partyDetail?.PartyAmount ?? 0;
+    if (formValue.PartyMasterSid && toNumber(matchingAmt) > toNumber(partyAmt)) {
       this.appSettingService.showError(
         'Please make sure the matching amount does not exceed the party amount.'
       );
@@ -1404,16 +1408,16 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       VoucherDate: formValue.VoucherDate,
       YearMasterSid: this.currentYearId,
       Narration: formValue.Narration,
-      PartyMasterSid: formValue.PartyMasterSid,
-      PartyName: formValue.PartyName,
-      PartyAddress: formValue.PartyAddress,
-      CustomerBranchSid: formValue.CustomerBranchSid,
+      PartyMasterSid: this.isFromPaymentRequest ? null : formValue.PartyMasterSid,
+      PartyName: this.isFromPaymentRequest ? '' : formValue.PartyName,
+      PartyAddress: this.isFromPaymentRequest ? '' : formValue.PartyAddress,
+      CustomerBranchSid: this.isFromPaymentRequest ? null : formValue.CustomerBranchSid,
       PlaceOfSupply: formValue.PlaceOfSupply,
       State: interOrIntra,
-      COAMasterSid: formValue.COAMasterSid,
+      COAMasterSid: this.isFromPaymentRequest ? null : formValue.COAMasterSid,
       BankCOA: formValue.BankCOA,
       BankPartyName: formValue.BankPartyName,
-      GST_VAT: formValue.GST_VAT,
+      GST_VAT: this.isFromPaymentRequest ? '' : formValue.GST_VAT,
       ReversalVoucher: this.isFromPaymentRequest
         ? (this.paymentRequestSid ?? formValue.ReversalVoucher)
         : formValue.ReversalVoucher,
@@ -1677,39 +1681,25 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
         const firstDetail = request?.paymentRequestDetails?.[0];
 
-        // Check party exists before any form patching
-        const party = this.partyList.find(
-          (item) => item.CustomerBranchSid === firstDetail?.CostAgentBranchSid
-        );
-        if (!party) {
-          this.appSettingService.showError(
-            'Party for this payment request is not found in the system. Cannot create payment.'
-          );
-          return;
-        }
-
-        // Block patchCurrencyExchangeRate so onPartyChange's async rate fetch
-        // does not overwrite the exchange rate we set from the saved payment request.
+        // Payment Request Party is informational only. Do not patch it into
+        // the payment header or create the auto party ledger row.
         this.isFromPaymentRequest = true;
         this.prPaymentRequestSid = paymentRequestSid;
         this.isPrefilling = true;
 
-        await this.onPartyChange(party, true);
+        this.paymentForm.patchValue({
+          PartyMasterSid: null,
+          PartyName: '',
+          PartyAddress: '',
+          CustomerBranchSid: null,
+          COAMasterSid: null,
+          GST_VAT: '',
+          BankPartyName: request.PayableTo || '',
+        }, { emitEvent: false });
 
-        // Validate party resolved with ledger mapping — block save if missing
-        if (!this.paymentForm.get('PartyMasterSid')?.value || !this.paymentForm.get('COAMasterSid')?.value) {
-          this.isPrefilling = false;
-          this.appSettingService.showError(
-            'Party not found or not mapped to a ledger. Cannot create payment.'
-          );
-          return;
-        }
-
-        // Pre-fill search card party so user can click Get OS manually later
-        this.searchOutstandingForm.get('LedgerMasterSid')?.setValue(party.SubledgerMasterSid ?? null);
+        this.searchOutstandingForm.get('LedgerMasterSid')?.setValue(null, { emitEvent: false });
         this.searchOutstandingForm.get('LedgerMasterSid')?.disable({ emitEvent: false });
         this.paymentForm.get('PartyMasterSid')?.disable({ emitEvent: false });
-        // Do NOT call searchOutstanding() here
 
         const currencySid = firstDetail?.CostCurrencyMasterSid || this.r['CurrencyMasterSid']?.value;
         const exchangeRate = firstDetail?.CostExchangeRate || 1;
@@ -1720,6 +1710,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
           CurrencyMasterSid: currencySid,
           Narration: `Payment against request ${request.PaymentRequestNumber}`,
           Remarks: request.Remarks || '',
+          BankPartyName: request.PayableTo || '',
         });
         this.setCurrencyCode(currencySid);
 
@@ -1736,10 +1727,6 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         }
         // Lock fields derived from payment request
         this.paymentForm.get('CashOrBank')?.disable({ emitEvent: false });
-        // Sync the auto-inserted party row's exchange rate to the header
-        this.checkAndUpdateForAllPartyDetail();
-        this.recalculateAllMatchingPartyAmounts();
-
         // Release the guard before adding charge detail rows
         this.isPrefilling = false;
 
@@ -1770,7 +1757,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
             HouseJobSid: request.HouseJobSid || null,
             MasterJobSid: request.MasterJobSid || null,
             CostRevenue: 'Cost',
-            PartyAmount: detail.CostAmount || 0,
+            PartyAmount: 0,
             CostRevenueChargesSid: detail.CostRevenueChargesSid || null,
             BookingRatesSid: detail.BookingRatesSid || null,
             SourceDetailSid: detail.PaymentRequestDtlSid ?? null,

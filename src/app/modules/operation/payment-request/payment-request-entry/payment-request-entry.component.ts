@@ -125,7 +125,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       PaymentRequestDate: [this.getToday(), Validators.required],
       CashBank: ['Bank', Validators.required],
       DepartmentMasterSid: [{ value: null, disabled: true }, Validators.required],
-      Party: [null, Validators.required],
+      Party: [{ value: null, disabled: true }],
       PayableTo: ['', Validators.required],
       CurrencyMasterSid: [{ value: null, disabled: true }, Validators.required],
       BookingSid: [null],
@@ -259,7 +259,6 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     this.form.patchValue({
       PayableTo: selectedParty?.CustomerName || ''
     });
-    this.syncDetailPartyWithHeader(selectedParty);
   }
 
   save() {
@@ -497,8 +496,8 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
         CostAmount: 0,
         CostLocalAmount: 0,
         CostDrCr: 'D',
-        CostAgentMasterSid: this.form.get('Party')?.value || null,
-        CostAgentName: this.form.get('PayableTo')?.value || '',
+        CostAgentMasterSid: null,
+        CostAgentName: '',
       }),
     );
     this.recalculateDetailRow(this.detailItems.length - 1);
@@ -567,7 +566,6 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
           }));
         });
 
-        this.syncDetailPartyWithHeader();
         this.applyApprovalReadOnlyState(request.PaymentRequestStatus);
         this.scheduleDirtyTrackingSnapshot();
         this.subscribeToFormChanges();
@@ -589,7 +587,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       PaymentRequestDate: this.getToday(),
       CashBank: 'Bank',
       DepartmentMasterSid: preview.DepartmentMasterSid || firstItem?.DepartmentMasterSid || null,
-      Party: preview.Party || firstItem?.CostAgentMasterSid || null,
+      Party: preview.Party || null,
       PayableTo: preview.PayableTo || firstItem?.CostAgentName || '',
       CurrencyMasterSid: preview.CurrencyMasterSid || firstItem?.CostCurrencyMasterSid || null,
       BookingSid: preview.BookingSid || null,
@@ -612,7 +610,6 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       );
     });
 
-    this.syncDetailPartyWithHeader();
     this.applyApprovalReadOnlyState('Pending');
     this.scheduleDirtyTrackingSnapshot();
     this.subscribeToFormChanges();
@@ -647,25 +644,6 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       LedgerMasterSid:       [data?.LedgerMasterSid ?? null],
       BookingRatesSid:       [data?.BookingRatesSid ?? null],
       CostRevenueChargesSid: [data?.CostRevenueChargesSid ?? null],
-    });
-  }
-
-  private syncDetailPartyWithHeader(selectedParty?: any) {
-    const headerPartySid = this.form.get('Party')?.value || null;
-    const resolvedParty =
-      selectedParty ||
-      this.supplierList.find((item: any) => item.CustomerMasterSid === headerPartySid);
-    const partyName = resolvedParty?.CustomerName || this.form.get('PayableTo')?.value || '';
-
-    this.detailItems.controls.forEach((control) => {
-      const row = control as FormGroup;
-      row.patchValue(
-        {
-          CostAgentMasterSid: headerPartySid,
-          CostAgentName: partyName,
-        },
-        { emitEvent: false },
-      );
     });
   }
 

@@ -122,8 +122,9 @@ interface rateComparison {
     SearchableDropdown,
     NgbDropdownModule,
     DecimalPrecisionDirective,
-    ElementStateGuardDirective,
     FormStateGuardDirective,
+    ElementStateGuardDirective
+   
   ],
   templateUrl: './credit-note-entry.component.html',
   styleUrl: './credit-note-entry.component.scss',

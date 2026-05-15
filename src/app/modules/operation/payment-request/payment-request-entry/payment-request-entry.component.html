@@ -200,8 +200,11 @@
                   >
                   </dofi-searchable-dropdown>
                   <label class="input-label">
-                    Party <span class="text-danger">*</span>
+                    Party
                   </label>
+                </div>
+                <div class="text-danger small mt-1">
+                  Payment will not be made against this party.
                 </div>
               </aside>
 
@@ -348,7 +351,7 @@
 
   <div class="col-12 px-0 mt-1">
     <div class="workspace-content px-0" [formGroup]="form">
-      <div class="d-flex justify-content-end mb-2 pe-2">
+      <div class="d-none">
         <button
           type="button"
           class="btn btn-info btn-sm dofi-min-w-80"

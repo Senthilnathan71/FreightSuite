@@ -137,7 +137,9 @@ export class ElementStateGuardDirective implements AfterViewInit, OnChanges, OnD
     if (!wasExplicit) return hadAttr;
     if (value === false || value == null) return false;
     if (typeof value === 'string') {
-      return !['false', '0', 'null', 'undefined'].includes(value.trim().toLowerCase());
+      const normalized = value.trim().toLowerCase();
+      if (normalized === '') return hadAttr;
+      return !['false', '0', 'null', 'undefined'].includes(normalized);
     }
     return Boolean(value);
   }
