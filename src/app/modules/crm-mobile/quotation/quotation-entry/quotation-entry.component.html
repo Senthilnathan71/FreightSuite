@@ -1118,7 +1118,7 @@
                             </button>
                           </h2>
                             <div ngbAccordionCollapse>
-                              <div class="p-2  rounded">
+                              <div class="p-1 py-0 rounded">
                                 <div class="row compact-form">
                                   <aside class="col-md-2">
                                     <div class="custom-form-group custom-form-group-select"
@@ -1402,7 +1402,8 @@
                                             <ng-select formControlName="authorizerStatus"  [items]="authorizerDetails.isAuthorizer ? allApprovalStatus : approvalStatus"
                                               bindLabel="name" bindValue="value"
                                               (change)="onCustomerApprovalStatusChange(routeIndex,carrierIndex,$event)"
-                                              [disabled]="isCarrierApproved(routeIndex, carrierIndex) || isCarrierApprovalLocked(routeIndex, carrierIndex)">
+                                              [disabled]="isCarrierApproved(routeIndex, carrierIndex) || isCarrierApprovalLocked(routeIndex, carrierIndex)"
+                                              appendTo="body">
                                             </ng-select>
                                             <label for="" class="input-label">Authorization Status <span
                                                 class="text-danger"></span></label>
@@ -1415,7 +1416,8 @@
                                             <ng-select formControlName="authorizerStatus" [items]="approvalStatus"
                                               bindLabel="name" bindValue="value"
                                               (change)="onCustomerApprovalStatusChange(routeIndex,carrierIndex,$event)"
-                                               [disabled]="isCarrierApprovalLocked(routeIndex, carrierIndex)">
+                                               [disabled]="isCarrierApprovalLocked(routeIndex, carrierIndex)"
+                                               appendTo="body">
                                             </ng-select>
                                             <label for="" class="input-label">Authorization Status <span
                                                 class="text-danger">{{isRequiredInQuoteCarrier(routeIndex,carrierIndex,'authorizerStatus')
