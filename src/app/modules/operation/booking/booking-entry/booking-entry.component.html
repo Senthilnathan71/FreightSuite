@@ -1237,14 +1237,14 @@
     </div>
 
     <div class="workspace-content" *ngIf="selectedTab === 'Cargo'">
-      <div class="d-flex justify-content-end align-items-center gap-2 pe-2">
+      <div class="d-flex justify-content-end align-items-center gap-2 pe-1">
         <button class="btn btn-sm btn-info" type="button" (click)="addBookingCargo()"
           [disabled]="selectedFCLLCL !== 'FCL' || (isEditMode && isSuspended) || hasHouseJobCreated">
           <i class="fas fa-plus me-1"></i> Add Cargo
         </button>
       </div>
 
-      <div class="col-12 px-1" [formGroup]="detailForm">
+      <div class="col-12" [formGroup]="detailForm">
         <div formArrayName="bookingCargo" ngbAccordion [closeOthers]="true" class="custom-accordion-quotation">
           <div ngbAccordionItem *ngFor="let cargo of bookingCargo.controls; let cargoIndex = index"
             [formGroupName]="cargoIndex" [ngbAccordionItem]="'cargo-' + cargoIndex" class="mb-1"
