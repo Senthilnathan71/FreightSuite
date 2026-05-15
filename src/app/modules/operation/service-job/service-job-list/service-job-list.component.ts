@@ -66,7 +66,7 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
             //  { key: 'HBLNo', label: 'HBL No', sortable: true, filterable: true, visible: true, dataType: 'string' },
              { key: 'MasterJobNumber', label: 'Job No', sortable: true, filterable: true, visible: true, dataType: 'string' },
              { key:'MBLDate', label: 'Job Date', sortable: true, filterable: true, visible: true, dataType: 'string' },
-            { key: 'ShipmentNo', label: 'Ref. No', sortable: true, filterable: true, visible: true, dataType: 'string' },
+            { key: 'ShipmentNo', label: 'Ref. No', sortable: true, filterable: true, visible: true, dataType: 'string', cellClass: 'text-end' },
             { key: 'CustomerName', label: 'Customer', sortable: true, filterable: true, visible: true, dataType: 'string' },
             { key: 'departmentName', label: 'Dept', sortable: true, filterable: true, visible: true, dataType: 'string' },
             { key: 'POL', label: 'POL', sortable: true, visible: true, dataType: 'string' },

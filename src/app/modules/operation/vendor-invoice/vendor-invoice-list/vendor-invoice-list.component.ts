@@ -367,6 +367,7 @@ private formatAmount(amount: number | string): string {
         visible: true,
         dataType: 'string',
         width: '120px',
+        cellClass: 'text-end'
       },
       {
         key: 'BillDate',
@@ -393,6 +394,7 @@ private formatAmount(amount: number | string): string {
         visible: true,
         dataType: 'number',
         width: '120px',
+        cellClass: 'text-end'
       },
       {
         key: 'MBLNo',

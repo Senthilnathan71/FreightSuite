@@ -555,7 +555,7 @@
                   id="ExchangeRate"
                   formControlName="ExchangeRate"
                   placeholder=""
-                  class="custom-input-field sm"
+                  class="custom-input-field sm text-end"
                   DecimalPrecision
                   [DecimalPrecisionBefore]="3"
                   [DecimalPrecisionAfter]="
@@ -579,7 +579,7 @@
                   id="BillAmount"
                   formControlName="BillAmt"
                   placeholder=""
-                  class="custom-input-field sm"
+                  class="custom-input-field sm text-end"
                   DecimalPrecision
                   [DecimalPrecisionBefore]="12"
                   [DecimalPrecisionAfter]="
@@ -601,7 +601,7 @@
                   id="BillNo"
                   formControlName="BillNo"
                   placeholder=""
-                  class="custom-input-field sm"
+                  class="custom-input-field sm text-end"
                   [class.is-invalid]="isFieldInvalid('BillNo')"
                 />
                 <label for="BillNo" class="input-label">
@@ -662,7 +662,7 @@
 
             <!-- MBL No -->
             <aside class="col-md-3">
-              <div class="custom-form-group">
+              <div class="custom-form-group text-end">
                 <input
                   type="text"
                   id="MBLNo"
@@ -1068,10 +1068,10 @@
                         </td>
 
                         <!-- No of Unit -->
-                        <td>
+                        <td class="text-end">
                           <input
                             type="text"
-                            class="custom-input-field sm"
+                            class="custom-input-field sm text-end"
                             formControlName="NumberOfUnit"
                             (input)="onDetailChange(i, 'NumberOfUnit')"
                             DecimalPrecision
@@ -1112,10 +1112,10 @@
                         </td>
 
                         <!-- Exchange Rate -->
-                        <td>
+                        <td class="text-end">
                           <input
                             type="text"
-                            class="custom-input-field sm"
+                            class="custom-input-field sm text-end"
                             formControlName="ExchangeRate"
                             (input)="onDetailChange(i, 'ExchangeRate')"
                             DecimalPrecision
@@ -1129,10 +1129,10 @@
                         </td>
 
                         <!-- Rate -->
-                        <td>
+                        <td class="text-end">
                           <input
                             type="text"
-                            class="custom-input-field sm"
+                            class="custom-input-field sm text-end"
                             formControlName="Rate"
                             (input)="onDetailChange(i, 'Rate')"
                             DecimalPrecision
@@ -1151,7 +1151,7 @@
                         </td>
 
                         <!-- Amount -->
-                        <td class="pt-1">
+                        <td class="pt-1 text-end">
                           <span style="font-weight: 600; color: black">{{
                             getFormattedAmount(
                               row.get("Amount")?.value,
@@ -1161,7 +1161,7 @@
                         </td>
 
                         <!-- Taxable Amount -->
-                        <td class="pt-1">
+                        <td class="pt-1 text-end">
                           <span style="font-weight: 600; color: black">{{
                             getFormattedAmount(
                               row.get("TaxableAmount")?.getRawValue(),

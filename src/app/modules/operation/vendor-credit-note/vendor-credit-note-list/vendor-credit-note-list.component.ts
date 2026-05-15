@@ -126,6 +126,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
           visible: true,
           dataType: 'string',
           width: '100px',
+          cellClass: 'text-end'
         },
         {
           key: 'BillDate',
@@ -152,6 +153,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
           filterable: true,
           visible: true,
           dataType: 'number',
+          cellClass: 'text-end'
         },
         {
           key: 'MBLNo',

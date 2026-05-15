@@ -359,6 +359,7 @@ private formatAmount(amount: number | string): string {
         visible: true,
         dataType: 'number',
         width: '120px',
+        cellClass: 'text-end'
       },
       {
         key: 'Narration',
