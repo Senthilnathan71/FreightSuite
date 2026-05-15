@@ -245,6 +245,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     } else {
       this.form.enable({ emitEvent: false });
       this.form.get('DepartmentMasterSid')?.disable({ emitEvent: false });
+      this.form.get('Party')?.disable({ emitEvent: false });
       this.form.get('CurrencyMasterSid')?.disable({ emitEvent: false });
       this.form.get('BookingNo')?.disable({ emitEvent: false });
       this.form.get('MasterJobNo')?.disable({ emitEvent: false });

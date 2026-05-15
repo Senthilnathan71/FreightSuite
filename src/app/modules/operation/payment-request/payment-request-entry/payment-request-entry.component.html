@@ -196,6 +196,8 @@
                     [labelFields]="CustomerLookupConfig.labelFields"
                     bindLabel="CustomerName"
                     bindValue="CustomerMasterSid"
+                    [readonly]="true"
+                    [clearable]="false"
                     (itemSelected)="onPartyChange($event)"
                   >
                   </dofi-searchable-dropdown>

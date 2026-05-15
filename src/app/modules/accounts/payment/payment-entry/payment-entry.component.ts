@@ -1213,11 +1213,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
     this.isSaving = true;
     const formValue = raw;
-    const detailItems = this.detailItems.getRawValue().map((item: any) => (
-      this.isFromPaymentRequest && item.SourceDetailSid
-        ? { ...item, PartyAmount: 0 }
-        : item
-    ));
+    const detailItems = this.detailItems.getRawValue();
 
     if (this.detailItems.length === 0) {
       this.appSettingService.showError(
@@ -1757,7 +1753,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
             HouseJobSid: request.HouseJobSid || null,
             MasterJobSid: request.MasterJobSid || null,
             CostRevenue: 'Cost',
-            PartyAmount: 0,
+            PartyAmount: detail.CostLocalAmount || detail.CostAmount || 0,
             CostRevenueChargesSid: detail.CostRevenueChargesSid || null,
             BookingRatesSid: detail.BookingRatesSid || null,
             SourceDetailSid: detail.PaymentRequestDtlSid ?? null,
@@ -4434,6 +4430,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
                 { HSSACMasterSid: hssacItems[0].HSSACMasterSid },
                 { emitEvent: false }
               );
+              this.recalcPaymentTaxForRow(index);
+            } else if (this.isFromPaymentRequest && !this.isPosted) {
               this.recalcPaymentTaxForRow(index);
             } else if (this.isPosted || currentHssac) {
               // currentHssac already set means edit/view mode — refresh labels
