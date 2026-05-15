@@ -1,0 +1,196 @@
+<div class="print-a4-portrait vat-summary-page">
+  <div class="vat-border">
+    <header class="vat-company-header">
+      <div class="company-name">{{ companyName }}</div>
+      <div class="report-title">UAE VAT RETURN</div>
+    </header>
+
+    <section class="vat-section">
+      <h6>Taxable Person Details</h6>
+      <div class="vat-grid two-col">
+        <div>
+          <label>TRN</label>
+          <div>{{ trn || '-' }}</div>
+        </div>
+        <div>
+          <label>Taxable Person Name (Arabic)</label>
+          <div>{{ reportData?.company?.nameArabic || '-' }}</div>
+        </div>
+        <div>
+          <label>Taxable Person Name (English)</label>
+          <div>{{ companyName || '-' }}</div>
+        </div>
+        <div>
+          <label>Taxable Person Address</label>
+          <div *ngFor="let line of addressLines">{{ line }}</div>
+          <div *ngIf="!addressLines.length">-</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="vat-section">
+      <h6>VAT Return Period</h6>
+      <div class="vat-grid two-col">
+        <div>
+          <label>VAT Return Period</label>
+          <div>{{ fromDate | formatDate }} to {{ toDate | formatDate }}</div>
+        </div>
+        <div>
+          <label>VAT Return Due Date</label>
+          <div>{{ dueDate ? (dueDate | formatDate) : '-' }}</div>
+        </div>
+        <div>
+          <label>TAX Year End</label>
+          <div>{{ taxYearEnd ? (taxYearEnd | formatDate) : '-' }}</div>
+        </div>
+        <div>
+          <label>VAT Return Period Reference Number</label>
+          <div>{{ referenceNumber || '-' }}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="vat-section">
+      <table class="vat-table">
+        <colgroup>
+          <col class="code-col" />
+          <col class="description-col" />
+          <col class="amount-col" />
+          <col class="vat-col" />
+          <col class="adjustment-col" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th colspan="2" class="text-start">VAT on Sales and all other Outputs</th>
+            <th>Amount (AED)</th>
+            <th>VAT Amount (AED)</th>
+            <th>Adjustment (AED)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of outputRows">
+            <td class="box-code">{{ row.code }}</td>
+            <td>{{ row.description }}</td>
+            <td class="amount">{{ formatNumber(row.amount) }}</td>
+            <td class="amount">{{ formatNumber(row.vatAmount) }}</td>
+            <td class="amount">{{ formatNumber(row.adjustmentAmount) }}</td>
+          </tr>
+          <tr class="total-row">
+            <td class="box-code">{{ outputTotal.code }}</td>
+            <td>{{ outputTotal.description }}</td>
+            <td class="amount">{{ formatNumber(outputTotal.amount) }}</td>
+            <td class="amount">{{ formatNumber(outputTotal.vatAmount) }}</td>
+            <td class="amount">{{ formatNumber(outputTotal.adjustmentAmount) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="vat-section page-break-before">
+      <table class="vat-table">
+        <colgroup>
+          <col class="code-col" />
+          <col class="description-col" />
+          <col class="amount-col" />
+          <col class="vat-col" />
+          <col class="adjustment-col" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th colspan="2" class="text-start">VAT on Expenses and all other Inputs</th>
+            <th>Amount (AED)</th>
+            <th>Recoverable VAT Amount (AED)</th>
+            <th>Adjustment Amount (AED)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of inputRows">
+            <td class="box-code">{{ row.code }}</td>
+            <td>{{ row.description }}</td>
+            <td class="amount">{{ formatNumber(row.amount) }}</td>
+            <td class="amount">{{ formatNumber(row.vatAmount) }}</td>
+            <td class="amount">{{ formatNumber(row.adjustmentAmount) }}</td>
+          </tr>
+          <tr class="total-row">
+            <td class="box-code">{{ inputTotal.code }}</td>
+            <td>{{ inputTotal.description }}</td>
+            <td class="amount">{{ formatNumber(inputTotal.amount) }}</td>
+            <td class="amount">{{ formatNumber(inputTotal.vatAmount) }}</td>
+            <td class="amount">{{ formatNumber(inputTotal.adjustmentAmount) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="vat-section">
+      <h6>Net VAT due</h6>
+      <table class="vat-table summary-table">
+        <tbody>
+          <tr>
+            <td class="box-code">12</td>
+            <td>Total value of due tax for the period</td>
+            <td class="amount">{{ formatNumber(totalDueTax) }}</td>
+          </tr>
+          <tr>
+            <td class="box-code">13</td>
+            <td>Total value of recoverable tax for the period</td>
+            <td class="amount">{{ formatNumber(totalRecoverableTax) }}</td>
+          </tr>
+          <tr class="total-row">
+            <td class="box-code">14</td>
+            <td>Net VAT due(or reclaimed) for the period</td>
+            <td class="amount">{{ formatNumber(netVatDue) }}</td>
+          </tr>
+          <tr>
+            <td class="box-code">15</td>
+            <td>Do you wish to request a refund for the above amount of excess recoverable tax.</td>
+            <td class="amount">{{ reportData?.summary?.refundRequested || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="vat-section">
+      <h6>Additional Reporting Requirements</h6>
+      <div class="vat-grid">
+        <div>
+          <label>Profit Margin Scheme</label>
+          <div>{{ reportData?.additionalReporting?.profitMarginScheme || 'No' }}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="vat-section">
+      <h6>Declaration and Authorised Signatory</h6>
+      <div class="vat-grid two-col">
+        <div>
+          <label>Name in English</label>
+          <div>{{ declaration?.nameEnglish || '-' }}</div>
+        </div>
+        <div>
+          <label>Name in Arabic</label>
+          <div>{{ declaration?.nameArabic || '-' }}</div>
+        </div>
+        <div>
+          <label>Phone/Mobile Country code</label>
+          <div>{{ declaration?.phoneCountryCode || '-' }}</div>
+        </div>
+        <div>
+          <label>Phone/Mobile number</label>
+          <div>{{ declaration?.phoneNumber || '-' }}</div>
+        </div>
+        <div>
+          <label>Date of Submission (dd/mm/yyyy)</label>
+          <div>{{ declaration?.submissionDate ? (declaration.submissionDate | formatDate) : '-' }}</div>
+        </div>
+        <div>
+          <label>E-mail address</label>
+          <div>{{ declaration?.email || '-' }}</div>
+        </div>
+      </div>
+      <p class="declaration-text">
+        I declare that all information provided is true, accurate and complete to the best of my knowledge and belief.
+      </p>
+    </section>
+  </div>
+</div>
