@@ -7,11 +7,12 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { OperationService } from '../../operation.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { catchError, of } from 'rxjs';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
   selector: 'app-get-standard-charges',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FormStateGuardDirective],
   templateUrl: './get-standard-charges.component.html',
   styles: ``
 })

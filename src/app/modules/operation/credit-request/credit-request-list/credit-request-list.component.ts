@@ -20,6 +20,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { Observable } from 'rxjs';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 
 @Component({
   selector: 'app-credit-request-list',
@@ -36,6 +37,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
     NgxSpinnerModule,
     ReusableTableComponent,
     PageHeaderComponent,
+    ElementStateGuardDirective
   ],
   providers: [CustomDatePipe],
   templateUrl: './credit-request-list.component.html',

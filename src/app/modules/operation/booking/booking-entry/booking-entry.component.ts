@@ -73,6 +73,8 @@ import * as JsBarcode from 'jsbarcode';
 import { CreditValidationApiService } from '../../services/credit-request.service';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -131,7 +133,9 @@ type BookingEmailType = 'booking' | 'cro' | 'barcode' | 'barcode-no-company';
     TimeAgoPipe,
     NgxBarcode6Module,
     PrintFooterComponent,
-    PrintHeaderComponent
+    PrintHeaderComponent,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './booking-entry.component.html',
   styleUrls: ['./booking-entry.component.scss'],

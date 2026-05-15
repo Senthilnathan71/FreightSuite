@@ -21,6 +21,7 @@ import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adap
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { TogglerComponent } from 'src/app/component/simple-toggler/toggle.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 
 @Component({
   selector: 'app-doc-reference',
@@ -33,7 +34,8 @@ import { TogglerComponent } from 'src/app/component/simple-toggler/toggle.compon
     NgbDropdownModule,
     FeatherModule,
     TextWithNumbersDirective,
-    TogglerComponent
+    TogglerComponent,
+    ElementStateGuardDirective
   ],
   templateUrl: './doc-reference.component.html',
   styleUrls: ['./doc-reference.component.scss'],

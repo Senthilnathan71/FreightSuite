@@ -15,6 +15,8 @@ import { SearchableDropdown } from 'src/app/component/searchable-dropdown/search
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { TextWithNumbersDirective } from 'src/app/core/Directives/textWithNumbers';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
   selector: 'app-connection',
@@ -29,7 +31,9 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     NgbPaginationModule,
     SearchableDropdown,
     TextWithNumbersDirective,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './connection.component.html',
   styleUrl: './connection.component.scss',

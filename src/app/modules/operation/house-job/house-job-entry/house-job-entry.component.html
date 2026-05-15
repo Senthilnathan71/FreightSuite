@@ -1626,7 +1626,7 @@
                   </span>
                 </h6>
                 <button type="button" class="btn btn-sm text-light" *ngIf="houseJobCargos.length > 1"
-                  [disabled]="isFormDisabled || isCargoFromBooking(cargoIndex)"
+                  [disabled]="isFormDisabled "
                   (click)="removeHouseJobCargo(cargoIndex); $event.stopPropagation()">
                   <i class="fas fa-trash text-danger"></i>
                 </button>

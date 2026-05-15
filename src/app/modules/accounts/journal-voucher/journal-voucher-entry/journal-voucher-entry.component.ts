@@ -2596,6 +2596,7 @@ private clearRelatedFieldsForRow(detailGroup: FormGroup, rowIndex: number): void
     const blockedReason = this.voucherActionGuard.getPostBlockedReason({
       ...this.getActionGuardContext(),
       headerId: voucherHeaderSid,
+      isSaving: false,
       isDirty: false,
     });
     if (this.voucherActionGuard.block(blockedReason)) {

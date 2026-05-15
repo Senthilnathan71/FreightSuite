@@ -32,6 +32,8 @@ import { consistentExchangeRatesValidator } from 'src/app/core/ValidationFn/exRa
 import { handleError, sortValidationErrors } from 'src/app/common/error-handling/payload-validation-handler';
 import { errorLoggerWithToastr } from 'src/app/common/error-handling/form-error-handler';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
   selector: 'app-cost-entry',
@@ -52,7 +54,9 @@ import { ModalService } from 'src/app/core/common-modal/common-modal.service';
     NgxSpinnerModule,
     FormsModule,
     NgbTooltipModule,
-    NgbDatepickerModule
+    NgbDatepickerModule,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './cost-entry.component.html',
   styleUrls: ['./cost-entry.component.scss'],

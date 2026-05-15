@@ -31,6 +31,7 @@ import {
   PageHeaderComponent,
 } from 'src/app/shared/components/header-list/header-list.component';
 import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 
 
 @Component({
@@ -46,6 +47,7 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
     ReusableTableComponent,
     PageHeaderComponent,
     FavoriteStarComponent,
+    ElementStateGuardDirective
   ],
   templateUrl: './doc-reference-list.component.html',
   styleUrls: ['./doc-reference-list.component.scss'],

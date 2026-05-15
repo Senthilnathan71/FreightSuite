@@ -72,6 +72,8 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 import { PerformaInvoiceComponent } from '../report/performa-invoice/performa-invoice.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -129,6 +131,8 @@ type Html2PdfOptions = {
     CustomsComponent,
     MultiSelectComponent,
     RouterModule,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './house-job-entry.component.html',
   styleUrls: ['./house-job-entry.component.scss'],

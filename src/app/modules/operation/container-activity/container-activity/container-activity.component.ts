@@ -11,6 +11,8 @@ import { CommonModule } from '@angular/common';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
   selector: 'app-container-activity',
@@ -22,7 +24,9 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
     CustomDatePipe,
     CommonModule,
     ReactiveFormsModule,
-    NgbPaginationModule
+    NgbPaginationModule,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './container-activity.component.html',
   styleUrl: './container-activity.component.scss',

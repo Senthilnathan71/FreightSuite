@@ -27,6 +27,7 @@ import {
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { OperationService } from '../../operation.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 
 @Component({
   selector: 'app-cargo-receipt-list',
@@ -45,7 +46,8 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
       ReusableTableComponent,
       PageHeaderComponent,
       ToolsDropdownComponent,
-      CustomDatePipe
+      CustomDatePipe,
+      ElementStateGuardDirective
     ],
     providers: [CustomDatePipe],
   templateUrl: './cargo-receipt-list.component.html',

@@ -28,6 +28,8 @@ import { PreventMultiClickDirective } from "src/app/core/Directives/prevent-mult
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
   selector: 'app-credit-request-entry',
@@ -47,7 +49,9 @@ import { DocReferenceComponent } from '../../doc-reference/doc-reference.compone
     DecimalPrecisionDirective,
     NgbAccordionModule,
     NgbDropdownModule,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
 ],
   templateUrl: './credit-request-entry.component.html',
   styleUrl: './credit-request-entry.component.scss',
