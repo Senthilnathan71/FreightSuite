@@ -131,8 +131,6 @@ type Html2PdfOptions = {
     CustomsComponent,
     MultiSelectComponent,
     RouterModule,
-    ElementStateGuardDirective,
-    FormStateGuardDirective
   ],
   templateUrl: './house-job-entry.component.html',
   styleUrls: ['./house-job-entry.component.scss'],
