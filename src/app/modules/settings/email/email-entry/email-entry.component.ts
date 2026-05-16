@@ -227,6 +227,14 @@ export class EmailEntryComponent implements OnInit {
       this.buildCommonTemplate(formValue.Mailbody, formValue.Subject, this.parentMailContent?.context)
     );
     formData.append('CreatedBy', userEmail);
+    const ctxMenu = this.parentMailContent?.context?.menuMasterSid;
+    const ctxResource = this.parentMailContent?.context?.resourceSid;
+    if (ctxMenu !== undefined && ctxMenu !== null && ctxMenu !== '') {
+      formData.append('MenuMasterSid', String(ctxMenu));
+    }
+    if (ctxResource !== undefined && ctxResource !== null && ctxResource !== '') {
+      formData.append('ResourceSid', String(ctxResource));
+    }
 
     this.selectedFiles.forEach((file) => {
       formData.append('attachments', file, this.sanitizeAttachmentFileName(file.name));

@@ -2862,7 +2862,9 @@ isRateLockDisabled(): boolean {
                 userName: this.userData?.userName,
                 toEmail: this.quotationData?.Email || '',
                 customerBranchSid: this.quotationData?.CustomerBranchSid || null,
-                approvalLink: window.location.origin + '/crm/quotation/entry/' + this.QuoteHeaderSid
+                approvalLink: this.getApprovalUrl(),
+                menuMasterSid: this.MenuMasterSid,
+                resourceSid: this.QuoteHeaderSid
               }
             });
              this.loadQuotation(this.QuoteHeaderSid);
@@ -2917,7 +2919,9 @@ isRateLockDisabled(): boolean {
                 userName: this.userData?.userName,
                 toEmail: this.quotationForm.get('Email')?.value || '',
                 customerBranchSid: this.quotationForm.get('CustomerBranchSid')?.value || null,
-                approvalLink: window.location.origin + '/crm/quotation/entry/' + resp.data?.quoteHeader?.QuoteHeaderSid
+                approvalLink: this.getApprovalUrl(),
+                menuMasterSid: this.MenuMasterSid,
+                resourceSid: resp.data?.quoteHeader?.QuoteHeaderSid
               }
             });
             const id = resp.data?.quoteHeader?.QuoteHeaderSid;
@@ -5521,7 +5525,9 @@ ${this.userData.userName}`;
         userName: this.userData?.userName,
         toEmail: this.quotationData?.Email || '',
         customerBranchSid: this.quotationData?.CustomerBranchSid || null,
-        approvalLink: window.location.origin + '/crm/quotation/entry/' + this.QuoteHeaderSid
+        approvalLink: this.getApprovalUrl(),
+        menuMasterSid: this.MenuMasterSid,
+        resourceSid: this.QuoteHeaderSid
       }
     });
     const payload = {
