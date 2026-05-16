@@ -52,14 +52,14 @@ export class VatPayableComponent {
   }
 
   getTotalTaxableAmt() {
-    return this.fullData?.data?.inputTax?.reduce(
+    return this.fullData?.data?.outputTax?.reduce(
       (sum: number, item: any) => sum + (+item.taxableAmt || 0),
       0
     );
   }
 
   getTotalTaxAmt() {
-    return this.fullData?.data?.inputTax?.reduce(
+    return this.fullData?.data?.outputTax?.reduce(
       (sum: number, item: any) => sum + (+item.taxAmt || 0),
       0
     );
@@ -81,7 +81,7 @@ export class VatPayableComponent {
     const rows: ExcelRow[] = [];
 
     // ✅ Same as HTML: inputTax
-    const data = this.fullData?.data?.inputTax || [];
+    const data = this.fullData?.data?.outputTax || [];
 
     data.forEach((item: any) => {
 

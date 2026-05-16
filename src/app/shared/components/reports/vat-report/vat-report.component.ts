@@ -52,14 +52,14 @@ export class VatReportComponent {
   }
 
    getTotalTaxableAmt() {
-    return this.fullData?.data?.outputTax?.reduce(
+    return this.fullData?.data?.inputTax?.reduce(
       (sum: number, item: any) => sum + (+item.taxableAmt || 0),
       0
     );
   }
 
   getTotalTaxAmt() {
-    return this.fullData?.data?.outputTax?.reduce(
+    return this.fullData?.data?.inputTax?.reduce(
       (sum: number, item: any) => sum + (+item.taxAmt || 0),
       0
     );
@@ -81,7 +81,7 @@ getExcelData(): ComplexReportExportConfig {
   const rows: ExcelRow[] = [];
 
   // ✅ Same data as HTML
-  const data = this.fullData?.data?.outputTax || [];
+  const data = this.fullData?.data?.inputTax || [];
 
   data.forEach((item: any) => {
 
