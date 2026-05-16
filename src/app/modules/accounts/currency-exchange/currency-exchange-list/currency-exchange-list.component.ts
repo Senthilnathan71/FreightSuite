@@ -416,7 +416,8 @@ export class CurrencyExchangeListComponent extends BaseListComponent implements 
         sortable: true,
         filterable: true,
         visible: true,
-        dataType: 'string'
+        dataType: 'string',
+        cellClass: 'text-end'
       },
       {
         key: 'BuyRateFormatted',
@@ -425,7 +426,7 @@ export class CurrencyExchangeListComponent extends BaseListComponent implements 
         filterable: true,
         visible: true,
         dataType: 'string',
-        cellClass: 'vessel-column'
+        cellClass: 'text-end'
       },
       {
         key: 'RateFrom',
@@ -433,7 +434,8 @@ export class CurrencyExchangeListComponent extends BaseListComponent implements 
         sortable: true,
         filterable: true,
         visible: true,
-        dataType: 'string'
+        dataType: 'string',
+        cellClass: 'text-end'
       },
       {
         key: 'status',

@@ -500,7 +500,7 @@
                   id="BillAmount" 
                   formControlName="BillAmt" 
                   placeholder=""
-                  class="custom-input-field sm" 
+                  class="custom-input-field sm text-end" 
                   DecimalPrecision
                   [DecimalPrecisionBefore]="12"
                   [DecimalPrecisionAfter]="getAmountDecimalPlaces(vendorInvoiceForm.get('CurrencyMasterSid')?.value)"
@@ -513,7 +513,7 @@
             <!-- Bill No -->
             <aside class="col-md-2">
               <div class="custom-form-group">
-                <input type="text" id="BillNo" formControlName="BillNo" placeholder="" class="custom-input-field sm"
+                <input type="text" id="BillNo" formControlName="BillNo" placeholder="" class="custom-input-field sm text-end"
                   [class.is-invalid]="isFieldInvalid('BillNo')" />
                 <label for="BillNo" class="input-label">
                   Bill No. <span class="text-danger">*</span>
@@ -552,7 +552,7 @@
             <!-- MBL No -->
             <aside class="col-md-2">
               <div class="custom-form-group">
-                <input type="text" id="MBLNo" formControlName="MBLNo" placeholder="" class="custom-input-field sm" />
+                <input type="text" id="MBLNo" formControlName="MBLNo" placeholder="" class="custom-input-field sm text-end" />
                 <label for="MBLNo" class="input-label">MBL No.</label>
               </div>
             </aside>
@@ -560,7 +560,7 @@
             <!-- HBL No -->
             <aside class="col-md-2">
               <div class="custom-form-group">
-                <input type="text" id="HBLNo" formControlName="HBLNo" placeholder="" class="custom-input-field sm" />
+                <input type="text" id="HBLNo" formControlName="HBLNo" placeholder="" class="custom-input-field sm text-end" />
                 <label for="HBLNo" class="input-label">HBL No.</label>
               </div>
             </aside>
@@ -867,10 +867,10 @@
 
 
                         <!-- Exchange Rate -->
-                        <td>
+                        <td class="text-end">
                           <input 
                             type="text" 
-                            class="custom-input-field sm"
+                            class="custom-input-field sm text-end"
                             formControlName="ExchangeRate" 
                             (input)="onDetailChange(i, 'ExchangeRate')"
                             DecimalPrecision
@@ -884,10 +884,10 @@
                         </td>
 
                         <!-- Rate -->
-                        <td>
+                        <td class="text-end">
                           <input 
                             type="text"
-                            class="custom-input-field sm" 
+                            class="custom-input-field sm text-end" 
                             formControlName="Rate"
                             (input)="onDetailChange(i, 'Rate')"
                             DecimalPrecision
@@ -902,7 +902,7 @@
 
 
                         <!-- Amount -->
-                        <td class="pt-1">
+                        <td class="pt-1 text-end">
                           <span style="font-weight: 600; color: black;">{{
                             getFormattedAmount(
                             row.get("Amount")?.value,
@@ -912,7 +912,7 @@
                         </td>
 
                         <!-- Taxable Amount -->
-                        <td class="pt-1">
+                        <td class="pt-1 text-end">
                           <span style="font-weight: 600; color: black;">{{ 
                             getFormattedAmount(
                               row.get("TaxableAmount")?.value,
@@ -936,7 +936,7 @@
                               </div>
                             </td>
                             <!-- CGST Amount -->
-                            <td>
+                            <td class="text-end">
                               <span class="pt-1" style="font-weight: 600; color: black;">{{
                                 getFormattedAmount(
                                   row.get("TaxAmount1")?.value,
@@ -958,7 +958,7 @@
                               </div>
                             </td>
                             <!-- SGST Amount -->
-                            <td>
+                            <td class="text-end">
                               <span class="pt-1" style="font-weight: 600; color: black;">{{
                                 getFormattedAmount(
                                   row.get("TaxAmount2")?.value,
@@ -980,7 +980,7 @@
                               </div>
                             </td>
                             <!-- UGST Amount -->
-                            <td>
+                            <td class="text-end">
                               <span class="pt-1" style="font-weight: 600; color: black;">{{
                                 getFormattedAmount(
                                   row.get("TaxAmount2")?.value,
@@ -1002,7 +1002,7 @@
                               </div>
                             </td>
                             <!-- IGST Amount -->
-                            <td>
+                            <td class="text-end">
                               <span class="pt-1" style="font-weight: 600; color: black;">{{
                                 getFormattedAmount(
                                   row.get("TaxAmount1")?.value,
@@ -1024,7 +1024,7 @@
                               </div>
                             </td>
                             <!-- VAT Amount -->
-                            <td>
+                            <td class="text-end">
                               <span class="pt-1" style="font-weight: 600; color: black;">{{
                                 getFormattedAmount(
                                   row.get("TaxAmount1")?.value,
@@ -1036,7 +1036,7 @@
                         </ng-container>
 
                         <!-- Local Amount -->
-                        <td>
+                        <td class="text-end">
                           <span class="pt-1" style="font-weight: 600; color: black;">
                             {{
                               getFormattedAmount(
@@ -1047,7 +1047,7 @@
                         </td>
 
                         <!-- Party Amount -->
-                        <td>
+                        <td class="text-end">
                           <span class="pt-1" style="font-weight: 600; color: black;">
                             {{ 
                               getFormattedAmount(

@@ -426,20 +426,20 @@
                             <input type="number" step="0.01" class="custom-input-field sm" formControlName="Rate"
                               readonly>
                           </td> -->
-                          <td>
-                            <input type="number" step="0.0001" class="custom-input-field sm"
+                          <td class="text-end">
+                            <input type="number" step="0.0001" class="custom-input-field sm text-end"
                               formControlName="ExchangeRate">
                           </td>
-                          <td style="color:black;font-weight: 600;">
+                          <td class="text-end" style="color:black;font-weight: 600;">
                             <span>{{ row.get('Amount')?.value | numberFormat }}</span>
                           </td>
-                          <td style="color:black;font-weight: 600;">
+                          <td class="text-end" style="color:black;font-weight: 600;">
                             <span>{{ row.get('TaxableAmount')?.value | numberFormat }}</span>
                           </td>
-                          <td style="color:black;font-weight: 600;">
+                          <td class="text-end" style="color:black;font-weight: 600;">
                             <span>{{ row.get('LocalAmount')?.value | numberFormat }}</span>
                           </td>
-                          <td style="color:black;font-weight: 600;">
+                          <td class="text-end" style="color:black;font-weight: 600;">
                             <span>{{ row.get('PartyAmount')?.value | numberFormat }}</span>
                           </td>
                           <td>
@@ -454,7 +454,7 @@
                               formControlName="HSSACMasterSid" appendTo="body">
                             </ng-select>
                           </td>
-                          <td style="color:black;font-weight: 600;">
+                          <td class="text-end" style="color:black;font-weight: 600;">
                             <span>{{ row.get('NumberOfUnit')?.value | numberFormat }}</span>
                           </td>
                           <!-- MasterJobSid column -->

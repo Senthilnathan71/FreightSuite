@@ -447,7 +447,8 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
         sortable: true,
         filterable: true,
         visible: true,
-        dataType: 'string'
+        dataType: 'string',
+        cellClass: 'text-end'
       },
        {
         key: 'LedgerType',
