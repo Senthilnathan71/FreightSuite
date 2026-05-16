@@ -4887,18 +4887,18 @@ private loadNetworks(): void {
           }
         } 
       } else {
-        this.appSettingService.showError(result.message || 'Bulk import failed');
+        this.appSettingService.showError(result.message || 'Bulk upload failed');
       }
 
     } catch (error: any) {
-      console.error('Bulk import error:', error);
+      console.error('Bulk upload error:', error);
 
       // Handle NestJS validation errors (400 Bad Request)
       if (error?.error?.message && Array.isArray(error.error.message)) {
         this.importFailedRecords = this.parseValidationErrors(error.error.message);
         this.openImportErrorsModal();
       } else {
-        this.appSettingService.showError(error.message || error?.error?.message || 'Error during bulk import');
+        this.appSettingService.showError(error.message || error?.error?.message || 'Error during bulk upload');
       }
     } finally {
       this.isImporting = false;

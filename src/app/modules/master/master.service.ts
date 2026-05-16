@@ -4610,6 +4610,24 @@ saveChargeExcel(payload: {
   return this.http.post(`charge/bulk-upload/save`, payload);
 }
 
+  downloadCoaTemplate(CompanyMasterSid: number): Observable<Blob> {
+    return this.http.get(`coa/template?CompanyMasterSid=${CompanyMasterSid}`,
+      { responseType: 'blob' }
+    );
+  }
+
+  parseCoaExcel(formData: FormData): Observable<any> {
+    return this.http.post(`coa/bulk-upload/parse`, formData);
+  }
+
+  saveCoaExcel(payload: {
+    validRows: any[];
+    CompanyMasterSid: number;
+    createdBy: string;
+  }): Observable<any> {
+    return this.http.post(`coa/bulk-upload/save`, payload);
+  }
+
 }
 
 

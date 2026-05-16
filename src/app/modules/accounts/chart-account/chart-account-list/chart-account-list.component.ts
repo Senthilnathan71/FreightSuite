@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FeatherModule } from 'angular-feather';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
@@ -24,6 +24,8 @@ import {
   DropdownFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { DropdownMenuItem,ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
+import { CoaImportModalComponent } from './coa-upload.component';
 
 @Component({
   selector: 'app-chart-account-list',
@@ -39,7 +41,8 @@ import { ElementStateGuardDirective } from 'src/app/core/Directives/element-stat
     NgxSpinnerModule,
     ReusableTableComponent,
     PageHeaderComponent,
-    ElementStateGuardDirective
+    ElementStateGuardDirective,
+    ToolsDropdownComponent
   ],
   templateUrl: './chart-account-list.component.html',
   styleUrl: './chart-account-list.component.scss'
@@ -116,7 +119,8 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
     private excelReportService: ExcelExportService,
     private dialog: MatDialog,
     private spinner: NgxSpinnerService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+    private modalService: NgbModal,
   ) {
     super(paginationService);
   }
@@ -360,6 +364,25 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
         disabled: !this.mps.can('insert')
       },
       {
+        label:    'XL Upload',
+        icon:     'fas fa-file-excel',
+        action:   'excel-dropdown',
+        cssClass: 'dofi-min-w-130',
+        tooltip:  'Import chart of accounts from Excel. Download the template, fill your data, then upload.',
+        children: [
+          {
+            label: 'Download Template',
+            icon:  'fas fa-download',
+            action: 'download-template'
+          },
+          {
+            label: 'Upload Excel',
+            icon:  'fas fa-file-upload',
+            action: 'upload-file'
+          }
+        ]
+      },
+      {
         label: 'Report',
         icon: 'fas fa-file-alt',
         action: 'report',
@@ -378,6 +401,12 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
       case 'create':
         this.navigateToCreate();
         break;
+      case 'download-template':
+        this.downloadCoaTemplate();
+        break;
+      case 'upload-file':
+        this.openImportModal();
+        break;
       case 'report':
         this.report();
         break;
@@ -387,6 +416,52 @@ export class ChartAccountListComponent extends BaseListComponent implements OnIn
       default:
         console.warn(`Unknown action: ${action}`);
     }
+  }
+
+  openImportModal(): void {
+    const modalRef = this.modalService.open(CoaImportModalComponent, {
+      size:     'lg',
+      centered: true,
+      backdrop: 'static',
+      keyboard: false
+    });
+ 
+    modalRef.componentInstance.currentCompany = this.currentCompany;
+    modalRef.componentInstance.currentBranch  = this.currentBranch;
+    modalRef.componentInstance.userData       = this.userData;
+ 
+    modalRef.closed.subscribe((imported: boolean) => {
+      if (imported) {
+        this.appSettingService.showSuccess('Chart of Accounts imported successfully!');
+        this.searchChartAccounts();   // refresh list
+      }
+    });
+  }
+ 
+  downloadCoaTemplate(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+      this.appSettingService.showError('Company is not selected');
+      return;
+    }
+ 
+    this.spinner.show();
+    this.masterService.downloadCoaTemplate(companyId).subscribe({
+      next: (blob: Blob) => {
+        const url  = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href     = url;
+        link.download = 'COA_Upload_Template.xlsx';
+        link.click();
+        window.URL.revokeObjectURL(url);
+        this.spinner.hide();
+        this.appSettingService.showSuccess('Template downloaded successfully');
+      },
+      error: () => {
+        this.spinner.hide();
+        this.appSettingService.showError('Error downloading template');
+      }
+    });
   }
 
     private updateHeaderActionState(): void {

@@ -2,18 +2,18 @@ import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { MasterService } from '../../master.service';
+import { MasterService } from 'src/app/modules/master/master.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 
 @Component({
-  selector: 'app-charge-import-modal',
+  selector: 'app-coa-import-modal',
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
   template: `
     <!-- Header -->
     <div class="modal-header modalHeaderpart p-1">
       <h5 class="modal-title text-white">
-        <i class="fas fa-file-import me-2"></i>Bulk Upload Charges
+        <i class="fas fa-file-import me-2"></i>Bulk Upload Chart of Accounts
       </h5>
       <button type="button" class="btn-close btn-close-white" (click)="onCancel()"
               [disabled]="isProcessing"></button>
@@ -28,9 +28,15 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
           <h6 class="fw-bold">Instructions:</h6>
           <ol>
             <li>Download the Excel template if you haven't already</li>
-            <li>Fill in charge details in the <strong>Charges</strong> sheet</li>
-            <li>Add tax rows in the <strong>Tax Details</strong> sheet (linked by Charge Name)</li>
-            <li>Add TDS rows in the <strong>TDS Details</strong> sheet (linked by Charge Name)</li>
+            <li>Fill in entries in the <strong>COA</strong> sheet — one row per account</li>
+            <li>
+              Hierarchy rules:
+              <ul>
+                <li><strong>Group</strong> — only Category + Group Name required</li>
+                <li><strong>Subgroup</strong> — Group Name (from existing groups) + Subgroup Name</li>
+                <li><strong>Ledger</strong> — Group + Subgroup (from existing) + Ledger Name &amp; Code</li>
+              </ul>
+            </li>
             <li>Upload the completed file, review, then click <strong>Confirm Upload</strong></li>
           </ol>
         </div>
@@ -73,7 +79,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
       <!-- ── PREVIEW STATE ── -->
       <div *ngIf="showPreview && !hasErrors()">
         <div class="preview-header p-1 mb-2 d-flex justify-content-between align-items-center">
-          <h6 class="fw-bold mb-0">Review and Edit Charges</h6>
+          <h6 class="fw-bold mb-0">Review Chart of Accounts</h6>
           <button type="button" class="btn btn-sm btn-info" (click)="onReUpload()">
             <i class="fas fa-sync-alt me-1"></i>Upload Different File
           </button>
@@ -81,8 +87,9 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 
         <!-- Summary badges -->
         <div class="d-flex gap-2 mb-3">
-          <span class="badge bg-secondary">Total: {{ chargesData.length }}</span>
+          <span class="badge bg-secondary">Total: {{ coaData.length }}</span>
           <span class="badge bg-success">Valid: {{ validCount }}</span>
+          <span class="badge bg-warning text-dark" *ngIf="warningCount">Warnings: {{ warningCount }}</span>
           <span class="badge bg-danger" *ngIf="invalidCount">Invalid: {{ invalidCount }}</span>
         </div>
 
@@ -94,6 +101,56 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
           <ul class="mb-0 ps-3 small text-danger">
             <li *ngFor="let e of rowErrors">Row {{ e.row }}: {{ e.message }}</li>
           </ul>
+        </div>
+
+        <!-- Preview table -->
+        <div class="charges-table-wrapper mt-3" *ngIf="coaArray.length">
+          <table class="table table-bordered table-hover preview-table">
+            <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>Category</th>
+                <th>Ledger Category</th>
+                <th>Group Name</th>
+                <th>Sub Group</th>
+                <th>Ledger Name</th>
+                <th>Ledger Code</th>
+                <th>Ledger Type</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody [formGroup]="coaForm">
+              <ng-container formArrayName="coa">
+                <tr *ngFor="let row of coaArray.controls; let i = index"
+                    [formGroupName]="i"
+                    [class.table-danger]="rowHasError(i)"
+                    [class.table-warning]="rowHasWarning(i)">
+                  <td class="text-muted small">{{ row.get('_rowNum')?.value }}</td>
+                  <td>{{ row.get('category')?.value }}</td>
+                  <td>{{ row.get('ledgerCategory')?.value }}</td>
+                  <td>{{ row.get('groupName')?.value }}</td>
+                  <td>{{ row.get('subGroupName')?.value }}</td>
+                  <td>{{ row.get('ledgerName')?.value }}</td>
+                  <td>{{ row.get('ledgerCode')?.value }}</td>
+                  <td>{{ row.get('ledgerType')?.value }}</td>
+                  <td>
+                    <span class="badge"
+                      [class.bg-success]="row.get('status')?.value?.toLowerCase() === 'active' || row.get('status')?.value === 'A'"
+                      [class.bg-secondary]="row.get('status')?.value?.toLowerCase() !== 'active' && row.get('status')?.value !== 'A'">
+                      {{ row.get('status')?.value }}
+                    </span>
+                  </td>
+                  <td>
+                    <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1"
+                            (click)="removeRow(i)" title="Remove row">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -108,7 +165,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
             <div *ngFor="let error of errors" class="error-item mb-1 small">
               <strong>{{ error.sheet }}</strong>
               <span *ngIf="error.row"> – Row {{ error.row }}</span>
-              <span> – {{ error.field }}: {{ error.message }}</span>
+              <span> – {{ error.field || error.message }}</span>
             </div>
           </div>
           <div class="text-center mt-3">
@@ -151,11 +208,10 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 
     .charges-table-wrapper { max-height: 360px; overflow-y: auto; border-radius: 8px; border: 1px solid #dee2e6; }
     .preview-table { font-size: 12px; margin-bottom: 0; }
-    .preview-table th { position: sticky; top: 0; z-index: 1; font-size: 11px; white-space: nowrap; }
-    .inline-input { min-width: 80px; font-size: 11px; padding: 2px 6px; }
+    .preview-table th { position: sticky; top: 0; z-index: 1; font-size: 11px; white-space: nowrap; background: #f8f9fa; }
 
     .loading-overlay {
-      position: absolute; inset: 0; background: rgba(255,255,255,0.8);
+      position: absolute; inset: 0; background: rgba(255,255,255,0.85);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       z-index: 10; border-radius: 4px;
     }
@@ -163,12 +219,10 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
     .error-item { padding: 2px 0; border-bottom: 1px solid #ffc10733; }
   `]
 })
-export class ChargeImportModalComponent implements OnInit {
+export class CoaImportModalComponent implements OnInit {
   @Input() currentCompany: any;
   @Input() currentBranch: any;
   @Input() userData: any;
-  @Input() departmentOptions: any[] = [];
-  @Input() uomOptions: any[] = [];
 
   // State
   selectedFile: File | null = null;
@@ -179,13 +233,13 @@ export class ChargeImportModalComponent implements OnInit {
   processingMessage = 'Processing...';
 
   // Data
-  chargesData: any[] = [];
-  chargeColumns: string[] = [];
+  coaData: any[] = [];
   errors: any[] = [];
   rowErrors: { row: number; message: string }[] = [];
+  rowWarnings: { row: number; message: string }[] = [];
 
   // Form
-  chargesForm!: FormGroup;
+  coaForm!: FormGroup;
 
   constructor(
     private activeModal: NgbActiveModal,
@@ -199,19 +253,23 @@ export class ChargeImportModalComponent implements OnInit {
   }
 
   initForm() {
-    this.chargesForm = this.fb.group({ charges: this.fb.array([]) });
+    this.coaForm = this.fb.group({ coa: this.fb.array([]) });
   }
 
-  get chargesArray(): FormArray {
-    return this.chargesForm.get('charges') as FormArray;
+  get coaArray(): FormArray {
+    return this.coaForm.get('coa') as FormArray;
   }
 
   get validCount(): number {
-    return this.chargesArray.length - this.rowErrors.length;
+    return this.coaArray.controls.filter((_, i) => !this.rowHasError(i)).length;
   }
 
   get invalidCount(): number {
     return this.rowErrors.length;
+  }
+
+  get warningCount(): number {
+    return this.rowWarnings.length;
   }
 
   // ── File handling ────────────────────────────────────────────────────────────
@@ -245,13 +303,13 @@ export class ChargeImportModalComponent implements OnInit {
 
   downloadTemplate() {
     this.downloading = true;
-    this.masterService.downloadChargeTemplate(this.currentCompany?.CompanyMasterSid).subscribe({
+    this.masterService.downloadCoaTemplate(this.currentCompany?.CompanyMasterSid).subscribe({
       next: (blob: Blob) => {
         this.downloading = false;
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'Charge_Upload_Template.xlsx';
+        a.download = 'COA_Upload_Template.xlsx';
         a.click();
         window.URL.revokeObjectURL(url);
       },
@@ -262,7 +320,7 @@ export class ChargeImportModalComponent implements OnInit {
     });
   }
 
-  // ── Parse Excel → build form ─────────────────────────────────────────────────
+  // ── Parse Excel → call backend ───────────────────────────────────────────────
 
   parseAndPreview() {
     if (!this.selectedFile) return;
@@ -271,12 +329,13 @@ export class ChargeImportModalComponent implements OnInit {
     this.processingMessage = 'Parsing file...';
     this.errors = [];
     this.rowErrors = [];
+    this.rowWarnings = [];
 
     const formData = new FormData();
     formData.append('file', this.selectedFile);
     formData.append('CompanyMasterSid', String(this.currentCompany?.CompanyMasterSid));
 
-    this.masterService.parseChargeExcel(formData).subscribe({
+    this.masterService.parseCoaExcel(formData).subscribe({
       next: (resp: any) => {
         this.isProcessing = false;
 
@@ -287,21 +346,21 @@ export class ChargeImportModalComponent implements OnInit {
 
         const result = resp.data;
 
-        // Surface backend structural errors (missing sheets, bad headers, etc.)
+        // Surface backend structural errors
         if (result.errors?.length) {
           this.errors = result.errors;
-          this.showPreview = false; // Show error state, not preview
+          this.showPreview = false;
           return;
         }
 
-        this.chargesData = [...(result.validRows || []), ...(result.invalidRows || [])];
+        this.coaData = [...(result.validRows || []), ...(result.invalidRows || [])];
 
-        if (!this.chargesData.length) {
+        if (!this.coaData.length) {
           this.fileError = 'No rows found in the file.';
           return;
         }
 
-        this.buildChargesForm(result.validRows || [], result.invalidRows || []);
+        this.buildCoaForm(result.validRows || [], result.invalidRows || []);
         this.showPreview = true;
         this.appSettingsService.showSuccess('File parsed successfully');
       },
@@ -312,99 +371,76 @@ export class ChargeImportModalComponent implements OnInit {
     });
   }
 
-  buildChargesForm(validRows: any[], invalidRows: any[]) {
-    // Derive columns from first available row (exclude meta fields)
-    const sampleRow = validRows[0] || invalidRows[0] || {};
-    this.chargeColumns = Object.keys(sampleRow).filter(
-      k => !['rowNum', 'errors', 'taxRecords', 'tdsRecords'].includes(k)
-    );
-
+  buildCoaForm(validRows: any[], invalidRows: any[]) {
     const allRows = [...validRows, ...invalidRows];
-    const chargeGroups = allRows.map((row: any) => {
-      const group: any = {};
-      this.chargeColumns.forEach(col => {
-        group[col] = [row[col] ?? ''];
+
+    const coaGroups = allRows.map((row: any) => {
+      return this.fb.group({
+        category:       [row.category       ?? ''],
+        ledgerCategory: [row.ledgerCategory  ?? ''],
+        groupName:      [row.groupName       ?? ''],
+        subGroupName:   [row.subGroupName    ?? ''],
+        ledgerName:     [row.ledgerName      ?? ''],
+        ledgerCode:     [row.ledgerCode      ?? ''],
+        ledgerType:     [row.ledgerType      ?? ''],
+        reportType:     [row.reportType      ?? ''],
+        currency:       [row.currency        ?? ''],
+        remarks:        [row.remarks         ?? ''],
+        subledgerName:  [row.subledgerName   ?? 'N'],
+        jobNoRequire:   [row.jobNoRequire    ?? 'N'],
+        hsnRequire:     [row.hsnRequire      ?? 'N'],
+        status:         [row.status          ?? 'Active'],
+        // Internal meta
+        _rowNum:        [row.rowNum          ?? ''],
+        _resolvedStatus:[row.resolvedStatus  ?? 'A'],
       });
-      // Stash nested records on the control for display
-      group['_taxRecords']  = [row.taxRecords  ?? []];
-      group['_tdsRecords']  = [row.tdsRecords  ?? []];
-      group['_rowNum']      = [row.rowNum ?? ''];
-      return this.fb.group(group);
     });
 
-    this.chargesForm = this.fb.group({ charges: this.fb.array(chargeGroups) });
+    this.coaForm = this.fb.group({ coa: this.fb.array(coaGroups) });
 
-    // Run frontend UOM/dept validations and tag invalid rows
+    // Map row errors and warnings from backend
     this.rowErrors = [];
-    allRows.forEach((row: any, i: number) => {
-      const backendErrors = row.errors || [];
-      const frontendErrors = this.runFrontendValidations(row);
-      const allErrors = [...backendErrors, ...frontendErrors];
-      if (allErrors.length) {
-        this.rowErrors.push({ row: row.rowNum ?? i + 2, message: allErrors.join('; ') });
+    this.rowWarnings = [];
+
+    allRows.forEach((row: any) => {
+      if (row.errors?.length) {
+        this.rowErrors.push({ row: row.rowNum, message: row.errors.join('; ') });
+      }
+      if (row.warnings?.length) {
+        this.rowWarnings.push({ row: row.rowNum, message: row.warnings.join('; ') });
       }
     });
-  }
-
-  // ── Frontend validations (mirrors original logic) ────────────────────────────
-
-  runFrontendValidations(row: any): string[] {
-    const errors: string[] = [];
-    const uomCode  = (row.uom  || '').toString().trim().toUpperCase();
-    const deptRaw  = (row.departments || '').toString().trim();
-    if (!uomCode || !deptRaw) return errors;
-
-    const deptNames     = deptRaw.split(';').map((d: string) => d.trim().toLowerCase());
-    const selectedDepts = this.departmentOptions.filter(d =>
-      deptNames.includes(d.departmentName?.trim().toLowerCase())
-    );
-    const selectedUOM = this.uomOptions.find(u =>
-      u.UOMCode?.trim().toUpperCase() === uomCode
-    );
-    if (!selectedUOM) return errors;
-
-    const containerUoms = ['CON', '20F', '40F', '45F'];
-    if (selectedDepts.some(d => d.FCLLCL === 'FCL') && uomCode === 'CBM') {
-      errors.push('CBM is not applicable for FCL department(s)');
-    }
-    if (selectedDepts.some(d => d.FCLLCL === 'LCL') && containerUoms.includes(uomCode)) {
-      errors.push(`${uomCode} is not applicable for LCL department(s)`);
-    }
-    return errors;
   }
 
   // ── Row helpers ──────────────────────────────────────────────────────────────
 
   rowHasError(index: number): boolean {
-    const rowNum = this.chargesArray.at(index).get('_rowNum')?.value;
+    const rowNum = this.coaArray.at(index).get('_rowNum')?.value;
     return this.rowErrors.some(e => e.row === rowNum);
   }
 
-  getTaxCount(index: number): number {
-    return (this.chargesArray.at(index).get('_taxRecords')?.value || []).length;
+  rowHasWarning(index: number): boolean {
+    const rowNum = this.coaArray.at(index).get('_rowNum')?.value;
+    return this.rowWarnings.some(e => e.row === rowNum);
   }
 
-  getTdsCount(index: number): number {
-    return (this.chargesArray.at(index).get('_tdsRecords')?.value || []).length;
-  }
-
-  removeCharge(index: number) {
-    const rowNum = this.chargesArray.at(index).get('_rowNum')?.value;
-    this.chargesArray.removeAt(index);
-    this.rowErrors = this.rowErrors.filter(e => e.row !== rowNum);
+  removeRow(index: number) {
+    const rowNum = this.coaArray.at(index).get('_rowNum')?.value;
+    this.coaArray.removeAt(index);
+    this.rowErrors   = this.rowErrors.filter(e => e.row !== rowNum);
+    this.rowWarnings = this.rowWarnings.filter(e => e.row !== rowNum);
   }
 
 
   onConfirmImport() {
-    if (!this.chargesArray.length || !this.validCount) return;
+    if (!this.coaArray.length || !this.validCount) return;
 
-    // Collect only rows without errors, strip internal fields
-    const validRows = this.chargesArray.controls
+    const validRows = this.coaArray.controls
       .filter((_, i) => !this.rowHasError(i))
       .map(ctrl => {
         const val = ctrl.value;
-        const { _taxRecords, _tdsRecords, _rowNum, ...rest } = val;
-        return { ...rest, taxRecords: _taxRecords, tdsRecords: _tdsRecords };
+        const { _rowNum, _resolvedStatus, ...rest } = val;
+        return { ...rest, resolvedStatus: _resolvedStatus };
       });
 
     const payload = {
@@ -414,15 +450,15 @@ export class ChargeImportModalComponent implements OnInit {
     };
 
     this.isProcessing = true;
-    this.processingMessage = 'Importing charges...';
+    this.processingMessage = 'Importing chart of accounts...';
 
-    this.masterService.saveChargeExcel(payload).subscribe({
+    this.masterService.saveCoaExcel(payload).subscribe({
       next: (resp: any) => {
         this.isProcessing = false;
         if (resp?.data) {
           const created = resp.data.created ?? 0;
           this.appSettingsService.showSuccess(
-            `Import complete — ${created} charge(s) created.`
+            `Import complete — ${created} account(s) created.`
           );
           this.activeModal.close(created > 0);
         } else {
@@ -439,12 +475,13 @@ export class ChargeImportModalComponent implements OnInit {
   // ── Navigation ───────────────────────────────────────────────────────────────
 
   onReUpload() {
-    this.selectedFile = null;
-    this.fileError    = '';
-    this.showPreview  = false;
-    this.chargesData  = [];
-    this.errors       = [];
-    this.rowErrors    = [];
+    this.selectedFile  = null;
+    this.fileError     = '';
+    this.showPreview   = false;
+    this.coaData       = [];
+    this.errors        = [];
+    this.rowErrors     = [];
+    this.rowWarnings   = [];
     this.initForm();
   }
 
