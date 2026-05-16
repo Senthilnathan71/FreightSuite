@@ -1,0 +1,124 @@
+.vat-summary-page {
+  color: #000;
+  font-size: 10px;
+}
+
+.vat-border {
+  min-height: 100%;
+  padding: 10px;
+}
+
+.vat-company-header {
+  border-bottom: 1px solid #000;
+  text-align: center;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+}
+
+.company-name {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.report-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.vat-section {
+  margin-bottom: 12px;
+}
+
+.vat-section h6 {
+  font-size: 11px;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+
+.vat-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px 18px;
+}
+
+.vat-grid.two-col {
+  grid-template-columns: 1fr 1fr;
+}
+
+.vat-grid label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.vat-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.vat-table .code-col {
+  width: 28px;
+}
+
+.vat-table .description-col {
+  width: auto;
+}
+
+.vat-table .amount-col {
+  width: 150px;
+}
+
+.vat-table .vat-col,
+.vat-table .adjustment-col {
+  width: 108px;
+}
+
+.vat-table th,
+.vat-table td {
+  border: 1px solid #000;
+  padding: 4px;
+  vertical-align: top;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.vat-table th {
+  font-weight: 700;
+  text-align: center;
+}
+
+.summary-table td:nth-child(3) {
+  width: 130px;
+}
+
+.box-code {
+  text-align: center;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.amount {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.total-row {
+  font-weight: 700;
+  background: #f4f4f4;
+}
+
+.declaration-text {
+  margin: 10px 0 0;
+}
+
+.page-break-before {
+  break-before: page;
+}
+
+@media print {
+  .page-break-before {
+    page-break-before: always;
+  }
+}

@@ -283,7 +283,7 @@
 
                         <aside class="col-md-3" *ngIf="!isJournalVoucher">
                             <div class="custom-form-group">
-                                <input type="text" class="custom-input-field sm" formControlName="ExchangeRate"
+                                <input type="text" class="custom-input-field sm text-end" formControlName="ExchangeRate"
                                     placeholder="" DecimalPrecision [DecimalPrecisionBefore]="3" />
                                 <label class="input-label">Ex. Rate
                                     <span class="text-danger"></span>
@@ -295,7 +295,7 @@
                         <aside class="col-md-3" *ngIf="isVendorInvoice || isVendorCreditNote">
                             <div class="custom-form-group">
                                 <input type="number" id="Amount" formControlName="Amount" placeholder=""
-                                    class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="12"
+                                    class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="12"
                                     readonly />
                                 <label for="Amount" class="input-label">Bill Amt</label>
                             </div>
@@ -304,7 +304,7 @@
                         <aside class="col-md-3" *ngIf="isVendorInvoice || isVendorCreditNote || isJournalVoucher">
                             <div class="custom-form-group">
                                 <input type="text" id="DocumentNumber" formControlName="DocumentNumber" placeholder=""
-                                    class="custom-input-field sm highlight-field"
+                                    class="custom-input-field sm highlight-field text-end"
                                     [class.is-invalid]="isFieldInvalid('DocumentNumber')" />
                                 <label for="DocumentNumber" class="input-label">
                                     Bill No. <span *ngIf="isVendorInvoice || isVendorCreditNote" class="text-danger">*</span>
@@ -340,7 +340,7 @@
                         <aside class="col-md-3" *ngIf="isVendorInvoice || isVendorCreditNote">
                             <div class="custom-form-group">
                                 <input type="text" id="HouseNumber" formControlName="HouseNumber" placeholder=""
-                                    class="custom-input-field sm" />
+                                    class="custom-input-field sm text-end" />
                                 <label for="HouseNumber" class="input-label">HBL No.</label>
                             </div>
                         </aside>
@@ -594,7 +594,7 @@
                                                         formControlName="ChargeUOMSid" appendTo="body">
                                                     </ng-select>
                                                 </td>
-                                                <td style="color:black;font-weight: 600;">
+                                                <td class="text-end" style="color:black;font-weight: 600;">
                                                     <span>{{ row.get('NumberOfUnit')?.value | numberFormat }}</span>
                                                 </td>
                                                 <td style="color:black;font-weight: 600;">
@@ -610,23 +610,23 @@
                                                     </dofi-searchable-dropdown>
                                                 </td>
 
-                                                <td>
-                                                    <input type="number" step="0.0001" class="custom-input-field sm"
+                                                <td class="text-end">
+                                                    <input type="number" step="0.0001" class="custom-input-field sm text-end"
                                                         formControlName="ExchangeRate">
                                                 </td>
-                                                <td style="color:black;font-weight: 600;">
+                                                <td class="text-end" style="color:black;font-weight: 600;">
                                                     <span>{{ row.get('Rate')?.value | numberFormat }}</span>
                                                 </td>
-                                                <td style="color:black;font-weight: 600;">
+                                                <td class="text-end" style="color:black;font-weight: 600;">
                                                     <span>{{ row.get('Amount')?.value | numberFormat }}</span>
                                                 </td>
-                                                <td style="color:black;font-weight: 600;">
+                                                <td class="text-end" style="color:black;font-weight: 600;">
                                                     <span>{{ row.get('TaxableAmount')?.value | numberFormat }}</span>
                                                 </td>
-                                                <td style="color:black;font-weight: 600;">
+                                                <td class="text-end" style="color:black;font-weight: 600;">
                                                     <span>{{ row.get('LocalAmount')?.value | numberFormat }}</span>
                                                 </td>
-                                                <td style="color:black;font-weight: 600;">
+                                                <td class="text-end" style="color:black;font-weight: 600;">
                                                     <span>{{ row.get('PartyAmount')?.value | numberFormat }}</span>
                                                 </td>
                                                 <td style="min-width:200px;">
@@ -701,14 +701,14 @@
                                                     </dofi-searchable-dropdown>
                                                 </td>
 
-                                                <td>
-                                                    <input type="number" step="0.0001" class="custom-input-field sm"
+                                                <td class="text-end">
+                                                    <input type="number" step="0.0001" class="custom-input-field sm text-end"
                                                         formControlName="ExchangeRate">
                                                 </td>
-                                                <td style="color:black;font-weight: 600;">
+                                                <td class="text-end" style="color:black;font-weight: 600;">
                                                     <span>{{ row.get('Amount')?.value | numberFormat }}</span>
                                                 </td>
-                                                <td style="color:black;font-weight: 600;">
+                                                <td class="text-end" style="color:black;font-weight: 600;">
                                                     <span>{{ row.get('LocalAmount')?.value | numberFormat }}</span>
                                                 </td>
                                             <td>

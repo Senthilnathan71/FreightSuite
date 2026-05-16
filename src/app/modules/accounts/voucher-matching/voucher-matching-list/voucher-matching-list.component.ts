@@ -24,6 +24,7 @@ import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AccountsService } from '../../accounts.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import {
   AdvancedFilterValues,
   DateRangeConfig,
@@ -122,6 +123,7 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
     private datePipe: CustomDatePipe,
+    private voucherActionGuard: VoucherActionGuardService,
   ) {
     super(paginationService);
   }
@@ -441,6 +443,12 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
   }
 
   navigateToCreate() {
+    const blockedReason = this.voucherActionGuard.getInsertBlockedReason({
+      documentName: 'Voucher Matching',
+      canInsert: this.mps.can('insert')
+    });
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     this.router.navigate(['accounts/voucher-matching/entry']);
   }
 

@@ -1,3 +1,14 @@
+<div class="d-flex justify-content-end gap-2 mb-3">
+    <button type="button" class="btn btn-light btn-sm" (click)="goBack()">
+      <i class="fas fa-arrow-left me-1"></i> Back
+    </button>
+    <button type="button" class="btn btn-secondary btn-sm" (click)="reset()" [disabled]="btnDisable">
+      <i class="fas fa-sync-alt me-1"></i> Reset
+    </button>
+    <button type="submit" class="btn btn-info btn-sm" [disabled]="btnDisable">
+      <i class="fas fa-save me-1"></i> {{ isEditMode ? 'Update' : 'Save' }}
+    </button>
+  </div>
 <form [formGroup]="form" class="px-0 compact-form" (ngSubmit)="onSubmit()">
 
   <!-- Section: Event Details -->
@@ -23,12 +34,22 @@
         <aside class="col-md-6">
           <div class="custom-form-group custom-form-group-select"
                [class.filled]="!!form.get('CityMasterSid')?.value">
-            <ng-select class="ng-select"
+            <!-- <ng-select class="ng-select"
                        formControlName="CityMasterSid"
                        [items]="cityList"
                        bindLabel="cityName"
                        bindValue="CityMasterSid">
-            </ng-select>
+            </ng-select> -->
+            <dofi-searchable-dropdown 
+            [items]="cityList" 
+            formControlName="CityMasterSid" 
+            placeholder=""
+            [displayFields]="cityLookupConfig.displayFields"
+            [displayLabels]="cityLookupConfig.displayLabels"
+            [labelFields]="cityLookupConfig.labelFields" 
+            bindValue="CityMasterSid"
+            >
+        </dofi-searchable-dropdown>
             <label class="input-label">City <span class="text-danger fw-bold">*</span></label>
             <div class="error-message">
               @if (form.get('CityMasterSid')?.touched && form.get('CityMasterSid')?.invalid) {
@@ -44,10 +65,10 @@
           <div class="custom-form-group custom-form-group-select-date">
             <div class="input-group">
               <input class="form-control mb-0" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                #d1="ngbDatepicker" (click)="d1.toggle()"
+                #d1="ngbDatepicker" (click)="!isPastEventDateLocked && d1.toggle()"
                 [minDate]="minDate" [maxDate]="maxDate"
                 formControlName="EventDate" readonly />
-              <button class="btn bi bi-calendar3" (click)="d1.toggle()" type="button">
+              <button class="btn bi bi-calendar3" (click)="d1.toggle()" type="button" *ngIf="!isPastEventDateLocked">
                 <i-feather name="calendar" class="feather-sm"></i-feather>
               </button>
             </div>
@@ -91,13 +112,13 @@
       <div class="row">
         <aside class="col-md-6">
           <div class="custom-form-group">
-            <input type="number" formControlName="TotalLeadRecd" class="custom-input-field sm" min="0" />
+            <input type="number" formControlName="TotalLeadRecd" class="custom-input-field sm text-end" min="0" />
             <label class="input-label">Leads Received <span class="text-danger fw-bold">*</span></label>
           </div>
         </aside>
         <aside class="col-md-6">
           <div class="custom-form-group">
-            <input type="number" formControlName="TotalLeadSuccess" class="custom-input-field sm" min="0" />
+            <input type="number" formControlName="TotalLeadSuccess" class="custom-input-field sm text-end" min="0" />
             <label class="input-label">Leads Success <span class="text-danger fw-bold">*</span></label>
           </div>
         </aside>
@@ -152,18 +173,5 @@
         </aside>
       </div>
     </div>
-  </div>
-
-  <!-- Footer actions -->
-  <div class="d-flex justify-content-end gap-2 mb-3">
-    <button type="button" class="btn btn-light btn-sm" (click)="goBack()">
-      <i class="fas fa-arrow-left me-1"></i> Back
-    </button>
-    <button type="button" class="btn btn-secondary btn-sm" (click)="reset()" [disabled]="btnDisable">
-      <i class="fas fa-sync-alt me-1"></i> Reset
-    </button>
-    <button type="submit" class="btn btn-info btn-sm" [disabled]="btnDisable">
-      <i class="fas fa-save me-1"></i> {{ isEditMode ? 'Update' : 'Save' }}
-    </button>
   </div>
 </form>

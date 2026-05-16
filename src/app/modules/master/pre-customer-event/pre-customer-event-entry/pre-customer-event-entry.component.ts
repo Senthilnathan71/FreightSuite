@@ -10,6 +10,9 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { ngbDateStructToDate, toNgbDateStruct } from 'src/app/common/helper';
+import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { stat } from 'fs';
 
 function leadsConsistencyValidator(group: AbstractControl): ValidationErrors | null {
   const recd = Number(group.get('TotalLeadRecd')?.value ?? 0);
@@ -27,6 +30,7 @@ function leadsConsistencyValidator(group: AbstractControl): ValidationErrors | n
     NgSelectModule,
     NgbDatepickerModule,
     FeatherModule,
+    SearchableDropdown
   ],
   templateUrl: './pre-customer-event-entry.component.html',
   styleUrl: './pre-customer-event-entry.component.scss',
@@ -48,6 +52,8 @@ export class PreCustomerEventEntryComponent implements OnInit {
   userData: any;
   currentCompany: any;
   currentBranch: any;
+
+  cityLookupConfig = DROPDOWN_CONFIGS.CITY;
 
   constructor(
     private fb: FormBuilder,
@@ -97,10 +103,45 @@ export class PreCustomerEventEntryComponent implements OnInit {
       },
       { validators: leadsConsistencyValidator },
     );
+
+    this.form.get('EventDate')?.valueChanges.subscribe(() => this.applyFormControlStates());
+    this.applyFormControlStates();
+  }
+
+  private applyPastEventDateLockState(): void {
+    const shouldLock = this.isPastEventDateLocked;
+    const controls = ['EventName','EventDate', 'CityMasterSid', 'EventLeader'];
+
+    controls.forEach((controlName) => {
+      const control = this.form.get(controlName);
+      if (!control) return;
+
+      if (shouldLock && control.enabled) control.disable({ emitEvent: false });
+      if (!shouldLock && control.disabled) control.enable({ emitEvent: false });
+    });
+  }
+
+  private applyLeadFieldsLockState(): void {
+    const shouldEnable = this.isOnOrAfterEventDate;
+    const controls = ['TotalLeadRecd', 'TotalLeadSuccess'];
+
+    controls.forEach((controlName) => {
+      const control = this.form.get(controlName);
+      if (!control) return;
+
+      if (shouldEnable && control.disabled) control.enable({ emitEvent: false });
+      if (!shouldEnable && control.enabled) control.disable({ emitEvent: false });
+    });
+  }
+
+  private applyFormControlStates(): void {
+    this.applyPastEventDateLockState();
+    this.applyLeadFieldsLockState();
   }
 
   loadUsers(): void {
-    this.masterService.getAllFfUser().subscribe({
+    const companyMastersID = this.currentCompany?.CompanyMasterSid;
+    this.masterService.getAllSalesmans(companyMastersID).subscribe({
       next: (resp: any) => {
         const data = resp?.data || resp;
         this.userList = Array.isArray(data) ? data.filter((u: any) => u?.status === 'A' || !u?.status) : [];
@@ -114,9 +155,14 @@ export class PreCustomerEventEntryComponent implements OnInit {
   loadCities(): void {
     this.masterService.getAllCity().subscribe({
       next: (cities: any) => {
-        this.cityList = Array.isArray(cities)
-          ? cities.filter((c: any) => c?.status === 'A' || !c?.status)
-          : [];
+        const city: any[] = Array.isArray(cities)
+        ? cities
+        : cities?.data || [];
+        this.cityList = city.map((c: any) => ({
+          ...c,
+          Country: c?.countryMaster?.countryName || '',
+          State: c?.stateMaster?.stateName || ''
+        }))
       },
       error: () => this.appSettingService.showError('Failed to load cities'),
     });
@@ -141,9 +187,36 @@ export class PreCustomerEventEntryComponent implements OnInit {
           Remarks: data.Remarks ?? '',
           Status: data.status === 'A' ? 'Active' : 'Suspended',
         });
+        this.applyFormControlStates();
       },
       error: () => this.appSettingService.showError('Failed to load event'),
     });
+  }
+
+  get isPastEventDateLocked(): boolean {
+    const eventDateStruct = this.form?.get('EventDate')?.value as NgbDateStruct | null;
+    if (!eventDateStruct) return false;
+
+    const eventDate = ngbDateStructToDate(eventDateStruct);
+    if (!eventDate) return false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    eventDate.setHours(0, 0, 0, 0);
+    return eventDate < today;
+  }
+
+  get isOnOrAfterEventDate(): boolean {
+    const eventDateStruct = this.form?.get('EventDate')?.value as NgbDateStruct | null;
+    if (!eventDateStruct) return false;
+
+    const eventDate = ngbDateStructToDate(eventDateStruct);
+    if (!eventDate) return false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    eventDate.setHours(0, 0, 0, 0);
+    return today >= eventDate;
   }
 
   get conversionPct(): number {
@@ -162,7 +235,7 @@ export class PreCustomerEventEntryComponent implements OnInit {
     this.btnDisable = true;
 
     const userEmail = this.appSettingService.userSettingSource.value?.['userEmail'];
-    const v = this.form.value;
+    const v = this.form.getRawValue();
     const eventDate = ngbDateStructToDate(v.EventDate);
 
     const payload: any = {
@@ -221,6 +294,7 @@ export class PreCustomerEventEntryComponent implements OnInit {
       Remarks: '',
       Status: 'Active',
     });
+    this.applyFormControlStates();
     this.btnDisable = false;
   }
 

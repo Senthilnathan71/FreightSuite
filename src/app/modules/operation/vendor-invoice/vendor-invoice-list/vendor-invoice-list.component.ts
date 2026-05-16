@@ -32,6 +32,7 @@ import {
   DropdownFilterConfig,
   PartyFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
+import { VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 
 @Component({
   selector: 'app-vendor-invoice-list',
@@ -154,7 +155,8 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
     private spinner: NgxSpinnerService,
     paginationService: PaginationService,
     private datePipe: CustomDatePipe,
-    public mps: MenuPermissionService
+    public mps: MenuPermissionService,
+    private voucherActionGuard: VoucherActionGuardService
   ) {
     super(paginationService);
   }
@@ -365,6 +367,7 @@ private formatAmount(amount: number | string): string {
         visible: true,
         dataType: 'string',
         width: '120px',
+        cellClass: 'text-end'
       },
       {
         key: 'BillDate',
@@ -391,6 +394,7 @@ private formatAmount(amount: number | string): string {
         visible: true,
         dataType: 'number',
         width: '120px',
+        cellClass: 'text-end'
       },
       {
         key: 'MBLNo',
@@ -507,10 +511,22 @@ private formatAmount(amount: number | string): string {
   }
 
   onCreate() {
+    const blockedReason = this.voucherActionGuard.getInsertBlockedReason({
+      documentName: 'Vendor Invoice',
+      canInsert: this.mps.can('insert'),
+    });
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     this.router.navigate(['/operation/vendor-invoice/entry']);
   }
 
   onCreateNonJob() {
+    const blockedReason = this.voucherActionGuard.getInsertBlockedReason({
+      documentName: 'Vendor Invoice',
+      canInsert: this.mps.can('insert'),
+    });
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     this.router.navigate(['/operation/vendor-invoice/entry'], {
       queryParams: { isNonJob: true }
     });
@@ -754,6 +770,15 @@ private formatAmount(amount: number | string): string {
   }
 
   deleteVendorInvoice(vendorInvoice: any) {
+    const blockedReason = this.voucherActionGuard.getDeleteBlockedReason({
+      documentName: 'Vendor Invoice',
+      status: vendorInvoice?.Status,
+      postStatus: vendorInvoice?.PostStatus,
+      canDelete: this.mps.can('delete'),
+      blockedByCondition: vendorInvoice?.Status !== 'Active' || vendorInvoice?.PostStatus !== 'Unposted',
+    });
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     const dialogRef = this.dialog.open(DeleteWarningComponent);
 
     dialogRef.afterClosed().subscribe(result => {

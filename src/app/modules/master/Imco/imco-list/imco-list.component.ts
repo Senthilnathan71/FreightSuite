@@ -63,7 +63,8 @@ export class ImcoListComponent extends BaseListComponent implements OnInit {
         sortable: true,
         filterable: true,
         visible: true,
-        dataType: 'string'
+        dataType: 'string',
+        cellClass: 'text-end'
       },
       {
         key: 'ImcoUn',
@@ -71,7 +72,8 @@ export class ImcoListComponent extends BaseListComponent implements OnInit {
         sortable: true,
         filterable: true,
         visible: true,
-        dataType: 'string'
+        dataType: 'string',
+        cellClass: 'text-end'
       },
       {
         key: 'PackingGroup',

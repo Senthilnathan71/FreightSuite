@@ -35,6 +35,9 @@ import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/
 import { CommonService } from 'src/app/common/common.service';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
+import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
   selector: 'app-voucher-matching-entry',
@@ -52,6 +55,8 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
     DecimalPrecisionDirective,
     NgxSpinnerModule,
     PreventMultiClickDirective,
+    ElementStateGuardDirective,
+    FormStateGuardDirective,
   ],
   templateUrl: './voucher-matching-entry.component.html',
   providers: [
@@ -194,6 +199,7 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
     private modalService: NgbModal,
     private confirmService: ModalService,
     private commonService: CommonService,
+    private voucherActionGuard: VoucherActionGuardService,
   ) { }
 
   ngOnInit(): void {
@@ -347,6 +353,25 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
   get vm(): { [key: string]: AbstractControl } { return this.voucherMatchingForm.controls; }
   get sourceItems(): FormArray { return this.voucherMatchingForm.get('sourceItems') as FormArray; }
   get objectItems(): FormArray { return this.voucherMatchingForm.get('objectItems') as FormArray; }
+
+  private getActionGuardContext(): VoucherActionGuardContext {
+    return {
+      documentName: 'Voucher Matching',
+      isSaving: this.isSaving,
+      isPosting: this.isPosting,
+      isCancelling: this.isCancelling,
+      isEditMode: this.isEditMode,
+      isPosted: this.isPosted,
+      isDirty: this.isDirty,
+      headerId: this.VoucherMatchingHeaderSid,
+      formInvalid: this.voucherMatchingForm?.invalid,
+      status: this.voucherMatchingForm?.get('Status')?.value,
+      postStatus: this.voucherMatchingForm?.get('PostStatus')?.value,
+      canInsert: this.mps.can('insert'),
+      canUpdate: this.mps.can('update'),
+      canPost: this.mps.can('post')
+    };
+  }
 
   //SECTION: DATA LOADING
   loadVoucherMatchingData(id: number) {
@@ -624,7 +649,9 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
   }
 
   onGet() {
-    if (this.isPosted) { return; }
+    const blockedReason = this.voucherActionGuard.getDetailMutationBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     if (!this.selectedLedger) { this.appSettingService.showWarning('Please select a Ledger'); return; }
     if (!this.selectedSubledger) { this.appSettingService.showWarning('Please select a Subledger'); return; }
     if (!this.isEditMode) {
@@ -1010,6 +1037,8 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
 
   /**SECTION Submit Function */
   onSubmit(resolve?: (value: boolean) => void) {
+    const blockedReason = this.voucherActionGuard.getSaveBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason, resolve)) return;
 
     const rawValue = this.voucherMatchingForm.getRawValue();
     // Validate voucher date is within financial year
@@ -1181,6 +1210,9 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
   /**SECTION - Posting Function */
   async postVoucher(): Promise<void> {
     try {
+      const blockedReason = this.voucherActionGuard.getPostBlockedReason(this.getActionGuardContext());
+      if (this.voucherActionGuard.block(blockedReason)) return;
+
       this.isPosting = true;
       this.spinner.show();
       const payload = {
@@ -1234,6 +1266,13 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
   }
 
   cancelVoucherMatching() {
+    const blockedReason = this.voucherActionGuard.getCancelBlockedReason({
+      ...this.getActionGuardContext(),
+      blockedByCondition: !this.isPosted || !this.isActive,
+      blockedConditionReason: 'Only posted active voucher matching can be cancelled.'
+    });
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     this.confirmService.confirm(
       this.buildCancelVoucherMatchingMessage(),
       'Cancel Voucher Matching',

@@ -92,7 +92,7 @@
           </div>
 
           <div class="buttons">
-            <button type="button" class="btn btn-warning btn-sm" (click)="openPaymentRequest()"
+            <button *ngIf="!isBooking" type="button" class="btn btn-warning btn-sm" (click)="openPaymentRequest()"
               [disabled]="isFormDisabled || !isEditMode || !rateFormArray?.length || !isVoucherGenerationAllowed() || !isHBLNoValid()" title="Create payment request from prepaid cost rows">
               <i class="fas fa-file-import me-1"></i>
               Payment Request
@@ -206,10 +206,10 @@
 
                 </div>
               </td>
-              <td>
+              <td class="text-end">
                 <div class="custom-form-group ">
                   <input type="text" min="0" formControlName="NoOfUnit" id="text-input"
-                    class="custom-input-field sm"
+                    class="custom-input-field sm text-end"
                     (change)="calculateCostAmount(i); calculateRevenueAmount(i)"
                     [disabled]="!canEditRate(i)" DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="3">
                 </div>
@@ -226,7 +226,7 @@
             <thead class="bg-info secondtable">
               <tr>
                 <th  class="bg-transparent text-light text-center"  colspan="10" style="border-left: 1px solid white; border-right: 1px solid white;">Revenue</th>
-                <th  class="bg-warning text-light text-center"  colspan="10">Cost</th>
+                <th  class="bg-warning text-light text-center"  colspan="11">Cost</th>
               </tr>
               <tr class="no-wrap">
                 <!-- Revenue -->
@@ -254,6 +254,7 @@
                 <th  class="bg-warning text-light ">Cr/Dr</th>
                 <th  class="bg-warning text-light ">PP/CC</th>
                 <th  class="bg-warning text-light ">Party</th>
+                <th *ngIf="!isBooking" class="bg-warning text-light ">Pay. Req</th>
                 <th  class="bg-warning text-light ">Type</th>
                 <th  class="bg-warning text-light ">Voucher No</th>
               </tr>
@@ -273,7 +274,7 @@
                   </div>
                 </td>
               
-                <td>
+                <td class="text-end">
                   <div class="custom-form-group dofi-min-w-60">
                     <input type="text" id="text-input" formControlName="RevenueExchangeRate" class="custom-input-field sm text-end"
                       (change)="calculateRevenueLocalAmount(i)" [disabled]="!canEditRate(i)" DecimalPrecision
@@ -281,14 +282,14 @@
                       [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)">
                   </div>
                 </td>
-                <td>
+                <td class="text-end">
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
                     <input type="text" id="text-input" formControlName="RevenueRate" class="custom-input-field sm text-end"
                       (change)="calculateRevenueAmount(i)" [disabled]="!canEditRate(i)" DecimalPrecision [DecimalPrecisionBefore]="6"
                       [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)">
                   </div>
                 </td>
-                <td>
+                <td class="text-end">
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" formControlName="RevenueAmount" class="custom-input-field sm text-end"
                       (change)="calculateRevenueLocalAmount(i)" [disabled]="!canEditRate(i)" DecimalPrecision
@@ -297,7 +298,7 @@
                   </div>
                 </td>
               
-                <td>
+                <td class="text-end">
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" class="custom-input-field sm text-end"
                       [value]="row.get('RevenueLocalAmount')?.value" DecimalPrecision [DecimalPrecisionBefore]="9"
@@ -416,6 +417,17 @@
                   </div>
                 </td>
               
+                <td *ngIf="!isBooking">
+                  <div class="custom-form-group custom-form-group-select dofi-min-w-200">
+                    <input *ngIf="!row.get('PaymentRequestSid')?.value"
+                      type="text" [value]="''" class="custom-input-field sm" readonly>
+                    <a *ngIf="row.get('PaymentRequestSid')?.value"
+                       [routerLink]="['/operation/payment-request/entry', row.get('PaymentRequestSid')?.value]"
+                       class="voucher-number-link" title="View Payment Request">
+                      {{ getPaymentRequestDisplayNumber(row) }}
+                    </a>
+                  </div>
+                </td>
                 <td>
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" [value]="getCostDocumentTypeDisplay(row)"
@@ -425,30 +437,23 @@
                 <td>
                   <div class="custom-form-group custom-form-group-select dofi-min-w-200">
                     <input
-                      *ngIf="!row.get('CostVoucherHeader')?.value?.VoucherHeaderSid && !row.get('PaymentRequestSid')?.value"
-                      type="text"
-                      [value]="row.get('CostVoucherHeader')?.value?.VoucherNumber || ''"
-                      class="custom-input-field sm"
-                      readonly
-                    >
-                    <a *ngIf="row.get('CostVoucherHeader')?.value?.VoucherHeaderSid"
+                      *ngIf="!row.get('CostVoucherHeader')?.value?.VoucherHeaderSid"
+                      type="text" [value]="''" class="custom-input-field sm" readonly>
+                    <a *ngIf="row.get('CostVoucherHeader')?.value?.VoucherHeaderSid && row.get('PaymentRequestSid')?.value"
+                      [routerLink]="['/accounts/payment/entry', row.get('CostVoucherHeader')?.value?.VoucherHeaderSid]"
+                      class="voucher-number-link" title="View Payment">
+                      {{ row.get('CostVoucherHeader')?.value?.VoucherNumber }}
+                    </a>
+                    <a *ngIf="row.get('CostVoucherHeader')?.value?.VoucherHeaderSid && !row.get('PaymentRequestSid')?.value"
                       [routerLink]="['/operation/vendor-invoice/entry', row.get('CostVoucherHeader')?.value?.VoucherHeaderSid]"
                       class="voucher-number-link" title="View Vendor Invoice">
                       {{ row.get('CostVoucherHeader')?.value?.VoucherNumber }}
-                    </a>
-                    <a
-                      *ngIf="!row.get('CostVoucherHeader')?.value?.VoucherHeaderSid && row.get('PaymentRequestSid')?.value"
-                      [routerLink]="['/operation/payment-request/entry', row.get('PaymentRequestSid')?.value]"
-                      class="voucher-number-link"
-                      title="View Payment Request"
-                    >
-                      {{ getPaymentRequestDisplayNumber(row) }}
                     </a>
                   </div>
                 </td>
               </tr>
               } @else {
-             <td colspan="21" class="text-center">
+             <td colspan="22" class="text-center">
 <div>No Record Found</div>
 </td>
               }

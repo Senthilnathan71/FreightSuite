@@ -1,62 +1,442 @@
-.config-items-container {
-  max-height: 60vh;
-  overflow-y: auto;
+:host {
+  display: block;
 }
 
-.config-item {
-  border-left: 4px solid #17a2b8;
-  
-  &.static-config {
-    border-left-color: #28a745;
+.company-config-shell {
+  min-height: 100%;
+  padding: 0.75rem 1rem;
+  background: #eef5fb;
+}
+
+.hero-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid #d9e4ef;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(33, 53, 85, 0.05);
+}
+
+.hero-copy {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.hero-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  color: #fff;
+  background: linear-gradient(135deg, #0b6ea8, #0f8fcf);
+  box-shadow: 0 10px 24px rgba(15, 143, 207, 0.28);
+}
+
+.hero-kicker {
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #5f7287;
+  margin-bottom: 0.25rem;
+}
+
+.hero-copy h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #17324d;
+}
+
+.hero-copy p {
+  margin: 0.25rem 0 0;
+  color: #66788d;
+  max-width: 780px;
+  font-size: 0.9rem;
+}
+
+.hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.meta-chip,
+.count-pill,
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 8px;
+  padding: 0.28rem 0.65rem;
+  border: 1px solid #d7e3ee;
+  background: #fff;
+}
+
+.meta-label {
+  font-size: 0.72rem;
+  color: #6b7d90;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.meta-value {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #17324d;
+}
+
+.loading-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  border-radius: 18px;
+  border: 1px dashed #c9d8e5;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.workspace-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.surface-card {
+  border: 1px solid #d9e4ef;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(33, 53, 85, 0.05);
+  overflow: hidden;
+}
+
+.surface-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid #e7eef5;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbfe 100%);
+}
+
+.surface-card__header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #17324d;
+}
+
+.surface-card__header p {
+  margin: 0.25rem 0 0;
+  color: #6a7b8d;
+  font-size: 0.86rem;
+}
+
+.surface-card__header--tight {
+  align-items: flex-start;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.builder-form,
+.table-form {
+  padding: 0.7rem 0.9rem 0.8rem;
+}
+
+.builder-grid {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr 0.75fr 1.35fr 1.2fr;
+  gap: 0.55rem 0.75rem;
+  align-items: start;
+}
+
+.field-block {
+  min-width: 0;
+}
+
+.field-block--company,
+.field-block--config-name,
+.field-block--display,
+.field-block--type,
+.field-block--value {
+  grid-column: auto;
+}
+
+.field-block--full {
+  grid-column: 1 / -1;
+}
+
+.field-label {
+  display: inline-block;
+  margin-bottom: 0.22rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #2f4a63;
+}
+
+.modern-input {
+  min-height: 34px;
+  border-radius: 8px;
+  border: 1px solid #c8d6e4;
+  box-shadow: none;
+}
+
+.modern-input:focus {
+  border-color: #0f8fcf;
+  box-shadow: 0 0 0 0.15rem rgba(15, 143, 207, 0.14);
+}
+
+.modern-input--sm {
+  min-height: 34px;
+}
+
+.modern-textarea {
+  resize: vertical;
+  min-height: 58px;
+}
+
+.modern-select {
+  min-height: 34px;
+}
+
+.modern-search-dropdown {
+  display: block;
+  min-height: 34px;
+}
+
+.modern-select--sm {
+  min-height: 34px;
+}
+
+.swap-field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.swap-field__control {
+  flex: 1;
+  min-width: 0;
+}
+
+.swap-btn {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid #c8d6e4;
+  background: #fff;
+  color: #0f8fcf;
+  transition: all 0.2s ease;
+}
+
+.swap-btn:hover {
+  background: #0f8fcf;
+  color: #fff;
+  border-color: #0f8fcf;
+}
+
+.field-hint,
+.builder-note {
+  margin-top: 0.25rem;
+  font-size: 0.78rem;
+  color: #6b7d90;
+}
+
+.field-hint--compact {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.builder-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.55rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid #e7eef5;
+}
+
+.select-all-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.company-option,
+.template-option,
+.row-title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.company-option small,
+.template-option small,
+.row-title small {
+  color: #6b7d90;
+}
+
+.type-pill {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  margin-top: 0.1rem;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #0f6a99;
+  background: #e8f5fd;
+}
+
+.chip {
+  font-size: 0.8rem;
+  background: #ecf5fc;
+  color: #174e74;
+}
+
+.chip--muted {
+  background: #f1f5f9;
+  color: #637386;
+}
+
+.boolean-field {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+}
+
+.modern-table-wrap {
+  border: 1px solid #e4edf5;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.modern-table {
+  margin: 0;
+}
+
+.modern-table thead th {
+  position: sticky;
+  top: 0;
+  background: #f7fafc;
+  color: #31475d;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-bottom: 1px solid #dde7f0;
+}
+
+.modern-table tbody td {
+  border-color: #edf2f7;
+  padding: 0.55rem 0.65rem;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+  text-align: center;
+  color: #6a7b8d;
+}
+
+.empty-state i {
+  font-size: 2rem;
+  color: #0f8fcf;
+  margin-bottom: 0.75rem;
+}
+
+.empty-state h3 {
+  margin: 0 0 0.35rem;
+  color: #17324d;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+@media (max-width: 992px) {
+  .hero-bar,
+  .surface-card__header,
+  .builder-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .builder-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .field-block--company,
+  .field-block--config-name,
+  .field-block--display,
+  .field-block--type,
+  .field-block--value,
+  .field-block--full {
+    grid-column: auto;
   }
 }
 
-.custom-form-group {
-  position: relative;
-  margin-bottom: 1rem;
-  
-  .custom-input-field {
-    &.sm {
-      padding: 0.5rem 0.75rem;
-      font-size: 0.875rem;
-    }
-    
-    &:focus {
-      border-color: #17a2b8;
-      box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
-    }
-    
-    &:disabled {
-      background-color: #e9ecef;
-      opacity: 1;
-    }
-  }
-  
-  .input-label {
-    position: absolute;
-    top: -0.5rem;
-    left: 0.75rem;
-    background: white;
-    padding: 0 0.25rem;
-    font-size: 0.75rem;
-    color: #6c757d;
-    transition: all 0.2s;
-  }
-  
-  .error-message {
-    color: #dc3545;
-    font-size: 0.75rem;
-    margin-top: 0.25rem;
-  }
-  
-  .form-text {
-    font-size: 0.75rem;
-  }
-}
-
-// Responsive adjustments
 @media (max-width: 768px) {
-  .config-item .card-body .row > div {
-    margin-bottom: 1rem;
+  .company-config-shell {
+    padding: 0.75rem;
+  }
+
+  .hero-copy {
+    align-items: flex-start;
+  }
+
+  .hero-copy h1 {
+    font-size: 1.25rem;
+  }
+
+  .builder-form,
+  .table-form {
+    padding: 0.9rem;
   }
 }
+
+:host ::ng-deep .ng-select .ng-select-container {
+  min-height: 34px;
+  border-radius: 8px;
+  border-color: #c8d6e4;
+}
+
+:host ::ng-deep dofi-searchable-dropdown .ng-select .ng-select-container {
+  min-height: 34px;
+  border-radius: 8px;
+  border-color: #c8d6e4;
+}
+
+:host ::ng-deep .modern-select--sm .ng-select-container {
+  min-height: 34px;
+}
+
+:host ::ng-deep .ng-select .ng-select-container .ng-value-container {
+  padding-top: 0.08rem;
+  padding-bottom: 0.08rem;
+}
+
+:host ::ng-deep .ng-select.ng-select-multiple .ng-select-container .ng-value-container {
+  gap: 0.35rem;
+}
+
+:host ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-selected {
+  background: #eef8fd;
+}
+

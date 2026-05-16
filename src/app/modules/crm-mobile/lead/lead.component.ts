@@ -37,6 +37,8 @@ import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/
 import { DocReferenceComponent } from '../../operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { AuditLogComponent } from '../../operation/audit-log/audit-log.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 
 @Component({
@@ -60,7 +62,9 @@ import { AuditLogComponent } from '../../operation/audit-log/audit-log.component
     EdocComponent,
     SearchableDropdown,
     OnlyNumbersDirective,
-    DialCodeDropdownComponent
+    DialCodeDropdownComponent,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
     // NgxIntlTelInputModule
   ],
   templateUrl: './lead.component.html',
@@ -115,6 +119,7 @@ isLoadingCities = false;
 
   readonly EARLY_STATUSES = ['Discovery', 'Qualify'];
   readonly LOCK_AFTER_STATUS = 'Meeting Scheduled';
+  readonly EDITABLE_LEAD_STATUSES = ['Discovery', 'Qualify'];
 
 
 
@@ -175,6 +180,22 @@ MenuMasterSid:any
       this.countryList = countryData;
       this.cityList = (cityData || []).map(c => ({...c,State : c.stateMaster?.stateName,Country : c.countryMaster?.countryName}));
     })
+  }
+
+  get canCreate(): boolean {
+    return this.mps.can('insert');
+  }
+
+  get canSave(): boolean {
+    return !this.isEditMode || this.mps.can('update');
+  }
+
+  canAccessAction(action: string): boolean {
+    return this.mps.has(action);
+  }
+
+  showActionMenu(): boolean {
+    return this.isEditMode && this.mps.hasAtLeastOne();
   }
 
   ngOnInit(): void {
@@ -243,6 +264,7 @@ MenuMasterSid:any
     checked ? 'Qualify' : 'Discovery',
     { emitEvent: false }
   );
+  this.applyLeadStatusFieldLock(checked ? 'Qualify' : 'Discovery');
 });
 
     this.subscribeToFormChanges();
@@ -339,6 +361,12 @@ languagePrefValidator(): ValidatorFn {
   // Handle Form Submission
   onSubmit(resolve?: (value: boolean) => void) {
     if (this.isSaving) {
+      if (resolve) resolve(false);
+      return;
+    }
+
+    if (!this.canSave) {
+      this.appSettingService.showWarning('You do not have permission to save this lead.');
       if (resolve) resolve(false);
       return;
     }
@@ -488,6 +516,23 @@ languagePrefValidator(): ValidatorFn {
 
 
   filteredStatuses: string[] = [];
+  private applyLeadStatusFieldLock(status: string): void {
+    const isEditable = this.EDITABLE_LEAD_STATUSES.includes(status);
+    const leadStatusControl = this.leadForm.get('leadStatus');
+
+    if (isEditable) {
+      this.leadForm.enable({ emitEvent: false });
+      if (this.isEditMode) {
+        leadStatusControl?.enable({ emitEvent: false });
+      } else {
+        leadStatusControl?.disable({ emitEvent: false });
+      }
+      return;
+    }
+
+    this.leadForm.disable({ emitEvent: false });
+  }
+
   // Fetch lead data and patch the form
   loadLeadData(leadId: number) {
   this.leadService.getLeadById(leadId).subscribe(
@@ -530,6 +575,7 @@ else {
       },
     { emitEvent: false }
   );
+      this.applyLeadStatusFieldLock(apiLeadStatus);
       setTimeout(() => {
         this.initialFormValue = this.leadForm.getRawValue();
         this.isDirty = false;
@@ -865,6 +911,10 @@ onStateChange(selectedState: any) {
 
   openEmail() {
     if (!this.leadData) return;
+    if (!this.canAccessAction('email')) {
+      this.appSettingService.showWarning('You do not have permission to access Email.');
+      return;
+    }
     const modalRef = this.modalService.open(EmailEntryComponent, {
       size: 'lg',
       centered: true,
@@ -873,6 +923,10 @@ onStateChange(selectedState: any) {
   }
 
   openAuthority() {
+    if (!this.canAccessAction('authority')) {
+      this.appSettingService.showWarning('You do not have permission to access Authority.');
+      return;
+    }
     const MenuMasterSid = sessionStorage.getItem('currentMenuId');
     if (!MenuMasterSid) return;
     const modalRef = this.modalService.open(AuthorityLogComponent, {
@@ -890,7 +944,7 @@ openEDoc() {
   if (!this.leadData) return;
 
   // Permission check before opening modal
-  if (!this.mps.has('edoc')) {
+  if (!this.canAccessAction('edoc')) {
     this.appSettingService.showWarning('You do not have permission to access Edoc.');
     return;
   }
@@ -899,7 +953,6 @@ openEDoc() {
     size: 'xl',
     centered: true,
     backdrop: 'static',
-        windowClass: 'full-screen-modal' // ✅ custom class
 
   });
 
@@ -928,6 +981,10 @@ openEDoc() {
 }
 
 openDocRef() {
+    if (!this.canAccessAction('document_reference')) {
+      this.appSettingService.showWarning('You do not have permission to access Document reference.');
+      return;
+    }
     const modalRef = this.modalService.open(DocReferenceComponent, {
       size: 'lg',
       centered: true,
@@ -940,10 +997,19 @@ openDocRef() {
     modalRef.componentInstance.DocumentSid = this.PreCustomerMasterSid;
   }
  createNew() {
+    if (!this.canCreate) {
+      this.appSettingService.showWarning('You do not have permission to create a new lead');
+      return;
+    }
+
     this.router.navigate(['crm/lead/entry'])
   }
   openFollowup() {
     if (!this.leadData) return;
+    if (!this.canAccessAction('follow_up')) {
+      this.appSettingService.showWarning('You do not have permission to access Followup.');
+      return;
+    }
     const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.documentSid = this.leadData?.PreCustomerMasterSid;
     modalRef.componentInstance.parentSubject = `__SUBJECT__ for Customer"${this.leadData.preCustomerName}"`;

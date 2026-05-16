@@ -69,6 +69,8 @@ import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.i
 import { MAWBComponent } from '../../Master-air-waybill/report/mawb/mawb.component';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 import { PerformaInvoiceComponent } from '../../house-job/report/performa-invoice/performa-invoice.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
@@ -125,6 +127,8 @@ type Html2PdfOptions = {
     CustomsComponent,
     MultiSelectComponent,
     RouterModule,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './agent-master-air-waybill-entry.component.html',
  

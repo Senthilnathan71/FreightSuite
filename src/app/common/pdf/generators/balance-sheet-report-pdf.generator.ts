@@ -28,7 +28,7 @@ export function transformBalanceSheetReportData(
 ): BalanceSheetReportPdfData {
   const fullData = rawData || {};
   const processedFunds = processFunds(fullData?.data || []);
-  const retainedEarning = (fullData?.incomeTotal || 0) - (fullData?.expenseTotal || 0);
+  const retainedEarning = resolveRetainedEarning(fullData);
   const sourceOfFundsCategories = processedFunds.filter(cat => cat.category !== 'Asset');
   const assetCategories = processedFunds.filter(cat => cat.category === 'Asset');
   const totalSourceOfFunds = retainedEarning + sourceOfFundsCategories.reduce((sum, cat) => sum + (cat.categoryTotal || 0), 0);
@@ -50,6 +50,21 @@ export function transformBalanceSheetReportData(
     totalSourceOfFunds,
     totalApplicationOfFunds
   };
+}
+
+function resolveRetainedEarning(fullData: any): number {
+  const retained = fullData?.retained;
+
+  if (typeof retained === 'number') {
+    return Number(retained) || 0;
+  }
+
+  if (retained && typeof retained === 'object') {
+    const retainedValue = retained?.netProfit ?? retained?.amount ?? retained?.value;
+    return Number(retainedValue) || 0;
+  }
+
+  return (fullData?.incomeTotal || 0) - (fullData?.expenseTotal || 0);
 }
 
 export function generateBalanceSheetReportDocument(data: BalanceSheetReportPdfData): any {
@@ -217,20 +232,20 @@ function buildAssetRows(data: BalanceSheetReportPdfData): any[] {
   const rows: any[] = [];
 
   data.assetCategories.forEach(cat => {
-    rows.push(...buildCategoryRows(cat));
+    rows.push(...buildCategoryRows(cat, true));
   });
 
   rows.push([
     { text: 'Total Application of Funds', colSpan: 3, style: 'grandTotalLabelCell', alignment: 'right' },
     {},
     {},
-    buildNumberCell(data.totalApplicationOfFunds, true, true)
+    buildNumberCell(flipSign(data.totalApplicationOfFunds), true, true)
   ]);
 
   return rows;
 }
 
-function buildCategoryRows(cat: any): any[] {
+function buildCategoryRows(cat: any, flipValues = false): any[] {
   const rows: any[] = [];
   let currentGroup = '';
   let currentSubGroup = '';
@@ -245,7 +260,7 @@ function buildCategoryRows(cat: any): any[] {
       buildTextCell(showGroup ? currentGroup : '', true),
       buildTextCell(showSubGroup ? currentSubGroup : '', true),
       buildTextCell(item?.ledgerName || ''),
-      buildNumberCell(item?.LocalAmt)
+      buildNumberCell(flipValues ? flipSign(item?.LocalAmt) : item?.LocalAmt)
     ]);
   });
 
@@ -253,10 +268,14 @@ function buildCategoryRows(cat: any): any[] {
     { text: 'Category Total', colSpan: 3, style: 'totalLabelCell', alignment: 'right' },
     {},
     {},
-    buildNumberCell(cat?.categoryTotal, true)
+    buildNumberCell(flipValues ? flipSign(cat?.categoryTotal) : cat?.categoryTotal, true)
   ]);
 
   return rows;
+}
+
+function flipSign(value: any): number {
+  return -1 * (Number(value) || 0);
 }
 
 function buildTableHeaderCell(text: string): any {

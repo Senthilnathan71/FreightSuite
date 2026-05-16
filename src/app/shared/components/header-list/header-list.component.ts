@@ -17,6 +17,7 @@ import {
   AdvancedFilterValues
 } from '../../interfaces/advanced-filter.interface';
 import { FeatherModule } from 'angular-feather';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 
 export interface HeaderAction {
   label: string;
@@ -41,6 +42,7 @@ export interface HeaderAction {
     NgbTooltipModule,
     NgbDatepickerModule,
     FeatherModule,
+    ElementStateGuardDirective,
   ],
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
@@ -193,6 +195,11 @@ export class PageHeaderComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   onActionClick(action: string): void {
+    const headerAction = this.actions.find(item => item.action === action)
+      || this.actions.flatMap(item => item.children || []).find(item => item.action === action);
+    if (headerAction?.disabled || headerAction?.condition === false) {
+      return;
+    }
     this.actionTriggered.emit(action);
   }
 

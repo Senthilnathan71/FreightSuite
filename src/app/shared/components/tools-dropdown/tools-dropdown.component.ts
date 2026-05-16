@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 
 export interface DropdownMenuItem {
   label: string;
@@ -19,7 +20,8 @@ export interface DropdownMenuItem {
   imports: [
     CommonModule,
     NgbDropdownModule,
-    PreventMultiClickDirective
+    PreventMultiClickDirective,
+    ElementStateGuardDirective
   ],
   templateUrl : './tools-dropdown.component.html',
   styleUrls: []
@@ -40,6 +42,10 @@ export class ToolsDropdownComponent {
   }
 
   onItemClick(action: string): void {
+    const item = this.visibleItems.find(menuItem => menuItem.action === action);
+    if (this.disabled || item?.disabled) {
+      return;
+    }
     this.itemClick.emit(action);
   }
 

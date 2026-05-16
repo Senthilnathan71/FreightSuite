@@ -14,6 +14,8 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { forkJoin } from 'rxjs';
 import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
   selector: 'app-ledger-mapping',
@@ -26,7 +28,9 @@ import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log
     FeatherModule,
     NgSelectModule,
     FavoriteStarComponent,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './ledger-mapping.component.html',
   styleUrl: './ledger-mapping.component.scss'

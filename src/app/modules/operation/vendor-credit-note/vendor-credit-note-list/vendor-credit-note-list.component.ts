@@ -31,6 +31,7 @@ import {
   DropdownFilterConfig,
   PartyFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
+import { VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 
 @Component({
   selector: 'app-vendor-credit-note-list',
@@ -125,6 +126,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
           visible: true,
           dataType: 'string',
           width: '100px',
+          cellClass: 'text-end'
         },
         {
           key: 'BillDate',
@@ -151,6 +153,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
           filterable: true,
           visible: true,
           dataType: 'number',
+          cellClass: 'text-end'
         },
         {
           key: 'MBLNo',
@@ -280,6 +283,7 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
       paginationService: PaginationService,
       private datePipe: CustomDatePipe,
       public mps : MenuPermissionService,
+      private voucherActionGuard: VoucherActionGuardService,
     ) {
       super(paginationService);
     }
@@ -513,6 +517,12 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
     }
   
     onCreate() {
+      const blockedReason = this.voucherActionGuard.getInsertBlockedReason({
+        documentName: 'Vendor Credit Note',
+        canInsert: this.mps.can('insert'),
+      });
+      if (this.voucherActionGuard.block(blockedReason)) return;
+
       this.router.navigate(['/operation/vendor-credit-note/entry']);
     }
   
@@ -685,6 +695,15 @@ export class VendorCreditNoteListComponent extends BaseListComponent implements 
     }
   
     deleteVendorCreditNote(vendorCreditNote: any) {
+      const blockedReason = this.voucherActionGuard.getDeleteBlockedReason({
+        documentName: 'Vendor Credit Note',
+        status: vendorCreditNote?.Status,
+        postStatus: vendorCreditNote?.PostStatus,
+        canDelete: this.mps.can('delete'),
+        blockedByCondition: vendorCreditNote?.Status !== 'Active' || vendorCreditNote?.PostStatus !== 'Unposted',
+      });
+      if (this.voucherActionGuard.block(blockedReason)) return;
+
       const dialogRef = this.dialog.open(DeleteWarningComponent);
 
       dialogRef.afterClosed().subscribe(result => {

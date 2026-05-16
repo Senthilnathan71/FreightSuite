@@ -34,6 +34,7 @@ import {
   PartyFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
 import { InvoiceService } from '../../services/invoice.service';
+import { VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 
 @Component({
   selector: 'app-invoice-list',
@@ -154,7 +155,8 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
     paginationService: PaginationService,
      private datePipe: CustomDatePipe,
      private mps: MenuPermissionService,
-     private invoiceService: InvoiceService
+     private invoiceService: InvoiceService,
+     private voucherActionGuard: VoucherActionGuardService
   ) {
     super(paginationService);
   }
@@ -372,6 +374,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         visible: true,
         dataType: 'number',
         width: '120px',
+        cellClass: 'text-end'
       },
         {
         key: 'MasterNumber',
@@ -450,7 +453,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         tooltip: 'Delete ',
         class: "text-danger",
         state: !this.mps.can('delete'),
-        condition: (row: any) => row.Status === 'Active' && row.PostStatus === 'U'
+        condition: (row: any) => this.canDeleteInvoice(row)
       }
     ],
     selectable: false,
@@ -612,7 +615,7 @@ navigateToBooking(row: any): void {
 
 
   deleteInvoiceByRow(row: any) {
-    this.deleteInvoice(row.VoucherHeaderSid);
+    this.deleteInvoice(row.VoucherHeaderSid, row);
   }
 
   onTableRowClick(row: any): void {
@@ -884,7 +887,28 @@ navigateToBooking(row: any): void {
     return index;
   }
 
-  deleteInvoice(id: number) {
+  private canDeleteInvoice(row: any): boolean {
+    const status = String(row?.Status ?? '').trim().toUpperCase();
+    const postStatus = String(row?.PostStatus ?? row?.PostStatusLabel ?? '').trim().toUpperCase();
+
+    const isActive = status === 'A' || status === 'ACTIVE';
+    const isUnposted = postStatus === 'U' || postStatus === 'UNPOSTED';
+
+    return isActive && isUnposted;
+  }
+
+  deleteInvoice(id: number, invoice?: any) {
+    const row = invoice ?? this.allItems.find((item: any) => item?.VoucherHeaderSid === id);
+    const blockedReason = this.voucherActionGuard.getDeleteBlockedReason({
+      documentName: 'Invoice',
+      status: row?.Status,
+      postStatus: row?.PostStatus ?? row?.PostStatusLabel,
+      canDelete: this.mps.can('delete'),
+      blockedByCondition: !this.canDeleteInvoice(row),
+      blockedConditionReason: 'Only active unposted invoices can be deleted.',
+    });
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     const dialogRef = this.dialog.open(DeleteWarningComponent);
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) {
@@ -915,6 +939,12 @@ navigateToBooking(row: any): void {
   }
 
   navigateToAddNewInvoice() {
+    const blockedReason = this.voucherActionGuard.getInsertBlockedReason({
+      documentName: 'Invoice',
+      canInsert: this.mps.can('insert'),
+    });
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     this.router.navigate(['operation/invoice/entry']);
   }
 

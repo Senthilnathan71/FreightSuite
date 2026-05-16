@@ -28,6 +28,7 @@ import {
   DateTypeConfig,
   DropdownFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
+import { VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 
 @Component({
   selector: 'app-journal-voucher-list',
@@ -107,6 +108,7 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
     public mps: MenuPermissionService,
     private datePipe: CustomDatePipe,
     private accountService: AccountsService,
+    private voucherActionGuard: VoucherActionGuardService,
     paginationService: PaginationService
   ) {
     super(paginationService);
@@ -357,6 +359,7 @@ private formatAmount(amount: number | string): string {
         visible: true,
         dataType: 'number',
         width: '120px',
+        cellClass: 'text-end'
       },
       {
         key: 'Narration',
@@ -454,6 +457,15 @@ editJournalVoucher(item: any): void {
 }
 
   postJournalVoucher(item: any): void {
+    const blockedReason = this.voucherActionGuard.getPostBlockedReason({
+      documentName: 'Journal Voucher',
+      headerId: item?.VoucherHeaderSid,
+      status: item?.Status,
+      postStatus: item?.PostStatus,
+      canPost: this.mps.can('post'),
+    });
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     const confirmed = confirm(`Are you sure you want to post voucher ${item.VoucherNumber}? This action cannot be undone.`);
 
     if (confirmed) {
@@ -476,6 +488,15 @@ editJournalVoucher(item: any): void {
   }
 
   deleteJournalVoucher(item: any): void {
+    const blockedReason = this.voucherActionGuard.getDeleteBlockedReason({
+      documentName: 'Journal Voucher',
+      status: item?.Status,
+      postStatus: item?.PostStatus,
+      canDelete: this.mps.can('delete'),
+      blockedByCondition: item?.Status !== 'A' || item?.PostStatus !== 'Unposted',
+    });
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     const dialogRef = this.dialog.open(DeleteWarningComponent);
 
     dialogRef.afterClosed().subscribe(result => {
@@ -611,6 +632,12 @@ editJournalVoucher(item: any): void {
   }
 
   navigateToCreate() {
+    const blockedReason = this.voucherActionGuard.getInsertBlockedReason({
+      documentName: 'Journal Voucher',
+      canInsert: this.mps.can('insert'),
+    });
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     this.router.navigate(['accounts/journal-voucher/entry']);
   }
 }

@@ -1294,7 +1294,7 @@
                 <div class="widget-body">
                   <div class="stat-item">
                     <div class="stat-label">Gross Weight</div>
-                    <div class="stat-value">{{c['GrossWeight']?.value ? c['GrossWeight']?.value : '-' }}</div>
+                    <div class="stat-value ">{{c['GrossWeight']?.value ? c['GrossWeight']?.value : '-' }}</div>
                   </div>
                   <div class="stat-item">
                     <div class="stat-label">Net Weight</div>
@@ -1422,7 +1422,7 @@
             </button>
           </div>
           <div class="col-md-12">
-            <div class="row compact-form px-md-5" [formGroup]="cargoForm">
+            <div class="row compact-form agent-mawb-cargo-form px-md-5" [formGroup]="cargoForm">
 
               <aside class="col-md-2">
                 <div class="custom-form-group custom-form-group-select"
@@ -1454,7 +1454,7 @@
               </aside>
               <aside class="col-md-2">
                 <div class="custom-form-group">
-                  <input type="text" id="text-input" placeholder="" class="custom-input-field sm" [onlyNumbers]
+                  <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end" [onlyNumbers]
                     formControlName="NoofContainers">
                   <label for="text-input" class="input-label">No of Container<span class="text-danger"></span></label>
                 </div>
@@ -1462,7 +1462,7 @@
               }
               <aside class="col-md-2">
                 <div class="custom-form-group">
-                  <input type="text" id="gross-weight" placeholder="" class="form-control custom-input-field sm"
+                  <input type="text" id="gross-weight" placeholder="" class="form-control custom-input-field sm text-end"
                     formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="10"
                     [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
                   <label for="text-input" class="input-label">
@@ -1491,7 +1491,7 @@
 
               <aside class="col-md-2">
                 <div class="custom-form-group">
-                  <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                  <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm text-end"
                     formControlName="NetWeight" DecimalPrecision [DecimalPrecisionBefore]="7"
                     [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999"
                     (blur)="cargoForm.get('GrossWeight')?.updateValueAndValidity()"
@@ -1514,7 +1514,7 @@
               </aside>
               <aside class="col-md-2">
                 <div class="custom-form-group">
-                  <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                  <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm text-end"
                     formControlName="Volume" DecimalPrecision [DecimalPrecisionBefore]="7"
                     [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
                   <label for="text-input" class="input-label">Volume(CBM)<span class="text-danger"></span></label>
@@ -1534,7 +1534,7 @@
               @if(selectedFCLLCL === "AIR" || selectedFCLLCL === "LCL") {
               <aside class="col-md-2">
                 <div class="custom-form-group">
-                  <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                  <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm text-end"
                     formControlName="Volumetric" DecimalPrecision [DecimalPrecisionBefore]="7"
                     [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
                   <label for="text-input" class="input-label">Volumetric<span class="text-danger"></span></label>
@@ -1553,7 +1553,7 @@
               </aside>
               <aside class="col-md-2">
                 <div class="custom-form-group">
-                  <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                  <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end"
                     formControlName="ChargeableWeight" DecimalPrecision [DecimalPrecisionBefore]="7"
                     [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
                   <label for="text-input" class="input-label">Chargeable Weight<span class="text-danger"></span></label>
@@ -1573,7 +1573,7 @@
               }
               <aside class="col-md-2">
                 <div class="custom-form-group">
-                  <input type="text" id="text-input" placeholder="" class="form-control  custom-input-field sm"
+                  <input type="text" id="text-input" placeholder="" class="form-control  custom-input-field sm text-end"
                     formControlName="NoOfPackage" DecimalPrecision [DecimalPrecisionBefore]="10"
                     [DecimalPrecisionAfter]="0" max="9999999.999">
                   <label for="text-input" class="input-label">No of Pkg<span class="text-danger"></span></label>

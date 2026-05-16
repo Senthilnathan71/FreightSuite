@@ -33,8 +33,8 @@
                             <div class="text-truncate fw-medium text-black">{{ item.createdBy || item.CreatedBy || '-' }}</div>
                         </td>
                         <td>
-                            <div class="text-truncate text-black" *ngIf="item.createdOn">{{ item.createdOn | formatDate : true }}</div>
-                            <div class="text-truncate text-black" *ngIf="item.CreatedOn">{{ item.CreatedOn | formatDate : true }}</div>
+                            <div class="text-truncate text-black" *ngIf="item.createdOn">{{ formatDetailsDate(item.createdOn) }}</div>
+                            <div class="text-truncate text-black" *ngIf="item.CreatedOn">{{ formatDetailsDate(item.CreatedOn) }}</div>
                             <div class="text-truncate text-black" *ngIf="!item.createdOn && !item.CreatedOn">-</div>
                         </td>
                     </tr>
@@ -55,7 +55,7 @@
                             <div class="text-truncate fw-medium text-black">{{ item.updatedBy || 'Not updated yet' }}</div>
                         </td>
                         <td>
-                            <div class="text-truncate text-black">{{ item.updatedBy ? (item.updatedOn | formatDate) : 'Not updated yet' }}</div>
+                            <div class="text-truncate text-black">{{ item.updatedOn ? formatDetailsDate(item.updatedOn) : 'Not updated yet' }}</div>
                         </td>
                     </tr>
                     } @else if(item.UpdatedBy){
@@ -64,7 +64,7 @@
                             <div class="text-truncate fw-medium text-black">{{ item.UpdatedBy || 'Not updated yet' }}</div>
                         </td>
                         <td>
-                            <div class="text-truncate text-black">{{ item.UpdatedBy ? (item.UpdatedOn | formatDate : true) : 'Not updated yet' }}</div>
+                            <div class="text-truncate text-black">{{ item.UpdatedOn ? formatDetailsDate(item.UpdatedOn) : 'Not updated yet' }}</div>
                         </td>
                     </tr>
                     } @else {

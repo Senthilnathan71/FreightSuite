@@ -27,11 +27,13 @@ import { errorLogger } from 'src/app/common/helper';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
   selector: 'app-chart-account-entry',
   standalone: true,
-  imports: [NgSelectModule, ReactiveFormsModule, CommonModule, NgbDropdownModule, SearchableDropdown],
+  imports: [NgSelectModule, ReactiveFormsModule, CommonModule, NgbDropdownModule, SearchableDropdown, ElementStateGuardDirective, FormStateGuardDirective],
   templateUrl: './chart-account-entry.component.html',
   styleUrl: './chart-account-entry.component.scss',
 })

@@ -670,7 +670,6 @@ onCarrierChangeForAir(carrier: any): void {
       this.masterJobForm.get('VesselName')?.setValue(matchingAirline.CustomerName);
     } else {
       // If no exact match found, you might want to clear or show a message
-      console.log('No matching airline found for AirlineCode:', carrier.AirlineCode);
       this.masterJobForm.get('VesselName')?.setValue(null);
     }
   } else {
@@ -1397,7 +1396,6 @@ loadMawbStock(data: any): void {
           this.loadMawbStock(data);
         }, 1000);
         }
-        console.log("loadMasterStock", response);
           this.resetDirtyState();
           this.logMawbDebug('loadMasterJobData:afterReset', {
             isDirty: this.isDirty,
@@ -3529,10 +3527,8 @@ handleEdocChange(event: any) {
       return;
     }
     const realIndex = ((this.page - 1) * this.pageSize) + shipmentIndex;
-    console.log(booking);
     const HouseJobSid = booking.HouseJobSid;
     const userEmail = this.appSettingsService.userSettingSource.value['userEmail'];
-    console.log(HouseJobSid);
     if (HouseJobSid) {
       this.operationService.detachBooking(HouseJobSid,userEmail).subscribe({
         next: (resp: any) => {
@@ -3696,7 +3692,6 @@ onYardChange(selectedYard: any): void {
 }
 
   navigateToHouse(shipment) {
-    console.log(shipment ,'shipment');
     this.router.navigate(['/operation/hawb-bill/entry',shipment.HouseJobSid]);
   }
 
@@ -3715,7 +3710,6 @@ onYardChange(selectedYard: any): void {
           size: 'xl',
           scrollable: true,
         })
-        console.log("Master Air way data",this.masterAirWayData);
         modalRef.componentInstance.masterAirWayData=this.masterAirWayData || []; 
         modalRef.componentInstance.containerTypeList=this.containerTypeList;
         modalRef.componentInstance.packageTypeList=this.packageTypeList;
@@ -3727,10 +3721,8 @@ onYardChange(selectedYard: any): void {
       }
 
       getFormattedPort(code:string){
-    console.log(code);
     if(!code) return '';
     const ourPort = (this.portList.find(p => p.PortCode === code))?.PortName;
-    console.log(ourPort);
     return `${ourPort} (${code})`
   }
 
@@ -3790,7 +3782,6 @@ onYardChange(selectedYard: any): void {
             size: 'xl',
             scrollable: true,
           })
-          console.log("Master Air way data", this.masterAirWayData);
           modalRef.componentInstance.masterAirWayData = this.masterAirWayData || [];
           modalRef.componentInstance.containerTypeList = this.containerTypeList;
           modalRef.componentInstance.packageTypeList = this.packageTypeList;

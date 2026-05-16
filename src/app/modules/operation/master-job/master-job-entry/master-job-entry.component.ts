@@ -5105,18 +5105,33 @@ onETDDateSelect(): void {
 
         const successList = results.filter((r: any) => r.success);
         const duplicateList = results.filter((r: any) => !r.success);
+        const getBookingNo = (item: any) => item?.bookingHeader?.BookingNo || item?.BookingNo || item?.bookingNo || '';
+        const successBookingNos = successList.map(getBookingNo).filter(Boolean).join(', ');
+        const duplicateBookingNos = duplicateList.map(getBookingNo).filter(Boolean).join(', ');
 
         // ✅ Case 1: At least one booking created
         if (successList.length > 0) {
           this.appSettingService.showSuccess(
-            `${successList.length} booking(s) created successfully`
+            successBookingNos
+              ? `${successList.length} booking(s) created successfully. Booking No: ${successBookingNos}`
+              : `${successList.length} booking(s) created successfully`
           );
         }
 
         // ℹ️ Case 2: All houses already have booking
         else if (duplicateList.length > 0 && successList.length === 0) {
-          this.appSettingService.showInfo(
-            'All selected house jobs already have bookings'
+          this.appSettingService.showWarning(
+            duplicateBookingNos
+              ? `All selected transhipment jobs already have bookings. Booking No: ${duplicateBookingNos}`
+              : 'All selected transhipment jobs already have bookings'
+          );
+        }
+
+        if (successList.length > 0 && duplicateList.length > 0) {
+          this.appSettingService.showWarning(
+            duplicateBookingNos
+              ? `Booking already exists for some transhipment jobs. Booking No: ${duplicateBookingNos}`
+              : 'Booking already exists for some transhipment jobs'
           );
         }
 

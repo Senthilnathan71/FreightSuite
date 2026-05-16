@@ -22,6 +22,7 @@ import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { DeleteWarningComponent } from '../../delete-warning.component';
 import { MatDialog } from '@angular/material/dialog';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 @Component({
   selector: 'app-view',
   standalone: true,
@@ -34,6 +35,7 @@ import { MatDialog } from '@angular/material/dialog';
     FavoriteStarComponent,
     ReusableTableComponent,
     PageHeaderComponent,
+    ElementStateGuardDirective
   ],
   templateUrl: './view.component.html',
   styleUrl: './view.component.scss'
@@ -165,7 +167,8 @@ export class ViewComponent extends BaseListComponent implements OnInit {
           action: 'delete',
           class:'text-danger',
           tooltip: 'Delete Zone',
-          state: !this.mps.can('delete')
+          state: !this.mps.can('delete'),
+          condition: (row: any) => this.canDeleteLead(row)
         },
       ],
       selectable: false,
@@ -177,6 +180,11 @@ export class ViewComponent extends BaseListComponent implements OnInit {
       emptyMessage: 'No bookings found',
       dragAndDrop: true
     };
+  }
+
+  private canDeleteLead(row: any): boolean {
+    const status = String(row?.leadStatus ?? '').trim().toLowerCase();
+    return status === 'qualify' || status === 'discovery';
   }
 
   // Implement abstract methods from BaseListComponent

@@ -18,6 +18,7 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
 import { PrintMasterService } from '../print-master.service';
 import { SettingsService } from 'src/app/modules/settings/settings.service';
 import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 @Component({
     selector: 'app-print-master-list',
@@ -181,6 +182,20 @@ export class PrintMasterListComponent extends BaseListComponent implements OnIni
         modalRef.componentInstance.idLabel = 'Print Master Id';
         modalRef.componentInstance.idValue = this.currentRecord?.PrintMasterSid;
     }
+
+    openAuditLogs() {
+                if (!this.currentRecord?.PrintMasterSid) return;
+            const modalRef = this.modalService.open(AuditLogComponent, {
+                  centered: true,
+                  scrollable: true,
+                  size: 'xl',
+                  windowClass: 'audit-log-modal'
+                });
+                modalRef.componentInstance.title = 'Print Logs';
+                modalRef.componentInstance.tableName = 'PrintMaster';
+                modalRef.componentInstance.recordId = this.currentRecord?.PrintMasterSid.toString();
+                modalRef.componentInstance.screenName = 'Print';
+              }
 
     onSave(modal: any): void {
         if (this.isSaving) return;

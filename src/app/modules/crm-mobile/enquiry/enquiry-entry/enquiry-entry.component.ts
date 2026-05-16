@@ -67,6 +67,8 @@ import { type } from 'os';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 import { OperationService } from 'src/app/modules/operation/operation.service';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 @Component({
   selector: 'app-enquiry-entry',
   standalone: true,
@@ -89,7 +91,9 @@ import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.i
     PrintFooterComponent,
     PrintHeaderComponent,
     DialCodeDropdownComponent,
-    MultiSelectComponent
+    MultiSelectComponent,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './enquiry-entry.component.html',
   styleUrl: './enquiry-entry.component.scss',
@@ -2087,40 +2091,53 @@ private parseFloatSafe(value: any): number {
   }
 
   private normalizeValue(value: any): any {
-    if (value === null || value === undefined) {
-      return null;
-    }
 
-    if (value instanceof Date) {
-      return value.toISOString().split('T')[0];
-    }
-
-    if (typeof value === 'string' && value.trim() !== '' && !isNaN(+value)) {
-      return Number(value);
-    }
-
-    if (typeof value === 'number') {
-      return Number(value.toFixed(6));
-    }
-
-    if (Array.isArray(value)) {
-      return value.map((v) => this.normalizeValue(v));
-    }
-
-    if (typeof value === 'object') {
-      return Object.keys(value)
-        .sort()
-        .reduce((acc: any, key) => {
-          acc[key] = this.normalizeValue(value[key]);
-          return acc;
-        }, {});
-    }
-
-    return value;
+  // Treat undefined/null/empty string as 0
+  if (
+    value === undefined ||
+    value === null ||
+    (typeof value === 'string' && value.trim() === '')
+  ) {
+    return 0;
   }
 
+  // Normalize Date
+  if (value instanceof Date) {
+    return value.toISOString().split('T')[0];
+  }
+
+  // Convert numeric strings
+  if (typeof value === 'string' && !isNaN(+value)) {
+    return Number(value);
+  }
+
+  // Normalize numbers
+  if (typeof value === 'number') {
+    return Number(value.toFixed(6));
+  }
+
+  // Normalize arrays
+  if (Array.isArray(value)) {
+    return value.map(v => this.normalizeValue(v));
+  }
+
+  // Normalize objects
+  if (typeof value === 'object') {
+    return Object.keys(value)
+      .sort()
+      .reduce((acc: any, key) => {
+        acc[key] = this.normalizeValue(value[key]);
+        return acc;
+      }, {});
+  }
+
+  return value;
+}
+
   private deepEqual(obj1: any, obj2: any): boolean {
-    return JSON.stringify(this.normalizeValue(obj1)) === JSON.stringify(this.normalizeValue(obj2));
+    const normalizedObj1 = this.normalizeValue(obj1);
+    const normalizedObj2 = this.normalizeValue(obj2);
+    return JSON.stringify(normalizedObj1) === JSON.stringify(normalizedObj2);
   }
 
   hasInvalidExcept(controlName: string, formGroup: FormGroup): boolean {
@@ -2375,7 +2392,6 @@ private parseFloatSafe(value: any): number {
     };
     this.leadService.clearQuotationData();
     this.leadService.setQuotationData(enqData);
-    console.log(this.leadService.getQuotationData());
     this.router.navigate(['crm/quotation/entry']);
   }
 
@@ -3793,7 +3809,6 @@ private getRequiredCargoFields(): string[] {
     this.currentCargoFieldIndex = s.cargoFieldIndex;
     this.isCargoVoiceMode = s.isCargoMode;
 
-    console.log('▶️ Voice resumed:', s);
 
     if (this.isCargoVoiceMode) {
       this.focusCargoField();

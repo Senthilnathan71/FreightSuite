@@ -39,6 +39,7 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 
 @Component({
@@ -622,49 +623,19 @@ export class BIclauseComponent extends BaseListComponent implements OnInit {
   }
 
 
- openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.blclauseData?.BLClauseMasterSid) return;
- 
-  if (this.isLogLoading) return; 
-  this.isLogLoading = true;
-
-  this.masterService.getAuditLogsBlclause(
-    'BLClauseMaster',
-    this.blclauseData?.BLClauseMasterSid.toString()
-  ).subscribe({
-    next: (logs: any[]) => {
-      this.isLogLoading = false;
-      const ignoredFields = ['updatedOn','updatedBy']; 
- 
-      const formatFields = (val: any) => {
-        if (!val) return [];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        if (Object.keys(obj).length === 0) return [];
-        return Object.entries(obj)
-          .filter(([key]) => !ignoredFields.includes(key)) 
-          .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-      };
- 
-      this.auditLogs = logs
-        .map(log => ({
-          ...log,
-          oldValDisplay: formatFields(log.oldVal),
-          newValDisplay: formatFields(log.newVal),
-        }))
-        .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
- 
-      this.auditLogModalRef = this.modalService.open(modal, {
-        centered: true,
-        scrollable: true,
-        windowClass: 'audit-log-modal'
-      });
-    },
-   error: err => {
-      this.isLogLoading = false; 
-      console.error('Error fetching audit logs:', err);
-    }
-  });
-}
+ openAuditLogs() {
+            if (!this.blclauseData?.BLClauseMasterSid) return;
+            const modalRef = this.modalService.open(AuditLogComponent, {
+              centered: true,
+              scrollable: true,
+              size: 'xl',
+              windowClass: 'audit-log-modal'
+            });
+            modalRef.componentInstance.title = 'BL-Clause Logs';
+            modalRef.componentInstance.tableName = 'BLClauseMaster';
+            modalRef.componentInstance.recordId = this.blclauseData?.BLClauseMasterSid.toString();
+            modalRef.componentInstance.screenName = 'BLClause';
+          }
 
   deleteClause(id: number): void {
     const dialogRef = this.dialog.open(DeleteWarningComponent);

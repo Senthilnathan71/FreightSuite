@@ -723,6 +723,37 @@ export class ReportRegistryService {
       console.warn(' VAT-201 Report component not yet created:', error);
     }
 
+    // VAT Summary Report
+    try {
+      const { VatSummaryReportComponent } = await import(
+        '../components/reports/vat-summary-report/vat-summary-report.component'
+      );
+
+      this.registerReport({
+        id: 'Vat-Summary-Report',
+        title: 'VAT Summary Report',
+        component: VatSummaryReportComponent,
+        filenameTemplate: 'VAT_Summary_Report_{date}',
+        module: 'accounts-report',
+        apiEndpoint: 'accounts-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'accounts/reports/{id}/generate',
+        emailSubjectTemplate: 'VAT_Summary_Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>VAT Summary Report</strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'portrait'
+      });
+
+    } catch (error) {
+      console.warn(' VAT Summary Report component not yet created:', error);
+    }
+
 
     // Unposted Voucher List Report
     try {

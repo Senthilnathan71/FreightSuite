@@ -1449,6 +1449,13 @@ processProductUpload(payload: any): Observable<any> {
     ).pipe(map((resp) => resp));
   }
 
+  suspendPaymentRequestCharges(payload: { PaymentRequestSid: number; chargeIds: number[] }) {
+    return this.http.post<{ status: boolean; message: string }>(
+      `payment-request/suspend-charges`,
+      payload
+    ).pipe(map((resp) => resp));
+  }
+
   getPaymentRequestById(paymentRequestSid: number) {
     return this.http.get<{ status: boolean; message: string; data: any }>(
       `payment-request/fetch/${paymentRequestSid}`

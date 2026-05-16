@@ -17,6 +17,7 @@ import { TableConfig, TableEventData, TableFilter, TableSortConfig } from 'src/a
 import { Observable } from 'rxjs';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { OperationService } from '../../operation.service';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 
 @Component({
   selector: 'app-payment-request-list',
@@ -31,6 +32,7 @@ import { OperationService } from '../../operation.service';
     ReusableTableComponent,
     PageHeaderComponent,
     CustomDatePipe,
+    ElementStateGuardDirective
   ],
   providers: [CustomDatePipe],
   templateUrl: './payment-request-list.component.html',
@@ -180,7 +182,8 @@ export class PaymentRequestListComponent extends BaseListComponent implements On
           visible: true,
           width: '150px',
           template: 'status',
-          dataType: 'string'
+          dataType: 'string',
+          cellClass: 'text-center'
         },
         {
           key: 'Status',

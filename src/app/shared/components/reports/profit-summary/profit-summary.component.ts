@@ -79,6 +79,17 @@ getGrandTotal(field: string): number {
   }, 0);
 }
 
+  getGrandProfitPercent(type: 'P' | 'A'): number {
+    const saleField = type === 'P' ? 'pSale' : 'aSale';
+    const gpField = type === 'P' ? 'pGp' : 'aGp';
+
+    const totalSale = this.getGrandTotal(saleField);
+    const totalGp = this.getGrandTotal(gpField);
+
+    if (!totalSale) return 0;
+    return (totalGp / totalSale) * 100;
+  }
+
   getExcelData(): ComplexReportExportConfig {
 
     const tableHeaders: ExcelHeader[] = [
@@ -106,9 +117,11 @@ getGrandTotal(field: string): number {
       { key: 'PSale', label: 'P.Sale' },
       { key: 'PCost', label: 'P.Cost' },
       { key: 'PGP', label: 'P.GP' },
+      { key: 'PProfitPercent', label: 'P.Profit %' },
       { key: 'ASale', label: 'A.Sale' },
       { key: 'ACost', label: 'A.Cost' },
-      { key: 'AGP', label: 'A.GP' }
+      { key: 'AGP', label: 'A.GP' },
+      { key: 'AProfitPercent', label: 'A.Profit %' }
     ];
 
     const rows: ExcelRow[] = [];
@@ -145,9 +158,11 @@ getGrandTotal(field: string): number {
           { value: this.formatNumber(master.pSale) },
           { value: this.formatNumber(master.pCost) },
           { value: this.formatNumber(master.pGp) },
+          { value: this.formatNumber(master.pGpPercent) },
           { value: this.formatNumber(master.aSale) },
           { value: this.formatNumber(master.aCost) },
-          { value: this.formatNumber(master.aGp) }
+          { value: this.formatNumber(master.aGp) },
+          { value: this.formatNumber(master.aGpPercent) }
         ],
         style: 'header'
       });
@@ -184,9 +199,11 @@ getGrandTotal(field: string): number {
             { value: this.formatNumber(house.pSale) },
             { value: this.formatNumber(house.pCost) },
             { value: this.formatNumber(house.pGp) },
+            { value: this.formatNumber(house.pGpPercent) },
             { value: this.formatNumber(house.aSale) },
             { value: this.formatNumber(house.aCost) },
-            { value: this.formatNumber(house.aGp) }
+            { value: this.formatNumber(house.aGp) },
+            { value: this.formatNumber(house.aGpPercent) }
           ],
           style: 'header'
         });
@@ -199,9 +216,11 @@ getGrandTotal(field: string): number {
         { value: this.formatNumber(this.getGrandTotal('pSale')) },
         { value: this.formatNumber(this.getGrandTotal('pCost')) },
         { value: this.formatNumber(this.getGrandTotal('pGp')) },
+        { value: this.formatNumber(this.getGrandProfitPercent('P')) },
         { value: this.formatNumber(this.getGrandTotal('aSale')) },
         { value: this.formatNumber(this.getGrandTotal('aCost')) },
-        { value: this.formatNumber(this.getGrandTotal('aGp')) }
+        { value: this.formatNumber(this.getGrandTotal('aGp')) },
+        { value: this.formatNumber(this.getGrandProfitPercent('A')) }
       ],
       style: 'grandTotal'
     });
@@ -230,7 +249,7 @@ getGrandTotal(field: string): number {
         15, 15, 12, 12, 12, 12,
         12, 12, 12, 12,
         14, 14, 8,
-        12, 12, 12, 12, 12, 12
+        12, 12, 12, 12, 12, 12, 12, 12
       ]
     };
   }

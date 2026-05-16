@@ -24,6 +24,12 @@
             <i class="fas fs-6 fa-info-circle"></i>
           </a>
         }
+        @if(isEditMode && form.get('VoucherSid')?.value){
+          <a [routerLink]="['/accounts/payment/entry', form.get('VoucherSid')?.value]"
+             class="voucher-number-link ms-2" title="View Payment">
+            <i class="fas fa-external-link-alt me-1"></i>{{ paymentVoucherNumber || 'Payment' }}
+          </a>
+        }
         </div>
       </div>
 
@@ -190,12 +196,17 @@
                     [labelFields]="CustomerLookupConfig.labelFields"
                     bindLabel="CustomerName"
                     bindValue="CustomerMasterSid"
+                    [readonly]="true"
+                    [clearable]="false"
                     (itemSelected)="onPartyChange($event)"
                   >
                   </dofi-searchable-dropdown>
                   <label class="input-label">
-                    Party <span class="text-danger">*</span>
+                    Party
                   </label>
+                </div>
+                <div class="text-danger small mt-1">
+                  Payment will not be made against this party.
                 </div>
               </aside>
 
@@ -278,7 +289,7 @@
                 </div>
               </aside>
 
-              <aside class="col-md-3">
+<aside class="col-md-3" style="display: none;">
                 <div class="custom-form-group">
                   <input
                     type="text"
@@ -300,8 +311,6 @@
                   <label class="input-label">Job No.</label>
                 </div>
               </aside>
-
-        
 
               <aside class="col-md-3">
                 <div class="custom-form-group">
@@ -344,7 +353,7 @@
 
   <div class="col-12 px-0 mt-1">
     <div class="workspace-content px-0" [formGroup]="form">
-      <div class="d-flex justify-content-end mb-2 pe-2">
+      <div class="d-none">
         <button
           type="button"
           class="btn btn-info btn-sm dofi-min-w-80"

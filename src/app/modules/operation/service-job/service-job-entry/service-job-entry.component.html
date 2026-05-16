@@ -290,7 +290,7 @@
             </aside>
             <aside class="col-md-2">
               <div class="custom-form-group" style="margin-top: 8px;">
-                <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+                <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm text-end"
                   formControlName="ShipmentNo">
                 <label for="text-input" [ngClass]="{
             'input-label': true,
@@ -534,7 +534,7 @@
         </button>
       </div>
       <div class="col-md-12">
-        <div class="row compact-form px-md-5" [formGroup]="cargoForm">
+        <div class="row compact-form service-job-cargo-form px-md-5" [formGroup]="cargoForm">
           <aside class="col-md-2">
             <div class="custom-form-group custom-form-group-select"
               [class.filled]="!!cargoForm.get('CargoType')?.value">
@@ -567,7 +567,7 @@
           }
           <aside class="col-md-2">
             <div class="custom-form-group">
-              <input type="text" id="gross-weight" placeholder="" class="form-control custom-input-field sm"
+              <input type="text" id="gross-weight" placeholder="" class="form-control custom-input-field sm text-end"
                 formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="10"
                 [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
               <label for="text-input" class="input-label">
@@ -591,7 +591,7 @@
 
           <aside class="col-md-2">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm text-end"
                 formControlName="NetWeight" DecimalPrecision [DecimalPrecisionBefore]="7"
                 [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999"
                 (blur)="cargoForm.get('GrossWeight')?.updateValueAndValidity()"
@@ -612,7 +612,7 @@
           </aside>
           <aside class="col-md-2">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm"
+              <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm text-end"
                 formControlName="Volume" DecimalPrecision [DecimalPrecisionBefore]="7"
                 [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
               <label for="text-input" class="input-label">Volume(CBM)<span class="text-danger"></span></label>
@@ -632,7 +632,7 @@
           @if(selectedFCLLCL === "AIR") {
           <aside class="col-md-2">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+              <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end"
                 formControlName="ChargeableWeight" DecimalPrecision [DecimalPrecisionBefore]="7"
                 [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
               <label for="text-input" class="input-label">Chargeable Weight<span class="text-danger"></span></label>
@@ -652,7 +652,7 @@
           }
           <aside class="col-md-2">
             <div class="custom-form-group">
-              <input type="text" id="text-input" placeholder="" class="form-control  custom-input-field sm"
+              <input type="text" id="text-input" placeholder="" class="form-control  custom-input-field sm text-end"
                 formControlName="NoOfPackage" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="0"
                 max="9999999.999">
               <label for="text-input" class="input-label">No. of Pkg<span class="text-danger"></span></label>
@@ -748,6 +748,18 @@
       <app-cost-entry #costEntryComponent [screenName]="selectedDepartmentType === 'AIR' ? 'House Air Waybill' : 'House Job'" [currencyList]="currencyList" [dataItems]="serviceJobRateArr"
         [resetTrigger]="resetTriggerRate" [formData]="currentFormValue" (dataEmitter)="handleRateChange($event)" [isFormDisabled]="isFormDisabled"
         (reloadParent)="loadServiceJobById($event)"></app-cost-entry>
+    </div>
+
+    <!-- Milestone Tab -->
+    <div class="workspace-content" [hidden]="selectedTab !== 'Milestone'">
+      <app-milestone
+        #milestoneComponent
+        screenName="Service Job"
+        [resetTrigger]="resetTriggerMilestone"
+        [isFormDisabled]="isFormDisabled"
+        [shipmentNo]="serviceJobForm.get('ShipmentNo')?.value || serviceJobData?.ShipmentNo"
+        (dataEmitter)="handleMilestoneChange($event)">
+      </app-milestone>
     </div>
 
     <!-- Other Tabs -->

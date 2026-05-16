@@ -258,8 +258,8 @@ export class MasterService {
     );
   }
 
-  deleteCustomerBranchById(id: number) {
-    return this.http.delete<{ data: any }>(`customer-branch/delete/${id}`).pipe(
+  deleteCustomerBranchById(id: number,updatedBy: string) {
+    return this.http.delete<{ data: any }>(`customer-branch/delete/${id}`,{body: {updatedBy}}).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -305,8 +305,8 @@ export class MasterService {
     );
   }
 
-  deleteCustomerBranchContactById(id: number) {
-    return this.http.delete<{ data: any }>(`customer-branch-contact/delete/${id}`).pipe(
+  deleteCustomerBranchContactById(id: number,updatedBy: string) {
+    return this.http.delete<{ data: any }>(`customer-branch-contact/delete/${id}`,{body: {updatedBy}}).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -352,8 +352,8 @@ export class MasterService {
     );
   }
 
-  deleteCustomerBranchEmailById(id: number) {
-    return this.http.delete<{ data: any }>(`customer-branch-email/delete/${id}`).pipe(
+  deleteCustomerBranchEmailById(id: number,updatedBy: string) {
+    return this.http.delete<{ data: any }>(`customer-branch-email/delete/${id}`,{body: {updatedBy}}).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -400,8 +400,8 @@ export class MasterService {
     );
   }
 
-  deleteCustomerLoginById(id: number) {
-    return this.http.delete<{ data: any }>(`customer-login/delete/${id}`).pipe(
+  deleteCustomerLoginById(id: number,updatedBy: string) {
+    return this.http.delete<{ data: any }>(`customer-login/delete/${id}`,{body: {updatedBy}}).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -429,8 +429,8 @@ export class MasterService {
     );
   }
 
-  deleteCustomerMilestoneById(CustomerMilestoneSid:number){
-    return this.http.delete<{data:any}>(`customer-milestone/delete/${CustomerMilestoneSid}`).pipe(
+  deleteCustomerMilestoneById(CustomerMilestoneSid:number,updatedBy: string){
+    return this.http.delete<{data:any}>(`customer-milestone/delete/${CustomerMilestoneSid}`,{body: {updatedBy}}).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -2697,8 +2697,8 @@ getFieldConfiguration() {
     );
   }
 
-  deleteSalesteamById(CustomerSalesSid: number) {
-    return this.http.delete<{ data: any }>(`customer-salesteam/delete/${CustomerSalesSid}`).pipe(
+  deleteSalesteamById(CustomerSalesSid: number,updatedBy: string) {
+    return this.http.delete<{ data: any }>(`customer-salesteam/delete/${CustomerSalesSid}`,{body: {updatedBy}}).pipe(
       map((resp) => {
         let response = resp;
         return response;
@@ -4206,7 +4206,7 @@ createReportMaster(payload: any) {
     )
   }
 
-  allocateMawbStock(payload: { stockIds: number[], customerId: number, companyId: number, branchId: number }) {
+  allocateMawbStock(payload: { stockIds: number[], customerId: number, companyId: number, branchId: number, useremail:string }) {
   return this.http.post<{ data: any[] }>('mawb-stock/allocate', payload).pipe(
     map((resp) => {
       let response = resp;
@@ -4219,6 +4219,7 @@ deallocateMawbStock(payload: {
   companyId: number, 
   branchId: number, 
   customerId: number, 
+  useremail:string,
   stocks: Array<{ MawbStockSid: number, StockStatus: string }> 
 }) {
   return this.http.post<{ data: any[] }>('mawb-stock/deallocate', payload).pipe(
@@ -4400,7 +4401,7 @@ getAuditLogsNetwork(tableName: string, recordId?: string) {
   getAllCompanyConfigsByCompanyId(companyId: number) {
     return this.http.get<{ data: any }>(`company-config/company/${companyId}`).pipe(
       map((resp) => {
-        let response = resp;
+        let response = resp.data;
         return response;
       })
     );
@@ -4459,6 +4460,17 @@ getAuditLogsNetwork(tableName: string, recordId?: string) {
 
   getConfigurationValue(companyId: number, configName: string) {
     return this.http.get<{ data: any }>(`company-config/value/${companyId}/${configName}`).pipe(
+      map((resp) => {
+        let response = resp.data;
+        return response;
+      })
+    );
+  }
+
+  getEligibleCompaniesForConfiguration(configurationName: string) {
+    return this.http.get<{ data: any }>(
+      `company-config/eligible-companies/${encodeURIComponent(configurationName)}`
+    ).pipe(
       map((resp) => {
         let response = resp.data;
         return response;
@@ -4573,11 +4585,30 @@ getAuditLogsNetwork(tableName: string, recordId?: string) {
     );
   }
 
-  getPreCustomerEventNotifications() {
-    return this.http.get('pre-customer-event-master/notifications').pipe(
+  getPreCustomerEventNotifications(CompanyMasterSid:number) {
+    return this.http.post<{ data: any[] }>('pre-customer-event-master/notifications',{CompanyMasterSid}).pipe(
       map((res: any) => res)
     );
   }
+
+  downloadChargeTemplate(CompanyMasterSid: number): Observable<Blob> {
+  return this.http.get(`charge/template`, {
+    params: { CompanyMasterSid: String(CompanyMasterSid) },
+    responseType: 'blob'
+  });
+}
+
+parseChargeExcel(formData: FormData): Observable<any> {
+  return this.http.post(`charge/bulk-upload/parse`, formData);
+}
+
+saveChargeExcel(payload: {
+  validRows: any[];
+  CompanyMasterSid: number;
+  createdBy: string;
+}): Observable<any> {
+  return this.http.post(`charge/bulk-upload/save`, payload);
+}
 
 }
 

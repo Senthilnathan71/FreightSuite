@@ -83,6 +83,20 @@
                             <td></td>
                         </tr>
                     </ng-container>
+                    <tr class="fw-bold bg-light" *ngIf="ledgerWiseData.length > 0">
+                        <td colspan="7" class="text-end">NET OS :</td>
+                        <td style="text-align: right;" class="fw-bold">
+                            {{ getOverallNetProfitLocal(ledgerWiseData) | number:'1.2-2' }}
+                        </td>
+                        <td></td>
+                        <td style="text-align: right;" class="fw-bold">
+                            {{ getOverallNetProfitOutstandingLocal(ledgerWiseData) | number:'1.2-2' }}
+                        </td>
+                        <td style="text-align: right;" class="fw-bold">
+                            {{ getOverallNetProfitCumulative(ledgerWiseData) | number:'1.2-2' }}
+                        </td>
+                        <td></td>
+                    </tr>
                     <tr *ngIf="ledgerWiseData.length === 0">
                         <td colspan="12" class="text-center fw-bold py-1">No Record Found</td>
                     </tr>
@@ -105,21 +119,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <ng-container *ngFor="let ledger of ledgerWiseData">
-                        <tr>
-                            <td colspan="7" class="fw-bold">{{ ledger?.ledgerName || '-' }}</td>
-                        </tr>
-                        <tr *ngFor="let cur of ledger?.currencyWiseSummary">
-                            <td class="text-center fw-bold">{{ cur.currencyCode }}</td>
-                            <td class="text-end">{{ cur.totalOutstanding | number:'1.2-2' }}</td>
-                            <td class="text-end">{{ cur.bucket_0_30 | number:'1.2-2' }}</td>
-                            <td class="text-end">{{ cur.bucket_31_60 | number:'1.2-2' }}</td>
-                            <td class="text-end">{{ cur.bucket_61_90 | number:'1.2-2' }}</td>
-                            <td class="text-end">{{ cur.bucket_91_120 | number:'1.2-2' }}</td>
-                            <td class="text-end">{{ cur.bucket_121_above | number:'1.2-2' }}</td>
-                        </tr>
-                    </ng-container>
-                    <tr *ngIf="ledgerWiseData.length === 0">
+                    <tr *ngFor="let cur of currencyWiseMergedSummary">
+                        <td class="text-center fw-bold">{{ cur.currencyCode }}</td>
+                        <td class="text-end">{{ cur.totalOutstanding | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ cur.bucket_0_30 | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ cur.bucket_31_60 | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ cur.bucket_61_90 | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ cur.bucket_91_120 | number:'1.2-2' }}</td>
+                        <td class="text-end">{{ cur.bucket_121_above | number:'1.2-2' }}</td>
+                    </tr>
+                    <tr *ngIf="currencyWiseMergedSummary.length === 0">
                         <td colspan="7" class="text-center fw-bold py-1">No Ageing Summary Found</td>
                     </tr>
                 </tbody>

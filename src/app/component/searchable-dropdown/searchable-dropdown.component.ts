@@ -46,6 +46,9 @@ export class SearchableDropdown implements OnChanges, OnInit, ControlValueAccess
   isOpen = false; // or whatever you already use internally
 
   public open(): void {
+  // if (this.readonly || this.internalControl.disabled) {
+  //   return;
+  // }
   if (this.ngSelect) {
     this.ngSelect.open();   // ✅ REAL OPEN
   }

@@ -17,6 +17,7 @@ import { AccountsService } from '../../accounts.service';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { AccountsCloseDetailModalComponent } from '../accounts-close-detail-modal/accounts-close-detail-modal.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 
 @Component({
   selector: 'app-accounts-close-list',
@@ -28,7 +29,8 @@ import { AccountsCloseDetailModalComponent } from '../accounts-close-detail-moda
     NgxSpinnerModule,
     ReusableTableComponent,
     PageHeaderComponent,
-    CustomDatePipe
+    CustomDatePipe,
+    ElementStateGuardDirective
   ],
   providers: [CustomDatePipe],
   templateUrl: './accounts-close-list.component.html',

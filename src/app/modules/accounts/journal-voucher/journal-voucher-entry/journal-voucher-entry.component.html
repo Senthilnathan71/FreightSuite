@@ -198,7 +198,7 @@
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" formControlName="DocumentNumber" class="custom-input-field sm"
+                            <input type="text" formControlName="DocumentNumber" class="custom-input-field sm text-end"
                                 placeholder="" />
                             <label class="input-label">Bill NO.</label>
                         </div>
@@ -332,7 +332,7 @@
   DecimalPrecision
   [DecimalPrecisionBefore]="3"
   [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(row.get('currencyMasterSid')?.value)"
-  class="form-control"
+  class="form-control text-end"
   (input)="calculateLocalAmount(i)"
 (blur)="calculateLocalAmount(i, true)"
 />

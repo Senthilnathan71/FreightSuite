@@ -107,6 +107,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
 
   private destroy$ = new Subject<void>();
   @ViewChild('costEntryComponent') costEntryComponent: CostEntryComponent;
+  @ViewChild('milestoneComponent') milestoneComponent!: MilestoneComponent;
   @ViewChild('departmentLookup') departmentLookup!: SearchableDropdown;
 
 
@@ -205,6 +206,9 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
   serviceJobRateResults : any[] = [];
   currentFormValue: any;
   selectedCustomer : any;
+  resetTriggerMilestone: boolean;
+  milestoneResult: any[] = [];
+  private milestoneSyncInitialized = false;
 
   today: any;
   minDate: any;
@@ -244,7 +248,8 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
   tabs = [
     // { name: 'Shipment', icon: 'fas fa-ship' },
     { name: 'Cargo', icon: 'fas fa-boxes' },
-    { name: 'Rate', icon: 'fas fa-rupee-sign' }
+    { name: 'Rate', icon: 'fas fa-rupee-sign' },
+    { name: 'Milestone', icon: 'fas fa-flag-checkered' }
   ];
   // Mail content
   departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
@@ -653,6 +658,16 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
     this.updateDirtyState();
   }
 
+  handleMilestoneChange(allMilestones: any[]) {
+    this.milestoneResult = [...(allMilestones || [])];
+    if (!this.milestoneSyncInitialized) {
+      this.milestoneSyncInitialized = true;
+      this.captureInitialFormState();
+      return;
+    }
+    this.updateDirtyState();
+  }
+
   @HostListener('window:beforeunload', ['$event'])
   unloadNotification($event: BeforeUnloadEvent): void {
     if (this.hasUnsavedChanges()) {
@@ -817,6 +832,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
         _costVoucherHeaderSid: rate._costVoucherHeaderSid || null,
         _revenueVoucherHeaderSid: rate._revenueVoucherHeaderSid || null
       })),
+      milestones: this.milestoneResult,
       ...(this.isEditMode ? { updatedBy: currUserEmail } : { createdBy: currUserEmail })
     };
 
@@ -1515,6 +1531,8 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
       this.customerBranchList = [];
       this.filteredShipperList = [...this.shipperList];
       this.filteredConsigneeList = [...this.consigneeList];
+      this.resetTriggerMilestone = !this.resetTriggerMilestone;
+      this.milestoneResult = [];
     }
   }
 
@@ -2009,6 +2027,7 @@ openDocRef() {
       bookingForm: this.serviceJobForm?.getRawValue?.(),
       cargoForm: this.cargoForm?.getRawValue?.(),
       rateResult: this.serviceJobRateResults || [],
+      milestoneResult: this.milestoneResult || [],
     };
   }
 

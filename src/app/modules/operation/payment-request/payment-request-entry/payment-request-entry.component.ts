@@ -11,7 +11,7 @@ import {
 } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import { NgSelectComponent } from '@ng-select/ng-select';
-import { Subject, forkJoin } from 'rxjs';
+import { Subject, firstValueFrom, forkJoin } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
@@ -31,6 +31,8 @@ import { PrintHeaderComponent } from 'src/app/shared/components/print-header/pri
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { DetailsComponent } from 'src/app/component/details/details.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
   selector: 'app-payment-request-entry',
@@ -48,7 +50,9 @@ import { DetailsComponent } from 'src/app/component/details/details.component';
     DecimalPrecisionDirective,
     PrintHeaderComponent,
     PrintFooterComponent,
-    CustomDatePipe
+    CustomDatePipe,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './payment-request-entry.component.html',
   providers: [
@@ -66,6 +70,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
   isEditMode = false;
   isViewMode = false;
   isReadOnly = false;
+  paymentVoucherNumber: string = '';
   loading = false;
   saving = false;
   lookupsLoaded = false;
@@ -120,7 +125,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       PaymentRequestDate: [this.getToday(), Validators.required],
       CashBank: ['Bank', Validators.required],
       DepartmentMasterSid: [{ value: null, disabled: true }, Validators.required],
-      Party: [null, Validators.required],
+      Party: [{ value: null, disabled: true }],
       PayableTo: ['', Validators.required],
       CurrencyMasterSid: [{ value: null, disabled: true }, Validators.required],
       BookingSid: [null],
@@ -132,6 +137,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       Remarks: [''],
       PaymentRequestStatus: ['Pending', Validators.required],
       Status: ['A', Validators.required],
+      VoucherSid: [{ value: null, disabled: true }],
       detailItems: this.fb.array([]),
     });
   }
@@ -146,6 +152,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     const preview = window.history.state?.paymentRequestPreview;
     if (preview?.detailItems?.length) {
       this.applyPreview(preview);
+      window.history.replaceState({}, document.title, window.location.href);
     }
 
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
@@ -220,6 +227,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     const preview = window.history.state?.paymentRequestPreview;
     if (preview?.detailItems?.length) {
       this.applyPreview(preview);
+      window.history.replaceState({}, document.title, window.location.href);
     }
     this.scheduleDirtyTrackingSnapshot();
   }
@@ -237,6 +245,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     } else {
       this.form.enable({ emitEvent: false });
       this.form.get('DepartmentMasterSid')?.disable({ emitEvent: false });
+      this.form.get('Party')?.disable({ emitEvent: false });
       this.form.get('CurrencyMasterSid')?.disable({ emitEvent: false });
       this.form.get('BookingNo')?.disable({ emitEvent: false });
       this.form.get('MasterJobNo')?.disable({ emitEvent: false });
@@ -251,7 +260,6 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     this.form.patchValue({
       PayableTo: selectedParty?.CustomerName || ''
     });
-    this.syncDetailPartyWithHeader(selectedParty);
   }
 
   save() {
@@ -489,8 +497,8 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
         CostAmount: 0,
         CostLocalAmount: 0,
         CostDrCr: 'D',
-        CostAgentMasterSid: this.form.get('Party')?.value || null,
-        CostAgentName: this.form.get('PayableTo')?.value || '',
+        CostAgentMasterSid: null,
+        CostAgentName: '',
       }),
     );
     this.recalculateDetailRow(this.detailItems.length - 1);
@@ -536,7 +544,9 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
           Remarks: request.Remarks || '',
           PaymentRequestStatus: request.PaymentRequestStatus,
           Status: request.Status,
+          VoucherSid: request.VoucherSid ?? null,
         });
+        this.paymentVoucherNumber = request.VoucherNumber || '';
 
         const firstCurrency = request.paymentRequestDetails?.[0]?.CostCurrencyMasterSid;
         if (firstCurrency) {
@@ -557,7 +567,6 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
           }));
         });
 
-        this.syncDetailPartyWithHeader();
         this.applyApprovalReadOnlyState(request.PaymentRequestStatus);
         this.scheduleDirtyTrackingSnapshot();
         this.subscribeToFormChanges();
@@ -579,7 +588,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       PaymentRequestDate: this.getToday(),
       CashBank: 'Bank',
       DepartmentMasterSid: preview.DepartmentMasterSid || firstItem?.DepartmentMasterSid || null,
-      Party: preview.Party || firstItem?.CostAgentMasterSid || null,
+      Party: preview.Party || null,
       PayableTo: preview.PayableTo || firstItem?.CostAgentName || '',
       CurrencyMasterSid: preview.CurrencyMasterSid || firstItem?.CostCurrencyMasterSid || null,
       BookingSid: preview.BookingSid || null,
@@ -602,7 +611,6 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       );
     });
 
-    this.syncDetailPartyWithHeader();
     this.applyApprovalReadOnlyState('Pending');
     this.scheduleDirtyTrackingSnapshot();
     this.subscribeToFormChanges();
@@ -633,25 +641,10 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
         data?.CostRevenueChargeSid ||
         null,
       ],
-    });
-  }
-
-  private syncDetailPartyWithHeader(selectedParty?: any) {
-    const headerPartySid = this.form.get('Party')?.value || null;
-    const resolvedParty =
-      selectedParty ||
-      this.supplierList.find((item: any) => item.CustomerMasterSid === headerPartySid);
-    const partyName = resolvedParty?.CustomerName || this.form.get('PayableTo')?.value || '';
-
-    this.detailItems.controls.forEach((control) => {
-      const row = control as FormGroup;
-      row.patchValue(
-        {
-          CostAgentMasterSid: headerPartySid,
-          CostAgentName: partyName,
-        },
-        { emitEvent: false },
-      );
+      COAMasterSid:          [data?.COAMasterSid ?? null],
+      LedgerMasterSid:       [data?.LedgerMasterSid ?? null],
+      BookingRatesSid:       [data?.BookingRatesSid ?? null],
+      CostRevenueChargesSid: [data?.CostRevenueChargesSid ?? null],
     });
   }
 
@@ -886,7 +879,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     });
   }
 
-  private saveWithCallback(resolve?: (value: boolean) => void): void {
+  private async saveWithCallback(resolve?: (value: boolean) => void): Promise<void> {
     if (this.isReadOnly) {
       this.appSettingsService.showWarning('Approved payment request cannot be modified');
       if (resolve) resolve(false);
@@ -915,6 +908,41 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       return;
     }
 
+    // Fetch COA/Ledger for selected rows that are missing them
+    for (const row of this.detailItems.controls) {
+      if (!row.get('Selected')?.value) continue;
+      if (row.get('COAMasterSid')?.value && row.get('LedgerMasterSid')?.value) continue;
+      const chargeSid = row.get('ChargeMasterSid')?.value;
+      if (!chargeSid) continue;
+      try {
+        const ledgerResp = await firstValueFrom(
+          this.operationService.getLedgerDetails({
+            DepartmentMasterSid: this.form.get('DepartmentMasterSid')?.value,
+            CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+            SubledgerMappingSid: chargeSid,
+            LedgerType: 'Charge',
+            DrCr: 'Dr',
+          })
+        );
+        if (ledgerResp?.status && ledgerResp.data) {
+          row.patchValue({
+            COAMasterSid:    ledgerResp.data.COAMasterSid ?? null,
+            LedgerMasterSid: ledgerResp.data.SubledgerMasterSid ?? null,
+          });
+        } else {
+          const chargeDesc = row.get('ChargeDescription')?.value || `Charge ${chargeSid}`;
+          this.appSettingsService.showError(`Subledger not mapped for charge "${chargeDesc}". Please configure subledger mapping.`);
+          if (resolve) resolve(false);
+          return;
+        }
+      } catch {
+        const chargeDesc = row.get('ChargeDescription')?.value || `Charge ${chargeSid}`;
+        this.appSettingsService.showError(`Failed to fetch ledger for charge "${chargeDesc}". Please try again.`);
+        if (resolve) resolve(false);
+        return;
+      }
+    }
+
     this.saving = true;
     const userEmail = this.userData?.userEmail;
     const payload = {
@@ -935,11 +963,26 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
         if (resp.status) {
           this.isDirty = false;
           this.appSettingsService.showSuccess(resp.message);
+          if (raw.Status === 'S' && this.isEditMode) {
+            const prSid = resp.data?.PaymentRequestSid || resp.data?.PaymentRequestHeader?.PaymentRequestSid || this.form.get('PaymentRequestSid')?.value;
+            const chargeIds = this.detailItems.getRawValue()
+              .map((d: any) => d.SourceCostRevenueChargeSid)
+              .filter(Boolean);
+            if (prSid && chargeIds.length) {
+              this.operationService.suspendPaymentRequestCharges({
+                PaymentRequestSid: prSid,
+                chargeIds,
+              }).subscribe();
+            }
+          }
           const id = resp.data?.PaymentRequestSid || resp.data?.PaymentRequestHeader?.PaymentRequestSid;
           if (id) {
-            this.form.patchValue({ PaymentRequestSid: id }, { emitEvent: false });
-            this.scheduleDirtyTrackingSnapshot();
-            this.router.navigate(['/operation/payment-request/entry', id]);
+            if (this.isEditMode) {
+              this.loadRequest(id);
+            } else {
+              this.form.patchValue({ PaymentRequestSid: id }, { emitEvent: false });
+              this.router.navigate(['/operation/payment-request/entry', id]);
+            }
           } else {
             this.scheduleDirtyTrackingSnapshot();
             this.goBack();

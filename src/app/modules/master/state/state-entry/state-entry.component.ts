@@ -26,6 +26,7 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/follow-up.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 @Component({
   selector: 'app-state-entry',
@@ -372,43 +373,19 @@ export class StateEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges
   }
 
 
-
-openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.stateData?.StateMasterSid) return;
-
-  this.masterService.getAuditLogsState(
-    'StateMaster',
-    this.stateData?.StateMasterSid.toString()
-  ).subscribe({
-    next: (logs: any[]) => {
-      const ignoredFields = ['UpdatedOn']; // ✅ add more if needed later
-
-      const formatFields = (val: any) => {
-        if (!val) return [];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        if (Object.keys(obj).length === 0) return [];
-        return Object.entries(obj)
-          .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-          .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-      };
-
-      this.auditLogs = logs
-        .map(log => ({
-          ...log,
-          oldValDisplay: formatFields(log.oldVal),
-          newValDisplay: formatFields(log.newVal),
-        }))
-        .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
-
-      this.auditLogModalRef = this.modalService.open(modal, {
+openAuditLogs() {
+      if (!this.stateData?.StateMasterSid) return;
+  const modalRef = this.modalService.open(AuditLogComponent, {
         centered: true,
         scrollable: true,
+        size: 'xl',
         windowClass: 'audit-log-modal'
       });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+      modalRef.componentInstance.title = 'State Logs';
+      modalRef.componentInstance.tableName = 'StateMaster';
+      modalRef.componentInstance.recordId = this.stateData?.StateMasterSid.toString();
+      modalRef.componentInstance.screenName = 'State';
+    }
 
   onSubmit(resolve?: (value: boolean) => void) {
     if (this.stateForm.invalid) {

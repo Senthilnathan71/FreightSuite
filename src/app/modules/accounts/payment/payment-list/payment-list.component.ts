@@ -25,6 +25,7 @@ import { PaymentListItem, PaymentFilter } from '../../models/payment.model';
 import { PaymentService } from '../../services/payment.service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import { AccountsService } from '../../accounts.service';
+import { VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import {
   AdvancedFilterValues,
   DateRangeConfig,
@@ -187,6 +188,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
     private accountService: AccountsService,
     private operationService: OperationService,
     private datePipe: CustomDatePipe,
+    private voucherActionGuard: VoucherActionGuardService,
     paginationService : PaginationService
   ) {
     super(paginationService)
@@ -548,6 +550,12 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
   }
 
   navigateToCreate() {
+    const blockedReason = this.voucherActionGuard.getInsertBlockedReason({
+      documentName: 'Payment',
+      canInsert: this.mps.can('insert')
+    });
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     this.router.navigate(['accounts/payment/entry'])
   }
 
@@ -559,6 +567,12 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
   }
 
   createPaymentFromRequest(item: any) {
+    const blockedReason = this.voucherActionGuard.getInsertBlockedReason({
+      documentName: 'Payment',
+      canInsert: this.mps.can('insert')
+    });
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     this.router.navigate(['accounts/payment/entry'], {
       queryParams: { paymentRequestSid: item.PaymentRequestSid }
     });
@@ -628,7 +642,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
   onHeaderAction(action: string): void {
     switch (action) {
       case 'create':
-        this.router.navigate(['accounts/payment/entry']);
+        this.navigateToCreate();
         break;
       case 'export':
         this.exportToExcel();
@@ -683,6 +697,17 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
    * Reverse payment voucher
    */
   reversePayment(payment: any): void {
+    const blockedReason = this.voucherActionGuard.getReverseBlockedReason({
+      documentName: 'Payment',
+      headerId: payment?.VoucherHeaderSid,
+      status: payment?.Status,
+      postStatus: payment?.PostStatus,
+      canUpdate: this.mps.can('update'),
+      blockedByCondition: payment?.Status !== 'Active' || payment?.PostStatus !== 'Posted',
+      blockedConditionReason: 'Only posted active payments can be reversed.'
+    });
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     const dialogRef = this.dialog.open(DeleteWarningComponent, {
       data: {
         title: 'Reverse Payment',
@@ -722,6 +747,15 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
    * Delete payment voucher
    */
   deletePayment(payment: any): void {
+    const blockedReason = this.voucherActionGuard.getDeleteBlockedReason({
+      documentName: 'Payment',
+      status: payment?.Status,
+      postStatus: payment?.PostStatus,
+      canDelete: this.mps.can('delete'),
+      blockedByCondition: payment?.Status !== 'Active' || payment?.PostStatus !== 'Unposted'
+    });
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     const dialogRef = this.dialog.open(DeleteWarningComponent, {
       data: {
         title: 'Delete Payment',

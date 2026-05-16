@@ -50,6 +50,7 @@ import { FollowUpComponent } from 'src/app/modules/settings/follow-up/follow-up/
 import { DialCodeDropdownComponent } from 'src/app/component/dial-code-dropdown/dial-code-dropdown.component';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 @Component({
   selector: 'app-user-entry',
@@ -160,6 +161,7 @@ export class UserEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges 
       contactNumberCode: [DialCodeDropdownComponent.getDefaultDialCodeFromLoginCountry(this.userData)],
       contactNumber: [null, [Validators.maxLength(15)]],
       status: ['Active'],
+      AttemptDateTime: [null],
       userPassword: [, [PasswordValidators.validate()]],
       CountryMasterSid: [, [Validators.required]],
       companies: [[], [Validators.required]],
@@ -568,6 +570,7 @@ export class UserEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges 
             department: d.department ?? [],
             CountryMasterSid: d.CountryMasterSid,
             status: d.status === 'A' ? 'Active' : 'Suspended',
+            AttemptDateTime: this.toDateTimeLocalValue(d.AttemptDateTime),
             DeptHead: d.DeptHead || null
           });
           this.setDefaultDept();
@@ -739,6 +742,7 @@ export class UserEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges 
       userTypeId: formValue.userTypeId,
       contactNumber: this.withDialCode(formValue.contactNumber, formValue.contactNumberCode)|| null,
       CountryMasterSid: formValue.CountryMasterSid,
+      AttemptDateTime: this.toApiDateTimeValue(formValue.AttemptDateTime),
       status:
         formValue.status === 'Active' || formValue.status === 'A' ? 'A' : 'S',
       userCode: this.getUserCode(formValue.userName),
@@ -942,6 +946,35 @@ export class UserEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges 
     input.type = 'password'; // Hide password on mouseup or mouseleave
   }
 
+  clearAttemptDateTime(): void {
+    this.userForm.get('AttemptDateTime')?.setValue(null);
+    this.userForm.get('AttemptDateTime')?.markAsDirty();
+    this.userForm.get('AttemptDateTime')?.markAsTouched();
+    this.appSettingService.showSuccess('Login lock cleared. Save changes to apply.');
+  }
+
+  getLoginLockStatus(): string {
+    const value = this.userForm.get('AttemptDateTime')?.value;
+    if (!value) {
+      return 'No active login lock.';
+    }
+
+    const lockedAt = new Date(value);
+    if (Number.isNaN(lockedAt.getTime())) {
+      return 'Login lock time is invalid.';
+    }
+
+    const lockEndsAt = new Date(lockedAt.getTime() + 5 * 60 * 1000);
+    const remainingMs = lockEndsAt.getTime() - Date.now();
+
+    if (remainingMs <= 0) {
+      return 'Lock window has expired. Clear and save to reset it now.';
+    }
+
+    const remainingMinutes = Math.ceil(remainingMs / 60000);
+    return `Account is locked. About ${remainingMinutes} minute${remainingMinutes === 1 ? '' : 's'} remaining.`;
+  }
+
   // resetForm() {
   // 	this.userForm.reset({
   // 		userName: '',
@@ -982,6 +1015,7 @@ export class UserEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges 
       contactNumberCode: DialCodeDropdownComponent.getDefaultDialCodeFromLoginCountry(this.userData),
       contactNumber: null,
       status: 'Active',
+      AttemptDateTime: null,
       userPassword: null,
       CountryMasterSid: null,
       companies: [],
@@ -1101,6 +1135,29 @@ export class UserEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges 
       phoneValue,
       dialCode || DialCodeDropdownComponent.getDefaultDialCodeFromLoginCountry(this.userData)
     );
+  }
+
+  private toDateTimeLocalValue(value: any): string | null {
+    if (!value) {
+      return null;
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return null;
+    }
+
+    const pad = (part: number) => String(part).padStart(2, '0');
+    return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}T${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`;
+  }
+
+  private toApiDateTimeValue(value: any): string | null {
+    if (!value) {
+      return null;
+    }
+
+    const date = new Date(`${value}Z`);
+    return Number.isNaN(date.getTime()) ? null : date.toISOString();
   }
 
   // openTandC() {
@@ -1251,44 +1308,19 @@ export class UserEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges 
     modalRef.componentInstance.pdfContentId = 'quotationContent';
   }
 
-  openAuditLogs(modal: TemplateRef<any>) {
-    if (!this.UserMasterSid) return;
-
-    this.masterService
-      .getAuditLogsFfUser('UserMaster', this.UserMasterSid.toString())
-      .subscribe({
-        next: (logs: any[]) => {
-          const ignoredFields = ['UpdatedOn', 'UpdatedBy']; // ✅ add more if needed later
-
-          const formatFields = (val: any) => {
-            if (!val) return [];
-            const obj = typeof val === 'string' ? JSON.parse(val) : val;
-            if (Object.keys(obj).length === 0) return [];
-            return Object.entries(obj)
-              .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-              .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-          };
-
-          this.auditLogs = logs
-            .map((log) => ({
-              ...log,
-              oldValDisplay: formatFields(log.oldVal),
-              newValDisplay: formatFields(log.newVal),
-            }))
-            .filter(
-              (log) =>
-                log.oldValDisplay.length > 0 || log.newValDisplay.length > 0
-            );
-
-          this.auditLogModalRef = this.modalService.open(modal, {
-            centered: true,
-            scrollable: true,
-            windowClass: 'audit-log-modal',
-          });
-        },
-        error: (err) => console.error('Error fetching audit logs:', err),
-      });
-  }
+  openAuditLogs() {
+        if (!this.userData?.UserMasterSid) return;
+        const modalRef = this.modalService.open(AuditLogComponent, {
+          centered: true,
+          scrollable: true,
+          size: 'xl',
+          windowClass: 'audit-log-modal'
+        });
+        modalRef.componentInstance.title = 'User Logs';
+        modalRef.componentInstance.tableName = 'UserMaster';
+        modalRef.componentInstance.recordId = this.userData?.UserMasterSid.toString();
+        modalRef.componentInstance.screenName = 'User';
+      }
 }
 // constructRoleForm(data?: any) {
 // 	if (data) {

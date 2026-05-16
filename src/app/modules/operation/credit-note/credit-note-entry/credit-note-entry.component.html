@@ -903,7 +903,7 @@
                           <td>
                             <input
                               type="text"
-                              class="custom-input-field sm"
+                              class="custom-input-field sm text-end"
                               formControlName="NumberOfUnit"
                               (input)="onDetailChange(i, 'NumberOfUnit')"
                               DecimalPrecision
@@ -950,7 +950,7 @@
                           <td>
                             <input
                               type="text"
-                              class="custom-input-field sm"
+                              class="custom-input-field sm text-end"
                               formControlName="ExchangeRate"
                               (input)="onDetailChange(i, 'ExchangeRate')"
                               DecimalPrecision
@@ -967,7 +967,7 @@
                           <td>
                             <input
                               type="text"
-                              class="custom-input-field sm"
+                              class="custom-input-field sm text-end"
                               formControlName="Rate"
                               (input)="onDetailChange(i, 'Rate')"
                               DecimalPrecision
@@ -987,7 +987,7 @@
                           </td>
 
                           <!-- Amount -->
-                          <td class="pt-1">
+                          <td class="pt-1 text-end">
                             <span style="font-weight: 600; color: black">{{
                               getFormattedAmount(
                                 row.get("Amount")?.value,
@@ -997,7 +997,7 @@
                           </td>
 
                           <!-- Taxable Amount -->
-                          <td class="pt-1">
+                          <td class="pt-1 text-end">
                             <span style="font-weight: 600; color: black">{{
                               getFormattedAmount(
                                 row.get("TaxableAmount")?.getRawValue(),
@@ -1013,12 +1013,12 @@
                               <td>
                                 <div class="input-group input-group-sm">
                                   <div class="d-flex">
-                                    <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1" readonly />
+                                    <input type="number" class="custom-input-field sm text-end" formControlName="TaxPercentage1" readonly />
                                     <span class="pt-1" style="font-weight: 600; color: black">%</span>
                                   </div>
                                 </div>
                               </td>
-                              <td>
+                              <td class="text-end">
                                 <span class="pt-1" style="font-weight: 600; color: black">{{
                                   getFormattedAmount(row.get("TaxAmount1")?.getRawValue(), currentCompany.CurrencyMasterSid)
                                 }}</span>
@@ -1029,12 +1029,12 @@
                               <td>
                                 <div class="input-group input-group-sm">
                                   <div class="d-flex gap-1">
-                                    <input type="number" class="custom-input-field sm" formControlName="TaxPercentage2" readonly />
+                                    <input type="number" class="custom-input-field sm text-end" formControlName="TaxPercentage2" readonly />
                                     <span class="pt-1" style="font-weight: 600; color: black">%</span>
                                   </div>
                                 </div>
                               </td>
-                              <td>
+                              <td class="text-end">
                                 <span class="pt-1" style="font-weight: 600; color: black">{{
                                   getFormattedAmount(row.get("TaxAmount2")?.getRawValue(), currentCompany.CurrencyMasterSid)
                                 }}</span>
@@ -1045,12 +1045,12 @@
                               <td>
                                 <div class="input-group input-group-sm">
                                   <div class="d-flex gap-1">
-                                    <input type="number" class="custom-input-field sm" formControlName="TaxPercentage2" readonly />
+                                    <input type="number" class="custom-input-field sm text-end" formControlName="TaxPercentage2" readonly />
                                     <span class="pt-1" style="font-weight: 600; color: black">%</span>
                                   </div>
                                 </div>
                               </td>
-                              <td>
+                              <td class="text-end">
                                 <span class="pt-1" style="font-weight: 600; color: black">{{
                                   getFormattedAmount(row.get("TaxAmount2")?.getRawValue(), currentCompany.CurrencyMasterSid)
                                 }}</span>
@@ -1061,12 +1061,12 @@
                               <td>
                                 <div class="input-group input-group-sm">
                                   <div class="d-flex">
-                                    <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1" readonly />
+                                    <input type="number" class="custom-input-field sm text-end" formControlName="TaxPercentage1" readonly />
                                     <span class="pt-1" style="font-weight: 600; color: black">%</span>
                                   </div>
                                 </div>
                               </td>
-                              <td>
+                              <td class="text-end">
                                 <span class="pt-1" style="font-weight: 600; color: black">{{
                                   getFormattedAmount(row.get("TaxAmount1")?.getRawValue(), currentCompany.CurrencyMasterSid)
                                 }}</span>
@@ -1077,12 +1077,12 @@
                               <td>
                                 <div class="input-group input-group-sm">
                                   <div class="d-flex">
-                                    <input type="number" class="custom-input-field sm" formControlName="TaxPercentage1" readonly />
+                                    <input type="number" class="custom-input-field sm text-end" formControlName="TaxPercentage1" readonly />
                                     <span class="pt-1" style="font-weight: 600; color: black">%</span>
                                   </div>
                                 </div>
                               </td>
-                              <td>
+                              <td class="text-end">
                                 <span class="pt-1" style="font-weight: 600; color: black">{{
                                   getFormattedAmount(row.get("TaxAmount1")?.getRawValue(), currentCompany.CurrencyMasterSid)
                                 }}</span>
@@ -1091,7 +1091,7 @@
                           </ng-container>
 
                           <!-- Local Amount -->
-                          <td>
+                          <td class="text-end">
                             <span
                               class="pt-1"
                               style="font-weight: 600; color: black"
@@ -1106,7 +1106,7 @@
                           </td>
 
                           <!-- Party Amount -->
-                          <td>
+                          <td class="text-end">
                             <span
                               class="pt-1"
                               style="font-weight: 600; color: black"

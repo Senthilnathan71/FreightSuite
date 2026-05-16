@@ -72,6 +72,8 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 import { PerformaInvoiceComponent } from '../report/performa-invoice/performa-invoice.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -599,15 +601,15 @@ hblModalRef?: NgbModalRef;
     this.initialConnectionsCount = this.connectionResult?.length || 0;
     this.initialRatesCount = this.rateResult?.length || 0;
     this.initialStateSnapshot = this.buildCurrentStateSnapshot();
-    console.log('[HouseJob dirty reset]', {
-      selectedDepartmentType: this.selectedDepartmentType,
-      selectedFCLLCL: this.selectedFCLLCL,
-      houseJobSnapshot: this.initialStateSnapshot?.houseJobForm,
-      cargoSnapshot: this.initialStateSnapshot?.cargoForm,
-      otherSnapshot: this.initialStateSnapshot?.otherForm,
-      proxySnapshot: this.initialStateSnapshot?.proxyForm,
-      detailSnapshot: this.initialStateSnapshot?.detailForm,
-    });
+    // console.log('[HouseJob dirty reset]', {
+    //   selectedDepartmentType: this.selectedDepartmentType,
+    //   selectedFCLLCL: this.selectedFCLLCL,
+    //   houseJobSnapshot: this.initialStateSnapshot?.houseJobForm,
+    //   cargoSnapshot: this.initialStateSnapshot?.cargoForm,
+    //   otherSnapshot: this.initialStateSnapshot?.otherForm,
+    //   proxySnapshot: this.initialStateSnapshot?.proxyForm,
+    //   detailSnapshot: this.initialStateSnapshot?.detailForm,
+    // });
   }
 
   private markAsDirty(source: string = 'unknown'): void {
@@ -624,22 +626,13 @@ hblModalRef?: NgbModalRef;
   private recomputeDirtyState(source: string = 'unknown'): void {
     if (this.formSaved) {
       this.isDirty = false;
-      console.log('[HouseJob dirty recompute]', source, {
-        formSaved: this.formSaved,
-        isDirty: this.isDirty,
-        ignoredBecauseFormSaved: true,
-      });
+  
       return;
     }
 
     if (!this.initialStateSnapshot) {
       this.isDirty = this.externalDirty;
-      console.log('[HouseJob dirty recompute]', source, {
-        formSaved: this.formSaved,
-        isDirty: this.isDirty,
-        reason: 'no snapshot',
-        externalDirty: this.externalDirty,
-      });
+    
       return;
     }
 
@@ -649,23 +642,23 @@ hblModalRef?: NgbModalRef;
       currentSnapshot
     );
     this.isDirty = this.externalDirty || snapshotChanged;
-    console.log('[HouseJob dirty recompute]', source, {
-      formSaved: this.formSaved,
-      isDirty: this.isDirty,
-      externalDirty: this.externalDirty,
-      snapshotChanged,
-      houseJobChanged: !this.deepEqual(this.initialStateSnapshot?.houseJobForm, currentSnapshot?.houseJobForm),
-      cargoChanged: !this.deepEqual(this.initialStateSnapshot?.cargoForm, currentSnapshot?.cargoForm),
-      otherChanged: !this.deepEqual(this.initialStateSnapshot?.otherForm, currentSnapshot?.otherForm),
-      proxyChanged: !this.deepEqual(this.initialStateSnapshot?.proxyForm, currentSnapshot?.proxyForm),
-      detailChanged: !this.deepEqual(this.initialStateSnapshot?.detailForm, currentSnapshot?.detailForm),
-      bookingProductsChanged: !this.deepEqual(this.initialStateSnapshot?.bookingProducts, currentSnapshot?.bookingProducts),
-      connectionChanged: !this.deepEqual(this.initialStateSnapshot?.connectionResult, currentSnapshot?.connectionResult),
-      rateChanged: !this.deepEqual(this.initialStateSnapshot?.rateResult, currentSnapshot?.rateResult),
-      milestoneChanged: !this.deepEqual(this.initialStateSnapshot?.milestoneResult, currentSnapshot?.milestoneResult),
-      selectedDepartmentTypeChanged: this.initialStateSnapshot?.selectedDepartmentType !== currentSnapshot?.selectedDepartmentType,
-      selectedFCLLCLChanged: this.initialStateSnapshot?.selectedFCLLCL !== currentSnapshot?.selectedFCLLCL,
-    });
+    // console.log('[HouseJob dirty recompute]', source, {
+    //   formSaved: this.formSaved,
+    //   isDirty: this.isDirty,
+    //   externalDirty: this.externalDirty,
+    //   snapshotChanged,
+    //   houseJobChanged: !this.deepEqual(this.initialStateSnapshot?.houseJobForm, currentSnapshot?.houseJobForm),
+    //   cargoChanged: !this.deepEqual(this.initialStateSnapshot?.cargoForm, currentSnapshot?.cargoForm),
+    //   otherChanged: !this.deepEqual(this.initialStateSnapshot?.otherForm, currentSnapshot?.otherForm),
+    //   proxyChanged: !this.deepEqual(this.initialStateSnapshot?.proxyForm, currentSnapshot?.proxyForm),
+    //   detailChanged: !this.deepEqual(this.initialStateSnapshot?.detailForm, currentSnapshot?.detailForm),
+    //   bookingProductsChanged: !this.deepEqual(this.initialStateSnapshot?.bookingProducts, currentSnapshot?.bookingProducts),
+    //   connectionChanged: !this.deepEqual(this.initialStateSnapshot?.connectionResult, currentSnapshot?.connectionResult),
+    //   rateChanged: !this.deepEqual(this.initialStateSnapshot?.rateResult, currentSnapshot?.rateResult),
+    //   milestoneChanged: !this.deepEqual(this.initialStateSnapshot?.milestoneResult, currentSnapshot?.milestoneResult),
+    //   selectedDepartmentTypeChanged: this.initialStateSnapshot?.selectedDepartmentType !== currentSnapshot?.selectedDepartmentType,
+    //   selectedFCLLCLChanged: this.initialStateSnapshot?.selectedFCLLCL !== currentSnapshot?.selectedFCLLCL,
+    // });
   }
 
   private buildCurrentStateSnapshot(): any {
@@ -3353,9 +3346,6 @@ private applyExportToImportFieldLocks(): void {
       this.milestoneResult = [...allmilestones];
       if (!this.milestoneSyncInitialized) {
         this.milestoneSyncInitialized = true;
-        console.log('[HouseJob milestone init sync]', {
-          milestoneCount: allmilestones.length,
-        });
         this.resetDirtyState();
         return;
       }
@@ -3380,17 +3370,17 @@ onCurrencyChange(event: any) {
 
 
   onSubmit() {
-    console.log('[HouseJob submit click]', {
-      isDirty: this.isDirty,
-      formSaved: this.formSaved,
-      externalDirty: this.externalDirty,
-      hasSnapshot: !!this.initialStateSnapshot,
-      houseJobDirty: this.houseJobForm?.dirty,
-      cargoDirty: this.cargoForm?.dirty,
-      proxyDirty: this.proxyForm?.dirty,
-      otherDirty: this.otherForm?.dirty,
-      detailDirty: this.detailForm?.dirty,
-    });
+    // console.log('[HouseJob submit click]', {
+    //   isDirty: this.isDirty,
+    //   formSaved: this.formSaved,
+    //   externalDirty: this.externalDirty,
+    //   hasSnapshot: !!this.initialStateSnapshot,
+    //   houseJobDirty: this.houseJobForm?.dirty,
+    //   cargoDirty: this.cargoForm?.dirty,
+    //   proxyDirty: this.proxyForm?.dirty,
+    //   otherDirty: this.otherForm?.dirty,
+    //   detailDirty: this.detailForm?.dirty,
+    // });
     this.submitHouseJob();
   }
 
@@ -3424,6 +3414,11 @@ onCurrencyChange(event: any) {
       }
     }
 
+  if (!this.validateTranshipmentPorts()) {
+    resolve?.(false);
+    return;
+  }
+
   if (this.houseJobForm.invalid) {
     this.houseJobForm.markAllAsTouched();
     this.houseJobForm.updateValueAndValidity();
@@ -3436,6 +3431,7 @@ onCurrencyChange(event: any) {
     resolve?.(false);
     return;
   }
+
   // Validate cargo only after the user starts entering cargo data
     if (this.houseJobCargos.length > 0) {
       let hasInvalidCargo = false;
@@ -4107,6 +4103,37 @@ validateHBLNo(): boolean {
   
   return true;
 }
+
+private validateTranshipmentPorts(): boolean {
+  const jobType = this.normalizePortText(this.b['JobType']?.value);
+  const pod = this.normalizePortText(this.b['POD']?.value);
+  const fpd = this.normalizePortText(this.b['FPD']?.value);
+
+  this.clearControlError(this.b['FPD'], 'requiredForTranshipment');
+  this.clearControlError(this.b['FPD'], 'sameAsPOD');
+
+  if (jobType !== 'TRANSHIPMENT') {
+    return true;
+  }
+
+  if (!fpd) {
+    this.setControlError(this.b['FPD'], 'requiredForTranshipment', true);
+    this.b['FPD']?.markAsTouched();
+    this.selectedTab = 'Shipment';
+    this.appSettingService.showWarning('FDC is required for Transhipment.');
+    return false;
+  }
+
+  if (pod && pod === fpd) {
+    this.setControlError(this.b['FPD'], 'sameAsPOD', true);
+    this.b['FPD']?.markAsTouched();
+    this.selectedTab = 'Shipment';
+    this.appSettingService.showWarning('For Transhipment, POD and FDC must be different.');
+    return false;
+  }
+
+  return true;
+}
   private autoSetJobType(department: any): void {
   if (!department) {
     this.b['JobType']?.setValue('', { emitEvent: !this.isPatching });
@@ -4706,15 +4733,18 @@ usesDimensionalCargoFields(): boolean {
   }
   this.b['FPD']?.setValue(selectedPort.PortCode);
   this.PODandFPODsame = this.b['FPD']?.value === this.b['POD']?.value;
+  this.validateTranshipmentPorts();
   this.getVesselBasedOnPorts(); // Add this call
 }
 
   handleFPODChange(port){
     if(!port){
       this.PODandFPODsame = true;
+      this.validateTranshipmentPorts();
       return;
     }
     this.PODandFPODsame = this.b['FPD']?.value === this.b['POD']?.value
+    this.validateTranshipmentPorts();
   }
 
   onVesselChange(vesselVoyage: any) {

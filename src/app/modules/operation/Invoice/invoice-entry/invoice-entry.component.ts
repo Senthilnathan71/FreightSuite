@@ -75,6 +75,9 @@ import { Menu } from 'angular-feather/icons';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 import { InvoiceService } from '../../services/invoice.service';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 interface NgbDateStructLike {
   day: number;
   month: number;
@@ -99,6 +102,8 @@ interface NgbDateStructLike {
     NgbDropdownModule,
     PreventMultiClickDirective,
     DecimalPrecisionDirective,
+    ElementStateGuardDirective,
+    FormStateGuardDirective,
     RouterModule
   ],
   templateUrl: './invoice-entry.component.html',
@@ -344,7 +349,26 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     private voucherPeriodService: VoucherPeriodValidationService,
     private pdfFileSaveService: PdfFileSaveService,
     private emailTriggerService: EmailTriggerService,
+    private voucherActionGuard: VoucherActionGuardService,
   ) {}
+
+  private getActionGuardContext(): VoucherActionGuardContext {
+    return {
+      documentName: 'Invoice',
+      isSaving: this.isSaving,
+      isEditMode: this.isEditMode,
+      isReadOnly: this.isReadOnly,
+      isPosted: this.isPosted,
+      isDirty: this.isDirty,
+      headerId: this.headerId,
+      formInvalid: this.invoiceForm?.invalid,
+      status: this.invoiceData?.Status ?? this.invoiceForm?.get('status')?.value,
+      postStatus: this.invoiceData?.PostStatus ?? this.invoiceForm?.get('PostStatus')?.value,
+      canInsert: this.mps.can('insert'),
+      canUpdate: this.mps.can('update'),
+      canPost: this.mps.can('post'),
+    };
+  }
 
   ngOnInit(): void {
     // Try accessing User related Properties
@@ -667,10 +691,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   }
 
   private showBlockedAction(reason: string, resolve?: (value: boolean) => void): boolean {
-    if (!reason) return false;
-    this.appSettingService.showWarning(reason);
-    if (resolve) resolve(false);
-    return true;
+    return this.voucherActionGuard.block(reason, resolve);
   }
 
   private getInvoiceStateBlockedReason(action: string): string {
@@ -681,23 +702,11 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   }
 
   private getSaveBlockedReason(): string {
-    if (this.isSaving) return 'Invoice is already saving. Please wait.';
-    const stateReason = this.getInvoiceStateBlockedReason('be saved');
-    if (stateReason) return stateReason;
-    if (this.isEditMode && !this.mps.can('update')) return 'You do not have permission to update this invoice.';
-    return '';
+    return this.voucherActionGuard.getSaveBlockedReason(this.getActionGuardContext());
   }
 
   private getPostBlockedReason(): string {
-    if (this.isSaving) return 'Invoice is currently saving. Please wait.';
-    if (this.isPosted) return 'This invoice is already posted.';
-    if (!this.headerId) return 'Please save the invoice before posting.';
-    if (this.invoiceData?.Status !== 'A') return 'Inactive invoice cannot be posted.';
-    if (this.isReadOnly) return 'This invoice cannot be posted in its current status.';
-    if (!this.mps.can('post')) return 'You do not have permission to post this invoice.';
-    if (this.invoiceForm.invalid) return 'Please fill all required fields before posting.';
-    if (this.isDirty) return 'Please save the draft before posting.';
-    return '';
+    return this.voucherActionGuard.getPostBlockedReason(this.getActionGuardContext());
   }
 
   private getResetBlockedReason(): string {
@@ -725,9 +734,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   }
 
   private getDetailMutationBlockedReason(): string {
-    const stateReason = this.getInvoiceStateBlockedReason('have details changed');
-    if (stateReason) return stateReason;
-    return '';
+    return this.voucherActionGuard.getDetailMutationBlockedReason(this.getActionGuardContext());
   }
 
   private getChargeSelectionBlockedReason(charge: any): string {
@@ -2692,9 +2699,6 @@ isSeaDepartment(): boolean {
   }
 
   get isPosted(): boolean {
-    if (this.invoiceData?.PostStatus === 'P' && !this.invoiceForm.disabled) {
-      this.invoiceForm.disable();
-    }
     return this.invoiceData?.PostStatus === 'P' || false;
   }
 
@@ -2974,11 +2978,20 @@ isSeaDepartment(): boolean {
       const documentName = 'Invoice';
       const voucherNumber = this.invoiceForm.get('VoucherNumber')?.value || this.invoiceData?.VoucherNumber || this.invoiceData?.InvoiceNo || '';
       const documentDate = this.formatEmailDate(this.invoiceForm.get('VoucherDate')?.value || this.invoiceData?.VoucherDate);
-      const toEmail = await this.emailTriggerService.resolveCustomerBranchEmailsByMenu({
+      const recipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
         customerBranchSid: this.getCustomerBranchSidForEmail(),
         customerMasterSid: this.getCustomerMasterSidForEmail(),
         menuMasterSid: this.getCurrentMenuMasterSidForEmail()
       });
+      const toEmail = recipients.toEmail;
+      const ccEmail = Array.from(
+        new Set(
+          [
+            ...(recipients.ccEmail || []),
+            this.userData?.userEmail || ''
+          ].map((email: string) => (email || '').trim()).filter((email: string) => !!email)
+        )
+      );
 
       if (toEmail.length === 0) {
         this.appSettingService.showError('No email found in customer branch email.');
@@ -2997,15 +3010,35 @@ isSeaDepartment(): boolean {
         introLine: `Please find attached the ${documentName} for your reference.`,
         followupLine: 'Kindly review the attached details at your convenience.'
       });
+      const menuMasterSid = this.getCurrentMenuMasterSidForEmail();
+      const mailConfig = await this.emailTriggerService.resolveMailForMenu({
+        companyId: this.currentCompany?.CompanyMasterSid,
+        menuMasterSid,
+        action: this.headerId ? 'UPDATE' : 'CREATE',
+        customerBranchSid: this.getCustomerBranchSidForEmail(),
+        fallbackToEmail: toEmail.join(','),
+        context: {
+          documentName,
+          documentNoLabel: 'Invoice No.',
+          documentNo: voucherNumber,
+          date: documentDate,
+          VoucherNumber: voucherNumber,
+          VoucherDate: documentDate,
+          POL: this.invoicePrintData?.POL || this.invoiceData?.POL || '',
+          POD: this.invoicePrintData?.POD || this.invoiceData?.POD || '',
+          FPD: this.invoicePrintData?.FPD || this.invoiceData?.FPD || ''
+        }
+      });
+      const resolvedBody = (mailConfig?.body || '').trim() || emailContent.body;
 
       const file = new File([blob], `Invoice_${voucherNumber || 'Report'}.pdf`, { type: 'application/pdf' });
       const emailRef = this.modalService.open(EmailEntryComponent, { size: 'lg' });
       emailRef.componentInstance.setContent = {
         EmailTo: toEmail,
-        EmailCC: this.userData?.userEmail ? [this.userData.userEmail] : [],
+        EmailCC: ccEmail,
         EmailBCC: [],
         Subject: emailContent.subject,
-        Mailbody: emailContent.body,
+        Mailbody: resolvedBody,
         context: {
           documentName,
           documentNoLabel: 'Invoice No',

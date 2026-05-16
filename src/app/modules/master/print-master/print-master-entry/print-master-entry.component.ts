@@ -7,6 +7,8 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { SettingsService } from 'src/app/modules/settings/settings.service';
 import { PrintMasterService } from '../print-master.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 @Component({
     selector: 'app-print-master-entry',
@@ -47,7 +49,8 @@ export class PrintMasterEntryComponent implements OnInit, OnDestroy {
         private printMasterService: PrintMasterService,
         private settingsService: SettingsService,
         private appSettingsService: AppSettingsService,
-        private spinner: NgxSpinnerService
+        private spinner: NgxSpinnerService,
+        private modalService: NgbModal
     ) {}
 
     ngOnInit(): void {
@@ -176,6 +179,21 @@ export class PrintMasterEntryComponent implements OnInit, OnDestroy {
             });
         }
     }
+
+      openAuditLogs() {
+            if (!this.printMasterSid) return;
+        const modalRef = this.modalService.open(AuditLogComponent, {
+              centered: true,
+              scrollable: true,
+              size: 'xl',
+              windowClass: 'audit-log-modal'
+            });
+            modalRef.componentInstance.title = 'Print Logs';
+            modalRef.componentInstance.tableName = 'PrintMaster';
+            modalRef.componentInstance.recordId = this.printMasterSid.toString();
+            modalRef.componentInstance.screenName = 'Print';
+          }
+     
 
     resetForm(): void {
         if (this.isEditMode) {

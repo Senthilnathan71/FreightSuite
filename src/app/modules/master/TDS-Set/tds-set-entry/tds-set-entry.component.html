@@ -20,7 +20,7 @@
                 <div
                     class="d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
                     <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
-                        (click)="openAuditLogs(auditLogModal)">
+                        (click)="openAuditLogs()">
                         <i class="fas fa-history me-1"></i>Logs
                     </button>
                     
@@ -113,7 +113,7 @@
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end"
                                 formControlName="TransactionLimit" DecimalPrecision [DecimalPrecisionBefore]="9"
                                 [DecimalPrecisionAfter]="3">
                             <label for="text-input" class="input-label">Transaction Limit <span
@@ -134,7 +134,7 @@
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end" 
                                 formControlName="AnnualLimit" DecimalPrecision [DecimalPrecisionBefore]="9"
                                 [DecimalPrecisionAfter]="3">
                             <label for="text-input" class="input-label">Annual Limit <span
@@ -155,7 +155,7 @@
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end"
                                 formControlName="TDSsetTransactionLimit" DecimalPrecision [DecimalPrecisionBefore]="9"
                                 [DecimalPrecisionAfter]="3">
                             <label for="text-input" class="input-label">TDS Set Transaction Limit <span
@@ -177,7 +177,7 @@
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
-                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                            <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end"
                                 formControlName="TDSSetAnnualLimit" DecimalPrecision [DecimalPrecisionBefore]="9"
                                 [DecimalPrecisionAfter]="3">
                             <label for="text-input" class="input-label">TDS Set Annual Limit <span
@@ -402,7 +402,7 @@
                             <div class="text-truncate">{{item.ITSectionCode}}</div>
                         </td>
                         <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
-                            <div class="text-truncate">{{item.TDSAmount}}</div>
+                            <div class="text-truncate text-end">{{item.TDSAmount}}</div>
                         </td>
                         <td style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
                             <div class="text-truncate">{{item.TDSRate}}</div>
@@ -970,48 +970,3 @@
     </div>
 </div>
 } -->
-
-<ng-template #auditLogModal let-modal>
-    <div class="modal-header bg-info text-white p-2">
-        <h5 class="modal-title mb-0">Audit Logs</h5>
-        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
-    </div>
-    <div class="modal-body p-3">
-        <div class="table-responsive">
-            <table class="table  align-middle no-wrap table-bordered table-sm mb-0">
-                <thead>
-                    <tr>
-                        <th>Changed At</th>
-                        <th>Changed By</th>
-                        <th>Operation</th>
-                        <th class="text-center">Old Value</th>
-                        <th class="text-center">New Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let log of auditLogs">
-                        <td>{{ log.changedAt | date:'medium' }}</td>
-                        <td>{{ log.changedBy || '-' }}</td>
-                        <td>{{ log.operation }}</td>
-                        <td class="bg-light-danger">
-                            <ul>
-                                <li *ngFor="let field of log.oldValDisplay">{{ field }}</li>
-                            </ul>
-                        </td>
-                        <td class="bg-light-success">
-                            <ul>
-                                <li *ngFor="let field of log.newValDisplay">{{ field }}</li>
-                            </ul>
-                        </td>
-                    </tr>
-                    <tr *ngIf="auditLogs.length === 0">
-                        <td colspan="6" class="text-center text-muted py-3">No audit logs found.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="modal.close()">Close</button>
-    </div>
-</ng-template>

@@ -25,6 +25,7 @@ import {
   DropdownFilterConfig,
   PartyFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 
 @Component({
   selector: 'app-quotation-view',
@@ -38,7 +39,8 @@ import {
     CustomDatePipe,
     NgxSpinnerModule,
     ReusableTableComponent,
-    PageHeaderComponent
+    PageHeaderComponent,
+    ElementStateGuardDirective
   ],
   templateUrl: './quotation-view.component.html',
   styleUrl: './quotation-view.component.scss',

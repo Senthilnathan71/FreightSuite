@@ -79,6 +79,9 @@ import { NumberToWordsService } from 'src/app/common/numberTowords';
 import { AppliedTaxMode, TaxCalculationService } from '../../services/tax-calculation.service';
 import { AuditLogComponent } from '../../audit-log/audit-log.component';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
+import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 interface NgbDateStructLike {
   day: number;
@@ -113,6 +116,8 @@ interface rateComparison {
     SearchableDropdown,
     NgbDropdownModule,
     DecimalPrecisionDirective,
+    ElementStateGuardDirective,
+    FormStateGuardDirective,
   ],
   templateUrl: './vendor-credit-note-entry.component.html',
   styleUrl: './vendor-credit-note-entry.component.scss',
@@ -378,7 +383,26 @@ export class VendorCreditNoteEntryComponent {
     private numberToWords: NumberToWordsService,
     public taxCalculationService: TaxCalculationService,
     private emailTriggerService: EmailTriggerService,
+    private voucherActionGuard: VoucherActionGuardService,
   ) {}
+
+  private getActionGuardContext(): VoucherActionGuardContext {
+    return {
+      documentName: 'Vendor Credit Note',
+      isSaving: this.isSaving,
+      isEditMode: this.isEditMode,
+      isReadOnly: this.isReadOnly,
+      isPosted: this.isPosted,
+      isDirty: this.isDirty,
+      headerId: this.headerId,
+      formInvalid: this.vendorCreditNoteForm?.invalid,
+      status: this.vendorCreditNoteData?.Status ?? this.vendorCreditNoteForm?.get('Status')?.value,
+      postStatus: this.vendorCreditNoteData?.PostStatus ?? this.vendorCreditNoteForm?.get('PostStatus')?.value,
+      canInsert: this.mps.can('insert'),
+      canUpdate: this.mps.can('update'),
+      canPost: this.mps.can('post'),
+    };
+  }
 
   sendManualMail(): void {
     this.emailTriggerService.triggerManualEmails({
@@ -981,6 +1005,7 @@ export class VendorCreditNoteEntryComponent {
       IRNStatus: header.IRNStatus || '',
       State: header.State || '',
       DepartmentMasterSid: header.DepartmentMasterSid || null,
+      MasterJobSid: header.MasterJobSid || null,
       HouseNumber: header.HouseNumber || '',
       MasterNumber: header.MasterNumber || '',
       HouseJobSid: header.HouseJobSid || null,
@@ -1609,6 +1634,9 @@ export class VendorCreditNoteEntryComponent {
   }
 
   addDetailRow() {
+    const blockedReason = this.voucherActionGuard.getDetailMutationBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     const missingErrors: string[] = [];
 
     const currency = this.vendorCreditNoteForm.get('CurrencyCode')?.value;
@@ -1782,6 +1810,9 @@ export class VendorCreditNoteEntryComponent {
   }
 
   removeDetailRow(index: number) {
+    const blockedReason = this.voucherActionGuard.getDetailMutationBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     if (this.details.length > index) this.details.removeAt(index);
     this.vendorCreditNoteForm.updateValueAndValidity();
     this.recalculateAllRows();
@@ -2065,6 +2096,9 @@ export class VendorCreditNoteEntryComponent {
   }
 
   onSubmit(resolve?: (value: boolean) => void, isPostingTrue?: boolean) {
+    const blockedReason = this.voucherActionGuard.getSaveBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason, resolve)) return;
+
     // Validate voucher date is within financial year
     const fy = this.appSettingService.getCurrentFinancialYear();
     if (fy) {
@@ -2303,7 +2337,9 @@ export class VendorCreditNoteEntryComponent {
   }
 
   async postVoucher(notFromSubmit: boolean = false): Promise<void> {
-    if (this.isSaving) return;
+    const blockedReason = this.voucherActionGuard.getPostBlockedReason(this.getActionGuardContext());
+    if (this.voucherActionGuard.block(blockedReason)) return;
+
     this.applyVoucherDateConstraints();
     if (this.voucherConstraints.isClosed) {
       if (this.voucherConstraints.errorMessage) this.appSettingService.showWarning(this.voucherConstraints.errorMessage);

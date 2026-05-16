@@ -111,6 +111,9 @@
                         <th class="bg-transparent text-light">Country</th>
                         <th class="bg-transparent text-light">Network Type</th>
                         <th class="bg-transparent text-light" width="8%">Status</th>
+                        <th class="bg-transparent text-light text-center" style="border-top-right-radius: 10px;">
+                                    Action
+                                </th>
                     </tr>
                 </thead>
 
@@ -145,6 +148,15 @@
                             <ng-select [items]="statusOptions" bindLabel="name" bindValue="id" formControlName="Status"
                                 appendTo="body"></ng-select>
                         </td>
+
+                        <td class="text-center" style="padding-top: 2px; padding-bottom: 2px; line-height: 1.5;">
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-info"
+                                            (click)="openAuditLogs(network.get('NetworkMasterSid')?.value)">
+                                            <i class="fas fa-history me-1"></i>
+                                        Logs
+                                    </button>
+                                </td>
                     </tr>
 
                     <tr *ngIf="networkArray.length === 0">

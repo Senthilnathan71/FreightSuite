@@ -7,6 +7,8 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { AccountsService } from '../../accounts.service';
 import { MasterService } from 'src/app/modules/master/master.service';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
   selector: 'app-accounts-close-detail-modal',
@@ -16,7 +18,9 @@ import { NgSelectModule } from '@ng-select/ng-select';
     ReactiveFormsModule,
     NgxSpinnerModule,
     DatePipe,
-    NgSelectModule
+    NgSelectModule,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './accounts-close-detail-modal.component.html',
   styleUrl: './accounts-close-detail-modal.component.scss'

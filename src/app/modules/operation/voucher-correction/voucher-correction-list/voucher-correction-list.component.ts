@@ -29,6 +29,7 @@ import {
   DateTypeConfig,
   DropdownFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 
 @Component({
   selector: 'app-voucher-correction-list',
@@ -47,7 +48,8 @@ import {
     PageHeaderComponent,
     ToolsDropdownComponent,
     CustomDatePipe,
-    NgbDropdownModule
+    NgbDropdownModule,
+    ElementStateGuardDirective
   ],
   providers: [CustomDatePipe],
   templateUrl: './voucher-correction-list.component.html',

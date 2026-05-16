@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PaginationService } from '../../services/pagination.service';
 import { PaginationConfig, PaginationInfo } from '../../interfaces/pagination.interface';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 
 @Component({
   selector: 'app-common-pagination',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ElementStateGuardDirective],
   templateUrl: './pagination.component.html',
   styleUrls: ['./pagination.component.scss']
 })

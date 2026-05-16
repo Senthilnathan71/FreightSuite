@@ -102,7 +102,6 @@ export class PreCustomerEventListComponent extends BaseListComponent implements 
       page: Number(this.page),
       pageSize: Number(this.pageSize),
       activeCompanyId: this.currentCompany?.CompanyMasterSid,
-      activeBranchId: this.currentBranch?.BranchMasterSid,
       sortColumn: this.sortColumn,
       sortDirection: this.sortDirection,
     };
@@ -214,9 +213,9 @@ export class PreCustomerEventListComponent extends BaseListComponent implements 
         { key: 'cityName', label: 'City', sortable: true, filterable: true, visible: true, dataType: 'string' },
         { key: 'EventDate', label: 'Event Date', sortable: true, filterable: true, visible: true, dataType: 'date' },
         { key: 'eventLeaderName', label: 'Event Leader', sortable: true, filterable: true, visible: true, dataType: 'string' },
-        { key: 'TotalLeadRecd', label: 'Leads', sortable: true, filterable: true, visible: true, dataType: 'number' },
-        { key: 'TotalLeadSuccess', label: 'Success', sortable: true, filterable: true, visible: true, dataType: 'number' },
-        { key: 'conversionPct', label: 'Conversion %', sortable: true, filterable: false, visible: true, dataType: 'number' },
+        { key: 'TotalLeadRecd', label: 'Leads', sortable: true, filterable: true, visible: true, dataType: 'number', cellClass: 'text-end' },
+        { key: 'TotalLeadSuccess', label: 'Success', sortable: true, filterable: true, visible: true, dataType: 'number', cellClass: 'text-end' },
+        { key: 'conversionPct', label: 'Conversion %', sortable: true, filterable: false, visible: true, dataType: 'number', cellClass: 'text-end' },
         { key: 'Status', label: 'Status', sortable: true, filterable: true, visible: true, template: 'status', width: '100px', dataType: 'string', cellClass: 'status-column' },
       ],
       actions: [

@@ -31,6 +31,7 @@ import {
 } from '../../interfaces/table.interface';
 import { CommonPaginationComponent } from '../pagination/pagination.component';
 import { PaginationConfig } from '../../interfaces/pagination.interface';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 
 @Component({
   selector: 'app-reusable-table',
@@ -40,7 +41,8 @@ import { PaginationConfig } from '../../interfaces/pagination.interface';
     FormsModule,
     FeatherModule,
     DragDropModule,
-    CommonPaginationComponent
+    CommonPaginationComponent,
+    ElementStateGuardDirective
   ],
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.scss'],
@@ -404,6 +406,10 @@ export class ReusableTableComponent implements OnInit, OnChanges, OnDestroy {
 
   // Action handling
   onActionClick(action: string, row: any, column?: TableColumn): void {
+    const actionConfig = this.config.actions?.find(configAction => configAction.action === action);
+    if (actionConfig?.state || actionConfig?.disabledCondition?.(row)) {
+      return;
+    }
     this.actionClick.emit({ action, row, column });
   }
 

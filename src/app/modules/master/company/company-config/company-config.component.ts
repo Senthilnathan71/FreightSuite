@@ -1,23 +1,51 @@
-import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
-import { NgbAccordionModule, NgbNavModule, NgbTooltipModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { Component, OnInit } from '@angular/core';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { NgbNavModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { catchError, forkJoin, of } from 'rxjs';
 
-import { CompanyConfigService } from '../services/company-config.service';
-import { MasterService } from '../../master.service';
-import { CompanySettingsManagerService } from '../../../../core/services/company-settings-manager.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { forkJoin } from 'rxjs';
+import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
+import { MasterService } from '../../master.service';
 
-interface CompanyConfig {
+type ConfigType = 'string' | 'number' | 'boolean' | 'email-array';
+
+interface CompanyOption {
+  CompanyMasterSid: number;
+  companyName: string;
+  companyCode?: string | null;
+}
+
+interface CompanyConfigRow {
+  CompanyConfigurationSid?: number;
   CompanyMasterSid: number;
   ConfigurationName: string;
+  DisplayName?: string | null;
+  ConfigType?: ConfigType | null;
   ConfigurationValue: any;
-  ConfigurationType: 'string' | 'number' | 'boolean' | 'email-array' | 'json';
-  CompanyConfigurationSid?: number;
 }
+
+interface ConfigTemplate {
+  configurationName: string;
+  displayName: string;
+  configType: ConfigType;
+}
+
+const CONFIG_TEMPLATES: ConfigTemplate[] = [
+  { configurationName: 'QuoteRateLockUser', displayName: 'Quote Rate Lock Users', configType: 'email-array' },
+  { configurationName: 'CustomerNameUpdateUsers', displayName: 'Customer Name Update Users', configType: 'email-array' },
+  { configurationName: 'ExchangeJVCOA', displayName: 'Exchange JV COA', configType: 'number' },
+  { configurationName: 'SaveAsFilePath', displayName: 'Save As File Path', configType: 'boolean' },
+  { configurationName: 'MawbStockAllocation', displayName: 'MAWB Stock Auto Allocation', configType: 'boolean' },
+  { configurationName: 'TermsandConditions', displayName: 'Terms and Conditions', configType: 'boolean' },
+  { configurationName: 'CreditRequestChecking', displayName: 'Credit Request Checking', configType: 'boolean' },
+  { configurationName: 'ExportToImportCompanyMasterSid', displayName: 'Export To Import Companies', configType: 'string' },
+  { configurationName: 'OSandStatementShowBankDetails', displayName: 'OS and Statement Show Bank Details', configType: 'boolean' },
+  { configurationName: 'Printallbank', displayName: 'Print All Bank', configType: 'boolean' },
+  { configurationName: 'DisableRateUpdateBack', displayName: 'Disable Rate Update Back', configType: 'boolean' },
+];
 
 @Component({
   selector: 'app-company-config',
@@ -26,134 +54,103 @@ interface CompanyConfig {
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    NgbAccordionModule,
     NgbNavModule,
     NgbTooltipModule,
-    NgSelectModule
+    NgSelectModule,
+    SearchableDropdown
   ],
   templateUrl: './company-config.component.html',
   styleUrl: './company-config.component.scss'
 })
 export class CompanyConfigComponent implements OnInit {
-  companyName: string = '';
+  companyName = '';
   companyId: number | null = null;
-  isLoading: boolean = false;
-  isSaving: boolean = false;
-  activeTab: string = 'general-settings';
-  isCreateMode: boolean = false;
-   tempCompanyData: any = null;
-  tempCompanyId: string | null = null;
+  isLoading = false;
+  isSaving = false;
+  activeTab = 'general-settings';
+  isEditMode = false;
+  isTemporaryMode = false;
+  manualConfigNameMode = false;
 
-  // Forms
   configForm!: FormGroup;
   newConfigForm!: FormGroup;
-  availableTypes: Array<'string' | 'number' | 'boolean' | 'email-array'> = [
-    'string',
-    'number',
-    'boolean',
-    'email-array'
+
+  currentConfigs: CompanyConfigRow[] = [];
+  companyOptions: CompanyOption[] = [];
+  eligibleCompanyOptions: CompanyOption[] = [];
+  selectedCompanyIds: number[] = [];
+
+  availableTypes: Array<{ value: ConfigType; label: string }> = [
+    { value: 'string', label: 'Text' },
+    { value: 'number', label: 'Number' },
+    { value: 'boolean', label: 'Y/N' },
+    { value: 'email-array', label: 'Email List' }
   ];
 
-  // Configuration templates
-  configTemplates = [
-    {
-      name: 'QuoteRateLockUser',
-      displayName: 'Quote Rate Lock Users',
-     
-      type: 'email-array' as const,
-      defaultValue: []
-    },
-    {
-      name: 'CustomerNameUpdateUsers',
-      displayName: 'Customer Name Update Users',
-     
-      type: 'email-array' as const,
-      defaultValue: []
-    },
-    {
-      name: 'ExchangeJVCOA',
-      displayName: 'Exchange JV COA',
-      
-      type: 'number' as const,
-      defaultValue: null
-    },
-    {
-      name: 'SaveAsFilePath',
-      displayName: 'Save As File Path',
-      type: 'boolean' as const,
-      defaultValue: false
-    },
-    {
-      name: 'MawbStockAllocation',
-      displayName: 'MAWB Stock Auto Allocation',
-      type: 'boolean' as const,
-      defaultValue: false
-    },
-    {
-      name: 'TermsandConditions',
-      displayName: 'Terms and Conditions',
-      type: 'boolean' as const,
-      defaultValue: false
-    },
-    {
-      name: 'CreditRequestChecking',
-      displayName: 'Credit Request Checking',
-      type: 'boolean' as const,
-      defaultValue: false
-    },
-    {
-      name: 'ExportToImportCompanyMasterSid',
-      displayName: 'Export To Import Companies',
-      type: 'string' as const,
-      defaultValue: ''
-    },
-    {
-      name: 'OSandStatementShowBankDetails',
-      displayName: 'OS and Statement Show Bank Details',
-      type: 'boolean' as const,
-      defaultValue: false
-    }
-    
-  ];
-
-  // Current configurations
-  currentConfigs: CompanyConfig[] = [];
+  configTemplates = CONFIG_TEMPLATES;
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private fb: FormBuilder,
-    private configService: CompanyConfigService,
     private masterService: MasterService,
-    private companySettingsManager: CompanySettingsManagerService,
-    private modalService: NgbModal,
-    private appSettingService: AppSettingsService,
+    private appSettingService: AppSettingsService
   ) {
     this.initializeForm();
   }
 
-  ngOnInit() {
-    this.companyId = +this.route.snapshot.params['id'];
-    const state = history.state;
-    this.companyName = state.companyName || '';
-     this.tempCompanyData = state.companyData || null;
-    this.tempCompanyId = state.tempCompanyId || null;
-    
-    // Check if we're in create mode (companyId is null or 0)
-    this.isCreateMode = !this.companyId || this.companyId === 0;
+  ngOnInit(): void {
+    const idParam = this.route.snapshot.params['id'];
+    this.companyId = idParam ? Number(idParam) : null;
 
-    this.loadConfiguration();
+    const state = history.state || {};
+    this.companyName = state.companyName || '';
+    this.isTemporaryMode = !this.companyId && !!state.companyData;
+    this.isEditMode = !!this.companyId;
+    this.selectedCompanyIds = this.companyId ? [this.companyId] : [];
+
+    this.configureCompanySelector();
+
+    this.newConfigForm.get('ConfigType')?.valueChanges.subscribe((type: ConfigType) => {
+      this.applyCreateType(type);
+    });
+
+    this.applyCreateType(this.normalizeConfigType(this.newConfigForm.get('ConfigType')?.value));
+
+    this.loadPageData();
   }
 
-  private initializeForm() {
+  private configureCompanySelector(): void {
+    const companyControl = this.newConfigForm.get('CompanyMasterSids');
+    if (!companyControl) return;
+
+    if (this.isTemporaryMode) {
+      companyControl.clearValidators();
+      companyControl.setValue([], { emitEvent: false });
+      companyControl.disable({ emitEvent: false });
+    } else {
+      companyControl.setValidators([Validators.required]);
+      companyControl.enable({ emitEvent: false });
+    }
+
+    if (this.companyId && !this.isTemporaryMode && !companyControl.value?.length) {
+      companyControl.setValue([this.companyId], { emitEvent: false });
+    }
+
+    companyControl.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private initializeForm(): void {
     this.configForm = this.fb.group({
       configurations: this.fb.array([])
     });
+
     this.newConfigForm = this.fb.group({
+      CompanyMasterSids: [[], this.isEditMode || this.isTemporaryMode ? [] : [Validators.required]],
       ConfigurationName: ['', Validators.required],
       DisplayName: [''],
-      Type: ['string', Validators.required],
-      Value: ['']
+      ConfigType: ['string', Validators.required],
+      ConfigurationValue: ['']
     });
   }
 
@@ -161,27 +158,151 @@ export class CompanyConfigComponent implements OnInit {
     return this.configForm.get('configurations') as FormArray;
   }
 
-  private createConfigFormGroup(configTemplate: any, existingValue?: any): FormGroup {
-    let value = existingValue !== undefined ? existingValue : configTemplate.defaultValue;
-    
-    // Handle email arrays
-    if (configTemplate.type === 'email-array' && Array.isArray(value)) {
-      value = value.join(', ');
-    }
-    if (configTemplate.type === 'boolean') {
-      value = this.parseBooleanValue(value, configTemplate.name);
-    }
+  get companyMultiSelectDisabled(): boolean {
+    return this.isTemporaryMode;
+  }
 
-    return this.fb.group({
-      ConfigurationName: [configTemplate.name],
-      DisplayName: [configTemplate.displayName || this.formatLabel(configTemplate.name)],
-      Description: [configTemplate.description],
-      Type: [configTemplate.type],
-      Value: [value, this.getValidatorsForType(configTemplate.type, configTemplate.name)]
+  get createButtonDisabled(): boolean {
+    return this.isSaving || this.newConfigForm.invalid || !this.canCreateSelectedConfig();
+  }
+
+  get selectedCompanyLabel(): string {
+    if (this.companyId) return this.companyName || this.getCompanyLabel(this.companyId);
+    if (this.selectedCompanyIds.length === 0) return 'No company selected';
+    if (this.selectedCompanyIds.length === 1) {
+      return this.getCompanyLabel(this.selectedCompanyIds[0]);
+    }
+    return `${this.selectedCompanyIds.length} companies selected`;
+  }
+
+  private loadPageData(): void {
+    this.isLoading = true;
+
+    forkJoin({
+      companies: this.masterService.getAllCompanies().pipe(catchError(() => of([]))),
+      configs: this.companyId
+        ? this.masterService.getAllCompanyConfigsByCompanyId(this.companyId).pipe(catchError(() => of([])))
+        : of([])
+    }).subscribe({
+      next: ({ companies, configs }) => {
+        const companyList = this.unwrapResponseArray(companies);
+        const configList = this.unwrapResponseArray(configs);
+
+        this.companyOptions = companyList.length
+          ? companyList
+            .filter((company: any) => company?.status === 'A' || company?.Status === 'A' || company?.status === undefined)
+            .map((company: any) => ({
+              CompanyMasterSid: Number(company.CompanyMasterSid),
+              companyName: company.companyName || company.CompanyName || '',
+              companyCode: company.companyCode || company.CompanyCode || null
+            }))
+          : [];
+
+        if (!this.companyName && this.companyId) {
+          const current = this.companyOptions.find(option => option.CompanyMasterSid === this.companyId);
+          this.companyName = current?.companyName || this.companyName;
+        }
+
+        this.currentConfigs = configList.map((config: any) => this.normalizeConfigRow(config));
+
+        this.initializeConfigurations();
+
+        if (this.companyId) {
+          this.newConfigForm.patchValue({ CompanyMasterSids: [this.companyId] }, { emitEvent: false });
+          this.newConfigForm.get('CompanyMasterSids')?.enable({ emitEvent: false });
+        }
+
+        this.isLoading = false;
+        this.refreshEligibleCompanies();
+      },
+      error: () => {
+        this.appSettingService.showError('Unable to load company configuration data.');
+        this.currentConfigs = [];
+        this.initializeConfigurations();
+        this.isLoading = false;
+      }
     });
   }
 
-  private getValidatorsForType(type: string, configName?: string) {
+  private initializeConfigurations(): void {
+    while (this.configurations.length) {
+      this.configurations.removeAt(0);
+    }
+
+    this.currentConfigs.forEach((config) => {
+      this.configurations.push(this.buildConfigRow(config));
+    });
+  }
+
+  private unwrapResponseArray(response: any): any[] {
+    if (Array.isArray(response)) return response;
+    if (Array.isArray(response?.data)) return response.data;
+    if (Array.isArray(response?.data?.data)) return response.data.data;
+    return [];
+  }
+
+  private buildConfigRow(config: CompanyConfigRow): FormGroup {
+    const configType = this.normalizeConfigType(config.ConfigType || this.inferTypeFromValue(config.ConfigurationValue));
+    const value = this.normalizeValueForForm(config.ConfigurationValue, configType);
+
+    const row = this.fb.group({
+      CompanyConfigurationSid: [config.CompanyConfigurationSid || null],
+      CompanyMasterSid: [{ value: config.CompanyMasterSid, disabled: true }],
+      ConfigurationName: [{ value: config.ConfigurationName, disabled: true }],
+      DisplayName: [config.DisplayName || this.formatLabel(config.ConfigurationName)],
+      ConfigType: [configType, Validators.required],
+      ConfigurationValue: [value, this.getValidatorsForType(configType, config.ConfigurationName)]
+    });
+
+    row.get('ConfigType')?.valueChanges.subscribe((type: ConfigType) => {
+      this.applyRowType(row, type);
+    });
+
+    return row;
+  }
+
+  private applyRowType(row: FormGroup, type: ConfigType): void {
+    const valueControl = row.get('ConfigurationValue');
+    if (!valueControl) return;
+
+    valueControl.clearValidators();
+    valueControl.setValue(this.normalizeValueForForm(valueControl.value, type), { emitEvent: false });
+    valueControl.setValidators(this.getValidatorsForType(type, row.get('ConfigurationName')?.value));
+    valueControl.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private applyCreateType(type: ConfigType): void {
+    const valueControl = this.newConfigForm.get('ConfigurationValue');
+    if (!valueControl) return;
+
+    const normalizedType = this.normalizeConfigType(type);
+    valueControl.clearValidators();
+    valueControl.setValidators(this.getValidatorsForType(normalizedType, this.newConfigForm.get('ConfigurationName')?.value));
+    valueControl.setValue(this.normalizeValueForForm(valueControl.value, normalizedType), { emitEvent: false });
+    valueControl.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private normalizeConfigRow(config: any): CompanyConfigRow {
+    return {
+      CompanyConfigurationSid: config.CompanyConfigurationSid,
+      CompanyMasterSid: Number(config.CompanyMasterSid),
+      ConfigurationName: config.ConfigurationName,
+      DisplayName: config.DisplayName || this.formatLabel(config.ConfigurationName),
+      ConfigType: this.normalizeConfigType(config.ConfigType || this.inferTypeFromValue(config.ConfigurationValue)),
+      ConfigurationValue: config.ConfigurationValue
+    };
+  }
+
+  private normalizeConfigType(type: any): ConfigType {
+    const normalized = String(type || 'string').toLowerCase();
+    return ['string', 'number', 'boolean', 'email-array'].includes(normalized) ? normalized as ConfigType : 'string';
+  }
+
+  private getValidatorsForType(type: ConfigType, configName?: string) {
+    if (configName === 'ExportToImportCompanyMasterSid') {
+      return [];
+    }
+
     switch (type) {
       case 'email-array':
         return [this.emailArrayValidator()];
@@ -193,9 +314,6 @@ export class CompanyConfigComponent implements OnInit {
       case 'boolean':
         return [];
       default:
-        if (configName === 'ExportToImportCompanyMasterSid') {
-          return [];
-        }
         return [Validators.required];
     }
   }
@@ -203,404 +321,432 @@ export class CompanyConfigComponent implements OnInit {
   private emailArrayValidator() {
     return (control: any) => {
       if (!control.value) return null;
-      
-      const emails = control.value.split(',').map((email: string) => email.trim()).filter((email: string) => email);
-      
+      const emails = String(control.value)
+        .split(',')
+        .map((email: string) => email.trim())
+        .filter((email: string) => email);
+
       for (const email of emails) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
           return { invalidEmail: true };
         }
       }
-      
       return null;
     };
   }
 
-  private loadConfiguration() {
-    this.isLoading = true;
+  private refreshEligibleCompanies(): void {
+    const configName = this.getConfigurationNameForLookup();
 
-    if (this.companyId && !this.isCreateMode) {
-      // Load existing configurations for existing company
-      this.masterService.getAllCompanyConfigsByCompanyId(this.companyId).subscribe({
-        next: (response: any) => {
-          if(response.status){
-            this.currentConfigs = response?.data || [];
-            console.log("Response", this.currentConfigs);
-            console.log("Before loading",this.isLoading);
-            this.initializeConfigurations();
-            this.isLoading = false;
-            console.log("After loading",this.isLoading);
-          } else {
-            this.isLoading = false;
-            this.initializeConfigurations();
-          }
-        },
-        error: (error) => {
-          console.error('Error loading configurations:', error);
-          this.initializeConfigurations(); // Initialize with defaults if error
-          this.isLoading = false;
-        }
-      });
-    } else {
-      // Create mode - initialize with empty/default values
-      this.initializeConfigurations();
-      this.isLoading = false;
-    }
-  }
-
-  private initializeConfigurations() {
-    // Clear existing configurations
-    while (this.configurations.length !== 0) {
-      this.configurations.removeAt(0);
-    }
-
-    // Create form groups for each template
-    this.configTemplates.forEach(template => {
-      const existingConfig = (this.currentConfigs || []).find(config => 
-        config.ConfigurationName === template.name
-      );
-      
-      const formGroup = this.createConfigFormGroup(
-        template, 
-        existingConfig?.ConfigurationValue
-      );
-      
-      this.configurations.push(formGroup);
-    });
-
-    // Add any configs from DB not in templates (dynamic support)
-    (this.currentConfigs || []).forEach((config) => {
-      const existsInTemplate = this.configTemplates.some(t => t.name === config.ConfigurationName);
-      if (existsInTemplate) return;
-
-      const dynamicTemplate = {
-        name: config.ConfigurationName,
-        displayName: this.formatLabel(config.ConfigurationName),
-        type: this.inferTypeFromValue(config.ConfigurationValue),
-        defaultValue: config.ConfigurationValue
-      };
-      const formGroup = this.createConfigFormGroup(dynamicTemplate, config.ConfigurationValue);
-      this.configurations.push(formGroup);
-    });
-  }
-
- 
-
-  isConfigInvalid(index: number): boolean {
-    const config = this.configurations.at(index);
-    const valueControl = config.get('Value');
-    return valueControl ? valueControl.invalid && (valueControl.dirty || valueControl.touched) : false;
-  }
-
-  getConfigError(index: number): string {
-    const config = this.configurations.at(index);
-    const valueControl = config.get('Value');
-    
-    if (valueControl?.errors) {
-      if (valueControl.errors['required']) return 'This field is required';
-      if (valueControl.errors['invalidEmail']) return 'Contains invalid email address';
-      if (valueControl.errors['pattern']) return 'Must be a valid number';
-    }
-    
-    return '';
-  }
-
-   saveConfiguration() {
-    if (this.configForm.invalid) {
-      this.markFormArrayTouched(this.configurations);
+    if (!configName) {
+      this.eligibleCompanyOptions = [...this.companyOptions];
+      if (!this.companyId && !this.isTemporaryMode) {
+        this.newConfigForm.get('CompanyMasterSids')?.enable({ emitEvent: false });
+      }
       return;
     }
 
-    this.isSaving = true;
+    this.masterService.getEligibleCompaniesForConfiguration(configName).pipe(
+      catchError(() => of([]))
+    ).subscribe((companies: any) => {
+      const companyList = this.unwrapResponseArray(companies);
+      const eligible = companyList.length
+        ? companyList.map((company: any) => ({
+            CompanyMasterSid: Number(company.CompanyMasterSid),
+            companyName: company.companyName || company.CompanyName || '',
+            companyCode: company.companyCode || company.CompanyCode || null
+          }))
+        : [];
 
-    if (this.isCreateMode) {
-      this.handleCreateModeSave();
-    } else {
-      this.updateConfiguration();
+      this.eligibleCompanyOptions = eligible;
+
+      if (!this.companyMultiSelectDisabled) {
+        const eligibleIds = new Set(eligible.map(option => option.CompanyMasterSid));
+        this.selectedCompanyIds = this.selectedCompanyIds.filter(id => eligibleIds.has(id));
+        this.newConfigForm.get('CompanyMasterSids')?.setValue(this.selectedCompanyIds, { emitEvent: false });
+        this.newConfigForm.get('CompanyMasterSids')?.enable({ emitEvent: false });
+      } else if (this.companyId && !eligible.some(option => option.CompanyMasterSid === this.companyId)) {
+        this.appSettingService.showWarning('This configuration already exists for the selected company.');
+      }
+    });
+  }
+
+  private getConfigurationNameForLookup(): string {
+    const rawName = String(this.newConfigForm.get('ConfigurationName')?.value || '').trim();
+    return rawName;
+  }
+
+  onConfigurationNameChanged(event: any): void {
+    const selectedName = typeof event === 'string' ? event : event?.configurationName || event?.ConfigurationName || event?.value || '';
+    const configName = String(selectedName || this.newConfigForm.get('ConfigurationName')?.value || '').trim();
+    const template = this.configTemplates.find(item => item.configurationName === configName);
+
+    if (template) {
+      this.manualConfigNameMode = false;
+      this.newConfigForm.patchValue({
+        ConfigurationName: template.configurationName,
+        DisplayName: template.displayName,
+        ConfigType: template.configType
+      }, { emitEvent: false });
+      this.applyCreateType(template.configType);
+    } else if (configName) {
+      if (!this.newConfigForm.get('DisplayName')?.value) {
+        this.newConfigForm.patchValue({ DisplayName: this.formatLabel(configName) }, { emitEvent: false });
+      }
+      if (!this.newConfigForm.get('ConfigType')?.value) {
+        this.newConfigForm.patchValue({ ConfigType: 'string' }, { emitEvent: false });
+      }
+      this.applyCreateType(this.normalizeConfigType(this.newConfigForm.get('ConfigType')?.value));
+    }
+
+    this.refreshEligibleCompanies();
+  }
+
+  onManualConfigNameInput(): void {
+    const configName = String(this.newConfigForm.get('ConfigurationName')?.value || '').trim();
+
+    if (!configName) {
+      this.newConfigForm.patchValue({ DisplayName: '', ConfigType: 'string' }, { emitEvent: false });
+      this.applyCreateType('string');
+      this.refreshEligibleCompanies();
+      return;
+    }
+
+    if (!this.newConfigForm.get('DisplayName')?.value) {
+      this.newConfigForm.patchValue({ DisplayName: this.formatLabel(configName) }, { emitEvent: false });
+    }
+    if (!this.newConfigForm.get('ConfigType')?.value) {
+      this.newConfigForm.patchValue({ ConfigType: 'string' }, { emitEvent: false });
+    }
+    this.applyCreateType(this.normalizeConfigType(this.newConfigForm.get('ConfigType')?.value));
+
+    this.refreshEligibleCompanies();
+  }
+
+  toggleManualConfigNameMode(): void {
+    this.manualConfigNameMode = !this.manualConfigNameMode;
+    if (!this.manualConfigNameMode) {
+      this.onConfigurationNameChanged(this.newConfigForm.get('ConfigurationName')?.value);
     }
   }
-    private handleCreateModeSave() {
-    // In create mode, we need to handle the configuration differently
-    if (this.tempCompanyData) {
-      // Option 1: Store config temporarily and link when company is created
+
+  toggleSelectAllCompanies(): void {
+    if (this.companyMultiSelectDisabled) return;
+
+    const eligibleIds = this.eligibleCompanyOptions.map(company => company.CompanyMasterSid);
+    const selectedIds = this.newConfigForm.get('CompanyMasterSids')?.value || [];
+
+    if (selectedIds.length === eligibleIds.length) {
+      this.selectedCompanyIds = [];
+    } else {
+      this.selectedCompanyIds = [...eligibleIds];
+    }
+
+    this.newConfigForm.get('CompanyMasterSids')?.setValue(this.selectedCompanyIds);
+    this.newConfigForm.get('CompanyMasterSids')?.markAsTouched();
+  }
+
+  onCompanySelectionChange(companyIds: number[]): void {
+    this.selectedCompanyIds = Array.isArray(companyIds)
+      ? companyIds.map((item: any) => Number(item?.CompanyMasterSid ?? item)).filter((id: number) => Number.isInteger(id) && id > 0)
+      : [];
+  }
+
+  private canCreateSelectedConfig(): boolean {
+    if (this.isTemporaryMode) {
+      return true;
+    }
+
+    const selectedIds = this.selectedCompanyIds.length
+      ? this.selectedCompanyIds
+      : (this.newConfigForm.get('CompanyMasterSids')?.value || []);
+
+    if (!selectedIds.length && !this.companyId) {
+      return false;
+    }
+
+    return selectedIds.every((id: number) => this.eligibleCompanyOptions.some(option => option.CompanyMasterSid === Number(id)));
+  }
+
+  addConfigRow(): void {
+    if (this.isTemporaryMode) {
       this.storeTemporaryConfiguration();
-    } else {
-      this.appSettingService.showError('Company data is required to save configuration.');
-      this.isSaving = false;
-    }
-  }
-  private storeTemporaryConfiguration() {
-    const configData = {
-      companyName: this.companyName,
-      companyData: this.tempCompanyData,
-      configurations: this.prepareCreatePayload(),
-      tempCompanyId: this.tempCompanyId,
-      timestamp: new Date().toISOString()
-    };
-
-    // Store in local storage or service for later retrieval
-    localStorage.setItem(`temp_company_config_${this.tempCompanyId}`, JSON.stringify(configData));
-    
-    this.appSettingService.showSuccess('Configuration saved temporarily. It will be linked when company is created.');
-    this.isSaving = false;
-    this.goBackToCompany();
-  }
-
-  private createConfiguration() {
-    const payload = this.prepareCreatePayload();
-
-    if (payload.length === 1) {
-      // Single configuration - use createCompanyConfig
-      this.masterService.createCompanyConfig(payload[0]).subscribe({
-        next: (response) => {
-          console.log('Configuration created successfully', response);
-          this.appSettingService.showSuccess('Configuration created successfully');
-          this.isSaving = false;
-          this.goBackToCompany();
-        },
-        error: (error) => {
-          console.error('Error creating configuration:', error);
-          this.appSettingService.showError('Error creating configuration');
-          this.isSaving = false;
-        }
-      });
-    } else {
-      // Multiple configurations - use createBulkCompanyConfigs
-      this.masterService.createBulkCompanyConfigs(payload).subscribe({
-        next: (response) => {
-          console.log('Configurations created successfully', response);
-          this.appSettingService.showSuccess('Configurations created successfully');
-          this.isSaving = false;
-          this.goBackToCompany();
-        },
-        error: (error) => {
-          console.error('Error creating configurations:', error);
-          this.appSettingService.showError('Error creating configurations');
-          this.isSaving = false;
-        }
-      });
-    }
-  }
-
-  private updateConfiguration() {
-    const payload = this.prepareUpdatePayload();
-
-    const existingConfigs = payload.configurations.filter((c: any) => c.CompanyConfigurationSid);
-    const newConfigs = payload.configurations.filter((c: any) => !c.CompanyConfigurationSid);
-
-    const requests = [];
-    if (existingConfigs.length) {
-      requests.push(this.masterService.bulkUpdateCompanyConfigs({
-        CompanyMasterSid: this.companyId,
-        configurations: existingConfigs
-      }));
-    }
-    if (newConfigs.length) {
-      requests.push(this.masterService.createBulkCompanyConfigs(newConfigs));
-    }
-
-    if (!requests.length) {
-      this.isSaving = false;
       return;
     }
 
-    forkJoin(requests).subscribe({
-      next: (response) => {
-        console.log('Configuration updated successfully', response);
-        this.appSettingService.showSuccess('Configuration updated successfully');
-        this.isSaving = false;
-        this.goBackToCompany();
-      },
-      error: (error) => {
-        console.error('Error updating configuration:', error);
-        this.appSettingService.showError('Error updating configuration');
-        this.isSaving = false;
-      }
-    });
-  }
-
-   private prepareCreatePayload(): any[] {
-    return this.configurations.value.map((config: any) => {
-      let processedValue = config.Value;
-
-      // Process based on type
-      switch (config.Type) {
-        case 'email-array':
-          if (typeof processedValue === 'string') {
-            processedValue = processedValue.split(',').map((email: string) => email.trim()).filter((email: string) => email).join(', ');
-          } else if (Array.isArray(processedValue)) {
-            processedValue = processedValue.join(', ');
-          }
-          break;
-        case 'number':
-          processedValue = processedValue ? Number(processedValue).toString() : null;
-          break;
-        case 'boolean':
-          processedValue = this.formatBooleanValue(processedValue, config.ConfigurationName);
-          break;
-        default:
-          processedValue = processedValue !== null && processedValue !== undefined ? processedValue.toString() : '';
-      }
-
-      return {
-        CompanyMasterSid: this.companyId, // This will be null in create mode
-        ConfigurationName: config.ConfigurationName,
-        ConfigurationValue: processedValue
-      };
-    });
-  }
-
-  private prepareUpdatePayload(): any {
-  const configurations = this.configurations.value.map((config: any) => {
-    let processedValue = config.Value;
-
-    // Process based on type - CONVERT ARRAYS TO STRINGS
-    switch (config.Type) {
-      case 'email-array':
-        // Convert array to comma-separated string
-        if (Array.isArray(processedValue)) {
-          processedValue = processedValue.join(', ');
-        } else if (typeof processedValue === 'string') {
-          // If it's already a string, ensure it's properly formatted
-          processedValue = processedValue.split(',').map((email: string) => email.trim()).filter((email: string) => email).join(', ');
-        }
-        break;
-      case 'number':
-        processedValue = processedValue ? Number(processedValue) : null;
-        // Convert to string if your Prisma expects string for numbers
-        processedValue = processedValue !== null ? processedValue.toString() : null;
-        break;
-      case 'boolean':
-        processedValue = this.formatBooleanValue(processedValue, config.ConfigurationName);
-        break;
-      default:
-        // Ensure all values are strings
-        processedValue = processedValue !== null && processedValue !== undefined ? processedValue.toString() : '';
-    }
-
-    // Find existing config to get CompanyConfigurationSid if it exists
-    const existingConfig = this.currentConfigs.find(c => c.ConfigurationName === config.ConfigurationName);
-
-    return {
-      CompanyConfigurationSid: existingConfig?.CompanyConfigurationSid || null,
-      CompanyMasterSid: this.companyId,
-      ConfigurationName: config.ConfigurationName,
-      ConfigurationValue: processedValue  // This should now always be a string
-    };
-  });
-
-  return {
-    CompanyMasterSid: this.companyId,
-    configurations: configurations
-  };
-}
-
-  private markFormArrayTouched(formArray: FormArray) {
-    formArray.controls.forEach(control => {
-      if (control instanceof FormGroup) {
-        Object.keys(control.controls).forEach(key => {
-          const formControl = control.get(key);
-          formControl?.markAsTouched();
-        });
-      }
-    });
-  }
-
-  addConfigRow() {
     if (this.newConfigForm.invalid) {
       this.markFormGroupTouched(this.newConfigForm);
       return;
     }
 
-    const name = String(this.newConfigForm.get('ConfigurationName')?.value || '').trim();
-    if (!name) return;
-
-    const alreadyExists = this.configurations.value.some(
-      (c: any) => String(c.ConfigurationName).trim().toLowerCase() === name.toLowerCase()
-    );
-    if (alreadyExists) {
-      this.appSettingService.showWarning('Configuration already exists');
+    if (!this.canCreateSelectedConfig()) {
+      this.appSettingService.showWarning('Please choose only companies that do not already have this configuration.');
       return;
     }
 
-    const type = this.newConfigForm.get('Type')?.value;
-    const displayName = this.newConfigForm.get('DisplayName')?.value || this.formatLabel(name);
-    const value = this.newConfigForm.get('Value')?.value;
+    const payload = this.buildCreatePayload();
+    this.isSaving = true;
 
-    const template = {
-      name,
-      displayName,
-      type,
-      defaultValue: value
+    this.masterService.createCompanyConfig(payload).subscribe({
+      next: (response: any) => {
+        this.isSaving = false;
+        if (response?.status === false) {
+          this.appSettingService.showError(response.message || 'Unable to create configuration.');
+          return;
+        }
+
+        this.appSettingService.showSuccess('Configuration created successfully.');
+        this.resetCreateForm();
+        this.reloadCurrentConfigurationsIfNeeded();
+      },
+      error: (error) => {
+        this.isSaving = false;
+        this.appSettingService.showError(error?.error?.message || 'Error creating configuration.');
+      }
+    });
+  }
+
+  private reloadCurrentConfigurationsIfNeeded(): void {
+    if (!this.companyId) {
+      this.refreshEligibleCompanies();
+      return;
+    }
+
+    this.masterService.getAllCompanyConfigsByCompanyId(this.companyId).pipe(catchError(() => of([]))).subscribe((configs: any) => {
+      this.currentConfigs = this.unwrapResponseArray(configs).map((config: any) => this.normalizeConfigRow(config));
+      this.initializeConfigurations();
+      this.refreshEligibleCompanies();
+    });
+  }
+
+  private storeTemporaryConfiguration(): void {
+    const configData = {
+      companyName: this.companyName,
+      companyData: history.state?.companyData || null,
+      configurations: [this.buildCreatePayload()],
+      tempCompanyId: history.state?.tempCompanyId || null,
+      timestamp: new Date().toISOString()
     };
-    const formGroup = this.createConfigFormGroup(template, value);
-    this.configurations.push(formGroup);
 
+    localStorage.setItem(`temp_company_config_${configData.tempCompanyId || 'draft'}`, JSON.stringify(configData));
+    this.appSettingService.showSuccess('Configuration saved temporarily. It will be linked when the company is created.');
+    this.goBackToCompany();
+  }
+
+  private buildCreatePayload(): any {
+    const rawCompanyIds = this.newConfigForm.get('CompanyMasterSids')?.value || [];
+
+    const selectedCompanyIds = Array.isArray(rawCompanyIds)
+      ? rawCompanyIds.map((item: any) => Number(item?.CompanyMasterSid ?? item)).filter((id: number) => Number.isInteger(id) && id > 0)
+      : [];
+
+    const configurationName = String(this.newConfigForm.get('ConfigurationName')?.value || '').trim();
+    const displayName = String(this.newConfigForm.get('DisplayName')?.value || '').trim() || this.formatLabel(configurationName);
+    const configType = this.normalizeConfigType(this.newConfigForm.get('ConfigType')?.value);
+    const configurationValue = this.serializeValue(this.newConfigForm.get('ConfigurationValue')?.value, configType);
+
+    return {
+      CompanyMasterSid: selectedCompanyIds.length === 1 ? selectedCompanyIds[0] : selectedCompanyIds,
+      CompanyMasterSids: selectedCompanyIds,
+      ConfigurationName: configurationName,
+      DisplayName: displayName,
+      ConfigType: configType,
+      ConfigurationValue: configurationValue
+    };
+  }
+
+  saveConfiguration(): void {
+    if (this.configForm.invalid) {
+      this.markFormArrayTouched(this.configurations);
+      return;
+    }
+
+    if (!this.companyId) {
+      this.appSettingService.showWarning('Existing configurations can be saved only from a company context.');
+      return;
+    }
+
+    this.isSaving = true;
+
+    const payload = this.prepareUpdatePayload();
+    this.masterService.bulkUpdateCompanyConfigs(payload).subscribe({
+      next: (response: any) => {
+        this.isSaving = false;
+        if (response?.status === false) {
+          this.appSettingService.showError(response.message || 'Unable to save configuration.');
+          return;
+        }
+
+        this.appSettingService.showSuccess('Configuration updated successfully.');
+        this.reloadCurrentConfigurationsIfNeeded();
+      },
+      error: (error) => {
+        this.isSaving = false;
+        this.appSettingService.showError(error?.error?.message || 'Error updating configuration.');
+      }
+    });
+  }
+
+  private prepareUpdatePayload(): any {
+    const configurations = this.configurations.controls.map((control: any) => {
+      const row = control as FormGroup;
+      const type = this.normalizeConfigType(row.get('ConfigType')?.value);
+      return {
+        CompanyConfigurationSid: row.get('CompanyConfigurationSid')?.value || null,
+        CompanyMasterSid: this.companyId,
+        ConfigurationName: String(row.get('ConfigurationName')?.value || '').trim(),
+        DisplayName: String(row.get('DisplayName')?.value || '').trim(),
+        ConfigType: type,
+        ConfigurationValue: this.serializeValue(row.get('ConfigurationValue')?.value, type)
+      };
+    });
+
+    return {
+      CompanyMasterSid: this.companyId,
+      configurations
+    };
+  }
+
+  private serializeValue(value: any, type: ConfigType): any {
+    switch (type) {
+      case 'email-array':
+        if (Array.isArray(value)) {
+          return value.map(item => String(item).trim()).filter(Boolean).join(', ');
+        }
+        return String(value || '')
+          .split(',')
+          .map(item => item.trim())
+          .filter(Boolean)
+          .join(', ');
+      case 'number':
+        if (value === null || value === undefined || value === '') return null;
+        return Number(value).toString();
+      case 'boolean':
+        return this.formatBooleanValue(value);
+      default:
+        return value === null || value === undefined ? '' : String(value);
+    }
+  }
+
+  private normalizeValueForForm(value: any, type: ConfigType): any {
+    switch (type) {
+      case 'email-array':
+        if (Array.isArray(value)) return value.join(', ');
+        return value === null || value === undefined ? '' : String(value);
+      case 'number':
+        return value === null || value === undefined ? '' : String(value);
+      case 'boolean':
+        return this.parseBooleanValue(value);
+      default:
+        return value === null || value === undefined ? '' : String(value);
+    }
+  }
+
+  isConfigInvalid(index: number): boolean {
+    const config = this.configurations.at(index);
+    const valueControl = config.get('ConfigurationValue');
+    return valueControl ? valueControl.invalid && (valueControl.dirty || valueControl.touched) : false;
+  }
+
+  getConfigError(index: number): string {
+    const valueControl = this.configurations.at(index).get('ConfigurationValue');
+    const errors = valueControl?.errors;
+
+    if (!errors) return '';
+    if (errors['required']) return 'This field is required';
+    if (errors['invalidEmail']) return 'Contains invalid email address';
+    if (errors['pattern']) return 'Must be a valid number';
+    return 'Invalid value';
+  }
+
+  resetConfiguration(): void {
+    this.resetCreateForm();
+    this.loadPageData();
+  }
+
+  private resetCreateForm(): void {
+    this.manualConfigNameMode = false;
     this.newConfigForm.reset({
+      CompanyMasterSids: this.companyId ? [this.companyId] : [],
       ConfigurationName: '',
       DisplayName: '',
-      Type: 'string',
-      Value: ''
+      ConfigType: 'string',
+      ConfigurationValue: ''
+    });
+
+    this.configureCompanySelector();
+
+    this.selectedCompanyIds = this.companyId ? [this.companyId] : [];
+    this.eligibleCompanyOptions = [...this.companyOptions];
+  }
+
+  private markFormArrayTouched(formArray: FormArray): void {
+    formArray.controls.forEach(control => {
+      if (control instanceof FormGroup) {
+        Object.keys(control.controls).forEach(key => control.get(key)?.markAsTouched());
+      }
     });
   }
 
-  private markFormGroupTouched(formGroup: FormGroup) {
-    Object.keys(formGroup.controls).forEach(key => {
-      const control = formGroup.get(key);
-      control?.markAsTouched();
-    });
+  private markFormGroupTouched(formGroup: FormGroup): void {
+    Object.keys(formGroup.controls).forEach(key => formGroup.get(key)?.markAsTouched());
   }
 
-  private inferTypeFromValue(value: any): 'string' | 'number' | 'boolean' | 'email-array' {
+  private parseBooleanValue(value: any): boolean {
+    if (value === true || value === 1) return true;
+    if (value === false || value === 0 || value === null || value === undefined) return false;
+    const normalized = String(value).trim().toUpperCase();
+    return ['Y', 'YES', 'TRUE', '1'].includes(normalized);
+  }
+
+  private formatBooleanValue(value: any): string {
+    return this.parseBooleanValue(value) ? 'Y' : 'N';
+  }
+
+  private inferTypeFromValue(value: any): ConfigType {
     if (value === true || value === false) return 'boolean';
     if (value !== null && value !== undefined) {
       const normalized = String(value).trim().toUpperCase();
-      if (['Y', 'N', 'YES', 'NO', 'TRUE', 'FALSE', '1', '0'].includes(normalized)) return 'boolean';
-    }
-    if (value !== null && value !== undefined && String(value).trim() !== '' && !isNaN(Number(value))) {
-      return 'number';
+      if (['Y', 'N', 'YES', 'NO', 'TRUE', 'FALSE', '1', '0'].includes(normalized)) {
+        return 'boolean';
+      }
+      if (String(value).includes('@') && String(value).includes(',')) {
+        return 'email-array';
+      }
+      if (String(value).trim() !== '' && !isNaN(Number(value))) {
+        return 'number';
+      }
     }
     return 'string';
   }
 
   private formatLabel(key: string): string {
-    return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
+    return String(key || '')
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, str => str.toUpperCase())
+      .trim();
   }
 
-  private parseBooleanValue(value: any, configName: string): boolean {
-    if (value === true) return true;
-    if (value === false || value === null || value === undefined) return false;
-
-    const normalized = String(value).trim().toUpperCase();
-    return normalized === 'Y' || normalized === 'YES' || normalized === 'TRUE' || normalized === '1';
+  getCompanyLabel(companyId: number): string {
+    const company = this.companyOptions.find(option => option.CompanyMasterSid === companyId);
+    return company?.companyName || String(companyId);
   }
 
-  private formatBooleanValue(value: any, configName: string): string {
-    const normalized = Boolean(value);
-    return normalized ? 'Y' : 'N';
-  }
-
-  resetConfiguration() {
-    this.initializeConfigurations();
-  }
-
-  goBackToCompany() {
+  goBackToCompany(): void {
     if (this.companyId) {
       this.router.navigate(['/master/company/entry', this.companyId]);
-    } else {
-      // Go back to company creation
-      this.router.navigate(['/master/company/entry']);
+      return;
     }
+
+    this.router.navigate(['/master/company/entry']);
   }
 
-  onTabChange(event: any) {
+  onTabChange(event: any): void {
     this.activeTab = event.nextId;
   }
 
-  // Helper method to check if we're in create mode
   isInCreateMode(): boolean {
-    return this.isCreateMode;
+    return !this.isEditMode;
   }
-  
 }

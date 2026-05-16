@@ -42,6 +42,8 @@ import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { UnsavedChangesAction, UnsavedChangesDialogComponent } from 'src/app/shared/components/unsaved-changes-dialog/unsaved-changes-dialog.component';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
   selector: 'app-meeting-update-list',
@@ -60,7 +62,9 @@ import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log
     DateTimePickerComponent,
     ReusableTableComponent,
     PageHeaderComponent,
-    SearchableDropdown
+    SearchableDropdown,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   providers: [CustomDatePipe,DatePipe],
   templateUrl: './meeting-update-list.component.html',
@@ -226,6 +230,30 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
      private dateFormatPipe : DatePipe
   ) {
     super(paginationService);
+  }
+
+  get canCreate(): boolean {
+    return this.mps.can('insert');
+  }
+
+  get canUpdate(): boolean {
+    return this.mps.can('update');
+  }
+
+  get canView(): boolean {
+    return this.mps.can('view');
+  }
+
+  get canDelete(): boolean {
+    return this.mps.can('delete');
+  }
+
+  canAccessAction(action: string): boolean {
+    return this.mps.has(action);
+  }
+
+  showActionMenu(): boolean {
+    return this.mps.hasAtLeastOne();
   }
 
   override ngOnInit(): void {
@@ -543,14 +571,14 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
           label: 'View',
           action: 'view',
           tooltip: 'View Meeting',
-          state:  !this.mps.can('view')
+          state:  !this.canView
         },
         {
           icon: 'fas fa-trash',
           label: 'Delete',
           action: 'delete',
           tooltip: 'Delete Meeting',
-          state:  !this.mps.can('delete')
+          state:  !this.canDelete
         }
       ],
       selectable: false,
@@ -597,7 +625,7 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
         label: 'Create',
         icon: 'fas fa-plus',
         action: 'create',
-         condition: !this.mps.can('insert'),
+         condition: !this.canCreate,
       },
       {
         label: 'Report',
@@ -954,6 +982,10 @@ private handleMeetingDateChange(newDate: string): void {
 
   onUpdateMeeting() {
      if (this.isMeetingSaving) return;
+     if (!this.canUpdate) {
+      this.appSettingService.showWarning('You do not have permission to update this meeting.');
+      return;
+    }
      if (!this.isMeetingDirty) {
       this.appSettingService.showWarning('No changes to save.');
       return;
@@ -1061,6 +1093,10 @@ private handleMeetingDateChange(newDate: string): void {
   }
 
   createNew() {
+    if (!this.canCreate) {
+      this.appSettingService.showWarning('You do not have permission to create a meeting.');
+      return;
+    }
     this.router.navigate(['/crm/calendar']);
   }
 
@@ -1186,6 +1222,10 @@ private handleMeetingDateChange(newDate: string): void {
 
   openEmail() {
     if (!this.meetingData) return;
+    if (!this.canAccessAction('email')) {
+      this.appSettingService.showWarning('You do not have permission to access Email.');
+      return;
+    }
     const modalRef = this.modalService.open(EmailEntryComponent, {
       size: 'lg',
       centered: true,
@@ -1194,13 +1234,17 @@ private handleMeetingDateChange(newDate: string): void {
   }
 
   openAuthority() {
+    if (!this.canAccessAction('authority')) {
+      this.appSettingService.showWarning('You do not have permission to access Authority.');
+      return;
+    }
     // Implementation for authority
   }
 
   openEDoc() {
     console.log('openEDoc');
     // if (!this.meetingData) return;
-     if (!this.mps.has('edoc')) {
+     if (!this.canAccessAction('edoc')) {
     this.appSettingService.showWarning('You do not have permission to access Edoc.');
     return;
   }
@@ -1227,6 +1271,10 @@ private handleMeetingDateChange(newDate: string): void {
   }
 
   openDocRef() {
+    if (!this.canAccessAction('document_reference')) {
+      this.appSettingService.showWarning('You do not have permission to access Document reference.');
+      return;
+    }
     const modalRef = this.modalService.open(DocReferenceComponent, {
       size: 'lg',
       centered: true,
@@ -1254,6 +1302,10 @@ private handleMeetingDateChange(newDate: string): void {
 
  openFollowup() {
     if (!this.meetingData) return;
+    if (!this.canAccessAction('follow_up')) {
+      this.appSettingService.showWarning('You do not have permission to access Followup.');
+      return;
+    }
     const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.documentSid = this.meetingData?.PreCustomerMeetingSid;
     modalRef.componentInstance.parentSubject = `__SUBJECT__ for Meeting Update for "${this.meetingData.customerName}"`;

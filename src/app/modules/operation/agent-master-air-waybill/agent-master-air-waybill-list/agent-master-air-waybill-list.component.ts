@@ -41,6 +41,7 @@ import {
 } from 'src/app/shared/interfaces/advanced-filter.interface';
 
 import { OperationService } from '../../operation.service';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 
 @Component({
   selector: 'app-agent-master-air-waybill-list',
@@ -55,7 +56,8 @@ import { OperationService } from '../../operation.service';
     NgxSpinnerModule,
     ReusableTableComponent,
     PageHeaderComponent,
-    ToolsDropdownComponent
+    ToolsDropdownComponent,
+    ElementStateGuardDirective
   ],
   providers: [CustomDatePipe],
   templateUrl: './agent-master-air-waybill-list.component.html',

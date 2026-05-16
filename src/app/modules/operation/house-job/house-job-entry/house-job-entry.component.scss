@@ -1,0 +1,53 @@
+.cargo-form-fields {
+  .custom-form-group {
+    margin-bottom: 1rem;
+  }
+
+  .error-message {
+    top: 100%;
+    bottom: auto;
+    left: 0;
+    right: 0;
+    line-height: 1;
+    text-align: right;
+    pointer-events: none;
+    white-space: normal;
+  }
+}
+
+:host .house-job-tabs {
+  gap: 4px;
+}
+
+:host .house-job-tabs .nav-pills {
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 3px;
+  overflow: visible;
+  justify-content: space-between;
+}
+
+:host .house-job-tabs .nav-pill {
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: center;
+  gap: 4px;
+  padding: 2px 6px;
+}
+
+:host .house-job-tabs .pill-icon {
+  flex: 0 0 auto;
+  font-size: 11px;
+}
+
+:host .house-job-tabs .pill-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+:host .house-job-tabs .nav-actions {
+  flex: 0 0 auto;
+}

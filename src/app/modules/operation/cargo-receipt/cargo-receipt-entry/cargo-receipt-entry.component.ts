@@ -26,6 +26,8 @@ import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { DocReferenceComponent } from '../../doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
   selector: 'app-cargo-receipt-entry',
@@ -39,7 +41,9 @@ import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.i
     CustomDatePipe,
     FormsModule,
     SearchableDropdown,
-    NgbDropdownModule 
+    NgbDropdownModule,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
 ],
   templateUrl: './cargo-receipt-entry.component.html',
   styleUrl: './cargo-receipt-entry.component.scss',

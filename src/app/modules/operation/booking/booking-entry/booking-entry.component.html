@@ -1237,14 +1237,14 @@
     </div>
 
     <div class="workspace-content" *ngIf="selectedTab === 'Cargo'">
-      <div class="d-flex justify-content-end align-items-center gap-2 pe-2">
+      <div class="d-flex justify-content-end align-items-center gap-2 pe-1">
         <button class="btn btn-sm btn-info" type="button" (click)="addBookingCargo()"
           [disabled]="selectedFCLLCL !== 'FCL' || (isEditMode && isSuspended) || hasHouseJobCreated">
           <i class="fas fa-plus me-1"></i> Add Cargo
         </button>
       </div>
 
-      <div class="col-12 px-1" [formGroup]="detailForm">
+      <div class="col-12" [formGroup]="detailForm">
         <div formArrayName="bookingCargo" ngbAccordion [closeOthers]="true" class="custom-accordion-quotation">
           <div ngbAccordionItem *ngFor="let cargo of bookingCargo.controls; let cargoIndex = index"
             [formGroupName]="cargoIndex" [ngbAccordionItem]="'cargo-' + cargoIndex" class="mb-1"
@@ -1262,7 +1262,7 @@
                   </span>
                 </h6>
                 <button type="button" class="btn btn-sm text-light py-0" *ngIf="bookingCargo.length > 1"
-                   [disabled]="isCargoFromQuotation(cargoIndex)"
+                   
                   (click)="removeBookingCargo(cargoIndex); $event.stopPropagation()">
                   <i class="fas fa-trash text-danger"></i>
                 </button>
@@ -1296,14 +1296,14 @@
                   </aside>
                   <aside class="col-md-2">
                     <div class="custom-form-group">
-                      <input type="text" class="custom-input-field sm" [onlyNumbers] formControlName="NoofContainers">
+                      <input type="text" class="custom-input-field sm text-end" [onlyNumbers] formControlName="NoofContainers">
                       <label class="input-label">No. of Container</label>
                     </div>
                   </aside>
                   }
                   <aside class="col-md-2">
                     <div class="custom-form-group">
-                      <input type="text" class="custom-input-field sm" formControlName="GrossWeight"
+                      <input type="text" class="custom-input-field sm text-end" formControlName="GrossWeight"
                         DecimalPrecision [DecimalPrecisionBefore]="10"
                         [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
                       <label class="input-label">Gross Weight</label>
@@ -1311,7 +1311,7 @@
                   </aside>
                   <aside class="col-md-2">
                     <div class="custom-form-group">
-                      <input type="text" class="custom-input-field sm" formControlName="NetWeight"
+                      <input type="text" class="custom-input-field sm text-end" formControlName="NetWeight"
                         DecimalPrecision [DecimalPrecisionBefore]="7"
                         [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999"
                         (blur)="cargo.get('GrossWeight')?.updateValueAndValidity()"
@@ -1321,7 +1321,7 @@
                   </aside>
                   <aside class="col-md-2">
                     <div class="custom-form-group">
-                      <input type="text" class="custom-input-field sm" formControlName="Volume"
+                      <input type="text" class="custom-input-field sm text-end" formControlName="Volume"
                         DecimalPrecision [DecimalPrecisionBefore]="7"
                         [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
                       <label class="input-label">Volume(CBM)</label>
@@ -1331,7 +1331,7 @@
                     @if(usesDimensionalCargoFields()) {
                     <aside class="col-md-2">
                       <div class="custom-form-group">
-                        <input type="text" class="custom-input-field sm" formControlName="Volumetric"
+                        <input type="text" class="custom-input-field sm text-end" formControlName="Volumetric"
                           DecimalPrecision [DecimalPrecisionBefore]="7"
                           [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
                         <label class="input-label">Volumetric</label>
@@ -1340,7 +1340,7 @@
                     }
                     <aside class="col-md-2">
                       <div class="custom-form-group">
-                        <input type="text" class="custom-input-field sm" formControlName="ChargeableWeight"
+                        <input type="text" class="custom-input-field sm text-end" formControlName="ChargeableWeight"
                           DecimalPrecision [DecimalPrecisionBefore]="7"
                           [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
                         <label class="input-label">Chargeable Weight</label>
@@ -1349,7 +1349,7 @@
                   }
                   <aside class="col-md-2">
                     <div class="custom-form-group">
-                      <input type="text" class="custom-input-field sm" formControlName="NoOfPackage"
+                      <input type="text" class="custom-input-field sm text-end" formControlName="NoOfPackage"
                         DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="0"
                         max="9999999.999">
                       <label class="input-label">No. of Pkg</label>
@@ -1499,7 +1499,7 @@
                             }
                           </td>
                           <td>
-                            <input type="text" formControlName="ExternlQty" class="custom-input-field sm" [onlyNumbers] >
+                            <input type="text" formControlName="ExternlQty" class="custom-input-field sm text-end" [onlyNumbers] >
                             @if (shouldShowProductFieldError(product, 'ExternlQty')) {
                               <div class="error-message mt-1">
                                 {{ getProductFieldErrorMessage(product, 'ExternlQty') }}
@@ -1517,12 +1517,12 @@
                                 </div>
                               }
                             </td>
-                            <td><input type="text" formControlName="Length" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
-                            <td><input type="text" formControlName="Width" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
-                            <td><input type="text" formControlName="Height" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
-                            <td><input type="text" formControlName="Volumetric" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
+                            <td><input type="text" formControlName="Length" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
+                            <td><input type="text" formControlName="Width" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
+                            <td><input type="text" formControlName="Height" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="8" [DecimalPrecisionAfter]="2"></td>
+                            <td><input type="text" formControlName="Volumetric" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3"></td>
                             <td>
-                              <input type="text" formControlName="Volume" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
+                              <input type="text" formControlName="Volume" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
                               @if (shouldShowProductFieldError(product, 'Volume')) {
                                 <div class="error-message mt-1">
                                   {{ getProductFieldErrorMessage(product, 'Volume') }}
@@ -1530,7 +1530,7 @@
                               }
                             </td>
                             <td>
-                              <input type="text" formControlName="GrossWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3" >
+                              <input type="text" formControlName="GrossWeight" class="custom-input-field sm text-end" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3" >
                               @if (shouldShowProductFieldError(product, 'GrossWeight')) {
                                 <div class="error-message mt-1">
                                   {{ getProductFieldErrorMessage(product, 'GrossWeight') }}
@@ -1538,7 +1538,7 @@
                               }
                             </td>
                             <td>
-                              <input type="text" formControlName="NetWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
+                              <input type="text" formControlName="NetWeight" class="custom-input-field sm text-end" (input)="logProduct(productIndex,cargoIndex)" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
                               @if (shouldShowProductFieldError(product, 'NetWeight')) {
                                 <div class="error-message mt-1">
                                   {{ getProductFieldErrorMessage(product, 'NetWeight') }}
@@ -1548,7 +1548,7 @@
                           }
                           @if(selectedFCLLCL === 'FCL' || isSurfaceCargoMode()){
                             <td>
-                              <input type="text" formControlName="GrossWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"  DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
+                              <input type="text" formControlName="GrossWeight" class="custom-input-field sm text-end" (input)="logProduct(productIndex,cargoIndex)"  DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
                               @if (shouldShowProductFieldError(product, 'GrossWeight')) {
                                 <div class="error-message mt-1">
                                   {{ getProductFieldErrorMessage(product, 'GrossWeight') }}
@@ -1556,7 +1556,7 @@
                               }
                             </td>
                             <td>
-                              <input type="text" formControlName="NetWeight" class="custom-input-field sm" (input)="logProduct(productIndex,cargoIndex)"  DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
+                              <input type="text" formControlName="NetWeight" class="custom-input-field sm text-end" (input)="logProduct(productIndex,cargoIndex)"  DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
                               @if (shouldShowProductFieldError(product, 'NetWeight')) {
                                 <div class="error-message mt-1">
                                   {{ getProductFieldErrorMessage(product, 'NetWeight') }}
@@ -1564,7 +1564,7 @@
                               }
                             </td>
                             <td>
-                              <input type="text" formControlName="Volume" class="custom-input-field sm" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
+                              <input type="text" formControlName="Volume" class="custom-input-field sm text-end" DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="3">
                               @if (shouldShowProductFieldError(product, 'Volume')) {
                                 <div class="error-message mt-1">
                                   {{ getProductFieldErrorMessage(product, 'Volume') }}

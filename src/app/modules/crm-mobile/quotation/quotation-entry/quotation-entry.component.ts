@@ -70,6 +70,8 @@ import { VoiceRecognitionService } from '../../enquiry/voice-recognition.service
 import { VoiceParserService } from '../../enquiry/voice-parser.service';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 type Html2PdfOptions = {
   margin?: number | [number, number, number, number];
   filename?: string;
@@ -117,6 +119,8 @@ type Html2PdfOptions = {
     PrintHeaderComponent,
     DialCodeDropdownComponent,
     RouterModule,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
     // MultiColumnComboboxComponent
   ],
   templateUrl: './quotation-entry.component.html',
@@ -1315,9 +1319,6 @@ private mapQuotationCargoForBooking(cargo: any): any {
   }
 
   addQuoteRoute(data?: any) {
-    console.log("PATCHING",data)
-    console.log("PATCHING VOLUME",data?.Volume)
-    console.log("PATCHING VOLUME FINAL",Number(data?.Volume).toFixed(this.digitsAfterDecimal))
     const routeForm = this.fb.group({
 
       // Route Related Controls
@@ -2986,11 +2987,7 @@ isRateLockDisabled(): boolean {
     }
 
     if (control.invalid) {
-      console.log('[Quotation Invalid Control]', {
-        path,
-        errors: control.errors,
-        value: control.value
-      });
+    
     }
   }
 
@@ -8027,7 +8024,6 @@ openStandardCharges(routeIndex: number, carrierIndex: number) {
 
     const quoteChargesArray =
       carrierForm.get('quoteCharges') as FormArray;
-    console.log(quoteChargesArray, "Qoute Charges")
 
     if (!quoteChargesArray) return;
 

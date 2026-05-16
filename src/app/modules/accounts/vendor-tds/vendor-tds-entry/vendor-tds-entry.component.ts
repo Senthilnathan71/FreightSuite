@@ -26,6 +26,8 @@ import { MenuPermissionService } from 'src/app/core/services/menu-permission.ser
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
 import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 
 @Component({
   selector: 'app-vendor-tds-entry',
@@ -40,7 +42,9 @@ import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log
     OnlyNumbersDirective,
     TextWithNumbersDirective,
     NgbDropdownModule,
-    SearchableDropdown
+    SearchableDropdown,
+    ElementStateGuardDirective,
+    FormStateGuardDirective
   ],
   templateUrl: './vendor-tds-entry.component.html',
   styleUrl: './vendor-tds-entry.component.scss',

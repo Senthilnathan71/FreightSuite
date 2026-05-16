@@ -28,6 +28,8 @@ import {
     DropdownFilterConfig,
     PartyFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
+import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 
 
 @Component({
@@ -43,7 +45,8 @@ import {
         NgxSpinnerModule,
         ReusableTableComponent,
         PageHeaderComponent,
-        ToolsDropdownComponent
+        ToolsDropdownComponent,
+        ElementStateGuardDirective,
     ],
     providers: [CustomDatePipe],
     templateUrl: './booking-list.component.html',

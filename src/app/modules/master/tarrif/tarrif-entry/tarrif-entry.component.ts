@@ -37,6 +37,7 @@ import { getDefaultTodayDate } from 'src/app/common/helper';
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/doc-reference.component';
 import { HasUnsavedChanges } from 'src/app/core/interfaces/has-unsaved-changes.interface';
+import { AuditLogComponent } from 'src/app/modules/operation/audit-log/audit-log.component';
 
 @Component({
   selector: 'app-tarrif-entry',
@@ -878,42 +879,19 @@ private shouldUseAllPortOptions(): boolean {
     return departmentName === 'SERVICE JOB' || departmentCode === 'SJ';
   }
 
-   openAuditLogs(modal: TemplateRef<any>) {
-  if (!this.TariffHeaderSid) return;
- 
-  this.masterServ.getAuditLogsTariff(
-    'TariffHeader',
-    this.TariffHeaderSid.toString()
-  ).subscribe({
-    next: (logs: any[]) => {
-      const ignoredFields = ['UpdatedOn']; // ✅ add more if needed later
- 
-      const formatFields = (val: any) => {
-        if (!val) return [];
-        const obj = typeof val === 'string' ? JSON.parse(val) : val;
-        if (Object.keys(obj).length === 0) return [];
-        return Object.entries(obj)
-          .filter(([key]) => !ignoredFields.includes(key)) // 🚫 exclude fields
-          .map(([key, value]) => `${key}: ${value ?? 'NA'}`);
-      };
- 
-      this.auditLogs = logs
-        .map(log => ({
-          ...log,
-          oldValDisplay: formatFields(log.oldVal),
-          newValDisplay: formatFields(log.newVal),
-        }))
-        .filter(log => log.oldValDisplay.length > 0 || log.newValDisplay.length > 0);
- 
-      this.auditLogModalRef = this.modalService.open(modal, {
+   openAuditLogs() {
+      if (!this.tariffData?.TariffHeaderSid) return;
+      const modalRef = this.modalService.open(AuditLogComponent, {
         centered: true,
         scrollable: true,
+        size: 'xl',
         windowClass: 'audit-log-modal'
       });
-    },
-    error: err => console.error('Error fetching audit logs:', err)
-  });
-}
+      modalRef.componentInstance.title = 'Tariff Logs';
+      modalRef.componentInstance.tableName = 'TariffHeader';
+      modalRef.componentInstance.recordId = this.tariffData?.TariffHeaderSid.toString();
+      modalRef.componentInstance.screenName = 'Tariff';
+    }
  
 
   loadModalFields(): Promise<void> {
