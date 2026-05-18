@@ -396,19 +396,12 @@
                 <input type="checkbox" formControlName="Selected" />
               </td>
               <td style="min-width: 220px;">
-                <dofi-searchable-dropdown
-                  [items]="chargeList"
-                  formControlName="ChargeMasterSid"
-                  [placeholder]="''"
-                  [clearable]="false"
-                  [style]="'min-width: 220px; width: 220px;'"
-                  [displayFields]="ChargeLookupConfig.displayFields"
-                  [displayLabels]="ChargeLookupConfig.displayLabels"
-                  [labelFields]="ChargeLookupConfig.labelFields"
-                  [bindValue]="'ChargeMasterSid'"
-                  (itemSelected)="onDetailChargeChange(i, $event)"
-                >
-                </dofi-searchable-dropdown>
+                <input
+                  type="text"
+                  class="custom-input-field sm"
+                  formControlName="ChargeDescription"
+                  readonly
+                />
               </td>
               <td style="min-width: 90px;">
                 <ng-select
@@ -420,6 +413,7 @@
                   appendTo="body"
                   placeholder=""
                   [clearable]="false"
+                  [readonly]="true"
                 >
                 </ng-select>
               </td>
@@ -431,6 +425,7 @@
                   DecimalPrecision
                   [DecimalPrecisionBefore]="9"
                   [DecimalPrecisionAfter]="3"
+                  readonly
                   (input)="recalculateDetailRow(i)"
                 />
               </td>
@@ -445,6 +440,7 @@
                   [displayLabels]="CurrencyLookupConfig.displayLabels"
                   [labelFields]="CurrencyLookupConfig.labelFields"
                   [bindValue]="'CurrencyMasterSid'"
+                  [readonly]="true"
                   (itemSelected)="onDetailCurrencyChange(i, $event)"
                 >
                 </dofi-searchable-dropdown>
@@ -457,6 +453,7 @@
                   DecimalPrecision
                   [DecimalPrecisionBefore]="9"
                   [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)"
+                  readonly
                   (input)="recalculateDetailRow(i)"
                 />
               </td>

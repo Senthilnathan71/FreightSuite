@@ -1057,7 +1057,27 @@ createRateFormGroup(data?: any): FormGroup {
     if (this.isFormDisabled) {
       return false;
     }
-    return !formGroup.get('_costVoucherHeaderSid')?.value && !formGroup.get('_revenueVoucherHeaderSid')?.value;
+    const costVoucherHeaderSid = formGroup.get('_costVoucherHeaderSid')?.value || formGroup.get('CostVoucherHeaderSid')?.value;
+    const revenueVoucherHeaderSid = formGroup.get('_revenueVoucherHeaderSid')?.value || formGroup.get('RevenueVoucherHeaderSid')?.value;
+    return !costVoucherHeaderSid && !revenueVoucherHeaderSid;
+  }
+
+  canEditRevenueRateFields(index: number): boolean {
+    const formGroup = this.rateFormArray.at(index) as FormGroup;
+    if (this.isFormDisabled) {
+      return false;
+    }
+    const revenueVoucherHeaderSid = formGroup.get('_revenueVoucherHeaderSid')?.value || formGroup.get('RevenueVoucherHeaderSid')?.value;
+    return !revenueVoucherHeaderSid;
+  }
+
+  canEditCostRateFields(index: number): boolean {
+    const formGroup = this.rateFormArray.at(index) as FormGroup;
+    if (this.isFormDisabled) {
+      return false;
+    }
+    const costVoucherHeaderSid = formGroup.get('_costVoucherHeaderSid')?.value || formGroup.get('CostVoucherHeaderSid')?.value;
+    return !costVoucherHeaderSid;
   }
 
 

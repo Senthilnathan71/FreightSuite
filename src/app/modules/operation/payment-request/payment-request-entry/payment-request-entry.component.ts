@@ -250,6 +250,7 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       this.form.get('BookingNo')?.disable({ emitEvent: false });
       this.form.get('MasterJobNo')?.disable({ emitEvent: false });
       this.form.get('HouseNo')?.disable({ emitEvent: false });
+      this.applyDetailRowsEditState();
     }
   }
 
@@ -617,23 +618,32 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
   }
 
   private createDetailRow(data: any) {
-    return this.fb.group({
+    const row = this.fb.group({
       PaymentRequestDtlSid: [data?.PaymentRequestDtlSid || null],
       Selected: [data?.Selected ?? true],
       ChargeMasterSid: [data?.ChargeMasterSid || null],
-      ChargeDescription: [data?.ChargeDescription || ''],
+      ChargeDescription: [
+        data?.ChargeDescription ||
+        data?.Charge?.chargeName ||
+        data?.Charge?.ChargeName ||
+        '',
+      ],
       CostChargeUomSid: [data?.CostChargeUomSid || null],
       CostCurrencyMasterSid: [data?.CostCurrencyMasterSid || null],
       CostCurrencyCode: [data?.CostCurrencyCode || data?.currency?.currencyCode || ''],
-      CostExchangeRate: [data?.CostExchangeRate || 1],
-      CostRate: [data?.CostRate || 0],
-      CostNumberOfUnit: [data?.CostNumberOfUnit || 0],
-      CostAmount: [data?.CostAmount || 0],
-      CostLocalAmount: [data?.CostLocalAmount || 0],
+      CostExchangeRate: [this.toNonNegativeNumber(data?.CostExchangeRate ?? 1)],
+      CostRate: [this.toNonNegativeNumber(data?.CostRate), Validators.min(0)],
+      CostNumberOfUnit: [this.toNonNegativeNumber(data?.CostNumberOfUnit), Validators.min(0)],
+      CostAmount: [this.toNonNegativeNumber(data?.CostAmount), Validators.min(0)],
+      CostLocalAmount: [this.toNonNegativeNumber(data?.CostLocalAmount)],
       CostDrCr: [data?.CostDrCr || 'D'],
       CostAgentMasterSid: [data?.CostAgentMasterSid || null],
       CostAgentBranchSid: [data?.CostAgentBranchSid || null],
-      CostAgentName: [data?.CostAgentName || data?.agent?.CustomerName || ''],
+      CostAgentName: [
+        data?.CostAgentName ||
+        data?.agent?.CustomerName ||
+        '',
+      ],
       SourceCostRevenueChargeSid: [
         data?.SourceCostRevenueChargeSid ||
         data?.sourceCostRevenueCharge?.CostRevenueChargesSid ||
@@ -645,6 +655,69 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       LedgerMasterSid:       [data?.LedgerMasterSid ?? null],
       BookingRatesSid:       [data?.BookingRatesSid ?? null],
       CostRevenueChargesSid: [data?.CostRevenueChargesSid ?? null],
+    });
+
+    this.applyDetailRowEditState(row);
+    return row;
+  }
+
+  private applyDetailRowsEditState(): void {
+    this.detailItems.controls.forEach((control) => {
+      this.applyDetailRowEditState(control as FormGroup);
+    });
+  }
+
+  private applyDetailRowEditState(row: FormGroup): void {
+    const readonlyControls = [
+      'ChargeMasterSid',
+      'CostChargeUomSid',
+      'CostCurrencyMasterSid',
+      'CostExchangeRate',
+      'CostNumberOfUnit',
+      'CostAmount',
+      'CostLocalAmount',
+      'CostAgentName',
+    ];
+    const editableAmountControls = ['CostRate'];
+
+    readonlyControls.forEach((controlName) => {
+      row.get(controlName)?.disable({ emitEvent: false });
+    });
+
+    editableAmountControls.forEach((controlName) => {
+      const control = row.get(controlName);
+      if (this.isReadOnly) {
+        control?.disable({ emitEvent: false });
+      } else {
+        control?.enable({ emitEvent: false });
+      }
+    });
+  }
+
+  private toNonNegativeNumber(value: any): number {
+    const parsed = Number(value ?? 0);
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+  }
+
+  private getNonNegativeControlValue(row: FormGroup, controlName: string): number {
+    const control = row.get(controlName);
+    const originalValue = control?.value;
+    const sanitizedValue = this.toNonNegativeNumber(originalValue);
+
+    if (Number(originalValue ?? 0) !== sanitizedValue) {
+      control?.patchValue(sanitizedValue, { emitEvent: false });
+    }
+
+    return sanitizedValue;
+  }
+
+  private sanitizeAllDetailAmounts(): void {
+    this.detailItems.controls.forEach((control) => {
+      const row = control as FormGroup;
+      this.getNonNegativeControlValue(row, 'CostNumberOfUnit');
+      this.getNonNegativeControlValue(row, 'CostRate');
+      this.getNonNegativeControlValue(row, 'CostAmount');
+      this.getNonNegativeControlValue(row, 'CostExchangeRate');
     });
   }
 
@@ -747,9 +820,9 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     }
 
     const currencyMasterSid = row.get('CostCurrencyMasterSid')?.value;
-    const unit = Number(row.get('CostNumberOfUnit')?.value || 0);
-    const rate = Number(row.get('CostRate')?.value || 0);
-    const exchangeRate = Number(row.get('CostExchangeRate')?.value || 0);
+    const unit = this.getNonNegativeControlValue(row, 'CostNumberOfUnit');
+    const rate = this.getNonNegativeControlValue(row, 'CostRate');
+    const exchangeRate = this.getNonNegativeControlValue(row, 'CostExchangeRate');
     const amount = unit * rate;
     const localAmount = amount * exchangeRate;
 
@@ -769,9 +842,9 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     }
 
     const currencyMasterSid = row.get('CostCurrencyMasterSid')?.value;
-    const unit = Number(row.get('CostNumberOfUnit')?.value || 0);
-    const exchangeRate = Number(row.get('CostExchangeRate')?.value || 0);
-    const amount = Number(row.get('CostAmount')?.value || 0);
+    const unit = this.getNonNegativeControlValue(row, 'CostNumberOfUnit');
+    const exchangeRate = this.getNonNegativeControlValue(row, 'CostExchangeRate');
+    const amount = this.getNonNegativeControlValue(row, 'CostAmount');
     const rate = unit > 0 ? amount / unit : 0;
     const localAmount = amount * exchangeRate;
 
@@ -885,6 +958,8 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
       if (resolve) resolve(false);
       return;
     }
+
+    this.sanitizeAllDetailAmounts();
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
