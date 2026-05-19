@@ -14,7 +14,12 @@ export class HttpInterceptorService implements HttpInterceptor {
     private jwtToken: any = null;
 
     // APIs that should NOT have Authorization header
-    private openURLs: string[] = ["/auth/login"];
+    private openURLs: string[] = [
+        "/auth/login",
+        "auth/forgot-password",
+        "auth/validate-reset-token/",
+        "auth/reset-password/",
+    ];
 
     private defaultTimeout = 60 * 5; // 5 mins
 
@@ -27,7 +32,7 @@ export class HttpInterceptorService implements HttpInterceptor {
 
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
 
-        const skipAuth = this.openURLs.includes(req.url);
+        const skipAuth = this.openURLs.some(url => req.url === url || req.url.startsWith(url));
         const showLoader = req.headers.get('showLoader') === 'true';
 
         // Skip auth for open URLs (like login)

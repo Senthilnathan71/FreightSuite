@@ -375,6 +375,10 @@ import { NgSelectModule } from '@ng-select/ng-select';
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
+    .recover-actions-stack {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
 
     .back-button {
       height: 42px;
@@ -384,6 +388,48 @@ import { NgSelectModule } from '@ng-select/ng-select';
       color: #59606a;
       font-size: 14px;
       font-weight: 700;
+    }
+
+    /* Check inbox screen */
+    .recover-icon-badge {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      display: grid; place-items: center;
+      background: linear-gradient(135deg, #E8F7F1 0%, #FFFFFF 100%);
+      border: 1px solid rgba(31,163,122,.18);
+      color: #1FA37A;
+      box-shadow: 0 8px 16px -10px rgba(31,163,122,.35), inset 0 1px 0 #fff;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .recover-icon-badge::after {
+      content: "";
+      position: absolute; inset: -5px;
+      border-radius: 19px;
+      border: 1px dashed rgba(31,163,122,.2);
+      pointer-events: none;
+    }
+    .resend-row {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12.5px; color: #4a5560;
+      margin: 8px 0 4px;
+    }
+    .resend-timer { color: #7b8694; }
+    .resend-timer strong { color: #0C5273; font-variant-numeric: tabular-nums; }
+    .resend-btn {
+      background: none; border: none; cursor: pointer;
+      color: #0C5273; font-weight: 700; font-size: 12.5px;
+      padding: 0; font-family: inherit;
+    }
+    .resend-btn:hover { text-decoration: underline; }
+    .resend-btn:disabled { opacity: .5; cursor: not-allowed; text-decoration: none; }
+    .recover-title {
+      font-size: 20px; font-weight: 800; color: #1f2933;
+      letter-spacing: -.01em; margin: 0 0 4px;
+    }
+    .recover-sub {
+      font-size: 13.5px; color: #4a5560; line-height: 1.5;
+      margin: 0 0 6px;
     }
 
     .session-overlay {
@@ -478,7 +524,10 @@ export class LoginComponent implements OnInit {
   successMessage: any;
   financialYears: any[] = [];
   activeSessionInfo: any = null;
+  resetLinkSent = false;
+  resendCountdown = 0;
   private pendingLoginParams: any = null;
+  private resendInterval: ReturnType<typeof setInterval> | null = null;
   private unsubscribe$ = new Subject<void>();
   constructor(
     private appService: AppService,
@@ -763,34 +812,69 @@ export class LoginComponent implements OnInit {
   // }
 
   sendResetLink() {
+    if (this.isLoading) return;
     let param = this.forgotPasswordForm.value;
     this.isLoading = true;
-    // this.spinner.show(); // Show spinner
 
-    try {
-      this.authService.forgotPassword(param).subscribe((resp) => {
-         if (resp.status) {
-          this.successMessage = resp.message;
-          this.appSettingService.showSuccess('Email Sent Successfully');
-          this.router.navigate(['auth/login']);
-          this.isLoading = false;
+    this.authService.forgotPassword(param).subscribe({
+      next: (resp) => {
+        this.isLoading = false;
+        if (resp.status) {
+          this.appSettingService.showSuccess('Reset link sent successfully');
+          this.resetLinkSent = true;
+          this.startResendTimer();
         } else {
-          this.errorMessage = resp.message;
-          this.appSettingService.showError('Email Sent Failed');
-          this.isLoading = false;
+          this.appSettingService.showError(resp.message || 'Failed to send reset link');
         }
-      })
-    } catch (err) {
-      // this.spinner.hide(); // Hide spinner
-      this.errorMessage = "Something went wrong while processing your request. Please try again"
-    }
+      },
+      error: () => {
+        this.isLoading = false;
+        this.appSettingService.showError('Something went wrong. Please try again.');
+      },
+    });
+  }
+
+  private startResendTimer(): void {
+    this.resendCountdown = 30;
+    if (this.resendInterval) clearInterval(this.resendInterval);
+    this.resendInterval = setInterval(() => {
+      this.resendCountdown--;
+      if (this.resendCountdown <= 0 && this.resendInterval) {
+        clearInterval(this.resendInterval);
+      }
+    }, 1000);
+  }
+
+  resendLink(): void {
+    if (this.resendCountdown > 0) return;
+    this.sendResetLink();
+  }
+
+  getMaskedForgotEmail(): string {
+    const email = this.forgotPasswordForm.value.email || '';
+    const parts = email.split('@');
+    if (parts.length < 2) return email;
+    const local = parts[0];
+    const domain = parts[1];
+    const visible = local.length <= 2 ? local : local[0] + '***' + local[local.length - 1];
+    return `${visible}@${domain}`;
+  }
+
+  backToEmailForm(): void {
+    this.resetLinkSent = false;
+    this.resendCountdown = 0;
+    if (this.resendInterval) clearInterval(this.resendInterval);
   }
 
 
 
   showRecoverForm() {
-    // this.loginform = !this.loginform;
     this.recoverform = !this.recoverform;
+    if (this.recoverform) {
+      this.resetLinkSent = false;
+      this.resendCountdown = 0;
+      if (this.resendInterval) clearInterval(this.resendInterval);
+    }
   }
 
 
@@ -825,6 +909,7 @@ export class LoginComponent implements OnInit {
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
+    if (this.resendInterval) clearInterval(this.resendInterval);
   }
 }
 
