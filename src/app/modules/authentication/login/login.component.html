@@ -85,30 +85,63 @@
             </div>
 
             <div id="recoverform" class="login-panel-content recover-panel" [ngClass]="{'d-block': recoverform}">
-                <div class="brand-lockup text-center">
-                    <span class="brand-mark">
-                        <img src="assets/logo/dofi-logo.svg" alt="Blufin logo" />
-                    </span>
-                    <h1>Recover Password</h1>
-                    <p>Enter your email and instructions will be sent to you.</p>
-                </div>
 
-                <form class="login-form" [formGroup]="forgotPasswordForm">
-                    <div class="custom-form-group login-field login-icon-field">
-                        <span class="login-field-icon"><i class="ti-email"></i></span>
-                        <input class="form-control" type="email" required="" placeholder="" formControlName="email">
-                        <label class="input-label">Email Address</label>
+                <!-- Phase 1: Email form -->
+                <div *ngIf="!resetLinkSent">
+                    <div class="brand-lockup text-center">
+                        <span class="brand-mark">
+                            <img src="assets/logo/dofi-logo.svg" alt="Blufin logo" />
+                        </span>
+                        <h1>Recover Password</h1>
+                        <p>Enter your email and instructions will be sent to you.</p>
                     </div>
 
-                    <div class="recover-actions">
-                        <button class="btn login-button" type="button" (click)="sendResetLink()" [disabled]="isLoading">
-                            Submit
+                    <form class="login-form" [formGroup]="forgotPasswordForm">
+                        <div class="custom-form-group login-field login-icon-field">
+                            <span class="login-field-icon"><i class="ti-email"></i></span>
+                            <input class="form-control" type="email" required="" placeholder="" formControlName="email">
+                            <label class="input-label">Email Address</label>
+                        </div>
+
+                        <div class="recover-actions">
+                            <button class="btn login-button" type="button" (click)="sendResetLink()" [disabled]="isLoading || forgotPasswordForm.invalid">
+                                {{ isLoading ? 'Sending...' : 'Submit' }}
+                            </button>
+                            <button class="btn back-button" type="button" (click)="showRecoverForm()">
+                                Back to Login
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Phase 2: Check inbox -->
+                <div *ngIf="resetLinkSent">
+                    <div class="recover-icon-badge">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                        </svg>
+                    </div>
+
+                    <h2 class="recover-title">Check your inbox</h2>
+                    <p class="recover-sub">
+                        We've sent a secure password-reset link to <strong>{{ getMaskedForgotEmail() }}</strong>. It expires in 10 minutes.
+                    </p>
+
+                    <div class="resend-row">
+                        <span>Didn't get it?</span>
+                        <span *ngIf="resendCountdown > 0" class="resend-timer">Resend in <strong>{{ resendCountdown }}s</strong></span>
+                        <button *ngIf="resendCountdown <= 0" class="resend-btn" (click)="resendLink()" [disabled]="isLoading">Resend email</button>
+                    </div>
+
+                    <div class="recover-actions recover-actions-stack" style="margin-top: 10px;">
+                        <button class="btn login-button" type="button" (click)="backToEmailForm()">
+                            Use a different email
                         </button>
-                        <button class="btn back-button" type="button" [routerLink]="'/auth/login'">
+                        <button class="btn back-button" type="button" (click)="showRecoverForm()">
                             Back to Login
                         </button>
                     </div>
-                </form>
+                </div>
             </div>
         </section>
     </div>
