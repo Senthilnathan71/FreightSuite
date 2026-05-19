@@ -20,6 +20,7 @@ import { FavoriteStarComponent } from 'src/app/component/favourite/favourite.com
 import { FeatherModule } from 'angular-feather';
 import { ExcelExportService } from 'src/app/shared/excel-report-service';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { ServiceJobImportModalComponent } from './service-job-upload.component';
 import {
   AdvancedFilterValues,
   DateRangeConfig,
@@ -168,8 +169,11 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
     }
 
     override ngOnInit(): void {
-        this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-        this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+        this.currentCompany = this.appSettingService.getCurrentCompanyInfo()
+            || this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+        this.currentBranch = this.appSettingService.getCurrentBranchInfo()
+            || this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+        this.userData = this.appSettingService.getDecryptedUserProfile();
         
         this.appSettingService.getUser().subscribe(user => {
             if (user) {
@@ -329,6 +333,12 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
             case 'create':
                 this.navigateToServiceJobEntry();
                 break;
+            case 'download-template':
+                this.downloadTemplate();
+                break;
+            case 'upload-file':
+                this.openImportModal();
+                break;
             case 'report':
                 this.exportReport();
                 break;
@@ -359,6 +369,25 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
                disabled: !this.mps.can('insert')
             },
             {
+                label: 'XL Upload',
+                icon: 'fas fa-file-excel',
+                action: 'excel-dropdown',
+                cssClass: 'dofi-min-w-130',
+                tooltip: 'Import service jobs from Excel template. Download the template, fill in your data, and upload to create service jobs.',
+                children: [
+                    {
+                        label: 'Download Template',
+                        icon: 'fas fa-download',
+                        action: 'download-template'
+                    },
+                    {
+                        label: 'Upload Excel',
+                        icon: 'fas fa-file-upload',
+                        action: 'upload-file'
+                    }
+                ]
+            },
+            {
                 label: 'Report',
                 icon: 'fas fa-file-alt',
                 action: 'report',
@@ -387,6 +416,65 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
 
     viewServiceJob(houseJobSid: number): void {
         this.router.navigate(['operation/service-job/entry', houseJobSid]);
+    }
+
+    openImportModal(): void {
+        const modalRef = this.modalService.open(ServiceJobImportModalComponent, {
+            size: 'lg',
+            centered: true,
+            backdrop: 'static',
+            keyboard: false
+        });
+
+        modalRef.componentInstance.currentCompany = this.currentCompany;
+        modalRef.componentInstance.currentBranch = this.currentBranch;
+        modalRef.componentInstance.userData = this.userData;
+
+        modalRef.closed.subscribe((imported: boolean) => {
+            if (imported) {
+                this.appSettingService.showSuccess('Service jobs imported successfully!');
+                this.page = 1;
+                this.search();
+            }
+        });
+    }
+
+    downloadTemplate(): void {
+        const companyId = this.getLoginCompanySid();
+        const branchId = this.getLoginBranchSid();
+        if (!companyId || !branchId) {
+            this.appSettingService.showError('Company or branch is not selected');
+            return;
+        }
+
+        this.spinner.show();
+        this.operationService.downloadServiceJobTemplate(companyId, branchId).subscribe({
+            next: (blob: Blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'ServiceJob_Upload_Template.xlsx';
+                link.click();
+                window.URL.revokeObjectURL(url);
+                this.spinner.hide();
+                this.appSettingService.showSuccess('Template downloaded successfully');
+            },
+            error: (error) => {
+                console.error('Error downloading service job template:', error);
+                this.spinner.hide();
+                this.appSettingService.showError('Error downloading template');
+            }
+        });
+    }
+
+    private getLoginCompanySid(): number | null {
+        const company = this.appSettingService.getCurrentCompanyInfo() || this.currentCompany;
+        return Number(company?.CompanyMasterSid) || null;
+    }
+
+    private getLoginBranchSid(): number | null {
+        const branch = this.appSettingService.getCurrentBranchInfo() || this.currentBranch;
+        return Number(branch?.BranchMasterSid) || null;
     }
 
     deleteServiceJob(houseJobSid: number): void {

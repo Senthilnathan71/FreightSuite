@@ -1515,6 +1515,29 @@ processProductUpload(payload: any): Observable<any> {
     );
   }
 
+  downloadServiceJobTemplate(CompanyMasterSid: number, BranchMasterSid: number): Observable<Blob> {
+    return this.http.get(`service-job/template`, {
+      params: {
+        CompanyMasterSid: String(CompanyMasterSid),
+        BranchMasterSid: String(BranchMasterSid),
+      },
+      responseType: 'blob'
+    });
+  }
+
+  parseServiceJobExcel(formData: FormData): Observable<any> {
+    return this.http.post(`service-job/bulk-upload/parse`, formData);
+  }
+
+  saveServiceJobExcel(payload: {
+    validRows: any[];
+    CompanyMasterSid: number;
+    BranchMasterSid: number;
+    createdBy: string;
+  }): Observable<any> {
+    return this.http.post(`service-job/bulk-upload/save`, payload);
+  }
+
    checkDuplicateServiceJob(payload: any) {
     return this.http.post<{ status: boolean; message: string; data: any }>(
       'service-job/check-duplicate',
