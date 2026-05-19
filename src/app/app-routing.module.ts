@@ -93,7 +93,7 @@ export const Approutes: Routes = [
   {
     path: 'public/reset-password/:token',
     loadComponent: () =>
-      import('./modules/public-reset-password/public-reset-password.component').then(
+      import('./modules/authentication/public-reset-password/public-reset-password.component').then(
         m => m.PublicResetPasswordComponent
       )
   },

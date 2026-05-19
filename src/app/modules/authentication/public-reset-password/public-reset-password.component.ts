@@ -2,8 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { PasswordValidators } from '../../core/ValidationFn/password.validators';
-import { CustomDatePipe } from '../../core/pipes/custom-date-format.pipe';
+import { PasswordValidators } from '../../../core/ValidationFn/password.validators';
+import { CustomDatePipe } from '../../../core/pipes/custom-date-format.pipe';
 import { PublicResetPasswordService } from './public-reset-password.service';
 
 type ScreenState = 'loading' | 'ready' | 'success' | 'error';
