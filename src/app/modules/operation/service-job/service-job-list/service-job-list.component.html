@@ -22,7 +22,6 @@
         [partySearchFn]="partySearchFn"
         (departmentFilterChanged)="onDepartmentFilterChanged($event)"
         (advancedSearchTriggered)="onAdvancedSearch($event)"
-        (searchTriggered)="onSearchTriggered($event)"
         (searchCleared)="onSearchCleared()"
         (actionTriggered)="onActionTriggered($event)">
     </app-page-header>
@@ -37,7 +36,6 @@
             [paginationConfig]="paginationConfig"
             (actionClick)="onTableActionClick($event)"
             (sortChange)="onTableSortChange($event)"
-            (filterChange)="onTableFilterChange($event)"
             (pageChange)="onPageChange($event)" 
             (pageSizeChange)="onPageSizeChange($event)">
         </app-reusable-table>

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgbModal, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { AppService } from 'src/app/service/app.service';
@@ -46,7 +46,7 @@ import { ElementStateGuardDirective } from 'src/app/core/Directives/element-stat
   styleUrl: './quotation-view.component.scss',
   providers: [CustomDatePipe]
 })
-export class QuotationViewComponent implements OnInit, AfterViewInit, OnDestroy {
+export class QuotationViewComponent implements OnInit, OnDestroy {
   @ViewChild('quotationTable') quotationTable!: ReusableTableComponent;
   @ViewChild('enquiryTable') enquiryTable!: ReusableTableComponent;
   @ViewChild('reportModel') content: TemplateRef<any>;
@@ -219,10 +219,6 @@ export class QuotationViewComponent implements OnInit, AfterViewInit, OnDestroy 
     // Initial load
     this.selectTab(this.selectedTab);
 
-  }
-
-  ngAfterViewInit(): void {
-    setTimeout(() => this.restoreQuotationHeaderState());
   }
 
 
@@ -656,10 +652,8 @@ export class QuotationViewComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   quoteResetPage() {
-    this.quotationManager.clearSavedState();
     this.quotationManager.filterValue = '';
     this.quotationManager.page = 1;
-    this.quotationManager.advancedFilters = this.getDefaultQuotationFilters();
     this.quotationHeader?.clearAdvancedFilters();
   }
 
@@ -676,9 +670,7 @@ export class QuotationViewComponent implements OnInit, AfterViewInit, OnDestroy 
     const quotationDefaults = this.getDefaultQuotationFilters();
 
     this.enquiryManager.advancedFilters = enquiryDefaults;
-    if (!this.quotationManager.hasAdvancedFilters()) {
-      this.quotationManager.advancedFilters = quotationDefaults;
-    }
+    this.quotationManager.advancedFilters = quotationDefaults;
   }
 
   private getDefaultEnquiryFilters(): AdvancedFilterValues {
@@ -744,40 +736,6 @@ export class QuotationViewComponent implements OnInit, AfterViewInit, OnDestroy 
 
     this.enquiryPolFilterConfig = { ...this.enquiryPolFilterConfig, options: filteredPorts };
     this.enquiryPodFilterConfig = { ...this.enquiryPodFilterConfig, options: filteredPorts };
-  }
-
-  private restoreQuotationHeaderState(): void {
-    if (!this.quotationHeader) {
-      return;
-    }
-
-    const filters = this.quotationManager.advancedFilters || {};
-    this.quotationHeader.searchValue = this.quotationManager.filterValue || '';
-
-    if (filters.dateType) {
-      this.quotationHeader.selectedDateType = filters.dateType;
-    }
-
-    if (filters.dateRange?.preset) {
-      this.quotationHeader.selectedPreset = filters.dateRange.preset;
-    }
-
-    if (filters.dateRange?.preset === 'custom') {
-      this.quotationHeader.customFromDate = filters.dateRange.fromDate ? new Date(filters.dateRange.fromDate) : null;
-      this.quotationHeader.customToDate = filters.dateRange.toDate ? new Date(filters.dateRange.toDate) : null;
-    }
-
-    if (filters.party?.partyId || filters.party?.partyName) {
-      this.quotationHeader.selectedParty = {
-        CustomerMasterSid: filters.party.partyId,
-        CustomerName: filters.party.partyName
-      };
-    }
-
-    this.quotationHeader.selectedDepartment = filters.departmentSid ?? null;
-    this.quotationHeader.selectedPOL = filters.pol ?? null;
-    this.quotationHeader.selectedPOD = filters.pod ?? null;
-    this.quotationHeader.selectedExtra = filters.extra ?? null;
   }
 
 }

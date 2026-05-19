@@ -8,7 +8,7 @@ import { BaseListComponent } from 'src/app/shared/components/base-list/base-list
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { ReusableTableComponent } from 'src/app/shared/components/table/table.component';
 import { ListComponentConfig, SearchParams } from 'src/app/shared/interfaces/pagination.interface';
-import { TableConfig, TableEventData, TableFilter, TableSortConfig } from 'src/app/shared/interfaces/table.interface';
+import { TableConfig, TableEventData, TableSortConfig } from 'src/app/shared/interfaces/table.interface';
 import { PaginationService } from 'src/app/shared/services/pagination.service';
 import { OperationService } from '../../operation.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
@@ -273,14 +273,12 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
         this.spinner.hide();
         if (response && response.status) {
             const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
-            const filteredItems = this.applyAdvancedFilters(rawItems);
 
-            this.allItems = filteredItems.map((item: any) => ({
+            this.allItems = rawItems.map((item: any) => ({
                 ...item,
-                CustomerName: item.CustomerName ?? item.customerMaster?.CustomerName ?? item.customer?.CustomerName ?? '',
-                departmentName : item.departmentMaster?.departmentName ?? item.departmentName ?? '',
-                MasterJobNumber: item.masterJob?.MasterJobNumber ?? item.MasterJobNumber ?? '',
-                MBLDate: this.datePipe.transform(this.getServiceJobDate(item)),
+                departmentName : item.departmentMaster?.departmentName,
+                MasterJobNumber: item.masterJob?.MasterJobNumber,
+                MBLDate:this.datePipe.transform(item?.MBLDate),
                 Status: item.status === 'A' ? 'Active' : 'Suspended',
             }));
             this.totalLengthOfCollection = response?.data?.totalCount || rawItems.length || 0;
@@ -304,10 +302,6 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
     this.sortColumn = sort.column;
     this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
     this.search();
-  }
-
-  onTableFilterChange(filters: TableFilter[]): void {
-    console.log('Filters changed', filters);
   }
 
     // --- UI and Table Event Handlers ---
@@ -562,13 +556,7 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
           }
         }
 
-        const itemDepartmentSid = Number(
-          item?.DepartmentMasterSid ??
-          item?.departmentMaster?.DepartmentMasterSid ??
-          0
-        );
-
-        if (selectedDeptSid && itemDepartmentSid !== selectedDeptSid) {
+        if (selectedDeptSid && Number(item?.DepartmentMasterSid) !== selectedDeptSid) {
           return false;
         }
 
@@ -581,7 +569,7 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
         }
 
         if (from || to) {
-          const rawDate = this.getServiceJobDate(item, selectedDateField);
+          const rawDate = item?.[selectedDateField];
           if (!rawDate) {
             return false;
           }
@@ -613,15 +601,6 @@ export class ServiceJobListComponent extends BaseListComponent implements OnInit
 
         return true;
       });
-    }
-
-    private getServiceJobDate(item: any, field: string = 'MBLDate'): any {
-      return item?.[field] ??
-        item?.masterJob?.[field] ??
-        item?.houseJob?.[field] ??
-        item?.MasterJobDate ??
-        item?.masterJob?.MasterJobDate ??
-        null;
     }
 }
 

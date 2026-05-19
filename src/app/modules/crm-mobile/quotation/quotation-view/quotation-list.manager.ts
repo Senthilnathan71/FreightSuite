@@ -10,8 +10,6 @@ import { getConcatenatedPorts } from 'src/app/common/helper';
 import { AdvancedFilterValues } from 'src/app/shared/interfaces/advanced-filter.interface';
 
 export class QuotationListManager {
-    private readonly storageKey = 'crm-quotation-list-state';
-
     // State
     public items: any[] = [];
     public totalRecords: number = 0;
@@ -28,6 +26,8 @@ export class QuotationListManager {
     public onResultsChanged?: () => void;
 
     private destroy$ = new Subject<void>();
+    private lastSearchParams: Partial<SearchParams> & Record<string, any> = {};
+
     constructor(
         private leadService: LeadService,
         private appSettings: AppSettingsService,
@@ -36,12 +36,10 @@ export class QuotationListManager {
         private currentCompany: any,
         private currentBranch: any
     ) {
-        this.restoreState();
         this.updateSearchParams();
     }
 
     public search() {
-        this.saveState();
         this.spinner.show();
         this.loading = true;
         this.getSearchObservable().pipe(
@@ -53,14 +51,12 @@ export class QuotationListManager {
                     this.items = rawItems.map(item => this.normalizeRow(item));
                     this.totalRecords = totalCount;
                     this.updateSearchParams();
-                    this.saveState();
                     this.onResultsChanged?.();
                 } else {
                     this.appSettings.showError('Error fetching quotations.');
                     this.items = [];
                     this.totalRecords = 0;
                     this.updateSearchParams();
-                    this.saveState();
                     this.onResultsChanged?.();
                 }
                 this.loading = false;
@@ -165,6 +161,7 @@ export class QuotationListManager {
         if (this.advancedFilters.extra) {
             params['ApprovalStatus'] = this.advancedFilters.extra;
         }
+        this.lastSearchParams = { ...params };
         return this.leadService.searchQuotation(params);
     }
 
@@ -197,49 +194,8 @@ export class QuotationListManager {
 
     public clearFilter() {
         this.filterValue = '';
-        this.advancedFilters = {};
         this.page = 1;
-        this.saveState();
         this.search();
-    }
-
-    public hasAdvancedFilters(): boolean {
-        return Object.keys(this.advancedFilters || {}).length > 0;
-    }
-
-    public clearSavedState(): void {
-        sessionStorage.removeItem(this.storageKey);
-    }
-
-    private saveState(): void {
-        const state = {
-            filterValue: this.filterValue,
-            advancedFilters: this.advancedFilters,
-            page: this.page,
-            pageSize: this.pageSize,
-            sortColumn: this.sortColumn,
-            sortDirection: this.sortDirection
-        };
-        sessionStorage.setItem(this.storageKey, JSON.stringify(state));
-    }
-
-    private restoreState(): void {
-        const rawState = sessionStorage.getItem(this.storageKey);
-        if (!rawState) {
-            return;
-        }
-
-        try {
-            const state = JSON.parse(rawState);
-            this.filterValue = state?.filterValue ?? '';
-            this.advancedFilters = state?.advancedFilters ?? {};
-            this.page = Number(state?.page || 1);
-            this.pageSize = Number(state?.pageSize || 10);
-            this.sortColumn = state?.sortColumn || 'QuoteDate';
-            this.sortDirection = state?.sortDirection === 'asc' ? 'asc' : 'desc';
-        } catch {
-            this.clearSavedState();
-        }
     }
 
     private normalizeRow(item: any): any {
