@@ -79,14 +79,14 @@ export class Vat210Component {
 
 
   get localSalesTaxableTotal(): number {
-    return this.localInputTax?.reduce(
+    return this.localoutputTax?.reduce(
       (sum, x) => sum + (x.TaxableAmount || 0),
       0
     );
   }
 
   get localSalesTaxTotal(): number {
-    return this.localInputTax?.reduce(
+    return this.localoutputTax?.reduce(
       (sum, x) => sum + (x.TaxAmount || 0),
       0
     );
@@ -95,14 +95,14 @@ export class Vat210Component {
 
 
   get overseasSalesTaxableTotal(): number {
-    return this.outSideInputTax?.reduce(
+    return this.overseasoutputTax?.reduce(
       (sum, x) => sum + (x.TaxableAmount || 0),
       0
     );
   }
 
   get overseasSalesTaxTotal(): number {
-    return this.outSideInputTax?.reduce(
+    return this.overseasoutputTax?.reduce(
       (sum, x) => sum + (x.TaxAmount || 0),
       0
     );
@@ -111,14 +111,14 @@ export class Vat210Component {
 
 
   get localPurchaseTaxableTotal(): number {
-    return this.localoutputTax?.reduce(
+    return this.localInputTax?.reduce(
       (sum, x) => sum + (x.TaxableAmount || 0),
       0
     );
   }
 
   get localPurchaseTaxTotal(): number {
-    return this.localoutputTax?.reduce(
+    return this.localInputTax?.reduce(
       (sum, x) => sum + (x.TaxAmount || 0),
       0
     );
@@ -126,14 +126,14 @@ export class Vat210Component {
 
 
   get overseasPurchaseTaxableTotal(): number {
-    return this.overseasoutputTax?.reduce(
+    return this.outSideInputTax?.reduce(
       (sum, x) => sum + (x.TaxableAmount || 0),
       0
     );
   }
 
   get overseasPurchaseTaxTotal(): number {
-    return this.overseasoutputTax?.reduce(
+    return this.outSideInputTax?.reduce(
       (sum, x) => sum + (x.TaxAmount || 0),
       0
     );
@@ -247,7 +247,7 @@ export class Vat210Component {
   // Local Supplies
   rows.push(this.subSectionRow('Local Supplies'));
 
-  this.localInputTax.forEach(item => {
+  this.localoutputTax.forEach(item => {
     rows.push({
       cells: [
         { value: item.LedgerName },
@@ -266,7 +266,7 @@ export class Vat210Component {
   // Outside GCC Supplies
   rows.push(this.subSectionRow('Outside GCC Supplies'));
 
-  this.outSideInputTax.forEach(item => {
+  this.overseasoutputTax.forEach(item => {
     rows.push({
       cells: [
         { value: item.LedgerName },
@@ -299,7 +299,7 @@ export class Vat210Component {
   // Local Purchases
   rows.push(this.subSectionRow('Local Purchases'));
 
-  this.localoutputTax.forEach(item => {
+  this.localInputTax.forEach(item => {
     rows.push({
       cells: [
         { value: item.LedgerName },
@@ -318,7 +318,7 @@ export class Vat210Component {
   // Outside GCC Purchases
   rows.push(this.subSectionRow('Outside GCC Purchases'));
 
-  this.overseasoutputTax.forEach(item => {
+  this.outSideInputTax.forEach(item => {
     rows.push({
       cells: [
         { value: item.LedgerName },
@@ -546,3 +546,4 @@ private formatNumber(value: any): string {
 }
 
 }
+

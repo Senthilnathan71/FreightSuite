@@ -95,8 +95,25 @@ getDeptMoM(department: string) {
 }
 
 calculateMoM(current: number, previous: number): number {
-  if (!previous) return 0;
-  return ((current - previous) / previous) * 100;
+
+  current = Number(current) || 0;
+  previous = Number(previous) || 0;
+
+  if (previous === 0 && current === 0) {
+    return 0;
+  }
+
+  // Avoid division by zero and prevent Infinity/-Infinity in UI.
+  if (previous === 0) {
+    return current > 0 ? 100 : -100;
+  }
+
+  if (current === 0) {
+    return -100;
+  }
+
+  const result = ((current - previous) / previous) * 100;
+  return Number.isFinite(result) ? result : 0;
 }
 
 getGpPercentage(row: any): number {
@@ -218,12 +235,28 @@ getAvgGpPerShipment(row: any): number {
   }
 
   private buildMoMRow(dept: any): ExcelRow {
-  const prevDept = this.getPreviousDept(dept.department);
+  const prevDept = this.getPreviousDept(dept.department) || {
+    totalShipment: 0,
+    totalRevenue: 0,
+    totalCost: 0,
+    grossProfit: 0,
+    totalGrossWt: 0,
+    totalVolume: 0,
+    totalNoOfTEU: 0,
+    jobCount: 0
+  };
 
-  if (!prevDept) return { cells: [] };
+  const mom = (c: number, p: number) => {
+    const current = Number(c) || 0;
+    const previous = Number(p) || 0;
 
-  const mom = (c: number, p: number) =>
-    p ? ((c - p) / p) * 100 : 0;
+    if (previous === 0 && current === 0) return 0;
+    if (previous === 0) return current > 0 ? 100 : -100;
+    if (current === 0) return -100;
+
+    const result = ((current - previous) / previous) * 100;
+    return Number.isFinite(result) ? result : 0;
+  };
 
   const gpCurr = this.getGpPercentage(dept);
   const gpPrev = this.getGpPercentage(prevDept);
@@ -330,3 +363,4 @@ private formatNumber(value: any): string {
   });
 }
 }
+
