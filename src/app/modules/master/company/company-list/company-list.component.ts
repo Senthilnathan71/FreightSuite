@@ -45,6 +45,7 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
   tableConfig: TableConfig;
 
   tableLoading = false;
+  private readonly stateKey = 'company-list-state';
 
   protected config: ListComponentConfig = {
     storageKey: 'company-list-state',
@@ -135,6 +136,7 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
         showPagination : true
       };
 
+      this.restoreListState();
       super.loadData();
     }
   }
@@ -260,8 +262,11 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
   }
 
   protected getSearchParams(): SearchParams {
+    const search = this.filterValue.trim();
     return {
-      search: this.filterValue.trim(),
+      search,
+      searchTerm: search,
+      filterValue: search,
       page: Number(this.page),
       pageSize: Number(this.pageSize),
       activeCompanyId: this.currentCompany?.CompanyMasterSid,
@@ -275,10 +280,14 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
     this.tableLoading = false;
     this.spinner.hide();
     if (response.status) {
-      this.allItems = response.data.items.map(item => ({
-        ...item,
-      }));
-      this.totalLengthOfCollection = response.data.totalCount || 0;
+      const rawItems = Array.isArray(response?.data?.items) ? response.data.items : [];
+      const normalizedItems = rawItems.map(item => this.normalizeCompanyRow(item));
+      const filteredItems = this.applyLocalSearch(normalizedItems);
+
+      this.allItems = filteredItems;
+      this.totalLengthOfCollection = this.filterValue.trim()
+        ? filteredItems.length
+        : response.data.totalCount || normalizedItems.length || 0;
       this.applySorting();
        this.updateHeaderActionState();
     } else {
@@ -294,6 +303,8 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
       return;
     }
     this.filterValue = searchValue;
+    this.page = 1;
+    this.saveListState();
     this.searchCompany();
   }
     onSearchCleared(): void {
@@ -380,6 +391,7 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
 
   // Legacy methods for template compatibility
   searchCompany() {
+    this.saveListState();
     this.search();
   }
 
@@ -421,7 +433,99 @@ export class CompanyListComponent extends BaseListComponent implements OnInit {
   onTableSortChange(sort: TableSortConfig): void {
     this.sortColumn = sort.column;
     this.sortDirection = sort.direction === 'none' ? 'desc' : sort.direction;
+    this.saveListState();
     this.search();
+  }
+
+  override onPageChange(newPage: number): void {
+    this.page = newPage;
+    this.updatePaginationConfig();
+    this.saveListState();
+    this.search();
+  }
+
+  override onPageSizeChange(newPageSize: number): void {
+    this.pageSize = Number(newPageSize);
+    this.page = 1;
+    this.updatePaginationConfig();
+    this.saveListState();
+    this.search();
+  }
+
+  override resetPage(): void {
+    sessionStorage.removeItem(this.stateKey);
+    super.resetPage();
+  }
+
+  override clearFilter(): void {
+    sessionStorage.removeItem(this.stateKey);
+    super.clearFilter();
+  }
+
+  private normalizeCompanyRow(item: any): any {
+    const branch = Array.isArray(item?.branchMaster) ? item.branchMaster[0] : item?.branchMaster;
+
+    return {
+      ...item,
+      branchName: item?.branchName ?? branch?.branchName ?? '',
+      city: item?.city ?? branch?.cityMaster?.cityName ?? branch?.city ?? '',
+      state: item?.state ?? branch?.stateMaster?.stateName ?? branch?.state ?? '',
+      country: item?.country ?? branch?.countryMaster?.countryName ?? branch?.country ?? '',
+      gst: item?.gst ?? branch?.taxRegistrationNo ?? branch?.gst ?? '',
+      status: item?.status === 'A' || item?.status === 'Active' ? 'Active' : 'Suspended'
+    };
+  }
+
+  private applyLocalSearch(items: any[]): any[] {
+    const search = this.filterValue.trim().toLowerCase();
+    if (!search) {
+      return items;
+    }
+
+    const searchableKeys = [
+      'companyName',
+      'companyCode',
+      'branchName',
+      'country',
+      'state',
+      'city',
+      'gst',
+      'status'
+    ];
+
+    return items.filter(item =>
+      searchableKeys.some(key => String(item?.[key] ?? '').toLowerCase().includes(search))
+    );
+  }
+
+  private saveListState(): void {
+    const state = {
+      filterValue: this.filterValue,
+      page: this.page,
+      pageSize: this.pageSize,
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection
+    };
+    sessionStorage.setItem(this.stateKey, JSON.stringify(state));
+  }
+
+  private restoreListState(): void {
+    const rawState = sessionStorage.getItem(this.stateKey);
+    if (!rawState) {
+      return;
+    }
+
+    try {
+      const state = JSON.parse(rawState);
+      this.filterValue = state?.filterValue ?? '';
+      this.page = Number(state?.page || 1);
+      this.pageSize = Number(state?.pageSize || this.config.defaultPageSize);
+      this.sortColumn = state?.sortColumn || this.config.defaultSortColumn;
+      this.sortDirection = state?.sortDirection === 'asc' ? 'asc' : 'desc';
+      this.updatePaginationConfig();
+    } catch {
+      sessionStorage.removeItem(this.stateKey);
+    }
   }
 
   onTableFilterChange(filters: TableFilter[]): void {
