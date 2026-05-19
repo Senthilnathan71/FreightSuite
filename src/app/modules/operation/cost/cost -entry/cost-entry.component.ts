@@ -946,12 +946,12 @@ createRateFormGroup(data?: any): FormGroup {
       form.get(field)?.disable();
     })
   }
-  if(data?.CostVoucherHeaderSid){
+  if(data?.CostVoucherHeaderSid || data?.PaymentRequestSid){
     costFields.forEach(field => {
       form.get(field)?.disable();
     })
   }
-  if(data?.RevenueVoucherHeaderSid || data?.CostVoucherHeaderSid){
+  if(data?.RevenueVoucherHeaderSid || data?.CostVoucherHeaderSid || data?.PaymentRequestSid){
     commonFields.forEach(field => {
       form.get(field)?.disable();
     })
@@ -1057,7 +1057,7 @@ createRateFormGroup(data?: any): FormGroup {
     if (this.isFormDisabled) {
       return false;
     }
-    const costVoucherHeaderSid = formGroup.get('_costVoucherHeaderSid')?.value || formGroup.get('CostVoucherHeaderSid')?.value;
+    const costVoucherHeaderSid = formGroup.get('_costVoucherHeaderSid')?.value || formGroup.get('CostVoucherHeaderSid')?.value || formGroup.get('PaymentRequestSid')?.value;
     const revenueVoucherHeaderSid = formGroup.get('_revenueVoucherHeaderSid')?.value || formGroup.get('RevenueVoucherHeaderSid')?.value;
     return !costVoucherHeaderSid && !revenueVoucherHeaderSid;
   }
@@ -1076,7 +1076,7 @@ createRateFormGroup(data?: any): FormGroup {
     if (this.isFormDisabled) {
       return false;
     }
-    const costVoucherHeaderSid = formGroup.get('_costVoucherHeaderSid')?.value || formGroup.get('CostVoucherHeaderSid')?.value;
+    const costVoucherHeaderSid = formGroup.get('_costVoucherHeaderSid')?.value || formGroup.get('CostVoucherHeaderSid')?.value || formGroup.get('PaymentRequestSid')?.value;
     return !costVoucherHeaderSid;
   }
 
