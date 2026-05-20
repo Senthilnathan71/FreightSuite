@@ -301,16 +301,16 @@
                 </div>
               </aside>
 
-              <aside class="col-md-3">
-                <div class="custom-form-group">
-                  <input
-                    type="text"
-                    class="custom-input-field sm"
-                    formControlName="MasterJobNo"
-                  />
-                  <label class="input-label">Job No.</label>
-                </div>
-              </aside>
+           <aside class="col-md-2">
+  <div class="custom-form-group">
+    <input
+      type="text"
+      class="custom-input-field sm"
+      formControlName="MasterJobNo"
+    />
+    <label class="input-label">Job No.</label>
+  </div>
+</aside>
 
               <aside class="col-md-3">
                 <div class="custom-form-group">
@@ -363,159 +363,245 @@
           <i class="fas fa-plus me-1"></i>Add Charge
         </button>
       </div>
-      <div class="table-responsive table-borderless">
-        <table class="table table-hover align-middle no-wrap table-sm mb-0">
-          <thead>
-            <tr class="bg-info text-center">
-              <th class="bg-transparent text-light" style="font-size: 14px; width: 50px;"></th>
-              <th class="bg-transparent text-light" style="font-size: 14px; width: 50px;"></th>
-              <th class="bg-transparent text-light" style="font-size: 14px; min-width: 220px;">Charge</th>
-              <th class="bg-transparent text-light" style="font-size: 14px; min-width: 90px;">Unit</th>
-              <th class="bg-transparent text-light" style="font-size: 14px; min-width: 120px;">No. of Unit</th>
-              <th class="bg-transparent text-light" style="font-size: 14px; min-width: 120px;">Curr.</th>
-              <th class="bg-transparent text-light" style="font-size: 14px; min-width: 130px;">Ex. Rate</th>
-              <th class="bg-transparent text-light" style="font-size: 14px; min-width: 130px;">Per Unit</th>
-              <th class="bg-transparent text-light" style="font-size: 14px; min-width: 130px;">Amt</th>
-              <th class="bg-transparent text-light" style="font-size: 14px; min-width: 140px;">Local Amt</th>
-              <th class="bg-transparent text-light" style="font-size: 14px; min-width: 220px;">Party</th>
-            </tr>
-          </thead>
-          <tbody formArrayName="detailItems">
-            <tr *ngFor="let row of detailItems.controls; let i = index" [formGroupName]="i">
-              <td class="text-center">
-                <button
-                  type="button"
-                  class="btn btn-link text-danger p-0"
-                  (click)="removeDetailRow(i)"
-                  [disabled]="isReadOnly"
-                >
-                  <i class="fas fa-trash fs-2"></i>
-                </button>
-              </td>
-              <td class="text-center pt-1">
-                <input type="checkbox" formControlName="Selected" />
-              </td>
-              <td style="min-width: 220px;">
-                <input
-                  type="text"
-                  class="custom-input-field sm"
-                  formControlName="ChargeDescription"
-                  readonly
-                />
-              </td>
-              <td style="min-width: 90px;">
-                <ng-select
-                  class="ng-select"
-                  [items]="uomList"
-                  bindLabel="UOMCode"
-                  bindValue="UOMMasterSid"
-                  formControlName="CostChargeUomSid"
-                  appendTo="body"
-                  placeholder=""
-                  [clearable]="false"
-                  [readonly]="true"
-                >
-                </ng-select>
-              </td>
-              <td style="min-width: 120px;">
-                <input
-                  type="text"
-                  class="custom-input-field sm text-end"
-                  formControlName="CostNumberOfUnit"
-                  DecimalPrecision
-                  [DecimalPrecisionBefore]="9"
-                  [DecimalPrecisionAfter]="3"
-                  readonly
-                  (input)="recalculateDetailRow(i)"
-                />
-              </td>
-              <td style="min-width: 120px;">
-                <dofi-searchable-dropdown
-                  [items]="currencyList"
-                  formControlName="CostCurrencyMasterSid" 
-                  [placeholder]="''"
-                  [clearable]="false"
-                  [style]="'min-width: 120px; width: 120px;'"
-                  [displayFields]="CurrencyLookupConfig.displayFields"
-                  [displayLabels]="CurrencyLookupConfig.displayLabels"
-                  [labelFields]="CurrencyLookupConfig.labelFields"
-                  [bindValue]="'CurrencyMasterSid'"
-                  [readonly]="true"
-                  (itemSelected)="onDetailCurrencyChange(i, $event)"
-                >
-                </dofi-searchable-dropdown>
-              </td>
-              <td style="min-width: 130px;">
-                <input
-                  type="text"
-                  class="custom-input-field sm text-end"
-                  formControlName="CostExchangeRate"
-                  DecimalPrecision
-                  [DecimalPrecisionBefore]="9"
-                  [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)"
-                  readonly
-                  (input)="recalculateDetailRow(i)"
-                />
-              </td>
-              <td style="min-width: 130px;">
-                <input
-                  type="text"
-                  class="custom-input-field sm text-end"
-                  formControlName="CostRate"
-                  DecimalPrecision
-                  [DecimalPrecisionBefore]="9"
-                  [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)"
-                  (input)="recalculateDetailRow(i)"
-                />
-              </td>
-              <td style="min-width: 130px;">
-                <input
-                  type="text"
-                  class="custom-input-field sm text-end"
-                  formControlName="CostAmount"
-                  DecimalPrecision
-                  [DecimalPrecisionBefore]="9"
-                  [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)"
-                  readonly
-                  (input)="onCostAmountChange(i)"
-                />
-              </td>
-              <td style="min-width: 140px;">
-                <input
-                  type="text"
-                  class="custom-input-field sm text-end fw-bold"
-                  formControlName="CostLocalAmount"
-                  DecimalPrecision
-                  [DecimalPrecisionBefore]="9"
-                  [DecimalPrecisionAfter]="getAmountDecimalPlaces(form.get('CurrencyMasterSid')?.value)"
-                  readonly
-                />
-              </td>
-              <td style="min-width: 220px;">
-                <input
-                  type="text"
-                  class="custom-input-field sm"
-                  formControlName="CostAgentName"
-                  readonly
-                />
-              </td>
-            </tr>
+     <div class="table-responsive table-borderless">
+  <table class="table table-hover align-middle no-wrap table-sm mb-0">
+    
+    <thead>
+      <tr class="bg-info text-center">
+        
+        <th class="bg-transparent text-light"
+            style="font-size: 14px; width: 50px;">
+        </th>
 
-            <tr *ngIf="detailItems.length === 0">
-              <td colspan="11">
-                <div class="text-center">No payable prepaid cost rows available</div>
-              </td>
-            </tr>
-          </tbody>
-          <tfoot class="sticky-bottom" style="position: sticky; bottom: 0; z-index: 1;">
-            <tr class="table-info fw-bold text-end">
-              <td colspan="9" class="text-end">Total</td>
-              <td>{{ totalLocalAmount | number:'1.2-2' }}</td>
-              <td></td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+        <th class="bg-transparent text-light"
+            style="font-size: 14px; width: 50px;">
+        </th>
+
+        <th class="bg-transparent text-light"
+            style="font-size: 14px; min-width: 220px;">
+          Charge
+        </th>
+
+        <th class="bg-transparent text-light"
+            style="font-size: 14px; min-width: 90px;">
+          Unit
+        </th>
+
+        <!-- Reduced Width -->
+        <th class="bg-transparent text-light"
+            style="font-size: 14px; min-width: 90px;">
+          No. of Unit
+        </th>
+
+        <!-- Reduced Width -->
+        <th class="bg-transparent text-light"
+            style="font-size: 14px; min-width: 80px;">
+          Curr.
+        </th>
+
+        <th class="bg-transparent text-light"
+            style="font-size: 14px; min-width: 130px;">
+          Ex. Rate
+        </th>
+
+        <th class="bg-transparent text-light"
+            style="font-size: 14px; min-width: 130px;">
+          Per Unit
+        </th>
+
+        <th class="bg-transparent text-light"
+            style="font-size: 14px; min-width: 130px;">
+          Amt
+        </th>
+
+        <th class="bg-transparent text-light"
+            style="font-size: 14px; min-width: 140px;">
+          Local Amt
+        </th>
+
+        <th class="bg-transparent text-light"
+            style="font-size: 14px; min-width: 220px;">
+          Party
+        </th>
+
+      </tr>
+    </thead>
+
+    <tbody formArrayName="detailItems">
+
+      <tr *ngFor="let row of detailItems.controls; let i = index"
+          [formGroupName]="i">
+
+        <!-- Delete -->
+        <td class="text-center">
+          <button
+            type="button"
+            class="btn btn-link text-danger p-0"
+            (click)="removeDetailRow(i)"
+            [disabled]="isReadOnly"
+          >
+            <i class="fas fa-trash fs-2"></i>
+          </button>
+        </td>
+
+        <!-- Checkbox -->
+        <td class="text-center pt-1">
+          <input type="checkbox" formControlName="Selected" />
+        </td>
+
+        <!-- Charge -->
+        <td style="min-width: 220px;">
+          <input
+            type="text"
+            class="custom-input-field sm"
+            formControlName="ChargeDescription"
+            readonly
+          />
+        </td>
+
+        <!-- Unit -->
+        <td style="min-width: 90px;">
+          <ng-select
+            class="ng-select"
+            [items]="uomList"
+            bindLabel="UOMCode"
+            bindValue="UOMMasterSid"
+            formControlName="CostChargeUomSid"
+            appendTo="body"
+            placeholder=""
+            [clearable]="false"
+            [readonly]="true"
+          >
+          </ng-select>
+        </td>
+
+        <!-- No of Unit Reduced -->
+        <td style="min-width: 90px;">
+          <input
+            type="text"
+            class="custom-input-field sm text-end"
+            formControlName="CostNumberOfUnit"
+            DecimalPrecision
+            [DecimalPrecisionBefore]="9"
+            [DecimalPrecisionAfter]="3"
+            readonly
+            (input)="recalculateDetailRow(i)"
+          />
+        </td>
+
+        <!-- Currency Reduced -->
+        <td style="min-width: 80px;">
+          <dofi-searchable-dropdown
+            [items]="currencyList"
+            formControlName="CostCurrencyMasterSid"
+            [placeholder]="''"
+            [clearable]="false"
+            [style]="'min-width: 80px; width: 80px;'"
+            [displayFields]="CurrencyLookupConfig.displayFields"
+            [displayLabels]="CurrencyLookupConfig.displayLabels"
+            [labelFields]="CurrencyLookupConfig.labelFields"
+            [bindValue]="'CurrencyMasterSid'"
+            [readonly]="true"
+            (itemSelected)="onDetailCurrencyChange(i, $event)"
+          >
+          </dofi-searchable-dropdown>
+        </td>
+
+        <!-- Exchange Rate -->
+        <td style="min-width: 130px;">
+          <input
+            type="text"
+            class="custom-input-field sm text-end"
+            formControlName="CostExchangeRate"
+            DecimalPrecision
+            [DecimalPrecisionBefore]="9"
+            [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)"
+            readonly
+            (input)="recalculateDetailRow(i)"
+          />
+        </td>
+
+        <!-- Per Unit -->
+        <td style="min-width: 130px;">
+          <input
+            type="text"
+            class="custom-input-field sm text-end"
+            formControlName="CostRate"
+            DecimalPrecision
+            [DecimalPrecisionBefore]="9"
+            [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)"
+            (input)="recalculateDetailRow(i)"
+          />
+        </td>
+
+        <!-- Amount -->
+        <td style="min-width: 130px;">
+          <input
+            type="text"
+            class="custom-input-field sm text-end"
+            formControlName="CostAmount"
+            DecimalPrecision
+            [DecimalPrecisionBefore]="9"
+            [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)"
+            readonly
+            (input)="onCostAmountChange(i)"
+          />
+        </td>
+
+        <!-- Local Amount -->
+        <td style="min-width: 140px;">
+          <input
+            type="text"
+            class="custom-input-field sm text-end fw-bold"
+            formControlName="CostLocalAmount"
+            DecimalPrecision
+            [DecimalPrecisionBefore]="9"
+            [DecimalPrecisionAfter]="getAmountDecimalPlaces(form.get('CurrencyMasterSid')?.value)"
+            readonly
+          />
+        </td>
+
+        <!-- Party -->
+        <td style="min-width: 220px;">
+          <input
+            type="text"
+            class="custom-input-field sm"
+            formControlName="CostAgentName"
+            readonly
+          />
+        </td>
+
+      </tr>
+
+      <!-- Empty -->
+      <tr *ngIf="detailItems.length === 0">
+        <td colspan="11">
+          <div class="text-center">
+            No payable prepaid cost rows available
+          </div>
+        </td>
+      </tr>
+
+    </tbody>
+
+    <!-- Footer -->
+    <tfoot class="sticky-bottom"
+            style="position: sticky; bottom: 0; z-index: 1;">
+      <tr class="table-info fw-bold text-end">
+        <td colspan="9" class="text-end">
+          Total
+        </td>
+
+        <td>
+          {{ totalLocalAmount | number:'1.2-2' }}
+        </td>
+
+        <td></td>
+      </tr>
+    </tfoot>
+
+  </table>
+</div>
     </div>
   </div>
 </div>
