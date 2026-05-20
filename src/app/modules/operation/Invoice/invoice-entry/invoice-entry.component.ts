@@ -352,6 +352,18 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     private voucherActionGuard: VoucherActionGuardService,
   ) {}
 
+  copyInvoiceNumber(event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const invoiceNo = this.invoiceForm?.get('VoucherNumber')?.value;
+    if (!invoiceNo) {
+      return;
+    }
+    navigator.clipboard.writeText(String(invoiceNo)).then(() => {
+      this.toastr.success('Invoice No. copied to clipboard.', '', { timeOut: 1500 });
+    });
+  }
+
   private getActionGuardContext(): VoucherActionGuardContext {
     return {
       documentName: 'Invoice',
