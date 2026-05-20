@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { catchError, map, mergeMap, of } from "rxjs";
 import { AppSettingsService } from "src/app/core/services/app-settings.service";
@@ -28,15 +28,11 @@ export class authService {
 
                 if (res && res.status) {
                     this.appSettingsService.setUserSettings(res.data.user);
+                    this.appSettingsService.storeUserProfile(res.data.user);
                     this.loginEmail = res.data.user?.UserEmail || '';
 
-                    return this.appSettingsService.setUserToken(res.data.token).pipe(
-                        map(() => {
-                            // Start session heartbeat after successful login
-                            this.sessionService.startHeartbeat();
-                            return res;
-                        })
-                    );
+                    this.sessionService.startHeartbeat();
+                    return of(res);
                 }
 
                 return of(res);
@@ -62,8 +58,7 @@ export class authService {
     }
 
     public resetPassword(payload: any, token: string) {
-        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`).set('Content-Type', 'application/json')
-        return this.http.patch('auth/reset-password', payload, { headers }).pipe
+        return this.http.patch(`auth/reset-password/${encodeURIComponent(token)}`, payload).pipe
             (map((resp: any) => {
                 return resp;
             }), catchError((err) => {
