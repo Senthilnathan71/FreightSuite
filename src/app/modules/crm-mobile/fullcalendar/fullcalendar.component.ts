@@ -232,6 +232,34 @@ export class FullcalendarComponent implements OnInit, AfterViewInit {
     return now.toISOString().slice(0, 16); // Format as 'YYYY-MM-DDTHH:mm'
   }
 
+  private getMeetingUserContext(): { userId: number; userTypeCode: string } {
+    const userProfile = this.appSettingService.getDecryptedUserProfile() || {};
+    const userFromStream = this.appSettingService.userSettingSource.value || {};
+
+    const userId = Number(
+      userProfile?.UserMasterSid
+      || userProfile?.userMasterSid
+      || userProfile?.UserSid
+      || userProfile?.userSid
+      || userProfile?.userMaster?.UserMasterSid
+      || userProfile?.userMaster?.userMasterSid
+      || userFromStream?.UserMasterSid
+      || userFromStream?.userMasterSid
+      || userFromStream?.UserSid
+      || userFromStream?.userSid
+      || 0
+    );
+
+    const userTypeCode = String(
+      userProfile?.userType?.code
+      || userProfile?.userMaster?.userType?.code
+      || userFromStream?.userType?.code
+      || ''
+    );
+
+    return { userId, userTypeCode };
+  }
+
 
 
   /*/////////////////////////////////////
@@ -526,7 +554,15 @@ export class FullcalendarComponent implements OnInit, AfterViewInit {
     // first clear events
     this.events = [];
 
-    this.leadService.getMeetings().subscribe((meetingRes: any) => {
+    const userContext = this.getMeetingUserContext();
+    const meetingScopePayload = {
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      userTypeCode: userContext.userTypeCode,
+      userId: userContext.userId
+    };
+
+    this.leadService.getAllPreCustomerMeetings(meetingScopePayload).subscribe((meetingRes: any) => {
       let meetingEvents: any[] = [];
 
       if (meetingRes.status && meetingRes.data.length) {

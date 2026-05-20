@@ -9,6 +9,7 @@ import {
   ExcelRow,
 } from 'src/app/shared/excel-report-service';
 import { REPORT_DATA } from 'src/app/shared/services/report.service';
+import { PrintHeaderComponent } from '../../print-header/print-header.component';
 
 interface VatReturnRow {
   code: string;
@@ -21,7 +22,7 @@ interface VatReturnRow {
 @Component({
   selector: 'app-vat-summary-report',
   standalone: true,
-  imports: [CommonModule, CustomDatePipe],
+  imports: [CommonModule, CustomDatePipe,PrintHeaderComponent],
   templateUrl: './vat-summary-report.component.html',
   styleUrls: ['./vat-summary-report.component.scss'],
 })

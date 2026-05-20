@@ -580,7 +580,8 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
       widths: ['50%', '50%'],
       body: [[
         { stack: leftStack, margin: [5, 2, 5, 2] },
-        { stack: rightStack, margin: [5, 2, 5, 2] }
+        // Keep right edge flush so cargo table aligns with charges table below.
+        { stack: rightStack, margin: [5, 2, 0, 2] }
       ]]
     },
     layout: 'noBorders',
