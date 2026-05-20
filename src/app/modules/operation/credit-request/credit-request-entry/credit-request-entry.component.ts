@@ -729,7 +729,9 @@ creditForm.get('ApprovalStatus')?.valueChanges.subscribe(() => {
       'CreditLimit',
       'PublishedDays',
       'PublishedLimit',
-      'EffectiveFrom'
+      'EffectiveFrom',
+      'EffectiveTo',
+      'Status'
     ];
 
     lockControls.forEach(name => {

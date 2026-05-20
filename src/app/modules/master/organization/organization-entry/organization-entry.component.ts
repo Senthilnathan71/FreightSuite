@@ -701,13 +701,17 @@ this.mps.init().subscribe();
         takeUntil(this.destroy$)
       )
       .subscribe(() => {
-         this.onCountryChange();
-        // this.updateShortCodeFieldState();
-      // this.generateCustomerShortCode();
-      this.updateTaxIdFieldValidation();
-      this.updateTaxIdFieldState();
-      this.getStatesByCountryId(); // Load states when country changes
-    });
+        this.handleCustomerCountryChange();
+      });
+
+    this.customerForm.get('status')?.valueChanges
+      .pipe(
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        this.syncBranchStatusesWithOrganizationStatus();
+      });
 
     setTimeout(() => {
       this.initializeUnsavedChangesTracking();
@@ -939,6 +943,9 @@ clearCustomerSearch(): void {
       data?.CustBranchPhoneCode ||
       parsedBranchPhone.phoneCode ||
       DialCodeDropdownComponent.getDefaultDialCodeFromLoginCountry(this.userData);
+    const initialBranchStatus = this.isOrganizationSuspended()
+      ? 'Suspended'
+      : data?.status === 'A' ? 'Active' : data?.status === 'S' ? 'Suspended' : 'Active';
 
     const branchForm = this.fb.group({
       CustomerBranchSid: [data?.CustomerBranchSid || null],
@@ -957,7 +964,7 @@ clearCustomerSearch(): void {
       CustBranchRegistered: [data?.Registered || 'Y', [Validators.required]],
       CustBranchGSTtype: [data?.CustomerGstType || 'Regular'],
       CustBranchGSTIN: [data?.GSTNo || '', this.gstValidator],
-      status: [{ value: data?.status === 'A' ? 'Active' : data?.status === 'S' ? 'Suspended' : 'Active', disabled: false }, Validators.required],
+      status: [{ value: initialBranchStatus, disabled: this.isOrganizationSuspended() }, Validators.required],
 
       // Contacts array
       contacts: this.fb.array(data?.contacts ? this.createContactsArray(data.contacts) : []),
@@ -972,13 +979,16 @@ clearCustomerSearch(): void {
 
     // Initialize cities array for this branch
     branchForm['cities'] = data?.cities || [];
+    this.setupBranchStateChangeSubscription(branchForm);
     branchForm.get('CustBranchGSTIN')?.valueChanges.subscribe((value:string)=>{
       if(value){
         branchForm.get('CustBranchGSTIN')?.setValue(this.casepipe.transform(value));
       }
     })
 
-     branchForm.get('status')?.valueChanges.subscribe((status) => {
+     branchForm.get('status')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((status) => {
     const branchIndex = this.branches.controls.findIndex(control => control === branchForm);
     if (branchIndex !== -1) {
       this.onBranchStatusChange(branchIndex);
@@ -1114,6 +1124,7 @@ clearCustomerSearch(): void {
   }
 
   this.updateAvailableBranchesCache();
+  this.syncBranchStatusWithOrganizationStatus(newBranch);
   this.cdRef.markForCheck();
 }
   // Add contact to branch
@@ -1362,6 +1373,8 @@ private populateBranchFormArray(branches: any[]): void {
       this.getCitiesByStateIdForBranch(currentBranchIndex, branch.stateMaster.StateMasterSid);
     }
 
+    this.syncBranchStatusWithOrganizationStatus(branchFormGroup);
+
     // Initialize GST digits after a short delay to ensure DOM is ready
      setTimeout(() => {
       if (branch.stateMaster?.StateMasterSid) {
@@ -1458,6 +1471,79 @@ private populateBranchFormArray(branches: any[]): void {
     this.updateTaxIdFieldState();
   }
 }
+
+  private handleCustomerCountryChange(): void {
+    this.updateTaxIdFieldState();
+    this.updatePanTypeValidation();
+    this.currentTaxIdLabel = this.getTaxIdLabel();
+    this.clearBranchLocationSelections();
+    this.getStatesByCountryId();
+    this.autoSelectCurrency();
+    this.cdRef.markForCheck();
+  }
+
+  private clearBranchLocationSelections(): void {
+    this.branches.controls.forEach((branchControl) => {
+      const branchForm = branchControl as FormGroup;
+      branchForm['cities'] = [];
+      branchForm.get('CustBranchState')?.setValue('', { emitEvent: false });
+      branchForm.get('CustBranchCity')?.setValue('', { emitEvent: false });
+      branchForm.get('CustBranchGSTIN')?.setValue('', { emitEvent: false });
+    });
+  }
+
+  private setupBranchStateChangeSubscription(branchForm: FormGroup): void {
+    branchForm.get('CustBranchState')?.valueChanges
+      .pipe(
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((stateId) => {
+        const branchIndex = this.branches.controls.findIndex(control => control === branchForm);
+        if (branchIndex === -1) return;
+
+        branchForm['cities'] = [];
+        branchForm.get('CustBranchCity')?.setValue('', { emitEvent: false });
+
+        if (stateId) {
+          this.getCitiesByStateIdForBranch(branchIndex, stateId);
+        } else {
+          this.generateGST(branchIndex);
+          this.cdRef.markForCheck();
+        }
+      });
+  }
+
+  private isOrganizationSuspended(): boolean {
+    const status = this.customerForm?.get('status')?.getRawValue();
+    return status === 'Suspended' || status === 'S';
+  }
+
+  private syncBranchStatusesWithOrganizationStatus(): void {
+    this.branches.controls.forEach((branchControl) => {
+      this.syncBranchStatusWithOrganizationStatus(branchControl as FormGroup);
+    });
+    this.cdRef.markForCheck();
+  }
+
+  private syncBranchStatusWithOrganizationStatus(branchForm: FormGroup): void {
+    const statusControl = branchForm.get('status');
+    if (!statusControl) return;
+
+    if (this.isOrganizationSuspended()) {
+      statusControl.enable({ emitEvent: false });
+      statusControl.setValue('Suspended', { emitEvent: false });
+      const branchIndex = this.branches.controls.findIndex(control => control === branchForm);
+      if (branchIndex !== -1) {
+        this.onBranchStatusChange(branchIndex);
+      }
+      statusControl.disable({ emitEvent: false });
+      return;
+    }
+
+    statusControl.enable({ emitEvent: false });
+  }
+
   getBranchCities(branchIndex: number): any[] {
     const branchForm = this.branches.at(branchIndex) as FormGroup | null;
     return branchForm?.['cities'] || [];
@@ -1703,7 +1789,7 @@ private populateBranchFormArray(branches: any[]): void {
       Remarks: [''],
       CIN:[''],
       TAN:[''],
-      status: [{ value: 'Active', disabled: !this.isEditMode }, Validators.required],
+      status: [{ value: 'Active', disabled: false }, Validators.required],
       CustomerType: [{}],
       Network: [''],
       cusMilestone: this.fb.array([]),
