@@ -283,7 +283,7 @@ export class JobCloseComponent implements OnInit {
         this.spinner.hide('jobCloseSpinner');
         if (resp.status) {
           this.appSettingService.showSuccess('Job Close status saved successfully');
-          this.router.navigate(['operation/master-job/list']);
+          this.loadJobCloseDetail();
         } else {
           this.appSettingService.showError(resp.message || 'Failed to save Job Close status');
         }
