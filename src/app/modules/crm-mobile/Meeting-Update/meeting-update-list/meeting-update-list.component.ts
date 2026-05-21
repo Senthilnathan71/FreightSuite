@@ -974,6 +974,8 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
           remarks: meeting.remarks || ''
         });
         if (followUp) {
+          this.meetingForm.get('followUpDate')?.setValidators(Validators.required);
+          this.meetingForm.get('followUpDate')?.updateValueAndValidity();
           this.meetingForm.get('followUpNote')?.setValidators(Validators.required);
           this.meetingForm.get('followUpNote')?.updateValueAndValidity();
         }
@@ -1035,6 +1037,12 @@ private handleMeetingDateChange(newDate: string): void {
     if (!this.meetingForm.get('meetingNote')?.value?.trim()) {
       this.meetingForm.get('meetingNote')?.markAsTouched();
       this.appSettingService.showError("Meeting Note is required.");
+      return;
+    }
+
+    if (this.meetingForm.get('followUp')?.value && !this.meetingForm.get('followUpDate')?.value) {
+      this.meetingForm.get('followUpDate')?.markAsTouched();
+      this.appSettingService.showError("Follow Up Date is required when Follow Up is enabled.");
       return;
     }
 
@@ -1181,10 +1189,13 @@ private handleMeetingDateChange(newDate: string): void {
 
     const hasFollowUp = !!(this.selectedMeeting?.followUpDate || this.selectedMeeting?.followUpNote);
     if (hasFollowUp) {
+      this.meetingForm.get('followUpDate')?.setValidators(Validators.required);
       this.meetingForm.get('followUpNote')?.setValidators(Validators.required);
     } else {
+      this.meetingForm.get('followUpDate')?.clearValidators();
       this.meetingForm.get('followUpNote')?.clearValidators();
     }
+    this.meetingForm.get('followUpDate')?.updateValueAndValidity();
     this.meetingForm.get('followUpNote')?.updateValueAndValidity();
 
     this.btnDisable = false;
@@ -1196,10 +1207,15 @@ private handleMeetingDateChange(newDate: string): void {
     this.meetingForm.patchValue({ followUp: isChecked });
 
     if (isChecked) {
+      this.meetingForm.get('followUpDate')?.setValidators(Validators.required);
+      this.meetingForm.get('followUpDate')?.updateValueAndValidity();
       this.meetingForm.get('followUpNote')?.setValidators(Validators.required);
       this.meetingForm.get('followUpNote')?.updateValueAndValidity();
     } else {
       this.meetingForm.patchValue({ followUpDate: null, followUpNote: '' });
+      this.meetingForm.get('followUpDate')?.clearValidators();
+      this.meetingForm.get('followUpDate')?.setErrors(null);
+      this.meetingForm.get('followUpDate')?.updateValueAndValidity();
       this.meetingForm.get('followUpNote')?.clearValidators();
       this.meetingForm.get('followUpNote')?.setErrors(null);
       this.meetingForm.get('followUpNote')?.updateValueAndValidity();
