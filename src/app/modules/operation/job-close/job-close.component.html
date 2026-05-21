@@ -48,12 +48,12 @@
         <button
           type="button"
           class="btn btn-sm dofi-min-w-80 dofi-max-w-80"
-          [ngClass]="allClosersClosed ? 'btn-warning' : 'btn-info'"
-          (click)="allClosersClosed ? onReopen() : save()"
-          [disabled]="loading || (!allClosersClosed && !canSave)"
+          [ngClass]="persistedAllClosersClosed ? 'btn-warning' : 'btn-info'"
+          (click)="persistedAllClosersClosed ? onReopen() : save()"
+          [disabled]="loading || (!persistedAllClosersClosed && !canSave)"
         >
-          <i class="fas me-1" [ngClass]="allClosersClosed ? 'fa-lock-open' : 'fa-save'"></i>
-          {{ allClosersClosed ? 'Reopen' : 'Save' }}
+          <i class="fas me-1" [ngClass]="persistedAllClosersClosed ? 'fa-lock-open' : 'fa-save'"></i>
+          {{ persistedAllClosersClosed ? 'Reopen' : 'Save' }}
         </button>
       </div>
 
@@ -273,6 +273,7 @@
             <th class="text-center bg-transparent text-light text-center">Prov. Rev</th>
             <th class="text-center bg-transparent text-light text-center">Actual Cost</th>
             <th class="text-center bg-transparent text-light text-center">Actual Rev</th>
+            <th class="text-center bg-transparent text-light text-center">GP</th>
           </tr>
         </thead>
         <tbody>
@@ -285,9 +286,25 @@
             <td style="color: black;">{{ h.ProvRevenue | number:'1.2-2' }}</td>
             <td style="color: black;">{{ h.ActualCost | number:'1.2-2' }}</td>
             <td style="color: black;">{{ h.ActualRevenue | number:'1.2-2' }}</td>
+            <td [ngClass]="h.GP <= 0 ? 'text-danger' : 'text-success'" style="font-weight: 700;">
+              {{ h.GP | number:'1.2-2' }}
+            </td>
+          </tr>
+          <tr *ngIf="hblData.length > 0" class="fw-bold" style="color: black; border-top: 2px solid #0d6efd;">
+            <td class="text-end">Total</td>
+            <td>{{ hblTotals.GrossWt | number:'1.3-3' }}</td>
+            <td>{{ hblTotals.Volumetric | number:'1.3-3' }}</td>
+            <td>{{ hblTotals.CBM | number:'1.3-3' }}</td>
+            <td>{{ hblTotals.ProvCost | number:'1.2-2' }}</td>
+            <td>{{ hblTotals.ProvRevenue | number:'1.2-2' }}</td>
+            <td>{{ hblTotals.ActualCost | number:'1.2-2' }}</td>
+            <td>{{ hblTotals.ActualRevenue | number:'1.2-2' }}</td>
+            <td [ngClass]="hblTotals.GP <= 0 ? 'text-danger' : 'text-success'" style="font-weight: 700;">
+              {{ hblTotals.GP | number:'1.2-2' }}
+            </td>
           </tr>
           <tr *ngIf="hblData.length === 0">
-            <td colspan="8" class="text-center text-muted">No HBL records found</td>
+            <td colspan="9" class="text-center text-muted">No HBL records found</td>
           </tr>
         </tbody>
       </table>
@@ -413,12 +430,26 @@
         <div class="closer-section" style="display: flex; flex-direction: column; height: 100%;">
           <h6 class="closer-title text-info">Job Closer</h6>
 
+          <div *ngIf="isGpLossReasonRequired && (hasJobLossReason || isJobProfitLossFailed)" class="small mb-2 p-2 rounded"
+               [ngClass]="jobLossReasonBoxClass">
+            <div class="fw-semibold text-info">Job Loss Reason</div>
+            <div>{{ masterJob?.others?.JobLossReason || '-' }}</div>
+            <div *ngIf="isJobProfitLossFailed && !hasJobLossReason" class="fw-semibold mt-1">
+              {{ jobLossReasonRequiredMessage }}
+            </div>
+            <div *ngIf="isJobProfitLossFailed && hasJobLossReason" class="fw-semibold mt-1">
+              {{ jobLossReasonApprovedMessage }}
+            </div>
+          </div>
+
           <div class="milestone-list" style="flex-grow: 1;">
             <div *ngFor="let m of milestoneChecks.jobClose" class="milestone-item">
               <i class="fas"
-                 [ngClass]="m.passed ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'">
+                 [ngClass]="isJobCloseMilestonePassed(m) ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'">
               </i>
-              <span class="ms-1 small" style="color: black;">{{ m.passed ? m.label : m.failedLabel }}</span>
+              <span class="ms-1 small" style="color: black;">
+                {{ isJobCloseMilestonePassed(m) ? m.label : m.failedLabel }}
+              </span>
             </div>
           </div>
 
@@ -454,6 +485,9 @@
       <i class="fas me-2"
          [ngClass]="m.passed ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'"></i>
       <span [class.text-danger]="!m.passed" [class.fw-semibold]="!m.passed">{{ m.passed ? m.label : m.failedLabel }}</span>
+    </div>
+    <div *ngIf="validationModalTitle === 'Job Closer' && isJobProfitLossFailed && !hasJobLossReason" class="text-danger small fw-semibold mt-3">
+      {{ jobLossReasonRequiredMessage }}
     </div>
     <div class="text-muted small mt-3">All milestones must pass before this closer can be completed.</div>
   </div>
