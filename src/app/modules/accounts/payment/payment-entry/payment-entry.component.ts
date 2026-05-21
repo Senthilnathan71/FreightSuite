@@ -190,6 +190,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   taxLabelCache: string[] = [];
   private _previousPaymentInvoiceType: string = '';
   private _originalHSSACValues: any[] = [];
+  private previousHeaderNarration: string = '';
   invoiceTypeOptions = [
     { id: 'REG',   name: 'Regular' },
     { id: 'RCM',   name: 'RCM - Reverse Charge' },
@@ -1857,6 +1858,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       },
       { emitEvent: false }
     );
+    this.previousHeaderNarration = headerInfo.Narration || '';
     const prSid = headerInfo.ReversalVoucher || headerInfo.PaymentRequestSid;
     if (prSid) {
       this.prPaymentRequestSid = prSid;
@@ -2170,6 +2172,9 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     }
 
     const newRow = this.constructDetailItems(data);
+    if (!newRow.get('Narration')?.value) {
+      newRow.patchValue({ Narration: this.r['Narration']?.value || '' }, { emitEvent: false });
+    }
     this.detailItems.push(newRow);
 
     const lastAddedRow = this.detailItems.length - 1;
@@ -2667,15 +2672,29 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       Narration:
         cashOrBank === 'Bank'
           ? `Being Bank Transfer  ${instrumentMode ? instrumentMode + '-' : ''}${instrumentNumber ? instrumentNumber + '-' : ''}${instrumentDate ? instrumentDate + ' ' : ''}`
-          : `Being Cash Transfer .`,
+          : this.r['Narration']?.value || '',
     });
 
     bankCtrl?.patchValue({
       Narration:
         cashOrBank === 'Bank'
           ? `Being ${instrumentMode ? instrumentMode + '-' : ''}${instrumentNumber ? instrumentNumber + '-' : ''}${instrumentDate ? instrumentDate + ' ' : ''}from ${bankPartyName ? bankPartyName + '' : ''}`
-          : `Being Cash Transfer.`,
+          : this.r['Narration']?.value || '',
     });
+  }
+
+  onHeaderNarrationChange() {
+    const newValue: string = this.r['Narration']?.value || '';
+    const prevNarration = this.previousHeaderNarration;
+
+    (this.detailItems.controls as FormGroup[]).forEach((row) => {
+      const rowNarration: string = row.get('Narration')?.value ?? '';
+      if (!rowNarration || rowNarration === prevNarration) {
+        row.patchValue({ Narration: newValue }, { emitEvent: false });
+      }
+    });
+
+    this.previousHeaderNarration = newValue;
   }
 
   fetchLedgerForCOA(
