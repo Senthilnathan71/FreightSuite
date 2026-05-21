@@ -50,6 +50,9 @@ export class JobCloseComponent implements OnInit {
   // Validation modal state
   validationModalTitle = '';
   validationModalMilestones: { label: string; failedLabel: string; passed: boolean }[] = [];
+  showJobCloseLossReasonValidation = false;
+  readonly jobLossReasonRequiredMessage = 'GP is negative/zero. Please update Job Loss Reason before closing the job.';
+  readonly jobLossReasonApprovedMessage = 'GP is negative/zero. Job Loss Reason is updated, so Job Close is allowed.';
 
   constructor(
     private route: ActivatedRoute,
@@ -88,6 +91,7 @@ export class JobCloseComponent implements OnInit {
             documentation: [], operation: [], accounts: [], jobClose: []
           };
           this.departmentType = this.masterJob.departmentType || '';
+          this.showJobCloseLossReasonValidation = false;
 
           this.docClose = this.closureStatus.DocCloseStatus === 'Closed';
           this.opsClose = this.closureStatus.OpsCloseStatus === 'Closed';
@@ -128,15 +132,113 @@ export class JobCloseComponent implements OnInit {
   }
 
   get allJobMilestonesPassed(): boolean {
+    return this.canPassJobCloseValidation;
+  }
+
+  get hasJobLossReason(): boolean {
+    return !!String(this.masterJob?.others?.JobLossReason || '').trim();
+  }
+
+  get hblTotals(): any {
+    return (this.hblData || []).reduce((total: any, h: any) => {
+      total.GrossWt += Number(h?.GrossWt || 0);
+      total.Volumetric += Number(h?.Volumetric || 0);
+      total.CBM += Number(h?.CBM || 0);
+      total.ProvCost += Number(h?.ProvCost || 0);
+      total.ProvRevenue += Number(h?.ProvRevenue || 0);
+      total.ActualCost += Number(h?.ActualCost || 0);
+      total.ActualRevenue += Number(h?.ActualRevenue || 0);
+      total.GP += Number(h?.GP || 0);
+      return total;
+    }, {
+      GrossWt: 0,
+      Volumetric: 0,
+      CBM: 0,
+      ProvCost: 0,
+      ProvRevenue: 0,
+      ActualCost: 0,
+      ActualRevenue: 0,
+      GP: 0
+    });
+  }
+
+  get jobCloseMilestonesPassedWithoutBypass(): boolean {
     return this.milestoneChecks.jobClose?.every((m: any) => m.passed) ?? false;
   }
 
+  get isGpLossReasonRequired(): boolean {
+    return Number(this.hblTotals.GP || 0) <= 0;
+  }
+
+  get failedJobCloseMilestones(): any[] {
+    return (this.milestoneChecks.jobClose || []).filter((m: any) => !m.nonBlocking && !m.passed);
+  }
+
+  isProfitLossMilestone(milestone: any): boolean {
+    return milestone?.code === 'JOB_PROFIT_LOSS';
+  }
+
+  isApprovedGpLossMilestone(milestone: any): boolean {
+    return this.isProfitLossMilestone(milestone)
+      && !milestone.passed
+      && this.isGpLossReasonRequired
+      && this.hasJobLossReason;
+  }
+
+  isJobCloseMilestonePassed(milestone: any): boolean {
+    return !!milestone?.passed
+      || (this.isProfitLossMilestone(milestone) && !this.isGpLossReasonRequired)
+      || this.isApprovedGpLossMilestone(milestone);
+  }
+
+  get blockingJobCloseMilestones(): any[] {
+    return this.failedJobCloseMilestones.filter((m: any) => !this.isJobCloseMilestonePassed(m));
+  }
+
+  get isJobProfitLossFailed(): boolean {
+    return this.isGpLossReasonRequired
+      && this.failedJobCloseMilestones.some((m: any) => this.isProfitLossMilestone(m));
+  }
+
+  get hasNonLossJobCloseFailure(): boolean {
+    return this.blockingJobCloseMilestones.some((m: any) => m.code !== 'JOB_PROFIT_LOSS');
+  }
+
+  get canPassJobCloseValidation(): boolean {
+    return this.blockingJobCloseMilestones.length === 0
+      || (this.isJobProfitLossFailed && !this.hasNonLossJobCloseFailure && this.hasJobLossReason);
+  }
+
+  get jobLossReasonBoxClass(): string {
+    if (this.isJobProfitLossFailed && !this.hasJobLossReason) {
+      return 'border border-danger bg-light text-danger';
+    }
+    if (this.isJobProfitLossFailed && this.hasJobLossReason) {
+      return 'border border-warning bg-light text-warning';
+    }
+    return 'border bg-light text-muted';
+  }
+
   get canSave(): boolean {
-    return this.allDocMilestonesPassed
-        && this.allOpsMilestonesPassed
-        && this.allAccMilestonesPassed
-        && this.allJobMilestonesPassed
-        && this.hasChanges;
+    if (!this.hasChanges) {
+      return false;
+    }
+    if (this.isClosing('DocCloseStatus') && !this.allDocMilestonesPassed) {
+      return false;
+    }
+    if (this.isClosing('OpsCloseStatus') && !this.allOpsMilestonesPassed) {
+      return false;
+    }
+    if (this.isClosing('AccCloseStatus') && !this.allAccMilestonesPassed) {
+      return false;
+    }
+    if (this.isClosing('JobCloseStatus') && !this.allJobMilestonesPassed) {
+      return false;
+    }
+    if (this.jobCloseCheck && !this.canPassJobCloseValidation) {
+      return false;
+    }
+    return true;
   }
 
   get allClosersClosed(): boolean {
@@ -144,6 +246,13 @@ export class JobCloseComponent implements OnInit {
         && this.closureStatus.OpsCloseStatus === 'Closed'
         && this.closureStatus.AccCloseStatus === 'Closed'
         && this.closureStatus.JobCloseStatus === 'Closed';
+  }
+
+  get persistedAllClosersClosed(): boolean {
+    return this.initialClosureStatus.DocCloseStatus === 'Closed'
+        && this.initialClosureStatus.OpsCloseStatus === 'Closed'
+        && this.initialClosureStatus.AccCloseStatus === 'Closed'
+        && this.initialClosureStatus.JobCloseStatus === 'Closed';
   }
 
   private tryClose(
@@ -161,6 +270,18 @@ export class JobCloseComponent implements OnInit {
       this.modalService.open(this.validationModal, { centered: true, size: 'md' });
       onRevert();
     }
+  }
+
+  private isClosing(statusField: string): boolean {
+    return this.closureStatus?.[statusField] === 'Closed'
+      && this.initialClosureStatus?.[statusField] !== 'Closed';
+  }
+
+  private resetJobClose(): void {
+    this.jobCloseCheck = false;
+    this.closureStatus.JobCloseStatus = 'Open';
+    this.closureStatus.JobClosedDate = null;
+    this.closureStatus.JobClosedBy = null;
   }
 
   onDocCloseChange(): void {
@@ -219,18 +340,28 @@ export class JobCloseComponent implements OnInit {
 
   onJobCloseChange(): void {
     if (this.jobCloseCheck) {
-      this.tryClose('Job Closer', this.milestoneChecks.jobClose,
-        () => {
-          this.closureStatus.JobCloseStatus = 'Closed';
-          this.closureStatus.JobClosedDate = new Date().toISOString();
-          this.closureStatus.JobClosedBy = this.userData?.email || this.userData?.userName || '';
-        },
-        () => { this.jobCloseCheck = false; }
-      );
+      if (this.canPassJobCloseValidation) {
+        this.showJobCloseLossReasonValidation = false;
+        this.closureStatus.JobCloseStatus = 'Closed';
+        this.closureStatus.JobClosedDate = new Date().toISOString();
+        this.closureStatus.JobClosedBy = this.userData?.email || this.userData?.userName || '';
+      } else if (this.isJobProfitLossFailed && !this.hasNonLossJobCloseFailure && !this.hasJobLossReason) {
+        this.showJobCloseLossReasonValidation = true;
+        this.appSettingService.showError(this.jobLossReasonRequiredMessage);
+        this.validationModalTitle = 'Job Closer';
+        this.validationModalMilestones = this.milestoneChecks.jobClose || [];
+        this.modalService.open(this.validationModal, { centered: true, size: 'md' });
+        this.resetJobClose();
+      } else {
+        this.showJobCloseLossReasonValidation = false;
+        this.validationModalTitle = 'Job Closer';
+        this.validationModalMilestones = this.milestoneChecks.jobClose || [];
+        this.modalService.open(this.validationModal, { centered: true, size: 'md' });
+        this.resetJobClose();
+      }
     } else {
-      this.closureStatus.JobCloseStatus = 'Open';
-      this.closureStatus.JobClosedDate = null;
-      this.closureStatus.JobClosedBy = null;
+      this.showJobCloseLossReasonValidation = false;
+      this.resetJobClose();
     }
   }
 
@@ -248,16 +379,28 @@ export class JobCloseComponent implements OnInit {
     }
 
     if (!allPreviousClosed && this.jobCloseCheck) {
-      this.jobCloseCheck = false;
-      this.closureStatus.JobCloseStatus = 'Open';
-      this.closureStatus.JobClosedDate = null;
-      this.closureStatus.JobClosedBy = null;
+      this.resetJobClose();
     }
   }
 
   save(): void {
     if (!this.hasChanges) {
       this.appSettingService.showError('No changes to save');
+      return;
+    }
+    if (this.jobCloseCheck && !this.canPassJobCloseValidation) {
+      this.validationModalTitle = 'Job Closer';
+      this.validationModalMilestones = this.milestoneChecks.jobClose || [];
+      this.modalService.open(this.validationModal, { centered: true, size: 'md' });
+      this.resetJobClose();
+      return;
+    }
+    if (this.closureStatus.JobCloseStatus === 'Closed'
+      && this.isJobProfitLossFailed
+      && !this.hasNonLossJobCloseFailure
+      && !this.hasJobLossReason) {
+      this.showJobCloseLossReasonValidation = true;
+      this.appSettingService.showError(this.jobLossReasonRequiredMessage);
       return;
     }
     this.spinner.show('jobCloseSpinner');

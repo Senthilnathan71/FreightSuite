@@ -95,7 +95,8 @@
             </div>
             <div class="action-group" >
                 <div ngbDropdown container="body" class="d-inline-block">
-                    <button type="button" class="btn btn-info btn-sm" id="dropdownUpload" ngbDropdownToggle>
+                    <button type="button" class="btn btn-info btn-sm" id="dropdownUpload" ngbDropdownToggle
+                        [disabled]="isLoading || isJobClosed">
                         <i class="fas fa-upload me-1"></i>
                         Upload
                     </button>
@@ -832,7 +833,7 @@
         type="button"
         class="btn btn-info btn-sm dofi-min-w-70 dofi-max-w-70" 
         *ngIf="isEditMode" 
-        (click)="navigateToHouseJobCreation()" [disabled]="isSuspended">
+        (click)="navigateToHouseJobCreation()" [disabled]="isSuspended || isJobClosed">
         <i class="fas fa-plus me-1"></i> Create
       </button>
         </div>
@@ -843,7 +844,7 @@
         type="button"
         class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120" 
         *ngIf="isEditMode"
-        (click)="openAttachModal()" [disabled]="isSuspended">
+        (click)="openAttachModal()" [disabled]="isSuspended || isJobClosed">
         <i class="fas fa-save me-1"></i> Attach Booking
       </button>
         </div>
@@ -1676,7 +1677,16 @@
                                         </div>
                     </aside>
 
-                
+                <aside class="col-md-3">
+                        <div class="custom-form-group">
+                            <input formControlName="JobLossReason" class="custom-input-field sm"
+                                placeholder="" rows="2" maxlength="300">
+                            <label class="input-label">Job Loss Reason</label>
+                            <div class="small text-muted text-end">
+                                {{ masterJobForm.get('JobLossReason')?.value?.length || 0 }}/300
+                            </div>
+                        </div>
+                    </aside>
 
                     <!-- <aside class="col-md-3">
                         <div class="custom-form-group" [class.filled]="!!masterJobForm.get('ImportMasterJobSid')?.value">
@@ -1773,6 +1783,7 @@
                         </button>
                     </div>
                 </div>
+                  
             </div>
         </div>
 

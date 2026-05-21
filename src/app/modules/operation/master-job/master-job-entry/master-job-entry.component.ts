@@ -509,7 +509,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
   }
 
   get isJobClosed(): boolean {
-    const status = this.masterJobData?.JobStatus;
+    const status = this.masterJobData?.JobStatus || this.masterJobForm?.get('JobStatus')?.value;
     return status === 'Closed' || status === 'Job Closed';
   }
 
@@ -695,6 +695,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       Transporter: formValue.Transporter,
       HandlingInformation: formValue.HandlingInformation,
       InternalNote: formValue.InternalNote,
+      JobLossReason: formValue.JobLossReason?.substring(0, 300) || '',
       CFS: formValue.CFS,
       CFSAddress: formValue.CFSAddress,
       StuffingStartDate: formValue.StuffingStartDate,
@@ -1101,6 +1102,7 @@ export class MasterJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
       Transporter: [''],
       HandlingInformation: [''],
       InternalNote: [''],
+      JobLossReason: ['', Validators.maxLength(300)],
       CFS: [null],
       CFSAddress: [''],
       StuffingStartDate: [null],
@@ -1680,6 +1682,7 @@ onETDDateSelect(): void {
           Transporter: othersData.Transporter || '',
           HandlingInformation: othersData.HandlingInformation || '',
           InternalNote: othersData.InternalNote || '',
+          JobLossReason: othersData.JobLossReason || '',
           CFS: othersData.CFS || null,
           CFSAddress: othersData.CFSAddress || '',
           StuffingStartDate: othersData.StuffingStartDate ? new Date(othersData.StuffingStartDate) : null,
@@ -2975,6 +2978,7 @@ onETDDateSelect(): void {
       Transporter: formValue.Transporter,
       HandlingInformation: formValue.HandlingInformation,
       InternalNote: formValue.InternalNote,
+      JobLossReason: formValue.JobLossReason?.substring(0, 300) || '',
       CFS: formValue.CFS,
       CFSAddress: formValue.CFSAddress,
       StuffingStartDate: formValue.StuffingStartDate,
@@ -4139,6 +4143,11 @@ onETDDateSelect(): void {
   }
 
   openAttachModal() {
+    if (this.isJobClosed) {
+      this.appSettingsService.showWarning('Job is closed. Attach Booking is not allowed.');
+      return;
+    }
+
     const requiredFields = ['DepartmentMasterSid', 'POL', 'POD'];
     if (!this.hasEveryRequiredFieldsFilled(requiredFields, this.masterJobForm)) {
       requiredFields.forEach(field => {
@@ -5031,6 +5040,11 @@ onETDDateSelect(): void {
     };
   }
   navigateToHouseJobCreation(): void {
+    if (this.isJobClosed) {
+      this.toastr.warning('Job is closed. House Job creation is not allowed.');
+      return;
+    }
+
     if (!this.masterJobSid) {
       this.toastr.error('Please save the master job first before creating house job');
       return;
