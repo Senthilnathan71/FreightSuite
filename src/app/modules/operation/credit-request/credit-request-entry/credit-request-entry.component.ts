@@ -260,17 +260,29 @@ export class CreditRequestEntryComponent implements HasUnsavedChanges, OnDestroy
 
     this.applyApprovalLock(creditForm);
 
-// Disable ApprovalStatus only for new records
-if (!data?.CustomerCreditRequestSid) {
-  creditForm.get('ApprovalStatus')?.disable({ emitEvent: false });
-} else {
-  creditForm.get('ApprovalStatus')?.enable({ emitEvent: false });
-}
+    // Disable ApprovalStatus only for new records
+    if (!data?.CustomerCreditRequestSid) {
+      creditForm.get('ApprovalStatus')?.disable({ emitEvent: false });
+    } else {
+      creditForm.get('ApprovalStatus')?.enable({ emitEvent: false });
+    }
 
-creditForm.get('ApprovalStatus')?.valueChanges.subscribe(() => {
-  this.applyApprovalLock(creditForm);
-  this.approvalStatusChanged = true;
-});
+    let previousApprovalStatus = creditForm.get('ApprovalStatus')?.value;
+    creditForm.get('ApprovalStatus')?.valueChanges.subscribe((status) => {
+      if (this.normalizeApprovalStatus(status) === 'approved') {
+        const approvalError = this.getApprovalKycError(creditForm);
+        if (approvalError) {
+          this.appSettingService.showWarning(approvalError);
+          creditForm.get('ApprovalStatus')?.setValue(previousApprovalStatus, { emitEvent: false });
+          this.applyApprovalLock(creditForm);
+          return;
+        }
+      }
+
+      previousApprovalStatus = status;
+      this.applyApprovalLock(creditForm);
+      this.approvalStatusChanged = true;
+    });
 
     return creditForm;
   }
@@ -717,6 +729,16 @@ creditForm.get('ApprovalStatus')?.valueChanges.subscribe(() => {
         ? raw
         : (raw?.value ?? raw?.name ?? raw?.Status ?? raw?.status ?? '');
     return String(status ?? '').trim().toLowerCase();
+  }
+
+  private getApprovalKycError(creditForm: FormGroup): string | null {
+    const kycArray = creditForm.get('customerKyc') as FormArray | null;
+    if (!kycArray || kycArray.length === 0) {
+      return 'Please add at least one KYC document before approval.';
+    }
+
+    const missingAttachment = kycArray.controls.some(kycCtrl => !kycCtrl.get('AttachDocumentSid')?.value);
+    return missingAttachment ? 'Please attach all KYC documents before approval.' : null;
   }
 
   private applyApprovalLock(creditForm: FormGroup) {

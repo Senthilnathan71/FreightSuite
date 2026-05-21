@@ -157,6 +157,9 @@ export class OrganizationEntryComponent implements OnInit, OnDestroy, HasUnsaved
   currentTaxIdLabel: string = 'PAN/VAT Number';
    activeBranchIds: string[] = [];
    private selectedStatusChanges = new Subject<void>();
+   private lastCountryMasterSid: any = null;
+   private temporarilySuspendedBranches = new Map<FormGroup, 'Active' | 'Suspended'>();
+   private temporarilySuspendedChildRecords = new Map<FormGroup, 'Active' | 'Suspended'>();
 
 
   networkList: any[] = [];
@@ -694,23 +697,33 @@ this.mps.init().subscribe();
       });
 
     // ✅ React to country changes with debounce
+    this.lastCountryMasterSid = this.customerForm.get('CountryMasterSid')?.value;
     this.customerForm.get('CountryMasterSid')?.valueChanges
       .pipe(
         debounceTime(100),
         distinctUntilChanged(),
         takeUntil(this.destroy$)
       )
-      .subscribe(() => {
-        this.handleCustomerCountryChange();
-      });
+      .subscribe((countryId) => {
+      if (this.lastCountryMasterSid !== null && this.lastCountryMasterSid !== countryId) {
+        this.clearBranchStateAndCityOnCountryChange();
+      }
+      this.lastCountryMasterSid = countryId;
+      this.onCountryChange();
+        // this.updateShortCodeFieldState();
+      // this.generateCustomerShortCode();
+      this.updateTaxIdFieldValidation();
+      this.updateTaxIdFieldState();
+      this.getStatesByCountryId(); // Load states when country changes
+    });
 
     this.customerForm.get('status')?.valueChanges
       .pipe(
         distinctUntilChanged(),
         takeUntil(this.destroy$)
       )
-      .subscribe(() => {
-        this.syncBranchStatusesWithOrganizationStatus();
+      .subscribe((status) => {
+        this.onCustomerStatusChange(status);
       });
 
     setTimeout(() => {
@@ -755,6 +768,7 @@ this.mps.init().subscribe();
 
   private resetUnsavedState(): void {
     if (!this.customerForm) return;
+    this.clearTemporaryStatusMemory();
     this.initialFormValue = this.buildUnsavedSnapshot();
     this.isDirty = false;
   }
@@ -943,9 +957,6 @@ clearCustomerSearch(): void {
       data?.CustBranchPhoneCode ||
       parsedBranchPhone.phoneCode ||
       DialCodeDropdownComponent.getDefaultDialCodeFromLoginCountry(this.userData);
-    const initialBranchStatus = this.isOrganizationSuspended()
-      ? 'Suspended'
-      : data?.status === 'A' ? 'Active' : data?.status === 'S' ? 'Suspended' : 'Active';
 
     const branchForm = this.fb.group({
       CustomerBranchSid: [data?.CustomerBranchSid || null],
@@ -964,7 +975,7 @@ clearCustomerSearch(): void {
       CustBranchRegistered: [data?.Registered || 'Y', [Validators.required]],
       CustBranchGSTtype: [data?.CustomerGstType || 'Regular'],
       CustBranchGSTIN: [data?.GSTNo || '', this.gstValidator],
-      status: [{ value: initialBranchStatus, disabled: this.isOrganizationSuspended() }, Validators.required],
+      status: [{ value: this.isCustomerSuspended() ? 'Suspended' : this.toDisplayStatus(data?.status), disabled: this.isCustomerSuspended() }, Validators.required],
 
       // Contacts array
       contacts: this.fb.array(data?.contacts ? this.createContactsArray(data.contacts) : []),
@@ -979,7 +990,6 @@ clearCustomerSearch(): void {
 
     // Initialize cities array for this branch
     branchForm['cities'] = data?.cities || [];
-    this.setupBranchStateChangeSubscription(branchForm);
     branchForm.get('CustBranchGSTIN')?.valueChanges.subscribe((value:string)=>{
       if(value){
         branchForm.get('CustBranchGSTIN')?.setValue(this.casepipe.transform(value));
@@ -997,7 +1007,7 @@ clearCustomerSearch(): void {
 
   // Initialize status if branch is suspended
   const initialStatus = branchForm.get('status')?.value;
-  if (initialStatus === 'Suspended' || initialStatus === 'S') {
+  if (initialStatus === 'Suspended') {
     const branchIndex = this.branches.controls.findIndex(control => control === branchForm);
     if (branchIndex !== -1) {
       setTimeout(() => {
@@ -1124,7 +1134,6 @@ clearCustomerSearch(): void {
   }
 
   this.updateAvailableBranchesCache();
-  this.syncBranchStatusWithOrganizationStatus(newBranch);
   this.cdRef.markForCheck();
 }
   // Add contact to branch
@@ -1136,9 +1145,10 @@ clearCustomerSearch(): void {
       MobileNoCode: [this.getFormDialCode()],
       MobileNo: ['', [Validators.maxLength(15), this.phoneNumberValidator]],
       Email: ['', [Validators.required, EmailValidators.multipleEmails()]],
-      status: ['Active']
+      status: [this.isBranchSuspended(branchIndex) ? 'Suspended' : 'Active']
     });
     this.getContacts(branchIndex).push(contactForm);
+    this.applyChildFormSuspendedState(contactForm, this.isBranchSuspended(branchIndex));
   }
  
   // Add email to branch
@@ -1149,9 +1159,10 @@ clearCustomerSearch(): void {
       DepartmentMasterSid: [[], [Validators.required]],
       Toemail: ['', [Validators.required, EmailValidators.multipleEmails()]],
       CCemail: ['', [EmailValidators.multipleEmails()]],
-      status: ['Active']
+      status: [this.isBranchSuspended(branchIndex) ? 'Suspended' : 'Active']
     });
     this.getEmails(branchIndex).push(emailForm);
+    this.applyChildFormSuspendedState(emailForm, this.isBranchSuspended(branchIndex));
   }
   // Add login to branch
   addLogin(branchIndex: number) {
@@ -1160,9 +1171,10 @@ clearCustomerSearch(): void {
       LoginName: ['', [Validators.required]],
       LoginEmail: ['', [Validators.required, EmailValidators.singleEmail()]],
       LoginPassword: ['', [Validators.required, Validators.maxLength(50), PasswordValidators.validate()]],
-      status: ['Active', Validators.required]
+      status: [this.isBranchSuspended(branchIndex) ? 'Suspended' : 'Active', Validators.required]
     });
     this.getLogins(branchIndex).push(loginForm);
+    this.applyChildFormSuspendedState(loginForm, this.isBranchSuspended(branchIndex));
   }
 
   // Remove branch
@@ -1373,8 +1385,6 @@ private populateBranchFormArray(branches: any[]): void {
       this.getCitiesByStateIdForBranch(currentBranchIndex, branch.stateMaster.StateMasterSid);
     }
 
-    this.syncBranchStatusWithOrganizationStatus(branchFormGroup);
-
     // Initialize GST digits after a short delay to ensure DOM is ready
      setTimeout(() => {
       if (branch.stateMaster?.StateMasterSid) {
@@ -1472,77 +1482,18 @@ private populateBranchFormArray(branches: any[]): void {
   }
 }
 
-  private handleCustomerCountryChange(): void {
-    this.updateTaxIdFieldState();
-    this.updatePanTypeValidation();
-    this.currentTaxIdLabel = this.getTaxIdLabel();
-    this.clearBranchLocationSelections();
-    this.getStatesByCountryId();
-    this.autoSelectCurrency();
-    this.cdRef.markForCheck();
-  }
-
-  private clearBranchLocationSelections(): void {
-    this.branches.controls.forEach((branchControl) => {
-      const branchForm = branchControl as FormGroup;
-      branchForm['cities'] = [];
-      branchForm.get('CustBranchState')?.setValue('', { emitEvent: false });
-      branchForm.get('CustBranchCity')?.setValue('', { emitEvent: false });
-      branchForm.get('CustBranchGSTIN')?.setValue('', { emitEvent: false });
-    });
-  }
-
-  private setupBranchStateChangeSubscription(branchForm: FormGroup): void {
-    branchForm.get('CustBranchState')?.valueChanges
-      .pipe(
-        distinctUntilChanged(),
-        takeUntil(this.destroy$)
-      )
-      .subscribe((stateId) => {
-        const branchIndex = this.branches.controls.findIndex(control => control === branchForm);
-        if (branchIndex === -1) return;
-
-        branchForm['cities'] = [];
-        branchForm.get('CustBranchCity')?.setValue('', { emitEvent: false });
-
-        if (stateId) {
-          this.getCitiesByStateIdForBranch(branchIndex, stateId);
-        } else {
-          this.generateGST(branchIndex);
-          this.cdRef.markForCheck();
-        }
-      });
-  }
-
-  private isOrganizationSuspended(): boolean {
-    const status = this.customerForm?.get('status')?.getRawValue();
-    return status === 'Suspended' || status === 'S';
-  }
-
-  private syncBranchStatusesWithOrganizationStatus(): void {
-    this.branches.controls.forEach((branchControl) => {
-      this.syncBranchStatusWithOrganizationStatus(branchControl as FormGroup);
-    });
-    this.cdRef.markForCheck();
-  }
-
-  private syncBranchStatusWithOrganizationStatus(branchForm: FormGroup): void {
-    const statusControl = branchForm.get('status');
-    if (!statusControl) return;
-
-    if (this.isOrganizationSuspended()) {
-      statusControl.enable({ emitEvent: false });
-      statusControl.setValue('Suspended', { emitEvent: false });
-      const branchIndex = this.branches.controls.findIndex(control => control === branchForm);
-      if (branchIndex !== -1) {
-        this.onBranchStatusChange(branchIndex);
-      }
-      statusControl.disable({ emitEvent: false });
-      return;
-    }
-
-    statusControl.enable({ emitEvent: false });
-  }
+private clearBranchStateAndCityOnCountryChange(): void {
+  this.branches.controls.forEach((control, branchIndex) => {
+    const branchForm = control as FormGroup;
+    branchForm.patchValue({
+      CustBranchState: '',
+      CustBranchCity: ''
+    }, { emitEvent: false });
+    branchForm['cities'] = [];
+    this.generateGST(branchIndex);
+  });
+  this.cdRef.markForCheck();
+}
 
   getBranchCities(branchIndex: number): any[] {
     const branchForm = this.branches.at(branchIndex) as FormGroup | null;
@@ -2325,6 +2276,7 @@ loadCustomerData(customerId: number) {
         AirlineCode: customerData.AirlineCode || null,
         PanName: customerData.PanName || ''
       },{ emitEvent: false });
+      this.lastCountryMasterSid = customerData.countryMaster?.CountryMasterSid;
 
        if (this.isEditMode) {
         this.customerForm.get('CountryMasterSid')?.disable();
@@ -3091,8 +3043,23 @@ private getFirstInvalidField(): string {
 
   // Add this missing validation method
   private validateAllBranches(): { isValid: boolean; message: string } {
-    if (this.branches.length === 0) {
-      return { isValid: true, message: '' }; // No branches is valid
+    const customerStatus = this.customerForm.get('status')?.getRawValue();
+    const activeBranchCount = this.branches.controls
+      .filter(branch => this.isActiveStatus((branch as FormGroup).get('status')?.getRawValue()))
+      .length;
+
+    if (this.isActiveStatus(customerStatus) && activeBranchCount === 0) {
+      return {
+        isValid: false,
+        message: 'Customer is Active. At least one branch must be Active.'
+      };
+    }
+
+    if (this.isSuspendedStatus(customerStatus) && activeBranchCount > 0) {
+      return {
+        isValid: false,
+        message: 'Customer is Suspended. All branches must be Suspended.'
+      };
     }
 
     if (this.branches.invalid) {
@@ -3221,7 +3188,7 @@ private getFirstInvalidField(): string {
 
     for (let branchIndex = 0; branchIndex < this.branches.length; branchIndex++) {
       const branchForm = this.branches.at(branchIndex);
-      const branchData = branchForm.value;
+      const branchData = branchForm.getRawValue();
       const activeCompanyId = this.currentCompany?.CompanyMasterSid;
       const branchPayload = {
         CompanyMasterSid: activeCompanyId,
@@ -3256,7 +3223,7 @@ private getFirstInvalidField(): string {
 
     for (let contactIndex = 0; contactIndex < contacts.length; contactIndex++) {
       const contactForm = contacts.at(contactIndex);
-      const contactData = contactForm.value;
+      const contactData = contactForm.getRawValue();
 
       contactsPayload.push({
         ContactType: contactData.ContactType,
@@ -3289,7 +3256,7 @@ private getFirstInvalidField(): string {
 
     for (let loginIndex = 0; loginIndex < logins.length; loginIndex++) {
       const loginForm = logins.at(loginIndex);
-      const loginData = loginForm.value;
+      const loginData = loginForm.getRawValue();
 
       loginsPayload.push({
         LoginName: loginData.LoginName?.trim(),
@@ -3303,7 +3270,7 @@ private getFirstInvalidField(): string {
   }
   // For UPDATE mode - send all data including sales teams and milestones
  private prepareUpdatePayload(): any {
-  const formValue = this.customerForm.value;
+  const formValue = this.customerForm.getRawValue();
   const activeCompanyId = this.currentCompany?.CompanyMasterSid;
   const statusValue = formValue.status === 'Active' ? 'A' : 'S';
 
@@ -3426,7 +3393,7 @@ private getFirstInvalidField(): string {
   
   for (let teamIndex = 0; teamIndex < this.cusSalesteam.length; teamIndex++) {
     const teamForm = this.cusSalesteam.at(teamIndex);
-    const teamData = teamForm.value;
+    const teamData = teamForm.getRawValue();
 
     // Only include sales teams that belong to this branch
     if (teamData.branchSid !== branchSid) {
@@ -3463,7 +3430,7 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
   
   for (let mileIndex = 0; mileIndex < this.cusMilestone.length; mileIndex++) {
     const mileForm = this.cusMilestone.at(mileIndex);
-    const mileData = mileForm.value;
+    const mileData = mileForm.getRawValue();
 
     // Only include milestones that belong to this branch
     if (mileData.CustomerBranchSid !== branchSid) {
@@ -3490,71 +3457,110 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
   
   private prepareUpdateEmailsPayload(branchIndex: number): any[] {
   const emailsPayload = [];
+  const addedEmailSids = new Set<any>();
   const branch = this.branches.at(branchIndex);
   const branchSid = branch.get('CustomerBranchSid')?.value;
 
-  // Process emails from Email tab for this branch
+  // Prefer the Email tab values because users edit status there.
   for (let i = 0; i < this.customerEmails.length; i++) {
     const emailForm = this.customerEmails.at(i);
    const emailData = emailForm.getRawValue();;
 
-    if (emailData.CustomerBranchSid !== branchSid) {
+    if (!this.idsEqual(emailData.CustomerBranchSid, branchSid)) {
       continue;
     }
 
-    let departmentValue = emailData.DepartmentMasterSid;
-    if (!Array.isArray(departmentValue)) {
-      departmentValue = departmentValue ? [departmentValue] : [];
-    }
-    const emailStatus = emailData.status === 'Active' ? 'A' : 'S';
-    const emailPayload: any = {
-      MenuMasterSid: Number(emailData.MenuMasterSid),
-      DepartmentMasterSid: departmentValue,
-      Toemail: emailData.Toemail,
-      CCemail: emailData.CCemail,
-      status: emailStatus
-    };
-
     if (emailData.CustomerBrEmailSid) {
-      emailPayload.CustomerBrEmailSid = emailData.CustomerBrEmailSid;
+      addedEmailSids.add(emailData.CustomerBrEmailSid);
     }
 
-    emailsPayload.push(emailPayload);
+    emailsPayload.push(this.buildBranchEmailPayload(emailData));
+  }
+
+  const nestedEmails = this.getEmails(branchIndex);
+  for (let i = 0; i < nestedEmails.length; i++) {
+    const emailData = nestedEmails.at(i).getRawValue();
+
+    if (emailData.CustomerBrEmailSid && addedEmailSids.has(emailData.CustomerBrEmailSid)) {
+      continue;
+    }
+
+    emailsPayload.push(this.buildBranchEmailPayload(emailData));
   }
 
   return emailsPayload;
 }
 
+private buildBranchEmailPayload(emailData: any): any {
+  let departmentValue = emailData.DepartmentMasterSid;
+  if (!Array.isArray(departmentValue)) {
+    departmentValue = departmentValue ? [departmentValue] : [];
+  }
+
+  const emailPayload: any = {
+    MenuMasterSid: Number(emailData.MenuMasterSid),
+    DepartmentMasterSid: departmentValue,
+    Toemail: emailData.Toemail,
+    CCemail: emailData.CCemail,
+    status: this.isActiveStatus(emailData.status) ? 'A' : 'S'
+  };
+
+  if (emailData.CustomerBrEmailSid) {
+    emailPayload.CustomerBrEmailSid = emailData.CustomerBrEmailSid;
+  }
+
+  return emailPayload;
+}
+
   private prepareUpdateLoginsPayload(branchIndex: number): any[] {
   const loginsPayload = [];
+  const addedLoginSids = new Set<any>();
   const branch = this.branches.at(branchIndex);
   const branchSid = branch.get('CustomerBranchSid')?.value;
 
-  // Process logins from eLogin tab for this branch
+  // Prefer the eLogin tab values because users edit status there.
   for (let i = 0; i < this.customerLogins.length; i++) {
     const loginForm = this.customerLogins.at(i);
     const loginData = loginForm.getRawValue();
 
-    if (loginData.CustomerBranchSid !== branchSid) {
+    if (!this.idsEqual(loginData.CustomerBranchSid, branchSid)) {
       continue;
     }
-     const loginStatus = loginData.status === 'Active' ? 'A' : 'S';
-
-    const loginPayload: any = {
-      LoginName: loginData.LoginName?.trim(),
-      LoginEmail: loginData.LoginEmail,
-      LoginPassword: loginData.LoginPassword,
-       status: loginStatus
-    };
 
     if (loginData.CustomerLoginSid) {
-      loginPayload.CustomerLoginSid = loginData.CustomerLoginSid;
+      addedLoginSids.add(loginData.CustomerLoginSid);
     }
 
-    loginsPayload.push(loginPayload);
+    loginsPayload.push(this.buildBranchLoginPayload(loginData));
+  }
+
+  const nestedLogins = this.getLogins(branchIndex);
+  for (let i = 0; i < nestedLogins.length; i++) {
+    const loginData = nestedLogins.at(i).getRawValue();
+
+    if (loginData.CustomerLoginSid && addedLoginSids.has(loginData.CustomerLoginSid)) {
+      continue;
+    }
+
+    loginsPayload.push(this.buildBranchLoginPayload(loginData));
   }
 
   return loginsPayload;
+}
+
+private buildBranchLoginPayload(loginData: any): any {
+  const loginPayload: any = {
+    LoginName: loginData.LoginName?.trim(),
+    LoginEmail: loginData.LoginEmail,
+    LoginPassword: loginData.LoginPassword,
+    status: this.isActiveStatus(loginData.status) ? 'A' : 'S'
+  };
+
+  if (loginData.CustomerLoginSid) {
+    loginPayload.CustomerLoginSid = loginData.CustomerLoginSid;
+  }
+
+  return loginPayload;
 }
   private prepareUpdateSalesTeamsPayload(branchSid?: number): any[] {
   if (this.cusSalesteam.length === 0) return [];
@@ -3564,7 +3570,7 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
 
   for (let teamIndex = 0; teamIndex < this.cusSalesteam.length; teamIndex++) {
     const teamForm = this.cusSalesteam.at(teamIndex);
-    const teamData = teamForm.value;
+    const teamData = teamForm.getRawValue();
 
     // Filter by branch if branchSid is provided
     if (branchSid && teamData.branchSid !== branchSid) {
@@ -3602,7 +3608,7 @@ private prepareMilestonesForBranch(branchSid: number): any[] {
 
   for (let mileIndex = 0; mileIndex < this.cusMilestone.length; mileIndex++) {
     const mileForm = this.cusMilestone.at(mileIndex);
-    const mileData = mileForm.value;
+    const mileData = mileForm.getRawValue();
 
     // Filter by branch if branchSid is provided
     if (branchSid && mileData.CustomerBranchSid !== branchSid) {
@@ -4011,6 +4017,67 @@ updateAirlineFieldValidation(): void {
     this.destroy$.complete();
   }
 
+  private toDisplayStatus(status: any): 'Active' | 'Suspended' {
+    const normalizedStatus = (status || '').toString().trim().toLowerCase();
+    return normalizedStatus === 's' || normalizedStatus === 'suspended' ? 'Suspended' : 'Active';
+  }
+
+  private isSuspendedStatus(status: any): boolean {
+    return this.toDisplayStatus(status) === 'Suspended';
+  }
+
+  private isActiveStatus(status: any): boolean {
+    return this.toDisplayStatus(status) === 'Active';
+  }
+
+  private idsEqual(left: any, right: any): boolean {
+    if (left === null || left === undefined || right === null || right === undefined) {
+      return left === right;
+    }
+    return String(left) === String(right);
+  }
+
+  private isCustomerSuspended(): boolean {
+    return this.isSuspendedStatus(this.customerForm?.get('status')?.getRawValue());
+  }
+
+  private isBranchSuspended(branchIndex: number): boolean {
+    const branchForm = this.branches.at(branchIndex) as FormGroup | null;
+    return this.isSuspendedStatus(branchForm?.get('status')?.getRawValue());
+  }
+
+  private clearTemporaryStatusMemory(): void {
+    this.temporarilySuspendedBranches.clear();
+    this.temporarilySuspendedChildRecords.clear();
+  }
+
+  private onCustomerStatusChange(status: any): void {
+    const isSuspended = this.isSuspendedStatus(status);
+
+    this.branches.controls.forEach((branchControl, branchIndex) => {
+      const branchForm = branchControl as FormGroup;
+      const branchStatusControl = branchForm.get('status');
+
+      if (isSuspended) {
+        if (!this.temporarilySuspendedBranches.has(branchForm)) {
+          this.temporarilySuspendedBranches.set(branchForm, this.toDisplayStatus(branchStatusControl?.getRawValue()));
+        }
+        branchStatusControl?.setValue('Suspended', { emitEvent: false });
+        branchStatusControl?.disable({ emitEvent: false });
+        this.updateChildRecordsStatus(branchIndex, true);
+      } else {
+        branchStatusControl?.enable({ emitEvent: false });
+        if (this.temporarilySuspendedBranches.get(branchForm) === 'Active') {
+          branchStatusControl?.setValue('Active', { emitEvent: false });
+          this.updateChildRecordsStatus(branchIndex, false);
+          this.temporarilySuspendedBranches.delete(branchForm);
+        }
+      }
+    });
+
+    this.cdRef.markForCheck();
+  }
+
   onBranchStatusChange(branchIndex: number): void {
   const branchForm = this.branches.at(branchIndex) as FormGroup;
   const branchStatus = branchForm.get('status')?.value;
@@ -4024,26 +4091,20 @@ private updateChildRecordsStatus(branchIndex: number, isSuspended: boolean): voi
   const branchForm = this.branches.at(branchIndex) as FormGroup;
   const branchSid = branchForm.get('CustomerBranchSid')?.value;
   
-  // Update contacts (existing)
+  // Update nested contacts, emails and logins under this branch.
   const contacts = this.getContacts(branchIndex);
   contacts.controls.forEach(contact => {
-    const contactForm = contact as FormGroup;
-    if (isSuspended) {
-      contactForm.get('status')?.setValue('Suspended');
-      contactForm.get('status')?.disable();
-      contactForm.get('ContactType')?.disable();
-      contactForm.get('ContactName')?.disable();
-      contactForm.get('MobileNoCode')?.disable();
-      contactForm.get('MobileNo')?.disable();
-      contactForm.get('Email')?.disable();
-    } else {
-      contactForm.get('status')?.enable();
-      contactForm.get('ContactType')?.enable();
-      contactForm.get('ContactName')?.enable();
-      contactForm.get('MobileNoCode')?.enable();
-      contactForm.get('MobileNo')?.enable();
-      contactForm.get('Email')?.enable();
-    }
+    this.applyChildFormSuspendedState(contact as FormGroup, isSuspended);
+  });
+
+  const emails = this.getEmails(branchIndex);
+  emails.controls.forEach(email => {
+    this.applyChildFormSuspendedState(email as FormGroup, isSuspended);
+  });
+
+  const logins = this.getLogins(branchIndex);
+  logins.controls.forEach(login => {
+    this.applyChildFormSuspendedState(login as FormGroup, isSuspended);
   });
 
   // Update emails in Email tab for this branch
@@ -4058,28 +4119,43 @@ private updateChildRecordsStatus(branchIndex: number, isSuspended: boolean): voi
   // Update milestones for this branch
   this.updateMilestonesForBranch(branchIndex, isSuspended);
 }
+
+private applyChildFormSuspendedState(
+  childForm: FormGroup,
+  isSuspended: boolean,
+  statusControlName: string = 'status'
+): void {
+  const statusControl = childForm.get(statusControlName);
+
+  if (isSuspended) {
+    if (!this.temporarilySuspendedChildRecords.has(childForm)) {
+      this.temporarilySuspendedChildRecords.set(childForm, this.toDisplayStatus(statusControl?.getRawValue()));
+    }
+    statusControl?.setValue('Suspended', { emitEvent: false });
+  } else if (this.temporarilySuspendedChildRecords.get(childForm) === 'Active') {
+    statusControl?.setValue('Active', { emitEvent: false });
+    this.temporarilySuspendedChildRecords.delete(childForm);
+  }
+
+  Object.keys(childForm.controls).forEach(controlName => {
+    const control = childForm.get(controlName);
+    if (!control) return;
+
+    if (isSuspended) {
+      control.disable({ emitEvent: false });
+    } else {
+      control.enable({ emitEvent: false });
+    }
+  });
+}
+
 private updateEmailTabForBranch(branchSid: number, isSuspended: boolean): void {
   this.customerEmails.controls.forEach(email => {
     const emailForm = email as FormGroup;
     const emailBranchSid = emailForm.get('CustomerBranchSid')?.value;
     
     if (emailBranchSid === branchSid) {
-      if (isSuspended) {
-        emailForm.get('status')?.setValue('Suspended');
-        emailForm.get('status')?.disable();
-        // Disable other email fields
-        emailForm.get('MenuMasterSid')?.disable();
-        emailForm.get('DepartmentMasterSid')?.disable();
-        emailForm.get('Toemail')?.disable();
-        emailForm.get('CCemail')?.disable();
-      } else {
-        emailForm.get('status')?.enable();
-        // Enable other email fields
-        emailForm.get('MenuMasterSid')?.enable();
-        emailForm.get('DepartmentMasterSid')?.enable();
-        emailForm.get('Toemail')?.enable();
-        emailForm.get('CCemail')?.enable();
-      }
+      this.applyChildFormSuspendedState(emailForm, isSuspended);
     }
   });
 }
@@ -4090,20 +4166,7 @@ private updateELoginTabForBranch(branchSid: number, isSuspended: boolean): void 
     const loginBranchSid = loginForm.get('CustomerBranchSid')?.value;
     
     if (loginBranchSid === branchSid) {
-      if (isSuspended) {
-        loginForm.get('status')?.setValue('Suspended');
-        loginForm.get('status')?.disable();
-        // Disable other login fields
-        loginForm.get('LoginName')?.disable();
-        loginForm.get('LoginEmail')?.disable();
-        loginForm.get('LoginPassword')?.disable();
-      } else {
-        loginForm.get('status')?.enable();
-        // Enable other login fields
-        loginForm.get('LoginName')?.enable();
-        loginForm.get('LoginEmail')?.enable();
-        loginForm.get('LoginPassword')?.enable();
-      }
+      this.applyChildFormSuspendedState(loginForm, isSuspended);
     }
   });
 }
@@ -4117,24 +4180,7 @@ private updateSalesTeamsForBranch(branchIndex: number, isSuspended: boolean): vo
     const teamBranchSid = teamForm.get('branchSid')?.value;
     
     if (teamBranchSid === branchSid) {
-      if (isSuspended) {
-        teamForm.get('status')?.setValue('Suspended');
-        teamForm.get('status')?.disable();
-        // Disable other sales team fields
-        teamForm.get('DepartmentMasterSid')?.disable();
-        teamForm.get('Salesman')?.disable();
-        teamForm.get('CSPerson')?.disable();
-        teamForm.get('DocPerson')?.disable();
-        teamForm.get('EffectiveFrom')?.disable();
-      } else {
-        teamForm.get('status')?.enable();
-        // Enable other sales team fields
-        teamForm.get('DepartmentMasterSid')?.enable();
-        teamForm.get('Salesman')?.enable();
-        teamForm.get('CSPerson')?.enable();
-        teamForm.get('DocPerson')?.enable();
-        teamForm.get('EffectiveFrom')?.enable();
-      }
+      this.applyChildFormSuspendedState(teamForm, isSuspended);
     }
   });
 }
@@ -4148,22 +4194,7 @@ private updateMilestonesForBranch(branchIndex: number, isSuspended: boolean): vo
     const milestoneBranchSid = milestoneForm.get('CustomerBranchSid')?.value;
     
     if (milestoneBranchSid === branchSid) {
-      if (isSuspended) {
-        milestoneForm.get('Status')?.setValue('Suspended');
-        milestoneForm.get('Status')?.disable();
-        // Disable other milestone fields
-        milestoneForm.get('MilestoneMasterSid')?.disable();
-        milestoneForm.get('UpdateType')?.disable();
-        milestoneForm.get('ContactInfo')?.disable();
-        milestoneForm.get('EffectiveFrom')?.disable();
-      } else {
-        milestoneForm.get('Status')?.enable();
-        // Enable other milestone fields
-        milestoneForm.get('MilestoneMasterSid')?.enable();
-        milestoneForm.get('UpdateType')?.enable();
-        milestoneForm.get('ContactInfo')?.enable();
-        milestoneForm.get('EffectiveFrom')?.enable();
-      }
+      this.applyChildFormSuspendedState(milestoneForm, isSuspended, 'Status');
     }
   });
 }

@@ -725,6 +725,7 @@
                         [displayLabels]="stateLookupConfig.displayLabels"
                         [labelFields]="stateLookupConfig.labelFields" bindLabel="stateName"
                         bindValue="StateMasterSid"
+                        (itemSelected)="onStateChange(branchIndex, $event)"
                         >   
                       </dofi-searchable-dropdown>
                     <label for="state_{{branchIndex}}" class="input-label">State <span
@@ -756,6 +757,7 @@
                         [displayLabels]="cityLookupConfig.displayLabels"
                         [labelFields]="cityLookupConfig.labelFields" bindLabel="cityName"
                         bindValue="CityMasterSid"
+                        (itemSelected)="onCityChange(branchIndex)"
                         >   
                       </dofi-searchable-dropdown>
                     <label [for]="'city_' + branchIndex" class="input-label">
