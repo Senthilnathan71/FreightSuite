@@ -636,8 +636,13 @@ private bookingDataSubject = new BehaviorSubject<any>({});
     )
   }
   // Get all pre-customer meetings
-  getAllPreCustomerMeetings(CompanyMasterSid:number, BranchMasterSid:number) {
-    return this.http.post<{ data: any[] }>('ff-pre-customer-meeting',{CompanyMasterSid,BranchMasterSid}).pipe(
+  getAllPreCustomerMeetings(payload: {
+    CompanyMasterSid: number;
+    BranchMasterSid: number;
+    userTypeCode?: string;
+    userId?: number;
+  }) {
+    return this.http.post<{ data: any[] }>('ff-pre-customer-meeting', payload).pipe(
       map((resp) => {
         let response = resp;
         return response;

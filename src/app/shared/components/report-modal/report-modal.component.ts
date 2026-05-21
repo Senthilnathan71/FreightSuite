@@ -289,6 +289,26 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
         return;
       }
 
+      if (this.reportId === 'Vat-Summary-Report') {
+        const company = this.appSettingsService.getCurrentCompanyInfo();
+        const branch = this.appSettingsService.getCurrentBranchInfo();
+        const userData = this.appSettingsService.getDecryptedUserProfile();
+        const logo = this.pdfMakeService.getReportLogo();
+
+        this.pdfMakeService.generateVatSummaryReport(
+          this.buildInjectedReportData(),
+          company,
+          branch,
+          userData,
+          logo,
+          'landscape',
+          filename
+        );
+        this.appSettingsService.showSuccess('PDF downloaded successfully!');
+        this.spinner.hide();
+        return;
+      }
+
       // Use pdfmake if component provides structured data
       if (this.componentRef?.instance?.getExcelData) {
         const exportConfig = this.componentRef.instance.getExcelData();
@@ -374,6 +394,20 @@ export class GenericReportModalComponent implements OnInit, OnDestroy {
             userData,
             logo,
             this.reportConfig?.pdfOrientation || 'landscape'
+          );
+        } else if (this.reportId === 'Vat-Summary-Report') {
+          const company = this.appSettingsService.getCurrentCompanyInfo();
+          const branch = this.appSettingsService.getCurrentBranchInfo();
+          const userData = this.appSettingsService.getDecryptedUserProfile();
+          const logo = this.pdfMakeService.getReportLogo();
+
+          pdfBlob = await this.pdfMakeService.generateVatSummaryReportBlob(
+            this.buildInjectedReportData(),
+            company,
+            branch,
+            userData,
+            logo,
+            'landscape'
           );
         } else if (exportConfig?.reportHeader && exportConfig?.rows) {
           const company = this.appSettingsService.getCurrentCompanyInfo();

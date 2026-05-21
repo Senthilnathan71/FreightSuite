@@ -1,24 +1,20 @@
-<div class="print-a4-portrait vat-summary-page">
+<div class="print-a4-landscape vat-summary-page">
+  <app-print-header></app-print-header>
   <div class="vat-border">
-    <header class="vat-company-header">
-      <div class="company-name">{{ companyName }}</div>
-      <div class="report-title">UAE VAT RETURN</div>
-    </header>
-
     <section class="vat-section">
       <h6>Taxable Person Details</h6>
       <div class="vat-grid two-col">
         <div>
           <label>TRN</label>
-          <div>{{ trn || '-' }}</div>
+          <div>{{ trn || '' }}</div>
         </div>
         <div>
           <label>Taxable Person Name (Arabic)</label>
-          <div>{{ reportData?.company?.nameArabic || '-' }}</div>
+          <div>{{ reportData?.company?.nameArabic || '' }}</div>
         </div>
         <div>
           <label>Taxable Person Name (English)</label>
-          <div>{{ companyName || '-' }}</div>
+          <div>{{ companyName || '' }}</div>
         </div>
         <div>
           <label>Taxable Person Address</label>
@@ -37,15 +33,15 @@
         </div>
         <div>
           <label>VAT Return Due Date</label>
-          <div>{{ dueDate ? (dueDate | formatDate) : '-' }}</div>
+          <div>{{ dueDate ? (dueDate | formatDate) : '' }}</div>
         </div>
         <div>
           <label>TAX Year End</label>
-          <div>{{ taxYearEnd ? (taxYearEnd | formatDate) : '-' }}</div>
+          <div>{{ taxYearEnd ? (taxYearEnd | formatDate) : '' }}</div>
         </div>
         <div>
           <label>VAT Return Period Reference Number</label>
-          <div>{{ referenceNumber || '-' }}</div>
+          <div>{{ referenceNumber || '' }}</div>
         </div>
       </div>
     </section>
@@ -127,7 +123,7 @@
       <table class="vat-table summary-table">
         <tbody>
           <tr>
-            <td class="box-code">12</td>
+            <td class="box-code" width=3%>12</td>
             <td>Total value of due tax for the period</td>
             <td class="amount">{{ formatNumber(totalDueTax) }}</td>
           </tr>

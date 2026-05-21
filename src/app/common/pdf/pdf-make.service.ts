@@ -96,6 +96,10 @@ import {
   generateBalanceSheetReportDocument,
   transformBalanceSheetReportData
 } from './generators/balance-sheet-report-pdf.generator';
+import {
+  generateVatSummaryReportDocument,
+  transformVatSummaryReportData
+} from './generators/vat-summary-report-pdf.generator';
 
 @Injectable({ providedIn: 'root' })
 export class PdfMakeService {
@@ -503,6 +507,33 @@ export class PdfMakeService {
   ): Promise<Blob> {
     const pdfData = transformBalanceSheetReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation);
     const docDefinition = generateBalanceSheetReportDocument(pdfData);
+    return this.getBlob(docDefinition);
+  }
+
+  generateVatSummaryReport(
+    rawData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    orientation: 'portrait' | 'landscape' = 'landscape',
+    filename = 'VAT-Summary-Report'
+  ): void {
+    const pdfData = transformVatSummaryReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation);
+    const docDefinition = generateVatSummaryReportDocument(pdfData);
+    this.download(docDefinition, filename);
+  }
+
+  async generateVatSummaryReportBlob(
+    rawData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    orientation: 'portrait' | 'landscape' = 'landscape'
+  ): Promise<Blob> {
+    const pdfData = transformVatSummaryReportData(rawData, this.mapCompany(company), this.mapBranch(branch), this.mapUser(userData), logo, orientation);
+    const docDefinition = generateVatSummaryReportDocument(pdfData);
     return this.getBlob(docDefinition);
   }
 

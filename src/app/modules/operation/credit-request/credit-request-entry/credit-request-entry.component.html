@@ -309,8 +309,9 @@
                               <div class="input-group">
                                 <input class="form-control" placeholder="DD-MMM-YYYY" ngbDatepicker #d2="ngbDatepicker"
                                   (click)="d2.toggle()" formControlName="EffectiveTo"
-                                  [minDate]="getEffectiveToMinDate(i)" container="body" />
-                                <button class="btn px-0" (click)="d2.toggle()" type="button">
+                                  [minDate]="getEffectiveToMinDate(i)" container="body" [disabled]="isApprovedRow(credit)" />
+                                <button class="btn px-0" (click)="d2.toggle()" type="button"
+                                  [disabled]="isApprovedRow(credit)">
                                   <i-feather name="calendar" class="feather-sm"></i-feather>
                                 </button>
                               </div>
@@ -325,7 +326,7 @@
                               <!-- <input type="text" formControlName="ApprovalStatus"
                                class="custom-input-field sm" placeholder=""/> -->
                               <ng-select formControlName="ApprovalStatus" [items]="approvalStatus" bindLabel="name"
-                                bindValue="value" placeholder="" [disabled]="true">
+                                bindValue="value" placeholder="" [disabled]="isApprovedRow(credit)">
                               </ng-select>
                               <label class="input-label">Approval Status</label>
                             </div>
@@ -335,7 +336,7 @@
                             <div class="custom-form-group custom-form-group-select"
                               [class.filled]="!!credit.get('Status')?.value">
                               <ng-select formControlName="Status" [items]="typeofStatus" bindLabel="name" bindValue="id"
-                                placeholder="">
+                                placeholder="" [disabled]="isApprovedRow(credit)">
                               </ng-select>
                               <label class="input-label">Status</label>
                               <div *ngIf="credit.get('Status')?.touched && credit.get('Status')?.invalid"
@@ -402,13 +403,13 @@
                                     <td>
                                       <button *ngIf="!kyc.get('AttachDocumentSid')?.value" type="button"
                                         class="btn btn-sm btn-secondary dofi-min-w-80" (click)="openEDoc(i, k)"
-                                        [disabled]="isApprovedRow(credit) && !approvalStatusChanged">
+                                        [disabled]="isApprovedRow(credit)">
                                         <i class="fas fa-upload me-1"></i> Upload
                                       </button>
 
                                       <button *ngIf="kyc.get('AttachDocumentSid')?.value" type="button"
                                         class="badge bg-success ms-1 border-0" (click)="openEDoc(i, k)"
-                                        [disabled]="isApprovedRow(credit) && !approvalStatusChanged">
+                                        [disabled]="isApprovedRow(credit)">
                                         Attached
                                       </button>
                                       <div *ngIf="getKycFileName(i, k)" class="small text-muted mt-1">

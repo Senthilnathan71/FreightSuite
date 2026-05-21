@@ -208,7 +208,7 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
     defaultPageSize: 10,
     defaultSortColumn: 'customerName',
     defaultSortDirection: 'asc',
-    pageSizeOptions: [10, 20, 50, 100],
+    pageSizeOptions: [10, 50, 100, 500],
     maxPagesToShow: 3
   };
 
@@ -314,6 +314,7 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
   }
 
   protected getSearchParams(): SearchParams & Record<string, any> {
+    const userContext = this.getMeetingUserContext();
     const params: any = {
       search: this.filterValue.trim(),
       page: Number(this.page),
@@ -321,8 +322,11 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
       activeCompanyId: this.currentCompany?.CompanyMasterSid,
       activeBranchId: this.currentBranch?.BranchMasterSid,
       sortColumn: this.sortColumn,
-      sortDirection: this.sortDirection
+      sortDirection: this.sortDirection,
+      userId: userContext.userId || undefined,
+      userTypeCode: userContext.userTypeCode || undefined
     };
+
     const selectedDateField = this.currentFilters.dateType || 'meetingDate';
     const isMeetingDatePresetRange =
       selectedDateField === 'meetingDate' &&
@@ -361,6 +365,34 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
 }
 
     return params;
+  }
+
+  private getMeetingUserContext(): { userId: number; userTypeCode: string } {
+    const userProfile = this.appSettingService.getDecryptedUserProfile() || {};
+    const userFromStream = this.appSettingService.userSettingSource.value || {};
+
+    const userId = Number(
+      userProfile?.UserMasterSid
+      || userProfile?.userMasterSid
+      || userProfile?.UserSid
+      || userProfile?.userSid
+      || userProfile?.userMaster?.UserMasterSid
+      || userProfile?.userMaster?.userMasterSid
+      || userFromStream?.UserMasterSid
+      || userFromStream?.userMasterSid
+      || userFromStream?.UserSid
+      || userFromStream?.userSid
+      || 0
+    );
+
+    const userTypeCode = String(
+      userProfile?.userType?.code
+      || userProfile?.userMaster?.userType?.code
+      || userFromStream?.userType?.code
+      || ''
+    );
+
+    return { userId, userTypeCode };
   }
 
   protected processSearchResults(response: any): void {
@@ -578,6 +610,7 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
           label: 'Delete',
           action: 'delete',
           tooltip: 'Delete Meeting',
+          class:'text-danger',
           state:  !this.canDelete
         }
       ],
@@ -928,7 +961,7 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
         const followUp = !!(meeting.followUpDate || meeting.followUpNote);
         // this.originalMeetingDate = meetingDate;
         this.meetingForm.patchValue({
-          customerName: meeting.preCustomerMaster?.preCustomerName || '',
+          customerName: meeting.preCustomerMaster?.preCustomerName || meeting.customerMaster?.CustomerName || '',
           PreCustomerMeetingSid: meeting.PreCustomerMeetingSid,
           meetingDate: meetingDate,
           meetingType: meeting.meetingType,
