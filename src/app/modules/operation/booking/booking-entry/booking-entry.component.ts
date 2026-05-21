@@ -48,7 +48,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { TimeAgoPipe } from 'src/app/core/pipes/timeAgo.pipe';
 import { PdfDownloadService } from 'src/app/common/pdf-download.service';
-import { PdfMakeService } from 'src/app/common/pdf';
+import { BookingDocumentType, PdfMakeService, transformBookingApiData, transformCroApiData } from 'src/app/common/pdf';
 import { CommonService } from 'src/app/common/common.service';
 import { Download, Menu } from 'angular-feather/icons';
 import { VolumetricAndCbmCalculationService } from 'src/app/core/services/volumetric-and-cbm-calculation.service';
@@ -4222,7 +4222,7 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
     this.isSendingMail = true;
     this.spinner.show();
     try {
-      const pdfBlob = await this.generatePDFBlob('mail-attachment');
+      const pdfBlob = await this.generateBookingPdfBlobForMail('booking');
       let attachmentFile: File | undefined;
       if (pdfBlob) {
         const attachmentName = String(this.bookingData?.BookingNo || 'Booking').replace(/[\\/:*?"<>|]+/g, '_') + '.pdf';
@@ -6222,24 +6222,21 @@ private async generateBookingPdfBlobForMail(type: 'booking' | 'cro' = 'booking')
   try {
     await this.prepareTermsForPrint();
     const logo = this.pdfMakeService.getReportLogo();
+    const apiData = {
+      ...this.bookingHeader,
+      terms: this.printTermsList
+    };
+    const lookups = {
+      ports: this.portList,
+      departments: this.departmentList,
+      carriers: this.carrierList,
+      containerTypes: this.containerTypeList
+    };
+    const pdfData = type === 'cro'
+      ? transformCroApiData(apiData, this.currentCompany, this.currentBranch, this.userData, logo) as any
+      : transformBookingApiData(apiData, this.currentCompany, this.currentBranch, this.userData, logo, lookups);
 
-    return await this.pdfMakeService.generateBookingBlobFromApi(
-      {
-        ...this.bookingHeader,
-        terms: this.printTermsList
-      },
-      this.currentCompany,
-      this.currentBranch,
-      this.userData,
-      logo,
-      {
-        ports: this.portList,
-        departments: this.departmentList,
-        carriers: this.carrierList,
-        containerTypes: this.containerTypeList
-      },
-      type
-    );
+    return await this.pdfMakeService.generateBookingBlob(pdfData, type as BookingDocumentType);
   } catch (error) {
     console.error(`PDF blob generation error for ${type}:`, error);
     return null;
