@@ -180,12 +180,13 @@ export class SmCreateMeetingModalComponent implements OnInit {
     const rawValue = this.meetingForm.getRawValue();
 
     this.activeModal.close({
-      ...rawValue,
       PreCustomerMasterSid: rawValue.LeadOrCustomer === 'L' ? rawValue.PreCustomerMasterSid : null,
-      CustomerMasterSid: rawValue.LeadOrCustomer === 'C' ? rawValue.CustomerMasterSid : null,
-      followUp: rawValue.followUp === true,
-      followUpDate: rawValue.followUp ? rawValue.followUpDate : null,
-      followUpNote: rawValue.followUp ? rawValue.followUpNote : null
+      leadAssignTo: rawValue.leadAssignTo,
+      meetingDate: rawValue.meetingDate,
+      meetingType: rawValue.meetingType,
+      meetingNote: rawValue.meetingNote,
+      ...(rawValue.followUp && rawValue.followUpDate ? { followUpDate: rawValue.followUpDate } : {}),
+      ...(rawValue.followUp && rawValue.followUpNote ? { followUpNote: rawValue.followUpNote } : {})
     });
   }
 }

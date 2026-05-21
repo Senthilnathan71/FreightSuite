@@ -800,7 +800,7 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
       followUp: [false],
       meetingType: ['', Validators.required],
       leadAssignTo: ['', Validators.required],
-      meetingNote: ['', this.meetingNoteValidator.bind(this)],
+      meetingNote: ['', Validators.required],
       meetingStatus: ['Scheduled', Validators.required],
       followUpNote: [''],
       meetingDuration: [''],
@@ -808,10 +808,6 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
       preCustomerMasterSid: [''],
       createdBy: [''],
       updatedBy: ['']
-    });
-
-    this.meetingForm.get('meetingStatus').valueChanges.subscribe(() => {
-      this.meetingForm.get('meetingNote').updateValueAndValidity();
     });
 
     this.meetingForm.valueChanges.subscribe(() => {
@@ -977,6 +973,10 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
           updatedBy: meeting.updatedBy,
           remarks: meeting.remarks || ''
         });
+        if (followUp) {
+          this.meetingForm.get('followUpNote')?.setValidators(Validators.required);
+          this.meetingForm.get('followUpNote')?.updateValueAndValidity();
+        }
         this.setupMeetingDateListener();
         this.meetingForm.controls['meetingStatus'].enable();
         if (meeting.meetingStatus === 'confirmed') {
@@ -1032,10 +1032,15 @@ private handleMeetingDateChange(newDate: string): void {
       return;
     }
   }
-    if (this.meetingForm.get('meetingStatus')?.value === 'on hold' &&
-      !this.meetingForm.get('meetingNote')?.value) {
+    if (!this.meetingForm.get('meetingNote')?.value?.trim()) {
       this.meetingForm.get('meetingNote')?.markAsTouched();
-      this.appSettingService.showError("Meeting Note is mandatory when status is 'On Hold'");
+      this.appSettingService.showError("Meeting Note is required.");
+      return;
+    }
+
+    if (this.meetingForm.get('followUp')?.value && !this.meetingForm.get('followUpNote')?.value?.trim()) {
+      this.meetingForm.get('followUpNote')?.markAsTouched();
+      this.appSettingService.showError("Follow Up Note is required when Follow Up is enabled.");
       return;
     }
 
@@ -1172,7 +1177,15 @@ private handleMeetingDateChange(newDate: string): void {
       control?.setErrors(null);
     });
     this.meetingForm.get('remarks')?.clearValidators();
-  this.meetingForm.get('remarks')?.updateValueAndValidity();
+    this.meetingForm.get('remarks')?.updateValueAndValidity();
+
+    const hasFollowUp = !!(this.selectedMeeting?.followUpDate || this.selectedMeeting?.followUpNote);
+    if (hasFollowUp) {
+      this.meetingForm.get('followUpNote')?.setValidators(Validators.required);
+    } else {
+      this.meetingForm.get('followUpNote')?.clearValidators();
+    }
+    this.meetingForm.get('followUpNote')?.updateValueAndValidity();
 
     this.btnDisable = false;
     this.setMeetingFormInitialValue();
@@ -1182,8 +1195,14 @@ private handleMeetingDateChange(newDate: string): void {
     const isChecked = (event.target as HTMLInputElement).checked;
     this.meetingForm.patchValue({ followUp: isChecked });
 
-    if (!isChecked) {
+    if (isChecked) {
+      this.meetingForm.get('followUpNote')?.setValidators(Validators.required);
+      this.meetingForm.get('followUpNote')?.updateValueAndValidity();
+    } else {
       this.meetingForm.patchValue({ followUpDate: null, followUpNote: '' });
+      this.meetingForm.get('followUpNote')?.clearValidators();
+      this.meetingForm.get('followUpNote')?.setErrors(null);
+      this.meetingForm.get('followUpNote')?.updateValueAndValidity();
     }
   }
 

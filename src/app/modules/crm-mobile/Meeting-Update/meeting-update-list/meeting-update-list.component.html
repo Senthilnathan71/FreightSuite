@@ -222,15 +222,9 @@
                     <aside class="col-md-4">
                         <div class="custom-form-group">
                             <textarea class="custom-input-field sm" formControlName="meetingNote" rows="1"></textarea>
-                            <label class="input-label">
-                                Meeting Note
-                                <span *ngIf="meetingForm.get('meetingStatus')?.value === 'on hold'"
-                                    class="text-danger">*</span>
-                            </label>
+                            <label class="input-label">Meeting Note <span class="text-danger">*</span></label>
                             <small *ngIf="f['meetingNote'].touched && f['meetingNote'].invalid" class="text-danger">
-                                <span *ngIf="f['meetingNote'].errors?.['required']">
-                                    Meeting Note is required when status is "On Hold"
-                                </span>
+                                <span *ngIf="f['meetingNote'].errors?.['required']">Meeting Note is required.</span>
                             </small>
                         </div>
                     </aside>
@@ -283,7 +277,10 @@
                             <div class="custom-form-group">
                                 <textarea class="custom-input-field sm" formControlName="followUpNote"
                                     rows="1"></textarea>
-                                <label class="input-label">Follow Up Note</label>
+                                <label class="input-label">Follow Up Note <span class="text-danger">*</span></label>
+                                <small *ngIf="f['followUpNote'].touched && f['followUpNote'].invalid" class="text-danger">
+                                    <span *ngIf="f['followUpNote'].errors?.['required']">Follow Up Note is required.</span>
+                                </small>
                             </div>
                         </aside>
                     </ng-container>
