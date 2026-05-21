@@ -95,7 +95,8 @@
             </div>
             <div class="action-group" >
                 <div ngbDropdown container="body" class="d-inline-block">
-                    <button type="button" class="btn btn-info btn-sm" id="dropdownUpload" ngbDropdownToggle>
+                    <button type="button" class="btn btn-info btn-sm" id="dropdownUpload" ngbDropdownToggle
+                        [disabled]="isLoading || isJobClosed">
                         <i class="fas fa-upload me-1"></i>
                         Upload
                     </button>
