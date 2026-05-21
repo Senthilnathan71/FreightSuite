@@ -788,7 +788,7 @@
                           </div>
                         </aside>
                         <aside class="col-md-2" *ngIf="isLclStyleQuotationSegment(route) || isSurfaceQuotationSegment(route)">
-                          <div class="custom-form-group mt-md-1">
+                          <div class="custom-form-group quote-net-weight-field mt-md-1">
                             <input type="text" id="text-input" placeholder=""
                               class="form-control custom-input-field sm text-end" formControlName="NetWeight"
                               DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
@@ -1171,7 +1171,7 @@
                                     </div>
                                   </aside>
                                   <aside class="col-md-1">
-                                    <div class="custom-form-group">
+                                    <div class="custom-form-group quote-net-weight-field">
                                       <input type="text" class="custom-input-field sm text-end" formControlName="NetWeight"
                                         DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
                                       <label class="input-label">Net Weight <span class="text-danger">*</span></label>
@@ -2242,7 +2242,7 @@
                             </div>
                           </aside>
                           <aside class="col-md-3" *ngIf="isLclStyleQuotationSegment(route)">
-                            <div class="custom-form-group">
+                            <div class="custom-form-group quote-net-weight-field">
                               <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm text-end"
                                 formControlName="NetWeight">
                               <label for="text-input" class="input-label">Net Weight <span class="text-danger"></span></label>
