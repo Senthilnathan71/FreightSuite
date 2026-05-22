@@ -61,9 +61,12 @@
               </div>
             </div>
 
-            <!-- Department-wise indicator -->
-            <div class="small mt-1" *ngIf="item.configured && item.DepartmentWiseCounter === 'Y'">
-              <span class="badge bg-info">Department-wise Counter</span>
+            <!-- Badges: POL/POD and Department-wise indicators -->
+            <div class="small mt-1 d-flex flex-wrap gap-1" *ngIf="item.configured && (item.POLPODFlagRequired === 'Y' || item.DepartmentWiseCounter === 'Y')">
+              <span class="badge bg-warning text-dark" *ngIf="item.POLPODFlagRequired === 'Y'">
+                POL/POD {{ item.POLPODPortWiseCounter === 'N' ? '(Common)' : '(Port-wise)' }}
+              </span>
+              <span class="badge bg-info" *ngIf="item.DepartmentWiseCounter === 'Y'">Department-wise Counter</span>
             </div>
           </div>
           <div class="card-footer bg-transparent py-2">
