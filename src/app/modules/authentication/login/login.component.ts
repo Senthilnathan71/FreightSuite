@@ -773,44 +773,6 @@ export class LoginComponent implements OnInit {
 
 
 
-
-
-
-
-  // login() {
-  //   let param = {
-  //     ...this.loginform.value,
-  //     projectType:'freight-forwarding'
-  //   }
-  //   this.isSubmitted = true;
-
-  //   if (this.loginform.invalid) {
-  //     return;
-  //   }
-
-  //   this.authService.login(param).subscribe(async (resp: any) => {
-  //     if (!resp.status) {
-  //       this.errorMessage = resp.message || "Login failed"
-  //       return;
-  //     }
-  //     this.isLoading = false;
-  //     let userData = resp.data.user;
-
-  //     if (this.loginform.get('rememberMe')?.value) {
-  //         localStorage.setItem('rememberedEmail', param.email);
-  //         localStorage.setItem('rememberedPassword', param.password);
-  //       } else {
-  //         localStorage.removeItem('rememberedEmail');
-  //         localStorage.removeItem('rememberedPassword');
-  //       }
-
-  //     if (resp.status) {
-  //       this.router.navigate(['dashboard']);
-  //     }
-  //   })
-
-  // }
-
   sendResetLink() {
     if (this.isLoading) return;
     let param = this.forgotPasswordForm.value;

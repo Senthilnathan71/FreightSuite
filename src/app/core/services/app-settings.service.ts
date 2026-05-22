@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { BehaviorSubject, forkJoin, map, Observable, observable } from "rxjs";
-import { StorageMap } from "@ngx-pwa/local-storage";
+import { BehaviorSubject, map, Observable } from "rxjs";
+
 import { ActiveToast, IndividualConfig, ToastrService } from "ngx-toastr";
 import * as CryptoJS from 'crypto-js';
 
@@ -18,14 +18,13 @@ export interface FinancialYear {
 })
 
 export class AppSettingsService {
-    tokenName = 'crm-token'
+
     userSettingSource: BehaviorSubject<any> = new BehaviorSubject(null);
     userSetting$ = this.userSettingSource.asObservable();
     private userSubject = new BehaviorSubject<any>(null);
 
     constructor(
         private http: HttpClient,
-        protected storage: StorageMap,
         private toaster: ToastrService
     ) { }
 
@@ -35,11 +34,6 @@ export class AppSettingsService {
     setUserSettings(data: any) {
         this.userSettingSource.next(data)
     }
-
-    setUserToken(token: string) {
-        return this.storage.set(this.tokenName, token)
-    }
-
 
     encrypt(data: any): string {
         return CryptoJS.AES.encrypt(JSON.stringify(data), this.secret).toString();
@@ -72,10 +66,14 @@ export class AppSettingsService {
     getUserByToken() {
         return this.http.get('user/sign-in-token').pipe(
             map((resp: any) => {
-                let mappedUser = resp.data || {};
+                if (!resp?.status || !resp?.data) {
+                    return null;
+                }
+
+                let mappedUser = resp.data;
                 this.userSubject.next(resp.data);
-                const encryptedData: any = this.storeUserProfile(resp.data)
-                localStorage.setItem('userData', encryptedData)
+                this.storeUserProfile(resp.data);
+                localStorage.setItem('userData', this.encrypt(resp.data))
                 return mappedUser
             }),
             map((user: any) => {
@@ -184,20 +182,12 @@ export class AppSettingsService {
         return decryptedYear;
     }
 
-    public sessionExpire() {
-        return new Promise((resolve) => {
-            let observable = [this.storage.delete(this.tokenName)];
-            forkJoin(observable).subscribe(
-                (response: any) => {
-                    // this.httpCancelService.cancelPendingRequests();
-                    return resolve(true)
-                },
-                (error) => {
-                    return resolve(false)
-                }
-            );
-        });
+    public sessionExpire(): Promise<boolean> {
+        this.showWarning('Your session has expired. Please log in again.', 'Session Expired');
+        return Promise.resolve(true);
     }
+
+
 
     showSuccess(
         message = '',
