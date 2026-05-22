@@ -638,7 +638,7 @@ export class ReportRegistryService {
 
       this.registerReport({
         id: 'vat-receivable-report',
-        title: 'VAT Recivedable Report',
+        title: 'VAT Receivable Report',
         component: VatReportComponent,
         filenameTemplate: 'VAT_Report_{date}',
         module: 'accounts-report',

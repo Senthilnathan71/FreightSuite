@@ -11,6 +11,8 @@ export interface BalanceSheetReportPdfData {
   params?: any;
   fullData?: any;
   retainedEarning: number;
+  openingRetainedEarning: number;
+  totalRetainedEarning: number;
   retainedEarningLabel: string;
   sourceOfFundsCategories: any[];
   assetCategories: any[];
@@ -29,9 +31,11 @@ export function transformBalanceSheetReportData(
   const fullData = rawData || {};
   const processedFunds = processFunds(fullData?.data || []);
   const retainedEarning = resolveRetainedEarning(fullData);
+  const openingRetainedEarning = Number(fullData?.openingRetained || 0);
+  const totalRetainedEarning = retainedEarning + openingRetainedEarning;
   const sourceOfFundsCategories = processedFunds.filter(cat => cat.category !== 'Asset');
   const assetCategories = processedFunds.filter(cat => cat.category === 'Asset');
-  const totalSourceOfFunds = retainedEarning + sourceOfFundsCategories.reduce((sum, cat) => sum + (cat.categoryTotal || 0), 0);
+  const totalSourceOfFunds = totalRetainedEarning + sourceOfFundsCategories.reduce((sum, cat) => sum + (cat.categoryTotal || 0), 0);
   const totalApplicationOfFunds = assetCategories.reduce((sum, cat) => sum + (cat.categoryTotal || 0), 0);
 
   return {
@@ -44,6 +48,8 @@ export function transformBalanceSheetReportData(
     params: fullData?.params || {},
     fullData,
     retainedEarning,
+    openingRetainedEarning,
+    totalRetainedEarning,
     retainedEarningLabel: getRetainedEarningLabel(fullData?.params?.ToDate),
     sourceOfFundsCategories,
     assetCategories,
@@ -85,7 +91,7 @@ export function generateBalanceSheetReportDocument(data: BalanceSheetReportPdfDa
     }),
     header: () => buildHeader(data),
     footer: (currentPage: number, pageCount: number) => buildFooter(data, currentPage, pageCount),
-    content: [buildPanelsTable(data)],
+    content: [buildPanelsTable(data), buildNoteSection()],
     styles: getStyles(),
     defaultStyle: {
       fontSize: 8,
@@ -206,10 +212,16 @@ function buildSourceRows(data: BalanceSheetReportPdfData): any[] {
       buildNumberCell(data.retainedEarning, true)
     ],
     [
+      buildTextCell('Reserve & Surplus', true),
+      buildTextCell('Retained Earning', true),
+      buildTextCell('Retained Earning (Before From Date)'),
+      buildNumberCell(data.openingRetainedEarning, true)
+    ],
+    [
       { text: 'Category Total', colSpan: 3, style: 'totalLabelCell', alignment: 'right' },
       {},
       {},
-      buildNumberCell(data.retainedEarning, true)
+      buildNumberCell(data.totalRetainedEarning, true)
     ]
   ];
 
@@ -342,6 +354,19 @@ function buildFooter(data: BalanceSheetReportPdfData, currentPage: number, pageC
       }
     ],
     margin: [18, 0, 18, 8]
+  };
+}
+
+function buildNoteSection(): any {
+  return {
+    margin: [0, 8, 0, 0],
+    stack: [
+      { text: 'Note :', bold: true, fontSize: 8, margin: [0, 0, 0, 2] },
+      {
+        text: '• Retained Earnings takes both From Date and To Date, while the remaining take only the To Date.',
+        fontSize: 8
+      }
+    ]
   };
 }
 
