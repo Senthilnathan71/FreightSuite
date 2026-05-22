@@ -2544,6 +2544,14 @@
               </p>
             </div>
 
+            <div *ngIf="invoicePrintData?.BOENo"
+              style="display: flex; margin-top: 8px; font-size: 14px; padding: 0 20px;">
+              <p style="font-weight: bolder; width: 165px; margin: 0">
+                <strong>BOE No.</strong>
+              </p>
+              <p style="margin: 0">: {{ invoicePrintData?.BOENo }}</p>
+            </div>
+
           <!-- Bank Details -->
         <div *ngIf="bankDetails && bankDetails.length > 0" class="px-3" style="font-size:16px">
           <h5 class="fw-bold my-1"><strong>Bank Details</strong></h5>

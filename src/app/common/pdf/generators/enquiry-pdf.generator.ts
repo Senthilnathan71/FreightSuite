@@ -6,15 +6,15 @@
 import { EnquiryPdfData } from '../interfaces/pdf-document.interfaces';
 import { buildHeader } from '../builders/pdf-header.builder';
 import { createFooterFunction } from '../builders/pdf-footer.builder';
-import { buildCargoTable, buildTwoColumnInfo } from '../builders/pdf-table.builder';
+import { buildTwoColumnInfo } from '../builders/pdf-table.builder';
 import {
   buildTitle,
   buildSectionTitle,
   buildDivider,
   buildRemarks
 } from '../builders/pdf-section.builder';
-import { getPdfStyles, PDF_DEFAULT_CONFIG } from '../styles/pdf-styles';
-import { formatDate, joinNonEmpty } from '../helpers/pdf-formatters';
+import { getPdfStyles, PDF_DEFAULT_CONFIG, PDF_TABLE_LAYOUTS } from '../styles/pdf-styles';
+import { formatDate, formatNumber, joinNonEmpty } from '../helpers/pdf-formatters';
 
 /**
  * Generate enquiry PDF document definition
@@ -105,8 +105,6 @@ function buildEnquiryInfo(data: EnquiryPdfData): any {
     { label: 'Party Name', value: enquiry?.customerName || '' },
     { label: 'Party Address', value: enquiry?.customerAddress || '' },
     { label: 'Received Date', value: formatDate(enquiry?.enquiryDate) },
-    { label: 'Port of Origin', value: formatPort(firstRoute?.poo) },
-    { label: 'Port of Loading', value: formatPort(firstRoute?.pol) },
     { label: 'Inco Terms', value: enquiry?.incoTerms || '' },
     // { label: 'Freight Terms', value: enquiry?.freightTerms || '' },
     // { label: 'Shipment Type', value: enquiry?.shipmentType || '' },
@@ -122,8 +120,7 @@ function buildEnquiryInfo(data: EnquiryPdfData): any {
     { label: 'Enquiry Created Date', value: formatDate(enquiry?.createdOn) },
     { label: 'Contact / Number', value: joinNonEmpty([enquiry?.contactPerson, enquiry?.contactNumber], ' / ') },
     { label: 'Expected Shipment Date', value: formatDate(enquiry?.shipmentDate) },
-    { label: 'Port of Discharge', value: formatPort(firstRoute?.pod) },
-    { label: 'Final Destination', value: formatPort(firstRoute?.fpd) },
+
     // { label: 'Salesman', value: enquiry?.salesmanName || '' },
     // { label: 'Enquiry Type', value: enquiry?.enquiryType || '' },
     // { label: 'Clearance By', value: enquiry?.clearanceBy || '' },
@@ -180,10 +177,84 @@ function buildCargoSection(data: EnquiryPdfData): any[] {
     }
 
     content.push(buildRoutePortSummary(route, routeIndex === 0));
-    content.push(buildCargoTable(cargoData, data.fclLcl, { margin: [-10, 4, -10, 3] }));
+    content.push(buildEnquiryCargoTable(cargoData, data.fclLcl));
   });
 
   return content;
+}
+
+function buildEnquiryCargoTable(cargo: any[], fclLcl: 'FCL' | 'LCL' | 'AIR'): any {
+  const isFcl = fclLcl === 'FCL';
+  const columns = isFcl
+    ? [
+        { header: 'Cargo Type', field: 'CargoType', width: 62, alignment: 'left' },
+        { header: 'Cargo Desc', field: 'CargoDesc', width: '*', alignment: 'left' },
+        { header: 'Product Name', field: 'ProductName', width: 70, alignment: 'left' },
+        { header: 'Cont. Type', field: 'ContainerType', width: 58, alignment: 'left' },
+        { header: 'No. of Cont.', field: 'NoofContainers', width: 50, alignment: 'right', decimals: 0 },
+        { header: 'Pkg Type', field: 'PackageType', width: 55, alignment: 'left' },
+        { header: 'Gross Wt.', field: 'GrossWeight', width: 58, alignment: 'right', decimals: 3 },
+        { header: 'CBM', field: 'Volume', width: 50, alignment: 'right', decimals: 3 }
+      ]
+    : [
+        { header: 'Cargo Type', field: 'CargoType', width: 50, alignment: 'left' },
+        { header: 'Cargo Desc', field: 'CargoDesc', width: '*', alignment: 'left' },
+        { header: 'Product Name', field: 'ProductName', width: 67, alignment: 'left' },
+        { header: 'Chargeable Wt.', field: 'ChargeableWeight', width: 72, alignment: 'right', decimals: 0 },
+        { header: 'Qty.', field: 'Qty', width: 42, alignment: 'right', decimals: 2 },
+        { header: 'Wt. Unit', field: 'WeightUnit', width: 43, alignment: 'left' },
+        { header: 'Pkg Type', field: 'PackageType', width: 45, alignment: 'left' },
+        { header: 'Gross Wt.', field: 'GrossWeight', width: 55, alignment: 'right', decimals: 3 },
+        { header: 'CBM', field: 'Volume', width: 43, alignment: 'right', decimals: 3 }
+      ];
+
+  const formatCellValue = (value: any, decimals?: number) => {
+    if (decimals === undefined) {
+      return value !== null && value !== undefined ? String(value) : '';
+    }
+
+    if (value === null || value === undefined || value === '') {
+      return '';
+    }
+
+    return formatNumber(value, decimals);
+  };
+
+  const headerRow = columns.map(col => ({
+    text: col.header,
+    style: 'tableHeader',
+    alignment: 'center',
+    noWrap: true
+  }));
+
+  const dataRows = cargo.map(row =>
+    columns.map(col => ({
+      text: formatCellValue(row[col.field], col.decimals),
+      style: 'tableCell',
+      alignment: col.alignment
+    }))
+  );
+
+  const totalGrossWeight = cargo.reduce((sum, item) => sum + (Number(item.GrossWeight) || 0), 0);
+  const totalVolume = cargo.reduce((sum, item) => sum + (Number(item.Volume) || 0), 0);
+  const totalRow: any[] = columns.map(() => ({ text: '', style: 'tableCell' }));
+  const totalLabelIndex = isFcl ? 5 : 6;
+  const grossWeightIndex = isFcl ? 6 : 7;
+  const volumeIndex = isFcl ? 7 : 8;
+
+  totalRow[totalLabelIndex] = { text: 'Total', style: 'tableCellBold', alignment: 'right' };
+  totalRow[grossWeightIndex] = { text: formatNumber(totalGrossWeight, 3), style: 'tableCellBold', alignment: 'right' };
+  totalRow[volumeIndex] = { text: formatNumber(totalVolume, 3), style: 'tableCellBold', alignment: 'right' };
+
+  return {
+    table: {
+      headerRows: 1,
+      widths: columns.map(col => col.width),
+      body: [headerRow, ...dataRows, totalRow]
+    },
+    layout: PDF_TABLE_LAYOUTS.bordered,
+    margin: [-10, 4, -10, 3]
+  };
 }
 
 function buildRoutePortSummary(route: EnquiryPdfData['routes'][number], isFirstRoute = false): any {
@@ -355,7 +426,7 @@ export function transformEnquiryApiData(
         volume: cargo.Volume || 0,
         chargeableWeight: cargo.ChargeableWeight || 0,
         packageType: cargo.PackageType || '',
-        weightUnit: cargo.WeightUnit || 'KG'
+        weightUnit: cargo.WeightUnit || ''
       }))
     })),
     fclLcl,

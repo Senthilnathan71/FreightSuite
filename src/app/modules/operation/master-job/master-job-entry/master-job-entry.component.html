@@ -1678,11 +1678,11 @@
                     </aside>
 
                 <aside class="col-md-3">
-                        <div class="custom-form-group">
+                        <div class="custom-form-group job-loss-reason-field">
                             <input formControlName="JobLossReason" class="custom-input-field sm"
                                 placeholder="" rows="2" maxlength="300">
                             <label class="input-label">Job Loss Reason</label>
-                            <div class="small text-muted text-end">
+                            <div class="job-loss-reason-count small text-muted">
                                 {{ masterJobForm.get('JobLossReason')?.value?.length || 0 }}/300
                             </div>
                         </div>

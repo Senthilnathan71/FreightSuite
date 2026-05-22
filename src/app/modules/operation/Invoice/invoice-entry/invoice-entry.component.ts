@@ -1545,6 +1545,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       FPD: this.getShipmentFieldValue('FPD') || "",
       ETD: this.getShipmentFieldValue('ETD') || "",
       ETA: this.getShipmentFieldValue('ETA') || "",
+      BOENo: this.getInvoiceBOENoDisplay(),
       HBLNo: this.invoiceData?.houseJob?.HBLNo || '',
       MBLNo: this.invoiceData?.masterJob?.MBLNo || '',
       MasterJobNumber: this.invoiceData?.masterJob?.MasterJobNumber || '',
@@ -1638,6 +1639,19 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
    
     
   } 
+
+  private getInvoiceBOENoDisplay(): string {
+    const boeList = this.invoiceData?.houseJob?.houseJobBOE;
+
+    if (!Array.isArray(boeList)) {
+      return '';
+    }
+
+    return boeList
+      .map((boe: any) => String(boe?.BOENo ?? '').trim())
+      .filter((boeNo: string) => boeNo)
+      .join(', ');
+  }
 
 isSeaDepartment(): boolean {
  const deptSid = this.invoiceData?.masterJob?.DepartmentMasterSid || this.invoiceData?.BookingHeader?.DepartmentMasterSid;
