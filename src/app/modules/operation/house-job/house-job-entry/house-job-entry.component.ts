@@ -377,6 +377,7 @@ auditLogs: any[] = []; // Stores audit logs
   currentYardCFSType: 'yard' | 'cfs' | null = null;
   jobStatusOptions = [
   { id: 'Job Generated', name: 'Job Generated' },
+  { id: 'Job closed', name: 'Job closed' },
   { id: 'Open', name: 'Open' },
   { id: 'Closed', name: 'Closed' },
   { id: 'Sailed', name: 'Sailed' },
@@ -2115,8 +2116,19 @@ get isSuspended() : boolean {
   }
 
   get isJobClosed(): boolean {
-    const status = this.housejobData?.masterJob?.JobStatus;
-    return status === 'Closed' || status === 'Job Closed';
+    return this.isClosedJobStatus(this.housejobData?.masterJob?.JobStatus);
+  }
+
+  private isClosedJobStatus(status: string | null | undefined): boolean {
+    return ['Closed', 'Job Closed', 'Job closed'].includes(status || '');
+  }
+
+  private getEffectiveHouseStatus(response: any): string {
+    if (this.isClosedJobStatus(response?.masterJob?.JobStatus)) {
+      return 'Job closed';
+    }
+
+    return response?.HouseStatus || 'Job Generated';
   }
 
   loadOtherLookups() {
@@ -2213,7 +2225,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
     this.isExportToImportLinked = response?.masterJob?.others?.[0]?.ExportToImport === 'Y';
     const selectedDepartment = this.departmentList.find(dep => dep.DepartmentMasterSid === response.DepartmentMasterSid);
     const shouldDisableForms = (this.isEditMode && response.status !== 'A')
-      || (this.isEditMode && (response?.masterJob?.JobStatus === 'Closed' || response?.masterJob?.JobStatus === 'Job Closed'));
+      || (this.isEditMode && this.isClosedJobStatus(response?.masterJob?.JobStatus));
     this.selectedDepartment = selectedDepartment;
     this.selectedDepartmentType = selectedDepartment?.departmentType?.toUpperCase() || '';
     this.filterTabs();
@@ -2286,7 +2298,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
       MBLNo: response.MBLNo,
       MBLDate: response.MBLDate ? new Date(response.MBLDate) : '',
       status: response.status === "A" ? "Active" : "Suspended",
-      HouseStatus: response.HouseStatus,
+      HouseStatus: this.getEffectiveHouseStatus(response),
       HBLCount: response.HBLCount,
       VesselName: vesselName,
       VoyageMasterSid: response.VoyageMasterSid,

@@ -1435,7 +1435,11 @@ private parseFloatSafe(value: any): number {
       fields.forEach(f => {
         const ctrl = cargoForm.get(f);
         if (ctrl) {
-          ctrl.setValidators([Validators.required]);
+          const validators = [Validators.required];
+          if (f === 'PackageQty' || f === 'volumetric') {
+            validators.push(Validators.min(1));
+          }
+          ctrl.setValidators(validators);
           if (!this.isPatching && (f === 'Qty' || f === 'cbm') && !ctrl.value) {
             ctrl.setValue('1');
           }
@@ -2328,6 +2332,11 @@ private parseFloatSafe(value: any): number {
           FPODSid: route.FDPSid,
           ContainerType: containerTypeCode || cargo.ContainerType || null,
           Qty: cargo.PackageQty,
+          Volume: cargo.Volume ?? cargo.CBM ?? cargo.cbm ?? null,
+          Volumetric: cargo.Volumetric ?? cargo.volumetric ?? null,
+          Length: cargo.Length ?? cargo.length ?? null,
+          Width: cargo.Width ?? cargo.width ?? null,
+          Height: cargo.Height ?? cargo.height ?? null,
           PackageTypeId: packageTypeId,
           ServiceLevel: response.IncoTerms,
         };
@@ -2356,9 +2365,9 @@ private parseFloatSafe(value: any): number {
         PackageTypeId: primaryCargo.PackageTypeId || null,
         ServiceLevel: response.IncoTerms,
         ProductName: primaryCargo.ProductName || null,
-        length: primaryCargo.length || 0,
-        width: primaryCargo.width || 0,
-        height: primaryCargo.height || 0,
+        length: primaryCargo.Length || primaryCargo.length || 0,
+        width: primaryCargo.Width || primaryCargo.width || 0,
+        height: primaryCargo.Height || primaryCargo.height || 0,
         Volumetric: primaryCargo.Volumetric || null,
         quoteCargo: cargoList,
       };
@@ -3682,7 +3691,11 @@ if (this.isTermsAndConditionsEnabled) {
         const control = cargo.get(fieldName);
         if (control?.invalid) {
           const label = fieldLabels[fieldName] || fieldName;
-          validationIssues.push(`${cargoLabel} - ${label} is required`);
+          if (control.hasError('min')) {
+            validationIssues.push(`${cargoLabel} - ${label} must be at least 1`);
+          } else {
+            validationIssues.push(`${cargoLabel} - ${label} is required`);
+          }
         }
       });
 

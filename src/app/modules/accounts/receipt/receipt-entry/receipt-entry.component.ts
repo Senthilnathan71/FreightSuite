@@ -142,6 +142,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   isPosted: boolean = false;
   isReadOnly: boolean = false;
   isTermsAndConditionsEnabled: boolean = true;
+  receiptAllowToPrintBeforePosting: boolean = false;
   /**
    * Calculate local amount before round off the Currency Amount
    *
@@ -357,6 +358,10 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     return this.voucherMatchings?.length > 0;
   }
 
+  get canPrintReceipt(): boolean {
+    return this.isPosted || this.receiptAllowToPrintBeforePosting;
+  }
+
   constructor(
     public mps: MenuPermissionService,
     private commonService: CommonService,
@@ -423,6 +428,7 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
 
     this.currentBranch = this.appSettingService.getCurrentBranchInfo();
     this.loadTermsAndConditionsConfig();
+    this.loadReceiptPrintBeforePostingConfig();
     this.mps.init().subscribe();
     this.checkVoucherPostingMechanism('B');
     this.initSearchOutstandingForm();
@@ -468,6 +474,26 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       error: () => {
         // Default to enabled if config fetch fails
         this.isTermsAndConditionsEnabled = true;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private loadReceiptPrintBeforePostingConfig(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+      this.receiptAllowToPrintBeforePosting = false;
+      return;
+    }
+
+    this.masterService.getConfigurationValue(companyId, 'ReceiptAllowtoprintbeforePosting').subscribe({
+      next: (resp: any) => {
+        const rawValue = resp?.ConfigurationValue ?? resp?.value ?? resp;
+        this.receiptAllowToPrintBeforePosting = this.parseConfigBoolean(rawValue, false);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.receiptAllowToPrintBeforePosting = false;
         this.cdr.markForCheck();
       }
     });

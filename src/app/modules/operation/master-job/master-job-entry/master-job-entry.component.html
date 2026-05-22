@@ -1849,7 +1849,8 @@
 
          <div class="workspace-content" *ngIf="selectedTab === 'Edoc'">
         <app-edoc [dataItems]="edocData" [resetTrigger]="edocResetTrigger" [formData]="currentEdocFormValue"
-            [isFormDisabled]="isFormDisabled"
+            [isFormDisabled]="isFormDisabled && !isJobClosed"
+            [isDeleteDisabled]="isJobClosed"
             (dataEmitter)="handleEdocChange($event)">
         </app-edoc>
     </div>

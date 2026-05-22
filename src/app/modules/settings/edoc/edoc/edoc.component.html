@@ -185,7 +185,7 @@
 
                             <aside class="col-md-6">
                                 <div class="custom-form-group custom-form-group-select mt-md-1"  [class.filled]="!!edocform.get('EdocStatus')?.value">
-                                    <ng-select formControlName="EdocStatus" [items]="modeOfStatus" bindLabel="name"
+                                    <ng-select formControlName="EdocStatus" [items]="edocStatusOptions" bindLabel="name"
                                         bindValue="id">
                                     </ng-select>
                                     <label for="" class="input-label">Status <span class="text-danger"></span></label>
@@ -277,7 +277,7 @@
                             <aside class="col-md-6" *ngIf="edocform.get('FollowupRequired')?.value">
                                 <div class="custom-form-group custom-form-group-select mt-md-1"
                                     [class.filled]="!!edocform.get('FollowupStatus')?.value">
-                                    <ng-select formControlName="FollowupStatus" [items]="modeOfStatus" bindLabel="name"
+                                    <ng-select formControlName="FollowupStatus" [items]="edocStatusOptions" bindLabel="name"
                                         bindValue="id">
                                     </ng-select>
                                     <label for="" class="input-label">Status <span class="text-danger"></span></label>

@@ -1572,6 +1572,10 @@ private mapQuotationCargoForBooking(cargo: any): any {
   return this.quotationForm.get('IsContract')?.value === true;
 }
 
+  isSavedContract(): boolean {
+  return this.quotationData?.IsContract === 'Y';
+}
+
   isContractValid(): boolean {
   // If not a contract, return true (no expiration check needed)
   if (!this.f['IsContract']?.value) {
@@ -1871,7 +1875,6 @@ private mapQuotationCargoForBooking(cargo: any): any {
 
 
     const defaultCargoProduct = (
-      !isFCL &&
       !cargoProducts.length &&
       (data?.ProductName || data?.PackageType || data?.GrossWeight || data?.NetWeight || data?.Volume))
       ? [{
@@ -1884,9 +1887,10 @@ private mapQuotationCargoForBooking(cargo: any): any {
           GrossWeight: data?.GrossWeight || '',
           NetWeight: data?.NetWeight || '',
           Volume: data?.Volume || '',
-          Length: data?.length || '',
-          Width: data?.width || '',
-          Height: data?.height || '',
+          Length: data?.Length ?? data?.length ?? '',
+          Volumetric: data?.Volumetric ?? data?.volumetric ?? '',
+          Width: data?.Width ?? data?.width ?? '',
+          Height: data?.Height ?? data?.height ?? '',
           ProductUnit: data?.PackageTypeId || data?.ProductUnit || null,
           ChargeableWeight: data?.ChargeableWeight || '',
           IsHaz: this.isHazardous(data?.IsHaz),
@@ -7629,10 +7633,7 @@ private getSavedRouteBySid(routeSid: number | null | undefined): any | null {
 }
 
 doesBookingExistForRoute(routeSid: number | null | undefined): boolean {
-  const isContract = this.quotationForm.get('IsContract')?.value;
-
-  // For contract quotes, we don't check booking existence (button should always be enabled)
-  if (isContract) return false;
+  if (this.isSavedContract()) return false;
 
   const savedRoute = this.getSavedRouteBySid(routeSid);
   if (!savedRoute) return false;
@@ -7660,6 +7661,11 @@ private resolveRouteSidForBooking(routeIndex: number, routeSid: number | null | 
 
 async goForBookingCreationForRoute(routeIndex: number, routeSid: number | null | undefined) {
   if (!this.validateCustomerForBookingCreation()) {
+    return;
+  }
+
+  if (this.isContract && !this.isSavedContract()) {
+    this.appSettingService.showWarning("Please save the contract before creating a booking.");
     return;
   }
 

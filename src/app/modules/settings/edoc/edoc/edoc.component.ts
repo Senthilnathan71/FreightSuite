@@ -49,6 +49,7 @@ export class EdocComponent implements OnInit, OnDestroy {
   @Input() branchMasterSid: number | string | null = null;
   @Input() menuMasterSid: number | string | null = null;
   @Input() documentSid: number | string | null = null;
+  @Input() isDeleteDisabled: boolean = false;
   @Output() dataEmitter = new EventEmitter<any>();
   attachDocumentSid: any
   previewFileType: any
@@ -328,6 +329,14 @@ export class EdocComponent implements OnInit, OnDestroy {
     { id: Status.Suspended, name: 'Suspended' },
     { id: Status.Deleted, name: 'Deleted' },
   ];
+
+  get edocStatusOptions(): any[] {
+    if (!this.isDeleteDisabled) {
+      return this.modeOfStatus;
+    }
+
+    return this.modeOfStatus.filter(status => status.id !== Status.Deleted);
+  }
 
   modeOfAction = [
     { id: '1', name: 'Internal followup' },
@@ -703,6 +712,11 @@ loadEdocData() {
 
   // Remove an existing file from database
   removeExistingFile(file: any, index: number) {
+    if (this.isDeleteDisabled) {
+      this.appSettingService.showWarning('Delete is not allowed after job close');
+      return;
+    }
+
     if (confirm(`Are you sure you want to delete "${file.FileName}"?`)) {
       this.commonService.deleteEdocFile(file.AttachDocumentSid).subscribe(
         (res) => {

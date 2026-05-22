@@ -3299,7 +3299,8 @@
         [branchMasterSid]="currentBranch?.BranchMasterSid"
         [menuMasterSid]="currentMenuId"
         [documentSid]="HouseJobSid || housejobData?.HouseJobSid"
-        [isFormDisabled]="isFormDisabled"
+        [isFormDisabled]="isFormDisabled && !isJobClosed"
+        [isDeleteDisabled]="isJobClosed"
         (dataEmitter)="handleEdocChange($event)">
       </app-edoc>
     </div>

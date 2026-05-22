@@ -882,11 +882,11 @@
       <div *ngIf="isEditMode && isRouteApproved(routeIndex)">
         <button class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120"
                 (click)="goForBookingCreationForRoute(routeIndex, route.value?.QuoteRouteSid)"
-                [disabled]="!isContractValid() || !isQuotationSavedAfterApproval(routeIndex) || quotationForm.get('status')?.getRawValue() === 'Suspended'|| (!isContract && doesBookingExistForRoute(route.value?.QuoteRouteSid))">
-          @if(doesBookingExistForRoute(route.value?.QuoteRouteSid) && quotationForm.get('IsContract')?.value) {
+                [disabled]="!isContractValid() || (isContract && !isSavedContract()) || !isQuotationSavedAfterApproval(routeIndex) || quotationForm.get('status')?.getRawValue() === 'Suspended'|| (!isContract && doesBookingExistForRoute(route.value?.QuoteRouteSid))">
+          @if(doesBookingExistForRoute(route.value?.QuoteRouteSid) && isSavedContract()) {
             <i class="fas fa-plus me-1"></i> Create Booking
           }
-          @else if(doesBookingExistForRoute(route.value?.QuoteRouteSid) && !quotationForm.get('IsContract')?.value) {
+          @else if(doesBookingExistForRoute(route.value?.QuoteRouteSid) && !isContract) {
             Booking Created
           }
           @else {
