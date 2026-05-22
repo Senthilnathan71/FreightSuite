@@ -5,7 +5,7 @@ import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ComplexReportExportConfig, ExcelCell, ExcelHeader, ExcelRow } from 'src/app/shared/excel-report-service';
 import { LeadService } from 'src/app/modules/crm-mobile/Services/lead.service';
 import { ReportRegistryService } from 'src/app/shared/services/report-registry.service';
-import { REPORT_DATA } from 'src/app/shared/services/report.service';
+import { REPORT_DATA, ReportCard, ReportService } from 'src/app/shared/services/report.service';
 import { PrintHeaderComponent } from '../../print-header/print-header.component';
 import { PrintFooterComponent } from '../../print-footer/print-footer.component';
 
@@ -33,7 +33,8 @@ export class BalanceSheetReportComponent {
     @Inject(REPORT_DATA) public data: any,
     private appSettingsService: AppSettingsService,
     private leadService: LeadService,
-    private reportRegistryService: ReportRegistryService
+    private reportRegistryService: ReportRegistryService,
+    private reportService: ReportService
   ) {
     console.log('Outstanding Report Data:', this.data);
   }
@@ -165,6 +166,14 @@ export class BalanceSheetReportComponent {
     return (this.data?.incomeTotal || 0) - (this.data?.expenseTotal || 0);
   }
 
+  get openingRetainedEarning(): number {
+    return Number(this.data?.openingRetained || 0);
+  }
+
+  get retainedEarningTotal(): number {
+    return this.retainedEarning + this.openingRetainedEarning;
+  }
+
   get sourceOfFundsCategories(): any[] {
     return (this.processedFunds || []).filter(cat => cat.category !== 'Asset');
   }
@@ -174,7 +183,7 @@ export class BalanceSheetReportComponent {
   }
 
   get totalSourceOfFunds(): number {
-    return this.retainedEarning + this.sourceOfFundsCategories.reduce((sum, cat) => sum + (cat.categoryTotal || 0), 0);
+    return this.retainedEarningTotal + this.sourceOfFundsCategories.reduce((sum, cat) => sum + (cat.categoryTotal || 0), 0);
   }
 
   get totalApplicationOfFunds(): number {
@@ -208,6 +217,8 @@ export class BalanceSheetReportComponent {
 
     const rows: ExcelRow[] = [];
     const retainedEarning = this.retainedEarning;
+    const openingRetainedEarning = this.openingRetainedEarning;
+    const retainedEarningTotal = this.retainedEarningTotal;
     const nonAssetCategories = this.sourceOfFundsCategories;
     const assetCategories = this.assetCategories;
     const panelHeaderCells: ExcelCell[] = [
@@ -275,8 +286,17 @@ export class BalanceSheetReportComponent {
     });
     leftRows.push({
       cells: [
+        { value: 'Reserve & Surplus' },
+        { value: 'Retained Earning' },
+        { value: 'Retained Earning (Before From Date)' },
+        { value: this.formatNumber(openingRetainedEarning), alignment: { horizontal: 'right' } }
+      ],
+      style: 'data'
+    });
+    leftRows.push({
+      cells: [
         { value: 'Category Total', colspan: 3, alignment: { horizontal: 'right' } },
-        { value: this.formatNumber(retainedEarning), alignment: { horizontal: 'right' } }
+        { value: this.formatNumber(retainedEarningTotal), alignment: { horizontal: 'right' } }
       ],
       style: 'total'
     });
@@ -386,5 +406,84 @@ get retainedEarningLabel(): string {
   const year = new Date(toDate).getFullYear();
   return `Retained Earning ${year}`;
 }
+
+  async openLedgerReport(item: any): Promise<void> {
+    const resolveLedgerId = (row: any): number => {
+      return Number(
+        row?.LedgerMasterSid ??
+        row?.ledgerMasterSid ??
+        row?.LedgerSid ??
+        row?.ledgerSid ??
+        row?.COAMasterSid ??
+        row?.coaMasterSid ??
+        row?.CoaMasterSid ??
+        row?.CoaSid ??
+        row?.coaSid ??
+        row?.AccountMasterSid ??
+        row?.accountMasterSid ??
+        row?.SubledgerMasterSid ??
+        row?.subledgerMasterSid ??
+        0
+      );
+    };
+
+    let ledgerMasterSid = resolveLedgerId(item);
+
+    // Fallback: try resolving from raw rows using ledger name match
+    if (!ledgerMasterSid) {
+      const ledgerNameKey = String(item?.ledgerName || item?.LedgerName || '').trim().toLowerCase();
+      const rawMatch = (this.fullData?.data || []).find((row: any) => {
+        const rowLedgerName = String(
+          row?.ledgerName ??
+          row?.LedgerName ??
+          row?.ledger ??
+          row?.Ledger ??
+          ''
+        ).trim().toLowerCase();
+        return rowLedgerName && rowLedgerName === ledgerNameKey;
+      });
+      ledgerMasterSid = resolveLedgerId(rawMatch);
+    }
+
+    if (!ledgerMasterSid) {
+      this.appSettingsService.showError('Unable to open Ledger Report: Ledger ID not found for selected row.');
+      return;
+    }
+
+    const branchFromParams =
+      this.params?.Branch ??
+      this.params?.Branches ??
+      this.params?.BranchMasterSids ??
+      (this.params?.BranchMasterSid ? [this.params.BranchMasterSid] : []);
+
+    const payload: any = {
+      FromDate: this.params?.FromDate,
+      ToDate: this.params?.ToDate,
+      Branch: Array.isArray(branchFromParams) ? branchFromParams : [branchFromParams],
+      Ledger: ledgerMasterSid,
+      LedgerMasterSid: ledgerMasterSid,
+      LedgerName: item?.ledgerName || item?.LedgerName || '',
+      companyId: this.params?.companyId ?? this.currentCompany?.CompanyMasterSid
+    };
+
+    Object.keys(payload).forEach((key) => {
+      if (payload[key] === undefined || payload[key] === null || payload[key] === '') {
+        delete payload[key];
+      }
+    });
+
+    const ledgerReportCard: ReportCard = {
+      ReportMasterSid: 0,
+      ReportName: 'ledger-report',
+      ReportDisplayName: 'Ledger Report',
+      ReportMenuSid: 0,
+      ReportFormat: 'PDF',
+      ReportType: 'REPORT',
+      Orientation: 'L',
+      ReportMasterDetail: []
+    };
+
+    await this.reportService.openReportModal(ledgerReportCard, undefined, payload);
+  }
 
 }
