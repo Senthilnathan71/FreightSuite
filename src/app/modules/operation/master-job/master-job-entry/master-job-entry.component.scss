@@ -1,0 +1,17 @@
+:host ::ng-deep .compact-form .job-loss-reason-field {
+  margin-bottom: 0.25rem;
+
+  .custom-input-field {
+    display: block;
+    width: 100%;
+  }
+
+  .job-loss-reason-count {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    line-height: 1;
+    margin-top: 2px;
+    pointer-events: none;
+  }
+}

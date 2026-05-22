@@ -124,6 +124,7 @@
         buildAmountInWords(data),
         ...(data.invoice?.remarks ? [buildRemarks(data.invoice.remarks)] : []),
         ...(buildContainerDetails(data) ? [buildContainerDetails(data)] : []),
+        ...(buildBOEDetails(data) ? [buildBOEDetails(data)] : []),
         ...buildBankDetailsSection(data),
         ...(resolvedTerms.length > 0
   ? [
@@ -1032,6 +1033,35 @@ function buildContainerDetails(data: InvoicePdfData): any {
       {
         width: '*',
         text: containerValue
+      }
+    ]
+  };
+}
+
+function buildBOEDetails(data: InvoicePdfData): any {
+  const printData = (data as any).invoicePrintData;
+  const boeValue = printData?.BOENo || '';
+
+  if (!boeValue) {
+    return null;
+  }
+
+  return {
+    margin: [0, 2, 0, 2],
+    columns: [
+      {
+        width: 90,
+        text: 'BOE No.',
+        style: 'labelBold'
+      },
+      {
+        width: 10,
+        text: ':',
+        alignment: 'center'
+      },
+      {
+        width: '*',
+        text: boeValue
       }
     ]
   };
