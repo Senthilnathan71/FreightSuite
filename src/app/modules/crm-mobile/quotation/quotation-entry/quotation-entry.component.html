@@ -1470,20 +1470,20 @@
                                           <!-- <h5 class="card-title text-info ms-1">Charge Details</h5> -->
                                         
                                           
-                                          <button class="btn btn-info btn-sm me-1" type="button"
+                                          <button class="btn btn-info btn-sm me-1" type="button" appPreventMultiClick
         (click)="getTariffDetails(routeIndex,carrierIndex,tariffDetailsModal)"
         [disabled]="disableAllModification || !canGetTariff(routeIndex) || isRouteApproved(routeIndex) || isRateLocked() || isBookingLockedForRoute(routeIndex) || (isEditMode && isSuspended)">
   <i-feather name="dollar-sign" class="feather-sm"></i-feather> Get Tariff
 </button>
-<button class="btn btn-info btn-sm me-1" type="button"
+<button class="btn btn-info btn-sm me-1" type="button" appPreventMultiClick
   (click)="openStandardCharges(routeIndex, carrierIndex)" [disabled]="disableAllModification || !canGetTariff(routeIndex) || isRouteApproved(routeIndex) || isRateLocked() || isBookingLockedForRoute(routeIndex) || (isEditMode && isSuspended)">
   Get Std Charges
 </button>
 
 
 <!-- Add Charge button -->
-<button class="btn btn-info btn-sm" type="button"
-        (click)="addQuoteCharge(routeIndex,carrierIndex)"
+<button class="btn btn-info btn-sm" type="button" appPreventMultiClick
+        (click)="addQuoteCharge(routeIndex,carrierIndex,'manual')"
         [disabled]="disableAllModification || isRouteApproved(routeIndex) || isRateLocked() || isBookingLockedForRoute(routeIndex) || (isEditMode && isSuspended)">
   <i class="fas fa-plus me-1"></i> Add Charge
 </button>
@@ -1494,7 +1494,7 @@
                                 </div>
                               </div>
                               <div class="table-responsive table-borderless" formArrayName="quoteCharges"
-                                style="overflow-y:hidden;">
+                                style="overflow-y:hidden;" *ngIf="costRevenueAccess !== 'HIDE_BOTH'">
                                 <div>
                                   <table class="table table-hover align-middle no-wrap  table-sm mb-0">
                                     <thead>
@@ -1517,12 +1517,12 @@
                                         <td class="bg-transparent text-light text-center  dofi-min-w-50" rowspan="2">
                                           <label class="form-label mb-0">Qty <span class="text-danger">*</span></label>
                                         </td>
-                                        <td class="bg-transparent text-light text-center"
+                                        <td *ngIf="showRevenue" class="bg-transparent text-light text-center"
                                           [attr.colspan]="f['AgreedRate']?.value ? 6 : 4"
                                           style="border-bottom: none;border-left: 1px solid #f3f1f1;">
                                           <label class="form-label mb-0 fw-bold">Revenue</label>
                                         </td>
-                                        <td class="bg-transparent text-light text-center" colspan="6"
+                                        <td *ngIf="showCost" class="bg-transparent text-light text-center" colspan="6"
                                           [attr.colspan]="f['AgreedRate']?.value ? 6 : 4"
                                           style="border-bottom: none;border-left: 1px solid #f3f1f1;">
                                           <label class="form-label mb-0 fw-bold">Cost</label>
@@ -1534,31 +1534,31 @@
                                           style="border-left: 1px solid #f3f1f1;">
                                           <label class="form-label mb-0">Unit <span class="text-danger">*</span></label>
                                         </td> -->
-                                        <td class="bg-transparent text-light text-center dofi-min-w-100"
+                                        <td *ngIf="showRevenue" class="bg-transparent text-light text-center dofi-min-w-100"
                                           style="border-left: 1px solid #f3f1f1;">
                                           <label class="form-label mb-0">Currency <span
                                               class="text-danger">*</span></label>
                                         </td>
-                                        <td class="bg-transparent text-light text-center dofi-min-w-100">
+                                        <td *ngIf="showRevenue" class="bg-transparent text-light text-center dofi-min-w-100">
                                           <label class="form-label mb-0">Per Unit <span
                                               class="text-danger">*</span></label>
                                         </td>
-                                        @if(f['AgreedRate']?.value){
+                                        @if(f['AgreedRate']?.value && showRevenue){
                                         <td class="bg-transparent text-light text-center dofi-min-w-100">
                                           <label class="form-label mb-0">Ex Rate <span
                                               class="text-danger">*</span></label>
                                         </td>
                                         }
-                                        <td class="bg-transparent text-light text-center dofi-min-w-150">
+                                        <td *ngIf="showRevenue" class="bg-transparent text-light text-center dofi-min-w-150">
                                           <label class="form-label mb-0">Amt <span class="text-danger">*</span></label>
                                         </td>
-                                        @if(f['AgreedRate']?.value){
+                                        @if(f['AgreedRate']?.value && showRevenue){
                                         <td class="bg-transparent text-light text-center dofi-min-w-150">
                                           <label class="form-label mb-0">Local Amt <span
                                               class="text-danger">*</span></label>
                                         </td>
                                         }
-                                        <td class="bg-transparent text-light text-center dofi-min-w-150">
+                                        <td *ngIf="showRevenue" class="bg-transparent text-light text-center dofi-min-w-150">
                                           <label class="form-label mb-0">Billing Party <span
                                               class="text-danger">*</span></label>
                                         </td>
@@ -1566,32 +1566,32 @@
                                           style="border-left: 1px solid #f3f1f1;">
                                           <label class="form-label mb-0">Unit <span class="text-danger">*</span></label>
                                         </td> -->
-                                        <td class="bg-transparent text-light text-center dofi-min-w-80"
+                                        <td *ngIf="showCost" class="bg-transparent text-light text-center dofi-min-w-80"
                                           style="border-left: 1px solid #f3f1f1;">
                                           <label class="form-label mb-0">Currency <span
                                               class="text-danger">*</span></label>
                                         </td>
-                                        <td class="bg-transparent text-light text-center dofi-min-w-100">
+                                        <td *ngIf="showCost" class="bg-transparent text-light text-center dofi-min-w-100">
                                           <label class="form-label mb-0">Per Unit <span
                                               class="text-danger">*</span></label>
                                         </td>
-                                        @if(f['AgreedRate']?.value){
+                                        @if(f['AgreedRate']?.value && showCost){
                                         <td class="bg-transparent text-light text-center dofi-min-w-100">
                                           <label class="form-label mb-0">Ex Rate
                                             <span class="text-danger"></span></label>
                                         </td>
                                         }
-                                        <td class="bg-transparent text-light text-center dofi-min-w-150">
+                                        <td *ngIf="showCost" class="bg-transparent text-light text-center dofi-min-w-150">
                                           <label class="form-label mb-0"> Amt
                                             <span class="text-danger"></span></label>
                                         </td>
-                                        @if(f['AgreedRate']?.value){
+                                        @if(f['AgreedRate']?.value && showCost){
                                         <td class="bg-transparent text-light text-center dofi-min-w-150">
                                           <label class="form-label mb-0">Local Amt <span
                                               class="text-danger">*</span></label>
                                         </td>
                                         }
-                                        <td class="bg-transparent text-light text-center dofi-min-w-150">
+                                        <td *ngIf="showCost" class="bg-transparent text-light text-center dofi-min-w-150">
                                           <label class="form-label mb-0">Party <span
                                               class="text-danger"></span></label>
                                         </td>
@@ -1604,7 +1604,7 @@
                                         <td *ngIf="quoteCharges(routeIndex,carrierIndex).length > 1">
   <button class="btn btn-link text-danger py-0"
           (click)="removeCharge(routeIndex,carrierIndex,chargeIndex,charge.value.QuoteChargeSid)"
-          [disabled]="disableAllModification || isRateLocked() || isBookingLockedForRoute(routeIndex) || quoteCarriers(routeIndex).at(carrierIndex).disabled" 
+          [disabled]="disableAllModification || isRateLocked() || isBookingLockedForRoute(routeIndex) || quoteCarriers(routeIndex).at(carrierIndex).disabled || isCostRevReadOnly"
           ngbTooltip="Delete">
     <i class="fas fa-trash text-center fs-2"></i>
   </button>
@@ -1656,13 +1656,14 @@
                                             bindValue="UOMMasterSid">
                                           </dofi-searchable-dropdown>
                                         </td> -->
-                                        <td>
+                                        <td *ngIf="showRevenue">
                                           <dofi-searchable-dropdown [items]="currencyMaster"
                                             formControlName="RevenueCurrencyMasterSid" placeholder=""
                                             [displayFields]="currencyLookupConfig.displayFields"
                                             [displayLabels]="currencyLookupConfig.displayLabels"
                                             [labelFields]="currencyLookupConfig.labelFields" bindLabel="currencyCode"
                                             bindValue="CurrencyMasterSid"
+                                            [disabled]="isCostRevReadOnly"
                                             (itemSelected)="fetchExchangeRate(routeIndex,carrierIndex,chargeIndex,'revenue')">
                                           </dofi-searchable-dropdown>
                                           <!-- <ng-select [items]="currencyMaster" bindLabel="currencyName"
@@ -1672,11 +1673,12 @@
                                               [class.filled]="!!quoteRoutes.at(routeIndex).get('RevenueCurrencyMasterSid')?.value">
                                             </ng-select> -->
                                         </td>
-                                        <td>
+                                        <td *ngIf="showRevenue">
                                           <div>
                                             <input type="text" id="text-input" formControlName="RevenueRate"
                                               placeholder="" class="custom-input-field sm text-end" DecimalPrecision
                                               [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal"
+                                              [disabled]="isCostRevReadOnly"
                                               (input)="calculateRevenueTotalAmount(routeIndex,carrierIndex,chargeIndex)"
                                               style="margin-top: 2px;">
                                             @if(charge.get("RevenueRate")?.touched &&
@@ -1689,26 +1691,27 @@
                                             }
                                           </div>
                                         </td>
-                                        @if(f['AgreedRate']?.value){
+                                        @if(f['AgreedRate']?.value && showRevenue){
                                         <td>
                                           <input type="text" #revenueLocalAmountInput [attr.data-route]="routeIndex"
                                             [attr.data-carrier]="carrierIndex" [attr.data-charge]="chargeIndex"
                                             id="text-input" formControlName="RevenueExchangeRate" placeholder=""
                                             (input)="calculateRevenueTotalAmount(routeIndex,carrierIndex,chargeIndex)"
                                             class="form-control custom-input-field sm  text-end" DecimalPrecision
+                                            [disabled]="isCostRevReadOnly"
                                             [DecimalPrecisionBefore]="4" [DecimalPrecisionAfter]="digitsAfterDecimal"
                                             style="margin-top: 2px;">
 
                                         </td>
                                         }
-                                        <td>
+                                        <td *ngIf="showRevenue">
                                           <input type="text" id="text-input" formControlName="RevenueAmount"
                                             placeholder="" class="form-control custom-input-field sm  text-end" readonly
                                             DecimalPrecision [DecimalPrecisionBefore]="9"
                                             [DecimalPrecisionAfter]="digitsAfterDecimal" style="margin-top: 2px;">
 
                                         </td>
-                                        @if(f['AgreedRate']?.value){
+                                        @if(f['AgreedRate']?.value && showRevenue){
                                         <td>
                                           <input type="text" id="text-input" formControlName="RevenueLocalAmount"
                                             placeholder="" class="form-control custom-input-field sm  text-end" readonly
@@ -1717,7 +1720,7 @@
 
                                         </td>
                                         }
-                                        <td>
+                                        <td *ngIf="showRevenue">
                                           <div [class.filled]="!!charge.get('RevenueCustomerBranchSid')?.value">
                                             <dofi-searchable-dropdown [items]="customers"
                                               formControlName="RevenueCustomerBranchSid" placeholder=""
@@ -1725,6 +1728,7 @@
                                               [displayLabels]="customerLookupConfig.displayLabels"
                                               [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
                                               bindValue="CustomerBranchSid"
+                                              [disabled]="isCostRevReadOnly"
                                               (itemSelected)="onChargeCustomerChange(routeIndex,carrierIndex,chargeIndex,'party',$event)">
                                             </dofi-searchable-dropdown>
                                           </div>
@@ -1749,13 +1753,14 @@
                                             [class.filled]="!!quoteRoutes.at(routeIndex).get('costUnit')?.value">
                                           </ng-select>
                                         </td> -->
-                                        <td>
+                                        <td *ngIf="showCost">
                                           <dofi-searchable-dropdown [items]="currencyMaster"
                                             formControlName="CostCurrencyMasterSid" placeholder=""
                                             [displayFields]="currencyLookupConfig.displayFields"
                                             [displayLabels]="currencyLookupConfig.displayLabels"
                                             [labelFields]="currencyLookupConfig.labelFields" bindLabel="currencyCode"
                                             bindValue="CurrencyMasterSid"
+                                            [disabled]="isCostRevReadOnly"
                                             (itemSelected)="fetchExchangeRate(routeIndex,carrierIndex,chargeIndex,'cost')">
                                           </dofi-searchable-dropdown>
                                           <!-- <ng-select [items]="currencyMaster" bindLabel="currencyName"
@@ -1765,11 +1770,12 @@
                                             [class.filled]="!!quoteRoutes.at(routeIndex).get('CostCurrencyMasterSid')?.value">
                                           </ng-select> -->
                                         </td>
-                                        <td>
+                                        <td *ngIf="showCost">
                                           <div>
                                             <input type="text" id="text-input" formControlName="CostRate" placeholder=""
                                               DecimalPrecision [DecimalPrecisionBefore]="6"
                                               [DecimalPrecisionAfter]="digitsAfterDecimal"
+                                              [disabled]="isCostRevReadOnly"
                                               (input)="calculateCostTotalAmount(routeIndex,carrierIndex,chargeIndex)"
                                               class="custom-input-field sm  text-end" style="margin-top: 2px;">
                                             @if(charge.get("CostRate")?.touched && charge.get("CostRate")?.invalid){
@@ -1781,24 +1787,25 @@
                                             }
                                           </div>
                                         </td>
-                                        @if(f['AgreedRate']?.value){
+                                        @if(f['AgreedRate']?.value && showCost){
                                         <td>
                                           <input type="text" id="text-input" formControlName="CostExchangeRate"
                                             (input)="calculateCostTotalAmount(routeIndex,carrierIndex,chargeIndex)"
                                             placeholder="" class="form-control custom-input-field sm  text-end"
                                             DecimalPrecision [DecimalPrecisionBefore]="4"
+                                            [disabled]="isCostRevReadOnly"
                                             [DecimalPrecisionAfter]="digitsAfterDecimal" style="margin-top: 2px;">
 
                                         </td>
                                         }
-                                        <td>
+                                        <td *ngIf="showCost">
                                           <input type="text" id="text-input" formControlName="CostAmount" placeholder=""
                                             class="form-control custom-input-field sm  text-end" readonly
                                             DecimalPrecision [DecimalPrecisionBefore]="9"
                                             [DecimalPrecisionAfter]="digitsAfterDecimal" style="margin-top: 2px;">
 
                                         </td>
-                                        @if(f['AgreedRate']?.value){
+                                        @if(f['AgreedRate']?.value && showCost){
                                         <td>
                                           <input type="text" id="text-input" formControlName="CostLocalAmount"
                                             placeholder="" class="form-control custom-input-field sm  text-end" readonly
@@ -1807,7 +1814,7 @@
 
                                         </td>
                                         }
-                                        <td>
+                                        <td *ngIf="showCost">
                                           <div [class.filled]="!!charge.get('CostAgentBranchSid')?.value">
                                             <dofi-searchable-dropdown [items]="vendorSupplierList"
                                               formControlName="CostAgentBranchSid" placeholder=""
@@ -1815,6 +1822,7 @@
                                               [displayLabels]="customerLookupConfig.displayLabels"
                                               [labelFields]="customerLookupConfig.labelFields" bindLabel="CustomerName"
                                               bindValue="CustomerBranchSid"
+                                              [disabled]="isCostRevReadOnly"
                                               (itemSelected)="onChargeCustomerChange(routeIndex,carrierIndex,chargeIndex,'vendor',$event)">
                                             </dofi-searchable-dropdown>
                                           </div>

@@ -363,6 +363,7 @@ export class MawbillEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   }
 
   ngOnInit(): void {
+    this.costRevenueAccess = this.appSettingsService.getCostRevenueAccess();
     const fy = this.appSettingsService.getCurrentFinancialYear();
         if (fy) {
           this.fyMinDate = toNgbDateStruct(fy.StartDate);
@@ -2893,7 +2894,16 @@ loadMawbStock(data: any): void {
     }
   }
 
+  costRevenueAccess: string = 'NONE';
+
   selectTab(tab: string): void {
+    if (tab === 'Rate' && this.costRevenueAccess === 'HIDE_BOTH') {
+      this.toastr.warning(
+        'Cost and Revenue access is hidden for this branch. Contact admin to update CostRevenueAccess in User Master.',
+        'Access Restricted'
+      );
+      return;
+    }
     if (tab === 'Follow Up') {
     this.openFollowup();
   }

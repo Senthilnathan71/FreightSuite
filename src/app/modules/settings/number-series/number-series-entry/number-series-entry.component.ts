@@ -64,10 +64,13 @@ export class NumberSeriesEntryComponent implements OnInit {
   ];
 
   departmentList: any[] = [];
+  portList: any[] = [];
 
   // Preview
   previewResult: PreviewResult | null = null;
   selectedDepartmentForPreview: number | null = null;
+  selectedPOLForPreview: number | null = null;
+  selectedPODForPreview: number | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -91,6 +94,7 @@ export class NumberSeriesEntryComponent implements OnInit {
     this.initForm();
     this.loadFinancialYear();
     this.loadDepartments();
+    this.loadPorts();
 
     this.route.paramMap.subscribe((params) => {
       const menuId = params.get('menuId');
@@ -113,6 +117,8 @@ export class NumberSeriesEntryComponent implements OnInit {
       CompanyPrefix: [''],
       BranchFlagRequired: ['N'],
       BranchPrefix: [''],
+      POLPODFlagRequired: ['N'],
+      POLPODPortWiseCounter: ['Y'],
       DepartmentCodeRequired: ['N'],
       MonthFlagRequired: ['N'],
       YearFlagRequired: ['N'],
@@ -131,6 +137,7 @@ export class NumberSeriesEntryComponent implements OnInit {
         next: (resp) => {
           if (resp.status) {
             this.currentYear = resp.data;
+            this.updatePreview();
           }
         },
         error: (err) => {
@@ -150,6 +157,17 @@ export class NumberSeriesEntryComponent implements OnInit {
           console.error('Error loading departments', err);
         },
       });
+  }
+
+  loadPorts(): void {
+    this.masterService.getAllPorts().subscribe({
+      next: (resp: any) => {
+        this.portList = resp?.data || resp || [];
+      },
+      error: (err) => {
+        console.error('Error loading ports', err);
+      },
+    });
   }
 
   loadMenuInfo(): void {
@@ -186,6 +204,8 @@ export class NumberSeriesEntryComponent implements OnInit {
               CompanyPrefix: config.CompanyPrefix || '',
               BranchFlagRequired: config.BranchFlagRequired || 'N',
               BranchPrefix: config.BranchPrefix || '',
+              POLPODFlagRequired: config.POLPODFlagRequired || 'N',
+              POLPODPortWiseCounter: config.POLPODPortWiseCounter || 'Y',
               DepartmentCodeRequired: config.DepartmentCodeRequired || 'N',
               MonthFlagRequired: config.MonthFlagRequired || 'N',
               YearFlagRequired: config.YearFlagRequired || 'N',
@@ -240,6 +260,19 @@ export class NumberSeriesEntryComponent implements OnInit {
       parts.push(formValue.BranchPrefix);
     }
 
+    // POL-POD segment
+    if (formValue.POLPODFlagRequired === 'Y') {
+      if (this.selectedPOLForPreview && this.selectedPODForPreview) {
+        const pol = this.portList.find(p => p.PortMasterSid === this.selectedPOLForPreview);
+        const pod = this.portList.find(p => p.PortMasterSid === this.selectedPODForPreview);
+        const polCode = pol?.PortCode ? (pol.PortCode.length > 3 ? pol.PortCode.slice(-3) : pol.PortCode) : 'POL';
+        const podCode = pod?.PortCode ? (pod.PortCode.length > 3 ? pod.PortCode.slice(-3) : pod.PortCode) : 'POD';
+        parts.push(`${polCode}-${podCode}`);
+      } else {
+        parts.push('POL-POD');
+      }
+    }
+
     // Department Code
     if (formValue.DepartmentCodeRequired === 'Y') {
       if (this.selectedDepartmentForPreview) {
@@ -280,6 +313,14 @@ export class NumberSeriesEntryComponent implements OnInit {
     this.updatePreview();
   }
 
+  onPOLPreviewChange(): void {
+    this.updatePreview();
+  }
+
+  onPODPreviewChange(): void {
+    this.updatePreview();
+  }
+
   onSubmit(): void {
     if (this.configForm.invalid) {
       this.configForm.markAllAsTouched();
@@ -298,6 +339,8 @@ export class NumberSeriesEntryComponent implements OnInit {
       CompanyPrefix: formValue.CompanyPrefix,
       BranchFlagRequired: formValue.BranchFlagRequired,
       BranchPrefix: formValue.BranchPrefix,
+      POLPODFlagRequired: formValue.POLPODFlagRequired,
+      POLPODPortWiseCounter: formValue.POLPODPortWiseCounter,
       DepartmentCodeRequired: formValue.DepartmentCodeRequired,
       MonthFlagRequired: formValue.MonthFlagRequired,
       YearFlagRequired: formValue.YearFlagRequired,
@@ -342,12 +385,20 @@ export class NumberSeriesEntryComponent implements OnInit {
     this.router.navigate(['/settings/number-series/list']);
   }
 
+  get isPolPodDisallowed(): boolean {
+    const code = (this.menuInfo?.MenuCode || '').toUpperCase();
+    const name = (this.menuInfo?.MenuName || '').toLowerCase();
+    return code === 'RAT' || code === 'QUA' || code === 'QT' ||
+           name.includes('enquiry') || name.includes('quotation');
+  }
+
   getFormatPreviewParts(): string[] {
     const formValue = this.configForm.value;
     const parts: string[] = [];
 
     if (formValue.CompanyFlagRequired === 'Y') parts.push('Company');
     if (formValue.BranchFlagRequired === 'Y') parts.push('Branch');
+    if (formValue.POLPODFlagRequired === 'Y') parts.push('POL-POD');
     if (formValue.DepartmentCodeRequired === 'Y') parts.push('Dept');
     if (formValue.MonthFlagRequired === 'Y') parts.push('Month');
     if (formValue.YearFlagRequired === 'Y') parts.push('Year');

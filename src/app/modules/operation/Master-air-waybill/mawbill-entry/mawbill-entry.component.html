@@ -1584,6 +1584,7 @@
             <app-cost-entry #costEntryComponent screenName="Master Air Waybill" [currencyList]="currencyList"
                 [agentList]="agentList" [customerList]="customerList" [dataItems]="masterJobRateArr" [isFormDisabled]="isFormDisabled"
                 [resetTrigger]="rateResetTrigger" [formData]="currentFormValue" (dataEmitter)="handleRateChange($event)"
+                [costRevenueAccess]="costRevenueAccess"
                 (reloadParent)="loadMasterJobData($event)">
             </app-cost-entry>
         </div>

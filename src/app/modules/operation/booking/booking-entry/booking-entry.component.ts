@@ -188,7 +188,16 @@ export class BookingEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   private hasShownVesselWarning = false;
   public rateComponent = CostEntryComponent;
   public ArApcomponent = ArApComponent;
+  costRevenueAccess: string = 'NONE';
+
   selectTab(tab: string) {
+    if (tab === 'Rate' && this.costRevenueAccess === 'HIDE_BOTH') {
+      this.toastr.warning(
+        'Cost and Revenue access is hidden for this branch. Contact admin to update CostRevenueAccess in User Master.',
+        'Access Restricted'
+      );
+      return;
+    }
     if (tab === "Rate") {
       this.syncFormValueWithRateComponent();
     }
@@ -570,6 +579,7 @@ get visibleTabs() {
   // }
 
   ngOnInit(): void {
+    this.costRevenueAccess = this.appSettingService.getCostRevenueAccess();
     this.userData = this.appSettingService.getDecryptedUserProfile();
     if (this.userData) {
     }

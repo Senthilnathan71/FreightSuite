@@ -434,6 +434,11 @@ dataFromEnqPage:any;
   digitsAfterDecimal = 3;
   truncationLimit = 4;
 
+  costRevenueAccess: string = 'NONE';
+  get showRevenue(): boolean { return this.costRevenueAccess !== 'HIDE_REVENUE' && this.costRevenueAccess !== 'HIDE_BOTH'; }
+  get showCost(): boolean { return this.costRevenueAccess !== 'HIDE_COST' && this.costRevenueAccess !== 'HIDE_BOTH'; }
+  get isCostRevReadOnly(): boolean { return this.costRevenueAccess === 'READ_ONLY'; }
+
   // SECTION2 - CONSTRUCTOR
   constructor(
     public mps : MenuPermissionService,
@@ -470,6 +475,7 @@ dataFromEnqPage:any;
 
   // SECTION3 - NGONIT
   ngOnInit(): void {
+    this.costRevenueAccess = this.appSettingService.getCostRevenueAccess();
     const initialQuotationData = this.leadService.getQuotationData();
     const historyState = window.history.state as any;
     const hasSeedData = !!(
@@ -1600,6 +1606,20 @@ private mapQuotationCargoForBooking(cargo: any): any {
 }
 
   addQuoteCharge(routeIndex: number,carrierIndex:number, data?: any) {
+    if (this.costRevenueAccess === 'READ_ONLY' && (data === undefined || data === 'manual')) {
+      if (data === 'manual') this.toastr.warning(`Adding a charge is not allowed. Cost/Revenue access for this branch is set to '${this.costRevenueAccess}'. Please contact your admin to change the access in User Master.`, 'Access Restricted', { timeOut: 6000 });
+      return;
+    }
+    if (this.costRevenueAccess === 'HIDE_BOTH') {
+      if (data === 'manual') {
+        this.toastr.warning(
+          `Adding a charge is not allowed. Cost/Revenue access for this branch is set to '${this.costRevenueAccess}'. Please contact your admin to change the access in User Master.`,
+          'Access Restricted',
+          { timeOut: 6000 }
+        );
+      }
+      return;
+    }
     const defaultRevenueCustomerMasterSid =
       data?.RevenueCustomerMasterSid ?? this.quotationForm.get('CustomerMasterSid')?.value ?? null;
     const defaultRevenueCustomerBranchSid =
@@ -1696,6 +1716,9 @@ private mapQuotationCargoForBooking(cargo: any): any {
       costPerUnitCtrl.setValidators([Validators.required]);
       costPerUnitCtrl.markAsTouched();
       costPerUnitCtrl.updateValueAndValidity();
+    }
+    if (this.costRevenueAccess === 'READ_ONLY') {
+      chargeForm.disable({ emitEvent: false });
     }
     this.quoteCharges(routeIndex,carrierIndex).push(chargeForm)
     this.handlePartyOnChargePPCC();
@@ -3769,6 +3792,10 @@ isRateLockDisabled(): boolean {
   // }
 
   getTariffDetails(routeIndex: number, carrierIndex: number, template: TemplateRef<any>) {
+    if (this.costRevenueAccess === 'HIDE_BOTH' || this.costRevenueAccess === 'READ_ONLY') {
+      this.toastr.warning(`Getting tariff is not allowed. Cost/Revenue access for this branch is set to '${this.costRevenueAccess}'. Please contact your admin to change the access in User Master.`, 'Access Restricted', { timeOut: 6000 });
+      return;
+    }
     const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
     const carrierForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
     const routeRawValue = routeForm.getRawValue();
@@ -7991,7 +8018,10 @@ isQuotationSavedAfterApproval(routeIndex: number): boolean {
   return hasSavedApproval;
 }
 openStandardCharges(routeIndex: number, carrierIndex: number) {
-
+  if (this.costRevenueAccess === 'HIDE_BOTH' || this.costRevenueAccess === 'READ_ONLY') {
+    this.toastr.warning(`Getting standard charges is not allowed. Cost/Revenue access for this branch is set to '${this.costRevenueAccess}'. Please contact your admin to change the access in User Master.`, 'Access Restricted', { timeOut: 6000 });
+    return;
+  }
   const routeForm = this.quoteRoutes.at(routeIndex) as FormGroup;
   const carrierForm = this.quoteCarriers(routeIndex).at(carrierIndex) as FormGroup;
 

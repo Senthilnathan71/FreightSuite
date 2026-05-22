@@ -164,8 +164,7 @@ export class CompanySettingsManagerService {
    */
   private isUserAuthenticated(): boolean {
     try {
-      // Check for token using the same method as the app
-      // The app uses StorageMap service for crm-token
+      // The session itself is held by the backend httpOnly cookie.
       const userProfile = localStorage.getItem('userProfile');
       return !!userProfile;
     } catch (error) {

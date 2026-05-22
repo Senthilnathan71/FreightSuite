@@ -14,13 +14,17 @@ interface NumberSeriesConfig {
   configured: boolean;
   preview?: string;
   CompanyFlagRequired?: string;
+  CompanyPrefix?: string;
   BranchFlagRequired?: string;
+  BranchPrefix?: string;
   DepartmentCodeRequired?: string;
   MonthFlagRequired?: string;
   YearFlagRequired?: string;
   Separator?: string;
   NumberLength?: number;
   ResetOption?: string;
+  POLPODFlagRequired?: string;
+  POLPODPortWiseCounter?: string;
   DepartmentWiseCounter?: string;
   StartingNumber?: number;
 }
@@ -110,13 +114,17 @@ export class NumberSeriesListComponent implements OnInit {
                   configured: !!config,
                   NumberSeriesConfigSid: config?.NumberSeriesConfigSid,
                   CompanyFlagRequired: config?.CompanyFlagRequired,
+                  CompanyPrefix: config?.CompanyPrefix,
                   BranchFlagRequired: config?.BranchFlagRequired,
+                  BranchPrefix: config?.BranchPrefix,
                   DepartmentCodeRequired: config?.DepartmentCodeRequired,
                   MonthFlagRequired: config?.MonthFlagRequired,
                   YearFlagRequired: config?.YearFlagRequired,
                   Separator: config?.Separator,
                   NumberLength: config?.NumberLength,
                   ResetOption: config?.ResetOption,
+                  POLPODFlagRequired: config?.POLPODFlagRequired,
+                  POLPODPortWiseCounter: config?.POLPODPortWiseCounter,
                   DepartmentWiseCounter: config?.DepartmentWiseCounter,
                   StartingNumber: config?.StartingNumber,
                 };
@@ -148,6 +156,12 @@ export class NumberSeriesListComponent implements OnInit {
   }
 
   loadPreview(item: NumberSeriesConfig): void {
+    // For POL/POD configs the API has no port context, so build locally with placeholder
+    if (item.POLPODFlagRequired === 'Y') {
+      item.preview = this.buildItemPreview(item);
+      return;
+    }
+
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
@@ -166,6 +180,30 @@ export class NumberSeriesListComponent implements OnInit {
     });
   }
 
+  buildItemPreview(item: NumberSeriesConfig): string {
+    const parts: string[] = [];
+    const sep = item.Separator || '';
+
+    if (item.CompanyFlagRequired === 'Y' && item.CompanyPrefix) parts.push(item.CompanyPrefix);
+    if (item.BranchFlagRequired === 'Y' && item.BranchPrefix) parts.push(item.BranchPrefix);
+    if (item.POLPODFlagRequired === 'Y') parts.push('POL-POD');
+    if (item.DepartmentCodeRequired === 'Y') parts.push('XX');
+    if (item.MonthFlagRequired === 'Y') {
+      const month = new Date().getMonth() + 1;
+      parts.push(month.toString().padStart(2, '0'));
+    }
+    if (item.YearFlagRequired === 'Y') {
+      const yearCode = this.currentYear?.YearCode?.toString();
+      parts.push(yearCode ? (yearCode.length === 4 ? yearCode.slice(-2) : yearCode) : 'YY');
+    }
+
+    const seqLength = item.NumberLength || 5;
+    const startingNumber = item.StartingNumber || 1;
+    parts.push(startingNumber.toString().padStart(seqLength, '0'));
+
+    return parts.join(sep);
+  }
+
   editConfig(item: NumberSeriesConfig): void {
     this.router.navigate([
       '/settings/number-series/entry',
@@ -179,6 +217,7 @@ export class NumberSeriesListComponent implements OnInit {
     const parts: string[] = [];
     if (item.CompanyFlagRequired === 'Y') parts.push('Company');
     if (item.BranchFlagRequired === 'Y') parts.push('Branch');
+    if (item.POLPODFlagRequired === 'Y') parts.push('POL-POD');
     if (item.DepartmentCodeRequired === 'Y') parts.push('Dept');
     if (item.MonthFlagRequired === 'Y') parts.push('Month');
     if (item.YearFlagRequired === 'Y') parts.push('Year');

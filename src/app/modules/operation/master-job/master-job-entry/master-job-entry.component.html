@@ -1803,6 +1803,7 @@
                 <app-cost-entry #costEntryComponent screenName="Master Job" [currencyList]="currencyList" [agentList]="agentList"[customerList]="customerList"
                     [dataItems]="masterJobRateArr" [resetTrigger]="rateResetTrigger" [formData]="currentFormValue"
                     [isFormDisabled]="isFormDisabled"
+                    [costRevenueAccess]="costRevenueAccess"
                     (dataEmitter)="handleRateChange($event)" (reloadParent)="loadMasterJobData($event)">
                 </app-cost-entry>
             </div>

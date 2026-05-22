@@ -1,8 +1,7 @@
-import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest, HttpResponse } from "@angular/common/http";
+import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { StorageMap } from "@ngx-pwa/local-storage";
 import { AppSettingsService } from "./services/app-settings.service";
-import { catchError, from, map, Observable, switchMap, throwError, timeout } from "rxjs";
+import { catchError, map, Observable, throwError, timeout } from "rxjs";
 import { environment } from "../../environments/environment";
 import { CompanySettingsManagerService } from "./services/company-settings-manager.service";
 import { Router } from "@angular/router";
@@ -11,50 +10,24 @@ import { Router } from "@angular/router";
 export class HttpInterceptorService implements HttpInterceptor {
 
     private baseURL = environment.apiUrl;
-    private jwtToken: any = null;
-
-    // APIs that should NOT have Authorization header
-    private openURLs: string[] = [
-        "/auth/login",
-        "auth/forgot-password",
-        "auth/validate-reset-token/",
-        "auth/reset-password/",
-    ];
 
     private defaultTimeout = 60 * 5; // 5 mins
 
+    private isRedirecting = false;
+
     constructor(
-        private localStorage: StorageMap,
         private appSettingService: AppSettingsService,
         private companySettingsManager: CompanySettingsManagerService,
         private router: Router
     ) { }
 
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-
-        const skipAuth = this.openURLs.some(url => req.url === url || req.url.startsWith(url));
-        const showLoader = req.headers.get('showLoader') === 'true';
-
-        // Skip auth for open URLs (like login)
-        if (skipAuth) {
-            return this.prepareRequest(req, next, showLoader, skipAuth);
-        }
-
-        // Always read token from storage for protected routes
-        // This ensures we get the latest token after login (fixes race condition)
-        return from(this.localStorage.get(this.appSettingService.tokenName)).pipe(
-            switchMap(token => {
-                this.jwtToken = token;
-                return this.prepareRequest(req, next, showLoader, skipAuth);
-            })
-        );
+        return this.prepareRequest(req, next);
     }
 
     private prepareRequest(
         req: HttpRequest<any>,
-        next: HttpHandler,
-        showLoader: boolean,
-        skipAuth: boolean
+        next: HttpHandler
     ): Observable<HttpEvent<any>> {
 
         let baseUrl = this.baseURL;
@@ -67,19 +40,10 @@ export class HttpInterceptorService implements HttpInterceptor {
             baseUrl = "";
         }
 
-        // Attach token only if NOT login URL
-        if (!skipAuth) {
-            req = req.clone({
-                url: baseUrl + req.url,
-                setHeaders: {
-                    Authorization: `Bearer ${this.jwtToken}`
-                }
-            });
-        } else {
-            req = req.clone({
-                url: baseUrl + req.url
-            });
-        }
+        req = req.clone({
+            url: baseUrl + req.url,
+            withCredentials: true
+        });
 
         // Handle request
         return next.handle(req).pipe(
@@ -95,27 +59,29 @@ export class HttpInterceptorService implements HttpInterceptor {
 
                 // Handle Unauthorized → Session Expired
                 if (error.status === 401) {
+                    const currentUrl = this.router.url;
+                    const isOnAuthPage = currentUrl.startsWith('/auth') || currentUrl === '/';
+                    const isOnPublicPage = currentUrl.startsWith('/public');
 
-                    this.appSettingService.sessionExpire().then(flag => {
+                    if (!this.isRedirecting && !isOnAuthPage && !isOnPublicPage) {
+                        this.isRedirecting = true;
+                        this.companySettingsManager.clearCompanySettings();
 
-                        if (flag) {
-                            // Clear cached data
-                            this.companySettingsManager.clearCompanySettings();
+                        // Preserve remembered credentials and year
+                        const rememberedEmail = localStorage.getItem("rememberedEmail");
+                        const rememberedPassword = localStorage.getItem("rememberedPassword");
+                        const lastYearId = localStorage.getItem("current-year-id");
+                        localStorage.clear();
+                        if (rememberedEmail) localStorage.setItem("rememberedEmail", rememberedEmail);
+                        if (rememberedPassword) localStorage.setItem("rememberedPassword", rememberedPassword);
+                        if (lastYearId) localStorage.setItem("current-year-id", lastYearId);
 
-                            // Save remembered credentials
-                            const rememberedEmail = localStorage.getItem("rememberedEmail");
-                            const rememberedPassword = localStorage.getItem("rememberedPassword");
+                        void this.appSettingService.sessionExpire();
 
-                            // Clear all data
-                            localStorage.clear();
-
-                            // Restore remembered creds
-                            if (rememberedEmail) localStorage.setItem("rememberedEmail", rememberedEmail);
-                            if (rememberedPassword) localStorage.setItem("rememberedPassword", rememberedPassword);
-
-                            this.router.navigate(["auth/login"]);
-                        }
-                    });
+                        this.router.navigate(["auth/login"]).then(() => {
+                            this.isRedirecting = false;
+                        });
+                    }
                 }
 
                 if (error.status === 403) {

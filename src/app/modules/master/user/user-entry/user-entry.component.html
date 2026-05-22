@@ -703,8 +703,11 @@
                     <th scope="col" style="border-style: none;font-weight: 700;" width="10%">
                       Sno.
                     </th>
-                    <th scope="col" style="border-style: none;font-weight: 700;" width="60%">
+                    <th scope="col" style="border-style: none;font-weight: 700;" width="40%">
                       Branch Name
+                    </th>
+                    <th scope="col" style="border-style: none;font-weight: 700;" width="20%">
+                      Cost/Rev Access
                     </th>
                     <th scope="col" style="border-style: none;font-weight: 700;" width="15%">
                       Access
@@ -725,6 +728,15 @@
                       <td style="border-style: none">{{ branchIndex + 1 }}</td>
                       <td style="border-style: none">
                         {{ branch.value.branchName }}
+                      </td>
+                      <td style="border-style: none">
+                        <select formControlName="CostRevenueAccess" class="form-select form-select-sm py-0" style="width: auto; min-width: 130px;">
+                          <option value="NONE">None</option>
+                          <option value="HIDE_COST">Hide Cost</option>
+                          <option value="HIDE_REVENUE">Hide Revenue</option>
+                          <option value="HIDE_BOTH">Hide Both</option>
+                          <option value="READ_ONLY">Read Only</option>
+                        </select>
                       </td>
                       <td style="border-style: none">
                         <aside class="d-flex align-items-center">

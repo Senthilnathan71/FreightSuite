@@ -271,6 +271,7 @@ export class UserEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges 
       branchName: [data.branchName || ''],
       GiveAccess: [data.GiveAccess === 'Y' || false],
       IsDefault: [data.IsDefault === 'Y' || false],
+      CostRevenueAccess: [data?.CostRevenueAccess || 'NONE'],
     });
   }
 
@@ -643,7 +644,8 @@ export class UserEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges 
                 BranchMasterSid: userBranch.BranchMasterSid,
                 branchName: validBranch?.branchName || userBranch.branchMaster?.branchName,
                 GiveAccess: userBranch.GiveAccess,
-                IsDefault: userBranch.IsDefault
+                IsDefault: userBranch.IsDefault,
+                CostRevenueAccess: userBranch.CostRevenueAccess,
               };
 
               this.userBranchMaster(lastCompanyIndex).push(
@@ -706,6 +708,7 @@ export class UserEntryComponent implements OnInit, OnDestroy, HasUnsavedChanges 
             BranchMasterSid: branch.BranchMasterSid,
             GiveAccess: branch.GiveAccess ? 'Y' : 'N',
             IsDefault: branch.IsDefault ? 'Y' : 'N',
+            CostRevenueAccess: branch.CostRevenueAccess,
           };
         });
 

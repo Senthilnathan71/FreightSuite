@@ -226,7 +226,13 @@ customsValidationErrors: { recordType: string; fieldRef: string; fieldName: stri
     { name: 'Edoc', icon: 'fas fa-file-pdf' },
   ];
   filteredTabs : {name : string, icon : string}[] = [...this.allTabs];
+  costRevenueAccess: string = 'NONE';
+
   selectTab(tab: string) {
+    if (tab === 'Rate' && this.costRevenueAccess === 'HIDE_BOTH') {
+      this.appSettingService.showWarning('Cost and Revenue access is hidden for this branch. Contact admin to update CostRevenueAccess in User Master.');
+      return;
+    }
     if (tab === "Rate") {
       this.syncFormValueWithRateComponent();
     }
@@ -751,6 +757,7 @@ hblModalRef?: NgbModalRef;
     |--------------------------------------------------
     */
   ngOnInit(): void {
+    this.costRevenueAccess = this.appSettingService.getCostRevenueAccess();
      const fy = this.appSettingService.getCurrentFinancialYear();
         if (fy) {
           this.fyMinDate = toNgbDateStruct(fy.StartDate);
