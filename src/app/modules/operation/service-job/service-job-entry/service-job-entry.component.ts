@@ -129,7 +129,16 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
   public rateComponent = CostEntryComponent;
   isSaving : boolean = false;
   
+  costRevenueAccess: string = 'NONE';
+
   selectTab(tab: string) {
+    if (tab === 'Rate' && this.costRevenueAccess === 'HIDE_BOTH') {
+      this.toastr.warning(
+        'Cost and Revenue access is hidden for this branch. Contact admin to update CostRevenueAccess in User Master.',
+        'Access Restricted'
+      );
+      return;
+    }
     if (tab === "Rate") {
       this.syncFormValueWithRateComponent();
     }
@@ -292,6 +301,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
     */
   
   ngOnInit(): void {
+    this.costRevenueAccess = this.appSettingService.getCostRevenueAccess();
     this.userData = this.appSettingService.getDecryptedUserProfile();
     const fy = this.appSettingService.getCurrentFinancialYear();
         if (fy) {

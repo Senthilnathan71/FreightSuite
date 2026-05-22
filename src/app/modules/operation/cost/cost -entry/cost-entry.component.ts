@@ -34,6 +34,7 @@ import { errorLoggerWithToastr } from 'src/app/common/error-handling/form-error-
 import { ModalService } from 'src/app/core/common-modal/common-modal.service';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { PreventMultiClickDirective } from 'src/app/core/Directives/prevent-multi-click.directive';
 
 @Component({
   selector: 'app-cost-entry',
@@ -56,7 +57,8 @@ import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guar
     NgbTooltipModule,
     NgbDatepickerModule,
     ElementStateGuardDirective,
-    FormStateGuardDirective
+    FormStateGuardDirective,
+    PreventMultiClickDirective
   ],
   templateUrl: './cost-entry.component.html',
   styleUrls: ['./cost-entry.component.scss'],
@@ -185,6 +187,22 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   }
 
   @Input() screenName: 'Booking' | 'Master Job' | 'House Job' | 'House Air Waybill' | 'Master Air Waybill' | 'Service Job'| 'Agent Master Air Waybill';
+  private _costRevenueAccess: string = 'NONE';
+  @Input()
+  set costRevenueAccess(value: string) {
+    this._costRevenueAccess = value;
+    if (this.rateForm) {
+      if (value === 'READ_ONLY') {
+        this.rateForm.disable({ emitEvent: false });
+      } else if (!this._isFormDisabled) {
+        this.rateForm.enable({ emitEvent: false });
+      }
+    }
+  }
+  get costRevenueAccess(): string { return this._costRevenueAccess; }
+  get hidesRevenue(): boolean { return this._costRevenueAccess === 'HIDE_REVENUE' || this._costRevenueAccess === 'HIDE_BOTH'; }
+  get hidesCost(): boolean { return this._costRevenueAccess === 'HIDE_COST' || this._costRevenueAccess === 'HIDE_BOTH'; }
+  get isCostRevReadOnly(): boolean { return this._costRevenueAccess === 'READ_ONLY'; }
   private _isFormDisabled: boolean = false;
   @Input()
   set isFormDisabled(value: boolean) {
@@ -275,6 +293,9 @@ export class CostEntryComponent implements OnInit, OnDestroy {
         this.patchValues(this._dataItems);
       } finally {
         this.isHydratingRateData = false;
+        if (this._costRevenueAccess === 'READ_ONLY') {
+          this.rateForm.disable({ emitEvent: false });
+        }
       }
     } else {
       this._dataItems = [];
@@ -987,6 +1008,14 @@ createRateFormGroup(data?: any): FormGroup {
     return null;
   }
 
+  handleAddRateRowClick() {
+    if (this.isCostRevReadOnly) {
+      this.toaster.warning(`Adding a charge is not allowed. Cost/Revenue access for this branch is set to '${this.costRevenueAccess}'. Please contact your admin to change the access in User Master.`, 'Access Restricted', { timeOut: 6000 });
+      return;
+    }
+    this.addRateRow();
+  }
+
   addRateRow(data?:any){
     if (this.isFormDisabled) {
       return;
@@ -1054,7 +1083,7 @@ createRateFormGroup(data?: any): FormGroup {
   canEditRate(index: number): boolean {
     const formGroup = this.rateFormArray.at(index) as FormGroup;
     // Check the hidden ID fields instead of display fields
-    if (this.isFormDisabled) {
+    if (this.isFormDisabled || this.isCostRevReadOnly) {
       return false;
     }
     const costVoucherHeaderSid = formGroup.get('_costVoucherHeaderSid')?.value || formGroup.get('CostVoucherHeaderSid')?.value || formGroup.get('PaymentRequestSid')?.value;
@@ -1064,7 +1093,7 @@ createRateFormGroup(data?: any): FormGroup {
 
   canEditRevenueRateFields(index: number): boolean {
     const formGroup = this.rateFormArray.at(index) as FormGroup;
-    if (this.isFormDisabled) {
+    if (this.isFormDisabled || this.isCostRevReadOnly) {
       return false;
     }
     const revenueVoucherHeaderSid = formGroup.get('_revenueVoucherHeaderSid')?.value || formGroup.get('RevenueVoucherHeaderSid')?.value;
@@ -1073,7 +1102,7 @@ createRateFormGroup(data?: any): FormGroup {
 
   canEditCostRateFields(index: number): boolean {
     const formGroup = this.rateFormArray.at(index) as FormGroup;
-    if (this.isFormDisabled) {
+    if (this.isFormDisabled || this.isCostRevReadOnly) {
       return false;
     }
     const costVoucherHeaderSid = formGroup.get('_costVoucherHeaderSid')?.value || formGroup.get('CostVoucherHeaderSid')?.value || formGroup.get('PaymentRequestSid')?.value;
@@ -1932,6 +1961,10 @@ createRateFormGroup(data?: any): FormGroup {
   }
 
   getTariffDetails(content: TemplateRef<any>) {
+    if (this.isCostRevReadOnly) {
+      this.toaster.warning(`Getting tariff is not allowed. Cost/Revenue access for this branch is set to '${this.costRevenueAccess}'. Please contact your admin to change the access in User Master.`, 'Access Restricted', { timeOut: 6000 });
+      return;
+    }
     if (!this.hasRequiredFieldsFilled()) {
       this.appSettingService.showWarning("Please fill all the required fields correctly to get Tariff.");
       return;
@@ -2910,6 +2943,14 @@ createRateFormGroup(data?: any): FormGroup {
 
   async selectVoucherType(voucherType: 'Invoice' | 'Vendor Invoice' | 'Payment Request') {
     if (this.isProcessingVoucherType) return;
+    if (voucherType === 'Invoice' && this.hidesRevenue) {
+      this.toaster.warning(`Invoice generation is not allowed. Cost/Revenue access for this branch is set to '${this.costRevenueAccess}'. Please contact your admin to change the access in User Master.`, 'Access Restricted', { timeOut: 6000 });
+      return;
+    }
+    if (voucherType === 'Vendor Invoice' && this.hidesCost) {
+      this.toaster.warning(`Vendor Invoice generation is not allowed. Cost/Revenue access for this branch is set to '${this.costRevenueAccess}'. Please contact your admin to change the access in User Master.`, 'Access Restricted', { timeOut: 6000 });
+      return;
+    }
     this.isProcessingVoucherType = true;
 
     try {
@@ -4551,6 +4592,10 @@ isHBLNoValid(): boolean {
   //!SECTION - 8 : Standard Charge Related
 
   getStdChargeModal() {
+    if (this.isCostRevReadOnly) {
+      this.toaster.warning(`Getting standard charges is not allowed. Cost/Revenue access for this branch is set to '${this.costRevenueAccess}'. Please contact your admin to change the access in User Master.`, 'Access Restricted', { timeOut: 6000 });
+      return;
+    }
     const modalRef = this.modalService.open(GetStandardChargesComponent, {
       size: 'xl',
       scrollable: true,

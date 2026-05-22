@@ -102,13 +102,13 @@
               <i class="fas fa-file-invoice me-1"></i>
               Generate Voucher
             </button>
-            <button class="btn btn-sm btn-info" (click)="addRateRow()" [disabled]="isFormDisabled || !isHBLNoValid()">
+            <button class="btn btn-sm btn-info" appPreventMultiClick (click)="handleAddRateRowClick()" [disabled]="isFormDisabled || !isHBLNoValid()">
               <i class="fas fa-plus"></i> Add Charge
             </button>
-            <button class="table-action-btn primary" (click)="getTariffDetails(tariffDetailsModal)" *ngIf="parentFormValue.ParentSid && showGetTariffButton" [disabled]="isFormDisabled || !isHBLNoValid()">
+            <button class="table-action-btn primary" appPreventMultiClick (click)="getTariffDetails(tariffDetailsModal)" *ngIf="parentFormValue.ParentSid && showGetTariffButton" [disabled]="isFormDisabled || !isHBLNoValid()">
               <i class="fas fa-plus"></i> Get Tariff
             </button>
-             <button class="table-action-btn primary" (click)="getStdChargeModal()" [disabled]="isFormDisabled || !isHBLNoValid()" *ngIf="isEditMode">
+             <button class="table-action-btn primary" appPreventMultiClick (click)="getStdChargeModal()" [disabled]="isFormDisabled || !isHBLNoValid()" *ngIf="isEditMode">
               <i class="fas fa-plus"></i> Get Standard Charges
             </button>
             <!-- <button class="table-action-btn export">
@@ -225,45 +225,45 @@
           <table>
             <thead class="bg-info secondtable">
               <tr>
-                <th  class="bg-transparent text-light text-center"  colspan="10" style="border-left: 1px solid white; border-right: 1px solid white;">Revenue</th>
-                <th  class="bg-warning text-light text-center"  colspan="11">Cost</th>
+                <th  class="bg-transparent text-light text-center"  colspan="10" style="border-left: 1px solid white; border-right: 1px solid white;" [hidden]="hidesRevenue">Revenue</th>
+                <th  class="bg-warning text-light text-center"  colspan="11" [hidden]="hidesCost">Cost</th>
               </tr>
               <tr class="no-wrap">
                 <!-- Revenue -->
                 <!-- <th class="table-header">Unit</th> -->
                 
-                <th class="bg-transparent text-light " style="border-left: 1px solid white; width: 90px;"  >Curr</th>
-                <th class="bg-transparent text-light ">Ex Rate <span class="text-danger"></span>
+                <th class="bg-transparent text-light " style="border-left: 1px solid white; width: 90px;" [hidden]="hidesRevenue">Curr</th>
+                <th class="bg-transparent text-light " [hidden]="hidesRevenue">Ex Rate <span class="text-danger"></span>
                 </th>
-                <th class="bg-transparent text-light">Per Unit</th>
-                <th class="bg-transparent text-light "> Amt</th>
-                <th class="bg-transparent text-light ">Local Amt</th>
-                <th  class="bg-transparent text-light " >Cr/Dr</th>
-                <th class="bg-transparent text-light ">PP/CC</th>
-                <th class="bg-transparent text-light ">Billing Party</th>
-                <th class="bg-transparent text-light ">Type</th>
-                <th class="bg-transparent text-light " style="border-right: 1px solid white">Voucher No</th>
+                <th class="bg-transparent text-light" [hidden]="hidesRevenue">Per Unit</th>
+                <th class="bg-transparent text-light " [hidden]="hidesRevenue"> Amt</th>
+                <th class="bg-transparent text-light " [hidden]="hidesRevenue">Local Amt</th>
+                <th  class="bg-transparent text-light " [hidden]="hidesRevenue">Cr/Dr</th>
+                <th class="bg-transparent text-light " [hidden]="hidesRevenue">PP/CC</th>
+                <th class="bg-transparent text-light " [hidden]="hidesRevenue">Billing Party</th>
+                <th class="bg-transparent text-light " [hidden]="hidesRevenue">Type</th>
+                <th class="bg-transparent text-light " style="border-right: 1px solid white" [hidden]="hidesRevenue">Voucher No</th>
                 <!-- Cost -->
                 <!-- <th style="background-color: #9dd376;" class="table-header">Unit</th> -->
-                
-                <th  class="bg-warning text-light">Curr</th>
-                <th  class="bg-warning text-light ">Ex Rate</th>
-                <th class="bg-warning text-light ">Per Unit</th>
-                <th  class="bg-warning text-light ">Amt</th>
-                <th  class="bg-warning text-light ">Local Amt</th>
-                <th  class="bg-warning text-light ">Cr/Dr</th>
-                <th  class="bg-warning text-light ">PP/CC</th>
-                <th  class="bg-warning text-light ">Party</th>
-                <th *ngIf="!isBooking" class="bg-warning text-light ">Pay. Req</th>
-                <th  class="bg-warning text-light ">Type</th>
-                <th  class="bg-warning text-light ">Voucher No</th>
+
+                <th  class="bg-warning text-light" [hidden]="hidesCost">Curr</th>
+                <th  class="bg-warning text-light " [hidden]="hidesCost">Ex Rate</th>
+                <th class="bg-warning text-light " [hidden]="hidesCost">Per Unit</th>
+                <th  class="bg-warning text-light " [hidden]="hidesCost">Amt</th>
+                <th  class="bg-warning text-light " [hidden]="hidesCost">Local Amt</th>
+                <th  class="bg-warning text-light " [hidden]="hidesCost">Cr/Dr</th>
+                <th  class="bg-warning text-light " [hidden]="hidesCost">PP/CC</th>
+                <th  class="bg-warning text-light " [hidden]="hidesCost">Party</th>
+                <th *ngIf="!isBooking" class="bg-warning text-light " [hidden]="hidesCost">Pay. Req</th>
+                <th  class="bg-warning text-light " [hidden]="hidesCost">Type</th>
+                <th  class="bg-warning text-light " [hidden]="hidesCost">Voucher No</th>
               </tr>
             </thead>
             <tbody #rightTableBody formArrayName="rateFormArray">
               @if(rateFormArray.length > 0){
               <tr *ngFor="let row of rateFormArray.controls;let i = index" [formGroupName]="i">
               
-                <td>
+                <td [hidden]="hidesRevenue">
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
                     <!-- <ng-select [items]="currencyList" bindLabel="currencyCode" bindValue="CurrencyMasterSid" formControlName="RevenueCurrencyMasterSid" (change)="getRevenueExchangeRate(i, $event?.CurrencyMasterSid)" [disabled]="!canEditRate(i)" appendTo="body"> </ng-select> -->
                     <dofi-searchable-dropdown [items]="currencyList" formControlName="RevenueCurrencyMasterSid" [placeholder]="''"
@@ -273,8 +273,8 @@
                     </dofi-searchable-dropdown>
                   </div>
                 </td>
-              
-                <td class="text-end">
+
+                <td class="text-end" [hidden]="hidesRevenue">
                   <div class="custom-form-group dofi-min-w-60">
                     <input type="text" id="text-input" formControlName="RevenueExchangeRate" class="custom-input-field sm text-end"
                       (change)="calculateRevenueLocalAmount(i)" [disabled]="!canEditRevenueRateFields(i)" DecimalPrecision
@@ -282,14 +282,14 @@
                       [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)">
                   </div>
                 </td>
-                <td class="text-end">
+                <td class="text-end" [hidden]="hidesRevenue">
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
                     <input type="text" id="text-input" formControlName="RevenueRate" class="custom-input-field sm text-end"
                       (change)="calculateRevenueAmount(i)" [disabled]="!canEditRevenueRateFields(i)" DecimalPrecision [DecimalPrecisionBefore]="6"
                       [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)">
                   </div>
                 </td>
-                <td class="text-end">
+                <td class="text-end" [hidden]="hidesRevenue">
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" formControlName="RevenueAmount" class="custom-input-field sm text-end"
                       (change)="calculateRevenueLocalAmount(i)" [disabled]="!canEditRevenueRateFields(i)" DecimalPrecision
@@ -297,15 +297,15 @@
                       [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)" readonly>
                   </div>
                 </td>
-              
-                <td class="text-end">
+
+                <td class="text-end" [hidden]="hidesRevenue">
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" class="custom-input-field sm text-end"
                       [value]="row.get('RevenueLocalAmount')?.value" DecimalPrecision [DecimalPrecisionBefore]="9"
                       [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('RevenueCurrencyMasterSid')?.value)" readonly>
                   </div>
                 </td>
-                <td>
+                <td [hidden]="hidesRevenue">
                   <div class="custom-form-group custom-form-group-select dofi-min-w-60">
                     <ng-select formControlName="RevenueDrCr" appendTo="body" [disabled]="!canEditRevenueRateFields(i)">
                       <ng-option value="D">Dr</ng-option>
@@ -313,15 +313,15 @@
                     </ng-select>
                   </div>
                 </td>
-                <td>
+                <td [hidden]="hidesRevenue">
                   <div class="custom-form-group custom-form-group-select dofi-min-w-40">
                       <ng-select [items]="ppcc" bindLabel="name" bindValue="name" class="ng-select" container="body" appendTo="body"
                       formControlName="RevenuePrepaidCollect" [disabled]="!canEditRevenueRateFields(i)">
                     </ng-select>
                   </div>
                 </td>
-              
-                <td>
+
+                <td [hidden]="hidesRevenue">
                   <div class="custom-form-group custom-form-group-select dofi-min-w-100">
                     <dofi-searchable-dropdown [items]="billingParties" formControlName="RevenueCustomerBranchSid" [placeholder]="''"
                       [displayFields]="customerLookupConfig.displayFields" [displayLabels]="customerLookupConfig.displayLabels"
@@ -330,14 +330,14 @@
                     </dofi-searchable-dropdown>
                   </div>
                 </td>
-              
-                <td>
+
+                <td [hidden]="hidesRevenue">
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" [value]="row.get('RevenueVoucherType')?.value?.DocumentTypeCode || ''"
                       class="custom-input-field sm" readonly>
                   </div>
                 </td>
-                <td>
+                <td [hidden]="hidesRevenue">
                   <div class="custom-form-group custom-form-group-select dofi-min-w-200">
                     <input *ngIf="!row.get('RevenueVoucherHeader')?.value?.VoucherHeaderSid" type="text"
                       [value]="row.get('RevenueVoucherHeader')?.value?.VoucherNumber || ''" class="custom-input-field sm" readonly>
@@ -348,8 +348,8 @@
                     </a>
                   </div>
                 </td>
-              
-                <td>
+
+                <td [hidden]="hidesCost">
                   <div class="custom-form-group custom-form-group-select dofi-min-w-70">
                     <dofi-searchable-dropdown [items]="currencyList" formControlName="CostCurrencyMasterSid" [placeholder]="''"
                       [displayFields]="CurrencyLookupConfig.displayFields" [displayLabels]="CurrencyLookupConfig.displayLabels"
@@ -358,37 +358,37 @@
                     </dofi-searchable-dropdown>
                   </div>
                 </td>
-                <td>
+                <td [hidden]="hidesCost">
                   <div class="custom-form-group dofi-min-w-60">
                     <input type="text" id="text-input" formControlName="CostExchangeRate" class="custom-input-field sm text-end"
                       (change)="calculateCostLocalAmount(i)" [disabled]="!canEditCostRateFields(i)" DecimalPrecision [DecimalPrecisionBefore]="4"
                       [DecimalPrecisionAfter]="getExchangeRateDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)">
                   </div>
                 </td>
-              
-                <td>
+
+                <td [hidden]="hidesCost">
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" formControlName="CostRate" class="custom-input-field sm text-end"
                       (change)="calculateCostAmount(i)" [disabled]="!canEditCostRateFields(i)" DecimalPrecision [DecimalPrecisionBefore]="6"
                       [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)">
                   </div>
                 </td>
-                <td>
+                <td [hidden]="hidesCost">
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" formControlName="CostAmount" class="custom-input-field sm text-end"
                       (change)="calculateCostLocalAmount(i)" [disabled]="!canEditCostRateFields(i)" DecimalPrecision [DecimalPrecisionBefore]="9"
-                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)" readonly> 
+                      [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)" readonly>
                   </div>
                 </td>
-              
-                <td>
+
+                <td [hidden]="hidesCost">
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" id="text-input" class="custom-input-field sm text-end"
                       [value]="row.get('CostLocalAmount')?.value" DecimalPrecision [DecimalPrecisionBefore]="9"
                       [DecimalPrecisionAfter]="getAmountDecimalPlaces(row.get('CostCurrencyMasterSid')?.value)" readonly>
                   </div>
                 </td>
-                <td>
+                <td [hidden]="hidesCost">
                   <div class="custom-form-group custom-form-group-select dofi-min-w-30">
                     <ng-select formControlName="CostDrCr" appendTo="body" [disabled]="!canEditCostRateFields(i)">
                       <ng-option value="D">Dr</ng-option>
@@ -396,14 +396,14 @@
                     </ng-select>
                   </div>
                 </td>
-                <td>
+                <td [hidden]="hidesCost">
                   <div class="custom-form-group custom-form-group-select dofi-min-w-40">
                     <ng-select [items]="ppcc" bindLabel="name" bindValue="name" class="ng-select" container="body" appendTo="body"
                       formControlName="CostPrepaidCollect" [disabled]="!canEditCostRateFields(i)">
                     </ng-select>
                   </div>
                 </td>
-                <td>
+                <td [hidden]="hidesCost">
                   <div class="custom-form-group custom-form-group-select dofi-min-w-80">
                     <!-- <ng-select [items]="agentList" bindLabel="CustomerName" bindValue="CustomerMasterSid"
                                     formControlName="AgentSid"
@@ -416,8 +416,8 @@
                     </dofi-searchable-dropdown>
                   </div>
                 </td>
-              
-                <td *ngIf="!isBooking">
+
+                <td *ngIf="!isBooking" [hidden]="hidesCost">
                   <div class="custom-form-group custom-form-group-select dofi-min-w-200">
                     <input *ngIf="!row.get('PaymentRequestSid')?.value"
                       type="text" [value]="''" class="custom-input-field sm" readonly>
@@ -428,13 +428,13 @@
                     </a>
                   </div>
                 </td>
-                <td>
+                <td [hidden]="hidesCost">
                   <div class="custom-form-group dofi-min-w-90">
                     <input type="text" [value]="getCostDocumentTypeDisplay(row)"
                       class="custom-input-field sm" readonly>
                   </div>
                 </td>
-                <td>
+                <td [hidden]="hidesCost">
                   <div class="custom-form-group custom-form-group-select dofi-min-w-200">
                     <input
                       *ngIf="!row.get('CostVoucherHeader')?.value?.VoucherHeaderSid"
@@ -891,13 +891,16 @@
         <div class="voucher-type-card" (click)="!isProcessingVoucherType && selectVoucherType('Invoice')">
           <div class="card h-100 border-2 border-primary voucher-card-hover"
             [class.cursor-pointer]="!isProcessingVoucherType"
-            [class.opacity-50]="isProcessingVoucherType"
+            [class.opacity-50]="isProcessingVoucherType || hidesRevenue"
             [style.pointer-events]="isProcessingVoucherType ? 'none' : 'auto'">
             <div class="card-body text-center py-1">
               <div class="voucher-icon mb-1">
                 <i class="fas fa-file-invoice fa-3x text-primary"></i>
               </div>
               <h5 class="card-title text-primary">Invoice</h5>
+              @if(hidesRevenue) {
+                <span class="badge bg-danger mb-1">Access Restricted</span>
+              }
               <p class="card-text text-muted">Generate customer invoice from sales charges</p>
               <ul class="list-unstyled text-start small">
                 <li><i class="fas fa-check text-success me-2"></i>Revenue charges only</li>
@@ -913,13 +916,16 @@
         <div class="voucher-type-card" (click)="!isProcessingVoucherType && selectVoucherType('Vendor Invoice')">
           <div class="card h-100 border-2 border-success voucher-card-hover"
             [class.cursor-pointer]="!isProcessingVoucherType"
-            [class.opacity-50]="isProcessingVoucherType"
+            [class.opacity-50]="isProcessingVoucherType || hidesCost"
             [style.pointer-events]="isProcessingVoucherType ? 'none' : 'auto'">
             <div class="card-body text-center py-1">
               <div class="voucher-icon mb-1">
                 <i class="fas fa-file-invoice-dollar fa-3x text-success"></i>
               </div>
               <h5 class="card-title text-success">Vendor Invoice</h5>
+              @if(hidesCost) {
+                <span class="badge bg-danger mb-1">Access Restricted</span>
+              }
               <p class="card-text text-muted">Generate vendor invoice directly from eligible cost charges</p>
               <ul class="list-unstyled text-start small">
                 <li><i class="fas fa-check text-success me-2"></i>Pending cost charges only</li>

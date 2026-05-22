@@ -138,6 +138,18 @@ export class AppSettingsService {
             ?.branchMaster || null;
     }
 
+    getCostRevenueAccess(): string {
+        const encryptedBranch = localStorage.getItem('selected-branch');
+        if (!encryptedBranch) return 'NONE';
+        const decryptedBranch = this.decrypt(encryptedBranch);
+        const BranchMasterSid = Number(decryptedBranch?.BranchMasterSid);
+        if (!BranchMasterSid) return 'NONE';
+        const companyInfo = this.getCurrentCompanyInfo();
+        if (!companyInfo) return 'NONE';
+        const branchEntry = companyInfo.userBranchMaster?.find((b: any) => b.BranchMasterSid === BranchMasterSid);
+        return branchEntry?.CostRevenueAccess || 'NONE';
+    }
+
     getCurrentBranchState(){
         const branch = this.getCurrentBranchInfo();
         if(!branch) return null;
