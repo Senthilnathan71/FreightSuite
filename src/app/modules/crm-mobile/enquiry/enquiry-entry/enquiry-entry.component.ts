@@ -1966,7 +1966,7 @@ private parseFloatSafe(value: any): number {
             this.enquiryOtherForm.markAsPristine();
             this.enquiryOtherForm.markAsUntouched();
             this.resetUnsavedState();
-            this.modalService.openSuccessModal('Enquiry Updated Successfully');
+            this.appSettingService.showSuccess('Enquiry Updated Successfully');
             this.btnDisable = false;
             this.isSaving = false;
             if (resolve) resolve(true);
@@ -1990,7 +1990,7 @@ private parseFloatSafe(value: any): number {
               }
             });
           } else {
-            this.modalService.openErrorModal('Enquiry Update Failed');
+            this.appSettingService.showError('Enquiry Update Failed');
             this.isSaving = false;
             if (resolve) resolve(false);
           }
@@ -2027,7 +2027,7 @@ private parseFloatSafe(value: any): number {
           this.enquiryOtherForm.markAsPristine();
           this.enquiryOtherForm.markAsUntouched();
           this.resetUnsavedState();
-          this.modalService.openSuccessModal('Enquiry Created Successfully');
+          this.appSettingService.showSuccess('Enquiry Created Successfully');
           this.btnDisable = false;
           this.isSaving = false;
           if (resolve) resolve(true);
@@ -2054,7 +2054,7 @@ private parseFloatSafe(value: any): number {
             }
           });
         } else {
-          this.modalService.openErrorModal('Enquiry Creation Failed');
+          this.appSettingService.showError('Enquiry Creation Failed');
           this.isSaving = false;
           if (resolve) resolve(false);
         }

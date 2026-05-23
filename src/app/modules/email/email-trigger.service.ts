@@ -486,6 +486,13 @@ ${userName}`
 
     formData.append('CreatedBy', userData?.userEmail || '');
 
+    if (context?.['menuMasterSid']) {
+      formData.append('MenuMasterSid', String(context['menuMasterSid']));
+    }
+    if (context?.['resourceSid']) {
+      formData.append('ResourceSid', String(context['resourceSid']));
+    }
+
     if (config.AttachmentRequire === 'Y' && attachmentFile) {
       formData.append('attachments', attachmentFile, this.sanitizeAttachmentFileName(attachmentFile.name));
     }
@@ -582,7 +589,8 @@ ${userName}`
     };
 
     for (const line of lines) {
-      const match = line.match(/^([^:]{2,40}):\s*(.+)$/);
+      const isUrlLine = /(https?:\/\/|www\.)/i.test(line);
+      const match = !isUrlLine ? line.match(/^([^:]{2,40}):\s*(.+)$/) : null;
       if (match) {
         detailRows.push({ label: match[1].trim(), value: match[2].trim() });
       } else {

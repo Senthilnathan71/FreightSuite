@@ -710,7 +710,7 @@ this.refresh.next();
     this.leadService.createPreCustomerMeeting(payload).subscribe(
       resp => {
         if (resp.data && resp.status) {
-          this.modalService.openSuccessModal(resp.message);
+          this.appSettingService.showSuccess(resp.message);
           this.btnDisable = false;
           this.isMeetingSaving = false;
           this.meetingForm.patchValue(resp.data);
@@ -720,13 +720,13 @@ this.refresh.next();
         } else {
           this.btnDisable = false;
           this.isMeetingSaving = false;
-          this.modalService.openErrorModal(resp.message);
+          this.appSettingService.showError(resp.message);
         }
       },
       error => {
         this.btnDisable = false;
         this.isMeetingSaving = false;
-        this.modalService.openErrorModal('Error creating meeting: ' + error.message);
+        this.appSettingService.showError('Error creating meeting: ' + error.message);
       }
     );
     this.isMeetingSaving = true;
@@ -804,7 +804,7 @@ this.refresh.next();
             centered: true
           });
         } else {
-          this.modalService.openSuccessModal(resp.message);
+          this.appSettingService.showSuccess(resp.message);
         }
         this.btnDisable = false;
         this.isMeetingSaving = false;
@@ -815,13 +815,13 @@ this.refresh.next();
       } else {
         this.btnDisable = false;
         this.isMeetingSaving = false;
-        this.modalService.openErrorModal(resp.message);
+        this.appSettingService.showError(resp.message);
       }
     },
     error => {
       this.btnDisable = false;
       this.isMeetingSaving = false;
-      this.modalService.openErrorModal('Error updating meeting: ' + error.message);
+      this.appSettingService.showError('Error updating meeting: ' + error.message);
     }
   );
   this.isMeetingSaving = true;

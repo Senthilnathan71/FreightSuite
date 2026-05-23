@@ -2957,7 +2957,7 @@ isRateLockDisabled(): boolean {
             }
             if (resolve) resolve(true);
           } else {
-            this.modalService.openErrorModal("Quotation Creation Failed");
+            this.appSettingService.showError("Quotation Creation Failed");
             if (resolve) resolve(false);
           }
         },

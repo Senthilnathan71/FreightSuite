@@ -143,6 +143,14 @@ export class ViewComponent extends BaseListComponent implements OnInit {
           dataType: 'string'
         },
         {
+          key: 'createdBy',
+          label: 'Created By',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string'
+        },
+        {
           key: 'status',
           label: 'Status',
           sortable: true,

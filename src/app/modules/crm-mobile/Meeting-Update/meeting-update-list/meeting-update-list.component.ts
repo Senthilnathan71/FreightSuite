@@ -586,6 +586,14 @@ export class MeetingUpdateListComponent extends BaseListComponent implements OnI
           dataType: 'string'
         },
         {
+          key: 'createdBy',
+          label: 'Assigned By',
+          sortable: true,
+          filterable: true,
+          visible: true,
+          dataType: 'string'
+        },
+        {
           key: 'meetingStatus',
           label: 'Meeting Status',
           sortable: true,
@@ -1112,7 +1120,7 @@ private handleMeetingDateChange(newDate: string): void {
               centered: true
             });
           } else {
-            this.commonModalService.openSuccessModal(resp.message);
+            this.appSettingService.showSuccess(resp.message);
           }
           
           this.btnDisable = false;
@@ -1123,13 +1131,13 @@ private handleMeetingDateChange(newDate: string): void {
         } else {
           this.btnDisable = false;
           this.isMeetingSaving = false;
-          this.commonModalService.openErrorModal(resp.message);
+          this.appSettingService.showError(resp.message);
         }
       },
       error => {
         this.btnDisable = false;
         this.isMeetingSaving = false;
-        this.commonModalService.openErrorModal("Failed to update meeting. Please try again.");
+        this.appSettingService.showError("Failed to update meeting. Please try again.");
       }
     );
   }

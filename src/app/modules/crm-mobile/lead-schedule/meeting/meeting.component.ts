@@ -192,7 +192,7 @@ changeTime(time: string) {
       next: (resp: any) => {
         if (resp.data && resp.status) {
           // this.appSettingService.showSuccess(resp.message);
-          this.modalService.openSuccessModal(resp.message);
+          this.appSettingService.showSuccess(resp.message);
           this.btnDisable = false;
           this.isSaving = false;
           this.meetingForm.patchValue(resp.data);
@@ -202,7 +202,7 @@ changeTime(time: string) {
 
         } else {
           // this.appSettingService.showError(resp.message);
-          this.modalService.openErrorModal(resp.message);
+          this.appSettingService.showError(resp.message);
           this.isSaving = false;
           this.btnDisable = false;
         }
@@ -361,7 +361,7 @@ changeTime(time: string) {
             this.initialFormValue = this.meetingForm.getRawValue();
             resolve(true);
           } else {
-            this.modalService.openErrorModal(resp.message);
+            this.appSettingService.showError(resp.message);
             resolve(false);
           }
         },
