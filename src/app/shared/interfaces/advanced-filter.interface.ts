@@ -1,3 +1,4 @@
+import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { Observable } from 'rxjs';
 
 export type DateRangePreset = 'all' | 'last30' | 'thisMonth' | 'lastMonth' | 'last2Months' | 'last3Months' | 'custom';
@@ -5,6 +6,8 @@ export type DateRangePreset = 'all' | 'last30' | 'thisMonth' | 'lastMonth' | 'la
 export interface DateRangeConfig {
   enabled: boolean;
   defaultPreset?: DateRangePreset;
+  minDate?: NgbDateStruct | null;
+  maxDate?: NgbDateStruct | null;
 }
 
 export interface DateTypeOption {

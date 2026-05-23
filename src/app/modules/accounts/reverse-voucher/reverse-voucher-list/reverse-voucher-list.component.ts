@@ -31,6 +31,7 @@ import {
   DateTypeConfig,
   DropdownFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
+import { getFinancialYearDateRangeBounds, getFinancialYearPresetDateRange } from 'src/app/common/helper';
 
 @Component({
   selector: 'app-reverse-voucher-list',
@@ -79,7 +80,7 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
       }
     
       tableConfig: TableConfig;
-      dateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+      dateRangeConfig: DateRangeConfig;
       dateTypeConfig: DateTypeConfig = {
         enabled: true,
         options: [{ label: 'Voucher Date', value: 'VoucherDate' }],
@@ -102,14 +103,7 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
         bindLabel: 'label',
         bindValue: 'value'
       };
-      currentFilters: AdvancedFilterValues = {
-        dateRange: {
-          preset: 'last30',
-          fromDate: this.getLast30FromDate(),
-          toDate: new Date().toISOString()
-        },
-        dateType: 'VoucherDate'
-      };
+      currentFilters: AdvancedFilterValues = {};
     
       headerActions: HeaderAction[] = [];
       modalDropdownItems: DropdownMenuItem[] = [];
@@ -152,13 +146,23 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
         if (userProfile) {
           this.userData = userProfile;
         }
-    
+
+        const fy = this.appSettingService.getCurrentFinancialYear();
+        const dateRangeBounds = getFinancialYearDateRangeBounds(fy);
+        this.dateRangeConfig = {
+          enabled: true,
+          defaultPreset: 'last30',
+          minDate: dateRangeBounds.minDate,
+          maxDate: dateRangeBounds.maxDate,
+        };
+
         this.initializeHeaderActions();
         this.initializeTableConfig();
         this.mps.init().subscribe(()=>{
           this.initializeTableConfig();
           this.initializeHeaderActions();
         });
+        this.currentFilters = this.getDefaultFilters();
         this.initializeModalDropdownItems();
         super.ngOnInit();
         this.loadVendorOptions();
@@ -231,15 +235,12 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
 
         if (this.currentFilters.dateRange?.fromDate) {
           params['dateFrom'] = this.currentFilters.dateRange.fromDate;
-          params['DateFrom'] = this.currentFilters.dateRange.fromDate;
         }
         if (this.currentFilters.dateRange?.toDate) {
           params['dateTo'] = this.currentFilters.dateRange.toDate;
-          params['DateTo'] = this.currentFilters.dateRange.toDate;
         }
         if (this.currentFilters.dateType) {
           params['dateField'] = this.currentFilters.dateType;
-          params['DateField'] = this.currentFilters.dateType;
         }
         if (this.currentFilters.pol) {
           params['VendorName'] = this.currentFilters.pol;
@@ -250,9 +251,16 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
           params['postStatus'] = this.currentFilters.extra;
         }
 
+        if (!this.hasExplicitDateRange()) {
+          const currentYear = this.appSettingService.getCurrentFinancialYear();
+          if (currentYear?.YearMasterSid) {
+            params['YearMasterSid'] = currentYear.YearMasterSid;
+          }
+        }
+
         return params;
       }
-    
+
       protected processSearchResults(response: any): void {
         this.spinner.hide();
         if (response.status) {
@@ -306,14 +314,7 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
     
       onSearchCleared(): void {
         this.filterValue = '';
-        this.currentFilters = {
-          dateRange: {
-            preset: 'last30',
-            fromDate: this.getLast30FromDate(),
-            toDate: new Date().toISOString()
-          },
-          dateType: 'VoucherDate'
-        };
+        this.currentFilters = this.getDefaultFilters();
         this.clearFilterValue();
       }
 
@@ -321,11 +322,7 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
         this.filterValue = event.searchValue;
         this.currentFilters = {
           ...event.filters,
-          dateRange: event.filters?.dateRange || {
-            preset: 'last30',
-            fromDate: this.getLast30FromDate(),
-            toDate: new Date().toISOString()
-          },
+          dateRange: event.filters?.dateRange || this.getDefaultDateRange(),
           dateType: event.filters?.dateType || 'VoucherDate'
         };
         this.page = 1;
@@ -681,11 +678,20 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
         });
       }
 
-      private getLast30FromDate(): string {
-        const date = new Date();
-        date.setHours(0, 0, 0, 0);
-        date.setDate(date.getDate() - 30);
-        return date.toISOString();
+      private getDefaultDateRange(): NonNullable<AdvancedFilterValues['dateRange']> {
+        const range = getFinancialYearPresetDateRange('last30', this.appSettingService.getCurrentFinancialYear());
+        return { preset: 'last30', ...range };
+      }
+
+      private hasExplicitDateRange(): boolean {
+        return !!(this.currentFilters.dateRange?.fromDate || this.currentFilters.dateRange?.toDate);
+      }
+
+      private getDefaultFilters(): AdvancedFilterValues {
+        return {
+          dateRange: this.getDefaultDateRange(),
+          dateType: 'VoucherDate'
+        };
       }
 
 }
