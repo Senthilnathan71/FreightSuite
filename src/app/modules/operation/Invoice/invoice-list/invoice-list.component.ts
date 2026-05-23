@@ -384,7 +384,6 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         visible: true,
         dataType: 'string',
         template:'link',
-        width: '150px',
       },
         {
         key: 'HouseNumber',
@@ -394,7 +393,6 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         visible: true,
         dataType: 'string',
         template: 'link',  
-        width: '150px',
       },
       {
         key:'BookingNo',
@@ -404,7 +402,6 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         visible: true,
         dataType: 'string',
         template: 'link',
-        width: '150px',
       },
       {
         key: 'PostStatusLabel',
@@ -413,7 +410,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
         filterable: true,
         visible: true,
         dataType: 'string',
-        width: '150px',
+        width: '120px',
         template: 'status',
       },
       {

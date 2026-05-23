@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Inject, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { ComplexReportExportConfig, ExcelCell, ExcelHeader, ExcelRow } from 'src/app/shared/excel-report-service';
@@ -11,6 +11,7 @@ import { PrintHeaderComponent } from '../../print-header/print-header.component'
 import { PrintFooterComponent } from '../../print-footer/print-footer.component';
 import { CompanySettingsManagerService } from 'src/app/core/services/company-settings-manager.service';
 import { OperationService } from 'src/app/modules/operation/operation.service';
+import { MasterService } from 'src/app/modules/master/master.service';
 
 @Component({
   selector: 'app-statement-report',
@@ -28,8 +29,12 @@ export class StatementReportComponent {
   currentCurrencyCode: string = '';
   currentCurrency: number;
   bankDetails: any[] = [];
+  currencyList: any[] = [];
   showBankDetails = false;
   isBankDetailsLoading = false;
+  isPrintAllBankEnabled = false;
+  isPrintAllBankConfigLoaded = false;
+  isBankFetched = false;
   orientation: 'portrait' | 'landscape' = 'portrait';
 
   constructor(
@@ -38,7 +43,8 @@ export class StatementReportComponent {
     private leadService: LeadService,
     private reportRegistryService: ReportRegistryService,
     private companySettings: CompanySettingsManagerService,
-    private operationService: OperationService
+    private operationService: OperationService,
+    private masterService: MasterService
   ) {
     console.log('Outstanding Report Data:', this.data);
   }
@@ -55,7 +61,7 @@ export class StatementReportComponent {
 
     this.operationService
       .getCompanyConfig(this.currentCompany?.CompanyMasterSid, 'OSandStatementShowBankDetails')
-      .subscribe((resp: any) => {
+      .subscribe(async (resp: any) => {
         const configValue = resp?.data;
         this.showBankDetails = configValue === 'Y';
 
@@ -65,13 +71,11 @@ export class StatementReportComponent {
         }
 
         this.isBankDetailsLoading = true;
-        this.getBankDetails().subscribe((bankResp: any) => {
-          this.bankDetails = bankResp?.data || [];
-          this.isBankDetailsLoading = false;
-        }, () => {
-          this.bankDetails = [];
-          this.isBankDetailsLoading = false;
-        });
+        await this.getAndStoreBankDetails();
+        this.isBankDetailsLoading = false;
+      }, () => {
+        this.bankDetails = [];
+        this.isBankDetailsLoading = false;
       });
   }
 
@@ -122,13 +126,114 @@ export class StatementReportComponent {
     return total;
   }
 
-  getBankDetails(): Observable<any> {
-    const payload = {
-      CurrencyMasterSid: this.currentCurrency,
-      BranchMasterSid: this.currentBranch?.BranchMasterSid,
-    };
+  async getAndStoreBankDetails(): Promise<void> {
+    try {
+      if (!this.isPrintAllBankConfigLoaded) {
+        await this.loadPrintAllBankConfig();
+      }
+      await this.ensureCurrencyListLoaded();
+      const resp: any = await firstValueFrom(this.getBankDetails());
+      this.isBankFetched = true;
+      this.bankDetails = this.filterPrintableBankDetails(resp ?? []);
+    } catch (err) {
+      console.error('Error fetching bank details', err);
+      this.bankDetails = [];
+    }
+  }
 
-    return this.operationService.getBankDetails(payload);
+  getBankDetails(): Observable<any[]> {
+    return this.masterService.getAllBranchBanks();
+  }
+
+  private filterPrintableBankDetails(bankDetails: any[]): any[] {
+    if (!Array.isArray(bankDetails)) {
+      return [];
+    }
+
+    const branchSid = Number(this.currentBranch?.BranchMasterSid || 0);
+    const reportCurrencySid = Number(this.fullData?.CurrencyMasterSid || this.currentCurrency || 0);
+
+    return bankDetails.filter((bankDetail: any) => {
+      const bankBranchSid = Number(bankDetail?.BranchMasterSid || 0);
+      const bankCurrencySid = Number(bankDetail?.CurrencyMasterSid || 0);
+      const printOnInvoice = bankDetail?.PrintOnInvoice ?? bankDetail?.printOnInvoice;
+
+      if (branchSid && bankBranchSid !== branchSid) {
+        return false;
+      }
+
+      if (!this.isPrintAllBankEnabled && reportCurrencySid && bankCurrencySid !== reportCurrencySid) {
+        return false;
+      }
+
+      return this.parseConfigBoolean(printOnInvoice, false);
+    });
+  }
+
+  getBankCurrencyCode(bankDetail: any): string {
+    const bankCurrencySid = Number(
+      bankDetail?.CurrencyMasterSid ??
+      bankDetail?.currencyMasterSid ??
+      bankDetail?.currencyMaster?.CurrencyMasterSid ??
+      bankDetail?.currency?.CurrencyMasterSid ??
+      0
+    );
+    const currencyFromList = bankCurrencySid
+      ? this.currencyList.find((c: any) => Number(c?.CurrencyMasterSid) === bankCurrencySid)
+      : null;
+
+    return bankDetail?.CurrencyCode ||
+      bankDetail?.currencyCode ||
+      bankDetail?.currencyMaster?.CurrencyCode ||
+      bankDetail?.currencyMaster?.currencyCode ||
+      bankDetail?.currency?.CurrencyCode ||
+      bankDetail?.currency?.currencyCode ||
+      currencyFromList?.currencyCode ||
+      currencyFromList?.CurrencyCode ||
+      this.fullData?.currencyCode ||
+      this.currentCurrencyCode ||
+      '';
+  }
+
+  private async loadPrintAllBankConfig(): Promise<void> {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+      this.isPrintAllBankEnabled = false;
+      this.isPrintAllBankConfigLoaded = true;
+      return;
+    }
+
+    try {
+      const resp: any = await firstValueFrom(
+        this.masterService.getConfigurationValue(companyId, 'Printallbank')
+      );
+      const rawValue = resp?.ConfigurationValue ?? resp?.value ?? resp;
+      this.isPrintAllBankEnabled = this.parseConfigBoolean(rawValue, false);
+    } catch (error) {
+      console.warn('Could not load Printallbank configuration:', error);
+      this.isPrintAllBankEnabled = false;
+    } finally {
+      this.isPrintAllBankConfigLoaded = true;
+    }
+  }
+
+  private parseConfigBoolean(value: any, fallback = false): boolean {
+    if (value === null || value === undefined) return fallback;
+    if (typeof value === 'boolean') return value;
+    const normalized = String(value).trim().toLowerCase();
+    if (!normalized) return fallback;
+    return ['y', 'yes', 'true', '1', 'on'].includes(normalized);
+  }
+
+  private async ensureCurrencyListLoaded(): Promise<void> {
+    if (this.currencyList?.length) return;
+    try {
+      const currencies = await firstValueFrom(this.masterService.getAllCurrencies());
+      this.currencyList = Array.isArray(currencies) ? currencies : [];
+    } catch (error) {
+      console.warn('Could not load currency list for bank headers:', error);
+      this.currencyList = [];
+    }
   }
 
   getLocalTotal(transactions: any[]): number {
@@ -284,7 +389,7 @@ export class StatementReportComponent {
               title: 'Bank Details',
               headers: [
                 'Details',
-                ...this.bankDetails.map(() => `Bank (${this.currentCurrencyCode})`)
+                ...this.bankDetails.map((bankDetail: any) => `Bank (${this.getBankCurrencyCode(bankDetail)})`)
               ],
               rows: [
                 {

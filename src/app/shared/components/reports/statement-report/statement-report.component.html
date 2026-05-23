@@ -203,7 +203,7 @@
                         </th>
                         <th *ngFor="let bankDetail of bankDetails"
                             style="padding:0px 6px;color:#000;border-color:#000;text-align:start;border:0.5px solid #000;background-color: #05608d; color: #FFFFFF;">
-                            <strong>Bank ({{ currentCurrencyCode }})</strong>
+                            <strong>Bank ({{ getBankCurrencyCode(bankDetail) }})</strong>
                         </th>
                     </tr>
                 </thead>
