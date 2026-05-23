@@ -33,6 +33,7 @@ import {
   DropdownFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
 import { OperationService } from 'src/app/modules/operation/operation.service';
+import { getFinancialYearDateRangeBounds, getFinancialYearPresetDateRange } from 'src/app/common/helper';
 
 /**
  * Payment List Component
@@ -92,7 +93,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
   selectedPaymentMode = 'All'; // All, Cash, Bank
   dateFrom?: string;
   dateTo?: string;
-  dateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+  dateRangeConfig: DateRangeConfig;
   dateTypeConfig: DateTypeConfig = {
     enabled: true,
     options: [
@@ -201,6 +202,16 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
     if (userProfile) {
       this.userData = userProfile;
     }
+
+    const fy = this.appSettingsService.getCurrentFinancialYear();
+    const dateRangeBounds = getFinancialYearDateRangeBounds(fy);
+    this.dateRangeConfig = {
+      enabled: true,
+      defaultPreset: 'last30',
+      minDate: dateRangeBounds.minDate,
+      maxDate: dateRangeBounds.maxDate,
+    };
+
     this.initializeTableConfig();
     this.initializeHeaderActions();
     this.mps.init().subscribe(()=>{
@@ -208,11 +219,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
       this.initializeTableConfig();
     });
     this.currentFilters = {
-      dateRange: {
-        preset: 'last30',
-        fromDate: this.getLast30FromDate(),
-        toDate: new Date().toISOString()
-      },
+      dateRange: this.getDefaultDateRange(),
       dateType: 'VoucherDate'
     };
     this.loadFilterLookups();
@@ -444,15 +451,12 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
 
     if (this.currentFilters.dateRange?.fromDate) {
       params.dateFrom = this.currentFilters.dateRange.fromDate;
-      params.DateFrom = this.currentFilters.dateRange.fromDate;
     }
     if (this.currentFilters.dateRange?.toDate) {
       params.dateTo = this.currentFilters.dateRange.toDate;
-      params.DateTo = this.currentFilters.dateRange.toDate;
     }
     if (this.currentFilters.dateType) {
       params.dateField = this.currentFilters.dateType;
-      params.DateField = this.currentFilters.dateType;
     }
     if (this.currentFilters.departmentSid) {
       params.PartyName = this.currentFilters.departmentSid;
@@ -465,6 +469,13 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
     if (this.currentFilters.pod) {
       params.CashOrBank = this.currentFilters.pod;
       params.cashOrBank = this.currentFilters.pod;
+    }
+
+    if (!this.hasExplicitDateRange()) {
+      const currentYear = this.appSettingsService.getCurrentFinancialYear();
+      if (currentYear?.YearMasterSid) {
+        params.YearMasterSid = currentYear.YearMasterSid;
+      }
     }
 
     return params;
@@ -908,11 +919,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
   onSearchCleared(): void {
     this.filterValue = '';
     this.currentFilters = {
-      dateRange: {
-        preset: 'last30',
-        fromDate: this.getLast30FromDate(),
-        toDate: new Date().toISOString()
-      },
+      dateRange: this.getDefaultDateRange(),
       dateType: 'VoucherDate'
     };
     this.clearFilterValue();
@@ -972,11 +979,13 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
     });
   }
 
-  private getLast30FromDate(): string {
-    const date = new Date();
-    date.setHours(0, 0, 0, 0);
-    date.setDate(date.getDate() - 30);
-    return date.toISOString();
+  private getDefaultDateRange(): NonNullable<AdvancedFilterValues['dateRange']> {
+    const range = getFinancialYearPresetDateRange('last30', this.appSettingsService.getCurrentFinancialYear());
+    return { preset: 'last30', ...range };
+  }
+
+  private hasExplicitDateRange(): boolean {
+    return !!(this.currentFilters.dateRange?.fromDate || this.currentFilters.dateRange?.toDate);
   }
 
   private applyAdvancedFilters(items: any[]): any[] {

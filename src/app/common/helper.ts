@@ -3,6 +3,24 @@ import { Port } from "../modules/crm-mobile/Interfaces/port.interface";
 import { AbstractControl, FormArray, FormGroup } from "@angular/forms";
 import { ToastrService } from 'ngx-toastr';
 
+
+type DateRangeInput = Date | string | NgbDateStruct | null | undefined;
+
+export interface FinancialYearDateRangeSource {
+  StartDate?: DateRangeInput;
+  EndDate?: DateRangeInput;
+}
+
+export interface DateRangeResult {
+  fromDate: string | null;
+  toDate: string | null;
+}
+
+export interface DateRangeBounds {
+  minDate: NgbDateStruct | null;
+  maxDate: NgbDateStruct | null;
+}
+
 // ── Voucher Period Grace Days ────────────────────────────────────────
 export interface VoucherPeriodInfo {
   VoucherPeriodSid: number;
@@ -235,6 +253,131 @@ export function toNgbDateStruct(
     year: d.getFullYear(),
     month: d.getMonth() + 1,
     day: d.getDate()
+  };
+}
+
+
+function isNgbDateStruct(value: DateRangeInput): value is NgbDateStruct {
+  return !!value &&
+    typeof value === 'object' &&
+    !(value instanceof Date) &&
+    typeof (value as NgbDateStruct).year === 'number' &&
+    typeof (value as NgbDateStruct).month === 'number' &&
+    typeof (value as NgbDateStruct).day === 'number';
+}
+
+// Always extracts the UTC calendar date — consistent with CustomDateAdapter which is UTC-only.
+function toUtcDateOnly(value: DateRangeInput): Date | null {
+  if (!value) return null;
+  if (isNgbDateStruct(value)) {
+    return new Date(Date.UTC(value.year, value.month - 1, value.day));
+  }
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) return null;
+    return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
+  }
+  // String: extract YYYY-MM-DD directly to avoid any timezone shift
+  const m = value.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return new Date(Date.UTC(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate()));
+}
+
+function startOfUtcDay(date: Date): Date {
+  const d = new Date(date.getTime());
+  d.setUTCHours(0, 0, 0, 0);
+  return d;
+}
+
+function endOfUtcDay(date: Date): Date {
+  const d = new Date(date.getTime());
+  d.setUTCHours(23, 59, 59, 999);
+  return d;
+}
+
+function addDays(date: Date, days: number): Date {
+  const d = new Date(date.getTime());
+  d.setUTCDate(d.getUTCDate() + days);
+  return d;
+}
+
+// Clamps a UTC-midnight date within [min, max]. Inputs from toUtcDateOnly are always midnight.
+function clampDate(date: Date, min: Date | null, max: Date | null): Date {
+  if (min && max && max < min) return startOfUtcDay(min);
+  if (min && date < min) return startOfUtcDay(min);
+  if (max && date > max) return startOfUtcDay(max);
+  return date;
+}
+
+function toUtcNgbDateStruct(date: Date): NgbDateStruct {
+  return { year: date.getUTCFullYear(), month: date.getUTCMonth() + 1, day: date.getUTCDate() };
+}
+
+export function getBoundedPresetDateRange(
+  preset: string,
+  options: {
+    minDate?: DateRangeInput;
+    maxDate?: DateRangeInput;
+    referenceDate?: DateRangeInput;
+  } = {}
+): DateRangeResult {
+  if (preset === 'all') return { fromDate: null, toDate: null };
+
+  const min = toUtcDateOnly(options.minDate);
+  const max = toUtcDateOnly(options.maxDate);
+  const ref = toUtcDateOnly(options.referenceDate ?? new Date()) ?? startOfUtcDay(new Date());
+  const effectiveTo = clampDate(ref, min, max);
+
+  let fromDate: Date = effectiveTo;
+  let toDate = effectiveTo;
+
+  switch (preset) {
+    case 'last30':      fromDate = addDays(effectiveTo, -30); break;
+    case 'thisMonth':   fromDate = new Date(Date.UTC(effectiveTo.getUTCFullYear(), effectiveTo.getUTCMonth(), 1)); break;
+    case 'lastMonth':
+      fromDate = new Date(Date.UTC(effectiveTo.getUTCFullYear(), effectiveTo.getUTCMonth() - 1, 1));
+      toDate = new Date(Date.UTC(effectiveTo.getUTCFullYear(), effectiveTo.getUTCMonth(), 0));
+      break;
+    case 'last2Months': fromDate = new Date(Date.UTC(effectiveTo.getUTCFullYear(), effectiveTo.getUTCMonth() - 2, 1)); break;
+    case 'last3Months': fromDate = new Date(Date.UTC(effectiveTo.getUTCFullYear(), effectiveTo.getUTCMonth() - 3, 1)); break;
+    default:            fromDate = addDays(effectiveTo, -30); break;
+  }
+
+  const boundedTo = clampDate(toDate, min, max);
+  let boundedFrom = clampDate(fromDate, min, max);
+  if (boundedFrom > boundedTo) boundedFrom = startOfUtcDay(boundedTo);
+
+  return {
+    fromDate: boundedFrom.toISOString(),
+    toDate: endOfUtcDay(boundedTo).toISOString()
+  };
+}
+
+export function getFinancialYearPresetDateRange(
+  preset: string,
+  financialYear: FinancialYearDateRangeSource | null | undefined,
+  referenceDate: DateRangeInput = new Date()
+): DateRangeResult {
+  return getBoundedPresetDateRange(preset, {
+    minDate: financialYear?.StartDate,
+    maxDate: financialYear?.EndDate,
+    referenceDate
+  });
+}
+
+export function getFinancialYearDateRangeBounds(
+  financialYear: FinancialYearDateRangeSource | null | undefined,
+  referenceDate: DateRangeInput = new Date()
+): DateRangeBounds {
+  const fyStart = toUtcDateOnly(financialYear?.StartDate);
+  const fyEnd = toUtcDateOnly(financialYear?.EndDate);
+  if (!fyStart || !fyEnd) return { minDate: null, maxDate: null };
+
+  const ref = toUtcDateOnly(referenceDate) ?? startOfUtcDay(new Date());
+  return {
+    minDate: toUtcNgbDateStruct(fyStart),
+    maxDate: toUtcNgbDateStruct(clampDate(ref, fyStart, fyEnd))
   };
 }
 

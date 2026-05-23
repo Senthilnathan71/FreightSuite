@@ -31,6 +31,7 @@ import {
   DateTypeConfig,
   DropdownFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
+import { getFinancialYearDateRangeBounds, getFinancialYearPresetDateRange } from 'src/app/common/helper';
 
 @Component({
   selector: 'app-voucher-matching-list',
@@ -70,7 +71,7 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
   currentBranch: any;
 
   tableConfig: TableConfig;
-  dateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+  dateRangeConfig: DateRangeConfig;
   dateTypeConfig: DateTypeConfig = {
     enabled: true,
     options: [{ label: 'Matching Date', value: 'VoucherMatchingDate' }],
@@ -83,14 +84,7 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
     bindLabel: 'SubledgerName',
     bindValue: 'SubledgerName'
   };
-  currentFilters: AdvancedFilterValues = {
-    dateRange: {
-      preset: 'last30',
-      fromDate: this.getLast30FromDate(),
-      toDate: new Date().toISOString()
-    },
-    dateType: 'VoucherMatchingDate'
-  };
+  currentFilters: AdvancedFilterValues = {};
 
   headerActions: HeaderAction[] = [];
   modalDropdownItems: DropdownMenuItem[] = [];
@@ -135,12 +129,22 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
 
     this.userData = userProfile;
 
+    const fy = this.appSettingService.getCurrentFinancialYear();
+    const dateRangeBounds = getFinancialYearDateRangeBounds(fy);
+    this.dateRangeConfig = {
+      enabled: true,
+      defaultPreset: 'last30',
+      minDate: dateRangeBounds.minDate,
+      maxDate: dateRangeBounds.maxDate,
+    };
+
     this.initializeHeaderActions();
     this.initializeTableConfig();
     this.mps.init().subscribe(()=>{
       this.initializeHeaderActions();
       this.initializeTableConfig();
     })
+    this.currentFilters = this.getDefaultFilters();
     this.loadSubledgerOptions();
     super.ngOnInit();
   }
@@ -165,19 +169,23 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
 
     if (this.currentFilters.dateRange?.fromDate) {
       params['dateFrom'] = this.currentFilters.dateRange.fromDate;
-      params['DateFrom'] = this.currentFilters.dateRange.fromDate;
     }
     if (this.currentFilters.dateRange?.toDate) {
       params['dateTo'] = this.currentFilters.dateRange.toDate;
-      params['DateTo'] = this.currentFilters.dateRange.toDate;
     }
     if (this.currentFilters.dateType) {
       params['dateField'] = this.currentFilters.dateType;
-      params['DateField'] = this.currentFilters.dateType;
     }
     if (this.currentFilters.pol) {
       params['SubledgerName'] = this.currentFilters.pol;
       params['subledgerName'] = this.currentFilters.pol;
+    }
+
+    if (!this.hasExplicitDateRange()) {
+      const currentYear = this.appSettingService.getCurrentFinancialYear();
+      if (currentYear?.YearMasterSid) {
+        params['YearMasterSid'] = currentYear.YearMasterSid;
+      }
     }
 
     return params;
@@ -226,14 +234,7 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
 
   onSearchCleared(): void {
     this.filterValue = '';
-    this.currentFilters = {
-      dateRange: {
-        preset: 'last30',
-        fromDate: this.getLast30FromDate(),
-        toDate: new Date().toISOString()
-      },
-      dateType: 'VoucherMatchingDate'
-    };
+    this.currentFilters = this.getDefaultFilters();
     this.clearFilterValue();
   }
 
@@ -547,11 +548,20 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
     });
   }
 
-  private getLast30FromDate(): string {
-    const date = new Date();
-    date.setHours(0, 0, 0, 0);
-    date.setDate(date.getDate() - 30);
-    return date.toISOString();
+  private getDefaultDateRange(): NonNullable<AdvancedFilterValues['dateRange']> {
+    const range = getFinancialYearPresetDateRange('last30', this.appSettingService.getCurrentFinancialYear());
+    return { preset: 'last30', ...range };
+  }
+
+  private hasExplicitDateRange(): boolean {
+    return !!(this.currentFilters.dateRange?.fromDate || this.currentFilters.dateRange?.toDate);
+  }
+
+  private getDefaultFilters(): AdvancedFilterValues {
+    return {
+      dateRange: this.getDefaultDateRange(),
+      dateType: 'VoucherMatchingDate'
+    };
   }
 }
 

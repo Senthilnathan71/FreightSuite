@@ -33,6 +33,7 @@ import {
   PartyFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
 import { VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
+import { getFinancialYearDateRangeBounds, getFinancialYearPresetDateRange } from 'src/app/common/helper';
 
 @Component({
   selector: 'app-vendor-invoice-list',
@@ -80,7 +81,7 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
   headerActions: HeaderAction[] = [];
   modalDropdownItems: DropdownMenuItem[] = [];
   tableLoading = false;
-  dateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+  dateRangeConfig: DateRangeConfig;
   dateTypeConfig: DateTypeConfig = {
     enabled: true,
     options: [
@@ -168,8 +169,17 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
 
     if (userProfile) {
       this.userData = userProfile;
-     
+
     }
+
+    const fy = this.appSettingService.getCurrentFinancialYear();
+    const dateRangeBounds = getFinancialYearDateRangeBounds(fy);
+    this.dateRangeConfig = {
+      enabled: true,
+      defaultPreset: 'last30',
+      minDate: dateRangeBounds.minDate,
+      maxDate: dateRangeBounds.maxDate,
+    };
 
     this.initializeHeaderActions();
     this.initializeTableConfig();
@@ -205,15 +215,12 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
 
     if (this.currentFilters.dateRange?.fromDate) {
       params.dateFrom = this.currentFilters.dateRange.fromDate;
-      params.DateFrom = this.currentFilters.dateRange.fromDate;
     }
     if (this.currentFilters.dateRange?.toDate) {
       params.dateTo = this.currentFilters.dateRange.toDate;
-      params.DateTo = this.currentFilters.dateRange.toDate;
     }
     if (this.currentFilters.dateType) {
       params.dateField = this.currentFilters.dateType;
-      params.DateField = this.currentFilters.dateType;
     }
     if (this.currentFilters.party) {
       params.PartyMasterSid = this.currentFilters.party.partyId;
@@ -223,6 +230,13 @@ export class VendorInvoiceListComponent extends BaseListComponent implements OnI
     if (this.currentFilters.pol) {
       params.CurrencyCode = this.currentFilters.pol;
       params.currencyCode = this.currentFilters.pol;
+    }
+
+    if (!this.hasExplicitDateRange()) {
+      const currentYear = this.appSettingService.getCurrentFinancialYear();
+      if (currentYear?.YearMasterSid) {
+        params.YearMasterSid = currentYear.YearMasterSid;
+      }
     }
 
     return params;
@@ -665,20 +679,18 @@ private formatAmount(amount: number | string): string {
     });
   }
 
-  private getLast30FromDate(): string {
-    const date = new Date();
-    date.setHours(0, 0, 0, 0);
-    date.setDate(date.getDate() - 30);
-    return date.toISOString();
+  private getDefaultDateRange(): NonNullable<AdvancedFilterValues['dateRange']> {
+    const range = getFinancialYearPresetDateRange('last30', this.appSettingService.getCurrentFinancialYear());
+    return { preset: 'last30', ...range };
+  }
+
+  private hasExplicitDateRange(): boolean {
+    return !!(this.currentFilters.dateRange?.fromDate || this.currentFilters.dateRange?.toDate);
   }
 
   private getDefaultFilters(): AdvancedFilterValues {
     return {
-      dateRange: {
-        preset: 'last30',
-        fromDate: this.getLast30FromDate(),
-        toDate: new Date().toISOString()
-      },
+      dateRange: this.getDefaultDateRange(),
       dateType: 'VoucherDate'
     };
   }

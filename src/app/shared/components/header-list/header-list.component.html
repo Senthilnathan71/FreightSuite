@@ -161,7 +161,8 @@
             <div class="input-group">
 
               <input class="form-control" placeholder="dd-MMM-yyyy" [(ngModel)]="customFromDate" ngbDatepicker
-                #dpFrom="ngbDatepicker" (click)="dpFrom.toggle()" (ngModelChange)="onCustomDateChanged()" readonly>
+                #dpFrom="ngbDatepicker" (click)="dpFrom.toggle()" (ngModelChange)="onCustomDateChanged()"
+                [minDate]="dateRangeConfig?.minDate" [maxDate]="dateRangeConfig?.maxDate" readonly>
 
               <button class="btn px-0" (click)="dpFrom.toggle()">
 
@@ -185,7 +186,8 @@
             <div class="input-group">
 
               <input class="form-control" placeholder="dd-MMM-yyyy" [(ngModel)]="customToDate" ngbDatepicker
-                #dpTo="ngbDatepicker" (click)="dpTo.toggle()" (ngModelChange)="onCustomDateChanged()" readonly>
+                #dpTo="ngbDatepicker" (click)="dpTo.toggle()" (ngModelChange)="onCustomDateChanged()"
+                [minDate]="dateRangeConfig?.minDate" [maxDate]="dateRangeConfig?.maxDate" readonly>
 
               <button class="btn px-0" (click)="dpTo.toggle()">
 

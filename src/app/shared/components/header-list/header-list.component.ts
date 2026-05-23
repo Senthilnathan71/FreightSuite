@@ -18,6 +18,7 @@ import {
 } from '../../interfaces/advanced-filter.interface';
 import { FeatherModule } from 'angular-feather';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { getBoundedPresetDateRange } from 'src/app/common/helper';
 
 export interface HeaderAction {
   label: string;
@@ -373,34 +374,12 @@ export class PageHeaderComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   calculateDateRange(): { fromDate: string | null; toDate: string | null } {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    let fromDate: Date | null = null;
-    const toDate: Date = new Date(today);
-
     switch (this.selectedPreset) {
       case 'all':
         return {
           fromDate: null,
           toDate: null
         };
-      case 'last30':
-        fromDate = new Date(today);
-        fromDate.setDate(fromDate.getDate() - 30);
-        break;
-      case 'thisMonth':
-        fromDate = new Date(today.getFullYear(), today.getMonth(), 1);
-        break;
-      case 'lastMonth':
-        fromDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-        toDate.setTime(new Date(today.getFullYear(), today.getMonth(), 0).getTime());
-        break;
-      case 'last2Months':
-        fromDate = new Date(today.getFullYear(), today.getMonth() - 2, 1);
-        break;
-      case 'last3Months':
-        fromDate = new Date(today.getFullYear(), today.getMonth() - 3, 1);
-        break;
       case 'custom':
         const customFrom = this.toBoundaryDate(this.customFromDate, false);
         const customTo = this.toBoundaryDate(this.customToDate, true);
@@ -408,14 +387,12 @@ export class PageHeaderComponent implements OnInit, OnChanges, OnDestroy {
           fromDate: customFrom ? customFrom.toISOString() : null,
           toDate: customTo ? customTo.toISOString() : null
         };
+      default:
+        return getBoundedPresetDateRange(this.selectedPreset, {
+          minDate: this.dateRangeConfig?.minDate,
+          maxDate: this.dateRangeConfig?.maxDate
+        });
     }
-
-    toDate.setHours(23, 59, 59, 999);
-
-    return {
-      fromDate: fromDate ? fromDate.toISOString() : null,
-      toDate: toDate.toISOString()
-    };
   }
 
   private toBoundaryDate(value: NgbDateStruct | Date | null, endOfDay: boolean): Date | null {
@@ -426,9 +403,9 @@ export class PageHeaderComponent implements OnInit, OnChanges, OnDestroy {
     let date: Date;
     if (value instanceof Date) {
       // Preserve selected calendar day from UTC-backed datepicker model.
-      date = new Date(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate());
+      date = new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
     } else {
-      date = new Date(value.year, value.month - 1, value.day);
+      date = new Date(Date.UTC(value.year, value.month - 1, value.day));
     }
 
     if (Number.isNaN(date.getTime())) {
@@ -436,9 +413,9 @@ export class PageHeaderComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     if (endOfDay) {
-      date.setHours(23, 59, 59, 999);
+      date.setUTCHours(23, 59, 59, 999);
     } else {
-      date.setHours(0, 0, 0, 0);
+      date.setUTCHours(0, 0, 0, 0);
     }
 
     return date;

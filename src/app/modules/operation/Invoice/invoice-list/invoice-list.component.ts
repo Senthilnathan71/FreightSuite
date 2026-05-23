@@ -35,6 +35,7 @@ import {
 } from 'src/app/shared/interfaces/advanced-filter.interface';
 import { InvoiceService } from '../../services/invoice.service';
 import { VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
+import { getFinancialYearDateRangeBounds, getFinancialYearPresetDateRange } from 'src/app/common/helper';
 
 @Component({
   selector: 'app-invoice-list',
@@ -91,7 +92,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
   modalDropdownItems: DropdownMenuItem[] = [];
 
   tableLoading = false;
-  dateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+  dateRangeConfig: DateRangeConfig;
   dateTypeConfig: DateTypeConfig = {
     enabled: true,
     options: [{ label: 'Invoice Date', value: 'VoucherDate' }],
@@ -171,6 +172,16 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
     if (userProfile) {
       this.userData = userProfile;
     }
+
+    const fy = this.appSettingService.getCurrentFinancialYear();
+    const dateRangeBounds = getFinancialYearDateRangeBounds(fy);
+    this.dateRangeConfig = {
+      enabled: true,
+      defaultPreset: 'last30',
+      minDate: dateRangeBounds.minDate,
+      maxDate: dateRangeBounds.maxDate,
+    };
+
     this.initializeHeaderActions();
     this.initializeTableConfig();
     this.mps.init().subscribe(()=>{
@@ -178,11 +189,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
           this.initializeHeaderActions();
         });
     this.currentFilters = {
-      dateRange: {
-        preset: 'last30',
-        fromDate: this.getLast30FromDate(),
-        toDate: new Date().toISOString()
-      },
+      dateRange: this.getDefaultDateRange(),
       dateType: 'VoucherDate'
     };
     this.loadCurrencies();
@@ -210,15 +217,12 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
 
     if (this.currentFilters.dateRange?.fromDate) {
       params.dateFrom = this.currentFilters.dateRange.fromDate;
-      params.DateFrom = this.currentFilters.dateRange.fromDate;
     }
     if (this.currentFilters.dateRange?.toDate) {
       params.dateTo = this.currentFilters.dateRange.toDate;
-      params.DateTo = this.currentFilters.dateRange.toDate;
     }
     if (this.currentFilters.dateType) {
       params.dateField = this.currentFilters.dateType;
-      params.DateField = this.currentFilters.dateType;
     }
     if (this.currentFilters.party) {
       const partyMasterSid = this.resolvePartyMasterSid(this.currentFilters.party.partyId);
@@ -235,6 +239,14 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
       params.CurrencyCode = this.currentFilters.pol;
       params.currencyCode = this.currentFilters.pol;
     }
+
+    if (!this.hasExplicitDateRange()) {
+      const currentYear = this.appSettingService.getCurrentFinancialYear();
+      if (currentYear?.YearMasterSid) {
+        params.YearMasterSid = currentYear.YearMasterSid;
+      }
+    }
+
     return params;
   }
 
@@ -285,11 +297,7 @@ export class InvoiceListComponent extends BaseListComponent implements OnInit {
   onSearchCleared(): void {
     this.filterValue = '';
     this.currentFilters = {
-      dateRange: {
-        preset: 'last30',
-        fromDate: this.getLast30FromDate(),
-        toDate: new Date().toISOString()
-      },
+      dateRange: this.getDefaultDateRange(),
       dateType: 'VoucherDate'
     };
     this.clearFilterValue();
@@ -659,11 +667,13 @@ navigateToBooking(row: any): void {
     });
   }
 
-  private getLast30FromDate(): string {
-    const date = new Date();
-    date.setHours(0, 0, 0, 0);
-    date.setDate(date.getDate() - 30);
-    return date.toISOString();
+  private getDefaultDateRange(): NonNullable<AdvancedFilterValues['dateRange']> {
+    const range = getFinancialYearPresetDateRange('last30', this.appSettingService.getCurrentFinancialYear());
+    return { preset: 'last30', ...range };
+  }
+
+  private hasExplicitDateRange(): boolean {
+    return !!(this.currentFilters.dateRange?.fromDate || this.currentFilters.dateRange?.toDate);
   }
 
   private resolvePartyMasterSid(partyId: any): number | null {

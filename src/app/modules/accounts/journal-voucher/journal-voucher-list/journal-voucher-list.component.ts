@@ -29,6 +29,7 @@ import {
   DropdownFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
 import { VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
+import { getFinancialYearDateRangeBounds, getFinancialYearPresetDateRange } from 'src/app/common/helper';
 
 @Component({
   selector: 'app-journal-voucher-list',
@@ -65,7 +66,8 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
  tableConfig: TableConfig;
 
   tableLoading = false;
-  dateRangeConfig: DateRangeConfig = { enabled: true, defaultPreset: 'last30' };
+  dateRangeConfig: DateRangeConfig;
+
   dateTypeConfig: DateTypeConfig = {
     enabled: true,
     options: [
@@ -122,6 +124,15 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
       this.userData = userProfile;
     }
 
+    const fy = this.appSettingService.getCurrentFinancialYear();
+    const dateRangeBounds = getFinancialYearDateRangeBounds(fy);
+    this.dateRangeConfig = {
+      enabled: true,
+      defaultPreset: 'last30',
+      minDate: dateRangeBounds.minDate,
+      maxDate: dateRangeBounds.maxDate,
+    };
+
     // Initialize table configuration
     this.initializeTableConfig();
     this.initializeHeaderActions();
@@ -130,11 +141,7 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
       this.initializeHeaderActions();
     });
     this.currentFilters = {
-      dateRange: {
-        preset: 'last30',
-        fromDate: this.getLast30FromDate(),
-        toDate: new Date().toISOString()
-      },
+      dateRange: this.getDefaultDateRange(),
       dateType: 'VoucherDateFormatted'
     };
     // Initialize base component
@@ -177,19 +184,23 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
     const dateField = this.currentFilters.dateType === 'PostDateFormatted' ? 'PostDate' : 'VoucherDate';
     if (this.currentFilters.dateRange?.fromDate) {
       params.dateFrom = this.currentFilters.dateRange.fromDate;
-      params.DateFrom = this.currentFilters.dateRange.fromDate;
     }
     if (this.currentFilters.dateRange?.toDate) {
       params.dateTo = this.currentFilters.dateRange.toDate;
-      params.DateTo = this.currentFilters.dateRange.toDate;
     }
     if (this.currentFilters.dateType) {
       params.dateField = dateField;
-      params.DateField = dateField;
     }
     if (this.currentFilters.departmentSid) {
       params.PostStatus = this.currentFilters.departmentSid;
       params.postStatus = this.currentFilters.departmentSid;
+    }
+
+    if (!this.hasExplicitDateRange()) {
+      const currentYear = this.appSettingService.getCurrentFinancialYear();
+      if (currentYear?.YearMasterSid) {
+        params.YearMasterSid = currentYear.YearMasterSid;
+      }
     }
 
     return params;
@@ -251,11 +262,7 @@ private formatAmount(amount: number | string): string {
   onSearchCleared(): void {
     this.filterValue = '';
     this.currentFilters = {
-      dateRange: {
-        preset: 'last30',
-        fromDate: this.getLast30FromDate(),
-        toDate: new Date().toISOString()
-      },
+      dateRange: this.getDefaultDateRange(),
       dateType: 'VoucherDateFormatted'
     };
     this.clearFilterValue();
@@ -545,11 +552,13 @@ editJournalVoucher(item: any): void {
     // console.log('Filters changed:', filters);
   }
 
-  private getLast30FromDate(): string {
-    const date = new Date();
-    date.setHours(0, 0, 0, 0);
-    date.setDate(date.getDate() - 30);
-    return date.toISOString();
+  private getDefaultDateRange(): NonNullable<AdvancedFilterValues['dateRange']> {
+    const range = getFinancialYearPresetDateRange('last30', this.appSettingService.getCurrentFinancialYear());
+    return { preset: 'last30', ...range };
+  }
+
+  private hasExplicitDateRange(): boolean {
+    return !!(this.currentFilters.dateRange?.fromDate || this.currentFilters.dateRange?.toDate);
   }
 
   private applyAdvancedFilters(items: any[]): any[] {
