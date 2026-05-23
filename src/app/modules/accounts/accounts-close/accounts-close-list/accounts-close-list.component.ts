@@ -49,7 +49,7 @@ export class AccountsCloseListComponent extends BaseListComponent implements OnI
 
   protected config: ListComponentConfig = {
     storageKey: 'accounts-close-list-state',
-    defaultPageSize: 20,
+    defaultPageSize: 10,
     defaultSortColumn: 'PeriodName',
     defaultSortDirection: 'asc',
     pageSizeOptions: [10, 20, 50, 100],

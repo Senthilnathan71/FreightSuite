@@ -88,7 +88,7 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
 
   protected config: ListComponentConfig = {
     storageKey: 'journal-voucher-list-state',
-    defaultPageSize: 20,
+    defaultPageSize: 10,
     defaultSortColumn: 'VoucherDate',
     defaultSortDirection: 'desc',
     pageSizeOptions: [10, 20, 50, 100, 500],

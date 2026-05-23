@@ -162,7 +162,6 @@ export class ReverseVoucherListComponent extends BaseListComponent implements On
         this.initializeModalDropdownItems();
         super.ngOnInit();
         this.loadVendorOptions();
-        this.loadVouchers();
       }
 
       private loadVendorOptions(): void {

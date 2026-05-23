@@ -279,7 +279,7 @@
                     @if ((isEditMode || isViewMode) && creditNoteForm.get('ReversalVoucher')?.value) {
                       <a
                         id="ReversalVoucherNumber"
-                        class="custom-input-field sm d-flex align-items-center text-primary text-decoration-underline cursor-pointer"
+                        class="custom-input-field sm d-flex align-items-center text-primary cursor-pointer"
                         (click)="navigateToReversalInvoice()"
                         title="Open Invoice"
                       >
@@ -1082,8 +1082,8 @@
                                   </div>
                                 </div>
                               </td>
-                              <td class="text-end">
-                                <span class="pt-1" style="font-weight: 600; color: black">{{
+                              <td class="text-end pt-1">
+                                <span class="" style="font-weight: 600; color: black">{{
                                   getFormattedAmount(row.get("TaxAmount1")?.getRawValue(), currentCompany.CurrencyMasterSid)
                                 }}</span>
                               </td>
@@ -1091,9 +1091,9 @@
                           </ng-container>
 
                           <!-- Local Amount -->
-                          <td class="text-end">
+                          <td class="text-end pt-1">
                             <span
-                              class="pt-1"
+                              class=""
                               style="font-weight: 600; color: black"
                             >
                               {{
@@ -1106,9 +1106,9 @@
                           </td>
 
                           <!-- Party Amount -->
-                          <td class="text-end">
+                          <td class="text-end pt-1">
                             <span
-                              class="pt-1"
+                              class=""
                               style="font-weight: 600; color: black"
                             >
                               {{
@@ -1123,10 +1123,10 @@
                           </td>
 
                           <!-- MasterJobSid column -->
-                          <td style="min-width: 200px">
+                          <td style="min-width: 200px" class="pt-1">
                             @if (isEditMode) {
                             <a
-                              class="text-decoration-underline"
+                              class="text-primary"
                               style="cursor: pointer"
                               (click)="navigateToDetailMasterJob(i)"
                             >
@@ -1155,10 +1155,10 @@
                           </td>
 
                           <!-- HouseJobSid -->
-                          <td style="min-width: 200px">
+                          <td style="min-width: 200px" class="pt-1">
                             @if (isEditMode) {
                             <a
-                              class="text-decoration-underline"
+                              class="text-primary"
                               style="cursor: pointer"
                               (click)="navigateToDetailHouseJob(i)"
                             >
