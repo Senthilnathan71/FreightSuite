@@ -57,6 +57,7 @@ export class TradelaneProfitabilityComponent {
   getExcelData(): ComplexReportExportConfig {
     const tableHeaders: ExcelHeader[] = [
       { key: 'bookingNo', label: 'Booking No' },
+      { key: 'BookingDate', label: 'Booking Date' },
       { key: 'revenue', label: 'Revenue' },
       { key: 'cost', label: 'Cost' },
       { key: 'profit', label: 'Profit' },
@@ -67,9 +68,9 @@ export class TradelaneProfitabilityComponent {
 
     const rows: ExcelRow[] = [];
     const colCount = tableHeaders.length;
-    const bookingHeaderValues = ['Booking No', 'Revenue', 'Cost', 'Profit', 'Gross Wt', 'Net Wt', 'CBM'];
-    const masterHeaderValues = ['MBL No', 'Revenue', 'Cost', 'Profit', 'Gross Wt', 'Net Wt', 'CBM'];
-    const houseHeaderValues = ['HBL No', 'Revenue', 'Cost', 'Profit', 'Gross Wt', 'Net Wt', 'CBM'];
+    const bookingHeaderValues = ['Booking No','Booking Date', 'Revenue', 'Cost', 'Profit', 'Gross Wt', 'Net Wt', 'CBM'];
+    const masterHeaderValues = ['MBL No','MBL Date', 'Revenue', 'Cost', 'Profit', 'Gross Wt', 'Net Wt', 'CBM'];
+    const houseHeaderValues = ['HBL No','HBL Date', 'Revenue', 'Cost', 'Profit', 'Gross Wt', 'Net Wt', 'CBM'];
     const buildHeaderRow = (values: string[]): ExcelRow => ({
       cells: values.map(value => ({ value, alignment: { horizontal: 'center' } })),
       style: 'header'
@@ -94,6 +95,7 @@ export class TradelaneProfitabilityComponent {
           rows.push({
             cells: [
               { value: item.bookingNo || '' },
+              { value: this.formatDate(item.BookingDate) , alignment:{horizontal:'center'} },
               { value: this.formatNumber(item.revenueLocalAmt ?? 0) },
               { value: this.formatNumber(item.costLocalAmt ?? 0) },
               { value: this.formatNumber(item.profit ?? 0) },
@@ -107,7 +109,7 @@ export class TradelaneProfitabilityComponent {
 
         rows.push({
           cells: [
-            { value: 'Total' },
+            { value: 'Total' , colspan:2 , alignment:{horizontal:'right'} },
             { value: this.formatNumber(route.bookingTotals?.revenue ?? 0) },
             { value: this.formatNumber(route.bookingTotals?.cost ?? 0) },
             { value: this.formatNumber(route.bookingTotals?.profit ?? 0) },
@@ -136,6 +138,7 @@ export class TradelaneProfitabilityComponent {
           rows.push({
             cells: [
               { value: item.MBLNo || '' , alignment:{horizontal:'left'} },
+              { value: this.formatDate(item.MasterDate)  , alignment:{horizontal:'center'}},
               { value: this.formatNumber(item.revenueLocalAmt ?? 0) },
               { value: this.formatNumber(item.costLocalAmt ?? 0) },
               { value: this.formatNumber(item.profit ?? 0) },
@@ -149,7 +152,7 @@ export class TradelaneProfitabilityComponent {
 
         rows.push({
           cells: [
-            { value: 'Total' },
+            { value: 'Total' , colspan:2 , alignment:{horizontal:'right'} },
             { value: this.formatNumber(route.masterTotals?.revenue ?? 0) },
             { value: this.formatNumber(route.masterTotals?.cost ?? 0) },
             { value: this.formatNumber(route.masterTotals?.profit ?? 0) },
@@ -178,6 +181,7 @@ export class TradelaneProfitabilityComponent {
           rows.push({
             cells: [
               { value: item.HBLNo || '' , alignment:{horizontal:'left'} },
+              { value: this.formatDate(item.HouseDate)  , alignment:{horizontal:'center'}},
               { value: this.formatNumber(item.revenueLocalAmt ?? 0) },
               { value: this.formatNumber(item.costLocalAmt ?? 0) },
               { value: this.formatNumber(item.profit ?? 0) },
@@ -191,7 +195,7 @@ export class TradelaneProfitabilityComponent {
 
         rows.push({
           cells: [
-            { value: 'Total' },
+            { value: 'Total' , colspan:2 , alignment:{horizontal:'right'} },
             { value: this.formatNumber(route.houseTotals?.revenue ?? 0) },
             { value: this.formatNumber(route.houseTotals?.cost ?? 0) },
             { value: this.formatNumber(route.houseTotals?.profit ?? 0) },
