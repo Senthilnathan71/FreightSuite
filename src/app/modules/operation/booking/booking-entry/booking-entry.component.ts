@@ -700,6 +700,12 @@ get visibleTabs() {
       this.bookingForm.get('BookingStatus')?.valueChanges.subscribe((status) => {
       this.updateGenerateJobButtonVisibility();
     });
+      this.bookingForm.get('Coload')?.valueChanges.subscribe(() => {
+      this.updateGenerateJobButtonVisibility();
+    });
+      this.otherForm.get('Coloader')?.valueChanges.subscribe(() => {
+      this.updateGenerateJobButtonVisibility();
+    });
 
       this.spinner.hide();
     });
@@ -722,10 +728,11 @@ get visibleTabs() {
 
   // ✅ Allowed Departments
   const isSeaFCL = deptType === 'SEA' && segment === 'FCL';
+  const isSeaLclCoload = deptType === 'SEA' && segment === 'LCL' && this.b['Coload']?.value && this.o['Coloader']?.value;
   const isAir = deptType === 'AIR';
   const isRoadOrTransport = deptType === 'ROAD' || deptType === 'TRANSPORT';
 
-  const isAllowed = isSeaFCL || isAir || isRoadOrTransport;
+  const isAllowed = isSeaFCL || isSeaLclCoload || isAir || isRoadOrTransport;
   const isStuffedStatus = this.b['BookingStatus']?.value === 'Stuffed';
   
   this.showGenerateJobButton = isAllowed  && !isStuffedStatus;
@@ -3060,10 +3067,7 @@ onCarrierChangeForAir(carrier: any): void {
   }
      this.autoSetJobType(department);
     this.updateCarrierValidation(department);
-    const isFCLDepartment = this.selectedFCLLCL === "FCL";
-  const isStuffedStatus = this.b['BookingStatus']?.value === 'Stuffed';
-  
-  this.showGenerateJobButton = isFCLDepartment && !isStuffedStatus;
+    this.updateGenerateJobButtonVisibility();
     if (this.selectedFCLLCL === "LCL" && department.ExportImport === "Export") {
       this.cargoForm.get('StuffingAt')?.setValue('Dock');
       this.cargoForm.get('StuffingAt')?.disable();

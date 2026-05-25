@@ -23,7 +23,7 @@
   <button class="btn btn-sm btn-info" 
            (click)="onGenerateJob()" 
           appPreventMultiClick
-          [disabled]="!b['DepartmentMasterSid']?.value || !b['POL']?.value || !b['POD']?.value || b['BookingStatus']?.value === 'Stuffed' || isSuspended">
+          [disabled]="!b['DepartmentMasterSid']?.value || !b['POL']?.value || !b['POD']?.value || b['BookingStatus']?.value === 'Stuffed' || isSuspended || isDirty">
     <i class="fas fa-save me-1"></i>
     <span>Generate Job</span>
   </button>

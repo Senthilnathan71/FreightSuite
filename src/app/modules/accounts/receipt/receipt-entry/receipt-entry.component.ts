@@ -4112,4 +4112,8 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         modalRef.componentInstance.recordId = this.receiptData?.VoucherHeaderSid.toString();
         modalRef.componentInstance.screenName = 'Receipt';
         }
+
+        navigateToCreate() {
+          this.router.navigate(['accounts/receipt/entry']);
+        }
 }

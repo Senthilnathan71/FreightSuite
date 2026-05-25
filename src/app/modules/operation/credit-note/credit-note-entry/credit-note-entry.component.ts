@@ -6545,4 +6545,8 @@ export class CreditNoteEntryComponent {
       modalRef.componentInstance.recordId = this.creditNoteData?.VoucherHeaderSid.toString();
       modalRef.componentInstance.screenName = 'CreditNote';
     }
+
+    navigateToCreate() {
+      this.router.navigate(['operation/credit-note/entry']);
+    }
 }

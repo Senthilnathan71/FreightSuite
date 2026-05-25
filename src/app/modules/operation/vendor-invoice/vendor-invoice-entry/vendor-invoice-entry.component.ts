@@ -4506,4 +4506,14 @@ Please configure the missing mappings and try again.`
         this.spinner.hide();
       }
     }
+
+    navigateToCreate() {
+      this.router.navigate(['/operation/vendor-invoice/entry']);
+    }
+
+    navigateToNonJob(){
+      this.router.navigate(['/operation/vendor-invoice/entry'], {
+      queryParams: { isNonJob: true }
+    });
+    }
 }

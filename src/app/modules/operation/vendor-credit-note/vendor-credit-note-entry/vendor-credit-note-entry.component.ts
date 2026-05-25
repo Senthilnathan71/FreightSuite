@@ -4076,4 +4076,8 @@ export class VendorCreditNoteEntryComponent {
       error: err => console.error('Error fetching audit logs:', err)
     });
   }
+
+  navigateToCreate() {
+    this.router.navigate(['/operation/vendor-credit-note/entry']);
+  }
 }
