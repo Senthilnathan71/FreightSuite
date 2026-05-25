@@ -172,6 +172,7 @@ export interface QuoteNoBooking {
   LeadOrCustomer: string;
   PreCustomerMasterSid: number;
   CustomerMasterSid: number;
+  CustomerBranchSid: number | null;
   CustomerName: string;
   preCustomerName: string;
   salespersonName: string;
@@ -292,4 +293,19 @@ export interface SalesDashboardSections {
 export interface SalesDashboardData {
   sections: SalesDashboardSections;
   charts: ChartData;
+}
+
+export interface FunnelJourneyItem {
+  PreCustomerMasterSid: number;
+  preCustomerName: string;
+  contactPerson?: string;
+  leadStatus?: string;
+  createdOn: string;
+  salespersonName?: string;
+  meeting: { sid: number; meetingDate: string; meetingStatus: string } | null;
+  customer: { sid: number; name: string } | null;
+  enquiry: { sid: number; number: string; date: string } | null;
+  quote: { sid: number; number: string; date: string } | null;
+  approvedQuote: { sid: number; number: string } | null;
+  booking: { sid: number; bookingNo: string } | null;
 }

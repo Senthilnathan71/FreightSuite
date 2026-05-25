@@ -1772,3 +1772,351 @@ tr:hover td { background: rgba($brand, 0.03); }
 
   .comparison-table { margin: 0 12px 12px; }
 }
+
+// ── KYC Warning Banner ──
+.kyc-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  font-size: 0.75rem;
+  color: #fcd34d;
+
+  .kyc-alert-link {
+    margin-left: auto;
+    color: #60a5fa;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+    font-weight: 600;
+    white-space: nowrap;
+    &:hover { color: #93c5fd; }
+  }
+
+  .kyc-alert-close {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 0 2px;
+    flex-shrink: 0;
+    &:hover { color: rgba(255, 255, 255, 0.85); }
+  }
+}
+
+// ── Lead Funnel: Title Action Buttons ──
+.funnel-title-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.funnel-hdr-btn {
+  background: rgba($brand, 0.06);
+  border: 1px solid rgba($brand, 0.2);
+  border-radius: 5px;
+  color: $brand;
+  font-size: 0.78rem;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+
+  &:hover { background: rgba($brand, 0.12); }
+  &.active { background: rgba($brand, 0.14); border-color: $brand; }
+
+  &--journey {
+    color: $color-green;
+    background: rgba($color-green, 0.06);
+    border-color: rgba($color-green, 0.2);
+    &:hover { background: rgba($color-green, 0.12); }
+    &.active { background: rgba($color-green, 0.14); border-color: $color-green; }
+  }
+}
+
+// ── Funnel Modals (Criteria + Journey) ──
+.funnel-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1040;
+}
+
+.funnel-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1050;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+  width: min(560px, 94vw);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  &--wide { width: min(960px, 96vw); }
+}
+
+.funnel-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: $brand;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.funnel-modal-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 2px;
+  &:hover { color: #fff; }
+}
+
+.funnel-modal-body {
+  padding: 16px 18px;
+  overflow-y: auto;
+  max-height: 70vh;
+
+  &--flush {
+    padding: 0;
+    overflow: hidden;
+  }
+}
+
+// ── Funnel Criteria Notes ──
+.funnel-notes-all {
+  display: flex;
+  flex-direction: column;
+}
+
+.funnel-notes-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid $border-light;
+
+  &:last-child { border-bottom: none; }
+}
+
+.fn-icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 13px;
+  margin-top: 1px;
+}
+
+.fn-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.fn-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: $text-primary;
+  margin-bottom: 3px;
+}
+
+.fn-criteria {
+  font-size: 11.5px;
+  color: $text-secondary;
+  line-height: 1.5;
+  margin-bottom: 3px;
+}
+
+.fn-meaning {
+  font-size: 11px;
+  color: $text-muted;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+// ── Lead Pipeline Matrix Table ──
+.jm-scroll {
+  overflow-y: auto;
+  max-height: 68vh;
+}
+
+.jm-table {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+// Lead column: ~22%, each of 7 stage columns: ~11.4% (totals 100%)
+.jm-lead-th  { width: 22%; }
+.jm-stage-th { width: calc(78% / 7); }
+
+.jm-lead-th {
+  background: $brand;
+  text-align: left;
+}
+
+.jm-stage-th {
+  text-align: center;
+  padding: 9px 4px !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+  white-space: normal !important;
+  letter-spacing: 0 !important;
+  vertical-align: top;
+
+  i { display: block; font-size: 12px; margin-bottom: 3px; }
+  span { display: block; line-height: 1.25; word-break: break-word; }
+
+  &.jm-s1 { background: #033a56; }
+  &.jm-s2 { background: #92400e; }
+  &.jm-s3 { background: #0c5a54; }
+  &.jm-s4 { background: #075985; }
+  &.jm-s5 { background: #c2410c; }
+  &.jm-s6 { background: #5b21b6; }
+  &.jm-s7 { background: #14532d; }
+}
+
+.jm-lead-td {
+  border-bottom: 1px solid $border-light;
+  padding: 8px 10px !important;
+  white-space: normal !important;
+  word-break: break-word;
+  vertical-align: top;
+
+  .link { display: block; font-size: 11.5px; margin-bottom: 4px; }
+}
+
+.jm-status-badge {
+  font-size: 8.5px !important;
+  padding: 1px 5px !important;
+}
+
+tr:hover .jm-lead-td { background: rgba($brand, 0.03); }
+
+.jm-cell {
+  text-align: center;
+  padding: 8px 3px !important;
+  border-bottom: 1px solid $border-light;
+  vertical-align: middle;
+}
+
+.jm-chip {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 3px 5px;
+  border-radius: 7px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: filter 0.1s;
+
+  &:hover { filter: brightness(0.88); text-decoration: none; }
+
+  &.jm-s1 { background: rgba($brand-dark, 0.1); color: $brand; }
+  &.jm-s2 { background: rgba(245, 158, 11, 0.13); color: #b45309; }
+  &.jm-s3 { background: rgba(15, 118, 110, 0.12); color: #0f766e; }
+  &.jm-s4 { background: rgba(6, 182, 212, 0.12); color: #0891b2; }
+  &.jm-s5 { background: rgba(249, 115, 22, 0.12); color: #ea580c; }
+  &.jm-s6 { background: rgba(124, 58, 237, 0.12); color: #7c3aed; }
+  &.jm-s7 { background: rgba(22, 163, 74, 0.12); color: $color-green; }
+}
+
+.jm-empty {
+  color: rgba($text-muted, 0.4);
+  font-size: 12px;
+  line-height: 1;
+}
+
+// On narrow screens: hide stage label text, show icon only
+@media (max-width: 600px) {
+  .jm-stage-th span { display: none; }
+  .jm-stage-th i { margin-bottom: 0; font-size: 11px; }
+  .jm-lead-th { width: 28%; }
+  .jm-stage-th { width: calc(72% / 7); }
+}
+
+// ── Card Info Button (chart cards + section headers) ──
+.card-info-btn {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  border: 1px solid rgba($brand, 0.2);
+  background: rgba($brand, 0.05);
+  color: $brand;
+  font-size: 11px;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+  margin-left: auto;
+
+  &:hover {
+    background: rgba($brand, 0.12);
+    border-color: $brand;
+  }
+}
+
+// Variant for section headers (keeps margin-left: auto from parent flex context)
+.section-info-btn {
+  margin-left: 0;
+}
+
+// ── Shared Card Notes Modal Content ──
+.card-notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.card-notes-item {
+  padding: 10px 0;
+  border-bottom: 1px solid $border-light;
+
+  &:last-child { border-bottom: none; }
+}
+
+.cn-heading {
+  font-size: 12px;
+  font-weight: 700;
+  color: $brand;
+  margin-bottom: 4px;
+}
+
+.cn-body {
+  font-size: 11.5px;
+  color: $text-secondary;
+  line-height: 1.55;
+}

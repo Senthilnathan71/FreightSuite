@@ -1059,6 +1059,10 @@ this.branchList = (selectedCompany?.companyMaster?.userBranchMaster || [])
     const userProfile = this.appSettingsService.getDecryptedUserProfile();
     const salespersonFlag = String(userProfile?.isSalesperson || '').toUpperCase();
 
+    if (userProfile?.userType?.code === 'salesManager') {
+      return '/dashboard/sales-manager';
+    }
+
     if (salespersonFlag === '1' || salespersonFlag === 'Y') {
       return '/dashboard/sales';
     }
