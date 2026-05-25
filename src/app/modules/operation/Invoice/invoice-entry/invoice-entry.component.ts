@@ -278,6 +278,8 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   TandCList: any[] = [];
   isTermsAndConditionsEnabled: boolean = true;
   isPrintAllBankEnabled: boolean = false;
+  isUAECompany: boolean = false;
+  customsDutyLabel: string = 'Customs Duty Invoice';
   private isPrintAllBankConfigLoaded: boolean = false;
   isBankFetched : boolean = false;
   bankDetails: any;
@@ -425,6 +427,10 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
             this.currentCompany?.countryMaster?.countryCode
         ).toLowerCase();
         this.bookingModeCountry = this.currentCompanyCountry.countryName;
+        this.isUAECompany = this.currentCompanyCountryCode === 'ae';
+        if (this.isUAECompany) {
+          this.loadCustomsDutyLabelConfig();
+        }
       }
       if (this.currentBranchState) {
         this.currentBranchStateName =
@@ -523,6 +529,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       Remarks: [''],
       IRNStatus: [''],
       MBLNo: [{ value: '', disabled: true }],
+      CustomsDuty: ['N'],
       status: ['A', Validators.required],
       voucherDetails: this.fb.array([]),
       voucherOthers: this.fb.group({
@@ -1266,6 +1273,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
         IRNNumber: data.IRNNumber || '',
         IRNStatus: data.IRNStatus || '',
         VoucherType: data.VoucherType,
+        CustomsDuty: data.CustomsDuty || 'N',
       },
       { emitEvent: false }
     );
@@ -1580,7 +1588,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
           this.invoiceData?.houseJob?.BookingNo : 
           ( isBookingInvoice ? this.invoiceData?.BookingHeader?.BookingNo : '' )
       ,
-      InvoiceDueDate: this.dueDate,
+      InvoiceDueDate: this.invoiceData?.CustomsDuty === 'Y' ? 'Cash Invoice' : this.dueDate,
       CurrExRate: `${this.invoiceData?.CurrencyCode || ""} / ${this.getFormattedAndPaddedExchangeRate(this.invoiceData?.ExchangeRate,this.invoiceData?.CurrencyMasterSid) || ""}`,
       SalesPerson: salesmanName,
       voucherDetails: voucherDetails,
@@ -2570,6 +2578,7 @@ isSeaDepartment(): boolean {
 
       DocumentNumber: raw.DocumentNumber || undefined,
       Remarks: raw.Remarks || undefined,
+      CustomsDuty: raw.CustomsDuty || 'N',
     };
 
     if (voucherOthersCandidate) {
@@ -3549,6 +3558,24 @@ isSeaDepartment(): boolean {
         this.isTermsAndConditionsEnabled = true;
       }
     });
+  }
+
+  private loadCustomsDutyLabelConfig(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) return;
+    this.masterService.getConfigurationValue(companyId, 'ChangeLabelToCashInvoice').subscribe({
+      next: (resp: any) => {
+        const rawValue = resp?.ConfigurationValue ?? resp?.value ?? resp;
+        const isCashInvoice = rawValue === true || rawValue === 'Y' || rawValue === 'y';
+        this.customsDutyLabel = isCashInvoice ? 'Cash Invoice' : 'Customs Duty Invoice';
+      },
+      error: () => { this.customsDutyLabel = 'Customs Duty Invoice'; }
+    });
+  }
+
+  onCustomsDutyToggle(event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.invoiceForm.get('CustomsDuty')?.setValue(checked ? 'Y' : 'N');
   }
 
   private parseConfigBoolean(value: any, defaultValue: boolean): boolean {
