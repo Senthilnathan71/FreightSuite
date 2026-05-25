@@ -4660,6 +4660,35 @@ onETDDateSelect(): void {
     modalRef.componentInstance.selectedFCLLCL = this.selectedFCLLCL;
     modalRef.componentInstance.portList = this.portList || [];
     modalRef.componentInstance.currentMenuId = this.currentMenuId || this.MenuMasterSid || Number(sessionStorage.getItem('currentMenuId'));
+    this.initializeMilestoneContentForCargoManifest(modalRef);
+  }
+
+  private initializeMilestoneContentForCargoManifest(modalRef: any): void {
+    const department = this.selectedDepartment || this.departments.find(
+      (dep) => dep.DepartmentMasterSid === this.masterJobForm.get('DepartmentMasterSid')?.value,
+    );
+    const validDepartment = department?.ExportImport === 'Export';
+    const masterJobSid = this.masterJobData?.MasterJobSid || this.masterJobSid;
+
+    modalRef.componentInstance.autoInsertMilestone = !!(validDepartment && masterJobSid);
+
+    const milestonePayload: InsertMilestoneByMasterJobPayload = {
+      MasterJobSid: Number(masterJobSid),
+      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      BranchMasterSid: this.currentBranch?.BranchMasterSid,
+      MilestoneCode: 'CARGOMANIFEST',
+      MilestoneDate: getDefaultTodayDate(),
+      createdBy: this.userData?.userEmail,
+      Remarks: `Cargo Manifest has been generated on ${(new Date().toISOString()).split('T')[0]}`,
+    };
+
+    modalRef.componentInstance.milestonePayload = milestonePayload;
+
+    modalRef.componentInstance.reloadMilestone.subscribe(() => {
+      if (this.masterJobSid) {
+        this.loadMasterJobData(this.masterJobSid);
+      }
+    });
   }
 
 

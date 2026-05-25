@@ -272,23 +272,7 @@ export class PreAlertComponent {
       const fileName = `Pre_Alert_${this.masterJobData?.MasterJobNumber || ''}.pdf`;
       pdfMake.createPdf(docDefinition).download(fileName);
       this.appSettingService.showSuccess('PDF downloaded successfully!');
-      const payload = {
-        tableName: 'MasterJob',
-        recordId: String(this.masterJobData?.MasterJobSid),
-        operation: 'PDF',
-        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
-        changes: {
-          action: 'PDF Downloaded'
-        },
-        newVal: {
-          PDF: 'Pre Alert PDF Downloaded'
-        }
-      };
-
-      this.operationService.createAuditLog(payload).subscribe({
-        next: () => { },
-        error: (err) => console.error(err)
-      });
+      this.createPdfAuditLog();
     } catch (error) {
       console.error('Pre alert PDF generation failed:', error);
       this.appSettingService.showError('Error generating PDF. Please try again.');
@@ -483,6 +467,7 @@ export class PreAlertComponent {
       };
       emailRef.componentInstance.dataChange.subscribe(() => {
         this.createEmailAuditLog(documentName);
+        this.createPdfAuditLog();
         this.insertMilestoneSafelyForPrint();
       });
     } catch (error) {
@@ -504,6 +489,26 @@ export class PreAlertComponent {
      },
      newVal: {
        Email: `${documentName} Mail Send`
+     }
+   };
+
+   this.operationService.createAuditLog(payload).subscribe({
+     next: () => { },
+     error: (err) => console.error(err)
+   });
+ }
+
+ private createPdfAuditLog(): void {
+   const payload = {
+     tableName: 'MasterJob',
+     recordId: String(this.masterJobData?.MasterJobSid),
+     operation: 'PDF',
+     changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+     changes: {
+       action: 'PDF Downloaded'
+     },
+     newVal: {
+       PDF: 'Pre Alert PDF Downloaded'
      }
    };
 

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { firstValueFrom } from 'rxjs';
@@ -14,6 +14,7 @@ import { PrintHeaderComponent } from 'src/app/shared/components/print-header/pri
 import { OperationService } from '../../../operation.service';
 import { EmailTriggerService } from 'src/app/modules/email/email-trigger.service';
 import { EmailEntryComponent } from 'src/app/modules/settings/email/email-entry/email-entry.component';
+import { InsertMilestoneByMasterJobPayload, ShipmentMilestoneService } from 'src/app/modules/operation/services/shipment-milestone.service';
 
 @Component({
   selector: 'app-cargo-manifest',
@@ -41,7 +42,12 @@ export class CargoManifestComponent {
   @Input()  selectedFCLLCL:any;
   @Input() portList: any[] = []; // Add this input
   @Input() currentMenuId: number | null = null;
+  @Input() autoInsertMilestone: boolean = false;
+  @Input() milestonePayload?: InsertMilestoneByMasterJobPayload;
+  @Output() reloadMilestone = new EventEmitter<void>();
   private pdfDepsPromise?: Promise<{ pdfMake: any }>;
+  private milestoneInserted: boolean = false;
+
   constructor(
     private appSettingsService: AppSettingsService,
     private activeModal: NgbActiveModal,
@@ -52,7 +58,8 @@ export class CargoManifestComponent {
     public mps: MenuPermissionService,
     private operationService: OperationService,
     private modalService: NgbModal,
-    private emailTriggerService: EmailTriggerService
+    private emailTriggerService: EmailTriggerService,
+    private milestoneService: ShipmentMilestoneService
   ) { }
 
    showPrintLogo: boolean = false;
@@ -71,6 +78,7 @@ export class CargoManifestComponent {
     this.currentCompany = ((this.userData.userCompanyMaster || []).find(ucm => ucm.CompanyMasterSid === this.currentCompany?.CompanyMasterSid))?.companyMaster;
     this.currentBranch = ((this.currentCompany.userBranchMaster || []).find(ubm => ubm.BranchMasterSid === this.currentBranch?.BranchMasterSid))?.branchMaster;
     this.currentBranchCityId = Number(this.branchDetails?.CityMasterSid);
+    this.milestoneInserted = false;
     this.loadCityName();
   }
 
@@ -258,23 +266,7 @@ export class CargoManifestComponent {
       const fileName = `Cargo_manifest_${this.masterJobData?.MasterJobNumber || ''}.pdf`;
       pdfMake.createPdf(docDefinition).download(fileName);
       this.appSettingService.showSuccess('PDF downloaded successfully!');
-      const payload = {
-        tableName: 'MasterJob',
-        recordId: String(this.masterJobData?.MasterJobSid),
-        operation: 'PDF',
-        changedBy: this.appSettingService.userSettingSource.value['userEmail'],
-        changes: {
-          action: 'PDF Downloaded'
-        },
-        newVal: {
-          PDF: 'Cargo Manifest PDF Downloaded'
-        }
-      };
-
-      this.operationService.createAuditLog(payload).subscribe({
-        next: () => { },
-        error: (err) => console.error(err)
-      });
+      this.createPdfAuditLog();
     } catch (error) {
       console.error('Cargo manifest PDF generation failed:', error);
       this.appSettingService.showError('Error generating PDF. Please try again.');
@@ -368,6 +360,8 @@ export class CargoManifestComponent {
       };
       emailRef.componentInstance.dataChange.subscribe(() => {
         this.createEmailAuditLog(documentName);
+        this.createPdfAuditLog();
+        this.insertMilestoneSafelyForMail();
       });
     } catch (error) {
       console.error('Cargo Manifest email error:', error);
@@ -397,6 +391,26 @@ export class CargoManifestComponent {
     });
   }
 
+  private createPdfAuditLog(): void {
+    const payload = {
+      tableName: 'MasterJob',
+      recordId: String(this.masterJobData?.MasterJobSid),
+      operation: 'PDF',
+      changedBy: this.appSettingService.userSettingSource.value['userEmail'],
+      changes: {
+        action: 'PDF Downloaded'
+      },
+      newVal: {
+        PDF: 'Cargo Manifest PDF Downloaded'
+      }
+    };
+
+    this.operationService.createAuditLog(payload).subscribe({
+      next: () => { },
+      error: (err) => console.error(err)
+    });
+  }
+
   private getCurrentMenuMasterSidForEmail(): number | null {
     const sid = Number(
       this.currentMenuId ||
@@ -411,6 +425,26 @@ export class CargoManifestComponent {
     if (!value) return '';
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-GB');
+  }
+
+  private async insertMilestoneSafelyForMail(): Promise<void> {
+    if (!this.autoInsertMilestone || !this.milestonePayload || this.milestoneInserted) {
+      return;
+    }
+
+    try {
+      const resp: any = await firstValueFrom(
+        this.milestoneService.insertMilestoneByMasterJob(this.milestonePayload)
+      );
+
+      if (resp.status) {
+        this.milestoneInserted = true;
+        this.autoInsertMilestone = false;
+        this.reloadMilestone.emit();
+      }
+    } catch (error) {
+      console.error('Error inserting milestone', error);
+    }
   }
 
   private async getPdfDependencies(): Promise<{ pdfMake: any }> {
