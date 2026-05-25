@@ -245,7 +245,15 @@
                                             <input type="text" formControlName="MasterJobNumber"
                                                 class="form-control custom-input-field sm" [readonly]="isEditMode"
                                                 [textWithNumbers]="15" placeholder="">
-                                            <label class="input-label">Master Job No <span
+                                            <label class="input-label">Master Job No
+                                                <i
+                                                    *ngIf="masterJobForm?.get('MasterJobNumber')?.value"
+                                                    class="fas fa-copy ms-1"
+                                                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                                                    title="Copy Master Job No"
+                                                    (click)="copyDocumentNumber('MasterJobNumber', 'Master Job No', $event)"
+                                                ></i>
+                                                <span
                                                     class="text-danger"></span></label>
                                             @if(masterJobForm.get('MasterJobNumber')?.touched &&
                                             masterJobForm.get('MasterJobNumber')?.invalid){
@@ -350,6 +358,13 @@
             maxlength="20" placeholder="">
         <label class="input-label">
             {{ selectedDepartment?.departmentType?.toUpperCase() === 'AIR' ? 'MAWB No' : 'MBL NO' }}
+            <i
+                *ngIf="masterJobForm?.get('MBLNo')?.value"
+                class="fas fa-copy ms-1"
+                style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                [title]="selectedDepartment?.departmentType?.toUpperCase() === 'AIR' ? 'Copy MAWB No' : 'Copy MBL No'"
+                (click)="copyDocumentNumber('MBLNo', selectedDepartment?.departmentType?.toUpperCase() === 'AIR' ? 'MAWB No' : 'MBL No', $event)"
+            ></i>
             @if(!selectedDepartment?.departmentName?.toLowerCase().includes('export')) {
                 <span class="text-danger">*</span>
             }
@@ -2801,7 +2816,15 @@
            maxlength="11" [textWithNumbers]="11" placeholder="" 
            (blur)="formatContainerNumber()"
            (input)="onContainerNumberInput($event)">
-    <label class="input-label">Container No <span class="text-danger">*</span></label>
+    <label class="input-label">Container No
+      <i
+        *ngIf="containerFormGroup?.get('ContainerNumber')?.value"
+        class="fas fa-copy ms-1"
+        style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+        title="Copy Container No"
+        (click)="copyContainerNumber($event)"
+      ></i>
+      <span class="text-danger">*</span></label>
 
     <div *ngIf="containerFormGroup.get('ContainerNumber')?.touched && 
                 containerFormGroup.get('ContainerNumber')?.invalid"

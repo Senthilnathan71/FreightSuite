@@ -523,6 +523,29 @@ get visibleTabs() {
     // this.dataFromQuotation = nav?.extras?.state?.['dataFromQuotation'] ?? {};
   }
 
+  copyDocumentNumber(controlName: string, label: string, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const documentNo = this.bookingForm?.get(controlName)?.value;
+    if (!documentNo) {
+      return;
+    }
+    navigator.clipboard.writeText(String(documentNo)).then(() => {
+      this.toastr.success(`${label} copied to clipboard.`, '', { timeOut: 1500 });
+    });
+  }
+
+  copyQuotationNumber(event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    if (!this.quotationNumber) {
+      return;
+    }
+    navigator.clipboard.writeText(String(this.quotationNumber)).then(() => {
+      this.toastr.success('Quotation No copied to clipboard.', '', { timeOut: 1500 });
+    });
+  }
+
   /**
     |--------------------------------------------------
     |   Section-3 : NgOnInit Part

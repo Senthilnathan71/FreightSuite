@@ -177,7 +177,15 @@
       <div class="custom-form-group">
         <input type="text" formControlName="MasterJobNumber" class="form-control custom-input-field sm"
           [readonly]="isEditMode" [textWithNumbers]="15" placeholder="">
-        <label class="input-label">Master Job No <span class="text-danger"></span></label>
+        <label class="input-label">Master Job No
+          <i
+            *ngIf="houseJobForm?.get('MasterJobNumber')?.value"
+            class="fas fa-copy ms-1"
+            style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+            title="Copy Master Job No"
+            (click)="copyDocumentNumber('MasterJobNumber', 'Master Job No', $event)"
+          ></i>
+          <span class="text-danger"></span></label>
       </div>
     </div>
       
@@ -190,6 +198,13 @@
       <input type="text" class="custom-input-field sm" formControlName="MBLNo" placeholder="">
       <label class="input-label">
         MAWBL No
+        <i
+          *ngIf="houseJobForm?.get('MBLNo')?.value"
+          class="fas fa-copy ms-1"
+          style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+          title="Copy MAWBL No"
+          (click)="copyDocumentNumber('MBLNo', 'MAWBL No', $event)"
+        ></i>
         <span class="text-danger">*</span>
       </label>
     </div>
@@ -215,6 +230,13 @@
         </div>
         <label class="input-label">
           MAWBL No
+          <i
+            *ngIf="houseJobForm?.get('MBLNo')?.value"
+            class="fas fa-copy ms-1"
+            style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+            title="Copy MAWBL No"
+            (click)="copyDocumentNumber('MBLNo', 'MAWBL No', $event)"
+          ></i>
           <span *ngIf="isEditMode" class="text-danger">*</span>
         </label>
       </div>
@@ -231,7 +253,15 @@
               [title]="isMawbDropdownDisabled ? 'Switch to dropdown (no stock)' : 'Switch to dropdown'"></i>
           </button>
         </div>
-        <label class="input-label">MAWBL No</label>
+        <label class="input-label">MAWBL No
+          <i
+            *ngIf="houseJobForm?.get('MBLNo')?.value"
+            class="fas fa-copy ms-1"
+            style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+            title="Copy MAWBL No"
+            (click)="copyDocumentNumber('MBLNo', 'MAWBL No', $event)"
+          ></i>
+        </label>
       </div>
     </div>
 
@@ -239,13 +269,29 @@
       [class.filled]="houseJobForm.get('MBLNo')?.value"
       *ngIf="selectedDepartmentType === 'AIR' && selectedDepartment?.ExportImport === 'Export' && isMawbStockAllocationEnabled">
       <input type="text" class="custom-input-field sm" formControlName="MBLNo" placeholder="" [readonly]="!allowManualMawbEntryOnAutoAllocationError">
-      <label class="input-label">MAWBL No</label>
+      <label class="input-label">MAWBL No
+        <i
+          *ngIf="houseJobForm?.get('MBLNo')?.value"
+          class="fas fa-copy ms-1"
+          style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+          title="Copy MAWBL No"
+          (click)="copyDocumentNumber('MBLNo', 'MAWBL No', $event)"
+        ></i>
+      </label>
     </div>
 
     <!-- For Non-Air departments - Simple input -->
     <div class="custom-form-group" *ngIf="selectedDepartmentType !== 'AIR'">
       <input type="text" class="custom-input-field sm" formControlName="MBLNo" placeholder="">
-      <label class="input-label">MAWBL No</label>
+      <label class="input-label">MAWBL No
+        <i
+          *ngIf="houseJobForm?.get('MBLNo')?.value"
+          class="fas fa-copy ms-1"
+          style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+          title="Copy MAWBL No"
+          (click)="copyDocumentNumber('MBLNo', 'MAWBL No', $event)"
+        ></i>
+      </label>
     </div>
 
     <!-- Error message for validation -->
@@ -3106,7 +3152,15 @@
           <ng-select [items]="masterJobContainers" placeholder="" bindLabel="ContainerNumber"
             bindValue="MasterJobContainerSid" formControlName="MasterJobContainerSid">
           </ng-select>
-          <label for="text-input" class="input-label">Container No<span class="text-danger"></span></label>
+          <label for="text-input" class="input-label">Container No
+            <i
+              *ngIf="productForm?.get('MasterJobContainerSid')?.value"
+              class="fas fa-copy ms-1"
+              style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+              title="Copy Container No"
+              (click)="copyProductContainerNumber($event)"
+            ></i>
+            <span class="text-danger"></span></label>
 
         </div>
       </aside>

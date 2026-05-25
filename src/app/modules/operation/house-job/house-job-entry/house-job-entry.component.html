@@ -246,6 +246,13 @@
         'bg-transparent': !b['HBLNo']?.getRawValue()
       }">
       {{selectedCargoMode === 'AIR' ? 'HAWBL No' : 'HBL No'}}
+      <i
+        *ngIf="b['HBLNo']?.value"
+        class="fas fa-copy ms-1"
+        style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+        [title]="selectedCargoMode === 'AIR' ? 'Copy HAWBL No' : 'Copy HBL No'"
+        (click)="copyDocumentNumber('HBLNo', selectedCargoMode === 'AIR' ? 'HAWBL No' : 'HBL No', $event)"
+      ></i>
       @if(!selectedDepartment?.departmentName?.toLowerCase().includes('export')) {
                 <span class="text-danger">*</span>
             }
@@ -304,7 +311,15 @@
           <input type="text" id="booking-input" class="custom-input-field sm" formControlName="BookingNo" placeholder="" />
           }
           <label for="booking-input" class="input-label" >
-            Booking No <span class="text-danger">*</span>
+            Booking No
+            <i
+              *ngIf="b['BookingNo']?.value"
+              class="fas fa-copy ms-1"
+              style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+              title="Copy Booking No"
+              (click)="copyDocumentNumber('BookingNo', 'Booking No', $event)"
+            ></i>
+            <span class="text-danger">*</span>
           </label>
         </div>
       </div>
@@ -3575,7 +3590,15 @@
           <ng-select [items]="getFilteredMasterJobContainers()" placeholder="" bindLabel="ContainerNumber"
             bindValue="MasterJobContainerSid" formControlName="MasterJobContainerSid">
           </ng-select>
-          <label for="text-input" class="input-label">Container No<span class="text-danger"></span></label>
+          <label for="text-input" class="input-label">Container No
+            <i
+              *ngIf="productForm?.get('MasterJobContainerSid')?.value"
+              class="fas fa-copy ms-1"
+              style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+              title="Copy Container No"
+              (click)="copyProductContainerNumber($event)"
+            ></i>
+            <span class="text-danger"></span></label>
 
         </div>
       </aside>

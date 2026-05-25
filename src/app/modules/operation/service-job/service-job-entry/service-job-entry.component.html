@@ -164,7 +164,15 @@
                 <label for="text-input" [ngClass]="{
               'input-label': true,
               'bg-transparent': !b['MasterJobNumber']?.getRawValue()
-             }">Job No.<span class="text-danger"></span></label>
+             }">Job No.
+                  <i
+                    *ngIf="b['MasterJobNumber']?.value"
+                    class="fas fa-copy ms-1"
+                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                    title="Copy Job No"
+                    (click)="copyDocumentNumber('MasterJobNumber', 'Job No', $event)"
+                  ></i>
+                  <span class="text-danger"></span></label>
               </div>
             </aside>
             <aside class="col-md-2">
@@ -174,7 +182,15 @@
                 <label for="text-input" [ngClass]="{
                           'input-label': true,
                           'bg-transparent': !b['HBLNo']?.getRawValue()
-                        }">House Job No.<span
+                        }">House Job No.
+                    <i
+                      *ngIf="b['HBLNo']?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy House Job No"
+                      (click)="copyDocumentNumber('HBLNo', 'House Job No', $event)"
+                    ></i>
+                    <span
                     class="text-danger"></span></label>
               </div>
             </aside>

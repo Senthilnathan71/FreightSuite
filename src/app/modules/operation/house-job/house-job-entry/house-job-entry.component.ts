@@ -751,6 +751,33 @@ hblModalRef?: NgbModalRef;
     this.today = this.calendar.getToday();
    }
 
+  copyDocumentNumber(controlName: string, label: string, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const documentNo = this.houseJobForm?.get(controlName)?.value;
+    if (!documentNo) {
+      return;
+    }
+    navigator.clipboard.writeText(String(documentNo)).then(() => {
+      this.appSettingService.showSuccess(`${label} copied to clipboard.`);
+    });
+  }
+
+  copyProductContainerNumber(event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const containerSid = this.productForm?.get('MasterJobContainerSid')?.value;
+    const container = this.getFilteredMasterJobContainers()
+      ?.find((item: any) => item?.MasterJobContainerSid === containerSid);
+    const containerNo = container?.ContainerNumber;
+    if (!containerNo) {
+      return;
+    }
+    navigator.clipboard.writeText(String(containerNo)).then(() => {
+      this.appSettingService.showSuccess('Container No copied to clipboard.');
+    });
+  }
+
   /**
     |--------------------------------------------------
     |   Section-3 : NgOnInit Part

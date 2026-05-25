@@ -352,6 +352,30 @@ export class MawbillEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
     this.attachedBookings = this.fb.array([]);
   }
 
+  copyDocumentNumber(controlName: string, label: string, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const documentNo = this.masterJobForm?.get(controlName)?.value;
+    if (!documentNo) {
+      return;
+    }
+    navigator.clipboard.writeText(String(documentNo)).then(() => {
+      this.toastr.success(`${label} copied to clipboard.`, '', { timeOut: 1500 });
+    });
+  }
+
+  copyContainerNumber(event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const containerNo = this.containerFormGroup?.get('ContainerNumber')?.value;
+    if (!containerNo) {
+      return;
+    }
+    navigator.clipboard.writeText(String(containerNo)).then(() => {
+      this.toastr.success('Container No copied to clipboard.', '', { timeOut: 1500 });
+    });
+  }
+
   sendManualMail(): void {
     this.emailTriggerService.triggerManualEmails({
       companyId: this.currentCompany?.CompanyMasterSid,

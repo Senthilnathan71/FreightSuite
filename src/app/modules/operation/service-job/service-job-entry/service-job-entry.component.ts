@@ -294,6 +294,18 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
     this.today = this.calendar.getToday();
   }
 
+  copyDocumentNumber(controlName: string, label: string, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const documentNo = this.serviceJobForm?.get(controlName)?.value;
+    if (!documentNo) {
+      return;
+    }
+    navigator.clipboard.writeText(String(documentNo)).then(() => {
+      this.toastr.success(`${label} copied to clipboard.`, '', { timeOut: 1500 });
+    });
+  }
+
   /**
     |--------------------------------------------------
     |   Section-3 : NgOnInit Part

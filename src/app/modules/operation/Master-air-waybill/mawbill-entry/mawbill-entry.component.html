@@ -197,7 +197,15 @@
                                                 <input type="text" formControlName="MasterJobNumber"
                                                     class="form-control custom-input-field sm" [readonly]="isEditMode"
                                                     [textWithNumbers]="15" placeholder="">
-                                                <label class="input-label">Master Job No <span
+                                                <label class="input-label">Master Job No
+                                                    <i
+                                                        *ngIf="masterJobForm?.get('MasterJobNumber')?.value"
+                                                        class="fas fa-copy ms-1"
+                                                        style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                                                        title="Copy Master Job No"
+                                                        (click)="copyDocumentNumber('MasterJobNumber', 'Master Job No', $event)"
+                                                    ></i>
+                                                    <span
                                                         class="text-danger"></span></label>
                                                 @if(masterJobForm.get('MasterJobNumber')?.touched &&
                                                 masterJobForm.get('MasterJobNumber')?.invalid){
@@ -307,6 +315,13 @@
                                                     <input type="text" class="custom-input-field sm" formControlName="MBLNo" placeholder="">
                                                     <label class="input-label">
                                                         MAWB
+                                                        <i
+                                                            *ngIf="masterJobForm?.get('MBLNo')?.value"
+                                                            class="fas fa-copy ms-1"
+                                                            style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                                                            title="Copy MAWB No"
+                                                            (click)="copyDocumentNumber('MBLNo', 'MAWB No', $event)"
+                                                        ></i>
                                                         <span *ngIf="isAirDepartment && selectedDepartment?.ExportImport === 'Import'" class="text-danger">*</span>
                                                     </label>
                                                 </div>
@@ -331,6 +346,13 @@
                                                         </button>
                                                     </div>
                                                     <label class="input-label">MAWB
+                                                        <i
+                                                            *ngIf="masterJobForm?.get('MBLNo')?.value"
+                                                            class="fas fa-copy ms-1"
+                                                            style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                                                            title="Copy MAWB No"
+                                                            (click)="copyDocumentNumber('MBLNo', 'MAWB No', $event)"
+                                                        ></i>
                                                         <span *ngIf="isAirDepartment && selectedDepartment?.ExportImport === 'Import'" class="text-danger">*</span>
                                                         <!-- ✅ Also required for Air Export in edit mode -->
                                                         <span *ngIf="isAirDepartment && selectedDepartment?.ExportImport === 'Export' && isEditMode"
@@ -351,7 +373,15 @@
                                                                 [title]="isMawbDropdownDisabled ? 'Switch to dropdown (no stock)' : 'Switch to dropdown'"></i>
                                                         </button>
                                                     </div>
-                                                        <label class="input-label">MAWB</label>
+                                                        <label class="input-label">MAWB
+                                                            <i
+                                                                *ngIf="masterJobForm?.get('MBLNo')?.value"
+                                                                class="fas fa-copy ms-1"
+                                                                style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                                                                title="Copy MAWB No"
+                                                                (click)="copyDocumentNumber('MBLNo', 'MAWB No', $event)"
+                                                            ></i>
+                                                        </label>
                                                     </div>
                                                 </div>
 
@@ -360,13 +390,29 @@
                                                     *ngIf="isAirDepartment && selectedDepartment?.ExportImport === 'Export' && isMawbStockAllocationEnabled">
                                                     <input type="text" class="custom-input-field sm" formControlName="MBLNo" placeholder=""
                                                         [readonly]="!allowManualMawbEntryOnAutoAllocationError">
-                                                    <label class="input-label">MAWB</label>
+                                                    <label class="input-label">MAWB
+                                                        <i
+                                                            *ngIf="masterJobForm?.get('MBLNo')?.value"
+                                                            class="fas fa-copy ms-1"
+                                                            style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                                                            title="Copy MAWB No"
+                                                            (click)="copyDocumentNumber('MBLNo', 'MAWB No', $event)"
+                                                        ></i>
+                                                    </label>
                                                 </div>
                                         
                                                 <!-- For Non-Air departments - Simple input -->
                                                 <div class="custom-form-group" *ngIf="!isAirDepartment">
                                                     <input type="text" class="custom-input-field sm" formControlName="MBLNo" placeholder="">
-                                                    <label class="input-label">MAWB</label>
+                                                    <label class="input-label">MAWB
+                                                        <i
+                                                            *ngIf="masterJobForm?.get('MBLNo')?.value"
+                                                            class="fas fa-copy ms-1"
+                                                            style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                                                            title="Copy MAWB No"
+                                                            (click)="copyDocumentNumber('MBLNo', 'MAWB No', $event)"
+                                                        ></i>
+                                                    </label>
                                                 </div>
                                         
                                                 <!-- Show warning when in manual mode due to no stock (Air Export only) -->
@@ -2643,7 +2689,15 @@
                         <div class="custom-form-group">
                             <input type="text" formControlName="ContainerNumber" class="custom-input-field sm"
                                 maxlength="11" [textWithNumbers]="11" placeholder="">
-                            <label class="input-label">Container No <span class="text-danger">*</span></label>
+                            <label class="input-label">Container No
+                                <i
+                                    *ngIf="containerFormGroup?.get('ContainerNumber')?.value"
+                                    class="fas fa-copy ms-1"
+                                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                                    title="Copy Container No"
+                                    (click)="copyContainerNumber($event)"
+                                ></i>
+                                <span class="text-danger">*</span></label>
 
                             <div *ngIf="containerFormGroup.get('ContainerNumber')?.touched && containerFormGroup.get('ContainerNumber')?.invalid"
                                 class="error-message">

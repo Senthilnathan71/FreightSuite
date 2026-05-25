@@ -141,7 +141,15 @@
           <label for="text-input" [ngClass]="{
           'input-label': true,
           'bg-transparent': !b['BookingNo']?.getRawValue()
-           }">Booking No <span class="text-danger"></span></label>
+           }">Booking No
+            <i
+              *ngIf="b['BookingNo']?.value"
+              class="fas fa-copy ms-1"
+              style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+              title="Copy Booking No"
+              (click)="copyDocumentNumber('BookingNo', 'Booking No', $event)"
+            ></i>
+            <span class="text-danger"></span></label>
         </div>
       </div>
       <div class="smart-field-group">
@@ -201,7 +209,15 @@
             <label for="text-input" [ngClass]="{
               'input-label': true,
               'bg-transparent': !b['HBLNo']?.getRawValue()
-            }">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}<span class="text-danger"></span></label>
+            }">{{selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No'}}
+              <i
+                *ngIf="b['HBLNo']?.value"
+                class="fas fa-copy ms-1"
+                style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                [title]="selectedFCLLCL === 'AIR' ? 'Copy HAWBL No' : 'Copy HBL No'"
+                (click)="copyDocumentNumber('HBLNo', selectedFCLLCL === 'AIR' ? 'HAWBL No' : 'HBL No', $event)"
+              ></i>
+              <span class="text-danger"></span></label>
           </div>
         </div>
       <div class="smart-field-group">
@@ -732,7 +748,15 @@
                       <label for="text-input" [ngClass]="{
                         'input-label': true,
                         'bg-transparent': !b['MBLNo']?.getRawValue()
-                      }">{{ selectedFCLLCL === 'AIR' ? 'MAWBL No' : 'MBL No' }}<span
+                      }">{{ selectedFCLLCL === 'AIR' ? 'MAWBL No' : 'MBL No' }}
+                        <i
+                          *ngIf="b['MBLNo']?.value"
+                          class="fas fa-copy ms-1"
+                          style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                          [title]="selectedFCLLCL === 'AIR' ? 'Copy MAWBL No' : 'Copy MBL No'"
+                          (click)="copyDocumentNumber('MBLNo', selectedFCLLCL === 'AIR' ? 'MAWBL No' : 'MBL No', $event)"
+                        ></i>
+                        <span
                           class="text-danger"></span></label>
                     </div>
                   </aside>
@@ -1212,7 +1236,15 @@
                         'input-label': true,
                         'bg-transparent': !b['QuotationHeaderSid']?.getRawValue()
                       }">
-                      Quotation No<span class="text-danger"></span>
+                      Quotation No
+                      <i
+                        *ngIf="quotationNumber"
+                        class="fas fa-copy ms-1"
+                        style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                        title="Copy Quotation No"
+                        (click)="copyQuotationNumber($event)"
+                      ></i>
+                      <span class="text-danger"></span>
                     </label>
                   </div>
                 </aside>
