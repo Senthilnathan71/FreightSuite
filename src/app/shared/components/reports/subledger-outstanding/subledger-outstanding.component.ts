@@ -100,6 +100,7 @@ export class SubledgerOutstandingComponent {
     const map = new Map<string, any>();
 
     (this.ledgerWiseData || []).forEach((ledger: any) => {
+      const sign = this.getLedgerSign(ledger);
       (ledger?.currencyWiseSummary || []).forEach((cur: any) => {
         const code = (cur?.currencyCode || '').trim();
         if (!code) return;
@@ -117,12 +118,12 @@ export class SubledgerOutstandingComponent {
         }
 
         const row = map.get(code);
-        row.totalOutstanding += Number(cur?.totalOutstanding || 0);
-        row.bucket_0_30 += Number(cur?.bucket_0_30 || 0);
-        row.bucket_31_60 += Number(cur?.bucket_31_60 || 0);
-        row.bucket_61_90 += Number(cur?.bucket_61_90 || 0);
-        row.bucket_91_120 += Number(cur?.bucket_91_120 || 0);
-        row.bucket_121_above += Number(cur?.bucket_121_above || 0);
+        row.totalOutstanding += sign * Math.abs(Number(cur?.totalOutstanding || 0));
+        row.bucket_0_30 += sign * Math.abs(Number(cur?.bucket_0_30 || 0));
+        row.bucket_31_60 += sign * Math.abs(Number(cur?.bucket_31_60 || 0));
+        row.bucket_61_90 += sign * Math.abs(Number(cur?.bucket_61_90 || 0));
+        row.bucket_91_120 += sign * Math.abs(Number(cur?.bucket_91_120 || 0));
+        row.bucket_121_above += sign * Math.abs(Number(cur?.bucket_121_above || 0));
       });
     });
 
@@ -273,8 +274,7 @@ export class SubledgerOutstandingComponent {
 
     return ledgers.reduce((sum, ledger) => {
       const transactions = ledger?.transactions || [];
-      const signedTotal = this.getSignedTotal(transactions, ledger?.ledgerType);
-      const sign = signedTotal < 0 ? -1 : 1;
+      const sign = this.getLedgerSign(ledger);
 
       let base = 0;
       if (mode === 'local') {
@@ -290,6 +290,15 @@ export class SubledgerOutstandingComponent {
 
       return sum + (sign * base);
     }, 0);
+  }
+
+  private getLedgerSign(ledger: any): number {
+    const ledgerLabel = String(ledger?.ledgerName || ledger?.ledgerType || '').toLowerCase();
+    const isCreditorLedger =
+      ledgerLabel.includes('creditor') ||
+      ledgerLabel.includes('sy cr') ||
+      ledgerLabel.includes(' cr');
+    return isCreditorLedger ? -1 : 1;
   }
   
   
