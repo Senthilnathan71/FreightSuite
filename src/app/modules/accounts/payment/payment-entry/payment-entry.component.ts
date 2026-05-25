@@ -381,6 +381,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   private initialFormValue : any = null;
   private previousPartyBranchSid: number | null = null;
   private previousBankCoaSid: number | null = null;
+  private copiedPaymentData: any = null;
+  private isCopiedPayment: boolean = false;
 
   get hasMatchingDetails(): boolean {
     return this.voucherMatchings?.length > 0;
@@ -482,6 +484,12 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     if (paymentId) {
       this.headerId = Number(paymentId);
     }
+    const historyState = history?.state;
+    this.copiedPaymentData = historyState?.copiedPaymentData;
+    this.isCopiedPayment = !!historyState?.isCopiedPayment;
+    if (this.isCopiedPayment && this.copiedPaymentData) {
+      history.replaceState({}, '', location.pathname);
+    }
 
     // Load currencies first, then fetch the payment so currencyList
     // is always populated before patchValues runs.
@@ -489,6 +497,11 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       if (this.headerId) {
         this.loadPayment(this.headerId);
       } else {
+        if (this.isCopiedPayment && this.copiedPaymentData) {
+          this.patchValues(this.copiedPaymentData);
+          this.applyCopiedPaymentMode();
+          this.spinner.hide();
+        }
         this.subscribeToPartyAndBankChanges();
         if (this.paymentRequestSid) {
           this.prefillFromPaymentRequest(this.paymentRequestSid);
@@ -4865,5 +4878,126 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     modalRef.componentInstance.tableName = 'VoucherHeader';
     modalRef.componentInstance.recordId = this.paymentData?.VoucherHeaderSid.toString();
     modalRef.componentInstance.screenName = 'Payment';
+  }
+
+  navigateToCreate() {
+        this.router.navigate(['accounts/payment/entry']);
+  }
+
+  copyPayment(): void {
+    if (!this.paymentData) {
+      this.appSettingService.showWarning('No payment data to copy');
+      return;
+    }
+
+    this.confirmService.confirm(
+      'Are you sure you want to copy this payment?',
+      'Copy Payment',
+      'Copy'
+    ).then((confirmed) => {
+      if (confirmed) {
+        this.performPaymentCopy();
+      }
+    });
+  }
+
+  private performPaymentCopy(): void {
+    this.spinner.show();
+    const copiedData = this.prepareCopiedPaymentData();
+
+    this.router.navigate(['/accounts/payment/entry'], {
+      state: {
+        copiedPaymentData: copiedData,
+        isCopiedPayment: true,
+      },
+    });
+  }
+
+  private prepareCopiedPaymentData(): any {
+  const copiedData = { ...this.paymentData };
+
+  // Clear header fields that should not be copied
+  copiedData.VoucherHeaderSid = null;
+  copiedData.VoucherNumber = '';
+  copiedData.VoucherDate = getDefaultTodayDate();
+  copiedData.PostStatus = 'U';
+  copiedData.Status = 'A';
+  copiedData.PostDate = null;
+  copiedData.PostedOn = null;
+
+if (copiedData.ReversalVoucher || copiedData.PaymentRequestSid) {
+  copiedData.Narration = '';
+}
+
+  // Clear payment request linkage
+  copiedData.ReversalVoucher = null;
+  copiedData.PaymentRequestSid = null;
+
+  // Clear job references from header
+  copiedData.MasterJobSid = null;
+  copiedData.HouseJobSid = null;
+  copiedData.DepartmentMasterSid = null;
+  copiedData.BookingHeaderSid = null;
+
+  // Clear voucher matchings
+  copiedData.voucherMatchings = [];
+  copiedData.VoucherMatchingHeader = [];
+
+  // Read narration BEFORE clearing it — cash mode uses it as the detail narration
+  const cashOrBank = copiedData.CashOrBank === 'C' ? 'Cash' : 'Bank';
+  const instrumentMode = copiedData.InstrumentMode || '';
+  const instrumentNumber = copiedData.InstrumentNumber || '';
+  const instrumentDate = copiedData.InstrumentDate
+    ? this.datePipe.transform(new Date(copiedData.InstrumentDate))
+    : '';
+  const bankPartyName = copiedData.BankPartyName || '';
+
+  const partyNarration = cashOrBank === 'Bank'
+    ? `Being Bank Transfer  ${instrumentMode ? instrumentMode + '-' : ''}${instrumentNumber ? instrumentNumber + '-' : ''}${instrumentDate ? instrumentDate + ' ' : ''}`
+    : '';
+
+  const bankNarration = cashOrBank === 'Bank'
+    ? `Being ${instrumentMode ? instrumentMode + '-' : ''}${instrumentNumber ? instrumentNumber + '-' : ''}${instrumentDate ? instrumentDate + ' ' : ''}from ${bankPartyName}`
+    : '';
+
+  if (Array.isArray(copiedData.VoucherDetail)) {
+    copiedData.VoucherDetail = copiedData.VoucherDetail.map((detail: any) => {
+      const isBankRow = detail.COAMasterSid === copiedData.BankCOA;
+      const isPartyRow = detail.LedgerMasterSid === copiedData.PartyMasterSid;
+
+      return {
+        ...detail,
+        VoucherDetailSid: null,
+        VoucherHeaderSid: null,
+        MasterJobSid: null,
+        HouseJobSid: null,
+        masterJob: null,
+        houseJob: null,
+        SourceDetailSid: null,
+        CostRevenueChargesSid: null,
+        BookingRatesSid: null,
+        Narration: isBankRow ? bankNarration : isPartyRow ? partyNarration : partyNarration,
+      };
+    });
+  }
+
+  return copiedData;
+}
+
+  private applyCopiedPaymentMode(): void {
+    this.headerId = null;
+    this.isViewMode = false;
+    this.isPosted = false;
+    this.isReadOnly = false;
+    this.paymentForm.get('CashOrBank')?.enable({ emitEvent: false });
+    this.paymentForm.get('VoucherNumber')?.setValue('', { emitEvent: false });
+
+    const fy = this.appSettingService.getCurrentFinancialYear();
+    if (fy) {
+      this.fyMinDate = toNgbDateStruct(fy.StartDate);
+      const fyEnd = new Date(fy.EndDate);
+      const today = getDefaultTodayDate();
+      this.fyMaxDate = toNgbDateStruct(fyEnd > today ? today : fyEnd);
+    }
   }
 }

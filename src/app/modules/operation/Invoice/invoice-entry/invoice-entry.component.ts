@@ -5048,6 +5048,8 @@ selectOrDeselectAll(event: any) {
       modalRef.componentInstance.screenName = 'Invoice';
     }
 
-    
+    navigaeToCreate() {
+      this.router.navigate(['operation/invoice/entry']);
+    }
 
 }

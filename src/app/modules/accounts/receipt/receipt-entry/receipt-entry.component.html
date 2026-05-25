@@ -170,6 +170,14 @@
             Reset
           </button>
 
+          <div class="action-group primary" *ngIf="isEditMode || isViewMode">
+        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateToCreate()" [disabled]="isDirty">
+          <i class="fas fa-plus me-1"></i>
+          <span>Create</span>
+        </button>
+      
+      </div>
+
           @if(isAutoPosting){
           <button
             type="button"

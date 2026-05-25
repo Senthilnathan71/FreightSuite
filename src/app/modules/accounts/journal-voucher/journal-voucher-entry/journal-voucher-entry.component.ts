@@ -3478,5 +3478,9 @@ resetForm(): void {
     modalRef.componentInstance.recordId = this.voucherData?.VoucherHeaderSid.toString();
     modalRef.componentInstance.screenName = 'JournalVoucher';
   }
+
+  navigateToCreate() {
+          this.router.navigate(['accounts/journal-voucher/entry'])
+        }
 }
 
