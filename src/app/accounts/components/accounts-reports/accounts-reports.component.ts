@@ -17,6 +17,7 @@ import { ReportEmailDialogComponent, EmailReportData } from '../../../shared/com
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { AgeingReportComponent } from 'src/app/shared/components/reports/ageing-report/ageing-report.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
+import { MasterService } from 'src/app/modules/master/master.service';
 
 @Component({
   selector: 'app-accounts-reports',
@@ -50,6 +51,9 @@ export class AccountsReportsComponent implements OnInit, OnDestroy {
 
   currentCompany : any;
   companyId = 1;
+  private isUAECompany = false;
+  private customsDutyLabel = 'Customs Duty Invoice';
+  filteredParameters: any[] = [];
 
   private destroy$ = new Subject<void>();
 
@@ -58,13 +62,19 @@ export class AccountsReportsComponent implements OnInit, OnDestroy {
     private exportService: ReportExportService,
     private modalService: NgbModal,
     private appSettingService: AppSettingsService,
-    private mps: MenuPermissionService
+    private mps: MenuPermissionService,
+    private masterService: MasterService
   ) {}
 
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
     if (this.currentCompany) {
       this.companyId = this.currentCompany?.CompanyMasterSid;
+    }
+    const country = this.appSettingService.getCurrentCompanyCountry();
+    this.isUAECompany = String(country?.countryCode || '').toLowerCase() === 'ae';
+    if (this.isUAECompany) {
+      this.loadCustomsDutyLabelConfig();
     }
     this.mps.init().subscribe();
     combineLatest([this.mps.loaded$, this.mps.reportPermissions$])
@@ -108,16 +118,51 @@ export class AccountsReportsComponent implements OnInit, OnDestroy {
       this.selectedReport = null;
       this.reportData = [];
       this.reportParameters = {};
+      this.filteredParameters = [];
     } else {
       // Select new report
       this.selectedReport = report;
       this.reportData = [];
       this.reportParameters = {};
+      this.updateFilteredParameters();
     }
   }
 
   openReportOrderPanel(): void {
     this.reportCardList?.openReorderPanel();
+  }
+
+  private updateFilteredParameters(): void {
+    if (!this.selectedReport?.ReportMasterDetail) {
+      this.filteredParameters = [];
+      return;
+    }
+    let params = [...this.selectedReport.ReportMasterDetail];
+    if (!this.isUAECompany) {
+      params = params.filter((p: any) => p.ParameterName !== 'CustomsDutyInvoice');
+    } else {
+      params = params.map((p: any) => {
+        if (p.ParameterName === 'CustomsDutyInvoice') {
+          return { ...p, DisplayLabel: this.customsDutyLabel };
+        }
+        return p;
+      });
+    }
+    this.filteredParameters = params;
+  }
+
+  private loadCustomsDutyLabelConfig(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) return;
+    this.masterService.getConfigurationValue(companyId, 'ChangeLabelToCashInvoice').subscribe({
+      next: (resp: any) => {
+        const rawValue = resp?.ConfigurationValue ?? resp?.value ?? resp;
+        const isCashInvoice = rawValue === true || rawValue === 'Y' || rawValue === 'y';
+        this.customsDutyLabel = isCashInvoice ? 'Cash Invoice' : 'Customs Duty Invoice';
+        this.updateFilteredParameters();
+      },
+      error: () => { this.customsDutyLabel = 'Customs Duty Invoice'; }
+    });
   }
 
   /**

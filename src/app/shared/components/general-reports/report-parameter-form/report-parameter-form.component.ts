@@ -24,6 +24,7 @@ export interface ReportParameter {
   ValidationRules ?: string;
   Status: string;
   DependsOnParameter?: string;  // Parent parameter name for cascading dropdowns
+  DisplayLabel?: string;        // Optional override for the auto-generated label
 }
 
 @Component({

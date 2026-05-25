@@ -2362,19 +2362,19 @@ export class CreditNoteEntryComponent {
     if (this.voucherActionGuard.block(blockedReason, resolve)) return;
 
     // Validate voucher date is within financial year
-    const fy = this.appSettingService.getCurrentFinancialYear();
-    if (fy) {
-      const voucherDate = new Date(this.creditNoteForm.getRawValue().VoucherDate);
-      const fyStart = new Date(fy.StartDate);
-      const fyEnd = new Date(fy.EndDate);
-      if (voucherDate < fyStart || voucherDate > fyEnd) {
-        this.appSettingService.showWarning(
-          `Voucher date must be within the financial year (${fy.YearName})`
-        );
-        if (resolve) resolve(false);
-        return;
-      }
-    }
+    // const fy = this.appSettingService.getCurrentFinancialYear();
+    // if (fy) {
+    //   const voucherDate = new Date(this.creditNoteForm.getRawValue().VoucherDate);
+    //   const fyStart = new Date(fy.StartDate);
+    //   const fyEnd = new Date(fy.EndDate);
+    //   if (voucherDate < fyStart || voucherDate > fyEnd) {
+    //     this.appSettingService.showWarning(
+    //       `Voucher date must be within the financial year (${fy.YearName})`
+    //     );
+    //     if (resolve) resolve(false);
+    //     return;
+    //   }
+    // }
 
     // Re-validate voucher date constraints at save time (edit mode may have stale state)
     this.applyVoucherDateConstraints();

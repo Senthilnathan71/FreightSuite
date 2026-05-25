@@ -503,7 +503,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
       { label: 'Job No.', value: printData?.MasterJobNumber || invoice?.jobNo || '' },
       { label: 'Freight Terms', value: printData?.FreightTerms || invoice?.freightTerms || '' },
       { label: 'Booking No.', value: printData?.BookingNumber || invoice?.bookingNo || '' },
-      { label: 'Invoice Due Date', value: dueDate ? formatDate(dueDate) : '' },
+      { label: 'Invoice Due Date', value: dueDate === 'Cash Invoice' ? 'Cash Invoice' : (dueDate ? formatDate(dueDate) : '') },
       { label: 'Currency / Ex-Rate', value: currExRate }
     ];
 

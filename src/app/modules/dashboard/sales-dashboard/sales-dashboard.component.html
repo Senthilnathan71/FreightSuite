@@ -158,6 +158,24 @@
         <div class="chart-card">
           <div class="chart-title">
             <i class="fas fa-filter ct-icon"></i> Lead Funnel
+            <div class="funnel-title-actions">
+              <button
+                class="funnel-hdr-btn"
+                [class.active]="showFunnelNotes"
+                (click)="onToggleFunnelNotes()"
+                title="Show stage criteria & meaning"
+              >
+                <i class="fas fa-info-circle"></i>
+              </button>
+              <button
+                class="funnel-hdr-btn funnel-hdr-btn--journey"
+                [class.active]="showFunnelJourneys"
+                (click)="onViewFunnelJourneys()"
+                title="View lead pipeline matrix"
+              >
+                <i class="fas fa-users"></i>
+              </button>
+            </div>
           </div>
           <div class="funnel-bars" *ngIf="funnelRows.length">
             <div
@@ -182,10 +200,12 @@
               </div>
             </div>
           </div>
+
         </div>
         <div class="chart-card">
           <div class="chart-title">
             <i class="fas fa-chart-pie ct-icon"></i> Lead Acquisition Sources
+            <button class="card-info-btn" (click)="openNotes('lead-acquisition')" title="About this chart"><i class="fas fa-info-circle"></i></button>
           </div>
           <apx-chart
             *ngIf="leadSourceDonutOptions.series?.length"
@@ -205,14 +225,14 @@
         <div class="chart-card">
           <div class="chart-title chart-title-with-count">
             <span
-              ><i class="fas fa-hourglass-half ct-icon"></i> Lead Aging
-              Overview</span
+              ><i class="fas fa-hourglass-half ct-icon"></i> Leads Not Converted into Customer</span
             >
             <span
               class="chart-title-count"
               *ngIf="getLeadAgeCohorts() as cohorts"
-              >Leads Not Converted Into Customer: {{ cohorts.total }}</span
+              >Total : {{ cohorts.total }}</span
             >
+            <button class="card-info-btn" (click)="openNotes('lead-age')" title="About this chart"><i class="fas fa-info-circle"></i></button>
           </div>
           <ng-container *ngIf="getLeadAgeCohorts() as cohorts">
             <div
@@ -343,6 +363,7 @@
         <div class="chart-card">
           <div class="chart-title">
             <i class="fas fa-project-diagram ct-icon"></i> Path Breakdown
+            <button class="card-info-btn" (click)="openNotes('path-breakdown')" title="About this chart"><i class="fas fa-info-circle"></i></button>
           </div>
           <div
             class="pipeline-shell"
@@ -508,6 +529,7 @@
               (ngModelChange)="onSectionSearchChange(1, $event)"
               (click)="$event.stopPropagation()"
             />
+            <button class="card-info-btn section-info-btn" (click)="openNotes('s1'); $event.stopPropagation()" title="About this section"><i class="fas fa-info-circle"></i></button>
             <div class="chevron">
               {{ expandedSections[1] ? "&#9660;" : "&#9654;" }}
             </div>
@@ -608,6 +630,7 @@
             </div>
           </div>
           <div class="section-header-right">
+            <button class="card-info-btn section-info-btn" (click)="openNotes('s2'); $event.stopPropagation()" title="About this section"><i class="fas fa-info-circle"></i></button>
             <div class="chevron">
               {{ expandedSections[2] ? "&#9660;" : "&#9654;" }}
             </div>
@@ -822,6 +845,7 @@
               (ngModelChange)="onSectionSearchChange(3, $event)"
               (click)="$event.stopPropagation()"
             />
+            <button class="card-info-btn section-info-btn" (click)="openNotes('s3'); $event.stopPropagation()" title="About this section"><i class="fas fa-info-circle"></i></button>
             <div class="chevron">
               {{ expandedSections[3] ? "&#9660;" : "&#9654;" }}
             </div>
@@ -930,6 +954,7 @@
               (ngModelChange)="onSectionSearchChange(4, $event)"
               (click)="$event.stopPropagation()"
             />
+            <button class="card-info-btn section-info-btn" (click)="openNotes('s4'); $event.stopPropagation()" title="About this section"><i class="fas fa-info-circle"></i></button>
             <div class="chevron">
               {{ expandedSections[4] ? "&#9660;" : "&#9654;" }}
             </div>
@@ -1043,6 +1068,7 @@
               (ngModelChange)="onSectionSearchChange(5, $event)"
               (click)="$event.stopPropagation()"
             />
+            <button class="card-info-btn section-info-btn" (click)="openNotes('s5'); $event.stopPropagation()" title="About this section"><i class="fas fa-info-circle"></i></button>
             <div class="chevron">
               {{ expandedSections[5] ? "&#9660;" : "&#9654;" }}
             </div>
@@ -1162,6 +1188,7 @@
               (ngModelChange)="onSectionSearchChange(6, $event)"
               (click)="$event.stopPropagation()"
             />
+            <button class="card-info-btn section-info-btn" (click)="openNotes('s6'); $event.stopPropagation()" title="About this section"><i class="fas fa-info-circle"></i></button>
             <div class="chevron">
               {{ expandedSections[6] ? "&#9660;" : "&#9654;" }}
             </div>
@@ -1258,6 +1285,7 @@
               (ngModelChange)="onSectionSearchChange(7, $event)"
               (click)="$event.stopPropagation()"
             />
+            <button class="card-info-btn section-info-btn" (click)="openNotes('s7'); $event.stopPropagation()" title="About this section"><i class="fas fa-info-circle"></i></button>
             <div class="chevron">
               {{ expandedSections[7] ? "&#9660;" : "&#9654;" }}
             </div>
@@ -1352,12 +1380,21 @@
               (ngModelChange)="onSectionSearchChange(8, $event)"
               (click)="$event.stopPropagation()"
             />
+            <button class="card-info-btn section-info-btn" (click)="openNotes('s8'); $event.stopPropagation()" title="About this section"><i class="fas fa-info-circle"></i></button>
             <div class="chevron">
               {{ expandedSections[8] ? "&#9660;" : "&#9654;" }}
             </div>
           </div>
         </div>
         <div class="table-wrap" *ngIf="expandedSections[8]">
+          <div class="kyc-alert" *ngIf="kycWarning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>{{ kycWarning.message }}</span>
+            <a class="kyc-alert-link" [routerLink]="['/master/organization/entry', kycWarning.customerMasterSid]">
+              Complete KYC for {{ kycWarning.customerName }} &rarr;
+            </a>
+            <button class="kyc-alert-close" (click)="kycWarning = null">&#x2715;</button>
+          </div>
           <div class="table-scroll" (scroll)="onSectionScroll($event, 8)">
             <table>
               <thead>
@@ -1434,6 +1471,7 @@
             <div class="section-count sc-green">Overview</div>
           </div>
           <div class="section-header-right">
+            <button class="card-info-btn section-info-btn" (click)="openNotes('s9'); $event.stopPropagation()" title="About this section"><i class="fas fa-info-circle"></i></button>
             <div class="chevron">
               {{ expandedSections[9] ? "&#9660;" : "&#9654;" }}
             </div>
@@ -1686,6 +1724,143 @@
         </ng-container>
       </div>
     </ng-container>
+  </div>
+</div>
+
+<!-- Funnel Criteria Modal -->
+<div class="funnel-modal-backdrop" *ngIf="showFunnelNotes" (click)="showFunnelNotes = false"></div>
+<div class="funnel-modal" *ngIf="showFunnelNotes">
+  <div class="funnel-modal-header">
+    <span><i class="fas fa-info-circle"></i> Stage Criteria &amp; Meaning</span>
+    <button class="funnel-modal-close" (click)="showFunnelNotes = false">&#x2715;</button>
+  </div>
+  <div class="funnel-modal-body">
+    <div class="funnel-notes-all">
+      <div class="funnel-notes-row" *ngFor="let row of funnelRows">
+        <div class="fn-icon" [style.background]="row.color">
+          <i [class]="row.icon"></i>
+        </div>
+        <div class="fn-content">
+          <div class="fn-label">{{ row.label }}</div>
+          <div class="fn-criteria"><strong>Criteria:</strong> {{ row.criteria }}</div>
+          <div class="fn-meaning">{{ row.meaning }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Funnel Journey Modal -->
+<div class="funnel-modal-backdrop" *ngIf="showFunnelJourneys" (click)="showFunnelJourneys = false; funnelJourneys = null"></div>
+<div class="funnel-modal funnel-modal--wide" *ngIf="showFunnelJourneys">
+  <div class="funnel-modal-header">
+    <span><i class="fas fa-users"></i> Lead Pipeline Matrix &mdash; {{ funnelJourneys?.totalCount || 0 }} leads</span>
+    <button class="funnel-modal-close" (click)="showFunnelJourneys = false; funnelJourneys = null">&#x2715;</button>
+  </div>
+  <div class="funnel-modal-body funnel-modal-body--flush">
+    <ng-container *ngIf="!funnelJourneysLoading; else journeySpinner">
+      <div class="jm-scroll">
+        <table class="jm-table">
+          <thead>
+            <tr>
+              <th class="jm-lead-th">Lead</th>
+              <th class="jm-stage-th jm-s1"><i class="fas fa-search"></i><span>Lead Created</span></th>
+              <th class="jm-stage-th jm-s2"><i class="fas fa-handshake"></i><span>Meeting Scheduled</span></th>
+              <th class="jm-stage-th jm-s3"><i class="fas fa-user-check"></i><span>Customer Converted</span></th>
+              <th class="jm-stage-th jm-s4"><i class="fas fa-comment-dots"></i><span>Enquiry Created</span></th>
+              <th class="jm-stage-th jm-s5"><i class="fas fa-file-invoice-dollar"></i><span>Quotation Created</span></th>
+              <th class="jm-stage-th jm-s6"><i class="fas fa-stamp"></i><span>Quotation Approved</span></th>
+              <th class="jm-stage-th jm-s7"><i class="fas fa-calendar-check"></i><span>Booking Created</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of funnelJourneys?.items">
+              <td class="jm-lead-td">
+                <a class="link" (click)="navigateToLead(item.PreCustomerMasterSid)">{{ item.preCustomerName }}</a>
+                <span class="badge jm-status-badge" [ngClass]="getLeadStatusClass(item.leadStatus || '')">
+                  {{ camelToWords(item.leadStatus || '') }}
+                </span>
+              </td>
+              <!-- Stage 1: Lead Created (always present) -->
+              <td class="jm-cell">
+                <a class="jm-chip jm-s1" (click)="navigateToLead(item.PreCustomerMasterSid)">
+                  <i class="fas fa-check"></i>
+                </a>
+              </td>
+              <!-- Stage 2: Meeting Scheduled -->
+              <td class="jm-cell">
+                <a class="jm-chip jm-s2" *ngIf="item.meeting; else jmEmpty2" (click)="navigateToMeetingUpdate(item.meeting.sid)">
+                  <i class="fas fa-check"></i>
+                </a>
+                <ng-template #jmEmpty2><span class="jm-empty">—</span></ng-template>
+              </td>
+              <!-- Stage 3: Customer Converted -->
+              <td class="jm-cell">
+                <a class="jm-chip jm-s3" *ngIf="item.customer; else jmEmpty3" (click)="navigateToOrganization(item.customer.sid)">
+                  <i class="fas fa-check"></i>
+                </a>
+                <ng-template #jmEmpty3><span class="jm-empty">—</span></ng-template>
+              </td>
+              <!-- Stage 4: Enquiry Created -->
+              <td class="jm-cell">
+                <a class="jm-chip jm-s4" *ngIf="item.enquiry; else jmEmpty4"
+                   [title]="item.enquiry.number" (click)="navigateToEnquiry(item.enquiry.sid)">
+                  {{ item.enquiry.number }}
+                </a>
+                <ng-template #jmEmpty4><span class="jm-empty">—</span></ng-template>
+              </td>
+              <!-- Stage 5: Quotation Created -->
+              <td class="jm-cell">
+                <a class="jm-chip jm-s5" *ngIf="item.quote; else jmEmpty5"
+                   [title]="item.quote.number" (click)="navigateToQuote(item.quote.sid)">
+                  {{ item.quote.number }}
+                </a>
+                <ng-template #jmEmpty5><span class="jm-empty">—</span></ng-template>
+              </td>
+              <!-- Stage 6: Quotation Approved -->
+              <td class="jm-cell">
+                <a class="jm-chip jm-s6" *ngIf="item.approvedQuote; else jmEmpty6"
+                   [title]="item.approvedQuote.number" (click)="navigateToQuote(item.approvedQuote.sid)">
+                  {{ item.approvedQuote.number }}
+                </a>
+                <ng-template #jmEmpty6><span class="jm-empty">—</span></ng-template>
+              </td>
+              <!-- Stage 7: Booking Created -->
+              <td class="jm-cell">
+                <a class="jm-chip jm-s7" *ngIf="item.booking; else jmEmpty7"
+                   [title]="item.booking.bookingNo" (click)="navigateToBooking(item.booking.sid)">
+                  {{ item.booking.bookingNo }}
+                </a>
+                <ng-template #jmEmpty7><span class="jm-empty">—</span></ng-template>
+              </td>
+            </tr>
+            <tr *ngIf="!funnelJourneys?.items?.length">
+              <td colspan="8" class="empty-state">No leads found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+    <ng-template #journeySpinner>
+      <div class="section-loading"><div class="spinner"></div></div>
+    </ng-template>
+  </div>
+</div>
+
+<!-- Shared Card Notes Modal -->
+<div class="funnel-modal-backdrop" *ngIf="activeNotes" (click)="closeNotes()"></div>
+<div class="funnel-modal" *ngIf="activeNotes">
+  <div class="funnel-modal-header">
+    <span><i class="fas fa-info-circle"></i> {{ activeNotes.title }}</span>
+    <button class="funnel-modal-close" (click)="closeNotes()">&#x2715;</button>
+  </div>
+  <div class="funnel-modal-body">
+    <div class="card-notes-list">
+      <div class="card-notes-item" *ngFor="let item of activeNotes.items">
+        <div class="cn-heading">{{ item.heading }}</div>
+        <div class="cn-body">{{ item.body }}</div>
+      </div>
+    </div>
   </div>
 </div>
 

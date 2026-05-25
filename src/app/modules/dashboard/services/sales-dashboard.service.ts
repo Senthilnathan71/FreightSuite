@@ -98,6 +98,15 @@ export class SalesDashboardService {
     );
   }
 
+  validateCustomerForBooking(payload: {
+    CustomerMasterSid: number;
+  }): Observable<{ data: { valid: boolean; message: string }; status: boolean; message: string }> {
+    return this.http.post<{ data: { valid: boolean; message: string }; status: boolean; message: string }>(
+      `customer/validate-for-booking`,
+      payload,
+    );
+  }
+
   getEnquiryDataForQuotationConversion(payload : {
     CompanyMasterSid: number,
     BranchMasterSid: number,
@@ -106,6 +115,18 @@ export class SalesDashboardService {
     return this.http.post<{ data: any; status: boolean; message: string }>(
       `ff-quotation/get-enquiry-for-quote`,
       payload,
+    );
+  }
+
+  getFunnelJourneys(
+    filters: SalesDashboardFilters & {
+      companyMasterSid: number;
+      branchMasterSid: number;
+    },
+  ): Observable<{ data: any; status: boolean; message: string }> {
+    return this.http.get<{ data: any; status: boolean; message: string }>(
+      `${this.baseUrl}/sales-dashboard/funnel-journeys`,
+      { params: this.buildParams(filters) },
     );
   }
 }

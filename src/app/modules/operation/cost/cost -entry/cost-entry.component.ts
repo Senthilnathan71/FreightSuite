@@ -73,6 +73,7 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   fyMinDate: NgbDateStruct | null = null;
   fyMaxDate: NgbDateStruct | null = null;
   selectedTab = 'Sales and cost';
+  customsDutyChecked: boolean = false;
   chargeList: any[] = [];
   filteredChargeList : any[] = [];
   uomList: any[] = [];
@@ -3600,10 +3601,11 @@ createRateFormGroup(data?: any): FormGroup {
 
       this.calculateTaxAmountForRow(chargeIndex++);
     }
+    this.autoDetectCustomsDuty();
   }
 
   /**
-   * 
+   *
    * @param rowIndex Particular Detail's index in FormArray
    * @returns 
    */
@@ -4173,6 +4175,7 @@ createRateFormGroup(data?: any): FormGroup {
       MasterNumber: rawValue.MasterNumber,
       Narration: narration,
       Remarks: headerRemarks,
+      CustomsDuty: this.isUAECompany() && this.customsDutyChecked ? 'Y' : 'N',
       Salesman: rawValue.Salesman,
       VoucherDetail: VoucherDetail,
       CreatedBy: this.userData?.userEmail,
@@ -4249,10 +4252,29 @@ createRateFormGroup(data?: any): FormGroup {
     this.chargeSelectionModalRef?.close();
     this.selectedCharges.clear();
     this.availableCharges = [];
+    this.customsDutyChecked = false;
   }
 
+  private autoDetectCustomsDuty(): void {
+    if (!this.isUAECompany()) return;
+    const details = this.details;
+    if (!details?.length) { this.customsDutyChecked = false; return; }
+    for (let i = 0; i < details.length; i++) {
+      const row = details.at(i);
+      if (!row.get('isSelected')?.value) continue;
+      const chargeSid = row.get('ChargeMasterSid')?.value;
+      const charge = this.chargeList.find(c => c.ChargeMasterSid === chargeSid);
+      if (!charge) continue;
+      const code = (charge.chargeCode || '').toUpperCase();
+      const name = (charge.chargeName || '').toUpperCase();
+      if (code.includes('CD') || name.includes('CUSTOMS DUTY')) {
+        this.customsDutyChecked = true;
+        return;
+      }
+    }
+    this.customsDutyChecked = false;
+  }
 
-  
   // SECTION - 7 (Generate Voucher Helpers)
   
   private getCompanyState(): string {

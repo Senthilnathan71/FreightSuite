@@ -8,7 +8,7 @@ import {
   NgbDateStruct,
   NgbDatepickerModule,
 } from '@ng-bootstrap/ng-bootstrap';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom, Subject, takeUntil } from 'rxjs';
 import { toNgbDateStruct } from 'src/app/common/helper';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
@@ -20,6 +20,7 @@ import {
   CustomerNoQuote,
   EnquiryNoQuotation,
   FunnelCounts,
+  FunnelJourneyItem,
   LeadAgeCohorts,
   LeadNoMeeting,
   LeadSourceDistribution,
@@ -50,6 +51,7 @@ interface SectionState<T> {
 }
 
 interface FunnelRow {
+  stageId: number;
   label: string;
   value: number;
   color: string;
@@ -57,6 +59,8 @@ interface FunnelRow {
   widthPct: number;
   pctOfTotal: number;
   tooltip: string;
+  criteria: string;
+  meaning: string;
 }
 
 @Component({
@@ -65,6 +69,7 @@ interface FunnelRow {
   imports: [
     CommonModule,
     FormsModule,
+    RouterLink,
     NgApexchartsModule,
     NgbDatepickerModule,
     CustomDatePipe,
@@ -91,7 +96,7 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     Record<ListSection, ReturnType<typeof setTimeout>>
   > = {};
 
-  readonly maxDateTo: NgbDateStruct = toNgbDateStruct(new Date())!;
+  maxDateTo: NgbDateStruct = toNgbDateStruct(new Date())!;
 
   dashboardCounts: SalesDashboardCounts | null = null;
   lastRefreshedAt: Date | null = null;
@@ -126,6 +131,8 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     selectedRouteSid: number | null;
   } = { open: false, quote: null, routes: [], selectedRouteSid: null };
 
+  kycWarning: { message: string; customerMasterSid: number; customerName: string } | null = null;
+
   searchTerms: Partial<Record<ListSection, string>> = {};
   sectionStates: Record<ListSection, SectionState<any>> = {
     1: this.createSectionState<LeadNoMeeting>(),
@@ -144,6 +151,118 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
 
   leadSourceDonutOptions: any = {};
   funnelRows: FunnelRow[] = [];
+  showFunnelNotes = false;
+  showFunnelJourneys = false;
+  funnelJourneys: { items: FunnelJourneyItem[]; totalCount: number } | null = null;
+  funnelJourneysLoading = false;
+  activeNotes: { title: string; items: { heading: string; body: string }[] } | null = null;
+
+  private readonly _cardNotes: Record<string, { title: string; items: { heading: string; body: string }[] }> = {
+    'lead-acquisition': {
+      title: 'Lead Acquisition Sources',
+      items: [
+        { heading: 'What it shows', body: 'Distribution of your Stage 1 leads by the channel through which they were acquired (Referral, Cold Call, Website, Exhibition, etc.).' },
+        { heading: 'How to use it', body: 'Identify which channels deliver the most leads. Focus on high-performing channels and investigate underperforming ones.' },
+        { heading: 'Date filter', body: 'Reflects leads created within the selected date range, filtered to leads assigned to or created by this salesperson.' },
+      ],
+    },
+    'lead-age': {
+      title: 'Unconverted Leads by Age',
+      items: [
+        { heading: 'What it shows', body: 'Leads within the selected date range (assigned to or created by this salesperson) that have not yet been converted into a customer. These mirror the Stage 1 funnel count minus Stage 3 (Customer Converted).' },
+        { heading: 'Age buckets are relative to today', body: 'The 0–7, 8–30, 31–60, and 61+ day groupings show how old each lead is as of today — not relative to the selected date range.' },
+        { heading: '0–7 Days', body: 'Fresh leads. No immediate concern, but initial outreach should be made soon.' },
+        { heading: '8–30 Days', body: 'Warming up. Over a week without conversion — follow-up is recommended.' },
+        { heading: '31–60 Days', body: 'Attention needed. These leads risk going cold. Review and prioritise action.' },
+        { heading: '61+ Days', body: 'High-risk stale leads. Unlikely to convert without significant re-engagement. Consider archiving or escalating.' },
+      ],
+    },
+    'path-breakdown': {
+      title: 'Path Breakdown',
+      items: [
+        { heading: 'What it shows', body: 'How quotations and bookings flow through your pipeline — whether they originated from enquiries/quotations or were created directly.' },
+        { heading: 'Quotations: From Enquiry vs Direct', body: '"From Enquiry" quotations were created by converting a shipping enquiry. "Direct" quotations were raised without a prior enquiry.' },
+        { heading: 'Bookings: From Quotation vs Direct', body: '"From Quotation" bookings were converted from an approved quote. "Direct" bookings were created without a prior quotation.' },
+        { heading: 'Why it matters', body: 'A higher "from pipeline" percentage means your CRM stages are being followed correctly. High "direct" usage may indicate the workflow is being bypassed.' },
+      ],
+    },
+    's1': {
+      title: 'Section 1 — Leads Created, No Meeting Scheduled',
+      items: [
+        { heading: 'What it shows', body: 'Leads created within the selected date range (assigned to or created by this salesperson) that do not have any meeting scheduled yet.' },
+        { heading: 'Idle time', body: 'The "Created Ago" column shows how long the lead has been waiting for initial contact. Leads idle for 7+ days are flagged as high-risk.' },
+        { heading: 'Action', body: 'Schedule a meeting with these leads as soon as possible. No outreach has been recorded — they risk going cold.' },
+      ],
+    },
+    's2': {
+      title: 'Section 2 — Meetings Scheduled',
+      items: [
+        { heading: 'What it shows', body: 'Pending meetings assigned to this salesperson, excluding those already Completed or Confirmed. Grouped into Overdue (date passed), Today, and Future.' },
+        { heading: 'Not date-range filtered', body: 'This section is NOT filtered by the date range selected above. It shows all pending meetings regardless of when they were created or when the dashboard filter is set.' },
+        { heading: 'Overdue', body: "The meeting date has passed but no outcome (Completed/Confirmed) has been recorded. Require immediate attention — update the status or schedule a follow-up." },
+        { heading: 'Today', body: 'Meetings happening today. Be prepared and review all relevant information beforehand.' },
+        { heading: 'Future', body: 'Upcoming scheduled meetings. Confirm attendance and prepare materials in advance.' },
+      ],
+    },
+    's3': {
+      title: 'Section 3 — Meetings with Follow-Up Pending',
+      items: [
+        { heading: 'What it shows', body: 'Meetings linked to your leads or customers that have a follow-up date set but the follow-up has not been completed.' },
+        { heading: 'Overdue', body: 'The follow-up date has passed without action. High priority — act immediately to avoid losing the opportunity.' },
+        { heading: 'Due Today', body: 'The follow-up is scheduled for today. Complete the task by end of day.' },
+        { heading: 'Upcoming', body: 'Follow-up is scheduled for a future date. Prepare in advance.' },
+      ],
+    },
+    's4': {
+      title: 'Section 4 — Business Not Converted',
+      items: [
+        { heading: 'What it shows', body: 'Leads that have at least one completed or confirmed meeting but have NOT yet been converted into a registered customer.' },
+        { heading: 'Why it matters', body: 'The meeting happened but no conversion followed. These are warm leads close to winning — act now before they go cold.' },
+        { heading: 'Action', body: 'Review meeting notes, understand any blockers, and either create a quotation, schedule a follow-up, or convert the lead to a customer.' },
+      ],
+    },
+    's5': {
+      title: 'Section 5 — Customer Created, No Quote or Booking',
+      items: [
+        { heading: 'What it shows', body: 'Customers converted from leads (assigned to or created by this salesperson) with no quotation and no booking on record.' },
+        { heading: 'Why it matters', body: 'The customer is registered but has not transacted yet — unrealised revenue. They became customers but have not placed any business.' },
+        { heading: 'Action', body: 'Reach out to understand their shipment needs and create a quotation. These are warm customers already in the system.' },
+      ],
+    },
+    's6': {
+      title: 'Section 6 — Enquiry Not Turned into Quotation',
+      items: [
+        { heading: 'What it shows', body: 'Enquiries raised within the selected date range that do not have a corresponding quotation created yet.' },
+        { heading: 'Why it matters', body: 'Every day without a quote risks losing the business to a competitor. An enquiry with no quote is a missed opportunity.' },
+        { heading: 'Action', body: 'Review each enquiry, understand the requirements, and create a quotation promptly. Fast turnaround is a key driver of conversion.' },
+      ],
+    },
+    's7': {
+      title: 'Section 7 — Quote Given, Not Yet Approved',
+      items: [
+        { heading: 'What it shows', body: 'Quotations that have been created but have not yet received approval. Quotations are authorized internally by the authoriser and then by the customer.' },
+        { heading: 'Expired quotes', body: 'Quotes past their validity date are highlighted. These likely need to be revised or reissued before they can proceed through approval.' },
+        { heading: 'Action', body: 'Follow up on the quote status. Understand any concerns or blockers and take steps to get the internal approval completed.' },
+      ],
+    },
+    's8': {
+      title: 'Section 8 — Quote Approved, Booking Not Created',
+      items: [
+        { heading: 'What it shows', body: 'Quotations approved by the internal authoriser (and the customer), but without a booking created from them yet.' },
+        { heading: 'Why it matters', body: 'An approved quote is a near-confirmed deal. The customer has accepted the price, but the actual booking is still missing — unsecured revenue.' },
+        { heading: 'Action', body: 'Create the booking immediately from the approved quotation. Every delay risks the customer going elsewhere or rates changing.' },
+      ],
+    },
+    's9': {
+      title: 'Section 9 — Summary KPIs',
+      items: [
+        { heading: 'Quote Health', body: 'Total quotations in the selected period, broken down by approval status. The percentage shows how many originated from enquiries vs created directly.' },
+        { heading: 'Booking Health', body: 'Total bookings split by origin (from quotation pipeline vs direct). A higher "from quotation" percentage means a healthier CRM pipeline.' },
+        { heading: 'Conversion Snapshot', body: 'Overall quote-to-booking rate and approved-quote-to-booking rate. Higher rates indicate a more efficient sales process.' },
+        { heading: 'Shipment Mix', body: 'Breakdown of bookings by shipment type (Air, Sea FCL, Sea LCL, etc.) within the selected period.' },
+      ],
+    },
+  };
 
   constructor(
     private salesDashboardService: SalesDashboardService,
@@ -156,6 +275,10 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.currentCompany = this.appSettings.getCurrentCompanyInfo();
     this.currentBranch = this.appSettings.getCurrentBranchInfo();
+    const fy = this.appSettings.getCurrentFinancialYear();
+    if (fy?.EndDate) {
+      this.maxDateTo = toNgbDateStruct(new Date(fy.EndDate))!;
+    }
     this.setDefaultDateRange();
     this.loadDashboardData();
   }
@@ -174,6 +297,8 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.clearPendingSearchTimers();
     this.resetSectionStates();
+    this.showFunnelJourneys = false;
+    this.funnelJourneys = null;
 
     this.salesDashboardService
       .getSalesDashboardCounts(this.getApiFilters())
@@ -263,40 +388,34 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
           monday.getMonth(),
           monday.getDate(),
         );
-        this.dateToInput = todayNoon;
+        const sunday = new Date(now);
+        sunday.setDate(now.getDate() + (7 - now.getDay()) % 7);
+        const { end: fyEndWeek } = getFinancialYearBounds();
+        const weekEnd = noon(sunday.getFullYear(), sunday.getMonth(), sunday.getDate());
+        this.dateToInput = weekEnd <= fyEndWeek ? weekEnd : fyEndWeek;
         break;
       }
-      case 'month':
+      case 'month': {
         this.dateFromInput = noon(now.getFullYear(), now.getMonth(), 1);
-        this.dateToInput = todayNoon;
+        const monthEnd = noon(now.getFullYear(), now.getMonth() + 1, 0);
+        const { end: fyEndMonth } = getFinancialYearBounds();
+        this.dateToInput = monthEnd <= fyEndMonth ? monthEnd : fyEndMonth;
         break;
+      }
       case 'lastMonth': {
         const { start: fyStart, end: fyEnd } = getFinancialYearBounds();
-        const previousMonthStart = noon(
-          now.getFullYear(),
-          now.getMonth() - 1,
-          1,
-        );
+        const previousMonthStart = noon(now.getFullYear(), now.getMonth() - 1, 1);
         const previousMonthEnd = noon(now.getFullYear(), now.getMonth(), 0);
-        const clampedStart =
-          previousMonthStart < fyStart ? fyStart : previousMonthStart;
-        const cappedToday = fyEnd < todayNoon ? fyEnd : todayNoon;
-        const clampedEnd =
-          previousMonthEnd > cappedToday ? cappedToday : previousMonthEnd;
-
-        if (clampedStart > clampedEnd) {
-          this.dateFromInput = fyStart;
-          this.dateToInput = cappedToday;
-        } else {
-          this.dateFromInput = clampedStart;
-          this.dateToInput = clampedEnd;
-        }
+        const clampedStart = previousMonthStart < fyStart ? fyStart : previousMonthStart;
+        const clampedEnd = previousMonthEnd > fyEnd ? fyEnd : previousMonthEnd;
+        this.dateFromInput = clampedStart;
+        this.dateToInput = clampedEnd;
         break;
       }
       case 'fy': {
         const { start: fyStart, end: fyEnd } = getFinancialYearBounds();
         this.dateFromInput = fyStart;
-        this.dateToInput = fyEnd < todayNoon ? fyEnd : todayNoon;
+        this.dateToInput = fyEnd;
         break;
       }
     }
@@ -673,6 +792,10 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
   navigateToEnquiry(sid: number): void {
     this.router.navigate(['/crm/enquiry/entry', sid]);
   }
+
+  navigateToBooking(sid: number): void {
+    this.router.navigate(['/operation/booking/entry', sid]);
+  }
   
   async convertEnquiryToQuote(sid: number): Promise<void> {
     this.spinner.show();
@@ -699,8 +822,24 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
   }
 
   async convertQuoteToBooking(quote: QuoteNoBooking): Promise<void> {
+    this.kycWarning = null;
     this.spinner.show();
     try {
+      const kycResult = await firstValueFrom(
+        this.salesDashboardService.validateCustomerForBooking({
+          CustomerMasterSid: quote.CustomerMasterSid,
+        })
+      );
+      if (!kycResult.status || !kycResult.data?.valid) {
+        this.spinner.hide();
+        this.kycWarning = {
+          message: kycResult.data?.message || kycResult.message || 'Customer KYC/branch details are incomplete.',
+          customerMasterSid: quote.CustomerMasterSid,
+          customerName: quote.CustomerName,
+        };
+        return;
+      }
+
       const result = await firstValueFrom(
         this.salesDashboardService.getQuoteDataForBookingConversion({
           CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
@@ -765,6 +904,37 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
       console.error(error);
       this.spinner.hide();
     }
+  }
+
+  onToggleFunnelNotes(): void {
+    this.showFunnelNotes = !this.showFunnelNotes;
+  }
+
+  onViewFunnelJourneys(): void {
+    if (this.showFunnelJourneys) {
+      this.showFunnelJourneys = false;
+      this.funnelJourneys = null;
+      return;
+    }
+    this.showFunnelJourneys = true;
+    this.funnelJourneysLoading = true;
+    this.salesDashboardService.getFunnelJourneys(this.getApiFilters()).subscribe({
+      next: (resp) => {
+        this.funnelJourneys = resp.data;
+        this.funnelJourneysLoading = false;
+      },
+      error: () => {
+        this.funnelJourneysLoading = false;
+      },
+    });
+  }
+
+  openNotes(key: string): void {
+    this.activeNotes = this._cardNotes[key] ?? null;
+  }
+
+  closeNotes(): void {
+    this.activeNotes = null;
   }
 
   navigateToCalendar(lead: LeadNoMeeting): void {
@@ -1018,6 +1188,7 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     };
     const items = [
       {
+        stageId: 1,
         label: 'Lead Created',
         value: counts.totalLeads,
         icon: 'fas fa-search',
@@ -1027,8 +1198,11 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
           counts.totalLeads,
           counts.totalLeads,
         ),
+        criteria: 'Leads created within the selected date range, assigned to or created by this salesperson. This is the base pool — all other stages count leads from within this group.',
+        meaning: 'The total prospects currently in your sales pipeline',
       },
       {
+        stageId: 2,
         label: 'Meeting Scheduled',
         value: counts.leadsWithMeeting,
         icon: 'fas fa-handshake',
@@ -1038,8 +1212,11 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
           counts.leadsWithMeeting,
           counts.totalLeads,
         ),
+        criteria: 'From Stage 1 leads: at least one meeting has been scheduled within the meeting date range. A lead must first appear in Stage 1 before being counted here.',
+        meaning: 'You have made initial outreach and an appointment is on record',
       },
       {
+        stageId: 3,
         label: 'Customer Converted',
         value: counts.leadsTurnedCustomer,
         icon: 'fas fa-user-check',
@@ -1053,8 +1230,11 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
             `${pathMix.customer.viaApprovedQuote} via approved quotation`,
           ],
         ),
+        criteria: 'From Stage 1 leads: this lead has been converted into a registered customer. Conversion happens in one of two ways — either a meeting with the lead was confirmed, or a quotation raised for the lead was approved.',
+        meaning: 'The prospect is now an official customer of the company',
       },
       {
+        stageId: 4,
         label: 'Enquiry Created',
         value: counts.leadsWithEnquiry,
         icon: 'fas fa-comment-dots',
@@ -1068,8 +1248,11 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
             `${pathMix.enquiry.viaCustomer} via customer-linked enquiry`,
           ],
         ),
+        criteria: 'From Stage 1 leads: at least one shipping enquiry has been raised — directly on the lead or via their converted customer — within the selected date range.',
+        meaning: 'The customer has expressed a formal interest in a shipment',
       },
       {
+        stageId: 5,
         label: 'Quotation Created',
         value: counts.leadsWithQuote,
         icon: 'fas fa-file-invoice-dollar',
@@ -1083,8 +1266,11 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
             `${pathMix.quote.viaCustomer} via customer-linked quote`,
           ],
         ),
+        criteria: 'Building on Stage 4 (Enquiry Created): at least one quotation has been created — directly on the lead or via their converted customer — within the selected date range. A lead should have an enquiry before a quotation is raised.',
+        meaning: 'A price proposal has been sent to the customer',
       },
       {
+        stageId: 6,
         label: 'Quotation Approved',
         value: counts.leadsWithApprovedQuote,
         icon: 'fas fa-stamp',
@@ -1098,8 +1284,11 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
             `${pathMix.approvedQuote.viaCustomer} via customer-linked quote`,
           ],
         ),
+        criteria: 'Building on Stage 5 (Quotation Created): at least one quotation has been approved. Quotations are authorized internally by the authoriser and then by the customer — carrier rate confirmation is a separate process. A quotation must exist before it can be approved.',
+        meaning: 'The customer has accepted a price \u2014 the deal is near closing',
       },
       {
+        stageId: 7,
         label: 'Booking Created',
         value: counts.leadsWithBooking,
         icon: 'fas fa-calendar-check',
@@ -1113,6 +1302,8 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
             `${pathMix.booking.viaCustomer} via customer-linked chain`,
           ],
         ),
+        criteria: 'Building on Stage 6 (Quotation Approved): a confirmed booking exists for this customer within the selected date range. Only leads that have already reached the Quotation Approved stage are counted here — a booking without an approved quote does not qualify.',
+        meaning: 'A shipment is booked \u2014 revenue is secured',
       },
     ];
     const maxVal = Math.max(...items.map((item) => item.value), 1);

@@ -49,17 +49,17 @@
 
           <!-- CHECKBOX -->
           <div class="form-check mt-2" *ngIf="param.ParameterFieldType === 'CHECKBOX'">
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               class="focus-ring form-check-input cursor-pointer"
-              [id]="param.ParameterName" 
-              [formControlName]="param.ParameterName" 
+              [id]="param.ParameterName"
+              [formControlName]="param.ParameterName"
             />
-            <label 
-              [for]="param.ParameterName" class="form-check-label" 
+            <label
+              [for]="param.ParameterName" class="form-check-label"
               >
-              {{ getParameterLabel(param.ParameterName) }}
-              <span 
+              {{ param.DisplayLabel || getParameterLabel(param.ParameterName) }}
+              <span
                 *ngIf="isFieldRequired(param.ParameterName)"
                 class="text-danger"
               >*</span>
