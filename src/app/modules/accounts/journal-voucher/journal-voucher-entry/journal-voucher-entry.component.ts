@@ -207,6 +207,18 @@ export class JournalVoucherEntryComponent implements OnInit,  HasUnsavedChanges,
     private voucherActionGuard: VoucherActionGuardService,
   ) { }
 
+  copyDocumentNumber(controlName: string, label: string, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const documentNo = this.form?.get(controlName)?.value;
+    if (!documentNo) {
+      return;
+    }
+    navigator.clipboard.writeText(String(documentNo)).then(() => {
+      this.toastr.success(`${label} copied to clipboard.`, '', { timeOut: 1500 });
+    });
+  }
+
   private getActionGuardContext(): VoucherActionGuardContext {
     return {
       documentName: 'Journal Voucher',

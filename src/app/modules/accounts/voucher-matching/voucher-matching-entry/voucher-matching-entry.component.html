@@ -30,7 +30,15 @@
           <div class="col-md-2">
             <div class="custom-form-group">
               <input type="text" formControlName="VoucherMatchingNo" class="custom-input-field sm" />
-              <label class="input-label">Matching No.</label>
+                <label class="input-label">Matching No.
+                  <i
+                    *ngIf="voucherMatchingForm?.get('VoucherMatchingNo')?.value"
+                    class="fas fa-copy ms-1"
+                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                    title="Copy Matching No"
+                    (click)="copyDocumentNumber('VoucherMatchingNo', 'Matching No', $event)"
+                  ></i>
+                </label>
             </div>
           </div>
           <div class="col-md-2">
@@ -261,7 +269,15 @@
             <div class="col-md-3">
               <div class="custom-form-group">
                 <input type="text" formControlName="VoucherMatchingNo" class="custom-input-field sm" />
-                <label class="input-label">Matching No.</label>
+                <label class="input-label">Matching No.
+                  <i
+                    *ngIf="voucherMatchingForm?.get('VoucherMatchingNo')?.value"
+                    class="fas fa-copy ms-1"
+                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                    title="Copy Matching No"
+                    (click)="copyDocumentNumber('VoucherMatchingNo', 'Matching No', $event)"
+                  ></i>
+                </label>
               </div>
             </div>
             <div class="col-md-3">
@@ -305,7 +321,15 @@
                 <ng-select formControlName="LedgerName" [items]="ledgerList" bindLabel="LedgerName" [clearable]="true"
                 placeholder="" (change)="onLedgerChange($event)" class="ng-select">
               </ng-select>
-              <label class="input-label">Ledger <span class="text-danger">*</span></label>
+              <label class="input-label">Ledger
+                <i
+                  *ngIf="voucherMatchingForm?.get('LedgerName')?.value"
+                  class="fas fa-copy ms-1"
+                  style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                  title="Copy Ledger Name"
+                  (click)="copyDocumentNumber('LedgerName', 'Ledger Name', $event)"
+                ></i>
+                <span class="text-danger">*</span></label>
               </div>
             </div>
             <div class="col-md-3">
@@ -314,7 +338,15 @@
                 <ng-select formControlName="SubledgerName" [items]="subledgerList" bindLabel="SubledgerName"
                 [clearable]="true" placeholder="" (change)="onSubledgerChange($event)" class="ng-select">
               </ng-select>
-              <label class="input-label">Subledger <span class="text-danger">*</span></label>
+              <label class="input-label">Subledger
+                <i
+                  *ngIf="voucherMatchingForm?.get('SubledgerName')?.value"
+                  class="fas fa-copy ms-1"
+                  style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                  title="Copy Subledger"
+                  (click)="copyDocumentNumber('SubledgerName', 'Subledger', $event)"
+                ></i>
+                <span class="text-danger">*</span></label>
             </div>
             <div class="pt-2">
               <button type="button" class="btn btn-info btn-sm w-100 d-flex align-items-center"
@@ -327,7 +359,15 @@
       <div class="col-md-3">
         <div class="custom-form-group">
           <input type="text" formControlName="Narration" class="custom-input-field sm" [readOnly]="isPosted" />
-          <label class="input-label">Narration <span class="text-danger">*</span></label>
+          <label class="input-label">Narration
+            <i
+              *ngIf="voucherMatchingForm?.get('Narration')?.value"
+              class="fas fa-copy ms-1"
+              style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+              title="Copy Narration"
+              (click)="copyDocumentNumber('Narration', 'Narration', $event)"
+            ></i>
+            <span class="text-danger">*</span></label>
         </div>
       </div>
       <div class="col-md-3">
@@ -532,9 +572,23 @@
                           <a [routerLink]="voucherLink" class="fw-bold px-2">
                             {{ s.get('VoucherNumber')?.value }}
                           </a>
+                          <i
+                            *ngIf="s.get('VoucherNumber')?.value"
+                            class="fas fa-copy ms-1"
+                            style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                            title="Copy Voucher No"
+                            (click)="copyValue(s.get('VoucherNumber')?.value, 'Voucher No', $event)"
+                          ></i>
                         </ng-container>
                         <ng-template #sourceVoucherText>
                           <span class="px-2">{{ s.get('VoucherNumber')?.value }}</span>
+                          <i
+                            *ngIf="s.get('VoucherNumber')?.value"
+                            class="fas fa-copy ms-1"
+                            style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                            title="Copy Voucher No"
+                            (click)="copyValue(s.get('VoucherNumber')?.value, 'Voucher No', $event)"
+                          ></i>
                         </ng-template>
                       </td>
                       <td [style.width]="isPosted ? '5%' : '4%'"><input type="text" formControlName="VoucherType"
@@ -709,9 +763,23 @@
                           <a [routerLink]="voucherLink" class="fw-bold px-2">
                             {{ o.get('VoucherNumber')?.value }}
                           </a>
+                          <i
+                            *ngIf="o.get('VoucherNumber')?.value"
+                            class="fas fa-copy ms-1"
+                            style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                            title="Copy Voucher No"
+                            (click)="copyValue(o.get('VoucherNumber')?.value, 'Voucher No', $event)"
+                          ></i>
                         </ng-container>
                         <ng-template #objectVoucherText>
                           <span class="px-2">{{ o.get('VoucherNumber')?.value }}</span>
+                          <i
+                            *ngIf="o.get('VoucherNumber')?.value"
+                            class="fas fa-copy ms-1"
+                            style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                            title="Copy Voucher No"
+                            (click)="copyValue(o.get('VoucherNumber')?.value, 'Voucher No', $event)"
+                          ></i>
                         </ng-template>
                       </td>
                       <td [style.width]="isPosted ? '5%' : '4%'"><input type="text" formControlName="VoucherType" class="custom-input-field sm" /></td>

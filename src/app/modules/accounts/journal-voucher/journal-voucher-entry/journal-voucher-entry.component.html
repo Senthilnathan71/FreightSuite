@@ -151,7 +151,15 @@
                         <div class="custom-form-group">
                             <input type="text" formControlName="voucherNumber" class="custom-input-field sm"
                                 placeholder="" />
-                            <label class="input-label">Voucher No.</label>
+                            <label class="input-label">Voucher No.
+                                <i
+                                    *ngIf="form?.get('voucherNumber')?.value"
+                                    class="fas fa-copy ms-1"
+                                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                                    title="Copy Voucher No"
+                                    (click)="copyDocumentNumber('voucherNumber', 'Voucher No', $event)"
+                                ></i>
+                            </label>
                         </div>
                     </aside>
 
@@ -193,14 +201,33 @@
                         <div class="custom-form-group">
                             <textarea formControlName="narration" class="custom-input-field sm" rows="1" placeholder=""
                                 maxlength="200"></textarea>
-                            <label class="input-label">Narration<span class="text-danger">*</span></label>
+                            <label class="input-label">
+                                Narration
+                                <i
+                                    *ngIf="form?.get('narration')?.value"
+                                    class="fas fa-copy ms-1"
+                                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                                    title="Copy Narration"
+                                    (click)="copyDocumentNumber('narration', 'Narration', $event)"
+                                ></i>
+                                <span class="text-danger">*</span>
+                            </label>
                         </div>
                     </aside>
                     <aside class="col-md-3">
                         <div class="custom-form-group">
                             <input type="text" formControlName="DocumentNumber" class="custom-input-field sm text-end"
                                 placeholder="" />
-                            <label class="input-label">Bill NO.</label>
+                            <label class="input-label">
+                                Bill NO.
+                                <i
+                                    *ngIf="form?.get('DocumentNumber')?.value"
+                                    class="fas fa-copy ms-1"
+                                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                                    title="Copy Bill No"
+                                    (click)="copyDocumentNumber('DocumentNumber', 'Bill No', $event)"
+                                ></i>
+                            </label>
                         </div>
                     </aside>
                    

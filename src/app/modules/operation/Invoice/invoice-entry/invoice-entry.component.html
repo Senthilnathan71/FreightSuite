@@ -321,7 +321,15 @@
                     (itemSelected)="onCustomerChange($event)"
                   >
                   </dofi-searchable-dropdown>
-                  <label class="input-label">Customer <span class="text-danger">*</span></label>
+                  <label class="input-label">Customer
+                    <i
+                      *ngIf="invoiceForm?.get('PartyName')?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy Customer"
+                      (click)="copyDocumentValue('PartyName', 'Customer', $event)"
+                    ></i>
+                    <span class="text-danger">*</span></label>
                 </div>
               </aside>
 
@@ -383,11 +391,35 @@
                     style="cursor: not-allowed"
                   />
                   @if(currentCompanyCountryCode === 'in'){
-                  <label class="input-label">GST No</label>
+                  <label class="input-label">GST No
+                    <i
+                      *ngIf="invoiceForm?.get('GST_VAT')?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy GST No"
+                      (click)="copyDocumentValue('GST_VAT', 'GST No', $event)"
+                    ></i>
+                  </label>
                   } @else if(currentCompanyCountryCode !== 'ae'){
-                  <label class="input-label">VAT No</label>
+                  <label class="input-label">VAT No
+                    <i
+                      *ngIf="invoiceForm?.get('GST_VAT')?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy VAT No"
+                      (click)="copyDocumentValue('GST_VAT', 'VAT No', $event)"
+                    ></i>
+                  </label>
                   } @else {
-                  <label class="input-label">Tax No</label>
+                  <label class="input-label">Tax No
+                    <i
+                      *ngIf="invoiceForm?.get('GST_VAT')?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy Tax No"
+                      (click)="copyDocumentValue('GST_VAT', 'Tax No', $event)"
+                    ></i>
+                  </label>
                   }
                 </div>
               </aside>
@@ -580,7 +612,15 @@
                     formControlName="Remarks"
                     placeholder=""
                   />
-                  <label class="input-label">Remarks</label>
+                  <label class="input-label">Remarks
+                    <i
+                      *ngIf="invoiceForm?.get('Remarks')?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy Remarks"
+                      (click)="copyDocumentValue('Remarks', 'Remarks', $event)"
+                    ></i>
+                  </label>
                 </div>
               </aside>
 

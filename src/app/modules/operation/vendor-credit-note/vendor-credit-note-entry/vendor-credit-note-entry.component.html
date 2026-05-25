@@ -242,7 +242,15 @@
                   readonly
                 />
                 <label for="VoucherNumber" class="input-label">
-                  Vendor Credit Note No. <span class="text-danger">*</span>
+                  Vendor Credit Note No.
+                  <i
+                    *ngIf="vendorCreditNoteForm?.get('VoucherNumber')?.value"
+                    class="fas fa-copy ms-1"
+                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                    title="Copy Vendor Credit Note No"
+                    (click)="copyDocumentNumber('VoucherNumber', 'Vendor Credit Note No', $event)"
+                  ></i>
+                  <span class="text-danger">*</span>
                 </label>
               </div>
             </aside>
@@ -254,7 +262,15 @@
                   <input type="text" id="ReversalVoucherNumber" formControlName="ReversalVoucherNumber"
                     class="custom-input-field sm" [readonly]="isEditMode || vendorCreditNoteForm.get('ReversalVoucher')?.value" />
                   <label for="ReversalVoucherNumber" class="input-label">
-                    Invoice No. <span class="text-danger">*</span>
+                    Invoice No.
+                    <i
+                      *ngIf="vendorCreditNoteForm?.get('ReversalVoucherNumber')?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy Invoice No"
+                      (click)="copyDocumentNumber('ReversalVoucherNumber', 'Invoice No', $event)"
+                    ></i>
+                    <span class="text-danger">*</span>
                   </label>
                 </div>
             
@@ -359,7 +375,16 @@
                   placeholder=""
                   class="custom-input-field sm"
                 />
-                <label for="Narration" class="input-label">Narration</label>
+                <label for="Narration" class="input-label">
+                  Narration
+                  <i
+                    *ngIf="vendorCreditNoteForm.get('Narration')?.value"
+                    class="fas fa-copy ms-1"
+                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                    title="Copy Narration"
+                    (click)="copyDocumentNumber('Narration', 'Narration', $event)"
+                  ></i>
+                </label>
               </div>
             </aside>
 
@@ -380,9 +405,17 @@
                   (itemSelected)="onVendorChange($event)"
                 >
                 </dofi-searchable-dropdown>
-                <label class="input-label"
-                  >Vendor <span class="text-danger"></span
-                ></label>
+                <label class="input-label">
+                  Vendor
+                  <i
+                    *ngIf="vendorCreditNoteForm.get('PartyName')?.value"
+                    class="fas fa-copy ms-1"
+                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                    title="Copy Vendor Name"
+                    (click)="copyDocumentNumber('PartyName', 'Vendor Name', $event)"
+                  ></i>
+                  <span class="text-danger"></span>
+                </label>
               </div>
             </aside>
 
@@ -605,7 +638,15 @@
                   [class.is-invalid]="isFieldInvalid('BillNo')"
                 />
                 <label for="BillNo" class="input-label">
-                  Bill No. <span class="text-danger">*</span>
+                  Bill No.
+                  <i
+                    *ngIf="vendorCreditNoteForm.get('BillNo')?.value"
+                    class="fas fa-copy ms-1"
+                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                    title="Copy Bill No"
+                    (click)="copyDocumentNumber('BillNo', 'Bill No', $event)"
+                  ></i>
+                  <span class="text-danger">*</span>
                 </label>
               </div>
             </aside>
@@ -670,7 +711,15 @@
                   placeholder=""
                   class="custom-input-field sm"
                 />
-                <label for="MBLNo" class="input-label">MBL No.</label>
+                <label for="MBLNo" class="input-label">MBL No.
+                  <i
+                    *ngIf="vendorCreditNoteForm?.get('MBLNo')?.value"
+                    class="fas fa-copy ms-1"
+                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                    title="Copy MBL No"
+                    (click)="copyDocumentNumber('MBLNo', 'MBL No', $event)"
+                  ></i>
+                </label>
               </div>
             </aside>
 
@@ -684,7 +733,15 @@
                   placeholder=""
                   class="custom-input-field sm"
                 />
-                <label for="HBLNo" class="input-label">HBL No.</label>
+                <label for="HBLNo" class="input-label">HBL No.
+                  <i
+                    *ngIf="vendorCreditNoteForm?.get('HBLNo')?.value"
+                    class="fas fa-copy ms-1"
+                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                    title="Copy HBL No"
+                    (click)="copyDocumentNumber('HBLNo', 'HBL No', $event)"
+                  ></i>
+                </label>
               </div>
             </aside>
 

@@ -341,8 +341,16 @@
                     for="text-input"
                     class="input-label"
                     style="font-size: 14px"
-                    ><span>Payment No.</span></label
-                  >
+                    >
+                    <span>Payment No.</span>
+                    <i
+                      *ngIf="paymentForm?.get('VoucherNumber')?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy Payment No"
+                      (click)="copyDocumentNumber('VoucherNumber', 'Payment No', $event)"
+                    ></i>
+                  </label>
                 </div>
               </aside>
 
@@ -397,8 +405,17 @@
                     for="text-input"
                     class="input-label"
                     style="font-size: 14px"
-                    >Narration <span class="text-danger">*</span></label
-                  >
+                    >
+                    Narration
+                    <i
+                      *ngIf="paymentForm?.get('Narration')?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy Narration"
+                      (click)="copyDocumentNumber('Narration', 'Narration', $event)"
+                    ></i>
+                    <span class="text-danger">*</span>
+                  </label>
                 </div>
               </aside>
 
@@ -541,8 +558,17 @@
                     for="text-input"
                     class="input-label"
                     style="font-size: 14px"
-                    >Pay To <span class="text-danger">*</span></label
-                  >
+                    >
+                    Pay To
+                    <i
+                      *ngIf="paymentForm?.get('BankPartyName')?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy Pay To"
+                      (click)="copyDocumentNumber('BankPartyName', 'Pay To', $event)"
+                    ></i>
+                    <span class="text-danger">*</span>
+                  </label>
                 </div>
               </aside>
 

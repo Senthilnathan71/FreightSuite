@@ -386,6 +386,18 @@ export class VendorCreditNoteEntryComponent {
     private voucherActionGuard: VoucherActionGuardService,
   ) {}
 
+  copyDocumentNumber(controlName: string, label: string, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const documentNo = this.vendorCreditNoteForm?.get(controlName)?.value;
+    if (!documentNo) {
+      return;
+    }
+    navigator.clipboard.writeText(String(documentNo)).then(() => {
+      this.appSettingService.showSuccess(`${label} copied to clipboard.`);
+    });
+  }
+
   private getActionGuardContext(): VoucherActionGuardContext {
     return {
       documentName: 'Vendor Credit Note',

@@ -79,7 +79,15 @@
                         <div class="custom-form-group">
                             <input type="text" id="bookingNo" placeholder="" class="custom-input-field sm"
                                 formControlName="BookingNo" readonly />
-                            <label for="bookingNo" class="input-label">Booking No <span
+                            <label for="bookingNo" class="input-label">Booking No
+                                <i
+                                    *ngIf="cargoForm?.get('BookingNo')?.value"
+                                    class="fas fa-copy ms-1"
+                                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                                    title="Copy Booking No"
+                                    (click)="copyDocumentNumber('BookingNo', 'Booking No', $event)"
+                                ></i>
+                                <span
                                     class="text-danger"></span></label>
                         </div>
                     </aside>
@@ -155,7 +163,15 @@
                         <div class="custom-form-group">
                             <input id="hbl" type="text" placeholder="" class="custom-input-field sm"
                                 formControlName="HBLNo" readonly />
-                            <label for="hbl" class="input-label">HBL No <span class="text-danger"></span></label>
+                            <label for="hbl" class="input-label">HBL No
+                                <i
+                                    *ngIf="cargoForm?.get('HBLNo')?.value"
+                                    class="fas fa-copy ms-1"
+                                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                                    title="Copy HBL No"
+                                    (click)="copyDocumentNumber('HBLNo', 'HBL No', $event)"
+                                ></i>
+                                <span class="text-danger"></span></label>
                         </div>
                     </aside>
                 </div>

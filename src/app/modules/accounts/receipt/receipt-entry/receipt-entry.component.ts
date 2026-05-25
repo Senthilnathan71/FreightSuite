@@ -386,6 +386,30 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     private voucherActionGuard: VoucherActionGuardService
   ) {}
 
+  copyDocumentNumber(controlName: string, label: string, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const documentNo = this.receiptForm?.get(controlName)?.value;
+    if (!documentNo) {
+      return;
+    }
+    navigator.clipboard.writeText(String(documentNo)).then(() => {
+      this.toastr.success(`${label} copied to clipboard.`, '', { timeOut: 1500 });
+    });
+  }
+
+  copyMatchingNumber(event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const matchingNo = this.voucherMatchingInfo?.VoucherMatchingNo;
+    if (!matchingNo) {
+      return;
+    }
+    navigator.clipboard.writeText(String(matchingNo)).then(() => {
+      this.toastr.success('Matching No copied to clipboard.', '', { timeOut: 1500 });
+    });
+  }
+
   private getActionGuardContext(): VoucherActionGuardContext {
     return {
       documentName: 'Receipt',

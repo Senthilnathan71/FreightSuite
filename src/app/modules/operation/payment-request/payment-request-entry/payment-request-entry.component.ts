@@ -142,6 +142,18 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     });
   }
 
+  copyDocumentNumber(controlName: string, label: string, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const documentNo = this.form?.get(controlName)?.value;
+    if (!documentNo) {
+      return;
+    }
+    navigator.clipboard.writeText(String(documentNo)).then(() => {
+      this.appSettingsService.showSuccess(`${label} copied to clipboard.`);
+    });
+  }
+
   ngOnInit(): void {
     this.currentCompany = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingsService.decrypt(localStorage.getItem('selected-branch'));

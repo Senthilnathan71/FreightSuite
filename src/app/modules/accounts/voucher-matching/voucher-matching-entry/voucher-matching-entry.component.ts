@@ -202,6 +202,40 @@ export class VoucherMatchingEntryComponent implements OnInit, AfterViewInit, OnD
     private voucherActionGuard: VoucherActionGuardService,
   ) { }
 
+  copyDocumentNumber(controlName: string, label: string, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const documentNo = this.getCopyText(this.voucherMatchingForm?.get(controlName)?.value);
+    if (!documentNo) {
+      return;
+    }
+    navigator.clipboard.writeText(documentNo).then(() => {
+      this.toastr.success(`${label} copied to clipboard.`, '', { timeOut: 1500 });
+    });
+  }
+
+  copyValue(value: any, label: string, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const copyText = this.getCopyText(value);
+    if (!copyText) {
+      return;
+    }
+    navigator.clipboard.writeText(copyText).then(() => {
+      this.toastr.success(`${label} copied to clipboard.`, '', { timeOut: 1500 });
+    });
+  }
+
+  private getCopyText(value: any): string {
+    if (!value) {
+      return '';
+    }
+    if (typeof value === 'object') {
+      return String(value.LedgerName || value.SubledgerName || value.VoucherNumber || value.name || value.label || '');
+    }
+    return String(value);
+  }
+
   ngOnInit(): void {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) this.userData = userProfile;

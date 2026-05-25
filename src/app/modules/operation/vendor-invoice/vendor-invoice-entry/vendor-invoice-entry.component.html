@@ -196,7 +196,15 @@
                   readonly
                   style="cursor: not-allowed"
                 />
-                <label for="VoucherNumber" class="input-label">Vendor Invoice No. </label>
+                <label for="VoucherNumber" class="input-label">Vendor Invoice No.
+                  <i
+                    *ngIf="vendorInvoiceForm?.get('VoucherNumber')?.value"
+                    class="fas fa-copy ms-1"
+                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                    title="Copy Vendor Invoice No"
+                    (click)="copyDocumentNumber('VoucherNumber', 'Vendor Invoice No', $event)"
+                  ></i>
+                </label>
               </div>
             </aside>
 
@@ -272,7 +280,15 @@
               <div class="custom-form-group">
                 <input type="text" id="Narration" formControlName="Narration" placeholder=""
                   class="custom-input-field sm" />
-                <label for="Narration" class="input-label">Narration</label>
+                <label for="Narration" class="input-label">Narration
+                  <i
+                    *ngIf="vendorInvoiceForm?.get('Narration')?.value"
+                    class="fas fa-copy ms-1"
+                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                    title="Copy Narration"
+                    (click)="copyDocumentNumber('Narration', 'Narration', $event)"
+                  ></i>
+                </label>
               </div>
             </aside>
 
@@ -291,7 +307,15 @@
                   (itemSelected)="onVendorChange($event)"
                 >
                 </dofi-searchable-dropdown>
-                <label class="input-label">Vendor <span class="text-danger">*</span></label>
+                <label class="input-label">Vendor
+                  <i
+                    *ngIf="vendorInvoiceForm?.get('PartyName')?.value"
+                    class="fas fa-copy ms-1"
+                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                    title="Copy Vendor"
+                    (click)="copyDocumentNumber('PartyName', 'Vendor', $event)"
+                  ></i>
+                  <span class="text-danger">*</span></label>
               </div>
             </aside>
 
@@ -354,11 +378,35 @@
                   style="cursor: not-allowed"
                 />
                   @if(currentCompanyCountryCode === 'in'){
-                  <label class="input-label">GST No</label>
+                  <label class="input-label">GST No
+                    <i
+                      *ngIf="vendorInvoiceForm?.get('GST_VAT')?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy GST No"
+                      (click)="copyDocumentNumber('GST_VAT', 'GST No', $event)"
+                    ></i>
+                  </label>
                   } @else if(currentCompanyCountryCode !== 'ae'){
-                  <label class="input-label">VAT No</label>
+                  <label class="input-label">VAT No
+                    <i
+                      *ngIf="vendorInvoiceForm?.get('GST_VAT')?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy VAT No"
+                      (click)="copyDocumentNumber('GST_VAT', 'VAT No', $event)"
+                    ></i>
+                  </label>
                   } @else {
-                  <label class="input-label">Tax No</label>
+                  <label class="input-label">Tax No
+                    <i
+                      *ngIf="vendorInvoiceForm?.get('GST_VAT')?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy Tax No"
+                      (click)="copyDocumentNumber('GST_VAT', 'Tax No', $event)"
+                    ></i>
+                  </label>
                   }
               </div>
             </aside>
@@ -516,7 +564,15 @@
                 <input type="text" id="BillNo" formControlName="BillNo" placeholder="" class="custom-input-field sm text-end"
                   [class.is-invalid]="isFieldInvalid('BillNo')" />
                 <label for="BillNo" class="input-label">
-                  Bill No. <span class="text-danger">*</span>
+                  Bill No.
+                  <i
+                    *ngIf="vendorInvoiceForm?.get('BillNo')?.value"
+                    class="fas fa-copy ms-1"
+                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                    title="Copy Bill No"
+                    (click)="copyDocumentNumber('BillNo', 'Bill No', $event)"
+                  ></i>
+                  <span class="text-danger">*</span>
                 </label>
               </div>
             </aside>
@@ -553,7 +609,15 @@
             <aside class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" id="MBLNo" formControlName="MBLNo" placeholder="" class="custom-input-field sm text-end" />
-                <label for="MBLNo" class="input-label">MBL No.</label>
+                <label for="MBLNo" class="input-label">MBL No.
+                  <i
+                    *ngIf="vendorInvoiceForm?.get('MBLNo')?.value"
+                    class="fas fa-copy ms-1"
+                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                    title="Copy MBL No"
+                    (click)="copyDocumentNumber('MBLNo', 'MBL No', $event)"
+                  ></i>
+                </label>
               </div>
             </aside>
 
@@ -561,7 +625,15 @@
             <aside class="col-md-2">
               <div class="custom-form-group">
                 <input type="text" id="HBLNo" formControlName="HBLNo" placeholder="" class="custom-input-field sm text-end" />
-                <label for="HBLNo" class="input-label">HBL No.</label>
+                <label for="HBLNo" class="input-label">HBL No.
+                  <i
+                    *ngIf="vendorInvoiceForm?.get('HBLNo')?.value"
+                    class="fas fa-copy ms-1"
+                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                    title="Copy HBL No"
+                    (click)="copyDocumentNumber('HBLNo', 'HBL No', $event)"
+                  ></i>
+                </label>
               </div>
             </aside>
 
@@ -576,7 +648,15 @@
                     formControlName="Remarks"
                     placeholder=""
                   />
-                <label for="Remarks" class="input-label">Remarks</label>
+                <label for="Remarks" class="input-label">Remarks
+                  <i
+                    *ngIf="vendorInvoiceForm?.get('Remarks')?.value"
+                    class="fas fa-copy ms-1"
+                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                    title="Copy Remarks"
+                    (click)="copyDocumentNumber('Remarks', 'Remarks', $event)"
+                  ></i>
+                </label>
               </div>
             </aside>
 

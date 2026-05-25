@@ -23,6 +23,12 @@
              title="Go to Voucher Matching">
             {{ header.VoucherMatchingNo }}
           </a>
+          <i
+             class="fas fa-copy ms-1"
+             style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+             title="Copy Matching No"
+             (click)="copyMatchingNumber(header.VoucherMatchingNo, $event)"
+          ></i>
         }
       </div>
 
@@ -152,7 +158,15 @@
               <div class="custom-form-group">
                 <input type="text" id="Narration" formControlName="Narration" placeholder=""
                   class="custom-input-field sm" />
-                <label for="Narration" class="input-label">Narration</label>
+                <label for="Narration" class="input-label">Narration
+                  <i
+                    *ngIf="reverseVoucherForm?.get('Narration')?.value"
+                    class="fas fa-copy ms-1"
+                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                    title="Copy Narration"
+                    (click)="copyDocumentNumber('Narration', 'Narration', $event)"
+                  ></i>
+                </label>
               </div>
             </aside>
             <aside class="col-md-3">
@@ -160,7 +174,15 @@
                 <input type="text" id="VoucherNumber" formControlName="VoucherNumber" placeholder=""
                   class="custom-input-field sm" readonly />
                 <label for="VoucherNumber" class="input-label">
-                  Reverse Voucher No. <span class="text-danger">*</span>
+                  Reverse Voucher No.
+                  <i
+                    *ngIf="reverseVoucherForm?.get('VoucherNumber')?.value"
+                    class="fas fa-copy ms-1"
+                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                    title="Copy Reverse Voucher No"
+                    (click)="copyDocumentNumber('VoucherNumber', 'Reverse Voucher No', $event)"
+                  ></i>
+                  <span class="text-danger">*</span>
                 </label>
               </div>
             </aside>
@@ -179,7 +201,15 @@
                       "
                     />
                     <label for="ReversalVoucherNumber" class="input-label">
-                      Voucher No. <span class="text-danger">*</span>
+                      Voucher No.
+                      <i
+                        *ngIf="reverseVoucherForm?.get('ReversalVoucherNumber')?.value"
+                        class="fas fa-copy ms-1"
+                        style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                        title="Copy Voucher No"
+                        (click)="copyDocumentNumber('ReversalVoucherNumber', 'Voucher No', $event)"
+                      ></i>
+                      <span class="text-danger">*</span>
                     </label>
                   </div>
 
@@ -269,7 +299,15 @@
               <div class="custom-form-group">
                 <textarea id="Remarks" placeholder="" rows="1" class="custom-input-field sm"
                   formControlName="Remarks"></textarea>
-                <label for="Remarks" class="input-label">Remarks</label>
+                <label for="Remarks" class="input-label">Remarks
+                  <i
+                    *ngIf="reverseVoucherForm?.get('Remarks')?.value"
+                    class="fas fa-copy ms-1"
+                    style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                    title="Copy Remarks"
+                    (click)="copyDocumentNumber('Remarks', 'Remarks', $event)"
+                  ></i>
+                </label>
               </div>
             </aside>
 

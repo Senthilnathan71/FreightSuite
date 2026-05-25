@@ -268,7 +268,15 @@
                     readonly
                   />
                   <label for="text-input" class="input-label"
-                    >Credit Note No</label
+                    >Credit Note No
+                    <i
+                      *ngIf="creditNoteForm?.get('VoucherNumber')?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy Credit Note No"
+                      (click)="copyDocumentNumber('VoucherNumber', 'Credit Note No', $event)"
+                    ></i>
+                    </label
                   >
                 </div>
               </aside>
@@ -298,7 +306,15 @@
                       />
                     }
                     <label for="ReversalVoucherNumber" class="input-label">
-                      Invoice No. <span class="text-danger">*</span>
+                      Invoice No.
+                      <i
+                        *ngIf="creditNoteForm?.get('ReversalVoucherNumber')?.value"
+                        class="fas fa-copy ms-1"
+                        style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                        title="Copy Invoice No"
+                        (click)="copyDocumentNumber('ReversalVoucherNumber', 'Invoice No', $event)"
+                      ></i>
+                      <span class="text-danger">*</span>
                     </label>
                   </div>
 

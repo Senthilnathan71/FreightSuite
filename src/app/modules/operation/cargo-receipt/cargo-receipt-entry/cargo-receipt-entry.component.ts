@@ -104,6 +104,18 @@ export class CargoReceiptEntryComponent implements OnInit, OnDestroy, HasUnsaved
     this.initForm();
   }
 
+  copyDocumentNumber(controlName: string, label: string, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const documentNo = this.cargoForm?.get(controlName)?.value;
+    if (!documentNo) {
+      return;
+    }
+    navigator.clipboard.writeText(String(documentNo)).then(() => {
+      this.appSettingService.showSuccess(`${label} copied to clipboard.`);
+    });
+  }
+
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));

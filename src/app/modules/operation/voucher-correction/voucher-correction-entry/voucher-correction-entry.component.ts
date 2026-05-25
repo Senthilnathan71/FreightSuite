@@ -210,6 +210,18 @@ export class VoucherCorrectionEntryComponent implements OnInit, OnDestroy, HasUn
     private receiptService: ReceiptService,
   ) { }
 
+  copyDocumentNumber(controlName: string, label: string, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const documentNo = this.voucherForm?.get(controlName)?.value;
+    if (!documentNo) {
+      return;
+    }
+    navigator.clipboard.writeText(String(documentNo)).then(() => {
+      this.appSettingService.showSuccess(`${label} copied to clipboard.`);
+    });
+  }
+
   ngOnInit(): void {
     try {
       const userProfile = this.appSettingService.getDecryptedUserProfile();

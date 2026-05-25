@@ -341,7 +341,14 @@
                     for="text-input"
                     class="input-label"
                     style="font-size: 14px"
-                    ><span>Receipt No.</span></label
+                    ><span>Receipt No.</span>
+                    <i
+                      *ngIf="receiptForm?.get('VoucherNumber')?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy Receipt No"
+                      (click)="copyDocumentNumber('VoucherNumber', 'Receipt No', $event)"
+                    ></i></label
                   >
                 </div>
               </aside>
@@ -397,7 +404,15 @@
                     for="text-input"
                     class="input-label"
                     style="font-size: 14px"
-                    >Narration <span class="text-danger">*</span></label
+                    >Narration
+                    <i
+                      *ngIf="receiptForm?.get('Narration')?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy Narration"
+                      (click)="copyDocumentNumber('Narration', 'Narration', $event)"
+                    ></i>
+                    <span class="text-danger">*</span></label
                   >
                 </div>
               </aside>
@@ -509,7 +524,15 @@
                     for="text-input"
                     class="input-label"
                     style="font-size: 14px"
-                    >Party <span class="text-danger">*</span></label
+                    >Party
+                    <i
+                      *ngIf="receiptForm?.get('PartyName')?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy Party"
+                      (click)="copyDocumentNumber('PartyName', 'Party', $event)"
+                    ></i>
+                    <span class="text-danger">*</span></label
                   >
                 </div>
               </aside>
@@ -585,7 +608,15 @@
                     for="text-input"
                     class="input-label"
                     style="font-size: 14px"
-                    >Received From</label
+                    >Received From
+                    <i
+                      *ngIf="receiptForm?.get('BankPartyName')?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy Received From"
+                      (click)="copyDocumentNumber('BankPartyName', 'Received From', $event)"
+                    ></i>
+                  </label
                   >
                 </div>
               </aside>
@@ -605,7 +636,14 @@
                     for="text-input"
                     class="input-label"
                     style="font-size: 14px"
-                    >Address</label
+                    >Address
+                    <i
+                      *ngIf="receiptForm?.get('PartyAddress')?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy Address"
+                      (click)="copyDocumentNumber('PartyAddress', 'Address', $event)"
+                    ></i></label
                   >
                 </div>
               </aside>
@@ -631,7 +669,14 @@
                         : currentCompanyCountryCode === "ae"
                         ? "VAT No."
                         : "Tax No."
-                    }}</label
+                    }}
+                    <i
+                      *ngIf="receiptForm?.get('GST_VAT')?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      [title]="currentCompanyCountryCode === 'in' ? 'Copy GST No' : 'Copy VAT No'"
+                      (click)="copyDocumentNumber('GST_VAT', currentCompanyCountryCode === 'in' ? 'GST No' : 'VAT No', $event)"
+                    ></i></label
                   >
                 </div>
               </aside>
@@ -653,6 +698,13 @@
                     class="input-label"
                     style="font-size: 14px"
                     >Remarks
+                    <i
+                      *ngIf="receiptForm?.get('Remarks')?.value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy Remarks"
+                      (click)="copyDocumentNumber('Remarks', 'Remarks', $event)"
+                    ></i>
                   </label>
                 </div>
               </aside>
@@ -812,6 +864,13 @@
         >
           {{ voucherMatchingInfo?.VoucherMatchingNo || "" }}
         </a>
+        <i
+          *ngIf="voucherMatchingInfo?.VoucherMatchingNo"
+          class="fas fa-copy ms-1"
+          style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+          title="Copy Matching No"
+          (click)="copyMatchingNumber($event)"
+        ></i>
         }
       </div>
 
