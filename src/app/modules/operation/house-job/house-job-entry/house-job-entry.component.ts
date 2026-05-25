@@ -2373,6 +2373,7 @@ private loadMasterJobDetails(masterJobSid: number): void {
       : Array.isArray(response?.houseJobProduct)
         ? response.houseJobProduct
         : [];
+    this.mergeSavedProductContainers(response, flatProducts);
 
     this.houseJobCargos.clear();
     this.houseJobCargoExpanded = [];
@@ -2723,6 +2724,61 @@ private applyExportToImportFieldLocks(): void {
     this.filteredMasterJobContainerCache.clear();
   }
 
+  private mergeSavedProductContainers(response: any, products: any[] = []): void {
+    const savedProducts = products.length ? products : this.getLoadedHouseJobProducts(response);
+    const responseContainers = [
+      ...(Array.isArray(response?.containers) ? response.containers : []),
+      ...(Array.isArray(response?.masterJob?.containers) ? response.masterJob.containers : [])
+    ];
+    const productContainers = (savedProducts || [])
+      .filter((product: any) => product?.MasterJobContainerSid && product?.ContainerNo)
+      .map((product: any) => ({
+        ...(product?.masterJobContainer || {}),
+        MasterJobContainerSid: product.MasterJobContainerSid,
+        ContainerNumber: product.ContainerNo,
+        ContainerType: product?.masterJobContainer?.ContainerType
+          ?? product?.masterJobContainer?.ContainerTypeMasterSid
+          ?? product?.ContainerType
+      }));
+
+    const containerMap = new Map<number, any>();
+    [...this.masterJobContainers, ...responseContainers, ...productContainers].forEach((container: any) => {
+      const sid = Number(container?.MasterJobContainerSid);
+      if (!sid) {
+        return;
+      }
+      const existing = containerMap.get(sid) || {};
+      containerMap.set(sid, {
+        ...existing,
+        ...container,
+        ContainerNumber: container?.ContainerNumber || existing?.ContainerNumber,
+        ContainerType: container?.ContainerType ?? existing?.ContainerType
+      });
+    });
+
+    this.masterJobContainers = Array.from(containerMap.values());
+    this.clearFilteredMasterJobContainerCache();
+  }
+
+  private getLoadedHouseJobProducts(response: any = this.housejobData): any[] {
+    const directProducts = [
+      ...(Array.isArray(response?.Products) ? response.Products : []),
+      ...(Array.isArray(response?.products) ? response.products : []),
+      ...(Array.isArray(response?.houseJobProduct) ? response.houseJobProduct : [])
+    ];
+    const cargoItems = [
+      ...(Array.isArray(response?.Cargo) ? response.Cargo : []),
+      ...(Array.isArray(response?.houseJobCargo) ? response.houseJobCargo : [])
+    ];
+    const cargoProducts = cargoItems.flatMap((cargo: any) => [
+      ...(Array.isArray(cargo?.bookingProducts) ? cargo.bookingProducts : []),
+      ...(Array.isArray(cargo?.bookingProduct) ? cargo.bookingProduct : []),
+      ...(Array.isArray(cargo?.products) ? cargo.products : [])
+    ]);
+
+    return [...directProducts, ...cargoProducts];
+  }
+
   private parseNumberSafe(value: any): number {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : 0;
@@ -2972,7 +3028,7 @@ private applyExportToImportFieldLocks(): void {
     this.operationService.getAllMasterJobContainers(MasterJobSid).subscribe((resp: any) => {
       if (resp.status) {
         this.masterJobContainers = resp.data || [];
-        this.clearFilteredMasterJobContainerCache();
+        this.mergeSavedProductContainers(this.housejobData, this.getLoadedHouseJobProducts());
         this.applyFclContainerValidators();
       } else {
         this.appSettingService.showError("Error loading containers");
