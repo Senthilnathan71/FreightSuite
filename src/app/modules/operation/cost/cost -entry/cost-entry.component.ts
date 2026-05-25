@@ -4256,23 +4256,23 @@ createRateFormGroup(data?: any): FormGroup {
   }
 
   private autoDetectCustomsDuty(): void {
-    if (!this.isUAECompany()) return;
-    const details = this.details;
-    if (!details?.length) { this.customsDutyChecked = false; return; }
-    for (let i = 0; i < details.length; i++) {
-      const row = details.at(i);
-      if (!row.get('isSelected')?.value) continue;
-      const chargeSid = row.get('ChargeMasterSid')?.value;
-      const charge = this.chargeList.find(c => c.ChargeMasterSid === chargeSid);
-      if (!charge) continue;
-      const code = (charge.chargeCode || '').toUpperCase();
-      const name = (charge.chargeName || '').toUpperCase();
-      if (code.includes('CD') || name.includes('CUSTOMS DUTY')) {
-        this.customsDutyChecked = true;
-        return;
-      }
+    if (!this.isUAECompany()) {
+      this.customsDutyChecked = false;
+      return;
     }
-    this.customsDutyChecked = false;
+
+    const selectedDetails = this.details?.controls.filter(row => row.get('isSelected')?.value) || [];
+    if (selectedDetails.length !== 1) {
+      this.customsDutyChecked = false;
+      return;
+    }
+
+    const chargeSid = selectedDetails[0].get('ChargeMasterSid')?.value;
+    const charge = this.chargeList.find(c => c.ChargeMasterSid === chargeSid);
+    const code = (charge?.chargeCode || '').toUpperCase();
+    const name = (charge?.chargeName || '').toUpperCase();
+
+    this.customsDutyChecked = code.includes('CD') || name.includes('CUSTOMS DUTY');
   }
 
   // SECTION - 7 (Generate Voucher Helpers)
