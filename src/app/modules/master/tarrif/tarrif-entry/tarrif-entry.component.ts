@@ -151,6 +151,7 @@ filteredFDC: any[] = [];
   isSaving: boolean = false;
   private initialFormValue: any = null;
   private destroy$ = new Subject<void>();
+  private lastPortFilterPayloadKey = '';
 
   editingDetailIndex: number | null = null;
   // Status-only edit flags
@@ -611,6 +612,7 @@ this.tariffDetailsForm.get('detailContainerType')?.valueChanges.subscribe(() => 
       }, { emitEvent: false });
 
       // 4. keep current selected ports inside filtered lists
+      this.refreshPortFilters(true);
       this.applyPatchedPortSelections();
 
       this.tariffDetails.clear();
@@ -675,15 +677,15 @@ this.tariffDetailsForm.get('detailContainerType')?.valueChanges.subscribe(() => 
     });
 
     this.filteredPorts = [...this.portList];
-    this.filteredPOO = [...this.portList];
-    this.filteredPOL = [...this.portList];
-    this.filteredPOD = [...this.portList];
-    this.filteredFDC = [...this.portList];
+    this.filteredPOO = [];
+    this.filteredPOL = [];
+    this.filteredPOD = [];
+    this.filteredFDC = [];
 
-    this.pooList = [...this.filteredPOO];
-    this.polList = [...this.filteredPOL];
-    this.podList = [...this.filteredPOD];
-    this.fdcList = [...this.filteredFDC];
+    this.pooList = [];
+    this.polList = [];
+    this.podList = [];
+    this.fdcList = [];
 
     this.agentList = agents.data;
     this.carrierList = carriers.data;
@@ -740,6 +742,40 @@ private getShipmentDirection(): 'EXPORT' | 'IMPORT' | '' {
   return '';
 }
 
+private normalizePortList(ports: any[] = []): any[] {
+  return (ports || []).map((p: any) => {
+    const countryName =
+      p.countryName ||
+      p.Country ||
+      p.countryMaster?.countryName ||
+      p.country?.countryName ||
+      p.CountryName ||
+      '';
+
+    return {
+      ...p,
+      PortCode: p.PortCode || p.portCode,
+      PortName: p.PortName || p.portName,
+      PortMasterSid: p.PortMasterSid || p.portMasterSid,
+      PortType: p.PortType || p.portType,
+      CountryMasterSid: p.CountryMasterSid || p.countryMaster?.CountryMasterSid || p.country?.CountryMasterSid || null,
+      Country: countryName,
+      countryName: countryName
+    };
+  });
+}
+
+private getLoginCountryMasterSid(): number | null {
+  const branchInfo = this.appSettingService.getCurrentBranchInfo?.();
+  return this.toNumericValue(
+    this.currentBranch?.CountryMasterSid ??
+    this.currentBranch?.branchMaster?.CountryMasterSid ??
+    branchInfo?.CountryMasterSid ??
+    branchInfo?.branchMaster?.CountryMasterSid ??
+    this.currentCompany?.CountryMasterSid
+  );
+}
+
 private applyPatchedPortSelections(): void {
   const pooSid = this.tariffHeaderForm.get('POOSid')?.value;
   const polSid = this.tariffHeaderForm.get('POLSid')?.value;
@@ -760,9 +796,6 @@ private applyPatchedPortSelections(): void {
 
   // POD list should contain current POD
   this.podList = [...(this.filteredPOD || [])];
-  if (selectedPOL) {
-    this.podList = this.podList.filter(p => Number(p.PortMasterSid) !== Number(selectedPOL.PortMasterSid));
-  }
   if (selectedPOD && !this.podList.some(p => Number(p.PortMasterSid) === Number(selectedPOD.PortMasterSid))) {
     this.podList = [selectedPOD, ...this.podList];
   }
@@ -790,87 +823,23 @@ private applyPatchedPortSelections(): void {
   }, { emitEvent: false });
 }
 
-private isCompanyCountryPort(port: any): boolean {
-  const companyCountryId = this.toNumericValue(this.currentCompany?.CountryMasterSid);
-  const portCountryId = this.toNumericValue(port?.CountryMasterSid);
-
-  if (companyCountryId && portCountryId) {
-    return companyCountryId === portCountryId;
-  }
-
-  const companyCountryName = this.normalizePortText(this.currentCompany?.CountryName);
-  const portCountryName = this.normalizePortText(
-    port?.Country || port?.countryName || port?.CountryName || port?.countryMaster?.countryName
-  );
-
-  return !!companyCountryName && !!portCountryName && companyCountryName === portCountryName;
-}
-
-private isForeignCountryPort(port: any): boolean {
-  const companyCountryId = this.toNumericValue(this.currentCompany?.CountryMasterSid);
-  const portCountryId = this.toNumericValue(port?.CountryMasterSid);
-
-  if (companyCountryId && portCountryId) {
-    return companyCountryId !== portCountryId;
-  }
-
-  const companyCountryName = this.normalizePortText(this.currentCompany?.CountryName);
-  const portCountryName = this.normalizePortText(
-    port?.Country || port?.countryName || port?.CountryName || port?.countryMaster?.countryName
-  );
-
-  return !!companyCountryName && !!portCountryName && companyCountryName !== portCountryName;
-}
-
 private getPortBySid(portSid: number | string | null | undefined): any | null {
   if (!portSid) {
     return null;
   }
 
-  return this.portList.find(
+  const allPorts = [
+    ...(this.portList || []),
+    ...(this.filteredPOO || []),
+    ...(this.filteredPOL || []),
+    ...(this.filteredPOD || []),
+    ...(this.filteredFDC || [])
+  ];
+
+  return allPorts.find(
     port => Number(port.PortMasterSid) === Number(portSid)
   ) || null;
 }
-
-private getPortsByReferenceCountry(
-  controlName: 'POLSid' | 'PODSid',
-  fallbackPorts: any[]
-): any[] {
-  const referencePort = this.getPortBySid(this.tariffHeaderForm.get(controlName)?.value);
-
-  if (!referencePort) {
-    return [...fallbackPorts];
-  }
-
-  const referenceCountryId = this.toNumericValue(referencePort?.CountryMasterSid);
-  if (referenceCountryId) {
-    return fallbackPorts.filter(
-      port => this.toNumericValue(port?.CountryMasterSid) === referenceCountryId
-    );
-  }
-
-  const referenceCountryName = this.normalizePortText(
-    referencePort?.Country || referencePort?.countryName || referencePort?.countryMaster?.countryName
-  );
-
-  if (!referenceCountryName) {
-    return [...fallbackPorts];
-  }
-
-  return fallbackPorts.filter(port => {
-    const portCountryName = this.normalizePortText(
-      port?.Country || port?.countryName || port?.countryMaster?.countryName
-    );
-    return portCountryName === referenceCountryName;
-  });
-}
-
-private shouldUseAllPortOptions(): boolean {
-    const departmentType = this.normalizePortText(this.selectedDepartmentType || this.selectedDepartment?.departmentType);
-    const segment = this.normalizePortText(this.selectedFCLLCL);
-
-    return ['OTHER', 'OTHERS', 'TRANSPORT'].includes(departmentType) || ['OTHER', 'OTHERS', 'TRANSPORT'].includes(segment);
-  }
 
   private isServiceJobDepartment(department: any): boolean {
     const departmentName = this.normalizePortText(department?.departmentName);
@@ -1322,6 +1291,18 @@ private resetDirtyTrackingAfterSave(): void {
     }, { emitEvent: false });
   }
 
+  if (isDeptChanged) {
+    this.filteredPOO = [];
+    this.filteredPOL = [];
+    this.filteredPOD = [];
+    this.filteredFDC = [];
+    this.pooList = [];
+    this.polList = [];
+    this.podList = [];
+    this.fdcList = [];
+    this.lastPortFilterPayloadKey = '';
+  }
+
   this.refreshPortFilters();
 
   if (this.selectedDepartmentType === 'SEA') {
@@ -1377,15 +1358,16 @@ clearPortSelections(): void {
     ViaPortSid: null,
   });
 
-  // Reset filtered lists
-   this.filteredPOO = [...this.filteredPorts];
-  this.filteredPOL = [...this.filteredPorts];
-  this.filteredPOD = [...this.filteredPorts];
-  this.filteredFDC = [...this.filteredPorts];
-  this.pooList = [...this.filteredPOO];
-  this.polList = [...this.filteredPOL];
-  this.podList = [...this.filteredPOD];
-  this.fdcList = [...this.filteredFDC];
+  this.filteredPOO = [];
+  this.filteredPOL = [];
+  this.filteredPOD = [];
+  this.filteredFDC = [];
+  this.pooList = [];
+  this.polList = [];
+  this.podList = [];
+  this.fdcList = [];
+  this.lastPortFilterPayloadKey = '';
+  this.refreshPortFilters(true);
 }
 filterChargesByDepartment(department: any): void {
   if (!department || !this.chargeList || this.chargeList.length === 0) {
@@ -1436,106 +1418,6 @@ filterChargesByDepartment(department: any): void {
     }
   }
 
-  getFilteredPortsBySegment(segment: string): any[] {
-  const normalizedSegment = this.normalizePortText(segment);
-
-  if (normalizedSegment === 'AIR') {
-    return this.portList.filter(
-      port => this.normalizePortText(port?.PortType) === 'AIR'
-    );
-  } else if (
-    normalizedSegment === 'FCL' ||
-    normalizedSegment === 'LCL' ||
-    normalizedSegment === 'SEA'
-  ) {
-    return this.portList.filter(
-      port => this.normalizePortText(port?.PortType) === 'SEA'
-    );
-  } else if (normalizedSegment === 'ROAD') {
-    return this.portList.filter(port => {
-      const portType = this.normalizePortText(port?.PortType);
-      return (
-        portType === 'ROAD' ||
-        portType.includes('ROAD') ||
-        portType.includes('LAND') ||
-        portType.includes('LOCATION')
-      );
-    });
-  } else if (normalizedSegment === 'TRANSPORT') {
-    return this.portList.filter(port => {
-      const portType = this.normalizePortText(port?.PortType);
-      return portType === 'SEA' || portType === 'AIR';
-    });
-  } else if (
-    normalizedSegment === 'OTHER' ||
-    normalizedSegment === 'OTHERS'
-  ) {
-    return [...this.portList];
-  }
-
-  return [];
-}
-
-private buildPortFilterLists() {
-  if (!this.selectedDepartmentType) {
-    return {
-      filteredPorts: [],
-      filteredPOO: [],
-      filteredPOL: [],
-      filteredPOD: [],
-      filteredFDC: []
-    };
-  }
-
-  const segment = this.selectedFCLLCL || this.selectedDepartmentType;
-  const basePorts = this.getFilteredPortsBySegment(segment);
-
-  if (this.shouldUseAllPortOptions()) {
-    const selectedPOL = this.tariffHeaderForm.get('POLSid')?.value;
-    const selectedPOD = this.tariffHeaderForm.get('PODSid')?.value;
-
-    return {
-      filteredPorts: basePorts,
-      filteredPOO: [...basePorts],
-      filteredPOL: basePorts.filter(port => Number(port.PortMasterSid) !== Number(selectedPOD)),
-      filteredPOD: basePorts.filter(port => Number(port.PortMasterSid) !== Number(selectedPOL)),
-      filteredFDC: [...basePorts]
-    };
-  }
-
-  const shipmentDirection = this.getShipmentDirection();
-  const foreignPorts = basePorts.filter(port => this.isForeignCountryPort(port));
-  const companyCountryPorts = basePorts.filter(port => this.isCompanyCountryPort(port));
-
-  let pooPorts = [...basePorts];
-  let polPorts = [...basePorts];
-  let podPorts = [...basePorts];
-  let fdcPorts = [...basePorts];
-
-  if (shipmentDirection === 'EXPORT') {
-    pooPorts = [...companyCountryPorts];
-    polPorts = [...companyCountryPorts];
-    podPorts = [...foreignPorts];
-    fdcPorts = this.getPortsByReferenceCountry('PODSid', foreignPorts);
-  } else if (shipmentDirection === 'IMPORT') {
-    pooPorts = this.getPortsByReferenceCountry('POLSid', foreignPorts);
-    polPorts = [...foreignPorts];
-    podPorts = [...companyCountryPorts];
-    fdcPorts = this.getPortsByReferenceCountry('PODSid', companyCountryPorts);
-  }
-
-  const selectedPOL = this.tariffHeaderForm.get('POLSid')?.value;
-  const selectedPOD = this.tariffHeaderForm.get('PODSid')?.value;
-
-  return {
-    filteredPorts: basePorts,
-    filteredPOO: pooPorts,
-    filteredPOL: polPorts.filter(port => Number(port.PortMasterSid) !== Number(selectedPOD)),
-    filteredPOD: podPorts.filter(port => Number(port.PortMasterSid) !== Number(selectedPOL)),
-    filteredFDC: fdcPorts
-  };
-}
-
 private applyPortFilterLists(filteredLists: any): void {
   this.filteredPorts = filteredLists.filteredPorts;
   this.filteredPOO = filteredLists.filteredPOO;
@@ -1549,58 +1431,82 @@ private applyPortFilterLists(filteredLists: any): void {
   this.fdcList = [...this.filteredFDC];
 }
 
-private clearPortControlIfInvalid(
-  controlName: 'POOSid' | 'POLSid' | 'PODSid' | 'FDCSid',
-  allowedPorts: any[]
-): boolean {
-  const control = this.tariffHeaderForm.get(controlName);
-  const selectedValue = control?.value;
-
-  if (!selectedValue) {
-    return false;
+private refreshPortFilters(force: boolean = false): void {
+  if (!this.selectedDepartment?.DepartmentMasterSid) {
+    this.applyPortFilterLists({
+      filteredPorts: [],
+      filteredPOO: [],
+      filteredPOL: [],
+      filteredPOD: [],
+      filteredFDC: []
+    });
+    this.lastPortFilterPayloadKey = '';
+    return;
   }
 
-  const isValid = allowedPorts.some(
-    port => Number(port.PortMasterSid) === Number(selectedValue)
-  );
+  const payload = {
+    DepartmentMasterSid: this.selectedDepartment.DepartmentMasterSid,
+    ShipmentType: this.getShipmentDirection(),
+    LoginCountryMasterSid: this.getLoginCountryMasterSid(),
+    PortFieldType: 'ALL',
+    SelectedPOO: this.tariffHeaderForm.get('POOSid')?.value || null,
+    SelectedPOL: this.tariffHeaderForm.get('POLSid')?.value || null,
+    SelectedPOD: this.tariffHeaderForm.get('PODSid')?.value || null,
+    SelectedFPOD: this.tariffHeaderForm.get('FDCSid')?.value || null
+  };
 
-  if (!isValid) {
-    control?.setValue(null, { emitEvent: false });
-    return true;
+  const payloadKey = JSON.stringify(payload);
+  if (!force && payloadKey === this.lastPortFilterPayloadKey) {
+    return;
   }
+  this.lastPortFilterPayloadKey = payloadKey;
+  const requestPayloadKey = payloadKey;
 
-  return false;
+  this.operationServ.getFilteredPorts(payload).subscribe({
+    next: (resp: any) => {
+      if (requestPayloadKey !== this.lastPortFilterPayloadKey) {
+        return;
+      }
+      const data = resp?.data || resp || {};
+      this.applyPortFilterLists({
+        filteredPorts: this.normalizePortList(data.POO || []),
+        filteredPOO: this.normalizePortList(data.POO || []),
+        filteredPOL: this.normalizePortList(data.POL || []),
+        filteredPOD: this.normalizePortList(data.POD || []),
+        filteredFDC: this.normalizePortList(data.FPOD || data.FDC || [])
+      });
+      this.applyPatchedPortSelections();
+    },
+    error: (error) => {
+      console.error('Error loading filtered tariff ports:', error);
+      this.applyPortFilterLists({
+        filteredPorts: [],
+        filteredPOO: [],
+        filteredPOL: [],
+        filteredPOD: [],
+        filteredFDC: []
+      });
+    }
+  });
 }
 
-private clearInvalidPortSelections(filteredLists: any): boolean {
-  let hasChanges = false;
-
-  hasChanges = this.clearPortControlIfInvalid('POOSid', filteredLists.filteredPOO) || hasChanges;
-  hasChanges = this.clearPortControlIfInvalid('POLSid', filteredLists.filteredPOL) || hasChanges;
-  hasChanges = this.clearPortControlIfInvalid('PODSid', filteredLists.filteredPOD) || hasChanges;
-  hasChanges = this.clearPortControlIfInvalid('FDCSid', filteredLists.filteredFDC) || hasChanges;
-
-  return hasChanges;
-}
-
-private refreshPortFilters(): void {
-  const filteredLists = this.buildPortFilterLists();
-  this.applyPortFilterLists(filteredLists);
-
-  if (this.clearInvalidPortSelections(filteredLists)) {
-    this.applyPortFilterLists(this.buildPortFilterLists());
-  }
+handlePOOChange(selectedPort: any): void {
+  const selectedPortSid = selectedPort?.PortMasterSid ?? selectedPort ?? null;
+  this.tariffHeaderForm.get('POOSid')?.setValue(selectedPortSid, { emitEvent: false });
+  this.refreshPortFilters();
 }
 
   handlePOLChange(selectedPort: any): void {
   const selectedPortSid = selectedPort?.PortMasterSid ?? selectedPort ?? null;
   this.tariffHeaderForm.get('POLSid')?.setValue(selectedPortSid, { emitEvent: false });
+  this.tariffHeaderForm.get('POLTerminal')?.setValue(selectedPort?.PortCode || '', { emitEvent: false });
   this.refreshPortFilters();
 }
 
 handlePODChange(selectedPort: any): void {
   const selectedPortSid = selectedPort?.PortMasterSid ?? selectedPort ?? null;
   this.tariffHeaderForm.get('PODSid')?.setValue(selectedPortSid, { emitEvent: false });
+  this.tariffHeaderForm.get('PODTerminal')?.setValue(selectedPort?.PortCode || '', { emitEvent: false });
 
   // Same as your current behavior: FDC defaults to POD
   this.tariffHeaderForm.get('FDCSid')?.setValue(selectedPortSid, { emitEvent: false });
@@ -1608,18 +1514,25 @@ handlePODChange(selectedPort: any): void {
   this.refreshPortFilters();
 }
 
+handleFDCChange(selectedPort: any): void {
+  const selectedPortSid = selectedPort?.PortMasterSid ?? selectedPort ?? null;
+  this.tariffHeaderForm.get('FDCSid')?.setValue(selectedPortSid, { emitEvent: false });
+  this.refreshPortFilters();
+}
+
 
   resetForm() {
   this.filteredPorts = [...this.portList];
-  this.filteredPOO = [...this.portList];
-  this.filteredPOL = [...this.portList];
-  this.filteredPOD = [...this.portList];
-  this.filteredFDC = [...this.portList];
+  this.filteredPOO = [];
+  this.filteredPOL = [];
+  this.filteredPOD = [];
+  this.filteredFDC = [];
 
-  this.pooList = [...this.filteredPOO];
-  this.polList = [...this.filteredPOL];
-  this.podList = [...this.filteredPOD];
-  this.fdcList = [...this.filteredFDC];
+  this.pooList = [];
+  this.polList = [];
+  this.podList = [];
+  this.fdcList = [];
+  this.lastPortFilterPayloadKey = '';
 
   if (this.isEditMode && this.TariffHeaderSid) {
     this.loadTariff(this.TariffHeaderSid);
@@ -1695,35 +1608,6 @@ handlePODChange(selectedPort: any): void {
     month: date.getMonth() + 1,
     day: date.getDate()
   };
-}
-
-  filterPodList(port: any) {
-  if (!port) {
-    this.tariffHeaderForm.get('POLTerminal')?.setValue('');
-    this.podList = [...(this.filteredPOD || [])];
-    return;
-  }
-
-  this.tariffHeaderForm.get('POLTerminal')?.setValue(port.PortCode);
-  this.podList = (this.filteredPOD || []).filter(
-    each => Number(each.PortMasterSid) !== Number(port.PortMasterSid)
-  );
-}
-
-filterPolList(port: any) {
-  if (!port) {
-    this.tariffHeaderForm.get('PODTerminal')?.setValue('');
-    this.tariffHeaderForm.get('FDCSid')?.setValue(null);
-    this.polList = [...(this.filteredPOL || [])];
-    return;
-  }
-
-  this.tariffHeaderForm.get('PODTerminal')?.setValue(port.PortCode);
-  this.polList = (this.filteredPOL || []).filter(
-    each => Number(each.PortMasterSid) !== Number(port.PortMasterSid)
-  );
-
-  this.tariffHeaderForm.get('FDCSid')?.setValue(port.PortMasterSid);
 }
 
   showHeaderInfo() {
@@ -2084,7 +1968,7 @@ private patchCopiedTariff(data: any): void {
   }, { emitEvent: false });
 
   // now re-filter based on copied POL/POD
-  this.refreshPortFilters();
+  this.refreshPortFilters(true);
   this.applyPatchedPortSelections();
 
   this.tariffDetails.clear();

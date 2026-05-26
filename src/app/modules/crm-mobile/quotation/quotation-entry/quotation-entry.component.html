@@ -576,10 +576,11 @@
                             bindValue="PortMasterSid">
 
                           </ng-select> -->
-                          <dofi-searchable-dropdown [items]="ports" formControlName="PORSid" placeholder=""
+                          <dofi-searchable-dropdown [items]="filteredPORPorts[routeIndex]" formControlName="PORSid" placeholder=""
                             [displayFields]="portLookupConfig.displayFields"
                             [displayLabels]="portLookupConfig.displayLabels"
-                            [labelFields]="portLookupConfig.labelFields" bindLabel="PortName" bindValue="PortMasterSid">
+                            [labelFields]="portLookupConfig.labelFields" bindLabel="PortName" bindValue="PortMasterSid"
+                            (itemSelected)="onRoutePortSelected(routeIndex, 'PORSid', $event)">
                           </dofi-searchable-dropdown>
                           <label for="" class="input-label">POO<span class="text-danger"></span></label>
                         </div>
@@ -595,7 +596,7 @@
                             placeholder="" [displayFields]="portLookupConfig.displayFields"
                             [displayLabels]="portLookupConfig.displayLabels"
                             [labelFields]="portLookupConfig.labelFields" bindLabel="PortName" bindValue="PortMasterSid"
-                            (itemSelected)="onRouteChange(routeIndex)">
+                            (itemSelected)="onRoutePortSelected(routeIndex, 'POLSid', $event)">
                           </dofi-searchable-dropdown>
                           <label for="" class="input-label">POL <span class="text-danger">*</span></label>
                           @if(route.get('POLSid')?.invalid && route.get('POLSid').touched){
@@ -638,10 +639,11 @@
                             bindValue="PortMasterSid">
 
                           </ng-select> -->
-                          <dofi-searchable-dropdown [items]="ports" formControlName="FPODSid" placeholder=""
+                          <dofi-searchable-dropdown [items]="filteredFPODPorts[routeIndex]" formControlName="FPODSid" placeholder=""
                             [displayFields]="portLookupConfig.displayFields"
                             [displayLabels]="portLookupConfig.displayLabels"
-                            [labelFields]="portLookupConfig.labelFields" bindLabel="PortName" bindValue="PortMasterSid">
+                            [labelFields]="portLookupConfig.labelFields" bindLabel="PortName" bindValue="PortMasterSid"
+                            (itemSelected)="onRoutePortSelected(routeIndex, 'FPODSid', $event)">
                           </dofi-searchable-dropdown>
                           <label for="" class="input-label">FPOD</label>
                         </div>
@@ -2090,7 +2092,7 @@
                         <div class="custom-form-group custom-form-group-select"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('PORSid')?.value">
                           <ng-select formControlName="PORSid" [items]="filteredPORPorts[routeIndex]" bindLabel="PortName"
-                            bindValue="PortMasterSid">
+                            bindValue="PortMasterSid" (change)="onRoutePortSelected(routeIndex, 'PORSid', $event)">
 
                           </ng-select>
                           <label for="" class="input-label">POR<span class="text-danger"></span></label>
@@ -2100,7 +2102,7 @@
                         <div class="custom-form-group custom-form-group-select"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('PORSid')?.value">
                           <ng-select formControlName="POLSid" [items]="filteredPOLPorts[routeIndex]"
-                            bindLabel="PortName" bindValue="PortMasterSid" (change)="onRouteChange(routeIndex)">
+                            bindLabel="PortName" bindValue="PortMasterSid" (change)="onRoutePortSelected(routeIndex, 'POLSid', $event)">
 
                           </ng-select>
                           <label for="" class="input-label">POL <span class="text-danger">*</span></label>
@@ -2117,8 +2119,7 @@
                         <div class="custom-form-group custom-form-group-select"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('PORSid')?.value">
                           <ng-select formControlName="PODSid" [items]="filteredPODPorts[routeIndex]"
-                            bindLabel="PortName" bindValue="PortMasterSid" (change)="onPODChange($event,routeIndex)"
-                            (change)="onRouteChange(routeIndex)">
+                            bindLabel="PortName" bindValue="PortMasterSid" (change)="onPODChange($event,routeIndex)">
 
                           </ng-select>
                           <label for="" class="input-label">POD <span class="text-danger">*</span></label>
@@ -2135,7 +2136,7 @@
                         <div class="custom-form-group custom-form-group-select"
                           [class.filled]="!!quoteRoutes.at(routeIndex).get('FPODSid')?.value">
                           <ng-select formControlName="FPODSid" [items]="filteredFPODPorts[routeIndex]" bindLabel="PortName"
-                            bindValue="PortMasterSid">
+                            bindValue="PortMasterSid" (change)="onRoutePortSelected(routeIndex, 'FPODSid', $event)">
 
                           </ng-select>
                           <label for="" class="input-label">FPOD</label>

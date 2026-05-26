@@ -470,7 +470,7 @@
                                                     {{ item.PortCode | uppercase }} - {{ item.PortName }}
                                                 </ng-template>
                                             </ng-select> -->
-                                            <dofi-searchable-dropdown [items]="portList" formControlName="POO" placeholder=""
+                                            <dofi-searchable-dropdown [items]="filteredPOO" formControlName="POO" placeholder=""
                         [displayFields]="portLookupConfig.displayFields"
                         [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
                         bindLabel="PortCode" bindValue="PortMasterSid"
@@ -547,7 +547,7 @@
                                                     {{ item.PortCode | uppercase }} - {{ item.PortName }}
                                                 </ng-template>
                                             </ng-select> -->
-                                            <dofi-searchable-dropdown [items]="portList" formControlName="FPD" placeholder=""
+                                            <dofi-searchable-dropdown [items]="filteredFPOD" formControlName="FPD" placeholder=""
                         [displayFields]="portLookupConfig.displayFields"
                         [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
                         bindLabel="PortCode" bindValue="PortMasterSid"

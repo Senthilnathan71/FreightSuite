@@ -885,6 +885,14 @@ processProductUpload(payload: any): Observable<any> {
       })
     );
   }
+
+  getFilteredPorts(payload: any) {
+    return this.http.post('port/filtered-list', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
   getAllVessels() {
     return this.http.get<{ data: Vessel }>('vessel').pipe(
       map((resp: any) => {

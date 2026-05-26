@@ -1007,11 +1007,11 @@
                                                     {{item.PortName}} ({{ item.PortCode }})
                                                 </ng-option>
                                             </ng-select> -->
-                                            <dofi-searchable-dropdown #pooDd [items]="ports" formControlName="POO"
+                                            <dofi-searchable-dropdown #pooDd [items]="filteredPOOPorts[routeIndex]" formControlName="POO"
                                                 placeholder="" [displayFields]="portLookupConfig.displayFields"
                                                 [displayLabels]="portLookupConfig.displayLabels"
                                                 [labelFields]="portLookupConfig.labelFields" bindLabel="PortName"
-                                                bindValue="PortMasterSid">
+                                                bindValue="PortMasterSid" (itemSelected)="onRoutePortSelected(routeIndex, 'POO', $event)">
                                             </dofi-searchable-dropdown>
                                             <label class="input-label">POO</label>
                                         </div>
@@ -1025,7 +1025,7 @@
                                                 [displayFields]="portLookupConfig.displayFields"
                                                 [displayLabels]="portLookupConfig.displayLabels"
                                                 [labelFields]="portLookupConfig.labelFields" bindLabel="PortName"
-                                                bindValue="PortMasterSid" (itemSelected)="onRouteChange(routeIndex)">
+                                                bindValue="PortMasterSid" (itemSelected)="onRoutePortSelected(routeIndex, 'POL', $event)">
                                             </dofi-searchable-dropdown>
                                             <label for="" class="input-label">POL <span
                                                     class="text-danger">*</span></label>
@@ -1047,7 +1047,7 @@
                                                 [displayFields]="portLookupConfig.displayFields"
                                                 [displayLabels]="portLookupConfig.displayLabels"
                                                 [labelFields]="portLookupConfig.labelFields" bindLabel="PortName"
-                                                bindValue="PortMasterSid" (itemSelected)="onRouteChange(routeIndex)">
+                                                bindValue="PortMasterSid" (itemSelected)="onRoutePortSelected(routeIndex, 'POD', $event)">
                                             </dofi-searchable-dropdown>
                                             <label for="" class="input-label">POD <span
                                                     class="text-danger">*</span></label>
@@ -1071,11 +1071,11 @@
                                                     {{item.PortName}} ({{ item.PortCode }})
                                                 </ng-option>
                                             </ng-select> -->
-                                            <dofi-searchable-dropdown #fdcDd [items]="ports" formControlName="FDC"
+                                            <dofi-searchable-dropdown #fdcDd [items]="filteredFDCPorts[routeIndex]" formControlName="FDC"
                                                 placeholder="" [displayFields]="portLookupConfig.displayFields"
                                                 [displayLabels]="portLookupConfig.displayLabels"
                                                 [labelFields]="portLookupConfig.labelFields" bindLabel="PortName"
-                                                bindValue="PortMasterSid">
+                                                bindValue="PortMasterSid" (itemSelected)="onRoutePortSelected(routeIndex, 'FDC', $event)">
                                             </dofi-searchable-dropdown>
                                             <label class="input-label">FPOD</label>
                                         </div>

@@ -936,7 +936,7 @@
                       <!-- <ng-select [items]="filteredPorts" bindLabel="PortName" bindValue="PortCode" class="ng-select"
                         formControlName="POO" appendTo="body" placeholder="">
                       </ng-select> -->
-                      <dofi-searchable-dropdown [items]="portList" formControlName="POO" placeholder=""
+                      <dofi-searchable-dropdown [items]="filteredPOO" formControlName="POO" placeholder=""
                         [displayFields]="portLookupConfig.displayFields"
                         [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
                         bindLabel="PortName" bindValue="PortCode">
@@ -1000,7 +1000,7 @@
                         formControlName="FPD" appendTo="body" placeholder=""
                         (change)="handleFPODChange($event)">
                       </ng-select> -->
-                      <dofi-searchable-dropdown [items]="portList" formControlName="FPD" placeholder=""
+                      <dofi-searchable-dropdown [items]="filteredFPOD" formControlName="FPD" placeholder=""
                         [displayFields]="portLookupConfig.displayFields"
                         [displayLabels]="portLookupConfig.displayLabels" [labelFields]="portLookupConfig.labelFields"
                         bindLabel="PortName" bindValue="PortCode" (itemSelected)="handleFPODChange($event)">
@@ -1532,7 +1532,7 @@
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('POO')?.value">
-              <dofi-searchable-dropdown [items]="portList" formControlName="POO" placeholder=""
+              <dofi-searchable-dropdown [items]="filteredPOO" formControlName="POO" placeholder=""
                 [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
                 [labelFields]="portLookupConfig.labelFields" bindValue="PortCode">
               </dofi-searchable-dropdown>
@@ -1542,7 +1542,7 @@
           </aside>
           <aside class="col-md-3">
             <div class="custom-form-group custom-form-group-select" [class.filled]="!!proxyForm.get('FPD')?.value">
-              <dofi-searchable-dropdown [items]="portList" formControlName="FPD" placeholder=""
+              <dofi-searchable-dropdown [items]="filteredFPOD" formControlName="FPD" placeholder=""
                 [displayFields]="portLookupConfig.displayFields" [displayLabels]="portLookupConfig.displayLabels"
                 [labelFields]="portLookupConfig.labelFields" bindValue="PortCode">
               </dofi-searchable-dropdown>
