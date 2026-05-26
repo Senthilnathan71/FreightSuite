@@ -1903,7 +1903,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       ShipmentNo: response.ShipmentNo
     });
 
-    // this.updateGenerateJobButtonVisibility()
+    this.updateGenerateJobButtonVisibility();
 
     this.getVesselVoyBasedOnPorts();
     this.b['DepartmentMasterSid']?.disable();
@@ -2022,6 +2022,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       CarrierBookingRef: otherData?.CarrierBookingRef,
       CarrierBookingDate: otherData?.CarrierBookingDate ? new Date(otherData?.CarrierBookingDate) : null
     }, { emitEvent: false });
+    this.updateGenerateJobButtonVisibility();
 
     // Patch CRO form
     const croData = response.bookingCro?.[0];
@@ -2162,6 +2163,7 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
       
       // Force one more sync with rate component
       this.syncFormValueWithRateComponent();
+      this.updateGenerateJobButtonVisibility();
     }, 1000);
   }
 }
