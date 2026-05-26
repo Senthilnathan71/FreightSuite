@@ -142,7 +142,8 @@
   [displayLabels]="portLookupConfig.displayLabels" 
   [labelFields]="portLookupConfig.labelFields"
   [bindValue]="'PortMasterSid'"
-  [isLoading]="isDataLoading">
+  [isLoading]="isDataLoading"
+  (itemSelected)="handlePOOChange($event)">
 </dofi-searchable-dropdown>
                             <!-- (itemSelected)="onItemSelected($event)" -->
                             <label for="text-input" class="input-label">POO <span class="text-danger"></span></label>
@@ -166,7 +167,7 @@
   [labelFields]="portLookupConfig.labelFields"
   [bindValue]="'PortMasterSid'"
   [isLoading]="isDataLoading" 
-  (itemSelected)="handlePOLChange($event); filterPodList($event)">
+  (itemSelected)="handlePOLChange($event)">
 </dofi-searchable-dropdown>
                             <!-- <ng-select class="ng-select" formControlName="POLSid" (change)="setPOLTerminal($event)">
                                 <ng-option value="">Select POL</ng-option>
@@ -198,7 +199,7 @@
   [labelFields]="portLookupConfig.labelFields"
   [bindValue]="'PortMasterSid'"
   [isLoading]="isDataLoading" 
-  (itemSelected)="handlePODChange($event); filterPolList($event)">
+  (itemSelected)="handlePODChange($event)">
 </dofi-searchable-dropdown>
                             <!-- <ng-select class="ng-select" formControlName="PODSid" (change)="setPODTerminal($event)">
                                 <ng-option value="">Select POD</ng-option>
@@ -239,7 +240,8 @@
   [displayLabels]="portLookupConfig.displayLabels" 
   [labelFields]="portLookupConfig.labelFields"
   [bindValue]="'PortMasterSid'"
-  [isLoading]="isDataLoading">
+  [isLoading]="isDataLoading"
+  (itemSelected)="handleFDCChange($event)">
 </dofi-searchable-dropdown>
 
     <label for="text-input" class="input-label">FDC <span class="text-danger"></span></label>

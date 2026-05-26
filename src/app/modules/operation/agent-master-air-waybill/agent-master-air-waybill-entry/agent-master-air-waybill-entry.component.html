@@ -972,7 +972,8 @@
                           <dofi-searchable-dropdown [items]="filteredPOO" formControlName="POO" placeholder=""
                             [displayFields]="portLookupConfig.displayFields"
                             [displayLabels]="portLookupConfig.displayLabels"
-                            [labelFields]="portLookupConfig.labelFields" bindLabel="PortName" bindValue="PortCode">
+                            [labelFields]="portLookupConfig.labelFields" bindLabel="PortName" bindValue="PortCode"
+                            (itemSelected)="handlePOOChange($event)">
                           </dofi-searchable-dropdown>
                           <label for="text-input" class="input-label">POO<span class="text-danger"></span></label>
                         </div>

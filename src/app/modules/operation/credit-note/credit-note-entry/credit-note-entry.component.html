@@ -455,11 +455,35 @@
                     readonly
                   />
                   @if (currentCompanyCountryCode === "in") {
-                    <label class="input-label">GST No</label>
+                    <label class="input-label">GST No
+                      <i 
+                      *ngIf="creditNoteForm?.get('GST_VAT').value"
+                      class="fas fa-copy ms-1"
+                      style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                      title="Copy GST No"
+                      (click)="copyDocumentNumber('GST_VAT', 'GST No', $event)"
+                    ></i>
+                    </label>
                   } @else if (currentCompanyCountryCode !== "ae") {
-                    <label class="input-label">VAT No</label>
+                    <label class="input-label">VAT No
+                      <i
+                        *ngIf="creditNoteForm?.get('GST_VAT').value"
+                        class="fas fa-copy ms-1"
+                        style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                        title="Copy VAT No"
+                        (click)="copyDocumentNumber('GST_VAT', 'VAT No', $event)"
+                      ></i>
+                    </label>
                   } @else {
-                    <label class="input-label">Tax No</label>
+                    <label class="input-label">Tax No
+                      <i
+                        *ngIf="creditNoteForm?.get('GST_VAT').value"
+                        class="fas fa-copy ms-1"
+                        style="cursor: pointer; color: #1976d2; font-size: 12px; pointer-events: auto;"
+                        title="Copy Tax No"
+                        (click)="copyDocumentNumber('GST_VAT', 'Tax No', $event)"
+                      ></i>
+                    </label>
                   }
                 </div>
               </aside>
