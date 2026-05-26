@@ -1513,7 +1513,7 @@
                     formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="10"
                     [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
                   <label for="text-input" class="input-label">
-                    Gross Weight <span class="text-danger">*</span>
+                    Gross Wt. <span class="text-danger">*</span>
                   </label>
 
                   <!-- Validation Messages -->
@@ -1543,7 +1543,7 @@
                     [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999"
                     (blur)="cargoForm.get('GrossWeight')?.updateValueAndValidity()"
                     (input)="cargoForm.get('GrossWeight')?.updateValueAndValidity()">
-                  <label for="text-input" class="input-label">Net Weight<span class="text-danger"></span></label>
+                  <label for="text-input" class="input-label">Net Wt.<span class="text-danger"></span></label>
                   <!-- Validation Messages -->
                   @if ((cargoForm.get('NetWeight')?.touched || cargoForm.get('NetWeight')?.dirty) &&
                   cargoForm.get('NetWeight')?.invalid) {
@@ -1603,7 +1603,7 @@
                   <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end"
                     formControlName="ChargeableWeight" DecimalPrecision [DecimalPrecisionBefore]="7"
                     [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
-                  <label for="text-input" class="input-label">Chargeable Weight<span class="text-danger"></span></label>
+                  <label for="text-input" class="input-label">Chargeable Wt.<span class="text-danger"></span></label>
                   <!-- Validation Messages -->
                   @if ((cargoForm.get('ChargeableWeight')?.touched || cargoForm.get('ChargeableWeight')?.dirty) &&
                   cargoForm.get('ChargeableWeight')?.invalid) {
@@ -1815,7 +1815,7 @@
             <div class="col-12 px-1" [formGroup]="detailForm">
               <div class="table-responsive table-borderless1" formArrayName="bookingProducts"
                 style="overflow-y: hidden;">
-                <table class="table table-hover align-middle no-wrap  table-sm mb-0">
+                <table class="table table-hover align-middle no-wrap table-sm mb-0 agent-mawb-product-table">
                   <thead>
                     <tr class="bg-info text-center">
                       <th class="bg-transparent text-light" scope="col" *ngIf="bookingProducts.length > 0" width="2%">
@@ -1824,7 +1824,7 @@
                           class="text-danger fw-bold fs-2">*</span></th>
                       <th class="bg-transparent text-light dofi-min-w-110" scope="col">HS Code<span
                           class="text-danger"></span></th>
-                      <th class="bg-transparent text-light dofi-min-w-40" scope="col">Shipping Bill No<span
+                      <th class="bg-transparent text-light dofi-min-w-40" scope="col">Shipping Bill No.<span
                           class="text-danger"></span></th>
                       <th class="bg-transparent text-light dofi-min-w-130" scope="col">Shipping Bill Date<span
                           class="text-danger"></span></th>
@@ -1835,19 +1835,19 @@
                       @if(selectedFCLLCL === 'LCL' || selectedFCLLCL === 'AIR'){
                       <th class="bg-transparent text-light dofi-min-w-80" scope="col">UOM <span
                           class="text-danger fw-bold fs-3">*</span></th>
-                      <th class="bg-transparent text-light dofi-min-w-80" scope="col">Length<span
+                      <th class="bg-transparent text-light dofi-min-w-80" scope="col">L<span
                           class="text-danger"></span></th>
-                      <th class="bg-transparent text-light dofi-min-w-80" scope="col">Width<span
+                      <th class="bg-transparent text-light dofi-min-w-80" scope="col">W<span
                           class="text-danger"></span></th>
-                      <th class="bg-transparent text-light dofi-min-w-80" scope="col">Height<span
+                      <th class="bg-transparent text-light dofi-min-w-80" scope="col">H<span
                           class="text-danger"></span></th>
                       <th class="bg-transparent text-light dofi-min-w-80" scope="col">Volumetric <span
                           class="text-danger fw-bold fs-3">*</span></th>
                       <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM <span
                           class="text-danger fw-bold fs-3">*</span></th>
-                      <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wgt <span
+                      <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wt. <span
                           class="text-danger fw-bold fs-3">*</span></th>
-                      <th class="bg-transparent text-light dofi-min-w-70" scope="col">Net Wgt<span
+                      <th class="bg-transparent text-light dofi-min-w-70" scope="col">Net Wt.<span
                           class="text-danger"></span></th>
                       }
                       @if(selectedFCLLCL === 'FCL'){
@@ -1872,14 +1872,14 @@
                       }
                       <th class="bg-transparent text-light dofi-min-w-130" scope="col">Delivery Date<span
                           class="text-danger"></span></th>
-                      <th class="bg-transparent text-light dofi-min-w-70" scope="col">Delivered Qty<span
+                      <th class="bg-transparent text-light dofi-min-w-110" scope="col">Delivered Qty<span
                           class="text-danger"></span></th>
-                      <th class="bg-transparent text-light" scope="col">Is Haz<span class="text-danger"></span></th>
-                      <th class="bg-transparent text-light dofi-min-w-60" scope="col">Imco Class<span
+                      <th class="bg-transparent text-light dofi-min-w-80" scope="col">Is Haz<span class="text-danger"></span></th>
+                      <th class="bg-transparent text-light dofi-min-w-100" scope="col">Imco Class<span
                           class="text-danger"></span></th>
-                      <th class="bg-transparent text-light dofi-min-w-60" scope="col">Un No.<span
+                      <th class="bg-transparent text-light dofi-min-w-80" scope="col">Un No.<span
                           class="text-danger"></span></th>
-                      <th class="bg-transparent text-light dofi-min-w-60" scope="col">Pkg Group<span
+                      <th class="bg-transparent text-light dofi-min-w-100" scope="col">Pkg Group<span
                           class="text-danger"></span></th>
                     </tr>
                   </thead>

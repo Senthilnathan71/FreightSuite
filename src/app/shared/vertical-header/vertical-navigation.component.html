@@ -2,7 +2,7 @@
 <!-- toggle and nav items -->
 <!-- ============================================================== -->
 
-<nav class="navbar navbar-expand-lg p-0">
+<nav class="navbar navbar-expand-lg p-0 position-relative" style="overflow: visible;">
    
 <ul class="navbar-nav float-start me-auto d-flex align-items-center gap-2">
   <li class="nav-item d-none d-lg-block">
@@ -192,12 +192,12 @@
 <!-- ============================================================== -->
 
  
-<ul class="navbar-nav float-end d-flex align-items-center gap-2">
+<ul class="navbar-nav float-end d-flex align-items-center gap-2" style="overflow: visible;">
   <!-- Search Inputs with Dropdown -->
         
   
-  <li class="nav-item">
-  <div class="d-flex gap-3">
+  <li class="nav-item position-absolute top-50 start-50 translate-middle d-flex align-items-center gap-3" style="z-index: 2;">
+  <div class="d-flex align-items-center gap-3">
     <div class="position-relative" ngbDropdown #menuSearchDropdown="ngbDropdown" [autoClose]="outside">
       <input 
         type="text" 
@@ -295,12 +295,6 @@
         </ng-container>
       </div>
     </div>
-  </div>
-</li>
-
-
-  <li class="nav-item">
-    <div class="d-flex gap-3">
       <div class="position-relative" ngbDropdown #docSearchDropdown="ngbDropdown" [autoClose]="outside">
         <input
           type="text"
@@ -385,15 +379,16 @@
 
 
     <li class="nav-item">
-      <a (click)="navigateToMaster()" href="javascript:void(0);" class="nav-link">
-        <i-feather name="home"></i-feather>
+      <a (click)="navigateToMaster()" href="javascript:void(0);" class="nav-link" style="color: #0b74b8;">
+        <i class="fas fa-home fs-5"></i>
       </a>
     </li>
     <li class="nav-item dropdown" ngbDropdown #myDrop="ngbDropdown" placement="bottom-end"
       (openChange)="loadRecentList($event)">
       <a ngbDropdownToggle class="nav-link dropdown-toggle waves-effect waves-dark" href="javascript:void(0)"
+        style="color: #d97706;"
         aria-haspopup="true" aria-expanded="false">
-        <i-feather name="clock"></i-feather>
+        <i class="fas fa-clock fs-5"></i>
       </a>
 
       <div class="dropdown-menu mailbox dropdown-menu-end dropdown-menu-animate-up" ngbDropdownMenu>
@@ -437,8 +432,9 @@
     <li class="nav-item dropdown" ngbDropdown #myDrop1="ngbDropdown" placement="bottom-end"
       (openChange)="loadFavouriteList($event)">
       <a ngbDropdownToggle class="nav-link dropdown-toggle waves-effect waves-dark" href="javascript:void(0)"
+        style="color: #be123c;"
         aria-haspopup="true" aria-expanded="false">
-        <i-feather name="heart"></i-feather>
+        <i class="fas fa-heart fs-5"></i>
       </a>
 
       <div class="dropdown-menu mailbox dropdown-menu-end dropdown-menu-animate-up" ngbDropdownMenu>
@@ -479,8 +475,8 @@
     </a>
   </li> -->
     <li class="nav-item">
-      <a href="javascript:void(0);" class="nav-link">
-        <i-feather name="align-right" (click)="navigateShortcut()"></i-feather>
+      <a href="javascript:void(0);" class="nav-link" style="color: #2563eb;">
+        <i class="fas fa-bars fs-5" (click)="navigateShortcut()"></i>
       </a>
     </li>
 
@@ -507,16 +503,17 @@
     <!-- ============================================================== -->
     <!-- Comment -->
     <!-- ============================================================== -->
-    <li class="nav-item dropdown" ngbDropdown #notifyDropdown="ngbDropdown" placement="bottom-end" autoClose="outside">
+    <li class="nav-item dropdown" ngbDropdown #notifyDropdown="ngbDropdown" placement="bottom-end" autoClose="outside" style="overflow: visible;">
       <a ngbDropdownToggle class="nav-link dropdown-toggle waves-effect waves-dark position-relative" href="javascript:void(0)"
+        style="color: #7c3aed;"
         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
         [ngbTooltip]="notifications.length > 0
           ? notifications.length + ' event' + (notifications.length === 1 ? '' : 's') + ' in next 24 hours'
           : 'No upcoming events'"
         placement="bottom">
-        <i-feather name="bell"></i-feather>
+        <i class="fas fa-bell fs-3"></i>
         @if (notifications.length > 0) {
-          <span class="bell-badge pulse">{{ notifications.length }}</span>
+          <span class="bell-badge pulse" style="top: 7px; right: 3px; min-width: 13px; height: 13px; line-height: 13px; padding: 0 3px; font-size: 8px; z-index: 5;">{{ notifications.length }}</span>
         }
       </a>
       <div class="dropdown-menu mailbox dropdown-menu-end dropdown-menu-animate-up" ngbDropdownMenu>

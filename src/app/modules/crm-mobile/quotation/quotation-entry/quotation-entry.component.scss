@@ -7,3 +7,13 @@
 :host .quote-net-weight-field .text-danger {
   display: inline;
 }
+
+:host .quote-charge-table thead .text-danger {
+  color: #ffb3b3 !important;
+  font-size: 12px;
+}
+
+:host .quote-cargo-entry-fields .input-label .text-danger {
+  color: #ff003c !important;
+  font-size: 12px;
+}

@@ -1,0 +1,36 @@
+:host {
+  display: block;
+}
+
+.credit-note-entry-header {
+  flex-wrap: nowrap;
+}
+
+.credit-note-title-section,
+.credit-note-actions-section {
+  min-width: 0;
+}
+
+.credit-note-title-section {
+  align-items: center;
+}
+
+.credit-note-actions {
+  flex-wrap: nowrap;
+  min-width: max-content;
+}
+
+.credit-note-actions .btn,
+.credit-note-actions .action-group {
+  flex: 0 0 auto;
+}
+
+.credit-note-actions .btn {
+  white-space: nowrap;
+}
+
+@media (max-width: 1199.98px) {
+  .credit-note-entry-header {
+    overflow-x: auto;
+  }
+}

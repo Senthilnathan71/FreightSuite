@@ -131,6 +131,7 @@ type Html2PdfOptions = {
     FormStateGuardDirective
   ],
   templateUrl: './agent-master-air-waybill-entry.component.html',
+  styleUrl: './agent-master-air-waybill-entry.component.scss',
  
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },

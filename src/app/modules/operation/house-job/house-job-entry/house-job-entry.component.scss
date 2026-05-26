@@ -51,3 +51,54 @@
 :host .house-job-tabs .nav-actions {
   flex: 0 0 auto;
 }
+
+:host .mandatory-symbol-light-red {
+  color: #ff8a8a;
+  margin-left: 3px;
+}
+
+:host .smart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+:host .header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+:host .brand-content {
+  flex: 0 0 auto;
+}
+
+:host .workspace-title {
+  margin: 0;
+  white-space: nowrap;
+}
+
+:host .master-job-link {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 520px;
+  white-space: nowrap;
+}
+
+:host .master-job-link a,
+:host .master-job-link span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:host .header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}

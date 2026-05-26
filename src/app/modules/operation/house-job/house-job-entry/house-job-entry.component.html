@@ -1704,7 +1704,7 @@
                         (input)="onCargoManualFieldInput($any(cargo), 'GrossWeight')"
                         DecimalPrecision [DecimalPrecisionBefore]="10" [DecimalPrecisionAfter]="decimalAfterPrecision"
                         max="9999999.999">
-                      <label class="input-label">Gross Weight <span class="text-danger">*</span></label>
+                      <label class="input-label">Gross Wt. <span class="text-danger">*</span></label>
                       @if (shouldShowCargoFieldError(cargo, 'GrossWeight')) {
                       <div class="error-message cargo-error-message" role="alert">
                         <span>{{ getCargoFieldErrorMessage(cargo, 'GrossWeight') }}</span>
@@ -1718,7 +1718,7 @@
                         DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="decimalAfterPrecision"
                         max="9999999.999" (blur)="cargo.get('GrossWeight')?.updateValueAndValidity()"
                         (input)="cargo.get('GrossWeight')?.updateValueAndValidity()">
-                      <label class="input-label">Net Weight</label>
+                      <label class="input-label">Net Wt.</label>
                     </div>
                   </aside>
                   <aside class="col-md-2">
@@ -1746,7 +1746,7 @@
                         (input)="onCargoManualFieldInput($any(cargo), 'ChargeableWeight')"
                         DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="decimalAfterPrecision"
                         max="9999999.999">
-                      <label class="input-label">Chargeable Weight</label>
+                      <label class="input-label">Chargeable Wt.</label>
                     </div>
                   </aside>
                   }
@@ -1757,7 +1757,7 @@
                         (input)="onCargoManualFieldInput($any(cargo), 'ChargeableWeight')"
                         DecimalPrecision [DecimalPrecisionBefore]="7" [DecimalPrecisionAfter]="decimalAfterPrecision"
                         max="9999999.999">
-                      <label class="input-label">Chargeable Weight</label>
+                      <label class="input-label">Chargeable Wt.</label>
                     </div>
                   </aside>
                   }
@@ -1840,26 +1840,26 @@
                     <thead>
                       <tr class="bg-info text-center">
                         <th class="bg-transparent text-light" scope="col" *ngIf="houseJobCargoProducts(cargoIndex).length > 0" width="2%"></th>
-                        <th class="bg-transparent text-light dofi-min-w-160" scope="col">Commodity<span class="text-danger">*</span></th>
+                        <th class="bg-transparent text-light dofi-min-w-160" scope="col">Commodity<span class="mandatory-symbol-light-red">*</span></th>
                         <th class="bg-transparent text-light dofi-min-w-110" scope="col">HS Code</th>
-                        <th class="bg-transparent text-light dofi-min-w-40" scope="col">Shipping Bill No</th>
+                        <th class="bg-transparent text-light dofi-min-w-40" scope="col">Shipping Bill No.</th>
                         <th class="bg-transparent text-light dofi-min-w-130" scope="col">Shipping Bill Date</th>
-                        <th class="bg-transparent text-light dofi-min-w-40" scope="col">Extl Pkg<span class="text-danger">*</span></th>
-                        <th class="bg-transparent text-light dofi-min-w-40" scope="col">No.of Pkg<span class="text-danger">*</span></th>
+                        <th class="bg-transparent text-light dofi-min-w-40" scope="col">Extl Pkg<span class="mandatory-symbol-light-red">*</span></th>
+                        <th class="bg-transparent text-light dofi-min-w-40" scope="col">No.of Pkg<span class="mandatory-symbol-light-red">*</span></th>
                         @if(usesDimensionalCargoFields()){
-                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">UOM <span class="text-danger">*</span></th>
-                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">Length</th>
-                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">Width</th>
-                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">Height</th>
-                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">Volumetric<span class="text-danger">*</span></th>
-                          <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM <span class="text-danger">*</span></th>
-                          <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wgt<span class="text-danger">*</span></th>
-                          <th class="bg-transparent text-light dofi-min-w-70" scope="col">Net Wgt</th>
+                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">UOM <span class="mandatory-symbol-light-red">*</span></th>
+                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">L</th>
+                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">W</th>
+                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">H</th>
+                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">Volumetric<span class="mandatory-symbol-light-red">*</span></th>
+                          <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM <span class="mandatory-symbol-light-red">*</span></th>
+                          <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wt.<span class="mandatory-symbol-light-red">*</span></th>
+                          <th class="bg-transparent text-light dofi-min-w-70" scope="col">Net Wt.</th>
                         }
                         @if(selectedFCLLCL === 'FCL' || isSurfaceCargoMode()){
-                          <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wgt <span class="text-danger">*</span></th>
-                          <th class="bg-transparent text-light dofi-min-w-70" scope="col">Net Wgt</th>
-                          <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM <span class="text-danger">*</span></th>
+                          <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wt. <span class="mandatory-symbol-light-red">*</span></th>
+                          <th class="bg-transparent text-light dofi-min-w-70" scope="col">Net Wt.</th>
+                          <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM <span class="mandatory-symbol-light-red">*</span></th>
                         }
                         <th class="bg-transparent text-light dofi-min-w-130" scope="col">Cargo Recd. Date</th>
                         <th class="bg-transparent text-light dofi-min-w-70" scope="col">Recd. Qty</th>
@@ -1872,7 +1872,7 @@
                         <th class="bg-transparent text-light dofi-min-w-70" scope="col">Delivered Qty</th>
                         <th class="bg-transparent text-light" scope="col">Is Haz</th>
                         <th class="bg-transparent text-light dofi-min-w-90" scope="col">Imco Class</th>
-                        <th class="bg-transparent text-light dofi-min-w-60" scope="col">UN No</th>
+                        <th class="bg-transparent text-light dofi-min-w-60" scope="col">UN No.</th>
                         <th class="bg-transparent text-light dofi-min-w-60" scope="col">Pkg Group</th>
                       </tr>
                     </thead>
@@ -2001,8 +2001,8 @@
                             <input type="text" formControlName="DeliveredQty" placeholder="" [onlyNumbers]
                               class="custom-input-field sm text-end">
                           </td>
-                          <td>
-                            <input type="checkbox" formControlName="IsHaz" (change)="toggleHazProduct(productIndex,cargoIndex)" />
+                          <td class="text-center align-middle">
+                            <input type="checkbox" class="m-0" formControlName="IsHaz" (change)="toggleHazProduct(productIndex,cargoIndex)" />
                           </td>
                           <td>
                             <ng-select [items]="imcoList" bindLabel="ImcoName" bindValue="ImcoName" formControlName="ImcoClass"

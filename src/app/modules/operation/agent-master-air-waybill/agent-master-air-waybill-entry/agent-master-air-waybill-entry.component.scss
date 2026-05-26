@@ -10,3 +10,8 @@
   text-align: left;
   white-space: normal;
 }
+
+:host ::ng-deep .agent-mawb-product-table thead .text-danger {
+  color: #ffb3b3 !important;
+  font-size: 12px !important;
+}

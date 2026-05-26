@@ -1,0 +1,53 @@
+:host {
+  display: block;
+}
+
+.payment-request-entry-header {
+  flex-wrap: nowrap;
+}
+
+.payment-request-title-section,
+.payment-request-link-section,
+.payment-request-actions-section {
+  min-width: 0;
+}
+
+.payment-request-title-section .page-title {
+  white-space: nowrap;
+}
+
+.payment-request-link-section {
+  display: flex;
+  align-items: center;
+}
+
+.voucher-number-link {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.payment-request-actions {
+  flex-wrap: nowrap;
+  min-width: max-content;
+}
+
+.payment-request-actions .btn,
+.payment-request-actions .action-group {
+  flex: 0 0 auto;
+}
+
+.payment-request-actions .btn {
+  white-space: nowrap;
+}
+
+@media (max-width: 1199.98px) {
+  .payment-request-entry-header {
+    overflow-x: auto;
+  }
+}

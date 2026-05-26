@@ -1,1 +1,37 @@
 
+:host {
+  display: block;
+}
+
+.vendor-credit-note-entry-header {
+  flex-wrap: nowrap;
+}
+
+.vendor-credit-note-title-section,
+.vendor-credit-note-actions-section {
+  min-width: 0;
+}
+
+.vendor-credit-note-title-section {
+  align-items: center;
+}
+
+.vendor-credit-note-actions {
+  flex-wrap: nowrap;
+  min-width: max-content;
+}
+
+.vendor-credit-note-actions .btn,
+.vendor-credit-note-actions .action-group {
+  flex: 0 0 auto;
+}
+
+.vendor-credit-note-actions .btn {
+  white-space: nowrap;
+}
+
+@media (max-width: 1199.98px) {
+  .vendor-credit-note-entry-header {
+    overflow-x: auto;
+  }
+}
