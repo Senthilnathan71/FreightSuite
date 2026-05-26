@@ -1075,6 +1075,24 @@
           </div>
         </div>
         <div class="table-wrap" *ngIf="expandedSections[5]">
+          <div class="kyc-alert" *ngIf="kycWarning5" role="alert">
+            <i class="fas fa-exclamation-triangle kyc-alert-icon"></i>
+            <div class="kyc-alert-body">
+              <strong>Action Required</strong>
+              <span>{{ kycWarning5.message }}</span>
+              <a *ngIf="kycWarning5.errorType === 'branch'"
+                 class="kyc-alert-link"
+                 [routerLink]="['/master/organization/entry', kycWarning5.customerMasterSid]">
+                Add Branch for {{ kycWarning5.customerName }} &rarr;
+              </a>
+              <a *ngIf="kycWarning5.errorType === 'subledger_missing' || kycWarning5.errorType === 'subledger_no_dr_coa'"
+                 class="kyc-alert-link"
+                 [routerLink]="['/accounts/ledger-mapping/list']">
+                Go to Ledger Mapping &rarr;
+              </a>
+            </div>
+            <button class="kyc-alert-close" (click)="kycWarning5 = null" aria-label="Dismiss">&#x2715;</button>
+          </div>
           <div class="table-scroll" (scroll)="onSectionScroll($event, 5)">
             <table>
               <thead>
@@ -1387,13 +1405,23 @@
           </div>
         </div>
         <div class="table-wrap" *ngIf="expandedSections[8]">
-          <div class="kyc-alert" *ngIf="kycWarning">
-            <i class="fas fa-exclamation-triangle"></i>
-            <span>{{ kycWarning.message }}</span>
-            <a class="kyc-alert-link" [routerLink]="['/master/organization/entry', kycWarning.customerMasterSid]">
-              Complete KYC for {{ kycWarning.customerName }} &rarr;
-            </a>
-            <button class="kyc-alert-close" (click)="kycWarning = null">&#x2715;</button>
+          <div class="kyc-alert" *ngIf="kycWarning" role="alert">
+            <i class="fas fa-exclamation-triangle kyc-alert-icon"></i>
+            <div class="kyc-alert-body">
+              <strong>Action Required</strong>
+              <span>{{ kycWarning.message }}</span>
+              <a *ngIf="kycWarning.errorType === 'branch'"
+                 class="kyc-alert-link"
+                 [routerLink]="['/master/organization/entry', kycWarning.customerMasterSid]">
+                Add Branch for {{ kycWarning.customerName }} &rarr;
+              </a>
+              <a *ngIf="kycWarning.errorType === 'subledger_missing' || kycWarning.errorType === 'subledger_no_dr_coa'"
+                 class="kyc-alert-link"
+                 [routerLink]="['/accounts/ledger-mapping/list']">
+                Go to Ledger Mapping &rarr;
+              </a>
+            </div>
+            <button class="kyc-alert-close" (click)="kycWarning = null" aria-label="Dismiss">&#x2715;</button>
           </div>
           <div class="table-scroll" (scroll)="onSectionScroll($event, 8)">
             <table>

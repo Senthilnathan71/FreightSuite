@@ -100,8 +100,8 @@ export class SalesDashboardService {
 
   validateCustomerForBooking(payload: {
     CustomerMasterSid: number;
-  }): Observable<{ data: { valid: boolean; message: string }; status: boolean; message: string }> {
-    return this.http.post<{ data: { valid: boolean; message: string }; status: boolean; message: string }>(
+  }): Observable<{ data: { valid: boolean; message: string; errorType: string | null }; status: boolean; message: string }> {
+    return this.http.post<{ data: { valid: boolean; message: string; errorType: string | null }; status: boolean; message: string }>(
       `customer/validate-for-booking`,
       payload,
     );

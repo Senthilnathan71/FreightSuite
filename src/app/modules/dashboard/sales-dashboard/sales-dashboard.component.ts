@@ -131,7 +131,8 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     selectedRouteSid: number | null;
   } = { open: false, quote: null, routes: [], selectedRouteSid: null };
 
-  kycWarning: { message: string; customerMasterSid: number; customerName: string } | null = null;
+  kycWarning: { message: string; customerMasterSid: number; customerName: string; errorType: string | null } | null = null;
+  kycWarning5: { message: string; customerMasterSid: number; customerName: string; errorType: string | null } | null = null;
 
   searchTerms: Partial<Record<ListSection, string>> = {};
   sectionStates: Record<ListSection, SectionState<any>> = {
@@ -251,6 +252,7 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
         { heading: 'What it shows', body: 'Quotations approved by the internal authoriser (and the customer), but without a booking created from them yet.' },
         { heading: 'Why it matters', body: 'An approved quote is a near-confirmed deal. The customer has accepted the price, but the actual booking is still missing — unsecured revenue.' },
         { heading: 'Action', body: 'Create the booking immediately from the approved quotation. Every delay risks the customer going elsewhere or rates changing.' },
+        { heading: 'Route & booking rule', body: 'A quotation can have multiple routes. Only routes with at least one approved carrier and no existing booking are eligible when creating a booking. If at least one route of a quotation has already been converted to a booking, the entire quotation is removed from this list.' },
       ],
     },
     's9': {
@@ -836,6 +838,7 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
           message: kycResult.data?.message || kycResult.message || 'Customer KYC/branch details are incomplete.',
           customerMasterSid: quote.CustomerMasterSid,
           customerName: quote.CustomerName,
+          errorType: kycResult.data?.errorType ?? null,
         };
         return;
       }
@@ -949,7 +952,31 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  navigateToCreateQuote(customer: CustomerNoQuote): void {
+  async navigateToCreateQuote(customer: CustomerNoQuote): Promise<void> {
+    this.kycWarning5 = null;
+    this.spinner.show();
+    try {
+      const kycResult = await firstValueFrom(
+        this.salesDashboardService.validateCustomerForBooking({
+          CustomerMasterSid: customer.CustomerMasterSid,
+        })
+      );
+      this.spinner.hide();
+      if (!kycResult.status || !kycResult.data?.valid) {
+        this.kycWarning5 = {
+          message: kycResult.data?.message || kycResult.message || 'Customer KYC/branch details are incomplete.',
+          customerMasterSid: customer.CustomerMasterSid,
+          customerName: customer.CustomerName,
+          errorType: kycResult.data?.errorType ?? null,
+        };
+        return;
+      }
+    } catch (error) {
+      console.error(error);
+      this.spinner.hide();
+      return;
+    }
+
     const userData = this.appSettings.getDecryptedUserProfile();
     this.router.navigate(['/crm/quotation/entry'], {
       state: {
