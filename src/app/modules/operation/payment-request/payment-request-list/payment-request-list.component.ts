@@ -221,7 +221,7 @@ export class PaymentRequestListComponent extends BaseListComponent implements On
   }
 
   protected getSearchParams(): SearchParams & Record<string, any> {
-    return {
+    const params: SearchParams & Record<string, any> = {
       search: this.filterValue.trim(),
       page: Number(this.page),
       pageSize: Number(this.pageSize),
@@ -230,6 +230,13 @@ export class PaymentRequestListComponent extends BaseListComponent implements On
       sortColumn: this.sortColumn,
       sortDirection: this.sortDirection
     };
+
+    const currentYear = this.appSettingsService.getCurrentFinancialYear();
+    if (currentYear?.YearMasterSid) {
+      params['YearMasterSid'] = currentYear.YearMasterSid;
+    }
+
+    return params;
   }
 
   protected processSearchResults(response: any): void {

@@ -141,6 +141,8 @@
                       ngbDatepicker
                       #requestDatePicker="ngbDatepicker"
                       formControlName="PaymentRequestDate"
+                      [minDate]="fyMinDate"
+                      [maxDate]="fyMaxDate"
                       (click)="requestDatePicker.toggle()"
                       (keydown.arrowDown)="requestDatePicker.open()"
                       readonly

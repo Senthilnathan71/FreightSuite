@@ -7,6 +7,7 @@ import {
   NgbDateAdapter,
   NgbDateParserFormatter,
   NgbDatepickerModule,
+  NgbDateStruct,
   NgbModal,
 } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
@@ -14,6 +15,7 @@ import { NgSelectComponent } from '@ng-select/ng-select';
 import { Subject, firstValueFrom, forkJoin } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { DROPDOWN_CONFIGS } from 'src/app/common/lookup-config';
+import { getDefaultTodayDate, toNgbDateStruct } from 'src/app/common/helper';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { SearchableDropdown } from 'src/app/component/searchable-dropdown/searchable-dropdown.component';
@@ -78,6 +80,9 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
   private initialFormValue: any = null;
   private destroy$ = new Subject<void>();
   private dirtyTrackingSubscribed = false;
+
+  fyMinDate: NgbDateStruct | null = null;
+  fyMaxDate: NgbDateStruct | null = null;
 
   currencyList: any[] = [];
   departmentList: any[] = [];
@@ -158,6 +163,14 @@ export class PaymentRequestEntryComponent implements OnInit, OnDestroy, HasUnsav
     this.currentCompany = this.appSettingsService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingsService.decrypt(localStorage.getItem('selected-branch'));
     this.userData = this.appSettingsService.getDecryptedUserProfile();
+
+    const fy = this.appSettingsService.getCurrentFinancialYear();
+    if (fy) {
+      this.fyMinDate = toNgbDateStruct(fy.StartDate);
+      const fyEnd = new Date(fy.EndDate);
+      const today = getDefaultTodayDate();
+      this.fyMaxDate = toNgbDateStruct(fyEnd > today ? today : fyEnd);
+    }
 
     this.loadLookups();
 

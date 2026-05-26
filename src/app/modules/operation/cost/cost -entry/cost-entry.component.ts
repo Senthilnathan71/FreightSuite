@@ -74,6 +74,7 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   fyMaxDate: NgbDateStruct | null = null;
   selectedTab = 'Sales and cost';
   customsDutyChecked: boolean = false;
+  isCashInvoiceMode: boolean = false;
   chargeList: any[] = [];
   filteredChargeList : any[] = [];
   uomList: any[] = [];
@@ -514,6 +515,19 @@ export class CostEntryComponent implements OnInit, OnDestroy {
   
   this.isBooking = this.screenName === "Booking";
   this.currentMenuId = Number(sessionStorage.getItem('currentMenuId'));
+
+  // Load Cash Invoice company config — when Y, CustomsDuty is manual-only (no auto-detect)
+  const companyId = this.currentCompany?.CompanyMasterSid;
+  if (companyId) {
+    this.masterService.getConfigurationValue(companyId, 'ChangeLabelToCashInvoice')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (resp: any) => {
+          const raw = resp?.data ?? resp;
+          this.isCashInvoiceMode = raw === true || raw === 'Y' || raw === 'y';
+        }
+      });
+  }
   
 
   // Extract BookingHeaderSid from route parameter
@@ -4144,6 +4158,8 @@ createRateFormGroup(data?: any): FormGroup {
       ? headerLocalAmount
       : toNumber(this.getFormattedAmount(totalLocalAmountWithTax / headerExchangeRate, headerCurrencySid));
 
+    this.autoDetectCustomsDuty();
+
     const payload = {
       CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
       BranchMasterSid: this.currentBranch?.BranchMasterSid,
@@ -4261,6 +4277,11 @@ createRateFormGroup(data?: any): FormGroup {
       return;
     }
 
+    // When company is configured as Cash Invoice, CustomsDuty is manual-only — skip auto-detection
+    if (this.isCashInvoiceMode) {
+      return;
+    }
+
     const selectedDetails = this.details?.controls.filter(row => row.get('isSelected')?.value) || [];
     if (selectedDetails.length !== 1) {
       this.customsDutyChecked = false;
@@ -4272,7 +4293,7 @@ createRateFormGroup(data?: any): FormGroup {
     const code = (charge?.chargeCode || '').toUpperCase();
     const name = (charge?.chargeName || '').toUpperCase();
 
-    this.customsDutyChecked = code.includes('CD') || name.includes('CUSTOMS DUTY');
+    this.customsDutyChecked = code.includes('CD') || name.includes('CUSTOMS DUTY') || name.includes('CUSTOM DUTY');
   }
 
   // SECTION - 7 (Generate Voucher Helpers)
