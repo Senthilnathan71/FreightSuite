@@ -877,37 +877,46 @@
                       </ng-container>
 
                       
-                     <aside class="col-md-4" [ngClass]="isFclQuotationSegment(route) ? 'order-md-12 ms-md-auto' : ''">
-  <div class="custom-form-group mt-md-2">
-    <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
-      <div *ngIf="getBookingNumber(route.value?.QuoteRouteSid)">
-        <a href="javascript:void(0)"
-           class="booking-link fw-bold"
-           (click)="viewBooking(getBookingHeader(route.value?.QuoteRouteSid))"
-           [title]="'View Booking: ' + getBookingNumber(route.value?.QuoteRouteSid)">
-          {{ getBookingNumber(route.value?.QuoteRouteSid) }}
-        </a>
-      </div>
-
-      <div *ngIf="isEditMode && isRouteApproved(routeIndex)">
-        <button class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120"
-                (click)="goForBookingCreationForRoute(routeIndex, route.value?.QuoteRouteSid)"
-                [disabled]="!isContractValid() || (isContract && !isSavedContract()) || !isQuotationSavedAfterApproval(routeIndex) || quotationForm.get('status')?.getRawValue() === 'Suspended'|| (!isContract && doesBookingExistForRoute(route.value?.QuoteRouteSid))">
-          @if(doesBookingExistForRoute(route.value?.QuoteRouteSid) && isSavedContract()) {
-            <i class="fas fa-plus me-1"></i> Create Booking
-          }
-          @else if(doesBookingExistForRoute(route.value?.QuoteRouteSid) && !isContract) {
-            Booking Created
-          }
-          @else {
-            <i class="fas fa-plus me-1"></i> Create Booking
-          }
-        </button>
-      </div>
+ <aside class="col-md-2">
+    <div class="custom-form-group mt-md-2">
+       <!-- Make the booking number clickable -->
+    <div *ngIf="getBookingNumber(route.value?.QuoteRouteSid)">
+      <a href="javascript:void(0)" 
+         class="booking-link"
+         (click)="viewBooking(getBookingHeader(route.value?.QuoteRouteSid))"
+         [title]="'View Booking: ' + getBookingNumber(route.value?.QuoteRouteSid)">
+        {{ getBookingNumber(route.value?.QuoteRouteSid) }}
+      </a>
     </div>
+   
+  
   </div>
 </aside>
+                      
+<div class="row">
+  <div class="col-md-12">
+    <div class="d-flex justify-content-end"
+         *ngIf="isEditMode && isRouteApproved(routeIndex)">
 
+      <button class="btn btn-info btn-sm dofi-min-w-120 dofi-max-w-120" 
+              (click)="goForBookingCreationForRoute(routeIndex, route.value?.QuoteRouteSid)"
+              [disabled]="!isContractValid() || !isQuotationSavedAfterApproval(routeIndex) || quotationForm.get('status')?.getRawValue() === 'Suspended'|| (!isContract && doesBookingExistForRoute(route.value?.QuoteRouteSid))">
+
+        @if(doesBookingExistForRoute(route.value?.QuoteRouteSid) && quotationForm.get('IsContract')?.value) {
+          <i class="fas fa-plus me-1"></i> Create Booking
+        }
+        @else if(doesBookingExistForRoute(route.value?.QuoteRouteSid) && !quotationForm.get('IsContract')?.value) {
+          Booking Created
+        }
+        @else {
+          <i class="fas fa-plus me-1"></i> Create Booking
+        }
+
+      </button>
+     
+    </div>
+  </div>
+</div>
 
                      <!-- <div class="col-12 px-2">
                         <div class="d-flex justify-content-end">
