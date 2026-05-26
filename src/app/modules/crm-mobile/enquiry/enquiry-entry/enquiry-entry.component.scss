@@ -1,0 +1,37 @@
+:host {
+  display: block;
+}
+
+.enquiry-lcl-cargo-table {
+  min-width: 1420px !important;
+}
+
+:host ::ng-deep .custom-form-group .input-label .text-danger,
+.enquiry-lcl-cargo-table thead .text-danger {
+  display: inline-block;
+  min-width: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.enquiry-lcl-cargo-table thead .text-danger {
+  color: #ffb3b3 !important;
+}
+
+.enquiry-lcl-cargo-table th:nth-child(7),
+.enquiry-lcl-cargo-table th:nth-child(8),
+.enquiry-lcl-cargo-table th:nth-child(9),
+.enquiry-lcl-cargo-table td:nth-child(7),
+.enquiry-lcl-cargo-table td:nth-child(8),
+.enquiry-lcl-cargo-table td:nth-child(9) {
+  width: 90px !important;
+  min-width: 90px !important;
+  max-width: none !important;
+}
+
+.enquiry-lcl-cargo-table td:nth-child(7) .custom-input-field,
+.enquiry-lcl-cargo-table td:nth-child(8) .custom-input-field,
+.enquiry-lcl-cargo-table td:nth-child(9) .custom-input-field {
+  min-width: 82px;
+}

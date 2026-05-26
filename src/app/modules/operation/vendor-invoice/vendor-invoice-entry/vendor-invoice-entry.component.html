@@ -4,8 +4,8 @@
 
 <div class="row compact-form">
   <div class="col-12 px-0">
-    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
-      <div class="col-md-5 d-flex pb-1">
+    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0 vendor-invoice-entry-header">
+      <div class="col-md-3 d-flex pb-1 vendor-invoice-title-section">
         <h5 class="page-title mb-0 text-info">{{ isViewMode ? ' Vendor Invoice' : (isEditMode ? 'Edit Vendor Invoice' :
           'Create Vendor Invoice') }} <span class="fw-bold text-info">{{ isNonJob ? '[Non Job]' : '' }}</span></h5>
           @if(isEditMode){
@@ -21,9 +21,9 @@
           }
       </div>
 
-      <div class="col-md-7 pb-1">
+      <div class="col-md-9 pb-1 vendor-invoice-actions-section">
         <div
-        class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+        class=" d-flex align-items-center justify-content-start justify-content-md-end gap-1 mx-0 vendor-invoice-actions">
         @if(!isEditMode){
           @if(!isNonJob){
           <button type="button" class="btn btn-info btn-sm dofi-min-w-170 dofi-max-w-170" (click)="openSearchCostsModal()">

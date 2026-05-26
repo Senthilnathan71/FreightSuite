@@ -789,7 +789,7 @@
                               class="form-control custom-input-field sm text-end" formControlName="GrossWeight"
                               (focus)="route.get('GrossWeight')?.updateValueAndValidity()"
                               (blur)="route.get('GrossWeight')?.updateValueAndValidity()">
-                            <label for="text-input" class="input-label">Gross Weight <span
+                            <label for="text-input" class="input-label">Gross Wt.<span
                                 class="text-danger">{{
                                 isRequiredInQuoteRoute(routeIndex,'GrossWeight') ? '*' : '' }}</span></label>
                             <!-- <span *ngIf="route.get('GrossWeight')?.hasError('grossNotGreater')" class="error-message">
@@ -802,7 +802,7 @@
                             <input type="text" id="text-input" placeholder=""
                               class="form-control custom-input-field sm text-end" formControlName="NetWeight"
                               DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                            <label for="text-input" class="input-label ">Net Weight <span
+                            <label for="text-input" class="input-label ">Net Wt.<span
                                 class="text-danger"></span></label>
                           </div>
                         </aside>
@@ -829,7 +829,7 @@
                             <input type="text" id="text-input" placeholder=""
                               class="form-control custom-input-field sm text-end" formControlName="ChargeableWeight"
                               DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                            <label for="text-input" class="input-label">Chargeable Weight <span class="text-danger">{{
+                            <label for="text-input" class="input-label">Chargeable Wt.<span class="text-danger">{{
                                 isRequiredInQuoteRoute(routeIndex,'ChargeableWeight') ? '*' : '' }}</span></label>
                             @if(route.get('ChargeableWeight')?.invalid && route.get('ChargeableWeight')?.touched){
                             <div class="error-message">
@@ -930,9 +930,9 @@
                                   <span class="text-danger">*</span></th>
                                 @if(isLclStyleQuotationSegment(route) || isSurfaceQuotationSegment(route)){
                                 <th class="bg-transparent text-light dofi-min-w-40" scope="col" width="5%">No of Pkg
-                                <th class="bg-transparent text-light dofi-min-w-100" scope="col" width="5%">Gross Weight
+                                <th class="bg-transparent text-light dofi-min-w-100" scope="col" width="5%">Gross Wt.
                                   <span class="text-danger">*</span></th>
-                                <th class="bg-transparent text-light dofi-min-w-100" scope="col" width="5%">Net Weight
+                                <th class="bg-transparent text-light dofi-min-w-100" scope="col" width="5%">Net Wt.
                                   <span class="text-danger">*</span></th>
                                 <th class="bg-transparent text-light dofi-min-w-100" scope="col" width="5%" *ngIf="!isSurfaceQuotationSegment(route)">CBM <span
                                     class="text-danger">*</span></th>
@@ -1129,7 +1129,7 @@
                           </h2>
                             <div ngbAccordionCollapse>
                               <div class="p-1 py-0 rounded">
-                                <div class="row compact-form">
+                                <div class="row compact-form quote-cargo-entry-fields">
                                   <aside class="col-md-2">
                                     <div class="custom-form-group custom-form-group-select"
                                       [class.filled]="!!quoteCargo(routeIndex).at(cargoIndex).get('CargoType')?.value">
@@ -1177,14 +1177,14 @@
                                     <div class="custom-form-group">
                                       <input type="text" class="custom-input-field sm text-end" formControlName="GrossWeight"
                                         DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                                      <label class="input-label">Gross Weight <span class="text-danger">*</span></label>
+                                      <label class="input-label">Gross Wt. <span class="text-danger">*</span></label>
                                     </div>
                                   </aside>
                                   <aside class="col-md-1">
                                     <div class="custom-form-group quote-net-weight-field">
                                       <input type="text" class="custom-input-field sm text-end" formControlName="NetWeight"
                                         DecimalPrecision [DecimalPrecisionBefore]="6" [DecimalPrecisionAfter]="digitsAfterDecimal">
-                                      <label class="input-label">Net Weight <span class="text-danger">*</span></label>
+                                      <label class="input-label">Net Wt. <span class="text-danger">*</span></label>
                                     </div>
                                   </aside>
                                   <aside class="col-md-1">
@@ -1221,8 +1221,8 @@
                                         <th class="bg-transparent text-light dofi-min-w-150" scope="col">Commodity</th>
                                         <th class="bg-transparent text-light dofi-min-w-150" scope="col">External Pkg</th>
                                         <th class="bg-transparent text-light dofi-min-w-150" scope="col">No of Pkg</th>
-                                        <th class="bg-transparent text-light dofi-min-w-150" scope="col">Gross Weight</th>
-                                        <th class="bg-transparent text-light dofi-min-w-150" scope="col">Net Weight</th>
+                                      <th class="bg-transparent text-light dofi-min-w-150" scope="col">Gross Wt.</th>
+                                      <th class="bg-transparent text-light dofi-min-w-150" scope="col">Net Wt.</th>
                                         <th class="bg-transparent text-light dofi-min-w-150" scope="col">CBM</th>
                                         <th class="bg-transparent text-light">Is Haz</th>
                                         <th class="bg-transparent text-light dofi-min-w-150" scope="col">Imco Class</th>
@@ -1506,7 +1506,7 @@
                               <div class="table-responsive table-borderless" formArrayName="quoteCharges"
                                 style="overflow-y:hidden;" *ngIf="costRevenueAccess !== 'HIDE_BOTH'">
                                 <div>
-                                  <table class="table table-hover align-middle no-wrap  table-sm mb-0">
+                                  <table class="table table-hover align-middle no-wrap table-sm mb-0 quote-charge-table">
                                     <thead>
                                       <tr class="bg-info" style="border-bottom: none;">
                                         <td class="bg-transparent text-light text-center" rowspan="2"
@@ -2254,7 +2254,7 @@
                             <div class="custom-form-group">
                               <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm text-end"
                                 formControlName="GrossWeight">
-                              <label for="text-input" class="input-label">Gross Weight <span class="text-danger">{{
+                              <label for="text-input" class="input-label">Gross Wt. <span class="text-danger">{{
                                   isRequiredInQuoteRoute(routeIndex,'GrossWeight') ? '*' : '' }}</span></label>
                             </div>
                           </aside>
@@ -2262,7 +2262,7 @@
                             <div class="custom-form-group quote-net-weight-field">
                               <input type="text" id="text-input" placeholder="" class="form-control custom-input-field sm text-end"
                                 formControlName="NetWeight">
-                              <label for="text-input" class="input-label">Net Weight <span class="text-danger"></span></label>
+                              <label for="text-input" class="input-label">Net Wt. <span class="text-danger"></span></label>
                             </div>
                           </aside>
 
@@ -2369,9 +2369,9 @@
                                     class="text-danger">*</span></th>
                                 <th class="bg-transparent text-light dofi-min-w-150" scope="col">No of Pkg <span
                                     class="text-danger">*</span></th>
-                                <th class="bg-transparent text-light dofi-min-w-150" scope="col">Gross Weight <span
+                                <th class="bg-transparent text-light dofi-min-w-150" scope="col">Gross Wt. <span
                                     class="text-danger">*</span></th>
-                                <th class="bg-transparent text-light dofi-min-w-150" scope="col">Net Weight <span
+                                <th class="bg-transparent text-light dofi-min-w-150" scope="col">Net Wt. <span
                                     class="text-danger">*</span></th>
                                 <th class="bg-transparent text-light dofi-min-w-150" scope="col">CBM <span
                                     class="text-danger">*</span></th>

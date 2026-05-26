@@ -57,6 +57,7 @@ import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guar
     FormStateGuardDirective
   ],
   templateUrl: './payment-request-entry.component.html',
+  styleUrl: './payment-request-entry.component.scss',
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },

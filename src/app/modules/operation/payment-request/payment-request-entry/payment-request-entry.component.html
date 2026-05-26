@@ -10,8 +10,8 @@
 
 <div class="row compact-form" [formGroup]="form">
   <div class="col-12 px-0">
-    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0">
-      <div class="col-md-4 pb-1">
+    <div class="row bg-white mb-1 align-items-center pt-1 rounded shadow-sm mx-0 payment-request-entry-header">
+      <div class="col-md-auto pb-1 payment-request-title-section">
         <div class="d-flex align-items-center gap-2">
           <h5 class="page-title my-0 text-info">
             {{ pageTitle }}
@@ -24,19 +24,20 @@
             <i class="fas fs-6 fa-info-circle"></i>
           </a>
         }
-        @if(isEditMode && form.get('VoucherSid')?.value){
-          <a [routerLink]="['/accounts/payment/entry', form.get('VoucherSid')?.value]"
-             class="voucher-number-link ms-2" title="View Payment">
-            <i class="fas fa-external-link-alt me-1"></i>{{ paymentVoucherNumber || 'Payment' }}
-          </a>
-        }
         </div>
       </div>
 
-      <div class="col-md-3"></div>
+      <div class="col-md-auto pb-1 payment-request-link-section">
+        @if(isEditMode && form.get('VoucherSid')?.value){
+          <a [routerLink]="['/accounts/payment/entry', form.get('VoucherSid')?.value]"
+             class="voucher-number-link" title="View Payment">
+            <i class="fas fa-external-link-alt me-1"></i>{{ paymentVoucherNumber || 'Payment' }}
+          </a>
+        }
+      </div>
 
-      <div class="col-md-5 pb-1">
-        <div class="d-flex align-items-center justify-content-start justify-content-md-end gap-1 gap-md-1 mx-0">
+      <div class="col pb-1 payment-request-actions-section">
+        <div class="d-flex align-items-center justify-content-start justify-content-md-end gap-1 mx-0 payment-request-actions">
            <button
             *ngIf="isEditMode"
             type="button"
