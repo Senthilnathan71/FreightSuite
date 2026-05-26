@@ -39,8 +39,7 @@
       <div [ngClass]="isEditMode ? 'col-md-4' : 'col-md-5'">
         <form [formGroup]="searchOutstandingForm" *ngIf="!isPosted">
           <div
-            class="d-flex pb-1 align-items-center ps-5"
-            [ngClass]="{ 'gap-2': !isEditMode, 'gap-0': isEditMode }"
+            class="d-flex pb-1 align-items-center ps-5 gap-2"
           >
             <!-- Search Type -->
             <div class="col-md-3" style="width: 160px">
@@ -83,8 +82,7 @@
             <!-- Search Button -->
             <div class="d-flex align-items-end">
               <button
-                class="btn btn-info btn-sm mt-1"
-                style="width: 100px; height: 26px"
+                class="btn btn-info btn-sm mt-1 receipt-get-os-btn"
                 [disabled]="
                   !searchOutstandingForm.get('SearchType')?.value ||
                   !(
@@ -127,7 +125,7 @@
           
           <button
             type="button"
-            class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+            class="btn btn-info btn-sm receipt-action-btn"
             *ngIf="isEditMode && receiptForm.get('CashOrBank')?.value === 'B' && mps.canPrint('Receipt', 'Print')"
             (click)="reportBank()"
             [disabled]="!receiptPrintData || !canPrintReceipt"
@@ -137,7 +135,7 @@
 
           <button
             type="button"
-            class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
+            class="btn btn-info btn-sm receipt-action-btn"
             *ngIf="isEditMode && receiptForm.get('CashOrBank')?.value === 'C' && mps.canPrint('Receipt', 'Print')"
             (click)="reportCash()"
             [disabled]="!receiptPrintData || !canPrintReceipt"
@@ -147,14 +145,14 @@
 
           <button
             type="button"
-            class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            class="btn btn-light-secondary btn-sm receipt-action-btn"
             (click)="goBack()"
           >
             <i class="fas fa-chevron-left me-1"></i>
             Back
           </button>
 
-          <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+          <button class="btn btn-light-secondary btn-sm receipt-action-btn"
           (click)="openAuditLogs()" *ngIf="isEditMode">
           <i class="fas fa-history  me-1"></i>
           <span>Logs</span>
@@ -162,7 +160,7 @@
 
           <button
             type="button"
-            class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            class="btn btn-light-secondary btn-sm receipt-action-btn"
             (click)="resetForm()"
             [disabled]="isReadOnly"
           >
@@ -171,7 +169,7 @@
           </button>
 
           <div class="action-group primary" *ngIf="isEditMode || isViewMode">
-        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateToCreate()" [disabled]="isDirty">
+        <button class="btn btn-info btn-sm receipt-action-btn" (click)="navigateToCreate()" [disabled]="isDirty">
           <i class="fas fa-plus me-1"></i>
           <span>Create</span>
         </button>
@@ -181,7 +179,7 @@
           @if(isAutoPosting){
           <button
             type="button"
-            class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
+            class="btn btn-sm receipt-action-btn position-relative"
             [ngClass]="{ 'btn-info': !isDirty, 'btn-warning': isDirty }"
             (click)="onSubmit(undefined, true)"
             [disabled]="
@@ -201,7 +199,7 @@
           <button
             type="button"
             appPreventMultiClick
-            class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
+            class="btn btn-success btn-sm receipt-action-btn"
             disabled="true"
           >
             <i class="fas fa-check-circle me-1"></i>
@@ -213,7 +211,7 @@
           <button
             type="button"
             appPreventMultiClick
-            class="btn btn-sm dofi-min-w-80 dofi-max-w-80 position-relative"
+            class="btn btn-sm receipt-action-btn position-relative"
             [ngClass]="{ 'btn-warning': isDirty, 'btn-info': !isDirty }"
             (click)="onSubmit()"
             [disabled]="
@@ -234,7 +232,7 @@
           <button
             type="button"
             appPreventMultiClick
-            class="btn btn-success btn-sm dofi-min-w-80 dofi-max-w-80"
+            class="btn btn-success btn-sm receipt-action-btn"
             (click)="postVoucher(true)"
             [disabled]="
               receiptForm.invalid ||
