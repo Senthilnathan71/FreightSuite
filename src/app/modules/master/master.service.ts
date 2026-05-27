@@ -2491,6 +2491,12 @@ getFieldConfiguration() {
     );
   }
 
+  getAllFfUserByCompany(companyId: number) {
+    return this.http.get<{ data: any[] }>(`ff-user/by-company/${companyId}`).pipe(
+      map((resp) => resp)
+    );
+  }
+
   getReportingUsers(payload:any){
     return this.http.post<{ data: any[] }>('ff-user/fetch-by-usertype',payload).pipe(
       map((resp) => {
@@ -4044,13 +4050,13 @@ getAuditLogsContainer(tableName: string, recordId?: string) {
     )
   }
 
-  getFollowupsByDocumentId(documentSid: number) {
-    return this.http.get<{ data: any }>(`followup/fetch/${documentSid}`).pipe(
-      map((resp) => {
-        let response = resp;
-        return response;
-      })
-    )
+  getFollowupsByDocumentId(documentSid: number, menuMasterSid?: number) {
+    const url = menuMasterSid
+      ? `followup/fetch/${documentSid}?menuMasterSid=${menuMasterSid}`
+      : `followup/fetch/${documentSid}`;
+    return this.http.get<{ data: any[] }>(url).pipe(
+      map((resp) => resp)
+    );
   }
 
   updateById(id, payload) {
@@ -4060,6 +4066,12 @@ getAuditLogsContainer(tableName: string, recordId?: string) {
         return response;
       })
     )
+  }
+
+  markFollowupCompleted(id: number, payload: { documentSid: number; menuMasterSid: number; isCompleted: string; updatedBy: string }) {
+    return this.http.patch<{ data: any; status: boolean; message: string }>(`followup/mark-completed/${id}`, payload).pipe(
+      map((resp) => resp)
+    );
   }
 
   deletefollowupById(id) {

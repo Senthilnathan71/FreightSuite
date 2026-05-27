@@ -4574,6 +4574,7 @@ openDocRef() {
     const formattedFPD = this.getFormattedPort(FPD);
     this.followupModalRef = this.modalService.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
     this.followupModalRef.componentInstance.documentSid = this.bookingData?.BookingHeaderSid;
+    this.followupModalRef.componentInstance.menuMasterSid = this.MenuMasterSid;
     this.followupModalRef.componentInstance.parentSubject = `__SUBJECT__ for Booking No."${this.bookingData.BookingNo}"`;
     this.followupModalRef.componentInstance.parentMailbodyTemplate = `
     <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">

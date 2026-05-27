@@ -1,168 +1,268 @@
-<form [formGroup]="followupForm">
-    <div class="row compact-form">
-        <div class="col-12">
-            <div class="row  align-items-center py-1 mx-0 bg-info">
-                <div class="col-md-4 pb-1">
-                    <h5 class="page-title mb-0 text-white">Follow Up</h5>                  
-                </div>
-                <div class="col-md-8 pb-1">
+<!-- Title bar -->
+<div class="d-flex align-items-center justify-content-between px-3 py-2"
+     style="background:#1c628f; border-radius:6px 6px 0 0; color:white;">
+  <h6 class="mb-0 fw-bold">Follow Up</h6>
+  <button type="button" class="btn btn-sm btn-outline-light" (click)="closeModal()">
+    <i class="fas fa-times me-1"></i>Close
+  </button>
+</div>
 
-                    <div
-                        class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="closeModal()">
-                            <i class="fas fa-chevron-left me-1"></i>
-                            Close
-                        </button>
-                        <button type="button" class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="resetform()"
-                            [disabled]="isFormDisabled">
-                            <i class="fas fa-sync-alt me-1"></i>
-                            Reset
-                        </button>
-                        <button type="button" class="btn btn-outline-light btn-sm dofi-min-w-80 dofi-max-w-80"
-                            (click)="onSave()"
-                            [disabled]="isFormDisabled">
-                            <i class="fas fa-save me-1"></i>
-                            Save
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-12">
-            <div class="card h-100 mb-0">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class=" custom-form-group custom-form-group-select-date">
-                                <div class="input-group">
-                                    <input class="form-control" placeholder="dd-mm-yyyy" name="dp" ngbDatepicker
-                                        #d15="ngbDatepicker" [minDate]="todayDate" (click)="d15.toggle()" formControlName="FollowupDate" />
-                                    <button class="btn bi bi-calendar3" (click)="d15.toggle()"
-                                        type="button"> <i-feather name="calendar"
-                                            class="feather-sm"></i-feather></button>
-                                </div>
-                                <label for="FollowUpDate" class="input-label">Followup Date <span
-                                        class="text-danger">*</span>
-                                </label>
-                                @if(followupForm.get('FollowUpDate')?.touched &&
-                                followupForm.get('FollowUpDate')?.invalid){
-                                <div class="error-message pe-4">
-                                    @if(followupForm.get('FollowUpDate')?.hasError('required')){
-                                    <span>Required</span>
-                                    }
-                                </div>
-                                }
-                            </div>
-                        </div>
-                        <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select"
-                            [class.filled]="!!followupForm.get('FollowupAction')?.value">
-                                     <ng-select formControlName="FollowupAction" [items]="modeOfAction" bindLabel="name"
-                                        bindValue="name">
-                                    </ng-select>
-                                <label for="text-input" class="input-label">Followup Action <span
-                                        class="text-danger">*</span></label>
-                                @if(followupForm.get('FollowupAction')?.touched &&
-                                followupForm.get('FollowupAction')?.invalid){
-                                <div class="error-message">
-                                    @if(followupForm.get('FollowupAction')?.hasError('required')){
-                                    <span>Required</span>
-                                    }
-                                </div>
-                                }
-                            </div>
-                        </aside>
-                        <aside class="col-md-4" *ngIf="showInternalUser">
-                            <div class="custom-form-group custom-form-group-select"
-                            [class.filled]="!!followupForm.get('InternalUser')?.value">
-                            <dofi-searchable-dropdown 
-                            [items] = "usersList"
-                            formControlName = "InternalUser"
-                            [placeholder]=""
-                            [displayFields]="userLookupConfig.displayFields"
-                            [displayLabels]="userLookupConfig.displayLabels"
-                            [labelFields]="userLookupConfig.labelFields"
-                            [bindValue]="'userEmail'"
-                            appendTo="body"
-                            >
-                            </dofi-searchable-dropdown>
-                            <label for="text-input" class="input-label">Internal User </label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-4" *ngIf="showExternalUser">
-                            <div class="custom-form-group custom-form-group-select"
-                            [class.filled]="!!followupForm.get('ExternalUser')?.value">
-                            <dofi-searchable-dropdown 
-                            [items] = "customerList"
-                            formControlName = "ExternalUser"
-                            [placeholder]=""
-                            [displayFields]="customerLookupConfig.displayFields"
-                            [displayLabels]="customerLookupConfig.displayLabels"
-                            [labelFields]="customerLookupConfig.labelFields"
-                            [bindValue]="'Email'"
-                            appendTo="body"
-                            >
-                            </dofi-searchable-dropdown>
-                            <label for="text-input" class="input-label">External User </label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="textarea" formControlName="Subject" id="text-input" placeholder=""
-                                    class="custom-input-field sm">
-                                <label for="text-input" class="input-label">Subject <span
-                                        class="text-danger fw-bold">*</span></label>
-                                @if(followupForm.get('Subject')?.touched &&
-                                followupForm.get('Subject')?.invalid){
-                                <div class="error-message">
-                                    @if(followupForm.get('Subject')?.hasError('required')){
-                                    <span>Required</span>
-                                    }
-                                </div>
-                                }
-                            </div>
-                        </aside>
-                        <aside class="col-md-4">
-                            <div class="custom-form-group">
-                                <input type="textarea" formControlName="Remarks" id="text-input" placeholder=""
-                                    class="custom-input-field sm">
-                                <label for="text-input" class="input-label">Remarks <span
-                                        class="text-danger fw-bold"></span></label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-4">
-                            <div class="custom-form-group custom-form-group-select" [class.filled]="!!followupForm.get('Status')?.value">
-                                <ng-select formControlName="Status" [items]="modeOfStatus" bindLabel="name" bindValue="name" appendTo="body">
-
-                                </ng-select>
-                                <label for="" class="input-label">Status <span class="text-danger"></span></label>
-                            </div>
-                        </aside>
-                        <aside class="col-md-2 d-flex align-items-center">
-                            <div class="form-check form-check-inline p-0">
-                                <div class="form-check d-flex align-items-center">
-                                    <input type="checkbox" id="Public" class="form-check-input sm" formControlName="Public">
-                                    <label for="Public" class="form-check-label sm">Public <span
-                                            class="text-danger"></span></label>
-                                </div>
-                            </div>
-                        </aside>
-                        <aside class="col-md-2 d-flex align-items-center">
-                            <div class="form-check form-check-inline p-0">
-                                <div class="form-check d-flex align-items-center">
-                                    <input type="checkbox" id="sentEmail" class="form-check-input sm" formControlName="sentEmail">
-                                    <label for="sentEmail" class="form-check-label sm">Send Email  <span
-                                            class="text-danger"></span></label>
-                                </div>
-                            </div>
-                        </aside>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
+<!-- Toolbar -->
+<div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom bg-light flex-wrap gap-2">
+  <div class="d-flex align-items-center gap-2 flex-wrap">
+    <span class="text-muted small">{{allCount}} record(s)</span>
+    <div class="btn-group btn-group-sm">
+      <button type="button" class="btn"
+              [class.btn-primary]="activeFilter==='All'"
+              [class.btn-outline-secondary]="activeFilter!=='All'"
+              (click)="setFilter('All')">All ({{allCount}})</button>
+      <button type="button" class="btn"
+              [class.btn-success]="activeFilter==='Active'"
+              [class.btn-outline-secondary]="activeFilter!=='Active'"
+              (click)="setFilter('Active')">Active ({{activeCount}})</button>
+      <button type="button" class="btn"
+              [class.btn-secondary]="activeFilter==='Completed'"
+              [class.btn-outline-secondary]="activeFilter!=='Completed'"
+              (click)="setFilter('Completed')">Done ({{completedCount}})</button>
+      <button type="button" class="btn"
+              [class.btn-warning]="activeFilter==='Suspended'"
+              [class.btn-outline-secondary]="activeFilter!=='Suspended'"
+              (click)="setFilter('Suspended')">Suspended ({{suspendedCount}})</button>
     </div>
-</form>
+    <input type="text" class="form-control form-control-sm" style="width:180px;" placeholder="Search..."
+           [(ngModel)]="searchTerm">
+  </div>
+  <button type="button" class="btn btn-sm btn-primary" (click)="addNew()" [disabled]="loading">
+    <i class="fas fa-plus me-1"></i>Add Followup
+  </button>
+</div>
+
+<!-- Followup list -->
+<div class="px-3 pt-3" style="min-height:80px;">
+  <ng-container *ngFor="let row of filteredFollowups; trackBy: trackByRow">
+    <div class="border rounded mb-2"
+         [style.opacity]="isRowLocked(row) ? '0.65' : '1'">
+
+      <!-- Collapsed row header -->
+      <div class="d-flex align-items-center gap-2 px-3 py-2"
+           [style.cursor]="isRowLocked(row) ? 'not-allowed' : 'pointer'"
+           (click)="openRow(row)">
+        <!-- Amber dirty dot (new unsaved row) -->
+        <span *ngIf="row._isNew" class="rounded-circle d-inline-block flex-shrink-0"
+              style="width:8px; height:8px; background:#c97a16;" title="Unsaved"></span>
+        <!-- Date -->
+        <span class="small text-muted flex-shrink-0" style="min-width:82px;">
+          {{row._isNew ? 'New' : formatRowDate(row.FollowupDate)}}
+        </span>
+        <!-- Action dot + label -->
+        <span class="rounded-circle d-inline-block flex-shrink-0"
+              style="width:10px; height:10px;"
+              [style.background]="getActionDotColor(row.FollowupAction)"></span>
+        <span class="small fw-medium flex-shrink-0" style="min-width:60px;">{{row.FollowupAction || '-'}}</span>
+        <!-- Subject + Remarks preview -->
+        <div class="flex-grow-1 small text-truncate">
+          <strong>{{row.Subject || '(No subject)'}}</strong>
+          <span class="text-muted ms-2">{{row.Remarks}}</span>
+        </div>
+        <!-- User -->
+        <span class="small text-muted flex-shrink-0" style="min-width:90px; text-align:right;">
+          {{getUserNameOrExternal(row)}}
+        </span>
+        <!-- Status badge -->
+        <span class="badge rounded-pill small flex-shrink-0"
+              [style.background]="getStatusBg(row)"
+              [style.color]="getStatusColor(row)">
+          {{getStatusLabel(row)}}
+        </span>
+        <!-- Complete toggle (for active rows) -->
+        <button *ngIf="row.FollowupSid && row.IsCompleted !== 'Y' && row.Status !== 'S'"
+                type="button" class="btn btn-sm btn-outline-success py-0 px-1 flex-shrink-0"
+                style="font-size:0.7rem;" title="Mark as Done"
+                (click)="onToggleCompleted(row, 'Y'); $event.stopPropagation()">
+          <i class="fas fa-check"></i>
+        </button>
+        <!-- Caret -->
+        <i class="fas flex-shrink-0"
+           [class.fa-chevron-down]="expandedId !== getRowId(row)"
+           [class.fa-chevron-up]="expandedId === getRowId(row)"
+           *ngIf="!isRowLocked(row)" style="color:#6c757d;"></i>
+      </div>
+
+      <!-- Expanded panel -->
+      <div *ngIf="expandedId === getRowId(row) && activeForm" class="border-top p-3">
+        <form [formGroup]="activeForm">
+          <div class="row g-2">
+
+            <!-- Row 1: Date | Action | InternalUser -->
+            <div class="col-md-4">
+              <div class="custom-form-group custom-form-group-select-date">
+                <div class="input-group">
+                  <input class="form-control" placeholder="dd-mm-yyyy" ngbDatepicker
+                         #dpFollowup="ngbDatepicker"
+                         (click)="dpFollowup.toggle()"
+                         formControlName="FollowupDate" />
+                  <button class="btn bi bi-calendar3" (click)="dpFollowup.toggle()" type="button">
+                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                  </button>
+                </div>
+                <label class="input-label">Followup Date <span class="text-danger">*</span></label>
+                <div class="error-message pe-4"
+                     *ngIf="activeForm.get('FollowupDate')?.touched && activeForm.get('FollowupDate')?.invalid">
+                  Required
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="custom-form-group custom-form-group-select"
+                   [class.filled]="!!activeForm.get('FollowupAction')?.value">
+                <ng-select formControlName="FollowupAction" [items]="modeOfAction"
+                           bindLabel="name" bindValue="name" appendTo="body">
+                </ng-select>
+                <label class="input-label">Followup Action <span class="text-danger">*</span></label>
+                <div class="error-message"
+                     *ngIf="activeForm.get('FollowupAction')?.touched && activeForm.get('FollowupAction')?.invalid">
+                  Required
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4" *ngIf="showInternalUserField">
+              <div class="custom-form-group custom-form-group-select"
+                   [class.filled]="!!activeForm.get('InternalUser')?.value">
+                <dofi-searchable-dropdown
+                  [items]="usersList"
+                  formControlName="InternalUser"
+                  [placeholder]=""
+                  [displayFields]="['userName', 'userEmail']"
+                  [displayLabels]="['Name', 'Email']"
+                  [labelFields]="['userName']"
+                  [bindValue]="'UserMasterSid'"
+                  appendTo="body">
+                </dofi-searchable-dropdown>
+                <label class="input-label">Internal User
+                  <span class="text-danger" *ngIf="isInternalUserRequired">*</span>
+                </label>
+                <div class="error-message"
+                     *ngIf="activeForm.get('InternalUser')?.touched && activeForm.get('InternalUser')?.invalid">
+                  Required
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 2: Subject (8) | Status (4) -->
+            <div class="col-md-8">
+              <div class="custom-form-group">
+                <input type="text" formControlName="Subject" class="custom-input-field sm" placeholder="">
+                <label class="input-label">Subject <span class="text-danger fw-bold">*</span></label>
+                <div class="error-message"
+                     *ngIf="activeForm.get('Subject')?.touched && activeForm.get('Subject')?.invalid">
+                  Required
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="custom-form-group custom-form-group-select"
+                   [class.filled]="!!activeForm.get('Status')?.value">
+                <ng-select formControlName="Status" [items]="modeOfStatus"
+                           bindLabel="name" bindValue="name" appendTo="body">
+                </ng-select>
+                <label class="input-label">Status <span class="text-danger">*</span></label>
+              </div>
+            </div>
+
+            <!-- Row 3: ExternalUser toggle (4) | Remarks -->
+            <div class="col-md-4" *ngIf="showExternalUserField">
+              <div class="custom-form-group">
+                <div class="input-group" *ngIf="!isExternalFreeText">
+                  <dofi-searchable-dropdown
+                    style="flex:1; min-width:0;"
+                    [items]="customerList"
+                    formControlName="ExternalUser"
+                    [placeholder]=""
+                    [displayFields]="['CustomerName', 'BranchName', 'Email']"
+                    [displayLabels]="['Customer', 'Branch', 'Email']"
+                    [labelFields]="['CustomerName']"
+                    [bindValue]="'CustomerName'"
+                    appendTo="body">
+                  </dofi-searchable-dropdown>
+                  <button type="button" class="btn btn-outline-secondary btn-sm"
+                          (click)="toggleExternalFreeText()" title="Switch to free text">
+                    <i class="fas fa-exchange-alt"></i>
+                  </button>
+                </div>
+                <div class="input-group" *ngIf="isExternalFreeText">
+                  <input type="text" formControlName="ExternalUser"
+                         class="form-control form-control-sm" placeholder="">
+                  <button type="button" class="btn btn-outline-secondary btn-sm"
+                          (click)="toggleExternalFreeText()" title="Switch to dropdown">
+                    <i class="fas fa-exchange-alt"></i>
+                  </button>
+                </div>
+                <label class="input-label">External User</label>
+              </div>
+            </div>
+
+            <div [class]="showExternalUserField ? 'col-md-8' : 'col-md-12'">
+              <div class="custom-form-group">
+                <input type="text" formControlName="Remarks" class="custom-input-field sm" placeholder="">
+                <label class="input-label">Remarks</label>
+              </div>
+            </div>
+
+            <!-- Row 4: Checkboxes -->
+            <div class="col-12 d-flex gap-4 align-items-center">
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input sm" formControlName="sentEmail"
+                       id="sentEmail_{{getRowId(row)}}">
+                <label class="form-check-label sm" for="sentEmail_{{getRowId(row)}}">Send Email</label>
+              </div>
+              <div class="form-check" *ngIf="showPublic">
+                <input type="checkbox" class="form-check-input sm" formControlName="Public"
+                       id="pub_{{getRowId(row)}}">
+                <label class="form-check-label sm" for="pub_{{getRowId(row)}}">Public</label>
+              </div>
+            </div>
+
+            <!-- Row 5: Actions -->
+            <div class="col-12 d-flex align-items-center justify-content-between mt-1 border-top pt-2">
+              <small class="text-muted" *ngIf="row.CreatedOn">
+                <i class="fas fa-clock me-1"></i>{{formatRowDate(row.CreatedOn)}}
+                <span *ngIf="row.CreatedBy" class="ms-1">by {{row.CreatedBy}}</span>
+              </small>
+              <div class="d-flex gap-2 ms-auto">
+                <button type="button" class="btn btn-sm btn-outline-danger"
+                        (click)="deleteRow(row)" [disabled]="loading">
+                  <i class="fas fa-trash me-1"></i>Delete
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary"
+                        (click)="closeRow()" [disabled]="loading">
+                  <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <button type="button" appPreventMultiClick class="btn btn-sm"
+                        style="background:#1c628f; color:white;"
+                        (click)="saveRow(row)" [disabled]="loading">
+                  <i class="fas fa-save me-1"></i>Save
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </form>
+      </div>
+    </div>
+  </ng-container>
+
+  <div *ngIf="filteredFollowups.length === 0 && !loading" class="text-center text-muted py-4">
+    <small>No followups found</small>
+  </div>
+</div>
+
+<!-- Dashed Add CTA -->
+<div class="px-3 pb-3 mt-1">
+  <button type="button" class="w-100 btn btn-outline-primary btn-sm"
+          style="border-style:dashed;" (click)="addNew()" [disabled]="loading">
+    <i class="fas fa-plus me-1"></i>Add another followup
+  </button>
+</div>

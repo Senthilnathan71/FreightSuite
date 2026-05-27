@@ -6,6 +6,55 @@ import { ToastrService } from 'ngx-toastr';
 
 type DateRangeInput = Date | string | NgbDateStruct | null | undefined;
 
+// ── Branch Timezone Helpers ──────────────────────────────────────────────────
+
+export function normalizeTimezoneOffset(offset?: string | null): string {
+  if (!offset) return '+00:00';
+  let value = String(offset).trim();
+  if (!value) return '+00:00';
+  if (!['+', '-'].includes(value[0])) value = `+${value}`;
+  const match = value.match(/^([+-])(\d{1,2})(?::?(\d{2}))?$/);
+  if (!match) return '+00:00';
+  const sign = match[1];
+  const hours = match[2].padStart(2, '0');
+  const minutes = match[3] || '00';
+  return `${sign}${hours}:${minutes}`;
+}
+
+export function getOffsetMinutes(offset: string): number {
+  const match = offset.match(/^([+-])(\d{2}):(\d{2})$/);
+  if (!match) return 0;
+  const sign = match[1] === '-' ? -1 : 1;
+  const hours = Number(match[2]);
+  const minutes = Number(match[3]);
+  return sign * ((hours * 60) + minutes);
+}
+
+/**
+ * Converts a UTC-midnight Date (from CustomDateAdapter) to an ISO string
+ * adjusted to the branch timezone, so the DB stores the correct local-midnight time.
+ * Example: formDate = Date.UTC(2026,5,5) [UTC midnight June 5], branch = +05:30
+ * → subtract 330 min → "2026-06-04T18:30:00.000Z" (= midnight June 5 in +05:30)
+ */
+export function branchDateToUtcIso(formDate: Date, timeZone?: string | null): string {
+  const offset = normalizeTimezoneOffset(timeZone);
+  const offsetMs = getOffsetMinutes(offset) * 60 * 1000;
+  return new Date(formDate.getTime() - offsetMs).toISOString();
+}
+
+/**
+ * Converts a DB-stored UTC ISO back to a Date where UTC getters reflect
+ * the branch-local calendar date, so CustomDateAdapter.fromModel shows the correct date.
+ * Example: "2026-06-04T18:30:00.000Z", branch = +05:30
+ * → add 330 min → Date where getUTC*() = June 5, 2026
+ */
+export function utcIsoToBranchLocalDate(isoDate: string, timeZone?: string | null): Date | null {
+  if (!isoDate) return null;
+  const offset = normalizeTimezoneOffset(timeZone);
+  const shifted = new Date(new Date(isoDate).getTime() + getOffsetMinutes(offset) * 60 * 1000);
+  return isNaN(shifted.getTime()) ? null : shifted;
+}
+
 export interface FinancialYearDateRangeSource {
   StartDate?: DateRangeInput;
   EndDate?: DateRangeInput;

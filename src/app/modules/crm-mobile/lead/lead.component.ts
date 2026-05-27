@@ -1012,6 +1012,7 @@ openDocRef() {
     }
     const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.documentSid = this.leadData?.PreCustomerMasterSid;
+    modalRef.componentInstance.menuMasterSid = this.MenuMasterSid;
     modalRef.componentInstance.parentSubject = `__SUBJECT__ for Customer"${this.leadData.preCustomerName}"`;
     modalRef.componentInstance.parentMailbodyTemplate = `
     <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
