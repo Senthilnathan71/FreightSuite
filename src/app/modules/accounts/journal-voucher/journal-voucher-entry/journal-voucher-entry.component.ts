@@ -1,7 +1,7 @@
 import { Component, HostListener, OnDestroy, OnInit,ViewChild  } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormArray, FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { NgbDateStruct, NgbDatepickerModule, NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateStruct, NgbDatepickerModule, NgbDropdownModule, NgbModal, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CommonModule } from '@angular/common';
@@ -57,6 +57,7 @@ interface NgbDateStructLike { day: number; month: number; year: number; }
     FeatherModule,
     NgSelectModule,
     NgbDropdownModule,
+    NgbTooltipModule,
     DecimalPrecisionDirective,
     SearchableDropdown,
     ElementStateGuardDirective,
