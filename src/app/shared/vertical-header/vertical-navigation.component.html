@@ -196,7 +196,7 @@
   <!-- Search Inputs with Dropdown -->
         
   
-  <li class="nav-item position-absolute top-50 start-50 translate-middle d-flex align-items-center gap-3" style="z-index: 2;">
+  <li class="nav-item position-absolute top-50 d-flex align-items-center gap-3" style="z-index: 2; left: calc(50% + 85px); transform: translate(-50%, -50%);">
   <div class="d-flex align-items-center gap-3">
     <div class="position-relative" ngbDropdown #menuSearchDropdown="ngbDropdown" [autoClose]="outside">
       <input 
@@ -675,40 +675,32 @@
         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         <img src="assets/images/users/user4.jpg" alt="user" class="rounded-circle" width="31" />
       </a>
-      <div class="dropdown-menu-end user-dd dropdown-menu-animate-up" ngbDropdownMenu>
+      <div class="dropdown-menu-end user-dd dropdown-menu-animate-up user-profile-menu p-0" ngbDropdownMenu>
         <span class="with-arrow">
           <span class="bg-primary"></span>
         </span>
-        <!-- <div class="
-          d-flex
-          no-block
-          align-items-center
-          p-3
-          bg-primary
-          text-white
-          mb-2
-        ">
-        <div class="">
-          <img src="assets/images/users/user4.jpg" alt="user" class="img-circle" width="60" />
+        <div class="user-profile-card">
+        <div class="user-profile-avatar">
+          <img src="assets/images/users/user4.jpg" alt="user" />
         </div>
-        <div class="ms-2">
-          <h4 class="mb-0">Steave Jobs</h4>
-          <p class="mb-0">jobs&#64;gmail.com</p>
+        <div class="user-profile-copy">
+          <div class="user-profile-name text-truncate" title="{{ userData?.userName }}">{{ userData?.userName || 'My Profile' }}</div>
+          <div class="user-profile-role text-truncate">My Profile</div>
         </div>
-      </div> -->
-      <li>
-        <a class="dropdown-item" href="javascript:void(0)"  title="{{ userData?.userName }}">
-          <i class="ti-user me-1 ms-1"></i> My Profile - {{ userData?.userName }}</a></li>
-          <li>
-  <a class="dropdown-item d-flex align-items-center" (click)="openBranchSwitchModal(branchSwitchModal)" style="cursor: pointer;">
-    <i class="ti-exchange-vertical me-1 ms-1"></i> Switch Branch
-  </a>
-</li>
-<li>
-  <a class="dropdown-item d-flex align-items-center" (click)="openCurrentUserChangePassword(resetTemplate)" style="cursor: pointer;">
-    <i class="ti-key me-1 ms-1"></i> Change Password
-  </a>
-</li>
+      </div>
+      <div class="user-profile-actions">
+        <a class="dropdown-item user-profile-action" href="javascript:void(0)" title="{{ userData?.userName }}">
+          <span class="user-profile-action-icon"><i class="ti-user"></i></span>
+          <span>My Profile</span>
+        </a>
+        <a class="dropdown-item user-profile-action" (click)="openBranchSwitchModal(branchSwitchModal)" style="cursor: pointer;">
+          <span class="user-profile-action-icon"><i class="ti-exchange-vertical"></i></span>
+          <span>Switch Branch</span>
+        </a>
+        <a class="dropdown-item user-profile-action" (click)="openCurrentUserChangePassword(resetTemplate)" style="cursor: pointer;">
+          <span class="user-profile-action-icon"><i class="ti-key"></i></span>
+          <span>Change Password</span>
+        </a>
         <!-- <a class="dropdown-item" href="javascript:void(0)">
         <i class="ti-wallet me-1 ms-1"></i> My Balance</a>
       <a class="dropdown-item" href="javascript:void(0)">
@@ -717,8 +709,11 @@
         <!-- <a class="dropdown-item" href="javascript:void(0)">
           <i class="ti-settings me-1 ms-1"></i> Account Setting</a> -->
         <!-- <div class="dropdown-divider"></div> -->
-        <li><a class="dropdown-item" href="javascript:void(0)" (click)="logout()">
-          <i class="fa fa-power-off me-1 ms-1"></i> Logout</a></li>
+        <a class="dropdown-item user-profile-action user-profile-logout" href="javascript:void(0)" (click)="logout()">
+          <span class="user-profile-action-icon"><i class="fa fa-power-off"></i></span>
+          <span>Logout</span>
+        </a>
+      </div>
         <!-- <div class="dropdown-divider"></div> -->
         <!-- <div class="ps-4 p-2">
         <a href="javascript:void(0)" class="btn btn-sm btn-success btn-rounded">View Profile</a>

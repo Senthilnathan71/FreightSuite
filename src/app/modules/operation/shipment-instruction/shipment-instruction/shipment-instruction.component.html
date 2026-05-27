@@ -1,412 +1,167 @@
-<div class="row ">
-  <!-- Header Section -->
-  <div class="col-12 compact-form">
-    <div class="row bg-white mb-1 align-items-center py-1 rounded shadow-sm mx-0">
-      <div class="col-md-4">
-        <div class="d-flex align-items-center gap-2">
-          <div class="brand-icon">
-            <i class="fas fa-file-contract"></i>
-          </div>
-          <h5 class="page-title mb-0 text-info">
-            Shipment Instruction (BL Format)
-          </h5>
-        </div>
-      </div>
-
-      <div class="col-md-4 pb-1 " *ngIf="!isPublicMode">
-          <!-- Search HBL -->
-          <div *ngIf="showShipmentInstruction || showSearchResults"   class="d-flex align-items-center gap-2">
-            <input type="text" class="form-control" placeholder="Enter Shipment No / HBL No / MBL No" [(ngModel)]="searchHbl"
-              (keyup.enter)="searchShipment()">
-            <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="searchShipment()"><i
-                class="fas fa-search me-1"></i> Search </button>
-          </div>
-
-      </div>
-
-      <div class="col-md-4" *ngIf="!isPublicMode">
-        <div>
-          <div
-            class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-            <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-              (click)="resetForm()">
-              <i class="fas fa-chevron-left me-1"></i>
-              Back
-            </button>
-            <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
-              (click)="resetForm()">
-              <i class="fas fa-sync-alt me-1"></i>
-              Reset
-            </button>
-            <button *ngIf="showShipmentInstruction && !isEditMode" type="button"
-              class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="toggleEditMode()">
-              <i class="fas fa-edit me-1"></i>
-              Edit
-            </button>
-            <button *ngIf="showShipmentInstruction && isEditMode" type="button"
-              class="btn btn-info btn-sm dofi-min-w-100 dofi-max-w-100" (click)="sendManualMail()">
-              <i class="fas fa-envelope me-1"></i> Send Mail
-            </button>
-            <button *ngIf="showShipmentInstruction && isEditMode" type="button"
-              class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="saveShipmentInstruction()"
-              [disabled]="isSaving">
-              <i class="fas fa-save me-1"></i>
-              {{ isSaving ? 'Saving...' : 'Save' }}
-            </button>
+  <div class="row ">
+    <!-- Header Section -->
+    <div class="col-12 compact-form">
+      <div class="row bg-white mb-1 align-items-center py-1 rounded shadow-sm mx-0">
+        <div class="col-md-4">
+          <div class="d-flex align-items-center gap-2">
+            <div class="brand-icon">
+              <i class="fas fa-file-contract"></i>
+            </div>
+            <h5 class="page-title mb-0 text-info">
+              Shipment Instruction (BL Format)
+            </h5>
           </div>
         </div>
-      </div>
 
-      <!-- Public mode action buttons -->
-      <div class="col-md-8" *ngIf="isPublicMode && !siConfirmed">
-        <div>
-          <div
-            class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-            <button *ngIf="showShipmentInstruction && !isEditMode" type="button"
-              class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="toggleEditMode()">
-              <i class="fas fa-edit me-1"></i>
-              Edit
-            </button>
-            <button *ngIf="showShipmentInstruction && isEditMode" type="button"
-              class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="saveShipmentInstruction()"
-              [disabled]="isSaving">
-              <i class="fas fa-save me-1"></i>
-              {{ isSaving ? 'Saving...' : 'Save' }}
-            </button>
+        <div class="col-md-4 pb-1 " *ngIf="!isPublicMode">
+            <!-- Search HBL -->
+            <div *ngIf="showShipmentInstruction || showSearchResults"   class="d-flex align-items-center gap-2">
+              <input type="text" class="form-control" placeholder="Enter Shipment No / HBL No / MBL No" [(ngModel)]="searchHbl"
+                (keyup.enter)="searchShipment()">
+              <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="searchShipment()"><i
+                  class="fas fa-search me-1"></i> Search </button>
+            </div>
+
+        </div>
+
+        <div class="col-md-4" *ngIf="!isPublicMode">
+          <div>
+            <div
+              class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+              <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                (click)="resetForm()">
+                <i class="fas fa-chevron-left me-1"></i>
+                Back
+              </button>
+              <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                (click)="resetForm()">
+                <i class="fas fa-sync-alt me-1"></i>
+                Reset
+              </button>
+              <button *ngIf="showShipmentInstruction && !isEditMode" type="button"
+                class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="toggleEditMode()">
+                <i class="fas fa-edit me-1"></i>
+                Edit
+              </button>
+              <button *ngIf="showShipmentInstruction && isEditMode" type="button"
+                class="btn btn-info btn-sm dofi-min-w-100 dofi-max-w-100" (click)="sendManualMail()">
+                <i class="fas fa-envelope me-1"></i> Send Mail
+              </button>
+              <button *ngIf="showShipmentInstruction && isEditMode" type="button"
+                class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="saveShipmentInstruction()"
+                [disabled]="isSaving">
+                <i class="fas fa-save me-1"></i>
+                {{ isSaving ? 'Saving...' : 'Save' }}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- SI already confirmed notification -->
-      <div class="col-md-8" *ngIf="isPublicMode && siConfirmed">
-        <div class="d-flex justify-content-end">
-          <div class="alert alert-success mb-0 py-1 px-3">
-            <i class="fas fa-check-circle me-1"></i> Shipment Instruction already confirmed.
+        <!-- Public mode action buttons -->
+        <div class="col-md-8" *ngIf="isPublicMode && !siConfirmed">
+          <div>
+            <div
+              class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
+              <button *ngIf="showShipmentInstruction && !isEditMode" type="button"
+                class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="toggleEditMode()">
+                <i class="fas fa-edit me-1"></i>
+                Edit
+              </button>
+              <button *ngIf="showShipmentInstruction && isEditMode" type="button"
+                class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" (click)="saveShipmentInstruction()"
+                [disabled]="isSaving">
+                <i class="fas fa-save me-1"></i>
+                {{ isSaving ? 'Saving...' : 'Save' }}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-    </div>
-  </div>
-
-  <!-- Search Section -->
-  <div class="col-12" *ngIf="!showShipmentInstruction && !showSearchResults && !isPublicMode">
-    <div class="card h-100" style="min-height:calc(100vh - 180px)">
-      <div class="card-body py-3 px-3">
-        <!-- Empty State for Shipment Instruction (BL Format) -->
-        <div class="container text-center py-5">
-          <!-- Icon / Illustration -->
-          <i class="fas fa-ship fs-5 text-secondary mb-4"></i>
-
-          <!-- Headline & Description -->
-          <h4 class="fw-semibold mb-0">Search for Shipment Instructions</h4>
-          <p class="text-body-secondary mb-3">
-            Enter a Shipment No, HBL No or MBL No to view details.
-          </p>
-
-          <!-- Search Input -->
-          <div class="d-flex justify-content-center gap-2 mb-5">
-            <input type="text" class="form-control w-auto" placeholder="e.g. BL1234567" aria-label="BL number search"
-              [(ngModel)]="searchHbl" (keyup.enter)="searchShipment()">
-            <button type="submit" class="btn btn-info" (click)="searchShipment()">Search</button>
-          </div>
-
-          <!-- Skeleton Table Preview -->
-          <div class="table-responsive">
-            <table class="table table-borderless">
-              <tbody>
-                <!-- Skeleton rows using Bootstrap 5 placeholders -->
-                <tr>
-                  <td colspan="4">
-                    <span class="placeholder col-12 placeholder-glow"></span>
-                  </td>
-                  <td colspan="4">
-                    <span class="placeholder col-12 placeholder-glow"></span>
-                  </td>
-                </tr>
-                <tr>
-                  <td colspan="4">
-                    <span class="placeholder col-12 placeholder-glow"></span>
-                  </td>
-                  <td colspan="4">
-                    <span class="placeholder col-12 placeholder-glow"></span>
-                  </td>
-                </tr>
-                <tr>
-                  <td colspan="4">
-                    <span class="placeholder col-12 placeholder-glow"></span>
-                  </td>
-                  <td colspan="4">
-                    <span class="placeholder col-12 placeholder-glow"></span>
-                  </td>
-                </tr>
-                <tr>
-                  <td colspan="4">
-                    <span class="placeholder col-12 placeholder-glow"></span>
-                  </td>
-                  <td colspan="4">
-                    <span class="placeholder col-12 placeholder-glow"></span>
-                  </td>
-                </tr>
-                <tr>
-                  <td colspan="4">
-                    <span class="placeholder col-12 placeholder-glow"></span>
-                  </td>
-                  <td colspan="4">
-                    <span class="placeholder col-12 placeholder-glow"></span>
-                  </td>
-                </tr>
-                <tr>
-                  <td colspan="4">
-                    <span class="placeholder col-12 placeholder-glow"></span>
-                  </td>
-                  <td colspan="4">
-                    <span class="placeholder col-12 placeholder-glow"></span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+        <!-- SI already confirmed notification -->
+        <div class="col-md-8" *ngIf="isPublicMode && siConfirmed">
+          <div class="d-flex justify-content-end">
+            <div class="alert alert-success mb-0 py-1 px-3">
+              <i class="fas fa-check-circle me-1"></i> Shipment Instruction already confirmed.
+            </div>
           </div>
         </div>
 
       </div>
     </div>
-  </div>
 
-  <!-- Search Results Section (Multiple MBL results) -->
-  <div class="col-12" *ngIf="showSearchResults && !showShipmentInstruction && !isPublicMode">
-    <div class="card h-100" style="min-height:calc(100vh - 180px)">
-      <div class="card-body py-3 px-3">
-        <h6 class="fw-bold mb-3">Multiple House Jobs found for MBL No: <span class="text-info">{{searchHbl}}</span> — Select one to view</h6>
-        <div class="table-responsive">
-          <table class="table table-borderless table-hover mb-0">
-            <thead class="house-table">
-              <tr>
-                <th class="small">#</th>
-                <th class="small">HBL No</th>
-                <th class="small">Shipment No</th>
-                <th class="small">Customer Name</th>
-                <th class="small">Shipper</th>
-                <th class="small">POL</th>
-                <th class="small">POD</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let result of searchResults; let i = index" (click)="selectHouseJob(result)"
-                style="cursor: pointer;">
-                <td>{{i + 1}}</td>
-                <td class="text-info">{{result.HBLNo || '-'}}</td>
-                <td>{{result.ShipmentNo || '-'}}</td>
-                <td>{{result.CustomerName || '-'}}</td>
-                <td>{{result.ShipperName || '-'}}</td>
-                <td>{{result.POL || '-'}}</td>
-                <td>{{result.POD || '-'}}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
+    <!-- Search Section -->
+    <div class="col-12" *ngIf="!showShipmentInstruction && !showSearchResults && !isPublicMode">
+      <div class="card h-100" style="min-height:calc(100vh - 180px)">
+        <div class="card-body py-3 px-3">
+          <!-- Empty State for Shipment Instruction (BL Format) -->
+          <div class="container text-center py-5">
+            <!-- Icon / Illustration -->
+            <i class="fas fa-ship fs-5 text-secondary mb-4"></i>
 
-  <!-- Bill of Lading Format Section -->
-  <div class="col-12" *ngIf="showShipmentInstruction">
-    <div class="card h-100 mb-0">
-      <div class="card-body p-0">
-        <!-- BL Header -->
-        <div class="bl-container " [ngClass]="{'edit-mode': isEditMode, 'view-mode': !isEditMode}">
-          <!-- Top Section -->
-          <div class="row g-0">
-            <!-- Left Column -->
-            <div class="col-md-6 border-end">
-              <!-- Shipper/Exporter -->
-              <div class="bl-section border-bottom p-1">
-                <label class="bl-label  mb-1">Shipper/Exporter(Complete Name and Address)</label>
-                <div class="editable-field-group">
-                  <input type="text" class="form-control border-0 bg-transparent  mb-1 editable-field"
-                    [(ngModel)]="shipmentData.shipper.name" [readonly]="!isEditMode" placeholder="">
-                  <textarea class="form-control border-0 bg-transparent editable-field"
-                    [(ngModel)]="shipmentData.shipper.address" [readonly]="!isEditMode" rows="3"
-                    placeholder="" style="resize: none;"></textarea>
-                </div>
-              </div>
+            <!-- Headline & Description -->
+            <h4 class="fw-semibold mb-0">Search for Shipment Instructions</h4>
+            <p class="text-body-secondary mb-3">
+              Enter a Shipment No, HBL No or MBL No to view details.
+            </p>
 
-              <!-- Consignee -->
-              <div class="bl-section border-bottom p-1">
-                <label class="bl-label  mb-1">Consignee(Name and Address) Not Negotiable Unless Consigned To
-                  Order</label>
-                <div class="editable-field-group">
-                  <input type="text" class="form-control border-0 bg-transparent  mb-1 editable-field"
-                    [(ngModel)]="shipmentData.consignee.name" [readonly]="!isEditMode" placeholder="">
-                  <textarea class="form-control border-0 bg-transparent editable-field"
-                    [(ngModel)]="shipmentData.consignee.address" [readonly]="!isEditMode" rows="3"
-                    placeholder="" style="resize: none;"></textarea>
-                </div>
-              </div>
-
-              <!-- Notify Party -->
-              <div class="bl-section p-1">
-                <label class="bl-label  mb-1">Notify Party(Name and Address)</label>
-                <div class="editable-field-group">
-                  <input type="text" class="form-control border-0 bg-transparentmb-1 editable-field"
-                    [(ngModel)]="shipmentData.notifyParty.name" [readonly]="!isEditMode"
-                    placeholder="">
-                  <textarea class="form-control border-0 bg-transparent editable-field"
-                    [(ngModel)]="shipmentData.notifyParty.address" [readonly]="!isEditMode" rows="3"
-                    placeholder="" style="resize: none;"></textarea>
-                </div>
-              </div>
+            <!-- Search Input -->
+            <div class="d-flex justify-content-center gap-2 mb-5">
+              <input type="text" class="form-control w-auto" placeholder="e.g. BL1234567" aria-label="BL number search"
+                [(ngModel)]="searchHbl" (keyup.enter)="searchShipment()">
+              <button type="submit" class="btn btn-info" (click)="searchShipment()">Search</button>
             </div>
 
-            <!-- Right Column -->
-            <div class="col-md-6">
-              <!-- Bill of Lading No -->
-              <div class="bl-section border-bottom p-1">
-                <div class="row">
-                  <div class="col-md-6">
-                    <label class="bl-label mb-1">Bill of Lading No</label>
-                    <input type="text" class="form-control border-0 bg-transparent editable-field"
-                      [(ngModel)]="shipmentData.billOfLadingNo" [readonly]="!isEditMode" placeholder="">
-                  </div>
-                  <div class="col-md-6">
-                    <label class="bl-label mb-1">Export Reference</label>
-                    <input type="text" class="form-control border-0 bg-transparent editable-field"
-                      [(ngModel)]="shipmentData.exportReference" [readonly]="!isEditMode"
-                      placeholder="">
-                  </div>
-                </div>
-
-
-
-              </div>
-
-              <!-- BL Title and Description -->
-              <div class="bl-section border-bottom p-1">
-                <h6 class="text-start fw-bold text-info mb-2">BILL OF LADING(FOR COMBINED TRANSPORT OR PORT TO PORT
-                  SHIPMENT)</h6>
-                <p class="small mb-1 text-black">
-                  <strong>RECEIVED</strong> by the carrier the Goods as specified below in apparent good order and
-                  condition unless otherwise stated, to be transported to such place as agreed, authorised or permitted
-                  herein and subject to all the terms and conditions appearing on the front and reverse of this Bill of
-                  Lading, any local privileges and customs notwithstanding.
-                </p>
-                <p class="small mb-2 text-black">
-                  The Particulars given above as stated by the shipper and the weight, measure, quantity, condition,
-                  contents and value of the Goods are unknown to the carrier.
-                </p>
-                <label class="bl-label ">Delivery Agent</label>
-                <input type="text" class="form-control border-0 bg-transparent editable-field"
-                  [(ngModel)]="shipmentData.deliveryAgent" [readonly]="!isEditMode" placeholder="">
-              </div>
-
-              <!-- Notify2 -->
-              <div class="bl-section p-1">
-                <label class="bl-label  mb-1">Notify2</label>
-                <div class="editable-field-group">
-                  <input type="text" class="form-control border-0 bg-transparent  mb-1 editable-field"
-                    placeholder="" [(ngModel)]="shipmentData.notifyParty2.name"
-                    [readonly]="!isEditMode">
-                  <textarea class="form-control border-0 bg-transparent editable-field"
-                    placeholder="" [(ngModel)]="shipmentData.notifyParty2.address"
-                    [readonly]="!isEditMode" rows="2" style="resize: none;"></textarea>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Middle Section - Transport Details -->
-          <div class="row g-0 border-top">
-            <div class="col-3 border-end p-1">
-              <label class="bl-label  small">Vessel/Voy No</label>
-              <input type="text" class="form-control border-0 bg-transparent small editable-field"
-                [(ngModel)]="shipmentData.vesselVoyNo" [readonly]="!isEditMode" placeholder="">
-            </div>
-            <div class="col-3 border-end p-1">
-              <label class="bl-label  small">Place of Receipt</label>
-              <input type="text" class="form-control border-0 bg-transparent small editable-field"
-                [(ngModel)]="shipmentData.placeOfReceipt" [readonly]="!isEditMode" placeholder="">
-            </div>
-            <div class="col-3 border-end p-1">
-              <label class="bl-label  small">Port of Discharge</label>
-              <input type="text" class="form-control border-0 bg-transparent small editable-field"
-                [(ngModel)]="shipmentData.portOfDischarge" [readonly]="!isEditMode" placeholder="">
-            </div>
-            <div class="col-3 p-1">
-              <label class="bl-label  small">Place of Delivery</label>
-              <input type="text" class="form-control border-0 bg-transparent small editable-field"
-                [(ngModel)]="shipmentData.placeOfDelivery" [readonly]="!isEditMode" placeholder="">
-            </div>
-          </div>
-
-          <!-- Bottom Section - BL Details -->
-          <div class="row g-0 border-top">
-            <div class="col-3 border-end p-1">
-              <label class="bl-label  small">Number of Original BL</label>
-              <div class="d-flex gap-2">
-                <input type="number" class="form-control border-0 bg-transparent small editable-field"
-                  [(ngModel)]="shipmentData.noOfOriginal" [readonly]="!isEditMode" min="0">
-              </div>
-            </div>
-            <div class="col-3 border-end p-1">
-              <label class="bl-label  small">Port of Loading</label>
-              <input type="text" class="form-control border-0 bg-transparent small editable-field"
-                [(ngModel)]="shipmentData.portOfLoading" [readonly]="!isEditMode" placeholder="">
-            </div>
-          </div>
-
-          <!-- Container Details Table -->
-          <div class="border-top">
-            <h6 class=" p-2 mb-0 bg-light">Particulars Furnished By Shipper</h6>
+            <!-- Skeleton Table Preview -->
             <div class="table-responsive">
-              <table class="table table-borderless mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <th class="small">S.No</th>
-                    <th class="small">Container</th>
-                    <th class="small">Marks and Numbers</th>
-                    <th class="small">Description of Goods</th>
-                    <th class="small">Pack Count / Pack Type</th>
-                    <th class="small">Gross Weight</th>
-                    <th class="small">Volume</th>
-                  </tr>
-                </thead>
+              <table class="table table-borderless">
                 <tbody>
-                  <tr *ngFor="let container of shipmentData.containers; let i = index">
-                    <td class="text-center">{{i+1}}</td>
-                    <td>
-                      <input type="text" class="form-control border-0 bg-transparent small editable-field"
-                        [(ngModel)]="container.containerNo" [readonly]="!isEditMode" placeholder="">
+                  <!-- Skeleton rows using Bootstrap 5 placeholders -->
+                  <tr>
+                    <td colspan="4">
+                      <span class="placeholder col-12 placeholder-glow"></span>
                     </td>
-                    <td>
-                      <textarea class="form-control border-0 bg-transparent small editable-field"
-                        [(ngModel)]="container.marksAndNos" [readonly]="!isEditMode" rows="2" style="resize: none;"
-                        placeholder=""></textarea>
+                    <td colspan="4">
+                      <span class="placeholder col-12 placeholder-glow"></span>
                     </td>
-                    <td>
-                      <textarea class="form-control border-0 bg-transparent small editable-field"
-                        [(ngModel)]="container.descriptionOfGoods" [readonly]="!isEditMode" rows="2"
-                        style="resize: none;" placeholder=""></textarea>
+                  </tr>
+                  <tr>
+                    <td colspan="4">
+                      <span class="placeholder col-12 placeholder-glow"></span>
                     </td>
-                    <td>
-                      <div class="d-flex gap-1">
-                        <input type="number" class="form-control border-0 bg-transparent small editable-field"
-                          [(ngModel)]="container.packCount" [readonly]="!isEditMode" style="width: 50px;"
-                          placeholder="">
-                        <select class="form-control border-0 bg-transparent small editable-field"
-                          [(ngModel)]="container.packType" [disabled]="!isEditMode">
-                          <option value="Carton">Carton</option>
-                          <option value="PACK">PACK</option>
-                          <option value="Box">Box</option>
-                        </select>
-                      </div>
+                    <td colspan="4">
+                      <span class="placeholder col-12 placeholder-glow"></span>
                     </td>
-                    <td>
-                      <input type="number" class="form-control border-0 bg-transparent small text-end editable-field"
-                        [(ngModel)]="container.grossWeight" [readonly]="!isEditMode" step="0.001" placeholder="">
+                  </tr>
+                  <tr>
+                    <td colspan="4">
+                      <span class="placeholder col-12 placeholder-glow"></span>
                     </td>
-                    <td>
-                      <input type="number" class="form-control border-0 bg-transparent small text-end editable-field"
-                        [(ngModel)]="container.volume" [readonly]="!isEditMode" step="0.001" placeholder="">
+                    <td colspan="4">
+                      <span class="placeholder col-12 placeholder-glow"></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="4">
+                      <span class="placeholder col-12 placeholder-glow"></span>
+                    </td>
+                    <td colspan="4">
+                      <span class="placeholder col-12 placeholder-glow"></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="4">
+                      <span class="placeholder col-12 placeholder-glow"></span>
+                    </td>
+                    <td colspan="4">
+                      <span class="placeholder col-12 placeholder-glow"></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="4">
+                      <span class="placeholder col-12 placeholder-glow"></span>
+                    </td>
+                    <td colspan="4">
+                      <span class="placeholder col-12 placeholder-glow"></span>
                     </td>
                   </tr>
                 </tbody>
@@ -414,90 +169,335 @@
             </div>
           </div>
 
-          <!-- Bottom Details -->
-          <div class="row g-0 border-top">
-            <div class="col-6 border-end">
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="p-1">
-                    <label class="bl-label  small">Freight Payable at</label>
-                    <input type="text" class="form-control border-0 bg-transparent small editable-field"
-                      [(ngModel)]="shipmentData.freightPayableAt" [readonly]="!isEditMode"
-                      placeholder="">
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="p-1">
-                    <label class="bl-label  small">Inco Terms</label>
-                    <input type="text" class="form-control border-0 bg-transparent small editable-field"
-                      [(ngModel)]="shipmentData.typeOfService" [readonly]="!isEditMode" placeholder="">
-                  </div>
-                </div>
-              </div>
+        </div>
+      </div>
+    </div>
 
-
-            </div>
-            <div class="col-6">
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="p-1">
-                    <label class="bl-label  small">Shipped On Board</label>
-                    <input class="form-control border-0 bg-transparent small editable-field"
-                      [(ngModel)]="shipmentData.shippedOnBoard" [readonly]="!isEditMode" rows="1" style="resize: none;"
-                      placeholder="" />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="p-1">
-                    <label class="bl-label  small">Place and Date of Issue</label>
-                    <input class="form-control border-0 bg-transparent small editable-field"
-                      [(ngModel)]="shipmentData.placeAndDateOfIssue" [readonly]="!isEditMode" rows="1"
-                      style="resize: none;" placeholder="" />
-                  </div>
-                </div>
-              </div>
-
-
-            </div>
+    <!-- Search Results Section (Multiple MBL results) -->
+    <div class="col-12" *ngIf="showSearchResults && !showShipmentInstruction && !isPublicMode">
+      <div class="card h-100" style="min-height:calc(100vh - 180px)">
+        <div class="card-body py-3 px-3">
+          <h6 class="fw-bold mb-3">Multiple House Jobs found for MBL No: <span class="text-info">{{searchHbl}}</span> — Select one to view</h6>
+          <div class="table-responsive">
+            <table class="table table-borderless table-hover mb-0">
+              <thead class="house-table">
+                <tr>
+                  <th class="small">#</th>
+                  <th class="small">HBL No</th>
+                  <th class="small">Shipment No</th>
+                  <th class="small">Customer Name</th>
+                  <th class="small">Shipper</th>
+                  <th class="small">POL</th>
+                  <th class="small">POD</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let result of searchResults; let i = index" (click)="selectHouseJob(result)"
+                  style="cursor: pointer;">
+                  <td>{{i + 1}}</td>
+                  <td class="text-info">{{result.HBLNo || '-'}}</td>
+                  <td>{{result.ShipmentNo || '-'}}</td>
+                  <td>{{result.CustomerName || '-'}}</td>
+                  <td>{{result.ShipperName || '-'}}</td>
+                  <td>{{result.POL || '-'}}</td>
+                  <td>{{result.POD || '-'}}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
+        </div>
+      </div>
+    </div>
 
-          <!-- Witness Statement -->
-          <div class="border-top p-1">
-            <p class="small text-justify mb-0">
-              In WITNESS of the contract herein contained the number of originals state above have been issued one of
-              the being accomplished the other(s) to be void.
-            </p>
-          </div>
-
-          <!-- Rider BL Section -->
-          <div class="border-top">
-            <h6 class=" p-2 mb-0 bg-light">Rider BL</h6>
+    <!-- Bill of Lading Format Section -->
+    <div class="col-12" *ngIf="showShipmentInstruction">
+      <div class="card h-100 mb-0">
+        <div class="card-body p-0">
+          <!-- BL Header -->
+          <div class="bl-container " [ngClass]="{'edit-mode': isEditMode, 'view-mode': !isEditMode}">
+            <!-- Top Section -->
             <div class="row g-0">
-              <div class="col-6 border-end p-1">
-                <label class="bl-label  small">Rider Marks No</label>
-                <input class="form-control border-0 bg-transparent small editable-field"
-                  [(ngModel)]="shipmentData.riderMarksNo" [readonly]="!isEditMode" rows="3" style="resize: none;"
-                  placeholder="R" />
+              <!-- Left Column -->
+              <div class="col-md-6 border-end">
+                <!-- Shipper/Exporter -->
+                <div class="bl-section border-bottom p-1">
+                  <label class="bl-label  mb-1">Shipper/Exporter(Complete Name and Address)</label>
+                  <div class="editable-field-group">
+                    <input type="text" class="form-control border-0 bg-transparent  mb-1 editable-field"
+                      [(ngModel)]="shipmentData.shipper.name" [readonly]="!isEditMode" placeholder="">
+                    <textarea class="form-control border-0 bg-transparent editable-field"
+                      [(ngModel)]="shipmentData.shipper.address" [readonly]="!isEditMode" rows="3"
+                      placeholder="" style="resize: none;"></textarea>
+                  </div>
+                </div>
+
+                <!-- Consignee -->
+                <div class="bl-section border-bottom p-1">
+                  <label class="bl-label  mb-1">Consignee(Name and Address) Not Negotiable Unless Consigned To
+                    Order</label>
+                  <div class="editable-field-group">
+                    <input type="text" class="form-control border-0 bg-transparent  mb-1 editable-field"
+                      [(ngModel)]="shipmentData.consignee.name" [readonly]="!isEditMode" placeholder="">
+                    <textarea class="form-control border-0 bg-transparent editable-field"
+                      [(ngModel)]="shipmentData.consignee.address" [readonly]="!isEditMode" rows="3"
+                      placeholder="" style="resize: none;"></textarea>
+                  </div>
+                </div>
+
+                <!-- Notify Party -->
+                <div class="bl-section p-1">
+                  <label class="bl-label  mb-1">Notify Party(Name and Address)</label>
+                  <div class="editable-field-group">
+                    <input type="text" class="form-control border-0 bg-transparentmb-1 editable-field"
+                      [(ngModel)]="shipmentData.notifyParty.name" [readonly]="!isEditMode"
+                      placeholder="">
+                    <textarea class="form-control border-0 bg-transparent editable-field"
+                      [(ngModel)]="shipmentData.notifyParty.address" [readonly]="!isEditMode" rows="3"
+                      placeholder="" style="resize: none;"></textarea>
+                  </div>
+                </div>
               </div>
-              <div class="col-6 p-1">
-                <label class="bl-label  small">Rider Desc</label>
-                <input class="form-control border-0 bg-transparent small editable-field"
-                  [(ngModel)]="shipmentData.riderDesc" [readonly]="!isEditMode" rows="3" style="resize: none;"
-                  placeholder="" />
+
+              <!-- Right Column -->
+              <div class="col-md-6">
+                <!-- Bill of Lading No -->
+                <div class="bl-section border-bottom p-1">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <label class="bl-label mb-1">Bill of Lading No</label>
+                      <input type="text" class="form-control border-0 bg-transparent editable-field"
+                        [(ngModel)]="shipmentData.billOfLadingNo" [readonly]="!isEditMode" placeholder="">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="bl-label mb-1">Export Reference</label>
+                      <input type="text" class="form-control border-0 bg-transparent editable-field"
+                        [(ngModel)]="shipmentData.exportReference" [readonly]="!isEditMode"
+                        placeholder="">
+                    </div>
+                  </div>
+
+
+
+                </div>
+
+                <!-- BL Title and Description -->
+                <div class="bl-section border-bottom p-1">
+                  <h6 class="text-start fw-bold text-info mb-2">BILL OF LADING(FOR COMBINED TRANSPORT OR PORT TO PORT
+                    SHIPMENT)</h6>
+                  <p class="small mb-1 text-black">
+                    <strong>RECEIVED</strong> by the carrier the Goods as specified below in apparent good order and
+                    condition unless otherwise stated, to be transported to such place as agreed, authorised or permitted
+                    herein and subject to all the terms and conditions appearing on the front and reverse of this Bill of
+                    Lading, any local privileges and customs notwithstanding.
+                  </p>
+                  <p class="small mb-2 text-black">
+                    The Particulars given above as stated by the shipper and the weight, measure, quantity, condition,
+                    contents and value of the Goods are unknown to the carrier.
+                  </p>
+                  <label class="bl-label ">Delivery Agent</label>
+                  <input type="text" class="form-control border-0 bg-transparent editable-field"
+                    [(ngModel)]="shipmentData.deliveryAgent" [readonly]="!isEditMode" placeholder="">
+                </div>
+
+                <!-- Notify2 -->
+                <div class="bl-section p-1">
+                  <label class="bl-label  mb-1">Notify2</label>
+                  <div class="editable-field-group">
+                    <input type="text" class="form-control border-0 bg-transparent  mb-1 editable-field"
+                      placeholder="" [(ngModel)]="shipmentData.notifyParty2.name"
+                      [readonly]="!isEditMode">
+                    <textarea class="form-control border-0 bg-transparent editable-field"
+                      placeholder="" [(ngModel)]="shipmentData.notifyParty2.address"
+                      [readonly]="!isEditMode" rows="2" style="resize: none;"></textarea>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Remarks Section -->
-          <div class="border-top">
-            <h6 class=" p-2 mb-0 bg-light">Remarks</h6>
-            <div class="p-2">
-              <textarea class="form-control editable-field" [(ngModel)]="remarks" [readonly]="!isEditMode" rows="3"
-                placeholder="" style="resize: none;"></textarea>
+            <!-- Middle Section - Transport Details -->
+            <div class="row g-0 border-top">
+              <div class="col-3 border-end p-1">
+                <label class="bl-label  small">Vessel/Voy No</label>
+                <input type="text" class="form-control border-0 bg-transparent small editable-field"
+                  [(ngModel)]="shipmentData.vesselVoyNo" [readonly]="!isEditMode" placeholder="">
+              </div>
+              <div class="col-3 border-end p-1">
+                <label class="bl-label  small">Place of Receipt</label>
+                <input type="text" class="form-control border-0 bg-transparent small editable-field"
+                  [(ngModel)]="shipmentData.placeOfReceipt" [readonly]="!isEditMode" placeholder="">
+              </div>
+              <div class="col-3 border-end p-1">
+                <label class="bl-label  small">Port of Discharge</label>
+                <input type="text" class="form-control border-0 bg-transparent small editable-field"
+                  [(ngModel)]="shipmentData.portOfDischarge" [readonly]="!isEditMode" placeholder="">
+              </div>
+              <div class="col-3 p-1">
+                <label class="bl-label  small">Place of Delivery</label>
+                <input type="text" class="form-control border-0 bg-transparent small editable-field"
+                  [(ngModel)]="shipmentData.placeOfDelivery" [readonly]="!isEditMode" placeholder="">
+              </div>
+            </div>
+
+            <!-- Bottom Section - BL Details -->
+            <div class="row g-0 border-top">
+              <div class="col-3 border-end p-1">
+                <label class="bl-label  small">Number of Original BL</label>
+                <div class="d-flex gap-2">
+                  <input type="number" class="form-control border-0 bg-transparent small editable-field"
+                    [(ngModel)]="shipmentData.noOfOriginal" [readonly]="!isEditMode" min="0">
+                </div>
+              </div>
+              <div class="col-3 border-end p-1">
+                <label class="bl-label  small">Port of Loading</label>
+                <input type="text" class="form-control border-0 bg-transparent small editable-field"
+                  [(ngModel)]="shipmentData.portOfLoading" [readonly]="!isEditMode" placeholder="">
+              </div>
+            </div>
+
+            <!-- Container Details Table -->
+            <div class="border-top">
+              <h6 class=" p-2 mb-0 bg-light">Particulars Furnished By Shipper</h6>
+              <div class="table-responsive">
+                <table class="table table-borderless mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th class="small">S.No</th>
+                      <th class="small">Container</th>
+                      <th class="small">Marks and Numbers</th>
+                      <th class="small">Description of Goods</th>
+                      <th class="small">Pack Count / Pack Type</th>
+                      <th class="small">Gross Wt.</th>
+                      <th class="small">Volume</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let container of shipmentData.containers; let i = index">
+                      <td class="text-center">{{i+1}}</td>
+                      <td>
+                        <input type="text" class="form-control border-0 bg-transparent small editable-field"
+                          [(ngModel)]="container.containerNo" [readonly]="!isEditMode" placeholder="">
+                      </td>
+                      <td>
+                        <textarea class="form-control border-0 bg-transparent small editable-field"
+                          [(ngModel)]="container.marksAndNos" [readonly]="!isEditMode" rows="2" style="resize: none;"
+                          placeholder=""></textarea>
+                      </td>
+                      <td>
+                        <textarea class="form-control border-0 bg-transparent small editable-field"
+                          [(ngModel)]="container.descriptionOfGoods" [readonly]="!isEditMode" rows="2"
+                          style="resize: none;" placeholder=""></textarea>
+                      </td>
+                      <td>
+                        <div class="d-flex gap-1">
+                          <input type="number" class="form-control border-0 bg-transparent small editable-field"
+                            [(ngModel)]="container.packCount" [readonly]="!isEditMode" style="width: 50px;"
+                            placeholder="">
+                          <select class="form-control border-0 bg-transparent small editable-field"
+                            [(ngModel)]="container.packType" [disabled]="!isEditMode">
+                            <option value="Carton">Carton</option>
+                            <option value="PACK">PACK</option>
+                            <option value="Box">Box</option>
+                          </select>
+                        </div>
+                      </td>
+                      <td>
+                        <input type="number" class="form-control border-0 bg-transparent small text-end editable-field"
+                          [(ngModel)]="container.grossWeight" [readonly]="!isEditMode" step="0.001" placeholder="">
+                      </td>
+                      <td>
+                        <input type="number" class="form-control border-0 bg-transparent small text-end editable-field"
+                          [(ngModel)]="container.volume" [readonly]="!isEditMode" step="0.001" placeholder="">
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Bottom Details -->
+            <div class="row g-0 border-top">
+              <div class="col-6 border-end">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="p-1">
+                      <label class="bl-label  small">Freight Payable at</label>
+                      <input type="text" class="form-control border-0 bg-transparent small editable-field"
+                        [(ngModel)]="shipmentData.freightPayableAt" [readonly]="!isEditMode"
+                        placeholder="">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="p-1">
+                      <label class="bl-label  small">Inco Terms</label>
+                      <input type="text" class="form-control border-0 bg-transparent small editable-field"
+                        [(ngModel)]="shipmentData.typeOfService" [readonly]="!isEditMode" placeholder="">
+                    </div>
+                  </div>
+                </div>
+
+
+              </div>
+              <div class="col-6">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="p-1">
+                      <label class="bl-label  small">Shipped On Board</label>
+                      <input class="form-control border-0 bg-transparent small editable-field"
+                        [(ngModel)]="shipmentData.shippedOnBoard" [readonly]="!isEditMode" rows="1" style="resize: none;"
+                        placeholder="" />
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="p-1">
+                      <label class="bl-label  small">Place and Date of Issue</label>
+                      <input class="form-control border-0 bg-transparent small editable-field"
+                        [(ngModel)]="shipmentData.placeAndDateOfIssue" [readonly]="!isEditMode" rows="1"
+                        style="resize: none;" placeholder="" />
+                    </div>
+                  </div>
+                </div>
+
+
+              </div>
+            </div>
+
+            <!-- Witness Statement -->
+            <div class="border-top p-1">
+              <p class="small text-justify mb-0">
+                In WITNESS of the contract herein contained the number of originals state above have been issued one of
+                the being accomplished the other(s) to be void.
+              </p>
+            </div>
+
+            <!-- Rider BL Section -->
+            <div class="border-top">
+              <h6 class=" p-2 mb-0 bg-light">Rider BL</h6>
+              <div class="row g-0">
+                <div class="col-6 border-end p-1">
+                  <label class="bl-label  small">Rider Marks No</label>
+                  <input class="form-control border-0 bg-transparent small editable-field"
+                    [(ngModel)]="shipmentData.riderMarksNo" [readonly]="!isEditMode" rows="3" style="resize: none;"
+                    placeholder="R" />
+                </div>
+                <div class="col-6 p-1">
+                  <label class="bl-label  small">Rider Desc</label>
+                  <input class="form-control border-0 bg-transparent small editable-field"
+                    [(ngModel)]="shipmentData.riderDesc" [readonly]="!isEditMode" rows="3" style="resize: none;"
+                    placeholder="" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Remarks Section -->
+            <div class="border-top">
+              <h6 class=" p-2 mb-0 bg-light">Remarks</h6>
+              <div class="p-2">
+                <textarea class="form-control editable-field" [(ngModel)]="remarks" [readonly]="!isEditMode" rows="3"
+                  placeholder="" style="resize: none;"></textarea>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>

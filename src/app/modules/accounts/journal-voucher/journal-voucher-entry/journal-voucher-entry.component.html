@@ -14,6 +14,18 @@
                         <i class="fas fs-6 fa-info-circle"></i>
                     </a>
                     }
+                    <button
+                        *ngIf="editMode"
+                        type="button"
+                        class="btn btn-sm ms-2"
+                        style="width: 26px; height: 24px; padding: 0; border-radius: 6px; background-color: #7c3aed; border-color: #7c3aed; color: #fff; display: inline-flex; align-items: center; justify-content: center;"
+                        (click)="copyJournalVoucher()"
+                        [disabled]="!voucherData || isSaving || isDirty"
+                        ngbTooltip="Copy"
+                        placement="bottom"
+                    >
+                        <i class="fas fa-copy" style="font-size: 11px;"></i>
+                    </button>
                 </div>
             </div>
             <div class="col-md-8 pb-1">
@@ -37,12 +49,6 @@
     (click)="resetForm()" [disabled]="isPosted">
     <i class="fas fa-sync-alt me-1"></i>
     Reset
-</button>
-
-<button *ngIf="editMode" type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
-    (click)="copyJournalVoucher()" [disabled]="!voucherData || isSaving || isDirty">
-    <i class="fas fa-copy me-1"></i>
-    Copy
 </button>
 
 <div class="action-group primary" *ngIf="editMode">
@@ -294,19 +300,19 @@
                             <th class="bg-transparent text-light" width="3%"></th>
 
                             <th class="bg-transparent text-light" style="min-width:160px">Ledger <span
-                                    class="text-danger">*</span></th>
+                                    class="text-danger" style="color: #ffb3b3 !important;">*</span></th>
                             <th class="bg-transparent text-light" style="min-width:160px">Subledger <span
-                                    class="text-danger" *ngIf="isAnySubledgerRequired()">*</span></th>
+                                    class="text-danger" style="color: #ffb3b3 !important;" *ngIf="isAnySubledgerRequired()">*</span></th>
                             <th class="bg-transparent text-light" style="min-width:88px">Curr. <span
-                                    class="text-danger">*</span></th>
+                                    class="text-danger" style="color: #ffb3b3 !important;">*</span></th>
                             <th class="bg-transparent text-light" style="min-width:90px">Ex.Rate <span
-                                    class="text-danger">*</span></th>
+                                    class="text-danger" style="color: #ffb3b3 !important;">*</span></th>
                             <th class="bg-transparent text-light" style="min-width:110px">Curr.Amt <span
-                                    class="text-danger">*</span></th>
+                                    class="text-danger" style="color: #ffb3b3 !important;">*</span></th>
                             <th class="bg-transparent text-light" style="min-width:110px">Local Amt <span
-                                    class="text-danger">*</span></th>
+                                    class="text-danger" style="color: #ffb3b3 !important;">*</span></th>
                             <th class="bg-transparent text-light" style="min-width:70px">Dr/Cr <span
-                                    class="text-danger">*</span></th>
+                                    class="text-danger" style="color: #ffb3b3 !important;">*</span></th>
                             <th class="bg-transparent text-light" style="min-width:150px">Narration <span
                                     class="text-danger"></span></th>
                         </tr>

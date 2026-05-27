@@ -445,7 +445,7 @@
                 </div>
               </div>
               <div class="stat-item">
-                <div class="stat-label">Gross Weight</div>
+                <div class="stat-label">Gross Wt.</div>
                 <div class="stat-value">{{c['GrossWeight']?.value ? c['GrossWeight']?.value : '-' }}</div>
               </div>
               <div class="stat-item">
@@ -587,7 +587,7 @@
                 formControlName="GrossWeight" DecimalPrecision [DecimalPrecisionBefore]="10"
                 [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
               <label for="text-input" class="input-label">
-                Gross Weight
+                Gross Wt.
               </label>
 
               <!-- Validation Messages -->
@@ -612,7 +612,7 @@
                 [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999"
                 (blur)="cargoForm.get('GrossWeight')?.updateValueAndValidity()"
                 (input)="cargoForm.get('GrossWeight')?.updateValueAndValidity()">
-              <label for="text-input" class="input-label">Net Weight<span class="text-danger"></span></label>
+              <label for="text-input" class="input-label">Net Wt.<span class="text-danger"></span></label>
               <!-- Validation Messages -->
               @if ((cargoForm.get('NetWeight')?.touched || cargoForm.get('NetWeight')?.dirty) &&
               cargoForm.get('NetWeight')?.invalid) {
@@ -651,7 +651,7 @@
               <input type="text" id="text-input" placeholder="" class="custom-input-field sm text-end"
                 formControlName="ChargeableWeight" DecimalPrecision [DecimalPrecisionBefore]="7"
                 [DecimalPrecisionAfter]="decimalAfterPrecision" max="9999999.999">
-              <label for="text-input" class="input-label">Chargeable Weight<span class="text-danger"></span></label>
+              <label for="text-input" class="input-label">Chargeable Wt.<span class="text-danger"></span></label>
               <!-- Validation Messages -->
               @if ((cargoForm.get('ChargeableWeight')?.touched || cargoForm.get('ChargeableWeight')?.dirty) &&
               cargoForm.get('ChargeableWeight')?.invalid) {

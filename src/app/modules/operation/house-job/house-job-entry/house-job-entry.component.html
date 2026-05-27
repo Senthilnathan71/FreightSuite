@@ -64,14 +64,14 @@
         </button>
       </div>
       <div class="action-group" *ngIf="isEditMode">
-        <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+        <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
           (click)="openAuditLogs()">
           <i class="fas fa-history me-1"></i>
           <span>Logs</span>
         </button>
       </div>
       <div class="action-group" *ngIf="isEditMode && !otherForm.get('SIConfirmationDate')?.value">
-        <button class="btn btn-light-secondary btn-sm dofi-min-w-80" style="white-space: nowrap;"
+        <button class="btn btn-info btn-sm dofi-min-w-80" style="white-space: nowrap;"
           (click)="sendSIMail()" [disabled]="isSendingSIMail || isSuspended || isJobClosed">
           <i class="fas me-1" [ngClass]="isSendingSIMail ? 'fa-spinner fa-spin' : 'fa-envelope'"></i>
           <span>{{ isSendingSIMail ? 'Sending...' : 'Send SI Mail' }}</span>
@@ -153,13 +153,13 @@
         </div>
       </div>
       <div class="action-group">
-        <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateBack()">
+        <button class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateBack()">
           <i class="fas fa-chevron-left  me-1"></i>
           <span>Back</span>
         </button>
       </div>
       <div class="action-group">
-        <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()"
+        <button class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="resetForm()"
           [disabled]="isJobClosed">
           <i class="fas fa-sync-alt  me-1"></i>
           <span>Reset</span>
