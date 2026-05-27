@@ -884,12 +884,12 @@
  <aside class="col-md-2">
     <div class="custom-form-group mt-md-2">
        <!-- Make the booking number clickable -->
-    <div *ngIf="getBookingNumber(route.value?.QuoteRouteSid)">
+    <div *ngIf="getBookingNumber(route.getRawValue()?.QuoteRouteSid)">
       <a href="javascript:void(0)" 
          class="booking-link"
-         (click)="viewBooking(getBookingHeader(route.value?.QuoteRouteSid))"
-         [title]="'View Booking: ' + getBookingNumber(route.value?.QuoteRouteSid)">
-        {{ getBookingNumber(route.value?.QuoteRouteSid) }}
+         (click)="viewBooking(getBookingHeader(route.getRawValue()?.QuoteRouteSid))"
+         [title]="'View Booking: ' + getBookingNumber(route.getRawValue()?.QuoteRouteSid)">
+        {{ getBookingNumber(route.getRawValue()?.QuoteRouteSid) }}
       </a>
     </div>
    
