@@ -51,6 +51,10 @@
           (click)="reportAndEmailModel(reportModel)">
           <i class="fas fa-print me-1"></i> Print
         </button>
+        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+          (click)="copyQuotation()" [disabled]="!quotationData || !mps.can('insert')">
+          <i class="fas fa-copy me-1"></i> Copy
+        </button>
 <button type="button" class="btn btn-sm voice-assist-btn btn-info"
           *ngIf="isVoiceSupported"
           (click)="startVoiceNavigation()"

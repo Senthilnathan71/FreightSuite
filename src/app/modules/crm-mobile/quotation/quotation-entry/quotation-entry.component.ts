@@ -486,12 +486,42 @@ dataFromEnqPage:any;
     });
   }
 
+  copyQuotation(): void {
+    if (!this.quotationData) {
+      this.appSettingService.showWarning('No quotation data to copy');
+      return;
+    }
+
+    this.modalService.confirm(
+      'Are you sure you want to copy this quotation?',
+      'Copy Quotation',
+      'Copy'
+    ).then((confirmed) => {
+      if (confirmed) {
+        this.performQuotationCopy();
+      }
+    });
+  }
+
+  private performQuotationCopy(): void {
+    const copiedData = this.prepareCopiedQuotationData();
+
+    this.router.navigate(['crm/quotation/entry'], {
+      state: {
+        copiedQuotationData: copiedData,
+        isCopiedQuotation: true
+      }
+    });
+  }
+
   // SECTION3 - NGONIT
   ngOnInit(): void {
     this.costRevenueAccess = this.appSettingService.getCostRevenueAccess();
     const initialQuotationData = this.leadService.getQuotationData();
     const historyState = window.history.state as any;
+    const copiedQuotationData = historyState?.copiedQuotationData;
     const hasSeedData = !!(
+      copiedQuotationData ||
       historyState?.dashboardQuoteData ||
       historyState?.enquiryConversionData?.rateRequest ||
       initialQuotationData?.rateRequest
@@ -534,14 +564,22 @@ dataFromEnqPage:any;
   
     const dashboardQuoteData = historyState?.dashboardQuoteData;
     const enquiryConversionData = historyState?.enquiryConversionData;
-    if (dashboardQuoteData || enquiryConversionData) {
+    if (dashboardQuoteData || enquiryConversionData || copiedQuotationData) {
       window.history.replaceState({}, '', window.location.href);
     }
 
     this.loadAllLookUps().subscribe(() => {
       this.dataFromEnqPage = this.leadService.getQuotationData();
       this.leadService.clearQuotationData();
-      if (enquiryConversionData?.rateRequest) {
+      if (copiedQuotationData) {
+        this.spinner.show();
+        setTimeout(() => {
+          this.patchCopiedQuotationValues(copiedQuotationData);
+          this.minEffDate = this.todayDate;
+          this.f['status']?.disable();
+          this.spinner.hide();
+        });
+      } else if (enquiryConversionData?.rateRequest) {
         this.spinner.show();
         setTimeout(() => {
           this.patchEnqPageValues(enquiryConversionData);
@@ -2579,6 +2617,211 @@ isRateLockDisabled(): boolean {
     this.bookingCreatedAgainstThisQuotation = this.selectedItem.BookingHeaderSid;
     this.isPatching = false;
     this.resetUnsavedState();
+  }
+
+  private prepareCopiedQuotationData(): any {
+    const copiedData = this.clonePlainObject(this.quotationData);
+    const today = getDefaultTodayDate();
+
+    Object.assign(copiedData, {
+      QuoteHeaderSid: null,
+      QuoteNumber: '',
+      QuoteDate: today,
+      EnquirySid: null,
+      BookingHeaderSid: null,
+      status: 'A',
+      InternalApprovedBy: null,
+      InternalApprovedOn: null,
+      CustomerApprovedBy: null,
+      CustomerApprovedOn: null,
+      authorizerStatus: 'Pending',
+      ApprovedBy: null
+    });
+
+    copiedData.quoteRoute = (copiedData.quoteRoute || []).map((route: any) => ({
+      ...route,
+      QuoteRouteSid: null,
+      QuoteHeaderSid: null,
+      BookingHeaderSid: null,
+      bookingHeader: null,
+      BookingNo: '',
+      effDate: today,
+      expDate: null,
+      expdate: null,
+      quoteCarrier: (route.quoteCarrier || []).map((carrier: any) => ({
+        ...carrier,
+        QuoteCarrierSid: null,
+        QuoteRouteSid: null,
+        QuoteHeaderSid: null,
+        ApprovalStatus: null,
+        authorizerStatus: 'Pending',
+        ApprovedBy: '',
+        Remarks: '',
+        quoteCharge: (carrier.quoteCharge || carrier.quoteCharges || []).map((charge: any) => ({
+          ...charge,
+          QuoteChargeSid: null,
+          QuoteRouteSid: null,
+          QuoteHeaderSid: null,
+          QuoteCarrierSid: null
+        }))
+      })),
+      quoteCargo: (route.quoteCargo || []).map((cargo: any) => ({
+        ...cargo,
+        QuoteCargoSid: null,
+        QuoteRouteSid: null,
+        QuoteHeaderSid: null,
+        BookingHeaderSid: null,
+        quoteProduct: (cargo.quoteProduct || cargo.quoteProducts || cargo.products || []).map((product: any) => ({
+          ...product,
+          QuoteProductSid: null,
+          QuoteCargoSid: null,
+          QuoteHeaderSid: null
+        }))
+      }))
+    }));
+
+    return copiedData;
+  }
+
+  private patchCopiedQuotationValues(response: any): void {
+    this.isPatching = true;
+    this.isEditMode = false;
+    this.QuoteHeaderSid = null;
+    this.quotationData = null;
+    this.selectedItem = null;
+    this.disableAllModification = false;
+    this.quotationApproved = false;
+    this.quoteAuthorized = false;
+    this.approvalDropdownValue = '';
+    this.authStateCache = 'Pending';
+
+    const parsedContact = this.parsePhone(response.ContactNumber);
+    const today = getDefaultTodayDate();
+
+    this.quotationForm.enable({ emitEvent: false });
+    this.quotationForm.patchValue({
+      ...response,
+      QuoteHeaderSid: null,
+      QuoteNumber: '',
+      QuoteDate: today,
+      EnquirySid: null,
+      BookingHeaderSid: null,
+      LeadOrCustomer: response.LeadOrCustomer === 'C',
+      AgreedRate: response.AgreedRate === 'Y',
+      IsContract: response.IsContract === 'Y',
+      RateLock: response.RateLock === 'Y',
+      status: 'Active',
+      ContactPerson: response.ContactPerson,
+      ContactNumberCode: parsedContact.phoneCode,
+      ContactNumber: parsedContact.phoneNumber
+    }, { emitEvent: false });
+
+    this.quotationForm.get('QuoteNumber')?.disable({ emitEvent: false });
+    this.quotationForm.get('EnquirySid')?.disable({ emitEvent: false });
+    this.quotationForm.get('status')?.disable({ emitEvent: false });
+    this.quoteRoutes.clear();
+
+    (response.quoteRoute || []).forEach((route: any, routeIndex: number) => {
+      const cargoGroups = Array.isArray(route?.quoteCargo) ? route.quoteCargo : [];
+      const cargo = cargoGroups[0];
+      const isFclRoute = this.isFclQuotationSegment(route);
+      const fullRouteData = {
+        ...route,
+        QuoteRouteSid: null,
+        QuoteHeaderSid: null,
+        QuoteCargoSid: cargo?.QuoteCargoSid || null,
+        CargoType: cargo?.CargoType,
+        WeightUnitSid: cargo?.WeightUnitSid,
+        GrossWeight: cargo?.GrossWeight,
+        NetWeight: cargo?.NetWeight,
+        Volume: cargo?.Volume,
+        ChargeableWeight: cargo?.ChargeableWeight,
+        ContainerType: cargo?.ContainerType,
+        BookingHeaderSid: null,
+        BookingNo: '',
+        Qty: cargo?.Qty,
+        ShipmentTerms: cargo?.ShipmentTerms,
+        effDate: route?.effDate || today,
+        expDate: null,
+        expdate: null
+      };
+
+      this.addQuoteRoute(fullRouteData);
+      this.handleValidationOnDept(routeIndex, route.segmentType);
+      this.onRouteChange(routeIndex);
+
+      if (isFclRoute) {
+        cargoGroups.forEach((cargoItem: any) => {
+          this.addQuoteCargo(routeIndex, {
+            ...cargoItem,
+            QuoteCargoSid: null,
+            QuoteHeaderSid: null,
+            QuoteRouteSid: null,
+            quoteProducts: cargoItem?.quoteProducts || cargoItem?.quoteProduct || cargoItem?.products || []
+          });
+        });
+      } else if (cargo) {
+        (cargo.quoteProduct || cargo.quoteProducts || []).forEach((product: any) => {
+          const productUnNo = this.productList.find(prod => prod.ProductMasterSid === product.ProductMasterSid)?.UnNo;
+          this.addQuoteProduct(routeIndex, {
+            ...product,
+            QuoteProductSid: null,
+            QuoteCargoSid: null,
+            QuoteHeaderSid: null,
+            Volumetric: this.deriveProductVolumetric(product),
+            UnNo: productUnNo
+          });
+        });
+      }
+
+      if (!isFclRoute) {
+        cargoGroups.slice(1).forEach((extraCargo: any) => {
+          this.addQuoteCargo(routeIndex, {
+            ...extraCargo,
+            QuoteCargoSid: null,
+            QuoteHeaderSid: null,
+            QuoteRouteSid: null,
+            quoteProducts: extraCargo?.quoteProducts || extraCargo?.quoteProduct || extraCargo?.products || []
+          });
+        });
+      }
+
+      (route?.quoteCarrier || []).forEach((carrier: any, carrierIndex: number) => {
+        this.addQuoteCarrier(routeIndex, {
+          ...carrier,
+          QuoteCarrierSid: null,
+          QuoteHeaderSid: null,
+          QuoteRouteSid: null,
+          ApprovalStatus: null,
+          ApprovedBy: '',
+          Remarks: ''
+        });
+        (carrier?.quoteCharge || carrier?.quoteCharges || []).forEach((charge: any) => {
+          this.addQuoteCharge(routeIndex, carrierIndex, {
+            ...charge,
+            QuoteChargeSid: null,
+            QuoteHeaderSid: null,
+            QuoteRouteSid: null,
+            QuoteCarrierSid: null
+          });
+        });
+      });
+    });
+
+    if (this.quoteRoutes.length === 0) {
+      this.addQuoteRoute();
+    }
+
+    this.isPatching = false;
+    this.resetUnsavedState();
+  }
+
+  private clonePlainObject<T>(value: T): T {
+    if (typeof structuredClone === 'function') {
+      return structuredClone(value);
+    }
+
+    return JSON.parse(JSON.stringify(value));
   }
 
   private applyEditModeFieldLocks(): void {
