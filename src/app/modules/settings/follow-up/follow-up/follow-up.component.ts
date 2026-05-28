@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Optional, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnChanges, OnDestroy, OnInit, Optional, Output, SimpleChanges } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -90,9 +90,11 @@ export class FollowUpComponent implements OnInit, OnChanges, OnDestroy {
   followups: any[] = [];
   expandedId: string | null = null;
   activeForm: FormGroup | null = null;
+  activeRowRef: any = null;         // reference to the currently open row object
+  activeRowData: any = null;        // snapshot of original row data (for Reset)
   activeRowIsNew = false;
   isExternalFreeText = false;
-  activeFilter: 'All' | 'Active' | 'Completed' | 'Suspended' = 'All';
+  activeFilter: 'All' | 'Pending' | 'Completed' = 'All';
   searchTerm = '';
 
   loading = false;
@@ -188,8 +190,8 @@ export class FollowUpComponent implements OnInit, OnChanges, OnDestroy {
     return row.FollowupSid ? row.FollowupSid.toString() : (row._tempId || '');
   }
 
-  trackByRow(_: number, row: any): any {
-    return this.getRowId(row);
+  trackByRow = (_: number, row: any): any => {
+    return row.FollowupSid ? row.FollowupSid.toString() : (row._tempId || '');
   }
 
   isRowLocked(row: any): boolean {
@@ -199,9 +201,8 @@ export class FollowUpComponent implements OnInit, OnChanges, OnDestroy {
   get filteredFollowups(): any[] {
     let list = this.followups;
     switch (this.activeFilter) {
-      case 'Active': list = list.filter(r => r.Status !== 'S' && r.IsCompleted !== 'Y'); break;
+      case 'Pending':   list = list.filter(r => r.IsCompleted !== 'Y'); break;
       case 'Completed': list = list.filter(r => r.IsCompleted === 'Y'); break;
-      case 'Suspended': list = list.filter(r => r.Status === 'S'); break;
     }
     if (this.searchTerm.trim()) {
       const term = this.searchTerm.toLowerCase();
@@ -215,28 +216,37 @@ export class FollowUpComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   get allCount(): number { return this.followups.filter(r => !r._isNew).length; }
-  get activeCount(): number { return this.followups.filter(r => !r._isNew && r.Status !== 'S' && r.IsCompleted !== 'Y').length; }
+  get pendingCount(): number { return this.followups.filter(r => !r._isNew && r.IsCompleted !== 'Y').length; }
   get completedCount(): number { return this.followups.filter(r => r.IsCompleted === 'Y').length; }
-  get suspendedCount(): number { return this.followups.filter(r => r.Status === 'S').length; }
 
-  setFilter(filter: 'All' | 'Active' | 'Completed' | 'Suspended') {
+  setFilter(filter: 'All' | 'Pending' | 'Completed') {
     this.activeFilter = filter;
   }
 
   openRow(row: any) {
     if (this.isRowLocked(row)) return;
     const rowId = this.getRowId(row);
+    // Toggle: clicking the already-open row header closes it
     if (this.expandedId === rowId) {
+      if (this.activeForm?.dirty) {
+        if (!confirm('You have unsaved changes. Discard them?')) return;
+      }
       this.closeRow();
       return;
     }
-    // Close current, discarding new-unsaved if present
+    // Switching away from a dirty form — prompt before discarding
+    if (this.expandedId !== null && this.activeForm?.dirty) {
+      if (!confirm('You have unsaved changes. Discard them?')) return;
+    }
+    // Remove any currently-open new row
     if (this.expandedId !== null && this.activeRowIsNew) {
       const idx = this.followups.findIndex(r => this.getRowId(r) === this.expandedId);
       if (idx !== -1) this.followups.splice(idx, 1);
     }
     this.rowFormCleanup$.next();
     this.expandedId = rowId;
+    this.activeRowRef = row;
+    this.activeRowData = { ...row };
     this.activeRowIsNew = !row.FollowupSid;
     this.isExternalFreeText = this.shouldUseFreeText(row);
     this.activeForm = this.buildRowForm(row);
@@ -251,6 +261,8 @@ export class FollowUpComponent implements OnInit, OnChanges, OnDestroy {
     }
     this.expandedId = null;
     this.activeForm = null;
+    this.activeRowRef = null;
+    this.activeRowData = null;
     this.activeRowIsNew = false;
     this.isExternalFreeText = false;
   }
@@ -266,9 +278,50 @@ export class FollowUpComponent implements OnInit, OnChanges, OnDestroy {
     this.rowFormCleanup$.next();
     this.followups = [newRow, ...this.followups];
     this.expandedId = tempId;
+    this.activeRowRef = newRow;
+    this.activeRowData = { ...newRow };
     this.activeRowIsNew = true;
     this.isExternalFreeText = false;
     this.activeForm = this.buildRowForm(newRow);
+    this.subscribeToActionChanges();
+  }
+
+  /** Reset the currently open form back to its original saved values */
+  resetActiveForm() {
+    if (!this.activeForm || !this.activeRowData) return;
+    this.rowFormCleanup$.next();
+    this.isExternalFreeText = this.shouldUseFreeText(this.activeRowData);
+    this.activeForm = this.buildRowForm(this.activeRowData);
+    this.subscribeToActionChanges();
+  }
+
+  /** Create a new unsaved row pre-filled with the values from an existing row */
+  duplicateRow(row: any) {
+    const tempId = `new_${Date.now()}`;
+    const duplicated = {
+      ...row,
+      FollowupSid: undefined,
+      _tempId: tempId,
+      _isNew: true,
+      CreatedOn: undefined,
+      CreatedBy: undefined,
+      UpdatedOn: undefined,
+      UpdatedBy: undefined,
+      IsCompleted: 'N',
+    };
+    // Close current row (discard new-unsaved if needed)
+    if (this.expandedId !== null && this.activeRowIsNew) {
+      const idx = this.followups.findIndex(r => this.getRowId(r) === this.expandedId);
+      if (idx !== -1) this.followups.splice(idx, 1);
+    }
+    this.rowFormCleanup$.next();
+    this.followups = [duplicated, ...this.followups];
+    this.expandedId = tempId;
+    this.activeRowRef = duplicated;
+    this.activeRowData = { ...duplicated };
+    this.activeRowIsNew = true;
+    this.isExternalFreeText = this.shouldUseFreeText(duplicated);
+    this.activeForm = this.buildRowForm(duplicated);
     this.subscribeToActionChanges();
   }
 
@@ -330,6 +383,10 @@ export class FollowUpComponent implements OnInit, OnChanges, OnDestroy {
     return this.showInternalUserField;
   }
 
+  get isExternalUserRequired(): boolean {
+    return this.showExternalUserField;
+  }
+
   // ── Save / Delete ─────────────────────────────────────────────────────────
 
   async saveRow(row: any) {
@@ -386,8 +443,12 @@ export class FollowUpComponent implements OnInit, OnChanges, OnDestroy {
         if (isCargoInvolved && this.autoInsertMilestone) {
           this.handleAutoInsertMilestone();
         }
+        // Use closeRow() so activeRowRef/activeRowData are also cleared
+        this.rowFormCleanup$.next();
         this.expandedId = null;
         this.activeForm = null;
+        this.activeRowRef = null;
+        this.activeRowData = null;
         this.activeRowIsNew = false;
         this.isExternalFreeText = false;
         this.loadFollowups();
@@ -451,16 +512,55 @@ export class FollowUpComponent implements OnInit, OnChanges, OnDestroy {
 
   // ── Display Helpers ───────────────────────────────────────────────────────
 
+  private static readonly MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  private static readonly DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  /** Returns "25 May 2026" — branch-local calendar date */
   formatRowDate(dateStr: string): string {
     if (!dateStr) return '-';
     const date = utcIsoToBranchLocalDate(dateStr, this.currentBranch?.timeZone);
     if (!date) return '-';
-    const d = date.getUTCDate().toString().padStart(2, '0');
-    const m = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+    const d = date.getUTCDate();
+    const m = FollowUpComponent.MONTHS[date.getUTCMonth()];
     const y = date.getUTCFullYear();
-    return `${d}-${m}-${y}`;
+    return `${d} ${m} ${y}`;
   }
 
+  /** Returns "Mon", "Tue", etc. */
+  getDayLabel(dateStr: string): string {
+    if (!dateStr) return '';
+    const date = utcIsoToBranchLocalDate(dateStr, this.currentBranch?.timeZone);
+    if (!date) return '';
+    return FollowUpComponent.DAYS[date.getUTCDay()];
+  }
+
+  /** Returns 1-2 letter initials for the user/external on the row */
+  getUserInitials(row: any): string {
+    const name = this.getUserNameOrExternal(row);
+    if (!name || name === '-' || name === '—') return '?';
+    // Filter out non-word characters at the start of each token
+    const parts = name.split(/\s+/).filter((p: string) => /\w/.test(p));
+    if (!parts.length) return '?';
+    return parts.map((p: string) => p[0]).slice(0, 2).join('').toUpperCase();
+  }
+
+  /** Returns the CSS class for the status badge */
+  getBadgeClass(row: any): string {
+    return row.IsCompleted === 'Y' ? 'badge--done' : 'badge--pending';
+  }
+
+  getStatusLabel(row: any): string {
+    return row.IsCompleted === 'Y' ? 'Completed' : 'Pending';
+  }
+
+  getUserNameOrExternal(row: any): string {
+    if (row.InternalUser) {
+      return this.usersList.find((u: any) => u.UserMasterSid === row.InternalUser)?.userName || `User#${row.InternalUser}`;
+    }
+    return row.ExternalUser || '—';
+  }
+
+  /** @deprecated kept for any legacy callers */
   getActionDotColor(action: string): string {
     switch (action) {
       case 'Internal': return '#5b8def';
@@ -469,30 +569,15 @@ export class FollowUpComponent implements OnInit, OnChanges, OnDestroy {
       default: return '#ccc';
     }
   }
-
-  getStatusLabel(row: any): string {
-    if (row.IsCompleted === 'Y') return 'Done';
-    if (row.Status === 'S') return 'Suspended';
-    return 'Active';
-  }
-
   getStatusBg(row: any): string {
-    if (row.IsCompleted === 'Y') return '#e9ecef';
-    if (row.Status === 'S') return '#fff3cd';
+    if (row.IsCompleted === 'Y') return '#eef2f7';
+    if (row.Status === 'S') return '#fff3e1';
     return '#e6f4ec';
   }
-
   getStatusColor(row: any): string {
-    if (row.IsCompleted === 'Y') return '#6c757d';
-    if (row.Status === 'S') return '#856404';
+    if (row.IsCompleted === 'Y') return '#7a8a9c';
+    if (row.Status === 'S') return '#c97a16';
     return '#2e7d4f';
-  }
-
-  getUserNameOrExternal(row: any): string {
-    if (row.InternalUser) {
-      return this.usersList.find(u => u.UserMasterSid === row.InternalUser)?.userName || `User#${row.InternalUser}`;
-    }
-    return row.ExternalUser || '-';
   }
 
   private getUserEmail(sid: number): string {
@@ -603,6 +688,20 @@ export class FollowUpComponent implements OnInit, OnChanges, OnDestroy {
       return isNaN(parsed.getTime()) ? null : parsed;
     }
     return null;
+  }
+
+  // ── Keyboard shortcuts ────────────────────────────────────────────────────
+
+  @HostListener('document:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent): void {
+    const tag = (event.target as HTMLElement)?.tagName?.toUpperCase();
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    if ((event.key === 'n' || event.key === 'N') && !event.metaKey && !event.ctrlKey) {
+      this.addNew();
+    }
+    if (event.key === 'Escape') {
+      this.closeRow();
+    }
   }
 
   // ── Modal ─────────────────────────────────────────────────────────────────
