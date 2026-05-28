@@ -1,10 +1,26 @@
 // Mail Configuration Card Grid + Detail Form styles
 
+.mail-config-page {
+  --mc-bg: #eef4f9;
+  --mc-surface: #ffffff;
+  --mc-border: #dbe5ef;
+  --mc-border-soft: #e8eff6;
+  --mc-text: #12324a;
+  --mc-muted: #777777;
+  --mc-accent: #0a78aa;
+  --mc-accent-soft: #e7f5fc;
+  --mc-success: #1db954;
+  --mc-black: #333;
+  background: linear-gradient(180deg, #f6f9fc 0%, var(--mc-bg) 100%);
+  border-radius: 14px;
+  padding-bottom: 0.5rem;
+}
+
 .page-header {
-  background: #ffffff;
-  border: 1px solid #e9ecef;
+  background: var(--mc-surface);
+  border: 1px solid var(--mc-border);
   border-radius: 12px;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 8px 20px rgba(18, 50, 74, 0.08);
   padding: 0 0.75rem;
 }
 
@@ -15,77 +31,105 @@
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  background: linear-gradient(135deg, #0dcaf0, #3dd5f3);
+  background: linear-gradient(135deg, #0a78aa, #2ea6d8);
   color: #ffffff;
-  box-shadow: 0 6px 12px rgba(13, 202, 240, 0.25);
+  // box-shadow: 0 8px 14px rgba(10, 120, 170, 0.25);
+}
+
+.detail-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
 }
 
 .btn-pill {
   border-radius: 999px;
-  padding: 0.3rem 0.85rem;
+  padding: 0.3rem 0.9rem;
+  font-weight: 600;
 }
 
 .mail-config-card {
-  border: 1px solid #e6eaf1;
-  border-radius: 12px;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-  cursor: default;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05);
+  border: 1px solid var(--mc-border);
+  border-radius: 14px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  background: var(--mc-surface);
+  overflow: hidden;
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
+    transform: translateY(-4px);
+    border-color: #c4d9ea;
+    // box-shadow: 0 14px 30px rgba(15, 23, 42, 0.12);
   }
 }
 
 .mail-card-header {
-  background: linear-gradient(135deg, #f9fbff 0%, #eef6ff 100%);
-  border-bottom: 1px solid #eef2f7;
-  padding: 0.55rem 0.85rem;
+  background: linear-gradient(135deg, #8bc7e3, #2ea6d8);
+  border-bottom: 1px solid var(--mc-border-soft);
+  padding: 0.72rem 0.9rem;
 }
 
 .mail-title {
-  font-size: 0.88rem;
+  font-size: 1.02rem;
+  color: #0f2b42;
+  max-width: 12.5rem;
 }
 
 .status-dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   display: inline-block;
   border-radius: 999px;
 }
 
 .status-badge {
-  font-size: 0.7rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 0.3rem 0.6rem;
 }
 
 .mail-card-body {
-  font-size: 0.8rem;
-  padding: 0.6rem 0.85rem;
+  font-size: 0.84rem;
+  padding: 5px 0.9rem;
+  color: var(--mc-text);
 }
 
 .mail-card-meta {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
+}
+
+.menu-chip {
+  font-size: 0.69rem;
+  border-radius: 10px;
 }
 
 .mail-card-tags .badge {
-  font-size: 0.7rem;
+  font-size: 0.74rem;
+  font-weight: 500;
+  border-radius: 10px;
+  padding: 0.26rem 0.56rem;
 }
 
 .mail-card-subject {
-  font-size: 0.75rem;
+  font-size: 0.79rem;
+  color: var(--mc-muted) !important;
 }
 
 .mail-card-footer {
-  border-top: 1px solid #eef2f7;
-  background: #ffffff;
-  padding: 0.4rem 0.7rem;
-  border-radius: 0 0 12px 12px;
+  border-top: 1px solid var(--mc-border-soft);
+  background: #fcfeff;
+  padding: 5px 0.8rem;
+}
+
+.action-btn {
+  border-radius: 8px;
+  font-size: 0.83rem;
+  font-weight: 600;
 }
 
 .card-active {
-  border-color: #05608d !important;
-  box-shadow: 0 0 0 3px rgba(5, 96, 141, 0.2) !important;
+  border-color: var(--mc-accent) !important;
+  box-shadow: 0 0 0 3px rgba(10, 120, 170, 0.2), 0 10px 22px rgba(10, 120, 170, 0.16) !important;
 
   &:hover {
     transform: none;
@@ -93,13 +137,56 @@
 }
 
 .card-inactive {
-  opacity: 0.65;
+  opacity: 0.66;
+}
+
+.empty-state {
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px dashed #b8cad9;
+  border-radius: 12px;
 }
 
 .detail-form-card {
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
+  border: 1px solid var(--mc-border);
+  border-radius: 12px;
+  border-top: 3px solid #0a78aa !important;
   animation: slideDown 0.25s ease-out;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+.detail-form-shell {
+  background: linear-gradient(180deg, #ffffff 0%, #f9fcff 100%);
+}
+
+.detail-form-head {
+  border-bottom: 1px solid #d9e7f2 !important;
+}
+
+.detail-form-body {
+  display: grid;
+  gap: 5px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.detail-form-body > .section-pane:first-child {
+  grid-column: 1 / -1;
+}
+
+.section-pane {
+  background: #ffffff;
+  border: 1px solid #dbe6f1;
+  border-radius: 10px;
+  padding: 6px 4px;
+}
+
+@media (max-width: 991.98px) {
+  .detail-form-body {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-form-body > .section-pane:first-child {
+    grid-column: auto;
+  }
 }
 
 @keyframes slideDown {
@@ -107,6 +194,7 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -114,21 +202,55 @@
 }
 
 .section-heading {
-  color: #05608d;
-  font-size: 0.9rem;
-  font-weight: 600;
-  border-bottom: 1px solid #e9ecef;
+  color: #0b5f88;
+  font-size: 0.92rem;
+  font-weight: 700;
+  border-bottom: 1px solid #dfe8f1;
   padding-bottom: 4px;
 }
 
 .form-hint {
   display: block;
-  color: #6c757d;
-  font-size: 0.7rem;
-  margin-top: 2px;
+  color: var(--mc-muted);
+  font-size: 0.72rem;
+  margin: 3px;
+}
+
+@media (max-width: 768px) {
+  .mail-config-page {
+    border-radius: 10px;
+  }
+
+  .page-header {
+    padding: 0 0.55rem;
+  }
+
+  .mail-title {
+    max-width: 10.5rem;
+  }
+
+  .mail-card-footer {
+    justify-content: stretch !important;
+  }
+
+  .mail-card-footer .action-btn {
+    flex: 1;
+  }
 }
 
 // Override _compact-form.scss max-height: 29px !important on textareas
 ::ng-deep .compact-form textarea.custom-input-field {
   max-height: unset !important;
+}
+
+/* Keep ng-select dropdown above sticky/card headers so options stay clickable */
+::ng-deep .ng-dropdown-panel {
+  z-index: 20000 !important;
+  pointer-events: auto !important;
+}
+
+::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items,
+::ng-deep .ng-dropdown-panel .ng-option,
+::ng-deep .ng-dropdown-panel .ng-option * {
+  pointer-events: auto !important;
 }

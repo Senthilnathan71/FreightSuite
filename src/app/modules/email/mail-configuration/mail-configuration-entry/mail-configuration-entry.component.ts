@@ -14,12 +14,14 @@ import { MailBodyModalComponent } from '../mail-body-modal/mail-body-modal.compo
 import { MailSubjectModalComponent } from '../mail-subject-modal/mail-subject-modal.component';
 import { PlaceholderAutocompleteDirective } from 'src/app/core/Directives/placeholder-autocomplete.directive';
 import { ALL_PLACEHOLDERS } from '../../mail-placeholder.constants';
+import { MasterService } from 'src/app/modules/master/master.service';
 
 interface MailConfigRow {
   MailConfigurationMasterSid?: number;
   Sno: number;
   MailName: string;
   MenuMasterSid: number | null;
+  CompanyMasterSids: number[];
   MailSubject: string;
   MailBody: string;
   ToEmailidFrom: string;
@@ -56,6 +58,8 @@ export class MailConfigurationEntryComponent implements OnInit {
   currentCompany: any;
   userData: any;
   menuList: any[] = [];
+  eligibleCompanyOptions: any[] = [];
+  currentRowEligibleCompanyOptions: any[] = [];
 
   rows: MailConfigRow[] = [];
 
@@ -414,6 +418,7 @@ export class MailConfigurationEntryComponent implements OnInit {
     private fb: FormBuilder,
     private emailService: EmailModuleService,
     private settingsService: SettingsService,
+    private masterService: MasterService,
     private appSettingService: AppSettingsService,
     private router: Router,
     private spinner: NgxSpinnerService,
@@ -423,9 +428,38 @@ export class MailConfigurationEntryComponent implements OnInit {
   ngOnInit(): void {
     this.currentCompany = this.appSettingService.getCurrentCompanyInfo();
     this.userData = this.appSettingService.getDecryptedUserProfile();
+    this.loadEligibleCompanies();
 
     this.loadMenuList();
     this.loadExistingData();
+  }
+
+  private loadEligibleCompanies(): void {
+    this.masterService.getAllCompanies().subscribe({
+      next: (resp: any) => {
+        const list = Array.isArray(resp?.data) ? resp.data : (Array.isArray(resp) ? resp : []);
+        const normalizedCompanies = list
+          .filter((company: any) => company?.status === 'A' || company?.Status === 'A' || company?.status === undefined)
+          .map((company: any) => ({
+            CompanyMasterSid: Number(company.CompanyMasterSid),
+            companyName: company.companyName || company.CompanyName || `Company ${company.CompanyMasterSid}`,
+            companyCode: company.companyCode || company.CompanyCode || ''
+          }))
+          .filter((company: any) => !!company.CompanyMasterSid);
+
+        const dedupedBySid = new Map<number, any>();
+        normalizedCompanies.forEach((company: any) => {
+          if (!dedupedBySid.has(company.CompanyMasterSid)) {
+            dedupedBySid.set(company.CompanyMasterSid, company);
+          }
+        });
+
+        this.eligibleCompanyOptions = Array.from(dedupedBySid.values());
+      },
+      error: () => {
+        this.eligibleCompanyOptions = [];
+      }
+    });
   }
 
   private loadMenuList(): void {
@@ -469,6 +503,9 @@ export class MailConfigurationEntryComponent implements OnInit {
               Sno: Number(item.Sno),
               MailName: item.MailName,
               MenuMasterSid: item.MenuMasterSid,
+              CompanyMasterSids: Array.isArray(item?.CompanyMasterSids)
+                ? item.CompanyMasterSids.map((sid: any) => Number(sid)).filter(Boolean)
+                : [Number(item.CompanyMasterSid) || null].filter(Boolean) as number[],
               MailSubject: item.MailSubject,
               MailBody: item.MailBody,
               ToEmailidFrom: item.ToEmailidFrom || '',
@@ -554,6 +591,7 @@ export class MailConfigurationEntryComponent implements OnInit {
       Sno: newSno,
       MailName: '',
       MenuMasterSid: null,
+      CompanyMasterSids: this.currentCompany?.CompanyMasterSid ? [Number(this.currentCompany.CompanyMasterSid)] : [],
       MailSubject: '',
       MailBody: '',
       ToEmailidFrom: '{{toEmail}}',
@@ -573,6 +611,7 @@ export class MailConfigurationEntryComponent implements OnInit {
     this.editingIndex = this.rows.length - 1;
     this.editingRow = this.rows[this.editingIndex];
     this.editingSnapshot = null;
+    this.refreshCurrentRowEligibleCompanies();
     this.scrollToDetailForm();
   }
 
@@ -616,6 +655,9 @@ export class MailConfigurationEntryComponent implements OnInit {
     // Clear selected update fields when menu changes
     row.selectedUpdateFields = [];
     row.UpdateFields = [];
+
+    this.syncRowCompanySelectionWithEligibility(row);
+    this.refreshCurrentRowEligibleCompanies();
   }
 
   private updateFieldOptionsForMenu(menuName: string): void {
@@ -641,6 +683,12 @@ export class MailConfigurationEntryComponent implements OnInit {
     this.editingIndex = index;
     this.editingRow = this.rows[index];
     this.rows[index].isEditing = true;
+    if (!this.rows[index].isNew) {
+      const currentCompanySid = Number(this.currentCompany?.CompanyMasterSid);
+      if (currentCompanySid > 0) {
+        this.rows[index].CompanyMasterSids = [currentCompanySid];
+      }
+    }
 
     // Update filtered action options and trigger fields based on selected menu
     const menuName = this.editingRow.MenuMasterSid ? this.getMenuName(this.editingRow.MenuMasterSid) : '';
@@ -649,8 +697,16 @@ export class MailConfigurationEntryComponent implements OnInit {
       ? this.actionOptions
       : this.actionOptions.filter(o => o.value !== 'SendSIMail');
     this.updateFieldOptionsForMenu(menuName);
+    this.refreshCurrentRowEligibleCompanies();
 
     this.scrollToDetailForm();
+  }
+
+  editFilteredRow(row: MailConfigRow): void {
+    const index = this.rows.indexOf(row);
+    if (index >= 0) {
+      this.editRow(index);
+    }
   }
 
   cancelEdit(index: number): void {
@@ -672,15 +728,18 @@ export class MailConfigurationEntryComponent implements OnInit {
     this.editingIndex = null;
     this.editingRow = null;
     this.editingSnapshot = null;
+    this.currentRowEligibleCompanyOptions = [];
   }
 
   saveRow(index: number): void {
     const row = this.rows[index];
+    const selectedCompanySids = this.normalizeCompanySidArray(row.CompanyMasterSids || []);
 
-    // Check for duplicate MenuMasterSid (excluding current row)
+    // Check for duplicate menu-company combinations (excluding current row).
     const isDuplicate = this.rows.some((r, idx) =>
       idx !== index &&
-      r.MenuMasterSid === row.MenuMasterSid
+      r.MenuMasterSid === row.MenuMasterSid &&
+      (r.CompanyMasterSids || []).some((sid) => selectedCompanySids.includes(Number(sid)))
     );
     if (isDuplicate) {
       this.appSettingService.showWarning('A mail configuration already exists for this menu.');
@@ -688,8 +747,8 @@ export class MailConfigurationEntryComponent implements OnInit {
     }
 
     // Validation
-    if (!row.Sno || !row.MailName || !row.MenuMasterSid || !row.MailSubject || !row.MailBody || !row.selectedActions?.length) {
-      this.appSettingService.showWarning('Please fill all required fields (Sno, Mail Name, Menu, Subject, Body, Action).');
+    if (!row.Sno || !row.MailName || !row.MenuMasterSid || !row.MailSubject || !row.MailBody || !row.selectedActions?.length || selectedCompanySids.length === 0) {
+      this.appSettingService.showWarning('Please fill all required fields (Sno, Mail Name, Menu, Company, Subject, Body, Action).');
       return;
     }
 
@@ -698,7 +757,8 @@ export class MailConfigurationEntryComponent implements OnInit {
     row.UpdateFields = row.selectedUpdateFields || [];
 
     const payload: any = {
-      CompanyMasterSid: this.currentCompany?.CompanyMasterSid,
+      CompanyMasterSid: selectedCompanySids[0],
+      CompanyMasterSids: selectedCompanySids,
       Sno: row.Sno,
       MailName: row.MailName,
       MenuMasterSid: row.MenuMasterSid,
@@ -728,6 +788,7 @@ export class MailConfigurationEntryComponent implements OnInit {
             this.editingIndex = null;
             this.editingRow = null;
             this.editingSnapshot = null;
+            this.currentRowEligibleCompanyOptions = [];
           } else {
             this.appSettingService.showError(resp.message || 'Error saving mail configuration.');
           }
@@ -739,7 +800,9 @@ export class MailConfigurationEntryComponent implements OnInit {
         }
       });
     } else {
-      this.emailService.updateMailConfiguration(row.MailConfigurationMasterSid!, payload).subscribe({
+      const updatePayload = { ...payload };
+      delete updatePayload.CompanyMasterSids;
+      this.emailService.updateMailConfiguration(row.MailConfigurationMasterSid!, updatePayload).subscribe({
         next: (resp) => {
           this.spinner.hide();
           if (resp.status) {
@@ -767,10 +830,11 @@ export class MailConfigurationEntryComponent implements OnInit {
     if (row.isNew) {
       this.rows.splice(index, 1);
       if (this.editingIndex === index) {
-        this.editingIndex = null;
-        this.editingRow = null;
-        this.editingSnapshot = null;
-      }
+            this.editingIndex = null;
+            this.editingRow = null;
+            this.editingSnapshot = null;
+            this.currentRowEligibleCompanyOptions = [];
+          }
       return;
     }
 
@@ -805,6 +869,13 @@ export class MailConfigurationEntryComponent implements OnInit {
     });
   }
 
+  deleteFilteredRow(row: MailConfigRow): void {
+    const index = this.rows.indexOf(row);
+    if (index >= 0) {
+      this.deleteRow(index);
+    }
+  }
+
   onTriggerChange(row: MailConfigRow): void {
     if (row.Trigger === 'A') {
       row.AutoPopup = 'A';
@@ -821,6 +892,109 @@ export class MailConfigurationEntryComponent implements OnInit {
 
   onUpdateFieldsChange(row: MailConfigRow): void {
     row.UpdateFields = row.selectedUpdateFields || [];
+  }
+
+  onCompanySelectionChange(row: MailConfigRow, selected: number[]): void {
+    if (this.isCompanySelectionLocked(row)) {
+      return;
+    }
+    const allowed = new Set(
+      this.getEligibleCompanyOptionsForRow(row)
+        .map((company: any) => Number(company.CompanyMasterSid))
+        .filter(Boolean)
+    );
+    row.CompanyMasterSids = this.normalizeCompanySidArray(selected || [])
+      .filter((sid) => allowed.has(sid));
+  }
+
+  toggleSelectAllCompanies(row: MailConfigRow): void {
+    if (this.isCompanySelectionLocked(row)) {
+      return;
+    }
+    const allCompanySids = (this.getEligibleCompanyOptionsForRow(row) || [])
+      .map((company: any) => Number(company.CompanyMasterSid))
+      .filter(Boolean);
+    const selectedCompanySids = (row.CompanyMasterSids || [])
+      .map((sid: any) => Number(sid?.CompanyMasterSid ?? sid))
+      .filter(Boolean);
+    row.CompanyMasterSids =
+      selectedCompanySids.length === allCompanySids.length ? [] : [...allCompanySids];
+  }
+
+  isCompanySelectionLocked(row: MailConfigRow | null): boolean {
+    return !!row && !row.isNew;
+  }
+
+  getEligibleCompanyOptionsForRow(row: MailConfigRow | null): any[] {
+    if (!row) {
+      return this.eligibleCompanyOptions || [];
+    }
+    if (this.editingRow === row && this.currentRowEligibleCompanyOptions?.length >= 0) {
+      return this.currentRowEligibleCompanyOptions;
+    }
+    if (!row.MenuMasterSid || this.isCompanySelectionLocked(row)) {
+      return this.eligibleCompanyOptions || [];
+    }
+
+    const blockedCompanySids = new Set<number>();
+    (this.rows || []).forEach((existingRow) => {
+      if (existingRow === row) return;
+      if (Number(existingRow.MenuMasterSid) !== Number(row.MenuMasterSid)) return;
+      (existingRow.CompanyMasterSids || [])
+        .map((sid) => Number(sid))
+        .filter(Boolean)
+        .forEach((sid) => blockedCompanySids.add(sid));
+    });
+
+    return (this.eligibleCompanyOptions || []).filter((company: any) =>
+      !blockedCompanySids.has(Number(company.CompanyMasterSid))
+    );
+  }
+
+  private syncRowCompanySelectionWithEligibility(row: MailConfigRow): void {
+    if (this.isCompanySelectionLocked(row)) return;
+    const allowed = new Set(
+      this.getEligibleCompanyOptionsForRow(row)
+        .map((company: any) => Number(company.CompanyMasterSid))
+        .filter(Boolean)
+    );
+    row.CompanyMasterSids = (row.CompanyMasterSids || [])
+      .map((sid: any) => Number(sid?.CompanyMasterSid ?? sid))
+      .filter((sid) => !!sid && allowed.has(sid));
+  }
+
+  private refreshCurrentRowEligibleCompanies(): void {
+    if (!this.editingRow) {
+      this.currentRowEligibleCompanyOptions = [];
+      return;
+    }
+    this.currentRowEligibleCompanyOptions = this.computeEligibleCompanyOptionsForRow(this.editingRow);
+  }
+
+  private computeEligibleCompanyOptionsForRow(row: MailConfigRow | null): any[] {
+    if (!row || !row.MenuMasterSid || this.isCompanySelectionLocked(row)) {
+      return this.eligibleCompanyOptions || [];
+    }
+
+    const blockedCompanySids = new Set<number>();
+    (this.rows || []).forEach((existingRow) => {
+      if (existingRow === row) return;
+      if (Number(existingRow.MenuMasterSid) !== Number(row.MenuMasterSid)) return;
+      (existingRow.CompanyMasterSids || [])
+        .map((sid: any) => Number(sid?.CompanyMasterSid ?? sid))
+        .filter(Boolean)
+        .forEach((sid: number) => blockedCompanySids.add(sid));
+    });
+
+    return (this.eligibleCompanyOptions || []).filter((company: any) =>
+      !blockedCompanySids.has(Number(company.CompanyMasterSid))
+    );
+  }
+
+  private normalizeCompanySidArray(values: any[]): number[] {
+    return (values || [])
+      .map((sid: any) => Number(sid?.CompanyMasterSid ?? sid))
+      .filter((sid: number) => Number.isInteger(sid) && sid > 0);
   }
 
   getMenuName(menuMasterSid: number | null): string {
@@ -870,5 +1044,13 @@ export class MailConfigurationEntryComponent implements OnInit {
 
   get manualTriggerCount(): number {
     return (this.rows?.filter(r => r.Trigger === 'M')?.length) || 0;
+  }
+
+  get companyFilteredRows(): MailConfigRow[] {
+    const companySid = Number(this.currentCompany?.CompanyMasterSid);
+    if (!companySid) return this.rows || [];
+    return (this.rows || []).filter((row) =>
+      (row.CompanyMasterSids || []).map((sid) => Number(sid)).includes(companySid)
+    );
   }
 }
