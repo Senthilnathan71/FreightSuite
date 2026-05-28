@@ -1979,6 +1979,7 @@ private parseFloatSafe(value: any): number {
               menuMasterSid: this.MenuMasterSid,
               action: 'UPDATE',
               context: {
+                menuMasterSid: this.MenuMasterSid,
                 EnquiryNo: this.enquiryData?.EnquiryNumber,
                 date: this.enquiryData?.EnquiryDate ? this.datePipe.transform(this.enquiryData.EnquiryDate) : '',
                 POO: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.PORSid),
@@ -1987,6 +1988,7 @@ private parseFloatSafe(value: any): number {
                 FPD: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.FDPSid),
                 customerName: this.enquiryData?.CustomerName,
                 userName: this.userData?.userName,
+                customerMasterSid: this.enquiryData?.CustomerMasterSid || null,
                 toEmail: this.enquiryData?.Email || '',
                 customerBranchSid: this.enquiryData?.CustomerBranchSid || null
               }
@@ -2043,6 +2045,7 @@ private parseFloatSafe(value: any): number {
             menuMasterSid: this.MenuMasterSid,
             action: 'CREATE',
             context: {
+              menuMasterSid: this.MenuMasterSid,
               EnquiryNo: resp?.data?.enquiryHeader?.EnquiryNumber,
               date: new Date().toLocaleDateString(),
               POO: getFormattedPort(this.ports, this.routes?.at(0)?.get('POO')?.value),
@@ -2051,6 +2054,7 @@ private parseFloatSafe(value: any): number {
               FPD: getFormattedPort(this.ports, this.routes?.at(0)?.get('FDC')?.value),
               customerName: this.rateRequestForm.get('customerName')?.value,
               userName: this.userData?.userName,
+              customerMasterSid: this.rateRequestForm.get('CustomerMasterSid')?.value || null,
               toEmail: this.rateRequestForm.get('Email')?.value || '',
               customerBranchSid: this.rateRequestForm.get('CustomerBranchSid')?.value || null
             }
@@ -2235,6 +2239,28 @@ private parseFloatSafe(value: any): number {
 
 
   async sendManualMail(): Promise<void> {
+    const leadCustomerValue = this.rateRequestForm.get('LeadOrCustomer')?.value;
+    const isCustomer = leadCustomerValue === true || String(leadCustomerValue).toUpperCase() === 'C';
+    const preCustomerMasterSid =
+      this.rateRequestForm.get('PreCustomerMasterSid')?.value ||
+      this.enquiryData?.PreCustomerMasterSid ||
+      null;
+    const leadFromList = this.leadList.find(
+      lead => Number(lead?.PreCustomerMasterSid) === Number(preCustomerMasterSid)
+    );
+    const resolvedLeadEmail = !isCustomer
+      ? (
+        this.rateRequestForm.get('Email')?.value ||
+        this.enquiryData?.Email ||
+        this.enquiryData?.email ||
+        leadFromList?.email ||
+        leadFromList?.Email ||
+        ''
+      )
+      : '';
+    const resolvedToEmail = isCustomer
+      ? (this.enquiryData?.Email || this.rateRequestForm.get('Email')?.value || '')
+      : resolvedLeadEmail;
     const pdfBlob = await this.generatePDFBlob();
     let attachmentFile: File | undefined;
     if (pdfBlob) {
@@ -2250,6 +2276,11 @@ private parseFloatSafe(value: any): number {
       action: 'UPDATE',
       attachmentFile,
       context: {
+        requireToEmail: true,
+        menuMasterSid: this.MenuMasterSid,
+        leadOrCustomer: isCustomer ? 'C' : 'L',
+        leadEmail: resolvedLeadEmail,
+        preCustomerMasterSid,
         EnquiryNo: this.enquiryData?.EnquiryNumber,
         date: this.enquiryData?.EnquiryDate ? this.datePipe.transform(this.enquiryData.EnquiryDate) : '',
         DepartmentName: departmentName,
@@ -2259,7 +2290,8 @@ private parseFloatSafe(value: any): number {
         FPD: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.FDPSid),
         customerName: this.enquiryData?.CustomerName,
         userName: this.userData?.userName,
-        toEmail: this.enquiryData?.Email || '',
+        customerMasterSid: this.enquiryData?.CustomerMasterSid || null,
+        toEmail: resolvedToEmail,
         customerBranchSid: this.enquiryData?.CustomerBranchSid || null
       }
     });

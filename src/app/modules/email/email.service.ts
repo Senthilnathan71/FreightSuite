@@ -5,6 +5,7 @@ import { map, Observable } from 'rxjs';
 export interface MailConfiguration {
   MailConfigurationMasterSid?: number;
   CompanyMasterSid: number;
+  CompanyMasterSids?: number[];
   Sno: number;
   MailName: string;
   MenuMasterSid: number;
