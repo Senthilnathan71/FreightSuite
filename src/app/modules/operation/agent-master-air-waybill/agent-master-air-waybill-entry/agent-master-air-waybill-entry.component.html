@@ -134,15 +134,19 @@
         </button>
       </div>
       <!-- *ngIf="mps.hasAtLeastOne() && isEditMode" -->
-      <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
+      <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block lead-actions-menu">
         <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
           <i class="fas fa-ellipsis-v"></i>
         </button>
-        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-          <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
-              class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-          <button *ngIf="mps.has('document_reference')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openDocRef()"><i
-              class="fas fa-paperclip me-1"></i>Document reference</button>
+        <div ngbDropdownMenu aria-labelledby="dropdownBasic1" class="lead-actions-dropdown">
+          <button *ngIf="mps.has('terms_and_condition')" class="lead-action-item" ngbDropdownItem appPreventMultiClick (click)="openTandC()">
+            <span class="lead-action-icon"><i class="fas fa-clipboard"></i></span>
+            <span class="lead-action-text">Terms & Condition</span>
+          </button>
+          <button *ngIf="mps.has('document_reference')" class="lead-action-item" ngbDropdownItem appPreventMultiClick (click)="openDocRef()">
+            <span class="lead-action-icon"><i class="fas fa-paperclip"></i></span>
+            <span class="lead-action-text">Document reference</span>
+          </button>
         </div>
       </div>
     </div>
@@ -1836,9 +1840,9 @@
                       @if(selectedFCLLCL === 'LCL' || selectedFCLLCL === 'AIR'){
                       <th class="bg-transparent text-light dofi-min-w-80" scope="col">UOM <span
                           class="text-danger fw-bold fs-3">*</span></th>
-                      <th class="bg-transparent text-light dofi-min-w-80" scope="col">L<span
+                      <th class="bg-transparent text-light dofi-min-w-80 dimension-x-after" scope="col">L<span
                           class="text-danger"></span></th>
-                      <th class="bg-transparent text-light dofi-min-w-80" scope="col">W<span
+                      <th class="bg-transparent text-light dofi-min-w-80 dimension-x-after" scope="col">W<span
                           class="text-danger"></span></th>
                       <th class="bg-transparent text-light dofi-min-w-80" scope="col">H<span
                           class="text-danger"></span></th>

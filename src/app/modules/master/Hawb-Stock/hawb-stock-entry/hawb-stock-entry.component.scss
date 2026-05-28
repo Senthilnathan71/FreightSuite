@@ -1,0 +1,11 @@
+:host .btn:disabled,
+:host .btn.disabled,
+:host .table-action-btn:disabled,
+:host .table-action-btn.disabled {
+  background-color: #8fa4b1 !important;
+  border-color: #8fa4b1 !important;
+  color: #eef5f8 !important;
+  opacity: 0.65;
+  cursor: not-allowed;
+  box-shadow: none !important;
+}

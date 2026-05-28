@@ -169,7 +169,7 @@
             </button>
           }
 
-          <div *ngIf="mps.hasAtLeastOne()" ngbDropdown class="d-inline-block">
+          <div *ngIf="mps.hasAtLeastOne()" ngbDropdown class="d-inline-block lead-actions-menu">
             <button
               type="button"
               class="btn btn-light-secondary btn-sm has-arrow"
@@ -178,54 +178,61 @@
             >
               <i class="fas fa-ellipsis-v"></i>
             </button>
-            <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+            <div ngbDropdownMenu aria-labelledby="dropdownBasic1" class="lead-actions-dropdown">
               <button
                 *ngIf="mps.has('edoc')"
-                class="text-dark"
+                class="lead-action-item"
                 ngbDropdownItem
                 appPreventMultiClick
                 (click)="openEDoc()"
               >
-                <i class="fas fa-file-alt me-1"></i> Edoc
+                <span class="lead-action-icon"><i class="fas fa-file-alt"></i></span>
+                <span class="lead-action-text">Edoc</span>
               </button>
               <button
                 *ngIf="mps.has('terms_and_condition')"
-                class="text-dark"
+                class="lead-action-item"
                 ngbDropdownItem
                 appPreventMultiClick
                 (click)="openTandC()"
               >
-                <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                <span class="lead-action-icon"><i class="fas fa-clipboard"></i></span>
+                <span class="lead-action-text">Terms & Condition</span>
               </button>
               <button
                 *ngIf="mps.has('authority')"
-                class="text-dark"
+                class="lead-action-item"
                 ngbDropdownItem
                 appPreventMultiClick
                 (click)="openAuthority()"
               >
-                <i class="fas fa-shield-alt me-1"></i> Authorize
+                <span class="lead-action-icon"><i class="fas fa-shield-alt"></i></span>
+                <span class="lead-action-text">Authorize</span>
               </button>
               <button
                 *ngIf="mps.has('email')"
-                class="text-dark"
+                class="lead-action-item"
                 ngbDropdownItem
                 appPreventMultiClick
                 (click)="openEmail()"
               >
-                <i class="fas fa-envelope me-1"></i> Email
+                <span class="lead-action-icon"><i class="fas fa-envelope"></i></span>
+                <span class="lead-action-text">Email</span>
               </button>
               <button
                 type="button"
                 appPreventMultiClick
-                class="text-dark"
+                class="lead-action-item"
                 ngbDropdownItem
                 (click)="openFollowup()"
               >
-                <i class="fas fa-paperclip me-1"></i> Followup
+                <span class="lead-action-icon"><i class="fas fa-paperclip"></i></span>
+                <span class="lead-action-text">Followup</span>
               </button>
-              <button *ngIf="mps.has('document_reference')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openDocRef()"><i
-              class="fas fa-paperclip me-1"></i>Document reference</button>
+              <button *ngIf="mps.has('document_reference')" class="lead-action-item" ngbDropdownItem appPreventMultiClick (click)="openDocRef()">
+                <span class="lead-action-icon"><i class="fas fa-paperclip"></i></span>
+                <span class="lead-action-text">Document reference</span>
+              </button>
             </div>
           </div>
         </div>

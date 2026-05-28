@@ -53,18 +53,32 @@
     </span>
   </button>
 </div>
-                     <div *ngIf="showActionMenu()" ngbDropdown class="d-inline-block" autoclose="false">
+                     <div *ngIf="showActionMenu()" ngbDropdown class="d-inline-block lead-actions-menu" autoclose="false">
                         <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
                             ngbDropdownToggle>
                             <i class="fas fa-ellipsis-v"></i>
                         </button>
-                        <div ngbDropdownMenu  aria-labelledby="dropdownBasic1" class="absolute z-999">
-                            <button *ngIf="canAccessAction('edoc')" class="dropdown-item text-dark" (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-                            <button *ngIf="canAccessAction('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                            <button *ngIf="canAccessAction('email')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
-                            <button *ngIf="canAccessAction('follow_up')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openFollowup()"><i class="fas fa-paperclip me-1"></i> Followup</button>
-                            <button *ngIf="canAccessAction('document_reference')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openDocRef()"><i
-              class="fas fa-paperclip me-1"></i>Document reference</button>
+                        <div ngbDropdownMenu  aria-labelledby="dropdownBasic1" class="lead-actions-dropdown absolute z-999">
+                            <button *ngIf="canAccessAction('edoc')" class="lead-action-item" ngbDropdownItem appPreventMultiClick (click)="openEDoc()">
+                                <span class="lead-action-icon edoc"><i class="fas fa-folder-open"></i></span>
+                                <span class="lead-action-text">Edoc</span>
+                            </button>
+                            <button *ngIf="canAccessAction('authority')" class="lead-action-item" ngbDropdownItem appPreventMultiClick (click)="openAuthority()">
+                                <span class="lead-action-icon authority"><i class="fas fa-shield-alt"></i></span>
+                                <span class="lead-action-text">Authorize</span>
+                            </button>
+                            <button *ngIf="canAccessAction('email')" class="lead-action-item" ngbDropdownItem appPreventMultiClick (click)="openEmail()">
+                                <span class="lead-action-icon email"><i class="fas fa-paper-plane"></i></span>
+                                <span class="lead-action-text">Email</span>
+                            </button>
+                            <button *ngIf="canAccessAction('follow_up')" class="lead-action-item" ngbDropdownItem appPreventMultiClick (click)="openFollowup()">
+                                <span class="lead-action-icon followup"><i class="fas fa-phone-volume"></i></span>
+                                <span class="lead-action-text">Followup</span>
+                            </button>
+                            <button *ngIf="canAccessAction('document_reference')" class="lead-action-item" ngbDropdownItem appPreventMultiClick (click)="openDocRef()">
+                                <span class="lead-action-icon reference"><i class="fas fa-bookmark"></i></span>
+                                <span class="lead-action-text">Document reference</span>
+                            </button>
                         </div>
                     </div>
                 </div>
