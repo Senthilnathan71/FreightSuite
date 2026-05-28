@@ -91,16 +91,17 @@
   </button>
 </div>
                     @if(isEditMode){
-                    <div *ngIf="mps.hasAtLeastOne()" ngbDropdown class="d-inline-block">
+                    <div *ngIf="mps.hasAtLeastOne()" ngbDropdown class="d-inline-block lead-actions-menu">
                         <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
                             ngbDropdownToggle>
                             <i class="fas fa-ellipsis-v"></i>
                         </button>
-                        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                        <div ngbDropdownMenu aria-labelledby="dropdownBasic1" class="lead-actions-dropdown">
                             <ng-container *ngFor="let item of actionMenuItems">
-                                <button *ngIf="item.condition !== false" class="text-dark" ngbDropdownItem
+                                <button *ngIf="item.condition !== false" class="lead-action-item" ngbDropdownItem
                                     appPreventMultiClick (click)="onActionMenuClick(item.action)">
-                                    <i [class]="item.icon + ' me-1'"></i> {{ item.label }}
+                                    <span class="lead-action-icon"><i [class]="item.icon"></i></span>
+                                    <span class="lead-action-text">{{ item.label }}</span>
                                 </button>
                             </ng-container>
                         </div>
@@ -1127,22 +1128,22 @@
                                                                 <label for="" class="form-label mb-0">Qty. <span
                                                                         class="text-danger">*</span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light text-center dofi-max-w-100"
+                                                            <td class="bg-transparent text-light text-center dofi-max-w-100 dimension-x-after"
                                                                 style="width: 160px;"
                                                                 [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
                                                                 <label class="form-label mb-0">L <span
                                                                         class="text-danger"></span></label>
                                                             </td>
-                                                            <td class="bg-transparent text-light text-center dofi-max-w-100"
+                                                            <td class="bg-transparent text-light text-center dofi-max-w-100 dimension-x-after"
                                                                 style="width: 160px;"
                                                                 [ngClass]="{ 'dofi-min-w-220': isMobile, '': !isMobile }">
-                                                                <label for="" class="form-label mb-0">W<span
+                                                                <label for="" class="form-label mb-0">W <span
                                                                         class="text-danger"></span></label>
                                                             </td>
                                                             <td class="bg-transparent text-light text-center dofi-max-w-100"
                                                                 style="width: 160px;"
                                                                 [ngClass]="{ 'dofi-min-w-80': isMobile, '': !isMobile }">
-                                                                <label class="form-label mb-0">H<span
+                                                                <label class="form-label mb-0">H <span
                                                                         class="text-danger"></span></label>
                                                             </td>
                                                             <td class="bg-transparent text-light " style="width: 160px;"
