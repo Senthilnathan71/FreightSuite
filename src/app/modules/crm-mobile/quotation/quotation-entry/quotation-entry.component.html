@@ -51,6 +51,10 @@
           (click)="reportAndEmailModel(reportModel)">
           <i class="fas fa-print me-1"></i> Print
         </button>
+        <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode"
+          (click)="copyQuotation()" [disabled]="!quotationData || !mps.can('insert')">
+          <i class="fas fa-copy me-1"></i> Copy
+        </button>
 <button type="button" class="btn btn-sm voice-assist-btn btn-info"
           *ngIf="isVoiceSupported"
           (click)="startVoiceNavigation()"
@@ -880,12 +884,12 @@
  <aside class="col-md-2">
     <div class="custom-form-group mt-md-2">
        <!-- Make the booking number clickable -->
-    <div *ngIf="getBookingNumber(route.value?.QuoteRouteSid)">
+    <div *ngIf="getBookingNumber(route.getRawValue()?.QuoteRouteSid)">
       <a href="javascript:void(0)" 
          class="booking-link"
-         (click)="viewBooking(getBookingHeader(route.value?.QuoteRouteSid))"
-         [title]="'View Booking: ' + getBookingNumber(route.value?.QuoteRouteSid)">
-        {{ getBookingNumber(route.value?.QuoteRouteSid) }}
+         (click)="viewBooking(getBookingHeader(route.getRawValue()?.QuoteRouteSid))"
+         [title]="'View Booking: ' + getBookingNumber(route.getRawValue()?.QuoteRouteSid)">
+        {{ getBookingNumber(route.getRawValue()?.QuoteRouteSid) }}
       </a>
     </div>
    

@@ -91,6 +91,93 @@ interface messages {
     .bell-notification-list .message-item:hover {
       background: rgba(0, 123, 255, 0.05);
     }
+    .user-profile-menu {
+      min-width: 270px;
+      border: 0;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 14px 34px rgba(15, 23, 42, 0.18);
+    }
+    .user-profile-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      background: linear-gradient(135deg, #05608d 0%, #0d7fab 100%);
+      color: #fff;
+    }
+    .user-profile-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      padding: 2px;
+      background: rgba(255, 255, 255, 0.28);
+      flex: 0 0 auto;
+    }
+    .user-profile-avatar img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .user-profile-copy {
+      min-width: 0;
+      line-height: 1.2;
+    }
+    .user-profile-name {
+      max-width: 190px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .user-profile-role {
+      max-width: 190px;
+      margin-top: 2px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.78);
+    }
+    .user-profile-actions {
+      padding: 7px;
+      background: #fff;
+    }
+    .user-profile-action {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 34px;
+      padding: 7px 9px;
+      border-radius: 7px;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 600;
+      transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+    }
+    .user-profile-action:hover {
+      background: #eaf6fc;
+      color: #05608d;
+      transform: translateX(2px);
+    }
+    .user-profile-action-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #eef6fb;
+      color: #05608d;
+      flex: 0 0 auto;
+    }
+    .user-profile-logout {
+      color: #b42318;
+    }
+    .user-profile-logout .user-profile-action-icon {
+      background: #fff1f0;
+      color: #d92d20;
+    }
+    .user-profile-logout:hover {
+      background: #fff1f0;
+      color: #b42318;
+    }
   `]
 })
 export class VerticalNavigationComponent implements OnInit, AfterViewInit {

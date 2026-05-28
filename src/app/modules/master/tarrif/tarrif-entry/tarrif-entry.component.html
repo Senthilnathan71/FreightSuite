@@ -12,6 +12,15 @@
                         <a class="text-info d-flex align-items-center w-2 h-2 cursor-pointer" (click)="showHeaderInfo()">
                             <i class="fas fs-6 fa-info-circle"></i>
                         </a>
+                        <button
+                            type="button"
+                            class="btn btn-sm tariff-copy-icon-btn ms-2"
+                            (click)="copyTariff()"
+                            ngbTooltip="Copy"
+                            placement="bottom"
+                        >
+                            <i class="fas fa-copy"></i>
+                        </button>
                     }
                 </div>
             </div>
@@ -39,11 +48,7 @@
                         <i class="fas fa-sync-alt me-1"></i>
                         Reset
                         </button>
-                        
-                        <button class="btn btn-sm btn-info dofi-min-w-80 dofi-max-w-80" *ngIf="isEditMode" (click)="copyTariff()">
-                            <i class="fas fa-copy me-1"></i>
-                            <span>Copy</span>
-                        </button>
+                    
 
                     <!-- <button appPreventMultiClick type="button" class="btn btn-info btn-sm dofi-min-w-80" (click)="onSave()"
                         [disabled]="(!mps.can('update') && isEditMode) || btnDisable">

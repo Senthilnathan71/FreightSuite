@@ -2,3 +2,26 @@
   color: #ffb3b3 !important;
   font-size: 12px;
 }
+
+:host .booking-copy-icon-btn {
+  width: 26px;
+  height: 24px;
+  padding: 0;
+  border-radius: 6px;
+  background-color: #7c3aed;
+  border-color: #7c3aed;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:host .booking-copy-icon-btn i {
+  font-size: 11px;
+}
+
+:host .booking-copy-icon-btn:hover {
+  background-color: #6d28d9;
+  border-color: #6d28d9;
+  color: #fff;
+}
