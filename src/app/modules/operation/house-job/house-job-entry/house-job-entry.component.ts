@@ -953,6 +953,8 @@ private setupMBLDateListener(): void {
       BookingNo: [{ value:'', disabled: true }],
       BookingDateTime: [defaultBookingDate],
       BookingHeaderSid: [null],
+      TranshipmentBookingSid: [null],
+      TranshipmentBookingNo: [{ value: '', disabled: true }],
       DepartmentMasterSid: [{ value: null, disabled: true }, [Validators.required]],
       CustomerMasterSid: [null, [Validators.required]],
       CustomerBranchSid: [''],
@@ -2308,6 +2310,8 @@ private loadMasterJobDetails(masterJobSid: number): void {
     this.houseJobForm.patchValue({
       MasterJobSid: response.MasterJobSid,
       BookingHeaderSid: response.BookingHeaderSid, 
+      TranshipmentBookingSid: response.TranshipmentBookingSid || null,
+      TranshipmentBookingNo: this.getTranshipmentBookingNo(response),
       MasterJobNumber: response.masterJob?.MasterJobNumber || response.MasterJobNumber || '',
       BookingNo: response.BookingNo,
       BookingDateTime: response.BookingDateTime ? new Date(response.BookingDateTime) : null,
@@ -3738,6 +3742,7 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
     CustomerMasterSid: houseJobFormValue.CustomerMasterSid,
     CustomerBranchSid: houseJobFormValue.CustomerBranchSid || null,
     BookingHeaderSid: existingBookingHeaderSid,
+    TranshipmentBookingSid: houseJobFormValue.TranshipmentBookingSid || null,
     CustomerName: houseJobFormValue.CustomerName,
     CustomerAddress: houseJobFormValue.CustomerAddress,
     SalesmanSid: houseJobFormValue.SalesmanSid || null,
@@ -7515,6 +7520,14 @@ getProductFormGroup(index: number): FormGroup {
       ...(this.currentFormValue || {}),
       status: this.b['status']?.getRawValue()
     };
+  }
+
+  getTranshipmentBookingNo(data: any = this.housejobData): string {
+    return data?.transhipmentBooking?.BookingNo
+      || data?.TranshipmentBookingNo
+      || data?.transhipmentBookingNo
+      || data?.TranshipmentBooking?.BookingNo
+      || '';
   }
 
   closeCustomsValidationModal() {

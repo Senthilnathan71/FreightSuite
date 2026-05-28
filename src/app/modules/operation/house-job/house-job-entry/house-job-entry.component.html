@@ -849,11 +849,11 @@
                     </div>
                   </aside>
                   @if(selectedDepartmentType === "SEA"){
-                  <aside class="col-md-6">
+                  <aside class="col-md-6" [formGroup]="cargoForm">
                     <div class="custom-form-group custom-form-group-select"
-                      [class.filled]="!!houseJobForm.get('FreightTerms')?.value">
+                      [class.filled]="!!cargoForm.get('ShipmentTerms')?.value">
                       <ng-select [items]="modeOfShipmentTerms" bindLabel="name" bindValue="name" class="ng-select"
-                        appendTo="body" placeholder="" formControlName="FreightTerms">
+                        appendTo="body" placeholder="" formControlName="ShipmentTerms">
                       </ng-select>
                       <label for="" class="input-label">Shipment Terms <span class="text-danger"></span></label>
                     </div>
@@ -3174,6 +3174,18 @@
               <label for="text-input" class="input-label">Place of Supply<span class="text-danger"></span></label>
             </div>
           </aside>
+          @if (houseJobForm.get('TranshipmentBookingSid')?.value) {
+          <aside class="col-md-3" [formGroup]="houseJobForm">
+            <div class="custom-form-group">
+              <a [routerLink]="['/operation/booking/entry', houseJobForm.get('TranshipmentBookingSid')?.value]"
+                class="form-control custom-input-field sm"
+                style="text-decoration: none; color: #0d6efd;">
+                {{ houseJobForm.get('TranshipmentBookingNo')?.value || getTranshipmentBookingNo() || houseJobForm.get('TranshipmentBookingSid')?.value }}
+              </a>
+              <label class="input-label">T/S Booking No</label>
+            </div>
+          </aside>
+          }
         </div>
       </div>
     </div>

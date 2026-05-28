@@ -1695,6 +1695,7 @@ private parseFloatSafe(value: any): number {
 
     const routesArray = this.rateRequestForm.get('routes') as FormArray;
     routesArray.clear();
+    this.routePortFilterPayloadKeys = [];
     this.filteredPOOPorts = [];
     this.filteredPOLPorts = [];
     this.filteredPODPorts = [];
@@ -2185,6 +2186,7 @@ private parseFloatSafe(value: any): number {
     // Clear and re-create routes (preserve lookups like ports)
     const routesArray = this.rateRequestForm.get('routes') as FormArray;
     routesArray.clear();
+    this.routePortFilterPayloadKeys = [];
     this.filteredPOOPorts = [];
     this.filteredPOLPorts = [];
     this.filteredPODPorts = [];
@@ -2472,6 +2474,13 @@ private parseFloatSafe(value: any): number {
       return;
     }
     this.routePortFilterPayloadKeys[routeIndex] = payloadKey;
+    this.applyRoutePortFilterLists(routeIndex, {
+      filteredPorts: this.filteredPorts || [],
+      filteredPOOPorts: this.filteredPOOPorts[routeIndex] || [],
+      filteredPOLPorts: this.filteredPOLPorts[routeIndex] || [],
+      filteredPODPorts: this.filteredPODPorts[routeIndex] || [],
+      filteredFDCPorts: this.filteredFDCPorts[routeIndex] || []
+    });
 
     this.operationService.getFilteredPorts(payload).subscribe({
       next: (resp: any) => {
@@ -2507,11 +2516,47 @@ private parseFloatSafe(value: any): number {
   }
 
   private applyRoutePortFilterLists(routeIndex: number, filteredLists: any): void {
-    this.filteredPorts = filteredLists.filteredPorts;
-    this.filteredPOOPorts[routeIndex] = filteredLists.filteredPOOPorts;
-    this.filteredPOLPorts[routeIndex] = filteredLists.filteredPOLPorts;
-    this.filteredPODPorts[routeIndex] = filteredLists.filteredPODPorts;
-    this.filteredFDCPorts[routeIndex] = filteredLists.filteredFDCPorts;
+    const routeForm = this.routes.at(routeIndex) as FormGroup;
+    const filteredPOOPorts = this.withSelectedPort(filteredLists.filteredPOOPorts, routeForm?.get('POO')?.value);
+    const filteredPOLPorts = this.withSelectedPort(filteredLists.filteredPOLPorts, routeForm?.get('POL')?.value);
+    const filteredPODPorts = this.withSelectedPort(filteredLists.filteredPODPorts, routeForm?.get('POD')?.value);
+    const filteredFDCPorts = this.withSelectedPort(filteredLists.filteredFDCPorts, routeForm?.get('FDC')?.value);
+
+    this.filteredPorts = this.mergeUniquePorts([
+      ...(filteredLists.filteredPorts || []),
+      ...filteredPOOPorts,
+      ...filteredPOLPorts,
+      ...filteredPODPorts,
+      ...filteredFDCPorts
+    ]);
+    this.filteredPOOPorts[routeIndex] = filteredPOOPorts;
+    this.filteredPOLPorts[routeIndex] = filteredPOLPorts;
+    this.filteredPODPorts[routeIndex] = filteredPODPorts;
+    this.filteredFDCPorts[routeIndex] = filteredFDCPorts;
+  }
+
+  private withSelectedPort(items: any[] = [], selectedPortSid: any): any[] {
+    const list = Array.isArray(items) ? items : [];
+    const selectedPort = this.ports.find(port => this.isSameSid(port?.PortMasterSid, selectedPortSid));
+
+    if (!selectedPort || list.some(port => this.isSameSid(port?.PortMasterSid, selectedPortSid))) {
+      return list;
+    }
+
+    return [selectedPort, ...list];
+  }
+
+  private mergeUniquePorts(ports: any[]): any[] {
+    const seen = new Set<number | string>();
+
+    return (ports || []).filter(port => {
+      const key = this.toNumericValue(port?.PortMasterSid) ?? String(port?.PortMasterSid ?? '');
+      if (!key || seen.has(key)) {
+        return false;
+      }
+      seen.add(key);
+      return true;
+    });
   }
 
   private syncRouteValidation(routeForm: FormGroup): void {

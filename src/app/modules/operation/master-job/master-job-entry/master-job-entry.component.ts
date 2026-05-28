@@ -3973,6 +3973,8 @@ onETDDateSelect(): void {
       HouseJobSid: [data?.HouseJobSid || null],
       BookingHeaderSid: [data?.BookingHeaderSid || null],
       BookingNo: [data?.BookingNo || '', Validators.required],
+      TranshipmentBookingSid: [data?.TranshipmentBookingSid || null],
+      TranshipmentBookingNo: [this.getTranshipmentBookingNo(data)],
       BookingDateTime: [data?.BookingDateTime ? new Date(data?.BookingDateTime) : null],
       DepartmentMasterSid: [data?.DepartmentMasterSid || null],
       HBLNo: [data?.HBLNo || null],
@@ -4092,6 +4094,26 @@ onETDDateSelect(): void {
         }
       });
     });
+  }
+
+  getTranshipmentBookingNo(data: any): string {
+    return data?.transhipmentBooking?.BookingNo
+      || data?.TranshipmentBookingNo
+      || data?.transhipmentBookingNo
+      || data?.TranshipmentBooking?.BookingNo
+      || '';
+  }
+
+  hasPendingTranshipmentBooking(): boolean {
+    return this.loadedHouses.some((house: any) =>
+      this.isLclImportTranshipmentHouse(house) && !house?.TranshipmentBookingSid
+    );
+  }
+
+  private isLclImportTranshipmentHouse(house: any): boolean {
+    const departmentName = this.getDepartmentName(house?.DepartmentMasterSid)?.trim().toLowerCase();
+    const jobType = house?.JobType?.trim().toLowerCase();
+    return departmentName === 'lcl import' && jobType === 'transhipment';
   }
 
 
@@ -5119,8 +5141,17 @@ onETDDateSelect(): void {
     });
   }
   bookingCreateInMasterJob() {
+    const pendingHouses = this.loadedHouses.filter((house: any) =>
+      this.isLclImportTranshipmentHouse(house) && !house?.TranshipmentBookingSid
+    );
+
+    if (!pendingHouses.length) {
+      this.appSettingService.showWarning('No pending LCL Import transhipment house jobs found.');
+      return;
+    }
+
     const bookingPayload = {
-      houses: this.loadedHouses,
+      houses: pendingHouses,
       createdBy: this.appSettingsService.userSettingSource.value['userEmail']
     };
 
@@ -5170,6 +5201,10 @@ onETDDateSelect(): void {
               ? `Booking already exists for some transhipment jobs. Booking No: ${duplicateBookingNos}`
               : 'Booking already exists for some transhipment jobs'
           );
+        }
+
+        if (this.masterJobSid) {
+          this.loadMasterJobData(this.masterJobSid);
         }
 
       },

@@ -986,6 +986,7 @@
                                 <th>Total Pkg</th>
                                 <th>House Status</th>
                                 <th>Invoice Status</th>
+                                <th>T/S Booking No</th>
                             </tr>
                         </thead>
             
@@ -1072,6 +1073,16 @@
                                 </span>
                             }
                         </td>
+                                <td>
+                                    @if(shipment.TranshipmentBookingSid){
+                                    <a class="fw-bold"
+                                        [routerLink]="['/operation/booking/entry', shipment.TranshipmentBookingSid]">
+                                        {{ getTranshipmentBookingNo(shipment) || shipment.TranshipmentBookingSid }}
+                                    </a>
+                                    } @else {
+                                    <span>-</span>
+                                    }
+                                </td>
             
             
                             </tr>
@@ -1793,7 +1804,8 @@
                 </div>
                 <div class="row mt-3" *ngIf="isTranshipment">
                     <div class="col-md-12 text-end">
-                        <button class="btn btn-primary" (click)="bookingCreateInMasterJob()">
+                        <button class="btn btn-primary" (click)="bookingCreateInMasterJob()"
+                            [disabled]="!hasPendingTranshipmentBooking() || isJobClosed">
                             <i class="fas fa-plus-circle"></i> Create T/S Booking
                         </button>
                     </div>

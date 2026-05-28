@@ -352,6 +352,95 @@
               </div>
             </aside>
 
+            <aside class="col-md-2">
+              <div class="custom-form-group custom-form-group-select inputChnages mt-md-1"
+                [class.filled]="!!serviceJobForm.get('VesselName')?.value">
+                <div class="d-flex align-items-center" *ngIf="!this.b['isVesselFreeText']?.value">
+                  <div style="flex:1; min-width:0; overflow:hidden;">
+                    <dofi-searchable-dropdown [items]="headerVesselList" formControlName="VesselName" placeholder=""
+                      [displayFields]="vesselVoyageLookupConfig.displayFields"
+                      [displayLabels]="vesselVoyageLookupConfig.displayLabels"
+                      [labelFields]="vesselVoyageLookupConfig.labelFields" bindValue="VesselName"
+                      (itemSelected)="onVesselChange($event)"
+                      style="display:block; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    </dofi-searchable-dropdown>
+                  </div>
+                  <button class="btn bi bi-calendar3 px-0" type="button"
+                    (click)="toggleInputType('VesselName','isVesselFreeText',$event)" style="flex-shrink:0;">
+                    <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
+                  </button>
+                </div>
+                <div class="d-flex" *ngIf="this.b['isVesselFreeText']?.value">
+                  <input type="text" formControlName="VesselName" placeholder="" [textWithNumbers]="100"
+                    class="custom-input-field sm" style="width: 85%" />
+                  <button class="btn bi bi-calendar3 px-0" type="button"
+                    (click)="toggleInputType('VesselName','isVesselFreeText',$event)">
+                    <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
+                  </button>
+                </div>
+                <label for="text-input" class="input-label">Vessel <span class="text-danger"></span></label>
+              </div>
+            </aside>
+
+            <aside class="col-md-2">
+              <div class="custom-form-group custom-form-group-select inputChnages mt-md-1"
+                [class.filled]="!!serviceJobForm.get('VoyageNo')?.value">
+                <div class="d-flex align-items-center" *ngIf="!this.b['isVoyageFreeText']?.value">
+                  <ng-select [items]="voyageList" bindLabel="VoyageNo" bindValue="VoyageNo"
+                    formControlName="VoyageNo" placeholder="" (change)="onVoyageChange($event)" appendTo="body"
+                    [clearable]="false" style="width: 85%">
+                    <ng-template ng-option-tmp let-item="item">
+                      <div class="fw-bold text-center">{{ item.VoyageNo }}</div>
+                      <div class="d-flex justify-content-between gap-2 small">
+                        <span>ETD: {{ item.ETD | formatDate }}</span>
+                        <span>ETA: {{ item.ETA | formatDate }}</span>
+                      </div>
+                    </ng-template>
+                  </ng-select>
+                  <button class="btn bi bi-calendar3 px-0" type="button"
+                    (click)="toggleInputType('VoyageNo','isVoyageFreeText',$event)">
+                    <i class="fas fa-exchange-alt" title="Switch to manual entry"></i>
+                  </button>
+                </div>
+                <div class="d-flex" *ngIf="this.b['isVoyageFreeText']?.value">
+                  <input type="text" formControlName="VoyageNo" placeholder="" [textWithNumbers]="10"
+                    class="custom-input-field sm" style="width: 85%" />
+                  <button class="btn bi bi-calendar3 px-0" type="button"
+                    (click)="toggleInputType('VoyageNo','isVoyageFreeText',$event)">
+                    <i class="fas fa-exchange-alt" title="Switch to dropdown"></i>
+                  </button>
+                </div>
+                <label class="input-label">Voyage <span class="text-danger"></span></label>
+              </div>
+            </aside>
+
+            <aside class="col-md-2">
+              <div class="custom-form-group custom-form-group-select-date">
+                <div class="input-group">
+                  <input class="form-control" placeholder="dd-mm-yyyy" formControlName="ETD" ngbDatepicker
+                    #etdPicker="ngbDatepicker" (click)="etdPicker.toggle()" container="body" readonly />
+                  <button class="btn bi bi-calendar3 px-0" (click)="etdPicker.toggle()" type="button">
+                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                  </button>
+                </div>
+                <label class="input-label">ETD <span class="text-danger"></span></label>
+              </div>
+            </aside>
+
+            <aside class="col-md-2">
+              <div class="custom-form-group custom-form-group-select-date">
+                <div class="input-group">
+                  <input class="form-control" placeholder="dd-mm-yyyy" formControlName="ETA" ngbDatepicker
+                    #etaPicker="ngbDatepicker" [minDate]="toNgbDateStruct(b['ETD']?.value)"
+                    (click)="etaPicker.toggle()" container="body" readonly />
+                  <button class="btn bi bi-calendar3 px-0" (click)="etaPicker.toggle()" type="button">
+                    <i-feather name="calendar" class="feather-sm"></i-feather>
+                  </button>
+                </div>
+                <label class="input-label">ETA <span class="text-danger"></span></label>
+              </div>
+            </aside>
+
 
             <div class="col-md-2">
               <aside>
