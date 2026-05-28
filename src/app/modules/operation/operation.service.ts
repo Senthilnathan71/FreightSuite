@@ -576,31 +576,7 @@ getHouseJobARAPData(HouseJobSid: number) {
     );
   }
 
-  // Master Job Bulk Upload Operations
-  parseExcelForBulkUpload(file: File) {
-    const formData = new FormData();
-    formData.append('file', file);
 
-    return this.http.post<{ status: boolean; message: string; data: any }>('master-job/bulk-upload/parse', formData).pipe(
-      map((resp) => {
-        return resp;
-      })
-    );
-  }
-
-  processBulkUpload(payload: any) {
-    return this.http.post<{ status: boolean; message: string; data: any }>('master-job/bulk-upload/process', payload).pipe(
-      map((resp) => {
-        return resp;
-      })
-    );
-  }
-
-  downloadMasterJobTemplate() {
-    return this.http.get('master-job/bulk-upload/template', {
-      responseType: 'blob'
-    });
-  }
 
   downloadContainerTemplate() {
     return this.http.get('master-job/container/template', {
@@ -2040,6 +2016,27 @@ getDefaultBLClausesByDepartment(DepartmentMasterSid: number) {
       })
     )
   }
+
+  downloadMasterJobTemplate(CompanyMasterSid: number, screenType: 'masterjob' | 'masterairwaybill' = 'masterjob'): Observable<Blob> {
+  return this.http.get(`master-job/template`, {
+    params: { CompanyMasterSid: String(CompanyMasterSid), screenType },
+    responseType: 'blob'
+  });
+}
+
+parseMasterJobExcel(formData: FormData): Observable<any> {
+  return this.http.post(`master-job/bulk-upload/parse`, formData);
+}
+
+saveMasterJobExcel(payload: {
+  validRows: any[];
+  CompanyMasterSid: number;
+  BranchMasterSid: number;
+  MenuMasterSid: number;
+  createdBy: string;
+}): Observable<any> {
+  return this.http.post(`master-job/bulk-upload/save`, payload);
+}
 
 
 }

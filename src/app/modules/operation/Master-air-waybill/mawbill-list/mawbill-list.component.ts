@@ -21,7 +21,6 @@ import { TableColumn, TableConfig, TableEventData, TableSortConfig, TableFilter 
 import { catchError, forkJoin, Observable, of } from 'rxjs';
 import { HeaderAction, PageHeaderComponent } from 'src/app/shared/components/header-list/header-list.component';
 import { DropdownMenuItem, ToolsDropdownComponent } from 'src/app/shared/components/tools-dropdown/tools-dropdown.component';
-import { MasterJobUploadModalComponent } from '../../master-job/components/master-job-upload-modal/master-job-upload-modal.component';
 import { MenuPermissionService } from 'src/app/core/services/menu-permission.service';
 import {
   AdvancedFilterValues,
@@ -29,6 +28,7 @@ import {
   DateTypeConfig,
   DropdownFilterConfig
 } from 'src/app/shared/interfaces/advanced-filter.interface';
+import { MasterJobImportModalComponent } from '../../master-job/master-job-entry/master-job-upload.component';
 
 @Component({ 
   selector: 'app-mawbill-list',
@@ -270,24 +270,16 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
         disabled: !this.mps.can('insert')
       },
       {
-        label: 'Excel Imp',
-        icon: 'fas fa-file-excel',
-        action: 'excel-dropdown',
-        disabled: !this.mps.can('insert'),
-        tooltip: 'Import master jobs and house jobs from Excel template. Download the template, fill in your data, and upload to create multiple jobs at once.',
-        children: [
-          {
-            label: 'Download Template',
-            icon: 'fas fa-download',
-            action: 'download-template'
-          },
-          {
-            label: 'Upload Excel',
-            icon: 'fas fa-file-upload',
-            action: 'upload-file'
-          }
-        ]
-      },
+      label:    'XL Upload',
+      icon:     'fas fa-file-excel',
+      action:   'excel-dropdown',
+      cssClass: 'dofi-min-w-130',
+      tooltip:  'Import master jobs from Excel. Download the template, fill in your data, then upload.',
+      children: [
+        { label: 'Download Template', icon: 'fas fa-download',     action: 'download-template' },
+        { label: 'Upload Excel',      icon: 'fas fa-file-upload',  action: 'upload-file'       }
+      ]
+    },
       {
         label: 'Report',
         icon: 'fas fa-file-alt',
@@ -309,12 +301,8 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
       case 'create':
         this.navigateToMasterJob()
         break;
-      case 'download-template':
-        this.downloadTemplate();
-        break;
-      case 'upload-file':
-        this.openUploadModal();
-        break;
+        case 'download-template': this.downloadTemplate();   break;
+    case 'upload-file':     this.openImportModal();      break;
       case 'report':
         this.report();
         break;
@@ -326,6 +314,52 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
     }
   }
 
+  downloadTemplate(): void {
+  const companyId = this.currentCompany?.CompanyMasterSid;
+  if (!companyId) {
+    this.appSettingService.showError('Company is not selected');
+    return;
+  }
+  this.spinner.show();
+  this.operationService.downloadMasterJobTemplate(companyId, 'masterairwaybill').subscribe({
+    next: (blob: Blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'MasterAirWaybill_Upload_Template.xlsx';
+      a.click();
+      window.URL.revokeObjectURL(url);
+      this.spinner.hide();
+      this.appSettingService.showSuccess('Template downloaded successfully');
+    },
+    error: () => {
+      this.spinner.hide();
+      this.appSettingService.showError('Error downloading template');
+    }
+  });
+}
+
+openImportModal(): void {
+  const modalRef = this.modalService.open(MasterJobImportModalComponent, {
+    size:     'xl',
+    centered: true,
+    backdrop: 'static',
+    keyboard: false
+  });
+
+  modalRef.componentInstance.currentCompany = this.currentCompany;
+  modalRef.componentInstance.currentBranch  = this.currentBranch;
+  modalRef.componentInstance.userData       = this.userData;
+  modalRef.componentInstance.menuMasterSid  = this.MenuMasterSid;
+  modalRef.componentInstance.screenType     = 'masterairwaybill';
+
+  modalRef.closed.subscribe((imported: boolean) => {
+    if (imported) {
+      this.appSettingService.showSuccess('Master jobs imported successfully!');
+      this.searchMasterjob();
+    }
+  });
+}
  
 
   private updateHeaderActionState(): void {
@@ -792,56 +826,6 @@ export class MawbillListComponent extends BaseListComponent implements OnInit {
   navigateToMasterJob() {
     this.router.navigate(['operation/mawbill/entry']);
   }
-
-  downloadTemplate(): void {
-    this.spinner.show();
-    this.operationService.downloadMasterJobTemplate().subscribe({
-      next: (blob: Blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'Master_Job_Upload_Template.xlsx';
-        link.click();
-        window.URL.revokeObjectURL(url);
-        this.spinner.hide();
-        this.appSettingService.showSuccess('Template downloaded successfully');
-      },
-      error: (error) => {
-        console.error('Error downloading template:', error);
-        this.spinner.hide();
-        this.appSettingService.showError('Error downloading template');
-      }
-    });
-  }
-
-  openUploadModal(): void {
-    const modalRef = this.modalService.open(MasterJobUploadModalComponent, {
-      size: 'xl',
-      backdrop: 'static',
-      keyboard: false,
-      centered: false
-    });
-
-    // Pass data to modal via component instance
-    modalRef.componentInstance.currentCompany = this.currentCompany;
-    modalRef.componentInstance.currentBranch = this.currentBranch;
-    modalRef.componentInstance.userData = this.userData;
-
-    modalRef.result.then(
-      (result) => {
-        if (result && result.success) {
-          this.appSettingService.showSuccess('Master Job and House Jobs created successfully');
-          this.searchMasterjob(); // Refresh the list
-        }
-      },
-      (reason) => {
-        // Modal dismissed (cancelled)
-        // console.log('Modal dismissed:', reason);
-      }
-    );
-  }
-
-
  
 
 }
