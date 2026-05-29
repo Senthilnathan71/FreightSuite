@@ -285,7 +285,7 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
           filterable: true,
           visible: true,
           dataType: 'string',
-          width: '150px'
+         
         },
         {
           key: 'VoucherMatchingDate',
@@ -294,7 +294,6 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
           filterable: true,
           visible: true,
           dataType: 'string',
-          width: '100px'
         },
         {
           key: 'Narration',
@@ -303,7 +302,6 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
           filterable: true,
           visible: true,
           dataType: 'string',
-          width: '180px',
         },
         {
           key: 'SubledgerName',
@@ -312,7 +310,7 @@ export class VoucherMatchingListComponent  extends BaseListComponent implements 
           filterable: true,
           visible: true,
           dataType: 'string',
-          width: '100px',
+        
         },
         {
           key: 'Status',

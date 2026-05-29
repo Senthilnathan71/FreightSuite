@@ -130,6 +130,16 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
   activeTab: 'payments' | 'pending-request' = 'payments';
   pendingPaymentRequests: any[] = [];
   pendingPaymentRequestRows: any[] = [];
+  allPendingPaymentRequestRows: any[] = [];
+  pendingPage = 1;
+  pendingPageSize = 10;
+  pendingPaginationConfig = {
+    page: 1,
+    pageSize: 10,
+    totalRecords: 0,
+    pageSizeOptions: [10, 20, 50, 100, 500],
+    maxPagesToShow: 3
+  };
 
   tableConfig: TableConfig ;
   pendingPaymentTableConfig: TableConfig;
@@ -599,18 +609,24 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
       .subscribe({
         next: (resp: any) => {
           this.pendingPaymentRequests = resp.status ? (resp.data || []) : [];
-          this.pendingPaymentRequestRows = this.pendingPaymentRequests.map((item: any) => ({
+          this.allPendingPaymentRequestRows = this.pendingPaymentRequests.map((item: any) => ({
             ...item,
             PaymentRequestDateRaw: item.PaymentRequestDate,
             PaymentRequestDate: this.datePipe.transform(item.PaymentRequestDate),
             DepartmentName: item.dept?.departmentName || item.dept?.DepartmentName || '-',
             RowCount: item.paymentRequestDetails?.length || 0
           }));
+          this.pendingPage = 1;
+          this.updatePendingPaginationConfig();
+          this.updatePendingPagedRows();
           this.tableLoading = false;
         },
         error: () => {
           this.pendingPaymentRequests = [];
+          this.allPendingPaymentRequestRows = [];
           this.pendingPaymentRequestRows = [];
+          this.pendingPage = 1;
+          this.updatePendingPaginationConfig();
           this.tableLoading = false;
         }
       });
@@ -622,7 +638,7 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
     }
 
     const direction = sort.direction === 'asc' ? 1 : -1;
-    this.pendingPaymentRequestRows = [...this.pendingPaymentRequestRows].sort((a: any, b: any) => {
+    this.allPendingPaymentRequestRows = [...this.allPendingPaymentRequestRows].sort((a: any, b: any) => {
       const aValue = a?.[sort.column];
       const bValue = b?.[sort.column];
 
@@ -632,6 +648,36 @@ export class PaymentListComponent extends BaseListComponent implements OnInit {
 
       return String(aValue).localeCompare(String(bValue), undefined, { numeric: true, sensitivity: 'base' }) * direction;
     });
+    this.updatePendingPagedRows();
+  }
+
+  onPendingPageChange(newPage: number): void {
+    this.pendingPage = Number(newPage) || 1;
+    this.updatePendingPaginationConfig();
+    this.updatePendingPagedRows();
+  }
+
+  onPendingPageSizeChange(newPageSize: number): void {
+    this.pendingPageSize = Number(newPageSize) || 10;
+    this.pendingPage = 1;
+    this.updatePendingPaginationConfig();
+    this.updatePendingPagedRows();
+  }
+
+  private updatePendingPaginationConfig(): void {
+    this.pendingPaginationConfig = {
+      page: this.pendingPage,
+      pageSize: this.pendingPageSize,
+      totalRecords: this.allPendingPaymentRequestRows.length,
+      pageSizeOptions: this.config.pageSizeOptions,
+      maxPagesToShow: this.config.maxPagesToShow
+    };
+  }
+
+  private updatePendingPagedRows(): void {
+    const start = (this.pendingPage - 1) * this.pendingPageSize;
+    const end = start + this.pendingPageSize;
+    this.pendingPaymentRequestRows = this.allPendingPaymentRequestRows.slice(start, end);
   }
 
 

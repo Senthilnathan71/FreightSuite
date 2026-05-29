@@ -395,7 +395,6 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
         filterable: true,
         visible: true,
         dataType: 'string',
-        width: '150px',
         template: 'link'
       },
         {
@@ -405,18 +404,16 @@ export class CreditNoteListComponent extends BaseListComponent implements OnInit
         filterable: true,
         visible: true,
         dataType: 'string',
-        width: '150px',
         template: 'link'
       },
       
        {
         key: 'CreatedBy',
-        label: 'Create By ',
+        label: 'Created By ',
         sortable: true,
         filterable: true,
         visible: true,
         dataType: 'string',
-        width: '150px',
       },
       {
         key: 'PostStatus',
