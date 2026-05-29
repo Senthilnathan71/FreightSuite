@@ -289,20 +289,32 @@ ${userName}`
       next: (resp: any) => {
         if (!resp.status || !resp.data) return;
 
-        const configs = resp.data.filter((config: any) =>
-          Number(config.MenuMasterSid) === menuSid &&
-          config.Trigger === 'A' &&
-          config.Status === 'A' &&
-          this.matchesAction(config.Action, action) &&
-          this.matchesUpdateFields(config, action, changedFields)
-        );
+        const configs = resp.data.filter((config: any) => {
+          const trigger = String(config?.Trigger || '').trim().toUpperCase();
+          const isAutoTrigger = trigger === 'A' || trigger === 'AUTO';
+          const configCompanySids = Array.isArray(config?.CompanyMasterSids)
+            ? config.CompanyMasterSids.map((sid: any) => Number(sid)).filter((sid: number) => sid > 0)
+            : [];
+          const configCompanySid = Number(config?.CompanyMasterSid);
+          const belongsToCompany =
+            configCompanySids.includes(Number(companyId)) ||
+            (configCompanySid > 0 && configCompanySid === Number(companyId));
 
-        for (const config of configs) {
-          if (config.AutoPopup === 'A') {
-            this.sendAutoEmail(config, companyId, branchId, context, attachmentFile);
-          } else if (config.AutoPopup === 'P') {
-            this.openEmailPopup(config, context, attachmentFile);
-          }
+          return belongsToCompany &&
+            isAutoTrigger &&
+            Number(config.MenuMasterSid) === menuSid &&
+            config.Status === 'A' &&
+            this.matchesAction(config.Action, action) &&
+            this.matchesUpdateFields(config, action, changedFields);
+        });
+
+        const selectedConfig = configs[0];
+        if (!selectedConfig) return;
+
+        if (selectedConfig.AutoPopup === 'A') {
+          this.sendAutoEmail(selectedConfig, companyId, branchId, context, attachmentFile);
+        } else if (selectedConfig.AutoPopup === 'P') {
+          this.openEmailPopup(selectedConfig, context, attachmentFile);
         }
       }
     });
@@ -316,11 +328,22 @@ ${userName}`
       next: (resp: any) => {
         if (!resp.status || !resp.data) return;
 
-        const configs = resp.data.filter((config: any) =>
-          Number(config.MenuMasterSid) === menuSid &&
-          config.Trigger === 'M' &&
-          config.Status === 'A'
-        );
+        const configs = resp.data.filter((config: any) => {
+          const trigger = String(config?.Trigger || '').trim().toUpperCase();
+          const isManualTrigger = trigger === 'M' || trigger === 'MANUAL';
+          const configCompanySids = Array.isArray(config?.CompanyMasterSids)
+            ? config.CompanyMasterSids.map((sid: any) => Number(sid)).filter((sid: number) => sid > 0)
+            : [];
+          const configCompanySid = Number(config?.CompanyMasterSid);
+          const belongsToCompany =
+            configCompanySids.includes(Number(companyId)) ||
+            (configCompanySid > 0 && configCompanySid === Number(companyId));
+
+          return belongsToCompany &&
+            Number(config.MenuMasterSid) === menuSid &&
+            isManualTrigger &&
+            config.Status === 'A';
+        });
 
         if (configs.length === 0) {
           this.appSettingService.showInfo('No manual mail configuration found.');
@@ -414,6 +437,21 @@ ${userName}`
     const customerBranchSid = Number(context?.['customerBranchSid']);
     const customerMasterSid = Number(context?.['customerMasterSid']);
     const menuMasterSid = Number(context?.['menuMasterSid']);
+    const isLead = String(context?.['leadOrCustomer'] || '').toUpperCase() === 'L';
+
+    // Lead flow: do not resolve from customer-branch email source.
+    if (isLead) {
+      return {
+        ...context,
+        toEmail,
+        ccEmail,
+        userEmail: userData?.userEmail || '',
+        userName: context?.['userName'] || userData?.userName || '',
+        companyName: companyInfo?.companyName || companyInfo?.CompanyName || 'Dofi Infosys',
+        branchName: branchInfo?.branchName || branchInfo?.BranchName || '',
+        logoUrl
+      };
+    }
 
     if ((customerBranchSid || customerMasterSid) && menuMasterSid && (!toEmail || !ccEmail)) {
       try {
@@ -476,9 +514,17 @@ ${userName}`
 
     const subject = this.replacePlaceholders(config.MailSubject, enrichedContext);
     const body = this.replacePlaceholders(config.MailBody, enrichedContext);
-    const toEmail = this.replacePlaceholders(config.ToEmailidFrom || '', enrichedContext);
+    const isLead = String(context?.['leadOrCustomer'] || '').toUpperCase() === 'L';
+    const leadEmail = String(context?.['leadEmail'] || '').trim();
+    const toEmail = isLead && leadEmail
+      ? leadEmail
+      : this.replacePlaceholders(config.ToEmailidFrom || '', enrichedContext);
     const ccEmail = this.replacePlaceholders(config.CcEmailidFrom || '', enrichedContext);
     if (!toEmail?.trim()) {
+      if (context?.['allowManualEmailEntry']) {
+        this.openEmailPopup(config, { ...context, requireToEmail: false, toEmail: '' }, attachmentFile);
+        return;
+      }
       this.appSettingService.showError('No email found for this record.');
       return;
     }

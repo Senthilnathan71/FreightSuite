@@ -11,22 +11,22 @@
   <div class="col-12">
     <div class="mail-config-page">
       <div class="row page-header mb-2 align-items-center mx-1">
-        <div class="d-flex justify-content-between align-items-center py-2 flex-wrap gap-2 w-100">
+        <div class="d-flex justify-content-between align-items-center py-1 flex-wrap gap-2 w-100">
           <div class="d-flex align-items-center gap-2">
             <span class="header-icon">
               <i class="fas fa-envelope-open-text"></i>
             </span>
             <div>
               <h5 class="mb-0">Mail Configuration</h5>
-              <small class="text-muted">Manage templates, triggers, and delivery rules</small>
+              <!-- <small class="text-muted">Manage templates, triggers, and delivery rules</small> -->
             </div>
           </div>
-          <div class="d-flex align-items-center gap-2">
-            <button type="button" class="btn btn-sm btn-info  me-2" (click)="addRow()">
+          <div class="d-flex align-items-center">
+            <button type="button" class="btn btn-sm btn-info me-2" (click)="addRow()">
               <i class="fas fa-plus me-1"></i> Add New
             </button>
             <button type="button" class="btn btn-sm btn-secondary" (click)="navigateBack()">
-              <i class="fas fa-arrow-left me-1"></i> Back
+              <i class="fas fa-chevron-left me-1"></i> Back
             </button>
           </div>
         </div>
@@ -65,7 +65,7 @@
                     {{ getTriggerLabel(row.Trigger) }}
                   </span>
                   @if (row.Trigger === 'M' && row.AutoPopup === 'P') {
-                    <span class="badge bg-warning text-dark">Popup</span>
+                    <span class="badge bg-warning text-white">Popup</span>
                   }
                   @if (row.Trigger === 'M' && row.AutoPopup === 'A') {
                     <span class="badge bg-info text-white">Auto Send</span>
@@ -87,11 +87,11 @@
               </div>
 
               <div class="card-footer mail-card-footer bg-transparent d-flex justify-content-end gap-2 border-0">
-                <button type="button" class="btn btn-sm btn-danger py-0 px-2" (click)="deleteFilteredRow(row)" title="Delete">
-                  <i class="fas fa-trash me-1 fs-1"></i>Delete
+                <button type="button" class="btn btn-danger mail-card-action-btn" (click)="deleteFilteredRow(row)" title="Delete">
+                  <i class="fas fa-trash me-1"></i>Delete
                 </button>
-                 <button type="button" class="btn btn-sm btn-info py-0 px-2" (click)="editFilteredRow(row)" title="Edit">
-                  <i class="fas fa-edit me-1 fs-1"></i>Edit
+                 <button type="button" class="btn btn-info mail-card-action-btn" (click)="editFilteredRow(row)" title="Edit">
+                  <i class="fas fa-eye me-1"></i>Edit
                 </button>
               </div>
             </div>
@@ -109,14 +109,21 @@
 
       @if (editingRow) {
         <div class="card detail-form-card detail-form-shell mx-1 mt-2 mb-3 shadow-sm border-0" #detailFormSection>
-          <div class="card-header detail-form-head py-2 px-3 d-flex justify-content-between align-items-center bg-info bg-opacity-10 border-0">
-            <div class="d-flex align-items-center gap-2">
-              <span class="header-icon detail-icon">
+          <div class="card-header detail-form-head py-1 px-3 d-flex justify-content-between align-items-center bg-info bg-opacity-10 border-0">
+            <div class="d-flex align-items-center">
+              <!-- <span class="header-icon detail-icon">
                 <i class="fas fa-edit"></i>
-              </span>
+              </span> -->
               <h6 class="mb-0">
-                {{ editingRow.isNew ? 'New Mail Configuration' : 'Edit: ' + editingRow.MailName }}
+                {{ editingRow.isNew ? 'New Mail Configuration' : 'Edit ' + editingRow.MailName }}
               </h6>
+              <button
+                type="button"
+                class="btn btn-link p-0 ms-1 text-white"
+                title="How Mail Trigger Works"
+                (click)="openTriggerHelpModal(triggerHelpModal)">
+                <i class="fas fs-5 fa-info-circle"></i>
+              </button>
             </div>
             <div class="d-flex gap-2">
               <button type="button" class="btn btn-sm btn-secondary btn-pill" (click)="cancelEdit(editingIndex!)">
@@ -386,5 +393,66 @@
     </div>
   </div>
 </div>
+
+<ng-template #triggerHelpModal let-modal>
+  <div class="mail-help-modal">
+  <div class="modal-header mail-help-head py-2">
+    <h6 class="modal-title mb-0">
+      <i class="fas fa-info-circle me-2"></i>How Mail Trigger Works
+    </h6>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body mail-help-body small">
+    <div class="help-row">
+      <div class="help-icon bg-info"><i class="fas fa-building"></i></div>
+      <div class="help-copy">
+        <div class="help-title">Company Scope</div>
+        <div class="help-text">
+        This configuration is company-specific. A company must be selected during configuration creation. The configuration will be applicable only to the selected company, and any modifications made during editing will affect only that company. It will not be applied to other companies.
+        </div>
+      </div>
+    </div>
+    <div class="help-row">
+      <div class="help-icon bg-primary"><i class="fas fa-bolt"></i></div>
+      <div class="help-copy">
+        <div class="help-title">Trigger Type</div>
+        <div class="help-text"><strong>Auto</strong> means this rule is checked during Save (Create/Update). <strong>Manual</strong> means this rule is checked only when user clicks <strong>Send Mail</strong>.</div>
+      </div>
+    </div>
+    <div class="help-row">
+      <div class="help-icon bg-warning text-dark"><i class="fas fa-window-restore"></i></div>
+      <div class="help-copy">
+        <div class="help-title">Auto / Popup Mode</div>
+        <div class="help-text">After rule match: <strong>Auto</strong> sends directly. <strong>Popup</strong> opens email compose window so user can review and send.</div>
+      </div>
+    </div>
+    <div class="help-row">
+      <div class="help-icon bg-success"><i class="fas fa-tasks"></i></div>
+      <div class="help-copy">
+        <div class="help-title">Action Filter</div>
+        <div class="help-text"><strong>Create</strong> runs when new record is saved. <strong>Update</strong> runs when existing record is saved. If both selected, both save operations can trigger this rule.</div>
+      </div>
+    </div>
+    
+    <div class="help-row">
+      <div class="help-icon bg-secondary"><i class="fas fa-user-friends"></i></div>
+      <div class="help-copy">
+        <div class="help-title">Recipient Resolution</div>
+        <div class="help-text">System resolves <strong>To/CC</strong> using template placeholders and runtime context. In Lead mode, lead email is used. In Customer mode, customer/config-based addresses are used.</div>
+      </div>
+    </div>
+    <div class="help-row mb-0 border-0 pb-0">
+      <div class="help-icon bg-primary"><i class="fas fa-route"></i></div>
+      <div class="help-copy">
+        <div class="help-title">Quick Flow Summary</div>
+        <div class="help-text"><strong>Save</strong> -> checks Auto rules -> matches Company + Menu + Action + Status -> resolves recipients -> sends/popup by Auto/Popup.<br><strong>Send Mail button</strong> -> checks Manual rules only.</div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer py-2">
+    <button type="button" class="btn btn-sm btn-secondary" (click)="modal.close()">Close</button>
+  </div>
+  </div>
+</ng-template>
 
 <!-- Old table UI removed - preserved in git history -->

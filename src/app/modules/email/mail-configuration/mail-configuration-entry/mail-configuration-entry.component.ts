@@ -1027,6 +1027,14 @@ export class MailConfigurationEntryComponent implements OnInit {
     }).catch(() => {});
   }
 
+  openTriggerHelpModal(content: any): void {
+    this.ngbModal.open(content, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+  }
+
   navigateBack(): void {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     const salespersonFlag = String(userProfile?.isSalesperson || '').toUpperCase();

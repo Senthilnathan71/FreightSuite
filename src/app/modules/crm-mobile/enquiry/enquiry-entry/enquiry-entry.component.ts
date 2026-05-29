@@ -1558,7 +1558,13 @@ private parseFloatSafe(value: any): number {
   }
 
   getCustomerBranches(CustomerMasterSid: number) {
-    this.leadService.getCustomerBranchByCustomerId(CustomerMasterSid).subscribe(
+    const customerSid = Number(CustomerMasterSid);
+    if (!Number.isFinite(customerSid) || customerSid <= 0) {
+      this.cusBranchList = [];
+      return;
+    }
+
+    this.leadService.getCustomerBranchByCustomerId(customerSid).subscribe(
       (resp: any) => {
         if (resp.status) {
           this.cusBranchList = resp.data;
@@ -1660,7 +1666,11 @@ private parseFloatSafe(value: any): number {
     this.quotationEnquiryNumber = response.EnquiryNumber;
     this.quotationCustomerId = response.CustomerMasterSid;
     this.quotationDepartmentId = response.DepartmentMasterSid;
-    this.getCustomerBranches(response.CustomerMasterSid);
+    if (response.LeadOrCustomer === 'C' && Number(response.CustomerMasterSid) > 0) {
+      this.getCustomerBranches(Number(response.CustomerMasterSid));
+    } else {
+      this.cusBranchList = [];
+    }
     const parsedContact = this.parsePhone(response.ContactNumber);
     this.authStateCache = response.authorizerStatus,
       this.rateRequestForm.patchValue({
@@ -1917,6 +1927,25 @@ private parseFloatSafe(value: any): number {
     this.isSaving = true;
     const formRawValue = this.rateRequestForm.getRawValue();
     const otherFormValue = this.enquiryOtherForm.getRawValue();
+    const isCustomerMode = formRawValue.LeadOrCustomer === true || String(formRawValue.LeadOrCustomer).toUpperCase() === 'C';
+    const preCustomerMasterSid = formRawValue.PreCustomerMasterSid || this.enquiryData?.PreCustomerMasterSid || null;
+    const leadFromList = this.leadList.find(
+      (lead: any) => Number(lead?.PreCustomerMasterSid) === Number(preCustomerMasterSid)
+    );
+    const resolvedLeadEmail = !isCustomerMode
+      ? (
+        formRawValue.Email ||
+        this.rateRequestForm.get('Email')?.value ||
+        this.enquiryData?.Email ||
+        this.enquiryData?.email ||
+        leadFromList?.email ||
+        leadFromList?.Email ||
+        ''
+      )
+      : '';
+    const resolvedToEmail = isCustomerMode
+      ? (this.enquiryData?.Email || this.rateRequestForm.get('Email')?.value || '')
+      : resolvedLeadEmail;
     const CompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     const BranchMasterSid = this.currentBranch?.BranchMasterSid;
 
@@ -1979,6 +2008,8 @@ private parseFloatSafe(value: any): number {
               menuMasterSid: this.MenuMasterSid,
               action: 'UPDATE',
               context: {
+                leadOrCustomer: isCustomerMode ? 'C' : 'L',
+                leadEmail: resolvedLeadEmail,
                 menuMasterSid: this.MenuMasterSid,
                 EnquiryNo: this.enquiryData?.EnquiryNumber,
                 date: this.enquiryData?.EnquiryDate ? this.datePipe.transform(this.enquiryData.EnquiryDate) : '',
@@ -1989,7 +2020,7 @@ private parseFloatSafe(value: any): number {
                 customerName: this.enquiryData?.CustomerName,
                 userName: this.userData?.userName,
                 customerMasterSid: this.enquiryData?.CustomerMasterSid || null,
-                toEmail: this.enquiryData?.Email || '',
+                toEmail: resolvedToEmail,
                 customerBranchSid: this.enquiryData?.CustomerBranchSid || null
               }
             });
@@ -2045,6 +2076,8 @@ private parseFloatSafe(value: any): number {
             menuMasterSid: this.MenuMasterSid,
             action: 'CREATE',
             context: {
+              leadOrCustomer: isCustomerMode ? 'C' : 'L',
+              leadEmail: resolvedLeadEmail,
               menuMasterSid: this.MenuMasterSid,
               EnquiryNo: resp?.data?.enquiryHeader?.EnquiryNumber,
               date: new Date().toLocaleDateString(),
@@ -2055,7 +2088,7 @@ private parseFloatSafe(value: any): number {
               customerName: this.rateRequestForm.get('customerName')?.value,
               userName: this.userData?.userName,
               customerMasterSid: this.rateRequestForm.get('CustomerMasterSid')?.value || null,
-              toEmail: this.rateRequestForm.get('Email')?.value || '',
+              toEmail: resolvedToEmail,
               customerBranchSid: this.rateRequestForm.get('CustomerBranchSid')?.value || null
             }
           });
@@ -2276,7 +2309,8 @@ private parseFloatSafe(value: any): number {
       action: 'UPDATE',
       attachmentFile,
       context: {
-        requireToEmail: true,
+        requireToEmail: !isCustomer,
+        allowManualEmailEntry: isCustomer,
         menuMasterSid: this.MenuMasterSid,
         leadOrCustomer: isCustomer ? 'C' : 'L',
         leadEmail: resolvedLeadEmail,
