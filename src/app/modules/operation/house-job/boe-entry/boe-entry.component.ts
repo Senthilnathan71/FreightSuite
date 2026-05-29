@@ -56,6 +56,7 @@ export class BoeEntryComponent implements OnInit, OnChanges {
   
   // Use only setter/getter for dataItems to avoid duplication
   private _dataItems: any[] = [];
+  private dataItemsPatched = false;
   
   @Input()
   set dataItems(value: any[]) {
@@ -64,11 +65,13 @@ export class BoeEntryComponent implements OnInit, OnChanges {
     // Process dataItems when form is ready
     if (this.boeForm) {
       this.boeFormArray?.clear();
+      this.page = 1;
       if (this._dataItems && this._dataItems.length > 0) {
         this.patchValues(this._dataItems);
       } else {
-        this.addBoeRow();
+        this.updateBoePagination();
       }
+      this.dataItemsPatched = true;
     }
   }
   
@@ -157,9 +160,10 @@ export class BoeEntryComponent implements OnInit, OnChanges {
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
     this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
 
-    // If dataItems was set before ngOnInit, process them now
-    if (this._dataItems && this._dataItems.length > 0) {
+    // If dataItems was not processed by the input setter, process it once here.
+    if (!this.dataItemsPatched && this._dataItems && this._dataItems.length > 0) {
       this.patchValues(this._dataItems);
+      this.dataItemsPatched = true;
     }
     this.updateFormDisabledState();
   }
@@ -171,10 +175,13 @@ export class BoeEntryComponent implements OnInit, OnChanges {
       this.boeDataLength = 0;
       this.slicedBoeFormArray = [];
       this.boeFormArray.clear();
+      this.page = 1;
       
       // Re-populate if we have data
       if (this._dataItems && this._dataItems.length > 0) {
         this.patchValues(this._dataItems);
+      } else {
+        this.updateBoePagination();
       }
     }
 
@@ -273,10 +280,13 @@ export class BoeEntryComponent implements OnInit, OnChanges {
 
     const formGroup = this.createBoeFormGroup(data);
     this.boeFormArray.push(formGroup);
+    if (!data?.HouseJobBOESid) {
+      this.page = Math.ceil(this.boeFormArray.length / this.pageSize) || 1;
+    }
     this.updateBoePagination();
     
     // Emit data changes
-    this.dataEmitter.emit(this.boeFormArray.getRawValue());
+    this.dataEmitter.emit(this.getBoeData());
   }
 
   // Delete BOE row
@@ -294,7 +304,7 @@ export class BoeEntryComponent implements OnInit, OnChanges {
             this.boeFormArray.removeAt(index);
             this.appSettingService.showSuccess("BOE Deleted Successfully");
             this.updateBoePagination();
-            this.dataEmitter.emit(this.boeFormArray.getRawValue());
+            this.dataEmitter.emit(this.getBoeData());
           } else {
             this.appSettingService.showError(resp.message || 'Error deleting BOE');
           }
@@ -307,7 +317,7 @@ export class BoeEntryComponent implements OnInit, OnChanges {
       this.boeFormArray.removeAt(index);
       this.appSettingService.showSuccess("BOE Deleted Successfully");
       this.updateBoePagination();
-      this.dataEmitter.emit(this.boeFormArray.getRawValue());
+      this.dataEmitter.emit(this.getBoeData());
     }
   }
 
@@ -353,7 +363,7 @@ export class BoeEntryComponent implements OnInit, OnChanges {
           this.spinner.hide();
           if (resp.status) {
             this.appSettingService.showSuccess('BOE updated successfully');
-            this.dataEmitter.emit(this.boeFormArray.getRawValue());
+            this.dataEmitter.emit(this.getBoeData());
           } else {
             this.appSettingService.showError(resp.message || 'Error updating BOE');
           }
@@ -378,7 +388,7 @@ export class BoeEntryComponent implements OnInit, OnChanges {
               formGroup.patchValue({ HouseJobBOESid: newId });
             }
             this.appSettingService.showSuccess('BOE created successfully');
-            this.dataEmitter.emit(this.boeFormArray.getRawValue());
+            this.dataEmitter.emit(this.getBoeData());
           } else {
             this.appSettingService.showError(resp.message || 'Error creating BOE');
           }
@@ -431,6 +441,8 @@ export class BoeEntryComponent implements OnInit, OnChanges {
   // Pagination methods
   updateBoePagination() {
     this.boeDataLength = this.boeFormArray.length;
+    const maxPage = Math.max(1, Math.ceil(this.boeDataLength / this.pageSize));
+    this.page = Math.min(Math.max(this.page, 1), maxPage);
     const start = (this.page - 1) * this.pageSize;
     const end = start + this.pageSize;
     this.slicedBoeFormArray = this.boeFormArray.controls.slice(start, end);
@@ -446,7 +458,11 @@ export class BoeEntryComponent implements OnInit, OnChanges {
     return !this.isEffectiveFormDisabled;
   }
   getBoeData(): any[] {
-  return this.boeFormArray ? this.boeFormArray.getRawValue() : [];
+  if (!this.boeFormArray) {
+    return [];
+  }
+
+  return this.boeFormArray.getRawValue().filter((boe: any) => this.hasBoeValue(boe));
 }
 validateBoeData(): boolean {
   return this.validateBoeArray();
@@ -470,5 +486,31 @@ validateBoeData(): boolean {
   private isSuspendedStatus(status: any): boolean {
     const value = String(status ?? '').trim().toLowerCase();
     return value === 's' || value === 'suspended';
+  }
+
+  private hasBoeValue(boe: any): boolean {
+    const fields = [
+      'HouseJobBOESid',
+      'DeclarationNo',
+      'BOENo',
+      'BOEDate',
+      'BOEValue',
+      'BOEInvoiceValue',
+      'GrossWeight',
+      'Volume',
+      'TransactionType',
+      'Amount',
+      'ProcessDate',
+      'ReceivedDate',
+      'AckNumber',
+      'AckDate',
+      'AckStatus',
+      'Remarks'
+    ];
+
+    return fields.some(field => {
+      const value = boe?.[field];
+      return value !== null && value !== undefined && String(value).trim() !== '';
+    });
   }
 }

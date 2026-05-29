@@ -47,7 +47,7 @@
         </thead>
 
         <tbody formArrayName="boeFormArray">
-          <tr *ngFor="let row of slicedBoeFormArray; let i = index" [formGroupName]="i">
+          <tr *ngFor="let row of slicedBoeFormArray; let i = index" [formGroupName]="(page-1)*pageSize + i">
             <!-- Action Column -->
             <td class="actions-cell">
               <!-- <button type="button" (click)="saveBoe((page-1)*pageSize + i)" class="btn btn-save px-1" 
