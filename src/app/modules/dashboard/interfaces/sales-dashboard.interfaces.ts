@@ -81,6 +81,7 @@ export interface ScheduledMeeting {
 }
 
 export interface MeetingWithFollowup {
+  MeetingFollowupSid: number;
   PreCustomerMeetingSid: number;
   meetingDate: string;
   meetingType: string;
@@ -293,6 +294,18 @@ export interface SalesDashboardSections {
 export interface SalesDashboardData {
   sections: SalesDashboardSections;
   charts: ChartData;
+}
+
+export interface DashboardFollowupItem {
+  FollowupSid: number;
+  DocumentSid: number;
+  documentNo: string;
+  Subject: string;
+  followupDate: string;
+  followUpStatus: 'Overdue' | 'Due Today' | 'Upcoming';
+  MenuMasterSid: number;
+  menuName: string;
+  menuPath: string;
 }
 
 export interface FunnelJourneyItem {

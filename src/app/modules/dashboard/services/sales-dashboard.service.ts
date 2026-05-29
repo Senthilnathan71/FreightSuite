@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
+  DashboardFollowupItem,
+  PagedResult,
   SalesDashboardCounts,
   SalesDashboardData,
   SalesDashboardFilters,
@@ -127,6 +129,43 @@ export class SalesDashboardService {
     return this.http.get<{ data: any; status: boolean; message: string }>(
       `${this.baseUrl}/sales-dashboard/funnel-journeys`,
       { params: this.buildParams(filters) },
+    );
+  }
+
+  completeMeetingFollowup(meetingFollowupSid: number): Observable<{ data: any; status: boolean; message: string }> {
+    return this.http.patch<{ data: any; status: boolean; message: string }>(
+      `${this.baseUrl}/sales-dashboard/followup/complete/${meetingFollowupSid}`,
+      {},
+    );
+  }
+
+  getDashboardFollowups(params: {
+    companyMasterSid: number;
+    branchMasterSid: number;
+    mode?: 'our' | 'created';
+    menuMasterSid?: number;
+    followUpStatus?: string;
+    page?: number;
+    pageSize?: number;
+  }): Observable<{ data: PagedResult<DashboardFollowupItem>; status: boolean; message: string }> {
+    let httpParams = new HttpParams()
+      .set('companyMasterSid', params.companyMasterSid)
+      .set('branchMasterSid', params.branchMasterSid);
+    if (params.mode) httpParams = httpParams.set('mode', params.mode);
+    if (params.menuMasterSid != null) httpParams = httpParams.set('menuMasterSid', params.menuMasterSid);
+    if (params.followUpStatus) httpParams = httpParams.set('followUpStatus', params.followUpStatus);
+    if (params.page != null) httpParams = httpParams.set('page', params.page);
+    if (params.pageSize != null) httpParams = httpParams.set('pageSize', params.pageSize);
+    return this.http.get<{ data: PagedResult<DashboardFollowupItem>; status: boolean; message: string }>(
+      `${this.baseUrl}/my-followups`,
+      { params: httpParams },
+    );
+  }
+
+  completeDashboardFollowup(followupSid: number): Observable<{ data: any; status: boolean; message: string }> {
+    return this.http.patch<{ data: any; status: boolean; message: string }>(
+      `${this.baseUrl}/complete-followup/${followupSid}`,
+      {},
     );
   }
 }

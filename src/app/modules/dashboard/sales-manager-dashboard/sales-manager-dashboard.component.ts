@@ -49,6 +49,7 @@ import { SmCreateMeetingModalComponent } from './components/sm-create-meeting-mo
 import { SmReminderModalComponent } from './components/sm-reminder-modal/sm-reminder-modal.component';
 import { SmAlertDrillDownModalComponent } from './components/sm-alert-drill-down-modal/sm-alert-drill-down-modal.component';
 import { Router } from '@angular/router';
+import { DashboardFollowupCardComponent } from '../components/dashboard-followup-card/dashboard-followup-card.component';
 
 @Component({
   selector: 'app-sales-manager-dashboard',
@@ -66,6 +67,7 @@ import { Router } from '@angular/router';
     SmAlertsComponent,
     SmActivityFeedComponent,
     SmTopPerformersComponent,
+    DashboardFollowupCardComponent,
   ],
   templateUrl: './sales-manager-dashboard.component.html',
   styleUrls: ['./sales-manager-dashboard.component.scss'],

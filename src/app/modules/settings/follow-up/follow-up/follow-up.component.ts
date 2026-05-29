@@ -132,7 +132,7 @@ export class FollowUpComponent implements OnInit, OnChanges, OnDestroy {
     const userProfile = this.appSettingService.getDecryptedUserProfile();
     if (userProfile) this.userData = userProfile;
     this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
-    this.currentBranch = this.appSettingService.decrypt(localStorage.getItem('selected-branch'));
+    this.currentBranch = this.appSettingService.getCurrentBranchInfo();
     this.loadLookups();
     if (this.documentSid) this.loadFollowups();
   }
@@ -224,7 +224,6 @@ export class FollowUpComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   openRow(row: any) {
-    if (this.isRowLocked(row)) return;
     const rowId = this.getRowId(row);
     // Toggle: clicking the already-open row header closes it
     if (this.expandedId === rowId) {
@@ -250,6 +249,7 @@ export class FollowUpComponent implements OnInit, OnChanges, OnDestroy {
     this.activeRowIsNew = !row.FollowupSid;
     this.isExternalFreeText = this.shouldUseFreeText(row);
     this.activeForm = this.buildRowForm(row);
+    if (this.isRowLocked(row)) this.activeForm.disable({ emitEvent: false });
     this.subscribeToActionChanges();
   }
 
@@ -437,7 +437,6 @@ export class FollowUpComponent implements OnInit, OnChanges, OnDestroy {
 
     const onSuccess = (resp: any) => {
       if (resp.status) {
-        this.appSettingService.showSuccess(resp.message);
         this.followupSaved.emit(resp);
         const isCargoInvolved = followupCreate.FollowupAction === 'External' && this.subject.toLowerCase().includes('cargo');
         if (isCargoInvolved && this.autoInsertMilestone) {
