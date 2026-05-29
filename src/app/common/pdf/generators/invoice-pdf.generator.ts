@@ -20,7 +20,7 @@
   import { Bold } from 'angular-feather/icons';
 
   // HTML print logo uses 110px. pdfMake works in pt, so convert px -> pt (72/96).
-  const INVOICE_LOGO_HEIGHT_PX = 110;
+  const INVOICE_LOGO_HEIGHT_PX = 90;
   const INVOICE_LOGO_HEIGHT_PT = INVOICE_LOGO_HEIGHT_PX * 0.75;
 
   function getContainerTypeNameFromList(containerTypeSid: number | string | null | undefined, containerTypes: any[] = []): string {
@@ -51,6 +51,23 @@
       .filter((value: string) => !!value)
       .join(', ');
   }
+
+  function buildPdfLogoColumn(logo: string | null | undefined, height: number): any {
+    if (!logo || logo === 'none') {
+      return { text: '', width: 1 };
+    }
+
+    const fit: [number, number] = [105, height];
+
+    if (logo.startsWith('data:image/svg+xml')) {
+      const svgPayload = logo.split(',')[1] || '';
+      const isBase64 = logo.includes(';base64,');
+      const svg = isBase64 ? atob(svgPayload) : decodeURIComponent(svgPayload);
+      return { svg, fit, alignment: 'left' as const };
+    }
+
+    return { image: logo, fit, alignment: 'left' as const };
+  }
   /**
    * Generate invoice PDF document definition
    */
@@ -63,7 +80,7 @@
     const taxConfig = (data.taxDisplayConfig as any) || {};
     const isIndiaInvoice = !taxConfig.showVAT;
     const logoHeaderHeight = INVOICE_LOGO_HEIGHT_PT;
-    const baseTopMargin = 150;
+    const baseTopMargin = 140;
     const extraTopMarginForLogo = Math.max(0, logoHeaderHeight - 55);
     const extraTopMarginForIndiaFields =
       isIndiaInvoice
@@ -124,7 +141,6 @@
         buildAmountInWords(data),
         ...(data.invoice?.remarks ? [buildRemarks(data.invoice.remarks)] : []),
         ...(buildContainerDetails(data) ? [buildContainerDetails(data)] : []),
-        ...(buildBOEDetails(data) ? [buildBOEDetails(data)] : []),
         ...buildBankDetailsSection(data),
         ...(resolvedTerms.length > 0
   ? [
@@ -179,9 +195,7 @@
 
     const LOGO_HEIGHT = INVOICE_LOGO_HEIGHT_PT; // 110px in HTML ~= 82.5pt in pdfMake
 
-    const logoColumn = logo
-      ? { image: logo, height: LOGO_HEIGHT, alignment: 'left' as const }
-      : { text: '', width: 1 };
+    const logoColumn = buildPdfLogoColumn(logo, LOGO_HEIGHT);
 
     const companyInfoStack: any[] = [];
 
@@ -302,7 +316,11 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
   const invoice = data.invoice;
   const printData = (data as any).invoicePrintData;
   const taxConfig = (data.taxDisplayConfig as any) || {};
-  const isIndiaInvoice = !taxConfig.showVAT;
+  const companyCountry = String((data as any)?.companyCountryCode || getNormalizedCompanyCountry(data))
+    .trim()
+    .toLowerCase();
+  const isIndiaInvoice = companyCountry ? companyCountry === 'in' || companyCountry === 'india' : !taxConfig.showVAT;
+  const customerTaxLabel = isIndiaInvoice ? 'GST No.' : 'VAT No.';
 
   const PAGE_LEFT = -10;
   const PAGE_RIGHT = 565;
@@ -380,11 +398,11 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
   // GST/VAT No
   rightStack.push({
     columns: [
-      { text: isIndiaInvoice ? 'GST No.' : 'VAT No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
+      { text: String(customerTaxLabel), width: RIGHT_LABEL_WIDTH, bold: true ,  },
       { text: ':', width: COLON_WIDTH },
       { text: printData?.GST_VAT || invoice?.customerGstVat || '', width: '*' }
     ],
-    margin: [0, 0, 0, 7]
+    margin: [0, 0, 0, 10]
   });
 
   // IRN Number (India only) - show the label even when the value is empty
@@ -457,9 +475,19 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
   const printData = (data as any).invoicePrintData;
   const cargo = data.cargoDetails;
   const isSeaMode = data.isSeaMode !== false;
+  const PAGE_LEFT = -10;
+  const PAGE_RIGHT = 565;
+  const companyCountry = String((data as any)?.companyCountryCode || getNormalizedCompanyCountry(data))
+    .trim()
+    .toLowerCase();
+  const isUAECompany = companyCountry === 'ae' || companyCountry === 'uae' || companyCountry === 'dubai';
 
   const RIGHT_LABEL_WIDTH = 88;
   const COLON_WIDTH = 5;
+  const vesselValue = printData?.Vessel || invoice?.vesselName || '';
+  const voyageValue = printData?.VoyageNo || invoice?.voyageNo || '';
+  const etdValue = printData?.ETD ? formatDate(printData.ETD) : formatDate(invoice?.etd || '');
+  const etaValue = printData?.ETA ? formatDate(printData.ETA) : formatDate(invoice?.eta || '');
 
   // -----------------------------
   // Left Column Data
@@ -467,13 +495,23 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
   const leftItems: { label: string; value: string }[] = [
     { label: 'Shipper', value: printData?.ShipperName || invoice?.shipperName || '' },
     { label: 'Consignee / Notify', value: printData?.ConsigneeName || invoice?.consigneeName || '' },
-    { label: isSeaMode ? 'Vessel Name' : 'Flight Name', value: printData?.Vessel || invoice?.vesselName || '' },
-    { label: isSeaMode ? 'Voyage No.' : 'Flight No.', value: printData?.VoyageNo || invoice?.voyageNo || '' },
+    {
+      label: `${isSeaMode ? 'Vsl Name' : 'Flight Name'} / ${isSeaMode ? 'Voy No.' : 'No.'}`,
+      value: `${vesselValue}${vesselValue && voyageValue ? '/' : ''}${voyageValue}`
+    },
     { label: 'Ref No.', value: printData?.DocumentNumber || invoice?.shipperRefNo || '' },
     { label: 'Loading Port', value: printData?.POL || invoice?.loadingPort || invoice?.pol || '' },
     { label: 'Final Destination', value: printData?.FPD || invoice?.finalDestination || invoice?.fpd || '' },
-    { label: 'ETD', value: printData?.ETD ? formatDate(printData.ETD) : formatDate(invoice?.etd || '') },
-    { label: 'ETA', value: printData?.ETA ? formatDate(printData.ETA) : formatDate(invoice?.eta || '') }
+    {
+      label: 'ETD & ETA',
+      value: `${etdValue}${etdValue && etaValue ? ' & ' : ''}${etaValue}`
+    },
+    ...(isUAECompany
+      ? [
+          { label: 'BOE No.', value: printData?.BOENo || '' },
+          { label: 'Declaration No.', value: printData?.DeclarationNo || printData?.declarationNo || '' }
+        ]
+      : [])
   ];
 
   // -----------------------------
@@ -576,7 +614,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
   // -----------------------------
   // Final Layout
   // -----------------------------
-  return {
+  const detailsTable = {
     table: {
       widths: ['50%', '50%'],
       body: [[
@@ -586,6 +624,24 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
       ]]
     },
     layout: 'noBorders',
+    margin: [0, 0, 0, 0]
+  };
+
+  return {
+    stack: [
+      {
+        canvas: [{
+          type: 'line',
+          x1: PAGE_LEFT,
+          y1: 0,
+          x2: PAGE_RIGHT,
+          y2: 0,
+          lineWidth: 1
+        }],
+        margin: [0, 6, 0, 4]
+      },
+      detailsTable
+    ],
     margin: [0, 0, 0, 0]
   };
 }
@@ -1038,36 +1094,6 @@ function buildContainerDetails(data: InvoicePdfData): any {
   };
 }
 
-function buildBOEDetails(data: InvoicePdfData): any {
-  const printData = (data as any).invoicePrintData;
-  const boeValue = printData?.BOENo || '';
-
-  if (!boeValue) {
-    return null;
-  }
-
-  return {
-    margin: [0, 2, 0, 2],
-    columns: [
-      {
-        width: 90,
-        text: 'BOE No.',
-        style: 'labelBold'
-      },
-      {
-        width: 10,
-        text: ':',
-        alignment: 'center'
-      },
-      {
-        width: '*',
-        text: boeValue
-      }
-    ]
-  };
-}
-
-
   /**
    * Build bank details section
    */
@@ -1389,6 +1415,7 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
       invoiceTitle?: string;
       isSeaMode?: boolean;
       isVATMode?: boolean;
+      companyCountryCode?: string;
       companyVatNo?: string;
       shipmentDetails?: any;
       cargoDetails?: any;
@@ -1521,6 +1548,7 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
       logo,
       invoiceTitle: options?.invoiceTitle || (invoice.PostStatus === 'P' ? 'TAX INVOICE' : 'TAX INVOICE DRAFT'),
       companyGstCode: branch?.taxRegistrationNo || company?.GST_VAT || '',
+      companyCountryCode: options?.companyCountryCode,
       companyPan: company?.Pan || company?.PAN || '',
       invoice: {
         invoiceNo: invoice.VoucherNumber || '',

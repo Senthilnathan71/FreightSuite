@@ -26,7 +26,7 @@ import {
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
 import { CommonModule } from '@angular/common';
-import { catchError, debounceTime, distinctUntilChanged, firstValueFrom, forkJoin, map, Observable, of, Subject, takeUntil } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, firstValueFrom, forkJoin, map, Observable, of, Subject, take, takeUntil } from 'rxjs';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -107,6 +107,7 @@ interface NgbDateStructLike {
     RouterModule
   ],
   templateUrl: './invoice-entry.component.html',
+  styleUrl: './invoice-entry.component.scss',
   providers: [
     { provide: NgbDateAdapter, useClass: CustomDateAdapter },
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
@@ -1566,6 +1567,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       ETD: this.getShipmentFieldValue('ETD') || "",
       ETA: this.getShipmentFieldValue('ETA') || "",
       BOENo: this.getInvoiceBOENoDisplay(),
+      DeclarationNo: this.getInvoiceDeclarationNoDisplay(),
       HBLNo: this.invoiceData?.houseJob?.HBLNo || '',
       MBLNo: this.invoiceData?.masterJob?.MBLNo || '',
       MasterJobNumber: this.invoiceData?.masterJob?.MasterJobNumber || '',
@@ -1614,20 +1616,41 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
 
 
        pkg: isHouseJobInvoice
-  ? (this.invoiceData?.houseJob?.Cargo?.[0]?.NoOfPackage ?? " ")
+  ? (this.invoiceData?.houseJob?.Cargo?.reduce(
+        (total: number, item: any) =>
+          total + Number(item?.NoOfPackage || 0),
+        0
+      ) ?? " ")
   : isBookingInvoice
-    ? (this.invoiceData?.BookingHeader?.bookingCargo?.[0]?.NoOfPackage ?? " ")
+    ? (this.invoiceData?.BookingHeader?.bookingCargo?.reduce(
+        (total: number, item: any) =>
+          total + Number(item?.NoOfPackage || 0),
+        0
+      ) ?? " ")
     : isMasterJobInvoice
       ? (this.invoiceData?.masterJob?.NoOfPkg ?? " ")
       : " ",
      
     grosswt: isHouseJobInvoice
-  ? (this.invoiceData?.houseJob?.Cargo?.[0]?.GrossWeight ?? " ")
+  ? (
+      this.invoiceData?.houseJob?.Cargo?.reduce(
+        (total: number, item: any) =>
+          total + Number(item?.GrossWeight || 0),
+        0
+      ) ?? " "
+    )
   : isBookingInvoice
-    ? (this.invoiceData?.BookingHeader?.bookingCargo?.[0]?.GrossWeight ?? " ")
+    ? (
+        this.invoiceData?.BookingHeader?.bookingCargo?.reduce(
+          (total: number, item: any) =>
+            total + Number(item?.GrossWeight || 0),
+          0
+        ) ?? " "
+      )
     : isMasterJobInvoice
       ? (this.invoiceData?.masterJob?.GrossWeight ?? " ")
-      : " ",
+      : " "
+      ,
  
       desc: isHouseJobInvoice
   ? (this.invoiceData?.houseJob?.Cargo?.[0]?.CommodityDescription ?? " ")
@@ -1638,17 +1661,37 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
       : " ",
  
     ChargeableWeight: isHouseJobInvoice
-  ? (this.invoiceData?.houseJob?.Cargo?.[0]?.ChargeableWeight ?? " ")
+  ? (
+      this.invoiceData?.houseJob?.Cargo?.reduce(
+        (total: number, item: any) =>
+          total + Number(item?.ChargeableWeight || 0),
+        0
+      ) ?? " "
+    )
   : isBookingInvoice
-    ? (this.invoiceData?.BookingHeader?.bookingCargo?.[0]?.ChargeableWeight ?? " ")
+    ? (
+        this.invoiceData?.BookingHeader?.bookingCargo?.reduce(
+          (total: number, item: any) =>
+            total + Number(item?.ChargeableWeight || 0),
+          0
+        ) ?? " "
+      )
     : isMasterJobInvoice
       ? (this.invoiceData?.masterJob?.ChargeableWeight ?? " ")
       : " ",
  
     cbm: isHouseJobInvoice
-  ? (this.invoiceData?.houseJob?.Cargo?.[0]?.Volume ?? " ")
+  ? (this.invoiceData?.houseJob?.Cargo?.reduce(
+        (total: number, item: any) => 
+          total + Number(item?.Volume || 0),
+        0
+      ) ?? " ")
   : isBookingInvoice
-    ? (this.invoiceData?.BookingHeader?.bookingCargo?.[0]?.Volume ?? " ")
+    ? (this.invoiceData?.BookingHeader?.bookingCargo?.reduce(
+        (total: number, item: any) => 
+          total + Number(item?.Volume || 0),
+        0
+      ) ?? " ")
     : isMasterJobInvoice
       ? (this.invoiceData?.masterJob?.Volume ?? " ")
       : " ",
@@ -1660,6 +1703,19 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     
   } 
 
+  private getInvoiceDeclarationNoDisplay(): string {
+    const declarationList = this.invoiceData?.houseJob?.houseJobBOE;
+
+    if (!Array.isArray(declarationList)) {
+      return '';
+    }
+
+    return declarationList
+      .map((boe: any) => String(boe?.DeclarationNo).trim())
+      .filter((declarationNo: string) => declarationNo)
+      .join(', ');
+  }
+
   private getInvoiceBOENoDisplay(): string {
     const boeList = this.invoiceData?.houseJob?.houseJobBOE;
 
@@ -1668,7 +1724,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     }
 
     return boeList
-      .map((boe: any) => String(boe?.BOENo ?? '').trim())
+      .map((boe: any) => String(boe?.BOENo).trim())
       .filter((boeNo: string) => boeNo)
       .join(', ');
   }
@@ -4206,9 +4262,9 @@ isSeaDepartment(): boolean {
     }
   }
 
-  private async getPdfGenerationContext(): Promise<{ logo: string; lookups: any; options: any }> {
+  private async getPdfGenerationContext(): Promise<{ logo: string | undefined; lookups: any; options: any }> {
     await this.preparePrintData();
-    const logo = this.pdfMakeService.getReportLogo();
+    const logo = await this.resolveReportLogo();
 
     const lookups = {
       hssacMaster: this.hssacList?.flat() || [],
@@ -4224,6 +4280,7 @@ isSeaDepartment(): boolean {
       invoiceTitle: this.invoicePrintData?.invoiceTitle || '',
       isSeaMode: this.isSeaDepartment(),
       isVATMode: this.printTaxDisplayConfig.showVAT,
+      companyCountryCode: this.currentCompanyCountryCode,
       companyVatNo: this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
       shipmentDetails: {
         shipper: this.invoicePrintData?.ShipperName,
@@ -4248,6 +4305,65 @@ isSeaDepartment(): boolean {
     };
 
     return { logo, lookups, options };
+  }
+
+  private async resolveReportLogo(): Promise<string | undefined> {
+    const logoFromStream = await firstValueFrom(
+      this.logoService.reportLogo$.pipe(take(1)),
+    );
+    const logoSource =
+      logoFromStream || localStorage.getItem('current_report_logo') || '';
+
+    if (!logoSource || logoSource === 'none') return undefined;
+    if (logoSource.startsWith('data:image')) return logoSource;
+    if (logoSource.toLowerCase().split('?')[0].endsWith('.svg')) {
+      const svgText = await this.fetchSvgText(logoSource);
+      return svgText
+        ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgText)}`
+        : undefined;
+    }
+
+    return this.imageUrlToBase64(logoSource);
+  }
+
+  private async fetchSvgText(url: string): Promise<string | undefined> {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) return undefined;
+      return response.text();
+    } catch {
+      return undefined;
+    }
+  }
+
+  private imageUrlToBase64(url: string): Promise<string | undefined> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+
+      img.onload = () => {
+        const scale = 3;
+        const canvas = document.createElement('canvas');
+        const width = img.naturalWidth || img.width;
+        const height = img.naturalHeight || img.height;
+        canvas.width = width * scale;
+        canvas.height = height * scale;
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          resolve(undefined);
+          return;
+        }
+
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/png'));
+      };
+
+      img.onerror = () => resolve(undefined);
+      img.src = url;
+    });
   }
 
   private async downloadPDFInBrowser(): Promise<void> {
@@ -4657,7 +4773,7 @@ isSeaDepartment(): boolean {
           : item;
 
         const number = container?.ContainerNumber || '';
-        const type = this.getContainerTypeName(container?.ContainerType);
+        const type = container?.containerType?.ContainerIsoCode;
 
         if (number && type) {
           return `${number} / ${type}`;

@@ -45,7 +45,7 @@
             <i class="fas fa-print me-1"></i> Print
           </button>
 
-          <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+          <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
           (click)="openAuditLogs()" *ngIf="isEditMode">
           <i class="fas fa-history  me-1"></i>
           <span>Logs</span>
@@ -53,7 +53,7 @@
 
           <button
             type="button"
-            class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="goBack()"
           >
             <i class="fas fa-chevron-left me-1"></i> Back
@@ -61,7 +61,7 @@
 
           <button
             type="button"
-            class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+            class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="onReset()"
             [disabled]="isReadOnly"
           >
@@ -156,7 +156,7 @@
           <div
             *ngIf="mps.hasAtLeastOne() && isEditMode"
             ngbDropdown
-            class="d-inline-block"
+            class="d-inline-block lead-actions-menu"
           >
             <button
               type="button"
@@ -166,54 +166,62 @@
             >
               <i class="fas fa-ellipsis-v"></i>
             </button>
-            <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+            <div ngbDropdownMenu aria-labelledby="dropdownBasic1" class="lead-actions-dropdown">
               <button
                 *ngIf="mps.has('edoc')"
-                class="text-dark"
+                class="lead-action-item"
                 ngbDropdownItem
                 appPreventMultiClick
                 (click)="openEDoc()"
               >
-                <i class="fas fa-file-alt me-1"></i> Edoc
+                <span class="lead-action-icon"><i class="fas fa-file-alt"></i></span>
+                <span class="lead-action-text">Edoc</span>
               </button>
               <button
                 *ngIf="mps.has('terms_and_condition')"
-                class="text-dark"
+                class="lead-action-item"
                 ngbDropdownItem
                 appPreventMultiClick
                 (click)="openTandC()"
               >
-                <i class="fas fa-clipboard me-1"></i> Terms & Condition
+                <span class="lead-action-icon"><i class="fas fa-clipboard"></i></span>
+                <span class="lead-action-text">Terms & Condition</span>
               </button>
               <button
                 *ngIf="mps.has('authority')"
-                class="text-dark"
+                class="lead-action-item"
                 ngbDropdownItem
                 appPreventMultiClick
                 (click)="openAuthority()"
               >
-                <i class="fas fa-shield-alt me-1"></i> Authorize
+                <span class="lead-action-icon"><i class="fas fa-shield-alt"></i></span>
+                <span class="lead-action-text">Authorize</span>
               </button>
               <button
                 *ngIf="mps.has('email')"
-                class="text-dark"
+                class="lead-action-item"
                 ngbDropdownItem
                 appPreventMultiClick
                 (click)="openEmail()"
               >
-                <i class="fas fa-envelope me-1"></i> Email
+                <span class="lead-action-icon"><i class="fas fa-envelope"></i></span>
+                <span class="lead-action-text">Email</span>
               </button>
               <button
                 *ngIf="mps.has('follow_up')"
-                class="text-dark"
+                class="lead-action-item"
                 ngbDropdownItem
                 appPreventMultiClick
                 (click)="openFollowup()"
               >
-                <i class="fas fa-paperclip me-1"></i> Followup
+                <span class="lead-action-icon"><i class="fas fa-paperclip"></i></span>
+                <span class="lead-action-text">Followup</span>
               </button>
-              <button *ngIf="mps.has('document_reference')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openDocRef()"><i
-              class="fas fa-paperclip me-1"></i>Document reference</button>
+              <button *ngIf="mps.has('document_reference')" class="lead-action-item" ngbDropdownItem appPreventMultiClick
+                (click)="openDocRef()">
+                <span class="lead-action-icon"><i class="fas fa-paperclip"></i></span>
+                <span class="lead-action-text">Document reference</span>
+              </button>
             </div>
           </div>
         </div>
@@ -1692,7 +1700,7 @@
               <!-- Consignee / Notify -->
                 <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
                   <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
-                      <strong>Consignee / Notify</strong>
+                      <strong>Consignee</strong>
                   </div>
                   <div style="width: 15px;text-align: center;">:</div>
                       <div style="flex: 1;line-height: 1.4;">
@@ -1703,24 +1711,24 @@
                 <!-- Vessel -->
                 <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
                   <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
-                      <strong>{{isSeaDepartment() ? 'Vessel Name ' : 'Flight Name'}}</strong>
+                      <strong>{{isSeaDepartment() ? 'Vsl Name ' : 'Flight Name'}} / {{isSeaDepartment() ? 'Voy No.' : 'No.'}}</strong>
                   </div>
                   <div style="width: 15px;text-align: center;">:</div>
                       <div style="flex: 1;line-height: 1.4;">
-                          {{ invoicePrintData?.Vessel }}
+                          {{ invoicePrintData?.Vessel }}<span *ngIf="invoicePrintData?.Vessel && invoicePrintData?.VoyageNo">/</span>{{ invoicePrintData?.VoyageNo }}
                   </div>
                 </div>
                 
                 <!-- Vessel / Flight No -->
-               <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
+               <!-- <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
                   <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
-                      <strong>{{isSeaDepartment() ? 'Voyage No.' : 'Flight No.'}}</strong>
+                      <strong>{{isSeaDepartment() ? 'Voy No.' : 'Flight No.'}}</strong>
                   </div>
                   <div style="width: 15px;text-align: center;">:</div>
                       <div style="flex: 1;line-height: 1.4;">
                           {{ invoicePrintData?.VoyageNo }}
                   </div>
-               </div>
+               </div> -->
 
                     <div style="display: flex;align-items: flex-start;font-size: 16px;margin-bottom: 2px;">
                   <div style="width: 160px;font-weight: bolder;white-space: nowrap;">
@@ -1768,17 +1776,33 @@
 
               <div style="display: flex">
                 <div style="width: 165px; font-weight: bolder">
-                  <strong>ETD</strong>
+                  <strong>ETD & ETA </strong>
                 </div>
-                <div>: {{ invoicePrintData?.ETD | formatDate }}</div>
+                <div>: {{ invoicePrintData?.ETD | formatDate }}<span *ngIf="invoicePrintData?.ETD && invoicePrintData?.ETA"> & </span>{{ invoicePrintData?.ETA | formatDate }}</div>
               </div>
 
-              <div style="display: flex">
+              <!-- <div style="display: flex">
                 <div style="width: 165px; font-weight: bolder">
                   <strong>ETA</strong>
                 </div>
-                <div>: {{ invoicePrintData?.ETA | formatDate }}</div>
-              </div>
+               
+              </div> -->
+
+            <div *ngIf= isUAECompany style="display: flex;">
+              <p style="font-weight: bolder; width: 165px; margin: 0">
+                <strong>BOE No.</strong>
+              </p>
+              <div>: {{ invoicePrintData?.BOENo }}</div>
+            </div>
+            
+
+            <div *ngIf= isUAECompany
+              style="display: flex;">
+              <p style="font-weight: bolder; width: 165px; margin: 0">
+                <strong>Declaration No.</strong>
+              </p>
+              <div>: {{ invoicePrintData?.DeclarationNo }}</div>
+            </div>
 
             </div>
             
@@ -2599,13 +2623,7 @@
               </p>
             </div>
 
-            <div *ngIf="invoicePrintData?.BOENo"
-              style="display: flex; margin-top: 8px; font-size: 14px; padding: 0 20px;">
-              <p style="font-weight: bolder; width: 165px; margin: 0">
-                <strong>BOE No.</strong>
-              </p>
-              <p style="margin: 0">: {{ invoicePrintData?.BOENo }}</p>
-            </div>
+
 
           <!-- Bank Details -->
         <div *ngIf="bankDetails && bankDetails.length > 0" class="px-3" style="font-size:16px">

@@ -5,6 +5,7 @@ import { PDF_DEFAULT_CONFIG, PDF_TABLE_LAYOUTS, getPdfStyles } from '../styles/p
 import { formatDate, formatNumberWithCommas, joinNonEmpty } from '../helpers/pdf-formatters';
 
 const LOGO_HEIGHT_PT = 82.5;
+const LOGO_FIT: [number, number] = [145, LOGO_HEIGHT_PT];
 
 export function generateProformaInvoiceDocument(data: InvoicePdfData): any {
   const printData = (data as any).invoicePrintData || {};
@@ -37,7 +38,9 @@ export function generateProformaInvoiceDocument(data: InvoicePdfData): any {
       buildChargesTable(data),
       buildAmountInWords(data),
       buildLabeledText('Remarks', data.invoice?.remarks || ''),
-      ...(data.invoice?.containerNumber ? [buildLabeledText('Container No / Type', data.invoice.containerNumber)] : []),
+      ...(printData.ContainerNumber || printData.ContainerType || data.invoice?.containerNumber
+        ? [buildLabeledText('Container No / Type', formatContainerNumberType(printData, data.invoice?.containerNumber))]
+        : []),
       ...buildBankDetails(data),
       ...buildTerms(data),
       buildSignatory(data)
@@ -75,12 +78,13 @@ function buildHeader(data: InvoicePdfData): any {
     });
   }
 
-  const cityName = branch.cityMaster?.cityName || branch.cityName || company.city || branch.branchName;
   const addressLine2 = branch.addressLine2 || company.addressLine2;
-  const cityCountry = joinNonEmpty([addressLine2, cityName], ', ');
-  if (cityCountry) {
+  const branchName = branch.branchName || branch.BranchName || company.city || '';
+  const branchCode = branch.branchCode || branch.BranchCode || '';
+  const branchLine = joinNonEmpty([addressLine2, joinNonEmpty([branchName, branchCode], ' - ')], ', ');
+  if (branchLine) {
     companyStack.push({
-      text: cityCountry,  
+      text: branchLine,
       style: 'addressText',
       alignment: 'right',
       margin: [0, 0, 0, 6]
@@ -107,7 +111,9 @@ function buildHeader(data: InvoicePdfData): any {
     });
   }
 
-  const registrationNo = printData.GSTCode || data.companyVatNo || data.companyPan || data.companyGstCode || '';
+  const registrationNo = isIndiaInvoice
+    ? (printData.PAN || company.Pan || company.PAN || data.companyPan || '')
+    : (data.companyVatNo || printData.GSTCode || data.companyGstCode || data.companyPan || '');
   if (registrationNo) {
     companyStack.push({
       text: `${isIndiaInvoice ? 'GST No' : 'VAT No'} : ${registrationNo}`,
@@ -122,7 +128,7 @@ function buildHeader(data: InvoicePdfData): any {
         table: {
           widths: ['auto', '*', 10],
           body: [[
-            data.logo ? { image: data.logo, height: LOGO_HEIGHT_PT, alignment: 'left' } : { text: '', width: 1 },
+            buildPdfLogoColumn(data.logo),
             { stack: companyStack },
             { text: '' }
           ]]
@@ -297,13 +303,14 @@ function buildCargoTable(data: InvoicePdfData): any {
 function buildChargesTable(data: InvoicePdfData): any {
   const printData = (data as any).invoicePrintData || {};
   const details = printData.voucherDetails || [];
-  if (!details.length) return { text: '' };
+  const taxConfig = (data.taxDisplayConfig as any) || {};
 
   const header: any[] = [
     tableHeader('S.No.'), tableHeader('Particulars'),
     tableHeader('Curr.'), tableHeader('No. of Unit'), tableHeader('Rate'), tableHeader('ROE')
   ];
 
+  addTaxHeaders(header, taxConfig);
   header.push(tableHeader('Amt'), tableHeader('Local Amt'));
 
   const rows = details.map((detail: any, index: number) => {
@@ -316,6 +323,7 @@ function buildChargesTable(data: InvoicePdfData): any {
       tableCell(detail.ExchangeRate || '', 'right')
     ];
 
+    addTaxCells(row, detail, taxConfig);
     row.push(tableCell(detail.PartyAmount || '', 'right'));
     row.push(tableCell(detail.LocalAmount || '', 'right'));
     return row;
@@ -323,12 +331,15 @@ function buildChargesTable(data: InvoicePdfData): any {
 
   const localTotal = details.reduce((sum: number, detail: any) => sum + parseNumber(detail.LocalAmount), 0);
   const totalRow = buildTotalRow(header.length, localTotal);
+  const body = details.length
+    ? [header, ...rows, totalRow]
+    : [header, noChargesCell(header.length), totalRow];
 
   return {
     table: {
       headerRows: 1,
-      widths: buildChargeWidths(),
-      body: [header, ...rows, totalRow]
+      widths: buildChargeWidths(taxConfig),
+      body
     },
     layout: PDF_TABLE_LAYOUTS.bordered,
     margin: [0, 0, 0, 2]
@@ -431,6 +442,28 @@ function buildLabeledText(label: string, value: any, labelWidth = 88): any {
   };
 }
 
+function buildPdfLogoColumn(logo: string | null | undefined): any {
+  if (!logo || logo === 'none') {
+    return { text: '', width: 1 };
+  }
+
+  if (logo.startsWith('data:image/svg+xml')) {
+    const svgPayload = logo.split(',')[1] || '';
+    const isBase64 = logo.includes(';base64,');
+    const svg = isBase64 ? atob(svgPayload) : decodeURIComponent(svgPayload);
+    return { svg, fit: LOGO_FIT, alignment: 'left' as const };
+  }
+
+  return { image: logo, fit: LOGO_FIT, alignment: 'left' as const };
+}
+
+function formatContainerNumberType(printData: any, fallback = ''): string {
+  const containerNumber = printData?.ContainerNumber || '';
+  const containerType = printData?.ContainerType || '';
+  if (containerNumber && containerType) return `${containerNumber} / ${containerType}`;
+  return containerNumber || containerType || fallback || '';
+}
+
 function horizontalLine(lineWidth: number, margin: number[]): any {
   return {
     canvas: [{ type: 'line', x1: -10, y1: 0, x2: 565, y2: 0, lineWidth }],
@@ -446,8 +479,14 @@ function tableCell(text: any, alignment: 'left' | 'center' | 'right'): any {
   return { text: text ?? '', style: 'tableCellSmall', alignment, noWrap: alignment !== 'left' };
 }
 
-function buildChargeWidths(): (number | string)[] {
-  return [30, '*', 36, 68, 52, 58, 88, 96];
+function buildChargeWidths(taxConfig: any = {}): (number | string)[] {
+  const widths: (number | string)[] = [30, '*', 36, 62, 46, 50];
+  if (taxConfig.showCGST) widths.push(38, 52);
+  if (taxConfig.showSGST) widths.push(38, 52);
+  if (taxConfig.showUGST) widths.push(38, 52);
+  if (taxConfig.showIGST) widths.push(38, 52);
+  widths.push(62, 72);
+  return widths;
 }
 
 function buildTotalRow(colCount: number, total: any): any[] {
@@ -456,6 +495,27 @@ function buildTotalRow(colCount: number, total: any): any[] {
   row.push({ text: 'Total', style: 'tableCellBoldSmall', bold: true, alignment: 'right', noWrap: true });
   row.push({ text: formatNumberWithCommas(parseNumber(total), 2), style: 'tableCellBoldSmall', bold: true, alignment: 'right', noWrap: true });
   return row;
+}
+
+function addTaxHeaders(header: any[], taxConfig: any): void {
+  if (taxConfig.showCGST) header.push(tableHeader('CGST %'), tableHeader('CGST Amt.'));
+  if (taxConfig.showSGST) header.push(tableHeader('SGST %'), tableHeader('SGST Amt.'));
+  if (taxConfig.showUGST) header.push(tableHeader('UGST %'), tableHeader('UGST Amt.'));
+  if (taxConfig.showIGST) header.push(tableHeader('IGST %'), tableHeader('IGST Amt.'));
+}
+
+function addTaxCells(row: any[], detail: any, taxConfig: any): void {
+  if (taxConfig.showCGST) row.push(tableCell(detail.cgstRate || '', 'right'), tableCell(detail.cgstAmt || '', 'right'));
+  if (taxConfig.showSGST) row.push(tableCell(detail.sgstRate || '', 'right'), tableCell(detail.sgstAmt || '', 'right'));
+  if (taxConfig.showUGST) row.push(tableCell(detail.ugstRate || '', 'right'), tableCell(detail.ugstAmt || '', 'right'));
+  if (taxConfig.showIGST) row.push(tableCell(detail.igstRate || '', 'right'), tableCell(detail.igstAmt || '', 'right'));
+}
+
+function noChargesCell(colSpan: number): any[] {
+  return [
+    { text: 'No charges available', style: 'tableCellSmall', alignment: 'center', colSpan },
+    ...Array.from({ length: colSpan - 1 }, () => ({ text: '', style: 'tableCellSmall' }))
+  ];
 }
 
 function bankRow(label: string, banks: any[], ...keys: string[]): any[] {
