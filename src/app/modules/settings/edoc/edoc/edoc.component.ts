@@ -34,7 +34,7 @@ import * as mammoth from 'mammoth';
     CustomDatePipe
   ],
 })
-export class EdocComponent implements OnInit, OnDestroy {
+export class EdocComponent implements OnInit, OnChanges, OnDestroy {
   private destroy$ = new Subject<void>();
   dummyFileUrl: string = 'assets/pdf-sample_0.pdf'; // place a PDF in src/assets
   existingFiles: any[] = []; // Files already in database
@@ -79,6 +79,10 @@ export class EdocComponent implements OnInit, OnDestroy {
   selectedFile: any = null;
   selectedFileUrl: SafeResourceUrl | any = '';
   existingFileName: string = '';
+  existingGroup: any = null;
+  existingFollowups: any[] = [];
+  isAddMode: boolean = false;
+  isDocumentListCollapsed: boolean = false;
 
   // Client-side rendering properties
   excelData: any[][] = [];  // For Excel sheets
@@ -107,7 +111,37 @@ export class EdocComponent implements OnInit, OnDestroy {
     if (this.formData) {
       this.edocform.patchValue(this.formData);
     }
-    this.loadEdocData()
+    setTimeout(() => {
+      this.componentData = this.resolveDocumentContext();
+      this.patchContextControls();
+      this.loadEdocData();
+    });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!this.edocform) {
+      return;
+    }
+
+    if (
+      changes['formData'] ||
+      changes['companyMasterSid'] ||
+      changes['branchMasterSid'] ||
+      changes['menuMasterSid'] ||
+      changes['documentSid']
+    ) {
+      const previousContext = JSON.stringify(this.componentData || {});
+      this.componentData = this.resolveDocumentContext();
+      this.patchContextControls();
+
+      if (this.formData) {
+        this.edocform.patchValue(this.formData, { emitEvent: false });
+      }
+
+      if (previousContext !== JSON.stringify(this.componentData || {})) {
+        this.loadEdocData();
+      }
+    }
   }
   initEdocForm() {
     this.edocform = this.fb.group({
@@ -158,6 +192,50 @@ export class EdocComponent implements OnInit, OnDestroy {
     this.edocform.patchValue({
       FollowupRequired: event.target.checked
     });
+  }
+
+  private getDefaultFormValue(): any {
+    return {
+      AttachDocmentNo: '',
+      DocumentDate: '',
+      FileName: '',
+      Documenttype: '',
+      ReceivedDate: '',
+      SentDate: '',
+      FollowupRequired: false,
+      FollowupDate: '',
+      FollowupAction: '',
+      EdocRemarks: '',
+      FollowupRemarks: '',
+      EdocStatus: Status.Active,
+      Public: 'N',
+      sentEmail: 'N',
+      FollowupStatus: Status.Active,
+      CompanyMasterSid: this.toNumberOrNull(this.componentData.CompanyMasterSid),
+      BranchMasterSid: this.toNumberOrNull(this.componentData.BranchMasterSid),
+      MenuMasterSid: this.toNumberOrNull(this.componentData.MenuMasterSid),
+      DocumentSid: this.toNumberOrNull(this.componentData.DocumentSid)
+    };
+  }
+
+  addNewEdoc() {
+    this.isAddMode = true;
+    this.attachDocumentSid = null;
+    this.selectedFile = null;
+    this.selectedFileUrl = '';
+    this.previewFileType = null;
+    this.existingFileName = '';
+    this.selectedFiles = [];
+    this.excelData = [];
+    this.excelSheets = [];
+    this.wordHtmlContent = '';
+    this.edocform.reset(this.getDefaultFormValue());
+    this.edocform.markAsPristine();
+    this.edocform.markAsUntouched();
+  }
+
+  toggleDocumentList() {
+    this.isDocumentListCollapsed = !this.isDocumentListCollapsed;
   }
 
   toggleYN(controlName: string, event: Event): void {
@@ -217,14 +295,17 @@ export class EdocComponent implements OnInit, OnDestroy {
     } else {
       console.log('ℹ️ No new files to upload');
     }
-    // Convert FollowupDate to ISO string before appending to FormData
-    if (formValue.FollowupDate) {
-      formValue.FollowupDate = this.toUTCISO(formValue.FollowupDate);
-    }
+    ['DocumentDate', 'ReceivedDate', 'SentDate', 'FollowupDate'].forEach((key) => {
+      if (formValue[key]) {
+        formValue[key] = this.toUTCISO(formValue[key]);
+      }
+    });
 
     formValue.FollowupRequired = formValue.FollowupRequired ? 'Y' : 'N';
+    formValue.DocumentType = formValue.Documenttype;
 
     formData.append('CreatedBy', this.userData['userEmail']);
+    formData.append('updatedBy', this.userData['userEmail']);
 
     // Append form fields (non-empty values only)
     Object.keys(formValue).forEach(key => {
@@ -252,7 +333,8 @@ export class EdocComponent implements OnInit, OnDestroy {
               fileName: firstFile?.FileName
             });
             this.selectedFiles = [];
-            this.loadEdocData();
+            this.isAddMode = false;
+            this.loadEdocData(this.attachDocumentSid);
           } else {
             this.appSettingService.showError(res.message || 'Edoc update failed');
             this.closeTemplate()
@@ -278,7 +360,8 @@ export class EdocComponent implements OnInit, OnDestroy {
               fileName: firstFile?.FileName
             });
             this.selectedFiles = [];
-            this.loadEdocData();
+            this.isAddMode = false;
+            this.loadEdocData(firstFile?.AttachDocumentSid);
           } else {
             this.appSettingService.showError(res.message || 'Edoc creation failed');
             this.closeTemplate()
@@ -294,12 +377,24 @@ export class EdocComponent implements OnInit, OnDestroy {
 
   private resolveDocumentContext() {
     const sharedContext = this.commonService.documentData() as any;
+    const formContext = this.formData || {};
+    const pick = (...values: any[]) => values.find(value => value !== null && value !== undefined && value !== '');
+
     return {
-      CompanyMasterSid: this.companyMasterSid ?? sharedContext?.CompanyMasterSid ?? null,
-      BranchMasterSid: this.branchMasterSid ?? sharedContext?.BranchMasterSid ?? null,
-      MenuMasterSid: this.menuMasterSid ?? sharedContext?.MenuMasterSid ?? null,
-      DocumentSid: this.documentSid ?? sharedContext?.DocumentSid ?? null
+      CompanyMasterSid: pick(this.companyMasterSid, sharedContext?.CompanyMasterSid, sharedContext?.companyMasterSid, formContext.CompanyMasterSid, formContext.companyMasterSid, null),
+      BranchMasterSid: pick(this.branchMasterSid, sharedContext?.BranchMasterSid, sharedContext?.branchMasterSid, formContext.BranchMasterSid, formContext.branchMasterSid, null),
+      MenuMasterSid: pick(this.menuMasterSid, sharedContext?.MenuMasterSid, sharedContext?.menuMasterSid, formContext.MenuMasterSid, formContext.menuMasterSid, null),
+      DocumentSid: pick(this.documentSid, sharedContext?.DocumentSid, sharedContext?.documentSid, formContext.DocumentSid, formContext.documentSid, null)
     };
+  }
+
+  private patchContextControls() {
+    this.edocform.patchValue({
+      CompanyMasterSid: this.toNumberOrNull(this.componentData.CompanyMasterSid),
+      BranchMasterSid: this.toNumberOrNull(this.componentData.BranchMasterSid),
+      MenuMasterSid: this.toNumberOrNull(this.componentData.MenuMasterSid),
+      DocumentSid: this.toNumberOrNull(this.componentData.DocumentSid)
+    }, { emitEvent: false });
   }
 
   private toNumberOrNull(value: any): number | null {
@@ -312,8 +407,13 @@ export class EdocComponent implements OnInit, OnDestroy {
 
 
   resetForm() {
-    this.existingFileName = null
-    this.edocform.reset();
+    if (this.isAddMode || !this.selectedFile) {
+      this.addNewEdoc();
+      return;
+    }
+
+    this.selectedFiles = [];
+    this.patchFormData(this.selectedFile, this.existingGroup, this.findFollowupForFile(this.selectedFile));
   }
 
   modeOfType = [
@@ -406,15 +506,37 @@ export class EdocComponent implements OnInit, OnDestroy {
 
 
 // 2️⃣ Load existing files from API
-loadEdocData() {
+loadEdocData(selectAttachDocumentSid?: number | string) {
+  if (!this.componentData?.MenuMasterSid || !this.componentData?.DocumentSid) {
+    this.existingFiles = [];
+    this.existingGroup = null;
+    this.existingFollowups = [];
+    this.addNewEdoc();
+    return;
+  }
+
   const payload = {
-    menuMasterSid: this.componentData.MenuMasterSid,
-    DocumentSid: this.componentData.DocumentSid
+    menuMasterSid: this.toNumberOrNull(this.componentData.MenuMasterSid),
+    DocumentSid: this.toNumberOrNull(this.componentData.DocumentSid),
+    documentSid: this.toNumberOrNull(this.componentData.DocumentSid)
   };
 
   this.commonService.getExistingFile(payload).subscribe(
     (response) => {
       console.log('🔍 Full API Response:', response);
+
+      if (!response) {
+        this.existingFiles = [];
+        this.existingGroup = null;
+        this.existingFollowups = [];
+        this.addNewEdoc();
+        return;
+      }
+
+      this.existingGroup = response.group || null;
+      this.existingFollowups = response.followups || [];
+
+      this.existingFiles = [];
 
       if (response.group && response.group.attachFiles) {
         this.existingFiles = response.group.attachFiles || [];
@@ -423,16 +545,29 @@ loadEdocData() {
       }
 
       // Optional: load preview for the first file
-      if (this.existingFiles.length > 0) {
-        const firstFile = this.existingFiles[0];
-        this.selectedFile = firstFile;
-        this.attachDocumentSid = firstFile.AttachDocumentSid;
-        this.loadFilePreview(firstFile);
-        this.patchFormData(firstFile,response.group, response.followups?.[0]);
+      if (this.existingFiles.length > 0 && !this.isAddMode) {
+        const fileToSelect = this.existingFiles.find(file =>
+          String(file.AttachDocumentSid) === String(selectAttachDocumentSid)
+        ) || this.existingFiles[0];
+        this.selectFile(fileToSelect);
+      } else if (this.existingFiles.length === 0) {
+        this.addNewEdoc();
       }
     },
     (error) => {
       console.error('❌ Error loading Edoc data:', error);
+      const message = error?.error?.message || error?.message || '';
+      if (
+        message.includes('Folder not found') ||
+        message.includes('Document group not found') ||
+        message.includes('No attached files')
+      ) {
+        this.existingFiles = [];
+        this.existingGroup = null;
+        this.existingFollowups = [];
+        this.addNewEdoc();
+        return;
+      }
       this.appSettingService.showError('Failed to load document data');
     }
   );
@@ -452,6 +587,7 @@ loadEdocData() {
     this.previewFileType = type;
 
     // Reset previous content
+    this.selectedFileUrl = '';
     this.excelData = [];
     this.excelSheets = [];
     this.wordHtmlContent = '';
@@ -623,13 +759,19 @@ loadEdocData() {
 
   // Switch between multiple files
   selectFile(file: any) {
+    this.isAddMode = false;
     this.selectedFile = file;
     this.attachDocumentSid = file.AttachDocumentSid;
     this.existingFileName = file.FileName;
     this.loadFilePreview(file);
+    this.patchFormData(file, this.existingGroup, this.findFollowupForFile(file));
+  }
 
-    // Optionally update form with selected file's data
-    // this.patchFormData(file, null);
+  private findFollowupForFile(file: any): any {
+    return this.existingFollowups.find((followup) =>
+      followup.AttachDocmentNo === file.AttachDocmentNo ||
+      followup.FileName === file.FileName
+    );
   }
 
   // Download file
@@ -693,7 +835,7 @@ loadEdocData() {
     const fileNameOnly = fullFileName.substring(0, fullFileName.lastIndexOf('.')) || fullFileName;
     const extension = fullFileName.split('.').pop()?.toLowerCase();
 
-    if (this.existingFiles.length === 0) {
+    if (this.isAddMode || !this.selectedFile || this.existingFiles.length === 0) {
       this.edocform.patchValue({
         FileName: fileNameOnly,
         Documenttype: extension
@@ -722,6 +864,14 @@ loadEdocData() {
         (res) => {
           if (res.status) {
             this.existingFiles.splice(index, 1);
+            if (this.selectedFile?.AttachDocumentSid === file.AttachDocumentSid) {
+              this.selectedFile = null;
+              this.attachDocumentSid = null;
+              this.selectedFileUrl = '';
+              this.previewFileType = null;
+              this.isAddMode = false;
+              this.loadEdocData();
+            }
             this.appSettingService.showSuccess('File deleted successfully');
             console.log('✅ File deleted:', file.FileName);
           } else {
