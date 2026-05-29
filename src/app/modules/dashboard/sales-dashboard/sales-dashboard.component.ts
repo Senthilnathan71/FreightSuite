@@ -15,6 +15,7 @@ import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adap
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
 import { CustomDatePipe } from 'src/app/core/pipes/custom-date-format.pipe';
+import { DashboardFollowupCardComponent } from '../components/dashboard-followup-card/dashboard-followup-card.component';
 import {
   BucketedPagedResult,
   CustomerNoQuote,
@@ -74,6 +75,7 @@ interface FunnelRow {
     NgbDatepickerModule,
     CustomDatePipe,
     NgxSpinnerModule,
+    DashboardFollowupCardComponent,
   ],
   templateUrl: './sales-dashboard.component.html',
   styleUrls: ['./sales-dashboard.component.scss'],
@@ -133,8 +135,9 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
 
   kycWarning: { message: string; customerMasterSid: number; customerName: string; errorType: string | null } | null = null;
   kycWarning5: { message: string; customerMasterSid: number; customerName: string; errorType: string | null } | null = null;
+  followupConfirm: { open: boolean; item: MeetingWithFollowup | null } = { open: false, item: null };
 
-  searchTerms: Partial<Record<ListSection, string>> = {};
+searchTerms: Partial<Record<ListSection, string>> = {};
   sectionStates: Record<ListSection, SectionState<any>> = {
     1: this.createSectionState<LeadNoMeeting>(),
     3: this.createSectionState<MeetingWithFollowup>(),
@@ -178,15 +181,6 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
         { heading: '61+ Days', body: 'High-risk stale leads. Unlikely to convert without significant re-engagement. Consider archiving or escalating.' },
       ],
     },
-    'path-breakdown': {
-      title: 'Path Breakdown',
-      items: [
-        { heading: 'What it shows', body: 'How quotations and bookings flow through your pipeline — whether they originated from enquiries/quotations or were created directly.' },
-        { heading: 'Quotations: From Enquiry vs Direct', body: '"From Enquiry" quotations were created by converting a shipping enquiry. "Direct" quotations were raised without a prior enquiry.' },
-        { heading: 'Bookings: From Quotation vs Direct', body: '"From Quotation" bookings were converted from an approved quote. "Direct" bookings were created without a prior quotation.' },
-        { heading: 'Why it matters', body: 'A higher "from pipeline" percentage means your CRM stages are being followed correctly. High "direct" usage may indicate the workflow is being bypassed.' },
-      ],
-    },
     's1': {
       title: 'Section 1 — Leads Created, No Meeting Scheduled',
       items: [
@@ -206,7 +200,7 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
       ],
     },
     's3': {
-      title: 'Section 3 — Meetings with Follow-Up Pending',
+      title: 'Section 3 — Pending Followup Meeting',
       items: [
         { heading: 'What it shows', body: 'Meetings linked to your leads or customers that have a follow-up date set but the follow-up has not been completed.' },
         { heading: 'Overdue', body: 'The follow-up date has passed without action. High priority — act immediately to avoid losing the opportunity.' },
@@ -952,7 +946,28 @@ export class SalesDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  async navigateToCreateQuote(customer: CustomerNoQuote): Promise<void> {
+  openCompleteFollowupConfirm(item: MeetingWithFollowup): void {
+    this.followupConfirm = { open: true, item };
+  }
+
+  confirmCompleteFollowup(): void {
+    const item = this.followupConfirm.item;
+    if (!item) return;
+    this.followupConfirm.open = false;
+    this.salesDashboardService.completeMeetingFollowup(item.MeetingFollowupSid).subscribe((resp) => {
+      if (resp.status) {
+        this.sectionStates[3].items = this.sectionStates[3].items.filter(
+          (f) => f.MeetingFollowupSid !== item.MeetingFollowupSid,
+        );
+        this.appSettings.showSuccess('Followup marked as completed');
+      } else {
+        this.appSettings.showError('Failed to complete followup');
+      }
+      this.followupConfirm = { open: false, item: null };
+    });
+  }
+
+async navigateToCreateQuote(customer: CustomerNoQuote): Promise<void> {
     this.kycWarning5 = null;
     this.spinner.show();
     try {

@@ -415,6 +415,17 @@ $shadow-hover: 0 8px 25px rgba(5, 96, 141, 0.12);
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-bottom: 14px;
+
+  .chart-card {
+    display: flex;
+    flex-direction: column;
+
+    .funnel-bars {
+      flex: 1;
+      justify-content: space-evenly;
+      gap: 0;
+    }
+  }
 }
 
 .chart-card {
@@ -2146,3 +2157,4 @@ tr:hover .jm-lead-td { background: rgba($brand, 0.03); }
   color: $text-secondary;
   line-height: 1.55;
 }
+

@@ -1,0 +1,468 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Follow-Up Component — Design matching Claude Design handoff (Followups.html)
+   Bootstrap is still loaded globally; this file adds all the custom layer.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+:host {
+  /* Design tokens */
+  --brand:       #1c628f;
+  --brand-dark:  #185577;
+  --ink:         #243b53;
+  --ink-soft:    #4a5d75;
+  --muted:       #7a8a9c;
+  --line:        #d8dde3;
+  --line-soft:   #e6eaef;
+  --bg:          #f3f5f8;
+  --card:        #ffffff;
+  --danger:      #d92f3a;
+  --warn:        #c97a16;
+  --ok:          #2e7d4f;
+  --shadow:      0 1px 2px rgba(20,40,60,.06), 0 8px 24px -16px rgba(20,40,60,.18);
+  --r:           6px;
+  --r-sm:        4px;
+
+  display: block;
+  // Inherit the app's global Nunito Sans — no override needed
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+// ── Title bar ────────────────────────────────────────────────────────────────
+.fu-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--brand);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: var(--r) var(--r) 0 0;
+
+  &__left { display: flex; align-items: baseline; }
+
+  h1 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: .01em;
+    color: #fff;
+  }
+
+  &__meta {
+    font-size: 12px;
+    color: rgba(255,255,255,.78);
+    font-weight: 500;
+    margin-left: 14px;
+  }
+
+  &__actions { display: flex; gap: 8px; align-items: center; }
+}
+
+// ── Buttons ──────────────────────────────────────────────────────────────────
+.fu-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  font: 600 13px/1.4 inherit;
+  cursor: pointer;
+  user-select: none;
+  transition: background 120ms, border-color 120ms, color 120ms;
+
+  &:active { transform: translateY(1px); }
+  &:disabled { opacity: .55; cursor: not-allowed; pointer-events: none; }
+
+  &--sec {
+    background: rgba(255,255,255,.15);
+    color: #fff;
+    border-color: rgba(255,255,255,.35);
+    &:hover { background: rgba(255,255,255,.22); }
+  }
+
+  &--pri {
+    background: #fff;
+    color: var(--brand);
+    border-color: #fff;
+    font-weight: 700;
+    &:hover { background: #eef6fb; }
+  }
+
+  &--ghost {
+    background: transparent;
+    color: var(--ink-soft);
+    border-color: var(--line);
+    &:hover { background: #f6f8fa; color: var(--ink); }
+  }
+
+  &--danger {
+    background: transparent;
+    color: var(--danger);
+    border-color: transparent;
+    &:hover { background: #fdecee; }
+  }
+
+  &--add {
+    background: var(--brand);
+    color: #fff;
+    border-color: var(--brand);
+    &:hover { background: var(--brand-dark); }
+  }
+
+  &--save {
+    background: var(--brand);
+    color: #fff;
+    border-color: var(--brand);
+    &:hover { background: var(--brand-dark); }
+    &:disabled { background: #b9c5d1; border-color: #b9c5d1; opacity: 1; }
+  }
+
+  svg { flex-shrink: 0; }
+}
+
+// ── Shell (main card) ────────────────────────────────────────────────────────
+.fu-shell {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-top: none;
+  border-radius: 0 0 var(--r) var(--r);
+  box-shadow: var(--shadow);
+}
+
+// ── Toolbar ──────────────────────────────────────────────────────────────────
+.fu-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--line-soft);
+  background: #fafbfc;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  &__left  { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  &__right { display: flex; gap: 8px; align-items: center; }
+
+  &__count {
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+
+    strong { color: var(--ink); font-weight: 700; }
+  }
+
+  &__search {
+    position: relative;
+
+    input {
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+      padding: 6px 10px 6px 30px;
+      font: inherit;
+      font-size: 13px;
+      min-width: 220px;
+      background: #fff;
+      color: var(--ink);
+
+      &:focus {
+        outline: 2px solid rgba(28,98,143,.25);
+        outline-offset: -1px;
+        border-color: var(--brand);
+      }
+    }
+
+    .fu-toolbar__search-icon {
+      position: absolute;
+      left: 9px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+      display: flex;
+    }
+  }
+}
+
+// ── Filter chips ─────────────────────────────────────────────────────────────
+.fu-chips { display: flex; gap: 4px; }
+
+.fu-chip {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink-soft);
+  padding: 5px 10px;
+  border-radius: 999px;
+  font: 600 12px/1 inherit;
+  cursor: pointer;
+  transition: background 120ms, border-color 120ms, color 120ms;
+
+  &.active  { background: var(--brand); color: #fff; border-color: var(--brand); }
+  &:not(.active):hover { background: #f1f4f8; }
+
+  &__count {
+    font-weight: 400;
+    font-size: 11px;
+    opacity: .75;
+    margin-left: 3px;
+  }
+}
+
+// ── List ─────────────────────────────────────────────────────────────────────
+.fu-list {
+  padding: 14px 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+// ── Individual row card ───────────────────────────────────────────────────────
+.fu-card {
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: #fff;
+  transition: box-shadow 160ms, border-color 160ms;
+  overflow: hidden;
+
+  &--editing {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(28,98,143,.10);
+  }
+
+  &--new {
+    border-color: var(--brand);
+    border-style: dashed;
+    background: #f6fbff;
+
+    &.fu-card--editing {
+      background: #fff;
+      border-style: solid;
+    }
+  }
+
+  &--locked { opacity: .62; }
+}
+
+// ── Collapsed row header ──────────────────────────────────────────────────────
+.fu-row {
+  display: grid;
+  grid-template-columns: 88px 110px 1fr 130px 112px 36px;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: background 120ms;
+
+  &:hover { background: #f8fafc; }
+  .fu-card--editing &  { background: #f6fbff; cursor: default; }
+  .fu-card--locked &   { cursor: not-allowed; }
+
+  // Date column
+  &__date {
+    font-size: 13px;
+    color: var(--ink);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+
+    small {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+  }
+
+  // Action dot + label
+  &__action {
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--ink-soft);
+
+    &::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+    }
+
+    &[data-act="Internal"]::before { background: #5b8def; }
+    &[data-act="External"]::before { background: #e0a82e; }
+    &[data-act="Both"]::before     { background: #8e6dd2; }
+  }
+
+  // Subject + remarks preview
+  &__subject {
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 13.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    small {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 400;
+      margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  // User avatar + name
+  &__user {
+    color: var(--ink-soft);
+    font-size: 12.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+
+    .fu-avatar {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #e6eaef;
+      color: var(--ink-soft);
+      font-size: 10.5px;
+      font-weight: 700;
+      margin-right: 6px;
+      flex-shrink: 0;
+    }
+  }
+
+  // Status badge
+  &__badge {
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      white-space: nowrap;
+
+      &::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+
+      &.badge--active  { background: #e6f4ec; color: var(--ok);      &::before { background: var(--ok); } }
+      &.badge--done    { background: #eef2f7; color: var(--ink-soft); &::before { background: var(--muted); } }
+      &.badge--pending { background: #fff3e1; color: var(--warn);     &::before { background: var(--warn); } }
+    }
+  }
+
+  // Caret
+  &__caret {
+    color: var(--muted);
+    display: flex;
+    justify-content: flex-end;
+    transition: transform 200ms;
+
+    .fu-card--editing & {
+      color: var(--brand);
+      transform: rotate(180deg);
+    }
+  }
+}
+
+// ── App form-control sizing inside the expanded card ─────────────────────────
+:host ::ng-deep .card-body {
+  .input-group-sm .form-control {
+    font-size: 13px;
+    padding: 5px 8px;
+  }
+
+  .custom-input-field.sm {
+    font-size: 13px;
+  }
+}
+
+
+// ── Edit action bar ───────────────────────────────────────────────────────────
+.fu-edit-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-soft);
+  flex-wrap: wrap;
+  gap: 8px;
+
+  &__left {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  &__right { display: flex; gap: 8px; flex-wrap: wrap; }
+}
+
+.fu-dirty-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--warn);
+  display: inline-block;
+  box-shadow: 0 0 0 3px rgba(201,122,22,.18);
+  flex-shrink: 0;
+}
+
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+.fu-empty {
+  text-align: center;
+  padding: 40px 12px;
+  color: var(--muted);
+
+  &__title { font-size: 14px; font-weight: 600; color: var(--ink-soft); margin-bottom: 6px; }
+  &__sub   { font-size: 13px; }
+}
+
+// ── Footer hint ───────────────────────────────────────────────────────────────
+.fu-footer {
+  padding: 12px 18px;
+  border-top: 1px solid var(--line-soft);
+  color: var(--muted);
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fafbfc;
+  border-radius: 0 0 var(--r) var(--r);
+
+  .kbd {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    padding: 2px 6px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: #fff;
+    color: var(--ink-soft);
+  }
+}
+
+
+// ── NgbDatepicker panel z-index ───────────────────────────────────────────────
+:host ::ng-deep ngb-datepicker { z-index: 1060; }

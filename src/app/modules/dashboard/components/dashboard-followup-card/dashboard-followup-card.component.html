@@ -1,0 +1,82 @@
+<div class="followup-card">
+  <div class="followup-card__header">
+    <span class="followup-card__title"><i class="fas fa-tasks ct-icon"></i> Followups</span>
+    <div class="filter-select-wrap">
+      <i class="fas fa-filter filter-icon"></i>
+      <select class="filter-select" [(ngModel)]="statusFilter" (ngModelChange)="onStatusFilterChange($event)">
+        <option value="">All Status</option>
+        <option value="overdue">Overdue</option>
+        <option value="today">Due Today</option>
+        <option value="upcoming">Upcoming</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="followup-tabs">
+    <button class="followup-tab" [class.active]="tab === 'our'" (click)="switchTab('our')">Action Required</button>
+    <button class="followup-tab" [class.active]="tab === 'created'" (click)="switchTab('created')">Raised by Me</button>
+  </div>
+
+  <div class="table-scroll" (scroll)="onScroll($event)">
+    <table>
+      <thead>
+        <tr>
+          <th class="dofi-min-w-120">#</th>
+          <th>Menu</th>
+          <th>Document No</th>
+          <th>Subject</th>
+          <th>Followup Date</th>
+          <th *ngIf="tab === 'our'">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let f of items; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td><span class="source-tag">{{ f.menuName || '—' }}</span></td>
+          <td>
+            <a class="link" (click)="navigate(f)">{{ f.documentNo || '—' }}</a>
+          </td>
+          <td class="subject-cell" [title]="f.Subject">{{ f.Subject }}</td>
+          <td>
+            <span class="days-pill"
+              [ngClass]="f.followUpStatus === 'Overdue' ? 'danger' : f.followUpStatus === 'Due Today' ? 'warning' : 'ok'">
+              {{ f.followupDate | formatDate }}
+            </span>
+          </td>
+          <td *ngIf="tab === 'our'">
+            <button class="action-btn complete" (click)="openConfirm(f)">Complete</button>
+          </td>
+        </tr>
+        <tr *ngIf="!loading && items.length === 0">
+          <td [attr.colspan]="tab === 'our' ? 6 : 5" class="empty-state">No pending followups</td>
+        </tr>
+        <tr *ngIf="loading">
+          <td [attr.colspan]="tab === 'our' ? 6 : 5" class="loading-cell">Loading…</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="hasMore && !loading" class="load-more-row">
+    <button class="btn btn-sm btn-outline-secondary" (click)="load()">Load more</button>
+  </div>
+</div>
+
+<!-- Confirm Complete Modal -->
+<div class="route-modal-backdrop" *ngIf="confirmOpen" (click)="confirmOpen = false"></div>
+<div class="route-modal" *ngIf="confirmOpen" style="min-width: 320px; max-width: 400px;">
+  <div class="route-modal-header">
+    <span>Confirm Complete</span>
+    <button class="route-modal-close" (click)="confirmOpen = false">&times;</button>
+  </div>
+  <div class="route-modal-body" style="padding: 16px;">
+    <p class="mb-1">Mark this followup as completed?</p>
+    <p class="mb-0" style="font-size:0.8rem; color:#555;">
+      <strong>{{ confirmItem?.menuName }}</strong> — {{ confirmItem?.documentNo }}
+    </p>
+  </div>
+  <div class="route-modal-footer">
+    <button class="action-btn" (click)="confirmOpen = false">Cancel</button>
+    <button class="action-btn booking" (click)="confirm()">Yes, Complete</button>
+  </div>
+</div>

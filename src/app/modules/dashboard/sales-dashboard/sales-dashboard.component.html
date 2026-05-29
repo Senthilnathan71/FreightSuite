@@ -202,23 +202,7 @@
           </div>
 
         </div>
-        <div class="chart-card">
-          <div class="chart-title">
-            <i class="fas fa-chart-pie ct-icon"></i> Lead Acquisition Sources
-            <button class="card-info-btn" (click)="openNotes('lead-acquisition')" title="About this chart"><i class="fas fa-info-circle"></i></button>
-          </div>
-          <apx-chart
-            *ngIf="leadSourceDonutOptions.series?.length"
-            [series]="leadSourceDonutOptions.series"
-            [chart]="leadSourceDonutOptions.chart"
-            [labels]="leadSourceDonutOptions.labels"
-            [colors]="leadSourceDonutOptions.colors"
-            [legend]="leadSourceDonutOptions.legend"
-            [dataLabels]="leadSourceDonutOptions.dataLabels"
-            [plotOptions]="leadSourceDonutOptions.plotOptions"
-            [stroke]="leadSourceDonutOptions.stroke"
-          ></apx-chart>
-        </div>
+        <app-dashboard-followup-card></app-dashboard-followup-card>
       </div>
 
       <div class="insights-row">
@@ -362,150 +346,20 @@
 
         <div class="chart-card">
           <div class="chart-title">
-            <i class="fas fa-project-diagram ct-icon"></i> Path Breakdown
-            <button class="card-info-btn" (click)="openNotes('path-breakdown')" title="About this chart"><i class="fas fa-info-circle"></i></button>
+            <i class="fas fa-chart-pie ct-icon"></i> Lead Acquisition Sources
+            <button class="card-info-btn" (click)="openNotes('lead-acquisition')" title="About this chart"><i class="fas fa-info-circle"></i></button>
           </div>
-          <div
-            class="pipeline-shell"
-            *ngIf="
-              dashboardCounts.summaryKpis.quotes.totalQuotes > 0 ||
-                dashboardCounts.summaryKpis.bookings.totalBookings > 0;
-              else noPipelineData
-            "
-          >
-            <div class="pipeline-kpi-grid">
-              <div class="pipeline-kpi-card">
-                <div class="pipeline-kpi-head">
-                  <div>
-                    <div class="pipeline-label">Quotations</div>
-                    <div class="pipeline-meta text-black fs-2">
-                      {{ dashboardCounts.summaryKpis.quotes.totalQuotes }} Total
-                    </div>
-                  </div>
-                  <div class="pipeline-badge">
-                    {{
-                      getPipelinePct(
-                        dashboardCounts.summaryKpis.quotes.quotesFromEnquiry,
-                        dashboardCounts.summaryKpis.quotes.totalQuotes
-                      )
-                    }}%
-                  </div>
-                </div>
-                <div class="pipeline-track">
-                  <div
-                    class="pipeline-fill fill-pipeline"
-                    [style.width.%]="
-                      getPipelinePct(
-                        dashboardCounts.summaryKpis.quotes.quotesFromEnquiry,
-                        dashboardCounts.summaryKpis.quotes.totalQuotes
-                      )
-                    "
-                  ></div>
-                  <div
-                    class="pipeline-fill fill-direct"
-                    [style.width.%]="
-                      getPipelinePct(
-                        dashboardCounts.summaryKpis.quotes.directQuotes,
-                        dashboardCounts.summaryKpis.quotes.totalQuotes
-                      )
-                    "
-                  ></div>
-                </div>
-                <div class="pipeline-split">
-                  <div class="pipeline-split-item">
-                    <span class="legend-dot dot-pipeline"></span>
-                    <span class="pipeline-split-label">From Enquiry</span>
-                    <strong>{{
-                      dashboardCounts.summaryKpis.quotes.quotesFromEnquiry
-                    }}</strong>
-                  </div>
-                  <div class="pipeline-split-item">
-                    <span class="legend-dot dot-direct"></span>
-                    <span class="pipeline-split-label">Direct</span>
-                    <strong>{{
-                      dashboardCounts.summaryKpis.quotes.directQuotes
-                    }}</strong>
-                  </div>
-                </div>
-                <div class="pipeline-insight">
-                  {{ dashboardCounts.summaryKpis.quotes.quotesFromEnquiry }} of
-                  {{ dashboardCounts.summaryKpis.quotes.totalQuotes }}
-                  quotations came from enquiries
-                </div>
-              </div>
-
-              <div class="pipeline-kpi-card">
-                <div class="pipeline-kpi-head">
-                  <div>
-                    <div class="pipeline-label">Bookings</div>
-                    <div class="pipeline-meta text-black fs-2">
-                      {{
-                        dashboardCounts.summaryKpis.bookings.totalBookings
-                      }}
-                      Total
-                    </div>
-                  </div>
-                  <div class="pipeline-badge">
-                    {{
-                      getPipelinePct(
-                        dashboardCounts.summaryKpis.bookings.bookingsFromQuote,
-                        dashboardCounts.summaryKpis.bookings.totalBookings
-                      )
-                    }}%
-                  </div>
-                </div>
-                <div class="pipeline-track">
-                  <div
-                    class="pipeline-fill fill-pipeline"
-                    [style.width.%]="
-                      getPipelinePct(
-                        dashboardCounts.summaryKpis.bookings.bookingsFromQuote,
-                        dashboardCounts.summaryKpis.bookings.totalBookings
-                      )
-                    "
-                  ></div>
-                  <div
-                    class="pipeline-fill fill-direct"
-                    [style.width.%]="
-                      getPipelinePct(
-                        dashboardCounts.summaryKpis.bookings.directBookings,
-                        dashboardCounts.summaryKpis.bookings.totalBookings
-                      )
-                    "
-                  ></div>
-                </div>
-                <div class="pipeline-split">
-                  <div class="pipeline-split-item">
-                    <span class="legend-dot dot-pipeline"></span>
-                    <span class="pipeline-split-label">From Quotation</span>
-                    <strong>{{
-                      dashboardCounts.summaryKpis.bookings.bookingsFromQuote
-                    }}</strong>
-                  </div>
-                  <div class="pipeline-split-item">
-                    <span class="legend-dot dot-direct"></span>
-                    <span class="pipeline-split-label">Direct</span>
-                    <strong>{{
-                      dashboardCounts.summaryKpis.bookings.directBookings
-                    }}</strong>
-                  </div>
-                </div>
-                <div class="pipeline-insight">
-                  {{
-                    dashboardCounts.summaryKpis.bookings.bookingsFromQuote
-                  }}
-                  of
-                  {{ dashboardCounts.summaryKpis.bookings.totalBookings }}
-                  bookings came from quotations
-                </div>
-              </div>
-            </div>
-          </div>
-          <ng-template #noPipelineData>
-            <div class="pipeline-shell pipeline-shell-empty">
-              <div class="empty-chart">No quotation or booking data</div>
-            </div>
-          </ng-template>
+          <apx-chart
+            *ngIf="leadSourceDonutOptions.series?.length"
+            [series]="leadSourceDonutOptions.series"
+            [chart]="leadSourceDonutOptions.chart"
+            [labels]="leadSourceDonutOptions.labels"
+            [colors]="leadSourceDonutOptions.colors"
+            [legend]="leadSourceDonutOptions.legend"
+            [dataLabels]="leadSourceDonutOptions.dataLabels"
+            [plotOptions]="leadSourceDonutOptions.plotOptions"
+            [stroke]="leadSourceDonutOptions.stroke"
+          ></apx-chart>
         </div>
       </div>
 
@@ -831,7 +685,7 @@
           <div class="section-header-left">
             <div class="section-number sn-3">3</div>
             <div class="section-title">
-              <i class="fas fa-bell si"></i> Meetings with Follow-Up Pending
+              <i class="fas fa-bell si"></i> Pending Followup Meeting
             </div>
             <div class="section-count sc-purple">
               {{ dashboardCounts.counts.followUpsPending }}
@@ -913,7 +767,7 @@
                   <td>
                     <button
                       class="action-btn complete"
-                      (click)="navigateToMeetingUpdate(followUp.PreCustomerMeetingSid)"
+                      (click)="openCompleteFollowupConfirm(followUp)"
                     >
                       Complete
                     </button>
@@ -1893,6 +1747,22 @@
 </div>
 
 <!-- Route Selection Modal -->
+<div class="route-modal-backdrop" *ngIf="followupConfirm.open" (click)="followupConfirm.open = false"></div>
+<div class="route-modal" *ngIf="followupConfirm.open" style="min-width: 320px; max-width: 400px;">
+  <div class="route-modal-header">
+    <span>Confirm Complete</span>
+    <button class="route-modal-close" (click)="followupConfirm.open = false">&times;</button>
+  </div>
+  <div class="route-modal-body" style="padding: 16px;">
+    <p class="mb-0">Are you sure you want to mark this followup as completed?</p>
+  </div>
+  <div class="route-modal-footer">
+    <button class="action-btn" (click)="followupConfirm.open = false">Cancel</button>
+    <button class="action-btn booking" (click)="confirmCompleteFollowup()">Yes, Complete</button>
+  </div>
+</div>
+
+
 <div class="route-modal-backdrop" *ngIf="routeSelectionModal.open" (click)="routeSelectionModal.open = false"></div>
 <div class="route-modal" *ngIf="routeSelectionModal.open">
   <div class="route-modal-header">

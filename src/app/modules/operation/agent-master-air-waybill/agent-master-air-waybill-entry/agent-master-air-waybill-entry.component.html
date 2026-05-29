@@ -2783,7 +2783,7 @@
 
         <div class="workspace-content" *ngIf="selectedTab === 'Follow Up'">
           <app-follow-up screenName="houseJob" [documentSid]="documentSid" [parentMailbodyTemplate]="parentMailbody"
-            [parentSubject]="parentSubject"></app-follow-up>
+            [parentSubject]="parentSubject" [menuMasterSid]="currentMenuId"></app-follow-up>
         </div>
 
         <!-- <div class="workspace-content" [hidden]="selectedTab !== 'BOE'">

@@ -146,14 +146,11 @@
       </section>
 
       <section class="row">
-        <section class="col-md-7">
+        <section class="col-md-6">
           <app-sm-trend-chart [data]="weeklyTrend"></app-sm-trend-chart>
         </section>
-        <section class="col-md-5">
-          <app-sm-top-performers 
-          [scoreboard]="scoreboard"
-          (performerClicked)="onScoreboardRowClicked($event)"
-          ></app-sm-top-performers>
+        <section class="col-md-6">
+          <app-dashboard-followup-card></app-dashboard-followup-card>
         </section>
       </section>
 
@@ -172,6 +169,13 @@
           (rowClicked)="onScoreboardRowClicked($event)"
           (remindClicked)="onScoreboardRemindClicked($event)">
         </app-sm-scoreboard>
+      </section>
+
+      <section class="dashboard-section">
+        <app-sm-top-performers
+          [scoreboard]="scoreboard"
+          (performerClicked)="onScoreboardRowClicked($event)">
+        </app-sm-top-performers>
       </section>
 
       <ng-container *ngIf="!liteMode">

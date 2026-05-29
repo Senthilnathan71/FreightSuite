@@ -1858,6 +1858,7 @@ openDocRef() {
      if (!this.serviceJobData) return;
      const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
      modalRef.componentInstance.documentSid = this.serviceJobData?.QuoteHeaderSid;
+     modalRef.componentInstance.menuMasterSid = this.MenuMasterSid;
      modalRef.componentInstance.parentEmail = this.serviceJobData.Email;
      modalRef.componentInstance.parentSubject = `Quotation No.${this.serviceJobData.QuoteNumber} Date:${new Date(this.serviceJobData.QuoteDate).toLocaleDateString()}`;
      modalRef.componentInstance.parentMailbody = `

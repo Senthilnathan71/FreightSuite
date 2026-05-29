@@ -3534,6 +3534,7 @@ if (this.isTermsAndConditionsEnabled) {
     if (!this.enquiryData) return;
     const modalRef = this.ngbModal.open(FollowUpComponent, { size: 'lg', centered: true, backdrop: 'static' });
     modalRef.componentInstance.documentSid = this.enquiryData?.EnquiryHeaderSid;
+    modalRef.componentInstance.menuMasterSid = this.MenuMasterSid;
     modalRef.componentInstance.parentSubject = `__SUBJECT__ for Enquiry No."${this.enquiryData.EnquiryNumber}"`;
     modalRef.componentInstance.parentMailbodyTemplate = `
     <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; color: #333;">
