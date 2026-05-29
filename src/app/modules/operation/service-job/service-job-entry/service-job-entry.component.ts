@@ -173,6 +173,8 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
   filteredPOL: any[] = [];
   filteredPOD: any[] = [];
   filteredFPOD: any[] = [];
+  headerVesselList: any[] = [];
+  voyageList: any[] = [];
   private lastPortFilterPayloadKey = '';
   TandCList: any[] = [];
   currencyList : any[] = [];
@@ -265,6 +267,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
   departmentLookupConfig = DROPDOWN_CONFIGS.DEPARTMENT;
   customerLookupConfig = DROPDOWN_CONFIGS.CUSTOMER;
   portLookupConfig = DROPDOWN_CONFIGS.PORT;
+  vesselVoyageLookupConfig = DROPDOWN_CONFIGS.VESSEL_VOYAGE;
 
 
   /**
@@ -431,6 +434,8 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
       ConsigneeAddress: [null],
       isShipperFreeText: [false],
       isConsigneeFreeText: [false],
+      isVesselFreeText: [false],
+      isVoyageFreeText: [false],
       ShipmentNo : [],
       MasterJobNumber : [{ value: '', disabled: true }],
       HBLNo: [{value: '', disabled: true}],
@@ -446,7 +451,12 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
       POO: [null],
       POL: [""],
       POD: [""],
-      FPD: [null]
+      FPD: [null],
+      VoyageMasterSid: [null],
+      VesselName: [''],
+      VoyageNo: [''],
+      ETD: [null],
+      ETA: [null]
     })
     this.serviceJobForm.valueChanges.subscribe(() => {
       this.syncFormValueWithRateComponent();
@@ -587,6 +597,8 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
       ConsigneeAddress: response.ConsigneeAddress,
       isShipperFreeText: !!response.ShipperName && !this.existsInList(this.shipperList, response.ShipperName),
       isConsigneeFreeText: !!response.ConsigneeName && !this.existsInList(this.consigneeList, response.ConsigneeName),
+      isVesselFreeText: !!response.VesselName && !this.existsInList(this.headerVesselList, response.VesselName, 'VesselName'),
+      isVoyageFreeText: !!response.VoyageNo && !this.existsInList(this.voyageList, response.VoyageNo, 'VoyageNo'),
       MasterJobNumber : response.masterJob?.MasterJobNumber || "",
       HBLNo: response.HBLNo,
       JobType: response.JobType,
@@ -598,6 +610,11 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
       POL: response.POL,
       POD: response.POD,
       FPD: response.FPD,
+      VoyageMasterSid: response.VoyageMasterSid || response.masterJob?.voyages?.[0]?.VoyageMasterSid || null,
+      VesselName: response.VesselName || response.masterJob?.voyages?.[0]?.VesselName || '',
+      VoyageNo: response.VoyageNo || response.masterJob?.voyages?.[0]?.VoyageNo || '',
+      ETD: response.ETD ? new Date(response.ETD) : null,
+      ETA: response.ETA ? new Date(response.ETA) : null,
       BookingStatus: response.BookingStatus,
       ShipmentNo: response.ShipmentNo
     })
@@ -763,12 +780,16 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
       POL: serviceFormValue.POL || "",
       POD: serviceFormValue.POD || "",
       FPD: serviceFormValue.FPD || "",
+      VesselName: serviceFormValue.VesselName || "",
+      VoyageNo: serviceFormValue.VoyageNo || "",
       HBLNo: serviceFormValue.HBLNo,
       JobType: serviceFormValue.JobType,
       MBLNo: serviceFormValue.MBLNo,
       MBLDate: serviceFormValue.MBLDate ? new Date(serviceFormValue.MBLDate) : null,
       HBLDate: serviceFormValue.MBLDate ? new Date(serviceFormValue.MBLDate) : null,
       MasterJobDate: serviceFormValue.MBLDate ? new Date(serviceFormValue.MasterJobDate) : null,
+      ETD: serviceFormValue.ETD ? new Date(serviceFormValue.ETD) : null,
+      ETA: serviceFormValue.ETA ? new Date(serviceFormValue.ETA) : null,
       CustomerMasterSid: serviceFormValue.CustomerMasterSid,
       CustomerBranchSid: serviceFormValue.CustomerBranchSid || null,
       CustomerName: serviceFormValue.CustomerName,
@@ -981,6 +1002,7 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
     this.b['POL']?.setValue(null);
     this.b['POD']?.setValue(null);
     this.b['FPD']?.setValue(null);
+    this.clearVesselAndVoyageData();
   }
 
   autoSetJobType(department: any): void {
@@ -1024,6 +1046,17 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
       this.clearControlError(this.b['POD'], 'samePort');
       this.clearControlError(this.b['POL'], 'samePort');
     }
+    this.triggerVesselSearch();
+  }
+
+  private clearVesselAndVoyageData(): void {
+    this.b['VoyageMasterSid']?.setValue(null);
+    this.b['VesselName']?.setValue('');
+    this.b['VoyageNo']?.setValue('');
+    this.b['ETD']?.setValue(null);
+    this.b['ETA']?.setValue(null);
+    this.headerVesselList = [];
+    this.voyageList = [];
   }
 
   private refreshPortFilters(): void {
@@ -1206,6 +1239,142 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
     this.onRouteChange();
   }
 
+  private getPortSidByCode(portCode: any): number | null {
+    if (!portCode) return null;
+    const port = this.portList.find(p => String(p.PortCode).trim() === String(portCode).trim());
+    return port?.PortMasterSid || null;
+  }
+
+  private getVoyageTypeBasedOnDept(): string {
+    const deptType = this.normalizePortText(this.selectedDepartment?.departmentType || this.selectedDepartmentType);
+    switch (deptType) {
+      case 'SEA':
+        return 'Sea';
+      case 'AIR':
+        return 'Air';
+      case 'ROAD':
+      case 'TRANSPORT':
+        return 'Road';
+      case 'OTHER':
+      case 'OTHERS':
+        return 'Others';
+      default:
+        return '';
+    }
+  }
+
+  private triggerVesselSearch(): void {
+    if (this.b['isVesselFreeText']?.value || this.b['isVoyageFreeText']?.value) {
+      return;
+    }
+
+    const polSid = this.getPortSidByCode(this.b['POL']?.value);
+    const podSid = this.getPortSidByCode(this.b['POD']?.value);
+    const segment = this.getVoyageTypeBasedOnDept();
+    if (!polSid || !podSid || !segment) {
+      this.headerVesselList = [];
+      this.voyageList = [];
+      return;
+    }
+
+    this.operationService.getVesselVoyageBasedOnPorts({ POL: polSid, POD: podSid, segment }).subscribe({
+      next: (resp: any) => {
+        if (resp.status) {
+          this.headerVesselList = (resp.data || []).map((vslVoy: any) => ({
+            ...vslVoy,
+            ETD: this.datePipe.transform(vslVoy.ETD),
+            ETA: this.datePipe.transform(vslVoy.ETA),
+            originalETD: vslVoy.ETD,
+            originalETA: vslVoy.ETA
+          }));
+        }
+      },
+      error: () => {
+        this.headerVesselList = [];
+      }
+    });
+  }
+
+  onVesselChange(vessel: any): void {
+    if (!vessel) {
+      this.voyageList = [];
+      this.b['VoyageMasterSid']?.setValue(null);
+      this.b['VoyageNo']?.setValue('');
+      this.b['ETD']?.setValue(null);
+      this.b['ETA']?.setValue(null);
+      return;
+    }
+
+    this.b['VesselName']?.setValue(vessel.VesselName);
+    this.getVoyageForPortsAndVessels(vessel.VesselName);
+    if (vessel.VoyageNo) {
+      this.onVoyageChange(vessel);
+    }
+  }
+
+  getVoyageForPortsAndVessels(vesselName?: string): void {
+    const polSid = this.getPortSidByCode(this.b['POL']?.value);
+    const podSid = this.getPortSidByCode(this.b['POD']?.value);
+    const vessel = vesselName || this.b['VesselName']?.value;
+    if (!polSid || !podSid || !vessel) {
+      return;
+    }
+
+    this.operationService.getVoyagesBasedOnVesselAndPort({
+      VesselName: vessel,
+      POL: polSid,
+      POD: podSid,
+      MovementType: this.selectedDepartment?.departmentType
+    }).subscribe({
+      next: (resp: any) => {
+        if (resp.status) {
+          this.voyageList = (resp.data || []).map((voyage: any) => ({
+            VoyageNo: voyage.VoyageNo,
+            ETD: voyage.ETD ? new Date(voyage.ETD) : null,
+            ETA: voyage.ETA ? new Date(voyage.ETA) : null,
+            VoyageMasterHeaderSid: voyage.VoyageMasterSid,
+            VesselName: voyage.VesselName
+          }));
+
+          const currentVoyageNo = this.b['VoyageNo']?.value;
+          const existingVoyage = currentVoyageNo
+            ? this.voyageList.find(v => v.VoyageNo === currentVoyageNo)
+            : null;
+          if (existingVoyage) {
+            this.onVoyageChange(existingVoyage);
+          } else if (!this.isEditMode && this.voyageList.length === 1) {
+            this.onVoyageChange(this.voyageList[0]);
+          }
+        }
+      },
+      error: () => {
+        this.voyageList = [];
+      }
+    });
+  }
+
+  onVoyageChange(voyage: any): void {
+    if (!voyage) {
+      this.b['VoyageMasterSid']?.setValue(null);
+      this.b['ETD']?.setValue(null);
+      this.b['ETA']?.setValue(null);
+      return;
+    }
+
+    this.serviceJobForm.patchValue({
+      VoyageMasterSid: voyage.VoyageMasterHeaderSid || voyage.VoyageMasterSid || null,
+      VesselName: voyage.VesselName || this.b['VesselName']?.value,
+      VoyageNo: voyage.VoyageNo || ''
+    });
+
+    if (voyage.ETD || voyage.originalETD) {
+      this.b['ETD']?.setValue(new Date(voyage.originalETD || voyage.ETD));
+    }
+    if (voyage.ETA || voyage.originalETA) {
+      this.b['ETA']?.setValue(new Date(voyage.originalETA || voyage.ETA));
+    }
+  }
+
   handleFPODChange(selectedPort: any) {
     if (!selectedPort) {
       return;
@@ -1251,6 +1420,14 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
     const value = this.b[flagCtrl]?.value;
     this.b[flagCtrl]?.setValue(!value);
     this.b[mainCtrl]?.reset();
+    if (mainCtrl === 'VesselName') {
+      this.b['VoyageMasterSid']?.setValue(null);
+      this.b['VoyageNo']?.setValue('');
+      this.voyageList = [];
+    }
+    if (mainCtrl === 'VoyageNo') {
+      this.b['VoyageMasterSid']?.setValue(null);
+    }
   }
 
   setAddress(controlName: string, item: any) {
@@ -1488,8 +1665,11 @@ export class ServiceJobEntryComponent implements OnInit, OnDestroy, HasUnsavedCh
       this.serviceJobForm.reset({
         status : 'Active',
         isShipperFreeText: false,
-        isConsigneeFreeText: false
+        isConsigneeFreeText: false,
+        isVesselFreeText: false,
+        isVoyageFreeText: false
       });
+      this.clearVesselAndVoyageData();
       this.selectedCustomer = null;
       this.selectedCustomerBranch = null;
       this.customerBranchList = [];
@@ -1881,9 +2061,9 @@ openDocRef() {
     this.destroy$.complete();
   }
 
-  existsInList(list: any[], value: any) {
+  existsInList(list: any[], value: any, field: string = 'CustomerName') {
     if (list) {
-      return list.some(item => item.CustomerName === value);
+      return list.some(item => item?.[field] === value);
     }
     return null;
   }

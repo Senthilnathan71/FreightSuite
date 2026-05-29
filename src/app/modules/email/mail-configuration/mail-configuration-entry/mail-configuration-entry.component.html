@@ -9,13 +9,11 @@
 
 <div class="row compact-form">
   <div class="col-12">
-    <div class="">
-      <!-- Page Header -->
-      <div class="row bg-white mb-2 align-items-center rounded shadow-sm mx-1 border" style="border-color: #e9ecef;">
-        <div class="d-flex justify-content-between align-items-center py-1">
+    <div class="mail-config-page">
+      <div class="row page-header mb-2 align-items-center mx-1">
+        <div class="d-flex justify-content-between align-items-center py-2 flex-wrap gap-2 w-100">
           <div class="d-flex align-items-center gap-2">
-            <span class="rounded-circle d-inline-flex align-items-center justify-content-center bg-info text-white"
-              style="width: 28px; height: 28px;">
+            <span class="header-icon">
               <i class="fas fa-envelope-open-text"></i>
             </span>
             <div>
@@ -24,7 +22,7 @@
             </div>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <button type="button" class="btn btn-sm btn-info me-2" (click)="addRow()">
+            <button type="button" class="btn btn-sm btn-info  me-2" (click)="addRow()">
               <i class="fas fa-plus me-1"></i> Add New
             </button>
             <button type="button" class="btn btn-sm btn-secondary" (click)="navigateBack()">
@@ -34,58 +32,52 @@
         </div>
       </div>
 
-      <!-- Card Grid -->
-      <div class="row mx-1 g-2">
-        @for (row of rows; track row.Sno; let i = $index) {
-          <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
-            <div class="card mail-config-card h-100 shadow-sm border-0 position-relative"
+      <div class="row mx-1 g-3">
+        @for (row of companyFilteredRows; track row.Sno; let i = $index) {
+          <div class="col-xl-3 col-lg-3 col-md-6 mb-1">
+            <div class="card mail-config-card h-100 border-0 position-relative"
               [class.card-active]="editingIndex === i"
               [class.card-inactive]="row.Status === 'I' && editingIndex !== i">
 
-              <!-- Card Header -->
-              <div class="card-header py-2 px-3 d-flex justify-content-between align-items-center border-0"
-                style="background: linear-gradient(135deg, #f8f9fa 0%, #eef7ff 100%);">
+              <div class="card-header mail-card-header d-flex justify-content-between align-items-center border-0">
                 <div class="d-flex align-items-center gap-2 text-black">
-                  <span class="rounded-circle"
+                  <span class="status-dot"
                     [class.bg-success]="row.Status === 'A'"
-                    [class.bg-secondary]="row.Status !== 'A'"
-                    style="width: 8px; height: 8px; display: inline-block;"></span>
-                  <span class="fw-semibold text-truncate" style="font-size: 0.85rem;">{{ row.MailName || 'Untitled' }}</span>
+                    [class.bg-secondary]="row.Status !== 'A'"></span>
+                  <span class="fw-semibold text-truncate">{{ row.MailName || 'Untitled' }}</span>
                 </div>
-                <span class="badge rounded-pill"
+                <span class="badge rounded-pill status-badge"
                   [class.bg-success]="row.Status === 'A'"
-                  [class.bg-secondary]="row.Status !== 'A'"
-                  style="font-size: 0.7rem;">
+                  [class.bg-secondary]="row.Status !== 'A'">
                   {{ getStatusLabel(row.Status) }}
                 </span>
               </div>
 
-              <!-- Card Body -->
-              <div class="card-body py-2 px-3" style="font-size: 0.8rem;">
-                <div class="d-flex align-items-center text-muted mb-1">
-                  <span class="badge bg-light text-dark border me-2" style="font-size: 0.65rem;">Menu</span>
+              <div class="card-body mail-card-body">
+                <!-- <div class="d-flex align-items-center text-muted mb-1 mail-card-meta">
+                  <span class="badge bg-light text-dark me-2 menu-chip">Menu</span>
                   <span class="text-truncate">
-                    <i class="fas fa-list-alt me-1"></i>{{ getMenuName(row.MenuMasterSid) || '—' }}
+                    <i class="fas fa-list-alt me-1"></i>{{ getMenuName(row.MenuMasterSid) || '-' }}
                   </span>
-                </div>
-                <div class="d-flex flex-wrap gap-1 mb-1">
-                  <span class="badge bg-light text-dark border me-1" style="font-size: 0.7rem;">
+                </div> -->
+                <div class="d-flex flex-wrap gap-1 mb-1 mail-card-tags">
+                  <span class="badge bg-light text-dark me-1">
                     {{ getTriggerLabel(row.Trigger) }}
                   </span>
                   @if (row.Trigger === 'M' && row.AutoPopup === 'P') {
-                    <span class="badge bg-warning text-dark border" style="font-size: 0.7rem;">Popup</span>
+                    <span class="badge bg-warning text-dark">Popup</span>
                   }
                   @if (row.Trigger === 'M' && row.AutoPopup === 'A') {
-                    <span class="badge bg-info text-white border" style="font-size: 0.7rem;">Auto Send</span>
+                    <span class="badge bg-info text-white">Auto Send</span>
                   }
                   @if (row.AttachmentRequire === 'Y') {
-                    <span class="badge bg-light text-dark border ms-1" style="font-size: 0.7rem;">
+                    <span class="badge bg-light text-dark ms-1">
                       <i class="fas fa-paperclip me-1"></i>Attachment
                     </span>
                   }
                 </div>
                 @if (row.MailSubject) {
-                  <div class="text-truncate text-muted mt-1 d-flex align-items-center gap-1" style="font-size: 0.75rem;"
+                  <div class="text-truncate text-muted mt-1 d-flex align-items-center gap-1 mail-card-subject"
                     title="{{ row.MailSubject }}">
                     <i class="fas fa-envelope"></i>
                     <span class="fw-semibold">Subject:</span>
@@ -94,36 +86,32 @@
                 }
               </div>
 
-              <!-- Card Footer -->
-              <div class="card-footer bg-transparent py-1 px-3 d-flex justify-content-end gap-1 border-0">
-                <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" (click)="editRow(i)" title="Edit"
-                  style="font-size: 0.75rem;">
-                  <i class="fas fa-edit me-1"></i>Edit
+              <div class="card-footer mail-card-footer bg-transparent d-flex justify-content-end gap-2 border-0">
+                <button type="button" class="btn btn-sm btn-danger py-0 px-2" (click)="deleteFilteredRow(row)" title="Delete">
+                  <i class="fas fa-trash me-1 fs-1"></i>Delete
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" (click)="deleteRow(i)" title="Delete"
-                  style="font-size: 0.75rem;">
-                  <i class="fas fa-trash me-1"></i>Delete
+                 <button type="button" class="btn btn-sm btn-info py-0 px-2" (click)="editFilteredRow(row)" title="Edit">
+                  <i class="fas fa-edit me-1 fs-1"></i>Edit
                 </button>
               </div>
             </div>
           </div>
         }
 
-        @if (rows.length === 0) {
-          <div class="col-12 text-center text-muted py-4">
-            No mail configurations found. Click "Add New" to create one.
+        @if (companyFilteredRows.length === 0) {
+          <div class="col-12">
+            <div class="empty-state text-center text-muted py-4">
+              No mail configurations found. Click "Add New" to create one.
+            </div>
           </div>
         }
       </div>
 
-      <!-- Detail Form -->
       @if (editingRow) {
-        <div class="card detail-form-card mx-1 mt-2 mb-3 shadow-sm border-0"
-          style="border-top: 3px solid #0dcaf0;" #detailFormSection>
-          <div class="card-header py-2 px-3 d-flex justify-content-between align-items-center bg-info bg-opacity-10 border-0">
+        <div class="card detail-form-card detail-form-shell mx-1 mt-2 mb-3 shadow-sm border-0" #detailFormSection>
+          <div class="card-header detail-form-head py-2 px-3 d-flex justify-content-between align-items-center bg-info bg-opacity-10 border-0">
             <div class="d-flex align-items-center gap-2">
-              <span class="rounded-circle d-inline-flex align-items-center justify-content-center bg-info text-white"
-                style="width: 28px; height: 28px;">
+              <span class="header-icon detail-icon">
                 <i class="fas fa-edit"></i>
               </span>
               <h6 class="mb-0">
@@ -131,37 +119,37 @@
               </h6>
             </div>
             <div class="d-flex gap-2">
-              <button type="button" class="btn btn-sm btn-secondary" (click)="cancelEdit(editingIndex!)">
+              <button type="button" class="btn btn-sm btn-secondary btn-pill" (click)="cancelEdit(editingIndex!)">
                 <i class="fas fa-times me-1"></i> Cancel
               </button>
-              <button type="button" class="btn btn-sm btn-outline-light" (click)="saveRow(editingIndex!)">
+              <button type="button" class="btn btn-sm btn-info btn-pill text-white" (click)="saveRow(editingIndex!)">
                 <i class="fas fa-save me-1"></i> Save
               </button>
             </div>
           </div>
 
-          <div class="card-body px-3 py-3">
-            <!-- Section 1: Basic Info -->
-            <div class="section-heading mb-2 d-flex align-items-center gap-2">
+          <div class="card-body detail-form-body px-3 py-3">
+            <div class="section-pane">
+            <div class="section-heading d-flex align-items-center gap-2">
               <span class="badge bg-info text-white">1</span>
               <span>Basic Information</span>
             </div>
-            <div class="row mb-3">
-              <div class="col-md-2">
+            <div class="row">
+              <div class="col-md-1">
                 <div class="custom-form-group">
                   <input type="number" class="custom-input-field sm"
-                    [(ngModel)]="editingRow.Sno" min="1" max="999" placeholder=" ">
+                    [(ngModel)]="editingRow.Sno" min="1" max="999" placeholder="">
                   <label class="input-label">Sno</label>
                 </div>
               </div>
-              <div class="col-md-4">
+              <div class="col-md-2">
                 <div class="custom-form-group">
                   <input type="text" class="custom-input-field sm"
                     [(ngModel)]="editingRow.MailName" maxlength="50" placeholder=" ">
                   <label class="input-label">Mail Name <span class="text-danger">*</span></label>
                 </div>
               </div>
-              <div class="col-md-4">
+              <div class="col-md-3">
                 <div class="custom-form-group custom-form-group-select filled">
                   <ng-select
                     [ngModel]="editingRow.MenuMasterSid"
@@ -176,6 +164,52 @@
                     class="ng-select">
                   </ng-select>
                   <label class="input-label">Menu / Component <span class="text-danger">*</span></label>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="custom-form-group custom-form-group-select filled">
+                  <ng-select
+                    [ngModel]="editingRow.CompanyMasterSids"
+                    (ngModelChange)="onCompanySelectionChange(editingRow, $event)"
+                    [items]="getEligibleCompanyOptionsForRow(editingRow)"
+                    [multiple]="true"
+                    [closeOnSelect]="false"
+                    [searchable]="true"
+                    [clearable]="true"
+                    bindLabel="companyName"
+                    bindValue="CompanyMasterSid"
+                    placeholder="Select companies"
+                    appendTo="body"
+                    [disabled]="isCompanySelectionLocked(editingRow)"
+                    class="ng-select">
+                    <ng-template ng-header-tmp>
+                      <div class="select-all-row" *ngIf="!isCompanySelectionLocked(editingRow)">
+                        <button type="button" class="btn btn-link btn-sm p-0" (click)="toggleSelectAllCompanies(editingRow)">
+                          <i class="fas fa-check-double me-1"></i>
+                          {{ (editingRow.CompanyMasterSids || []).length === getEligibleCompanyOptionsForRow(editingRow).length ? 'Unselect All' : 'Select All' }}
+                        </button>
+                      </div>
+                    </ng-template>
+                    <ng-template ng-option-tmp let-item="item">
+                      <div class="company-option">
+                        <strong>{{ item.companyName }}</strong>
+                        <small *ngIf="item.companyCode">Code: {{ item.companyCode }}</small>
+                      </div>
+                    </ng-template>
+                    <ng-template ng-multi-label-tmp let-items="items">
+                      <div class="chip" *ngFor="let item of items.slice(0, 1)">
+                        {{ item.companyName }}
+                      </div>
+                      <div class="chip chip--muted" *ngIf="items.length > 1">+{{ items.length - 1 }}</div>
+                    </ng-template>
+                  </ng-select>
+                  <label class="input-label">Company <span class="text-danger">*</span></label>
+                  <small class="form-hint" *ngIf="isCompanySelectionLocked(editingRow)">
+                    Company is locked while editing an existing record.
+                  </small>
+                  <small class="form-hint" *ngIf="!isCompanySelectionLocked(editingRow) && editingRow.MenuMasterSid && getEligibleCompanyOptionsForRow(editingRow).length === 0">
+                    This menu is already configured for all companies.
+                  </small>
                 </div>
               </div>
               <div class="col-md-2">
@@ -195,63 +229,65 @@
               </div>
             </div>
 
-            <!-- Section 2: Email Content -->
-            <div class="section-heading mb-2 d-flex align-items-center gap-2">
+            </div>
+            <div class="section-pane">
+            <div class="section-heading d-flex align-items-center gap-2">
               <span class="badge bg-info text-white">2</span>
               <span>Email Content</span>
             </div>
-            <div class="row mb-3">
-              <div class="col-12 mb-2">
+            <div class="row mb-1">
+              <div class="col-12">
                 <div class="custom-form-group">
-                  <textarea class="custom-input-field sm" rows="3"
+                  <textarea class="custom-input-field sm" rows="1"
                     [(ngModel)]="editingRow.MailSubject"
                     appPlaceholderAutocomplete
                     placeholder="Type curly braces to insert placeholders"></textarea>
                   <label class="input-label">Mail Subject <span class="text-danger">*</span></label>
-                  <small class="form-hint">Default template shown — customize freely. Type curly braces to see available placeholders.</small>
+                  <small class="form-hint">Default template shown - customize freely. Type curly braces to see available placeholders.</small>
                 </div>
               </div>
               <div class="col-12">
                 <div class="custom-form-group">
-                  <textarea class="custom-input-field sm" rows="8"
+                  <textarea class="custom-input-field sm" rows="7"
                     [(ngModel)]="editingRow.MailBody"
                     appPlaceholderAutocomplete
                     placeholder="Type curly braces to insert placeholders"></textarea>
                   <label class="input-label">Mail Body <span class="text-danger">*</span></label>
-                  <small class="form-hint">Default template shown — customize freely. Type curly braces to see available placeholders.</small>
+                  <small class="form-hint">Default template shown - customize freely. Type curly braces to see available placeholders.</small>
                 </div>
               </div>
             </div>
 
-            <!-- Section 3: Recipients & Settings -->
-            <div class="section-heading mb-2 d-flex align-items-center gap-2">
+            </div>
+            <div class="section-pane">
+            <div class="section-heading  d-flex align-items-center gap-2">
               <span class="badge bg-info text-white">3</span>
               <span>Recipients &amp; Settings</span>
             </div>
-            <div class="row mb-2">
-              <div class="col-md-6 mb-2">
+            <div class="row">
+              <div class="col-md-12">
                 <div class="custom-form-group">
                   <input type="text" class="custom-input-field sm"
                     [(ngModel)]="editingRow.ToEmailidFrom"
                     appPlaceholderAutocomplete
                     maxlength="200" placeholder="To email addresses">
                   <label class="input-label">To Email</label>
-                  <small class="form-hint">{{ '{{toEmail}}' }} → To Email column under Organization → Email tab (CustomerBrEmail.Toemail)</small>
+                  <small class="form-hint">{{ '{{toEmail}}' }} -> To Email column under Organization -> Email tab (CustomerBrEmail.Toemail)</small>
                 </div>
               </div>
-              <div class="col-md-6 mb-2">
+              <div class="col-md-12">
                 <div class="custom-form-group">
                   <input type="text" class="custom-input-field sm"
                     [(ngModel)]="editingRow.CcEmailidFrom"
                     appPlaceholderAutocomplete
                     maxlength="200" placeholder="CC email addresses">
                   <label class="input-label">CC Email</label>
-                  <small class="form-hint">{{ '{{ccEmail}}' }} → CC Email column under Organization → Email tab (CustomerBrEmail.CCemail); {{ '{{userEmail}}' }} → logged-in user</small>
+                  <small class="form-hint">{{ '{{ccEmail}}' }} -> CC Email column under Organization -> Email tab (CustomerBrEmail.CCemail); {{ '{{userEmail}}' }} -> logged-in user</small>
                 </div>
               </div>
             </div>
-            <div class="row mb-2">
-              <div class="col-md-3 mb-2">
+            <div class="row mb-1 g-3">
+              <div class="col-md-4">
                 <div class="custom-form-group custom-form-group-select filled">
                   <ng-select
                     [(ngModel)]="editingRow.AttachmentRequire"
@@ -266,7 +302,7 @@
                   <label class="input-label">Attachment</label>
                 </div>
               </div>
-              <div class="col-md-3 mb-2">
+              <div class="col-md-4 ">
                 <div class="custom-form-group custom-form-group-select filled">
                   <ng-select
                     [(ngModel)]="editingRow.selectedActions"
@@ -284,7 +320,7 @@
                   <label class="input-label">Action <span class="text-danger">*</span></label>
                 </div>
               </div>
-              <div class="col-md-3 mb-2">
+              <div class="col-md-4 ">
                 <div class="custom-form-group custom-form-group-select filled">
                   <ng-select
                     [(ngModel)]="editingRow.Trigger"
@@ -301,7 +337,7 @@
                 </div>
               </div>
               @if (editingRow.Trigger === 'M') {
-                <div class="col-md-3 mb-2">
+                <div class="col-md-4">
                   <div class="custom-form-group custom-form-group-select filled">
                     <ng-select
                       [(ngModel)]="editingRow.AutoPopup"
@@ -317,10 +353,10 @@
                   </div>
                 </div>
               }
-            </div>
+           
             @if (editingRow.selectedActions?.includes('UPDATE')) {
-              <div class="row mb-2">
-                <div class="col-md-6 mb-2">
+              
+                <div class="col-md-8">
                   <div class="custom-form-group custom-form-group-select filled">
                     <ng-select
                       [(ngModel)]="editingRow.selectedUpdateFields"
@@ -338,8 +374,10 @@
                     <label class="input-label">Trigger on Fields</label>
                   </div>
                 </div>
-              </div>
+             
             }
+             </div>
+            </div>
           </div>
 
         </div>
@@ -349,4 +387,4 @@
   </div>
 </div>
 
-<!-- Old table UI removed — preserved in git history -->
+<!-- Old table UI removed - preserved in git history -->

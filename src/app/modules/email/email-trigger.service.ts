@@ -411,7 +411,23 @@ ${userName}`
     let ccEmail = context?.['ccEmail'] || '';
     const logoUrl = this.getStoredLogoUrl();
 
-    if (context?.['customerBranchSid'] && (!toEmail || !ccEmail)) {
+    const customerBranchSid = Number(context?.['customerBranchSid']);
+    const customerMasterSid = Number(context?.['customerMasterSid']);
+    const menuMasterSid = Number(context?.['menuMasterSid']);
+
+    if ((customerBranchSid || customerMasterSid) && menuMasterSid && (!toEmail || !ccEmail)) {
+      try {
+        const recipients = await this.resolveCustomerBranchEmailRecipientsByMenu({
+          customerBranchSid,
+          customerMasterSid,
+          menuMasterSid
+        });
+        if (!toEmail) toEmail = recipients.toEmail.join(', ');
+        if (!ccEmail) ccEmail = recipients.ccEmail.join(', ');
+      } catch (e) {
+        console.error(e);
+      }
+    } else if (context?.['customerBranchSid'] && (!toEmail || !ccEmail)) {
       try {
         const resp: any = await firstValueFrom(
           this.operationService.getCustomerBranchEmail(context['customerBranchSid'])
@@ -462,6 +478,10 @@ ${userName}`
     const body = this.replacePlaceholders(config.MailBody, enrichedContext);
     const toEmail = this.replacePlaceholders(config.ToEmailidFrom || '', enrichedContext);
     const ccEmail = this.replacePlaceholders(config.CcEmailidFrom || '', enrichedContext);
+    if (!toEmail?.trim()) {
+      this.appSettingService.showError('No email found for this record.');
+      return;
+    }
 
     const bodyHtml = this.formatEmailBody(body);
     const headerLabel = this.getHeaderLabel(config, subject, enrichedContext);
@@ -500,7 +520,7 @@ ${userName}`
     this.settingsService.createNewEmailLog(formData).subscribe({
       next: (resp: any) => {
         if (resp.status) {
-          this.appSettingService.showSuccess('Email sent successfully.');
+          this.appSettingService.showSuccess('Email log created successfully.');
         } else {
           this.appSettingService.showError('Email sending failed.');
         }
@@ -512,7 +532,16 @@ ${userName}`
   }
   private async openEmailPopup(config: any, context?: any, attachmentFile?: File): Promise<void> {
     const enrichedContext = await this.enrichContext(context);
-
+    const isLead = String(context?.['leadOrCustomer'] || '').toUpperCase() === 'L';
+    const leadEmail = String(context?.['leadEmail'] || '').trim();
+    const toEmail = isLead && leadEmail
+      ? leadEmail
+      : this.replacePlaceholders(config.ToEmailidFrom || '', enrichedContext);
+    if (context?.['requireToEmail'] && !toEmail?.trim()) {
+      this.appSettingService.showError('No customer email found for this record.');
+      return;
+    }
+  
     const modalRef = this.ngbModal.open(EmailEntryComponent, {
       size: 'lg',
       centered: true,
@@ -520,7 +549,7 @@ ${userName}`
     });
 
     modalRef.componentInstance.setContent = {
-      EmailTo: this.replacePlaceholders(config.ToEmailidFrom || '', enrichedContext),
+      EmailTo: toEmail,
       EmailCC: this.replacePlaceholders(config.CcEmailidFrom || '', enrichedContext),
       EmailBCC: '',
       Subject: this.replacePlaceholders(config.MailSubject, enrichedContext),

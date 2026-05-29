@@ -113,22 +113,41 @@
     </span>
   </button>
 </div>
-      <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
+      <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block lead-actions-menu">
         <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
           <i class="fas fa-ellipsis-v"></i>
         </button>
-        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-          <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
-            (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
-          <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
-            (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-          <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
-            (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-          <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
-            (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
-            <button *ngIf="mps.has('follow_up')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openFollowup()"><i class="fas fa-paperclip me-1"></i> Followup</button>
-            <button *ngIf="mps.has('document_reference')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openDocRef()"><i
-              class="fas fa-paperclip me-1"></i>Document reference</button>
+        <div ngbDropdownMenu aria-labelledby="dropdownBasic1" class="lead-actions-dropdown">
+          <button *ngIf="mps.has('edoc')" class="lead-action-item" ngbDropdownItem appPreventMultiClick
+            (click)="openEDoc()">
+            <span class="lead-action-icon"><i class="fas fa-file-alt"></i></span>
+            <span class="lead-action-text">Edoc</span>
+          </button>
+          <button *ngIf="mps.has('terms_and_condition')" class="lead-action-item" ngbDropdownItem appPreventMultiClick
+            (click)="openTandC()">
+            <span class="lead-action-icon"><i class="fas fa-clipboard"></i></span>
+            <span class="lead-action-text">Terms & Condition</span>
+          </button>
+          <button *ngIf="mps.has('authority')" class="lead-action-item" ngbDropdownItem appPreventMultiClick
+            (click)="openAuthority()">
+            <span class="lead-action-icon"><i class="fas fa-shield-alt"></i></span>
+            <span class="lead-action-text">Authorize</span>
+          </button>
+          <button *ngIf="mps.has('email')" class="lead-action-item" ngbDropdownItem appPreventMultiClick
+            (click)="openEmail()">
+            <span class="lead-action-icon"><i class="fas fa-envelope"></i></span>
+            <span class="lead-action-text">Email</span>
+          </button>
+          <button *ngIf="mps.has('follow_up')" class="lead-action-item" ngbDropdownItem appPreventMultiClick
+            (click)="openFollowup()">
+            <span class="lead-action-icon"><i class="fas fa-paperclip"></i></span>
+            <span class="lead-action-text">Followup</span>
+          </button>
+          <button *ngIf="mps.has('document_reference')" class="lead-action-item" ngbDropdownItem appPreventMultiClick
+            (click)="openDocRef()">
+            <span class="lead-action-icon"><i class="fas fa-paperclip"></i></span>
+            <span class="lead-action-text">Document reference</span>
+          </button>
         </div>
       </div>
     </div>
@@ -1328,13 +1347,29 @@
                         [labelFields]="containerTypeLookupConfig.labelFields" bindLabel="ContainerName"
                         bindValue="ContainerTypeMasterSid">
                       </dofi-searchable-dropdown>
-                      <label class="input-label">Container Type</label>
+                      <label class="input-label">Container Type <span class="text-danger">*</span></label>
+                      @if ((cargo.get('ContainerType')?.touched || cargo.get('ContainerType')?.dirty) &&
+                      cargo.get('ContainerType')?.hasError('required')) {
+                      <div class="error-message">
+                        <span>Container Type is required</span>
+                      </div>
+                      }
                     </div>
                   </aside>
                   <aside class="col-md-2">
                     <div class="custom-form-group">
                       <input type="text" class="custom-input-field sm text-end" [onlyNumbers] formControlName="NoofContainers">
-                      <label class="input-label">No. of Container</label>
+                      <label class="input-label">No. of Container <span class="text-danger">*</span></label>
+                      @if ((cargo.get('NoofContainers')?.touched || cargo.get('NoofContainers')?.dirty) &&
+                      cargo.get('NoofContainers')?.invalid) {
+                      <div class="error-message">
+                        @if (cargo.get('NoofContainers')?.hasError('required')) {
+                        <span>No. of Container is required</span>
+                        } @else if (cargo.get('NoofContainers')?.hasError('min')) {
+                        <span>No. of Container must be greater than 0</span>
+                        }
+                      </div>
+                      }
                     </div>
                   </aside>
                   }
@@ -1449,9 +1484,9 @@
                         <th class="bg-transparent text-light dofi-min-w-40" scope="col">No.of Pkg <span class="text-danger">*</span></th>
                         @if(usesDimensionalCargoFields()){
                           <th class="bg-transparent text-light dofi-min-w-80" scope="col">UOM <span class="text-danger">*</span></th>
-                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">Length<span class="text-danger"></span></th>
-                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">Width<span class="text-danger"></span></th>
-                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">Height<span class="text-danger"></span></th>
+                          <th class="bg-transparent text-light dofi-min-w-80 dimension-x-after" scope="col">L<span class="text-danger"></span></th>
+                          <th class="bg-transparent text-light dofi-min-w-80 dimension-x-after" scope="col">W<span class="text-danger"></span></th>
+                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">H<span class="text-danger"></span></th>
                           <th class="bg-transparent text-light dofi-min-w-80" scope="col">Volumetric <span class="text-danger">*</span></th>
                           <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM <span class="text-danger">*</span></th>
                           <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wt. <span class="text-danger">*</span></th>
@@ -1463,7 +1498,7 @@
                           <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM <span class="text-danger">*</span></th>
                         }
                         <th class="bg-transparent text-light dofi-min-w-130" scope="col">Cargo Recd. Date</th>
-                        <th class="bg-transparent text-light" scope="col">Is Haz</th>
+                        <th class="bg-transparent text-light is-haz-col" scope="col">Is Haz</th>
                         <th class="bg-transparent text-light dofi-min-w-90" scope="col">Imco Class</th>
                         <th class="bg-transparent text-light dofi-min-w-60" scope="col">UN No</th>
                         <th class="bg-transparent text-light dofi-min-w-60" scope="col">Pkg Group</th>
@@ -1619,8 +1654,8 @@
                               </button>
                             </div>
                           </td>
-                          <td>
-                            <input type="checkbox" formControlName="IsHaz" (change)="toggleHazProduct(productIndex,cargoIndex)" />
+                          <td class="is-haz-col">
+                            <input class="form-check-input m-0" type="checkbox" formControlName="IsHaz" (change)="toggleHazProduct(productIndex,cargoIndex)" />
                           </td>
                           <td>
                             <ng-select [items]="imcoList" bindLabel="ImcoName" bindValue="ImcoName" formControlName="ImcoClass"
@@ -1701,14 +1736,30 @@
                 class="ng-select" formControlName="ContainerType" placeholder="" appendTo="body"
                 (change)="onContainerTypeChange($event)">
               </ng-select> -->
-              <label for="text-input" class="input-label">Container Type<span class="text-danger"></span></label>
+              <label for="text-input" class="input-label">Container Type<span class="text-danger">*</span></label>
+              @if ((cargoForm.get('ContainerType')?.touched || cargoForm.get('ContainerType')?.dirty) &&
+              cargoForm.get('ContainerType')?.hasError('required')) {
+              <div class="error-message">
+                <span>Container Type is required</span>
+              </div>
+              }
             </div>
           </aside>
           <aside class="col-md-2">
             <div class="custom-form-group">
               <input type="text" id="text-input" placeholder="" class="custom-input-field sm" [onlyNumbers]
                 formControlName="NoofContainers">
-              <label for="text-input" class="input-label">No. of Container<span class="text-danger"></span></label>
+              <label for="text-input" class="input-label">No. of Container<span class="text-danger">*</span></label>
+              @if ((cargoForm.get('NoofContainers')?.touched || cargoForm.get('NoofContainers')?.dirty) &&
+              cargoForm.get('NoofContainers')?.invalid) {
+              <div class="error-message">
+                @if (cargoForm.get('NoofContainers')?.hasError('required')) {
+                <span>No. of Container is required</span>
+                } @else if (cargoForm.get('NoofContainers')?.hasError('min')) {
+                <span>No. of Container must be greater than 0</span>
+                }
+              </div>
+              }
             </div>
           </aside>
           }

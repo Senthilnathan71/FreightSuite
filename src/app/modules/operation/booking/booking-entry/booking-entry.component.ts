@@ -360,6 +360,8 @@ export class BookingEntryComponent implements OnInit, OnDestroy, HasUnsavedChang
   private readonly productValidationConfig: ValidationMessageConfig = {
     labels: {
       ProductName: 'Commodity',
+      ContainerType: 'Container Type',
+      NoofContainers: 'No. of Container',
       ShippingBillNo: 'Shipping Bill No',
       ShippingBillDate: 'Shipping Bill Date',
       ExternaPkg: 'External Package',
@@ -2854,7 +2856,14 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
     this.bookingCargo.controls.forEach((control, cargoIndex: number) => {
       const cargoGroup = control as FormGroup;
       if (!this.shouldValidateBookingCargoGroup(cargoGroup)) {
+        this.clearFclCargoContainerErrors(cargoGroup);
         return;
+      }
+      const fclContainerErrors = this.validateFclCargoContainerFields(cargoGroup, cargoIndex);
+      if (fclContainerErrors.length > 0) {
+        errorMessages.push(...fclContainerErrors);
+        setFirstInvalidTab('Cargo');
+        isValid = false;
       }
       if (cargoGroup.invalid) {
         cargoGroup.markAllAsTouched();
@@ -2862,6 +2871,9 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
 
         Object.keys(cargoGroup.controls).forEach(key => {
           const control = cargoGroup.get(key);
+          if (this.shouldValidateFclCargoContainerFields() && ['ContainerType', 'NoofContainers'].includes(key)) {
+            return;
+          }
           if (control?.errors?.['required']) {
             errorMessages.push(`Cargo ${cargoIndex + 1}: ${this.getFieldLabel(key)} is required`);
           }
@@ -2988,6 +3000,54 @@ private setupImmediateVolumetricCalculationForFormArray(productForm: FormGroup):
   }
 
   return isValid;
+}
+
+private shouldValidateFclCargoContainerFields(): boolean {
+  const segment = this.normalizePortText(this.selectedFCLLCL);
+  const exportImport = this.normalizePortText(
+    this.selectedDepartment?.ExportImport || this.b?.['JobType']?.value
+  );
+  return segment === 'FCL' && ['EXPORT', 'IMPORT'].includes(exportImport);
+}
+
+private validateFclCargoContainerFields(cargoGroup: FormGroup, cargoIndex: number): string[] {
+  const containerTypeControl = cargoGroup.get('ContainerType');
+  const noOfContainersControl = cargoGroup.get('NoofContainers');
+
+  if (!this.shouldValidateFclCargoContainerFields()) {
+    this.clearFclCargoContainerErrors(cargoGroup);
+    return [];
+  }
+
+  const errors: string[] = [];
+  const containerType = containerTypeControl?.value;
+  const noOfContainers = Number(noOfContainersControl?.value);
+
+  if (!containerType) {
+    this.setControlError(containerTypeControl, 'required', true);
+    errors.push(`Cargo ${cargoIndex + 1}: Container Type is required`);
+  } else {
+    this.clearControlError(containerTypeControl, 'required');
+  }
+
+  if (!noOfContainersControl?.value) {
+    this.setControlError(noOfContainersControl, 'required', true);
+    errors.push(`Cargo ${cargoIndex + 1}: No. of Container is required`);
+  } else if (!Number.isFinite(noOfContainers) || noOfContainers <= 0) {
+    this.setControlError(noOfContainersControl, 'min', true);
+    errors.push(`Cargo ${cargoIndex + 1}: No. of Container must be greater than 0`);
+  } else {
+    this.clearControlError(noOfContainersControl, 'required');
+    this.clearControlError(noOfContainersControl, 'min');
+  }
+
+  return errors;
+}
+
+private clearFclCargoContainerErrors(cargoGroup: FormGroup): void {
+  this.clearControlError(cargoGroup.get('ContainerType'), 'required');
+  this.clearControlError(cargoGroup.get('NoofContainers'), 'required');
+  this.clearControlError(cargoGroup.get('NoofContainers'), 'min');
 }
 
 private setControlError(control: AbstractControl | null, key: string, value: any): void {
@@ -6892,6 +6952,8 @@ getFieldLabel(fieldName: string): string {
     'IncoTerms': 'INCO Terms',
     
     // Cargo Form Fields
+    'ContainerType': 'Container Type',
+    'NoofContainers': 'No. of Container',
     'ProductName': 'Commodity',
     'ShippingBillNo': 'Shipping Bill No',
     'ShippingBillDate': 'Shipping Bill Date',

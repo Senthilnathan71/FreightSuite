@@ -187,16 +187,22 @@
         </button>
       </div>
        <!-- *ngIf="mps.hasAtLeastOne() && isEditMode" -->
-       <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
+       <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block lead-actions-menu">
         <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
           <i class="fas fa-ellipsis-v"></i>
         </button>
-        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+        <div ngbDropdownMenu aria-labelledby="dropdownBasic1" class="lead-actions-dropdown">
           <!-- *ngIf="mps.has('terms_and_condition')" -->
-          <button  class="text-dark" ngbDropdownItem appPreventMultiClick
-            (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-          <button *ngIf="mps.has('document_reference')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openDocRef()"><i
-              class="fas fa-paperclip me-1"></i>Document reference</button>
+          <button class="lead-action-item" ngbDropdownItem appPreventMultiClick
+            (click)="openTandC()">
+            <span class="lead-action-icon"><i class="fas fa-clipboard"></i></span>
+            <span class="lead-action-text">Terms & Condition</span>
+          </button>
+          <button *ngIf="mps.has('document_reference')" class="lead-action-item" ngbDropdownItem appPreventMultiClick
+            (click)="openDocRef()">
+            <span class="lead-action-icon"><i class="fas fa-paperclip"></i></span>
+            <span class="lead-action-text">Document reference</span>
+          </button>
         </div>
       </div>
     </div>
@@ -849,11 +855,11 @@
                     </div>
                   </aside>
                   @if(selectedDepartmentType === "SEA"){
-                  <aside class="col-md-6">
+                  <aside class="col-md-6" [formGroup]="cargoForm">
                     <div class="custom-form-group custom-form-group-select"
-                      [class.filled]="!!houseJobForm.get('FreightTerms')?.value">
+                      [class.filled]="!!cargoForm.get('ShipmentTerms')?.value">
                       <ng-select [items]="modeOfShipmentTerms" bindLabel="name" bindValue="name" class="ng-select"
-                        appendTo="body" placeholder="" formControlName="FreightTerms">
+                        appendTo="body" placeholder="" formControlName="ShipmentTerms">
                       </ng-select>
                       <label for="" class="input-label">Shipment Terms <span class="text-danger"></span></label>
                     </div>
@@ -1848,8 +1854,8 @@
                         <th class="bg-transparent text-light dofi-min-w-40" scope="col">No.of Pkg<span class="mandatory-symbol-light-red">*</span></th>
                         @if(usesDimensionalCargoFields()){
                           <th class="bg-transparent text-light dofi-min-w-80" scope="col">UOM <span class="mandatory-symbol-light-red">*</span></th>
-                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">L</th>
-                          <th class="bg-transparent text-light dofi-min-w-80" scope="col">W</th>
+                          <th class="bg-transparent text-light dofi-min-w-80 dimension-x-after" scope="col">L</th>
+                          <th class="bg-transparent text-light dofi-min-w-80 dimension-x-after" scope="col">W</th>
                           <th class="bg-transparent text-light dofi-min-w-80" scope="col">H</th>
                           <th class="bg-transparent text-light dofi-min-w-80" scope="col">Volumetric<span class="mandatory-symbol-light-red">*</span></th>
                           <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM <span class="mandatory-symbol-light-red">*</span></th>
@@ -2405,9 +2411,9 @@
                   <th class="bg-transparent text-light dofi-min-w-40" scope="col">No.of Pkg <span class="text-danger fw-bold fs-2">*</span></th>
                   @if(usesDimensionalCargoFields()){
                   <th class="bg-transparent text-light dofi-min-w-80" scope="col">UOM <span class="text-danger fw-bold fs-3">*</span></th>
-                  <th class="bg-transparent text-light dofi-min-w-80" scope="col">Length<span class="text-danger"></span></th>
-                  <th class="bg-transparent text-light dofi-min-w-80" scope="col">Width<span class="text-danger"></span></th>
-                  <th class="bg-transparent text-light dofi-min-w-80" scope="col">Height<span class="text-danger"></span></th>
+                  <th class="bg-transparent text-light dofi-min-w-80 dimension-x-after" scope="col">L<span class="text-danger"></span></th>
+                  <th class="bg-transparent text-light dofi-min-w-80 dimension-x-after" scope="col">W<span class="text-danger"></span></th>
+                  <th class="bg-transparent text-light dofi-min-w-80" scope="col">H<span class="text-danger"></span></th>
                   <th class="bg-transparent text-light dofi-min-w-80" scope="col">Volumetric <span class="text-danger fw-bold fs-3">*</span></th>
                   <th class="bg-transparent text-light dofi-min-w-70" scope="col">CBM <span class="text-danger fw-bold fs-3">*</span></th>
                   <th class="bg-transparent text-light dofi-min-w-70" scope="col">Gross Wgt <span class="text-danger fw-bold fs-3">*</span></th>
@@ -3174,6 +3180,18 @@
               <label for="text-input" class="input-label">Place of Supply<span class="text-danger"></span></label>
             </div>
           </aside>
+          @if (houseJobForm.get('TranshipmentBookingSid')?.value) {
+          <aside class="col-md-3" [formGroup]="houseJobForm">
+            <div class="custom-form-group">
+              <a [routerLink]="['/operation/booking/entry', houseJobForm.get('TranshipmentBookingSid')?.value]"
+                class="form-control custom-input-field sm"
+                style="text-decoration: none; color: #0d6efd;">
+                {{ houseJobForm.get('TranshipmentBookingNo')?.value || getTranshipmentBookingNo() || houseJobForm.get('TranshipmentBookingSid')?.value }}
+              </a>
+              <label class="input-label">T/S Booking No</label>
+            </div>
+          </aside>
+          }
         </div>
       </div>
     </div>

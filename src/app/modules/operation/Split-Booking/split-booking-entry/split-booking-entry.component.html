@@ -12,10 +12,10 @@
       <div class="col-md-8 pb-1">
         <div
           class=" d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="back()">
+          <button type="button" class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="back()">
             <i class="fas fa-chevron-left me-1"></i> Back
           </button>
-          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+          <button type="button" class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
             (click)="bookingForm.reset()">
             <i class="fas fa-sync-alt me-1"></i> Reset
           </button>
@@ -26,19 +26,28 @@
             <i class="fas fa-save me-1"></i>Save
           </button>
           
-             <div *ngIf="mps.hasAtLeastOne() " ngbDropdown class="d-inline-block">
+             <div *ngIf="mps.hasAtLeastOne() " ngbDropdown class="d-inline-block lead-actions-menu">
                     <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
                         <i class="fas fa-ellipsis-v"></i>
                     </button>
-                    <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-                        <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick
-                            (click)="openEDoc()"><i class="fas fa-file-alt me-1"></i> Edoc</button>
+                    <div ngbDropdownMenu aria-labelledby="dropdownBasic1" class="lead-actions-dropdown">
+                        <button *ngIf="mps.has('edoc')" class="lead-action-item" ngbDropdownItem appPreventMultiClick
+                            (click)="openEDoc()">
+                            <span class="lead-action-icon"><i class="fas fa-file-alt"></i></span>
+                            <span class="lead-action-text">Edoc</span>
+                        </button>
                         <!-- <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
                             (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button> -->
-                        <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick
-                            (click)="openAuthority()"><i class="fas fa-shield-alt me-1"></i> Authorize</button>
-                        <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick
-                            (click)="openEmail()"><i class="fas fa-envelope me-1"></i> Email</button>
+                        <button *ngIf="mps.has('authority')" class="lead-action-item" ngbDropdownItem appPreventMultiClick
+                            (click)="openAuthority()">
+                            <span class="lead-action-icon"><i class="fas fa-shield-alt"></i></span>
+                            <span class="lead-action-text">Authorize</span>
+                        </button>
+                        <button *ngIf="mps.has('email')" class="lead-action-item" ngbDropdownItem appPreventMultiClick
+                            (click)="openEmail()">
+                            <span class="lead-action-icon"><i class="fas fa-envelope"></i></span>
+                            <span class="lead-action-text">Email</span>
+                        </button>
                         <!-- <button type="button" appPreventMultiClick class="text-dark" ngbDropdownItem (click)="openFollowup()">
                             <i class="fas fa-paperclip me-1"></i> Followup
                         </button> -->

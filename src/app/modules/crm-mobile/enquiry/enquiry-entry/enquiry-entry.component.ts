@@ -1695,6 +1695,7 @@ private parseFloatSafe(value: any): number {
 
     const routesArray = this.rateRequestForm.get('routes') as FormArray;
     routesArray.clear();
+    this.routePortFilterPayloadKeys = [];
     this.filteredPOOPorts = [];
     this.filteredPOLPorts = [];
     this.filteredPODPorts = [];
@@ -1978,6 +1979,7 @@ private parseFloatSafe(value: any): number {
               menuMasterSid: this.MenuMasterSid,
               action: 'UPDATE',
               context: {
+                menuMasterSid: this.MenuMasterSid,
                 EnquiryNo: this.enquiryData?.EnquiryNumber,
                 date: this.enquiryData?.EnquiryDate ? this.datePipe.transform(this.enquiryData.EnquiryDate) : '',
                 POO: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.PORSid),
@@ -1986,6 +1988,7 @@ private parseFloatSafe(value: any): number {
                 FPD: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.FDPSid),
                 customerName: this.enquiryData?.CustomerName,
                 userName: this.userData?.userName,
+                customerMasterSid: this.enquiryData?.CustomerMasterSid || null,
                 toEmail: this.enquiryData?.Email || '',
                 customerBranchSid: this.enquiryData?.CustomerBranchSid || null
               }
@@ -2042,6 +2045,7 @@ private parseFloatSafe(value: any): number {
             menuMasterSid: this.MenuMasterSid,
             action: 'CREATE',
             context: {
+              menuMasterSid: this.MenuMasterSid,
               EnquiryNo: resp?.data?.enquiryHeader?.EnquiryNumber,
               date: new Date().toLocaleDateString(),
               POO: getFormattedPort(this.ports, this.routes?.at(0)?.get('POO')?.value),
@@ -2050,6 +2054,7 @@ private parseFloatSafe(value: any): number {
               FPD: getFormattedPort(this.ports, this.routes?.at(0)?.get('FDC')?.value),
               customerName: this.rateRequestForm.get('customerName')?.value,
               userName: this.userData?.userName,
+              customerMasterSid: this.rateRequestForm.get('CustomerMasterSid')?.value || null,
               toEmail: this.rateRequestForm.get('Email')?.value || '',
               customerBranchSid: this.rateRequestForm.get('CustomerBranchSid')?.value || null
             }
@@ -2185,6 +2190,7 @@ private parseFloatSafe(value: any): number {
     // Clear and re-create routes (preserve lookups like ports)
     const routesArray = this.rateRequestForm.get('routes') as FormArray;
     routesArray.clear();
+    this.routePortFilterPayloadKeys = [];
     this.filteredPOOPorts = [];
     this.filteredPOLPorts = [];
     this.filteredPODPorts = [];
@@ -2233,6 +2239,28 @@ private parseFloatSafe(value: any): number {
 
 
   async sendManualMail(): Promise<void> {
+    const leadCustomerValue = this.rateRequestForm.get('LeadOrCustomer')?.value;
+    const isCustomer = leadCustomerValue === true || String(leadCustomerValue).toUpperCase() === 'C';
+    const preCustomerMasterSid =
+      this.rateRequestForm.get('PreCustomerMasterSid')?.value ||
+      this.enquiryData?.PreCustomerMasterSid ||
+      null;
+    const leadFromList = this.leadList.find(
+      lead => Number(lead?.PreCustomerMasterSid) === Number(preCustomerMasterSid)
+    );
+    const resolvedLeadEmail = !isCustomer
+      ? (
+        this.rateRequestForm.get('Email')?.value ||
+        this.enquiryData?.Email ||
+        this.enquiryData?.email ||
+        leadFromList?.email ||
+        leadFromList?.Email ||
+        ''
+      )
+      : '';
+    const resolvedToEmail = isCustomer
+      ? (this.enquiryData?.Email || this.rateRequestForm.get('Email')?.value || '')
+      : resolvedLeadEmail;
     const pdfBlob = await this.generatePDFBlob();
     let attachmentFile: File | undefined;
     if (pdfBlob) {
@@ -2248,6 +2276,11 @@ private parseFloatSafe(value: any): number {
       action: 'UPDATE',
       attachmentFile,
       context: {
+        requireToEmail: true,
+        menuMasterSid: this.MenuMasterSid,
+        leadOrCustomer: isCustomer ? 'C' : 'L',
+        leadEmail: resolvedLeadEmail,
+        preCustomerMasterSid,
         EnquiryNo: this.enquiryData?.EnquiryNumber,
         date: this.enquiryData?.EnquiryDate ? this.datePipe.transform(this.enquiryData.EnquiryDate) : '',
         DepartmentName: departmentName,
@@ -2257,7 +2290,8 @@ private parseFloatSafe(value: any): number {
         FPD: getFormattedPort(this.ports, this.enquiryData?.enquiryRoute?.[0]?.FDPSid),
         customerName: this.enquiryData?.CustomerName,
         userName: this.userData?.userName,
-        toEmail: this.enquiryData?.Email || '',
+        customerMasterSid: this.enquiryData?.CustomerMasterSid || null,
+        toEmail: resolvedToEmail,
         customerBranchSid: this.enquiryData?.CustomerBranchSid || null
       }
     });
@@ -2472,6 +2506,13 @@ private parseFloatSafe(value: any): number {
       return;
     }
     this.routePortFilterPayloadKeys[routeIndex] = payloadKey;
+    this.applyRoutePortFilterLists(routeIndex, {
+      filteredPorts: this.filteredPorts || [],
+      filteredPOOPorts: this.filteredPOOPorts[routeIndex] || [],
+      filteredPOLPorts: this.filteredPOLPorts[routeIndex] || [],
+      filteredPODPorts: this.filteredPODPorts[routeIndex] || [],
+      filteredFDCPorts: this.filteredFDCPorts[routeIndex] || []
+    });
 
     this.operationService.getFilteredPorts(payload).subscribe({
       next: (resp: any) => {
@@ -2507,11 +2548,47 @@ private parseFloatSafe(value: any): number {
   }
 
   private applyRoutePortFilterLists(routeIndex: number, filteredLists: any): void {
-    this.filteredPorts = filteredLists.filteredPorts;
-    this.filteredPOOPorts[routeIndex] = filteredLists.filteredPOOPorts;
-    this.filteredPOLPorts[routeIndex] = filteredLists.filteredPOLPorts;
-    this.filteredPODPorts[routeIndex] = filteredLists.filteredPODPorts;
-    this.filteredFDCPorts[routeIndex] = filteredLists.filteredFDCPorts;
+    const routeForm = this.routes.at(routeIndex) as FormGroup;
+    const filteredPOOPorts = this.withSelectedPort(filteredLists.filteredPOOPorts, routeForm?.get('POO')?.value);
+    const filteredPOLPorts = this.withSelectedPort(filteredLists.filteredPOLPorts, routeForm?.get('POL')?.value);
+    const filteredPODPorts = this.withSelectedPort(filteredLists.filteredPODPorts, routeForm?.get('POD')?.value);
+    const filteredFDCPorts = this.withSelectedPort(filteredLists.filteredFDCPorts, routeForm?.get('FDC')?.value);
+
+    this.filteredPorts = this.mergeUniquePorts([
+      ...(filteredLists.filteredPorts || []),
+      ...filteredPOOPorts,
+      ...filteredPOLPorts,
+      ...filteredPODPorts,
+      ...filteredFDCPorts
+    ]);
+    this.filteredPOOPorts[routeIndex] = filteredPOOPorts;
+    this.filteredPOLPorts[routeIndex] = filteredPOLPorts;
+    this.filteredPODPorts[routeIndex] = filteredPODPorts;
+    this.filteredFDCPorts[routeIndex] = filteredFDCPorts;
+  }
+
+  private withSelectedPort(items: any[] = [], selectedPortSid: any): any[] {
+    const list = Array.isArray(items) ? items : [];
+    const selectedPort = this.ports.find(port => this.isSameSid(port?.PortMasterSid, selectedPortSid));
+
+    if (!selectedPort || list.some(port => this.isSameSid(port?.PortMasterSid, selectedPortSid))) {
+      return list;
+    }
+
+    return [selectedPort, ...list];
+  }
+
+  private mergeUniquePorts(ports: any[]): any[] {
+    const seen = new Set<number | string>();
+
+    return (ports || []).filter(port => {
+      const key = this.toNumericValue(port?.PortMasterSid) ?? String(port?.PortMasterSid ?? '');
+      if (!key || seen.has(key)) {
+        return false;
+      }
+      seen.add(key);
+      return true;
+    });
   }
 
   private syncRouteValidation(routeForm: FormGroup): void {

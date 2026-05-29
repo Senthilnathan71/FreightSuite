@@ -55,7 +55,7 @@
         </div>
         <div class="header-actions">
             <div class="action-group" *ngIf="isEditMode">
-                <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                <button class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                     (click)="openAuditLogs()">
                     <i class="fas fa-history  me-1"></i>
                     <span>Logs</span>
@@ -116,13 +116,13 @@
                     </button>
             </div>
             <div class="action-group">
-                <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateBack()">
+                <button class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="navigateBack()">
                     <i class="fas fa-chevron-left me-1"></i>
                     <span>Back</span>
                 </button>
             </div>
             <div class="action-group">
-                <button class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onReset()"
+                <button class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="onReset()"
                     [disabled]="isLoading || isJobClosed">
                     <i class="fas fa-sync-alt me-1"></i>
                     <span>Reset</span>
@@ -152,16 +152,22 @@
                     </span>
                 </button>
             </div>
-            <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
+            <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block lead-actions-menu">
         <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1" ngbDropdownToggle>
           <i class="fas fa-ellipsis-v"></i>
         </button>
-        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+        <div ngbDropdownMenu aria-labelledby="dropdownBasic1" class="lead-actions-dropdown">
           
-          <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick
-            (click)="openTandC()"><i class="fas fa-clipboard me-1"></i> Terms & Condition</button>
-         <button *ngIf="mps.has('document_reference')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openDocRef()"><i
-              class="fas fa-paperclip me-1"></i>Document reference</button>
+          <button *ngIf="mps.has('terms_and_condition')" class="lead-action-item" ngbDropdownItem appPreventMultiClick
+            (click)="openTandC()">
+            <span class="lead-action-icon"><i class="fas fa-clipboard"></i></span>
+            <span class="lead-action-text">Terms & Condition</span>
+          </button>
+         <button *ngIf="mps.has('document_reference')" class="lead-action-item" ngbDropdownItem appPreventMultiClick
+            (click)="openDocRef()">
+            <span class="lead-action-icon"><i class="fas fa-paperclip"></i></span>
+            <span class="lead-action-text">Document reference</span>
+          </button>
         </div>
       </div>
 
@@ -986,6 +992,7 @@
                                 <th>Total Pkg</th>
                                 <th>House Status</th>
                                 <th>Invoice Status</th>
+                                <th>T/S Booking No</th>
                             </tr>
                         </thead>
             
@@ -1072,6 +1079,16 @@
                                 </span>
                             }
                         </td>
+                                <td>
+                                    @if(shipment.TranshipmentBookingSid){
+                                    <a class="fw-bold"
+                                        [routerLink]="['/operation/booking/entry', shipment.TranshipmentBookingSid]">
+                                        {{ getTranshipmentBookingNo(shipment) || shipment.TranshipmentBookingSid }}
+                                    </a>
+                                    } @else {
+                                    <span>-</span>
+                                    }
+                                </td>
             
             
                             </tr>
@@ -1793,7 +1810,8 @@
                 </div>
                 <div class="row mt-3" *ngIf="isTranshipment">
                     <div class="col-md-12 text-end">
-                        <button class="btn btn-primary" (click)="bookingCreateInMasterJob()">
+                        <button class="btn btn-primary" (click)="bookingCreateInMasterJob()"
+                            [disabled]="!hasPendingTranshipmentBooking() || isJobClosed">
                             <i class="fas fa-plus-circle"></i> Create T/S Booking
                         </button>
                     </div>
