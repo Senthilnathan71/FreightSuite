@@ -113,6 +113,7 @@ export class PerformaInvoiceComponent implements OnInit {
     const house = this.housejobData || {};
     const master = house.masterJob || house.MasterJob || {};
     const cargo = this.getFirstCargo(house);
+    const cargoTotals = this.getCargoTotals(house);
     const firstRevenueCharge = this.getRevenueCharges(house)?.[0];
     const currencyMasterSid =
       house.CurrencyMasterSid ||
@@ -172,16 +173,49 @@ export class PerformaInvoiceComponent implements OnInit {
       Remarks: house.Remarks || '',
       BankDetails: this.bankDetails,
       TermsAndConditions: this.TandCList || [],
-      pkg: cargo.NoOfPackage ?? cargo.PackageCount ?? '',
-      grosswt: cargo.GrossWeight ?? '',
+      pkg: cargoTotals.pkg,
+      grosswt: cargoTotals.grossWeight,
       desc: cargo.CommodityDescription ?? cargo.Description ?? '',
-      ChargeableWeight: cargo.ChargeableWeight ?? '',
-      cbm: cargo.Volume ?? cargo.CBM ?? '',
+      ChargeableWeight: cargoTotals.chargeableWeight,
+      cbm: cargoTotals.cbm,
     };
   }
 
   private getFirstCargo(house: any): any {
     return house?.Cargo?.[0] || house?.cargo?.[0] || house?.Products?.[0] || {};
+  }
+
+  private getCargoList(house: any): any[] {
+    const cargos = house?.Cargo || house?.cargo || house?.Products || [];
+    return Array.isArray(cargos) ? cargos : [];
+  }
+
+  private getCargoTotals(house: any): { pkg: number | string; grossWeight: number | string; chargeableWeight: number | string; cbm: number | string } {
+    const cargos = this.getCargoList(house);
+
+    if (!cargos.length) {
+      const cargo = this.getFirstCargo(house);
+      return {
+        pkg: cargo.NoOfPackage ?? cargo.PackageCount ?? '',
+        grossWeight: cargo.GrossWeight ?? '',
+        chargeableWeight: cargo.ChargeableWeight ?? '',
+        cbm: cargo.Volume ?? cargo.CBM ?? '',
+      };
+    }
+
+    return {
+      pkg: this.sumCargoField(cargos, ['NoOfPackage', 'PackageCount']),
+      grossWeight: this.sumCargoField(cargos, ['GrossWeight']),
+      chargeableWeight: this.sumCargoField(cargos, ['ChargeableWeight']),
+      cbm: this.sumCargoField(cargos, ['Volume', 'CBM']),
+    };
+  }
+
+  private sumCargoField(cargos: any[], keys: string[]): number {
+    return cargos.reduce((total, cargo) => {
+      const value = keys.map((key) => cargo?.[key]).find((item) => item !== null && item !== undefined && item !== '');
+      return total + Number(value || 0);
+    }, 0);
   }
 
   private getVoucherDetails(house: any): any[] {
@@ -377,14 +411,15 @@ export class PerformaInvoiceComponent implements OnInit {
   async downloadPDF(): Promise<void> {
     try {
       this.preparePrintData();
-      this.pdfMakeService.generateProformaInvoice(this.buildProformaPdfData());
+      const logo = await this.resolvePdfLogo();
+      this.pdfMakeService.generateProformaInvoice(this.buildProformaPdfData(logo));
     } catch (error) {
       console.error('Error generating proforma invoice PDF:', error);
       this.appSettingService.showError('Error generating PDF. Please try again.');
     }
   }
 
-  private buildProformaPdfData(): InvoicePdfData {
+  private buildProformaPdfData(logo?: string): InvoicePdfData {
     const printData = this.invoicePrintData || {};
     const house = this.housejobData || {};
     const billingAddress =
@@ -417,7 +452,6 @@ export class PerformaInvoiceComponent implements OnInit {
     const localCurrency = this.currentCompanyCurrency?.code || this.currentCompany?.CurrencyCode || '';
     const partyTotal = this.parseAmount(printData.totalPartyAmount);
     const localTotal = this.getVoucherLocalTotal(printData.voucherDetails || []);
-    const logo = this.pdfMakeService.getReportLogo();
     const companyRegistrationNo = this.getCompanyRegistrationNo();
 
     const pdfData: any = {
@@ -429,10 +463,12 @@ export class PerformaInvoiceComponent implements OnInit {
         countryCode: this.currentCompanyCountryCode,
         country: this.currentCompany?.countryMaster?.countryName || this.currentCompany?.countryName || '',
         postalCode: this.currentCompany?.postalCode || this.currentCompany?.postal_code || this.currentCompany?.ZipCode || '',
-        phoneNumber: this.currentCompany?.phoneNumber || this.currentCompany?.Phone || this.currentCompany?.PhoneNumber || ''
+        phoneNumber: this.currentCompany?.phoneNumber || this.currentCompany?.Phone || this.currentCompany?.PhoneNumber || '',
+        Pan: this.currentCompany?.Pan || this.currentCompany?.PAN || ''
       },
       branch: {
         branchName: this.currentBranch?.branchName || this.currentBranch?.BranchName || '',
+        branchCode: this.currentBranch?.branchCode || this.currentBranch?.BranchCode || '',
         addressLine1: this.currentBranch?.addressLine1 || this.currentBranch?.Address || this.currentBranch?.address || '',
         addressLine2: this.currentBranch?.addressLine2 || this.currentBranch?.AddressLine2 || '',
         cityName: this.currentBranch?.cityMaster?.cityName || this.currentBranch?.cityName || this.currentBranch?.City || this.currentBranch?.branchName || this.currentBranch?.BranchName || '',
@@ -552,6 +588,49 @@ export class PerformaInvoiceComponent implements OnInit {
     }
 
     return '';
+  }
+
+  private async resolvePdfLogo(): Promise<string | undefined> {
+    const storedLogo = this.pdfMakeService.getReportLogo();
+    if (this.isPdfMakeLogo(storedLogo)) {
+      return storedLogo;
+    }
+
+    try {
+      const reportLogo = await firstValueFrom(this.logoService.reportLogo$);
+      if (this.isPdfMakeLogo(reportLogo)) {
+        return reportLogo;
+      }
+
+      if (reportLogo && reportLogo !== 'none') {
+        return await this.convertLogoUrlToDataUrl(reportLogo);
+      }
+    } catch (error) {
+      console.warn('Unable to resolve proforma PDF logo:', error);
+    }
+
+    return undefined;
+  }
+
+  private isPdfMakeLogo(logo: any): logo is string {
+    return typeof logo === 'string' && logo.startsWith('data:image/');
+  }
+
+  private async convertLogoUrlToDataUrl(logoUrl: string): Promise<string | undefined> {
+    try {
+      const response = await fetch(logoUrl);
+      if (!response.ok) return undefined;
+
+      const blob = await response.blob();
+      return await new Promise<string | undefined>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => resolve(undefined);
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return undefined;
+    }
   }
 
   private getCompanyRegistrationNo(): string {
