@@ -30,6 +30,8 @@ import {
 } from 'src/app/shared/interfaces/advanced-filter.interface';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
+import { BookingImportModalComponent } from '../booking-entry/booking-upload.component';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 
 @Component({
@@ -133,6 +135,7 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
         paginationService: PaginationService,
         public mps: MenuPermissionService,
         private datePipe: CustomDatePipe,
+        private modalService: NgbModal,
     ) {
         super(paginationService);
     }
@@ -299,6 +302,17 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 disabled: !this.mps.can('insert')
             },
             {
+            label:    'XL Upload',
+            icon:     'fas fa-file-excel',
+            action:   'excel-dropdown',
+            cssClass: 'dofi-min-w-130',
+            tooltip:  'Import bookings from Excel. Download the template, fill in your data, then upload.',
+            children: [
+                { label: 'Download Template', icon: 'fas fa-download',    action: 'download-template' },
+                { label: 'Upload Excel',      icon: 'fas fa-file-upload', action: 'upload-file'       }
+            ]
+        },
+            {
                 label: 'Report',
                 icon: 'fas fa-file-alt',
                 action: 'report',
@@ -317,6 +331,12 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
             case 'create':
                 this.navigateToCreate()
                 break;
+            case 'download-template':
+            this.downloadTemplate();
+            break;
+        case 'upload-file':
+            this.openImportModal();
+            break;
             case 'report':
                 this.report();
                 break;
@@ -327,6 +347,52 @@ export class BookingListComponent extends BaseListComponent implements OnInit {
                 console.warn(`Unknown action: ${action}`);
         }
     }
+
+    downloadTemplate(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+        this.appSettingService.showError('Company is not selected');
+        return;
+    }
+    this.spinner.show();
+    this.operationService.downloadBookingTemplate(companyId).subscribe({
+        next: (blob: Blob) => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Booking_Upload_Template.xlsx';
+            a.click();
+            window.URL.revokeObjectURL(url);
+            this.spinner.hide();
+            this.appSettingService.showSuccess('Template downloaded successfully');
+        },
+        error: () => {
+            this.spinner.hide();
+            this.appSettingService.showError('Error downloading template');
+        }
+    });
+}
+
+openImportModal(): void {
+    const modalRef = this.modalService.open(BookingImportModalComponent, {
+        size:     'xl',
+        centered: true,
+        backdrop: 'static',
+        keyboard: false
+    });
+
+    modalRef.componentInstance.currentCompany = this.currentCompany;
+    modalRef.componentInstance.currentBranch  = this.currentBranch;
+    modalRef.componentInstance.userData       = this.userData;
+    modalRef.componentInstance.menuMasterSid  = this.mps.getMenuId();
+
+    modalRef.closed.subscribe((imported: boolean) => {
+        if (imported) {
+            this.appSettingService.showSuccess('Bookings imported successfully!');
+            this.searchBookings();
+        }
+    });
+}
 
     private updateHeaderActionState(): void {
         this.headerActions = this.headerActions.map(action => {

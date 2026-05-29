@@ -2038,5 +2038,26 @@ saveMasterJobExcel(payload: {
   return this.http.post(`master-job/bulk-upload/save`, payload);
 }
 
+downloadBookingTemplate(CompanyMasterSid: number): Observable<Blob> {
+  return this.http.get(`ff-booking/template`, {
+    params: { CompanyMasterSid: String(CompanyMasterSid) },
+    responseType: 'blob'
+  });
+}
+
+parseBookingExcel(formData: FormData): Observable<any> {
+  return this.http.post(`ff-booking/bulk-upload/parse`, formData);
+}
+
+saveBookingExcel(payload: {
+  validRows: any[];
+  CompanyMasterSid: number;
+  BranchMasterSid: number;
+  MenuMasterSid: number;
+  createdBy: string;
+}): Observable<any> {
+  return this.http.post(`ff-booking/bulk-upload/save`, payload);
+}
+
 
 }
