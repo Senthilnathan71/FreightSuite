@@ -3639,6 +3639,13 @@ onCurrencyChange(event: any) {
   const vehicleData = this.vehicleComponent ? this.vehicleComponent.getVehicleData() : [];
   const customsData = this.customsComponent ? this.customsComponent.getCustomsData() : [];
 
+  if (this.boeComponent && !this.boeComponent.validateBoeData()) {
+    this.selectedTab = 'BOE';
+    this.resetSaveState();
+    resolve?.(false);
+    return;
+  }
+
   // Validate customs required fields before saving
     if (customsData.length > 0 && this.customsComponent) {
     const customsErrors = this.customsComponent.getValidationErrorsForSave();

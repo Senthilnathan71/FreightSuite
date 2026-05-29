@@ -2,6 +2,18 @@ input[type="file"] {
   color: transparent;       /* hide the text */
 }
 
+.edoc-file-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 6px;
+
+  .list-group-item {
+    border: 1px solid #d7e0ec;
+    border-radius: 4px;
+    min-height: 42px;
+  }
+}
+
 // input[type="file"]::-webkit-file-upload-button {
 //   visibility: hidden;       /* hide default button */
 // }
