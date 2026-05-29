@@ -5691,6 +5691,29 @@ ${this.userData.userName}`;
   }
 
   async sendManualMail(): Promise<void> {
+    const leadCustomerValue = this.quotationForm.get('LeadOrCustomer')?.value;
+    const isCustomer = leadCustomerValue === true || String(leadCustomerValue).toUpperCase() === 'C';
+    const preCustomerMasterSid =
+      this.quotationForm.get('PreCustomerMasterSid')?.value ||
+      this.quotationData?.PreCustomerMasterSid ||
+      null;
+    const leadFromList = this.leadList.find(
+      lead => Number(lead?.PreCustomerMasterSid) === Number(preCustomerMasterSid)
+    );
+    const resolvedLeadEmail = !isCustomer
+      ? (
+        this.quotationForm.get('Email')?.value ||
+        this.quotationData?.Email ||
+        this.quotationData?.email ||
+        leadFromList?.email ||
+        leadFromList?.Email ||
+        ''
+      )
+      : '';
+    const resolvedToEmail = isCustomer
+      ? (this.quotationData?.Email || this.quotationForm.get('Email')?.value || '')
+      : resolvedLeadEmail;
+
     const pdfBlob = await this.generatePDFBlob();
     let attachmentFile: File | undefined;
     if (pdfBlob) {
@@ -5705,6 +5728,8 @@ ${this.userData.userName}`;
       action: 'UPDATE',
       attachmentFile,
       context: {
+        requireToEmail: !isCustomer,
+        allowManualEmailEntry: isCustomer,
         quotationNumber: this.quotationData?.QuoteNumber,
         date: this.datePipe.transform(this.quotationData?.QuoteDate),
         DepartmentName: departmentName,
@@ -5714,7 +5739,9 @@ ${this.userData.userName}`;
         FPD: this.getFormattedPort(this.quotationData?.quoteRoute?.[0]?.FPODSid),
         customerName: this.quotationData?.CustomerName,
         userName: this.userData?.userName,
-        toEmail: this.quotationData?.Email || '',
+        leadOrCustomer: isCustomer ? 'C' : 'L',
+        leadEmail: resolvedLeadEmail,
+        toEmail: resolvedToEmail,
         customerBranchSid: this.quotationData?.CustomerBranchSid || null,
         approvalLink: this.getApprovalUrl(),
         menuMasterSid: this.MenuMasterSid,

@@ -64,10 +64,10 @@
     </div>
     <div class="col-12" *ngIf="activeTab === 'pending-request'">
       <app-reusable-table #pendingPaymentTable [config]="pendingPaymentTableConfig" [data]="pendingPaymentRequestRows" [loading]="tableLoading"
-          [totalRecords]="pendingPaymentRequestRows.length" [paginationConfig]="paginationConfig"
+          [totalRecords]="pendingPaginationConfig.totalRecords" [paginationConfig]="pendingPaginationConfig"
           (actionClick)="onTableActionClick($event)" (rowClick)="onTableRowClick($event)"
           (sortChange)="onTableSortChange($event)" (filterChange)="onTableFilterChange($event)"
-          (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+          (pageChange)="onPendingPageChange($event)" (pageSizeChange)="onPendingPageSizeChange($event)">
       </app-reusable-table>
     </div>            
         </div>
