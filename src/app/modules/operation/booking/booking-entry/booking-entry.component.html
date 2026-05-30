@@ -1506,8 +1506,8 @@
                     </thead>
                     <tbody>
                       @if(bookingCargoProducts(cargoIndex).length > 0){
-                        <tr *ngFor="let product of bookingCargoProducts(cargoIndex).controls; let productIndex = index"
-                          [formGroupName]="productIndex" class="py-0">
+                        <ng-container *ngFor="let product of bookingCargoProducts(cargoIndex).controls; let productIndex = index">
+                        <tr [formGroupName]="productIndex" class="py-0">
                           <td>
                             <button class="btn btn-link text-danger py-0 px-1"
                             [disabled]="isCargoFromQuotation(cargoIndex)"
@@ -1684,6 +1684,16 @@
                             }
                           </td>
                         </tr>
+                        <tr class="booking-product-error-row" *ngIf="getProductRowErrors(product).length">
+                          <td colspan="24">
+                            <div class="booking-product-error-list">
+                              <span class="booking-product-error" *ngFor="let message of getProductRowErrors(product)">
+                                {{ message }}
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+                        </ng-container>
                       } @else {
                         <tr>
                           <td colspan="16" class="text-center">No Products added</td>

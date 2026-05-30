@@ -2,16 +2,16 @@
 
     <div class="row compact-form">
         <div class="col-12">
-            <div class="row  mb-2 align-items-center pt-1 mx-0">
-                <div class="col-md-4 pb-2">
+            <div class="row  align-items-center  mx-0 edoc-toolbar">
+                <div class="col-md-4">
                     <h5 class="page-title mb-0">Edoc</h5>
                     <!-- <button type="button" class="btn-close" aria-label="Close"></button> -->
                 </div>
-                <div class="col-md-8 pb-2">
+                <div class="col-md-8">
 
                     <div
                         class="row d-flex flex-wrap align-items-center justify-content-start justify-content-md-end gap-1 gap-md-2 mx-0">
-                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        <button type="button" class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="closeTemplate()">
                             <i class="fas fa-chevron-left me-1"></i>
                             Close
@@ -24,7 +24,7 @@
                             Add
                         </button>
 
-                        <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
+                        <button type="button" class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="resetForm()"
                             [disabled]="isFormDisabled || isSaving">
                             <i class="fas fa-sync-alt me-1"></i>
@@ -41,9 +41,9 @@
             </div>
         </div>
 
-        <div class="row m-1">
+        <div class="row m-1 edoc-form-shell">
             <div class="col-md-6 pe-md-1 ps-0">
-                <div class="card h-100 mb-0">
+                <div class="card h-100 mb-0 edoc-panel">
                     <div class="card-body">
                         <div class="row">
 
@@ -203,7 +203,7 @@
                 </div>
             </div>
             <div class="col-md-6 mt-md-0 mt-1 ps-md-1">
-                <div class="card h-100 mb-0">
+                <div class="card h-100 mb-0 edoc-panel edoc-followup-panel">
                     <div class="card-body">
                         <div class="row">
                             <aside class="col-md-6">
@@ -382,11 +382,11 @@
 
 <!-- File List & Preview Section -->
 <div class="col-12">
-    <div class="row bg-white mb-2 pt-2 rounded shadow-sm mx-0">
+    <div class="row bg-white mb-2 pt-2 rounded shadow-sm mx-0 edoc-preview-shell">
 
         <div class="col-12" *ngIf="existingFiles.length">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <button type="button" class="btn btn-light-secondary btn-sm" (click)="toggleDocumentList()">
+            <div class="edoc-section-header mb-2">
+                <button type="button" class="btn btn-light-secondary btn-sm edoc-collapse-btn" (click)="toggleDocumentList()">
                     <i class="fas me-1" [class.fa-chevron-down]="isDocumentListCollapsed"
                         [class.fa-chevron-up]="!isDocumentListCollapsed"></i>
                     Attached Files ({{ existingFiles.length }})
@@ -395,16 +395,17 @@
 
             <div class="list-group edoc-file-list mb-2" *ngIf="!isDocumentListCollapsed">
                 <button *ngFor="let file of existingFiles; let i = index" type="button"
-                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                    class="list-group-item list-group-item-action edoc-file-item"
                     [class.active]="selectedFile?.AttachDocumentSid === file.AttachDocumentSid"
                     (click)="selectFile(file)">
-                    <span class="d-flex align-items-center min-w-0">
-                        <i [class]="getFileIcon(file.FileName)" class="me-2"></i>
-                        <span class="text-truncate" [title]="file.FileName">{{ file.FileName }}</span>
+                    <span class="edoc-file-main">
+                        <span class="edoc-file-text">
+                            <span class="edoc-file-name" [title]="file.FileName">{{ file.FileName }}</span>
+                            <small class="edoc-file-date" *ngIf="file.DocumentDate">{{ file.DocumentDate | date:'dd/MM/yyyy' }}</small>
+                        </span>
                     </span>
-                    <span class="d-flex align-items-center gap-2">
-                        <small>{{ file.DocumentDate | date:'dd/MM/yyyy' }}</small>
-                        <button class="btn btn-sm btn-outline-primary"
+                    <span class="edoc-file-actions">
+                        <button class="btn btn-info btn-sm"
                             (click)="downloadFile(file); $event.stopPropagation()" title="Download">
                             <i class="fas fa-download"></i>
                         </button>
@@ -417,8 +418,8 @@
         <div class="col-12">
 
             <!-- File Info Header -->
-            <div class="d-flex justify-content-between align-items-center mb-3" *ngIf="selectedFile">
-                <div>
+            <div class="edoc-preview-header mb-3" *ngIf="selectedFile">
+                <div class="edoc-preview-title">
                     <h5 class="mb-1">
                         <i [class]="getFileIcon(selectedFile.FileName)" class="me-2"></i>
                         {{ selectedFile.FileName }}
@@ -428,11 +429,11 @@
                         Date: {{ selectedFile.DocumentDate | date:'dd/MM/yyyy' }}
                     </small>
                 </div>
-                <div>
-                    <button class="btn btn-primary btn-sm me-2" (click)="downloadFile(selectedFile)">
+                <div class="edoc-preview-actions">
+                    <button class="btn btn-info btn-sm me-2" (click)="downloadFile(selectedFile)">
                         <i class="fas fa-download"></i> Download
                     </button>
-                    <button class="btn btn-outline-secondary btn-sm" (click)="loadFilePreview(selectedFile)">
+                    <button class="btn btn-secondary btn-sm" (click)="loadFilePreview(selectedFile)">
                         <i class="fas fa-sync-alt"></i> Refresh
                     </button>
                 </div>

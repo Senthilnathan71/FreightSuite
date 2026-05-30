@@ -30,11 +30,11 @@
                         (click)="openAuditLogs()">
                         <i class="fas fa-history me-1"></i>Logs
                     </button>
-          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
+          <button type="button" class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="goBack()">
             <i class="fas fa-chevron-left me-1"></i>
             Back
           </button>
-          <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="reset()">
+          <button type="button" class="btn btn-secondary btn-sm dofi-min-w-80 dofi-max-w-80" (click)="reset()">
             <i class="fas fa-sync-alt me-1"></i>
             Reset
           </button>
@@ -57,24 +57,34 @@
     </span>
   </button>
 </div>
-          <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block">
+          <div *ngIf="mps.hasAtLeastOne() && isEditMode" ngbDropdown class="d-inline-block lead-actions-menu">
             <button type="button" class="btn btn-light-secondary btn-sm has-arrow" id="dropdownBasic1"
               ngbDropdownToggle>
               <i class="fas fa-ellipsis-v"></i>
             </button>
-            <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-              <button *ngIf="mps.has('edoc')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEDoc()"><i
-                  class="fas fa-file-alt me-1"></i> Edoc</button>
+            <div ngbDropdownMenu aria-labelledby="dropdownBasic1" class="lead-actions-dropdown">
+              <button *ngIf="mps.has('edoc')" class="lead-action-item" ngbDropdownItem appPreventMultiClick (click)="openEDoc()">
+                <span class="lead-action-icon"><i class="fas fa-file-alt"></i></span>
+                <span class="lead-action-text">Edoc</span>
+              </button>
               <!-- <button *ngIf="mps.has('terms_and_condition')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openTandC()"><i
                   class="fas fa-clipboard me-1"></i> Terms & Condition</button> -->
-              <button *ngIf="mps.has('authority')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openAuthority()"><i
-                  class="fas fa-shield-alt me-1"></i> Authorize</button>
-              <button *ngIf="mps.has('email')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openEmail()"><i
-                  class="fas fa-envelope me-1"></i> Email</button>
-              <button *ngIf="mps.has('follow_up')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openFollowup()"><i
-                  class="fas fa- me-1"></i> Followup</button>
-                <button *ngIf="mps.has('document_reference')" class="text-dark" ngbDropdownItem appPreventMultiClick (click)="openDocRef()"><i
-              class="fas fa-paperclip me-1"></i>Document reference</button>
+              <button *ngIf="mps.has('authority')" class="lead-action-item" ngbDropdownItem appPreventMultiClick (click)="openAuthority()">
+                <span class="lead-action-icon"><i class="fas fa-shield-alt"></i></span>
+                <span class="lead-action-text">Authorize</span>
+              </button>
+              <button *ngIf="mps.has('email')" class="lead-action-item" ngbDropdownItem appPreventMultiClick (click)="openEmail()">
+                <span class="lead-action-icon"><i class="fas fa-envelope"></i></span>
+                <span class="lead-action-text">Email</span>
+              </button>
+              <button *ngIf="mps.has('follow_up')" class="lead-action-item" ngbDropdownItem appPreventMultiClick (click)="openFollowup()">
+                <span class="lead-action-icon"><i class="fas fa-paperclip"></i></span>
+                <span class="lead-action-text">Followup</span>
+              </button>
+                <button *ngIf="mps.has('document_reference')" class="lead-action-item" ngbDropdownItem appPreventMultiClick (click)="openDocRef()">
+              <span class="lead-action-icon"><i class="fas fa-link"></i></span>
+              <span class="lead-action-text">Document reference</span>
+            </button>
             </div>
           </div>
         </div>
