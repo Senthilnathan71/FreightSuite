@@ -10,8 +10,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NgbActiveModal, NgbDateAdapter, NgbDateParserFormatter, NgbDatepickerModule, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FeatherModule } from 'angular-feather';
-import { Subject } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
 import { CommonService } from 'src/app/common/common.service';
+import { MasterService } from 'src/app/modules/master/master.service';
 import { Status } from 'src/app/common/helper';
 import { CustomDateAdapter } from 'src/app/component/datepicker/custom-date-adapter';
 import { CustomDateParserFormatter } from 'src/app/component/datepicker/custom-date-parser';
@@ -86,21 +87,34 @@ export class EdocComponent implements OnInit, OnChanges, OnDestroy {
   isSaving: boolean = false;
 
   // Client-side rendering properties
-  excelData: any[][] = [];  // For Excel sheets
-  excelSheets: string[] = []; // Sheet names
-  activeSheetIndex: number = 0; // Currently displayed sheet
-  wordHtmlContent: string = ''; // For Word documents
+  excelData: any[][] = [];
+  excelSheets: string[] = [];
+  activeSheetIndex: number = 0;
+  wordHtmlContent: string = '';
+
+  // User / customer lookups for followup fields
+  usersList: any[] = [];
+  customerList: any[] = [];
+  isExternalFreeText: boolean = false;
+
   constructor(
     private datePipe: CustomDatePipe,
     private sanitizer: DomSanitizer,
-
-    private route: ActivatedRoute, private commonService: CommonService, private fb: FormBuilder, private appSettingService: AppSettingsService, @Optional() public activeModal: NgbActiveModal,) {
+    private route: ActivatedRoute,
+    private commonService: CommonService,
+    private masterService: MasterService,
+    private fb: FormBuilder,
+    private appSettingService: AppSettingsService,
+    @Optional() public activeModal: NgbActiveModal,
+  ) {
     this.minDate = this.toNgbDateStruct(new Date())
   }
 
 
   ngOnInit() {
     this.userData = this.appSettingService.getDecryptedUserProfile();
+    this.currentCompany = this.appSettingService.decrypt(localStorage.getItem('selected-company'));
+    this.loadLookups();
 
     console.log('📂 Edoc modal opened!');
     console.log('📋 Received screenName:', this.screenName);
@@ -144,6 +158,18 @@ export class EdocComponent implements OnInit, OnChanges, OnDestroy {
       }
     }
   }
+  loadLookups(): void {
+    const cid = this.currentCompany?.CompanyMasterSid;
+    if (!cid) return;
+    forkJoin({
+      users:     this.masterService.getAllFfUserByCompany(cid),
+      customers: this.masterService.getAllCustomersWithCustomerBranch(cid),
+    }).subscribe(({ users, customers }: any) => {
+      this.usersList    = users?.data || [];
+      this.customerList = customers   || [];
+    });
+  }
+
   initEdocForm() {
     this.edocform = this.fb.group({
       AttachDocmentNo: ['', Validators.required],
@@ -152,40 +178,66 @@ export class EdocComponent implements OnInit, OnChanges, OnDestroy {
       Documenttype: ['', Validators.required],
       ReceivedDate: ['', Validators.required],
       SentDate: ['', Validators.required],
-      FollowupRequired: [false], // ✅ boolean, not 'N'
+      FollowupRequired: [false],
       FollowupDate: [''],
       FollowupAction: [''],
+      Subject: [''],
+      InternalUser: [null],
+      ExternalUser: [''],
       EdocRemarks: [''],
       FollowupRemarks: [''],
-      EdocStatus: [Status.Active, Validators.required],      // ✅ Default "A"
+      EdocStatus: [Status.Active, Validators.required],
       Public: ['N'],
       sentEmail: ['N'],
-      FollowupStatus: [Status.Active],                       // ✅ Default "A"
+      FollowupStatus: [Status.Active],
       CompanyMasterSid: this.toNumberOrNull(this.componentData.CompanyMasterSid),
       BranchMasterSid: this.toNumberOrNull(this.componentData.BranchMasterSid),
       MenuMasterSid: this.toNumberOrNull(this.componentData.MenuMasterSid),
       DocumentSid: this.toNumberOrNull(this.componentData.DocumentSid)
     });
-    this.edocform.get('FollowupRequired')?.valueChanges.subscribe((isChecked) => {
-      const dateCtrl = this.edocform.get('FollowupDate');
-      const actionCtrl = this.edocform.get('FollowupAction');
-      const publicCtrl = this.edocform.get('Public');
-      const emailCtrl = this.edocform.get('sentEmail');
-      const remarksCtrl = this.edocform.get('FollowupRemarks');
 
+    this.edocform.get('FollowupRequired')?.valueChanges.subscribe((isChecked) => {
+      const dateCtrl     = this.edocform.get('FollowupDate');
+      const actionCtrl   = this.edocform.get('FollowupAction');
+      const subjectCtrl  = this.edocform.get('Subject');
+      const internalCtrl = this.edocform.get('InternalUser');
+      const externalCtrl = this.edocform.get('ExternalUser');
 
       if (isChecked) {
         dateCtrl?.setValidators([Validators.required]);
         actionCtrl?.setValidators([Validators.required]);
+        subjectCtrl?.setValidators([Validators.required]);
       } else {
         dateCtrl?.clearValidators();
         actionCtrl?.clearValidators();
+        subjectCtrl?.clearValidators();
+        internalCtrl?.clearValidators();
+        externalCtrl?.clearValidators();
         dateCtrl?.setValue('');
         actionCtrl?.setValue('');
+        subjectCtrl?.setValue('');
+        internalCtrl?.setValue(null);
+        externalCtrl?.setValue('');
+        this.isExternalFreeText = false;
       }
 
       dateCtrl?.updateValueAndValidity();
       actionCtrl?.updateValueAndValidity();
+      subjectCtrl?.updateValueAndValidity();
+      internalCtrl?.updateValueAndValidity();
+      externalCtrl?.updateValueAndValidity();
+    });
+
+    this.edocform.get('FollowupAction')?.valueChanges.subscribe(action => {
+      const ctrl = this.edocform.get('InternalUser');
+      const followupRequired = this.edocform.get('FollowupRequired')?.value;
+      if (followupRequired && (action === 'Internal' || action === 'Both')) {
+        ctrl?.setValidators([Validators.required]);
+      } else {
+        ctrl?.clearValidators();
+        if (action !== 'Both') ctrl?.setValue(null);
+      }
+      ctrl?.updateValueAndValidity();
     });
   }
 
@@ -193,6 +245,21 @@ export class EdocComponent implements OnInit, OnChanges, OnDestroy {
     this.edocform.patchValue({
       FollowupRequired: event.target.checked
     });
+  }
+
+  get showInternalUserField(): boolean {
+    const a = this.edocform?.get('FollowupAction')?.value;
+    return !!this.edocform?.get('FollowupRequired')?.value && (a === 'Internal' || a === 'Both');
+  }
+
+  get showExternalUserField(): boolean {
+    const a = this.edocform?.get('FollowupAction')?.value;
+    return !!this.edocform?.get('FollowupRequired')?.value && (a === 'External' || a === 'Both');
+  }
+
+  toggleExternalFreeText(): void {
+    this.isExternalFreeText = !this.isExternalFreeText;
+    this.edocform.get('ExternalUser')?.reset();
   }
 
   private getDefaultFormValue(): any {
@@ -206,6 +273,9 @@ export class EdocComponent implements OnInit, OnChanges, OnDestroy {
       FollowupRequired: false,
       FollowupDate: '',
       FollowupAction: '',
+      Subject: '',
+      InternalUser: null,
+      ExternalUser: '',
       EdocRemarks: '',
       FollowupRemarks: '',
       EdocStatus: Status.Active,
@@ -230,6 +300,7 @@ export class EdocComponent implements OnInit, OnChanges, OnDestroy {
     this.excelData = [];
     this.excelSheets = [];
     this.wordHtmlContent = '';
+    this.isExternalFreeText = false;
     this.edocform.reset(this.getDefaultFormValue());
     this.edocform.markAsPristine();
     this.edocform.markAsUntouched();
@@ -449,8 +520,9 @@ export class EdocComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   modeOfAction = [
-    { id: '1', name: 'Internal followup' },
-    { id: '2', name: 'External followup' },
+    { id: '1', name: 'Internal' },
+    { id: '2', name: 'External' },
+    { id: '3', name: 'Both' },
   ];
 
   // closeModal(){
@@ -752,18 +824,27 @@ loadEdocData(selectAttachDocumentSid?: number | string, afterLoad?: () => void) 
 
     // Patch followup data
     if (followupData) {
+      this.isExternalFreeText = !!(followupData.ExternalUser &&
+        !this.customerList.some((c: any) => c.CustomerName === followupData.ExternalUser));
       this.edocform.patchValue({
         FollowupDate: followupData.FollowupDate || null,
         FollowupAction: followupData.FollowupAction || '',
+        Subject: followupData.Subject || '',
+        InternalUser: followupData.InternalUser || null,
+        ExternalUser: followupData.ExternalUser || '',
         Public: followupData.Public || 'N',
         sentEmail: followupData.sentEmail || 'N',
         FollowupRemarks: followupData.Remarks || '',
         FollowupStatus: followupData.Status || 'A',
       });
     } else {
+      this.isExternalFreeText = false;
       this.edocform.patchValue({
         FollowupDate: null,
         FollowupAction: '',
+        Subject: '',
+        InternalUser: null,
+        ExternalUser: '',
         FollowupRemarks: '',
         FollowupStatus: 'A',
       });
