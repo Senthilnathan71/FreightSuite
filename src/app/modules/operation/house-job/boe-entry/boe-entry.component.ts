@@ -243,19 +243,19 @@ export class BoeEntryComponent implements OnInit, OnChanges, OnDestroy {
       
       DeclarationNo: [data?.DeclarationNo || '', [Validators.required]],
       BOENo: [data?.BOENo || '', [Validators.required]],
-      BOEDate: [data?.BOEDate ? this.formatDate(data.BOEDate) : ''],
+      BOEDate: [data?.BOEDate ? this.formatDate(data.BOEDate) : null],
       BOEValue: [data?.BOEValue || null],
-      BOEInvoiceValue: [data?.BOEInvoiceValue || ''],
+      BOEInvoiceValue: [data?.BOEInvoiceValue || null],
       GrossWeight: [data?.GrossWeight || null],
       Volume: [data?.Volume || null],
       TransactionType: [data?.TransactionType || null, [Validators.required]],
       Amount: [data?.Amount || null],
-      ProcessDate: [data?.ProcessDate ? this.formatDate(data.ProcessDate) : ''],
-      ReceivedDate: [data?.ReceivedDate ? this.formatDate(data.ReceivedDate) : ''],
-      AckNumber: [data?.AckNumber || ''],
-      AckDate: [data?.AckDate ? this.formatDate(data.AckDate) : ''],
-      AckStatus: [data?.AckStatus || ''],
-      Remarks: [data?.Remarks || data?.Remarks || ''],
+      ProcessDate: [data?.ProcessDate ? this.formatDate(data.ProcessDate) : null],
+      ReceivedDate: [data?.ReceivedDate ? this.formatDate(data.ReceivedDate) : null],
+      AckNumber: [data?.AckNumber || null],
+      AckDate: [data?.AckDate ? this.formatDate(data.AckDate) : null],
+      AckStatus: [data?.AckStatus || null],
+      Remarks: [data?.Remarks || data?.Remarks || null],
       
       status: [data?.status || 'Active'],
       CreatedBy: [data?.CreatedBy || this.userData?.userEmail],
@@ -449,9 +449,16 @@ export class BoeEntryComponent implements OnInit, OnChanges, OnDestroy {
         return false;
       }
 
-      if (boe.invalid) {
-        boe.markAllAsTouched();
-        this.appSettingService.showError("Please fill all the required fields correctly");
+      const invalidDateField = this.boeDateFields.find(field => {
+        const control = boe.get(field);
+        return this.hasControlValue(control?.value) && !!control?.invalid;
+      });
+
+      if (invalidDateField) {
+        boe.get(invalidDateField)?.markAsTouched();
+        this.appSettingService.showWarning(
+          `[SNo: ${i + 1}] Please enter a valid date.`
+        );
         this.validationResult.emit(false);
         return false;
       }
