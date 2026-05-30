@@ -34,7 +34,7 @@
           <td>{{ i + 1 }}</td>
           <td><span class="source-tag">{{ f.menuName || '—' }}</span></td>
           <td>
-            <a class="link" (click)="navigate(f)">{{ f.documentNo || '—' }}</a>
+            <a class="link" (click)="navigate(f)">{{ f.linkLabel }}</a>
           </td>
           <td class="subject-cell" [title]="f.Subject">{{ f.Subject }}</td>
           <td>
@@ -72,7 +72,7 @@
   <div class="route-modal-body" style="padding: 16px;">
     <p class="mb-1">Mark this followup as completed?</p>
     <p class="mb-0" style="font-size:0.8rem; color:#555;">
-      <strong>{{ confirmItem?.menuName }}</strong> — {{ confirmItem?.documentNo }}
+      <strong>{{ confirmItem?.menuName }}</strong> — {{ confirmItem?.linkLabel }}
     </p>
   </div>
   <div class="route-modal-footer">

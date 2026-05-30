@@ -298,8 +298,9 @@ export interface SalesDashboardData {
 
 export interface DashboardFollowupItem {
   FollowupSid: number;
-  DocumentSid: number;
-  documentNo: string;
+  DocumentSid: number | null;
+  documentNo: string | null;
+  linkLabel: string;
   Subject: string;
   followupDate: string;
   followUpStatus: 'Overdue' | 'Due Today' | 'Upcoming';

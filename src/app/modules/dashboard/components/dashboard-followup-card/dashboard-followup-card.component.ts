@@ -117,9 +117,13 @@ export class DashboardFollowupCardComponent implements OnInit, OnChanges {
   }
 
   navigate(item: DashboardFollowupItem): void {
-    if (!item.menuPath || !item.DocumentSid) return;
+    if (!item.menuPath) return;
     const basePath = item.menuPath.replace(/\/(list|entry)$/, '');
     const prefix = basePath.startsWith('/') ? '' : '/';
-    this.router.navigate([`${prefix}${basePath}/entry/${item.DocumentSid}`]);
+    if (item.DocumentSid) {
+      this.router.navigate([`${prefix}${basePath}/entry/${item.DocumentSid}`]);
+    } else {
+      this.router.navigate([`${prefix}${basePath}`]);
+    }
   }
 }
