@@ -46,6 +46,7 @@ const CONFIG_TEMPLATES: ConfigTemplate[] = [
   { configurationName: 'Printallbank', displayName: 'Print All Bank', configType: 'boolean' },
   { configurationName: 'DisableRateUpdateBack', displayName: 'Disable Rate Update Back', configType: 'boolean' },
   { configurationName: 'ReceiptAllowtoprintbeforePosting', displayName: 'Receipt Allow to print before posting', configType: 'boolean' },
+  { configurationName: 'QuoteApproval', displayName: 'Quote Approval', configType: 'boolean'}
 ];
 
 @Component({
