@@ -160,8 +160,9 @@ export class QuotationEntryComponent implements OnInit, OnDestroy, HasUnsavedCha
     AuthorityDetailSid: null,
     ApprovedBy : ''
   }
-   rateLock: boolean = false;
+  rateLock: boolean = false;
   rateLockConfig: any;
+  quoteAutoApprovalEnabled: boolean = false;
   canUserLockRates: boolean = false;
   tariffData: any;
   currentUserEmail: string;
@@ -2937,6 +2938,8 @@ isRateLockDisabled(): boolean {
     let currentCompanyMasterSid = this.currentCompany?.CompanyMasterSid;
     let currentBranchMasterSid = this.currentBranch?.BranchMasterSid;
     let userEmail = this.userData?.userEmail;
+    const shouldAutoApproveQuote = !this.isEditMode && this.quoteAutoApprovalEnabled;
+    const quoteCreatedByUserName = this.userData?.userName || userEmail || '';
   
     const transportBy = this.dataFromEnqPage?.TransportBy || null;
     const clearanceBy = this.dataFromEnqPage?.ClearanceBy || null;
@@ -3096,6 +3099,11 @@ isRateLockDisabled(): boolean {
           }))
           return {
             ...carrier,
+            ...(shouldAutoApproveQuote ? {
+              ApprovalStatus: 'Approved',
+              authorizerStatus: 'Approved',
+              ApprovedBy: quoteCreatedByUserName
+            } : {}),
             ...(canLoginUserAuthorize ? {ApprovalStatus : finalValue} : {}),
             quoteCharges : allCharges
           }
@@ -7612,6 +7620,8 @@ toggleLock() {
     
     // Find the QuoteRateLockUser configuration
     this.rateLockConfig = config.find((c: any) => c.ConfigurationName === 'QuoteRateLockUser');
+    const quoteApprovalConfig = config.find((c: any) => c.ConfigurationName === 'QuoteApproval');
+    this.quoteAutoApprovalEnabled = this.parseConfigBoolean(quoteApprovalConfig?.ConfigurationValue, false);
     
     
     
@@ -7621,6 +7631,7 @@ toggleLock() {
   } catch (error) {
     console.error('Error loading rate lock configuration:', error);
     this.rateLockConfig = null;
+    this.quoteAutoApprovalEnabled = false;
     this.canUserLockRates = false;
     
     // Disable the checkbox on error
