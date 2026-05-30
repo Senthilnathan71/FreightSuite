@@ -19,20 +19,20 @@
 
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="addNewEdoc()"
-                            [disabled]="isFormDisabled">
+                            [disabled]="isFormDisabled || isSaving">
                             <i class="fas fa-plus me-1"></i>
                             Add
                         </button>
 
                         <button type="button" class="btn btn-light-secondary btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="resetForm()"
-                            [disabled]="isFormDisabled">
+                            [disabled]="isFormDisabled || isSaving">
                             <i class="fas fa-sync-alt me-1"></i>
                             Reset
                         </button>
                         <button type="button" class="btn btn-info btn-sm dofi-min-w-80 dofi-max-w-80"
                             (click)="onSubmit()"
-                            [disabled]="isFormDisabled">
+                            [disabled]="isFormDisabled || isSaving">
                             <i class="fas fa-save me-1"></i>
                             Save
                         </button>

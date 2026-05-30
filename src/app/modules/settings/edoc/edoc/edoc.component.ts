@@ -83,6 +83,7 @@ export class EdocComponent implements OnInit, OnChanges, OnDestroy {
   existingFollowups: any[] = [];
   isAddMode: boolean = false;
   isDocumentListCollapsed: boolean = false;
+  isSaving: boolean = false;
 
   // Client-side rendering properties
   excelData: any[][] = [];  // For Excel sheets
@@ -263,6 +264,10 @@ export class EdocComponent implements OnInit, OnChanges, OnDestroy {
 
 
   onSubmit() {
+    if (this.isSaving) {
+      return;
+    }
+
     const formSnapshot = { ...this.edocform.getRawValue() };
     const formValue = { ...formSnapshot };
     console.log('📤 Edoc save payload:', {
@@ -316,6 +321,7 @@ export class EdocComponent implements OnInit, OnChanges, OnDestroy {
     });
 
     console.log('Uploading files...');
+    this.isSaving = true;
 
     // ✅ Update or Create API call
     if (this.attachDocumentSid) {
@@ -334,13 +340,15 @@ export class EdocComponent implements OnInit, OnChanges, OnDestroy {
             });
             this.selectedFiles = [];
             this.isAddMode = false;
-            this.loadEdocData(this.attachDocumentSid);
+            this.loadEdocData(this.attachDocumentSid, () => this.isSaving = false);
           } else {
+            this.isSaving = false;
             this.appSettingService.showError(res.message || 'Edoc update failed');
             this.closeTemplate()
           }
         },
         (error) => {
+          this.isSaving = false;
           console.error('Upload error:', error);
           this.appSettingService.showError(error?.error?.message || 'Upload failed');
         }
@@ -361,13 +369,15 @@ export class EdocComponent implements OnInit, OnChanges, OnDestroy {
             });
             this.selectedFiles = [];
             this.isAddMode = false;
-            this.loadEdocData(firstFile?.AttachDocumentSid);
+            this.loadEdocData(firstFile?.AttachDocumentSid, () => this.isSaving = false);
           } else {
+            this.isSaving = false;
             this.appSettingService.showError(res.message || 'Edoc creation failed');
             this.closeTemplate()
           }
         },
         (error) => {
+          this.isSaving = false;
           console.error('Upload error:', error);
           this.appSettingService.showError(error?.error?.message || 'Upload failed');
         }
@@ -506,12 +516,13 @@ export class EdocComponent implements OnInit, OnChanges, OnDestroy {
 
 
 // 2️⃣ Load existing files from API
-loadEdocData(selectAttachDocumentSid?: number | string) {
+loadEdocData(selectAttachDocumentSid?: number | string, afterLoad?: () => void) {
   if (!this.componentData?.MenuMasterSid || !this.componentData?.DocumentSid) {
     this.existingFiles = [];
     this.existingGroup = null;
     this.existingFollowups = [];
     this.addNewEdoc();
+    afterLoad?.();
     return;
   }
 
@@ -530,6 +541,7 @@ loadEdocData(selectAttachDocumentSid?: number | string) {
         this.existingGroup = null;
         this.existingFollowups = [];
         this.addNewEdoc();
+        afterLoad?.();
         return;
       }
 
@@ -553,6 +565,7 @@ loadEdocData(selectAttachDocumentSid?: number | string) {
       } else if (this.existingFiles.length === 0) {
         this.addNewEdoc();
       }
+      afterLoad?.();
     },
     (error) => {
       console.error('❌ Error loading Edoc data:', error);
@@ -566,9 +579,11 @@ loadEdocData(selectAttachDocumentSid?: number | string) {
         this.existingGroup = null;
         this.existingFollowups = [];
         this.addNewEdoc();
+        afterLoad?.();
         return;
       }
       this.appSettingService.showError('Failed to load document data');
+      afterLoad?.();
     }
   );
 }

@@ -1,4 +1,4 @@
-import { Component, ViewChild, TemplateRef, Input, OnInit, Output, EventEmitter, OnChanges, SimpleChanges, ElementRef } from '@angular/core';
+import { Component, ViewChild, TemplateRef, Input, OnInit, Output, EventEmitter, OnChanges, SimpleChanges, ElementRef, OnDestroy } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { NgbDatepickerModule, NgbModal, NgbModalRef, NgbPaginationModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
@@ -6,7 +6,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
 import { OperationService } from '../../operation.service';
 import { AppSettingsService } from 'src/app/core/services/app-settings.service';
-import { catchError, firstValueFrom, forkJoin, of } from 'rxjs';
+import { catchError, firstValueFrom, forkJoin, of, Subscription } from 'rxjs';
 import { FeatherModule } from 'angular-feather';
 import { OnlyNumbersDirective } from 'src/app/core/Directives/onlyNumbersOfLength';
 import { DecimalPrecisionDirective } from 'src/app/core/Directives/decimalWithPrecision';
@@ -47,7 +47,7 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
     CustomDatePipe
   ]
 })
-export class BoeEntryComponent implements OnInit, OnChanges {
+export class BoeEntryComponent implements OnInit, OnChanges, OnDestroy {
 
   @Input() screenName: string;
   @Input() formData: any;
@@ -88,6 +88,14 @@ export class BoeEntryComponent implements OnInit, OnChanges {
   
   // Data management
   private prevValue: boolean;
+  private boeValueChangesSub?: Subscription;
+  private readonly requiredBoeFields = ['DeclarationNo', 'BOENo', 'TransactionType'];
+  private readonly boeDateFields = ['BOEDate', 'ProcessDate', 'ReceivedDate', 'AckDate'];
+  private readonly requiredBoeFieldLabels: Record<string, string> = {
+    DeclarationNo: 'Declaration No',
+    BOENo: 'BOE No',
+    TransactionType: 'Transaction Type'
+  };
   
   // Pagination
   boeDataLength: number = 0;
@@ -165,7 +173,12 @@ export class BoeEntryComponent implements OnInit, OnChanges {
       this.patchValues(this._dataItems);
       this.dataItemsPatched = true;
     }
+    this.subscribeBoeChanges();
     this.updateFormDisabledState();
+  }
+
+  ngOnDestroy(): void {
+    this.boeValueChangesSub?.unsubscribe();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -198,6 +211,13 @@ export class BoeEntryComponent implements OnInit, OnChanges {
     console.log("Parent Value Changed", value);
   }
 
+  private subscribeBoeChanges(): void {
+    this.boeValueChangesSub?.unsubscribe();
+    this.boeValueChangesSub = this.boeFormArray.valueChanges.subscribe(() => {
+      this.dataEmitter.emit(this.getBoeData());
+    });
+  }
+
   // Form initialization
   initBoeForm() {
     this.boeForm = this.fb.group({
@@ -221,14 +241,14 @@ export class BoeEntryComponent implements OnInit, OnChanges {
       BranchMasterSid: [data?.BranchMasterSid || this.currentBranch?.BranchMasterSid],
       MenuMasterSid: [Number(sessionStorage.getItem('currentMenuId'))],
       
-      DeclarationNo: [data?.DeclarationNo || ''],
+      DeclarationNo: [data?.DeclarationNo || '', [Validators.required]],
       BOENo: [data?.BOENo || '', [Validators.required]],
       BOEDate: [data?.BOEDate ? this.formatDate(data.BOEDate) : ''],
       BOEValue: [data?.BOEValue || null],
       BOEInvoiceValue: [data?.BOEInvoiceValue || ''],
       GrossWeight: [data?.GrossWeight || null],
       Volume: [data?.Volume || null],
-      TransactionType: [data?.TransactionType || null],
+      TransactionType: [data?.TransactionType || null, [Validators.required]],
       Amount: [data?.Amount || null],
       ProcessDate: [data?.ProcessDate ? this.formatDate(data.ProcessDate) : ''],
       ReceivedDate: [data?.ReceivedDate ? this.formatDate(data.ReceivedDate) : ''],
@@ -334,7 +354,7 @@ export class BoeEntryComponent implements OnInit, OnChanges {
       return;
     }
 
-    const value = formGroup.value;
+    const value = this.normalizeBoePayload(formGroup.getRawValue());
     const houseJobSid = this.formData?.HouseJobSid;
     const companySid = this.formData?.CompanyMasterSid;
 
@@ -409,26 +429,29 @@ export class BoeEntryComponent implements OnInit, OnChanges {
       return true;
     }
 
-    if (this.boeFormArray.invalid) {
-      this.boeFormArray.markAllAsTouched();
-      this.appSettingService.showError("Please fill all the required fields correctly");
-      this.validationResult.emit(false);
-      return false;
-    }
-
     for (let i = 0; i < this.boeFormArray.length; i++) {
       const boe = this.boeFormArray.at(i) as FormGroup;
+      const boeValue = boe.getRawValue();
 
-      const requiredFields = ['BOENo'];
-      const hasAllRequired = requiredFields.every(field => {
-        const control = boe.get(field);
-        return !!control?.value;
-      });
+      if (!this.hasBoeValue(boeValue)) {
+        continue;
+      }
 
-      if (!hasAllRequired) {
+      const missingFields = this.requiredBoeFields.filter(field => !this.hasControlValue(boe.get(field)?.value));
+
+      if (missingFields.length > 0) {
+        boe.markAllAsTouched();
+        const missingLabels = missingFields.map(field => this.requiredBoeFieldLabels[field]).join(', ');
         this.appSettingService.showWarning(
-          `[SNo: ${i + 1}] Please fill all required mandatory (*) fields.`
+          `[SNo: ${i + 1}] Please fill required fields: ${missingLabels}.`
         );
+        this.validationResult.emit(false);
+        return false;
+      }
+
+      if (boe.invalid) {
+        boe.markAllAsTouched();
+        this.appSettingService.showError("Please fill all the required fields correctly");
         this.validationResult.emit(false);
         return false;
       }
@@ -462,7 +485,9 @@ export class BoeEntryComponent implements OnInit, OnChanges {
     return [];
   }
 
-  return this.boeFormArray.getRawValue().filter((boe: any) => this.hasBoeValue(boe));
+  return this.boeFormArray.getRawValue()
+    .filter((boe: any) => this.hasBoeValue(boe))
+    .map((boe: any) => this.normalizeBoePayload(boe));
 }
 validateBoeData(): boolean {
   return this.validateBoeArray();
@@ -510,7 +535,37 @@ validateBoeData(): boolean {
 
     return fields.some(field => {
       const value = boe?.[field];
-      return value !== null && value !== undefined && String(value).trim() !== '';
+      return this.hasControlValue(value);
     });
+  }
+
+  private hasControlValue(value: any): boolean {
+    return value !== null && value !== undefined && String(value).trim() !== '';
+  }
+
+  private normalizeBoePayload(boe: any): any {
+    const payload = { ...boe };
+    this.boeDateFields.forEach(field => {
+      payload[field] = this.normalizeDateValue(payload[field]);
+    });
+    return payload;
+  }
+
+  private normalizeDateValue(value: any): string | null {
+    if (!this.hasControlValue(value)) {
+      return null;
+    }
+
+    if (value instanceof Date) {
+      return value.toISOString().split('T')[0];
+    }
+
+    if (typeof value === 'object' && value.year && value.month && value.day) {
+      const month = String(value.month).padStart(2, '0');
+      const day = String(value.day).padStart(2, '0');
+      return `${value.year}-${month}-${day}`;
+    }
+
+    return String(value);
   }
 }
