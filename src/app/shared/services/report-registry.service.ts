@@ -1569,7 +1569,38 @@ export class ReportRegistryService {
       });
 
     } catch (error) {
-      console.warn('Freight MoM Growth Report component not yet created:', error);
+      console.warn('Cost & Revenue Not Booked Report component not yet created:', error);
+    }
+
+    // unpicked-cargo-report
+       try {
+      const { UnpickedCargoComponent } = await import(
+        '../components/reports/unpicked-cargo/unpicked-cargo.component'
+      );
+
+      this.registerReport({
+        id: 'unpicked-cargo',
+        title: 'Unpicked Cargo Report',
+        component: UnpickedCargoComponent,
+        filenameTemplate: 'unpicked-cargo-report',
+        module: 'operations-report',
+        apiEndpoint: 'operations-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'Unpicked Cargo Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>Unpicked Cargo Report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn('Unpicked Cargo Report component not yet created:', error);
     }
 
   }
