@@ -1715,7 +1715,7 @@
                   </div>
                   <div style="width: 15px;text-align: center;">:</div>
                       <div style="flex: 1;line-height: 1.4;">
-                          {{ invoicePrintData?.Vessel }}<span *ngIf="invoicePrintData?.Vessel && invoicePrintData?.VoyageNo">/</span>{{ invoicePrintData?.VoyageNo }}
+                          {{ invoicePrintData?.Vessel }}<span *ngIf="invoicePrintData?.Vessel && invoicePrintData?.VoyageNo">  /  </span>{{ invoicePrintData?.VoyageNo }}
                   </div>
                 </div>
                 
@@ -1778,7 +1778,7 @@
                 <div style="width: 165px; font-weight: bolder">
                   <strong>ETD & ETA </strong>
                 </div>
-                <div>: {{ invoicePrintData?.ETD | formatDate }}<span *ngIf="invoicePrintData?.ETD && invoicePrintData?.ETA"> & </span>{{ invoicePrintData?.ETA | formatDate }}</div>
+                <div>: {{ invoicePrintData?.ETD | formatDate }}<span *ngIf="invoicePrintData?.ETD && invoicePrintData?.ETA">  &  </span>{{ invoicePrintData?.ETA | formatDate }}</div>
               </div>
 
               <!-- <div style="display: flex">
@@ -1788,20 +1788,25 @@
                
               </div> -->
 
-            <div *ngIf= isUAECompany style="display: flex;">
-              <p style="font-weight: bolder; width: 165px; margin: 0">
+            <div *ngIf="isUAECompany" style="display: flex; align-items: flex-start; margin-bottom: 2px;">
+              <div style="width: 165px; min-width: 165px; font-weight: bolder;">
                 <strong>BOE No.</strong>
-              </p>
-              <div>: {{ invoicePrintData?.BOENo }}</div>
+              </div>
+              <div style="width: 15px; min-width: 15px; text-align: center;">:</div>
+              <div style="flex: 1; line-height: 1.4; word-break: break-word;">
+                {{ invoicePrintData?.BOENo }}
+              </div>
             </div>
             
 
-            <div *ngIf= isUAECompany
-              style="display: flex;">
-              <p style="font-weight: bolder; width: 165px; margin: 0">
+            <div *ngIf="isUAECompany" style="display: flex; align-items: flex-start; margin-bottom: 2px;">
+              <div style="width: 165px; min-width: 165px; font-weight: bolder;">
                 <strong>Declaration No.</strong>
-              </p>
-              <div>: {{ invoicePrintData?.DeclarationNo }}</div>
+              </div>
+              <div style="width: 15px; min-width: 15px; text-align: center;">:</div>
+              <div style="flex: 1; line-height: 1.4; word-break: break-word;">
+                {{ invoicePrintData?.DeclarationNo }}
+              </div>
             </div>
 
             </div>

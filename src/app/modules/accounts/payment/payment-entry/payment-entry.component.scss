@@ -43,3 +43,106 @@
   border-color: #6d28d9;
   color: #fff;
 }
+
+:host .lead-actions-menu .lead-actions-dropdown {
+  min-width: 205px;
+  padding: 6px;
+  margin-top: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14);
+}
+
+:host .lead-actions-menu .lead-actions-dropdown::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  right: 16px;
+  width: 12px;
+  height: 12px;
+  background: #ffffff;
+  border-left: 1px solid rgba(5, 96, 141, 0.12);
+  border-top: 1px solid rgba(5, 96, 141, 0.12);
+  transform: rotate(45deg);
+}
+
+:host .lead-actions-menu .lead-action-item {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 5px 7px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1f2937;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  background: transparent;
+  transition: all 0.18s ease;
+}
+
+:host .lead-actions-menu .lead-action-item + .lead-action-item {
+  margin-top: 2px;
+}
+
+:host .lead-actions-menu .lead-action-item:hover,
+:host .lead-actions-menu .lead-action-item:focus {
+  border-color: rgba(5, 96, 141, 0.1);
+  background: #f0f9fc;
+  color: #05608d;
+  transform: translateX(2px);
+}
+
+:host .lead-actions-menu .lead-action-item:active {
+  background: #dff2f8;
+}
+
+:host .lead-actions-menu .lead-action-icon {
+  width: 22px;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 10px;
+  background: #0e7490;
+  transition: all 0.18s ease;
+}
+
+:host .lead-actions-menu .lead-action-item:hover .lead-action-icon,
+:host .lead-actions-menu .lead-action-item:focus .lead-action-icon {
+  color: #ffffff;
+  transform: scale(1.04);
+}
+
+:host .lead-actions-menu .lead-action-item:nth-of-type(2) .lead-action-icon {
+  background: #047857;
+}
+
+:host .lead-actions-menu .lead-action-item:nth-of-type(3) .lead-action-icon {
+  background: #2563eb;
+}
+
+:host .lead-actions-menu .lead-action-item:nth-of-type(4) .lead-action-icon {
+  background: #ea580c;
+}
+
+:host .lead-actions-menu .lead-action-item:nth-of-type(5) .lead-action-icon {
+  background: #7c3aed;
+}
+
+:host .lead-actions-menu .lead-action-text {
+  white-space: normal;
+}
+
+@media (max-width: 576px) {
+  :host .lead-actions-menu .lead-actions-dropdown {
+    min-width: 200px;
+    max-width: calc(100vw - 24px);
+  }
+}

@@ -7036,6 +7036,26 @@ public getProductFieldErrorMessage(product: AbstractControl | null, fieldName: s
   return `${label} is invalid`;
 }
 
+public getProductRowErrors(product: AbstractControl | null): string[] {
+  const fields = [
+    'ProductName',
+    'ExternaPkg',
+    'ExternlQty',
+    'UomMasterSid',
+    'Volume',
+    'GrossWeight',
+    'NetWeight',
+    'ImcoClass',
+    'UnNo',
+    'PkgGroup'
+  ];
+
+  return fields
+    .filter(fieldName => this.shouldShowProductFieldError(product, fieldName))
+    .map(fieldName => this.getProductFieldErrorMessage(product, fieldName))
+    .filter((message, index, messages) => !!message && messages.indexOf(message) === index);
+}
+
 get isTranshipmentMode(): boolean {
   return this.b['JobType']?.value === 'Transhipment';
 }
