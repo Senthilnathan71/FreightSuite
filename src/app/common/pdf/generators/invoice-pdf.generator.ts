@@ -88,7 +88,12 @@
           ((printData?.PAN || (data as any)?.companyPan) ? 12 : 0) +
           ((printData?.IRNNumber || data.invoice?.irnNumber) ? 14 : 0)
         : 0;
-    const dynamicTopMargin = baseTopMargin + extraTopMarginForLogo + extraTopMarginForIndiaFields;
+    // When UAE company has no VAT No the company info stack is ~7pt shorter, causing
+    // buildInvoiceInfo.bottomLine to sit above the content's first canvas line → double-line.
+    // Reduce top margin by 6pt to re-align the lines when VAT No is absent.
+    const companyVatNoForMargin = (data as any)?.companyPan || (!isIndiaInvoice ? (data as any)?.companyVatNo : '');
+    const extraTopMarginForVATLine = !isIndiaInvoice && !companyVatNoForMargin ? -6 : 0;
+    const dynamicTopMargin = baseTopMargin + extraTopMarginForLogo + extraTopMarginForIndiaFields + extraTopMarginForVATLine;
     const configuredMargins = data.config?.pageMargins as number[] | undefined;
     const resolvedPageMargins = configuredMargins
       ? [
@@ -240,7 +245,7 @@
       });
     }
 
-    const registrationNo = data.companyPan;
+    const registrationNo = data.companyPan || (!isIndiaInvoice ? (data as any)?.companyVatNo : '');
     if (registrationNo) {
       companyInfoStack.push({
         text: `${isIndiaInvoice ? 'GST No' : 'VAT No'} : ${registrationNo}`,
