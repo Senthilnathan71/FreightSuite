@@ -181,6 +181,22 @@ export class AccountsService {
       })
     )
   }
+  getSupplierTdsByBranch(payload: {
+    CustomerBranchSid: number;
+    LedgerMasterSid: number;
+    CompanyMasterSid: number;
+    fyStartDate: string;
+    fyEndDate: string;
+    voucherDate: string;
+    excludeVoucherHeaderSid?: number;
+  }) {
+    return this.http.post<{ data: any }>('supplier-tds-mapping/by-branch', payload).pipe(
+      map((resp: any) => {
+        return resp;
+      })
+    );
+  }
+
   getTDSDetailByHeader(TDSSetHeaderSid:number){
     return this.http.get<{data:any}>(`tds-detail/fetchByHeader/${TDSSetHeaderSid}`).pipe(
       map((resp:any)=>{
