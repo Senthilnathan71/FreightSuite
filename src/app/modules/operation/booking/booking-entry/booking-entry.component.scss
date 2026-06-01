@@ -204,6 +204,38 @@
   }
 }
 
+:host ::ng-deep .booking-products-table .error-message {
+  display: none !important;
+}
+
+:host ::ng-deep .booking-products-table .booking-product-error-row td {
+  padding: 4px 8px 6px !important;
+  background: #fff8f8;
+  border-top: 0;
+}
+
+:host ::ng-deep .booking-products-table .booking-product-error-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  max-width: 100%;
+}
+
+:host ::ng-deep .booking-products-table .booking-product-error {
+  display: inline-flex;
+  align-items: center;
+  max-width: 260px;
+  padding: 2px 6px;
+  border: 1px solid rgba(220, 53, 69, 0.18);
+  border-radius: 4px;
+  color: #ff2f45;
+  background: #fff;
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 576px) {
   .lead-actions-menu {
     .lead-actions-dropdown {
