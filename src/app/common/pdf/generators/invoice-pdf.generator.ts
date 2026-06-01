@@ -78,22 +78,21 @@
     const resolvedTerms = getInvoiceTerms(data);
     const printData = (data as any).invoicePrintData;
     const taxConfig = (data.taxDisplayConfig as any) || {};
-    const isIndiaInvoice = !taxConfig.showVAT;
+    const isIndiaInvoice = isIndiaPdfInvoice(data, taxConfig);
     const logoHeaderHeight = INVOICE_LOGO_HEIGHT_PT;
     const baseTopMargin = 140;
     const extraTopMarginForLogo = Math.max(0, logoHeaderHeight - 55);
+    const extraTopMarginForIRNLine = isIndiaInvoice ? 14 : 0;
     const extraTopMarginForIndiaFields =
       isIndiaInvoice
         ? (printData?.GSTCode ? 12 : 0) +
-          ((printData?.PAN || (data as any)?.companyPan) ? 12 : 0) +
-          ((printData?.IRNNumber || data.invoice?.irnNumber) ? 14 : 0)
+          ((printData?.PAN || (data as any)?.companyPan) ? 12 : 0)
         : 0;
     // When UAE company has no VAT No the company info stack is ~7pt shorter, causing
     // buildInvoiceInfo.bottomLine to sit above the content's first canvas line → double-line.
     // Reduce top margin by 6pt to re-align the lines when VAT No is absent.
-    const companyVatNoForMargin = (data as any)?.companyPan || (!isIndiaInvoice ? (data as any)?.companyVatNo : '');
-    const extraTopMarginForVATLine = !isIndiaInvoice && !companyVatNoForMargin ? -6 : 0;
-    const dynamicTopMargin = baseTopMargin + extraTopMarginForLogo + extraTopMarginForIndiaFields + extraTopMarginForVATLine;
+    const extraTopMarginForVATLine = 0;
+    const dynamicTopMargin = baseTopMargin + extraTopMarginForLogo + extraTopMarginForIndiaFields + extraTopMarginForIRNLine + extraTopMarginForVATLine;
     const configuredMargins = data.config?.pageMargins as number[] | undefined;
     const resolvedPageMargins = configuredMargins
       ? [
@@ -194,7 +193,7 @@
     const branch = data.branch;
     const logo = data.logo;
     const taxConfig = (data.taxDisplayConfig as any) || {};
-    const isIndiaInvoice = !taxConfig.showVAT;
+    const isIndiaInvoice = isIndiaPdfInvoice(data, taxConfig);
     const PAGE_LEFT = -10;
     const PAGE_RIGHT = 565;
 
@@ -245,8 +244,8 @@
       });
     }
 
-    const registrationNo = data.companyPan || (!isIndiaInvoice ? (data as any)?.companyVatNo : '');
-    if (registrationNo) {
+    const registrationNo = (isIndiaInvoice ? data.companyPan : (data as any)?.companyVatNo) || '';
+    if (!isIndiaInvoice || registrationNo) {
       companyInfoStack.push({
         text: `${isIndiaInvoice ? 'GST No' : 'VAT No'} : ${registrationNo}`,
         style: 'addressText',
@@ -321,10 +320,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
   const invoice = data.invoice;
   const printData = (data as any).invoicePrintData;
   const taxConfig = (data.taxDisplayConfig as any) || {};
-  const companyCountry = String((data as any)?.companyCountryCode || getNormalizedCompanyCountry(data))
-    .trim()
-    .toLowerCase();
-  const isIndiaInvoice = companyCountry ? companyCountry === 'in' || companyCountry === 'india' : !taxConfig.showVAT;
+  const isIndiaInvoice = isIndiaPdfInvoice(data, taxConfig);
   const customerTaxLabel = isIndiaInvoice ? 'GST No.' : 'VAT No.';
 
   const PAGE_LEFT = -10;
@@ -400,18 +396,8 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
     margin: [0, 0, 0, 5]
   });
 
-  // GST/VAT No
-  rightStack.push({
-    columns: [
-      { text: String(customerTaxLabel), width: RIGHT_LABEL_WIDTH, bold: true ,  },
-      { text: ':', width: COLON_WIDTH },
-      { text: printData?.GST_VAT || invoice?.customerGstVat || '', width: '*' }
-    ],
-    margin: [0, 0, 0, 10]
-  });
-
-  // IRN Number (India only) - show the label even when the value is empty
   if (isIndiaInvoice) {
+    // IRN Number - show the label even when the value is empty
     rightStack.push({
       columns: [
         { text: 'IRN No.', width: RIGHT_LABEL_WIDTH, style: 'labelBold' },
@@ -419,6 +405,16 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
         { text: printData?.IRNNumber || invoice?.irnNumber || '', width: '*' }
       ],
       margin: [0, 0, 0, 7]
+    });
+  } else {
+    // VAT Number - show the label even when the value is empty
+    rightStack.push({
+      columns: [
+        { text: String(customerTaxLabel), width: RIGHT_LABEL_WIDTH, bold: true },
+        { text: ':', width: COLON_WIDTH },
+        { text: printData?.GST_VAT || invoice?.customerGstVat || '', width: '*' }
+      ],
+      margin: [0, 0, 0, 4]
     });
   }
 
@@ -459,7 +455,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
         lineWidth: 1.5
       }
     ],
-    margin: [0, 5, 0, 5]
+    margin: [0, 2, 0, 3]
   };
 
   return {
@@ -915,6 +911,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
 
   function getNormalizedCompanyCountry(data: InvoicePdfData): string {
     return String(
+      (data as any)?.companyCountryCode ||
       data.company?.countryCode ||
       data.branch?.countryCode ||
       (data.company as any)?.country ||
@@ -924,6 +921,16 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
       .trim()
       .toLowerCase()
       .replace(/[^a-z]/g, '');
+  }
+
+  function isIndiaPdfInvoice(data: InvoicePdfData, taxConfig: any = {}): boolean {
+    const companyCountry = getNormalizedCompanyCountry(data);
+
+    if (companyCountry) {
+      return companyCountry === 'in' || companyCountry === 'india';
+    }
+
+    return !taxConfig.showVAT;
   }
 
   function buildDefaultInvoiceTotalRow(colCount: number, grandTotal: any): any[] {
