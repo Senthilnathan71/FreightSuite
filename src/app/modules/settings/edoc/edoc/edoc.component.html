@@ -198,6 +198,17 @@
                                 </div>
                             </aside>
 
+                            <aside class="col-md-6">
+                                <div class="custom-form-group mt-md-2">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input"
+                                            [checked]="edocform.get('Public')?.value === 'Y'"
+                                            (change)="toggleYN('Public', $event)" />
+                                        <label class="form-check-label">Public</label>
+                                    </div>
+                                </div>
+                            </aside>
+
                         </div>
                     </div>
                 </div>
@@ -313,17 +324,6 @@
                                             [checked]="edocform.get('sentEmail')?.value === 'Y'"
                                             (change)="toggleYN('sentEmail', $event)" />
                                         <label class="form-check-label">Sent Email</label>
-                                    </div>
-                                </div>
-                            </aside>
-
-                            <aside class="col-md-6" *ngIf="edocform.get('FollowupRequired')?.value">
-                                <div class="custom-form-group mt-md-2">
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input"
-                                            [checked]="edocform.get('Public')?.value === 'Y'"
-                                            (change)="toggleYN('Public', $event)" />
-                                        <label class="form-check-label">Public</label>
                                     </div>
                                 </div>
                             </aside>
