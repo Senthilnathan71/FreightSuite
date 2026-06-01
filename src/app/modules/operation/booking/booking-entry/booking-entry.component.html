@@ -814,7 +814,7 @@
                       <dofi-searchable-dropdown [items]="incoList" formControlName="IncoTerms" placeholder=""
                         [displayFields]="incoLookupConfig.displayFields"
                         [displayLabels]="incoLookupConfig.displayLabels" [labelFields]="incoLookupConfig.labelFields"
-                        bindLabel="IncoName" bindValue="IncoName" (itemSelected)="onIncoTermsChange($event)">
+                        bindLabel="IncoCode" bindValue="IncoCode" (itemSelected)="onIncoTermsChange($event)">
                       </dofi-searchable-dropdown>
                       <label for="text-input" class="input-label">Inco Terms <span class="text-danger">*</span></label>
                       @if(bookingForm.get('IncoTerms')?.touched && bookingForm.get('IncoTerms')?.invalid){
