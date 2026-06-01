@@ -13,8 +13,8 @@
   </div>
 
   <div class="followup-tabs">
-    <button class="followup-tab" [class.active]="tab === 'our'" (click)="switchTab('our')">Action Required</button>
-    <button class="followup-tab" [class.active]="tab === 'created'" (click)="switchTab('created')">Raised by Me</button>
+    <button class="followup-tab" [class.active]="tab === 'our'" (click)="switchTab('our')">My Actions</button>
+    <button class="followup-tab" [class.active]="tab === 'created'" (click)="switchTab('created')">My Followups</button>
   </div>
 
   <div class="table-scroll" (scroll)="onScroll($event)">

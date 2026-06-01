@@ -5027,7 +5027,7 @@ getFormattedPort(code: string): string {
       return;
     }
 
-    const inco = this.incoList.find(item => item.IncoName === incoTerm);
+    const inco = this.incoList.find(item => item.IncoCode === incoTerm);
     if (inco && inco.OceanFreight) {
       this.bookingForm.get('FreightTerms')?.setValue(inco.OceanFreight, { emitEvent: false });
     }
@@ -5038,7 +5038,7 @@ getFormattedPort(code: string): string {
     }
 
     const inco = this.incoList.find(item =>
-      item.IncoName === selectedInco || item.IncoMasterSid === selectedInco
+      item.IncoCode === selectedInco || item.IncoMasterSid === selectedInco
     );
 
     if (inco && inco.OceanFreight) {
