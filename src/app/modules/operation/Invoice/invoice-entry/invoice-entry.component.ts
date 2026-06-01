@@ -78,6 +78,8 @@ import { InvoiceService } from '../../services/invoice.service';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
 import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
+import { InvoiceCommodityPrintComponent } from '../invoice-new/invoice-commodity-print.component';
+
 interface NgbDateStructLike {
   day: number;
   month: number;
@@ -104,7 +106,8 @@ interface NgbDateStructLike {
     DecimalPrecisionDirective,
     ElementStateGuardDirective,
     FormStateGuardDirective,
-    RouterModule
+    RouterModule,
+    InvoiceCommodityPrintComponent
   ],
   templateUrl: './invoice-entry.component.html',
   styleUrl: './invoice-entry.component.scss',
@@ -279,6 +282,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
   TandCList: any[] = [];
   isTermsAndConditionsEnabled: boolean = true;
   isPrintAllBankEnabled: boolean = false;
+  isShowCargowithContainerEnabled: boolean = false;
   isUAECompany: boolean = false;
   customsDutyLabel: string = 'Customs Duty Invoice';
   private isPrintAllBankConfigLoaded: boolean = false;
@@ -462,6 +466,7 @@ export class InvoiceEntryComponent implements OnInit,HasUnsavedChanges , OnDestr
     }
     this.loadTermsAndConditionsConfig();
     this.loadPrintAllBankConfig();
+    this.loadShowCommodityWithContainerConfig();
     this.checkVoucherPostingMechanism();
     this.initForm();
     this.loadVoucherPeriods();
@@ -3641,6 +3646,29 @@ isSeaDepartment(): boolean {
     });
   }
 
+  private loadShowCommodityWithContainerConfig(): void {
+    const companyId = this.currentCompany?.CompanyMasterSid;
+    if (!companyId) {
+      this.isShowCargowithContainerEnabled = false;
+      return;
+    }
+
+    this.masterService.getConfigurationValue(companyId, 'ShowCargowithContainer').subscribe({
+      next: (resp: any) => {
+        const rawValue = resp?.ConfigurationValue ?? resp?.value ?? resp;
+        this.isShowCargowithContainerEnabled = this.parseConfigBoolean(rawValue, false);
+      },
+      error: () => {
+        // Keep default print layout on config fetch failure.
+        this.isShowCargowithContainerEnabled = false;
+      }
+    });
+  }
+
+  shouldUseCargoMultiPrintLayout(): boolean {
+    return this.isShowCargowithContainerEnabled && this.isSeaDepartment();
+  }
+
   onCustomsDutyToggle(event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;
     this.invoiceForm.get('CustomsDuty')?.setValue(checked ? 'Y' : 'N');
@@ -4368,6 +4396,19 @@ isSeaDepartment(): boolean {
 
   private async downloadPDFInBrowser(): Promise<void> {
     const { logo, lookups, options } = await this.getPdfGenerationContext();
+    if (this.shouldUseCommodityPdfGenerator()) {
+      this.pdfMakeService.generateCommodityInvoiceFromApi(
+        this.invoiceData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        lookups,
+        options
+      );
+      return;
+    }
+
     this.pdfMakeService.generateInvoiceFromApi(
       this.invoiceData,
       this.currentCompany,
@@ -4403,6 +4444,18 @@ isSeaDepartment(): boolean {
   private async getDownloadPDFBlob(): Promise<Blob> {
     const { logo, lookups, options } = await this.getPdfGenerationContext();
 
+    if (this.shouldUseCommodityPdfGenerator()) {
+      return await this.pdfMakeService.generateCommodityInvoiceBlobFromApi(
+        this.invoiceData,
+        this.currentCompany,
+        this.currentBranch,
+        this.userData,
+        logo,
+        lookups,
+        options
+      );
+    }
+
     return await this.pdfMakeService.generateInvoiceBlobFromApi(
       this.invoiceData,
       this.currentCompany,
@@ -4412,6 +4465,10 @@ isSeaDepartment(): boolean {
       lookups,
       options
     );
+  }
+
+  private shouldUseCommodityPdfGenerator(): boolean {
+    return this.shouldUseCargoMultiPrintLayout();
   }
 
   // Helper methods for tax display logic
@@ -4773,7 +4830,7 @@ isSeaDepartment(): boolean {
           : item;
 
         const number = container?.ContainerNumber || '';
-        const type = container?.containerType?.ContainerIsoCode;
+        const type = container?.containerType?.ContainerName;
 
         if (number && type) {
           return `${number} / ${type}`;

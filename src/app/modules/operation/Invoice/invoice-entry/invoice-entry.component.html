@@ -1482,6 +1482,25 @@
     </div>
 
     <div class="modal-body">
+      <ng-container *ngIf="shouldUseCargoMultiPrintLayout(); else normalInvoicePrintTemplate">
+        <app-invoice-commodity-print
+          [invoicePrintData]="invoicePrintData"
+          [invoiceData]="invoiceData"
+          [currentCompany]="currentCompany"
+          [currentBranch]="currentBranch"
+          [currentCompanyCountryCode]="currentCompanyCountryCode"
+          [currentCompanyCurrency]="currentCompanyCurrency"
+          [userData]="userData"
+          [currentDate]="currentDate"
+          [isUAECompany]="isUAECompany"
+          [bankDetails]="bankDetails || []"
+          [effectiveTermsAndConditions]="effectiveTermsAndConditions"
+          [printTaxDisplayConfig]="printTaxDisplayConfig"
+          [isSeaMode]="isSeaDepartment()"
+          [isVATMode]="printTaxDisplayConfig.showVAT"
+        ></app-invoice-commodity-print>
+      </ng-container>
+      <ng-template #normalInvoicePrintTemplate>
       <div id="printContent">
         <div
           style="
@@ -2798,6 +2817,7 @@
           
         </div>
       </div>
+      </ng-template>
     </div>
     
   </ng-template>

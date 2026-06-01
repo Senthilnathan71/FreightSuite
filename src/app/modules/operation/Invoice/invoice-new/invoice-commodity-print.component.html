@@ -1,0 +1,545 @@
+<div id="printContent">
+    <div
+        style="width: 280mm; min-height: 350mm; margin: 10px; background: #fff; border: 1px solid #000; box-sizing: border-box; color: #000; page-break-after: always; font-size: 16px;">
+        <div style="
+              display: flex;
+              flex-direction: column;
+              margin-bottom: 0;
+              width: 100%;
+              padding-top: 5px;
+              padding-left: 20px;
+            ">
+            <div style="
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            flex-wrap: wrap;
+                          ">
+                <div style="
+                              display: flex;
+                              flex-direction: column;
+                            ">
+                    <!-- Print logo -->
+                    <img [src]="logoService.reportLogo$ | async" alt="Company Logo" class="company-logo img-fluid"
+                        style="width:auto; height: 110px" />
+                </div>
+                <div style="
+                              flex: 1;
+                              text-align:right;
+                              font-size: 17px;
+                              padding-right: 3%;
+                            ">
+                    <h3 style="margin: 0; font-weight: 900">
+                        {{ currentCompany?.companyName || "Company Name" }}
+                    </h3>
+                    <!-- <h5 style="margin: 0; font-weight: 900">
+                              {{ currentBranch?.branchName || "Company Branch" }}
+                            </h5> -->
+                    <p style="margin: 0px 0; font-size: 16px">
+                        {{ currentBranch?.addressLine1 || "" }}
+                    </p>
+                    <p style="margin: 0px 0; font-size: 16px">
+                        <ng-container *ngIf="currentBranch?.addressLine2 as addr">
+                            {{ addr }},
+                        </ng-container>
+                        <!-- {{
+                                currentBranch?.cityMaster?.cityName ||
+                                  currentCompany?.City ||
+                                  ""
+                              }} -->
+                        {{ currentBranch?.branchName || "Company Branch" }}
+
+                        <!-- <ng-container *ngIf="currentcountryCode?.countryCode as code">
+                    - {{ code }}
+                  </ng-container> -->
+                        <ng-container *ngIf="currentBranch?.branchCode as code">
+                            - {{ code }}
+                        </ng-container>
+
+                    </p>
+                    <div *ngIf="currentBranch?.postalCode || currentBranch?.ZipCode"
+                        style="display:flex;justify-content:right;align-items:center;gap:6px;width:100%;font-size:16px;">
+                        <span>Postal Code</span>
+                        <span>: {{ currentBranch?.postalCode || currentBranch?.ZipCode }}</span>
+                    </div>
+
+                    <div *ngIf="currentBranch?.phoneNumber || currentBranch?.Phone"
+                        style="display:flex;justify-content:right;align-items:center;gap:6px;width:100%;font-size:16px;">
+                        <span>Phone No</span>
+                        <span>: {{ currentBranch?.phoneNumber || currentBranch?.Phone }}</span>
+                    </div>
+
+                    <div
+                        style="display: flex;justify-content: right;align-items: center;gap: 6px;width: 100%;font-size: 16px;">
+                        <span *ngIf="currentCompanyCountryCode === 'in'">GST No</span>
+                        <span *ngIf="currentCompanyCountryCode !== 'in'">VAT No</span>
+                        <span>: {{ currentCompany?.Pan || '' }}</span>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <div style="text-align:center;border-top:1px solid #000;padding-top:4px;">
+            <h3 style="margin:2px 0;font-weight:bolder;font-size:20px;"><strong>{{ invoicePrintData?.invoiceTitle
+                    }}</strong></h3>
+            <p style="font-size:12px;margin:2px 0;" *ngIf="currentCompanyCountryCode === 'in'"><strong>GST Code
+                    :</strong> {{ invoicePrintData?.GSTCode }}</p>
+        </div>
+
+        <div
+            style="display:flex;justify-content:space-between;border-bottom:1px solid #000;margin-top:8px;padding:0 20px 8px 20px;">
+            <div style="flex:0 0 50%;max-width:50%;font-size:16px;">
+                <strong>BILLED TO</strong><br />
+                <div style="padding-left:30px;">
+                    <span>{{ invoicePrintData?.BilledTo }}</span><br />
+                    {{ invoicePrintData?.BillingAddress }}<br />
+                </div>
+            </div>
+            <div style="flex:0 0 50%;max-width:50%;font-size:16px;">
+                <div style="display:flex;">
+                    <div style="width:180px;font-weight:bolder;"><strong>Invoice No.</strong></div>
+                    <div>: {{ invoicePrintData?.InvoiceNo }}</div>
+                </div>
+                <div style="display:flex;">
+                    <div style="width:180px;font-weight:bolder;"><strong>Invoice Date</strong></div>
+                    <div>: {{ invoicePrintData?.InvoiceDate | formatDate }}</div>
+                </div>
+                <div style="display:flex;">
+                    <div style="width:180px;font-weight:bolder;"><strong>{{ currentCompanyCountryCode === 'in' ? 'GST
+                            No.' : 'VAT No.' }}</strong></div>
+                    <div>: {{ invoicePrintData?.GST_VAT }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="display:flex;margin-top:8px;font-size:16px;padding:0 20px;">
+            <div style="flex:0 0 50%;max-width:50%;">
+                <div><strong>Shipper</strong> : {{ invoicePrintData?.ShipperName }}</div>
+                <div><strong>Consignee</strong> : {{ invoicePrintData?.ConsigneeName }}</div>
+                <div><strong>{{ isSeaDepartment() ? 'Vsl Name / Voy No.' : 'Flight Name / No.' }}</strong> : {{
+                    invoicePrintData?.Vessel }}<span *ngIf="invoicePrintData?.Vessel && invoicePrintData?.VoyageNo"> /
+                    </span>{{ invoicePrintData?.VoyageNo }}</div>
+                <div><strong>Loading Port</strong> : {{ invoicePrintData?.POL }}</div>
+                <div><strong>Final Destination</strong> : {{ invoicePrintData?.FPD }}</div>
+                <div><strong>ETD & ETA</strong> : {{ invoicePrintData?.ETD | formatDate }}<span
+                        *ngIf="invoicePrintData?.ETD && invoicePrintData?.ETA"> / </span>{{ invoicePrintData?.ETA |
+                    formatDate }}</div>
+                <div *ngIf="isUAECompany"><strong>BOE No.</strong> : {{ invoicePrintData?.BOENo }}</div>
+                <div *ngIf="isUAECompany"><strong>Declaration No.</strong> : {{ invoicePrintData?.DeclarationNo }}</div>
+            </div>
+            <div style="flex:0 0 50%;max-width:50%;">
+                <div><strong>{{ isSeaDepartment() ? 'HBL' : 'HAWB' }}</strong> : {{ invoicePrintData?.HBLNo }}</div>
+                <div><strong>{{ isSeaDepartment() ? 'MBL' : 'MAWB' }}</strong> : {{ invoicePrintData?.MBLNo }}</div>
+                <div><strong>Job No.</strong> : {{ invoicePrintData?.MasterJobNumber }}</div>
+                <div><strong>Freight Terms</strong> : {{ invoicePrintData?.FreightTerms }}</div>
+                <div><strong>Booking No.</strong> : {{ invoicePrintData?.BookingNumber }}</div>
+                <div><strong>Invoice Due Date</strong> : {{ invoicePrintData?.InvoiceDueDate === 'Cash Invoice' ?
+                    invoicePrintData?.InvoiceDueDate : (invoicePrintData?.InvoiceDueDate | formatDate) }}</div>
+                <div><strong>Currency / Ex-Rate</strong> : {{ invoicePrintData?.CurrExRate }}</div>
+
+            </div>
+        </div>
+
+        <div style="padding:0 20px;margin-top:8px;">
+            <table style="width:100%;border-collapse:collapse;margin-top:5px;">
+                <thead>
+                    <tr style="font-size:12px;">
+                        <th *ngIf="showCommodityDescColumn"
+                            style="border:1px solid black;padding:2px 8px;text-align:center;"><strong>Commodity
+                                Desc</strong></th>
+                        <th style="border:1px solid black;padding:2px 8px;text-align:center;"><strong>Pkg</strong>
+                        </th>
+                        <th *ngIf="showHouseJobContainerColumns"
+                            style="border:1px solid black;padding:2px 8px;text-align:center;"><strong>Pkg Type</strong>
+                        </th>
+                        <th style="border:1px solid black;padding:2px 8px;text-align:center;"><strong>Gross
+                                Wt.</strong></th>
+                        <th style="border:1px solid black;padding:2px 8px;text-align:center;"><strong>{{
+                                isSeaDepartment() ? 'CBM' : 'Charge Wt.' }}</strong></th>
+                        <th *ngIf="showHouseJobContainerColumns"
+                            style="border:1px solid black;padding:2px 8px;text-align:center;"><strong>Container
+                                No</strong></th>
+                        <th *ngIf="showHouseJobContainerColumns"
+                            style="border:1px solid black;padding:2px 8px;text-align:center;"><strong>Container
+                                Type</strong></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="font-size:12px;" *ngFor="let row of commodityRows">
+                        <td *ngIf="showCommodityDescColumn" style="border:1px solid black;padding:2px 8px;">{{ row.desc
+                            }}</td>
+                        <td style="border:1px solid black;padding:2px 8px;text-align:right;">{{ row.pkg }}</td>
+                        <td *ngIf="showHouseJobContainerColumns" style="border:1px solid black;padding:2px 8px;">{{
+                            row.pkgtype }}</td>
+                        <td style="border:1px solid black;padding:2px 8px;text-align:right;">{{ row.grosswt |
+                            number:'1.3-3' }}</td>
+                        <td style="border:1px solid black;padding:2px 8px;text-align:right;">
+                            {{ row.metric | number:'1.3-3' }}
+                        </td>
+                        <td *ngIf="showHouseJobContainerColumns"
+                            style="border:1px solid black;padding:2px 8px;text-align:center;">{{ row.containerNo }}</td>
+                        <td *ngIf="showHouseJobContainerColumns"
+                            style="border:1px solid black;padding:2px 8px;text-align:center;">{{ row.containerType }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="width: 100%; overflow-x: auto; margin-top: 8px">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px">
+                <thead>
+                    <tr>
+                        <th
+                            style="border: 1px solid black; padding: 2px 8px; font-weight: bolder; text-align: center; width: 20px; border-left: none;">
+                            <strong>S.No.</strong>
+                        </th>
+                        <th style="border: 1px solid black; padding: 2px 8px; font-weight: bolder; text-align: center;">
+                            <strong>Particulars</strong>
+                        </th>
+                        <th *ngIf="currentCompanyCountryCode?.toLowerCase() !== 'ae'"
+                            style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;">
+                            <strong>HSN/SAC</strong>
+                        </th>
+                        <th style="border: 1px solid black; padding: 2px 8px; text-align: left; font-weight: bolder;">
+                            <strong>Curr.</strong>
+                        </th>
+                        <th style="border: 1px solid black; padding: 2px 8px; text-align:center; font-weight: bolder;">
+                            <strong>No. of Unit</strong>
+                        </th>
+                        <th style="border: 1px solid black; padding: 2px 8px; text-align:center; font-weight: bolder;">
+                            <strong>Rate</strong>
+                        </th>
+                        <th style="border: 1px solid black; padding: 2px 8px; text-align:center; font-weight: bolder;">
+                            <strong>ROE</strong>
+                        </th>
+                        <th style="border: 1px solid black; padding: 2px 8px; text-align:center; font-weight: bolder;">
+                            <strong>Taxable Amt</strong>
+                        </th>
+
+                        <ng-container *ngIf="printTaxDisplayConfig.showCGST">
+                            <th
+                                style="border: 1px solid black; padding: 2px 8px; text-align:center; font-weight: bolder;">
+                                <strong>CGST %</strong>
+                            </th>
+                            <th
+                                style="border: 1px solid black; padding: 2px 8px; text-align:center; font-weight: bolder;">
+                                <strong>CGST Amt.</strong>
+                            </th>
+                        </ng-container>
+
+                        <ng-container *ngIf="printTaxDisplayConfig.showSGST">
+                            <th
+                                style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;">
+                                <strong>SGST %</strong>
+                            </th>
+                            <th
+                                style="border: 1px solid black; padding: 2px 8px; text-align:center; font-weight: bolder;">
+                                <strong>SGST Amt.</strong>
+                            </th>
+                        </ng-container>
+
+                        <ng-container *ngIf="printTaxDisplayConfig.showUGST">
+                            <th
+                                style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;">
+                                <strong>UGST %</strong>
+                            </th>
+                            <th
+                                style="border: 1px solid black; padding: 2px 8px; text-align:center; font-weight: bolder;">
+                                <strong>UGST Amt.</strong>
+                            </th>
+                        </ng-container>
+
+                        <ng-container *ngIf="printTaxDisplayConfig.showIGST">
+                            <th
+                                style="border: 1px solid black; padding: 2px 8px; text-align:center; font-weight: bolder;">
+                                <strong>IGST %</strong>
+                            </th>
+                            <th
+                                style="border: 1px solid black; padding: 2px 8px; text-align: center; font-weight: bolder;">
+                                <strong>IGST Amt.</strong>
+                            </th>
+                        </ng-container>
+
+                        <ng-container *ngIf="printTaxDisplayConfig.showVAT">
+                            <th
+                                style="border: 1px solid black; padding: 2px 8px; text-align:center; font-weight: bolder;">
+                                <strong>VAT %</strong>
+                            </th>
+                            <th
+                                style="border: 1px solid black; padding: 2px 8px; text-align:center; font-weight: bolder;">
+                                <strong>VAT Amt.</strong>
+                            </th>
+                        </ng-container>
+
+                        <th [style.border-right]="shouldShowForeignCurrencyColumn() ? '1px solid black' : 'none'"
+                            style="border: 1px solid black; padding: 2px 8px; text-align:center;">
+                            <strong>Amt In {{ currentCompanyCurrency?.code }}</strong>
+                        </th>
+                        <th *ngIf="shouldShowForeignCurrencyColumn()"
+                            style="border: 1px solid black; padding: 2px 8px; text-align:center; border-right: none;">
+                            <strong>Amt In {{ invoiceData?.CurrencyCode }}</strong>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let detail of invoicePrintData?.voucherDetails; let i = index">
+                        <td style="border: 1px solid black; padding: 2px 8px; border-left: none; text-align: center;">
+                            {{ detail.Sno }}
+                        </td>
+                        <td style="border: 1px solid black; padding: 2px 8px">
+                            {{ detail.ChargeDescription }}
+                        </td>
+                        <td *ngIf="currentCompanyCountryCode?.toLowerCase() !== 'ae'"
+                            style="border: 1px solid black; padding: 2px 8px">
+                            {{ detail.HSSACCode }}
+                        </td>
+                        <td style="border: 1px solid black; padding: 2px 8px">
+                            {{ detail.CurrencyCode }}
+                        </td>
+                        <td style="border: 1px solid black; padding: 2px 8px; text-align:right;">
+                            {{ detail.NumberOfUnit }}
+                        </td>
+                        <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">
+                            {{ detail.Rate }}
+                        </td>
+                        <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">
+                            {{ detail.ExchangeRate }}
+                        </td>
+                        <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">
+                            {{ detail.TaxableAmount }}
+                        </td>
+
+                        <ng-container *ngIf="printTaxDisplayConfig.showCGST">
+                            <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">
+                                {{ detail.cgstRate }}
+                            </td>
+                            <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">
+                                {{ detail.cgstAmt }}
+                            </td>
+                        </ng-container>
+
+                        <ng-container *ngIf="printTaxDisplayConfig.showSGST">
+                            <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">
+                                {{ detail.sgstRate }}
+                            </td>
+                            <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">
+                                {{ detail.sgstAmt }}
+                            </td>
+                        </ng-container>
+
+                        <ng-container *ngIf="printTaxDisplayConfig.showUGST">
+                            <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">
+                                {{ detail.ugstRate }}
+                            </td>
+                            <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">
+                                {{ detail.ugstAmt }}
+                            </td>
+                        </ng-container>
+
+                        <ng-container *ngIf="printTaxDisplayConfig.showIGST">
+                            <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">
+                                {{ detail.igstRate }}
+                            </td>
+                            <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">
+                                {{ detail.igstAmt }}
+                            </td>
+                        </ng-container>
+
+                        <ng-container *ngIf="printTaxDisplayConfig.showVAT">
+                            <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">
+                                {{ detail.vatRate }}
+                            </td>
+                            <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">
+                                {{ detail.vatAmt }}
+                            </td>
+                        </ng-container>
+                        <td [style.border-right]="shouldShowForeignCurrencyColumn() ? '1px solid black' : 'none'"
+                            style="border: 1px solid black; padding: 2px 8px; text-align: right;">
+                            {{ detail?.LocalAmount }}
+                        </td>
+                        <td *ngIf="shouldShowForeignCurrencyColumn()"
+                            style="border: 1px solid black; padding: 2px 8px; border-right: none; text-align: right;">
+                            {{ detail?.PartyAmount }}
+                        </td>
+                    </tr>
+
+                    <tr *ngIf="shouldShowIndiaGstAmountTotals(printTaxDisplayConfig)" style="font-weight: bolder">
+                        <td [attr.colspan]="calculateBaseInvoicePrintColspan() + 1"
+                            style="border: 1px solid black; padding: 2px 8px; text-align: right; border-left: none;">
+                            <strong>Total</strong>
+                        </td>
+                        <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">
+                            <strong>{{ getInvoicePrintAmountTotal('cgstAmt') }}</strong>
+                        </td>
+                        <td style="border: 1px solid black; padding: 2px 8px; text-align: right;"></td>
+                        <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">
+                            <strong>{{ getInvoicePrintAmountTotal('sgstAmt') }}</strong>
+                        </td>
+                        <td [style.border-right]="shouldShowForeignCurrencyColumn() ? '1px solid black' : 'none'"
+                            style="border: 1px solid black; padding: 2px 8px; text-align: right;">
+                            <strong>{{ shouldShowForeignCurrencyColumn() ? getInvoicePrintAmountTotal('LocalAmount') :
+                                invoicePrintData?.totalPartyAmount }}</strong>
+                        </td>
+                        <td *ngIf="shouldShowForeignCurrencyColumn()"
+                            style="border: 1px solid black; padding: 2px 8px; border-right: none; text-align: right;">
+                            <strong>{{ invoicePrintData?.totalPartyAmount }}</strong>
+                        </td>
+                    </tr>
+
+                    <tr *ngIf="shouldShowVatAmountTotals(printTaxDisplayConfig)" style="font-weight: bolder">
+                        <td [attr.colspan]="calculateBaseInvoicePrintColspan() + 1"
+                            style="border: 1px solid black; padding: 2px 8px; text-align: right; border-left: none;">
+                            <strong>Total</strong>
+                        </td>
+                        <td style="border: 1px solid black; padding: 2px 8px; text-align: right;">
+                            <strong>{{ getInvoicePrintAmountTotal('vatAmt') }}</strong>
+                        </td>
+                        <td [style.border-right]="shouldShowForeignCurrencyColumn() ? '1px solid black' : 'none'"
+                            style="border: 1px solid black; padding: 2px 8px; text-align: right;">
+                            <strong>{{ shouldShowForeignCurrencyColumn() ? getInvoicePrintAmountTotal('LocalAmount') :
+                                invoicePrintData?.totalPartyAmount }}</strong>
+                        </td>
+                        <td *ngIf="shouldShowForeignCurrencyColumn()"
+                            style="border: 1px solid black; padding: 2px 8px; border-right: none; text-align: right;">
+                            <strong>{{ invoicePrintData?.totalPartyAmount }}</strong>
+                        </td>
+                    </tr>
+
+                    <tr *ngIf="!shouldShowDetailedTaxAmountTotals(printTaxDisplayConfig)" style="font-weight: bolder">
+                        <td [attr.colspan]="calculateTotalColspan(printTaxDisplayConfig) + (shouldShowForeignCurrencyColumn() ? 1 : 0)"
+                            style="border: 1px solid black; padding: 2px 8px; text-align: right; border-left: none;">
+                            <strong>Total</strong>
+                        </td>
+                        <td style="border: 1px solid black; padding: 2px 8px; border-right: none; text-align: right;">
+                            <strong>{{ invoicePrintData?.totalPartyAmount }}</strong>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="display:flex;margin-top:8px;font-size:16px;padding:0 20px;">
+            <p style="font-weight:bolder;width:165px;margin:0;"><strong>Amount In Words</strong></p>
+            <p style="margin:0;">: {{ invoicePrintData?.AmountInWords }}</p>
+        </div>
+
+        <div style="display:flex;margin-top:8px;padding:0 20px;font-size:13px;">
+            <p style="font-weight:bolder;width:165px;margin:0;"><strong>Remarks</strong></p>
+            <p style="margin:0;">: {{ invoicePrintData?.Remarks }}</p>
+        </div>
+
+        <div *ngIf="bankDetails && bankDetails.length > 0" class="px-3" style="font-size:16px;">
+            <h5 style="margin:0 0 4px 0;"><strong>Bank Details</strong></h5>
+            <div class="table-responsive">
+                <table style="width:100%;border-collapse:collapse;border:0.5px solid #000;font-size:13px;" [ngStyle]="{
+        width: bankDetails.length === 1 ? 'auto' : '100%',
+        'table-layout': bankDetails.length === 1 ? 'auto' : 'fixed'
+      }">
+                    <thead>
+                        <tr>
+                            <th style="width:180px;padding:0 6px;text-align:center;border:0.5px solid #000;">
+                                <strong>Details</strong>
+                            </th>
+                            <th *ngFor="let bankDetail of bankDetails"
+                                style="padding:0 6px;text-align:start;border:0.5px solid #000;">
+                                <strong>Bank ({{ getBankCurrencyCode(bankDetail) }})</strong>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th style="padding:0 6px;border:0.5px solid #000;"><strong>Beneficiary Name</strong></th>
+                            <td *ngFor="let bankDetail of bankDetails"
+                                style="padding:2px;border:0.5px solid #000;white-space:normal;word-break:break-word;">
+                                {{ bankDetail.BeneficiaryName }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th style="padding:0 6px;border:0.5px solid #000;"><strong>Account No.</strong></th>
+                            <td *ngFor="let bankDetail of bankDetails"
+                                style="padding:2px;border:0.5px solid #000;white-space:normal;word-break:break-word;">
+                                {{ bankDetail.BankAccountNo }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th style="padding:0 6px;border:0.5px solid #000;"><strong>{{ isVATMode ? 'IBAN' : 'IFSC'
+                                    }}</strong></th>
+                            <td *ngFor="let bankDetail of bankDetails"
+                                style="padding:2px;border:0.5px solid #000;white-space:normal;word-break:break-word;">
+                                {{ bankDetail.IFSCCode }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th style="padding:0 6px;border:0.5px solid #000;"><strong>Swift Code</strong></th>
+                            <td *ngFor="let bankDetail of bankDetails"
+                                style="padding:2px;border:0.5px solid #000;white-space:normal;word-break:break-word;">
+                                {{ bankDetail.BankCode }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th style="padding:0 6px;border:0.5px solid #000;"><strong>Bank Name</strong></th>
+                            <td *ngFor="let bankDetail of bankDetails"
+                                style="padding:2px;border:0.5px solid #000;white-space:normal;word-break:break-word;">
+                                {{ bankDetail.BankName }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th style="padding:0 6px;border:0.5px solid #000;"><strong>Branch</strong></th>
+                            <td *ngFor="let bankDetail of bankDetails"
+                                style="padding:2px;border:0.5px solid #000;white-space:normal;word-break:break-word;">
+                                {{ bankDetail.BankAddress }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @if (currentCompany?.CompanyMasterSid === 13 || (effectiveTermsAndConditions?.length || 0) > 0) {
+        <div style="margin-top: 1rem; font-size: 12px; padding: 0 20px">
+            <h5 style="margin-bottom: 0.5rem; font-weight: bolder">
+                <strong>Terms and Conditions</strong>
+            </h5>
+
+            @if (currentCompany?.CompanyMasterSid === 13) {
+            <ul style="margin-top: 0; padding-left: 1.5rem; font-size: 12px;">
+                <li>If any discrepancy is noticed in the invoice, kindly inform us in writing within 7 days,
+                    otherwise the above amount will be considered as correct.</li>
+                <li>Please mention our invoice number(s) on your remittance instructions.</li>
+            </ul>
+            } @else {
+            <ul style="margin-top: 0; padding-left: 1.2rem">
+                @for (term of effectiveTermsAndConditions; track term) {
+                <li>{{ term.TandC || term.Terms }}</li>
+                }
+            </ul>
+            }
+        </div>
+        }
+
+        <div style="display:flex;flex-direction:column;margin-top:12px;text-align:end;padding:0 20px;">
+            <strong>For {{ currentCompany?.companyName || 'Company Name' }}</strong>
+            <p>Authorised Signatory</p>
+        </div>
+
+
+        <div style="
+            min-height: 100vh;  display: flex; flex-direction: column;">
+
+            <main style="flex: 1;">
+
+            </main>
+
+            <footer style="width: 100%; font-size: 10pt;padding: 10px; box-sizing: border-box; margin-top: auto; ">
+                <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                    <div>Printed By : {{ userData.userName }}</div>
+                    <span>This document is computer-generated and does not require a signature.</span>
+                    <div>Printed On : {{ currentDate | formatDate }}</div>
+                </div>
+            </footer>
+        </div>
+    </div>
+</div>

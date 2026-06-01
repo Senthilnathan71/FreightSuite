@@ -44,6 +44,7 @@ import { generateMasterJobDocument, transformMasterJobApiData } from './generato
 import { generateGenericReportDocument, GenericReportPdfData } from './generators/generic-report-pdf.generator';
 import { ComplexReportExportConfig } from 'src/app/shared/excel-report-service';
 import { generateInvoiceDocument, transformInvoiceApiData } from './generators/invoice-pdf.generator';
+import { generateCommodityInvoiceDocument, transformCommodityInvoiceApiData } from './generators/invoice-commodity-pdf.generator';
 import { generateProformaInvoiceDocument } from './generators/proforma-invoice-pdf.generator';
 import {
   generateVendorInvoiceDocument,
@@ -680,6 +681,90 @@ export class PdfMakeService {
   ): Promise<Blob> {
     const pdfData = transformInvoiceApiData(apiData, company, branch, userData, logo, lookups, options);
     return this.generateInvoiceBlob(pdfData);
+  }
+
+  /**
+   * Generate and download Commodity Invoice PDF
+   */
+  generateCommodityInvoice(data: InvoicePdfData): void {
+    const docDefinition = generateCommodityInvoiceDocument(data);
+    const filename = `Invoice_${data.invoice?.invoiceNo || 'Draft'}.pdf`;
+    this.download(docDefinition, filename);
+  }
+
+  /**
+   * Get Commodity Invoice PDF as Blob
+   */
+  async generateCommodityInvoiceBlob(data: InvoicePdfData): Promise<Blob> {
+    try {
+      const docDefinition = generateCommodityInvoiceDocument(data);
+      return this.getBlob(docDefinition);
+    } catch (error) {
+      console.error('Commodity Invoice PDF Generation Error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate Commodity Invoice from raw API data
+   */
+  generateCommodityInvoiceFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    lookups?: {
+      hssacMaster?: any[];
+      currencyMaster?: any[];
+    },
+    options?: {
+      taxDisplayConfig?: {
+        showCGST: boolean;
+        showSGST: boolean;
+        showIGST: boolean;
+        showVAT: boolean;
+      };
+      bankDetails?: any[];
+      terms?: any[];
+      amountInWords?: string;
+      localCurrency?: string;
+      invoiceTitle?: string;
+    }
+  ): void {
+    const pdfData = transformCommodityInvoiceApiData(apiData, company, branch, userData, logo, lookups, options);
+    this.generateCommodityInvoice(pdfData);
+  }
+
+  /**
+   * Get Commodity Invoice Blob from raw API data
+   */
+  async generateCommodityInvoiceBlobFromApi(
+    apiData: any,
+    company: any,
+    branch: any,
+    userData: any,
+    logo?: string,
+    lookups?: {
+      hssacMaster?: any[];
+      currencyMaster?: any[];
+    },
+    options?: {
+      taxDisplayConfig?: {
+        showCGST: boolean;
+        showSGST: boolean;
+        showIGST: boolean;
+        showVAT: boolean;
+      };
+      bankDetails?: any[];
+      terms?: any[];
+      amountInWords?: string;
+      localCurrency?: string;
+      invoiceTitle?: string;
+    }
+  ): Promise<Blob> {
+    const pdfData = transformCommodityInvoiceApiData(apiData, company, branch, userData, logo, lookups, options);
+    return this.generateCommodityInvoiceBlob(pdfData);
   }
 
   /**
