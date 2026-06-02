@@ -504,8 +504,8 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
     { label: 'Loading Port', value: printData?.POL || invoice?.loadingPort || invoice?.pol || '' },
     { label: 'Final Destination', value: printData?.FPD || invoice?.finalDestination || invoice?.fpd || '' },
     {
-      label: 'ETD & ETA',
-      value: `${etdValue}${etdValue && etaValue ? ' & ' : ''}${etaValue}`
+      label: 'ETD / ETA',
+      value: `${etdValue}${etdValue && etaValue ? ' / ' : ''}${etaValue}`
     },
     ...(isUAECompany
       ? [

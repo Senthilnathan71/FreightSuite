@@ -1795,9 +1795,9 @@
 
               <div style="display: flex">
                 <div style="width: 165px; font-weight: bolder">
-                  <strong>ETD & ETA </strong>
+                  <strong>ETD / ETA </strong>
                 </div>
-                <div>: {{ invoicePrintData?.ETD | formatDate }}<span *ngIf="invoicePrintData?.ETD && invoicePrintData?.ETA">  &  </span>{{ invoicePrintData?.ETA | formatDate }}</div>
+                <div>: {{ invoicePrintData?.ETD | formatDate }}<span *ngIf="invoicePrintData?.ETD && invoicePrintData?.ETA">  /  </span>{{ invoicePrintData?.ETA | formatDate }}</div>
               </div>
 
               <!-- <div style="display: flex">
@@ -1811,7 +1811,7 @@
               <div style="width: 165px; min-width: 165px; font-weight: bolder;">
                 <strong>BOE No.</strong>
               </div>
-              <div style="width: 15px; min-width: 15px; text-align: center;">:</div>
+              <div style="text-align: center;">:</div>
               <div style="flex: 1; line-height: 1.4; word-break: break-word;">
                 {{ invoicePrintData?.BOENo }}
               </div>
@@ -1822,7 +1822,7 @@
               <div style="width: 165px; min-width: 165px; font-weight: bolder;">
                 <strong>Declaration No.</strong>
               </div>
-              <div style="width: 15px; min-width: 15px; text-align: center;">:</div>
+              <div style="text-align: center;">:</div>
               <div style="flex: 1; line-height: 1.4; word-break: break-word;">
                 {{ invoicePrintData?.DeclarationNo }}
               </div>

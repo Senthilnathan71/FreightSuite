@@ -4309,7 +4309,8 @@ isSeaDepartment(): boolean {
       isSeaMode: this.isSeaDepartment(),
       isVATMode: this.printTaxDisplayConfig.showVAT,
       companyCountryCode: this.currentCompanyCountryCode,
-      companyVatNo: this.currentBranch?.taxRegistrationNo || this.currentCompany?.GST_VAT || '',
+      companyVatNo:
+        this.currentCompany?.Pan || '',
       shipmentDetails: {
         shipper: this.invoicePrintData?.ShipperName,
         consignee: this.invoicePrintData?.ConsigneeName,
