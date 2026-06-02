@@ -3062,17 +3062,17 @@ export class ReceiptEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       .toFixed(2);
   }
 
-  getDrMatchLocalAmt() {
+  getDrMatchPartyAmt() {
     return this.voucherMatchings.controls
       .filter(c => c.get('drCr')?.value === 'Dr')
-      .reduce((t, c) => t + Number(c.get('matchLocalAmt')?.value || 0), 0)
+      .reduce((t, c) => t + Number(c.get('matchPartyAmt')?.value || 0), 0)
       .toFixed(2);
   }
 
-  getCrMatchLocalAmt() {
+  getCrMatchPartyAmt() {
     return this.voucherMatchings.controls
       .filter(c => c.get('drCr')?.value === 'Cr')
-      .reduce((t, c) => t + Number(c.get('matchLocalAmt')?.value || 0), 0)
+      .reduce((t, c) => t + Number(c.get('matchPartyAmt')?.value || 0), 0)
       .toFixed(2);
   }
 

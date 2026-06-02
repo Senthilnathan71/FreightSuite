@@ -762,11 +762,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       .pipe(takeUntil(this.destroy$), debounceTime(150))
       .subscribe(() => {
         if (this.isPatching || !this.tdsHelper.isTDSEnabled) return;
-        this.tdsHelper.recalcTDSAmounts(
-          this.detailItems.getRawValue(),
-          this.tdsForm,
-          toNumber(this.paymentForm.get('ExchangeRate')?.getRawValue() || 1),
-        );
+        this.runTDSRecalc();
         this.validateAmount();
       });
 
@@ -3982,14 +3978,12 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     } else {
       finalAmount = Number(amount) * Number(formattedExchangeRate);
     }
-    row
-      .get('LocalAmount')
-      ?.setValue(
-        this.getFormattedAmount(
-          finalAmount,
-          row.get('CurrencyMasterSid')?.value
-        )
-      );
+    const formattedLocalAmount = this.getFormattedAmount(
+      finalAmount,
+      row.get('CurrencyMasterSid')?.value
+    );
+    row.get('LocalAmount')?.setValue(formattedLocalAmount);
+    row.get('TaxableAmount')?.setValue(formattedLocalAmount);
 
     if (recalcPartyAmount) {
       this.recalcPaymentTaxForRow(index);
@@ -4604,11 +4598,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       tdsForm: this.tdsForm,
     }).subscribe(() => {
       if (this.tdsHelper.isTDSEnabled) {
-        this.tdsHelper.recalcTDSAmounts(
-          this.detailItems.getRawValue(),
-          this.tdsForm,
-          toNumber(this.paymentForm.get('ExchangeRate')?.getRawValue() || 1),
-        );
+        this.runTDSRecalc();
       }
       this.validateAmount();
     });
@@ -4621,11 +4611,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       this.tdsHelper.autoReason = null;
     } else {
       // User manually toggled ON — recalc using current detail rows
-      this.tdsHelper.recalcTDSAmounts(
-        this.detailItems.getRawValue(),
-        this.tdsForm,
-        toNumber(this.paymentForm.get('ExchangeRate')?.getRawValue() || 1),
-      );
+      this.runTDSRecalc();
     }
     this.validateAmount();
   }
@@ -4648,21 +4634,25 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       ITSectionCode: rate.ITSectionCode ?? '',
       CompanyType: rate.CompanyType ?? '',
     }, { emitEvent: false });
-    this.tdsHelper.recalcTDSAmounts(
-      this.detailItems.getRawValue(),
-      this.tdsForm,
-      toNumber(this.paymentForm.get('ExchangeRate')?.getRawValue() || 1),
-    );
+    this.runTDSRecalc();
     this.validateAmount();
   }
 
   onTDSRateBlur(): void {
+    this.runTDSRecalc();
+    this.validateAmount();
+  }
+
+  /** Single entry-point for TDS recalculation — passes party SID + currency formatter */
+  private runTDSRecalc(): void {
+    const currencySid = this.paymentForm.get('CurrencyMasterSid')?.getRawValue();
     this.tdsHelper.recalcTDSAmounts(
       this.detailItems.getRawValue(),
       this.tdsForm,
       toNumber(this.paymentForm.get('ExchangeRate')?.getRawValue() || 1),
+      this.paymentForm.get('PartyMasterSid')?.getRawValue(),
+      (n: number) => this.getFormattedAndPaddedAmount(n, currencySid),
     );
-    this.validateAmount();
   }
 
   showInfo() {

@@ -1382,6 +1382,9 @@
                         type="text"
                         formControlName="TaxableAmount"
                         class="custom-input-field sm text-end"
+                        DecimalPrecision
+                        [DecimalPrecisionBefore]="13"
+                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(paymentForm.get('CurrencyMasterSid')?.value)"
                         readonly
                       />
                     </td>
@@ -1402,6 +1405,9 @@
                         type="text"
                         formControlName="TDSAmount"
                         class="custom-input-field sm text-end fw-bold"
+                        DecimalPrecision
+                        [DecimalPrecisionBefore]="13"
+                        [DecimalPrecisionAfter]="getAmountDecimalPlaces(paymentForm.get('CurrencyMasterSid')?.value)"
                         readonly
                       />
                     </td>
