@@ -1871,15 +1871,19 @@
                         <th class="bg-transparent text-light dofi-min-w-70" scope="col">Recd. Qty</th>
                         <th class="bg-transparent text-light dofi-min-w-70" scope="col">Damaged Qty</th>
                         <th class="bg-transparent text-light dofi-min-w-160" scope="col">Damage Remarks</th>
+                        <th class="bg-transparent text-light dofi-min-w-180" scope="col">Goods Description</th>
+                        <th class="bg-transparent text-light dofi-min-w-160" scope="col">Marks & Number</th>
                         @if(selectedDepartmentType !== 'AIR'){
                           <th class="bg-transparent text-light dofi-min-w-160" scope="col">Container No.</th>
                         }
                         <th class="bg-transparent text-light dofi-min-w-130" scope="col">Delivery Date</th>
                         <th class="bg-transparent text-light dofi-min-w-70" scope="col">Delivered Qty</th>
-                        <th class="bg-transparent text-light" scope="col">Is Haz</th>
-                        <th class="bg-transparent text-light dofi-min-w-90" scope="col">Imco Class</th>
-                        <th class="bg-transparent text-light dofi-min-w-60" scope="col">UN No.</th>
-                        <th class="bg-transparent text-light dofi-min-w-60" scope="col">Pkg Group</th>
+                        @if(isHazCargoType(cargoIndex)){
+                          <th class="bg-transparent text-light" scope="col">Is Haz</th>
+                          <th class="bg-transparent text-light dofi-min-w-90" scope="col">Imco Class</th>
+                          <th class="bg-transparent text-light dofi-min-w-60" scope="col">UN No.</th>
+                          <th class="bg-transparent text-light dofi-min-w-60" scope="col">Pkg Group</th>
+                        }
                       </tr>
                     </thead>
                     <tbody>
@@ -1986,6 +1990,12 @@
                             <input type="text" formControlName="DamageRemarks" placeholder="" [onlyText]
                               class="custom-input-field sm text-end">
                           </td>
+                          <td>
+                            <input type="text" formControlName="ProductDescription" class="custom-input-field sm">
+                          </td>
+                          <td>
+                            <input type="text" formControlName="MarksAndNumber" class="custom-input-field sm">
+                          </td>
                           @if(selectedDepartmentType !== 'AIR'){
                             <td>
                               <ng-select class="ng-select" formControlName="MasterJobContainerSid" [items]="getFilteredMasterJobContainers(cargoIndex)"
@@ -2007,16 +2017,18 @@
                             <input type="text" formControlName="DeliveredQty" placeholder="" [onlyNumbers]
                               class="custom-input-field sm text-end">
                           </td>
-                          <td class="text-center align-middle">
-                            <input type="checkbox" class="m-0" formControlName="IsHaz" (change)="toggleHazProduct(productIndex,cargoIndex)" />
-                          </td>
-                          <td>
-                            <ng-select [items]="imcoList" bindLabel="ImcoName" bindValue="ImcoName" formControlName="ImcoClass"
-                              class="ng-select" placeholder="" appendTo="body" (change)="onImcoChange(productIndex,$event,cargoIndex)">
-                            </ng-select>
-                          </td>
-                          <td><input type="text" formControlName="UnNo" class="custom-input-field sm"></td>
-                          <td><input type="text" formControlName="PkgGroup" class="custom-input-field sm"></td>
+                          @if(isHazCargoType(cargoIndex)){
+                            <td class="text-center align-middle">
+                              <input type="checkbox" class="m-0" formControlName="IsHaz" (change)="toggleHazProduct(productIndex,cargoIndex)" />
+                            </td>
+                            <td>
+                              <ng-select [items]="imcoList" bindLabel="ImcoName" bindValue="ImcoName" formControlName="ImcoClass"
+                                class="ng-select" placeholder="" appendTo="body" (change)="onImcoChange(productIndex,$event,cargoIndex)">
+                              </ng-select>
+                            </td>
+                            <td><input type="text" formControlName="UnNo" class="custom-input-field sm"></td>
+                            <td><input type="text" formControlName="PkgGroup" class="custom-input-field sm"></td>
+                          }
                         </tr>
                       } @else {
                         <tr>
@@ -2428,15 +2440,20 @@
                   <th class="bg-transparent text-light dofi-min-w-70" scope="col">Recd. Qty<span class="text-danger"></span></th>
                   <th class="bg-transparent text-light dofi-min-w-70" scope="col">Damaged Qty<span class="text-danger"></span></th>
                   <th class="bg-transparent text-light dofi-min-w-160" scope="col">Damage Remarks<span class="text-danger"></span></th>
+                  <th class="bg-transparent text-light dofi-min-w-180" scope="col">Goods Description<span class="text-danger"></span></th>
+                  <th class="bg-transparent text-light dofi-min-w-160" scope="col">Marks & Number<span class="text-danger"></span></th>
+                  
                   @if(selectedDepartmentType !== 'AIR'){
                   <th class="bg-transparent text-light dofi-min-w-160" scope="col">Container No.<span class="text-danger"></span></th>
                   }
                   <th class="bg-transparent text-light dofi-min-w-130" scope="col">Delivery Date<span class="text-danger"></span></th>
                   <th class="bg-transparent text-light dofi-min-w-70" scope="col">Delivered Qty<span class="text-danger"></span></th>
+                  @if(isActiveCargoHazType()){
                   <th class="bg-transparent text-light" scope="col">Is Haz<span class="text-danger"></span></th>
                   <th class="bg-transparent text-light dofi-min-w-60" scope="col">Imco Class<span class="text-danger"></span></th>
                   <th class="bg-transparent text-light dofi-min-w-60" scope="col">Un No.<span class="text-danger"></span></th>
                   <th class="bg-transparent text-light dofi-min-w-60" scope="col">Pkg Group<span class="text-danger"></span></th>
+                  }
                 </tr>
               </thead>
               <tbody>
@@ -2635,6 +2652,14 @@
                     <input type="text" id="text-input" formControlName="DamageRemarks" placeholder="" [onlyText]
                       class="custom-input-field sm text-end">
                   </td>
+                  <td>
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                      formControlName="ProductDescription">
+                  </td>
+                  <td>
+                    <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+                      formControlName="MarksAndNumber">
+                  </td>
                   @if(selectedDepartmentType !== 'AIR'){
                   <td>
                     <ng-select class="ng-select" formControlName="MasterJobContainerSid" [items]="getFilteredMasterJobContainers()"
@@ -2653,6 +2678,7 @@
                     <input type="text" id="text-input" formControlName="DeliveredQty" placeholder="" [onlyNumbers]
                       class="custom-input-field sm text-end">
                   </td>
+                  @if(isActiveCargoHazType()){
                   <td>
                     <div class="form-check text-center">
                       <input class="form-check-input" type="checkbox" id="leadOrCustomer" formControlName="IsHaz"
@@ -2674,6 +2700,7 @@
                   <td>
                     <input type="text" id="text-input" formControlName="PkgGroup" placeholder="" class="custom-input-field sm">
                   </td>
+                  }
                 </tr>
                 } @else {
                 <tr>
@@ -3602,6 +3629,20 @@
           <label for="text-input" class="input-label">Damage Remarks <span class="text-danger"></span></label>
         </div>
       </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+            formControlName="ProductDescription">
+          <label for="text-input" class="input-label">Goods Description <span class="text-danger"></span></label>
+        </div>
+      </aside>
+      <aside class="col-md-4">
+        <div class="custom-form-group">
+          <input type="text" id="text-input" placeholder="" class="custom-input-field sm"
+            formControlName="MarksAndNumber">
+          <label for="text-input" class="input-label">Marks & Number <span class="text-danger"></span></label>
+        </div>
+      </aside>
       <aside class="col-md-4" *ngIf="selectedDepartmentType !== 'AIR'">
         <div class="custom-form-group custom-form-group-select"
           [class.filled]="!!productForm.get('MasterJobContainerSid')?.value">
@@ -3651,6 +3692,7 @@
               }
             </div>
           </aside>
+          @if(isActiveCargoHazType()){
           <aside class="col-md-4 d-flex align-items-center">
         <div class="form-check form-check-inline p-0">
           <div class="form-check d-flex align-items-center">
@@ -3682,6 +3724,7 @@
           <label for="text-input" class="input-label">Pkg Group <span class="text-danger"></span></label>
         </div>
       </aside>
+      }
       }
     </div>
   </div>

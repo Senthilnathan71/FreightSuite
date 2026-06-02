@@ -1367,6 +1367,7 @@ shouldCalculateVolume(): boolean {
       ImcoClass: [null],
       UnNo: [''],
       PkgGroup: [''],
+      ProductDescription: [''],
       Length: [''],
       Width: [''],
       Height: [''],
@@ -1378,6 +1379,7 @@ shouldCalculateVolume(): boolean {
       DamageRemarks: [''],
       MasterJobContainerSid: [null], 
       ContainerNo: ['', { disabled: true }], 
+      MarksAndNumber : [''],
       MarksAndNumbers : [''],
       DeliveredQty: [null],
       DeliveryDate: [null]
@@ -1734,6 +1736,7 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       ImcoClass : [data?.ImcoClass || null],
       UnNo : [data?.UnNo || ''],
       PkgGroup : [data?.PkgGroup || ''],
+      ProductDescription: [data?.ProductDescription || data?.CommodityDescription || ''],
       Length: [data?.Length || ''],
       Width: [data?.Width || ''],
       Height: [data?.Height || ''],
@@ -1745,7 +1748,8 @@ private setupImmediateVolumetricCalculation(productForm: FormGroup): void {
       DamageRemarks: [data?.DamageRemarks || ''],
       MasterJobContainerSid: [data?.MasterJobContainerSid || null],
       ContainerNo :[{value: data?.ContainerNo || '', disabled: false}],
-      MarksAndNumbers : [data?.MarksAndNumbers || ''],
+      MarksAndNumber : [data?.MarksAndNumber || data?.MarksAndNumbers || ''],
+      MarksAndNumbers : [data?.MarksAndNumbers || data?.MarksAndNumber || ''],
       DeliveryDate: [data?.DeliveryDate ? new Date(data?.DeliveryDate) : null],
       DeliveredQty: [data?.DeliveredQty || null]
 
@@ -2997,6 +3001,7 @@ private applyExportToImportFieldLocks(): void {
         ImcoClass: data?.ImcoClass,
         UnNo: data?.UnNo,
         PkgGroup: data?.PkgGroup,
+        ProductDescription: data?.ProductDescription || data?.CommodityDescription,
         Length: data?.Length,
         Width: data?.Width,
         Height: data?.Height,
@@ -3008,6 +3013,7 @@ private applyExportToImportFieldLocks(): void {
         DamageRemarks: data?.DamageRemarks,
         ContainerNo : data?.ContainerNo,
         MasterJobContainerSid: data?.MasterJobContainerSid,
+        MarksAndNumber : data?.MarksAndNumber || data?.MarksAndNumbers,
         MarksAndNumbers : data?.MarksAndNumbers,
         DeliveryDate: data?.DeliveryDate,
         DeliveredQty: data?.DeliveredQty,
@@ -3352,6 +3358,17 @@ private applyExportToImportFieldLocks(): void {
     return fieldLabels[fieldName] || fieldName;
   }
 
+  public isHazCargoType(cargoIndex: number = -1): boolean {
+    const cargoGroup = cargoIndex >= 0
+      ? this.houseJobCargos?.at(cargoIndex) as FormGroup | undefined
+      : this.cargoForm;
+    return cargoGroup?.get('CargoType')?.value === 'Haz';
+  }
+
+  public isActiveCargoHazType(): boolean {
+    return this.isHazCargoType(this.houseJobCargoActiveIndex);
+  }
+
   private getHouseJobInvalidFields(): string[] {
     const invalidFields: string[] = [];
 
@@ -3674,37 +3691,45 @@ if (rawCargoCurrency && rawCargoCurrency !== '') {
   const cargoPayload = cargoGroupsValue.map((cargo: any) => {
     const cargoSid = cargo?.HouseJobCargoSid || null;
     const cargoProducts = Array.isArray(cargo?.bookingProducts) ? cargo.bookingProducts : [];
-    const mappedProducts = cargoProducts.map((product: any) => ({
-      HouseJobProductSid: product.HouseJobProductSid || null,
-      ProductName: product.ProductName || '',
-      ShippingBillNo: product.ShippingBillNo || '',
-      ShippingBillDate: product.ShippingBillDate,
-      ExternaPkg: product.ExternaPkg || null,
-      ExternlQty: String(product.ExternlQty),
-      GrossWeight: parseFloat(product.GrossWeight) || 0,
-      NetWeight: parseFloat(product.NetWeight) || 0,
-      Volume: parseFloat(product.Volume) || 0,
-      Volumetric: parseFloat(product.Volumetric) || 0,
-      IsHaz: product.IsHaz ? 'Y' : 'N',
-      ImcoClass: product.ImcoClass || '',
-      UnNo: String(product.UnNo) || '',
-      PkgGroup: product.PkgGroup || '',
-      Length: parseFloat(product.Length),
-      Width: parseFloat(product.Width),
-      Height: parseFloat(product.Height),
-      UomMasterSid: product.UomMasterSid,
-      HSCode: product.HSCode,
-      CargoRecDate: product.CargoRecDate,
-      DamageQty: product.DamageQty,
-      ReceivedQty: product.ReceivedQty,
-      DamageRemarks: product.DamageRemarks,
-      MasterJobContainerSid: product.MasterJobContainerSid || null,
-      ContainerNo: product.ContainerNo,
-      MarksAndNumbers: product.MarksAndNumbers,
-      DeliveryDate: product.DeliveryDate,
-      DeliveredQty: product.DeliveredQty,
-      HouseJobCargoSid: cargoSid
-    }));
+    const mappedProducts = cargoProducts.map((product: any) => {
+      const productDescription = product.ProductDescription || cargo.CommodityDescription || '';
+      const marksAndNumber = product.MarksAndNumber || product.MarksAndNumbers || cargo.MarksAndNumber || '';
+      const isHazCargo = cargo.CargoType === 'Haz';
+
+      return {
+        HouseJobProductSid: product.HouseJobProductSid || null,
+        ProductName: product.ProductName || '',
+        ProductDescription: productDescription,
+        ShippingBillNo: product.ShippingBillNo || '',
+        ShippingBillDate: product.ShippingBillDate,
+        ExternaPkg: product.ExternaPkg || null,
+        ExternlQty: String(product.ExternlQty),
+        GrossWeight: parseFloat(product.GrossWeight) || 0,
+        NetWeight: parseFloat(product.NetWeight) || 0,
+        Volume: parseFloat(product.Volume) || 0,
+        Volumetric: parseFloat(product.Volumetric) || 0,
+        IsHaz: isHazCargo && product.IsHaz ? 'Y' : 'N',
+        ImcoClass: isHazCargo ? product.ImcoClass || '' : '',
+        UnNo: isHazCargo ? String(product.UnNo || '') : '',
+        PkgGroup: isHazCargo ? product.PkgGroup || '' : '',
+        Length: parseFloat(product.Length),
+        Width: parseFloat(product.Width),
+        Height: parseFloat(product.Height),
+        UomMasterSid: product.UomMasterSid,
+        HSCode: product.HSCode,
+        CargoRecDate: product.CargoRecDate,
+        DamageQty: product.DamageQty,
+        ReceivedQty: product.ReceivedQty,
+        DamageRemarks: product.DamageRemarks,
+        MasterJobContainerSid: product.MasterJobContainerSid || null,
+        ContainerNo: product.ContainerNo,
+        MarksAndNumber: marksAndNumber,
+        MarksAndNumbers: marksAndNumber,
+        DeliveryDate: product.DeliveryDate,
+        DeliveredQty: product.DeliveredQty,
+        HouseJobCargoSid: cargoSid
+      };
+    });
 
     return {
       HouseJobCargoSid: cargoSid,
