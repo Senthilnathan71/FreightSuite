@@ -113,13 +113,13 @@
         return {
           canvas: [
             // LEFT BORDER
-            { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.8 },
+            { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.5 },
             // RIGHT BORDER
-            { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 },
+            { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.5 },
             // TOP BORDER
-            { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.8 },
+            { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.5 },
             // BOTTOM BORDER
-            { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 }
+            { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.5 }
           ]
         };
       },
@@ -269,7 +269,7 @@
         y1: 0,
         x2: PAGE_RIGHT,
         y2: 0,
-        lineWidth: 1.5
+        lineWidth: 0.5
       }],
       margin: [0, 0, 0, 6]
     };
@@ -444,24 +444,24 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
   // -----------------------------
   // Bottom Line (No Extra Space)
   // -----------------------------
-  const bottomLine = {
-    canvas: [
-      {
-        type: 'line',
-        x1: PAGE_LEFT,
-        y1: 0,
-        x2: PAGE_RIGHT,
-        y2: 0,
-        lineWidth: 1.5
-      }
-    ],
-    margin: [0, 2, 0, 3]
-  };
+  // const bottomLine = {
+  //   canvas: [
+  //     {
+  //       type: 'line',
+  //       x1: PAGE_LEFT,
+  //       y1: 0,
+  //       x2: PAGE_RIGHT,
+  //       y2: 0,
+  //       lineWidth: 0.1
+  //     }
+  //   ],
+  //   margin: [0, 2, 0, 3]
+  // };
 
   return {
     stack: [
       twoColumnLayout,
-      bottomLine
+      // bottomLine
     ],
     margin: [0, 0, 0, 0]
   };
@@ -637,7 +637,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
           y1: 0,
           x2: PAGE_RIGHT,
           y2: 0,
-          lineWidth: 1
+          lineWidth: 0.5
         }],
         margin: [0, 6, 0, 4]
       },
@@ -1304,8 +1304,8 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
         dontBreakRows: true
       },
       layout: {
-        hLineWidth: () => 1,
-        vLineWidth: () => 1,
+        hLineWidth: () => 0.5,
+        vLineWidth: () => 0.5,
         hLineColor: () => '#000',
         vLineColor: () => '#000',
         paddingLeft: () => 3,      // Reduced from 6
