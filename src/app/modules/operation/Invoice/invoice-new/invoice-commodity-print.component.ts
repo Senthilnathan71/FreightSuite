@@ -137,10 +137,7 @@ export class InvoiceCommodityPrintComponent {
         return {
           pkg: Number(p?.ExternlQty ?? c?.NoOfPkg ?? 0),
           pkgtype: p?.ExternaPkg || p?.PkgGroup || c?.PkgType || '',
-          desc:
-            c?.CommodityDescription ||
-            p?.CommodityDescription ||
-            '',
+          desc:p?.ProductDescription || '',
           grosswt: Number(c?.GrossWeight ?? p?.GrossWeight ?? 0),
           metric: this.isSeaDepartment()
             ? Number(c?.Volume ?? p?.Volume ?? 0)

@@ -80,7 +80,7 @@
     const taxConfig = (data.taxDisplayConfig as any) || {};
     const isIndiaInvoice = !taxConfig.showVAT;
     const logoHeaderHeight = INVOICE_LOGO_HEIGHT_PT;
-    const baseTopMargin = 140;
+    const baseTopMargin = 155;
     const extraTopMarginForLogo = Math.max(0, logoHeaderHeight - 55);
     const extraTopMarginForIndiaFields =
       isIndiaInvoice
@@ -114,13 +114,13 @@
         return {
           canvas: [
             // LEFT BORDER
-            { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.8 },
+            { type: 'line', x1: 10, y1: 10, x2: 10, y2: pageSize.height - 10, lineWidth: 0.5 },
             // RIGHT BORDER
-            { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 },
+            { type: 'line', x1: pageSize.width - 10, y1: 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.5 },
             // TOP BORDER
-            { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.8 },
+            { type: 'line', x1: 10, y1: 10, x2: pageSize.width - 10, y2: 10, lineWidth: 0.5 },
             // BOTTOM BORDER
-            { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.8 }
+            { type: 'line', x1: 10, y1: pageSize.height - 10, x2: pageSize.width - 10, y2: pageSize.height - 10, lineWidth: 0.5 }
           ]
         };
       },
@@ -235,24 +235,31 @@
       });
     }
 
+    const postalCode = branch?.postalCode;
+      companyInfoStack.push({
+        text: `Postal Code : ${postalCode}`,
+        style: 'addressText',
+        alignment: 'right',
+        margin: [0, 0, 0, 6]
+      });
+    
+
     const phone = branch?.phoneNumber || company?.phoneNumber;
-    if (phone) {
       companyInfoStack.push({
         text: `Phone No : ${phone}`,
         style: 'addressText',
         alignment: 'right',
         margin: [0, 0, 0, 6]
       });
-    }
+    
 
     const registrationNo = data.companyPan || (!isIndiaInvoice ? (data as any)?.companyVatNo : '');
-    if (registrationNo) {
       companyInfoStack.push({
         text: `${isIndiaInvoice ? 'GST No' : 'VAT No'} : ${registrationNo}`,
         style: 'addressText',
         alignment: 'right'
       });
-    }
+
 
     const headerTable = {
       table: {
@@ -270,7 +277,7 @@
         y1: 0,
         x2: PAGE_RIGHT,
         y2: 0,
-        lineWidth: 1.5
+        lineWidth: 0.5
       }],
       margin: [0, 0, 0, 6]
     };
@@ -456,7 +463,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
         y1: 0,
         x2: PAGE_RIGHT,
         y2: 0,
-        lineWidth: 1.5
+        lineWidth: 0.5
       }
     ],
     margin: [0, 5, 0, 5]
@@ -600,7 +607,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
         return {
           pkg: Number(p?.ExternlQty ?? c?.NoOfPkg ?? 0),
           pkgtype: p?.ExternaPkg || p?.PkgGroup || c?.PkgType || '',
-          desc: c?.CommodityDescription || p?.CommodityDescription || '',
+          desc: c?.ProductDescription || p?.ProductDescription || '',
           grosswt: Number(c?.GrossWeight ?? p?.GrossWeight ?? 0),
           metric: Number(isSeaMode ? (c?.Volume ?? p?.Volume ?? 0) : (c?.ChargeableWeight ?? p?.ChargeableWeight ?? 0)),
           containerNo: c?.ContainerNumber || '',
@@ -634,7 +641,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
       })();
 
   const cargoHeaderRow: any[] = [
-    ...(showCommodityDescColumn ? [{ text: 'Commodity Desc', style: 'tableHeader', alignment: 'center' }] : []),
+   
     { text: 'Pkg', style: 'tableHeader', alignment: 'center' },
     ...(showHouseJobContainerColumns ? [{ text: 'Pkg Type', style: 'tableHeader', alignment: 'center' }] : []),
     { text: 'Gross Wt.', style: 'tableHeader', alignment: 'center' },
@@ -644,11 +651,11 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
           { text: 'Container No', style: 'tableHeader', alignment: 'center' },
           { text: 'Container Type', style: 'tableHeader', alignment: 'center' }
         ]
-      : [])
+      : []),
+       { text: 'Commodity Desc', style: 'tableHeader', alignment: 'center' }
   ];
 
   const cargoBodyRows = commodityRows.map((row: any) => ([
-    ...(showCommodityDescColumn ? [{ text: row.desc || '' }] : []),
     { text: String(row.pkg ?? 0), alignment: 'right' },
     ...(showHouseJobContainerColumns ? [{ text: row.pkgtype || '-' }] : []),
     { text: formatNumberWithCommas(Number(row.grosswt) || 0, 3), alignment: 'right' },
@@ -658,12 +665,13 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
           { text: row.containerNo || '-', alignment: 'center' },
           { text: row.containerType || '-', alignment: 'center' }
         ]
-      : [])
+      : []),
+       { text: row.desc || '' }
   ]));
 
   const cargoWidths = showHouseJobContainerColumns
-    ? ['12%', '16%', '16%', '14%', '21%', '21%']
-    : ['42%', '14%', '22%', '22%'];
+    ? ['8%', '11%', '12%', '10%', '18%', '16%', '25%']
+    : ['14%', '22%', '22%', '42%'];
 
   const cargoTableBlock = {
     table: {
@@ -700,7 +708,7 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
           y1: 0,
           x2: PAGE_RIGHT,
           y2: 0,
-          lineWidth: 1
+          lineWidth: 0.5
         }],
         margin: [0, 6, 0, 4]
       },
@@ -752,8 +760,8 @@ function buildInvoiceInfo(data: InvoicePdfData): any {
     };
     if (!displayDetails.length) return { text: '' };
     const compactBorderedLayout = {
-      hLineWidth: () => 1,
-      vLineWidth: () => 1,
+      hLineWidth: () => 0.5,
+      vLineWidth: () => 0.5,
       hLineColor: () => '#000',
       vLineColor: () => '#000',
       paddingLeft: () => 1,
@@ -1357,8 +1365,8 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
         dontBreakRows: true
       },
       layout: {
-        hLineWidth: () => 1,
-        vLineWidth: () => 1,
+        hLineWidth: () => 0.5,
+        vLineWidth: () => 0.5,
         hLineColor: () => '#000',
         vLineColor: () => '#000',
         paddingLeft: () => 3,      // Reduced from 6
@@ -1437,19 +1445,13 @@ function buildBankDetailsSection(data: InvoicePdfData): any[] {
     const companyName = data.company?.companyName || '';
 
     return [{
-      stack: [
-        { 
-          text: companyName ? `For ${companyName}` : '', 
-          alignment: 'right', 
-          margin: [0, 0, 0, 2] // Minimal spacing
-        },
-        { 
-          text: 'Authorised Signatory', 
-          alignment: 'right', 
-          style: 'labelBold' 
-        }
+      text: [
+        ...(companyName ? [{ text: `For ${companyName}\n`, bold: false }] : []),
+        { text: 'Authorised Signatory', bold: true }
       ],
-      margin: [0, 0, 0, 0] // Minimal spacing
+      alignment: 'right',
+      margin: [0, 8, 0, 0],
+      unbreakable: true
     }];
   }
   /**

@@ -146,9 +146,7 @@
             <table style="width:100%;border-collapse:collapse;margin-top:5px;">
                 <thead>
                     <tr style="font-size:12px;">
-                        <th *ngIf="showCommodityDescColumn"
-                            style="border:1px solid black;padding:2px 8px;text-align:center;"><strong>Commodity
-                                Desc</strong></th>
+                        
                         <th style="border:1px solid black;padding:2px 8px;text-align:center;"><strong>Pkg</strong>
                         </th>
                         <th *ngIf="showHouseJobContainerColumns"
@@ -164,12 +162,13 @@
                         <th *ngIf="showHouseJobContainerColumns"
                             style="border:1px solid black;padding:2px 8px;text-align:center;"><strong>Container
                                 Type</strong></th>
+                                <th style="border:1px solid black;padding:2px 8px;text-align:center;"><strong>Commodity
+                                Desc</strong></th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr style="font-size:12px;" *ngFor="let row of commodityRows">
-                        <td *ngIf="showCommodityDescColumn" style="border:1px solid black;padding:2px 8px;">{{ row.desc
-                            }}</td>
+                       
                         <td style="border:1px solid black;padding:2px 8px;text-align:right;">{{ row.pkg }}</td>
                         <td *ngIf="showHouseJobContainerColumns" style="border:1px solid black;padding:2px 8px;">{{
                             row.pkgtype }}</td>
@@ -183,6 +182,8 @@
                         <td *ngIf="showHouseJobContainerColumns"
                             style="border:1px solid black;padding:2px 8px;text-align:center;">{{ row.containerType }}
                         </td>
+                         <td style="border:1px solid black;padding:2px 8px;">{{ row.desc
+                            }}</td>
                     </tr>
                 </tbody>
             </table>

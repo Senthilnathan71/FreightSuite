@@ -362,7 +362,7 @@ export function transformPackingListApiData(
       consigneeAddress: housejobData?.ConsigneeAddress || '',
       shipmentNo: housejobData?.ShipmentNo || '',
       jobNo: housejobData?.masterJob?.MasterJobNumber || '',
-      mblNo: housejobData?.MBLNo || '',
+      mblNo: housejobData?.masterJob?.MBLNo || housejobData?.MBLNo || masterJobData?.MBLNo || '',
       hblNo: housejobData?.HBLNo || '',
       placeOfReceipt: resolvePortName(housejobData?.POO),
       portOfLoading: resolvePortName(housejobData?.POL),
