@@ -103,6 +103,8 @@ export class ChartAccountEntryComponent implements OnInit, OnDestroy, HasUnsaved
     { id: 17, name: 'Revenue' },
     { id: 18, name: 'Sy Cr' },
     { id: 19, name: 'Sy Dr' },
+    { id: 20, name: 'TDS Payable' },
+    { id: 21, name: 'TDS Receivable' },
 
   ];
 

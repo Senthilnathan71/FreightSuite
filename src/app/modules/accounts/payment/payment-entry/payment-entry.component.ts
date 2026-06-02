@@ -90,6 +90,7 @@ import { DocReferenceComponent } from 'src/app/modules/operation/doc-reference/d
 import { VoucherActionGuardContext, VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import { ElementStateGuardDirective } from 'src/app/core/Directives/element-state-guard.directive';
 import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guard.directive';
+import { TdsHelperService } from '../../services/tds-helper.service';
 
 /**
  * Payment Entry Component
@@ -129,6 +130,7 @@ import { FormStateGuardDirective } from 'src/app/core/Directives/form-state-guar
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
     CustomDatePipe,
     TaxCalculationService,
+    TdsHelperService,
   ],
 })
 export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedChanges {
@@ -169,6 +171,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
   todayDateInNgbStruct = toNgbDateStruct(this.today);
   searchOutstandingForm!: FormGroup;
   paymentForm!: FormGroup;
+  tdsForm!: FormGroup;
   partyList: any[] = [];
   onlyCustomerList: any[] = [];
   selectedPartyItemForSearch: any = null;
@@ -411,7 +414,8 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     private masterService: MasterService,
     private operationService: OperationService,
     private taxCalculationService: TaxCalculationService,
-    private voucherActionGuard: VoucherActionGuardService
+    private voucherActionGuard: VoucherActionGuardService,
+    public tdsHelper: TdsHelperService
   ) {}
 
   copyDocumentNumber(controlName: string, label: string, event?: Event): void {
@@ -750,6 +754,18 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       });
     });
 
+    // TDS form
+    this.tdsForm = this.tdsHelper.buildTdsForm(this.fb);
+
+    // Recalculate TDS amounts whenever detail rows change
+    this.paymentForm.get('detailItems')?.valueChanges
+      .pipe(takeUntil(this.destroy$), debounceTime(150))
+      .subscribe(() => {
+        if (this.isPatching || !this.tdsHelper.isTDSEnabled) return;
+        this.runTDSRecalc();
+        this.validateAmount();
+      });
+
     this.paymentForm.setValidators(
       consistentExchangeRatesValidator(
         companyCurrency,
@@ -874,6 +890,11 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       CompanyMasterSid,
       BranchMasterSid,
     };
+
+    // TDS sets — India only
+    if (this.currentCompanyCountryCode === 'in' && CompanyMasterSid) {
+      this.tdsHelper.loadTDSSets(CompanyMasterSid).subscribe();
+    }
     forkJoin({
       coaWithLedgerCategoryAsLedger: this.accountService
         .getAllCoaWithLedgerCategory({
@@ -1468,6 +1489,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         };
       }),
       voucherMatching: voucherMatching,
+      tdsDetail: this.tdsHelper.buildPayload(this.tdsForm),
       PaymentRequestSid: this.paymentRequestSid,
       MasterJobSid: this.prMasterJobSid ?? null,
       HouseJobSid: this.prHouseJobSid ?? null,
@@ -2055,6 +2077,17 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     const voucherMatchingRecords = response.voucherMatchings || [];
     this.patchOutstandingFormArray(voucherMatchingRecords);
 
+    // Restore VoucherTDS (India only)
+    const savedTDS = response.VoucherTDS?.[0];
+    if (savedTDS && this.currentCompanyCountryCode === 'in') {
+      this.tdsHelper.isTDSEnabled = true;
+      this.tdsHelper.patchFromSavedTDS(savedTDS, this.tdsForm);
+      const headerSidForRates = savedTDS.TDSSetRate?.TDSSetHeaderSid ?? this.tdsForm.get('TDSSetHeaderSid')?.value;
+      if (headerSidForRates) {
+        this.tdsHelper.loadRatesForSet(headerSidForRates).subscribe();
+      }
+    }
+
     if (this.isReadOnly) {
       this.isDirty = false;
       this.initialFormValue = this.paymentForm.getRawValue();
@@ -2292,6 +2325,7 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         } else {
           this.removeAutoPartyRow();
         }
+        this.refreshSupplierTDS(partySid);
       });
 
     // Capture initial BankCOA value so we can track the previous one on changes
@@ -3944,14 +3978,12 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
     } else {
       finalAmount = Number(amount) * Number(formattedExchangeRate);
     }
-    row
-      .get('LocalAmount')
-      ?.setValue(
-        this.getFormattedAmount(
-          finalAmount,
-          row.get('CurrencyMasterSid')?.value
-        )
-      );
+    const formattedLocalAmount = this.getFormattedAmount(
+      finalAmount,
+      row.get('CurrencyMasterSid')?.value
+    );
+    row.get('LocalAmount')?.setValue(formattedLocalAmount);
+    row.get('TaxableAmount')?.setValue(formattedLocalAmount);
 
     if (recalcPartyAmount) {
       this.recalcPaymentTaxForRow(index);
@@ -4520,8 +4552,107 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
         totalDebits += ((toNumber(vd.LocalAmount) + toNumber(vd.TaxAmount1) + toNumber(vd.TaxAmount2)) / headerExRate)  || 0;
       }
     });
+    // TDS (Cr-side) — India only
+    if (this.tdsHelper?.isTDSEnabled && this.currentCompanyCountryCode === 'in') {
+      const tdsAmt = toNumber(this.tdsForm?.get('TDSAmount')?.value || 0);
+      if (tdsAmt > 0) {
+        totalDebits += tdsAmt / (headerExRate || 1);
+      }
+    }
     this.totalCredits = toNumber(this.getFormattedAndPaddedAmount(totalCredits,this.paymentForm.get('CurrencyMasterSid')?.getRawValue()));
     this.totalDebits = toNumber(this.getFormattedAndPaddedAmount(totalDebits,this.paymentForm.get('CurrencyMasterSid')?.getRawValue()));
+  }
+
+  /**
+   * Fetch supplier TDS mapping + FY cumulative when CustomerBranchSid changes.
+   * India-only. Auto-populates form and re-validates totals.
+   */
+  private refreshSupplierTDS(customerBranchSid: number | null): void {
+    if (this.currentCompanyCountryCode !== 'in') return;
+    if (!customerBranchSid) {
+      this.tdsHelper.reset();
+      this.tdsForm?.reset({ TaxableAmount: 0, TDSAmount: 0, TDSPartyAmount: 0, TDSRate: 0 });
+      this.validateAmount();
+      return;
+    }
+    const party = this.partyList.find(p => p.CustomerBranchSid === customerBranchSid);
+    const ledgerMasterSid = party?.SubledgerMasterSid;
+    const companyMasterSid = this.currentCompany?.CompanyMasterSid;
+    if (!ledgerMasterSid || !companyMasterSid) return;
+
+    const fy = this.appSettingService.getCurrentFinancialYear();
+    if (!fy) return;
+    const fyStart = new Date(fy.StartDate);
+    const fyEnd = new Date(fy.EndDate);
+    const voucherDateRaw = this.paymentForm.get('VoucherDate')?.value;
+    const voucherDate = voucherDateRaw ? new Date(voucherDateRaw) : new Date();
+
+    this.tdsHelper.fetchAndPopulate({
+      CustomerBranchSid: customerBranchSid,
+      LedgerMasterSid: ledgerMasterSid,
+      CompanyMasterSid: companyMasterSid,
+      fyStartDate: fyStart,
+      fyEndDate: fyEnd,
+      excludeVoucherHeaderSid: this.headerId,
+      voucherDate,
+      tdsForm: this.tdsForm,
+    }).subscribe(() => {
+      if (this.tdsHelper.isTDSEnabled) {
+        this.runTDSRecalc();
+      }
+      this.validateAmount();
+    });
+  }
+
+  onTDSToggle(): void {
+    if (!this.tdsHelper.isTDSEnabled) {
+      this.tdsForm.reset({ TaxableAmount: 0, TDSAmount: 0, TDSPartyAmount: 0, TDSRate: 0 });
+      this.tdsHelper.limitNote = null;
+      this.tdsHelper.autoReason = null;
+    } else {
+      // User manually toggled ON — recalc using current detail rows
+      this.runTDSRecalc();
+    }
+    this.validateAmount();
+  }
+
+  onTDSSetChange(set: any): void {
+    if (!set) {
+      this.tdsHelper.tdsRateList = [];
+      this.tdsForm.patchValue({ TDSSetRateSid: null, TDSRate: 0, ITSectionCode: '', CompanyType: '' }, { emitEvent: false });
+      this.validateAmount();
+      return;
+    }
+    this.tdsHelper.loadRatesForSet(set.TDSSetHeaderSid).subscribe();
+    this.tdsForm.patchValue({ TDSSetRateSid: null, TDSRate: 0, ITSectionCode: '', CompanyType: '' }, { emitEvent: false });
+  }
+
+  onTDSRateChange(rate: any): void {
+    if (!rate) return;
+    this.tdsForm.patchValue({
+      TDSRate: Number(rate.TDSRate ?? 0),
+      ITSectionCode: rate.ITSectionCode ?? '',
+      CompanyType: rate.CompanyType ?? '',
+    }, { emitEvent: false });
+    this.runTDSRecalc();
+    this.validateAmount();
+  }
+
+  onTDSRateBlur(): void {
+    this.runTDSRecalc();
+    this.validateAmount();
+  }
+
+  /** Single entry-point for TDS recalculation — passes party SID + currency formatter */
+  private runTDSRecalc(): void {
+    const currencySid = this.paymentForm.get('CurrencyMasterSid')?.getRawValue();
+    this.tdsHelper.recalcTDSAmounts(
+      this.detailItems.getRawValue(),
+      this.tdsForm,
+      toNumber(this.paymentForm.get('ExchangeRate')?.getRawValue() || 1),
+      this.paymentForm.get('PartyMasterSid')?.getRawValue(),
+      (n: number) => this.getFormattedAndPaddedAmount(n, currencySid),
+    );
   }
 
   showInfo() {
