@@ -35,19 +35,19 @@ interface ConfigTemplate {
 
 const CONFIG_TEMPLATES: ConfigTemplate[] = [
   { configurationName: 'QuoteRateLockUser', displayName: 'Quote Rate Lock Users', configType: 'email-array' },
-  { configurationName: 'CustomerNameUpdateUsers', displayName: 'Customer Name Update Users', configType: 'email-array' },
+  { configurationName: 'CustomerNameUpdateUsers', displayName: 'Customer Name Update Users(Allow)', configType: 'email-array' },
   { configurationName: 'ExchangeJVCOA', displayName: 'Exchange JV COA', configType: 'number' },
-  { configurationName: 'SaveAsFilePath', displayName: 'Save As File Path', configType: 'boolean' },
+  { configurationName: 'SaveAsFilePath', displayName: 'Save As File Path (PDF file)', configType: 'boolean' },
   { configurationName: 'MawbStockAllocation', displayName: 'MAWB Stock Auto Allocation', configType: 'boolean' },
   { configurationName: 'TermsandConditions', displayName: 'Terms and Conditions', configType: 'boolean' },
-  { configurationName: 'CreditRequestChecking', displayName: 'Credit Request Checking', configType: 'boolean' },
+  { configurationName: 'CreditRequestChecking', displayName: 'Credit Request Checking(Limit)', configType: 'boolean' },
   { configurationName: 'ExportToImportCompanyMasterSid', displayName: 'Export To Import Companies', configType: 'string' },
-  { configurationName: 'OSandStatementShowBankDetails', displayName: 'OS and Statement Show Bank Details', configType: 'boolean' },
-  { configurationName: 'Printallbank', displayName: 'Print All Bank', configType: 'boolean' },
+  { configurationName: 'OSandStatementShowBankDetails', displayName: 'OS & Statement Show Bank Details', configType: 'boolean' },
+  { configurationName: 'Printallbank', displayName: 'Printallbank ( Invoice & OS print)', configType: 'boolean' },
   { configurationName: 'DisableRateUpdateBack', displayName: 'Disable Rate Update Back', configType: 'boolean' },
   { configurationName: 'ReceiptAllowtoprintbeforePosting', displayName: 'Receipt Allow to print before posting', configType: 'boolean' },
   { configurationName: 'QuoteApproval', displayName: 'Quote Approval', configType: 'boolean'},
-  { configurationName: 'ShowCargowithContainer', displayName: 'Show Cargo with Container', configType: 'boolean'},
+  { configurationName: 'ShowCargowithContainer', displayName: 'Show Cargo with Container(Invoice Print)', configType: 'boolean'},
 ];
 
 @Component({
