@@ -80,7 +80,7 @@
     const taxConfig = (data.taxDisplayConfig as any) || {};
     const isIndiaInvoice = isIndiaPdfInvoice(data, taxConfig);
     const logoHeaderHeight = INVOICE_LOGO_HEIGHT_PT;
-    const baseTopMargin = 140;
+    const baseTopMargin = 150;
     const extraTopMarginForLogo = Math.max(0, logoHeaderHeight - 55);
     const extraTopMarginForIRNLine = isIndiaInvoice ? 14 : 0;
     const extraTopMarginForIndiaFields =
@@ -88,10 +88,7 @@
         ? (printData?.GSTCode ? 12 : 0) +
           ((printData?.PAN || (data as any)?.companyPan) ? 12 : 0)
         : 0;
-    // When UAE company has no VAT No the company info stack is ~7pt shorter, causing
-    // buildInvoiceInfo.bottomLine to sit above the content's first canvas line → double-line.
-    // Reduce top margin by 6pt to re-align the lines when VAT No is absent.
-    const extraTopMarginForVATLine = 0;
+    const extraTopMarginForVATLine = !isIndiaInvoice ? 8 : 0;
     const dynamicTopMargin = baseTopMargin + extraTopMarginForLogo + extraTopMarginForIndiaFields + extraTopMarginForIRNLine + extraTopMarginForVATLine;
     const configuredMargins = data.config?.pageMargins as number[] | undefined;
     const resolvedPageMargins = configuredMargins
@@ -235,14 +232,22 @@
     }
 
     const phone = branch?.phoneNumber || company?.phoneNumber;
-    if (phone) {
       companyInfoStack.push({
         text: `Phone No : ${phone}`,
         style: 'addressText',
         alignment: 'right',
         margin: [0, 0, 0, 6]
       });
-    }
+   
+
+    const postalCode = branch?.postalCode || (branch as any)?.ZipCode || company?.postalCode;
+      companyInfoStack.push({
+        text: `Postal Code : ${postalCode}`,
+        style: 'addressText',
+        alignment: 'right',
+        margin: [0, 0, 0, 6]
+      });
+    
 
     const registrationNo = (isIndiaInvoice ? data.companyPan : (data as any)?.companyVatNo) || '';
     if (!isIndiaInvoice || registrationNo) {
@@ -309,7 +314,8 @@
               margin: [0, 0, 0, 5]
             }]
           : [])
-      ]
+      ],
+      margin: [0, 0, 0, 2]
     };
   }
 
