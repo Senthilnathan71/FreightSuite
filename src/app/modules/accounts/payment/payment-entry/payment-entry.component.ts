@@ -3433,6 +3433,20 @@ export class PaymentEntryComponent implements OnInit, AfterViewInit, HasUnsavedC
       .toFixed(2);
   }
 
+  getDrMatchLocalAmt() {
+    return this.voucherMatchings.controls
+      .filter(c => c.get('drCr')?.value === 'Dr')
+      .reduce((t, c) => t + Number(c.get('matchLocalAmt')?.value || 0), 0)
+      .toFixed(2);
+  }
+
+  getCrMatchLocalAmt() {
+    return this.voucherMatchings.controls
+      .filter(c => c.get('drCr')?.value === 'Cr')
+      .reduce((t, c) => t + Number(c.get('matchLocalAmt')?.value || 0), 0)
+      .toFixed(2);
+  }
+
   // Section-4 Helper
   getCurrentCompanyBranches() {
     const currentCompanyId = this.currentCompany?.CompanyMasterSid;

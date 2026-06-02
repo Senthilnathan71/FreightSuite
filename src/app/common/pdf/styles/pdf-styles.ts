@@ -178,8 +178,8 @@ export const PDF_STYLES = {
 export const PDF_TABLE_LAYOUTS = {
   // Standard table with all borders
   bordered: {
-    hLineWidth: () => 1,
-    vLineWidth: () => 1,
+    hLineWidth: () => 0.5,
+    vLineWidth: () => 0.5,
     hLineColor: () => PDF_COLORS.tableBorder,
     vLineColor: () => PDF_COLORS.tableBorder,
     paddingLeft: () => 4,
