@@ -895,28 +895,33 @@
         </span>
         }
 
-        <!-- DETAIL TOTALS (Blue Tone) -->
-        <div class="px-2 py-1 rounded bg-primary bg-opacity-10 border border-primary">
+        <!-- DETAIL TOTALS -->
+        <div class="position-relative px-2 rounded border border-primary" style="padding-top:0.9rem; padding-bottom:0.2rem;">
+          <span class="position-absolute fw-semibold text-primary" style="font-size:0.6rem; top:0.1rem; right:0.4rem;">Detail</span>
           <span class="me-3">
             Total Cr ({{ receiptForm.get('CurrencyCode')?.getRawValue() }}) :
-            <span class="fw-bold text-primary">
-              {{ totalCredits | number : "1.2-2" }}
-            </span>
+            <span class="fw-bold text-primary">{{ totalCredits | number : "1.2-2" }}</span>
           </span>
-
           <span>
             Total Dr ({{ receiptForm.get('CurrencyCode')?.getRawValue() }}) :
-            <span class="fw-bold text-primary">
-              {{ totalDebits | number : "1.2-2" }}
-            </span>
+            <span class="fw-bold text-primary">{{ totalDebits | number : "1.2-2" }}</span>
           </span>
         </div>
 
-        <!-- MATCHING TOTAL (Warning Tone) -->
-        <div class="px-2 py-1 rounded bg-warning bg-opacity-10 border border-warning">
-          Net Matching ({{ receiptForm.get('CurrencyCode')?.getRawValue() }}) :
-          <span class="fw-bold text-warning">
-            {{ getTotalMatchPartyAmt() | number : "1.2-2" }}
+        <!-- MATCHING TOTALS -->
+        <div class="position-relative px-2 rounded border border-info" style="padding-top:0.9rem; padding-bottom:0.2rem;">
+          <span class="position-absolute fw-semibold text-info" style="font-size:0.6rem; top:0.1rem; right:0.4rem;">Matching</span>
+          <span class="me-3">
+            Dr ({{ receiptForm.get('CurrencyCode')?.getRawValue() }}) :
+            <span class="fw-bold text-success">{{ getDrMatchLocalAmt() | number : "1.2-2" }}</span>
+          </span>
+          <span class="me-3">
+            Cr ({{ receiptForm.get('CurrencyCode')?.getRawValue() }}) :
+            <span class="fw-bold text-danger">{{ getCrMatchLocalAmt() | number : "1.2-2" }}</span>
+          </span>
+          <span>
+            Net ({{ receiptForm.get('CurrencyCode')?.getRawValue() }}) :
+            <span class="fw-bold text-primary">{{ getTotalMatchPartyAmt() | number : "1.2-2" }}</span>
           </span>
         </div>
       </div>
@@ -1674,9 +1679,9 @@
 
           </tbody>
           <tfoot class="sticky-bottom" style="position: sticky; bottom: 0; z-index: 1;">
-            <!-- TOTAL ROW -->
-            <tr class="table-info fw-bold text-end">
-              <td colspan="7" class="text-end">Total</td>
+            <!-- NET ROW -->
+            <tr class="table-info fw-bold text-end" style="font-size:0.8rem;">
+              <td colspan="7" class="text-end">Net</td>
               <!-- @if(!isEditMode){ -->
               <!-- <td>{{ getTotalCurrAmt() }}</td> -->
               <td>{{ getTotalLocalAmt() }}</td>
@@ -1684,11 +1689,8 @@
               <td></td>
               <td>{{ getTotalOSLocalAmount() }}</td>
               }
-              <td></td>
-              <!-- matchCurr -->
-              <td></td>
-              <!-- matchExRate -->
-
+              <td></td><!-- matchCurr -->
+              <td></td><!-- matchExRate -->
               <td></td>
               <td>{{ getTotalMatchLocalAmt() }}</td>
               <td>{{ getTotalMatchPartyAmt() }}</td>
