@@ -1603,6 +1603,36 @@ export class ReportRegistryService {
       console.warn('Unpicked Cargo Report component not yet created:', error);
     }
 
+    try {
+      const { TranshipmentCargoComponent } = await import(
+        '../components/reports/transhipment-cargo/transhipment-cargo.component'
+      );
+
+      this.registerReport({
+        id: 'transhipment-cargo',
+        title: 'Transhipment Cargo Report',
+        component: TranshipmentCargoComponent,
+        filenameTemplate: 'transhipment-cargo-report',
+        module: 'operations-report',
+        apiEndpoint: 'operations-report/send-email',
+        request: 'POST',
+        fetchDataEndpoint: 'operation/reports/{id}/generate',
+        emailSubjectTemplate: 'Transhipment Cargo Report',
+        emailBodyTemplate: `
+          <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>Dear Sir/Madam,</p>
+            <p>Please find attached the <strong>Transhipment Cargo Report</strong></strong></p>
+            <p>Best regards,</p>
+          </div>
+        `,
+        modalSize: 'xl',
+        pdfOrientation: 'landscape'
+      });
+
+    } catch (error) {
+      console.warn('Transhipment Cargo Report component not yet created:', error);
+    }
+
   }
 
   /**

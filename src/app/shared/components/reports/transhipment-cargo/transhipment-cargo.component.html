@@ -1,0 +1,85 @@
+<div [ngClass]="orientation === 'portrait' ? 'print-a4-portrait' : 'print-a4-landscape'">
+    <app-print-header></app-print-header>
+
+    <h4 class="text-center fw-bold py-2" style="margin: 0;">
+        Transhipment Cargo Report
+    </h4>
+    <div style="margin-top: 1rem;">
+
+        <div style="display: flex; justify-content:space-between;">
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="width: 130px;">To HBL Date </strong>
+                    <p class="ms-1 my-0">: {{ params?.ToHblDt | formatDate }}</p>
+                </div>
+            </div>
+
+            <div>
+                <div class="d-flex align-items-center">
+                    <strong style="width: 130px;">Branch </strong>
+                    <p class="ms-1 my-0">: {{ fullData?.branchInvolved }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table tablebordered table-sm" style="margin: 0; font-size: 12px;">
+                <thead>
+                    <tr class="bg-info">
+                        <th class="bg-transparent text-light text-center">HBL Date</th>
+                        <th class="bg-transparent text-light text-center">HBL No</th>
+                        <th class="bg-transparent text-light text-center">MBL No</th>
+                        <th class="bg-transparent text-light text-center">Origin Agent</th>
+                        <th class="bg-transparent text-light text-center">Export Booking No</th>
+                        <th class="bg-transparent text-light text-center">Imp.Cont.No.</th>
+                        <th class="bg-transparent text-light text-center">Pkgs</th>
+                        <th class="bg-transparent text-light text-center">PkgType</th>
+                        <th class="bg-transparent text-light text-center">Weight</th>
+                        <th class="bg-transparent text-light text-center">Volume</th>
+                        <th class="bg-transparent text-light text-center">Final Destination</th>
+                        <th class="bg-transparent text-light text-center">Vessel</th>
+                        <th class="bg-transparent text-light text-center">Voyage</th>
+                        <th class="bg-transparent text-light text-center">VesselArrDate</th>
+                        <th class="bg-transparent text-light text-center">DeStuffingDate</th>
+                        <th class="bg-transparent text-light text-center">Coloader</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of fullData?.data; let i=index" style="white-space: nowrap;">
+                        <td>{{ item.HBLDate | formatDate }}</td>
+                        <td>{{ item.HBLNo}}</td>
+                        <td>{{ item.MBLNo}}</td>
+                        <td>{{ item.OriginAgent}}</td>
+                        <td>{{ item.BookingNo}}</td>
+                        <td>{{ item.ContainerNo }}</td>
+                        <td class="text-end">{{ item.PackageCount }}</td>
+                        <td>{{ item.ExternaPkg }}</td>
+                        <td class="text-end">{{ item.GrossWeight }}</td>
+                        <td class="text-end">{{ item.Volume }}</td>
+                        <td>{{ item.FPD }}</td>
+                        <td>{{ item.Vessel }}</td>
+                        <td>{{ item.VoyageNo }}</td>
+                        <td>{{ item.ETA | formatDate }}</td>
+                        <td>{{ item.CargoReceivedDate | formatDate }}</td>
+                        <td>{{ item.Coloader }}</td>
+                    </tr>
+                    <tr *ngIf="fullData?.data?.length > 0" style="white-space: nowrap; font-weight: bold; border-top: 2px solid #dee2e6;">
+    <td colspan="6"></td>
+    <td class="text-end">{{ totals.packageCount }}</td>
+    <td></td>
+    <td class="text-end">{{ totals.grossWeight | number:'1.2-2' }}</td>
+    <td class="text-end">{{ totals.volume | number:'1.2-2' }}</td>
+    <td colspan="6"></td>
+</tr>
+
+                    <tr *ngIf="!fullData?.data || fullData.data?.length === 0">
+                        <td colspan="10" class="text-center fw-bold py-1">
+                            No Record Found
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <app-print-footer></app-print-footer>
+</div>
