@@ -912,12 +912,12 @@
         <div class="position-relative px-2 rounded border border-info" style="padding-top:0.9rem; padding-bottom:0.2rem;">
           <span class="position-absolute fw-semibold text-info" style="font-size:0.6rem; top:0.1rem; right:0.4rem;">Matching</span>
           <span class="me-3">
-            Total Dr ({{ receiptForm.get('CurrencyCode')?.getRawValue() }}) :
-            <span class="fw-bold text-success">{{ getDrMatchPartyAmt() | number : "1.2-2" }}</span>
+            Dr ({{ receiptForm.get('CurrencyCode')?.getRawValue() }}) :
+            <span class="fw-bold text-success">{{ getDrMatchLocalAmt() | number : "1.2-2" }}</span>
           </span>
           <span class="me-3">
-            Total Cr ({{ receiptForm.get('CurrencyCode')?.getRawValue() }}) :
-            <span class="fw-bold text-danger">{{ getCrMatchPartyAmt() | number : "1.2-2" }}</span>
+            Cr ({{ receiptForm.get('CurrencyCode')?.getRawValue() }}) :
+            <span class="fw-bold text-danger">{{ getCrMatchLocalAmt() | number : "1.2-2" }}</span>
           </span>
           <span>
             Net ({{ receiptForm.get('CurrencyCode')?.getRawValue() }}) :
