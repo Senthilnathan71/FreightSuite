@@ -30,6 +30,8 @@ import {
 } from 'src/app/shared/interfaces/advanced-filter.interface';
 import { VoucherActionGuardService } from 'src/app/shared/services/voucher-action-guard.service';
 import { getFinancialYearDateRangeBounds, getFinancialYearPresetDateRange } from 'src/app/common/helper';
+import { JournalVoucherImportModalComponent } from './journal-voucher-upload.component';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-journal-voucher-list',
@@ -111,7 +113,8 @@ export class JournalVoucherListComponent extends BaseListComponent implements On
     private datePipe: CustomDatePipe,
     private accountService: AccountsService,
     private voucherActionGuard: VoucherActionGuardService,
-    paginationService: PaginationService
+    paginationService: PaginationService,
+    private modalService: NgbModal
   ) {
     super(paginationService);
   }
@@ -284,6 +287,25 @@ private formatAmount(amount: number | string): string {
         disabled: !this.mps.can('insert')
       },
       {
+      label:    'XL Upload',
+      icon:     'fas fa-file-excel',
+      action:   'excel-dropdown',
+      cssClass: 'dofi-min-w-130',
+      tooltip:  'Import journal vouchers from Excel template.',
+      children: [
+        {
+          label: 'Download Template',
+          icon:  'fas fa-download',
+          action: 'download-template'
+        },
+        {
+          label: 'Upload Excel',
+          icon:  'fas fa-file-upload',
+          action: 'upload-file'
+        }
+      ]
+    },
+      {
         label: 'Report',
         icon: 'fas fa-file-alt',
         action: 'report',
@@ -302,6 +324,12 @@ private formatAmount(amount: number | string): string {
       case 'create':
         this.navigateToCreate();
         break;
+        case 'download-template':       // ← add
+      this.downloadTemplate();
+      break;
+    case 'upload-file':             // ← add
+      this.openImportModal();
+      break;
       case 'report':
         this.report();
         break;
@@ -312,6 +340,58 @@ private formatAmount(amount: number | string): string {
         console.warn(`Unknown action: ${action}`);
     }
   }
+
+  openImportModal(): void {
+  const currentYear = this.appSettingService.getCurrentFinancialYear();
+
+  const modalRef = this.modalService.open(JournalVoucherImportModalComponent, {
+    size:     'lg',
+    centered: true,
+    backdrop: 'static',
+    keyboard: false
+  });
+
+  modalRef.componentInstance.currentCompany = this.currentCompany;
+  modalRef.componentInstance.currentBranch  = this.currentBranch;
+  modalRef.componentInstance.currentYear    = currentYear;
+  modalRef.componentInstance.userData       = this.userData;
+
+  modalRef.closed.subscribe((imported: boolean) => {
+    if (imported) {
+      this.appSettingService.showSuccess('Journal vouchers imported successfully!');
+      this.searchJournalVoucher();   // refresh list
+    }
+  });
+}
+
+downloadTemplate(): void {
+  const companyId  = this.currentCompany?.CompanyMasterSid;
+  const branchId   = this.currentBranch?.BranchMasterSid;
+
+  if (!companyId || !branchId) {
+    this.appSettingService.showError('Company or Branch is not selected');
+    return;
+  }
+
+  this.spinner.show();
+  this.accountService.downloadJournalVoucherTemplate(companyId, branchId).subscribe({
+    next: (blob: Blob) => {
+      const url  = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href  = url;
+      link.download = 'Journal_Voucher_Upload_Template.xlsx';
+      link.click();
+      window.URL.revokeObjectURL(url);
+      this.spinner.hide();
+      this.appSettingService.showSuccess('Template downloaded successfully');
+    },
+    error: (err) => {
+      console.error('Error downloading template:', err);
+      this.spinner.hide();
+      this.appSettingService.showError('Error downloading template');
+    }
+  });
+}
 
   private updateHeaderActionState(): void {
     this.headerActions = this.headerActions.map(action => {

@@ -122,7 +122,7 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
   protected config: ListComponentConfig = {
     storageKey: 'enquiry-list-state',
     defaultPageSize: 10,
-    defaultSortColumn: 'EnquiryNumber',
+    defaultSortColumn: 'EnquiryDate',
     defaultSortDirection: 'desc',
     pageSizeOptions: [10, 20, 50, 100, 500],
     maxPagesToShow: 3
@@ -236,7 +236,6 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
       }));
       this.enquiryItems = this.allItems;
       this.totalLengthOfCollection = response?.data?.totalCount || rawItems.length || 0;
-      this.applySorting();
       this.updateHeaderActionState();
     } else {
       this.appSettingService.showError('Error searching Enquiry.');
@@ -740,7 +739,7 @@ export class EnquiryListComponent extends BaseListComponent implements OnInit {
     this.filterValue = '';
     this.currentFilters = {};
     this.updatePortFilterOptionsFromCurrentFilters();
-    this.sortColumn = "EnquiryNumber"
+    this.sortColumn = "EnquiryDate"
     this.sortDirection = "asc"
     this.enquiryItems = [];
     this.totalLengthOfCollection = this.enquiryItems.length;

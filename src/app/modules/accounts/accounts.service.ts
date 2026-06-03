@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { CurrencyExchange } from '../crm-mobile/Interfaces/currency-exchange.interface';
-import { map } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 
 export interface CheckVoucherPostingMechanism {
@@ -579,5 +579,32 @@ export class AccountsService {
       map((res: any) => res)
     );
   }
+
+  downloadJournalVoucherTemplate(
+  CompanyMasterSid: number,
+  BranchMasterSid: number
+): Observable<Blob> {
+  return this.http.get(`accounts/journal-voucher/template`, {
+    params: {
+      CompanyMasterSid: String(CompanyMasterSid),
+      BranchMasterSid: String(BranchMasterSid)
+    },
+    responseType: 'blob'
+  });
+}
+
+parseJournalVoucherExcel(formData: FormData): Observable<any> {
+  return this.http.post(`accounts/journal-voucher/bulk-upload/parse`, formData);
+}
+
+saveJournalVoucherExcel(payload: {
+  validRows: any[];
+  CompanyMasterSid: number;
+  BranchMasterSid: number;
+  YearMasterSid: number;
+  createdBy: string;
+}): Observable<any> {
+  return this.http.post(`accounts/journal-voucher/bulk-upload/save`, payload);
+}
 
 }

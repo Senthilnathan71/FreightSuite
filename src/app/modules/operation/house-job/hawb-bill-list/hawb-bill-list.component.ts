@@ -261,7 +261,6 @@ export class HawbBillListComponent extends BaseListComponent implements OnInit {
     }));
 
     this.totalLengthOfCollection = response?.data?.totalCount || rawItems.length || 0;
-    this.applySorting();
     this.updateHeaderActionState();
   }
 
