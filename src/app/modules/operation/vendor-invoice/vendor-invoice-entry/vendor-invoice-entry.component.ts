@@ -379,13 +379,48 @@ export class VendorInvoiceEntryComponent implements OnInit {
     };
   }
 
-  sendManualMail(): void {
+  async sendManualMail(): Promise<void> {
+    const menuMasterSid = this.currentMenuId || Number(sessionStorage.getItem('currentMenuId'));
+    const customerBranchSid =
+      this.vendorInvoiceData?.CustomerBranchSid ||
+      this.vendorInvoiceForm?.get('CustomerBranchSid')?.getRawValue() ||
+      null;
+    const customerMasterSid =
+      this.vendorInvoiceData?.CustomerMasterSid ||
+      this.vendorInvoiceForm?.get('PartyName')?.getRawValue() ||
+      null;
+    const recipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
+      customerBranchSid,
+      customerMasterSid,
+      menuMasterSid
+    });
+    const organizationEmail = recipients.toEmail.join(', ');
+    const ccEmail = Array.from(
+      new Set(
+        (recipients.ccEmail || [])
+          .map((email: string) => (email || '').trim())
+          .filter((email: string) => !!email)
+      )
+    ).join(', ');
+
     this.emailTriggerService.triggerManualEmails({
       companyId: this.currentCompany?.CompanyMasterSid,
       branchId: this.currentBranch?.BranchMasterSid,
-      menuMasterSid: Number(sessionStorage.getItem('currentMenuId')),
+      menuMasterSid,
       action: 'UPDATE',
-      context: {}
+      context: {
+        allowManualEmailEntry: true,
+        requireToEmail: false,
+        menuMasterSid,
+        resourceSid: this.vendorInvoiceData?.VoucherHeaderSid || this.headerId,
+        toEmail: organizationEmail,
+        ccEmail,
+        organizationEmail,
+        customerEmail: organizationEmail,
+        customerBranchSid,
+        customerMasterSid,
+        userName: this.userData?.userName
+      }
     });
   }
 

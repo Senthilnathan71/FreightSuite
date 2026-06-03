@@ -2838,15 +2838,36 @@ isSeaDepartment(): boolean {
     if (pdfBlob) {
       attachmentFile = new File([pdfBlob], (this.invoiceData?.InvoiceNo || 'Invoice') + '.pdf', { type: 'application/pdf' });
     }
+    const menuMasterSid = this.getCurrentMenuMasterSidForEmail();
+    const recipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
+      customerBranchSid: this.getCustomerBranchSidForEmail(),
+      customerMasterSid: this.getCustomerMasterSidForEmail(),
+      menuMasterSid
+    });
+    const toEmail = recipients.toEmail.join(', ');
+    const ccEmail = Array.from(
+      new Set(
+        (recipients.ccEmail || [])
+          .map((email: string) => (email || '').trim())
+          .filter((email: string) => !!email)
+      )
+    ).join(', ');
+
     this.emailTriggerService.triggerManualEmails({
       companyId: this.currentCompany?.CompanyMasterSid,
       branchId: this.currentBranch?.BranchMasterSid,
-      menuMasterSid: this.currentMenuId,
+      menuMasterSid: menuMasterSid || this.currentMenuId,
       action: 'UPDATE',
       attachmentFile,
       context: {
+        allowManualEmailEntry: true,
+        requireToEmail: false,
+        menuMasterSid,
+        customerBranchSid: this.getCustomerBranchSidForEmail(),
+        customerMasterSid: this.getCustomerMasterSidForEmail(),
         userName: this.userData?.userName,
-        toEmail: ''
+        toEmail,
+        ccEmail
       }
     });
     const payload = {

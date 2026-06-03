@@ -3221,7 +3221,29 @@ export class CreditNoteEntryComponent {
   }
 
   async sendManualMail(): Promise<void> {
-    const pdfBlob = await this.generatePDFBlob();
+    const menuMasterSid = this.getCurrentMenuMasterSidForEmail() || Number(sessionStorage.getItem('currentMenuId'));
+    const customerBranchSid = this.getCustomerBranchSidForEmail();
+    const customerMasterSid = this.getCustomerMasterSidForEmail();
+    const recipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
+      customerBranchSid,
+      customerMasterSid,
+      menuMasterSid
+    });
+    const organizationEmail = recipients.toEmail.join(', ');
+    const ccEmail = Array.from(
+      new Set(
+        (recipients.ccEmail || [])
+          .filter((email): email is string => !!email)
+          .map(email => email.trim())
+      )
+    ).join(', ');
+
+    let pdfBlob: Blob | null = null;
+    try {
+      pdfBlob = await this.generatePDFBlob();
+    } catch (error) {
+      console.error('Error generating credit note PDF attachment:', error);
+    }
     let attachmentFile: File | undefined;
     if (pdfBlob) {
       attachmentFile = new File([pdfBlob], (this.creditNoteData?.CreditNoteNo || 'CreditNote') + '.pdf', { type: 'application/pdf' });
@@ -3229,12 +3251,21 @@ export class CreditNoteEntryComponent {
     this.emailTriggerService.triggerManualEmails({
       companyId: this.currentCompany?.CompanyMasterSid,
       branchId: this.currentBranch?.BranchMasterSid,
-      menuMasterSid: Number(sessionStorage.getItem('currentMenuId')),
+      menuMasterSid,
       action: 'UPDATE',
       attachmentFile,
       context: {
+        allowManualEmailEntry: true,
+        requireToEmail: false,
+        menuMasterSid,
+        resourceSid: this.creditNoteData?.VoucherHeaderSid || this.headerId,
         userName: this.userData?.userName,
-        toEmail: ''
+        toEmail: organizationEmail,
+        ccEmail,
+        organizationEmail,
+        customerEmail: organizationEmail,
+        customerBranchSid,
+        customerMasterSid
       }
     });
   }

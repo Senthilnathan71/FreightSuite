@@ -75,7 +75,7 @@
           </div> -->
 
           <button type="button" class="btn btn-info btn-sm text-nowrap" *ngIf="isEditMode"
-            (click)="openEmailModal()" [disabled]="(this.invoiceData?.Status !== 'A')">
+            (click)="sendManualMail()" [disabled]="(this.invoiceData?.Status !== 'A')">
             <i class="fas fa-envelope me-1"></i> Send Mail
           </button>
 
@@ -841,14 +841,14 @@
                             <th
                               rowspan="2"
                               class="text-center bg-transparent text-light"
-                              style="min-width: 220px"
+                              style="min-width: 240px"
                             >
                               Job No.
                             </th>
                             <th
                               rowspan="2"
                               class="text-center bg-transparent text-light"
-                              style="min-width: 220px"
+                              style="min-width: 240px"
                             >
                               House No.
                             </th>
@@ -1211,7 +1211,7 @@
                               <td class="text-center pt-1">
                                 @if (isEditMode) {
                                 <a
-                                  class="text-decoration-underline"
+                                  class="text-info fw-bold"
                                   style="cursor: pointer"
                                   (click)="navigateToDetailMasterJob(i)"
                                 >
@@ -1249,7 +1249,7 @@
                               <td class="text-center pt-1">
                                 @if (isEditMode) {
                                 <a
-                                  class="text-decoration-underline"
+                                  class="text-info fw-bold"
                                   style="cursor: pointer"
                                   (click)="navigateToDetailHouseJob(i)"
                                 >

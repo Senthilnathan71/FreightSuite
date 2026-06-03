@@ -4282,14 +4282,44 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
         const attachmentName = String(this.bookingData?.BookingNo || 'Booking').replace(/[\\/:*?"<>|]+/g, '_') + '.pdf';
         attachmentFile = new File([pdfBlob], attachmentName, { type: 'application/pdf' });
       }
+      const menuMasterSid = this.getCurrentBookingMenuMasterSid();
+      const customerBranchSid =
+        this.bookingData?.CustomerBranchSid ||
+        this.bookingHeader?.CustomerBranchSid ||
+        this.bookingForm?.get('CustomerBranchSid')?.getRawValue() ||
+        this.selectedCustomerBranch?.CustomerBranchSid ||
+        null;
+      const customerMasterSid =
+        this.bookingData?.CustomerMasterSid ||
+        this.bookingHeader?.CustomerMasterSid ||
+        this.bookingForm?.get('CustomerMasterSid')?.getRawValue() ||
+        this.selectedCustomerBranch?.CustomerMasterSid ||
+        null;
+      const recipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
+        customerBranchSid,
+        customerMasterSid,
+        menuMasterSid
+      });
+      const organizationEmail = recipients.toEmail.join(', ');
+      const ccEmail = Array.from(
+        new Set(
+          (recipients.ccEmail || [])
+            .map((email: string) => (email || '').trim())
+            .filter((email: string) => !!email)
+        )
+      ).join(', ');
 
       this.emailTriggerService.triggerManualEmails({
         companyId: this.currentCompany.CompanyMasterSid,
         branchId: this.currentBranch.BranchMasterSid,
-        menuMasterSid: this.MenuMasterSid,
+        menuMasterSid,
         action: 'UPDATE',
         attachmentFile,
         context: {
+          allowManualEmailEntry: true,
+          requireToEmail: false,
+          menuMasterSid,
+          resourceSid: this.bookingData?.BookingHeaderSid || this.bookingHeader?.BookingHeaderSid,
           BookingNo: this.bookingData?.BookingNo,
           date: this.datePipe.transform(this.bookingData?.BookingDateTime),
           POO: this.getFormattedPort(this.bookingData?.POO),
@@ -4301,7 +4331,12 @@ private getCargoIndexForProductForm(productForm: FormGroup): number {
           consigneeName: this.bookingData?.ConsigneeName,
           userName: this.userData?.userName,
           ShipmentNo: this.bookingData?.ShipmentNo,
-          toEmail: this.selectedCustomerBranch?.Email || ''
+          toEmail: organizationEmail,
+          ccEmail,
+          organizationEmail,
+          customerEmail: organizationEmail,
+          customerBranchSid,
+          customerMasterSid
         }
       });
       const payload = {

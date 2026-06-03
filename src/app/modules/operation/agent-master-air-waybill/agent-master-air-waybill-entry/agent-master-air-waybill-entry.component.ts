@@ -4070,23 +4070,73 @@ getVoyageTypeBasedOnDept(deptId: number) {
 
 
   async sendManualMail(): Promise<void> {
-    const pdfBlob = await this.generatePDFBlob();
-    let attachmentFile: File | undefined;
-    if (pdfBlob) {
-      attachmentFile = new File([pdfBlob], (this.bookingData?.ShipmentNo || 'MAWB') + '.pdf', { type: 'application/pdf' });
-    }
-    this.emailTriggerService.triggerManualEmails({
-      companyId: this.currentCompany?.CompanyMasterSid,
-      branchId: this.currentBranch?.BranchMasterSid,
-      menuMasterSid: Number(sessionStorage.getItem('currentMenuId')),
-      action: 'UPDATE',
-      attachmentFile,
-      context: {
-        ShipmentNo: this.bookingData?.ShipmentNo,
-        userName: this.userData?.userName,
-        toEmail: ''
+    try {
+      let pdfBlob: Blob | undefined;
+      try {
+        pdfBlob = await this.generatePDFBlob();
+      } catch (e) {
+        console.warn('PDF generation skipped:', e);
       }
-    });
+      let attachmentFile: File | undefined;
+      if (pdfBlob) {
+        attachmentFile = new File([pdfBlob], (this.bookingData?.ShipmentNo || 'MAWB') + '.pdf', { type: 'application/pdf' });
+      }
+      const menuMasterSid = this.currentMenuId || Number(sessionStorage.getItem('currentMenuId'));
+      const customerBranchSid =
+        this.bookingData?.CustomerBranchSid ||
+        this.houseJobForm?.get('CustomerBranchSid')?.getRawValue() ||
+        this.housejobData?.CustomerBranchSid ||
+        this.bookingHeader?.CustomerBranchSid ||
+        this.selectedCustomerBranch?.CustomerBranchSid ||
+        null;
+      const customerMasterSid =
+        this.bookingData?.CustomerMasterSid ||
+        this.houseJobForm?.get('CustomerMasterSid')?.getRawValue() ||
+        this.housejobData?.CustomerMasterSid ||
+        this.bookingHeader?.CustomerMasterSid ||
+        this.selectedCustomerBranch?.CustomerMasterSid ||
+        null;
+      const recipients = await this.emailTriggerService.resolveCustomerBranchEmailRecipientsByMenu({
+        customerBranchSid,
+        customerMasterSid,
+        menuMasterSid
+      });
+      const organizationEmail = recipients.toEmail.join(', ');
+      const ccEmail = Array.from(
+        new Set(
+          (recipients.ccEmail || [])
+            .map((email: string) => (email || '').trim())
+            .filter((email: string) => !!email)
+        )
+      ).join(', ');
+
+      this.emailTriggerService.triggerManualEmails({
+        companyId: this.currentCompany?.CompanyMasterSid,
+        branchId: this.currentBranch?.BranchMasterSid,
+        menuMasterSid,
+        action: 'UPDATE',
+        attachmentFile,
+        context: {
+          allowManualEmailEntry: true,
+          requireToEmail: false,
+          menuMasterSid,
+          resourceSid: this.housejobData?.HouseJobSid || this.HouseJobSid,
+          ShipmentNo: this.bookingData?.ShipmentNo,
+          userName: this.userData?.userName,
+          toEmail: organizationEmail,
+          ccEmail,
+          organizationEmail,
+          customerEmail: organizationEmail,
+          customerBranchSid,
+          customerMasterSid
+        }
+      });
+    } catch (error) {
+      console.error('MAWB manual mail error:', error);
+      this.appSettingService.showError('Error preparing mail.');
+      return;
+    }
+
     const payload = {
         tableName: 'HouseJob',
         recordId: String(this.housejobData?.HouseJobSid),
@@ -4550,7 +4600,7 @@ ${this.userData['userName']}`;
 
   generatePDFBlob(): Promise<Blob> {
     return new Promise((resolve, reject) => {
-      const element = document.getElementById('pdfContent');
+      const element = document.getElementById('pdfContent') || document.getElementById('printContent');
 
       const opt: Html2PdfOptions = {
         margin: 0.5,

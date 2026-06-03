@@ -302,7 +302,7 @@
                     @if ((isEditMode || isViewMode) && creditNoteForm.get('ReversalVoucher')?.value) {
                       <a
                         id="ReversalVoucherNumber"
-                        class="custom-input-field sm d-flex align-items-center text-primary cursor-pointer"
+                        class="custom-input-field sm d-flex align-items-center text-info cursor-pointer"
                         (click)="navigateToReversalInvoice()"
                         title="Open Invoice"
                       >
@@ -827,14 +827,14 @@
                         <th
                           rowspan="2"
                           class="text-center bg-transparent text-light"
-                          style="min-width: 180px"
+                          style="min-width:240px"
                         >
                           Job No.
                         </th>
                         <th
                           rowspan="2"
                           class="text-center bg-transparent text-light"
-                          style="min-width: 180px"
+                          style="min-width: 240px"
                         >
                           House No.
                         </th>
@@ -1178,10 +1178,10 @@
                           </td>
 
                           <!-- MasterJobSid column -->
-                          <td style="min-width: 200px" class="pt-1">
+                          <td  class="pt-1">
                             @if (isEditMode) {
                             <a
-                              class="text-primary"
+                              class="text-info fw-bold"
                               style="cursor: pointer"
                               (click)="navigateToDetailMasterJob(i)"
                             >
@@ -1210,10 +1210,10 @@
                           </td>
 
                           <!-- HouseJobSid -->
-                          <td style="min-width: 200px" class="pt-1">
+                          <td  class="pt-1">
                             @if (isEditMode) {
                             <a
-                              class="text-primary"
+                              class="text-info fw-bold"
                               style="cursor: pointer"
                               (click)="navigateToDetailHouseJob(i)"
                             >
